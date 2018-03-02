@@ -30,6 +30,7 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.PreferenceManager;
 
 import com.google.firebase.FirebaseApp;
@@ -62,13 +63,16 @@ import java.util.Locale;
 
 import timber.log.Timber;
 
-
 /**
  * An {@link Application} subclass for retrieving static context
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class GnuCashApplication extends Application {
+
+    static {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+    }
 
     /**
      * Authority (domain) for the file provider. Also used in the app manifest
