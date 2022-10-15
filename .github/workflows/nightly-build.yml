@@ -20,3 +20,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
       - name: Build with Gradle
         run: ./gradlew build -Dorg.gradle.jvmargs=-Xmx6144M
+      - uses: actions/upload-artifact@v3
+        with:
+          name: "Nightly APKs #${{ github.run_number }}.${{ github.run_attempt }}"
+          path: app/build/outputs/apk
