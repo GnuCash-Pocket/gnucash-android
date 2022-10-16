@@ -41,3 +41,8 @@ jobs:
         with:
           api-level: 27
           script: ./gradlew spoon
+      - name: Provide Test Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: "Spoon Test Report #${{ github.run_number }}.${{ github.run_attempt }}"
+          path: app/build/spoon
