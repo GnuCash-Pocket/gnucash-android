@@ -46,3 +46,4 @@ jobs:
         with:
           name: "Spoon Test Report #${{ github.run_number }}.${{ github.run_attempt }}"
           path: app/build/spoon
+        if: always()
