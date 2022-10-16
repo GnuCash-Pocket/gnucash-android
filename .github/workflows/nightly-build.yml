@@ -24,3 +24,20 @@ jobs:
         with:
           name: "Nightly APKs #${{ github.run_number }}.${{ github.run_attempt }}"
           path: app/build/outputs/apk
+  spoon:
+    runs-on: macos-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: set up JDK 8
+        uses: actions/setup-java@v3
+        with:
+          java-version: "8"
+          distribution: "temurin"
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+      - name: run tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 27
+          script: ./gradlew spoon
