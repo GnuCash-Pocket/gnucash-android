@@ -52,3 +52,10 @@ jobs:
         with:
           paths: "app/build/spoon/junit-reports/*.xml"
         if: always()
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Spoon Tests
+          path: app/build/spoon/junit-reports/*.xml
+          reporter: java-junit
