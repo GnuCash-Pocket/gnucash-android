@@ -47,3 +47,8 @@ jobs:
           name: "Spoon Test Report #${{ github.run_number }}.${{ github.run_attempt }}"
           path: app/build/spoon
         if: always()
+      - name: Display Test Results
+        uses: test-summary/action@v2
+        with:
+          paths: "app/build/spoon/junit-reports/*.xml"
+        if: always()
