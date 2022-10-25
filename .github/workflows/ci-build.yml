@@ -1,23 +1,74 @@
 name: CI Build
 
 on:
-  push:
-    branches: ["master"]
+  push: {}
   pull_request:
     branches: ["master"]
+  workflow_dispatch: {}
 
 jobs:
-  build:
+  main:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
-      - name: set up JDK 8
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Prepare Java
         uses: actions/setup-java@v3
         with:
           java-version: "8"
           distribution: "temurin"
-      - name: Setup Gradle
+      - name: Prepare Gradle
         uses: gradle/gradle-build-action@v2
-      - name: Build with Gradle
-        run: ./gradlew testDevelopmentDebugUnitTest -Dorg.gradle.jvmargs=-Xmx6144M --no-daemon
+      - name: Build
+        run: ./gradlew assembleDevelopmentDebug
+      - name: Unit Tests
+        run: ./gradlew testDevelopmentDebugUnitTest
+      - name: Unit Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Unit Tests Report
+          path: app/build/test-results/testDevelopmentDebugUnitTest/TEST-*.xml
+          reporter: java-junit
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: "Development Debug APK #${{ github.run_number }}.${{ github.run_attempt }}"
+          path: app/build/outputs/apk/development/debug/*.apk
+      - name: Lint
+        run: ./gradlew lintDevelopmentDebug
+  instrumentation-test:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Prepare Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: "8"
+          distribution: "temurin"
+      - name: Prepare Gradle
+        uses: gradle/gradle-build-action@v2
+      - name: Instrumentation Tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 27
+          script: ./gradlew spoonDevelopmentDebugAndroidTest
+      - name: Instrumentation Test Summary
+        uses: test-summary/action@v2
+        with:
+          paths: "app/build/spoon/junit-reports/*.xml"
+        if: always()
+      - name: Instrumentation Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Instrumentation Tests
+          path: app/build/spoon/junit-reports/*.xml
+          reporter: java-junit
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: "Instrumentation Test Results #${{ github.run_number }}.${{ github.run_attempt }}"
+          path: app/build/spoon
+        if: always()
