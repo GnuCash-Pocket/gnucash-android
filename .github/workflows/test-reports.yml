@@ -1,0 +1,24 @@
+name: Test Reports
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Unit Test Report
+        uses: dorny/test-reporter@v1
+        with:
+          artifact: unit-test-results
+          name: Unit Test Report
+          path: TEST-*.xml
+          reporter: java-junit
+      - name: Instrumentation Test Report
+        uses: dorny/test-reporter@v1
+        with:
+          artifact: instrumentation-test-results
+          name: Instrumentation Test Report
+          path: junit-reports/*.xml
+          reporter: java-junit
