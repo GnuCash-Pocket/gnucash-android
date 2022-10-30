@@ -27,7 +27,7 @@ jobs:
         uses: dorny/test-reporter@v1
         if: always()
         with:
-          name: Unit Tests Report
+          name: Unit Test Report
           path: app/build/test-results/testDevelopmentDebugUnitTest/TEST-*.xml
           reporter: java-junit
       - name: Upload APK
@@ -63,7 +63,7 @@ jobs:
         uses: dorny/test-reporter@v1
         if: always()
         with:
-          name: Instrumentation Tests
+          name: Instrumentation Test Report
           path: app/build/spoon/junit-reports/*.xml
           reporter: java-junit
       - name: Upload Test Results
