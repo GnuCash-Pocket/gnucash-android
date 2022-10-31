@@ -22,6 +22,11 @@ jobs:
         run: ./gradlew assembleDevelopmentDebug
       - name: Unit Tests
         run: ./gradlew testDevelopmentDebugUnitTest
+      - name: Unit Test Summary
+        uses: test-summary/action@v2
+        if: always()
+        with:
+          paths: app/build/test-results/testDevelopmentDebugUnitTest/TEST-*.xml
       - name: Upload Unit Test Results for Report
         uses: actions/upload-artifact@v3
         if: always()
