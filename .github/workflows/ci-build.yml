@@ -4,7 +4,6 @@ on:
   push: {}
   pull_request:
     branches: ["master"]
-  workflow_dispatch: {}
 
 jobs:
   main:
@@ -34,7 +33,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v3
         with:
-          name: "Development Debug APK #${{ github.run_number }}.${{ github.run_attempt }}"
+          name: "Development Debug APK"
           path: app/build/outputs/apk/development/debug/*.apk
   instrumentation-test:
     runs-on: macos-latest
