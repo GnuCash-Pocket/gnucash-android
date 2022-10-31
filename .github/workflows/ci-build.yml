@@ -1,9 +1,9 @@
 name: CI Build
 
 on:
-  push: {}
+  push: { }
   pull_request:
-    branches: ["master"]
+    branches: [ "master" ]
 
 jobs:
   main:
@@ -66,5 +66,5 @@ jobs:
         uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: Instrumentation Test Results
+          name: instrumentation-test-results
           path: app/build/spoon

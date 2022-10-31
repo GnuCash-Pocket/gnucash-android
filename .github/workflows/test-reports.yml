@@ -1,7 +1,7 @@
 name: Test Reports
 on:
   workflow_run:
-    workflows: ["CI Build"]
+    workflows: [ "CI Build" ]
     types:
       - completed
 jobs:
