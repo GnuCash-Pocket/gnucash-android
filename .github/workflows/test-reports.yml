@@ -15,6 +15,7 @@ jobs:
           name: Unit Test Report
           path: TEST-*.xml
           reporter: java-junit
+          fail-on-error: false
       - name: Instrumentation Test Report
         uses: dorny/test-reporter@v1
         with:
@@ -22,3 +23,4 @@ jobs:
           name: Instrumentation Test Report
           path: junit-reports/*.xml
           reporter: java-junit
+          fail-on-error: false
