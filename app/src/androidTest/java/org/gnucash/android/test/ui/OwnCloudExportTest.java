@@ -79,8 +79,8 @@ public class OwnCloudExportTest {
     private SharedPreferences mPrefs;
 
     private String OC_SERVER = "https://demo.owncloud.org";
-    private String OC_USERNAME = "test";
-    private String OC_PASSWORD = "test";
+    private String OC_USERNAME = "admin";
+    private String OC_PASSWORD = "admin";
     private String OC_DIR = "gc_test";
 
     /**
