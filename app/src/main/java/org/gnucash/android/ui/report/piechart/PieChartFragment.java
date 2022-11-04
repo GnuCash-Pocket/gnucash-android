@@ -92,7 +92,7 @@ public class PieChartFragment extends BaseReportFragment {
         mChart.setOnChartValueSelectedListener(this);
         mChart.getLegend().setForm(LegendForm.CIRCLE);
         mChart.getLegend().setWordWrapEnabled(true);
-        mChart.getLegend().setPosition(LegendPosition.BELOW_CHART_CENTER);
+        mChart.getLegend().setPosition(LegendPosition.RIGHT_OF_CHART_INSIDE);
 
     }
 
