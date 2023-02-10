@@ -15,8 +15,10 @@
  */
 package org.gnucash.android.test.unit.export;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.database.sqlite.SQLiteDatabase;
-import android.support.annotation.NonNull;
+
 import androidx.annotation.NonNull;
 
 import org.gnucash.android.app.GnuCashApplication;

@@ -15,6 +15,9 @@
  */
 package org.gnucash.android.test.unit.db;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+
 import android.database.sqlite.SQLiteDatabase;
 
 import org.assertj.core.data.Index;
@@ -60,9 +63,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 
 @RunWith(RobolectricTestRunner.class)
 //package is required so that resources can be found in dev mode

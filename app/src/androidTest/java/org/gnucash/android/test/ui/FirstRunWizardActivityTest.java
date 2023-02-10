@@ -26,7 +26,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import android.Manifest;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.support.test.InstrumentationRegistry;
 import android.util.Log;
 
 import androidx.test.rule.ActivityTestRule;

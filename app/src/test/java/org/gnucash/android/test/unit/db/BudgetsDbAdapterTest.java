@@ -15,7 +15,7 @@
  */
 package org.gnucash.android.test.unit.db;
 
-import android.support.annotation.NonNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import androidx.annotation.NonNull;
 
@@ -40,8 +40,6 @@ import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for the budgets database adapter

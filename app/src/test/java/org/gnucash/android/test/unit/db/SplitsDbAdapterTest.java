@@ -15,6 +15,8 @@
  */
 package org.gnucash.android.test.unit.db;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.database.sqlite.SQLiteException;
 
 import org.gnucash.android.db.DatabaseSchema;
@@ -35,8 +37,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Some tests for the splits database adapter

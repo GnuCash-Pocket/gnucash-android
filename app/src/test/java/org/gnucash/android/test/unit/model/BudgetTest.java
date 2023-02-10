@@ -16,6 +16,8 @@
 
 package org.gnucash.android.test.unit.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.gnucash.android.model.Budget;
 import org.gnucash.android.model.BudgetAmount;
 import org.gnucash.android.model.Money;
@@ -23,8 +25,6 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for budgets

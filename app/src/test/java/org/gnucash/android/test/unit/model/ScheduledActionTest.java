@@ -16,6 +16,8 @@
 
 package org.gnucash.android.test.unit.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.gnucash.android.model.PeriodType;
 import org.gnucash.android.model.Recurrence;
 import org.gnucash.android.model.ScheduledAction;
@@ -27,8 +29,6 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 
 /**

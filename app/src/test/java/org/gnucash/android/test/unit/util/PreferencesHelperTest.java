@@ -15,6 +15,8 @@
  */
 package org.gnucash.android.test.unit.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.gnucash.android.test.unit.testutil.ShadowCrashlytics;
 import org.gnucash.android.test.unit.testutil.ShadowUserVoice;
 import org.gnucash.android.util.PreferencesHelper;
@@ -25,8 +27,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.sql.Timestamp;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 21, packageName = "org.gnucash.android", shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})

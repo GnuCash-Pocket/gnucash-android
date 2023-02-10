@@ -15,6 +15,8 @@
  */
 package org.gnucash.android.test.unit.export;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
@@ -25,7 +27,6 @@ import org.gnucash.android.export.xml.GncXmlExporter;
 import org.gnucash.android.importer.GncXmlImporter;
 import org.gnucash.android.test.unit.testutil.ShadowCrashlytics;
 import org.gnucash.android.test.unit.testutil.ShadowUserVoice;
-import org.gnucash.android.util.BackupManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,8 +39,6 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test backup and restore functionality

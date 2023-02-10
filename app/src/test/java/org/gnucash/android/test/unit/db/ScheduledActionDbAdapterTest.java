@@ -1,5 +1,7 @@
 package org.gnucash.android.test.unit.db;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.content.res.Resources;
 
 import org.gnucash.android.R;
@@ -18,8 +20,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test the scheduled actions database adapter

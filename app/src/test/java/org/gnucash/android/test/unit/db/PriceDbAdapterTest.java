@@ -1,5 +1,7 @@
 package org.gnucash.android.test.unit.db;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.PricesDbAdapter;
 import org.gnucash.android.model.Price;
@@ -9,8 +11,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test price functions

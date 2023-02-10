@@ -15,6 +15,9 @@
  */
 package org.gnucash.android.test.unit.importer;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
+
 import android.database.sqlite.SQLiteDatabase;
 
 import org.gnucash.android.app.GnuCashApplication;
@@ -55,9 +58,6 @@ import java.util.Date;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
 
 /**
  * Imports GnuCash XML files and checks the objects defined in them are imported correctly.

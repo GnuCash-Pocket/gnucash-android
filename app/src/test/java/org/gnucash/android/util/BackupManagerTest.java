@@ -1,5 +1,7 @@
 package org.gnucash.android.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
@@ -16,8 +18,6 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 
 @RunWith(RobolectricTestRunner.class)

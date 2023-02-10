@@ -16,6 +16,10 @@
 
 package org.gnucash.android.test.unit.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.test.unit.testutil.ShadowCrashlytics;
@@ -29,10 +33,6 @@ import org.robolectric.annotation.Config;
 import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.Locale;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 21, packageName = "org.gnucash.android", shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})

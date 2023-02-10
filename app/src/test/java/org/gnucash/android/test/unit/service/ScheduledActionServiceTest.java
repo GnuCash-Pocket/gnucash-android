@@ -15,6 +15,8 @@
  */
 package org.gnucash.android.test.unit.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -68,8 +70,6 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test the the scheduled actions service runs as expected

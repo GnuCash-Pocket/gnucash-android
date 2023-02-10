@@ -15,6 +15,8 @@
  */
 package org.gnucash.android.test.unit.db;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.assertj.core.data.Index;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.SplitsDbAdapter;
@@ -35,8 +37,6 @@ import org.robolectric.annotation.Config;
 
 import java.math.BigDecimal;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 
 @RunWith(RobolectricTestRunner.class)

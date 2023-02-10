@@ -38,9 +38,9 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 
 import androidx.test.espresso.Espresso;
-import androidx.test.runner.AndroidJUnit4;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
+import androidx.test.runner.AndroidJUnit4;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;

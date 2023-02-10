@@ -15,10 +15,10 @@
  */
 package org.gnucash.android.test.unit.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.gnucash.android.model.Commodity;
 import org.junit.Test;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test commodities

@@ -16,14 +16,14 @@
 
 package org.gnucash.android.test.unit.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.gnucash.android.model.PeriodType;
 import org.gnucash.android.model.Recurrence;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
 import java.sql.Timestamp;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test {@link Recurrence}s

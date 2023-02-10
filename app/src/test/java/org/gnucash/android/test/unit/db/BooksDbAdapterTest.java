@@ -15,6 +15,9 @@
  */
 package org.gnucash.android.test.unit.db;
 
+import static junit.framework.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
@@ -35,9 +38,6 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
-
-import static junit.framework.Assert.fail;
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test the book database adapter

@@ -1,5 +1,7 @@
 package org.gnucash.android.test.unit.util;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.gnucash.android.util.AmountParser;
 import org.junit.After;
 import org.junit.Before;
@@ -8,8 +10,6 @@ import org.junit.Test;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Locale;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class AmountParserTest {
     private Locale mPreviousLocale;

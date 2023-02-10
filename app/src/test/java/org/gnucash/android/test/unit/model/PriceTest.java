@@ -16,14 +16,14 @@
 
 package org.gnucash.android.test.unit.model;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
+
 import org.gnucash.android.model.Price;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.Locale;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
 
 
 public class PriceTest {

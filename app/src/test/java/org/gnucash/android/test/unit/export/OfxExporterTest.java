@@ -15,6 +15,8 @@
  */
 package org.gnucash.android.test.unit.export;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.database.sqlite.SQLiteDatabase;
 
 import org.gnucash.android.app.GnuCashApplication;
@@ -41,8 +43,6 @@ import org.robolectric.annotation.Config;
 
 import java.io.File;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 
 @RunWith(RobolectricTestRunner.class)
