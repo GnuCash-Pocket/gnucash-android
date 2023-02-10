@@ -18,8 +18,6 @@ package org.gnucash.android.ui.transaction.dialog;
 
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +25,9 @@ import android.view.WindowManager.LayoutParams;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import androidx.cursoradapter.widget.SimpleCursorAdapter;
+import androidx.fragment.app.DialogFragment;
 
 import org.gnucash.android.R;
 import org.gnucash.android.db.DatabaseSchema;

@@ -1,10 +1,11 @@
 package org.gnucash.android.ui.util.widget;
 
 import android.content.Context;
-import android.support.v7.widget.AppCompatSpinner;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.AdapterView;
+
+import androidx.appcompat.widget.AppCompatSpinner;
 
 import org.gnucash.android.ui.export.ExportFormFragment;
 

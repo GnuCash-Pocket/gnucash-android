@@ -17,13 +17,14 @@
 package org.gnucash.android.ui.util;
 
 import android.content.Context;
-import android.os.Build;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.FloatingActionButton;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
+
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.gnucash.android.R;
 
@@ -59,7 +60,7 @@ public class ScrollingFABBehavior extends CoordinatorLayout.Behavior<FloatingAct
 
     private int getToolbarHeight(Context context) {
         TypedValue tv = new TypedValue();
-        int actionBarHeight = android.support.v7.appcompat.R.attr.actionBarSize;
+        int actionBarHeight = R.attr.actionBarSize;
         if (context.getTheme().resolveAttribute(R.attr.actionBarSize, tv, true)) {
             actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data,
                     context.getResources().getDisplayMetrics());

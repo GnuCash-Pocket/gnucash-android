@@ -19,9 +19,10 @@ package org.gnucash.android.ui.passcode;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.WindowManager.LayoutParams;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.ui.common.UxArgument;

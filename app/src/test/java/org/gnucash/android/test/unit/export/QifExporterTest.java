@@ -17,6 +17,7 @@ package org.gnucash.android.test.unit.export;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.BookDbHelper;
@@ -47,8 +48,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 import java.util.zip.ZipFile;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
 //package is required so that resources can be found in dev mode

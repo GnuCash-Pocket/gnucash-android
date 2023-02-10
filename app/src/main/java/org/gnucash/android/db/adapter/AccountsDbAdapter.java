@@ -17,16 +17,21 @@
 
 package org.gnucash.android.db.adapter;
 
+import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
+import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
+import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Color;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -46,10 +51,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-
-import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
-import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
-import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 
 /**
  * Manages persistence of {@link Account}s in the database

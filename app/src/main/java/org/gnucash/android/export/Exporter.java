@@ -20,8 +20,9 @@ package org.gnucash.android.export;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
-import android.support.annotation.NonNull;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.crashlytics.android.Crashlytics;
 

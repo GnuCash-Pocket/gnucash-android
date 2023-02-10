@@ -15,7 +15,6 @@
  */
 package org.gnucash.android.ui.util.widget;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;

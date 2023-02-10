@@ -17,13 +17,16 @@
 
 package org.gnucash.android.ui.report.barchart;
 
+import static org.gnucash.android.ui.report.ReportsActivity.COLORS;
+
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.Legend;
@@ -53,8 +56,6 @@ import java.util.List;
 import java.util.Map;
 
 import butterknife.BindView;
-
-import static org.gnucash.android.ui.report.ReportsActivity.COLORS;
 
 /**
  * Activity used for drawing a bar chart

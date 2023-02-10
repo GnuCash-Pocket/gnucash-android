@@ -17,9 +17,10 @@ package org.gnucash.android.ui.budget;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.view.View;
+
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;

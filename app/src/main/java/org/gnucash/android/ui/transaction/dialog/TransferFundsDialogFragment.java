@@ -18,10 +18,6 @@ package org.gnucash.android.ui.transaction.dialog;
 
 import android.app.Dialog;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.TextInputLayout;
-import android.support.v4.app.DialogFragment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Pair;
@@ -33,6 +29,12 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+
+import com.google.android.material.textfield.TextInputLayout;
 
 import org.gnucash.android.R;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;

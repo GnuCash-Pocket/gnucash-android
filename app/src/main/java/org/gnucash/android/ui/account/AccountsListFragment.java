@@ -25,18 +25,7 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager.LoaderCallbacks;
-import android.support.v4.content.Loader;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -48,6 +37,18 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.appcompat.widget.SearchView;
+import androidx.core.view.MenuItemCompat;
+import androidx.fragment.app.Fragment;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.Loader;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -78,9 +79,9 @@ import butterknife.ButterKnife;
  */
 public class AccountsListFragment extends Fragment implements
         Refreshable,
-        LoaderCallbacks<Cursor>,
-        android.support.v7.widget.SearchView.OnQueryTextListener,
-        android.support.v7.widget.SearchView.OnCloseListener {
+        LoaderManager.LoaderCallbacks<Cursor>,
+        SearchView.OnQueryTextListener,
+        SearchView.OnCloseListener {
 
     AccountRecyclerAdapter mAccountRecyclerAdapter;
     @BindView(R.id.account_recycler_view)
@@ -135,7 +136,7 @@ public class AccountsListFragment extends Fragment implements
     /**
      * Search view for searching accounts
      */
-    private android.support.v7.widget.SearchView mSearchView;
+    private SearchView mSearchView;
 
     public static AccountsListFragment newInstance(DisplayMode displayMode) {
         AccountsListFragment fragment = new AccountsListFragment();
@@ -280,7 +281,7 @@ public class AccountsListFragment extends Fragment implements
 
             SearchManager searchManager =
                     (SearchManager) GnuCashApplication.getAppContext().getSystemService(Context.SEARCH_SERVICE);
-            mSearchView = (android.support.v7.widget.SearchView)
+            mSearchView = (SearchView)
                     MenuItemCompat.getActionView(menu.findItem(R.id.menu_search));
             if (mSearchView == null)
                 return;

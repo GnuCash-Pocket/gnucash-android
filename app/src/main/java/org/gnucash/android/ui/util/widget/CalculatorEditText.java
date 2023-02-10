@@ -19,9 +19,6 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.inputmethodservice.KeyboardView;
 import android.os.Build;
-import android.support.annotation.Nullable;
-import android.support.annotation.XmlRes;
-import android.support.v7.widget.AppCompatEditText;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
@@ -29,6 +26,10 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.XmlRes;
+import androidx.appcompat.widget.AppCompatEditText;
 
 import com.crashlytics.android.Crashlytics;
 
@@ -123,7 +124,7 @@ public class CalculatorEditText extends AppCompatEditText {
     public void bindListeners(CalculatorKeyboard calculatorKeyboard) {
         mCalculatorKeyboard = calculatorKeyboard;
         mContext = calculatorKeyboard.getContext();
-        setOnFocusChangeListener(new OnFocusChangeListener() {
+        setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {

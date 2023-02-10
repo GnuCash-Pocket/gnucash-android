@@ -18,13 +18,14 @@ package org.gnucash.android.ui.report.sheet;
 import android.database.Cursor;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.widget.TableLayout;
 import android.widget.TextView;
+
+import androidx.annotation.Nullable;
 
 import org.gnucash.android.R;
 import org.gnucash.android.db.DatabaseSchema;

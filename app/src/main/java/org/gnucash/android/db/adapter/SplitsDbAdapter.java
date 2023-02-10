@@ -17,14 +17,18 @@
 
 package org.gnucash.android.db.adapter;
 
+import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
+import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
+
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
+
+import androidx.annotation.NonNull;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema;
@@ -37,9 +41,6 @@ import org.gnucash.android.util.TimestampHelper;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
-import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 
 /**
  * Database adapter for managing transaction splits in the database

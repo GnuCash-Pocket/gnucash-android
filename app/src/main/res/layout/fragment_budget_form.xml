@@ -34,7 +34,7 @@
             android:layout_marginTop="@dimen/dialog_padding"
             android:orientation="vertical">
 
-            <android.support.design.widget.TextInputLayout
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/name_text_input_layout"
                 android:paddingLeft="@dimen/dialog_padding"
                 android:paddingRight="@dimen/dialog_padding"
@@ -51,7 +51,7 @@
                     android:ellipsize="start"
                     android:hint="Budget name"
                     style="@style/ListItemText"></EditText>
-            </android.support.design.widget.TextInputLayout>
+            </com.google.android.material.textfield.TextInputLayout>
 
             <TableRow
                 style="@style/FormRow"

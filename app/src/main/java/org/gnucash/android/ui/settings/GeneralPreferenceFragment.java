@@ -20,12 +20,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.preference.CheckBoxPreference;
-import android.support.v7.preference.Preference;
-import android.support.v7.preference.PreferenceFragmentCompat;
 import android.widget.Toast;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.CheckBoxPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
 
 import org.gnucash.android.R;
 import org.gnucash.android.ui.common.UxArgument;
@@ -38,7 +39,7 @@ import org.gnucash.android.ui.passcode.PasscodePreferenceActivity;
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
 public class GeneralPreferenceFragment extends PreferenceFragmentCompat implements
-        android.support.v7.preference.Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
+        Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
 
     /**
      * Request code for retrieving passcode to store

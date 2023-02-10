@@ -16,8 +16,9 @@
 
 package org.gnucash.android.model;
 
-import android.support.annotation.NonNull;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import org.joda.time.LocalDateTime;
 

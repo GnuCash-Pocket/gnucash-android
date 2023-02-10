@@ -1,16 +1,17 @@
 package org.gnucash.android.db.adapter;
 
+import static org.gnucash.android.db.DatabaseSchema.PriceEntry;
+
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
-import android.support.annotation.NonNull;
 import android.util.Pair;
+
+import androidx.annotation.NonNull;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.model.Price;
 import org.gnucash.android.util.TimestampHelper;
-
-import static org.gnucash.android.db.DatabaseSchema.PriceEntry;
 
 /**
  * Database adapter for prices

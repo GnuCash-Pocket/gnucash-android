@@ -21,10 +21,6 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.inputmethodservice.KeyboardView;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.widget.SimpleCursorAdapter;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -42,6 +38,11 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.cursoradapter.widget.SimpleCursorAdapter;
+import androidx.fragment.app.Fragment;
 
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;

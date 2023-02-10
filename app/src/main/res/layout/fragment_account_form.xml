@@ -25,7 +25,7 @@
         android:padding="@dimen/dialog_padding"
         android:orientation="vertical">
 
-        <android.support.design.widget.TextInputLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/name_text_input_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -41,7 +41,7 @@
                 android:ellipsize="start"
                 android:hint="@string/label_account_name"
                 style="@style/ListItemText"></EditText>
-        </android.support.design.widget.TextInputLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -97,7 +97,7 @@
                 android:layout_marginLeft="@dimen/dialog_padding" />
         </LinearLayout>
 
-        <android.support.design.widget.TextInputLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/description_input_layout"
             android:layout_marginBottom="10dp"
             android:layout_marginLeft="9dp"
@@ -112,7 +112,7 @@
                 android:ems="15"
                 android:inputType="textCapSentences"
                 android:hint="@string/hint_account_description"></EditText>
-        </android.support.design.widget.TextInputLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
         <CheckBox
             android:id="@+id/checkbox_placeholder_account"

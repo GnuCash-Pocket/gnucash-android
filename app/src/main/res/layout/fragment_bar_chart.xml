@@ -18,7 +18,6 @@
 -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:padding="@dimen/dialog_padding"
     android:weightSum="3"
@@ -36,7 +35,7 @@
         android:textSize="16sp"
         android:gravity="center" />
 
-    <android.support.v7.widget.CardView
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:padding="@dimen/dialog_padding"
         android:layout_marginBottom="@dimen/edge_padding"
@@ -49,6 +48,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-    </android.support.v7.widget.CardView>
+    </androidx.cardview.widget.CardView>
 
 </LinearLayout>

@@ -18,12 +18,13 @@ package org.gnucash.android.util;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.support.annotation.LayoutRes;
-import android.support.annotation.NonNull;
-import android.support.v4.widget.SimpleCursorAdapter;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.annotation.LayoutRes;
+import androidx.annotation.NonNull;
+import androidx.cursoradapter.widget.SimpleCursorAdapter;
 
 import org.gnucash.android.R;
 import org.gnucash.android.db.DatabaseSchema;

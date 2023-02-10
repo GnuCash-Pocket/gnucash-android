@@ -16,6 +16,17 @@
 
 package org.gnucash.android.db;
 
+import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
+import static org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry;
+import static org.gnucash.android.db.DatabaseSchema.BudgetEntry;
+import static org.gnucash.android.db.DatabaseSchema.CommodityEntry;
+import static org.gnucash.android.db.DatabaseSchema.CommonColumns;
+import static org.gnucash.android.db.DatabaseSchema.PriceEntry;
+import static org.gnucash.android.db.DatabaseSchema.RecurrenceEntry;
+import static org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry;
+import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
+import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
+
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -33,17 +44,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import javax.xml.parsers.ParserConfigurationException;
-
-import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
-import static org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry;
-import static org.gnucash.android.db.DatabaseSchema.BudgetEntry;
-import static org.gnucash.android.db.DatabaseSchema.CommodityEntry;
-import static org.gnucash.android.db.DatabaseSchema.CommonColumns;
-import static org.gnucash.android.db.DatabaseSchema.PriceEntry;
-import static org.gnucash.android.db.DatabaseSchema.RecurrenceEntry;
-import static org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry;
-import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
-import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 
 /**
  * Helper class for managing the SQLite database.

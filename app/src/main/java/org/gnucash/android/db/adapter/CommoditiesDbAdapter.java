@@ -1,18 +1,19 @@
 package org.gnucash.android.db.adapter;
 
+import static org.gnucash.android.db.DatabaseSchema.CommodityEntry;
+
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
-import android.support.annotation.NonNull;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.crashlytics.android.Crashlytics;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.model.Commodity;
-
-import static org.gnucash.android.db.DatabaseSchema.CommodityEntry;
 
 /**
  * Database adapter for {@link org.gnucash.android.model.Commodity}

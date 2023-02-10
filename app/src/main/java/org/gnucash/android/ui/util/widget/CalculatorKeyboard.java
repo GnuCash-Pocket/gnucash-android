@@ -30,12 +30,13 @@ import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.inputmethodservice.KeyboardView.OnKeyboardActionListener;
 import android.provider.Settings;
-import android.support.annotation.XmlRes;
 import android.text.Editable;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+
+import androidx.annotation.XmlRes;
 
 import java.text.DecimalFormatSymbols;
 

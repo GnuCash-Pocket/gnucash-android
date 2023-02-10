@@ -17,16 +17,22 @@
 
 package org.gnucash.android.db.adapter;
 
+import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
+import static org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry;
+import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
+import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
+
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.crashlytics.android.Crashlytics;
 
@@ -40,11 +46,6 @@ import org.gnucash.android.util.TimestampHelper;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
-import static org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry;
-import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
-import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 
 /**
  * Manages persistence of {@link Transaction}s in the database

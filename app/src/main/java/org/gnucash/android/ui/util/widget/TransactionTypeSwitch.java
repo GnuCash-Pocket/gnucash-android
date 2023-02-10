@@ -17,11 +17,12 @@
 package org.gnucash.android.ui.util.widget;
 
 import android.content.Context;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.SwitchCompat;
 import android.util.AttributeSet;
 import android.widget.CompoundButton;
 import android.widget.TextView;
+
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.ContextCompat;
 
 import org.gnucash.android.R;
 import org.gnucash.android.model.AccountType;

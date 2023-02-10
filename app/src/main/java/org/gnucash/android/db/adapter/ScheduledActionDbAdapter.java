@@ -15,12 +15,15 @@
  */
 package org.gnucash.android.db.adapter;
 
+import static org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry;
+
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
-import android.support.annotation.NonNull;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema;
@@ -29,8 +32,6 @@ import org.gnucash.android.model.ScheduledAction;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry;
 
 /**
  * Database adapter for fetching/saving/modifying scheduled events

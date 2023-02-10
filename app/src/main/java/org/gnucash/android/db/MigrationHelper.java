@@ -16,6 +16,17 @@
 
 package org.gnucash.android.db;
 
+import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
+import static org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry;
+import static org.gnucash.android.db.DatabaseSchema.BudgetEntry;
+import static org.gnucash.android.db.DatabaseSchema.CommodityEntry;
+import static org.gnucash.android.db.DatabaseSchema.CommonColumns;
+import static org.gnucash.android.db.DatabaseSchema.PriceEntry;
+import static org.gnucash.android.db.DatabaseSchema.RecurrenceEntry;
+import static org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry;
+import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
+import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
+
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
@@ -25,9 +36,10 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
-import android.support.v7.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
+
+import androidx.preference.PreferenceManager;
 
 import com.crashlytics.android.Crashlytics;
 
@@ -72,17 +84,6 @@ import java.util.TimeZone;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-
-import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
-import static org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry;
-import static org.gnucash.android.db.DatabaseSchema.BudgetEntry;
-import static org.gnucash.android.db.DatabaseSchema.CommodityEntry;
-import static org.gnucash.android.db.DatabaseSchema.CommonColumns;
-import static org.gnucash.android.db.DatabaseSchema.PriceEntry;
-import static org.gnucash.android.db.DatabaseSchema.RecurrenceEntry;
-import static org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry;
-import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
-import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 
 /**
  * Collection of helper methods which are used during database migrations

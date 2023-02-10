@@ -17,13 +17,17 @@
 
 package org.gnucash.android.ui.report.piechart;
 
+import static com.github.mikephil.charting.components.Legend.LegendForm;
+import static com.github.mikephil.charting.components.Legend.LegendPosition;
+
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.Nullable;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import androidx.annotation.Nullable;
 
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.Entry;
@@ -43,9 +47,6 @@ import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
-
-import static com.github.mikephil.charting.components.Legend.LegendForm;
-import static com.github.mikephil.charting.components.Legend.LegendPosition;
 
 /**
  * Activity used for drawing a pie chart

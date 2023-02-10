@@ -1,9 +1,8 @@
 package org.gnucash.android.util;
 
-import android.support.annotation.NonNull;
 import android.util.Log;
 
-import org.gnucash.android.export.ExportAsyncTask;
+import androidx.annotation.NonNull;
 
 import java.io.File;
 import java.io.FileInputStream;

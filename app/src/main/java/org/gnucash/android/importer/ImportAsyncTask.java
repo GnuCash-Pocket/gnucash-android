@@ -15,7 +15,6 @@
  */
 package org.gnucash.android.importer;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
@@ -23,7 +22,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.widget.Toast;

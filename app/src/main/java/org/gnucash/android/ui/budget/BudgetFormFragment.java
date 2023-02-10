@@ -21,11 +21,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.inputmethodservice.KeyboardView;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.design.widget.TextInputLayout;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -39,10 +34,16 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+
 import com.codetroopers.betterpickers.calendardatepicker.CalendarDatePickerDialogFragment;
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence;
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrenceFormatter;
 import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment;
+import com.google.android.material.textfield.TextInputLayout;
 
 import org.gnucash.android.R;
 import org.gnucash.android.db.DatabaseSchema;

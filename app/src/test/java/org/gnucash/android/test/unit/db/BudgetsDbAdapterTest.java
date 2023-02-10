@@ -17,6 +17,8 @@ package org.gnucash.android.test.unit.db;
 
 import android.support.annotation.NonNull;
 
+import androidx.annotation.NonNull;
+
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BudgetAmountsDbAdapter;
 import org.gnucash.android.db.adapter.BudgetsDbAdapter;

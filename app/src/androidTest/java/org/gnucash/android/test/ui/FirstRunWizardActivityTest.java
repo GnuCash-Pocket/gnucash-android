@@ -15,14 +15,23 @@
  */
 package org.gnucash.android.test.ui;
 
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import android.Manifest;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.rule.GrantPermissionRule;
-import android.support.test.runner.AndroidJUnit4;
-import android.test.ActivityInstrumentationTestCase2;
 import android.util.Log;
+
+import androidx.test.rule.ActivityTestRule;
+import androidx.test.rule.GrantPermissionRule;
+import androidx.test.runner.AndroidJUnit4;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -37,22 +46,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * Tests the first run wizard
  *
  * @author Ngewi Fet
  */
 @RunWith(AndroidJUnit4.class)
-public class FirstRunWizardActivityTest extends ActivityInstrumentationTestCase2<FirstRunWizardActivity> {
-
+public class FirstRunWizardActivityTest {
     private DatabaseHelper mDbHelper;
     private SQLiteDatabase mDb;
     private AccountsDbAdapter mAccountsDbAdapter;
@@ -62,18 +62,14 @@ public class FirstRunWizardActivityTest extends ActivityInstrumentationTestCase2
     FirstRunWizardActivity mActivity;
 
     @Rule
-    public GrantPermissionRule animationPermissionsRule = GrantPermissionRule.grant(Manifest.permission.SET_ANIMATION_SCALE);
+    ActivityTestRule<FirstRunWizardActivity> rule = new ActivityTestRule<>(FirstRunWizardActivity.class);
 
-    public FirstRunWizardActivityTest() {
-        super(FirstRunWizardActivity.class);
-    }
+    @Rule
+    public GrantPermissionRule animationPermissionsRule = GrantPermissionRule.grant(Manifest.permission.SET_ANIMATION_SCALE);
 
     @Before
     public void setUp() throws Exception {
-        super.setUp();
-        injectInstrumentation(InstrumentationRegistry.getInstrumentation());
-
-        mActivity = getActivity();
+        mActivity = rule.getActivity();
         mDbHelper = new DatabaseHelper(mActivity, BaseModel.generateUID());
         try {
             mDb = mDbHelper.getWritableDatabase();

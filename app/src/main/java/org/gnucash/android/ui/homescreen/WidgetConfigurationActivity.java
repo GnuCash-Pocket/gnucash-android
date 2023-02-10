@@ -27,18 +27,18 @@ import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.SimpleCursorAdapter;
-import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.ImageButton;
 import android.widget.RemoteViews;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import androidx.core.content.ContextCompat;
+import androidx.cursoradapter.widget.SimpleCursorAdapter;
+import androidx.preference.PreferenceManager;
 
 import org.gnucash.android.R;
 import org.gnucash.android.db.BookDbHelper;
@@ -58,7 +58,6 @@ import org.gnucash.android.ui.transaction.TransactionsActivity;
 import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
 
 import java.util.Locale;
-import java.util.prefs.Preferences;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
