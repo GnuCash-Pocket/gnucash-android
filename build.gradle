@@ -12,9 +12,9 @@ buildscript {
 
 allprojects {
     repositories {
-		maven { url "http://dl.bintray.com/populov/maven" }
+		maven { url "https://dl.bintray.com/populov/maven" }
         maven { url "https://jitpack.io" }
-		maven { url "http://JRAF.org/static/maven/2" }
+		maven { url "https://JRAF.org/static/maven/2" }
         jcenter()
         google()
         mavenCentral()
