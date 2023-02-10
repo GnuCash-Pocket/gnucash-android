@@ -36,7 +36,7 @@ public class ReselectSpinner extends AppCompatSpinner {
     public void setSelection(int position) {
         boolean sameSelected = getSelectedItemPosition() == position;
         super.setSelection(position);
-        if (sameSelected){
+        if (sameSelected) {
             OnItemSelectedListener listener = getOnItemSelectedListener();
             if (listener != null)
                 listener.onItemSelected(this, getSelectedView(), position, getSelectedItemId());

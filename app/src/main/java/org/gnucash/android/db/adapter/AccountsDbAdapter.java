@@ -54,6 +54,7 @@ import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 /**
  * Manages persistence of {@link Account}s in the database
  * Handles adding, modifying and deleting of account records.
+ *
  * @author Ngewi Fet <ngewif@gmail.com>
  * @author Yongxin Wang <fefe.wyx@gmail.com>
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
@@ -71,9 +72,9 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      */
     public static final String ROOT_ACCOUNT_FULL_NAME = " ";
 
-	/**
-	 * Transactions database adapter for manipulating transactions associated with accounts
-	 */
+    /**
+     * Transactions database adapter for manipulating transactions associated with accounts
+     */
     private final TransactionsDbAdapter mTransactionsAdapter;
 
     /**
@@ -83,20 +84,21 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     /**
      * Overloaded constructor. Creates an adapter for an already open database
+     *
      * @param db SQliteDatabase instance
      */
     public AccountsDbAdapter(SQLiteDatabase db, TransactionsDbAdapter transactionsDbAdapter) {
         super(db, AccountEntry.TABLE_NAME, new String[]{
-                AccountEntry.COLUMN_NAME         ,
-                AccountEntry.COLUMN_DESCRIPTION  ,
-                AccountEntry.COLUMN_TYPE         ,
-                AccountEntry.COLUMN_CURRENCY     ,
-                AccountEntry.COLUMN_COLOR_CODE   ,
-                AccountEntry.COLUMN_FAVORITE     ,
-                AccountEntry.COLUMN_FULL_NAME    ,
-                AccountEntry.COLUMN_PLACEHOLDER  ,
-                AccountEntry.COLUMN_CREATED_AT   ,
-                AccountEntry.COLUMN_HIDDEN       ,
+                AccountEntry.COLUMN_NAME,
+                AccountEntry.COLUMN_DESCRIPTION,
+                AccountEntry.COLUMN_TYPE,
+                AccountEntry.COLUMN_CURRENCY,
+                AccountEntry.COLUMN_COLOR_CODE,
+                AccountEntry.COLUMN_FAVORITE,
+                AccountEntry.COLUMN_FULL_NAME,
+                AccountEntry.COLUMN_PLACEHOLDER,
+                AccountEntry.COLUMN_CREATED_AT,
+                AccountEntry.COLUMN_HIDDEN,
                 AccountEntry.COLUMN_COMMODITY_UID,
                 AccountEntry.COLUMN_PARENT_ACCOUNT_UID,
                 AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID
@@ -106,24 +108,25 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     }
 
     /**
-     * Convenience overloaded constructor. 
-     * This is used when an AccountsDbAdapter object is needed quickly. Otherwise, the other 
+     * Convenience overloaded constructor.
+     * This is used when an AccountsDbAdapter object is needed quickly. Otherwise, the other
      * constructor {@link #AccountsDbAdapter(SQLiteDatabase, TransactionsDbAdapter)}
      * should be used whenever possible
+     *
      * @param db Database to create an adapter for
      */
-    public AccountsDbAdapter(SQLiteDatabase db){
+    public AccountsDbAdapter(SQLiteDatabase db) {
         super(db, AccountEntry.TABLE_NAME, new String[]{
-                AccountEntry.COLUMN_NAME         ,
-                AccountEntry.COLUMN_DESCRIPTION  ,
-                AccountEntry.COLUMN_TYPE         ,
-                AccountEntry.COLUMN_CURRENCY     ,
-                AccountEntry.COLUMN_COLOR_CODE   ,
-                AccountEntry.COLUMN_FAVORITE     ,
-                AccountEntry.COLUMN_FULL_NAME    ,
-                AccountEntry.COLUMN_PLACEHOLDER  ,
-                AccountEntry.COLUMN_CREATED_AT   ,
-                AccountEntry.COLUMN_HIDDEN       ,
+                AccountEntry.COLUMN_NAME,
+                AccountEntry.COLUMN_DESCRIPTION,
+                AccountEntry.COLUMN_TYPE,
+                AccountEntry.COLUMN_CURRENCY,
+                AccountEntry.COLUMN_COLOR_CODE,
+                AccountEntry.COLUMN_FAVORITE,
+                AccountEntry.COLUMN_FULL_NAME,
+                AccountEntry.COLUMN_PLACEHOLDER,
+                AccountEntry.COLUMN_CREATED_AT,
+                AccountEntry.COLUMN_HIDDEN,
                 AccountEntry.COLUMN_COMMODITY_UID,
                 AccountEntry.COLUMN_PARENT_ACCOUNT_UID,
                 AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID
@@ -135,37 +138,39 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     /**
      * Returns an application-wide instance of this database adapter
+     *
      * @return Instance of Accounts db adapter
      */
-    public static AccountsDbAdapter getInstance(){
+    public static AccountsDbAdapter getInstance() {
         return GnuCashApplication.getAccountsDbAdapter();
     }
 
     /**
-	 * Adds an account to the database. 
-	 * If an account already exists in the database with the same GUID, it is replaced.
-	 * @param account {@link Account} to be inserted to database
-	 */
+     * Adds an account to the database.
+     * If an account already exists in the database with the same GUID, it is replaced.
+     *
+     * @param account {@link Account} to be inserted to database
+     */
     @Override
-	public void addRecord(@NonNull Account account, UpdateMethod updateMethod){
+    public void addRecord(@NonNull Account account, UpdateMethod updateMethod) {
         Log.d(LOG_TAG, "Replace account to db");
         //in-case the account already existed, we want to update the templates based on it as well
         List<Transaction> templateTransactions = mTransactionsAdapter.getScheduledTransactionsForAccount(account.getUID());
         super.addRecord(account, updateMethod);
         String accountUID = account.getUID();
-		//now add transactions if there are any
-		if (account.getAccountType() != AccountType.ROOT){
+        //now add transactions if there are any
+        if (account.getAccountType() != AccountType.ROOT) {
             //update the fully qualified account name
             updateRecord(accountUID, AccountEntry.COLUMN_FULL_NAME, getFullyQualifiedAccountName(accountUID));
             for (Transaction t : account.getTransactions()) {
                 t.setCommodity(account.getCommodity());
-		        mTransactionsAdapter.addRecord(t, updateMethod);
-			}
+                mTransactionsAdapter.addRecord(t, updateMethod);
+            }
             for (Transaction transaction : templateTransactions) {
                 mTransactionsAdapter.addRecord(transaction, UpdateMethod.update);
             }
         }
-	}
+    }
 
     /**
      * Adds some accounts and their transactions to the database in bulk.
@@ -173,25 +178,26 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * This function will NOT try to determine the full name
      * of the accounts inserted, full names should be generated prior to the insert.
      * <br>All or none of the accounts will be inserted;</p>
+     *
      * @param accountList {@link Account} to be inserted to database
      * @return number of rows inserted
      */
     @Override
-    public long bulkAddRecords(@NonNull List<Account> accountList, UpdateMethod updateMethod){
+    public long bulkAddRecords(@NonNull List<Account> accountList, UpdateMethod updateMethod) {
         //scheduled transactions are not fetched from the database when getting account transactions
         //so we retrieve those which affect this account and then re-save them later
         //this is necessary because the database has ON DELETE CASCADE between accounts and splits
         //and all accounts are editing via SQL REPLACE
 
         //// TODO: 20.04.2016 Investigate if we can safely remove updating the transactions when bulk updating accounts
-        List<Transaction> transactionList = new ArrayList<>(accountList.size()*2);
+        List<Transaction> transactionList = new ArrayList<>(accountList.size() * 2);
         for (Account account : accountList) {
             transactionList.addAll(account.getTransactions());
             transactionList.addAll(mTransactionsAdapter.getScheduledTransactionsForAccount(account.getUID()));
         }
         long nRow = super.bulkAddRecords(accountList, updateMethod);
 
-        if (nRow > 0 && !transactionList.isEmpty()){
+        if (nRow > 0 && !transactionList.isEmpty()) {
             mTransactionsAdapter.bulkAddRecords(transactionList, updateMethod);
         }
         return nRow;
@@ -232,10 +238,11 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     /**
      * Marks all transactions for a given account as exported
+     *
      * @param accountUID Unique ID of the record to be marked as exported
      * @return Number of records marked as exported
      */
-    public int markAsExported(String accountUID){
+    public int markAsExported(String accountUID) {
         ContentValues contentValues = new ContentValues();
         contentValues.put(TransactionEntry.COLUMN_EXPORTED, 1);
         return mDb.update(
@@ -259,11 +266,12 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * This feature goes through all the rows in the accounts and changes value for <code>columnKey</code> to <code>newValue</code><br/>
      * The <code>newValue</code> parameter is taken as string since SQLite typically stores everything as text.
      * <p><b>This method affects all rows, exercise caution when using it</b></p>
+     *
      * @param columnKey Name of column to be updated
-     * @param newValue New value to be assigned to the columnKey
+     * @param newValue  New value to be assigned to the columnKey
      * @return Number of records affected
      */
-    public int updateAllAccounts(String columnKey, String newValue){
+    public int updateAllAccounts(String columnKey, String newValue) {
         ContentValues contentValues = new ContentValues();
         if (newValue == null) {
             contentValues.putNull(columnKey);
@@ -275,19 +283,21 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     /**
      * Updates a specific entry of an account
+     *
      * @param accountId Database record ID of the account to be updated
      * @param columnKey Name of column to be updated
      * @param newValue  New value to be assigned to the columnKey
      * @return Number of records affected
      */
-    public int updateAccount(long accountId, String columnKey, String newValue){
+    public int updateAccount(long accountId, String columnKey, String newValue) {
         return updateRecord(AccountEntry.TABLE_NAME, accountId, columnKey, newValue);
     }
 
     /**
      * This method goes through all the children of {@code accountUID} and updates the parent account
      * to {@code newParentAccountUID}. The fully qualified account names for all descendant accounts will also be updated.
-     * @param accountUID GUID of the account
+     *
+     * @param accountUID          GUID of the account
      * @param newParentAccountUID GUID of the new parent account
      */
     public void reassignDescendantAccounts(@NonNull String accountUID, @NonNull String newParentAccountUID) {
@@ -355,12 +365,13 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * <p>If you want to preserve transactions, make sure to first reassign the children accounts (see {@link #reassignDescendantAccounts(String, String)}
      * before calling this method. This method will however not delete a root account. </p>
      * <p><b>This method does a thorough delete, use with caution!!!</b></p>
+     *
      * @param accountId Database record ID of account
      * @return <code>true</code> if the account and subaccounts were all successfully deleted, <code>false</code> if
      * even one was not deleted
      * @see #reassignDescendantAccounts(String, String)
      */
-    public boolean recursiveDeleteAccount(long accountId){
+    public boolean recursiveDeleteAccount(long accountId) {
         String accountUID = getUID(accountId);
         if (getAccountType(accountUID) == AccountType.ROOT) {
             // refuse to delete ROOT
@@ -388,7 +399,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
             //if we delete some accounts, reset the default transfer account to NULL
             //there is also a database trigger from db version > 12
-            if (deletedCount > 0){
+            if (deletedCount > 0) {
                 ContentValues contentValues = new ContentValues();
                 contentValues.putNull(AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID);
                 mDb.update(mTableName, contentValues,
@@ -398,25 +409,24 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
             mDb.setTransactionSuccessful();
             return true;
-        }
-        finally {
+        } finally {
             mDb.endTransaction();
         }
     }
 
-	/**
-	 * Builds an account instance with the provided cursor and loads its corresponding transactions.
-	 *
-	 * @param c Cursor pointing to account record in database
-	 * @return {@link Account} object constructed from database record
-	 */
+    /**
+     * Builds an account instance with the provided cursor and loads its corresponding transactions.
+     *
+     * @param c Cursor pointing to account record in database
+     * @return {@link Account} object constructed from database record
+     */
     @Override
-    public Account buildModelInstance(@NonNull final Cursor c){
+    public Account buildModelInstance(@NonNull final Cursor c) {
         Account account = buildSimpleAccountInstance(c);
         account.setTransactions(mTransactionsAdapter.getAllTransactionsForAccount(account.getUID()));
 
         return account;
-	}
+    }
 
     /**
      * Builds an account instance with the provided cursor and loads its corresponding transactions.
@@ -449,13 +459,14 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     }
 
     /**
-	 * Returns the  unique ID of the parent account of the account with unique ID <code>uid</code>
-	 * If the account has no parent, null is returned
-	 * @param uid Unique Identifier of account whose parent is to be returned. Should not be null
-	 * @return DB record UID of the parent account, null if the account has no parent
-	 */
-    public String getParentAccountUID(@NonNull String uid){
-		Cursor cursor = mDb.query(AccountEntry.TABLE_NAME,
+     * Returns the  unique ID of the parent account of the account with unique ID <code>uid</code>
+     * If the account has no parent, null is returned
+     *
+     * @param uid Unique Identifier of account whose parent is to be returned. Should not be null
+     * @return DB record UID of the parent account, null if the account has no parent
+     */
+    public String getParentAccountUID(@NonNull String uid) {
+        Cursor cursor = mDb.query(AccountEntry.TABLE_NAME,
                 new String[]{AccountEntry.COLUMN_PARENT_ACCOUNT_UID},
                 AccountEntry.COLUMN_UID + " = ?",
                 new String[]{uid},
@@ -470,14 +481,15 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         } finally {
             cursor.close();
         }
-	}
+    }
 
     /**
      * Returns the color code for the account in format #rrggbb
+     *
      * @param accountId Database row ID of the account
      * @return String color code of account or null if none
      */
-    public String getAccountColorCode(long accountId){
+    public String getAccountColorCode(long accountId) {
         Cursor c = mDb.query(AccountEntry.TABLE_NAME,
                 new String[]{AccountEntry._ID, AccountEntry.COLUMN_COLOR_CODE},
                 AccountEntry._ID + "=" + accountId,
@@ -485,8 +497,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         try {
             if (c.moveToFirst()) {
                 return c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_COLOR_CODE));
-            }
-            else {
+            } else {
                 return null;
             }
         } finally {
@@ -496,19 +507,21 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     /**
      * Overloaded method. Resolves the account unique ID from the row ID and makes a call to {@link #getAccountType(String)}
+     *
      * @param accountId Database row ID of the account
      * @return {@link AccountType} of the account
      */
-    public AccountType getAccountType(long accountId){
+    public AccountType getAccountType(long accountId) {
         return getAccountType(getUID(accountId));
     }
 
     /**
      * Returns a list of all account entries in the system (includes root account)
      * No transactions are loaded, just the accounts
+     *
      * @return List of {@link Account}s in the database
      */
-    public List<Account> getSimpleAccountList(){
+    public List<Account> getSimpleAccountList() {
         LinkedList<Account> accounts = new LinkedList<>();
         Cursor c = fetchAccounts(null, null, AccountEntry.COLUMN_FULL_NAME + " ASC");
 
@@ -516,8 +529,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             while (c.moveToNext()) {
                 accounts.add(buildSimpleAccountInstance(c));
             }
-        }
-        finally {
+        } finally {
             c.close();
         }
         return accounts;
@@ -526,27 +538,29 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     /**
      * Returns a list of all account entries in the system (includes root account)
      * No transactions are loaded, just the accounts
+     *
      * @return List of {@link Account}s in the database
      */
-    public List<Account> getSimpleAccountList(String where, String[] whereArgs, String orderBy){
+    public List<Account> getSimpleAccountList(String where, String[] whereArgs, String orderBy) {
         LinkedList<Account> accounts = new LinkedList<>();
         Cursor c = fetchAccounts(where, whereArgs, orderBy);
         try {
             while (c.moveToNext()) {
                 accounts.add(buildSimpleAccountInstance(c));
             }
-        }
-        finally {
+        } finally {
             c.close();
         }
         return accounts;
     }
-	/**
-	 * Returns a list of accounts which have transactions that have not been exported yet
+
+    /**
+     * Returns a list of accounts which have transactions that have not been exported yet
+     *
      * @param lastExportTimeStamp Timestamp after which to any transactions created/modified should be exported
-	 * @return List of {@link Account}s with unexported transactions
-	 */
-    public List<Account> getExportableAccounts(Timestamp lastExportTimeStamp){
+     * @return List of {@link Account}s with unexported transactions
+     */
+    public List<Account> getExportableAccounts(Timestamp lastExportTimeStamp) {
         LinkedList<Account> accountsList = new LinkedList<>();
         Cursor cursor = mDb.query(
                 TransactionEntry.TABLE_NAME + " , " + SplitEntry.TABLE_NAME +
@@ -566,23 +580,23 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             while (cursor.moveToNext()) {
                 accountsList.add(buildModelInstance(cursor));
             }
-        }
-        finally {
+        } finally {
             cursor.close();
         }
         return accountsList;
-	}
+    }
 
     /**
      * Retrieves the unique ID of the imbalance account for a particular currency (creates the imbalance account
      * on demand if necessary)
+     *
      * @param commodity Commodity for the imbalance account
      * @return String unique ID of the account
      */
-    public String getOrCreateImbalanceAccountUID(Commodity commodity){
+    public String getOrCreateImbalanceAccountUID(Commodity commodity) {
         String imbalanceAccountName = getImbalanceAccountName(commodity);
         String uid = findAccountUidByFullName(imbalanceAccountName);
-        if (uid == null){
+        if (uid == null) {
             Account account = new Account(imbalanceAccountName, commodity);
             account.setAccountType(AccountType.BANK);
             account.setParentUID(getOrCreateGnuCashRootAccountUID());
@@ -603,7 +617,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return GUID of the account or null if the account doesn't exist yet
      * @see #getOrCreateImbalanceAccountUID(Commodity)
      */
-    public String getImbalanceAccountUID(Commodity commodity){
+    public String getImbalanceAccountUID(Commodity commodity) {
         String imbalanceAccountName = getImbalanceAccountName(commodity);
         return findAccountUidByFullName(imbalanceAccountName);
     }
@@ -612,7 +626,8 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * Creates the account with the specified name and returns its unique identifier.
      * <p>If a full hierarchical account name is provided, then the whole hierarchy is created and the
      * unique ID of the last account (at bottom) of the hierarchy is returned</p>
-     * @param fullName Fully qualified name of the account
+     *
+     * @param fullName    Fully qualified name of the account
      * @param accountType Type to assign to all accounts created
      * @return String unique ID of the account at bottom of hierarchy
      */
@@ -649,6 +664,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     /**
      * Returns the unique ID of the opening balance account or creates one if necessary
+     *
      * @return String unique ID of the opening balance account
      */
     public String getOrCreateOpeningBalanceAccountUID() {
@@ -662,10 +678,11 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     /**
      * Finds an account unique ID by its full name
+     *
      * @param fullName Fully qualified name of the account
      * @return String unique ID of the account or null if no match is found
      */
-    public String findAccountUidByFullName(String fullName){
+    public String findAccountUidByFullName(String fullName) {
         Cursor c = mDb.query(AccountEntry.TABLE_NAME, new String[]{AccountEntry.COLUMN_UID},
                 AccountEntry.COLUMN_FULL_NAME + "= ?", new String[]{fullName},
                 null, null, null, "1");
@@ -680,31 +697,33 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         }
     }
 
-	/**
-	 * Returns a cursor to all account records in the database.
+    /**
+     * Returns a cursor to all account records in the database.
      * GnuCash ROOT accounts and hidden accounts will <b>not</b> be included in the result set
-	 * @return {@link Cursor} to all account records
-	 */
+     *
+     * @return {@link Cursor} to all account records
+     */
     @Override
-	public Cursor fetchAllRecords(){
-		Log.v(LOG_TAG, "Fetching all accounts from db");
-        String selection =  AccountEntry.COLUMN_HIDDEN + " = 0 AND " + AccountEntry.COLUMN_TYPE + " != ?" ;
+    public Cursor fetchAllRecords() {
+        Log.v(LOG_TAG, "Fetching all accounts from db");
+        String selection = AccountEntry.COLUMN_HIDDEN + " = 0 AND " + AccountEntry.COLUMN_TYPE + " != ?";
         return mDb.query(AccountEntry.TABLE_NAME,
                 null,
                 selection,
                 new String[]{AccountType.ROOT.name()},
                 null, null,
                 AccountEntry.COLUMN_NAME + " ASC");
-	}
+    }
 
     /**
      * Returns a cursor to all account records in the database ordered by full name.
      * GnuCash ROOT accounts and hidden accounts will not be included in the result set.
+     *
      * @return {@link Cursor} to all account records
      */
-    public Cursor fetchAllRecordsOrderedByFullName(){
+    public Cursor fetchAllRecordsOrderedByFullName() {
         Log.v(LOG_TAG, "Fetching all accounts from db");
-        String selection =  AccountEntry.COLUMN_HIDDEN + " = 0 AND " + AccountEntry.COLUMN_TYPE + " != ?" ;
+        String selection = AccountEntry.COLUMN_HIDDEN + " = 0 AND " + AccountEntry.COLUMN_TYPE + " != ?";
         return mDb.query(AccountEntry.TABLE_NAME,
                 null,
                 selection,
@@ -716,13 +735,14 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     /**
      * Returns a Cursor set of accounts which fulfill <code>where</code>
      * and ordered by <code>orderBy</code>
-     * @param where SQL WHERE statement without the 'WHERE' itself
+     *
+     * @param where     SQL WHERE statement without the 'WHERE' itself
      * @param whereArgs args to where clause
-     * @param orderBy orderBy clause
+     * @param orderBy   orderBy clause
      * @return Cursor set of accounts which fulfill <code>where</code>
      */
-    public Cursor fetchAccounts(@Nullable String where, @Nullable String[] whereArgs, @Nullable String orderBy){
-        if (orderBy == null){
+    public Cursor fetchAccounts(@Nullable String where, @Nullable String[] whereArgs, @Nullable String orderBy) {
+        if (orderBy == null) {
             orderBy = AccountEntry.COLUMN_NAME + " ASC";
         }
         Log.v(LOG_TAG, "Fetching all accounts from db where " + where + " order by " + orderBy);
@@ -731,11 +751,12 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
                 null, where, whereArgs, null, null,
                 orderBy);
     }
-    
+
     /**
      * Returns a Cursor set of accounts which fulfill <code>where</code>
      * <p>This method returns the accounts list sorted by the full account name</p>
-     * @param where SQL WHERE statement without the 'WHERE' itself
+     *
+     * @param where     SQL WHERE statement without the 'WHERE' itself
      * @param whereArgs where args
      * @return Cursor set of accounts which fulfill <code>where</code>
      */
@@ -750,7 +771,8 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * Returns a Cursor set of accounts which fulfill <code>where</code>
      * <p>This method returns the favorite accounts first, sorted by name, and then the other accounts,
      * sorted by name.</p>
-     * @param where SQL WHERE statement without the 'WHERE' itself
+     *
+     * @param where     SQL WHERE statement without the 'WHERE' itself
      * @param whereArgs where args
      * @return Cursor set of accounts which fulfill <code>where</code>
      */
@@ -763,17 +785,19 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     /**
      * Returns the balance of an account while taking sub-accounts into consideration
+     *
      * @return Account Balance of an account including sub-accounts
      */
-    public Money getAccountBalance(String accountUID){
+    public Money getAccountBalance(String accountUID) {
         return computeBalance(accountUID, -1, -1);
     }
 
     /**
      * Returns the balance of an account within the specified time range while taking sub-accounts into consideration
-     * @param accountUID the account's UUID
+     *
+     * @param accountUID     the account's UUID
      * @param startTimestamp the start timestamp of the time range
-     * @param endTimestamp the end timestamp of the time range
+     * @param endTimestamp   the end timestamp of the time range
      * @return the balance of an account within the specified range including sub-accounts
      */
     public Money getAccountBalance(String accountUID, long startTimestamp, long endTimestamp) {
@@ -782,16 +806,17 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     /**
      * Compute the account balance for all accounts with the specified type within a specific duration
-     * @param accountType Account Type for which to compute balance
+     *
+     * @param accountType    Account Type for which to compute balance
      * @param startTimestamp Begin time for the duration in milliseconds
-     * @param endTimestamp End time for duration in milliseconds
+     * @param endTimestamp   End time for duration in milliseconds
      * @return Account balance
      */
-    public Money getAccountBalance(AccountType accountType, long startTimestamp, long endTimestamp){
+    public Money getAccountBalance(AccountType accountType, long startTimestamp, long endTimestamp) {
         Cursor cursor = fetchAccounts(AccountEntry.COLUMN_TYPE + "= ?",
                 new String[]{accountType.name()}, null);
         List<String> accountUidList = new ArrayList<>();
-        while (cursor.moveToNext()){
+        while (cursor.moveToNext()) {
             String accountUID = cursor.getString(cursor.getColumnIndexOrThrow(AccountEntry.COLUMN_UID));
             accountUidList.add(accountUID);
         }
@@ -810,12 +835,13 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     /**
      * Returns the account balance for all accounts types specified
+     *
      * @param accountTypes List of account types
-     * @param start Begin timestamp for transactions
-     * @param end End timestamp of transactions
+     * @param start        Begin timestamp for transactions
+     * @param end          End timestamp of transactions
      * @return Money balance of the account types
      */
-    public Money getAccountBalance(List<AccountType> accountTypes, long start, long end){
+    public Money getAccountBalance(List<AccountType> accountTypes, long start, long end) {
         Money balance = Money.createZeroInstance(GnuCashApplication.getDefaultCurrencyCode());
         for (AccountType accountType : accountTypes) {
             balance = balance.add(getAccountBalance(accountType, start, end));
@@ -838,18 +864,19 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         return (startTimestamp == -1 && endTimestamp == -1)
                 ? splitsDbAdapter.computeSplitBalance(accountsList, currencyCode, hasDebitNormalBalance)
                 : splitsDbAdapter.computeSplitBalance(accountsList, currencyCode, hasDebitNormalBalance, startTimestamp, endTimestamp);
-        
+
     }
 
     /**
      * Returns the balance of account list within the specified time range. The default currency
      * takes as base currency.
+     *
      * @param accountUIDList list of account UIDs
      * @param startTimestamp the start timestamp of the time range
-     * @param endTimestamp the end timestamp of the time range
+     * @param endTimestamp   the end timestamp of the time range
      * @return Money balance of account list
      */
-    public Money getAccountsBalance(@NonNull  List<String> accountUIDList, long startTimestamp, long endTimestamp) {
+    public Money getAccountsBalance(@NonNull List<String> accountUIDList, long startTimestamp, long endTimestamp) {
         String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
         Money balance = Money.createZeroInstance(currencyCode);
 
@@ -870,6 +897,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * Retrieve all descendant accounts of an account
      * Note, in filtering, once an account is filtered out, all its descendants
      * will also be filtered out, even they don't meet the filter where
+     *
      * @param accountUID The account to retrieve descendant accounts
      * @param where      Condition to filter accounts
      * @param whereArgs  Condition args to filter accounts
@@ -881,7 +909,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         ArrayList<String> accountsList = new ArrayList<>();
         ArrayList<String> accountsListLevel = new ArrayList<>();
         accountsListLevel.add(accountUID);
-        for (;;) {
+        for (; ; ) {
             Cursor cursor = mDb.query(AccountEntry.TABLE_NAME,
                     new String[]{AccountEntry.COLUMN_UID},
                     AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " IN ( '" + TextUtils.join("' , '", accountsListLevel) + "' )" +
@@ -900,8 +928,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             }
             if (accountsListLevel.size() > 0) {
                 accountsList.addAll(accountsListLevel);
-            }
-            else {
+            } else {
                 break;
             }
         }
@@ -910,6 +937,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     /**
      * Returns a cursor to the dataset containing sub-accounts of the account with record ID <code>accoundId</code>
+     *
      * @param accountUID GUID of the parent account
      * @return {@link Cursor} to the sub accounts data set
      */
@@ -925,6 +953,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     /**
      * Returns the top level accounts i.e. accounts with no parent or with the GnuCash ROOT account as parent
+     *
      * @return Cursor to the top level accounts
      */
     public Cursor fetchTopLevelAccounts() {
@@ -939,6 +968,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     /**
      * Returns a cursor to accounts which have recently had transactions added to them
+     *
      * @return Cursor to recently used accounts
      */
     public Cursor fetchRecentAccounts(int numberOfRecent) {
@@ -960,9 +990,10 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     /**
      * Fetches favorite accounts from the database
+     *
      * @return Cursor holding set of favorite accounts
      */
-    public Cursor fetchFavoriteAccounts(){
+    public Cursor fetchFavoriteAccounts() {
         Log.v(LOG_TAG, "Fetching favorite accounts from db");
         String condition = AccountEntry.COLUMN_FAVORITE + " = 1";
         return mDb.query(AccountEntry.TABLE_NAME,
@@ -974,6 +1005,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * Returns the GnuCash ROOT account UID if one exists (or creates one if necessary).
      * <p>In GnuCash desktop account structure, there is a root account (which is not visible in the UI) from which
      * other top level accounts derive. GnuCash Android also enforces a ROOT account now</p>
+     *
      * @return Unique ID of the GnuCash root account.
      */
     public String getOrCreateGnuCashRootAccountUID() {
@@ -1008,10 +1040,11 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     /**
      * Returns the number of accounts for which the account with ID <code>accoundId</code> is a first level parent
+     *
      * @param accountUID String Unique ID (GUID) of the account
      * @return Number of sub accounts
      */
-    public int getSubAccountCount(String accountUID){
+    public int getSubAccountCount(String accountUID) {
         //TODO: at some point when API level 11 and above only is supported, use DatabaseUtils.queryNumEntries
 
         String queryCount = "SELECT COUNT(*) FROM " + AccountEntry.TABLE_NAME + " WHERE "
@@ -1024,36 +1057,39 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     }
 
     /**
-	 * Returns currency code of account with database ID <code>id</code>
-	 * @param uid GUID of the account
-	 * @return Currency code of the account
-	 */
-	public String getCurrencyCode(String uid){
-		return getAccountCurrencyCode(uid);
-	}
+     * Returns currency code of account with database ID <code>id</code>
+     *
+     * @param uid GUID of the account
+     * @return Currency code of the account
+     */
+    public String getCurrencyCode(String uid) {
+        return getAccountCurrencyCode(uid);
+    }
 
     /**
      * Returns the simple name of the account with unique ID <code>accountUID</code>.
+     *
      * @param accountUID Unique identifier of the account
      * @return Name of the account as String
      * @throws java.lang.IllegalArgumentException if accountUID does not exist
      * @see #getFullyQualifiedAccountName(String)
      */
-    public String getAccountName(String accountUID){
+    public String getAccountName(String accountUID) {
         return getAttribute(accountUID, AccountEntry.COLUMN_NAME);
     }
 
     /**
      * Returns the default transfer account record ID for the account with UID <code>accountUID</code>
+     *
      * @param accountID Database ID of the account record
      * @return Record ID of default transfer account
      */
-    public long getDefaultTransferAccountID(long accountID){
+    public long getDefaultTransferAccountID(long accountID) {
         Cursor cursor = mDb.query(AccountEntry.TABLE_NAME,
                 new String[]{AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID},
                 AccountEntry._ID + " = " + accountID,
                 null, null, null, null);
-       try {
+        try {
             if (cursor.moveToNext()) {
                 String uid = cursor.getString(
                         cursor.getColumnIndexOrThrow(AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID));
@@ -1071,14 +1107,15 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     /**
      * Returns the full account name including the account hierarchy (parent accounts)
+     *
      * @param accountUID Unique ID of account
      * @return Fully qualified (with parent hierarchy) account name
      */
-    public String getFullyQualifiedAccountName(String accountUID){
+    public String getFullyQualifiedAccountName(String accountUID) {
         String accountName = getAccountName(accountUID);
         String parentAccountUID = getParentAccountUID(accountUID);
 
-        if (parentAccountUID == null || parentAccountUID.equalsIgnoreCase(getOrCreateGnuCashRootAccountUID())){
+        if (parentAccountUID == null || parentAccountUID.equalsIgnoreCase(getOrCreateGnuCashRootAccountUID())) {
             return accountName;
         }
 
@@ -1089,6 +1126,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     /**
      * get account's full name directly from DB
+     *
      * @param accountUID the account to retrieve full name
      * @return full name registered in DB
      */
@@ -1100,8 +1138,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             if (cursor.moveToFirst()) {
                 return cursor.getString(cursor.getColumnIndexOrThrow(AccountEntry.COLUMN_FULL_NAME));
             }
-        }
-        finally {
+        } finally {
             cursor.close();
         }
         throw new IllegalArgumentException("account UID: " + accountUID + " does not exist");
@@ -1110,6 +1147,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     /**
      * Returns <code>true</code> if the account with unique ID <code>accountUID</code> is a placeholder account.
+     *
      * @param accountUID Unique identifier of the account
      * @return <code>true</code> if the account is a placeholder account, <code>false</code> otherwise
      */
@@ -1120,20 +1158,22 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     /**
      * Convenience method, resolves the account unique ID and calls {@link #isPlaceholderAccount(String)}
+     *
      * @param accountUID GUID of the account
      * @return <code>true</code> if the account is hidden, <code>false</code> otherwise
      */
-    public boolean isHiddenAccount(String accountUID){
+    public boolean isHiddenAccount(String accountUID) {
         String isHidden = getAttribute(accountUID, AccountEntry.COLUMN_HIDDEN);
         return Integer.parseInt(isHidden) == 1;
     }
 
     /**
      * Returns true if the account is a favorite account, false otherwise
+     *
      * @param accountUID GUID of the account
      * @return <code>true</code> if the account is a favorite account, <code>false</code> otherwise
      */
-    public boolean isFavoriteAccount(String accountUID){
+    public boolean isFavoriteAccount(String accountUID) {
         String isFavorite = getAttribute(accountUID, AccountEntry.COLUMN_FAVORITE);
         return Integer.parseInt(isFavorite) == 1;
     }
@@ -1141,7 +1181,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     /**
      * Updates all opening balances to the current account balances
      */
-    public List<Transaction> getAllOpeningBalanceTransactions(){
+    public List<Transaction> getAllOpeningBalanceTransactions() {
         Cursor cursor = fetchAccounts(null, null, null);
         List<Transaction> openingTransactions = new ArrayList<>();
         try {
@@ -1176,7 +1216,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     }
 
     public static String getImbalanceAccountPrefix() {
-         return GnuCashApplication.getAppContext().getString(R.string.imbalance_account_name) + "-";
+        return GnuCashApplication.getAppContext().getString(R.string.imbalance_account_name) + "-";
     }
 
     /**
@@ -1185,16 +1225,17 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @param commodity Commodity of the transaction
      * @return Imbalance account name
      */
-    public static String getImbalanceAccountName(Commodity commodity){
+    public static String getImbalanceAccountName(Commodity commodity) {
         return getImbalanceAccountPrefix() + commodity.getCurrencyCode();
     }
 
     /**
      * Get the name of the default account for opening balances for the current locale.
      * For the English locale, it will be "Equity:Opening Balances"
+     *
      * @return Fully qualified account name of the opening balances account
      */
-    public static String getOpeningBalanceAccountFullName(){
+    public static String getOpeningBalanceAccountFullName() {
         Context context = GnuCashApplication.getAppContext();
         String parentEquity = context.getString(R.string.account_name_equity).trim();
         //German locale has no parent Equity account
@@ -1211,6 +1252,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * Basically, if we are in a top level account, use the default title color.
      * but propagate a parent account's title color to children who don't have own color
      * </p>
+     *
      * @param accountUID GUID of the account
      * @return Android resource ID representing the color which can be directly set to a view
      */
@@ -1220,7 +1262,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         String colorCode = null;
         int iColor = -1;
         String parentAccountUID = accountUID;
-        while (parentAccountUID != null ) {
+        while (parentAccountUID != null) {
             colorCode = accountsDbAdapter.getAccountColorCode(accountsDbAdapter.getID(parentAccountUID));
             if (colorCode != null) {
                 iColor = Color.parseColor(colorCode);
@@ -1250,7 +1292,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         try {
             while (cursor.moveToNext()) {
                 String currencyCode =
-                    cursor.getString(cursor.getColumnIndexOrThrow(AccountEntry.COLUMN_CURRENCY));
+                        cursor.getString(cursor.getColumnIndexOrThrow(AccountEntry.COLUMN_CURRENCY));
                 commodityList.add(mCommoditiesDbAdapter.getCommodity(currencyCode));
             }
         } finally {
@@ -1258,12 +1300,13 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         }
         return commodityList;
     }
+
     /**
-	 * Deletes all accounts, transactions (and their splits) from the database.
+     * Deletes all accounts, transactions (and their splits) from the database.
      * Basically empties all 3 tables, so use with care ;)
-	 */
+     */
     @Override
-	public int deleteAllRecords() {
+    public int deleteAllRecords() {
         // Relies "ON DELETE CASCADE" takes too much time
         // It take more than 300s to complete the deletion on my dataset without
         // clearing the split table first, but only needs a little more that 1s
@@ -1282,7 +1325,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     @Override
     public boolean deleteRecord(@NonNull String uid) {
         boolean result = super.deleteRecord(uid);
-        if (result){
+        if (result) {
             ContentValues contentValues = new ContentValues();
             contentValues.putNull(AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID);
             mDb.update(mTableName, contentValues,
@@ -1302,15 +1345,14 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
                 null,
                 null,
                 null
-                );
+        );
         try {
             if (cursor.moveToFirst()) {
-                return (int)cursor.getLong(0);
+                return (int) cursor.getLong(0);
             } else {
                 return 0;
             }
-        }
-        finally {
+        } finally {
             cursor.close();
         }
     }

@@ -85,6 +85,6 @@ public class TimestampHelperTest {
         final long now = TimestampHelper.getTimestampFromNow().getTime();
         final long after = System.currentTimeMillis();
         assertThat(now).isGreaterThanOrEqualTo(before)
-                       .isLessThanOrEqualTo(after);
+                .isLessThanOrEqualTo(after);
     }
 }

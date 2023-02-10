@@ -70,25 +70,26 @@ import butterknife.BindView;
 
 /**
  * Activity for displaying, creating and editing transactions
+ *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class TransactionsActivity extends BaseDrawerActivity implements
-        Refreshable, OnAccountClickedListener, OnTransactionClickedListener{
+        Refreshable, OnAccountClickedListener, OnTransactionClickedListener {
 
-	/**
-	 * Logging tag
-	 */
-	protected static final String TAG = "TransactionsActivity";
+    /**
+     * Logging tag
+     */
+    protected static final String TAG = "TransactionsActivity";
 
     /**
      * ViewPager index for sub-accounts fragment
      */
-    private static final int INDEX_SUB_ACCOUNTS_FRAGMENT     = 0;
+    private static final int INDEX_SUB_ACCOUNTS_FRAGMENT = 0;
 
     /**
      * ViewPager index for transactions fragment
      */
-    private static final int INDEX_TRANSACTIONS_FRAGMENT     = 1;
+    private static final int INDEX_TRANSACTIONS_FRAGMENT = 1;
 
     /**
      * Number of pages to show
@@ -111,11 +112,16 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      */
     private Cursor mAccountsCursor = null;
 
-    @BindView(R.id.pager)            ViewPager mViewPager;
-    @BindView(R.id.toolbar_spinner)  Spinner mToolbarSpinner;
-    @BindView(R.id.tab_layout)       TabLayout mTabLayout;
-    @BindView(R.id.transactions_sum) TextView mSumTextView;
-    @BindView(R.id.fab_create_transaction) FloatingActionButton mCreateFloatingButton;
+    @BindView(R.id.pager)
+    ViewPager mViewPager;
+    @BindView(R.id.toolbar_spinner)
+    Spinner mToolbarSpinner;
+    @BindView(R.id.tab_layout)
+    TabLayout mTabLayout;
+    @BindView(R.id.transactions_sum)
+    TextView mSumTextView;
+    @BindView(R.id.fab_create_transaction)
+    FloatingActionButton mCreateFloatingButton;
 
     private SparseArray<Refreshable> mFragmentPageReferenceMap = new SparseArray<>();
 
@@ -125,14 +131,14 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      */
     private boolean mIsPlaceholderAccount;
 
-	private AdapterView.OnItemSelectedListener mTransactionListNavigationListener = new AdapterView.OnItemSelectedListener() {
+    private AdapterView.OnItemSelectedListener mTransactionListNavigationListener = new AdapterView.OnItemSelectedListener() {
 
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
             mAccountUID = mAccountsDbAdapter.getUID(id);
             getIntent().putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID); //update the intent in case the account gets rotated
             mIsPlaceholderAccount = mAccountsDbAdapter.isPlaceholderAccount(mAccountUID);
-            if (mIsPlaceholderAccount){
+            if (mIsPlaceholderAccount) {
                 if (mTabLayout.getTabCount() > 1) {
                     mPagerAdapter.notifyDataSetChanged();
                     mTabLayout.removeTabAt(1);
@@ -155,7 +161,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         public void onNothingSelected(AdapterView<?> parent) {
             //nothing to see here, move along
         }
-	};
+    };
 
     private PagerAdapter mPagerAdapter;
 
@@ -165,20 +171,20 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      */
     private class AccountViewPagerAdapter extends FragmentStatePagerAdapter {
 
-        public AccountViewPagerAdapter(FragmentManager fm){
+        public AccountViewPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
         @Override
         public Fragment getItem(int i) {
-            if (mIsPlaceholderAccount){
+            if (mIsPlaceholderAccount) {
                 Fragment transactionsListFragment = prepareSubAccountsListFragment();
                 mFragmentPageReferenceMap.put(i, (Refreshable) transactionsListFragment);
                 return transactionsListFragment;
             }
 
             Fragment currentFragment;
-            switch (i){
+            switch (i) {
                 case INDEX_SUB_ACCOUNTS_FRAGMENT:
                     currentFragment = prepareSubAccountsListFragment();
                     break;
@@ -189,7 +195,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
                     break;
             }
 
-            mFragmentPageReferenceMap.put(i, (Refreshable)currentFragment);
+            mFragmentPageReferenceMap.put(i, (Refreshable) currentFragment);
             return currentFragment;
         }
 
@@ -204,7 +210,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
             if (mIsPlaceholderAccount)
                 return getString(R.string.section_header_subaccounts);
 
-            switch (position){
+            switch (position) {
                 case INDEX_SUB_ACCOUNTS_FRAGMENT:
                     return getString(R.string.section_header_subaccounts);
 
@@ -224,9 +230,10 @@ public class TransactionsActivity extends BaseDrawerActivity implements
 
         /**
          * Creates and initializes the fragment for displaying sub-account list
+         *
          * @return {@link AccountsListFragment} initialized with the sub-accounts
          */
-        private AccountsListFragment prepareSubAccountsListFragment(){
+        private AccountsListFragment prepareSubAccountsListFragment() {
             AccountsListFragment subAccountsListFragment = new AccountsListFragment();
             Bundle args = new Bundle();
             args.putString(UxArgument.PARENT_ACCOUNT_UID, mAccountUID);
@@ -236,14 +243,15 @@ public class TransactionsActivity extends BaseDrawerActivity implements
 
         /**
          * Creates and initializes fragment for displaying transactions
+         *
          * @return {@link TransactionsListFragment} initialized with the current account transactions
          */
-        private TransactionsListFragment prepareTransactionsListFragment(){
+        private TransactionsListFragment prepareTransactionsListFragment() {
             TransactionsListFragment transactionsListFragment = new TransactionsListFragment();
             Bundle args = new Bundle();
             args.putString(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
             transactionsListFragment.setArguments(args);
-            Log.i(TAG, "Opening transactions for account:  " +  mAccountUID);
+            Log.i(TAG, "Opening transactions for account:  " + mAccountUID);
             return transactionsListFragment;
         }
     }
@@ -265,7 +273,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     }
 
     @Override
-    public void refresh(){
+    public void refresh() {
         refresh(mAccountUID);
         setTitleIndicatorColor();
     }
@@ -281,12 +289,12 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     }
 
     @Override
-	protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-		mAccountUID = getIntent().getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
+        mAccountUID = getIntent().getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
 
         mIsPlaceholderAccount = mAccountsDbAdapter.isPlaceholderAccount(mAccountUID);
@@ -321,7 +329,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
 
         //if there are no transactions, and there are sub-accounts, show the sub-accounts
         if (TransactionsDbAdapter.getInstance().getTransactionsCount(mAccountUID) == 0
-                && mAccountsDbAdapter.getSubAccountCount(mAccountUID) > 0){
+                && mAccountsDbAdapter.getSubAccountCount(mAccountUID) > 0) {
             mViewPager.setCurrentItem(INDEX_SUB_ACCOUNTS_FRAGMENT);
         } else {
             mViewPager.setCurrentItem(INDEX_TRANSACTIONS_FRAGMENT);
@@ -347,7 +355,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
                 }
             }
         });
-	}
+    }
 
     @Override
     protected void onResume() {
@@ -371,14 +379,14 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     }
 
     /**
-	 * Set up action bar navigation list and listener callbacks
-	 */
-	private void setupActionBarNavigation() {
-		// set up spinner adapter for navigation list
+     * Set up action bar navigation list and listener callbacks
+     */
+    private void setupActionBarNavigation() {
+        // set up spinner adapter for navigation list
         if (mAccountsCursor != null) {
             mAccountsCursor.close();
         }
-		mAccountsCursor = mAccountsDbAdapter.fetchAllRecordsOrderedByFullName();
+        mAccountsCursor = mAccountsDbAdapter.fetchAllRecordsOrderedByFullName();
 
         SpinnerAdapter mSpinnerAdapter = new QualifiedAccountNameCursorAdapter(
                 getSupportActionBar().getThemedContext(), mAccountsCursor, R.layout.account_spinner_item);
@@ -387,17 +395,17 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         mToolbarSpinner.setOnItemSelectedListener(mTransactionListNavigationListener);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-		updateNavigationSelection();
-	}
-	
-	/**
-	 * Updates the action bar navigation list selection to that of the current account
-	 * whose transactions are being displayed/manipulated
-	 */
-	public void updateNavigationSelection() {
-		// set the selected item in the spinner
-		int i = 0;
-		Cursor accountsCursor = mAccountsDbAdapter.fetchAllRecordsOrderedByFullName();
+        updateNavigationSelection();
+    }
+
+    /**
+     * Updates the action bar navigation list selection to that of the current account
+     * whose transactions are being displayed/manipulated
+     */
+    public void updateNavigationSelection() {
+        // set the selected item in the spinner
+        int i = 0;
+        Cursor accountsCursor = mAccountsDbAdapter.fetchAllRecordsOrderedByFullName();
         while (accountsCursor.moveToNext()) {
             String uid = accountsCursor.getString(accountsCursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_UID));
             if (mAccountUID.equals(uid)) {
@@ -407,7 +415,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
             ++i;
         }
         accountsCursor.close();
-	}
+    }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
@@ -425,8 +433,8 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     }
 
     @Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
             case android.R.id.home:
                 return super.onOptionsItemSelected(item);
 
@@ -447,10 +455,10 @@ public class TransactionsActivity extends BaseDrawerActivity implements
                 startActivityForResult(editAccountIntent, AccountsActivity.REQUEST_EDIT_ACCOUNT);
                 return true;
 
-        default:
-			return false;
-		}
-	}
+            default:
+                return false;
+        }
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -463,25 +471,27 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     }
 
     @Override
-	protected void onDestroy() {
-		super.onDestroy();
+    protected void onDestroy() {
+        super.onDestroy();
         mAccountsCursor.close();
-	}
+    }
 
-	/**
-	 * Returns the global unique ID of the current account
-	 * @return GUID of the current account
-	 */
-	public String getCurrentAccountUID(){
-		return mAccountUID;
-	}
+    /**
+     * Returns the global unique ID of the current account
+     *
+     * @return GUID of the current account
+     */
+    public String getCurrentAccountUID() {
+        return mAccountUID;
+    }
 
     /**
      * Display the balance of a transaction in a text view and format the text color to match the sign of the amount
+     *
      * @param balanceTextView {@link android.widget.TextView} where balance is to be displayed
-     * @param balance {@link org.gnucash.android.model.Money} balance to display
+     * @param balance         {@link org.gnucash.android.model.Money} balance to display
      */
-    public static void displayBalance(TextView balanceTextView, Money balance){
+    public static void displayBalance(TextView balanceTextView, Money balance) {
         balanceTextView.setText(balance.formattedString());
         Context context = GnuCashApplication.getAppContext();
         int fontColor = balance.isNegative() ?
@@ -496,6 +506,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      * Formats the date to show the the day of the week if the {@code dateMillis} is within 7 days
      * of today. Else it shows the actual date formatted as short string. <br>
      * It also shows "today", "yesterday" or "tomorrow" if the date is on any of those days
+     *
      * @param dateMillis
      * @return
      */
@@ -504,9 +515,9 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         LocalDate transactionTime = new LocalDate(dateMillis);
         LocalDate today = new LocalDate();
         String prettyDateText = null;
-        if (transactionTime.compareTo(today.minusDays(1)) >= 0 && transactionTime.compareTo(today.plusDays(1)) <= 0){
+        if (transactionTime.compareTo(today.minusDays(1)) >= 0 && transactionTime.compareTo(today.plusDays(1)) <= 0) {
             prettyDateText = DateUtils.getRelativeTimeSpanString(dateMillis, System.currentTimeMillis(), DateUtils.DAY_IN_MILLIS).toString();
-        } else if (transactionTime.getYear() == today.getYear()){
+        } else if (transactionTime.getYear() == today.getYear()) {
             prettyDateText = mDayMonthDateFormat.format(new Date(dateMillis));
         } else {
             prettyDateText = DateUtils.formatDateTime(context, dateMillis, DateUtils.FORMAT_ABBREV_MONTH | DateUtils.FORMAT_SHOW_YEAR);
@@ -515,24 +526,24 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         return prettyDateText;
     }
 
-	@Override
-	public void createNewTransaction(String accountUID) {
+    @Override
+    public void createNewTransaction(String accountUID) {
         Intent createTransactionIntent = new Intent(this.getApplicationContext(), FormActivity.class);
         createTransactionIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
         createTransactionIntent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
         createTransactionIntent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name());
         startActivity(createTransactionIntent);
-	}
+    }
 
-	@Override
-	public void editTransaction(String transactionUID){
+    @Override
+    public void editTransaction(String transactionUID) {
         Intent createTransactionIntent = new Intent(this.getApplicationContext(), FormActivity.class);
         createTransactionIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
         createTransactionIntent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
         createTransactionIntent.putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID);
         createTransactionIntent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name());
         startActivity(createTransactionIntent);
-	}
+    }
 
     @Override
     public void accountSelected(String accountUID) {

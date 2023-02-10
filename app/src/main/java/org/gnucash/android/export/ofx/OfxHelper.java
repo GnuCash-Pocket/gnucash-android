@@ -49,31 +49,31 @@ public class OfxHelper {
     public static final String OFX_SGML_HEADER = "ENCODING:UTF-8\nOFXHEADER:100\nDATA:OFXSGML\nVERSION:211\nSECURITY:NONE\nCHARSET:UTF-8\nCOMPRESSION:NONE\nOLDFILEUID:NONE\nNEWFILEUID:NONE";
 
     /*
-    * XML tag name constants for the OFX file
+     * XML tag name constants for the OFX file
      */
-    public static final String TAG_TRANSACTION_UID      = "TRNUID";
-    public static final String TAG_BANK_MESSAGES_V1     = "BANKMSGSRSV1";
-    public static final String TAG_CURRENCY_DEF         = "CURDEF";
-    public static final String TAG_BANK_ID              = "BANKID";
-    public static final String TAG_ACCOUNT_ID           = "ACCTID";
-    public static final String TAG_ACCOUNT_TYPE         = "ACCTTYPE";
-    public static final String TAG_BANK_ACCOUNT_FROM    = "BANKACCTFROM";
-    public static final String TAG_BALANCE_AMOUNT       = "BALAMT";
-    public static final String TAG_DATE_AS_OF           = "DTASOF";
-    public static final String TAG_LEDGER_BALANCE       = "LEDGERBAL";
-    public static final String TAG_DATE_START           = "DTSTART";
-    public static final String TAG_DATE_END             = "DTEND";
-    public static final String TAG_TRANSACTION_TYPE     = "TRNTYPE";
-    public static final String TAG_DATE_POSTED          = "DTPOSTED";
-    public static final String TAG_DATE_USER            = "DTUSER";
-    public static final String TAG_TRANSACTION_AMOUNT   = "TRNAMT";
-    public static final String TAG_TRANSACTION_FITID    = "FITID";
-    public static final String TAG_NAME                 = "NAME";
-    public static final String TAG_MEMO                 = "MEMO";
-    public static final String TAG_BANK_ACCOUNT_TO      = "BANKACCTTO";
-    public static final String TAG_BANK_TRANSACTION_LIST    = "BANKTRANLIST";
-    public static final String TAG_STATEMENT_TRANSACTIONS   = "STMTRS";
-    public static final String TAG_STATEMENT_TRANSACTION    = "STMTTRN";
+    public static final String TAG_TRANSACTION_UID = "TRNUID";
+    public static final String TAG_BANK_MESSAGES_V1 = "BANKMSGSRSV1";
+    public static final String TAG_CURRENCY_DEF = "CURDEF";
+    public static final String TAG_BANK_ID = "BANKID";
+    public static final String TAG_ACCOUNT_ID = "ACCTID";
+    public static final String TAG_ACCOUNT_TYPE = "ACCTTYPE";
+    public static final String TAG_BANK_ACCOUNT_FROM = "BANKACCTFROM";
+    public static final String TAG_BALANCE_AMOUNT = "BALAMT";
+    public static final String TAG_DATE_AS_OF = "DTASOF";
+    public static final String TAG_LEDGER_BALANCE = "LEDGERBAL";
+    public static final String TAG_DATE_START = "DTSTART";
+    public static final String TAG_DATE_END = "DTEND";
+    public static final String TAG_TRANSACTION_TYPE = "TRNTYPE";
+    public static final String TAG_DATE_POSTED = "DTPOSTED";
+    public static final String TAG_DATE_USER = "DTUSER";
+    public static final String TAG_TRANSACTION_AMOUNT = "TRNAMT";
+    public static final String TAG_TRANSACTION_FITID = "FITID";
+    public static final String TAG_NAME = "NAME";
+    public static final String TAG_MEMO = "MEMO";
+    public static final String TAG_BANK_ACCOUNT_TO = "BANKACCTTO";
+    public static final String TAG_BANK_TRANSACTION_LIST = "BANKTRANLIST";
+    public static final String TAG_STATEMENT_TRANSACTIONS = "STMTRS";
+    public static final String TAG_STATEMENT_TRANSACTION = "STMTTRN";
     public static final String TAG_STATEMENT_TRANSACTION_RESPONSE = "STMTTRNRS";
 
 
@@ -84,25 +84,27 @@ public class OfxHelper {
 
     /**
      * Returns the current time formatted using the pattern in {@link #OFX_DATE_FORMATTER}
+     *
      * @return Current time as a formatted string
      * @see #getOfxFormattedTime(long)
      */
-    public static String getFormattedCurrentTime(){
+    public static String getFormattedCurrentTime() {
         return getOfxFormattedTime(System.currentTimeMillis());
     }
 
     /**
      * Returns a formatted string representation of time in <code>milliseconds</code>
+     *
      * @param milliseconds Long value representing the time to be formatted
      * @return Formatted string representation of time in <code>milliseconds</code>
      */
-    public static String getOfxFormattedTime(long milliseconds){
+    public static String getOfxFormattedTime(long milliseconds) {
         Date date = new Date(milliseconds);
         String dateString = OFX_DATE_FORMATTER.format(date);
         TimeZone tz = Calendar.getInstance().getTimeZone();
         int offset = tz.getRawOffset();
-        int hours   = (int) (( offset / (1000*60*60)) % 24);
-        String sign = offset > 0 ?  "+" : "";
+        int hours = (int) ((offset / (1000 * 60 * 60)) % 24);
+        String sign = offset > 0 ? "+" : "";
         return dateString + "[" + sign + hours + ":" + tz.getDisplayName(false, TimeZone.SHORT, Locale.getDefault()) + "]";
     }
 }

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +17,7 @@
     <item
         android:id="@+id/nav_item_open"
         android:icon="@drawable/ic_folder_open_black_24dp"
-        android:title="@string/nav_menu_open"/>
+        android:title="@string/nav_menu_open" />
     <item
         android:id="@+id/nav_section_accounts"
         android:title="@string/title_accounts">
@@ -26,13 +25,14 @@
             <item
                 android:id="@+id/nav_item_favorites"
                 android:icon="@drawable/ic_star_black_24dp"
-                android:title="@string/nav_menu_favorites"/>
-<!--
-            <item android:id="@+id/nav_item_budgets"
-                android:icon="@drawable/ic_dashboard_black_24dp"
-                android:title="@string/nav_menu_budgets" />
--->
-            <item android:id="@+id/nav_item_reports"
+                android:title="@string/nav_menu_favorites" />
+            <!--
+                        <item android:id="@+id/nav_item_budgets"
+                            android:icon="@drawable/ic_dashboard_black_24dp"
+                            android:title="@string/nav_menu_budgets" />
+            -->
+            <item
+                android:id="@+id/nav_item_reports"
                 android:icon="@drawable/ic_equalizer_black_24dp"
                 android:title="@string/nav_menu_reports" />
         </menu>
@@ -44,11 +44,11 @@
             <item
                 android:id="@+id/nav_item_scheduled_actions"
                 android:icon="@drawable/ic_settings_backup_restore_black_24dp"
-                android:title="@string/nav_menu_scheduled_actions"/>
+                android:title="@string/nav_menu_scheduled_actions" />
             <item
                 android:id="@+id/nav_item_export"
                 android:icon="@drawable/ic_backup_black_24dp"
-                android:title="@string/nav_menu_export"/>
+                android:title="@string/nav_menu_export" />
         </menu>
     </item>
     <item
@@ -58,11 +58,11 @@
             <item
                 android:id="@+id/nav_item_settings"
                 android:icon="@drawable/ic_settings_black_24dp"
-                android:title="@string/nav_menu_settings"/>
+                android:title="@string/nav_menu_settings" />
             <item
                 android:id="@+id/nav_item_help"
                 android:icon="@drawable/ic_help_black_24dp"
-                android:title="@string/nav_menu_help"/>
+                android:title="@string/nav_menu_help" />
         </menu>
     </item>
 </menu>

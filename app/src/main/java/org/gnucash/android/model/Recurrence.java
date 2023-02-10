@@ -67,13 +67,14 @@ public class Recurrence extends BaseModel {
 
     private int mMultiplier = 1; //multiplier for the period type
 
-    public Recurrence(@NonNull PeriodType periodType){
+    public Recurrence(@NonNull PeriodType periodType) {
         setPeriodType(periodType);
         mPeriodStart = new Timestamp(System.currentTimeMillis());
     }
 
     /**
      * Return the PeriodType for this recurrence
+     *
      * @return PeriodType for the recurrence
      */
     public PeriodType getPeriodType() {
@@ -82,6 +83,7 @@ public class Recurrence extends BaseModel {
 
     /**
      * Sets the period type for the recurrence
+     *
      * @param periodType PeriodType
      */
     public void setPeriodType(PeriodType periodType) {
@@ -90,6 +92,7 @@ public class Recurrence extends BaseModel {
 
     /**
      * Return the start time for this recurrence
+     *
      * @return Timestamp of start of recurrence
      */
     public Timestamp getPeriodStart() {
@@ -98,6 +101,7 @@ public class Recurrence extends BaseModel {
 
     /**
      * Set the start time of this recurrence
+     *
      * @param periodStart {@link Timestamp} of recurrence
      */
     public void setPeriodStart(Timestamp periodStart) {
@@ -109,12 +113,13 @@ public class Recurrence extends BaseModel {
      * Returns an approximate period for this recurrence
      * <p>The period is approximate because months do not all have the same number of days,
      * but that is assumed</p>
+     *
      * @return Milliseconds since Epoch representing the period
      * @deprecated Do not use in new code. Uses fixed period values for months and years (which have variable units of time)
      */
-    public long getPeriod(){
+    public long getPeriod() {
         long baseMillis = 0;
-        switch (mPeriodType){
+        switch (mPeriodType) {
             case HOUR:
                 baseMillis = RecurrenceParser.HOUR_MILLIS;
                 break;
@@ -136,9 +141,10 @@ public class Recurrence extends BaseModel {
 
     /**
      * Returns the event schedule (start, end and recurrence)
+     *
      * @return String description of repeat schedule
      */
-    public String getRepeatString(){
+    public String getRepeatString() {
         StringBuilder repeatBuilder = new StringBuilder(getFrequencyRepeatString());
         Context context = GnuCashApplication.getAppContext();
 
@@ -149,7 +155,7 @@ public class Recurrence extends BaseModel {
                     append(context.getString(R.string.repeat_on_weekday, dayOfWeek));
         }
 
-        if (mPeriodEnd != null){
+        if (mPeriodEnd != null) {
             String endDateString = SimpleDateFormat.getDateInstance().format(new Date(mPeriodEnd.getTime()));
             repeatBuilder.append(", ").append(context.getString(R.string.repeat_until_date, endDateString));
         }
@@ -160,9 +166,10 @@ public class Recurrence extends BaseModel {
      * Creates an RFC 2445 string which describes this recurring event.
      * <p>See http://recurrance.sourceforge.net/</p>
      * <p>The output of this method is not meant for human consumption</p>
+     *
      * @return String describing event
      */
-    public String getRuleString(){
+    public String getRuleString() {
         String separator = ";";
 
         StringBuilder ruleBuilder = new StringBuilder();
@@ -189,13 +196,14 @@ public class Recurrence extends BaseModel {
 
     /**
      * Return the number of days left in this period
+     *
      * @return Number of days left in period
      */
-    public int getDaysLeftInCurrentPeriod(){
+    public int getDaysLeftInCurrentPeriod() {
         LocalDateTime startDate = new LocalDateTime(System.currentTimeMillis());
         int interval = mMultiplier - 1;
         LocalDateTime endDate = null;
-        switch (mPeriodType){
+        switch (mPeriodType) {
             case HOUR:
                 endDate = new LocalDateTime(System.currentTimeMillis()).plusHours(interval);
                 break;
@@ -220,6 +228,7 @@ public class Recurrence extends BaseModel {
      * Returns the number of periods from the start date of this recurrence until the end of the
      * interval multiplier specified in the {@link PeriodType}
      * //fixme: Improve the documentation
+     *
      * @return Number of periods in this recurrence
      */
     public int getNumberOfPeriods(int numberOfPeriods) {
@@ -227,7 +236,7 @@ public class Recurrence extends BaseModel {
         LocalDateTime endDate;
         int interval = mMultiplier;
         //// TODO: 15.08.2016 Why do we add the number of periods. maybe rename method or param
-        switch (mPeriodType){
+        switch (mPeriodType) {
             case HOUR: //this is not the droid you are looking for
                 endDate = startDate.plusHours(numberOfPeriods);
                 return Hours.hoursBetween(startDate, endDate).getHours();
@@ -250,11 +259,12 @@ public class Recurrence extends BaseModel {
 
     /**
      * Return the name of the current period
+     *
      * @return String of current period
      */
-    public String getTextOfCurrentPeriod(int periodNum){
+    public String getTextOfCurrentPeriod(int periodNum) {
         LocalDate startDate = new LocalDate(mPeriodStart.getTime());
-        switch (mPeriodType){
+        switch (mPeriodType) {
             case HOUR:
                 //nothing to see here. Just use default period designation
                 break;
@@ -278,7 +288,7 @@ public class Recurrence extends BaseModel {
      *
      * @return list of days of week on which to run the recurrence.
      */
-    public @NonNull List<Integer> getByDays(){
+    public @NonNull List<Integer> getByDays() {
         return Collections.unmodifiableList(mByDays);
     }
 
@@ -290,22 +300,23 @@ public class Recurrence extends BaseModel {
      *
      * @param byDays list of days of week on which to run the recurrence.
      */
-    public void setByDays(@NonNull List<Integer> byDays){
+    public void setByDays(@NonNull List<Integer> byDays) {
         mByDays = new ArrayList<>(byDays);
     }
 
     /**
      * Computes the number of occurrences of this recurrences between start and end date
      * <p>If there is no end date or the PeriodType is unknown, it returns -1</p>
+     *
      * @return Number of occurrences, or -1 if there is no end date
      */
-    public int getCount(){
+    public int getCount() {
         if (mPeriodEnd == null)
             return -1;
 
         int multiple = mMultiplier;
         ReadablePeriod jodaPeriod;
-        switch (mPeriodType){
+        switch (mPeriodType) {
             case HOUR:
                 jodaPeriod = Hours.hours(multiple);
                 break;
@@ -326,7 +337,7 @@ public class Recurrence extends BaseModel {
         }
         int count = 0;
         LocalDateTime startTime = new LocalDateTime(mPeriodStart.getTime());
-        while (startTime.toDateTime().getMillis() < mPeriodEnd.getTime()){
+        while (startTime.toDateTime().getMillis() < mPeriodEnd.getTime()) {
             ++count;
             startTime = startTime.plus(jodaPeriod);
         }
@@ -355,13 +366,14 @@ public class Recurrence extends BaseModel {
 
     /**
      * Sets the end time of this recurrence by specifying the number of occurences
+     *
      * @param numberOfOccurences Number of occurences from the start time
      */
-    public void setPeriodEnd(int numberOfOccurences){
+    public void setPeriodEnd(int numberOfOccurences) {
         LocalDateTime localDate = new LocalDateTime(mPeriodStart.getTime());
         LocalDateTime endDate;
         int occurrenceDuration = numberOfOccurences * mMultiplier;
-        switch (mPeriodType){
+        switch (mPeriodType) {
             case HOUR:
                 endDate = localDate.plusHours(occurrenceDuration);
                 break;
@@ -384,17 +396,19 @@ public class Recurrence extends BaseModel {
 
     /**
      * Return the end date of the period in milliseconds
+     *
      * @return End date of the recurrence period
      */
-    public Timestamp getPeriodEnd(){
+    public Timestamp getPeriodEnd() {
         return mPeriodEnd;
     }
 
     /**
      * Set period end date
+     *
      * @param endTimestamp End time in milliseconds
      */
-    public void setPeriodEnd(Timestamp endTimestamp){
+    public void setPeriodEnd(Timestamp endTimestamp) {
         mPeriodEnd = endTimestamp;
     }
 
@@ -402,9 +416,9 @@ public class Recurrence extends BaseModel {
      * Returns the multiplier for the period type. The default multiplier is 1.
      * e.g. bi-weekly actions have period type {@link PeriodType#WEEK} and multiplier 2.
      *
-     * @return  Multiplier for the period type
+     * @return Multiplier for the period type
      */
-    public int getMultiplier(){
+    public int getMultiplier() {
         return mMultiplier;
     }
 
@@ -414,7 +428,7 @@ public class Recurrence extends BaseModel {
      *
      * @param multiplier Multiplier for the period type
      */
-    public void setMultiplier(int multiplier){
+    public void setMultiplier(int multiplier) {
         mMultiplier = multiplier;
     }
 
@@ -423,7 +437,7 @@ public class Recurrence extends BaseModel {
      *
      * @return String describing the period type
      */
-    private String getFrequencyRepeatString(){
+    private String getFrequencyRepeatString() {
         Resources res = GnuCashApplication.getAppContext().getResources();
         switch (mPeriodType) {
             case HOUR:
@@ -448,35 +462,35 @@ public class Recurrence extends BaseModel {
      * @return Recurrence with the specified period.
      */
     public static Recurrence fromLegacyPeriod(long period) {
-        int result = (int) (period/RecurrenceParser.YEAR_MILLIS);
+        int result = (int) (period / RecurrenceParser.YEAR_MILLIS);
         if (result > 0) {
             Recurrence recurrence = new Recurrence(PeriodType.YEAR);
             recurrence.setMultiplier(result);
             return recurrence;
         }
 
-        result = (int) (period/RecurrenceParser.MONTH_MILLIS);
+        result = (int) (period / RecurrenceParser.MONTH_MILLIS);
         if (result > 0) {
             Recurrence recurrence = new Recurrence(PeriodType.MONTH);
             recurrence.setMultiplier(result);
             return recurrence;
         }
 
-        result = (int) (period/RecurrenceParser.WEEK_MILLIS);
+        result = (int) (period / RecurrenceParser.WEEK_MILLIS);
         if (result > 0) {
             Recurrence recurrence = new Recurrence(PeriodType.WEEK);
             recurrence.setMultiplier(result);
             return recurrence;
         }
 
-        result = (int) (period/RecurrenceParser.DAY_MILLIS);
+        result = (int) (period / RecurrenceParser.DAY_MILLIS);
         if (result > 0) {
             Recurrence recurrence = new Recurrence(PeriodType.DAY);
             recurrence.setMultiplier(result);
             return recurrence;
         }
 
-        result = (int) (period/RecurrenceParser.HOUR_MILLIS);
+        result = (int) (period / RecurrenceParser.HOUR_MILLIS);
         if (result > 0) {
             Recurrence recurrence = new Recurrence(PeriodType.HOUR);
             recurrence.setMultiplier(result);

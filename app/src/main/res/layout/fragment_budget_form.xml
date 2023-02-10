@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
  
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,16 +20,19 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <ScrollView
         android:id="@+id/scroll_view"
         android:layout_above="@id/calculator_keyboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <TableLayout android:id="@+id/budget_info_table"
+
+        <TableLayout
+            android:id="@+id/budget_info_table"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/dialog_padding"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <android.support.design.widget.TextInputLayout
                 android:id="@+id/name_text_input_layout"
@@ -38,6 +40,7 @@
                 android:paddingRight="@dimen/dialog_padding"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+
                 <EditText
                     android:id="@+id/input_budget_name"
                     android:layout_width="match_parent"
@@ -47,17 +50,20 @@
                     android:singleLine="true"
                     android:ellipsize="start"
                     android:hint="Budget name"
-                    style="@style/ListItemText">
-                </EditText>
+                    style="@style/ListItemText"></EditText>
             </android.support.design.widget.TextInputLayout>
 
-            <TableRow style="@style/FormRow"
+            <TableRow
+                style="@style/FormRow"
                 android:paddingLeft="@dimen/dialog_padding"
                 android:paddingRight="@dimen/dialog_padding">
-                <ImageView style="@style/FormIcon"
-                    android:src="@drawable/ic_action_sort_by_size"/>
 
-                <EditText android:id="@+id/input_description"
+                <ImageView
+                    style="@style/FormIcon"
+                    android:src="@drawable/ic_action_sort_by_size" />
+
+                <EditText
+                    android:id="@+id/input_description"
                     android:layout_width="0dp"
                     android:layout_weight="5"
                     android:layout_height="wrap_content"
@@ -66,16 +72,20 @@
                     android:hint="Description"
                     android:inputType="textMultiLine|textCapSentences" />
             </TableRow>
+
             <View style="@style/Divider" />
 
-            <TableRow style="@style/FormRow"
+            <TableRow
+                style="@style/FormRow"
                 android:paddingLeft="@dimen/dialog_padding"
                 android:paddingRight="@dimen/dialog_padding">
 
-                <ImageView style="@style/FormIcon"
-                    android:src="@drawable/ic_action_rotate_right"/>
+                <ImageView
+                    style="@style/FormIcon"
+                    android:src="@drawable/ic_action_rotate_right" />
 
-                <TextView android:id="@+id/input_recurrence"
+                <TextView
+                    android:id="@+id/input_recurrence"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="5"
@@ -85,7 +95,8 @@
 
             </TableRow>
 
-            <TableRow style="@style/FormRow"
+            <TableRow
+                style="@style/FormRow"
                 android:paddingLeft="@dimen/dialog_padding"
                 android:paddingRight="@dimen/dialog_padding">
 
@@ -94,9 +105,10 @@
                     android:layout_weight="1.2"
                     android:layout_height="wrap_content"
                     android:textAllCaps="true"
-                    android:text="START"/>
+                    android:text="START" />
 
-                <TextView android:id="@+id/input_start_date"
+                <TextView
+                    android:id="@+id/input_start_date"
                     android:layout_width="0dp"
                     android:layout_weight="5"
                     android:layout_height="wrap_content"
@@ -105,21 +117,25 @@
                     android:textSize="16sp"
                     android:padding="3dp"
                     android:textColor="@android:color/black"
-                    android:gravity="left"      />
+                    android:gravity="left" />
             </TableRow>
 
-            <include android:id="@+id/budget_amount_layout"
+            <include
+                android:id="@+id/budget_amount_layout"
                 layout="@layout/item_budget_amount" />
 
-            <Button android:id="@+id/btn_add_budget_amount"
+            <Button
+                android:id="@+id/btn_add_budget_amount"
                 style="?attr/borderlessButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/theme_accent"
-                android:text="Add Budget Amounts"/>
+                android:text="Add Budget Amounts" />
         </TableLayout>
     </ScrollView>
-    <android.inputmethodservice.KeyboardView android:id="@+id/calculator_keyboard"
+
+    <android.inputmethodservice.KeyboardView
+        android:id="@+id/calculator_keyboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

@@ -25,15 +25,20 @@ import android.view.View;
 
 /**
  * Code from https://gist.github.com/AnirudhaAgashe/61e523dadbaaf064b9a0
+ *
  * @author Anirudha Agashe <anirudhaagashe@gmail.com>
  */
 public class EmptyRecyclerView extends RecyclerView {
     @Nullable
     View emptyView;
 
-    public EmptyRecyclerView(Context context) { super(context); }
+    public EmptyRecyclerView(Context context) {
+        super(context);
+    }
 
-    public EmptyRecyclerView(Context context, AttributeSet attrs) { super(context, attrs); }
+    public EmptyRecyclerView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
 
     public EmptyRecyclerView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -47,7 +52,8 @@ public class EmptyRecyclerView extends RecyclerView {
 
     final @NonNull AdapterDataObserver observer = new AdapterDataObserver() {
 
-        @Override public void onChanged() {
+        @Override
+        public void onChanged() {
             super.onChanged();
             checkIfEmpty();
         }
@@ -65,7 +71,8 @@ public class EmptyRecyclerView extends RecyclerView {
         }
     };
 
-    @Override public void setAdapter(@Nullable Adapter adapter) {
+    @Override
+    public void setAdapter(@Nullable Adapter adapter) {
         final Adapter oldAdapter = getAdapter();
         if (oldAdapter != null) {
             oldAdapter.unregisterAdapterDataObserver(observer);

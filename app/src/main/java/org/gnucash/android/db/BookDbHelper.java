@@ -54,16 +54,16 @@ public class BookDbHelper extends SQLiteOpenHelper {
      * Create the books table
      */
     private static final String BOOKS_TABLE_CREATE = "CREATE TABLE " + BookEntry.TABLE_NAME + " ("
-            + BookEntry._ID 		         + " integer primary key autoincrement, "
-            + BookEntry.COLUMN_UID 		     + " varchar(255) not null UNIQUE, "
-            + BookEntry.COLUMN_DISPLAY_NAME  + " varchar(255) not null, "
-            + BookEntry.COLUMN_ROOT_GUID     + " varchar(255) not null, "
+            + BookEntry._ID + " integer primary key autoincrement, "
+            + BookEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
+            + BookEntry.COLUMN_DISPLAY_NAME + " varchar(255) not null, "
+            + BookEntry.COLUMN_ROOT_GUID + " varchar(255) not null, "
             + BookEntry.COLUMN_TEMPLATE_GUID + " varchar(255), "
-            + BookEntry.COLUMN_ACTIVE        + " tinyint default 0, "
-            + BookEntry.COLUMN_SOURCE_URI    + " varchar(255), "
-            + BookEntry.COLUMN_LAST_SYNC     + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-            + BookEntry.COLUMN_CREATED_AT    + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-            + BookEntry.COLUMN_MODIFIED_AT   + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP "
+            + BookEntry.COLUMN_ACTIVE + " tinyint default 0, "
+            + BookEntry.COLUMN_SOURCE_URI + " varchar(255), "
+            + BookEntry.COLUMN_LAST_SYNC + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+            + BookEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+            + BookEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP "
             + ");" + DatabaseHelper.createUpdatedAtTrigger(BookEntry.TABLE_NAME);
 
     public BookDbHelper(Context context) {
@@ -75,7 +75,7 @@ public class BookDbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(BOOKS_TABLE_CREATE);
 
-        if (mContext.getDatabasePath(DatabaseSchema.LEGACY_DATABASE_NAME).exists()){
+        if (mContext.getDatabasePath(DatabaseSchema.LEGACY_DATABASE_NAME).exists()) {
             Log.d(LOG_TAG, "Legacy database found. Migrating to multibook format");
             DatabaseHelper helper = new DatabaseHelper(GnuCashApplication.getAppContext(),
                     DatabaseSchema.LEGACY_DATABASE_NAME);
@@ -126,17 +126,19 @@ public class BookDbHelper extends SQLiteOpenHelper {
 
     /**
      * Returns the database for the book
+     *
      * @param bookUID GUID of the book
      * @return SQLiteDatabase of the book
      */
-    public static SQLiteDatabase getDatabase(String bookUID){
+    public static SQLiteDatabase getDatabase(String bookUID) {
         DatabaseHelper dbHelper = new DatabaseHelper(GnuCashApplication.getAppContext(), bookUID);
         return dbHelper.getWritableDatabase();
     }
 
     /**
      * Inserts the book into the database
-     * @param db Book database
+     *
+     * @param db   Book database
      * @param book Book to insert
      */
     private void insertBook(SQLiteDatabase db, Book book) {
@@ -154,9 +156,10 @@ public class BookDbHelper extends SQLiteOpenHelper {
      * Move the backup and export files from the old location (single-book) to the new multi-book
      * backup folder structure. Each book has its own directory as well as backups and exports.
      * <p>This method should be called only once during the initial migration to multi-book support</p>
+     *
      * @param activeBookUID GUID of the book for which to migrate the files
      */
-    private void migrateBackupFiles(String activeBookUID){
+    private void migrateBackupFiles(String activeBookUID) {
 
         Log.d(LOG_TAG, "Moving export and backup files to book-specific folders");
         File newBasePath = new File(Exporter.LEGACY_BASE_FOLDER_PATH + "/" + activeBookUID);

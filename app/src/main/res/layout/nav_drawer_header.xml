@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +20,8 @@
     android:background="@color/theme_primary"
     android:orientation="vertical">
 
-    <TextView android:id="@+id/drawer_title"
+    <TextView
+        android:id="@+id/drawer_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
@@ -33,6 +33,7 @@
         android:clickable="true"
         android:text="@string/app_name"
         android:textColor="@android:color/white" />
+
     <TextView
         android:id="@+id/book_name"
         android:layout_width="match_parent"
@@ -48,5 +49,5 @@
         android:drawableRight="@drawable/ic_arrow_drop_down_white_24dp"
         android:drawableEnd="@drawable/ic_arrow_drop_down_white_24dp"
         android:clickable="true"
-        tools:text="Current Book Name"/>
+        tools:text="Current Book Name" />
 </LinearLayout>

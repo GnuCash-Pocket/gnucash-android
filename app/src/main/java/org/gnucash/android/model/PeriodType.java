@@ -21,10 +21,11 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
-* Represents a type of period which can be associated with a recurring event
+ * Represents a type of period which can be associated with a recurring event
+ *
  * @author Ngewi Fet <ngewif@gmail.com>
  * @see org.gnucash.android.model.ScheduledAction
-*/
+ */
 public enum PeriodType {
     HOUR, DAY, WEEK, MONTH, YEAR;
 
@@ -32,6 +33,7 @@ public enum PeriodType {
     /**
      * Returns the frequency description of this period type.
      * This is used mostly for generating the recurrence rule.
+     *
      * @return Frequency description
      */
     public String getFrequencyDescription() {
@@ -54,15 +56,16 @@ public enum PeriodType {
     /**
      * Returns the parts of the recurrence rule which describe the day or month on which to run the
      * scheduled transaction. These parts are the BYxxx
+     *
      * @param startTime Start time of transaction used to determine the start day of execution
      * @return String describing the BYxxx parts of the recurrence rule
      */
-    public String getByParts(long startTime){
+    public String getByParts(long startTime) {
         String partString = "";
-        if (this == WEEK){
+        if (this == WEEK) {
             String dayOfWeek = new SimpleDateFormat("E", Locale.US).format(new Date(startTime));
             //our parser only supports two-letter day names
-            partString = "BYDAY=" + dayOfWeek.substring(0, dayOfWeek.length()-1).toUpperCase();
+            partString = "BYDAY=" + dayOfWeek.substring(0, dayOfWeek.length() - 1).toUpperCase();
         }
         return partString;
     }

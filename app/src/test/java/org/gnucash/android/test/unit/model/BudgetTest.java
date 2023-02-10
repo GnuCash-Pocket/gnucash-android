@@ -30,9 +30,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests for budgets
  */
 public class BudgetTest {
-    
+
     @Test
-    public void addingBudgetAmount_shouldSetBudgetUID(){
+    public void addingBudgetAmount_shouldSetBudgetUID() {
         Budget budget = new Budget("Test");
 
         assertThat(budget.getBudgetAmounts()).isNotNull();
@@ -44,7 +44,7 @@ public class BudgetTest {
 
         //setting a whole list should also set the budget UIDs
         List<BudgetAmount> budgetAmounts = new ArrayList<>();
-        budgetAmounts.add(new BudgetAmount(Money.getZeroInstance(),"test"));
+        budgetAmounts.add(new BudgetAmount(Money.getZeroInstance(), "test"));
         budgetAmounts.add(new BudgetAmount(Money.getZeroInstance(), "second"));
 
         budget.setBudgetAmounts(budgetAmounts);
@@ -54,7 +54,7 @@ public class BudgetTest {
     }
 
     @Test
-    public void shouldComputeAbsoluteAmountSum(){
+    public void shouldComputeAbsoluteAmountSum() {
         Budget budget = new Budget("Test");
         Money accountAmount = new Money("-20", "USD");
         BudgetAmount budgetAmount = new BudgetAmount(accountAmount, "account1");
@@ -72,7 +72,7 @@ public class BudgetTest {
      * {@link BudgetAmount}s which have different money amounts
      */
     @Test
-    public void shouldNotCompactBudgetAmountsWithDifferentAmounts(){
+    public void shouldNotCompactBudgetAmountsWithDifferentAmounts() {
         Budget budget = new Budget("Test");
         budget.setNumberOfPeriods(6);
         BudgetAmount budgetAmount = new BudgetAmount(new Money("10", "USD"), "test");
@@ -101,7 +101,7 @@ public class BudgetTest {
      * with the same amount but leaves others untouched
      */
     @Test
-    public void addingSameAmounts_shouldCompactOnRetrieval(){
+    public void addingSameAmounts_shouldCompactOnRetrieval() {
         Budget budget = new Budget("Test");
         budget.setNumberOfPeriods(6);
         BudgetAmount budgetAmount = new BudgetAmount(new Money("10", "USD"), "first");
@@ -140,7 +140,7 @@ public class BudgetTest {
      * should create new budget amounts for each of the periods in the budgeting period
      */
     @Test
-    public void addingNegativePeriodNum_shouldExpandOnRetrieval(){
+    public void addingNegativePeriodNum_shouldExpandOnRetrieval() {
         Budget budget = new Budget("Test");
         budget.setNumberOfPeriods(6);
         BudgetAmount budgetAmount = new BudgetAmount(new Money("10", "USD"), "first");
@@ -152,13 +152,13 @@ public class BudgetTest {
         assertThat(expandedBudgetAmount).hasSize(6);
 
         assertThat(expandedBudgetAmount).extracting("mPeriodNum").hasSize(6)
-                .contains(0L,1L,2L,3L,4L,5L).doesNotContain(-1L);
+                .contains(0L, 1L, 2L, 3L, 4L, 5L).doesNotContain(-1L);
 
         assertThat(expandedBudgetAmount).extracting("mAccountUID").hasSize(6);
     }
 
     @Test
-    public void testGetNumberOfAccounts(){
+    public void testGetNumberOfAccounts() {
         Budget budget = new Budget("Test");
         budget.setNumberOfPeriods(6);
         BudgetAmount budgetAmount = new BudgetAmount(new Money("10", "USD"), "first");

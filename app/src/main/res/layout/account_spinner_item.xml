@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2016 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +14,11 @@
  limitations under the License.
 -->
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-          android:id="@android:id/text1"
-          style="?android:attr/spinnerItemStyle"
-          android:maxLines="1"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:textSize="18sp"
-          android:ellipsize="marquee"
-          android:textAlignment="inherit"/>
+    android:id="@android:id/text1"
+    style="?android:attr/spinnerItemStyle"
+    android:maxLines="1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:textSize="18sp"
+    android:ellipsize="marquee"
+    android:textAlignment="inherit" />

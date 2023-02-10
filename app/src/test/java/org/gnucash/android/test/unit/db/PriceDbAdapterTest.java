@@ -11,10 +11,12 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * Test price functions
  */
-@RunWith(RobolectricTestRunner.class) //package is required so that resources can be found in dev mode
+@RunWith(RobolectricTestRunner.class)
+//package is required so that resources can be found in dev mode
 @Config(sdk = 21, packageName = "org.gnucash.android", shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
 public class PriceDbAdapterTest {
 
@@ -23,7 +25,7 @@ public class PriceDbAdapterTest {
      * todo: maybe move this to UI testing. Not sure how Robolectric handles this
      */
     @Test
-    public void shouldOnlySaveOnePricePerCommodityPair(){
+    public void shouldOnlySaveOnePricePerCommodityPair() {
         String commodityUID = CommoditiesDbAdapter.getInstance().getCommodityUID("EUR");
         String currencyUID = CommoditiesDbAdapter.getInstance().getCommodityUID("USD");
         Price price = new Price(commodityUID, currencyUID);

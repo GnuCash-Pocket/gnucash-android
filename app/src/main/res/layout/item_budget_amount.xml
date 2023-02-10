@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +23,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
+
     <LinearLayout
         android:padding="5dp"
         android:orientation="vertical"
@@ -35,6 +35,7 @@
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:gravity="center_vertical">
+
             <TextView
                 android:id="@+id/currency_symbol"
                 style="@style/FormIcon"
@@ -52,7 +53,8 @@
                 android:nextFocusDown="@+id/input_description"
                 android:background="@android:color/transparent"
                 android:textSize="20sp"
-                app:keyboardKeysLayout="@xml/calculator_keyboard"/>
+                app:keyboardKeysLayout="@xml/calculator_keyboard" />
+
             <ImageView
                 android:id="@+id/btn_remove_item"
                 android:layout_width="48dp"
@@ -65,20 +67,25 @@
                 android:src="@drawable/ic_close_black_24dp"
                 tools:ignore="ContentDescription" />
         </TableRow>
+
         <View style="@style/Divider" />
-        <TableRow android:id="@+id/layout_double_entry"
+
+        <TableRow
+            android:id="@+id/layout_double_entry"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:padding="@dimen/dialog_padding"
-            android:gravity="center_vertical" >
+            android:gravity="center_vertical">
 
-            <ImageView style="@style/FormIcon"
-                android:src="@drawable/ic_action_forward"/>
+            <ImageView
+                style="@style/FormIcon"
+                android:src="@drawable/ic_action_forward" />
+
             <Spinner
                 android:id="@+id/input_budget_account_spinner"
                 android:layout_width="0dp"
                 android:layout_weight="5"
-                android:layout_height="wrap_content"  />
+                android:layout_height="wrap_content" />
         </TableRow>
     </LinearLayout>
 </android.support.v7.widget.CardView>

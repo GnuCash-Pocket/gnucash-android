@@ -49,7 +49,7 @@ import java.util.Map;
  *
  * @author Semyannikov Gleb <nightdevgame@gmail.com>
  */
-public class CsvTransactionsExporter extends Exporter{
+public class CsvTransactionsExporter extends Exporter {
 
     private char mCsvSeparator;
 
@@ -57,6 +57,7 @@ public class CsvTransactionsExporter extends Exporter{
 
     /**
      * Construct a new exporter with export parameters
+     *
      * @param params Parameters for the export
      */
     public CsvTransactionsExporter(ExportParams params) {
@@ -68,8 +69,9 @@ public class CsvTransactionsExporter extends Exporter{
     /**
      * Overloaded constructor.
      * Creates an exporter with an already open database instance.
+     *
      * @param params Parameters for the export
-     * @param db SQLite database
+     * @param db     SQLite database
      */
     public CsvTransactionsExporter(ExportParams params, SQLiteDatabase db) {
         super(params, db);
@@ -81,9 +83,9 @@ public class CsvTransactionsExporter extends Exporter{
     public List<String> generateExport() throws ExporterException {
         String outputFile = getExportCacheFilePath();
 
-        try (CsvWriter csvWriter = new CsvWriter(new FileWriter(outputFile), "" + mCsvSeparator)){
+        try (CsvWriter csvWriter = new CsvWriter(new FileWriter(outputFile), "" + mCsvSeparator)) {
             generateExport(csvWriter);
-        } catch (IOException ex){
+        } catch (IOException ex) {
             Crashlytics.log("Error exporting CSV");
             Crashlytics.logException(ex);
             throw new ExporterException(mExportParams, ex);
@@ -94,6 +96,7 @@ public class CsvTransactionsExporter extends Exporter{
 
     /**
      * Write splits to CSV format
+     *
      * @param splits Splits to be written
      */
     private void writeSplitsToCsv(@NonNull List<Split> splits, @NonNull CsvWriter writer) throws IOException {
@@ -102,7 +105,7 @@ public class CsvTransactionsExporter extends Exporter{
         Map<String, Account> uidAccountMap = new HashMap<>();
 
         for (Split split : splits) {
-            if (index++ > 0){ // the first split is on the same line as the transactions. But after that, we
+            if (index++ > 0) { // the first split is on the same line as the transactions. But after that, we
                 writer.write("" + mCsvSeparator + mCsvSeparator + mCsvSeparator + mCsvSeparator
                         + mCsvSeparator + mCsvSeparator + mCsvSeparator + mCsvSeparator);
             }
@@ -138,7 +141,7 @@ public class CsvTransactionsExporter extends Exporter{
     private void generateExport(final CsvWriter csvWriter) throws ExporterException {
         try {
             List<String> names = Arrays.asList(mContext.getResources().getStringArray(R.array.csv_transaction_headers));
-            for(int i = 0; i < names.size(); i++) {
+            for (int i = 0; i < names.size(); i++) {
                 csvWriter.writeToken(names.get(i));
             }
             csvWriter.newLine();
@@ -146,7 +149,7 @@ public class CsvTransactionsExporter extends Exporter{
 
             Cursor cursor = mTransactionsDbAdapter.fetchTransactionsModifiedSince(mExportParams.getExportStartTime());
             Log.d(LOG_TAG, String.format("Exporting %d transactions to CSV", cursor.getCount()));
-            while (cursor.moveToNext()){
+            while (cursor.moveToNext()) {
                 Transaction transaction = mTransactionsDbAdapter.buildModelInstance(cursor);
                 Date date = new Date(transaction.getTimeMillis());
                 csvWriter.writeToken(dateFormat.format(date));

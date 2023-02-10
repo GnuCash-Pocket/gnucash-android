@@ -17,8 +17,9 @@ package org.gnucash.android.export;
 
 /**
  * Enumeration of the different export formats supported by the application
-* @author Ngewi Fet <ngewif@gmail.com>
-*/
+ *
+ * @author Ngewi Fet <ngewif@gmail.com>
+ */
 public enum ExportFormat {
     QIF("Quicken Interchange Format"),
     OFX("Open Financial eXchange"),
@@ -37,9 +38,10 @@ public enum ExportFormat {
 
     /**
      * Returns the file extension for this export format including the period e.g. ".qif"
+     *
      * @return String file extension for the export format
      */
-    public String getExtension(){
+    public String getExtension() {
         switch (this) {
             case QIF:
                 return ".qif";

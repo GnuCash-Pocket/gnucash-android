@@ -32,7 +32,8 @@ public final class TimestampHelper {
     /**
      * Should be not instantiated.
      */
-    private TimestampHelper() {}
+    private TimestampHelper() {
+    }
 
     /**
      * We are using Joda Time classes because they are thread-safe.

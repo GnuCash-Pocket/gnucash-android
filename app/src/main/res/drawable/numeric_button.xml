@@ -19,21 +19,17 @@
 
     <item android:state_pressed="true">
         <shape android:shape="oval">
-            <padding
-                android:bottom="5dp" android:left="5dp"
-                android:right="5dp" android:top="5dp" />
-            <solid android:color="@color/credit_green"/>
+            <padding android:bottom="5dp" android:left="5dp" android:right="5dp" android:top="5dp" />
+            <solid android:color="@color/credit_green" />
         </shape>
 
     </item>
 
     <item android:state_enabled="true">
         <shape android:shape="oval">
-            <padding
-                android:bottom="5dp" android:left="5dp"
-                android:right="5dp" android:top="5dp" />
-            <stroke android:color="@color/theme_primary" android:width="1dp"/>
-            <solid android:color="@color/transparent"/>
+            <padding android:bottom="5dp" android:left="5dp" android:right="5dp" android:top="5dp" />
+            <stroke android:color="@color/theme_primary" android:width="1dp" />
+            <solid android:color="@color/transparent" />
         </shape>
     </item>
 </selector>

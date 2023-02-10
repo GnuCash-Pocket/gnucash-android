@@ -57,11 +57,10 @@ public class ScrollingFABBehavior extends CoordinatorLayout.Behavior<FloatingAct
         return true;
     }
 
-    private int getToolbarHeight(Context context){
+    private int getToolbarHeight(Context context) {
         TypedValue tv = new TypedValue();
         int actionBarHeight = android.support.v7.appcompat.R.attr.actionBarSize;
-        if (context.getTheme().resolveAttribute(R.attr.actionBarSize, tv, true))
-        {
+        if (context.getTheme().resolveAttribute(R.attr.actionBarSize, tv, true)) {
             actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data,
                     context.getResources().getDisplayMetrics());
         }

@@ -17,6 +17,7 @@
 -->
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+
     <style name="Theme.GnucashTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Set AppCompat’s actionBarStyle
         <item name="actionBarStyle">@style/MyActionBarStyle</item>
@@ -26,7 +27,7 @@
         <item name="colorPrimary">@color/theme_primary</item>
         <item name="colorPrimaryDark">@color/theme_primary_dark</item>
         <item name="colorAccent">@color/theme_accent</item>
-    <!-- The rest of your attributes -->
+        <!-- The rest of your attributes -->
 
         <item name="actionModeBackground">@color/action_mode_background</item>
         <item name="windowActionModeOverlay">true</item>

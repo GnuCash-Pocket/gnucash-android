@@ -42,7 +42,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Test the book database adapter
  */
-@RunWith(RobolectricTestRunner.class) //package is required so that resources can be found in dev mode
+@RunWith(RobolectricTestRunner.class)
+//package is required so that resources can be found in dev mode
 @Config(sdk = 21, packageName = "org.gnucash.android", shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
 public class BooksDbAdapterTest {
 
@@ -59,7 +60,7 @@ public class BooksDbAdapterTest {
     }
 
     @Test
-    public void addBook(){
+    public void addBook() {
         Book book = new Book(BaseModel.generateUID());
         mBooksDbAdapter.addRecord(book, DatabaseAdapter.UpdateMethod.insert);
 
@@ -68,13 +69,13 @@ public class BooksDbAdapterTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void savingBook_requiresRootAccountGUID(){
+    public void savingBook_requiresRootAccountGUID() {
         Book book = new Book();
         mBooksDbAdapter.addRecord(book);
     }
 
     @Test
-    public void deleteBook(){
+    public void deleteBook() {
         Book book = new Book();
         book.setRootAccountUID(BaseModel.generateUID());
         mBooksDbAdapter.addRecord(book);
@@ -85,7 +86,7 @@ public class BooksDbAdapterTest {
     }
 
     @Test
-    public void setBookActive(){
+    public void setBookActive() {
         Book book1 = new Book(BaseModel.generateUID());
         Book book2 = new Book(BaseModel.generateUID());
 
@@ -108,7 +109,7 @@ public class BooksDbAdapterTest {
      * book records in the database
      */
     @Test
-    public void testGeneratedDisplayName(){
+    public void testGeneratedDisplayName() {
         Book book1 = new Book(BaseModel.generateUID());
         Book book2 = new Book(BaseModel.generateUID());
 
@@ -122,7 +123,7 @@ public class BooksDbAdapterTest {
      * Test that deleting a book record also deletes the book database
      */
     @Test
-    public void deletingBook_shouldDeleteDbFile(){
+    public void deletingBook_shouldDeleteDbFile() {
         String bookUID = createNewBookWithDefaultAccounts();
         File dbPath = GnuCashApplication.getAppContext().getDatabasePath(bookUID);
         assertThat(dbPath).exists();
@@ -140,7 +141,7 @@ public class BooksDbAdapterTest {
      * increased irrespective of the order in which books are added to and deleted from the db
      */
     @Test
-    public void testGeneratedDisplayNames_shouldBeUnique(){
+    public void testGeneratedDisplayNames_shouldBeUnique() {
         Book book1 = new Book(BaseModel.generateUID());
         Book book2 = new Book(BaseModel.generateUID());
         Book book3 = new Book(BaseModel.generateUID());
@@ -197,10 +198,11 @@ public class BooksDbAdapterTest {
 
     /**
      * Creates a new database with default accounts
+     *
      * @return The book UID for the new database
      * @throws RuntimeException if the new books could not be created
      */
-    private String createNewBookWithDefaultAccounts(){
+    private String createNewBookWithDefaultAccounts() {
         try {
             return GncXmlImporter.parse(GnuCashApplication.getAppContext().getResources().openRawResource(R.raw.default_accounts));
         } catch (ParserConfigurationException | SAXException | IOException e) {

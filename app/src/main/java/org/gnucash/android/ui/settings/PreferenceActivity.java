@@ -45,11 +45,12 @@ import butterknife.ButterKnife;
  * Activity for unified preferences
  */
 public class PreferenceActivity extends PasscodeLockActivity implements
-        PreferenceFragmentCompat.OnPreferenceStartFragmentCallback{
+        PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
 
     public static final String ACTION_MANAGE_BOOKS = "org.gnucash.android.intent.action.MANAGE_BOOKS";
 
-    @BindView(R.id.slidingpane_layout) SlidingPaneLayout mSlidingPaneLayout;
+    @BindView(R.id.slidingpane_layout)
+    SlidingPaneLayout mSlidingPaneLayout;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -78,7 +79,7 @@ public class PreferenceActivity extends PasscodeLockActivity implements
         });
 
         String action = getIntent().getAction();
-        if (action != null && action.equals(ACTION_MANAGE_BOOKS)){
+        if (action != null && action.equals(ACTION_MANAGE_BOOKS)) {
             loadFragment(new BookManagerFragment());
             mSlidingPaneLayout.closePane();
         } else {
@@ -112,6 +113,7 @@ public class PreferenceActivity extends PasscodeLockActivity implements
 
     /**
      * Load the provided fragment into the right pane, replacing the previous one
+     *
      * @param fragment BaseReportFragment instance
      */
     private void loadFragment(Fragment fragment) {
@@ -143,18 +145,20 @@ public class PreferenceActivity extends PasscodeLockActivity implements
     /**
      * Returns the shared preferences file for the currently active book.
      * Should be used instead of {@link PreferenceManager#getDefaultSharedPreferences(Context)}
+     *
      * @return Shared preferences file
      */
-    public static SharedPreferences getActiveBookSharedPreferences(){
+    public static SharedPreferences getActiveBookSharedPreferences() {
         return getBookSharedPreferences(BooksDbAdapter.getInstance().getActiveBookUID());
     }
 
     /**
      * Return the {@link SharedPreferences} for a specific book
+     *
      * @param bookUID GUID of the book
      * @return Shared preferences
      */
-    public static SharedPreferences getBookSharedPreferences(String bookUID){
+    public static SharedPreferences getBookSharedPreferences(String bookUID) {
         Context context = GnuCashApplication.getAppContext();
         return context.getSharedPreferences(bookUID, Context.MODE_PRIVATE);
     }

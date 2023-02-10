@@ -26,6 +26,7 @@ import java.util.ArrayList;
 
 /**
  * Welcome page for the first run wizard
+ *
  * @author Ngewi Fet
  */
 public class WelcomePage extends Page {

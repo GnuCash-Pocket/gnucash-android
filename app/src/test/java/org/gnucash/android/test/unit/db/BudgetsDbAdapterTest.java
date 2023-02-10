@@ -44,7 +44,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Tests for the budgets database adapter
  */
-@RunWith(RobolectricTestRunner.class) //package is required so that resources can be found in dev mode
+@RunWith(RobolectricTestRunner.class)
+//package is required so that resources can be found in dev mode
 @Config(sdk = 21, packageName = "org.gnucash.android", shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
 public class BudgetsDbAdapterTest {
 
@@ -57,11 +58,11 @@ public class BudgetsDbAdapterTest {
     private Account mSecondAccount;
 
     @Before
-    public void setUp(){
-        mAccountsDbAdapter      = AccountsDbAdapter.getInstance();
-        mBudgetsDbAdapter       = BudgetsDbAdapter.getInstance();
+    public void setUp() {
+        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+        mBudgetsDbAdapter = BudgetsDbAdapter.getInstance();
         mBudgetAmountsDbAdapter = BudgetAmountsDbAdapter.getInstance();
-        mRecurrenceDbAdapter    = RecurrenceDbAdapter.getInstance();
+        mRecurrenceDbAdapter = RecurrenceDbAdapter.getInstance();
 
         mAccount = new Account("Budgeted account");
         mSecondAccount = new Account("Another account");
@@ -70,14 +71,14 @@ public class BudgetsDbAdapterTest {
     }
 
     @After
-    public void tearDown(){
+    public void tearDown() {
         mBudgetsDbAdapter.deleteAllRecords();
         mBudgetAmountsDbAdapter.deleteAllRecords();
         mRecurrenceDbAdapter.deleteAllRecords();
     }
 
     @Test
-    public void testAddingBudget(){
+    public void testAddingBudget() {
         assertThat(mBudgetsDbAdapter.getRecordsCount()).isZero();
         assertThat(mBudgetAmountsDbAdapter.getRecordsCount()).isZero();
         assertThat(mRecurrenceDbAdapter.getRecordsCount()).isZero();
@@ -106,7 +107,7 @@ public class BudgetsDbAdapterTest {
      * Test that when bulk adding budgets, all the associated budgetAmounts and recurrences are saved
      */
     @Test
-    public void testBulkAddBudgets(){
+    public void testBulkAddBudgets() {
         assertThat(mBudgetsDbAdapter.getRecordsCount()).isZero();
         assertThat(mBudgetAmountsDbAdapter.getRecordsCount()).isZero();
         assertThat(mRecurrenceDbAdapter.getRecordsCount()).isZero();
@@ -122,7 +123,7 @@ public class BudgetsDbAdapterTest {
     }
 
     @Test
-    public void testGetAccountBudgets(){
+    public void testGetAccountBudgets() {
         mBudgetsDbAdapter.bulkAddRecords(bulkCreateBudgets());
 
         List<Budget> budgets = mBudgetsDbAdapter.getAccountBudgets(mAccount.getUID());
@@ -147,7 +148,7 @@ public class BudgetsDbAdapterTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void savingBudget_shouldRequireExistingAccount(){
+    public void savingBudget_shouldRequireExistingAccount() {
         Budget budget = new Budget("");
         budget.addBudgetAmount(new BudgetAmount(Money.getZeroInstance(), "unknown-account"));
 
@@ -155,7 +156,7 @@ public class BudgetsDbAdapterTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void savingBudget_shouldRequireRecurrence(){
+    public void savingBudget_shouldRequireRecurrence() {
         Budget budget = new Budget("");
         budget.addBudgetAmount(new BudgetAmount(Money.getZeroInstance(), mAccount.getUID()));
 
@@ -163,7 +164,7 @@ public class BudgetsDbAdapterTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void savingBudget_shouldRequireBudgetAmount(){
+    public void savingBudget_shouldRequireBudgetAmount() {
         Budget budget = new Budget("");
         budget.setRecurrence(new Recurrence(PeriodType.MONTH));
 

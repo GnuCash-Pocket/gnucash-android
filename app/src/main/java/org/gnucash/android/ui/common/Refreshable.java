@@ -17,6 +17,7 @@ package org.gnucash.android.ui.common;
 
 /**
  * Interface for fragments which are refreshable
+ *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public interface Refreshable {
@@ -28,6 +29,7 @@ public interface Refreshable {
 
     /**
      * Refresh the list with modified parameters
+     *
      * @param uid GUID of relevant item to be refreshed
      */
     public void refresh(String uid);

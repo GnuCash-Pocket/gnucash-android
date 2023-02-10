@@ -1,10 +1,10 @@
 /**
  * Copyright 2013 Maarten Pennings extended by SimplicityApks
- *
+ * <p>
  * Modified by:
  * Copyright 2015 Àlex Magaz Graça <rivaldi8@gmail.com>
  * Copyright 2015 Ngewi Fet <ngewif@gmail.com>
- *
+ * <p>
  * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ public class CalculatorKeyboard {
     private OnKeyboardActionListener mOnKeyboardActionListener = new OnKeyboardActionListener() {
         @Override
         public void onKey(int primaryCode, int[] keyCodes) {
-            View focusCurrent = ((Activity)mContext).getWindow().getCurrentFocus();
+            View focusCurrent = ((Activity) mContext).getWindow().getCurrentFocus();
             assert focusCurrent != null;
 
             /*
@@ -77,7 +77,7 @@ public class CalculatorKeyboard {
                 return;
             */
 
-            if (!(focusCurrent instanceof CalculatorEditText)){
+            if (!(focusCurrent instanceof CalculatorEditText)) {
                 return;
             }
 
@@ -114,7 +114,7 @@ public class CalculatorKeyboard {
                     editable.insert(start, Character.toString((char) primaryCode));
                     break;
                 case -5:
-                    int deleteStart = start > 0 ? start - 1: 0;
+                    int deleteStart = start > 0 ? start - 1 : 0;
                     editable.delete(deleteStart, end);
                     break;
                 case 1003: // C[lear]
@@ -136,12 +136,29 @@ public class CalculatorKeyboard {
                 mKeyboardView.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
         }
 
-        @Override public void onRelease(int primaryCode) { }
-        @Override public void onText(CharSequence text) { }
-        @Override public void swipeLeft() { }
-        @Override public void swipeRight() { }
-        @Override public void swipeDown() { }
-        @Override public void swipeUp() { }
+        @Override
+        public void onRelease(int primaryCode) {
+        }
+
+        @Override
+        public void onText(CharSequence text) {
+        }
+
+        @Override
+        public void swipeLeft() {
+        }
+
+        @Override
+        public void swipeRight() {
+        }
+
+        @Override
+        public void swipeDown() {
+        }
+
+        @Override
+        public void swipeUp() {
+        }
     };
 
     /**
@@ -151,7 +168,7 @@ public class CalculatorKeyboard {
      */
     private boolean isHapticFeedbackEnabled() {
         int value = Settings.System.getInt(mKeyboardView.getContext().getContentResolver(),
-                                           Settings.System.HAPTIC_FEEDBACK_ENABLED, 0);
+                Settings.System.HAPTIC_FEEDBACK_ENABLED, 0);
         return value != 0;
     }
 
@@ -170,7 +187,7 @@ public class CalculatorKeyboard {
         mKeyboardView = keyboardView;
         Keyboard keyboard = new Keyboard(mContext, keyboardLayoutResId);
         for (Keyboard.Key key : keyboard.getKeys()) {
-            if (key.codes[0] == KEY_CODE_DECIMAL_SEPARATOR){
+            if (key.codes[0] == KEY_CODE_DECIMAL_SEPARATOR) {
                 key.label = LOCALE_DECIMAL_SEPARATOR;
                 break;
             }
@@ -179,7 +196,7 @@ public class CalculatorKeyboard {
         mKeyboardView.setPreviewEnabled(false); // NOTE Do not show the preview balloons
         mKeyboardView.setOnKeyboardActionListener(mOnKeyboardActionListener);
         // Hide the standard keyboard initially
-        ((Activity)mContext).getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        ((Activity) mContext).getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
 
     /** Returns whether the CalculatorKeyboard is visible. */
@@ -214,7 +231,7 @@ public class CalculatorKeyboard {
      * Returns the context of this keyboard
      * @return Context
      */
-    public Context getContext(){
+    public Context getContext() {
         return mContext;
     }
 }

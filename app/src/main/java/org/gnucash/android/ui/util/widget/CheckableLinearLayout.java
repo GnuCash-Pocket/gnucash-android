@@ -30,6 +30,7 @@ import android.widget.LinearLayout;
  *
  * <p>This layout is designed for use with ListViews with a choice mode other than {@link android.widget.ListView#CHOICE_MODE_NONE}.
  * Android requires the parent view of the row items in the list to be checkable in order to take advantage of the APIs</p>
+ *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class CheckableLinearLayout extends LinearLayout implements Checkable {
@@ -70,19 +71,20 @@ public class CheckableLinearLayout extends LinearLayout implements Checkable {
     /**
      * Iterates through the child views of <code>parent</code> to an arbitrary depth and returns the first
      * {@link Checkable} view found
+     *
      * @param parent ViewGroup in which to search for Checkable children
      * @return First {@link Checkable} child view of parent found
      */
-    private Checkable findCheckableView(ViewGroup parent){
+    private Checkable findCheckableView(ViewGroup parent) {
         for (int i = 0; i < parent.getChildCount(); i++) {
             View childView = parent.getChildAt(i);
 
             if (childView instanceof Checkable)
-                return (Checkable)childView;
+                return (Checkable) childView;
 
-            if (childView instanceof ViewGroup){
-                Checkable checkable = findCheckableView((ViewGroup)childView);
-                if (checkable != null){
+            if (childView instanceof ViewGroup) {
+                Checkable checkable = findCheckableView((ViewGroup) childView);
+                if (checkable != null) {
                     return checkable;
                 }
             }
@@ -92,7 +94,7 @@ public class CheckableLinearLayout extends LinearLayout implements Checkable {
 
     @Override
     public void setChecked(boolean b) {
-        if (mCheckable != null){
+        if (mCheckable != null) {
             mCheckable.setChecked(b);
         } else {
             mIsChecked = b;
@@ -107,7 +109,7 @@ public class CheckableLinearLayout extends LinearLayout implements Checkable {
 
     @Override
     public void toggle() {
-        if (mCheckable != null){
+        if (mCheckable != null) {
             mCheckable.toggle();
         } else {
             mIsChecked = !mIsChecked;

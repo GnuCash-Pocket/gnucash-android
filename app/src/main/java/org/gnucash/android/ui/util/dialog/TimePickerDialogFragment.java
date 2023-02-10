@@ -26,59 +26,60 @@ import java.util.GregorianCalendar;
 
 /**
  * Fragment for displaying a time choose dialog
- * @author Ngewi Fet <ngewif@gmail.com>
  *
+ * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class TimePickerDialogFragment extends DialogFragment {
-	/**
-	 * Listener to notify when the time is set
-	 */
-	private OnTimeSetListener mListener = null;
-	
-	/**
-	 * Current time to initialize the dialog to, or to notify the listener of.
-	 */
-	Calendar mCurrentTime = null;
-	
-	/**
-	 * Default constructor
-	 * Is required for when the device is rotated while the dialog is open.
-	 * If this constructor is not present, the app will crash
-	 */
-	public TimePickerDialogFragment() {
-		// nothing to see here, move along
-	}
-	
-	/**
-	 * Overloaded constructor
-	 * @param listener {@link OnTimeSetListener} to notify when the time has been set
-	 * @param timeMillis Time in milliseconds to initialize the dialog to
-	 */
-	public static TimePickerDialogFragment newInstance(OnTimeSetListener listener, long timeMillis){
-		TimePickerDialogFragment timePickerDialogFragment = new TimePickerDialogFragment();
+    /**
+     * Listener to notify when the time is set
+     */
+    private OnTimeSetListener mListener = null;
+
+    /**
+     * Current time to initialize the dialog to, or to notify the listener of.
+     */
+    Calendar mCurrentTime = null;
+
+    /**
+     * Default constructor
+     * Is required for when the device is rotated while the dialog is open.
+     * If this constructor is not present, the app will crash
+     */
+    public TimePickerDialogFragment() {
+        // nothing to see here, move along
+    }
+
+    /**
+     * Overloaded constructor
+     *
+     * @param listener   {@link OnTimeSetListener} to notify when the time has been set
+     * @param timeMillis Time in milliseconds to initialize the dialog to
+     */
+    public static TimePickerDialogFragment newInstance(OnTimeSetListener listener, long timeMillis) {
+        TimePickerDialogFragment timePickerDialogFragment = new TimePickerDialogFragment();
         timePickerDialogFragment.mListener = listener;
-		if (timeMillis > 0){
-			timePickerDialogFragment.mCurrentTime = new GregorianCalendar();
-			timePickerDialogFragment.mCurrentTime.setTimeInMillis(timeMillis);
-		}
+        if (timeMillis > 0) {
+            timePickerDialogFragment.mCurrentTime = new GregorianCalendar();
+            timePickerDialogFragment.mCurrentTime.setTimeInMillis(timeMillis);
+        }
         return timePickerDialogFragment;
-	}
-	
-	/**
-	 * Creates and returns an Android {@link TimePickerDialog}
-	 */
-	@Override
-	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		Calendar cal = mCurrentTime == null ? Calendar.getInstance() : mCurrentTime;
-		
-		int hour = cal.get(Calendar.HOUR_OF_DAY);
-		int minute = cal.get(Calendar.MINUTE);
-		
-		return new TimePickerDialog(getActivity(),
-				mListener, 
-				hour, 
-				minute,
-				true);
-	}
-	
+    }
+
+    /**
+     * Creates and returns an Android {@link TimePickerDialog}
+     */
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Calendar cal = mCurrentTime == null ? Calendar.getInstance() : mCurrentTime;
+
+        int hour = cal.get(Calendar.HOUR_OF_DAY);
+        int minute = cal.get(Calendar.MINUTE);
+
+        return new TimePickerDialog(getActivity(),
+                mListener,
+                hour,
+                minute,
+                true);
+    }
+
 }

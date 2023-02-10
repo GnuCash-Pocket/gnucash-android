@@ -140,6 +140,7 @@ public class Account extends BaseModel {
     /**
      * Constructor
      * Creates a new account with the default currency and a generated unique ID
+     *
      * @param name Name of the account
      */
     public Account(String name) {
@@ -150,6 +151,7 @@ public class Account extends BaseModel {
 
     /**
      * Overloaded constructor
+     *
      * @param name      Name of the account
      * @param commodity {@link Commodity} to be used by transactions in this account
      */
@@ -161,6 +163,7 @@ public class Account extends BaseModel {
 
     /**
      * Sets the name of the account
+     *
      * @param name String name of the account
      */
     public void setName(String name) {
@@ -169,6 +172,7 @@ public class Account extends BaseModel {
 
     /**
      * Returns the name of the account
+     *
      * @return String containing name of the account
      */
     public String getName() {
@@ -178,6 +182,7 @@ public class Account extends BaseModel {
     /**
      * Returns the full name of this account.
      * The full name is the full account hierarchy name
+     *
      * @return Fully qualified name of the account
      */
     public String getFullName() {
@@ -186,6 +191,7 @@ public class Account extends BaseModel {
 
     /**
      * Sets the fully qualified name of the account
+     *
      * @param fullName Fully qualified account name
      */
     public void setFullName(String fullName) {
@@ -194,6 +200,7 @@ public class Account extends BaseModel {
 
     /**
      * Returns the account description
+     *
      * @return String with description
      */
     public String getDescription() {
@@ -202,6 +209,7 @@ public class Account extends BaseModel {
 
     /**
      * Sets the account description
+     *
      * @param description Account description
      */
     public void setDescription(@NonNull String description) {
@@ -210,6 +218,7 @@ public class Account extends BaseModel {
 
     /**
      * Get the type of account
+     *
      * @return {@link AccountType} type of account
      */
     public AccountType getAccountType() {
@@ -218,6 +227,7 @@ public class Account extends BaseModel {
 
     /**
      * Sets the type of account
+     *
      * @param mAccountType Type of account
      * @see AccountType
      */
@@ -227,6 +237,7 @@ public class Account extends BaseModel {
 
     /**
      * Adds a transaction to this account
+     *
      * @param transaction {@link Transaction} to be added to the account
      */
     public void addTransaction(Transaction transaction) {
@@ -239,6 +250,7 @@ public class Account extends BaseModel {
      * Overrides any previous transactions with those in the list.
      * The account UID and currency of the transactions will be set to the unique ID
      * and currency of the account respectively
+     *
      * @param transactionsList List of {@link Transaction}s to be set.
      */
     public void setTransactions(List<Transaction> transactionsList) {
@@ -247,6 +259,7 @@ public class Account extends BaseModel {
 
     /**
      * Returns a list of transactions for this account
+     *
      * @return Array list of transactions for the account
      */
     public List<Transaction> getTransactions() {
@@ -255,6 +268,7 @@ public class Account extends BaseModel {
 
     /**
      * Returns the number of transactions in this account
+     *
      * @return Number transactions in account
      */
     public int getTransactionCount() {
@@ -264,6 +278,7 @@ public class Account extends BaseModel {
     /**
      * Returns the aggregate of all transactions in this account.
      * It takes into account debit and credit amounts, it does not however consider sub-accounts
+     *
      * @return {@link Money} aggregate amount of all transactions in account.
      */
     public Money getBalance() {
@@ -276,6 +291,7 @@ public class Account extends BaseModel {
 
     /**
      * Returns the color of the account.
+     *
      * @return Color of the account as an int as returned by {@link Color}.
      */
     public int getColor() {
@@ -284,17 +300,19 @@ public class Account extends BaseModel {
 
     /**
      * Returns the account color as an RGB hex string
+     *
      * @return Hex color of the account
      */
-    public String getColorHexString(){
+    public String getColorHexString() {
         return String.format("#%06X", (0xFFFFFF & mColor));
     }
 
     /**
      * Sets the color of the account.
+     *
      * @param color Color as an int as returned by {@link Color}.
      * @throws java.lang.IllegalArgumentException if the color is transparent,
-     *   which is not supported.
+     *                                            which is not supported.
      */
     public void setColor(int color) {
         if (Color.alpha(color) < 255)
@@ -304,9 +322,10 @@ public class Account extends BaseModel {
 
     /**
      * Sets the color of the account.
+     *
      * @param colorCode Color code to be set in the format #rrggbb
      * @throws java.lang.IllegalArgumentException if the color code is not properly formatted or
-	 *   the color is transparent.
+     *                                            the color is transparent.
      */
     //TODO: Allow use of #aarrggbb format as well
     public void setColor(@NonNull String colorCode) {
@@ -315,6 +334,7 @@ public class Account extends BaseModel {
 
     /**
      * Tests if this account is a favorite account or not
+     *
      * @return <code>true</code> if account is flagged as favorite, <code>false</code> otherwise
      */
     public boolean isFavorite() {
@@ -323,6 +343,7 @@ public class Account extends BaseModel {
 
     /**
      * Toggles the favorite flag on this account on or off
+     *
      * @param isFavorite <code>true</code> if account should be flagged as favorite, <code>false</code> otherwise
      */
     public void setFavorite(boolean isFavorite) {
@@ -339,6 +360,7 @@ public class Account extends BaseModel {
 
     /**
      * Sets the commodity of this account
+     *
      * @param commodity Commodity of the account
      */
     public void setCommodity(@NonNull Commodity commodity) {
@@ -348,6 +370,7 @@ public class Account extends BaseModel {
 
     /**
      * Sets the Unique Account Identifier of the parent account
+     *
      * @param parentUID String Unique ID of parent account
      */
     public void setParentUID(String parentUID) {
@@ -356,6 +379,7 @@ public class Account extends BaseModel {
 
     /**
      * Returns the Unique Account Identifier of the parent account
+     *
      * @return String Unique ID of parent account
      */
     public String getParentUID() {
@@ -364,6 +388,7 @@ public class Account extends BaseModel {
 
     /**
      * Returns <code>true</code> if this account is a placeholder account, <code>false</code> otherwise.
+     *
      * @return <code>true</code> if this account is a placeholder account, <code>false</code> otherwise
      */
     public boolean isPlaceholderAccount() {
@@ -373,6 +398,7 @@ public class Account extends BaseModel {
     /**
      * Returns the hidden property of this account.
      * <p>Hidden accounts are not visible in the UI</p>
+     *
      * @return <code>true</code> if the account is hidden, <code>false</code> otherwise.
      */
     public boolean isHidden() {
@@ -382,6 +408,7 @@ public class Account extends BaseModel {
     /**
      * Toggles the hidden property of the account.
      * <p>Hidden accounts are not visible in the UI</p>
+     *
      * @param hidden boolean specifying is hidden or not
      */
     public void setHidden(boolean hidden) {
@@ -391,6 +418,7 @@ public class Account extends BaseModel {
     /**
      * Sets the placeholder flag for this account.
      * Placeholder accounts cannot have transactions
+     *
      * @param isPlaceholder Boolean flag indicating if the account is a placeholder account or not
      */
     public void setPlaceHolderFlag(boolean isPlaceholder) {
@@ -399,6 +427,7 @@ public class Account extends BaseModel {
 
     /**
      * Return the unique ID of accounts to which to default transfer transactions to
+     *
      * @return Unique ID string of default transfer account
      */
     public String getDefaultTransferAccountUID() {
@@ -407,6 +436,7 @@ public class Account extends BaseModel {
 
     /**
      * Set the unique ID of account which is the default transfer target
+     *
      * @param defaultTransferAccountUID Unique ID string of default transfer account
      */
     public void setDefaultTransferAccountUID(String defaultTransferAccountUID) {
@@ -417,6 +447,7 @@ public class Account extends BaseModel {
     /**
      * Maps the <code>accountType</code> to the corresponding account type.
      * <code>accountType</code> have corresponding values to GnuCash desktop
+     *
      * @param accountType {@link AccountType} of an account
      * @return Corresponding {@link OfxAccountType} for the <code>accountType</code>
      * @see AccountType
@@ -452,6 +483,7 @@ public class Account extends BaseModel {
 
     /**
      * Converts this account's transactions into XML and adds them to the DOM document
+     *
      * @param doc             XML DOM document for the OFX data
      * @param parent          Parent node to which to add this account's transactions in XML
      * @param exportStartTime Time from which to export transactions which are created/modified after

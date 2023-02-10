@@ -86,6 +86,7 @@ public class DeleteAccountDialogFragment extends DialogFragment {
 
     /**
      * Creates new instance of the delete confirmation dialog and provides parameters for it
+     *
      * @param accountUID GUID of the account to be deleted
      * @return New instance of the delete confirmation dialog
      */
@@ -143,8 +144,8 @@ public class DeleteAccountDialogFragment extends DialogFragment {
         AccountType accountType = accountsDbAdapter.getAccountType(mOriginAccountUID);
 
         String transactionDeleteConditions = "(" + DatabaseSchema.AccountEntry.COLUMN_UID + " != ? AND "
-                + DatabaseSchema.AccountEntry.COLUMN_CURRENCY               + " = ? AND "
-                + DatabaseSchema.AccountEntry.COLUMN_TYPE         + " = ? AND "
+                + DatabaseSchema.AccountEntry.COLUMN_CURRENCY + " = ? AND "
+                + DatabaseSchema.AccountEntry.COLUMN_TYPE + " = ? AND "
                 + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0 AND "
                 + DatabaseSchema.AccountEntry.COLUMN_UID + " NOT IN ('" + TextUtils.join("','", descendantAccountUIDs) + "')"
                 + ")";
@@ -156,8 +157,8 @@ public class DeleteAccountDialogFragment extends DialogFragment {
 
         //target accounts for transactions and accounts have different conditions
         String accountMoveConditions = "(" + DatabaseSchema.AccountEntry.COLUMN_UID + " != ? AND "
-                + DatabaseSchema.AccountEntry.COLUMN_CURRENCY               + " = ? AND "
-                + DatabaseSchema.AccountEntry.COLUMN_TYPE         + " = ? AND "
+                + DatabaseSchema.AccountEntry.COLUMN_CURRENCY + " = ? AND "
+                + DatabaseSchema.AccountEntry.COLUMN_TYPE + " = ? AND "
                 + DatabaseSchema.AccountEntry.COLUMN_UID + " NOT IN ('" + TextUtils.join("','", descendantAccountUIDs) + "')"
                 + ")";
         cursor = accountsDbAdapter.fetchAccountsOrderedByFullName(accountMoveConditions,
@@ -168,7 +169,7 @@ public class DeleteAccountDialogFragment extends DialogFragment {
         setListeners();
 
         //this comes after the listeners because of some useful bindings done there
-        if (cursor.getCount() == 0){
+        if (cursor.getCount() == 0) {
             mMoveAccountsRadioButton.setEnabled(false);
             mMoveAccountsRadioButton.setChecked(false);
             mDeleteAccountsRadioButton.setChecked(true);
@@ -183,7 +184,7 @@ public class DeleteAccountDialogFragment extends DialogFragment {
     /**
      * Binds click listeners for the dialog buttons
      */
-    protected void setListeners(){
+    protected void setListeners() {
         mMoveAccountsRadioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -214,19 +215,19 @@ public class DeleteAccountDialogFragment extends DialogFragment {
 
                 AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
 
-                if ((mTransactionCount > 0) && mMoveTransactionsRadioButton.isChecked()){
+                if ((mTransactionCount > 0) && mMoveTransactionsRadioButton.isChecked()) {
                     long targetAccountId = mTransactionsDestinationAccountSpinner.getSelectedItemId();
                     //move all the splits
                     SplitsDbAdapter.getInstance().updateRecords(DatabaseSchema.SplitEntry.COLUMN_ACCOUNT_UID + " = ?",
                             new String[]{mOriginAccountUID}, DatabaseSchema.SplitEntry.COLUMN_ACCOUNT_UID, accountsDbAdapter.getUID(targetAccountId));
                 }
 
-                if ((mSubAccountCount > 0) && mMoveAccountsRadioButton.isChecked()){
+                if ((mSubAccountCount > 0) && mMoveAccountsRadioButton.isChecked()) {
                     long targetAccountId = mAccountsDestinationAccountSpinner.getSelectedItemId();
                     AccountsDbAdapter.getInstance().reassignDescendantAccounts(mOriginAccountUID, accountsDbAdapter.getUID(targetAccountId));
                 }
 
-                if (GnuCashApplication.isDoubleEntryEnabled()){ //reassign splits to imbalance
+                if (GnuCashApplication.isDoubleEntryEnabled()) { //reassign splits to imbalance
                     TransactionsDbAdapter.getInstance().deleteTransactionsForAccount(mOriginAccountUID);
                 }
 
@@ -234,7 +235,7 @@ public class DeleteAccountDialogFragment extends DialogFragment {
                 accountsDbAdapter.recursiveDeleteAccount(accountsDbAdapter.getID(mOriginAccountUID));
 
                 WidgetConfigurationActivity.updateAllWidgets(getActivity());
-                ((Refreshable)getTargetFragment()).refresh();
+                ((Refreshable) getTargetFragment()).refresh();
                 dismiss();
             }
         });

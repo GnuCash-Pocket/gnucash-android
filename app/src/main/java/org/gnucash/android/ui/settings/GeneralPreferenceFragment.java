@@ -34,6 +34,7 @@ import org.gnucash.android.ui.passcode.PasscodePreferenceActivity;
 
 /**
  * Fragment for general preferences. Currently caters to the passcode and reporting preferences
+ *
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
 public class GeneralPreferenceFragment extends PreferenceFragmentCompat implements
@@ -132,7 +133,7 @@ public class GeneralPreferenceFragment extends PreferenceFragmentCompat implemen
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (mEditor == null){
+        if (mEditor == null) {
             mEditor = getPreferenceManager().getSharedPreferences().edit();
         }
 

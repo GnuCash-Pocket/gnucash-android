@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,9 +22,10 @@
         android:id="@+id/calendar_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="2"/>
+        android:layout_weight="2" />
 
-    <include layout="@layout/default_buttons"
+    <include
+        layout="@layout/default_buttons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

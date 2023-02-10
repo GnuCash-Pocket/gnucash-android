@@ -42,15 +42,20 @@ import butterknife.BindView;
 
 /**
  * Balance sheet report fragment
+ *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class BalanceSheetFragment extends BaseReportFragment {
 
-    @BindView(R.id.table_assets) TableLayout mAssetsTableLayout;
-    @BindView(R.id.table_liabilities) TableLayout mLiabilitiesTableLayout;
-    @BindView(R.id.table_equity) TableLayout mEquityTableLayout;
+    @BindView(R.id.table_assets)
+    TableLayout mAssetsTableLayout;
+    @BindView(R.id.table_liabilities)
+    TableLayout mLiabilitiesTableLayout;
+    @BindView(R.id.table_equity)
+    TableLayout mEquityTableLayout;
 
-    @BindView(R.id.total_liability_and_equity) TextView mNetWorth;
+    @BindView(R.id.total_liability_and_equity)
+    TextView mNetWorth;
 
     AccountsDbAdapter mAccountsDbAdapter = AccountsDbAdapter.getInstance();
 
@@ -124,10 +129,11 @@ public class BalanceSheetFragment extends BaseReportFragment {
 
     /**
      * Loads rows for the individual accounts and adds them to the report
+     *
      * @param accountTypes Account types for which to load balances
-     * @param tableLayout Table layout into which to load the rows
+     * @param tableLayout  Table layout into which to load the rows
      */
-    private void loadAccountViews(List<AccountType> accountTypes, TableLayout tableLayout){
+    private void loadAccountViews(List<AccountType> accountTypes, TableLayout tableLayout) {
         LayoutInflater inflater = LayoutInflater.from(getActivity());
 
         Cursor cursor = mAccountsDbAdapter.fetchAccounts(DatabaseSchema.AccountEntry.COLUMN_TYPE
@@ -135,12 +141,12 @@ public class BalanceSheetFragment extends BaseReportFragment {
                         + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0",
                 null, DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC");
 
-        while (cursor.moveToNext()){
+        while (cursor.moveToNext()) {
             String accountUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_UID));
             String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_NAME));
             Money balance = mAccountsDbAdapter.getAccountBalance(accountUID);
             View view = inflater.inflate(R.layout.row_balance_sheet, tableLayout, false);
-            ((TextView)view.findViewById(R.id.account_name)).setText(name);
+            ((TextView) view.findViewById(R.id.account_name)).setText(name);
             TextView balanceTextView = (TextView) view.findViewById(R.id.account_balance);
             TransactionsActivity.displayBalance(balanceTextView, balance);
             tableLayout.addView(view);

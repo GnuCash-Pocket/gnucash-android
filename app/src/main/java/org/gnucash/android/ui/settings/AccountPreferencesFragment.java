@@ -55,7 +55,7 @@ import java.util.concurrent.ExecutionException;
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
 public class AccountPreferencesFragment extends PreferenceFragmentCompat implements
-        Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener{
+        Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
 
     private static final int REQUEST_EXPORT_FILE = 0xC5;
 
@@ -75,7 +75,7 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
         actionBar.setTitle(R.string.title_account_preferences);
 
         Cursor cursor = CommoditiesDbAdapter.getInstance().fetchAllRecords(DatabaseSchema.CommodityEntry.COLUMN_MNEMONIC + " ASC");
-        while(cursor.moveToNext()){
+        while (cursor.moveToNext()) {
             String code = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.CommodityEntry.COLUMN_MNEMONIC));
             String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.CommodityEntry.COLUMN_FULLNAME));
             mCurrencyEntries.add(code + " - " + name);
@@ -146,12 +146,12 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
     public boolean onPreferenceClick(Preference preference) {
         String key = preference.getKey();
 
-        if (key.equals(getString(R.string.key_import_accounts))){
+        if (key.equals(getString(R.string.key_import_accounts))) {
             AccountsActivity.startXmlFileChooser(this);
             return true;
         }
 
-        if (key.equals(getString(R.string.key_export_accounts_csv))){
+        if (key.equals(getString(R.string.key_export_accounts_csv))) {
             selectExportFile();
             return true;
         }
@@ -176,7 +176,7 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        if (preference.getKey().equals(getString(R.string.key_default_currency))){
+        if (preference.getKey().equals(getString(R.string.key_default_currency))) {
             GnuCashApplication.setDefaultCurrencyCode(newValue.toString());
             String fullname = CommoditiesDbAdapter.getInstance().getCommodity(newValue.toString()).getFullname();
             preference.setSummary(fullname);
@@ -188,14 +188,14 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
     /**
      * Show the dialog for deleting accounts
      */
-    public void showDeleteAccountsDialog(){
+    public void showDeleteAccountsDialog() {
         DeleteAllAccountsConfirmationDialog deleteConfirmationDialog = DeleteAllAccountsConfirmationDialog.newInstance();
         deleteConfirmationDialog.show(getActivity().getSupportFragmentManager(), "account_settings");
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode){
+        switch (requestCode) {
             case AccountsActivity.REQUEST_PICK_ACCOUNTS_FILE:
                 if (resultCode == Activity.RESULT_OK && data != null) {
                     AccountsActivity.importXmlFileFromIntent(getActivity(), data, null);
@@ -203,7 +203,7 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
                 break;
 
             case REQUEST_EXPORT_FILE:
-                if (resultCode == Activity.RESULT_OK && data != null){
+                if (resultCode == Activity.RESULT_OK && data != null) {
                     ExportParams exportParams = new ExportParams(ExportFormat.CSVA);
                     exportParams.setExportTarget(ExportParams.ExportTarget.URI);
                     exportParams.setExportLocation(data.getData().toString());

@@ -34,40 +34,45 @@ import java.util.List;
  * Represents a financial transaction, either credit or debit.
  * Transactions belong to accounts and each have the unique identifier of the account to which they belong.
  * The default type is a debit, unless otherwise specified.
+ *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class Transaction extends BaseModel{
+public class Transaction extends BaseModel {
 
-	/**
-	 * Mime type for transactions in Gnucash.
-	 * Used for recording transactions through intents
-	 */
-	public static final String MIME_TYPE 			= "vnd.android.cursor.item/vnd." + BuildConfig.APPLICATION_ID + ".transaction";
+    /**
+     * Mime type for transactions in Gnucash.
+     * Used for recording transactions through intents
+     */
+    public static final String MIME_TYPE = "vnd.android.cursor.item/vnd." + BuildConfig.APPLICATION_ID + ".transaction";
 
-	/**
-	 * Key for passing the account unique Identifier as an argument through an {@link Intent}
+    /**
+     * Key for passing the account unique Identifier as an argument through an {@link Intent}
+     *
      * @deprecated use {@link Split}s instead
-	 */
+     */
     @Deprecated
-	public static final String EXTRA_ACCOUNT_UID 	= "org.gnucash.android.extra.account_uid";
+    public static final String EXTRA_ACCOUNT_UID = "org.gnucash.android.extra.account_uid";
 
-	/**
-	 * Key for specifying the double entry account
+    /**
+     * Key for specifying the double entry account
+     *
      * @deprecated use {@link Split}s instead
-	 */
+     */
     @Deprecated
-	public static final String EXTRA_DOUBLE_ACCOUNT_UID = "org.gnucash.android.extra.double_account_uid";
+    public static final String EXTRA_DOUBLE_ACCOUNT_UID = "org.gnucash.android.extra.double_account_uid";
 
-	/**
-	 * Key for identifying the amount of the transaction through an Intent
+    /**
+     * Key for identifying the amount of the transaction through an Intent
+     *
      * @deprecated use {@link Split}s instead
-	 */
+     */
     @Deprecated
-	public static final String EXTRA_AMOUNT 		= "org.gnucash.android.extra.amount";
+    public static final String EXTRA_AMOUNT = "org.gnucash.android.extra.amount";
 
     /**
      * Extra key for the transaction type.
      * This value should typically be set by calling {@link TransactionType#name()}
+     *
      * @deprecated use {@link Split}s instead
      */
     @Deprecated
@@ -90,26 +95,26 @@ public class Transaction extends BaseModel{
      */
     private List<Split> mSplitList = new ArrayList<>();
 
-	/**
-	 * Name describing the transaction
-	 */
-	private String mDescription;
+    /**
+     * Name describing the transaction
+     */
+    private String mDescription;
 
-	/**
-	 * An extra note giving details about the transaction
-	 */
-	private String mNotes = "";
+    /**
+     * An extra note giving details about the transaction
+     */
+    private String mNotes = "";
 
-	/**
-	 * Flag indicating if this transaction has been exported before or not
-	 * The transactions are typically exported as bank statement in the OFX format
-	 */
-	private boolean mIsExported = false;
+    /**
+     * Flag indicating if this transaction has been exported before or not
+     * The transactions are typically exported as bank statement in the OFX format
+     */
+    private boolean mIsExported = false;
 
-	/**
-	 * Timestamp when this transaction occurred
-	 */
-	private long mTimestamp;
+    /**
+     * Timestamp when this transaction occurred
+     */
+    private long mTimestamp;
 
     /**
      * Flag indicating that this transaction is a template
@@ -121,15 +126,16 @@ public class Transaction extends BaseModel{
      */
     private String mScheduledActionUID = null;
 
-	/**
-	 * Overloaded constructor. Creates a new transaction instance with the
-	 * provided data and initializes the rest to default values.
-	 * @param name Name of the transaction
-	 */
-	public Transaction(String name) {
-		initDefaults();
-		setDescription(name);
-	}
+    /**
+     * Overloaded constructor. Creates a new transaction instance with the
+     * provided data and initializes the rest to default values.
+     *
+     * @param name Name of the transaction
+     */
+    public Transaction(String name) {
+        initDefaults();
+        setDescription(name);
+    }
 
     /**
      * Copy constructor.
@@ -137,10 +143,11 @@ public class Transaction extends BaseModel{
      * <p><b>Note:</b> The unique ID of the transaction is not cloned if the parameter <code>generateNewUID</code>,
      * is set to false. Otherwise, a new one is generated.<br/>
      * The export flag and the template flag are not copied from the old transaction to the new.</p>
-     * @param transaction Transaction to be cloned
+     *
+     * @param transaction    Transaction to be cloned
      * @param generateNewUID Flag to determine if new UID should be assigned or not
      */
-    public Transaction(Transaction transaction, boolean generateNewUID){
+    public Transaction(Transaction transaction, boolean generateNewUID) {
         initDefaults();
         setDescription(transaction.getDescription());
         setNote(transaction.getNote());
@@ -152,18 +159,18 @@ public class Transaction extends BaseModel{
             addSplit(new Split(split, generateNewUID));
         }
 
-        if (!generateNewUID){
+        if (!generateNewUID) {
             setUID(transaction.getUID());
         }
     }
 
-	/**
-	 * Initializes the different fields to their default values.
-	 */
-	private void initDefaults(){
+    /**
+     * Initializes the different fields to their default values.
+     */
+    private void initDefaults() {
         setCommodity(Commodity.DEFAULT_COMMODITY);
-		this.mTimestamp = System.currentTimeMillis();
-	}
+        this.mTimestamp = System.currentTimeMillis();
+    }
 
     /**
      * Creates a split which will balance the transaction, in value.
@@ -171,11 +178,12 @@ public class Transaction extends BaseModel{
      *
      * <p>The added split will not use any account in db, but will use currency code as account UID.
      * The added split will be returned, to be filled with proper account UID later.</p>
+     *
      * @return Split whose amount is the imbalance of this transaction
      */
-    public Split createAutoBalanceSplit(){
+    public Split createAutoBalanceSplit() {
         Money imbalance = getImbalance(); //returns imbalance of 0 for multicurrency transactions
-        if (!imbalance.isAmountZero()){
+        if (!imbalance.isAmountZero()) {
             // yes, this is on purpose the account UID is set to the currency.
             // This should be overridden before saving to db
             Split split = new Split(imbalance, mCommodity.getCurrencyCode());
@@ -189,6 +197,7 @@ public class Transaction extends BaseModel{
     /**
      * Set the GUID of the transaction
      * If the transaction has Splits, their transactionGUID will be updated as well
+     *
      * @param uid String unique ID
      */
     @Override
@@ -201,21 +210,23 @@ public class Transaction extends BaseModel{
 
     /**
      * Returns list of splits for this transaction
+     *
      * @return {@link java.util.List} of splits in the transaction
      */
-    public List<Split> getSplits(){
+    public List<Split> getSplits() {
         return mSplitList;
     }
 
     /**
      * Returns the list of splits belonging to a specific account
+     *
      * @param accountUID Unique Identifier of the account
      * @return List of {@link org.gnucash.android.model.Split}s
      */
-    public List<Split> getSplits(String accountUID){
+    public List<Split> getSplits(String accountUID) {
         List<Split> splits = new ArrayList<>();
         for (Split split : mSplitList) {
-            if (split.getAccountUID().equals(accountUID)){
+            if (split.getAccountUID().equals(accountUID)) {
                 splits.add(split);
             }
         }
@@ -225,9 +236,10 @@ public class Transaction extends BaseModel{
     /**
      * Sets the splits for this transaction
      * <p>All the splits in the list will have their transaction UID set to this transaction</p>
+     *
      * @param splitList List of splits for this transaction
      */
-    public void setSplits(List<Split> splitList){
+    public void setSplits(List<Split> splitList) {
         mSplitList = splitList;
         for (Split split : splitList) {
             split.setTransactionUID(getUID());
@@ -237,9 +249,10 @@ public class Transaction extends BaseModel{
     /**
      * Add a split to the transaction.
      * <p>Sets the split UID and currency to that of this transaction</p>
+     *
      * @param split Split for this transaction
      */
-    public void addSplit(Split split){
+    public void addSplit(Split split) {
         //sets the currency of the split to the currency of the transaction
         split.setTransactionUID(getUID());
         mSplitList.add(split);
@@ -248,11 +261,12 @@ public class Transaction extends BaseModel{
     /**
      * Returns the balance of this transaction for only those splits which relate to the account.
      * <p>Uses a call to {@link #getBalance(String)} with the appropriate parameters</p>
+     *
      * @param accountUID Unique Identifier of the account
      * @return Money balance of the transaction for the specified account
      * @see #computeBalance(String, java.util.List)
      */
-    public Money getBalance(String accountUID){
+    public Money getBalance(String accountUID) {
         return computeBalance(accountUID, mSplitList);
     }
 
@@ -260,9 +274,10 @@ public class Transaction extends BaseModel{
      * Computes the imbalance amount for the given transaction.
      * In double entry, all transactions should resolve to zero. But imbalance occurs when there are unresolved splits.
      * <p><b>Note:</b> If this is a multi-currency transaction, an imbalance of zero will be returned</p>
+     *
      * @return Money imbalance of the transaction or zero if it is a multi-currency transaction
      */
-    private Money getImbalance(){
+    private Money getImbalance() {
         Money imbalance = Money.createZeroInstance(mCommodity.getCurrencyCode());
         for (Split split : mSplitList) {
             if (!split.getQuantity().getCommodity().equals(mCommodity)) {
@@ -285,8 +300,9 @@ public class Transaction extends BaseModel{
      * <p>Only those splits which belong to the account will be considered.
      * If the {@code accountUID} is null, then the imbalance of the transaction is computed. This means that either
      * zero is returned (for balanced transactions) or the imbalance amount will be returned.</p>
+     *
      * @param accountUID Unique Identifier of the account
-     * @param splitList List of splits
+     * @param splitList  List of splits
      * @return Money list of splits
      */
     public static Money computeBalance(String accountUID, List<Split> splitList) {
@@ -300,7 +316,7 @@ public class Transaction extends BaseModel{
             if (!split.getAccountUID().equals(accountUID))
                 continue;
             Money amount;
-            if (split.getValue().getCommodity().getCurrencyCode().equals(accountCurrencyCode)){
+            if (split.getValue().getCommodity().getCurrencyCode().equals(accountCurrencyCode)) {
                 amount = split.getValue();
             } else { //if this split belongs to the account, then either its value or quantity is in the account currency
                 amount = split.getQuantity();
@@ -325,6 +341,7 @@ public class Transaction extends BaseModel{
 
     /**
      * Returns the currency code of this transaction.
+     *
      * @return ISO 4217 currency code string
      */
     public String getCurrencyCode() {
@@ -333,6 +350,7 @@ public class Transaction extends BaseModel{
 
     /**
      * Returns the  commodity for this transaction
+     *
      * @return Commodity of the transaction
      */
     public @NonNull Commodity getCommodity() {
@@ -341,6 +359,7 @@ public class Transaction extends BaseModel{
 
     /**
      * Sets the commodity for this transaction
+     *
      * @param commodity Commodity instance
      */
     public void setCommodity(@NonNull Commodity commodity) {
@@ -348,69 +367,77 @@ public class Transaction extends BaseModel{
     }
 
     /**
-	 * Returns the description of the transaction
-	 * @return Transaction description
-	 */
+     * Returns the description of the transaction
+     *
+     * @return Transaction description
+     */
     public String getDescription() {
-		return mDescription;
-	}
+        return mDescription;
+    }
 
-	/**
-	 * Sets the transaction description
-	 * @param description String description
-	 */
-	public void setDescription(String description) {
-		this.mDescription = description.trim();
-	}
+    /**
+     * Sets the transaction description
+     *
+     * @param description String description
+     */
+    public void setDescription(String description) {
+        this.mDescription = description.trim();
+    }
 
-	/**
-	 * Add notes to the transaction
-	 * @param notes String containing notes for the transaction
-	 */
-	public void setNote(String notes) {
-		this.mNotes = notes;
-	}
+    /**
+     * Add notes to the transaction
+     *
+     * @param notes String containing notes for the transaction
+     */
+    public void setNote(String notes) {
+        this.mNotes = notes;
+    }
 
-	/**
-	 * Returns the transaction notes
-	 * @return String notes of transaction
-	 */
+    /**
+     * Returns the transaction notes
+     *
+     * @return String notes of transaction
+     */
     public String getNote() {
-		return mNotes;
-	}
+        return mNotes;
+    }
 
-	/**
-	 * Set the time of the transaction
-	 * @param timestamp Time when transaction occurred as {@link Date}
-	 */
-	public void setTime(Date timestamp){
-		this.mTimestamp = timestamp.getTime();
-	}
+    /**
+     * Set the time of the transaction
+     *
+     * @param timestamp Time when transaction occurred as {@link Date}
+     */
+    public void setTime(Date timestamp) {
+        this.mTimestamp = timestamp.getTime();
+    }
 
-	/**
-	 * Sets the time when the transaction occurred
-	 * @param timeInMillis Time in milliseconds
-	 */
-	public void setTime(long timeInMillis) {
-		this.mTimestamp = timeInMillis;
-	}
+    /**
+     * Sets the time when the transaction occurred
+     *
+     * @param timeInMillis Time in milliseconds
+     */
+    public void setTime(long timeInMillis) {
+        this.mTimestamp = timeInMillis;
+    }
 
-	/**
-	 * Returns the time of transaction in milliseconds
-	 * @return Time when transaction occurred in milliseconds
-	 */
-	public long getTimeMillis(){
-		return mTimestamp;
-	}
+    /**
+     * Returns the time of transaction in milliseconds
+     *
+     * @return Time when transaction occurred in milliseconds
+     */
+    public long getTimeMillis() {
+        return mTimestamp;
+    }
 
     /**
      * Returns the corresponding {@link TransactionType} given the accounttype and the effect which the transaction
      * type should have on the account balance
-     * @param accountType Type of account
+     *
+     * @param accountType         Type of account
      * @param shouldReduceBalance <code>true</code> if type should reduce balance, <code>false</code> otherwise
      * @return TransactionType for the account
      */
-    public static TransactionType getTypeForBalance(AccountType accountType, boolean shouldReduceBalance){
+    public static TransactionType getTypeForBalance(AccountType accountType, boolean shouldReduceBalance) {
         TransactionType type;
         if (accountType.hasDebitNormalBalance()) {
             type = shouldReduceBalance ? TransactionType.CREDIT : TransactionType.DEBIT;
@@ -422,6 +449,7 @@ public class Transaction extends BaseModel{
 
     /**
      * Returns true if the transaction type represents a decrease for the account balance for the <code>accountType</code>, false otherwise
+     *
      * @return true if the amount represents a decrease in the account balance, false otherwise
      * @see #getTypeForBalance(AccountType, boolean)
      */
@@ -432,46 +460,51 @@ public class Transaction extends BaseModel{
             return transactionType == TransactionType.DEBIT;
     }
 
-	/**
-	 * Sets the exported flag on the transaction
-	 * @param isExported <code>true</code> if the transaction has been exported, <code>false</code> otherwise
-	 */
-	public void setExported(boolean isExported){
-		mIsExported = isExported;
-	}
+    /**
+     * Sets the exported flag on the transaction
+     *
+     * @param isExported <code>true</code> if the transaction has been exported, <code>false</code> otherwise
+     */
+    public void setExported(boolean isExported) {
+        mIsExported = isExported;
+    }
 
-	/**
-	 * Returns <code>true</code> if the transaction has been exported, <code>false</code> otherwise
-	 * @return <code>true</code> if the transaction has been exported, <code>false</code> otherwise
-	 */
-	public boolean isExported(){
-		return mIsExported;
-	}
+    /**
+     * Returns <code>true</code> if the transaction has been exported, <code>false</code> otherwise
+     *
+     * @return <code>true</code> if the transaction has been exported, <code>false</code> otherwise
+     */
+    public boolean isExported() {
+        return mIsExported;
+    }
 
     /**
      * Returns {@code true} if this transaction is a template, {@code false} otherwise
+     *
      * @return {@code true} if this transaction is a template, {@code false} otherwise
      */
-    public boolean isTemplate(){
+    public boolean isTemplate() {
         return mIsTemplate;
     }
 
     /**
      * Sets flag indicating whether this transaction is a template or not
+     *
      * @param isTemplate Flag indicating if transaction is a template or not
      */
-    public void setTemplate(boolean isTemplate){
+    public void setTemplate(boolean isTemplate) {
         mIsTemplate = isTemplate;
     }
 
     /**
-	 * Converts transaction to XML DOM corresponding to OFX Statement transaction and
-	 * returns the element node for the transaction.
-	 * The Unique ID of the account is needed in order to properly export double entry transactions
-     * @param doc XML document to which transaction should be added
+     * Converts transaction to XML DOM corresponding to OFX Statement transaction and
+     * returns the element node for the transaction.
+     * The Unique ID of the account is needed in order to properly export double entry transactions
+     *
+     * @param doc        XML document to which transaction should be added
      * @param accountUID Unique Identifier of the account which called the method.  @return Element in DOM corresponding to transaction
      */
-	public Element toOFX(Document doc, String accountUID){
+    public Element toOFX(Document doc, String accountUID) {
         Money balance = getBalance(accountUID);
         TransactionType transactionType = balance.isNegative() ? TransactionType.DEBIT : TransactionType.CREDIT;
 
@@ -501,16 +534,16 @@ public class Transaction extends BaseModel{
         name.appendChild(doc.createTextNode(mDescription));
         transactionNode.appendChild(name);
 
-        if (mNotes != null && mNotes.length() > 0){
+        if (mNotes != null && mNotes.length() > 0) {
             Element memo = doc.createElement(OfxHelper.TAG_MEMO);
             memo.appendChild(doc.createTextNode(mNotes));
             transactionNode.appendChild(memo);
         }
 
-        if (mSplitList.size() == 2){ //if we have exactly one other split, then treat it like a transfer
+        if (mSplitList.size() == 2) { //if we have exactly one other split, then treat it like a transfer
             String transferAccountUID = accountUID;
             for (Split split : mSplitList) {
-                if (!split.getAccountUID().equals(accountUID)){
+                if (!split.getAccountUID().equals(accountUID)) {
                     transferAccountUID = split.getAccountUID();
                     break;
                 }
@@ -535,10 +568,11 @@ public class Transaction extends BaseModel{
         }
 
         return transactionNode;
-	}
+    }
 
     /**
      * Returns the GUID of the {@link org.gnucash.android.model.ScheduledAction} which created this transaction
+     *
      * @return GUID of scheduled action
      */
     public String getScheduledActionUID() {
@@ -547,6 +581,7 @@ public class Transaction extends BaseModel{
 
     /**
      * Sets the GUID of the {@link org.gnucash.android.model.ScheduledAction} which created this transaction
+     *
      * @param scheduledActionUID GUID of the scheduled action
      */
     public void setScheduledActionUID(String scheduledActionUID) {
@@ -556,10 +591,11 @@ public class Transaction extends BaseModel{
     /**
      * Creates an Intent with arguments from the <code>transaction</code>.
      * This intent can be broadcast to create a new transaction
+     *
      * @param transaction Transaction used to create intent
      * @return Intent with transaction details as extras
      */
-    public static Intent createIntent(Transaction transaction){
+    public static Intent createIntent(Transaction transaction) {
         Intent intent = new Intent(Intent.ACTION_INSERT);
         intent.setType(Transaction.MIME_TYPE);
         intent.putExtra(Intent.EXTRA_TITLE, transaction.getDescription());

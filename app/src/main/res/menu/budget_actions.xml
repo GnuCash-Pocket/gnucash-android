@@ -2,16 +2,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/menu_goto_account"
+    <item
+        android:id="@+id/menu_goto_account"
         android:icon="@drawable/ic_action_forward"
         android:title="Go to Account"
         app:showAsAction="never"
-        android:orderInCategory="1"/>
+        android:orderInCategory="1" />
 
-    <item android:id="@+id/menu_edit_budget"
+    <item
+        android:id="@+id/menu_edit_budget"
         android:icon="@drawable/content_edit_holo_dark"
         android:title="Edit Budget"
         app:showAsAction="never"
-        android:orderInCategory="2"/>
+        android:orderInCategory="2" />
 
 </menu>

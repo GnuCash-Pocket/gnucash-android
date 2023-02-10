@@ -43,27 +43,28 @@ import java.math.MathContext;
 
 /**
  * Broadcast receiver responsible for creating transactions received through {@link Intent}s
- * In order to create a transaction through Intents, broadcast an intent with the arguments needed to 
- * create the transaction. Transactions are strongly bound to {@link Account}s and it is recommended to 
+ * In order to create a transaction through Intents, broadcast an intent with the arguments needed to
+ * create the transaction. Transactions are strongly bound to {@link Account}s and it is recommended to
  * create an Account for your transaction splits.
- * <p>Remember to declare the appropriate permissions in order to create transactions with Intents. 
+ * <p>Remember to declare the appropriate permissions in order to create transactions with Intents.
  * The required permission is "org.gnucash.android.permission.RECORD_TRANSACTION"</p>
+ *
  * @author Ngewi Fet <ngewif@gmail.com>
  * @see AccountCreator
  * @see org.gnucash.android.model.Transaction#createIntent(org.gnucash.android.model.Transaction)
  */
 public class TransactionRecorder extends BroadcastReceiver {
 
-	@Override
-	public void onReceive(Context context, Intent intent) {
-		Log.i(this.getClass().getName(), "Received transaction recording intent");
-		Bundle args = intent.getExtras();
-		String name = args.getString(Intent.EXTRA_TITLE);
-		String note = args.getString(Intent.EXTRA_TEXT);
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        Log.i(this.getClass().getName(), "Received transaction recording intent");
+        Bundle args = intent.getExtras();
+        String name = args.getString(Intent.EXTRA_TITLE);
+        String note = args.getString(Intent.EXTRA_TEXT);
 
-		String currencyCode = args.getString(Account.EXTRA_CURRENCY_CODE);
-		if (currencyCode == null)
-			currencyCode = Money.DEFAULT_CURRENCY_CODE;
+        String currencyCode = args.getString(Account.EXTRA_CURRENCY_CODE);
+        if (currencyCode == null)
+            currencyCode = Money.DEFAULT_CURRENCY_CODE;
 
         Transaction transaction = new Transaction(name);
         transaction.setTime(System.currentTimeMillis());
@@ -71,7 +72,7 @@ public class TransactionRecorder extends BroadcastReceiver {
         transaction.setCommodity(Commodity.getInstance(currencyCode));
 
         //Parse deprecated args for compatibility. Transactions were bound to accounts, now only splits are
-		String accountUID = args.getString(Transaction.EXTRA_ACCOUNT_UID);
+        String accountUID = args.getString(Transaction.EXTRA_ACCOUNT_UID);
         if (accountUID != null) {
             TransactionType type = TransactionType.valueOf(args.getString(Transaction.EXTRA_TRANSACTION_TYPE));
             BigDecimal amountBigDecimal = (BigDecimal) args.getSerializable(Transaction.EXTRA_AMOUNT);
@@ -94,7 +95,7 @@ public class TransactionRecorder extends BroadcastReceiver {
             BufferedReader bufferedReader = new BufferedReader(stringReader);
             String line = null;
             try {
-                while ((line = bufferedReader.readLine()) != null){
+                while ((line = bufferedReader.readLine()) != null) {
                     Split split = Split.parseSplit(line);
                     transaction.addSplit(split);
                 }
@@ -103,9 +104,9 @@ public class TransactionRecorder extends BroadcastReceiver {
             }
         }
 
-		TransactionsDbAdapter.getInstance().addRecord(transaction, DatabaseAdapter.UpdateMethod.insert);
-		
-		WidgetConfigurationActivity.updateAllWidgets(context);
-	}
+        TransactionsDbAdapter.getInstance().addRecord(transaction, DatabaseAdapter.UpdateMethod.insert);
+
+        WidgetConfigurationActivity.updateAllWidgets(context);
+    }
 
 }

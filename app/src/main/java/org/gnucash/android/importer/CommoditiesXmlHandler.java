@@ -33,11 +33,11 @@ import java.util.List;
  */
 public class CommoditiesXmlHandler extends DefaultHandler {
 
-    public static final String TAG_CURRENCY         = "currency";
-    public static final String ATTR_ISO_CODE        = "isocode";
-    public static final String ATTR_FULL_NAME       = "fullname";
-    public static final String ATTR_NAMESPACE       = "namespace";
-    public static final String ATTR_EXCHANGE_CODE   = "exchange-code";
+    public static final String TAG_CURRENCY = "currency";
+    public static final String ATTR_ISO_CODE = "isocode";
+    public static final String ATTR_FULL_NAME = "fullname";
+    public static final String ATTR_NAMESPACE = "namespace";
+    public static final String ATTR_EXCHANGE_CODE = "exchange-code";
     public static final String ATTR_SMALLEST_FRACTION = "smallest-fraction";
     public static final String ATTR_LOCAL_SYMBOL = "local-symbol";
     /**
@@ -48,8 +48,8 @@ public class CommoditiesXmlHandler extends DefaultHandler {
 
     private CommoditiesDbAdapter mCommoditiesDbAdapter;
 
-    public CommoditiesXmlHandler(SQLiteDatabase db){
-        if (db == null){
+    public CommoditiesXmlHandler(SQLiteDatabase db) {
+        if (db == null) {
             mCommoditiesDbAdapter = GnuCashApplication.getCommoditiesDbAdapter();
         } else {
             mCommoditiesDbAdapter = new CommoditiesDbAdapter(db);

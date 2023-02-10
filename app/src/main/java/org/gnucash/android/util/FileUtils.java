@@ -42,6 +42,7 @@ public final class FileUtils {
 
     /**
      * Moves a file from <code>src</code> to <code>dst</code>
+     *
      * @param src Absolute path to the source file
      * @param dst Absolute path to the destination file
      * @throws IOException if the file could not be moved.
@@ -64,7 +65,8 @@ public final class FileUtils {
     /**
      * Move file from a location on disk to an outputstream.
      * The outputstream could be for a URI in the Storage Access Framework
-     * @param src Input file (usually newly exported file)
+     *
+     * @param src          Input file (usually newly exported file)
      * @param outputStream Output stream to write to
      * @throws IOException if error occurred while moving the file
      */

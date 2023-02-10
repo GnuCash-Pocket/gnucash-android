@@ -27,25 +27,27 @@ import java.sql.Timestamp;
  * Encapsulation of the parameters used for exporting transactions.
  * The parameters are determined by the user in the export dialog and are then transmitted to the asynchronous task which
  * actually performs the export.
- * @see ExportFormFragment
- * @see ExportAsyncTask
  *
  * @author Ngewi Fet <ngewif@gmail.com>
+ * @see ExportFormFragment
+ * @see ExportAsyncTask
  */
 public class ExportParams {
     /**
      * Options for the destination of the exported transctions file.
      * It could be stored on the {@link #SD_CARD} or exported through another program via {@link #SHARING}
      */
-    public enum ExportTarget {SD_CARD("SD Card"), SHARING("External Service"),
+    public enum ExportTarget {
+        SD_CARD("SD Card"), SHARING("External Service"),
         DROPBOX("Dropbox"), GOOGLE_DRIVE("Google Drive"), OWNCLOUD("ownCloud"),
         URI("Sync Service");
         private String mDescription;
-        ExportTarget(String description){
+
+        ExportTarget(String description) {
             mDescription = description;
         }
 
-        public String getDescription(){
+        public String getDescription() {
             return mDescription;
         }
     }
@@ -54,7 +56,7 @@ public class ExportParams {
      * Format to use for the exported transactions
      * By default, the {@link ExportFormat#QIF} format is used
      */
-    private ExportFormat mExportFormat      = ExportFormat.QIF;
+    private ExportFormat mExportFormat = ExportFormat.QIF;
 
     /**
      * All transactions created after this date will be exported
@@ -70,7 +72,7 @@ public class ExportParams {
     /**
      * Destination for the exported transactions
      */
-    private ExportTarget mExportTarget      = ExportTarget.SHARING;
+    private ExportTarget mExportTarget = ExportTarget.SHARING;
 
     /**
      * Location to save the file name being exported.
@@ -85,14 +87,16 @@ public class ExportParams {
 
     /**
      * Creates a new set of paramters and specifies the export format
+     *
      * @param format Format to use when exporting the transactions
      */
-    public ExportParams(ExportFormat format){
+    public ExportParams(ExportFormat format) {
         setExportFormat(format);
     }
 
     /**
      * Return the format used for exporting
+     *
      * @return {@link ExportFormat}
      */
     public ExportFormat getExportFormat() {
@@ -101,6 +105,7 @@ public class ExportParams {
 
     /**
      * Set the export format
+     *
      * @param exportFormat {@link ExportFormat}
      */
     public void setExportFormat(ExportFormat exportFormat) {
@@ -110,22 +115,25 @@ public class ExportParams {
     /**
      * Return date from which to start exporting transactions
      * <p>Transactions created or modified after this timestamp will be exported</p>
+     *
      * @return Timestamp from which to export
      */
-    public Timestamp getExportStartTime(){
+    public Timestamp getExportStartTime() {
         return mExportStartTime;
     }
 
     /**
      * Set the timestamp after which all transactions created/modified will be exported
+     *
      * @param exportStartTime Timestamp
      */
-    public void setExportStartTime(Timestamp exportStartTime){
+    public void setExportStartTime(Timestamp exportStartTime) {
         this.mExportStartTime = exportStartTime;
     }
 
     /**
      * Returns flag whether transactions should be deleted after export
+     *
      * @return <code>true</code> if all transactions will be deleted, <code>false</code> otherwise
      */
     public boolean shouldDeleteTransactionsAfterExport() {
@@ -134,6 +142,7 @@ public class ExportParams {
 
     /**
      * Set flag to delete transactions after exporting is complete
+     *
      * @param deleteTransactions SEt to <code>true</code> if transactions should be deleted, false if not
      */
     public void setDeleteTransactionsAfterExport(boolean deleteTransactions) {
@@ -142,6 +151,7 @@ public class ExportParams {
 
     /**
      * Get the target for the exported file
+     *
      * @return {@link org.gnucash.android.export.ExportParams.ExportTarget}
      */
     public ExportTarget getExportTarget() {
@@ -150,6 +160,7 @@ public class ExportParams {
 
     /**
      * Set the target for the exported transactions
+     *
      * @param mExportTarget Target for exported transactions
      */
     public void setExportTarget(ExportTarget mExportTarget) {
@@ -160,30 +171,34 @@ public class ExportParams {
      * Return the location where the file should be exported to.
      * When used with {@link ExportTarget#URI}, the returned value will be a URI which can be parsed
      * with {@link Uri#parse(String)}
+     *
      * @return String representing export file destination.
      */
-    public String getExportLocation(){
+    public String getExportLocation() {
         return mExportLocation;
     }
 
     /**
      * Set the location where to export the file
+     *
      * @param exportLocation Destination of the export
      */
-    public void setExportLocation(String exportLocation){
+    public void setExportLocation(String exportLocation) {
         mExportLocation = exportLocation;
     }
 
     /**
      * Get the CSV-separator char
+     *
      * @return CSV-separator char
      */
-    public char getCsvSeparator(){
+    public char getCsvSeparator() {
         return mCsvSeparator;
     }
 
     /**
      * Set the CSV-separator char
+     *
      * @param separator CSV-separator char
      */
     public void setCsvSeparator(char separator) {
@@ -193,15 +208,16 @@ public class ExportParams {
     @Override
     public String toString() {
         return "Export all transactions created since " + TimestampHelper.getUtcStringFromTimestamp(mExportStartTime) + " UTC"
-                + " as "+ mExportFormat.name() + " to " + mExportTarget.name() + (mExportLocation != null ? " (" + mExportLocation +")" : "");
+                + " as " + mExportFormat.name() + " to " + mExportTarget.name() + (mExportLocation != null ? " (" + mExportLocation + ")" : "");
     }
 
     /**
      * Returns the export parameters formatted as CSV.
      * <p>The CSV format is: exportformat;exportTarget;shouldExportAllTransactions;shouldDeleteAllTransactions</p>
+     *
      * @return String containing CSV format of ExportParams
      */
-    public String toCsv(){
+    public String toCsv() {
         String separator = ";";
 
         return mExportFormat.name() + separator
@@ -213,16 +229,17 @@ public class ExportParams {
 
     /**
      * Parses csv generated by {@link #toCsv()} to create
+     *
      * @param csvParams String containing csv of params
      * @return ExportParams from the csv
      */
-    public static ExportParams parseCsv(String csvParams){
+    public static ExportParams parseCsv(String csvParams) {
         String[] tokens = csvParams.split(";");
         ExportParams params = new ExportParams(ExportFormat.valueOf(tokens[0]));
         params.setExportTarget(ExportTarget.valueOf(tokens[1]));
         params.setExportStartTime(TimestampHelper.getTimestampFromUtcString(tokens[2]));
         params.setDeleteTransactionsAfterExport(Boolean.parseBoolean(tokens[3]));
-        if (tokens.length == 5){
+        if (tokens.length == 5) {
             params.setExportLocation(tokens[4]);
         }
         return params;

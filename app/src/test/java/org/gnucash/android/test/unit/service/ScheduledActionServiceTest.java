@@ -74,7 +74,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Test the the scheduled actions service runs as expected
  */
-@RunWith(RobolectricTestRunner.class) //package is required so that resources can be found in dev mode
+@RunWith(RobolectricTestRunner.class)
+//package is required so that resources can be found in dev mode
 @Config(sdk = 21, packageName = "org.gnucash.android",
         shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
 public class ScheduledActionServiceTest {
@@ -88,7 +89,7 @@ public class ScheduledActionServiceTest {
     private static Transaction mTemplateTransaction;
     private TransactionsDbAdapter mTransactionsDbAdapter;
 
-    public void createAccounts(){
+    public void createAccounts() {
         try {
             String bookUID = GncXmlImporter.parse(GnuCashApplication.getAppContext().getResources().openRawResource(R.raw.default_accounts));
             BookUtils.loadBook(bookUID);
@@ -100,7 +101,7 @@ public class ScheduledActionServiceTest {
     }
 
     @BeforeClass
-    public static void makeAccounts(){
+    public static void makeAccounts() {
         mTemplateTransaction = new Transaction("Recurring Transaction");
         mTemplateTransaction.setTemplate(true);
 
@@ -108,7 +109,7 @@ public class ScheduledActionServiceTest {
     }
 
     @Before
-    public void setUp(){
+    public void setUp() {
         mDb = GnuCashApplication.getActiveDb();
         new CommoditiesDbAdapter(mDb); //initializes commodity static values
         mBaseAccount.setCommodity(Commodity.DEFAULT_COMMODITY);
@@ -130,7 +131,7 @@ public class ScheduledActionServiceTest {
     }
 
     @Test
-    public void disabledScheduledActions_shouldNotRun(){
+    public void disabledScheduledActions_shouldNotRun() {
         Recurrence recurrence = new Recurrence(PeriodType.WEEK);
         ScheduledAction scheduledAction1 = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
         scheduledAction1.setStartTime(System.currentTimeMillis() - 100000);
@@ -149,7 +150,7 @@ public class ScheduledActionServiceTest {
     }
 
     @Test
-    public void futureScheduledActions_shouldNotRun(){
+    public void futureScheduledActions_shouldNotRun() {
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
         scheduledAction.setStartTime(System.currentTimeMillis() + 100000);
         scheduledAction.setEnabled(true);
@@ -170,7 +171,7 @@ public class ScheduledActionServiceTest {
      * Transactions whose execution count has reached or exceeded the planned execution count
      */
     @Test
-    public void exceededExecutionCounts_shouldNotRun(){
+    public void exceededExecutionCounts_shouldNotRun() {
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
         scheduledAction.setActionUID(mActionUID);
         scheduledAction.setStartTime(new DateTime(2015, 5, 31, 14, 0).getMillis());
@@ -192,7 +193,7 @@ public class ScheduledActionServiceTest {
      * Test that normal scheduled transactions would lead to new transaction entries
      */
     @Test
-    public void missedScheduledTransactions_shouldBeGenerated(){
+    public void missedScheduledTransactions_shouldBeGenerated() {
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
         DateTime startTime = new DateTime(2016, 6, 6, 9, 0);
         scheduledAction.setStartTime(startTime.getMillis());
@@ -217,7 +218,7 @@ public class ScheduledActionServiceTest {
         assertThat(transactionsDbAdapter.getRecordsCount()).isEqualTo(7);
     }
 
-    public void endTimeInTheFuture_shouldExecuteOnlyUntilPresent(){
+    public void endTimeInTheFuture_shouldExecuteOnlyUntilPresent() {
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
         DateTime startTime = new DateTime(2016, 6, 6, 9, 0);
         scheduledAction.setStartTime(startTime.getMillis());
@@ -235,7 +236,7 @@ public class ScheduledActionServiceTest {
         ScheduledActionService.processScheduledActions(actions, mDb);
 
         int weeks = Weeks.weeksBetween(startTime, new DateTime(2016, 8, 29, 10, 0)).getWeeks();
-        int expectedTransactionCount = weeks/2; //multiplier from the PeriodType
+        int expectedTransactionCount = weeks / 2; //multiplier from the PeriodType
 
         assertThat(transactionsDbAdapter.getRecordsCount()).isEqualTo(expectedTransactionCount);
     }
@@ -247,7 +248,7 @@ public class ScheduledActionServiceTest {
      * <p>This holds only for transactions. Backups will be skipped</p>
      */
     @Test
-    public void scheduledTransactionsWithEndTimeInPast_shouldBeExecuted(){
+    public void scheduledTransactionsWithEndTimeInPast_shouldBeExecuted() {
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
         DateTime startTime = new DateTime(2016, 6, 6, 9, 0);
         scheduledAction.setStartTime(startTime.getMillis());
@@ -276,9 +277,9 @@ public class ScheduledActionServiceTest {
      * Test that only scheduled actions with action UIDs are processed
      */
     @Test //(expected = IllegalArgumentException.class)
-    public void recurringTransactions_shouldHaveScheduledActionUID(){
+    public void recurringTransactions_shouldHaveScheduledActionUID() {
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
-        DateTime startTime = new DateTime(2016, 7, 4, 12 ,0);
+        DateTime startTime = new DateTime(2016, 7, 4, 12, 0);
         scheduledAction.setStartTime(startTime.getMillis());
         scheduledAction.setRecurrence(PeriodType.MONTH, 1);
 
@@ -305,7 +306,7 @@ public class ScheduledActionServiceTest {
      * useful, so just one should be done.</p>
      */
     @Test
-    public void scheduledBackups_shouldRunOnlyOnce(){
+    public void scheduledBackups_shouldRunOnlyOnce() {
         ScheduledAction scheduledBackup = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
         scheduledBackup.setStartTime(LocalDateTime.now()
                 .minusMonths(4).minusDays(2).toDate().getTime());
@@ -350,7 +351,7 @@ public class ScheduledActionServiceTest {
      * <p>Tests for bug https://github.com/codinguser/gnucash-android/issues/583</p>
      */
     @Test
-    public void scheduledBackups_shouldNotRunBeforeNextScheduledExecution(){
+    public void scheduledBackups_shouldNotRunBeforeNextScheduledExecution() {
         ScheduledAction scheduledBackup = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
         scheduledBackup.setStartTime(
                 LocalDateTime.now().withDayOfWeek(DateTimeConstants.WEDNESDAY).toDate().getTime());
@@ -403,7 +404,7 @@ public class ScheduledActionServiceTest {
         // Create a transaction with a modified date previous to the last run
         Transaction transaction = new Transaction("Tandoori express");
         Split split = new Split(new Money("10", Commodity.DEFAULT_COMMODITY.getCurrencyCode()),
-                                mBaseAccount.getUID());
+                mBaseAccount.getUID());
         split.setType(TransactionType.DEBIT);
         transaction.addSplit(split);
         transaction.addSplit(split.createPair(mTransferAccount.getUID()));
@@ -431,14 +432,14 @@ public class ScheduledActionServiceTest {
      * Sets the transaction modified timestamp directly in the database.
      *
      * @param transactionUID UID of the transaction to set the modified timestamp.
-     * @param timestamp new modified timestamp.
+     * @param timestamp      new modified timestamp.
      */
     private void setTransactionInDbModifiedTimestamp(String transactionUID, Timestamp timestamp) {
         ContentValues values = new ContentValues();
         values.put(DatabaseSchema.TransactionEntry.COLUMN_MODIFIED_AT,
-                   TimestampHelper.getUtcStringFromTimestamp(timestamp));
+                TimestampHelper.getUtcStringFromTimestamp(timestamp));
         mTransactionsDbAdapter.updateTransaction(values, "uid = ?",
-                                                 new String[]{transactionUID});
+                new String[]{transactionUID});
     }
 
     /**
@@ -485,7 +486,7 @@ public class ScheduledActionServiceTest {
     }
 
     @After
-    public void tearDown(){
+    public void tearDown() {
         TransactionsDbAdapter.getInstance().deleteAllRecords();
     }
 }

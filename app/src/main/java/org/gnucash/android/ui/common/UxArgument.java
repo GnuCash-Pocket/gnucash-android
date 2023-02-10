@@ -25,37 +25,37 @@ public final class UxArgument {
     /**
      * Key for passing the transaction GUID as parameter in a bundle
      */
-    public static final String SELECTED_TRANSACTION_UID  = "selected_transaction_uid";
+    public static final String SELECTED_TRANSACTION_UID = "selected_transaction_uid";
 
     /**
-	 * Key for passing list of IDs selected transactions as an argument in a bundle or intent
-	 */
-	public static final String SELECTED_TRANSACTION_IDS = "selected_transactions";
+     * Key for passing list of IDs selected transactions as an argument in a bundle or intent
+     */
+    public static final String SELECTED_TRANSACTION_IDS = "selected_transactions";
 
     /**
-	 * Key for the origin account as argument when moving accounts
-	 */
-	public static final String ORIGIN_ACCOUNT_UID = "origin_acccount_uid";
+     * Key for the origin account as argument when moving accounts
+     */
+    public static final String ORIGIN_ACCOUNT_UID = "origin_acccount_uid";
 
     /**
      * Key for checking whether the passcode is enabled or not
      */
-    public static final String ENABLED_PASSCODE         = "enabled_passcode";
+    public static final String ENABLED_PASSCODE = "enabled_passcode";
 
     /**
      * Key for disabling the passcode
      */
-    public static final String DISABLE_PASSCODE         = "disable_passcode";
+    public static final String DISABLE_PASSCODE = "disable_passcode";
 
     /**
      * Key for storing the passcode
      */
-    public static final String PASSCODE                 = "passcode";
+    public static final String PASSCODE = "passcode";
 
     /**
      * Key for skipping the passcode screen. Use this only when there is no other choice.
      */
-    public static final String SKIP_PASSCODE_SCREEN     = "skip_passcode_screen";
+    public static final String SKIP_PASSCODE_SCREEN = "skip_passcode_screen";
 
     /**
      * Amount passed as a string
@@ -113,7 +113,7 @@ public final class UxArgument {
     public static final String BOOK_UID = "book_uid";
 
     //prevent initialization of instances of this class
-    private UxArgument(){
+    private UxArgument() {
         //prevent even the native class from calling the ctor
         throw new AssertionError();
     }

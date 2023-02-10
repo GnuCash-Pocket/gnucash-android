@@ -35,11 +35,12 @@ import java.util.List;
  *
  * @author Semyannikov Gleb <nightdevgame@gmail.com>
  */
-public class CsvAccountExporter extends Exporter{
+public class CsvAccountExporter extends Exporter {
     private char mCsvSeparator;
 
     /**
      * Construct a new exporter with export parameters
+     *
      * @param params Parameters for the export
      */
     public CsvAccountExporter(ExportParams params) {
@@ -51,8 +52,9 @@ public class CsvAccountExporter extends Exporter{
     /**
      * Overloaded constructor.
      * Creates an exporter with an already open database instance.
+     *
      * @param params Parameters for the export
-     * @param db SQLite database
+     * @param db     SQLite database
      */
     public CsvAccountExporter(ExportParams params, SQLiteDatabase db) {
         super(params, db);
@@ -65,7 +67,7 @@ public class CsvAccountExporter extends Exporter{
         String outputFile = getExportCacheFilePath();
         try (CsvWriter writer = new CsvWriter(new FileWriter(outputFile), mCsvSeparator + "")) {
             generateExport(writer);
-        } catch (IOException ex){
+        } catch (IOException ex) {
             Crashlytics.log("Error exporting CSV");
             Crashlytics.logException(ex);
             throw new ExporterException(mExportParams, ex);
@@ -76,6 +78,7 @@ public class CsvAccountExporter extends Exporter{
 
     /**
      * Writes out all the accounts in the system as CSV to the provided writer
+     *
      * @param csvWriter Destination for the CSV export
      * @throws ExporterException if an error occurred while writing to the stream
      */
@@ -84,7 +87,7 @@ public class CsvAccountExporter extends Exporter{
             List<String> names = Arrays.asList(mContext.getResources().getStringArray(R.array.csv_account_headers));
             List<Account> accounts = mAccountsDbAdapter.getAllRecords();
 
-            for(int i = 0; i < names.size(); i++) {
+            for (int i = 0; i < names.size(); i++) {
                 csvWriter.writeToken(names.get(i));
             }
 
@@ -104,7 +107,7 @@ public class CsvAccountExporter extends Exporter{
                 csvWriter.writeToken(account.isHidden() ? "T" : "F");
 
                 csvWriter.writeToken("F"); //Tax
-                csvWriter.writeEndToken(account.isPlaceholderAccount() ? "T": "F");
+                csvWriter.writeEndToken(account.isPlaceholderAccount() ? "T" : "F");
             }
         } catch (IOException e) {
             Crashlytics.logException(e);

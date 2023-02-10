@@ -44,6 +44,7 @@ import org.gnucash.android.util.BookUtils;
  * Activity for displaying forms in the application.
  * The activity provides the standard close button, but it is up to the form fragments to display
  * menu options (e.g. for saving etc)
+ *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class FormActivity extends PasscodeLockActivity {
@@ -61,7 +62,7 @@ public class FormActivity extends PasscodeLockActivity {
 
         //if a parameter was passed to open an account within a specific book, then switch
         String bookUID = getIntent().getStringExtra(UxArgument.BOOK_UID);
-        if (bookUID != null && !bookUID.equals(BooksDbAdapter.getInstance().getActiveBookUID())){
+        if (bookUID != null && !bookUID.equals(BooksDbAdapter.getInstance().getActiveBookUID())) {
             BookUtils.activateBook(bookUID);
         }
 
@@ -69,7 +70,7 @@ public class FormActivity extends PasscodeLockActivity {
         setSupportActionBar(toolbar);
 
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
-        assert(actionBar != null);
+        assert (actionBar != null);
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeAsUpIndicator(R.drawable.ic_close_white_24dp);
@@ -79,7 +80,7 @@ public class FormActivity extends PasscodeLockActivity {
         FormType formType = FormType.valueOf(formtypeString);
 
         mAccountUID = intent.getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
-        if (mAccountUID == null){
+        if (mAccountUID == null) {
             mAccountUID = intent.getStringExtra(UxArgument.PARENT_ACCOUNT_UID);
         }
         if (mAccountUID != null) {
@@ -88,7 +89,7 @@ public class FormActivity extends PasscodeLockActivity {
             if (Build.VERSION.SDK_INT > 20)
                 getWindow().setStatusBarColor(GnuCashApplication.darken(colorCode));
         }
-        switch (formType){
+        switch (formType) {
             case ACCOUNT:
                 showAccountFormFragment(intent.getExtras());
                 break;
@@ -122,7 +123,7 @@ public class FormActivity extends PasscodeLockActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case android.R.id.home:
                 setResult(RESULT_CANCELED);
                 finish();
@@ -136,6 +137,7 @@ public class FormActivity extends PasscodeLockActivity {
      * Return the GUID of the account for which the form is displayed.
      * If the form is a transaction form, the transaction is created within that account. If it is
      * an account form, then the GUID is the parent account
+     *
      * @return GUID of account
      */
     public String getCurrentAccountUID() {
@@ -144,10 +146,11 @@ public class FormActivity extends PasscodeLockActivity {
 
     /**
      * Shows the form for creating/editing accounts
+     *
      * @param args Arguments to use for initializing the form.
      *             This could be an account to edit or a preset for the parent account
      */
-    private void showAccountFormFragment(Bundle args){
+    private void showAccountFormFragment(Bundle args) {
         AccountFormFragment accountFormFragment = AccountFormFragment.newInstance();
         accountFormFragment.setArguments(args);
         showFormFragment(accountFormFragment);
@@ -155,9 +158,10 @@ public class FormActivity extends PasscodeLockActivity {
 
     /**
      * Loads the transaction insert/edit fragment and passes the arguments
+     *
      * @param args Bundle arguments to be passed to the fragment
      */
-    private void showTransactionFormFragment(Bundle args){
+    private void showTransactionFormFragment(Bundle args) {
         TransactionFormFragment transactionFormFragment = new TransactionFormFragment();
         transactionFormFragment.setArguments(args);
         showFormFragment(transactionFormFragment);
@@ -165,9 +169,10 @@ public class FormActivity extends PasscodeLockActivity {
 
     /**
      * Loads the export form fragment and passes the arguments
+     *
      * @param args Bundle arguments
      */
-    private void showExportFormFragment(Bundle args){
+    private void showExportFormFragment(Bundle args) {
         ExportFormFragment exportFragment = new ExportFormFragment();
         exportFragment.setArguments(args);
         showFormFragment(exportFragment);
@@ -175,18 +180,20 @@ public class FormActivity extends PasscodeLockActivity {
 
     /**
      * Load the split editor fragment
+     *
      * @param args View arguments
      */
-    private void showSplitEditorFragment(Bundle args){
+    private void showSplitEditorFragment(Bundle args) {
         SplitEditorFragment splitEditor = SplitEditorFragment.newInstance(args);
         showFormFragment(splitEditor);
     }
 
     /**
      * Load the budget form
+     *
      * @param args View arguments
      */
-    private void showBudgetFormFragment(Bundle args){
+    private void showBudgetFormFragment(Bundle args) {
         BudgetFormFragment budgetFormFragment = new BudgetFormFragment();
         budgetFormFragment.setArguments(args);
         showFormFragment(budgetFormFragment);
@@ -194,18 +201,20 @@ public class FormActivity extends PasscodeLockActivity {
 
     /**
      * Load the budget amount editor fragment
+     *
      * @param args Arguments
      */
-    private void showBudgetAmountEditorFragment(Bundle args){
+    private void showBudgetAmountEditorFragment(Bundle args) {
         BudgetAmountEditorFragment fragment = BudgetAmountEditorFragment.newInstance(args);
         showFormFragment(fragment);
     }
 
     /**
      * Loads the fragment into the fragment container, replacing whatever was there before
+     *
      * @param fragment Fragment to be displayed
      */
-    private void showFormFragment(Fragment fragment){
+    private void showFormFragment(Fragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager
                 .beginTransaction();

@@ -26,6 +26,7 @@ import org.gnucash.android.util.BackupManager;
 /**
  * Receiver which is called when the device finishes booting.
  * It schedules periodic jobs.
+ *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class BootReceiver extends BroadcastReceiver {

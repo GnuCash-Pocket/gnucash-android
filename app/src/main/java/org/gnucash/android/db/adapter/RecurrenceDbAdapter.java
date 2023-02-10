@@ -41,7 +41,7 @@ public class RecurrenceDbAdapter extends DatabaseAdapter<Recurrence> {
     /**
      * Opens the database adapter with an existing database
      *
-     * @param db        SQLiteDatabase object
+     * @param db SQLiteDatabase object
      */
     public RecurrenceDbAdapter(SQLiteDatabase db) {
         super(db, RecurrenceEntry.TABLE_NAME, new String[]{
@@ -53,7 +53,7 @@ public class RecurrenceDbAdapter extends DatabaseAdapter<Recurrence> {
         });
     }
 
-    public static RecurrenceDbAdapter getInstance(){
+    public static RecurrenceDbAdapter getInstance() {
         return GnuCashApplication.getRecurrenceDbAdapter();
     }
 
@@ -133,7 +133,7 @@ public class RecurrenceDbAdapter extends DatabaseAdapter<Recurrence> {
             }
             builder.append(",");
         }
-        builder.deleteCharAt(builder.length()-1);
+        builder.deleteCharAt(builder.length() - 1);
         return builder.toString();
     }
 

@@ -39,8 +39,9 @@ public class QualifiedAccountNameCursorAdapter extends SimpleCursorAdapter {
 
     /**
      * Initialize the Cursor adapter for account names using default spinner views
+     *
      * @param context Application context
-     * @param cursor Cursor to accounts
+     * @param cursor  Cursor to accounts
      */
     public QualifiedAccountNameCursorAdapter(Context context, Cursor cursor) {
         super(context, android.R.layout.simple_spinner_item, cursor,
@@ -51,8 +52,9 @@ public class QualifiedAccountNameCursorAdapter extends SimpleCursorAdapter {
 
     /**
      * Overloaded constructor. Specifies the view to use for displaying selected spinner text
-     * @param context Application context
-     * @param cursor Cursor to account data
+     *
+     * @param context             Application context
+     * @param cursor              Cursor to account data
      * @param selectedSpinnerItem Layout resource for selected item text
      */
     public QualifiedAccountNameCursorAdapter(Context context, Cursor cursor,
@@ -70,22 +72,23 @@ public class QualifiedAccountNameCursorAdapter extends SimpleCursorAdapter {
         textView.setEllipsize(TextUtils.TruncateAt.MIDDLE);
 
         Integer isFavorite = cursor.getInt(cursor.getColumnIndex(DatabaseSchema.AccountEntry.COLUMN_FAVORITE));
-        if(isFavorite == 0) {
-            textView.setCompoundDrawablesWithIntrinsicBounds(0,0,0,0);
+        if (isFavorite == 0) {
+            textView.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
         } else {
-            textView.setCompoundDrawablesWithIntrinsicBounds(0,0,R.drawable.ic_star_black_18dp,0);
+            textView.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_star_black_18dp, 0);
         }
     }
 
     /**
      * Returns the position of a given account in the adapter
+     *
      * @param accountUID GUID of the account
      * @return Position of the account or -1 if the account is not found
      */
-    public int getPosition(@NonNull String accountUID){
+    public int getPosition(@NonNull String accountUID) {
         long accountId = AccountsDbAdapter.getInstance().getID(accountUID);
         for (int pos = 0; pos < getCount(); pos++) {
-            if (getItemId(pos) == accountId){
+            if (getItemId(pos) == accountId) {
                 return pos;
             }
         }

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,12 +26,14 @@
     android:layout_marginRight="5dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="@dimen/card_min_height">
 
-        <include android:id="@+id/list_item_2_lines"
+        <include
+            android:id="@+id/list_item_2_lines"
             layout="@layout/list_item_2_lines"
             android:paddingTop="6dp"
             android:layout_height="wrap_content"
@@ -41,7 +42,7 @@
             android:layout_marginTop="6dp"
             android:layout_marginBottom="@dimen/dialog_padding"
             android:layout_marginLeft="@dimen/dialog_padding"
-            android:layout_marginRight="52dp"/>
+            android:layout_marginRight="52dp" />
 
         <ImageView
             android:id="@+id/options_menu"
@@ -80,7 +81,7 @@
             tools:text="$ 45"
             android:layout_alignBottom="@id/options_menu"
             android:layout_toLeftOf="@id/options_menu"
-            android:layout_marginRight="@dimen/dialog_padding"/>
+            android:layout_marginRight="@dimen/dialog_padding" />
 
         <TextView
             android:id="@+id/transaction_date"
@@ -93,6 +94,6 @@
             android:gravity="left|bottom|start"
             android:textSize="14sp"
             android:textColor="@android:color/darker_gray"
-            tools:text="Sat, 04 July"/>
+            tools:text="Sat, 04 July" />
     </RelativeLayout>
 </android.support.v7.widget.CardView>

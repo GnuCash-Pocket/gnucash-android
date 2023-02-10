@@ -99,7 +99,8 @@ public class OwnCloudExportTest {
             AccountsActivity.class);
 
 
-    @Rule public GrantPermissionRule animationPermissionsRule = GrantPermissionRule.grant(Manifest.permission.SET_ANIMATION_SCALE);
+    @Rule
+    public GrantPermissionRule animationPermissionsRule = GrantPermissionRule.grant(Manifest.permission.SET_ANIMATION_SCALE);
 
     @Before
     public void setUp() throws Exception {
@@ -150,9 +151,10 @@ public class OwnCloudExportTest {
 
     /**
      * Test if there is an active internet connection on the device/emulator
+     *
      * @return {@code true} is an internet connection is available, {@code false} otherwise
      */
-    public static boolean hasActiveInternetConnection(){
+    public static boolean hasActiveInternetConnection() {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) GnuCashApplication.getAppContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
@@ -206,6 +208,7 @@ public class OwnCloudExportTest {
 
     /**
      * Checks that a specific toast message is displayed
+     *
      * @param toastString String that should be displayed
      */
     private void assertToastDisplayed(String toastString) {
@@ -213,8 +216,10 @@ public class OwnCloudExportTest {
                 .inRoot(withDecorView(not(is(mActivityRule.getActivity().getWindow().getDecorView()))))
                 .check(matches(isDisplayed()));
     }
+
     /**
      * Sleep the thread for a specified period
+     *
      * @param millis Duration to sleep in milliseconds
      */
     private void sleep(long millis) {

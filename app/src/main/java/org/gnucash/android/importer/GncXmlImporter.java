@@ -43,6 +43,7 @@ public class GncXmlImporter {
 
     /**
      * Parse GnuCash XML input and populates the database
+     *
      * @param gncXmlInputStream InputStream source of the GnuCash XML file
      * @return GUID of the book into which the XML was imported
      */
@@ -52,11 +53,11 @@ public class GncXmlImporter {
         XMLReader xr = sp.getXMLReader();
 
         BufferedInputStream bos;
-        PushbackInputStream pb = new PushbackInputStream( gncXmlInputStream, 2 ); //we need a pushbackstream to look ahead
-        byte [] signature = new byte[2];
-        pb.read( signature ); //read the signature
-        pb.unread( signature ); //push back the signature to the stream
-        if( signature[ 0 ] == (byte) 0x1f && signature[ 1 ] == (byte) 0x8b ) //check if matches standard gzip magic number
+        PushbackInputStream pb = new PushbackInputStream(gncXmlInputStream, 2); //we need a pushbackstream to look ahead
+        byte[] signature = new byte[2];
+        pb.read(signature); //read the signature
+        pb.unread(signature); //push back the signature to the stream
+        if (signature[0] == (byte) 0x1f && signature[1] == (byte) 0x8b) //check if matches standard gzip magic number
             bos = new BufferedInputStream(new GZIPInputStream(pb));
         else
             bos = new BufferedInputStream(pb);
@@ -68,7 +69,7 @@ public class GncXmlImporter {
         long startTime = System.nanoTime();
         xr.parse(new InputSource(bos));
         long endTime = System.nanoTime();
-        Log.d(GncXmlImporter.class.getSimpleName(), String.format("%d ns spent on importing the file", endTime-startTime));
+        Log.d(GncXmlImporter.class.getSimpleName(), String.format("%d ns spent on importing the file", endTime - startTime));
 
         String bookUID = handler.getBookUID();
         PreferencesHelper.setLastExportTime(

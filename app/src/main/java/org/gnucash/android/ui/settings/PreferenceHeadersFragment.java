@@ -23,6 +23,7 @@ import org.gnucash.android.R;
 
 /**
  * Fragment for displaying preference headers
+ *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class PreferenceHeadersFragment extends PreferenceFragmentCompat {

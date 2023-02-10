@@ -33,8 +33,7 @@ public class DisableAnimationsRule implements TestRule {
 
             IBinder windowManagerBinder = (IBinder) getService.invoke(null, "window");
             mWindowManagerObject = asInterface.invoke(null, windowManagerBinder);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to access animation methods", e);
         }
     }
@@ -45,8 +44,11 @@ public class DisableAnimationsRule implements TestRule {
             @Override
             public void evaluate() throws Throwable {
                 setAnimationScaleFactors(0.0f);
-                try { statement.evaluate(); }
-                finally { setAnimationScaleFactors(1.0f); }
+                try {
+                    statement.evaluate();
+                } finally {
+                    setAnimationScaleFactors(1.0f);
+                }
             }
         };
     }

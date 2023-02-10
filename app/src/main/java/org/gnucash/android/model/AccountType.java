@@ -17,7 +17,7 @@ public enum AccountType {
      */
     private TransactionType mNormalBalance = TransactionType.CREDIT;
 
-    AccountType(TransactionType normalBalance){
+    AccountType(TransactionType normalBalance) {
         this.mNormalBalance = normalBalance;
     }
 
@@ -25,15 +25,16 @@ public enum AccountType {
         //nothing to see here, move along
     }
 
-    public boolean hasDebitNormalBalance(){
+    public boolean hasDebitNormalBalance() {
         return mNormalBalance == TransactionType.DEBIT;
     }
 
     /**
      * Returns the type of normal balance this account possesses
+     *
      * @return TransactionType balance of the account type
      */
-    public TransactionType getNormalBalanceType(){
+    public TransactionType getNormalBalanceType() {
         return mNormalBalance;
     }
 }

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,7 +33,8 @@
         android:orientation="vertical"
         android:minHeight="@dimen/card_min_height">
 
-        <include android:id="@+id/list_item_2_lines"
+        <include
+            android:id="@+id/list_item_2_lines"
             layout="@layout/list_item_2_lines"
             android:paddingTop="6dp"
             android:layout_height="wrap_content"
@@ -42,7 +42,7 @@
             android:layout_toRightOf="@id/account_color_strip"
             android:layout_marginTop="@dimen/dialog_padding"
             android:layout_marginLeft="@dimen/dialog_padding"
-            android:layout_marginRight="@dimen/dialog_padding"/>
+            android:layout_marginRight="@dimen/dialog_padding" />
 
         <TextView
             android:id="@+id/budget_recurrence"
@@ -53,11 +53,12 @@
             android:gravity="left|start"
             android:layout_marginLeft="@dimen/dialog_padding"
             android:layout_marginRight="@dimen/dialog_padding"
-            tools:text="$2,500 monthly until 02/14"/>
+            tools:text="$2,500 monthly until 02/14" />
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
             <ImageView
                 android:id="@+id/options_menu"
                 android:layout_width="48dp"
@@ -72,13 +73,15 @@
                 android:src="@drawable/ic_more_vert_black_24dp"
                 tools:ignore="ContentDescription" />
 
-            <LinearLayout android:id="@+id/budget_progress_layout"
+            <LinearLayout
+                android:id="@+id/budget_progress_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_toLeftOf="@id/options_menu"
                 android:layout_marginRight="@dimen/dialog_padding"
                 android:layout_marginLeft="@dimen/dialog_padding"
                 android:orientation="vertical">
+
                 <TextView
                     android:id="@+id/budget_amount"
                     android:layout_width="match_parent"
@@ -88,7 +91,7 @@
                     android:textSize="18sp"
                     android:gravity="right"
                     android:textColor="@android:color/black"
-                    tools:text="$ 2000 of $ 2,500"/>
+                    tools:text="$ 2000 of $ 2,500" />
 
                 <ProgressBar
                     android:id="@+id/budget_indicator"
@@ -99,9 +102,9 @@
                     android:max="100"
                     android:indeterminate="false"
                     tools:background="@color/account_gold"
-                    android:paddingBottom="4dp"/>
+                    android:paddingBottom="4dp" />
             </LinearLayout>
 
         </RelativeLayout>
-</LinearLayout>
+    </LinearLayout>
 </android.support.v7.widget.CardView>

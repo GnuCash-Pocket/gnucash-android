@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2012 - 2015 Ngewi Fet <ngewif@gmail.com>
  
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,15 +23,18 @@
     android:showDividers="middle">
 
     <!-- placeholder, allows the divider to be displayed -->
-    <View android:layout_width="match_parent"
+    <View
+        android:layout_width="match_parent"
         android:layout_height="0dp" />
 
-    <LinearLayout style="buttonBarStyle"
+    <LinearLayout
+        style="buttonBarStyle"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"        
+        android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <Button android:id="@+id/btn_cancel"
+        <Button
+            android:id="@+id/btn_cancel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -40,7 +42,8 @@
             android:textColor="@color/theme_accent"
             android:text="@string/btn_cancel" />
 
-        <Button android:id="@+id/btn_save"
+        <Button
+            android:id="@+id/btn_save"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"

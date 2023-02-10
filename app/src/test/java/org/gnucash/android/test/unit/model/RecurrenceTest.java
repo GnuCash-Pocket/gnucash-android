@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class RecurrenceTest {
 
     @Test
-    public void settingCount_shouldComputeCorrectEndTime(){
+    public void settingCount_shouldComputeCorrectEndTime() {
         Recurrence recurrence = new Recurrence(PeriodType.MONTH);
 
         DateTime startTime = new DateTime(2015, 10, 5, 0, 0);
@@ -46,7 +46,7 @@ public class RecurrenceTest {
      * When the end date of a recurrence is set, we should be able to correctly get the number of occurrences
      */
     @Test
-    public void testRecurrenceCountComputation(){
+    public void testRecurrenceCountComputation() {
         Recurrence recurrence = new Recurrence(PeriodType.MONTH);
 
         DateTime start = new DateTime(2015, 10, 5, 0, 0);

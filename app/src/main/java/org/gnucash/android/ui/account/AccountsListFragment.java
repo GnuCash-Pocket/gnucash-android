@@ -83,8 +83,10 @@ public class AccountsListFragment extends Fragment implements
         android.support.v7.widget.SearchView.OnCloseListener {
 
     AccountRecyclerAdapter mAccountRecyclerAdapter;
-    @BindView(R.id.account_recycler_view)  EmptyRecyclerView mRecyclerView;
-    @BindView(R.id.empty_view) TextView mEmptyTextView;
+    @BindView(R.id.account_recycler_view)
+    EmptyRecyclerView mRecyclerView;
+    @BindView(R.id.empty_view)
+    TextView mEmptyTextView;
 
     /**
      * Describes the kinds of accounts that should be loaded in the accounts list.
@@ -135,7 +137,7 @@ public class AccountsListFragment extends Fragment implements
      */
     private android.support.v7.widget.SearchView mSearchView;
 
-    public static AccountsListFragment newInstance(DisplayMode displayMode){
+    public static AccountsListFragment newInstance(DisplayMode displayMode) {
         AccountsListFragment fragment = new AccountsListFragment();
         fragment.mDisplayMode = displayMode;
         return fragment;
@@ -151,7 +153,7 @@ public class AccountsListFragment extends Fragment implements
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setEmptyView(mEmptyTextView);
 
-        switch (mDisplayMode){
+        switch (mDisplayMode) {
 
             case TOP_LEVEL:
                 mEmptyTextView.setText(R.string.label_no_accounts);
@@ -279,7 +281,7 @@ public class AccountsListFragment extends Fragment implements
             SearchManager searchManager =
                     (SearchManager) GnuCashApplication.getAppContext().getSystemService(Context.SEARCH_SERVICE);
             mSearchView = (android.support.v7.widget.SearchView)
-                MenuItemCompat.getActionView(menu.findItem(R.id.menu_search));
+                    MenuItemCompat.getActionView(menu.findItem(R.id.menu_search));
             if (mSearchView == null)
                 return;
 
@@ -329,9 +331,10 @@ public class AccountsListFragment extends Fragment implements
     /**
      * Opens a new activity for creating or editing an account.
      * If the <code>accountId</code> &lt; 1, then create else edit the account.
+     *
      * @param accountId Long record ID of account to be edited. Pass 0 to create a new account.
      */
-    public void openCreateOrEditActivity(long accountId){
+    public void openCreateOrEditActivity(long accountId) {
         Intent editAccountIntent = new Intent(AccountsListFragment.this.getActivity(), FormActivity.class);
         editAccountIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
         editAccountIntent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountsDbAdapter.getUID(accountId));
@@ -345,7 +348,7 @@ public class AccountsListFragment extends Fragment implements
         Bundle arguments = getArguments();
         String accountUID = arguments == null ? null : arguments.getString(UxArgument.PARENT_ACCOUNT_UID);
 
-        if (mCurrentFilter != null){
+        if (mCurrentFilter != null) {
             return new AccountsCursorLoader(getActivity(), mCurrentFilter);
         } else {
             return new AccountsCursorLoader(this.getActivity(), accountUID, mDisplayMode);
@@ -400,6 +403,7 @@ public class AccountsListFragment extends Fragment implements
      * <p>By default it loads only top-level accounts (accounts which have no parent or have GnuCash ROOT account as parent.
      * By submitting a parent account ID in the constructor parameter, it will load child accounts of that parent.</p>
      * <p>Class must be static because the Android loader framework requires it to be so</p>
+     *
      * @author Ngewi Fet <ngewif@gmail.com>
      */
     private static final class AccountsCursorLoader extends DatabaseCursorLoader {
@@ -411,7 +415,8 @@ public class AccountsListFragment extends Fragment implements
          * Initializes the loader to load accounts from the database.
          * If the <code>parentAccountId <= 0</code> then only top-level accounts are loaded.
          * Else only the child accounts of the <code>parentAccountId</code> will be loaded
-         * @param context Application context
+         *
+         * @param context          Application context
          * @param parentAccountUID GUID of the parent account
          */
         public AccountsCursorLoader(Context context, String parentAccountUID, DisplayMode displayMode) {
@@ -423,10 +428,11 @@ public class AccountsListFragment extends Fragment implements
         /**
          * Initializes the loader with a filter for account names.
          * Only accounts whose name match the filter will be loaded.
+         *
          * @param context Application context
-         * @param filter Account name filter string
+         * @param filter  Account name filter string
          */
-        public AccountsCursorLoader(Context context, String filter){
+        public AccountsCursorLoader(Context context, String filter) {
             super(context);
             mFilter = filter;
         }
@@ -436,16 +442,16 @@ public class AccountsListFragment extends Fragment implements
             mDatabaseAdapter = AccountsDbAdapter.getInstance();
             Cursor cursor;
 
-            if (mFilter != null){
-                cursor = ((AccountsDbAdapter)mDatabaseAdapter)
+            if (mFilter != null) {
+                cursor = ((AccountsDbAdapter) mDatabaseAdapter)
                         .fetchAccounts(DatabaseSchema.AccountEntry.COLUMN_HIDDEN + "= 0 AND "
-                                + DatabaseSchema.AccountEntry.COLUMN_NAME + " LIKE '%" + mFilter + "%'",
+                                        + DatabaseSchema.AccountEntry.COLUMN_NAME + " LIKE '%" + mFilter + "%'",
                                 null, null);
             } else {
                 if (mParentAccountUID != null && mParentAccountUID.length() > 0)
                     cursor = ((AccountsDbAdapter) mDatabaseAdapter).fetchSubAccounts(mParentAccountUID);
                 else {
-                    switch (this.mDisplayMode){
+                    switch (this.mDisplayMode) {
                         case RECENT:
                             cursor = ((AccountsDbAdapter) mDatabaseAdapter).fetchRecentAccounts(10);
                             break;
@@ -470,8 +476,8 @@ public class AccountsListFragment extends Fragment implements
 
     class AccountRecyclerAdapter extends CursorRecyclerAdapter<AccountRecyclerAdapter.AccountViewHolder> {
 
-        public AccountRecyclerAdapter(Cursor cursor){
-           super(cursor);
+        public AccountRecyclerAdapter(Cursor cursor) {
+            super(cursor);
         }
 
         @Override
@@ -499,7 +505,7 @@ public class AccountsListFragment extends Fragment implements
 
             // add a summary of transactions to the account view
 
-                // Make sure the balance task is truly multithread
+            // Make sure the balance task is truly multithread
             new AccountBalanceTask(holder.accountBalance).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, accountUID);
 
             String accountColor = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_COLOR_CODE));
@@ -525,7 +531,7 @@ public class AccountsListFragment extends Fragment implements
 
             List<Budget> budgets = BudgetsDbAdapter.getInstance().getAccountBudgets(accountUID);
             //TODO: include fetch only active budgets
-            if (budgets.size() == 1){
+            if (budgets.size() == 1) {
                 Budget budget = budgets.get(0);
                 Money balance = mAccountsDbAdapter.getAccountBalance(accountUID, budget.getStartofCurrentPeriod(), budget.getEndOfCurrentPeriod());
                 double budgetProgress = balance.divide(budget.getAmount(accountUID)).asBigDecimal().doubleValue() * 100;
@@ -537,7 +543,7 @@ public class AccountsListFragment extends Fragment implements
             }
 
 
-            if (mAccountsDbAdapter.isFavoriteAccount(accountUID)){
+            if (mAccountsDbAdapter.isFavoriteAccount(accountUID)) {
                 holder.favoriteStatus.setImageResource(R.drawable.ic_star_black_24dp);
             } else {
                 holder.favoriteStatus.setImageResource(R.drawable.ic_star_border_black_24dp);
@@ -569,15 +575,23 @@ public class AccountsListFragment extends Fragment implements
         }
 
 
-        class AccountViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener{
-            @BindView(R.id.primary_text) TextView accountName;
-            @BindView(R.id.secondary_text) TextView description;
-            @BindView(R.id.account_balance) TextView accountBalance;
-            @BindView(R.id.create_transaction) ImageView createTransaction;
-            @BindView(R.id.favorite_status) ImageView favoriteStatus;
-            @BindView(R.id.options_menu) ImageView optionsMenu;
-            @BindView(R.id.account_color_strip) View colorStripView;
-            @BindView(R.id.budget_indicator) ProgressBar budgetIndicator;
+        class AccountViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener {
+            @BindView(R.id.primary_text)
+            TextView accountName;
+            @BindView(R.id.secondary_text)
+            TextView description;
+            @BindView(R.id.account_balance)
+            TextView accountBalance;
+            @BindView(R.id.create_transaction)
+            ImageView createTransaction;
+            @BindView(R.id.favorite_status)
+            ImageView favoriteStatus;
+            @BindView(R.id.options_menu)
+            ImageView optionsMenu;
+            @BindView(R.id.account_color_strip)
+            View colorStripView;
+            @BindView(R.id.budget_indicator)
+            ProgressBar budgetIndicator;
             long accoundId;
 
             public AccountViewHolder(View itemView) {
@@ -600,7 +614,7 @@ public class AccountsListFragment extends Fragment implements
 
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()){
+                switch (item.getItemId()) {
                     case R.id.context_menu_edit_accounts:
                         openCreateOrEditActivity(accoundId);
                         return true;

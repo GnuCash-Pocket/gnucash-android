@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
 Copyright (c) 2013 Ngewi Fet <ngewif@gmail.com>
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="?android:attr/listPreferredItemHeight"
     android:layout_width="match_parent"
@@ -33,7 +31,7 @@ limitations under the License.
         android:singleLine="true"
         android:ellipsize="end"
         tools:text="Transaction description"
-        style="@style/ListItemText"/>
+        style="@style/ListItemText" />
 
     <TextView
         android:id="@+id/secondary_text"
@@ -42,5 +40,5 @@ limitations under the License.
         android:singleLine="true"
         android:ellipsize="end"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        tools:text="Amount and date"/>
+        tools:text="Amount and date" />
 </LinearLayout>

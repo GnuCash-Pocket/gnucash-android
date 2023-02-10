@@ -26,16 +26,17 @@ public class Price extends BaseModel {
      */
     public static final String SOURCE_USER = "user:xfer-dialog";
 
-    public Price(){
+    public Price() {
         mDate = TimestampHelper.getTimestampFromNow();
     }
 
     /**
      * Create new instance with the GUIDs of the commodities
+     *
      * @param commodityUID GUID of the origin commodity
-     * @param currencyUID GUID of the target commodity
+     * @param currencyUID  GUID of the target commodity
      */
-    public Price(String commodityUID, String currencyUID){
+    public Price(String commodityUID, String currencyUID) {
         this.mCommodityUID = commodityUID;
         this.mCurrencyUID = currencyUID;
         mDate = TimestampHelper.getTimestampFromNow();
@@ -43,9 +44,10 @@ public class Price extends BaseModel {
 
     /**
      * Create new instance with the GUIDs of the commodities and the specified exchange rate.
+     *
      * @param commodity1UID GUID of the origin commodity
      * @param commodity2UID GUID of the target commodity
-     * @param exchangeRate exchange rate between the commodities
+     * @param exchangeRate  exchange rate between the commodities
      */
     public Price(String commodity1UID, String commodity2UID, BigDecimal exchangeRate) {
         this(commodity1UID, commodity2UID);
@@ -124,7 +126,7 @@ public class Price extends BaseModel {
             }
             long num2 = mValueDenom;
             long commonDivisor = 1;
-            for(;;) {
+            for (; ; ) {
                 long r = num1 % num2;
                 if (r == 0) {
                     commonDivisor = num2;

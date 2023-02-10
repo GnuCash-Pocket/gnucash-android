@@ -69,6 +69,7 @@ public class OwnCloudDialogFragment extends DialogFragment {
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
+     *
      * @return A new instance of fragment OwnCloudDialogFragment.
      */
     public static OwnCloudDialogFragment newInstance(Preference pref) {
@@ -227,7 +228,7 @@ public class OwnCloudDialogFragment extends DialogFragment {
     /**
      * Binds click listeners for the dialog buttons
      */
-    private void setListeners(){
+    private void setListeners() {
 
         mCancelButton.setOnClickListener(new View.OnClickListener() {
 
@@ -242,12 +243,12 @@ public class OwnCloudDialogFragment extends DialogFragment {
             @Override
             public void onClick(View v) {
                 // If data didn't change
-                if(mOkButton.getText().toString().equals(getString(R.string.btn_save)) &&
+                if (mOkButton.getText().toString().equals(getString(R.string.btn_save)) &&
                         mOC_server.equals(mServer.getText().toString().trim()) &&
                         mOC_username.equals(mUsername.getText().toString().trim()) &&
                         mOC_password.equals(mPassword.getText().toString().trim()) &&
                         mOC_dir.equals(mDir.getText().toString().trim())
-                        )
+                )
                     save();
                 else
                     checkData();

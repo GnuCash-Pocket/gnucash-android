@@ -60,6 +60,7 @@ import butterknife.ButterKnife;
  * <p>Any custom information to be initialized for the report should be done in {@link #onActivityCreated(Bundle)} in implementing classes.
  * The report is then generated in {@link #onStart()}
  * </p>
+ *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public abstract class BaseReportFragment extends Fragment implements
@@ -103,24 +104,29 @@ public abstract class BaseReportFragment extends Fragment implements
 
     protected ReportsActivity mReportsActivity;
 
-    @Nullable @BindView(R.id.selected_chart_slice) protected TextView mSelectedValueTextView;
+    @Nullable
+    @BindView(R.id.selected_chart_slice)
+    protected TextView mSelectedValueTextView;
 
     private AsyncTask<Void, Void, Void> mReportGenerator;
 
     /**
      * Return the title of this report
+     *
      * @return Title string identifier
      */
     public abstract @StringRes int getTitle();
 
     /**
      * Returns the layout resource to use for this report
+     *
      * @return Layout resource identifier
      */
     public abstract @LayoutRes int getLayoutResource();
 
     /**
      * Returns what kind of report this is
+     *
      * @return Type of report
      */
     public abstract ReportType getReportType();
@@ -128,18 +134,20 @@ public abstract class BaseReportFragment extends Fragment implements
     /**
      * Return {@code true} if this report fragment requires account type options.
      * <p>Sub-classes should implement this method. The base implementation returns {@code true}</p>
+     *
      * @return {@code true} if the fragment makes use of account type options, {@code false} otherwise
      */
-    public boolean requiresAccountTypeOptions(){
+    public boolean requiresAccountTypeOptions() {
         return true;
     }
 
     /**
      * Return {@code true} if this report fragment requires time range options.
      * <p>Base implementation returns true</p>
+     *
      * @return {@code true} if the report fragment requires time range options, {@code false} otherwise
      */
-    public boolean requiresTimeRangeOptions(){
+    public boolean requiresTimeRangeOptions() {
         return true;
     }
 
@@ -175,13 +183,13 @@ public abstract class BaseReportFragment extends Fragment implements
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         assert actionBar != null;
         actionBar.setTitle(getTitle());
 
         setHasOptionsMenu(true);
         mCommodity = CommoditiesDbAdapter.getInstance()
-                    .getCommodity(GnuCashApplication.getDefaultCurrencyCode());
+                .getCommodity(GnuCashApplication.getDefaultCurrencyCode());
 
         ReportsActivity reportsActivity = (ReportsActivity) getActivity();
         mReportPeriodStart = reportsActivity.getReportPeriodStart();
@@ -236,8 +244,9 @@ public abstract class BaseReportFragment extends Fragment implements
 
     /**
      * Calculates difference between two date values accordingly to {@code mGroupInterval}
+     *
      * @param start start date
-     * @param end end date
+     * @param end   end date
      * @return difference between two dates or {@code -1}
      */
     protected int getDateDiff(LocalDateTime start, LocalDateTime end) {
@@ -257,6 +266,7 @@ public abstract class BaseReportFragment extends Fragment implements
 
     /**
      * Returns a quarter of the specified date
+     *
      * @param date date
      * @return a quarter
      */

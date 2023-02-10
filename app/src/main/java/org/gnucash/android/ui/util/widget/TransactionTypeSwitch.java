@@ -35,6 +35,7 @@ import java.util.List;
 /**
  * A special type of {@link android.widget.ToggleButton} which displays the appropriate CREDIT/DEBIT labels for the
  * different account types.
+ *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class TransactionTypeSwitch extends SwitchCompat {
@@ -54,7 +55,7 @@ public class TransactionTypeSwitch extends SwitchCompat {
         super(context);
     }
 
-    public void setAccountType(AccountType accountType){
+    public void setAccountType(AccountType accountType) {
         this.mAccountType = accountType;
         Context context = getContext().getApplicationContext();
         switch (mAccountType) {
@@ -110,54 +111,60 @@ public class TransactionTypeSwitch extends SwitchCompat {
 
     /**
      * Set a checked change listener to monitor the amount view and currency views and update the display (color & balance accordingly)
-     * @param amoutView Amount string {@link android.widget.EditText}
+     *
+     * @param amoutView        Amount string {@link android.widget.EditText}
      * @param currencyTextView Currency symbol text view
      */
-    public void setAmountFormattingListener(CalculatorEditText amoutView, TextView currencyTextView){
+    public void setAmountFormattingListener(CalculatorEditText amoutView, TextView currencyTextView) {
         setOnCheckedChangeListener(new OnTypeChangedListener(amoutView, currencyTextView));
     }
 
     /**
      * Add listeners to be notified when the checked status changes
+     *
      * @param checkedChangeListener Checked change listener
      */
-    public void addOnCheckedChangeListener(OnCheckedChangeListener checkedChangeListener){
+    public void addOnCheckedChangeListener(OnCheckedChangeListener checkedChangeListener) {
         mOnCheckedChangeListeners.add(checkedChangeListener);
     }
 
     /**
      * Toggles the button checked based on the movement caused by the transaction type for the specified account
+     *
      * @param transactionType {@link org.gnucash.android.model.TransactionType} of the split
      */
-    public void setChecked(TransactionType transactionType){
+    public void setChecked(TransactionType transactionType) {
         setChecked(Transaction.shouldDecreaseBalance(mAccountType, transactionType));
     }
 
     /**
      * Returns the account type associated with this button
+     *
      * @return Type of account
      */
-    public AccountType getAccountType(){
+    public AccountType getAccountType() {
         return mAccountType;
     }
 
-    public TransactionType getTransactionType(){
-        if (mAccountType.hasDebitNormalBalance()){
+    public TransactionType getTransactionType() {
+        if (mAccountType.hasDebitNormalBalance()) {
             return isChecked() ? TransactionType.CREDIT : TransactionType.DEBIT;
         } else {
             return isChecked() ? TransactionType.DEBIT : TransactionType.CREDIT;
         }
     }
 
-    private class OnTypeChangedListener implements OnCheckedChangeListener{
+    private class OnTypeChangedListener implements OnCheckedChangeListener {
         private CalculatorEditText mAmountEditText;
         private TextView mCurrencyTextView;
+
         /**
          * Constructor with the amount view
-         * @param amountEditText EditText displaying the amount value
+         *
+         * @param amountEditText   EditText displaying the amount value
          * @param currencyTextView Currency symbol text view
          */
-        public OnTypeChangedListener(CalculatorEditText amountEditText, TextView currencyTextView){
+        public OnTypeChangedListener(CalculatorEditText amountEditText, TextView currencyTextView) {
             this.mAmountEditText = amountEditText;
             this.mCurrencyTextView = currencyTextView;
         }
@@ -165,22 +172,21 @@ public class TransactionTypeSwitch extends SwitchCompat {
         @Override
         public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
             setText(isChecked ? getTextOn() : getTextOff());
-            if (isChecked){
+            if (isChecked) {
                 int red = ContextCompat.getColor(getContext(), R.color.debit_red);
                 TransactionTypeSwitch.this.setTextColor(red);
                 mAmountEditText.setTextColor(red);
                 mCurrencyTextView.setTextColor(red);
-            }
-            else {
+            } else {
                 int green = ContextCompat.getColor(getContext(), R.color.credit_green);
                 TransactionTypeSwitch.this.setTextColor(green);
                 mAmountEditText.setTextColor(green);
                 mCurrencyTextView.setTextColor(green);
             }
             BigDecimal amount = mAmountEditText.getValue();
-            if (amount != null){
+            if (amount != null) {
                 if ((isChecked && amount.signum() > 0) //we switched to debit but the amount is +ve
-                        || (!isChecked && amount.signum() < 0)){ //credit but amount is -ve
+                        || (!isChecked && amount.signum() < 0)) { //credit but amount is -ve
                     mAmountEditText.setValue(amount.negate());
                 }
 

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,14 +15,16 @@
 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 
-        <item android:id="@android:id/background">
-            <shape>
-                <stroke android:width="1dp" android:color="#D0CFCC"  />
-                <solid android:color="#D0CFCC" />
-                <corners android:radius="3dp" />
-            </shape>
+    <item android:id="@android:id/background">
+        <shape>
+            <stroke
+                android:width="1dp"
+                android:color="#D0CFCC" />
+            <solid android:color="#D0CFCC" />
+            <corners android:radius="3dp" />
+        </shape>
 
-        </item>
+    </item>
 
     <item android:id="@android:id/secondaryProgress">
         <clip>
@@ -33,8 +34,7 @@
                     android:centerColor="#234"
                     android:centerY="0.75"
                     android:endColor="#a24"
-                    android:angle="270"
-                    />
+                    android:angle="270" />
             </shape>
         </clip>
     </item>
@@ -47,8 +47,7 @@
                     android:centerColor="#ee8600"
                     android:centerY="0.75"
                     android:endColor="#e00404"
-                    android:angle="0"
-                    />
+                    android:angle="0" />
             </shape>
         </clip>
     </item>

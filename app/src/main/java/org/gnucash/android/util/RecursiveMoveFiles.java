@@ -35,10 +35,11 @@ public class RecursiveMoveFiles implements Runnable {
 
     /**
      * Constructor, specify origin and target directories
+     *
      * @param src Source directory/file. If directory, all files within it will be moved
      * @param dst Destination directory/file. If directory, it should already exist
      */
-    public RecursiveMoveFiles(File src, File dst){
+    public RecursiveMoveFiles(File src, File dst) {
         mSource = src;
         mDestination = dst;
     }
@@ -46,6 +47,7 @@ public class RecursiveMoveFiles implements Runnable {
     /**
      * Copy file from one location to another.
      * Does not support copying of directories
+     *
      * @param src Source file
      * @param dst Destination of the file
      * @return {@code true} if the file was successfully copied, {@code false} otherwise
@@ -68,22 +70,23 @@ public class RecursiveMoveFiles implements Runnable {
      * Recursively copy files from one location to another and deletes the origin files after copy.
      * If the source file is a directory, all of the files in it will be moved.
      * This method will create the destination directory if the {@code src} is also a directory
+     *
      * @param src origin file
      * @param dst destination file or directory
      * @return number of files copied (excluding parent directory)
      */
-    private int recursiveMove(File src, File dst){
+    private int recursiveMove(File src, File dst) {
         int copyCount = 0;
-        if (src.isDirectory() && src.listFiles() != null){
+        if (src.isDirectory() && src.listFiles() != null) {
             dst.mkdirs(); //we assume it works everytime. Great, right?
             for (File file : src.listFiles()) {
                 File target = new File(dst, file.getName());
-                 copyCount += recursiveMove(file, target);
+                copyCount += recursiveMove(file, target);
             }
             src.delete();
         } else {
             try {
-                if(copy(src, dst))
+                if (copy(src, dst))
                     src.delete();
             } catch (IOException e) {
                 Log.d(MigrationHelper.LOG_TAG, "Error moving file: " + src.getAbsolutePath());

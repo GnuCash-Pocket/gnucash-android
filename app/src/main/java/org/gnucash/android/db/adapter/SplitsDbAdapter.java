@@ -68,18 +68,20 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
     /**
      * Returns application-wide instance of the database adapter
+     *
      * @return SplitsDbAdapter instance
      */
-    public static SplitsDbAdapter getInstance(){
+    public static SplitsDbAdapter getInstance() {
         return GnuCashApplication.getSplitsDbAdapter();
     }
 
     /**
      * Adds a split to the database.
      * The transactions belonging to the split are marked as exported
+     *
      * @param split {@link org.gnucash.android.model.Split} to be recorded in DB
      */
-    public void addRecord(@NonNull final Split split, UpdateMethod updateMethod){
+    public void addRecord(@NonNull final Split split, UpdateMethod updateMethod) {
         Log.d(LOG_TAG, "Replace transaction split in db");
         super.addRecord(split, updateMethod);
 
@@ -113,23 +115,25 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
         return stmt;
     }
+
     /**
      * Builds a split instance from the data pointed to by the cursor provided
      * <p>This method will not move the cursor in any way. So the cursor should already by pointing to the correct entry</p>
+     *
      * @param cursor Cursor pointing to transaction record in database
      * @return {@link org.gnucash.android.model.Split} instance
      */
-    public Split buildModelInstance(@NonNull final Cursor cursor){
-        long valueNum       = cursor.getLong(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_VALUE_NUM));
-        long valueDenom     = cursor.getLong(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_VALUE_DENOM));
-        long quantityNum    = cursor.getLong(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_QUANTITY_NUM));
-        long quantityDenom  = cursor.getLong(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_QUANTITY_DENOM));
-        String typeName     = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_TYPE));
-        String accountUID   = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_ACCOUNT_UID));
-        String transxUID    = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_TRANSACTION_UID));
-        String memo         = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_MEMO));
+    public Split buildModelInstance(@NonNull final Cursor cursor) {
+        long valueNum = cursor.getLong(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_VALUE_NUM));
+        long valueDenom = cursor.getLong(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_VALUE_DENOM));
+        long quantityNum = cursor.getLong(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_QUANTITY_NUM));
+        long quantityDenom = cursor.getLong(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_QUANTITY_DENOM));
+        String typeName = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_TYPE));
+        String accountUID = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_ACCOUNT_UID));
+        String transxUID = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_TRANSACTION_UID));
+        String memo = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_MEMO));
         String reconcileState = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_RECONCILE_STATE));
-        String reconcileDate  = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_RECONCILE_DATE));
+        String reconcileDate = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_RECONCILE_DATE));
 
         String transactionCurrency = getAttribute(TransactionEntry.TABLE_NAME, transxUID, TransactionEntry.COLUMN_CURRENCY);
         Money value = new Money(valueNum, valueDenom, transactionCurrency);
@@ -153,12 +157,13 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
      * Returns the sum of the splits for given set of accounts.
      * This takes into account the kind of movement caused by the split in the account (which also depends on account type)
      * The Caller must make sure all accounts have the currency, which is passed in as currencyCode
-     * @param accountUIDList List of String unique IDs of given set of accounts
-     * @param currencyCode currencyCode for all the accounts in the list
+     *
+     * @param accountUIDList        List of String unique IDs of given set of accounts
+     * @param currencyCode          currencyCode for all the accounts in the list
      * @param hasDebitNormalBalance Does the final balance has normal debit credit meaning
      * @return Balance of the splits for this account
      */
-    public Money computeSplitBalance(List<String> accountUIDList, String currencyCode, boolean hasDebitNormalBalance){
+    public Money computeSplitBalance(List<String> accountUIDList, String currencyCode, boolean hasDebitNormalBalance) {
         return calculateSplitBalance(accountUIDList, currencyCode, hasDebitNormalBalance, -1, -1);
     }
 
@@ -166,22 +171,23 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
      * Returns the sum of the splits for given set of accounts within the specified time range.
      * This takes into account the kind of movement caused by the split in the account (which also depends on account type)
      * The Caller must make sure all accounts have the currency, which is passed in as currencyCode
-     * @param accountUIDList List of String unique IDs of given set of accounts
-     * @param currencyCode currencyCode for all the accounts in the list
+     *
+     * @param accountUIDList        List of String unique IDs of given set of accounts
+     * @param currencyCode          currencyCode for all the accounts in the list
      * @param hasDebitNormalBalance Does the final balance has normal debit credit meaning
-     * @param startTimestamp the start timestamp of the time range
-     * @param endTimestamp the end timestamp of the time range
+     * @param startTimestamp        the start timestamp of the time range
+     * @param endTimestamp          the end timestamp of the time range
      * @return Balance of the splits for this account within the specified time range
      */
     public Money computeSplitBalance(List<String> accountUIDList, String currencyCode, boolean hasDebitNormalBalance,
-                                     long startTimestamp, long endTimestamp){
+                                     long startTimestamp, long endTimestamp) {
         return calculateSplitBalance(accountUIDList, currencyCode, hasDebitNormalBalance, startTimestamp, endTimestamp);
     }
 
 
     private Money calculateSplitBalance(List<String> accountUIDList, String currencyCode, boolean hasDebitNormalBalance,
-                          long startTimestamp, long endTimestamp){
-        if (accountUIDList.size() == 0){
+                                        long startTimestamp, long endTimestamp) {
+        if (accountUIDList.size() == 0) {
             return new Money("0", currencyCode);
         }
 
@@ -261,10 +267,11 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
     /**
      * Returns the list of splits for a transaction
+     *
      * @param transactionUID String unique ID of transaction
      * @return List of {@link org.gnucash.android.model.Split}s
      */
-    public List<Split> getSplitsForTransaction(String transactionUID){
+    public List<Split> getSplitsForTransaction(String transactionUID) {
         Cursor cursor = fetchSplitsForTransaction(transactionUID);
         List<Split> splitList = new ArrayList<Split>();
         try {
@@ -279,26 +286,28 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
     /**
      * Returns the list of splits for a transaction
+     *
      * @param transactionID DB record ID of the transaction
      * @return List of {@link org.gnucash.android.model.Split}s
      * @see #getSplitsForTransaction(String)
      * @see #getTransactionUID(long)
      */
-    public List<Split> getSplitsForTransaction(long transactionID){
+    public List<Split> getSplitsForTransaction(long transactionID) {
         return getSplitsForTransaction(getTransactionUID(transactionID));
     }
 
     /**
      * Fetch splits for a given transaction within a specific account
+     *
      * @param transactionUID String unique ID of transaction
-     * @param accountUID String unique ID of account
+     * @param accountUID     String unique ID of account
      * @return List of splits
      */
-    public List<Split> getSplitsForTransactionInAccount(String transactionUID, String accountUID){
+    public List<Split> getSplitsForTransactionInAccount(String transactionUID, String accountUID) {
         Cursor cursor = fetchSplitsForTransactionAndAccount(transactionUID, accountUID);
         List<Split> splitList = new ArrayList<Split>();
-        if (cursor != null){
-            while (cursor.moveToNext()){
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
                 splitList.add(buildModelInstance(cursor));
             }
             cursor.close();
@@ -308,22 +317,24 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
     /**
      * Fetches a collection of splits for a given condition and sorted by <code>sortOrder</code>
-     * @param where String condition, formatted as SQL WHERE clause
+     *
+     * @param where     String condition, formatted as SQL WHERE clause
      * @param whereArgs where args
      * @param sortOrder Sort order for the returned records
      * @return Cursor to split records
      */
-    public Cursor fetchSplits(String where, String[] whereArgs, String sortOrder){
+    public Cursor fetchSplits(String where, String[] whereArgs, String sortOrder) {
         return mDb.query(SplitEntry.TABLE_NAME,
                 null, where, whereArgs, null, null, sortOrder);
     }
 
     /**
      * Returns a Cursor to a dataset of splits belonging to a specific transaction
+     *
      * @param transactionUID Unique idendtifier of the transaction
      * @return Cursor to splits
      */
-    public Cursor fetchSplitsForTransaction(String transactionUID){
+    public Cursor fetchSplitsForTransaction(String transactionUID) {
         Log.v(LOG_TAG, "Fetching all splits for transaction UID " + transactionUID);
         return mDb.query(SplitEntry.TABLE_NAME,
                 null, SplitEntry.COLUMN_TRANSACTION_UID + " = ?",
@@ -333,17 +344,18 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
     /**
      * Fetches splits for a given account
+     *
      * @param accountUID String unique ID of account
      * @return Cursor containing splits dataset
      */
-    public Cursor fetchSplitsForAccount(String accountUID){
+    public Cursor fetchSplitsForAccount(String accountUID) {
         Log.d(LOG_TAG, "Fetching all splits for account UID " + accountUID);
 
         //This is more complicated than a simple "where account_uid=?" query because
         // we need to *not* return any splits which belong to recurring transactions
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         queryBuilder.setTables(TransactionEntry.TABLE_NAME
-                + " INNER JOIN " +  SplitEntry.TABLE_NAME + " ON "
+                + " INNER JOIN " + SplitEntry.TABLE_NAME + " ON "
                 + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " = "
                 + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID);
         queryBuilder.setDistinct(true);
@@ -359,11 +371,12 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
     /**
      * Returns a cursor to splits for a given transaction and account
+     *
      * @param transactionUID Unique idendtifier of the transaction
-     * @param accountUID String unique ID of account
+     * @param accountUID     String unique ID of account
      * @return Cursor to splits data set
      */
-    public Cursor fetchSplitsForTransactionAndAccount(String transactionUID, String accountUID){
+    public Cursor fetchSplitsForTransactionAndAccount(String transactionUID, String accountUID) {
         if (transactionUID == null || accountUID == null)
             return null;
 
@@ -378,10 +391,11 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
     /**
      * Returns the unique ID of a transaction given the database record ID of same
+     *
      * @param transactionId Database record ID of the transaction
      * @return String unique ID of the transaction or null if transaction with the ID cannot be found.
      */
-    public String getTransactionUID(long transactionId){
+    public String getTransactionUID(long transactionId) {
         Cursor cursor = mDb.query(TransactionEntry.TABLE_NAME,
                 new String[]{TransactionEntry.COLUMN_UID},
                 TransactionEntry._ID + " = " + transactionId,
@@ -423,6 +437,7 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
     /**
      * Returns the database record ID for the specified transaction UID
+     *
      * @param transactionUID Unique idendtifier of the transaction
      * @return Database record ID for the transaction
      */

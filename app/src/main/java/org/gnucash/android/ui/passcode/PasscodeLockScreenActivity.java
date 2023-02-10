@@ -29,6 +29,7 @@ import org.gnucash.android.ui.common.UxArgument;
 
 /**
  * Activity for displaying and managing the passcode lock screen.
+ *
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
 public class PasscodeLockScreenActivity extends AppCompatActivity

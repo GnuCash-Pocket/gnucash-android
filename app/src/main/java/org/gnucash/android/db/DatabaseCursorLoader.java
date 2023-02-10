@@ -29,120 +29,124 @@ import org.gnucash.android.db.adapter.DatabaseAdapter;
  * {@link #loadInBackground()} method to load the particular records from the database.
  * Ideally, the database has {@link DatabaseAdapter} which is used for managing access to the
  * records from the database
+ *
  * @author Ngewi Fet <ngewif@gmail.com>
  * @see DatabaseAdapter
  */
 public abstract class DatabaseCursorLoader extends AsyncTaskLoader<Cursor> {
-	/**
-	 * Cursor which will hold the loaded data set.
-	 * The cursor will be returned from the {@link #loadInBackground()} method
-	 */
-	private Cursor mCursor = null;
-	
-	/**
-	 * {@link DatabaseAdapter} which will be used to load the records from the database
-	 */
-	protected DatabaseAdapter mDatabaseAdapter = null;
-	
-	/**
-	 * A content observer which monitors the cursor and provides notifications when
-	 * the dataset backing the cursor changes. You need to register the oberserver on
-	 * your cursor using {@link #registerContentObserver(Cursor)}
-	 */
-	protected final Loader.ForceLoadContentObserver mObserver;
-	
-	/**
-	 * Constructor
-	 * Initializes the content observer
-	 * @param context Application context
-	 */
-	public DatabaseCursorLoader(Context context) {
-		super(context);
-		mObserver = new ForceLoadContentObserver();
-	}
+    /**
+     * Cursor which will hold the loaded data set.
+     * The cursor will be returned from the {@link #loadInBackground()} method
+     */
+    private Cursor mCursor = null;
 
-	/**
-	 * Asynchronously loads the results from the database. 
-	 */
-	public abstract Cursor loadInBackground();
+    /**
+     * {@link DatabaseAdapter} which will be used to load the records from the database
+     */
+    protected DatabaseAdapter mDatabaseAdapter = null;
 
-	/**
-	 * Registers the content observer for the cursor. 
-	 * @param cursor {@link Cursor} whose content is to be observed for changes
-	 */
-	protected void registerContentObserver(Cursor cursor){
-		cursor.registerContentObserver(mObserver);
-	}
-	
-	@Override
-	public void deliverResult(Cursor data) {
-		if (isReset()) {
-			if (data != null) {
-				onReleaseResources(data);
-			}
-			return;
-		}
+    /**
+     * A content observer which monitors the cursor and provides notifications when
+     * the dataset backing the cursor changes. You need to register the oberserver on
+     * your cursor using {@link #registerContentObserver(Cursor)}
+     */
+    protected final Loader.ForceLoadContentObserver mObserver;
 
-		Cursor oldCursor = mCursor;
-		mCursor = data;
+    /**
+     * Constructor
+     * Initializes the content observer
+     *
+     * @param context Application context
+     */
+    public DatabaseCursorLoader(Context context) {
+        super(context);
+        mObserver = new ForceLoadContentObserver();
+    }
 
-		if (isStarted()) {
-			super.deliverResult(data);
-		}
+    /**
+     * Asynchronously loads the results from the database.
+     */
+    public abstract Cursor loadInBackground();
 
-		if (oldCursor != null && oldCursor != data && !oldCursor.isClosed()) {
-			onReleaseResources(oldCursor);
-		}
-	}
+    /**
+     * Registers the content observer for the cursor.
+     *
+     * @param cursor {@link Cursor} whose content is to be observed for changes
+     */
+    protected void registerContentObserver(Cursor cursor) {
+        cursor.registerContentObserver(mObserver);
+    }
 
-	@Override
-	protected void onStartLoading() {
-		if (mCursor != null){
-			deliverResult(mCursor);
-		}
-        
+    @Override
+    public void deliverResult(Cursor data) {
+        if (isReset()) {
+            if (data != null) {
+                onReleaseResources(data);
+            }
+            return;
+        }
+
+        Cursor oldCursor = mCursor;
+        mCursor = data;
+
+        if (isStarted()) {
+            super.deliverResult(data);
+        }
+
+        if (oldCursor != null && oldCursor != data && !oldCursor.isClosed()) {
+            onReleaseResources(oldCursor);
+        }
+    }
+
+    @Override
+    protected void onStartLoading() {
+        if (mCursor != null) {
+            deliverResult(mCursor);
+        }
+
         if (takeContentChanged() || mCursor == null) {
             // If the data has changed since the last time it was loaded
             // or is not currently available, start a load.
             forceLoad();
         }
-	}
-	
-	@Override
-	protected void onStopLoading() {
-		cancelLoad();
-	}
-	
-	@Override
-	public void onCanceled(Cursor data) {
-		super.onCanceled(data);
-		onReleaseResources(data);
-	}
-	
-	/**
+    }
+
+    @Override
+    protected void onStopLoading() {
+        cancelLoad();
+    }
+
+    @Override
+    public void onCanceled(Cursor data) {
+        super.onCanceled(data);
+        onReleaseResources(data);
+    }
+
+    /**
      * Handles a request to completely reset the Loader.
      */
-	@Override
-	protected void onReset() {
-		super.onReset();
-		
-		onStopLoading();
+    @Override
+    protected void onReset() {
+        super.onReset();
+
+        onStopLoading();
 
         // At this point we can release the resources associated with 'mCursor'
         // if needed.
         if (mCursor != null && !mCursor.isClosed()) {
-            onReleaseResources(mCursor);           
-        }	
+            onReleaseResources(mCursor);
+        }
         mCursor = null;
-	}
-	
-	/**
+    }
+
+    /**
      * Helper function to take care of releasing resources associated
      * with an actively loaded data set.
+     *
      * @param c {@link Cursor} to be released
      */
-	protected void onReleaseResources(Cursor c) {
-		if (c != null)
-			c.close();
-	}
+    protected void onReleaseResources(Cursor c) {
+        if (c != null)
+            c.close();
+    }
 }

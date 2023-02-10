@@ -14,7 +14,7 @@ import org.robolectric.annotation.Implements;
 public class ShadowCrashlytics {
 
     @Implementation
-    public static void start(Context context){
+    public static void start(Context context) {
         System.out.println("Shadowing crashlytics start");
         //nothing to see here, move along
     }

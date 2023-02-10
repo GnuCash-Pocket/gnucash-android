@@ -49,7 +49,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class BackupTest {
 
     @Before
-    public void setUp(){
+    public void setUp() {
         loadDefaultAccounts();
     }
 
@@ -68,7 +68,7 @@ public class BackupTest {
     /**
      * Loads the default accounts from file resource
      */
-    private void loadDefaultAccounts(){
+    private void loadDefaultAccounts() {
         try {
             String bookUID = GncXmlImporter.parse(GnuCashApplication.getAppContext().getResources().openRawResource(R.raw.default_accounts));
             BooksDbAdapter.getInstance().setActive(bookUID);

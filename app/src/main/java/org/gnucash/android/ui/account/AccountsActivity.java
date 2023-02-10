@@ -89,9 +89,9 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
     public static final int REQUEST_EDIT_ACCOUNT = 0x10;
 
     /**
-	 * Logging tag
-	 */
-	protected static final String LOG_TAG = "AccountsActivity";
+     * Logging tag
+     */
+    protected static final String LOG_TAG = "AccountsActivity";
 
     /**
      * Number of pages to show
@@ -131,9 +131,12 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
     /**
      * ViewPager which manages the different tabs
      */
-    @BindView(R.id.pager) ViewPager mViewPager;
-    @BindView(R.id.fab_create_account) FloatingActionButton mFloatingActionButton;
-    @BindView(R.id.coordinatorLayout) CoordinatorLayout mCoordinatorLayout;
+    @BindView(R.id.pager)
+    ViewPager mViewPager;
+    @BindView(R.id.fab_create_account)
+    FloatingActionButton mFloatingActionButton;
+    @BindView(R.id.coordinatorLayout)
+    CoordinatorLayout mCoordinatorLayout;
 
     /**
      * Configuration for rating the app
@@ -146,7 +149,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
      */
     private class AccountViewPagerAdapter extends FragmentPagerAdapter {
 
-        public AccountViewPagerAdapter(FragmentManager fm){
+        public AccountViewPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
@@ -181,7 +184,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
 
         @Override
         public CharSequence getPageTitle(int position) {
-            switch (position){
+            switch (position) {
                 case INDEX_RECENT_ACCOUNTS_FRAGMENT:
                     return getString(R.string.title_recent_accounts);
 
@@ -200,7 +203,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
         }
     }
 
-    public AccountsListFragment getCurrentAccountListFragment(){
+    public AccountsListFragment getCurrentAccountListFragment() {
         int index = mViewPager.getCurrentItem();
         Fragment fragment = (Fragment) mFragmentPageReferenceMap.get(index);
         if (fragment == null)
@@ -219,7 +222,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
     }
 
     @Override
-	public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         final Intent intent = getIntent();
@@ -266,7 +269,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
                 startActivityForResult(addAccountIntent, AccountsActivity.REQUEST_EDIT_ACCOUNT);
             }
         });
-	}
+    }
 
     @Override
     protected void onStart() {
@@ -281,12 +284,13 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
 
     /**
      * Handles the case where another application has selected to open a (.gnucash or .gnca) file with this app
+     *
      * @param intent Intent containing the data to be imported
      */
     private void handleOpenFileIntent(Intent intent) {
         //when someone launches the app to view a (.gnucash or .gnca) file
         Uri data = intent.getData();
-        if (data != null){
+        if (data != null) {
             BackupManager.backupActiveBook();
             intent.setData(null);
             new ImportAsyncTask(this).execute(data);
@@ -303,7 +307,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
         int index = mViewPager.getCurrentItem();
         Fragment fragment = (Fragment) mFragmentPageReferenceMap.get(index);
         if (fragment != null)
-            ((Refreshable)fragment).refresh();
+            ((Refreshable) fragment).refresh();
 
         handleOpenFileIntent(intent);
     }
@@ -311,7 +315,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
     /**
      * Sets the current tab in the ViewPager
      */
-    public void setCurrentTab(){
+    public void setCurrentTab() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         int lastTabIndex = preferences.getInt(LAST_OPEN_TAB_INDEX, INDEX_TOP_LEVEL_ACCOUNTS_FRAGMENT);
         int index = getIntent().getIntExtra(EXTRA_TAB_INDEX, lastTabIndex);
@@ -329,7 +333,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         boolean firstRun = prefs.getBoolean(getString(R.string.key_first_run), true);
 
-        if (firstRun){
+        if (firstRun) {
             startActivity(new Intent(GnuCashApplication.getAppContext(), FirstRunWizardActivity.class));
 
             //default to using double entry and save the preference explicitly
@@ -338,7 +342,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
             return;
         }
 
-        if (hasNewFeatures()){
+        if (hasNewFeatures()) {
             showWhatsNewDialog(this);
         }
         GnuCashApplication.startScheduledActionExecutionService(this);
@@ -353,29 +357,30 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
     }
 
     /**
-	 * Checks if the minor version has been increased and displays the What's New dialog box.
-	 * This is the minor version as per semantic versioning.
-	 * @return <code>true</code> if the minor version has been increased, <code>false</code> otherwise.
-	 */
-	private boolean hasNewFeatures(){
+     * Checks if the minor version has been increased and displays the What's New dialog box.
+     * This is the minor version as per semantic versioning.
+     *
+     * @return <code>true</code> if the minor version has been increased, <code>false</code> otherwise.
+     */
+    private boolean hasNewFeatures() {
         String minorVersion = getResources().getString(R.string.app_minor_version);
         int currentMinor = Integer.parseInt(minorVersion);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         int previousMinor = prefs.getInt(getString(R.string.key_previous_minor_version), 0);
-        if (currentMinor > previousMinor){
+        if (currentMinor > previousMinor) {
             Editor editor = prefs.edit();
             editor.putInt(getString(R.string.key_previous_minor_version), currentMinor);
             editor.apply();
             return true;
         }
         return false;
-	}
-	
-	/**
-	 * Show dialog with new features for this version
-	 */
-	public static AlertDialog showWhatsNewDialog(Context context){
+    }
+
+    /**
+     * Show dialog with new features for this version
+     */
+    public static AlertDialog showWhatsNewDialog(Context context) {
         Resources resources = context.getResources();
         StringBuilder releaseTitle = new StringBuilder(resources.getString(R.string.title_whats_new));
         PackageInfo packageInfo;
@@ -388,16 +393,16 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
         }
 
         return new AlertDialog.Builder(context)
-		.setTitle(releaseTitle.toString())
-		.setMessage(R.string.whats_new)
-		.setPositiveButton(R.string.label_dismiss, new DialogInterface.OnClickListener() {
-			
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				dialog.dismiss();
-			}
-		}).show();
-	}
+                .setTitle(releaseTitle.toString())
+                .setMessage(R.string.whats_new)
+                .setPositiveButton(R.string.label_dismiss, new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }).show();
+    }
 
     /**
      * Displays the dialog for exporting transactions
@@ -409,29 +414,29 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
     }
 
     @Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.global_actions, menu);
-		return true;
-	}
-	
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.global_actions, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
             case android.R.id.home:
                 return super.onOptionsItemSelected(item);
 
-		default:
-			return false;
-		}
-	}
+            default:
+                return false;
+        }
+    }
 
     /**
      * Creates default accounts with the specified currency code.
      * If the currency parameter is null, then locale currency will be used if available
      *
      * @param currencyCode Currency code to assign to the imported accounts
-     * @param activity Activity for providing context and displaying dialogs
+     * @param activity     Activity for providing context and displaying dialogs
      */
     public static void createDefaultAccounts(final String currencyCode, final Activity activity) {
         TaskDelegate delegate = null;
@@ -453,6 +458,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
      * Starts Intent chooser for selecting a GnuCash accounts file to import.
      * <p>The {@code activity} is responsible for the actual import of the file and can do so by calling {@link #importXmlFileFromIntent(Activity, Intent, TaskDelegate)}<br>
      * The calling class should respond to the request code {@link AccountsActivity#REQUEST_PICK_ACCOUNTS_FILE} in its {@link #onActivityResult(int, int, Intent)} method</p>
+     *
      * @param activity Activity starting the request and will also handle the response
      * @see #importXmlFileFromIntent(Activity, Intent, TaskDelegate)
      */
@@ -464,7 +470,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
 
         try {
             activity.startActivityForResult(chooser, REQUEST_PICK_ACCOUNTS_FILE);
-        } catch (ActivityNotFoundException ex){
+        } catch (ActivityNotFoundException ex) {
             Crashlytics.log("No file manager for selecting files available");
             Crashlytics.logException(ex);
             Toast.makeText(activity, R.string.toast_install_file_manager, Toast.LENGTH_LONG).show();
@@ -474,6 +480,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
     /**
      * Overloaded method.
      * Starts chooser for selecting a GnuCash account file to import
+     *
      * @param fragment Fragment creating the chooser and which will also handle the result
      * @see #startXmlFileChooser(Activity)
      */
@@ -485,7 +492,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
 
         try {
             fragment.startActivityForResult(chooser, REQUEST_PICK_ACCOUNTS_FILE);
-        } catch (ActivityNotFoundException ex){
+        } catch (ActivityNotFoundException ex) {
             Crashlytics.log("No file manager for selecting files available");
             Crashlytics.logException(ex);
             Toast.makeText(fragment.getActivity(), R.string.toast_install_file_manager, Toast.LENGTH_LONG).show();
@@ -495,8 +502,9 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
     /**
      * Reads and XML file from an intent and imports it into the database
      * <p>This method is usually called in response to {@link AccountsActivity#startXmlFileChooser(Activity)}</p>
-     * @param context Activity context
-     * @param data Intent data containing the XML uri
+     *
+     * @param context      Activity context
+     * @param data         Intent data containing the XML uri
      * @param onFinishTask Task to be executed when import is complete
      */
     public static void importXmlFileFromIntent(Activity context, Intent data, TaskDelegate onFinishTask) {
@@ -506,33 +514,34 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
 
     /**
      * Starts the AccountsActivity and clears the activity stack
+     *
      * @param context Application context
      */
-    public static void start(Context context){
+    public static void start(Context context) {
         Intent accountsActivityIntent = new Intent(context, AccountsActivity.class);
         accountsActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        accountsActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        accountsActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         context.startActivity(accountsActivityIntent);
     }
 
     @Override
-	public void accountSelected(String accountUID) {
-		Intent intent = new Intent(this, TransactionsActivity.class);
-		intent.setAction(Intent.ACTION_VIEW);
-		intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
+    public void accountSelected(String accountUID) {
+        Intent intent = new Intent(this, TransactionsActivity.class);
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
 
-		startActivity(intent);
-	}
-	
-	/**
-	 * Removes the flag indicating that the app is being run for the first time. 
-	 * This is called every time the app is started because the next time won't be the first time
-	 */
-	public static void removeFirstRunFlag(){
+        startActivity(intent);
+    }
+
+    /**
+     * Removes the flag indicating that the app is being run for the first time.
+     * This is called every time the app is started because the next time won't be the first time
+     */
+    public static void removeFirstRunFlag() {
         Context context = GnuCashApplication.getAppContext();
-		Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
-		editor.putBoolean(context.getString(R.string.key_first_run), false);
-		editor.commit();
-	}
+        Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
+        editor.putBoolean(context.getString(R.string.key_first_run), false);
+        editor.commit();
+    }
 
 }

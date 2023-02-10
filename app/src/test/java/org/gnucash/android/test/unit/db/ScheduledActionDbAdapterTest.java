@@ -24,18 +24,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Test the scheduled actions database adapter
  */
-@RunWith(RobolectricTestRunner.class) //package is required so that resources can be found in dev mode
+@RunWith(RobolectricTestRunner.class)
+//package is required so that resources can be found in dev mode
 @Config(sdk = 21, packageName = "org.gnucash.android", shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
 public class ScheduledActionDbAdapterTest {
 
     ScheduledActionDbAdapter mScheduledActionDbAdapter;
 
     @Before
-    public void setUp(){
+    public void setUp() {
         mScheduledActionDbAdapter = ScheduledActionDbAdapter.getInstance();
     }
 
-    public void shouldFetchOnlyEnabledScheduledActions(){
+    public void shouldFetchOnlyEnabledScheduledActions() {
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
         scheduledAction.setRecurrence(new Recurrence(PeriodType.MONTH));
         scheduledAction.setEnabled(false);
@@ -54,14 +55,14 @@ public class ScheduledActionDbAdapterTest {
     }
 
     @Test(expected = NullPointerException.class) //no recurrence is set
-    public void everyScheduledActionShouldHaveRecurrence(){
+    public void everyScheduledActionShouldHaveRecurrence() {
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
         scheduledAction.setActionUID(BaseModel.generateUID());
         mScheduledActionDbAdapter.addRecord(scheduledAction);
     }
 
     @Test
-    public void testGenerateRepeatString(){
+    public void testGenerateRepeatString() {
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
         PeriodType periodType = PeriodType.MONTH;
         Recurrence recurrence = new Recurrence(periodType);

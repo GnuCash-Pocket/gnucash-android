@@ -80,7 +80,8 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     private long mLatestTransactionTimestamp;
     private boolean mChartDataPresent = true;
 
-    @BindView(R.id.line_chart) LineChart mChart;
+    @BindView(R.id.line_chart)
+    LineChart mChart;
 
     @Override
     public int getLayoutResource() {
@@ -117,6 +118,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
 
     /**
      * Returns a data object that represents a user data of the specified account types
+     *
      * @param accountTypeList account's types which will be displayed
      * @return a {@code LineData} instance that represents a user data
      */
@@ -180,6 +182,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
 
     /**
      * Returns a data object that represents situation when no user data available
+     *
      * @return a {@code LineData} instance for situation when no user data available
      */
     private LineData getEmptyData() {
@@ -200,6 +203,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
 
     /**
      * Returns entries which represent a user data of the specified account type
+     *
      * @param accountType account's type which user data will be processed
      * @return entries which represent a user data
      */
@@ -263,6 +267,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
 
     /**
      * Calculates the earliest and latest transaction's timestamps of the specified account types
+     *
      * @param accountTypeList account's types which will be processed
      */
     private void calculateEarliestAndLatestTimestamps(List<AccountType> accountTypeList) {
@@ -273,7 +278,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
         }
 
         TransactionsDbAdapter dbAdapter = TransactionsDbAdapter.getInstance();
-        for (Iterator<AccountType> iter = accountTypeList.iterator(); iter.hasNext();) {
+        for (Iterator<AccountType> iter = accountTypeList.iterator(); iter.hasNext(); ) {
             AccountType type = iter.next();
             long earliest = dbAdapter.getTimestampOfEarliestTransaction(type, mCommodity.getCurrencyCode());
             long latest = dbAdapter.getTimestampOfLatestTransaction(type, mCommodity.getCurrencyCode());

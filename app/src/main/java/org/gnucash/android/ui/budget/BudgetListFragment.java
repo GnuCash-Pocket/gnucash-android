@@ -79,8 +79,10 @@ public class BudgetListFragment extends Fragment implements Refreshable,
 
     private BudgetsDbAdapter mBudgetsDbAdapter;
 
-    @BindView(R.id.budget_recycler_view) EmptyRecyclerView mRecyclerView;
-    @BindView(R.id.empty_view) Button mProposeBudgets;
+    @BindView(R.id.budget_recycler_view)
+    EmptyRecyclerView mRecyclerView;
+    @BindView(R.id.empty_view)
+    Button mProposeBudgets;
 
     @Nullable
     @Override
@@ -137,7 +139,7 @@ public class BudgetListFragment extends Fragment implements Refreshable,
         super.onResume();
         refresh();
         getActivity().findViewById(R.id.fab_create_budget).setVisibility(View.VISIBLE);
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Budgets");
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Budgets");
     }
 
     @Override
@@ -148,6 +150,7 @@ public class BudgetListFragment extends Fragment implements Refreshable,
     /**
      * This method does nothing with the GUID.
      * Is equivalent to calling {@link #refresh()}
+     *
      * @param uid GUID of relevant item to be refreshed
      */
     @Override
@@ -157,9 +160,10 @@ public class BudgetListFragment extends Fragment implements Refreshable,
 
     /**
      * Opens the budget detail fragment
+     *
      * @param budgetUID GUID of budget
      */
-    public void onClickBudget(String budgetUID){
+    public void onClickBudget(String budgetUID) {
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager
                 .beginTransaction();
@@ -171,9 +175,10 @@ public class BudgetListFragment extends Fragment implements Refreshable,
 
     /**
      * Launches the FormActivity for editing the budget
+     *
      * @param budgetId Db record Id of the budget
      */
-    private void editBudget(long budgetId){
+    private void editBudget(long budgetId) {
         Intent addAccountIntent = new Intent(getActivity(), FormActivity.class);
         addAccountIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
         addAccountIntent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.BUDGET.name());
@@ -183,21 +188,22 @@ public class BudgetListFragment extends Fragment implements Refreshable,
 
     /**
      * Delete the budget from the database
+     *
      * @param budgetId Database record ID
      */
-    private void deleteBudget(long budgetId){
+    private void deleteBudget(long budgetId) {
         BudgetsDbAdapter.getInstance().deleteRecord(budgetId);
         refresh();
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK){
+        if (resultCode == Activity.RESULT_OK) {
             refresh();
         }
     }
 
-    class BudgetRecyclerAdapter extends CursorRecyclerAdapter<BudgetRecyclerAdapter.BudgetViewHolder>{
+    class BudgetRecyclerAdapter extends CursorRecyclerAdapter<BudgetRecyclerAdapter.BudgetViewHolder> {
 
         public BudgetRecyclerAdapter(Cursor cursor) {
             super(cursor);
@@ -213,7 +219,7 @@ public class BudgetListFragment extends Fragment implements Refreshable,
             AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
             String accountString;
             int numberOfAccounts = budget.getNumberOfAccounts();
-            if (numberOfAccounts == 1){
+            if (numberOfAccounts == 1) {
                 accountString = accountsDbAdapter.getAccountFullName(budget.getBudgetAmounts().get(0).getAccountUID());
             } else {
                 accountString = numberOfAccounts + " budgeted accounts";
@@ -237,7 +243,7 @@ public class BudgetListFragment extends Fragment implements Refreshable,
             holder.budgetAmount.setText(usedAmount);
 
             double budgetProgress = spentAmountValue.divide(budgetTotal.asBigDecimal(),
-                    commodity.getSmallestFractionDigits(), RoundingMode.HALF_EVEN)
+                            commodity.getSmallestFractionDigits(), RoundingMode.HALF_EVEN)
                     .doubleValue();
             holder.budgetIndicator.setProgress((int) (budgetProgress * 100));
 
@@ -259,13 +265,19 @@ public class BudgetListFragment extends Fragment implements Refreshable,
             return new BudgetViewHolder(v);
         }
 
-        class BudgetViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener{
-            @BindView(R.id.primary_text)        TextView budgetName;
-            @BindView(R.id.secondary_text)      TextView accountName;
-            @BindView(R.id.budget_amount)       TextView budgetAmount;
-            @BindView(R.id.options_menu)        ImageView optionsMenu;
-            @BindView(R.id.budget_indicator)    ProgressBar budgetIndicator;
-            @BindView(R.id.budget_recurrence)   TextView budgetRecurrence;
+        class BudgetViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener {
+            @BindView(R.id.primary_text)
+            TextView budgetName;
+            @BindView(R.id.secondary_text)
+            TextView accountName;
+            @BindView(R.id.budget_amount)
+            TextView budgetAmount;
+            @BindView(R.id.options_menu)
+            ImageView optionsMenu;
+            @BindView(R.id.budget_indicator)
+            ProgressBar budgetIndicator;
+            @BindView(R.id.budget_recurrence)
+            TextView budgetRecurrence;
             long budgetId;
 
             public BudgetViewHolder(View itemView) {
@@ -287,7 +299,7 @@ public class BudgetListFragment extends Fragment implements Refreshable,
 
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()){
+                switch (item.getItemId()) {
                     case R.id.context_menu_edit_budget:
                         editBudget(budgetId);
                         return true;

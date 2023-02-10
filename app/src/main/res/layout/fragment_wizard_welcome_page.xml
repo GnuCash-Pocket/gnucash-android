@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,11 +18,12 @@
     android:gravity="center"
     android:orientation="vertical">
 
-    <TextView style="@style/WizardPageTitle"
+    <TextView
+        style="@style/WizardPageTitle"
         android:drawableLeft="@drawable/ic_launcher"
         android:drawablePadding="10dp"
         android:gravity="bottom"
-        android:text="@string/wizard_title_welcome_to_gnucash"/>
+        android:text="@string/wizard_title_welcome_to_gnucash" />
 
     <TextView
         android:layout_marginTop="@dimen/edge_padding"
@@ -31,5 +31,5 @@
         android:layout_height="wrap_content"
         android:textSize="24sp"
         android:gravity="center"
-        android:text="@string/msg_wizard_welcome_page"/>
+        android:text="@string/msg_wizard_welcome_page" />
 </LinearLayout>

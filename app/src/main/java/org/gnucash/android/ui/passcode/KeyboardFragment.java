@@ -29,6 +29,7 @@ import org.gnucash.android.R;
 
 /**
  * Soft numeric keyboard for lock screen and passcode preference.
+ *
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
 public class KeyboardFragment extends Fragment {

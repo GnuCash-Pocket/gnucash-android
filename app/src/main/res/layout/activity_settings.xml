@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,18 +14,21 @@
  limitations under the License.
 -->
 <android.support.v4.widget.SlidingPaneLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/slidingpane_layout">
 
-    <fragment android:name="org.gnucash.android.ui.settings.PreferenceHeadersFragment"
+    <fragment
+        android:name="org.gnucash.android.ui.settings.PreferenceHeadersFragment"
         android:tag="PreferenceHeadersFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginRight="0dp"
-        android:layout_gravity="left|start"/>
+        android:layout_gravity="left|start" />
 
-    <FrameLayout android:id="@+id/fragment_container"
+    <FrameLayout
+        android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:layout_weight="1"
         android:layout_height="match_parent" />

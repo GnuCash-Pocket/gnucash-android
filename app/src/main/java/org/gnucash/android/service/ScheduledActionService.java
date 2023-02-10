@@ -98,6 +98,7 @@ public class ScheduledActionService extends JobIntentService {
 
     /**
      * Process scheduled actions and execute any pending actions
+     *
      * @param scheduledActions List of scheduled actions
      */
     //made public static for testing. Do not call these methods directly
@@ -105,7 +106,7 @@ public class ScheduledActionService extends JobIntentService {
     public static void processScheduledActions(List<ScheduledAction> scheduledActions, SQLiteDatabase db) {
         for (ScheduledAction scheduledAction : scheduledActions) {
 
-            long now        = System.currentTimeMillis();
+            long now = System.currentTimeMillis();
             int totalPlannedExecutions = scheduledAction.getTotalPlannedExecutionCount();
             int executionCount = scheduledAction.getExecutionCount();
 
@@ -124,13 +125,14 @@ public class ScheduledActionService extends JobIntentService {
 
     /**
      * Executes a scheduled event according to the specified parameters
+     *
      * @param scheduledAction ScheduledEvent to be executed
      */
-    private static void executeScheduledEvent(ScheduledAction scheduledAction, SQLiteDatabase db){
+    private static void executeScheduledEvent(ScheduledAction scheduledAction, SQLiteDatabase db) {
         Log.i(LOG_TAG, "Executing scheduled action: " + scheduledAction.toString());
         int executionCount = 0;
 
-        switch (scheduledAction.getActionType()){
+        switch (scheduledAction.getActionType()) {
             case TRANSACTION:
                 executionCount += executeTransactions(scheduledAction, db);
                 break;
@@ -160,8 +162,9 @@ public class ScheduledActionService extends JobIntentService {
     /**
      * Executes scheduled backups for a given scheduled action.
      * The backup will be executed only once, even if multiple schedules were missed
+     *
      * @param scheduledAction Scheduled action referencing the backup
-     * @param db SQLiteDatabase to backup
+     * @param db              SQLiteDatabase to backup
      * @return Number of times backup is executed. This should either be 1 or 0
      */
     private static int executeBackup(ScheduledAction scheduledAction, SQLiteDatabase db) {
@@ -192,6 +195,7 @@ public class ScheduledActionService extends JobIntentService {
 
     /**
      * Check if a scheduled action is due for execution
+     *
      * @param scheduledAction Scheduled action
      * @return {@code true} if execution is due, {@code false} otherwise
      */
@@ -213,8 +217,9 @@ public class ScheduledActionService extends JobIntentService {
      * Executes scheduled transactions which are to be added to the database.
      * <p>If a schedule was missed, all the intervening transactions will be generated, even if
      * the end time of the transaction was already reached</p>
+     *
      * @param scheduledAction Scheduled action which references the transaction
-     * @param db SQLiteDatabase where the transactions are to be executed
+     * @param db              SQLiteDatabase where the transactions are to be executed
      * @return Number of transactions created as a result of this action
      */
     private static int executeTransactions(ScheduledAction scheduledAction, SQLiteDatabase db) {
@@ -224,7 +229,7 @@ public class ScheduledActionService extends JobIntentService {
         Transaction trxnTemplate;
         try {
             trxnTemplate = transactionsDbAdapter.getRecord(actionUID);
-        } catch (IllegalArgumentException ex){ //if the record could not be found, abort
+        } catch (IllegalArgumentException ex) { //if the record could not be found, abort
             Log.e(LOG_TAG, "Scheduled transaction with UID " + actionUID + " could not be found in the db with path " + db.getPath());
             return executionCount;
         }

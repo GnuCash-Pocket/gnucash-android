@@ -28,7 +28,7 @@ import java.util.ArrayList;
 /**
  * Page displaying all the commodities in the database
  */
-public class CurrencySelectPage extends Page{
+public class CurrencySelectPage extends Page {
 
     public static final String CURRENCY_CODE_DATA_KEY = "currency_code_data_key";
 

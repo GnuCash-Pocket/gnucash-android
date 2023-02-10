@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
 Copyright (c) 2014 Ngewi Fet <ngewif@gmail.com>
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,25 +20,28 @@ limitations under the License.
     android:layout_height="match_parent"
     tools:context=".ui.common.FormActivity">
 
-    <LinearLayout android:id="@+id/imbalance_layout"
+    <LinearLayout
+        android:id="@+id/imbalance_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:padding="@dimen/dialog_padding">
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:gravity="center_vertical"
-            android:text="@string/label_imbalance"/>
+            android:text="@string/label_imbalance" />
 
-        <TextView android:id="@+id/imbalance_textview"
+        <TextView
+            android:id="@+id/imbalance_textview"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:gravity="right|center_vertical"
-            tools:text="$200"/>
+            tools:text="$200" />
     </LinearLayout>
 
     <include
@@ -54,7 +56,9 @@ limitations under the License.
         android:layout_below="@id/imbalance_layout"
         android:layout_above="@+id/calculator_keyboard"
         android:padding="@dimen/dialog_padding">
-        <LinearLayout android:id="@+id/split_list_layout"
+
+        <LinearLayout
+            android:id="@+id/split_list_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="200dp"
@@ -63,7 +67,8 @@ limitations under the License.
         </LinearLayout>
     </ScrollView>
 
-    <android.inputmethodservice.KeyboardView android:id="@+id/calculator_keyboard"
+    <android.inputmethodservice.KeyboardView
+        android:id="@+id/calculator_keyboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

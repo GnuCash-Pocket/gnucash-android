@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,17 +19,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.common.FormActivity">
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <LinearLayout android:id="@+id/budget_amount_layout"
+
+        <LinearLayout
+            android:id="@+id/budget_amount_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="200dp"
-            android:orientation="vertical"/>
+            android:orientation="vertical" />
     </ScrollView>
 
-    <android.inputmethodservice.KeyboardView android:id="@+id/calculator_keyboard"
+    <android.inputmethodservice.KeyboardView
+        android:id="@+id/calculator_keyboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

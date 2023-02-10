@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,17 +20,19 @@
     android:layout_height="wrap_content"
     android:layout_width="match_parent">
 
-    <TextView android:id="@+id/title_content"
+    <TextView
+        android:id="@+id/title_content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textStyle="bold"
         tools:text="Transactions" />
 
-    <TextView android:id="@+id/description"
+    <TextView
+        android:id="@+id/description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="12sp"
-        tools:text="This account contains transactions. \nWhat would you like to do with these transactions"/>
+        tools:text="This account contains transactions. \nWhat would you like to do with these transactions" />
 
     <RadioButton
         android:id="@+id/radio_delete"
@@ -47,8 +48,9 @@
         android:checked="true"
         android:text="@string/label_move_to" />
 
-    <Spinner android:id="@+id/target_accounts_spinner"
+    <Spinner
+        android:id="@+id/target_accounts_spinner"
         android:layout_width="match_parent"
-        android:layout_height="?android:listPreferredItemHeight"/>
+        android:layout_height="?android:listPreferredItemHeight" />
 
 </RadioGroup>

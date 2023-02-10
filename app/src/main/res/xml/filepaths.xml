@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2016 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +14,13 @@
  limitations under the License.
 -->
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <cache-path name="ofx" path="OFX/" />
-    <cache-path name="qif" path="QIF/" />
-    <cache-path name="xml" path="XML/" />
+    <cache-path
+        name="ofx"
+        path="OFX/" />
+    <cache-path
+        name="qif"
+        path="QIF/" />
+    <cache-path
+        name="xml"
+        path="XML/" />
 </paths>

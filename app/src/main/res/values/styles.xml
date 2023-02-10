@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2012 - 2015 Ngewi Fet <ngewif@gmail.com>
  
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,33 +15,34 @@
 -->
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+
     <style name="ListItemContainerBase">
         <item name="android:minHeight">?android:attr/listPreferredItemHeight</item>
     </style>
+
     <style name="ListItem" parent="ListItemContainerBase">
         <item name="android:paddingLeft">@dimen/dialog_padding</item>
         <item name="android:paddingRight">@dimen/dialog_padding</item>
         <item name="android:paddingTop">8dp</item>
-        <item name="android:paddingBottom">8dp</item>        
+        <item name="android:paddingBottom">8dp</item>
         <item name="android:gravity">center_vertical</item>
     </style>
-    
+
     <style name="ListItemText">
         <item name="android:textSize">20sp</item>
         <item name="android:textColor">@android:color/black</item>
         <item name="android:gravity">center_vertical</item>
     </style>
-    
+
     <style name="Dropdown.TextView" parent="@style/Widget.AppCompat.Spinner.DropDown.ActionBar">
         <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
     </style>
-    
+
     <style name="ButtonBaseStyle">
         <item name="android:textColor">@android:color/white</item>
     </style>
-    
-    <style name="TextAppearance" parent="android:TextAppearance">
-    </style>
+
+    <style name="TextAppearance" parent="android:TextAppearance"></style>
 
     <style name="TextAppearance.EditTransaction_Small">
         <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
@@ -50,7 +50,7 @@
         <item name="android:textSize">14sp</item>
         <item name="android:textColor">#FFAAAAAA</item>
     </style>
-    
+
     <style name="TextAppearance.EditTransaction_LabelSmall" parent="TextAppearance.EditTransaction_Small">
         <item name="android:minHeight">24dp</item>
         <item name="android:layout_width">144dp</item>
@@ -59,7 +59,7 @@
         <item name="android:paddingRight">8dp</item>
         <item name="android:layout_marginBottom">-12dp</item>
     </style>
-    
+
     <style name="TextAppearance.Hint">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
@@ -76,8 +76,7 @@
         <item name="android:background">@drawable/selected_background</item>
     </style>
 
-    <style name="Dialog.WidgetConfiguration" parent="android:Theme.Dialog">
-    </style>
+    <style name="Dialog.WidgetConfiguration" parent="android:Theme.Dialog"></style>
 
     <style name="FormRow">
         <item name="android:layout_width">match_parent</item>

@@ -52,8 +52,7 @@
         exchange-code="950"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="₣"
-    />
+        local-symbol="₣" />
     <!-- "ADP" - "Andorran Peseta"
       2002-01-01 "ESP" 1 ;; = 1/1 Spanish Peseta replaced by EUR
     -->
@@ -66,8 +65,7 @@
         exchange-code="724"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="₧"
-    />
+        local-symbol="₧" />
     <!-- "AED" - "UAE Dirham"
       There is also an arabic symbol for "Dhs"
     -->
@@ -80,8 +78,7 @@
         exchange-code="784"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Dhs"
-    />
+        local-symbol="Dhs" />
     <!-- "AFA" - "Afghani"
       through 2003-01-02 "AFN" 1000
     -->
@@ -94,8 +91,7 @@
         exchange-code="004"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "AFN" - "Afghani"
     -->
     <currency
@@ -107,8 +103,7 @@
         exchange-code="971"
         parts-per-unit="1"
         smallest-fraction="1"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "ALL" - "Lek"
     -->
     <currency
@@ -120,8 +115,7 @@
         exchange-code="008"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "AMD" - "Armenian Dram"
     -->
     <currency
@@ -133,8 +127,7 @@
         exchange-code="051"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="դր."
-    />
+        local-symbol="դր." />
     <!-- "ANG" - "Netherlands Antillian Guilder"
       through 2010-10 ???
     -->
@@ -147,8 +140,7 @@
         exchange-code="532"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="NAƒ"
-    />
+        local-symbol="NAƒ" />
     <!-- "AOA" - "Kwanza"
     -->
     <currency
@@ -160,8 +152,7 @@
         exchange-code="973"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Kz"
-    />
+        local-symbol="Kz" />
     <!-- "AON" - "Angola New Kwanza"
       1995-07-01 "AOR" 1000
     -->
@@ -174,8 +165,7 @@
         exchange-code="024"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "AOR" - "Angola Kwanza Reajustado"
       2000-02-01 "AOA" 1000000
     -->
@@ -188,8 +178,7 @@
         exchange-code="982"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "ARA" - "Argentine Austral"
       1992-01-01 "ARS" 10000
     -->
@@ -202,8 +191,7 @@
         exchange-code="XXX"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "ARS" - "Argentine Peso"
     -->
     <currency
@@ -215,8 +203,7 @@
         exchange-code="032"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "ATS" - "Austrian Schilling"
       2002-01-01 "EUR" 13.7603
     -->
@@ -229,8 +216,7 @@
         exchange-code="040"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="öS"
-    />
+        local-symbol="öS" />
     <!-- "AUD" - "Australian Dollar"
     -->
     <currency
@@ -242,8 +228,7 @@
         exchange-code="036"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="$"
-    />
+        local-symbol="$" />
     <!-- "AWG" - "Aruban Guilder"
       ""
     -->
@@ -256,8 +241,7 @@
         exchange-code="533"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Afl."
-    />
+        local-symbol="Afl." />
     <!-- "AZM" - "Azerbaijanian Manat"
       2006-01-01 "AZN" 5000
     -->
@@ -270,8 +254,7 @@
         exchange-code="031"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "AZN" - "Azerbaijanian Manat"
       "m" should be  a 90° rotated € sign, but currently not encoded in Unicode
     -->
@@ -284,8 +267,7 @@
         exchange-code="944"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="m"
-    />
+        local-symbol="m" />
     <!-- "BAD" - "Bosnia and Herzegovina Dinar"
       1998-06-22 "BAM" 100 ;; there was a revaluation 1994-08: 10000:1
     -->
@@ -298,8 +280,7 @@
         exchange-code="070"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "BAM" - "Convertible Marks"
     -->
     <currency
@@ -311,8 +292,7 @@
         exchange-code="977"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="KM"
-    />
+        local-symbol="KM" />
     <!-- "BBD" - "Barbados Dollar"
     -->
     <currency
@@ -324,8 +304,7 @@
         exchange-code="052"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Bds$"
-    />
+        local-symbol="Bds$" />
     <!-- "BDT" - "Taka"
     -->
     <currency
@@ -337,8 +316,7 @@
         exchange-code="050"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="৳"
-    />
+        local-symbol="৳" />
     <!-- "BEF" - "Belgian Franc"
       2002-01-01 "EUR" 40.3399
     -->
@@ -351,8 +329,7 @@
         exchange-code="056"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="fr."
-    />
+        local-symbol="fr." />
     <!-- "BGL" - "Bulgarian Lev A/99"
       1999-07-05 "BGN" 1000
     -->
@@ -365,8 +342,7 @@
         exchange-code="100"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "BGN" - "Bulgarian Lev"
       scheduled replacement: 2012-01-01 "EUR" 1.95583 (=DEM)
     -->
@@ -379,8 +355,7 @@
         exchange-code="975"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="лв"
-    />
+        local-symbol="лв" />
     <!-- "BHD" - "Bahraini Dinar"
       ar:.د.ب
     -->
@@ -393,8 +368,7 @@
         exchange-code="048"
         parts-per-unit="1000"
         smallest-fraction="1000"
-        local-symbol="BD"
-    />
+        local-symbol="BD" />
     <!-- "BIF" - "Burundi Franc"
     -->
     <currency
@@ -406,8 +380,7 @@
         exchange-code="108"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="FBu"
-    />
+        local-symbol="FBu" />
     <!-- "BMD" - "Bermudian Dollar"
     -->
     <currency
@@ -419,8 +392,7 @@
         exchange-code="060"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="BD$"
-    />
+        local-symbol="BD$" />
     <!-- "BND" - "Brunei Dollar"
     -->
     <currency
@@ -432,8 +404,7 @@
         exchange-code="096"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="B$"
-    />
+        local-symbol="B$" />
     <!-- "BOB" - "Boliviano"
     -->
     <currency
@@ -445,8 +416,7 @@
         exchange-code="068"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Bs."
-    />
+        local-symbol="Bs." />
     <!-- "BOV" - "Mvdol"
       Mantenimiento de Valor respecto al Dólar
     -->
@@ -459,8 +429,7 @@
         exchange-code="984"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "BRE" - "Brazilian Cruzeiro"
       1993-08-01 "BRR" 1000
     -->
@@ -473,8 +442,7 @@
         exchange-code="076"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "BRL" - "Brazilian Real"
     -->
     <currency
@@ -486,8 +454,7 @@
         exchange-code="986"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="R$"
-    />
+        local-symbol="R$" />
     <!-- "BRR" - "Brazilian Cruzeiro Real"
       1994-07-01 "BRL" 2750
     -->
@@ -500,8 +467,7 @@
         exchange-code="987"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "BSD" - "Bahamian Dollar"
     -->
     <currency
@@ -513,8 +479,7 @@
         exchange-code="044"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="B$"
-    />
+        local-symbol="B$" />
     <!-- "BTN" - "Ngultrum"
     -->
     <currency
@@ -526,8 +491,7 @@
         exchange-code="064"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Nu."
-    />
+        local-symbol="Nu." />
     <!-- "BWP" - "Pula"
     -->
     <currency
@@ -539,8 +503,7 @@
         exchange-code="072"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="P"
-    />
+        local-symbol="P" />
     <!-- "BYB" - "Belarussian Rouble"
       2000-01-01 "BYR" 1000
     -->
@@ -553,8 +516,7 @@
         exchange-code=""
         parts-per-unit="100"
         smallest-fraction="1"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "BYR" - "Belarussian Ruble"
       2017-01-01 "BYN" 10000
     -->
@@ -567,8 +529,7 @@
         exchange-code="974"
         parts-per-unit="1"
         smallest-fraction="100"
-        local-symbol="Br"
-    />
+        local-symbol="Br" />
     <!-- "BYN" - "Belarussian Ruble"
     -->
     <currency
@@ -580,8 +541,7 @@
         exchange-code="933"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Br"
-    />
+        local-symbol="Br" />
     <!-- "BZD" - "Belize Dollar"
     -->
     <currency
@@ -593,8 +553,7 @@
         exchange-code="084"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="BZ$"
-    />
+        local-symbol="BZ$" />
     <!-- "CAD" - "Canadian Dollar"
     -->
     <currency
@@ -606,8 +565,7 @@
         exchange-code="124"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="C$"
-    />
+        local-symbol="C$" />
     <!-- "CDF" - "Franc Congolais"
     -->
     <currency
@@ -619,8 +577,7 @@
         exchange-code="976"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="FC"
-    />
+        local-symbol="FC" />
     <!-- "CHE" - "WIR Euro"
       complementary currency by WIR Wirtschaftsring-Genossenschaft
     -->
@@ -633,8 +590,7 @@
         exchange-code="974"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "CHF" - "Swiss Franc"
     -->
     <currency
@@ -646,8 +602,7 @@
         exchange-code="756"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="SFr."
-    />
+        local-symbol="SFr." />
     <!-- "CHW" - "WIR Franc"
       complementary currency by WIR Wirtschaftsring-Genossenschaft
     -->
@@ -660,8 +615,7 @@
         exchange-code="948"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "CLF" - "Unidades de fomento"
       international secured loans; decimals not defined but required for conversion as of 2011-03-18 1 CLF = 21,560.19 CLP
     -->
@@ -674,8 +628,7 @@
         exchange-code="990"
         parts-per-unit="10000"
         smallest-fraction="10000"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "CLP" - "Chilean Peso"
       "$" should have 2 strokes
     -->
@@ -688,8 +641,7 @@
         exchange-code="152"
         parts-per-unit="100"
         smallest-fraction="1"
-        local-symbol="$"
-    />
+        local-symbol="$" />
     <!-- "CNY" - "Yuan Renminbi"
       locale-symbol has been changed from 元 to CN¥ following a discussion on bug 727466
     -->
@@ -702,8 +654,7 @@
         exchange-code="156"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="CN¥"
-    />
+        local-symbol="CN¥" />
     <!-- "COP" - "Colombian Peso"
     -->
     <currency
@@ -715,8 +666,7 @@
         exchange-code="170"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="$"
-    />
+        local-symbol="$" />
     <!-- "COU" - "Unidad de Valor Real"
     -->
     <currency
@@ -728,8 +678,7 @@
         exchange-code="970"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "CRC" - "Costa Rican Colon"
     -->
     <currency
@@ -741,8 +690,7 @@
         exchange-code="188"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="₡"
-    />
+        local-symbol="₡" />
     <!-- "CUP" - "Cuban Peso"
     -->
     <currency
@@ -754,8 +702,7 @@
         exchange-code="192"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="$MN"
-    />
+        local-symbol="$MN" />
     <!-- "CUC" - "Cuban Convertible Peso"
     -->
     <currency
@@ -767,8 +714,7 @@
         exchange-code="931"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="CUC$"
-    />
+        local-symbol="CUC$" />
     <!-- "CVE" - "Cape Verde Escudo"
     -->
     <currency
@@ -780,8 +726,7 @@
         exchange-code="132"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Esc"
-    />
+        local-symbol="Esc" />
     <!-- "CYP" - "Cyprus Pound"
       2008-01-01 "EUR" 0.585274
     -->
@@ -794,8 +739,7 @@
         exchange-code="196"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="£"
-    />
+        local-symbol="£" />
     <!-- "CZK" - "Czech Koruna"
     -->
     <currency
@@ -807,8 +751,7 @@
         exchange-code="203"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Kč"
-    />
+        local-symbol="Kč" />
     <!-- "DEM" - "Deutsche Mark"
       2002-01-01 "EUR" 1.95583
     -->
@@ -821,8 +764,7 @@
         exchange-code="280"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="DM"
-    />
+        local-symbol="DM" />
     <!-- "DJF" - "Djibouti Franc"
     -->
     <currency
@@ -834,8 +776,7 @@
         exchange-code="262"
         parts-per-unit="100"
         smallest-fraction="1"
-        local-symbol="Fdj"
-    />
+        local-symbol="Fdj" />
     <!-- "DKK" - "Danish Krone"
     -->
     <currency
@@ -847,8 +788,7 @@
         exchange-code="208"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="kr"
-    />
+        local-symbol="kr" />
     <!-- "DOP" - "Dominican Peso"
     -->
     <currency
@@ -860,8 +800,7 @@
         exchange-code="214"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="RD$"
-    />
+        local-symbol="RD$" />
     <!-- "DZD" - "Algerian Dinar"
       ar.:  دج
     -->
@@ -874,8 +813,7 @@
         exchange-code="012"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="DA"
-    />
+        local-symbol="DA" />
     <!-- "ECS" - "Ecuador Sucre"
       2000-09-15 "USD" 25000
     -->
@@ -888,8 +826,7 @@
         exchange-code="218"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="S/."
-    />
+        local-symbol="S/." />
     <!-- "EEK" - "Kroon"
       2011-01-01 "EUR" 15.6466
     -->
@@ -902,8 +839,7 @@
         exchange-code="233"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="kr"
-    />
+        local-symbol="kr" />
     <!-- "EGP" - "Egyptian Pound"
       ar.:ج.م maleem=0.001 £E for accounting?
     -->
@@ -916,8 +852,7 @@
         exchange-code="818"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="£E"
-    />
+        local-symbol="£E" />
     <!-- "ERN" - "Nakfa"
     -->
     <currency
@@ -929,8 +864,7 @@
         exchange-code="232"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Nfa"
-    />
+        local-symbol="Nfa" />
     <!-- "ESP" - "Spanish Peseta"
       2002-01-01 "EUR" 166.386
     -->
@@ -943,8 +877,7 @@
         exchange-code="724"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="₧"
-    />
+        local-symbol="₧" />
     <!-- "ETB" - "Ethiopian Birr"
     -->
     <currency
@@ -956,8 +889,7 @@
         exchange-code="230"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Br"
-    />
+        local-symbol="Br" />
     <!-- "EUR" - "Euro"
     -->
     <currency
@@ -969,8 +901,7 @@
         exchange-code="978"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="€"
-    />
+        local-symbol="€" />
     <!-- "FIM" - "Finnish Markka"
       2002-01-01 "EUR" 5.94573
     -->
@@ -983,8 +914,7 @@
         exchange-code="246"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="mk"
-    />
+        local-symbol="mk" />
     <!-- "FJD" - "Fiji Dollar"
     -->
     <currency
@@ -996,8 +926,7 @@
         exchange-code="242"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="FJ$"
-    />
+        local-symbol="FJ$" />
     <!-- "FKP" - "Falkland Islands Pound"
     -->
     <currency
@@ -1009,8 +938,7 @@
         exchange-code="238"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="FK£"
-    />
+        local-symbol="FK£" />
     <!-- "FRF" - "French Franc"
       2002-01-01 "EUR" 6.55957
     -->
@@ -1023,8 +951,7 @@
         exchange-code="250"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="₣"
-    />
+        local-symbol="₣" />
     <!-- "GBP" - "Pound Sterling"
     -->
     <currency
@@ -1036,8 +963,7 @@
         exchange-code="826"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="£"
-    />
+        local-symbol="£" />
     <!-- "GEL" - "Lari"
     -->
     <currency
@@ -1049,8 +975,7 @@
         exchange-code="981"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "GHC" - "Cedi"
       2007-07-01 "GHS" 10000
     -->
@@ -1063,8 +988,7 @@
         exchange-code="288"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "GHS" - "Ghana Cedi"
     -->
     <currency
@@ -1076,8 +1000,7 @@
         exchange-code="936"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="GH₵"
-    />
+        local-symbol="GH₵" />
     <!-- "GIP" - "Gibraltar Pound"
     -->
     <currency
@@ -1089,8 +1012,7 @@
         exchange-code="292"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="£"
-    />
+        local-symbol="£" />
     <!-- "GMD" - "Dalasi"
     -->
     <currency
@@ -1102,8 +1024,7 @@
         exchange-code="270"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="D"
-    />
+        local-symbol="D" />
     <!-- "GNF" - "Guinea Franc"
     -->
     <currency
@@ -1115,8 +1036,7 @@
         exchange-code="324"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="FG"
-    />
+        local-symbol="FG" />
     <!-- "GRD" - "Greek Drachma"
       2002-01-01 "EUR" 340.750
     -->
@@ -1129,8 +1049,7 @@
         exchange-code="200"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Δρ."
-    />
+        local-symbol="Δρ." />
     <!-- "GTQ" - "Quetzal"
     -->
     <currency
@@ -1142,8 +1061,7 @@
         exchange-code="320"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Q"
-    />
+        local-symbol="Q" />
     <!-- "GWP" - "Guinea-Bissau Peso"
       1997-01-01 "XOF" 65
     -->
@@ -1156,8 +1074,7 @@
         exchange-code="624"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "GYD" - "Guyana Dollar"
     -->
     <currency
@@ -1169,8 +1086,7 @@
         exchange-code="328"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="G$"
-    />
+        local-symbol="G$" />
     <!-- "HKD" - "Hong Kong Dollar"
     -->
     <currency
@@ -1182,8 +1098,7 @@
         exchange-code="344"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="HK$"
-    />
+        local-symbol="HK$" />
     <!-- "HNL" - "Lempira"
     -->
     <currency
@@ -1195,8 +1110,7 @@
         exchange-code="340"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="L"
-    />
+        local-symbol="L" />
     <!-- "HRK" - "Croatian Kuna"
     -->
     <currency
@@ -1208,8 +1122,7 @@
         exchange-code="191"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="kn"
-    />
+        local-symbol="kn" />
     <!-- "HTG" - "Gourde"
     -->
     <currency
@@ -1221,8 +1134,7 @@
         exchange-code="332"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="G"
-    />
+        local-symbol="G" />
     <!-- "HUF" - "Forint"
     -->
     <currency
@@ -1234,8 +1146,7 @@
         exchange-code="348"
         parts-per-unit="1"
         smallest-fraction="100"
-        local-symbol="Ft"
-    />
+        local-symbol="Ft" />
     <!-- "IDR" - "Rupiah"
     -->
     <currency
@@ -1247,8 +1158,7 @@
         exchange-code="360"
         parts-per-unit="1"
         smallest-fraction="100"
-        local-symbol="Rp"
-    />
+        local-symbol="Rp" />
     <!-- "IEP" - "Irish Pound"
       2002-01-01 "EUR" 0.787564
     -->
@@ -1261,8 +1171,7 @@
         exchange-code="372"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="£"
-    />
+        local-symbol="£" />
     <!-- "ILS" - "New Israeli Sheqel"
     -->
     <currency
@@ -1274,8 +1183,7 @@
         exchange-code="376"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="₪"
-    />
+        local-symbol="₪" />
     <!-- "INR" - "Indian Rupee"
     -->
     <currency
@@ -1287,8 +1195,7 @@
         exchange-code="356"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="₹"
-    />
+        local-symbol="₹" />
     <!-- "IQD" - "Iraqi Dinar"
     -->
     <currency
@@ -1300,8 +1207,7 @@
         exchange-code="368"
         parts-per-unit="1000"
         smallest-fraction="1000"
-        local-symbol="ع.د"
-    />
+        local-symbol="ع.د" />
     <!-- "IRR" - "Iranian Rial"
     -->
     <currency
@@ -1313,8 +1219,7 @@
         exchange-code="364"
         parts-per-unit="1"
         smallest-fraction="1"
-        local-symbol="﷼"
-    />
+        local-symbol="﷼" />
     <!-- "ISK" - "Iceland Krona"
     -->
     <currency
@@ -1326,8 +1231,7 @@
         exchange-code="352"
         parts-per-unit="1"
         smallest-fraction="100"
-        local-symbol="kr"
-    />
+        local-symbol="kr" />
     <!-- "ITL" - "Italian Lira"
       2002-01-01 "EUR" 1936.27
     -->
@@ -1340,8 +1244,7 @@
         exchange-code="380"
         parts-per-unit="1"
         smallest-fraction="1"
-        local-symbol="₤"
-    />
+        local-symbol="₤" />
     <!-- "JMD" - "Jamaican Dollar"
     -->
     <currency
@@ -1353,8 +1256,7 @@
         exchange-code="388"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="J$"
-    />
+        local-symbol="J$" />
     <!-- "JOD" - "Jordanian Dinar"
     -->
     <currency
@@ -1366,8 +1268,7 @@
         exchange-code="400"
         parts-per-unit="1000"
         smallest-fraction="1000"
-        local-symbol="JD"
-    />
+        local-symbol="JD" />
     <!-- "JPY" - "Yen"
     -->
     <currency
@@ -1379,8 +1280,7 @@
         exchange-code="392"
         parts-per-unit="100"
         smallest-fraction="1"
-        local-symbol="JP¥"
-    />
+        local-symbol="JP¥" />
     <!-- "KES" - "Kenyan Shilling"
     -->
     <currency
@@ -1392,8 +1292,7 @@
         exchange-code="404"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Ksh"
-    />
+        local-symbol="Ksh" />
     <!-- "KGS" - "Som"
     -->
     <currency
@@ -1405,8 +1304,7 @@
         exchange-code="417"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "KHR" - "Riel"
     -->
     <currency
@@ -1418,8 +1316,7 @@
         exchange-code="116"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "KMF" - "Comoro Franc"
     -->
     <currency
@@ -1431,8 +1328,7 @@
         exchange-code="174"
         parts-per-unit="100"
         smallest-fraction="1"
-        local-symbol="FC"
-    />
+        local-symbol="FC" />
     <!-- "KPW" - "North Korean Won"
     -->
     <currency
@@ -1444,8 +1340,7 @@
         exchange-code="408"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="₩"
-    />
+        local-symbol="₩" />
     <!-- "KRW" - "Won"
     -->
     <currency
@@ -1457,8 +1352,7 @@
         exchange-code="410"
         parts-per-unit="1"
         smallest-fraction="100"
-        local-symbol="₩"
-    />
+        local-symbol="₩" />
     <!-- "KWD" - "Kuwaiti Dinar"
     -->
     <currency
@@ -1470,8 +1364,7 @@
         exchange-code="414"
         parts-per-unit="1000"
         smallest-fraction="1000"
-        local-symbol="د.ك"
-    />
+        local-symbol="د.ك" />
     <!-- "KYD" - "Cayman Islands Dollar"
     -->
     <currency
@@ -1483,8 +1376,7 @@
         exchange-code="136"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="CI$"
-    />
+        local-symbol="CI$" />
     <!-- "KZT" - "Tenge"
     -->
     <currency
@@ -1496,8 +1388,7 @@
         exchange-code="398"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="₸"
-    />
+        local-symbol="₸" />
     <!-- "LAK" - "Kip"
     -->
     <currency
@@ -1509,8 +1400,7 @@
         exchange-code="418"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="₭"
-    />
+        local-symbol="₭" />
     <!-- "LBP" - "Lebanese Pound"
     -->
     <currency
@@ -1522,8 +1412,7 @@
         exchange-code="422"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="ل.ل"
-    />
+        local-symbol="ل.ل" />
     <!-- "LKR" - "Sri Lanka Rupee"
     -->
     <currency
@@ -1535,8 +1424,7 @@
         exchange-code="144"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="₨"
-    />
+        local-symbol="₨" />
     <!-- "LRD" - "Liberian Dollar"
     -->
     <currency
@@ -1548,8 +1436,7 @@
         exchange-code="430"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="L$"
-    />
+        local-symbol="L$" />
     <!-- "LSL" - "Loti"
     -->
     <currency
@@ -1561,8 +1448,7 @@
         exchange-code="426"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="M"
-    />
+        local-symbol="M" />
     <!-- "LTL" - "Lithuanian Litas"
     -->
     <currency
@@ -1574,8 +1460,7 @@
         exchange-code="440"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Lt"
-    />
+        local-symbol="Lt" />
     <!-- "LUF" - "Luxembourg Franc"
       2002-01-01 "EUR" 40.3399
     -->
@@ -1588,8 +1473,7 @@
         exchange-code="442"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Flux"
-    />
+        local-symbol="Flux" />
     <!-- "LVL" - "Latvian Lats"
       Valid from 2. may 2009. till 31. december 2013, now "EUR" 0.702804
     -->
@@ -1602,8 +1486,7 @@
         exchange-code="428"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Ls"
-    />
+        local-symbol="Ls" />
     <!-- "LYD" - "Libyan Dinar"
     -->
     <currency
@@ -1615,8 +1498,7 @@
         exchange-code="434"
         parts-per-unit="1000"
         smallest-fraction="1000"
-        local-symbol="ل.د"
-    />
+        local-symbol="ل.د" />
     <!-- "MAD" - "Moroccan Dirham"
     -->
     <currency
@@ -1628,8 +1510,7 @@
         exchange-code="504"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="د.م"
-    />
+        local-symbol="د.م" />
     <!-- "MDL" - "Moldovan Leu"
     -->
     <currency
@@ -1641,8 +1522,7 @@
         exchange-code="498"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "MGA" - "Malagasy Ariary"
     -->
     <currency
@@ -1654,8 +1534,7 @@
         exchange-code="969"
         parts-per-unit="5"
         smallest-fraction="5"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "MGF" - "Malagasy Franc"
       2003-07-31 "MGA" 5
     -->
@@ -1668,8 +1547,7 @@
         exchange-code="450"
         parts-per-unit="500"
         smallest-fraction="500"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "MKD" - "Denar"
     -->
     <currency
@@ -1681,8 +1559,7 @@
         exchange-code="807"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="ден"
-    />
+        local-symbol="ден" />
     <!-- "MLF" - "Mali Franc"
       1984-07-01 "XOF" 2
     -->
@@ -1695,8 +1572,7 @@
         exchange-code="466"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "MMK" - "Kyat"
     -->
     <currency
@@ -1708,8 +1584,7 @@
         exchange-code="104"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="K"
-    />
+        local-symbol="K" />
     <!-- "MNT" - "Tugrik"
     -->
     <currency
@@ -1721,8 +1596,7 @@
         exchange-code="496"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="₮"
-    />
+        local-symbol="₮" />
     <!-- "MOP" - "Pataca"
     -->
     <currency
@@ -1734,8 +1608,7 @@
         exchange-code="446"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="MOP$"
-    />
+        local-symbol="MOP$" />
     <!-- "MRO" - "Ouguiya"
     -->
     <currency
@@ -1747,8 +1620,7 @@
         exchange-code="478"
         parts-per-unit="5"
         smallest-fraction="5"
-        local-symbol="UM"
-    />
+        local-symbol="UM" />
     <!-- "MTL" - "Maltese Lira"
       2008-01-01 "EUR" 0.4293
     -->
@@ -1761,8 +1633,7 @@
         exchange-code="470"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Lm"
-    />
+        local-symbol="Lm" />
     <!-- "MUR" - "Mauritius Rupee"
     -->
     <currency
@@ -1774,8 +1645,7 @@
         exchange-code="480"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="R"
-    />
+        local-symbol="R" />
     <!-- "MVR" - "Rufiyaa"
     -->
     <currency
@@ -1787,8 +1657,7 @@
         exchange-code="462"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=".ރ"
-    />
+        local-symbol=".ރ" />
     <!-- "MWK" - "Kwacha"
     -->
     <currency
@@ -1800,8 +1669,7 @@
         exchange-code="454"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="MK"
-    />
+        local-symbol="MK" />
     <!-- "MXN" - "Mexican Peso"
       since Jan 1993 (1000 MXP = 1 MXN)
     -->
@@ -1814,8 +1682,7 @@
         exchange-code="484"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Mex$"
-    />
+        local-symbol="Mex$" />
     <!-- "MXV" - "Mexican Unidad de Inversion (UDI)"
       fund index based; used for credits, not subject to inflation
     -->
@@ -1828,8 +1695,7 @@
         exchange-code="979"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "MYR" - "Malaysian Ringgit"
     -->
     <currency
@@ -1841,8 +1707,7 @@
         exchange-code="458"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="RM"
-    />
+        local-symbol="RM" />
     <!-- "MZM" - "Mozambique Metical"
       2006-07-01 "MZN" 1000
     -->
@@ -1855,8 +1720,7 @@
         exchange-code="508"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "MZN" - "Metical"
     -->
     <currency
@@ -1868,8 +1732,7 @@
         exchange-code="943"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="MTn"
-    />
+        local-symbol="MTn" />
     <!-- "NAD" - "Namibia Dollar"
     -->
     <currency
@@ -1881,8 +1744,7 @@
         exchange-code="516"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="N$"
-    />
+        local-symbol="N$" />
     <!-- "NGN" - "Naira"
     -->
     <currency
@@ -1894,8 +1756,7 @@
         exchange-code="566"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="₦"
-    />
+        local-symbol="₦" />
     <!-- "NIC" - "Nicaraguan Cordoba"
       1990-10-13 "NIO" 5000000
     -->
@@ -1908,8 +1769,7 @@
         exchange-code="558"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "NIO" - "Cordoba Oro"
     -->
     <currency
@@ -1921,8 +1781,7 @@
         exchange-code="558"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="C$"
-    />
+        local-symbol="C$" />
     <!-- "NLG" - "Netherlands Guilder"
       2002-01-01 "EUR" 2.20371
     -->
@@ -1935,8 +1794,7 @@
         exchange-code="528"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "NOK" - "Norwegian Krone"
     -->
     <currency
@@ -1948,8 +1806,7 @@
         exchange-code="578"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="kr"
-    />
+        local-symbol="kr" />
     <!-- "NPR" - "Nepalese Rupee"
     -->
     <currency
@@ -1961,8 +1818,7 @@
         exchange-code="524"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="₨"
-    />
+        local-symbol="₨" />
     <!-- "NZD" - "New Zealand Dollar"
     -->
     <currency
@@ -1974,8 +1830,7 @@
         exchange-code="554"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="NZ$"
-    />
+        local-symbol="NZ$" />
     <!-- "OMR" - "Rial Omani"
     -->
     <currency
@@ -1987,8 +1842,7 @@
         exchange-code="512"
         parts-per-unit="1000"
         smallest-fraction="1000"
-        local-symbol="ر.ع."
-    />
+        local-symbol="ر.ع." />
     <!-- "PAB" - "Balboa"
     -->
     <currency
@@ -2000,8 +1854,7 @@
         exchange-code="590"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="฿"
-    />
+        local-symbol="฿" />
     <!-- "PEN" - "Nuevo Sol"
     -->
     <currency
@@ -2013,8 +1866,7 @@
         exchange-code="604"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="S/."
-    />
+        local-symbol="S/." />
     <!-- "PGK" - "Kina"
     -->
     <currency
@@ -2026,8 +1878,7 @@
         exchange-code="598"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="K"
-    />
+        local-symbol="K" />
     <!-- "PHP" - "Philippine Peso"
     -->
     <currency
@@ -2039,8 +1890,7 @@
         exchange-code="608"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="₱"
-    />
+        local-symbol="₱" />
     <!-- "PKR" - "Pakistan Rupee"
     -->
     <currency
@@ -2052,8 +1902,7 @@
         exchange-code="586"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Rs"
-    />
+        local-symbol="Rs" />
     <!-- "PLN" - "Zloty"
     -->
     <currency
@@ -2065,8 +1914,7 @@
         exchange-code="985"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="zł"
-    />
+        local-symbol="zł" />
     <!-- "PTE" - "Portuguese Escudo"
       2002-01-01 "EUR" 200.482
     -->
@@ -2079,8 +1927,7 @@
         exchange-code="620"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="$"
-    />
+        local-symbol="$" />
     <!-- "PYG" - "Guarani"
       scheduled revaluation 2011
     -->
@@ -2093,8 +1940,7 @@
         exchange-code="600"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="₲"
-    />
+        local-symbol="₲" />
     <!-- "QAR" - "Qatari Rial"
     -->
     <currency
@@ -2106,8 +1952,7 @@
         exchange-code="634"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="ر.ق"
-    />
+        local-symbol="ر.ق" />
     <!-- "ROL" - "Romanian Old Leu"
       2005-07-01 "RON" 10000
     -->
@@ -2120,8 +1965,7 @@
         exchange-code="642"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "RON" - "New Leu"
       scheduled 2012..14: EUR
     -->
@@ -2134,8 +1978,7 @@
         exchange-code="946"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "RSD" - "Serbian Dinar"
     -->
     <currency
@@ -2147,8 +1990,7 @@
         exchange-code="941"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "RUB" - "Russian Rouble"
       RUR: 1998-01-1 "RUB" 1000; see bug #393185
     -->
@@ -2161,8 +2003,7 @@
         exchange-code="643"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="руб"
-    />
+        local-symbol="руб" />
     <!-- "RWF" - "Rwanda Franc"
     -->
     <currency
@@ -2174,8 +2015,7 @@
         exchange-code="646"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="RF"
-    />
+        local-symbol="RF" />
     <!-- "SAR" - "Saudi Riyal"
     -->
     <currency
@@ -2187,8 +2027,7 @@
         exchange-code="682"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="ر.س"
-    />
+        local-symbol="ر.س" />
     <!-- "SBD" - "Solomon Islands Dollar"
     -->
     <currency
@@ -2200,8 +2039,7 @@
         exchange-code="090"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="SI$"
-    />
+        local-symbol="SI$" />
     <!-- "SCR" - "Seychelles Rupee"
     -->
     <currency
@@ -2213,8 +2051,7 @@
         exchange-code="690"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="SR"
-    />
+        local-symbol="SR" />
     <!-- "SDD" - "Sudanese Dinar"
       2007-07-01 "SDG" 100, reunite with South
     -->
@@ -2227,8 +2064,7 @@
         exchange-code="736"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "SDG" - "Sudanese Pound"
     -->
     <currency
@@ -2240,8 +2076,7 @@
         exchange-code="938"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "SDP" - "Sudanese Pound"
       1992-01-01 "SDD" 10, but only in the North
     -->
@@ -2254,8 +2089,7 @@
         exchange-code="736"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "SEK" - "Swedish Krona"
     -->
     <currency
@@ -2267,8 +2101,7 @@
         exchange-code="752"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="kr"
-    />
+        local-symbol="kr" />
     <!-- "SGD" - "Singapore Dollar"
     -->
     <currency
@@ -2280,8 +2113,7 @@
         exchange-code="702"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="S$"
-    />
+        local-symbol="S$" />
     <!-- "SHP" - "Saint Helena Pound"
     -->
     <currency
@@ -2293,8 +2125,7 @@
         exchange-code="654"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="£"
-    />
+        local-symbol="£" />
     <!-- "SIT" - "Slovenian Tolar"
       2007-01-01 "EUR" 239.640
     -->
@@ -2307,8 +2138,7 @@
         exchange-code="705"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "SKK" - "Slovak Koruna"
       2009-01-01 "EUR" 30.126
     -->
@@ -2321,8 +2151,7 @@
         exchange-code="703"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "SLL" - "Leone"
     -->
     <currency
@@ -2334,8 +2163,7 @@
         exchange-code="694"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Le"
-    />
+        local-symbol="Le" />
     <!-- "SOS" - "Somali Shilling"
     -->
     <currency
@@ -2347,8 +2175,7 @@
         exchange-code="706"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="SoSh"
-    />
+        local-symbol="SoSh" />
     <!-- "SRD" - "Surinam Dollar"
     -->
     <currency
@@ -2360,8 +2187,7 @@
         exchange-code="968"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="$"
-    />
+        local-symbol="$" />
     <!-- "SRG" - "Suriname Guilder"
       2004-01-01 "SRD" 1000
     -->
@@ -2374,8 +2200,7 @@
         exchange-code="740"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "STD" - "Dobra"
     -->
     <currency
@@ -2387,8 +2212,7 @@
         exchange-code="678"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Db"
-    />
+        local-symbol="Db" />
     <!-- "SVC" - "El Salvador Colon"
       2001-01-01 "USD" 8.75
     -->
@@ -2401,8 +2225,7 @@
         exchange-code="222"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "SYP" - "Syrian Pound"
     -->
     <currency
@@ -2414,8 +2237,7 @@
         exchange-code="760"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "SZL" - "Lilangeni"
     -->
     <currency
@@ -2427,8 +2249,7 @@
         exchange-code="748"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="L"
-    />
+        local-symbol="L" />
     <!-- "THB" - "Baht"
     -->
     <currency
@@ -2440,8 +2261,7 @@
         exchange-code="764"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="฿"
-    />
+        local-symbol="฿" />
     <!-- "TJR" - "Tajik Rouble"
       2002-11-01 "TJS" 1000
     -->
@@ -2454,8 +2274,7 @@
         exchange-code="762"
         parts-per-unit="1"
         smallest-fraction="1"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "TJS" - "Somoni"
     -->
     <currency
@@ -2467,8 +2286,7 @@
         exchange-code="972"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "TMM" - "Manat"
       2009-01-01 "TMT" 5000
     -->
@@ -2481,8 +2299,7 @@
         exchange-code="795"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "TMT" - "Manat"
     -->
     <currency
@@ -2494,8 +2311,7 @@
         exchange-code="934"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="m"
-    />
+        local-symbol="m" />
     <!-- "TND" - "Tunisian Dinar"
     -->
     <currency
@@ -2507,8 +2323,7 @@
         exchange-code="788"
         parts-per-unit="1000"
         smallest-fraction="1000"
-        local-symbol="د.ت"
-    />
+        local-symbol="د.ت" />
     <!-- "TOP" - "Pa'anga"
     -->
     <currency
@@ -2520,8 +2335,7 @@
         exchange-code="776"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="T$"
-    />
+        local-symbol="T$" />
     <!-- "TRY" - "Turkish Lira"
     -->
     <currency
@@ -2533,8 +2347,7 @@
         exchange-code="949"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="₺"
-    />
+        local-symbol="₺" />
     <!-- "TTD" - "Trinidad and Tobago Dollar"
     -->
     <currency
@@ -2546,8 +2359,7 @@
         exchange-code="780"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="TT$"
-    />
+        local-symbol="TT$" />
     <!-- "TWD" - "New Taiwan Dollar"
     -->
     <currency
@@ -2559,8 +2371,7 @@
         exchange-code="901"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="NT$"
-    />
+        local-symbol="NT$" />
     <!-- "TZS" - "Tanzanian Shilling"
     -->
     <currency
@@ -2572,8 +2383,7 @@
         exchange-code="834"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="/"
-    />
+        local-symbol="/" />
     <!-- "UAH" - "Hryvnia"
     -->
     <currency
@@ -2585,8 +2395,7 @@
         exchange-code="980"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="₴"
-    />
+        local-symbol="₴" />
     <!-- "UGX" - "Uganda Shilling"
     -->
     <currency
@@ -2598,8 +2407,7 @@
         exchange-code="800"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="USh"
-    />
+        local-symbol="USh" />
     <!-- "USD" - "US Dollar"
     -->
     <currency
@@ -2611,8 +2419,7 @@
         exchange-code="840"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="$"
-    />
+        local-symbol="$" />
     <!-- "USN" - "US Dollar (Next day)"
       funds code
     -->
@@ -2625,8 +2432,7 @@
         exchange-code="997"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="$n"
-    />
+        local-symbol="$n" />
     <!-- "USS" - "US Dollar (Same day)"
       funds code
     -->
@@ -2639,8 +2445,7 @@
         exchange-code="998"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="$s"
-    />
+        local-symbol="$s" />
     <!-- "UYI" - "Uruguay Peso en Unidades Indexadas"
     -->
     <currency
@@ -2652,8 +2457,7 @@
         exchange-code="940"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="UI"
-    />
+        local-symbol="UI" />
     <!-- "UYU" - "Peso Uruguayo"
     -->
     <currency
@@ -2665,8 +2469,7 @@
         exchange-code="858"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="$U"
-    />
+        local-symbol="$U" />
     <!-- "UZS" - "Uzbekistan Sum"
     -->
     <currency
@@ -2678,8 +2481,7 @@
         exchange-code="860"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="som"
-    />
+        local-symbol="som" />
     <!-- "VEB" - "Venezuela Bolívar"
       2008-01-01 "VEF" 1000
     -->
@@ -2692,8 +2494,7 @@
         exchange-code="862"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "VEF" - "Bolivar Fuerte"
     -->
     <currency
@@ -2705,8 +2506,7 @@
         exchange-code="937"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Bs."
-    />
+        local-symbol="Bs." />
     <!-- "VND" - "Dong"
     -->
     <currency
@@ -2718,8 +2518,7 @@
         exchange-code="704"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="₫"
-    />
+        local-symbol="₫" />
     <!-- "VUV" - "Vatu"
     -->
     <currency
@@ -2731,8 +2530,7 @@
         exchange-code="548"
         parts-per-unit="1"
         smallest-fraction="1"
-        local-symbol="Vt"
-    />
+        local-symbol="Vt" />
     <!-- "WST" - "Tala"
     -->
     <currency
@@ -2744,8 +2542,7 @@
         exchange-code="882"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="WS$"
-    />
+        local-symbol="WS$" />
     <!-- "YER" - "Yemeni Rial"
     -->
     <currency
@@ -2757,8 +2554,7 @@
         exchange-code="886"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Rl"
-    />
+        local-symbol="Rl" />
     <!-- "YUM" - "Yugoslavian Dinar"
       2003 replaced by RSD 1
     -->
@@ -2771,8 +2567,7 @@
         exchange-code="890"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "ZAR" - "Rand"
     -->
     <currency
@@ -2784,8 +2579,7 @@
         exchange-code="710"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="R"
-    />
+        local-symbol="R" />
     <!-- "ZMK" - "Kwacha (old)"
       replaced by ZMW from 2013-01-01 onwards
     -->
@@ -2798,8 +2592,7 @@
         exchange-code="894"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="ZK"
-    />
+        local-symbol="ZK" />
     <!-- "ZMW" - "Zambian Kwacha"
       replaced ZMK from 2013-01-01 onwards
     -->
@@ -2812,8 +2605,7 @@
         exchange-code="967"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="ZK"
-    />
+        local-symbol="ZK" />
     <!-- "ZWD" - "Zimbabwe Dollar"
       2006-08-01 "ZWN" 1000, 2008-08-01 "ZWR" 10000000000, 2009-02-01 "ZWD" 1000000000000
     -->
@@ -2826,8 +2618,7 @@
         exchange-code="716"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "ZWL" - "Zimbabwe Dollar"
       2009-04 suspended for at least 1 year
     -->
@@ -2840,8 +2631,7 @@
         exchange-code="716"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="Z.$"
-    />
+        local-symbol="Z.$" />
 
     <!-- multinational -->
     <!-- "XAF" - "CFA Franc BEAC"
@@ -2856,8 +2646,7 @@
         exchange-code="950"
         parts-per-unit="1"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- XB* should be replaced by EUR, if I am right -->
     <!-- "XCD" - "East Caribbean Dollar"
       Organisation of Eastern Caribbean States
@@ -2871,8 +2660,7 @@
         exchange-code="951"
         parts-per-unit="100"
         smallest-fraction="100"
-        local-symbol="EC$"
-    />
+        local-symbol="EC$" />
     <!-- "XDR" - "SDR"
       International Monetary Funds Special Drawing Rights
     -->
@@ -2885,8 +2673,7 @@
         exchange-code="960"
         parts-per-unit="1"
         smallest-fraction="1"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "XFO" - "Gold-Franc"
       Bank for International Settlements
     -->
@@ -2899,8 +2686,7 @@
         exchange-code="nil"
         parts-per-unit="1"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "XFU" - "UIC-Franc"
       Union Internationale des Chemins de fer
     -->
@@ -2913,8 +2699,7 @@
         exchange-code="nil"
         parts-per-unit="1"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "XOF" - "CFA Franc BCEAO"
       Banque Centrale des États de l'Afrique de l'Ouest
     -->
@@ -2927,8 +2712,7 @@
         exchange-code="952"
         parts-per-unit="1"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "XPF" - "CFP Franc"
       Communauté Financière du Pacifique
     -->
@@ -2941,8 +2725,7 @@
         exchange-code="953"
         parts-per-unit="1"
         smallest-fraction="100"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "XTS" - "Code for testing purposes"
       Code reserved for testing purposes
     -->
@@ -2955,8 +2738,7 @@
         exchange-code="963"
         parts-per-unit="1"
         smallest-fraction="1000000"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "XXX" - "No currency"
     -->
     <currency
@@ -2968,21 +2750,19 @@
         exchange-code="999"
         parts-per-unit="1"
         smallest-fraction="1000000"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "XBT" - "Bitcoin"
     -->
     <currency
-      isocode="XBT"
-      fullname="Bitcoin"
-      unitname="bitcoin"
-      partname="microbitcoin"
-      namespace="ISO4217"
-      exchange-code="nil"
-      parts-per-unit="1000000"
-      smallest-fraction="1000000"
-      local-symbol="XBT"
-    />
+        isocode="XBT"
+        fullname="Bitcoin"
+        unitname="bitcoin"
+        partname="microbitcoin"
+        namespace="ISO4217"
+        exchange-code="nil"
+        parts-per-unit="1000000"
+        smallest-fraction="1000000"
+        local-symbol="XBT" />
 
     <!-- precious metals -->
     <!-- "XAG" - "Silver"
@@ -2996,8 +2776,7 @@
         exchange-code="961"
         parts-per-unit="1"
         smallest-fraction="1000000"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "XAU" - "Gold"
     -->
     <currency
@@ -3009,8 +2788,7 @@
         exchange-code="959"
         parts-per-unit="1"
         smallest-fraction="1000000"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "XPD" - "Palladium"
     -->
     <currency
@@ -3022,8 +2800,7 @@
         exchange-code="964"
         parts-per-unit="1"
         smallest-fraction="1000000"
-        local-symbol=""
-    />
+        local-symbol="" />
     <!-- "XPT" - "Platinum"
     -->
     <currency
@@ -3035,6 +2812,5 @@
         exchange-code="962"
         parts-per-unit="1"
         smallest-fraction="1000000"
-        local-symbol=""
-    />
+        local-symbol="" />
 </currencylist>

@@ -22,6 +22,7 @@ import java.sql.Timestamp;
 
 /**
  * Represents a GnuCash book which is made up of accounts and transactions
+ *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class Book extends BaseModel {
@@ -37,15 +38,16 @@ public class Book extends BaseModel {
     /**
      * Default constructor
      */
-    public Book(){
+    public Book() {
         init();
     }
 
     /**
      * Create a new book instance
+     *
      * @param rootAccountUID GUID of root account
      */
-    public Book(String rootAccountUID){
+    public Book(String rootAccountUID) {
         this.mRootAccountUID = rootAccountUID;
         init();
     }
@@ -53,13 +55,14 @@ public class Book extends BaseModel {
     /**
      * Initialize default values for the book
      */
-    private void init(){
+    private void init() {
         this.mRootTemplateUID = generateUID();
         mLastSync = new Timestamp(System.currentTimeMillis());
     }
 
     /**
      * Return the root account GUID of this book
+     *
      * @return GUID of the book root account
      */
     public String getRootAccountUID() {
@@ -69,6 +72,7 @@ public class Book extends BaseModel {
     /**
      * Sets the GUID of the root account of this book.
      * <p>Each book has only one root account</p>
+     *
      * @param rootAccountUID GUID of the book root account
      */
     public void setRootAccountUID(String rootAccountUID) {
@@ -77,6 +81,7 @@ public class Book extends BaseModel {
 
     /**
      * Return GUID of the template root account
+     *
      * @return GUID of template root acount
      */
     public String getRootTemplateUID() {
@@ -85,6 +90,7 @@ public class Book extends BaseModel {
 
     /**
      * Set the GUID of the root template account
+     *
      * @param rootTemplateUID GUID of the root template account
      */
     public void setRootTemplateUID(String rootTemplateUID) {
@@ -94,6 +100,7 @@ public class Book extends BaseModel {
     /**
      * Check if this book is the currently active book in the app
      * <p>An active book is one whose data is currently displayed in the UI</p>
+     *
      * @return {@code true} if this is the currently active book, {@code false} otherwise
      */
     public boolean isActive() {
@@ -102,6 +109,7 @@ public class Book extends BaseModel {
 
     /**
      * Sets this book as the currently active one in the application
+     *
      * @param active Flag for activating/deactivating the book
      */
     public void setActive(boolean active) {
@@ -112,6 +120,7 @@ public class Book extends BaseModel {
      * Return the Uri of the XML file from which the book was imported.
      * <p>In API level 16 and above, this is the Uri from the storage access framework which will
      * be used for synchronization of the book</p>
+     *
      * @return Uri of the book source XML
      */
     public Uri getSourceUri() {
@@ -121,6 +130,7 @@ public class Book extends BaseModel {
     /**
      * Set the Uri of the XML source for the book
      * <p>This Uri will be used for sync where applicable</p>
+     *
      * @param uri Uri of the GnuCash XML source file
      */
     public void setSourceUri(Uri uri) {
@@ -131,6 +141,7 @@ public class Book extends BaseModel {
      * Returns a name for the book
      * <p>This is the user readable string which is used in UI unlike the root account GUID which
      * is used for uniquely identifying each book</p>
+     *
      * @return Name of the book
      */
     public String getDisplayName() {
@@ -139,6 +150,7 @@ public class Book extends BaseModel {
 
     /**
      * Set a name for the book
+     *
      * @param name Name of the book
      */
     public void setDisplayName(String name) {
@@ -147,6 +159,7 @@ public class Book extends BaseModel {
 
     /**
      * Get the time of last synchronization of the book
+     *
      * @return Timestamp of last synchronization
      */
     public Timestamp getLastSync() {
@@ -155,6 +168,7 @@ public class Book extends BaseModel {
 
     /**
      * Set the time of last synchronization of the book
+     *
      * @param lastSync Timestamp of last synchronization
      */
     public void setLastSync(Timestamp lastSync) {

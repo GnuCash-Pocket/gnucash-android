@@ -37,7 +37,7 @@ public class SplitTest {
     }
 
     @Test
-    public void testAddingSplitToTransaction(){
+    public void testAddingSplitToTransaction() {
         Split split = new Split(Money.getZeroInstance(), "Test");
         assertThat(split.getTransactionUID()).isEmpty();
 
@@ -49,7 +49,7 @@ public class SplitTest {
     }
 
     @Test
-    public void testCloning(){
+    public void testCloning() {
         Split split = new Split(new Money(BigDecimal.TEN, Commodity.getInstance("EUR")), "random-account");
         split.setTransactionUID("terminator-trx");
         split.setType(TransactionType.CREDIT);
@@ -67,7 +67,7 @@ public class SplitTest {
      * Everything else should be the same
      */
     @Test
-    public void shouldCreateInversePair(){
+    public void shouldCreateInversePair() {
         Split split = new Split(new Money("2", "USD"), "dummy");
         split.setType(TransactionType.CREDIT);
         split.setTransactionUID("random-trx");
@@ -80,7 +80,7 @@ public class SplitTest {
     }
 
     @Test
-    public void shouldGenerateValidCsv(){
+    public void shouldGenerateValidCsv() {
         Split split = new Split(new Money(BigDecimal.TEN, Commodity.getInstance("EUR")), "random-account");
         split.setTransactionUID("terminator-trx");
         split.setType(TransactionType.CREDIT);
@@ -89,7 +89,7 @@ public class SplitTest {
     }
 
     @Test
-    public void shouldParseCsv(){
+    public void shouldParseCsv() {
         String csv = "test-split-uid;490;100;USD;490;100;USD;trx-action;test-account;DEBIT;Didn't you get the memo?";
         Split split = Split.parseSplit(csv);
         assertThat(split.getValue().getNumerator()).isEqualTo(new Money("4.90", "USD").getNumerator());

@@ -56,7 +56,8 @@ public class MultiBookTest {
 
     private static BooksDbAdapter mBooksDbAdapter;
 
-    @Rule public GrantPermissionRule animationPermissionsRule = GrantPermissionRule.grant(Manifest.permission.SET_ANIMATION_SCALE);
+    @Rule
+    public GrantPermissionRule animationPermissionsRule = GrantPermissionRule.grant(Manifest.permission.SET_ANIMATION_SCALE);
 
     @ClassRule
     public static DisableAnimationsRule disableAnimationsRule = new DisableAnimationsRule();
@@ -65,12 +66,12 @@ public class MultiBookTest {
     public IntentsTestRule<AccountsActivity> mActivityRule = new IntentsTestRule<>(AccountsActivity.class);
 
     @BeforeClass
-    public static void prepTestCase(){
+    public static void prepTestCase() {
         mBooksDbAdapter = BooksDbAdapter.getInstance();
     }
 
     @Test
-    public void shouldOpenBookManager(){
+    public void shouldOpenBookManager() {
         onView(withId(R.id.drawer_layout)).perform(DrawerActions.open());
         onView(withId(R.id.book_name)).check(matches(isDisplayed())).perform(click());
 
@@ -79,7 +80,7 @@ public class MultiBookTest {
         Intents.intended(hasComponent(PreferenceActivity.class.getName()));
     }
 
-    public void testLoadBookFromBookManager(){
+    public void testLoadBookFromBookManager() {
         Book book = new Book();
         book.setDisplayName("Launch Codes");
         BooksDbAdapter.getInstance().addRecord(book);
@@ -91,7 +92,7 @@ public class MultiBookTest {
     }
 
     @Test
-    public void creatingNewAccounts_shouldCreatedNewBook(){
+    public void creatingNewAccounts_shouldCreatedNewBook() {
         long booksCount = mBooksDbAdapter.getRecordsCount();
 
         onView(withId(R.id.drawer_layout)).perform(DrawerActions.open());
@@ -107,15 +108,15 @@ public class MultiBookTest {
         //// TODO: 18.05.2016 wait for import to finish instead
         sleep(2000); //give import time to finish
 
-        assertThat(mBooksDbAdapter.getRecordsCount()).isEqualTo(booksCount+1);
+        assertThat(mBooksDbAdapter.getRecordsCount()).isEqualTo(booksCount + 1);
 
         //// TODO: 25.08.2016 Delete all books before the start of this test
         Book activeBook = mBooksDbAdapter.getRecord(mBooksDbAdapter.getActiveBookUID());
-        assertThat(activeBook.getDisplayName()).isEqualTo("Book " + (booksCount+1));
+        assertThat(activeBook.getDisplayName()).isEqualTo("Book " + (booksCount + 1));
     }
 
     @Test
-    public void testCreateNewBook(){
+    public void testCreateNewBook() {
         long bookCount = mBooksDbAdapter.getRecordsCount();
 
         shouldOpenBookManager();
@@ -124,11 +125,11 @@ public class MultiBookTest {
                 .check(matches(isDisplayed()))
                 .perform(click());
 
-        assertThat(mBooksDbAdapter.getRecordsCount()).isEqualTo(bookCount+1);
+        assertThat(mBooksDbAdapter.getRecordsCount()).isEqualTo(bookCount + 1);
     }
 
     //TODO: Finish implementation of this test
-    public void testDeleteBook(){
+    public void testDeleteBook() {
         long bookCount = mBooksDbAdapter.getRecordsCount();
 
         Book book = new Book();
@@ -149,7 +150,7 @@ public class MultiBookTest {
         assertThat(mBooksDbAdapter.getRecordsCount()).isEqualTo(bookCount);
     }
 
-    private static void sleep(long millis){
+    private static void sleep(long millis) {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {

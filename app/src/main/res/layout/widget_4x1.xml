@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2012 Ngewi Fet <ngewif@gmail.com>
  
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,52 +16,57 @@
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	android:padding="@dimen/widget_margin">
-	
-   <LinearLayout android:id="@+id/widget_layout"
-	    android:layout_width="match_parent"
-	    android:layout_height="match_parent"
-	    android:gravity="center_vertical"
-	    android:background="@drawable/appwidget_dark_bg_clickable"
-	    android:orientation="horizontal">
+    android:layout_height="match_parent"
+    android:padding="@dimen/widget_margin">
 
-	     <TextView android:id="@+id/account_name" 
-	         android:layout_width="0dp"
-	         android:layout_height="match_parent"
-	         android:layout_weight="1"
-	         android:gravity="center_vertical"
-	         android:singleLine="true"
-	         android:ellipsize="end"
-	         android:layout_marginLeft="@dimen/edge_padding"
-	         android:textAppearance="?android:attr/textAppearanceLarge"
-			 android:textColor="@android:color/white"
-	         android:text="@string/label_account_name" />
-	                
-	    <TextView android:id="@+id/transactions_summary"
-	        android:layout_width="wrap_content"
-	        android:layout_height="match_parent"
-	        android:singleLine="true" 
-	        style="@style/ListItemText"
-	        android:layout_marginLeft="@dimen/widget_margin"
-	        android:layout_marginRight="@dimen/widget_margin" />      
-	    
-	    <ImageButton android:id="@+id/btn_new_transaction" 
-	        android:layout_width="48dp"
-	        android:layout_height="wrap_content"
-	        android:layout_marginRight="@dimen/edge_padding"
-	        android:layout_marginLeft="@dimen/edge_padding"
-	        android:src="@drawable/content_new_holo_light"
-	        android:background="@drawable/appwidget_bg_clickable"
-	        android:contentDescription="@string/description_add_transaction_icon"/>
+    <LinearLayout
+        android:id="@+id/widget_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:background="@drawable/appwidget_dark_bg_clickable"
+        android:orientation="horizontal">
 
-	   <ImageButton android:id="@+id/btn_view_account"
-		   android:layout_width="48dp"
-		   android:layout_height="wrap_content"
-		   android:layout_marginRight="@dimen/edge_padding"
-		   android:layout_marginLeft="@dimen/edge_padding"
-		   android:src="@drawable/action_about_holo_light"
-		   android:background="@drawable/appwidget_bg_clickable"
-		   android:contentDescription="@string/description_view_account_icon"/>
-	</LinearLayout>        
+        <TextView
+            android:id="@+id/account_name"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:layout_marginLeft="@dimen/edge_padding"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@android:color/white"
+            android:text="@string/label_account_name" />
+
+        <TextView
+            android:id="@+id/transactions_summary"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:singleLine="true"
+            style="@style/ListItemText"
+            android:layout_marginLeft="@dimen/widget_margin"
+            android:layout_marginRight="@dimen/widget_margin" />
+
+        <ImageButton
+            android:id="@+id/btn_new_transaction"
+            android:layout_width="48dp"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/edge_padding"
+            android:layout_marginLeft="@dimen/edge_padding"
+            android:src="@drawable/content_new_holo_light"
+            android:background="@drawable/appwidget_bg_clickable"
+            android:contentDescription="@string/description_add_transaction_icon" />
+
+        <ImageButton
+            android:id="@+id/btn_view_account"
+            android:layout_width="48dp"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="@dimen/edge_padding"
+            android:layout_marginLeft="@dimen/edge_padding"
+            android:src="@drawable/action_about_holo_light"
+            android:background="@drawable/appwidget_bg_clickable"
+            android:contentDescription="@string/description_view_account_icon" />
+    </LinearLayout>
 </FrameLayout>

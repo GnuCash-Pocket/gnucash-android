@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +28,8 @@
         android:textSize="18sp"
         android:textStyle="bold"
         android:textColor="@color/theme_accent"
-        android:text="@string/label_assets"/>
+        android:text="@string/label_assets" />
+
     <android.support.v7.widget.CardView
         android:id="@+id/assets_card"
         app:elevation="10dp"
@@ -37,7 +37,8 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent">
 
-        <TableLayout android:id="@+id/table_assets"
+        <TableLayout
+            android:id="@+id/table_assets"
             android:padding="@dimen/dialog_padding"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
@@ -49,7 +50,8 @@
         android:textSize="18sp"
         android:textStyle="bold"
         android:textColor="@color/theme_accent"
-        android:text="@string/label_liabilities"/>
+        android:text="@string/label_liabilities" />
+
     <android.support.v7.widget.CardView
         android:id="@+id/liabilities_card"
         app:elevation="10dp"
@@ -57,7 +59,8 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent">
 
-        <TableLayout android:id="@+id/table_liabilities"
+        <TableLayout
+            android:id="@+id/table_liabilities"
             android:padding="@dimen/dialog_padding"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
@@ -70,7 +73,8 @@
         android:textSize="18sp"
         android:textStyle="bold"
         android:textColor="@color/theme_accent"
-        android:text="@string/label_equity"/>
+        android:text="@string/label_equity" />
+
     <android.support.v7.widget.CardView
         android:id="@+id/equity_card"
         app:elevation="10dp"
@@ -78,7 +82,8 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent">
 
-        <TableLayout android:id="@+id/table_equity"
+        <TableLayout
+            android:id="@+id/table_equity"
             android:padding="@dimen/dialog_padding"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
@@ -96,20 +101,25 @@
             android:padding="@dimen/dialog_padding"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
             <TableRow>
-                <TextView android:layout_width="0dp"
+
+                <TextView
+                    android:layout_width="0dp"
                     android:layout_weight="1.5"
                     android:layout_height="wrap_content"
                     android:textSize="18sp"
-                    android:text="@string/label_net_worth"/>
-                <TextView android:id="@+id/total_liability_and_equity"
+                    android:text="@string/label_net_worth" />
+
+                <TextView
+                    android:id="@+id/total_liability_and_equity"
                     android:layout_weight="1"
                     android:gravity="right"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    tools:text="$ 2,500"/>
+                    tools:text="$ 2,500" />
             </TableRow>
         </TableLayout>
     </android.support.v7.widget.CardView>

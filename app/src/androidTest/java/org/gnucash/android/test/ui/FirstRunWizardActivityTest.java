@@ -47,10 +47,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests the first run wizard
+ *
  * @author Ngewi Fet
  */
 @RunWith(AndroidJUnit4.class)
-public class FirstRunWizardActivityTest extends ActivityInstrumentationTestCase2<FirstRunWizardActivity>{
+public class FirstRunWizardActivityTest extends ActivityInstrumentationTestCase2<FirstRunWizardActivity> {
 
     private DatabaseHelper mDbHelper;
     private SQLiteDatabase mDb;
@@ -60,7 +61,8 @@ public class FirstRunWizardActivityTest extends ActivityInstrumentationTestCase2
 
     FirstRunWizardActivity mActivity;
 
-    @Rule public GrantPermissionRule animationPermissionsRule = GrantPermissionRule.grant(Manifest.permission.SET_ANIMATION_SCALE);
+    @Rule
+    public GrantPermissionRule animationPermissionsRule = GrantPermissionRule.grant(Manifest.permission.SET_ANIMATION_SCALE);
 
     public FirstRunWizardActivityTest() {
         super(FirstRunWizardActivity.class);
@@ -87,7 +89,7 @@ public class FirstRunWizardActivityTest extends ActivityInstrumentationTestCase2
 
 
     @Test
-    public void shouldRunWizardToEnd(){
+    public void shouldRunWizardToEnd() {
         assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(0);
 
         onView(withId(R.id.btn_save)).perform(click());
@@ -118,7 +120,7 @@ public class FirstRunWizardActivityTest extends ActivityInstrumentationTestCase2
     }
 
     @Test
-    public void shouldDisplayFullCurrencyList(){
+    public void shouldDisplayFullCurrencyList() {
         assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(0);
 
         onView(withId(R.id.btn_save)).perform(click());

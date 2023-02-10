@@ -59,73 +59,77 @@ import javax.xml.transform.stream.StreamResult;
 
 /**
  * Exports the data in the database in OFX format
+ *
  * @author Ngewi Fet <ngewi.fet@gmail.com>
  * @author Yongxin Wang <fefe.wyx@gmail.com>
  */
-public class OfxExporter extends Exporter{
+public class OfxExporter extends Exporter {
 
     /**
-	 * List of accounts in the expense report
-	 */
-	private List<Account> mAccountsList;
+     * List of accounts in the expense report
+     */
+    private List<Account> mAccountsList;
 
     /**
-	 * Builds an XML representation of the {@link Account}s and {@link Transaction}s in the database
-	 */
-	public OfxExporter(ExportParams params) {
+     * Builds an XML representation of the {@link Account}s and {@link Transaction}s in the database
+     */
+    public OfxExporter(ExportParams params) {
         super(params, null);
         LOG_TAG = "OfxExporter";
-	}
+    }
 
     /**
      * Overloaded constructor. Initializes the export parameters and the database to export
+     *
      * @param params Export options
-     * @param db SQLiteDatabase to export
+     * @param db     SQLiteDatabase to export
      */
-    public OfxExporter(ExportParams params, SQLiteDatabase db){
+    public OfxExporter(ExportParams params, SQLiteDatabase db) {
         super(params, db);
         LOG_TAG = "OfxExporter";
     }
 
     /**
-	 * Converts all expenses into OFX XML format and adds them to the XML document
-	 * @param doc DOM document of the OFX expenses.
-	 * @param parent Parent node for all expenses in report
-	 */
-	private void generateOfx(Document doc, Element parent){
-		Element transactionUid = doc.createElement(OfxHelper.TAG_TRANSACTION_UID);
-		//unsolicited because the data exported is not as a result of a request
-		transactionUid.appendChild(doc.createTextNode(OfxHelper.UNSOLICITED_TRANSACTION_ID));
+     * Converts all expenses into OFX XML format and adds them to the XML document
+     *
+     * @param doc    DOM document of the OFX expenses.
+     * @param parent Parent node for all expenses in report
+     */
+    private void generateOfx(Document doc, Element parent) {
+        Element transactionUid = doc.createElement(OfxHelper.TAG_TRANSACTION_UID);
+        //unsolicited because the data exported is not as a result of a request
+        transactionUid.appendChild(doc.createTextNode(OfxHelper.UNSOLICITED_TRANSACTION_ID));
 
-		Element statementTransactionResponse = doc.createElement(OfxHelper.TAG_STATEMENT_TRANSACTION_RESPONSE);
-		statementTransactionResponse.appendChild(transactionUid);
-		
-		Element bankmsgs = doc.createElement(OfxHelper.TAG_BANK_MESSAGES_V1);
-		bankmsgs.appendChild(statementTransactionResponse);
-		
-		parent.appendChild(bankmsgs);		
-		
-		AccountsDbAdapter accountsDbAdapter = mAccountsDbAdapter;
-		for (Account account : mAccountsList) {		
-			if (account.getTransactionCount() == 0)
-				continue; 
+        Element statementTransactionResponse = doc.createElement(OfxHelper.TAG_STATEMENT_TRANSACTION_RESPONSE);
+        statementTransactionResponse.appendChild(transactionUid);
+
+        Element bankmsgs = doc.createElement(OfxHelper.TAG_BANK_MESSAGES_V1);
+        bankmsgs.appendChild(statementTransactionResponse);
+
+        parent.appendChild(bankmsgs);
+
+        AccountsDbAdapter accountsDbAdapter = mAccountsDbAdapter;
+        for (Account account : mAccountsList) {
+            if (account.getTransactionCount() == 0)
+                continue;
 
             //do not export imbalance accounts for OFX transactions and double-entry disabled
             if (!GnuCashApplication.isDoubleEntryEnabled() && account.getName().contains(mContext.getString(R.string.imbalance_account_name)))
                 continue;
 
 
-			//add account details (transactions) to the XML document			
-			account.toOfx(doc, statementTransactionResponse, mExportParams.getExportStartTime());
-			
-			//mark as exported
-			accountsDbAdapter.markAsExported(account.getUID());
-			
-		}
-	}
+            //add account details (transactions) to the XML document
+            account.toOfx(doc, statementTransactionResponse, mExportParams.getExportStartTime());
+
+            //mark as exported
+            accountsDbAdapter.markAsExported(account.getUID());
+
+        }
+    }
 
     /**
      * Generate OFX export file from the transactions in the database
+     *
      * @return String containing OFX export
      * @throws ExporterException
      */
@@ -155,7 +159,7 @@ public class OfxExporter extends Exporter{
 
         StringWriter stringWriter = new StringWriter();
         //if we want SGML OFX headers, write first to string and then prepend header
-        if (useXmlHeader){
+        if (useXmlHeader) {
             write(document, stringWriter, false);
             return stringWriter.toString();
         } else {
@@ -197,11 +201,12 @@ public class OfxExporter extends Exporter{
 
     /**
      * Writes out the document held in <code>node</code> to <code>outputWriter</code>
-     * @param node {@link Node} containing the OFX document structure. Usually the parent node
-     * @param outputWriter {@link java.io.Writer} to use in writing the file to stream
+     *
+     * @param node               {@link Node} containing the OFX document structure. Usually the parent node
+     * @param outputWriter       {@link java.io.Writer} to use in writing the file to stream
      * @param omitXmlDeclaration Flag which causes the XML declaration to be omitted
      */
-    private void write(Node node, Writer outputWriter, boolean omitXmlDeclaration){
+    private void write(Node node, Writer outputWriter, boolean omitXmlDeclaration) {
         try {
             TransformerFactory transformerFactory = TransformerFactory
                     .newInstance();
@@ -224,9 +229,10 @@ public class OfxExporter extends Exporter{
 
     /**
      * Returns the MIME type for this exporter.
+     *
      * @return MIME type as string
      */
-    public String getExportMimeType(){
+    public String getExportMimeType() {
         return "text/xml";
     }
 }

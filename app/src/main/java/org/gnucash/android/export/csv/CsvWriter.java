@@ -32,11 +32,11 @@ import java.io.Writer;
 public class CsvWriter extends BufferedWriter {
     private String separator = ",";
 
-    public CsvWriter(Writer writer){
+    public CsvWriter(Writer writer) {
         super(writer);
     }
 
-    public CsvWriter(Writer writer, String separator){
+    public CsvWriter(Writer writer, String separator) {
         super(writer);
         this.separator = separator;
     }
@@ -48,14 +48,15 @@ public class CsvWriter extends BufferedWriter {
 
     /**
      * Writes a CSV token and the separator to the underlying output stream.
-     *
+     * <p>
      * The token **MUST NOT** not contain the CSV separator. If the separator is found in the token, then
      * the token will be escaped as specified by RFC 4180
+     *
      * @param token Token to be written to file
      * @throws IOException if the token could not be written to the underlying stream
      */
     public void writeToken(String token) throws IOException {
-        if (token == null || token.isEmpty()){
+        if (token == null || token.isEmpty()) {
             write(separator);
         } else {
             token = escape(token);
@@ -65,12 +66,13 @@ public class CsvWriter extends BufferedWriter {
 
     /**
      * Escape any CSV separators by surrounding the token in double quotes
+     *
      * @param token String token to be written to CSV
      * @return Escaped CSV token
      */
     @NonNull
     private String escape(@NonNull String token) {
-        if (token.contains(separator)){
+        if (token.contains(separator)) {
             return "\"" + token + "\"";
         }
         return token;
@@ -78,9 +80,10 @@ public class CsvWriter extends BufferedWriter {
 
     /**
      * Writes a token to the CSV file and appends end of line to it.
-     *
+     * <p>
      * The token **MUST NOT** not contain the CSV separator. If the separator is found in the token, then
      * the token will be escaped as specified by RFC 4180
+     *
      * @param token The token to be written to the file
      * @throws IOException if token could not be written to underlying writer
      */

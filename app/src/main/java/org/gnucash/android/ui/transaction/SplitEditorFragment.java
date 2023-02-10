@@ -79,9 +79,12 @@ import butterknife.ButterKnife;
  */
 public class SplitEditorFragment extends Fragment {
 
-    @BindView(R.id.split_list_layout)   LinearLayout mSplitsLinearLayout;
-    @BindView(R.id.calculator_keyboard) KeyboardView mKeyboardView;
-    @BindView(R.id.imbalance_textview)  TextView mImbalanceTextView;
+    @BindView(R.id.split_list_layout)
+    LinearLayout mSplitsLinearLayout;
+    @BindView(R.id.calculator_keyboard)
+    KeyboardView mKeyboardView;
+    @BindView(R.id.imbalance_textview)
+    TextView mImbalanceTextView;
 
     private AccountsDbAdapter mAccountsDbAdapter;
     private Cursor mCursor;
@@ -98,11 +101,12 @@ public class SplitEditorFragment extends Fragment {
 
     /**
      * Create and return a new instance of the fragment with the appropriate paramenters
+     *
      * @param args Arguments to be set to the fragment. <br>
      *             See {@link UxArgument#AMOUNT_STRING} and {@link UxArgument#SPLIT_LIST}
      * @return New instance of SplitEditorFragment
      */
-    public static SplitEditorFragment newInstance(Bundle args){
+    public static SplitEditorFragment newInstance(Bundle args) {
         SplitEditorFragment fragment = new SplitEditorFragment();
         fragment.setArguments(args);
         return fragment;
@@ -119,7 +123,7 @@ public class SplitEditorFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         assert actionBar != null;
         actionBar.setTitle(R.string.title_split_editor);
         setHasOptionsMenu(true);
@@ -193,13 +197,14 @@ public class SplitEditorFragment extends Fragment {
 
     /**
      * Add a split view and initialize it with <code>split</code>
+     *
      * @param split Split to initialize the contents to
      * @return Returns the split view which was added
      */
-    private View addSplitView(Split split){
+    private View addSplitView(Split split) {
         LayoutInflater layoutInflater = getActivity().getLayoutInflater();
         View splitView = layoutInflater.inflate(R.layout.item_split_entry, mSplitsLinearLayout, false);
-        mSplitsLinearLayout.addView(splitView,0);
+        mSplitsLinearLayout.addView(splitView, 0);
         SplitViewHolder viewHolder = new SplitViewHolder(splitView, split);
         splitView.setTag(viewHolder);
         mSplitItemViewList.add(splitView);
@@ -227,19 +232,26 @@ public class SplitEditorFragment extends Fragment {
     /**
      * Holds a split item view and binds the items in it
      */
-    class SplitViewHolder implements OnTransferFundsListener{
-        @BindView(R.id.input_split_memo)        EditText splitMemoEditText;
-        @BindView(R.id.input_split_amount)      CalculatorEditText splitAmountEditText;
-        @BindView(R.id.btn_remove_split)        ImageView removeSplitButton;
-        @BindView(R.id.input_accounts_spinner)  Spinner accountsSpinner;
-        @BindView(R.id.split_currency_symbol)   TextView splitCurrencyTextView;
-        @BindView(R.id.split_uid)               TextView splitUidTextView;
-        @BindView(R.id.btn_split_type)          TransactionTypeSwitch splitTypeSwitch;
+    class SplitViewHolder implements OnTransferFundsListener {
+        @BindView(R.id.input_split_memo)
+        EditText splitMemoEditText;
+        @BindView(R.id.input_split_amount)
+        CalculatorEditText splitAmountEditText;
+        @BindView(R.id.btn_remove_split)
+        ImageView removeSplitButton;
+        @BindView(R.id.input_accounts_spinner)
+        Spinner accountsSpinner;
+        @BindView(R.id.split_currency_symbol)
+        TextView splitCurrencyTextView;
+        @BindView(R.id.split_uid)
+        TextView splitUidTextView;
+        @BindView(R.id.btn_split_type)
+        TransactionTypeSwitch splitTypeSwitch;
 
         View splitView;
         Money quantity;
 
-        public SplitViewHolder(View splitView, Split split){
+        public SplitViewHolder(View splitView, Split split) {
             ButterKnife.bind(this, splitView);
             this.splitView = splitView;
             if (split != null && !split.getQuantity().equals(split.getValue()))
@@ -252,7 +264,7 @@ public class SplitEditorFragment extends Fragment {
             quantity = amount;
         }
 
-        private void setListeners(Split split){
+        private void setListeners(Split split) {
             splitAmountEditText.bindListeners(mCalculatorKeyboard);
 
             removeSplitButton.setOnClickListener(new View.OnClickListener() {
@@ -297,9 +309,10 @@ public class SplitEditorFragment extends Fragment {
          * Returns the value of the amount in the splitAmountEditText field without setting the value to the view
          * <p>If the expression in the view is currently incomplete or invalid, null is returned.
          * This method is used primarily for computing the imbalance</p>
+         *
          * @return Value in the split item amount field, or {@link BigDecimal#ZERO} if the expression is empty or invalid
          */
-        public BigDecimal getAmountValue(){
+        public BigDecimal getAmountValue() {
             String amountString = splitAmountEditText.getCleanString();
             if (amountString.isEmpty())
                 return BigDecimal.ZERO;
@@ -325,34 +338,37 @@ public class SplitEditorFragment extends Fragment {
 
     /**
      * Updates the spinner to the selected transfer account
+     *
      * @param accountId Database ID of the transfer account
      */
-    private void setSelectedTransferAccount(long accountId, final Spinner accountsSpinner){
+    private void setSelectedTransferAccount(long accountId, final Spinner accountsSpinner) {
         for (int pos = 0; pos < mCursorAdapter.getCount(); pos++) {
-            if (mCursorAdapter.getItemId(pos) == accountId){
+            if (mCursorAdapter.getItemId(pos) == accountId) {
                 accountsSpinner.setSelection(pos);
                 break;
             }
         }
     }
+
     /**
      * Updates the list of possible transfer accounts.
      * Only accounts with the same currency can be transferred to
      */
-    private void updateTransferAccountsList(Spinner transferAccountSpinner){
+    private void updateTransferAccountsList(Spinner transferAccountSpinner) {
         mCursorAdapter = new QualifiedAccountNameCursorAdapter(getActivity(), mCursor);
         transferAccountSpinner.setAdapter(mCursorAdapter);
     }
 
     /**
      * Check if all the split amounts have valid values that can be saved
+     *
      * @return {@code true} if splits can be saved, {@code false} otherwise
      */
-    private boolean canSave(){
+    private boolean canSave() {
         for (View splitView : mSplitItemViewList) {
             SplitViewHolder viewHolder = (SplitViewHolder) splitView.getTag();
             viewHolder.splitAmountEditText.evaluate();
-            if (viewHolder.splitAmountEditText.getError() != null){
+            if (viewHolder.splitAmountEditText.getError() != null) {
                 return false;
             }
             //TODO: also check that multicurrency splits have a conversion amount present
@@ -364,7 +380,7 @@ public class SplitEditorFragment extends Fragment {
      * Save all the splits from the split editor
      */
     private void saveSplits() {
-        if (!canSave()){
+        if (!canSave()) {
             Toast.makeText(getActivity(), R.string.toast_error_check_split_amounts,
                     Toast.LENGTH_SHORT).show();
             return;
@@ -379,9 +395,10 @@ public class SplitEditorFragment extends Fragment {
 
     /**
      * Extracts the input from the views and builds {@link org.gnucash.android.model.Split}s to correspond to the input.
+     *
      * @return List of {@link org.gnucash.android.model.Split}s represented in the view
      */
-    private ArrayList<Split> extractSplitsFromView(){
+    private ArrayList<Split> extractSplitsFromView() {
         ArrayList<Split> splitList = new ArrayList<>();
         for (View splitView : mSplitItemViewList) {
             SplitViewHolder viewHolder = (SplitViewHolder) splitView.getTag();
@@ -462,7 +479,7 @@ public class SplitEditorFragment extends Fragment {
          */
         boolean userInteraction = false;
 
-        public SplitAccountListener(TransactionTypeSwitch typeToggleButton, SplitViewHolder viewHolder){
+        public SplitAccountListener(TransactionTypeSwitch typeToggleButton, SplitViewHolder viewHolder) {
             this.mTypeToggleButton = typeToggleButton;
             this.mSplitViewHolder = viewHolder;
         }
@@ -478,7 +495,7 @@ public class SplitEditorFragment extends Fragment {
             String fromCurrencyCode = mAccountsDbAdapter.getCurrencyCode(mAccountUID);
             String targetCurrencyCode = mAccountsDbAdapter.getCurrencyCode(mAccountsDbAdapter.getUID(id));
 
-            if (!userInteraction || fromCurrencyCode.equals(targetCurrencyCode)){
+            if (!userInteraction || fromCurrencyCode.equals(targetCurrencyCode)) {
                 //first call is on layout, subsequent calls will be true and transfer will work as usual
                 userInteraction = true;
                 return;

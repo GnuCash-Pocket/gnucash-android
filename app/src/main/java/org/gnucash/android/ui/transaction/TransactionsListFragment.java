@@ -69,318 +69,329 @@ import butterknife.ButterKnife;
 
 /**
  * List Fragment for displaying list of transactions for an account
- * @author Ngewi Fet <ngewif@gmail.com>
  *
+ * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class TransactionsListFragment extends Fragment implements
-        Refreshable, LoaderCallbacks<Cursor>{
+        Refreshable, LoaderCallbacks<Cursor> {
 
-	/**
-	 * Logging tag
-	 */
-	protected static final String LOG_TAG = "TransactionListFragment";
+    /**
+     * Logging tag
+     */
+    protected static final String LOG_TAG = "TransactionListFragment";
 
     private TransactionsDbAdapter mTransactionsDbAdapter;
     private String mAccountUID;
 
-	private boolean mUseCompactView = false;
+    private boolean mUseCompactView = false;
 
-	private TransactionRecyclerAdapter mTransactionRecyclerAdapter;
-	@BindView(R.id.transaction_recycler_view) EmptyRecyclerView mRecyclerView;
+    private TransactionRecyclerAdapter mTransactionRecyclerAdapter;
+    @BindView(R.id.transaction_recycler_view)
+    EmptyRecyclerView mRecyclerView;
 
 
-	@Override
- 	public void onCreate(Bundle savedInstanceState) {		
-		super.onCreate(savedInstanceState);
-		setHasOptionsMenu(true);
-		Bundle args = getArguments();
-		mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+        Bundle args = getArguments();
+        mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID);
 
-		mUseCompactView = PreferenceActivity.getActiveBookSharedPreferences()
-				.getBoolean(getActivity().getString(R.string.key_use_compact_list), !GnuCashApplication.isDoubleEntryEnabled());
-		//if there was a local override of the global setting, respect it
-		if (savedInstanceState != null)
-			mUseCompactView = savedInstanceState.getBoolean(getString(R.string.key_use_compact_list), mUseCompactView);
+        mUseCompactView = PreferenceActivity.getActiveBookSharedPreferences()
+                .getBoolean(getActivity().getString(R.string.key_use_compact_list), !GnuCashApplication.isDoubleEntryEnabled());
+        //if there was a local override of the global setting, respect it
+        if (savedInstanceState != null)
+            mUseCompactView = savedInstanceState.getBoolean(getString(R.string.key_use_compact_list), mUseCompactView);
 
-		mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
-	}
+        mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
+    }
 
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
-		outState.putBoolean(getString(R.string.key_use_compact_list), mUseCompactView);
-	}
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(getString(R.string.key_use_compact_list), mUseCompactView);
+    }
 
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.fragment_transactions_list, container, false);
-		ButterKnife.bind(this, view);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_transactions_list, container, false);
+        ButterKnife.bind(this, view);
 
-		mRecyclerView.setHasFixedSize(true);
-		if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-			GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
-			mRecyclerView.setLayoutManager(gridLayoutManager);
-		} else {
-			LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-			mRecyclerView.setLayoutManager(mLayoutManager);
-		}
-		mRecyclerView.setEmptyView(view.findViewById(R.id.empty_view));
+        mRecyclerView.setHasFixedSize(true);
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
+            mRecyclerView.setLayoutManager(gridLayoutManager);
+        } else {
+            LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
+            mRecyclerView.setLayoutManager(mLayoutManager);
+        }
+        mRecyclerView.setEmptyView(view.findViewById(R.id.empty_view));
 
-		return view;
-	}
+        return view;
+    }
 
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-		
-		ActionBar aBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-		aBar.setDisplayShowTitleEnabled(false);
-		aBar.setDisplayHomeAsUpEnabled(true);
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
-		mTransactionRecyclerAdapter = new TransactionRecyclerAdapter(null);
-		mRecyclerView.setAdapter(mTransactionRecyclerAdapter);
+        ActionBar aBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        aBar.setDisplayShowTitleEnabled(false);
+        aBar.setDisplayHomeAsUpEnabled(true);
 
-		setHasOptionsMenu(true);		
-	}
+        mTransactionRecyclerAdapter = new TransactionRecyclerAdapter(null);
+        mRecyclerView.setAdapter(mTransactionRecyclerAdapter);
+
+        setHasOptionsMenu(true);
+    }
 
     /**
      * Refresh the list with transactions from account with ID <code>accountId</code>
+     *
      * @param accountUID GUID of account to load transactions from
      */
     @Override
-	public void refresh(String accountUID){
-		mAccountUID = accountUID;
-		refresh();
-	}
+    public void refresh(String accountUID) {
+        mAccountUID = accountUID;
+        refresh();
+    }
 
     /**
      * Reload the list of transactions and recompute account balances
      */
     @Override
-	public void refresh(){
-		getLoaderManager().restartLoader(0, null, this);
-	}
-	
-	@Override
-	public void onResume() {
-		super.onResume();
-		((TransactionsActivity)getActivity()).updateNavigationSelection();
-		refresh();
-	}
+    public void refresh() {
+        getLoaderManager().restartLoader(0, null, this);
+    }
 
-	public void onListItemClick(long id) {
-		Intent intent = new Intent(getActivity(), TransactionDetailActivity.class);
-		intent.putExtra(UxArgument.SELECTED_TRANSACTION_UID, mTransactionsDbAdapter.getUID(id));
-		intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
-		startActivity(intent);
+    @Override
+    public void onResume() {
+        super.onResume();
+        ((TransactionsActivity) getActivity()).updateNavigationSelection();
+        refresh();
+    }
+
+    public void onListItemClick(long id) {
+        Intent intent = new Intent(getActivity(), TransactionDetailActivity.class);
+        intent.putExtra(UxArgument.SELECTED_TRANSACTION_UID, mTransactionsDbAdapter.getUID(id));
+        intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
+        startActivity(intent);
 //		mTransactionEditListener.editTransaction(mTransactionsDbAdapter.getUID(id));
-	}
+    }
 
-	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.transactions_list_actions, menu);	
-	}
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.transactions_list_actions, menu);
+    }
 
-	@Override
-	public void onPrepareOptionsMenu(Menu menu) {
-		super.onPrepareOptionsMenu(menu);
-		MenuItem item = menu.findItem(R.id.menu_compact_trn_view);
-		item.setChecked(mUseCompactView);
-		item.setEnabled(GnuCashApplication.isDoubleEntryEnabled()); //always compact for single-entry
-	}
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        MenuItem item = menu.findItem(R.id.menu_compact_trn_view);
+        item.setChecked(mUseCompactView);
+        item.setEnabled(GnuCashApplication.isDoubleEntryEnabled()); //always compact for single-entry
+    }
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-			case R.id.menu_compact_trn_view:
-				item.setChecked(!item.isChecked());
-				mUseCompactView = !mUseCompactView;
-				refresh();
-				return true;
-			default:
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_compact_trn_view:
+                item.setChecked(!item.isChecked());
+                mUseCompactView = !mUseCompactView;
+                refresh();
+                return true;
+            default:
                 return super.onOptionsItemSelected(item);
         }
-	}
-	
-	@Override
-	public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
-		Log.d(LOG_TAG, "Creating transactions loader");
-		return new TransactionsCursorLoader(getActivity(), mAccountUID);
-	}
+    }
 
-	@Override
-	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-		Log.d(LOG_TAG, "Transactions loader finished. Swapping in cursor");
-		mTransactionRecyclerAdapter.swapCursor(cursor);
-		mTransactionRecyclerAdapter.notifyDataSetChanged();
-	}
+    @Override
+    public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
+        Log.d(LOG_TAG, "Creating transactions loader");
+        return new TransactionsCursorLoader(getActivity(), mAccountUID);
+    }
 
-	@Override
-	public void onLoaderReset(Loader<Cursor> loader) {
-		Log.d(LOG_TAG, "Resetting transactions loader");
-		mTransactionRecyclerAdapter.swapCursor(null);
-	}
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        Log.d(LOG_TAG, "Transactions loader finished. Swapping in cursor");
+        mTransactionRecyclerAdapter.swapCursor(cursor);
+        mTransactionRecyclerAdapter.notifyDataSetChanged();
+    }
 
-	/**
-	 * {@link DatabaseCursorLoader} for loading transactions asynchronously from the database
-	 * @author Ngewi Fet <ngewif@gmail.com>
-	 */
-	protected static class TransactionsCursorLoader extends DatabaseCursorLoader {
-		private String accountUID;
-		
-		public TransactionsCursorLoader(Context context, String accountUID) {
-			super(context);			
-			this.accountUID = accountUID;
-		}
-		
-		@Override
-		public Cursor loadInBackground() {
-			mDatabaseAdapter = TransactionsDbAdapter.getInstance();
-			Cursor c = ((TransactionsDbAdapter) mDatabaseAdapter).fetchAllTransactionsForAccount(accountUID);
-			if (c != null)
-				registerContentObserver(c);
-			return c;
-		}		
-	}
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        Log.d(LOG_TAG, "Resetting transactions loader");
+        mTransactionRecyclerAdapter.swapCursor(null);
+    }
 
-	public class TransactionRecyclerAdapter extends CursorRecyclerAdapter<TransactionRecyclerAdapter.ViewHolder>{
+    /**
+     * {@link DatabaseCursorLoader} for loading transactions asynchronously from the database
+     *
+     * @author Ngewi Fet <ngewif@gmail.com>
+     */
+    protected static class TransactionsCursorLoader extends DatabaseCursorLoader {
+        private String accountUID;
 
-		public static final int ITEM_TYPE_COMPACT 	= 0x111;
-		public static final int ITEM_TYPE_FULL		= 0x100;
+        public TransactionsCursorLoader(Context context, String accountUID) {
+            super(context);
+            this.accountUID = accountUID;
+        }
 
-		public TransactionRecyclerAdapter(Cursor cursor) {
-			super(cursor);
-		}
+        @Override
+        public Cursor loadInBackground() {
+            mDatabaseAdapter = TransactionsDbAdapter.getInstance();
+            Cursor c = ((TransactionsDbAdapter) mDatabaseAdapter).fetchAllTransactionsForAccount(accountUID);
+            if (c != null)
+                registerContentObserver(c);
+            return c;
+        }
+    }
 
-		@Override
-		public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-			int layoutRes = viewType == ITEM_TYPE_COMPACT ? R.layout.cardview_compact_transaction : R.layout.cardview_transaction;
-			View v = LayoutInflater.from(parent.getContext())
-					.inflate(layoutRes, parent, false);
-			return new ViewHolder(v);
-		}
+    public class TransactionRecyclerAdapter extends CursorRecyclerAdapter<TransactionRecyclerAdapter.ViewHolder> {
 
-		@Override
-		public int getItemViewType(int position) {
-			return mUseCompactView ? ITEM_TYPE_COMPACT : ITEM_TYPE_FULL;
-		}
+        public static final int ITEM_TYPE_COMPACT = 0x111;
+        public static final int ITEM_TYPE_FULL = 0x100;
 
-		@Override
-		public void onBindViewHolderCursor(ViewHolder holder, Cursor cursor) {
-			holder.transactionId = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry._ID));
+        public TransactionRecyclerAdapter(Cursor cursor) {
+            super(cursor);
+        }
 
-			String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_DESCRIPTION));
-			holder.primaryText.setText(description);
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            int layoutRes = viewType == ITEM_TYPE_COMPACT ? R.layout.cardview_compact_transaction : R.layout.cardview_transaction;
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(layoutRes, parent, false);
+            return new ViewHolder(v);
+        }
 
-			final String transactionUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_UID));
-			Money amount = mTransactionsDbAdapter.getBalance(transactionUID, mAccountUID);
-			TransactionsActivity.displayBalance(holder.transactionAmount, amount);
+        @Override
+        public int getItemViewType(int position) {
+            return mUseCompactView ? ITEM_TYPE_COMPACT : ITEM_TYPE_FULL;
+        }
 
-			long dateMillis = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_TIMESTAMP));
-			String dateText = TransactionsActivity.getPrettyDateFormat(getActivity(), dateMillis);
+        @Override
+        public void onBindViewHolderCursor(ViewHolder holder, Cursor cursor) {
+            holder.transactionId = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry._ID));
 
-			final long id = holder.transactionId;
-			holder.itemView.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					onListItemClick(id);
-				}
-			});
+            String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_DESCRIPTION));
+            holder.primaryText.setText(description);
 
-			if (mUseCompactView) {
-				holder.secondaryText.setText(dateText);
-			} else {
+            final String transactionUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_UID));
+            Money amount = mTransactionsDbAdapter.getBalance(transactionUID, mAccountUID);
+            TransactionsActivity.displayBalance(holder.transactionAmount, amount);
 
-				List<Split> splits = SplitsDbAdapter.getInstance().getSplitsForTransaction(transactionUID);
-				String text = "";
+            long dateMillis = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_TIMESTAMP));
+            String dateText = TransactionsActivity.getPrettyDateFormat(getActivity(), dateMillis);
 
-				if (splits.size() == 2 && splits.get(0).isPairOf(splits.get(1))) {
-					for (Split split : splits) {
-						if (!split.getAccountUID().equals(mAccountUID)) {
-							text = AccountsDbAdapter.getInstance().getFullyQualifiedAccountName(split.getAccountUID());
-							break;
-						}
-					}
-				}
+            final long id = holder.transactionId;
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onListItemClick(id);
+                }
+            });
 
-				if (splits.size() > 2) {
-					text = splits.size() + " splits";
-				}
-				holder.secondaryText.setText(text);
-				holder.transactionDate.setText(dateText);
+            if (mUseCompactView) {
+                holder.secondaryText.setText(dateText);
+            } else {
 
-				holder.editTransaction.setOnClickListener(new View.OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						Intent intent = new Intent(getActivity(), FormActivity.class);
-						intent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name());
-						intent.putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID);
-						intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
-						startActivity(intent);
-					}
-				});
-			}
-		}
+                List<Split> splits = SplitsDbAdapter.getInstance().getSplitsForTransaction(transactionUID);
+                String text = "";
 
-		public class ViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener{
-			@BindView(R.id.primary_text) 		public TextView primaryText;
-			@BindView(R.id.secondary_text) 		public TextView secondaryText;
-			@BindView(R.id.transaction_amount)	public TextView transactionAmount;
-			@BindView(R.id.options_menu)		public ImageView optionsMenu;
+                if (splits.size() == 2 && splits.get(0).isPairOf(splits.get(1))) {
+                    for (Split split : splits) {
+                        if (!split.getAccountUID().equals(mAccountUID)) {
+                            text = AccountsDbAdapter.getInstance().getFullyQualifiedAccountName(split.getAccountUID());
+                            break;
+                        }
+                    }
+                }
 
-			//these views are not used in the compact view, hence the nullability
-			@Nullable @BindView(R.id.transaction_date)	public TextView transactionDate;
-			@Nullable @BindView(R.id.edit_transaction)	public ImageView editTransaction;
+                if (splits.size() > 2) {
+                    text = splits.size() + " splits";
+                }
+                holder.secondaryText.setText(text);
+                holder.transactionDate.setText(dateText);
 
-			long transactionId;
+                holder.editTransaction.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(getActivity(), FormActivity.class);
+                        intent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name());
+                        intent.putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID);
+                        intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
+                        startActivity(intent);
+                    }
+                });
+            }
+        }
 
-			public ViewHolder(View itemView) {
-				super(itemView);
-				ButterKnife.bind(this, itemView);
-				primaryText.setTextSize(18);
-				optionsMenu.setOnClickListener(new View.OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						PopupMenu popup = new PopupMenu(getActivity(), v);
-						popup.setOnMenuItemClickListener(ViewHolder.this);
-						MenuInflater inflater = popup.getMenuInflater();
-						inflater.inflate(R.menu.transactions_context_menu, popup.getMenu());
-						popup.show();
-					}
-				});
-			}
+        public class ViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener {
+            @BindView(R.id.primary_text)
+            public TextView primaryText;
+            @BindView(R.id.secondary_text)
+            public TextView secondaryText;
+            @BindView(R.id.transaction_amount)
+            public TextView transactionAmount;
+            @BindView(R.id.options_menu)
+            public ImageView optionsMenu;
 
-			@Override
-			public boolean onMenuItemClick(MenuItem item) {
-				switch (item.getItemId()) {
-					case R.id.context_menu_delete:
-						BackupManager.backupActiveBook();
-						mTransactionsDbAdapter.deleteRecord(transactionId);
-						WidgetConfigurationActivity.updateAllWidgets(getActivity());
-						refresh();
-						return true;
+            //these views are not used in the compact view, hence the nullability
+            @Nullable
+            @BindView(R.id.transaction_date)
+            public TextView transactionDate;
+            @Nullable
+            @BindView(R.id.edit_transaction)
+            public ImageView editTransaction;
 
-					case R.id.context_menu_duplicate_transaction:
-						Transaction transaction = mTransactionsDbAdapter.getRecord(transactionId);
-						Transaction duplicate = new Transaction(transaction, true);
-						duplicate.setTime(System.currentTimeMillis());
-						mTransactionsDbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.insert);
-						refresh();
-						return true;
+            long transactionId;
 
-					case R.id.context_menu_move_transaction:
-						long[] ids = new long[]{transactionId};
-						BulkMoveDialogFragment fragment = BulkMoveDialogFragment.newInstance(ids, mAccountUID);
-						fragment.show(getActivity().getSupportFragmentManager(), "bulk_move_transactions");
-						fragment.setTargetFragment(TransactionsListFragment.this, 0);
-						return true;
+            public ViewHolder(View itemView) {
+                super(itemView);
+                ButterKnife.bind(this, itemView);
+                primaryText.setTextSize(18);
+                optionsMenu.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        PopupMenu popup = new PopupMenu(getActivity(), v);
+                        popup.setOnMenuItemClickListener(ViewHolder.this);
+                        MenuInflater inflater = popup.getMenuInflater();
+                        inflater.inflate(R.menu.transactions_context_menu, popup.getMenu());
+                        popup.show();
+                    }
+                });
+            }
 
-					default:
-						return false;
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.context_menu_delete:
+                        BackupManager.backupActiveBook();
+                        mTransactionsDbAdapter.deleteRecord(transactionId);
+                        WidgetConfigurationActivity.updateAllWidgets(getActivity());
+                        refresh();
+                        return true;
 
-				}
-			}
-		}
-	}
+                    case R.id.context_menu_duplicate_transaction:
+                        Transaction transaction = mTransactionsDbAdapter.getRecord(transactionId);
+                        Transaction duplicate = new Transaction(transaction, true);
+                        duplicate.setTime(System.currentTimeMillis());
+                        mTransactionsDbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.insert);
+                        refresh();
+                        return true;
+
+                    case R.id.context_menu_move_transaction:
+                        long[] ids = new long[]{transactionId};
+                        BulkMoveDialogFragment fragment = BulkMoveDialogFragment.newInstance(ids, mAccountUID);
+                        fragment.show(getActivity().getSupportFragmentManager(), "bulk_move_transactions");
+                        fragment.setTargetFragment(TransactionsListFragment.this, 0);
+                        return true;
+
+                    default:
+                        return false;
+
+                }
+            }
+        }
+    }
 }

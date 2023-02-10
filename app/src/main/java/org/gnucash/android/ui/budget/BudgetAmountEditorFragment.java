@@ -64,10 +64,12 @@ public class BudgetAmountEditorFragment extends Fragment {
     private List<View> mBudgetAmountViews = new ArrayList<>();
     private AccountsDbAdapter mAccountsDbAdapter;
 
-    @BindView(R.id.budget_amount_layout)    LinearLayout mBudgetAmountTableLayout;
-    @BindView(R.id.calculator_keyboard)     KeyboardView mKeyboardView;
+    @BindView(R.id.budget_amount_layout)
+    LinearLayout mBudgetAmountTableLayout;
+    @BindView(R.id.calculator_keyboard)
+    KeyboardView mKeyboardView;
 
-    public static BudgetAmountEditorFragment newInstance(Bundle args){
+    public static BudgetAmountEditorFragment newInstance(Bundle args) {
         BudgetAmountEditorFragment fragment = new BudgetAmountEditorFragment();
         fragment.setArguments(args);
         return fragment;
@@ -93,14 +95,14 @@ public class BudgetAmountEditorFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         assert actionBar != null;
         actionBar.setTitle("Edit Budget Amounts");
         setHasOptionsMenu(true);
 
         ArrayList<BudgetAmount> budgetAmounts = getArguments().getParcelableArrayList(UxArgument.BUDGET_AMOUNT_LIST);
         if (budgetAmounts != null) {
-            if (budgetAmounts.isEmpty()){
+            if (budgetAmounts.isEmpty()) {
                 BudgetAmountViewHolder viewHolder = (BudgetAmountViewHolder) addBudgetAmountView(null).getTag();
                 viewHolder.removeItemBtn.setVisibility(View.GONE); //there should always be at least one
             } else {
@@ -120,7 +122,7 @@ public class BudgetAmountEditorFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.menu_add_budget_amount:
                 addBudgetAmountView(null);
                 return true;
@@ -136,17 +138,18 @@ public class BudgetAmountEditorFragment extends Fragment {
 
     /**
      * Checks if the budget amounts can be saved
+     *
      * @return {@code true} if all amounts a properly entered, {@code false} otherwise
      */
-    private boolean canSave(){
+    private boolean canSave() {
         for (View budgetAmountView : mBudgetAmountViews) {
             BudgetAmountViewHolder viewHolder = (BudgetAmountViewHolder) budgetAmountView.getTag();
             viewHolder.amountEditText.evaluate();
-            if (viewHolder.amountEditText.getError() != null){
+            if (viewHolder.amountEditText.getError() != null) {
                 return false;
             }
             //at least one account should be loaded (don't create budget with empty account tree
-            if (viewHolder.budgetAccountSpinner.getCount() == 0){
+            if (viewHolder.budgetAccountSpinner.getCount() == 0) {
                 Toast.makeText(getActivity(), "You need an account hierarchy to create a budget!",
                         Toast.LENGTH_SHORT).show();
                 return false;
@@ -156,7 +159,7 @@ public class BudgetAmountEditorFragment extends Fragment {
     }
 
     private void saveBudgetAmounts() {
-        if (canSave()){
+        if (canSave()) {
             ArrayList<BudgetAmount> budgetAmounts = (ArrayList<BudgetAmount>) extractBudgetAmounts();
             Intent data = new Intent();
             data.putParcelableArrayListExtra(UxArgument.BUDGET_AMOUNT_LIST, budgetAmounts);
@@ -167,9 +170,10 @@ public class BudgetAmountEditorFragment extends Fragment {
 
     /**
      * Load views for the budget amounts
+     *
      * @param budgetAmounts List of {@link BudgetAmount}s
      */
-    private void loadBudgetAmountViews(List<BudgetAmount> budgetAmounts){
+    private void loadBudgetAmountViews(List<BudgetAmount> budgetAmounts) {
         for (BudgetAmount budgetAmount : budgetAmounts) {
             addBudgetAmountView(budgetAmount);
         }
@@ -178,14 +182,15 @@ public class BudgetAmountEditorFragment extends Fragment {
     /**
      * Inflates a new BudgetAmount item view and adds it to the UI.
      * <p>If the {@code budgetAmount} is not null, then it is used to initialize the view</p>
+     *
      * @param budgetAmount Budget amount
      */
-    private View addBudgetAmountView(BudgetAmount budgetAmount){
+    private View addBudgetAmountView(BudgetAmount budgetAmount) {
         LayoutInflater layoutInflater = getActivity().getLayoutInflater();
         View budgetAmountView = layoutInflater.inflate(R.layout.item_budget_amount,
                 mBudgetAmountTableLayout, false);
         BudgetAmountViewHolder viewHolder = new BudgetAmountViewHolder(budgetAmountView);
-        if (budgetAmount != null){
+        if (budgetAmount != null) {
             viewHolder.bindViews(budgetAmount);
         }
         mBudgetAmountTableLayout.addView(budgetAmountView, 0);
@@ -197,7 +202,7 @@ public class BudgetAmountEditorFragment extends Fragment {
     /**
      * Loads the accounts in the spinner
      */
-    private void setupAccountSpinnerAdapter(){
+    private void setupAccountSpinnerAdapter() {
         String conditions = "(" + DatabaseSchema.AccountEntry.COLUMN_HIDDEN + " = 0 )";
 
         if (mAccountCursor != null) {
@@ -210,9 +215,10 @@ public class BudgetAmountEditorFragment extends Fragment {
 
     /**
      * Extract {@link BudgetAmount}s from the views
+     *
      * @return List of budget amounts
      */
-    private List<BudgetAmount> extractBudgetAmounts(){
+    private List<BudgetAmount> extractBudgetAmounts() {
         List<BudgetAmount> budgetAmounts = new ArrayList<>();
         for (View view : mBudgetAmountViews) {
             BudgetAmountViewHolder viewHolder = (BudgetAmountViewHolder) view.getTag();
@@ -230,14 +236,18 @@ public class BudgetAmountEditorFragment extends Fragment {
     /**
      * View holder for budget amounts
      */
-    class BudgetAmountViewHolder{
-        @BindView(R.id.currency_symbol)     TextView currencySymbolTextView;
-        @BindView(R.id.input_budget_amount) CalculatorEditText amountEditText;
-        @BindView(R.id.btn_remove_item)     ImageView removeItemBtn;
-        @BindView(R.id.input_budget_account_spinner) Spinner budgetAccountSpinner;
+    class BudgetAmountViewHolder {
+        @BindView(R.id.currency_symbol)
+        TextView currencySymbolTextView;
+        @BindView(R.id.input_budget_amount)
+        CalculatorEditText amountEditText;
+        @BindView(R.id.btn_remove_item)
+        ImageView removeItemBtn;
+        @BindView(R.id.input_budget_account_spinner)
+        Spinner budgetAccountSpinner;
         View itemView;
 
-        public BudgetAmountViewHolder(View view){
+        public BudgetAmountViewHolder(View view) {
             itemView = view;
             ButterKnife.bind(this, view);
             itemView.setTag(this);
@@ -268,7 +278,7 @@ public class BudgetAmountEditorFragment extends Fragment {
             });
         }
 
-        public void bindViews(BudgetAmount budgetAmount){
+        public void bindViews(BudgetAmount budgetAmount) {
             amountEditText.setValue(budgetAmount.getAmount().asBigDecimal());
             budgetAccountSpinner.setSelection(mAccountCursorAdapter.getPosition(budgetAmount.getAccountUID()));
         }

@@ -55,7 +55,7 @@ public class AccountCreator extends BroadcastReceiver {
                 account.setCommodity(commodity);
             } else {
                 throw new IllegalArgumentException("Commodity with '" + currencyCode
-                                        + "' currency code not found in the database");
+                        + "' currency code not found in the database");
             }
         }
 

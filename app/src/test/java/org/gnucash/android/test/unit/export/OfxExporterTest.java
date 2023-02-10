@@ -45,7 +45,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-@RunWith(RobolectricTestRunner.class) //package is required so that resources can be found in dev mode
+@RunWith(RobolectricTestRunner.class)
+//package is required so that resources can be found in dev mode
 @Config(sdk = 21,
         packageName = "org.gnucash.android",
         shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
@@ -68,7 +69,7 @@ public class OfxExporterTest {
      * shouldn't create any file.
      */
     @Test
-    public void testWithNoTransactionsToExport_shouldNotCreateAnyFile(){
+    public void testWithNoTransactionsToExport_shouldNotCreateAnyFile() {
         ExportParams exportParameters = new ExportParams(ExportFormat.OFX);
         exportParameters.setExportStartTime(TimestampHelper.getTimestampFromEpochZero());
         exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
@@ -81,12 +82,12 @@ public class OfxExporterTest {
      * Test that OFX files are generated
      */
     //FIXME: test failing with NPE
-    public void testGenerateOFXExport(){
+    public void testGenerateOFXExport() {
         AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(mDb);
 
         Account account = new Account("Basic Account");
         Transaction transaction = new Transaction("One transaction");
-        transaction.addSplit(new Split(Money.createZeroInstance("EUR"),account.getUID()));
+        transaction.addSplit(new Split(Money.createZeroInstance("EUR"), account.getUID()));
         account.addTransaction(transaction);
 
         accountsDbAdapter.addRecord(account);

@@ -63,8 +63,8 @@ import io.fabric.sdk.android.Fabric;
 
 /**
  * An {@link Application} subclass for retrieving static context
- * @author Ngewi Fet <ngewif@gmail.com>
  *
+ * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class GnuCashApplication extends MultiDexApplication {
 
@@ -118,12 +118,12 @@ public class GnuCashApplication extends MultiDexApplication {
     }
 
     @Override
-    public void onCreate(){
+    public void onCreate() {
         super.onCreate();
         GnuCashApplication.context = getApplicationContext();
 
         Fabric.with(this, new Crashlytics.Builder().core(
-                new CrashlyticsCore.Builder().disabled(!isCrashlyticsEnabled()).build())
+                        new CrashlyticsCore.Builder().disabled(!isCrashlyticsEnabled()).build())
                 .build());
 
         setUpUserVoice();
@@ -142,17 +142,17 @@ public class GnuCashApplication extends MultiDexApplication {
      * This method should be called every time a new book is opened
      */
     public static void initializeDatabaseAdapters() {
-        if (mDbHelper != null){ //close if open
+        if (mDbHelper != null) { //close if open
             mDbHelper.getReadableDatabase().close();
         }
 
         try {
             mDbHelper = new DatabaseHelper(getAppContext(),
-                                           mBooksDbAdapter.getActiveBookUID());
+                    mBooksDbAdapter.getActiveBookUID());
         } catch (BooksDbAdapter.NoActiveBookFoundException e) {
             mBooksDbAdapter.fixBooksDatabase();
             mDbHelper = new DatabaseHelper(getAppContext(),
-                                           mBooksDbAdapter.getActiveBookUID());
+                    mBooksDbAdapter.getActiveBookUID());
         }
         SQLiteDatabase mainDb;
         try {
@@ -163,15 +163,15 @@ public class GnuCashApplication extends MultiDexApplication {
             mainDb = mDbHelper.getReadableDatabase();
         }
 
-        mSplitsDbAdapter            = new SplitsDbAdapter(mainDb);
-        mTransactionsDbAdapter      = new TransactionsDbAdapter(mainDb, mSplitsDbAdapter);
-        mAccountsDbAdapter          = new AccountsDbAdapter(mainDb, mTransactionsDbAdapter);
-        mRecurrenceDbAdapter        = new RecurrenceDbAdapter(mainDb);
-        mScheduledActionDbAdapter   = new ScheduledActionDbAdapter(mainDb, mRecurrenceDbAdapter);
-        mPricesDbAdapter            = new PricesDbAdapter(mainDb);
-        mCommoditiesDbAdapter       = new CommoditiesDbAdapter(mainDb);
-        mBudgetAmountsDbAdapter     = new BudgetAmountsDbAdapter(mainDb);
-        mBudgetsDbAdapter           = new BudgetsDbAdapter(mainDb, mBudgetAmountsDbAdapter, mRecurrenceDbAdapter);
+        mSplitsDbAdapter = new SplitsDbAdapter(mainDb);
+        mTransactionsDbAdapter = new TransactionsDbAdapter(mainDb, mSplitsDbAdapter);
+        mAccountsDbAdapter = new AccountsDbAdapter(mainDb, mTransactionsDbAdapter);
+        mRecurrenceDbAdapter = new RecurrenceDbAdapter(mainDb);
+        mScheduledActionDbAdapter = new ScheduledActionDbAdapter(mainDb, mRecurrenceDbAdapter);
+        mPricesDbAdapter = new PricesDbAdapter(mainDb);
+        mCommoditiesDbAdapter = new CommoditiesDbAdapter(mainDb);
+        mBudgetAmountsDbAdapter = new BudgetAmountsDbAdapter(mainDb);
+        mBudgetsDbAdapter = new BudgetsDbAdapter(mainDb, mBudgetAmountsDbAdapter, mRecurrenceDbAdapter);
     }
 
     public static AccountsDbAdapter getAccountsDbAdapter() {
@@ -186,15 +186,15 @@ public class GnuCashApplication extends MultiDexApplication {
         return mSplitsDbAdapter;
     }
 
-    public static ScheduledActionDbAdapter getScheduledEventDbAdapter(){
+    public static ScheduledActionDbAdapter getScheduledEventDbAdapter() {
         return mScheduledActionDbAdapter;
     }
 
-    public static CommoditiesDbAdapter getCommoditiesDbAdapter(){
+    public static CommoditiesDbAdapter getCommoditiesDbAdapter() {
         return mCommoditiesDbAdapter;
     }
 
-    public static PricesDbAdapter getPricesDbAdapter(){
+    public static PricesDbAdapter getPricesDbAdapter() {
         return mPricesDbAdapter;
     }
 
@@ -206,24 +206,26 @@ public class GnuCashApplication extends MultiDexApplication {
         return mRecurrenceDbAdapter;
     }
 
-    public static BudgetAmountsDbAdapter getBudgetAmountsDbAdapter(){
+    public static BudgetAmountsDbAdapter getBudgetAmountsDbAdapter() {
         return mBudgetAmountsDbAdapter;
     }
 
-    public static BooksDbAdapter getBooksDbAdapter(){
+    public static BooksDbAdapter getBooksDbAdapter() {
         return mBooksDbAdapter;
     }
 
     /**
      * Returns the currently active database in the application
+     *
      * @return Currently active {@link SQLiteDatabase}
      */
-    public static SQLiteDatabase getActiveDb(){
+    public static SQLiteDatabase getActiveDb() {
         return mDbHelper.getWritableDatabase();
     }
 
     /**
      * Returns the application context
+     *
      * @return Application {@link Context} object
      */
     public static Context getAppContext() {
@@ -232,18 +234,20 @@ public class GnuCashApplication extends MultiDexApplication {
 
     /**
      * Checks if crashlytics is enabled
+     *
      * @return {@code true} if crashlytics is enabled, {@code false} otherwise
      */
-    public static boolean isCrashlyticsEnabled(){
+    public static boolean isCrashlyticsEnabled() {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(context.getString(R.string.key_enable_crashlytics), false);
     }
 
     /**
      * Returns <code>true</code> if double entry is enabled in the app settings, <code>false</code> otherwise.
      * If the value is not set, the default value can be specified in the parameters.
+     *
      * @return <code>true</code> if double entry is enabled, <code>false</code> otherwise
      */
-    public static boolean isDoubleEntryEnabled(){
+    public static boolean isDoubleEntryEnabled() {
         SharedPreferences sharedPrefs = PreferenceActivity.getActiveBookSharedPreferences();
         return sharedPrefs.getBoolean(context.getString(R.string.key_use_double_entry), true);
     }
@@ -251,10 +255,11 @@ public class GnuCashApplication extends MultiDexApplication {
     /**
      * Returns <code>true</code> if setting is enabled to save opening balances after deleting transactions,
      * <code>false</code> otherwise.
+     *
      * @param defaultValue Default value to return if double entry is not explicitly set
      * @return <code>true</code> if opening balances should be saved, <code>false</code> otherwise
      */
-    public static boolean shouldSaveOpeningBalances(boolean defaultValue){
+    public static boolean shouldSaveOpeningBalances(boolean defaultValue) {
         SharedPreferences sharedPrefs = PreferenceActivity.getActiveBookSharedPreferences();
         return sharedPrefs.getBoolean(context.getString(R.string.key_save_opening_balances), defaultValue);
     }
@@ -262,14 +267,14 @@ public class GnuCashApplication extends MultiDexApplication {
     /**
      * Returns the default currency code for the application. <br/>
      * What value is actually returned is determined in this order of priority:<ul>
-     *     <li>User currency preference (manually set be user in the app)</li>
-     *     <li>Default currency for the device locale</li>
-     *     <li>United States Dollars</li>
+     * <li>User currency preference (manually set be user in the app)</li>
+     * <li>Default currency for the device locale</li>
+     * <li>United States Dollars</li>
      * </ul>
      *
      * @return Default currency code string for the application
      */
-    public static String getDefaultCurrencyCode(){
+    public static String getDefaultCurrencyCode() {
         Locale locale = getDefaultLocale();
 
         String currencyCode = "USD"; //start with USD as the default
@@ -292,10 +297,11 @@ public class GnuCashApplication extends MultiDexApplication {
      *     <li>{@link Money#DEFAULT_CURRENCY_CODE}</li>
      *     <li>{@link Commodity#DEFAULT_COMMODITY}</li>
      * </ul>
+     *
      * @param currencyCode ISO 4217 currency code
      * @see #getDefaultCurrencyCode()
      */
-    public static void setDefaultCurrencyCode(@NonNull String currencyCode){
+    public static void setDefaultCurrencyCode(@NonNull String currencyCode) {
         PreferenceManager.getDefaultSharedPreferences(context).edit()
                 .putString(getAppContext().getString(R.string.key_default_currency), currencyCode)
                 .apply();
@@ -306,6 +312,7 @@ public class GnuCashApplication extends MultiDexApplication {
     /**
      * Returns the default locale which is used for currencies, while handling special cases for
      * locales which are not supported for currency such as en_GB
+     *
      * @return The default locale for this device
      */
     public static Locale getDefaultLocale() {
@@ -316,11 +323,11 @@ public class GnuCashApplication extends MultiDexApplication {
         }
 
         //for unsupported locale es_LG
-        if (locale.getCountry().equals("LG")){
+        if (locale.getCountry().equals("LG")) {
             locale = new Locale(locale.getLanguage(), "ES");
         }
 
-        if (locale.getCountry().equals("en")){
+        if (locale.getCountry().equals("en")) {
             locale = Locale.US;
         }
         return locale;
@@ -330,13 +337,14 @@ public class GnuCashApplication extends MultiDexApplication {
      * Starts the service for scheduled events and schedules an alarm to call the service twice daily.
      * <p>If the alarm already exists, this method does nothing. If not, the alarm will be created
      * Hence, there is no harm in calling the method repeatedly</p>
+     *
      * @param context Application context
      */
-    public static void startScheduledActionExecutionService(Context context){
+    public static void startScheduledActionExecutionService(Context context) {
         Intent alarmIntent = new Intent(context, PeriodicJobReceiver.class);
         alarmIntent.setAction(PeriodicJobReceiver.ACTION_SCHEDULED_ACTIONS);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context,0, alarmIntent,
-                                                                 PendingIntent.FLAG_NO_CREATE);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent,
+                PendingIntent.FLAG_NO_CREATE);
 
         if (pendingIntent != null) //if service is already scheduled, just return
             return;

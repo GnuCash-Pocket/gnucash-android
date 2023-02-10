@@ -30,19 +30,19 @@ import org.gnucash.android.ui.settings.PreferenceActivity;
  * {@link AppWidgetProvider} which is responsible for managing widgets on the homescreen
  * It receives broadcasts related to updating and deleting widgets
  * Widgets can also be updated manually by calling {@link WidgetConfigurationActivity#updateAllWidgets(Context)}
- * @author Ngewi Fet <ngewif@gmail.com>
  *
+ * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class TransactionAppWidgetProvider extends AppWidgetProvider {
 
-	@Override
-	public void onUpdate(Context context, AppWidgetManager appWidgetManager,
-			int[] appWidgetIds) {
-		super.onUpdate(context, appWidgetManager, appWidgetIds);
-		for (int appWidgetId : appWidgetIds) {
-			WidgetConfigurationActivity.updateWidget(context, appWidgetId);
-		}
-	}
+    @Override
+    public void onUpdate(Context context, AppWidgetManager appWidgetManager,
+                         int[] appWidgetIds) {
+        super.onUpdate(context, appWidgetManager, appWidgetIds);
+        for (int appWidgetId : appWidgetIds) {
+            WidgetConfigurationActivity.updateWidget(context, appWidgetId);
+        }
+    }
 
     @Override
     public void onEnabled(Context context) {
@@ -51,10 +51,10 @@ public class TransactionAppWidgetProvider extends AppWidgetProvider {
     }
 
     @Override
-	public void onDeleted(Context context, int[] appWidgetIds) {
-		super.onDeleted(context, appWidgetIds);
-		for (int appWidgetId : appWidgetIds) {
-			WidgetConfigurationActivity.removeWidgetConfiguration(context, appWidgetId);
-		}
-	}
+    public void onDeleted(Context context, int[] appWidgetIds) {
+        super.onDeleted(context, appWidgetIds);
+        for (int appWidgetId : appWidgetIds) {
+            WidgetConfigurationActivity.removeWidgetConfiguration(context, appWidgetId);
+        }
+    }
 }

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,14 +17,16 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     tools:showIn="@layout/fragment_text_report">
 
-    <TextView android:id="@+id/account_name"
+    <TextView
+        android:id="@+id/account_name"
         android:layout_width="0dp"
         android:layout_weight="1"
         android:layout_height="wrap_content"
         android:textSize="14sp"
         tools:text="Credit Card" />
 
-    <TextView android:id="@+id/account_balance"
+    <TextView
+        android:id="@+id/account_balance"
         android:layout_weight="1"
         android:gravity="right"
         android:textSize="14sp"

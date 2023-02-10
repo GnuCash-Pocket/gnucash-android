@@ -40,25 +40,26 @@ import java.util.List;
 public class RecurrenceParser {
     //these are time millisecond constants which are used for scheduled actions.
     //they may not be calendar accurate, but they serve the purpose for scheduling approximate time for background service execution
-    public static final long SECOND_MILLIS  = 1000;
-    public static final long MINUTE_MILLIS  = 60 * SECOND_MILLIS;
-    public static final long HOUR_MILLIS    = 60 * MINUTE_MILLIS;
-    public static final long DAY_MILLIS     = 24 * HOUR_MILLIS;
-    public static final long WEEK_MILLIS    = 7 * DAY_MILLIS;
-    public static final long MONTH_MILLIS   = 30 * DAY_MILLIS;
-    public static final long YEAR_MILLIS    = 12 * MONTH_MILLIS;
+    public static final long SECOND_MILLIS = 1000;
+    public static final long MINUTE_MILLIS = 60 * SECOND_MILLIS;
+    public static final long HOUR_MILLIS = 60 * MINUTE_MILLIS;
+    public static final long DAY_MILLIS = 24 * HOUR_MILLIS;
+    public static final long WEEK_MILLIS = 7 * DAY_MILLIS;
+    public static final long MONTH_MILLIS = 30 * DAY_MILLIS;
+    public static final long YEAR_MILLIS = 12 * MONTH_MILLIS;
 
     /**
      * Parse an {@link EventRecurrence} into a {@link Recurrence} object
+     *
      * @param eventRecurrence EventRecurrence object
      * @return Recurrence object
      */
-    public static Recurrence parse(EventRecurrence eventRecurrence){
+    public static Recurrence parse(EventRecurrence eventRecurrence) {
         if (eventRecurrence == null)
             return null;
 
         PeriodType periodType;
-        switch(eventRecurrence.freq){
+        switch (eventRecurrence.freq) {
             case EventRecurrence.HOURLY:
                 periodType = PeriodType.HOUR;
                 break;
@@ -98,15 +99,16 @@ public class RecurrenceParser {
     /**
      * Parses the end time from an EventRecurrence object and sets it to the <code>scheduledEvent</code>.
      * The end time is specified in the dialog either by number of occurrences or a date.
+     *
      * @param eventRecurrence Event recurrence pattern obtained from dialog
-     * @param recurrence Recurrence event to set the end period to
+     * @param recurrence      Recurrence event to set the end period to
      */
     private static void parseEndTime(EventRecurrence eventRecurrence, Recurrence recurrence) {
         if (eventRecurrence.until != null && eventRecurrence.until.length() > 0) {
             Time endTime = new Time();
             endTime.parse(eventRecurrence.until);
             recurrence.setPeriodEnd(new Timestamp(endTime.toMillis(false)));
-        } else if (eventRecurrence.count > 0){
+        } else if (eventRecurrence.count > 0) {
             recurrence.setPeriodEnd(eventRecurrence.count);
         }
     }

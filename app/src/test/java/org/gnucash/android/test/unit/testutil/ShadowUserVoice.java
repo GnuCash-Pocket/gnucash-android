@@ -15,7 +15,7 @@ import org.robolectric.annotation.Implements;
 public class ShadowUserVoice {
 
     @Implementation
-    public static void init(Config config, Context context){
+    public static void init(Config config, Context context) {
         //do nothing
     }
 }

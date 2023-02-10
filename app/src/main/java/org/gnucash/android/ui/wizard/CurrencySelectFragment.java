@@ -35,6 +35,7 @@ import butterknife.ButterKnife;
 /**
  * Displays a list of all currencies in the database and allows selection of one
  * <p>This fragment is intended for use with the first run wizard</p>
+ *
  * @author Ngewi Fet <ngewif@gmail.com>
  * @see CurrencySelectPage
  * @see FirstRunWizardActivity
@@ -49,7 +50,7 @@ public class CurrencySelectFragment extends ListFragment {
 
     String mPageKey;
 
-    public static CurrencySelectFragment newInstance(String key){
+    public static CurrencySelectFragment newInstance(String key) {
         CurrencySelectFragment fragment = new CurrencySelectFragment();
         fragment.mPageKey = key;
         return fragment;

@@ -38,14 +38,16 @@ public class DropboxHelper {
      * DropBox API v2 client for making requests to DropBox
      */
     private static DbxClientV2 sDbxClient;
+
     /**
      * Retrieves the access token after DropBox OAuth authentication and saves it to preferences file
-     * <p>This method should typically by called in the {@link Activity#onResume()} method of the 
+     * <p>This method should typically by called in the {@link Activity#onResume()} method of the
      * Activity or Fragment which called {@link Auth#startOAuth2Authentication(Context, String)}
      * </p>
+     *
      * @return Retrieved access token. Could be null if authentication failed or was canceled.
      */
-    public static String retrieveAndSaveToken(){
+    public static String retrieveAndSaveToken() {
         Context context = GnuCashApplication.getAppContext();
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         String keyAccessToken = context.getString(R.string.key_dropbox_access_token);
@@ -62,9 +64,10 @@ public class DropboxHelper {
 
     /**
      * Return a DropBox client for making requests
+     *
      * @return DropBox client for API v2
      */
-    public static DbxClientV2 getClient(){
+    public static DbxClientV2 getClient() {
         if (sDbxClient != null)
             return sDbxClient;
 
@@ -82,9 +85,10 @@ public class DropboxHelper {
 
     /**
      * Checks if the app holds an access token for dropbox
+     *
      * @return {@code true} if token exists, {@code false} otherwise
      */
-    public static boolean hasToken(){
+    public static boolean hasToken() {
         Context context = GnuCashApplication.getAppContext();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String accessToken = prefs.getString(context.getString(R.string.key_dropbox_access_token), null);

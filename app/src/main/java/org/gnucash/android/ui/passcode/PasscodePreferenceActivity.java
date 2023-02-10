@@ -28,6 +28,7 @@ import org.gnucash.android.ui.common.UxArgument;
 
 /**
  * Activity for entering and confirming passcode
+ *
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
 public class PasscodePreferenceActivity extends AppCompatActivity

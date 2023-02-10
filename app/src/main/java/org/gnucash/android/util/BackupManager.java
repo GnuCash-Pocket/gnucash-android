@@ -67,13 +67,13 @@ public class BackupManager {
 
         for (String bookUID : bookUIDs) {
             String backupFile = getBookBackupFileUri(bookUID);
-            if (backupFile == null){
+            if (backupFile == null) {
                 backupBook(bookUID);
                 continue;
             }
 
             try (BufferedOutputStream bufferedOutputStream =
-                    new BufferedOutputStream(context.getContentResolver().openOutputStream(Uri.parse(backupFile)))){
+                         new BufferedOutputStream(context.getContentResolver().openOutputStream(Uri.parse(backupFile)))) {
                 GZIPOutputStream gzipOutputStream = new GZIPOutputStream(bufferedOutputStream);
                 OutputStreamWriter writer = new OutputStreamWriter(gzipOutputStream);
                 ExportParams params = new ExportParams(ExportFormat.XML);
@@ -103,11 +103,11 @@ public class BackupManager {
      * @param bookUID Unique ID of the book
      * @return {@code true} if backup was successful, {@code false} otherwise
      */
-    public static boolean backupBook(String bookUID){
+    public static boolean backupBook(String bookUID) {
         OutputStream outputStream;
         try {
             String backupFile = getBookBackupFileUri(bookUID);
-            if (backupFile != null){
+            if (backupFile != null) {
                 outputStream = GnuCashApplication.getAppContext().getContentResolver().openOutputStream(Uri.parse(backupFile));
             } else { //no Uri set by user, use default location on SD card
                 backupFile = getBackupFilePath(bookUID);
@@ -132,14 +132,15 @@ public class BackupManager {
     /**
      * Returns the full path of a file to make database backup of the specified book.
      * Backups are done in XML format and are Gzipped (with ".gnca" extension).
+     *
      * @param bookUID GUID of the book
      * @return the file path for backups of the database.
      * @see #getBackupFolderPath(String)
      */
-    private static String getBackupFilePath(String bookUID){
+    private static String getBackupFilePath(String bookUID) {
         Book book = BooksDbAdapter.getInstance().getRecord(bookUID);
         return getBackupFolderPath(book.getUID())
-               + Exporter.buildExportFilename(ExportFormat.XML, book.getDisplayName());
+                + Exporter.buildExportFilename(ExportFormat.XML, book.getDisplayName());
     }
 
     /**
@@ -149,10 +150,10 @@ public class BackupManager {
      *
      * @return Absolute path to backup folder for the book
      */
-    private static String getBackupFolderPath(String bookUID){
+    private static String getBackupFolderPath(String bookUID) {
         String baseFolderPath = GnuCashApplication.getAppContext()
-                                                  .getExternalFilesDir(null)
-                                                  .getAbsolutePath();
+                .getExternalFilesDir(null)
+                .getAbsolutePath();
         String path = baseFolderPath + "/" + bookUID + "/backups/";
         File file = new File(path);
         if (!file.exists())
@@ -162,11 +163,12 @@ public class BackupManager {
 
     /**
      * Return the user-set backup file URI for the book with UID {@code bookUID}.
+     *
      * @param bookUID Unique ID of the book
      * @return DocumentFile for book backups, or null if the user hasn't set any.
      */
     @Nullable
-    public static String getBookBackupFileUri(String bookUID){
+    public static String getBookBackupFileUri(String bookUID) {
         SharedPreferences sharedPreferences = PreferenceActivity.getBookSharedPreferences(bookUID);
         return sharedPreferences.getString(KEY_BACKUP_FILE, null);
     }
@@ -176,15 +178,15 @@ public class BackupManager {
         Arrays.sort(backupFiles);
         List<File> backupFilesList = Arrays.asList(backupFiles);
         Collections.reverse(backupFilesList);
-        return  backupFilesList;
+        return backupFilesList;
     }
 
     public static void schedulePeriodicBackups(Context context) {
         Log.i(LOG_TAG, "Scheduling backup job");
         Intent intent = new Intent(context, PeriodicJobReceiver.class);
         intent.setAction(PeriodicJobReceiver.ACTION_BACKUP);
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(context,0, intent,
-                                                               PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                 SystemClock.elapsedRealtime() + AlarmManager.INTERVAL_FIFTEEN_MINUTES,

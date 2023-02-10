@@ -41,7 +41,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Some tests for the splits database adapter
  */
-@RunWith(RobolectricTestRunner.class) //package is required so that resources can be found in dev mode
+@RunWith(RobolectricTestRunner.class)
+//package is required so that resources can be found in dev mode
 @Config(sdk = 21, packageName = "org.gnucash.android", shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
 public class SplitsDbAdapterTest {
 
@@ -64,7 +65,7 @@ public class SplitsDbAdapterTest {
      * Adding a split where the account does not exist in the database should generate an exception
      */
     @Test(expected = SQLiteException.class)
-    public void shouldHaveAccountInDatabase(){
+    public void shouldHaveAccountInDatabase() {
         Transaction transaction = new Transaction("");
         mTransactionsDbAdapter.addRecord(transaction);
 
@@ -77,7 +78,7 @@ public class SplitsDbAdapterTest {
      * Adding a split where the account does not exist in the database should generate an exception
      */
     @Test(expected = SQLiteException.class)
-    public void shouldHaveTransactionInDatabase(){
+    public void shouldHaveTransactionInDatabase() {
         Transaction transaction = new Transaction(""); //not added to the db
 
         Split split = new Split(Money.getZeroInstance(), mAccount.getUID());
@@ -86,7 +87,7 @@ public class SplitsDbAdapterTest {
     }
 
     @Test
-    public void testAddSplit(){
+    public void testAddSplit() {
         Transaction transaction = new Transaction("");
         mTransactionsDbAdapter.addRecord(transaction);
 
@@ -103,7 +104,7 @@ public class SplitsDbAdapterTest {
      * When a split is added or modified to a transaction, we should set the
      */
     @Test
-    public void addingSplitShouldUnsetExportedFlagOfTransaction(){
+    public void addingSplitShouldUnsetExportedFlagOfTransaction() {
         Transaction transaction = new Transaction("");
         transaction.setExported(true);
         mTransactionsDbAdapter.addRecord(transaction);
@@ -120,7 +121,7 @@ public class SplitsDbAdapterTest {
     }
 
     @After
-    public void tearDown(){
+    public void tearDown() {
         mAccountsDbAdapter.deleteAllRecords();
     }
 }

@@ -28,15 +28,15 @@ import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFra
 /**
  * Shows the recurrence dialog when the recurrence view is clicked
  */
-public class RecurrenceViewClickListener implements View.OnClickListener{
-    private static final String FRAGMENT_TAG_RECURRENCE_PICKER  = "recurrence_picker";
+public class RecurrenceViewClickListener implements View.OnClickListener {
+    private static final String FRAGMENT_TAG_RECURRENCE_PICKER = "recurrence_picker";
 
     AppCompatActivity mActivity;
     String mRecurrenceRule;
     OnRecurrenceSetListener mRecurrenceSetListener;
 
     public RecurrenceViewClickListener(AppCompatActivity activity, String recurrenceRule,
-                                       OnRecurrenceSetListener recurrenceSetListener){
+                                       OnRecurrenceSetListener recurrenceSetListener) {
         this.mActivity = activity;
         this.mRecurrenceRule = recurrenceRule;
         this.mRecurrenceSetListener = recurrenceSetListener;

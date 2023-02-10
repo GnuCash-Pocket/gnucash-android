@@ -50,7 +50,7 @@ public class GncXmlHelperTest {
     }
 
     @Test
-    public void testFormatSplitAmount(){
+    public void testFormatSplitAmount() {
         Commodity usdCommodity = new Commodity("US Dollars", "USD", 100);
         Commodity euroCommodity = new Commodity("Euro", "EUR", 100);
 

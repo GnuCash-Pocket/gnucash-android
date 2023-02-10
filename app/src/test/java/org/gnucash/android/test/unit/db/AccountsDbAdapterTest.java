@@ -64,29 +64,31 @@ import javax.xml.parsers.ParserConfigurationException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
-@RunWith(RobolectricTestRunner.class) //package is required so that resources can be found in dev mode
+@RunWith(RobolectricTestRunner.class)
+//package is required so that resources can be found in dev mode
 @Config(sdk = 21, packageName = "org.gnucash.android", shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
-public class AccountsDbAdapterTest{
+public class AccountsDbAdapterTest {
 
-	private static final String BRAVO_ACCOUNT_NAME = "Bravo";
-	private static final String ALPHA_ACCOUNT_NAME = "Alpha";
+    private static final String BRAVO_ACCOUNT_NAME = "Bravo";
+    private static final String ALPHA_ACCOUNT_NAME = "Alpha";
     private AccountsDbAdapter mAccountsDbAdapter;
     private TransactionsDbAdapter mTransactionsDbAdapter;
     private SplitsDbAdapter mSplitsDbAdapter;
     private CommoditiesDbAdapter mCommoditiesDbAdapter;
 
     @Before
-	public void setUp() throws Exception {
+    public void setUp() throws Exception {
         initAdapters(null);
-	}
+    }
 
     /**
      * Initialize database adapters for a specific book.
      * This method should be called everytime a new book is loaded into the database
+     *
      * @param bookUID GUID of the GnuCash book
      */
-    private void initAdapters(String bookUID){
-        if (bookUID == null){
+    private void initAdapters(String bookUID) {
+        if (bookUID == null) {
             mSplitsDbAdapter = SplitsDbAdapter.getInstance();
             mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
             mAccountsDbAdapter = AccountsDbAdapter.getInstance();
@@ -106,22 +108,22 @@ public class AccountsDbAdapterTest{
      * Test that the list of accounts is always returned sorted alphabetically
      */
     @Test
-	public void shouldBeAlphabeticallySortedByDefault(){
+    public void shouldBeAlphabeticallySortedByDefault() {
         Account first = new Account(ALPHA_ACCOUNT_NAME);
         Account second = new Account(BRAVO_ACCOUNT_NAME);
         //purposefully added the second after the first
         mAccountsDbAdapter.addRecord(second);
         mAccountsDbAdapter.addRecord(first);
 
-		List<Account> accountsList = mAccountsDbAdapter.getAllRecords();
-		assertEquals(2, accountsList.size());
-		//bravo was saved first, but alpha should be first alphabetically
+        List<Account> accountsList = mAccountsDbAdapter.getAllRecords();
+        assertEquals(2, accountsList.size());
+        //bravo was saved first, but alpha should be first alphabetically
         assertThat(accountsList).contains(first, Index.atIndex(0));
         assertThat(accountsList).contains(second, Index.atIndex(1));
-	}
+    }
 
     @Test
-    public void bulkAddAccountsShouldNotModifyTransactions(){
+    public void bulkAddAccountsShouldNotModifyTransactions() {
         Account account1 = new Account("AlphaAccount");
         Account account2 = new Account("BetaAccount");
         Transaction transaction = new Transaction("MyTransaction");
@@ -145,7 +147,7 @@ public class AccountsDbAdapterTest{
     }
 
     @Test
-    public void shouldAddAccountsToDatabase(){
+    public void shouldAddAccountsToDatabase() {
         Account account1 = new Account("AlphaAccount");
         Account account2 = new Account("BetaAccount");
         Transaction transaction = new Transaction("MyTransaction");
@@ -174,7 +176,7 @@ public class AccountsDbAdapterTest{
      * Tests the foreign key constraint "ON DELETE CASCADE" between accounts and splits
      */
     @Test
-    public void shouldDeleteSplitsWhenAccountDeleted(){
+    public void shouldDeleteSplitsWhenAccountDeleted() {
         Account first = new Account(ALPHA_ACCOUNT_NAME);
         first.setUID(ALPHA_ACCOUNT_NAME);
         Account second = new Account(BRAVO_ACCOUNT_NAME);
@@ -201,7 +203,7 @@ public class AccountsDbAdapterTest{
      * Tests that a ROOT account will always be created in the system
      */
     @Test
-    public void shouldCreateDefaultRootAccount(){
+    public void shouldCreateDefaultRootAccount() {
         Account account = new Account("Some account");
         mAccountsDbAdapter.addRecord(account);
         assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(2L);
@@ -214,7 +216,7 @@ public class AccountsDbAdapterTest{
     }
 
     @Test
-    public void shouldUpdateFullNameAfterParentChange(){
+    public void shouldUpdateFullNameAfterParentChange() {
         Account parent = new Account("Test");
         Account child = new Account("Child");
 
@@ -234,7 +236,7 @@ public class AccountsDbAdapterTest{
     }
 
     @Test
-    public void shouldAddTransactionsAndSplitsWhenAddingAccounts(){
+    public void shouldAddTransactionsAndSplitsWhenAddingAccounts() {
         Account account = new Account("Test");
         mAccountsDbAdapter.addRecord(account);
 
@@ -254,7 +256,7 @@ public class AccountsDbAdapterTest{
     }
 
     @Test
-    public void shouldClearAllTablesWhenDeletingAllAccounts(){
+    public void shouldClearAllTablesWhenDeletingAllAccounts() {
         Account account = new Account("Test");
         Transaction transaction = new Transaction("Test description");
         Split split = new Split(Money.getZeroInstance(), account.getUID());
@@ -291,7 +293,7 @@ public class AccountsDbAdapterTest{
     }
 
     @Test
-    public void simpleAccountListShouldNotContainTransactions(){
+    public void simpleAccountListShouldNotContainTransactions() {
         Account account = new Account("Test");
         Transaction transaction = new Transaction("Test description");
         Split split = new Split(Money.getZeroInstance(), account.getUID());
@@ -309,7 +311,7 @@ public class AccountsDbAdapterTest{
     }
 
     @Test
-    public void shouldComputeAccountBalanceCorrectly(){
+    public void shouldComputeAccountBalanceCorrectly() {
         Account account = new Account("Test", Commodity.USD);
         account.setAccountType(AccountType.ASSET); //debit normal account balance
         Account transferAcct = new Account("Transfer");
@@ -354,7 +356,7 @@ public class AccountsDbAdapterTest{
      * Test creating an account hierarchy by specifying fully qualified name
      */
     @Test
-    public void shouldCreateAccountHierarchy(){
+    public void shouldCreateAccountHierarchy() {
         String uid = mAccountsDbAdapter.createAccountHierarchy("Assets:Current Assets:Cash in Wallet", AccountType.ASSET);
 
         List<Account> accounts = mAccountsDbAdapter.getAllRecords();
@@ -363,7 +365,7 @@ public class AccountsDbAdapterTest{
     }
 
     @Test
-    public void shouldRecursivelyDeleteAccount(){
+    public void shouldRecursivelyDeleteAccount() {
         Account account = new Account("Parent");
         Account account2 = new Account("Child");
         account2.setParentUID(account.getUID());
@@ -392,7 +394,7 @@ public class AccountsDbAdapterTest{
     }
 
     @Test
-    public void shouldGetDescendantAccounts(){
+    public void shouldGetDescendantAccounts() {
         loadDefaultAccounts();
 
         String uid = mAccountsDbAdapter.findAccountUidByFullName("Expenses:Auto");
@@ -402,7 +404,7 @@ public class AccountsDbAdapterTest{
     }
 
     @Test
-    public void shouldReassignDescendantAccounts(){
+    public void shouldReassignDescendantAccounts() {
         loadDefaultAccounts();
 
         String savingsAcctUID = mAccountsDbAdapter.findAccountUidByFullName("Assets:Current Assets:Savings Account");
@@ -419,7 +421,7 @@ public class AccountsDbAdapterTest{
     }
 
     @Test
-    public void shouldCreateImbalanceAccountOnDemand(){
+    public void shouldCreateImbalanceAccountOnDemand() {
         assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(1L);
 
         Commodity usd = mCommoditiesDbAdapter.getCommodity("USD");
@@ -431,13 +433,13 @@ public class AccountsDbAdapterTest{
         assertThat(imbalanceUID).isNotNull().isNotEmpty();
         assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(2);
     }
-    
-    
-	@Test
-    public void editingAccountShouldNotDeleteTemplateSplits(){
+
+
+    @Test
+    public void editingAccountShouldNotDeleteTemplateSplits() {
         Account account = new Account("First", Commodity.EUR);
         Account transferAccount = new Account("Transfer", Commodity.EUR);
-		mAccountsDbAdapter.addRecord(account);
+        mAccountsDbAdapter.addRecord(account);
         mAccountsDbAdapter.addRecord(transferAccount);
 
         assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(3); //plus root account
@@ -465,7 +467,7 @@ public class AccountsDbAdapterTest{
     }
 
     @Test
-    public void shouldSetDefaultTransferColumnToNull_WhenTheAccountIsDeleted(){
+    public void shouldSetDefaultTransferColumnToNull_WhenTheAccountIsDeleted() {
         mAccountsDbAdapter.deleteAllRecords();
         assertThat(mAccountsDbAdapter.getRecordsCount()).isZero();
 
@@ -495,11 +497,12 @@ public class AccountsDbAdapterTest{
         assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(2L);
         assertThat(mAccountsDbAdapter.getRecord(account4.getUID()).getDefaultTransferAccountUID()).isNull();
     }
+
     /**
      * Opening an XML file should set the default currency to that used by the most accounts in the file
      */
     @Test
-    public void importingXml_shouldSetDefaultCurrencyFromXml(){
+    public void importingXml_shouldSetDefaultCurrencyFromXml() {
         GnuCashApplication.setDefaultCurrencyCode("JPY");
 
         assertThat(GnuCashApplication.getDefaultCurrencyCode()).isEqualTo("JPY");
@@ -519,7 +522,7 @@ public class AccountsDbAdapterTest{
     /**
      * Loads the default accounts from file resource
      */
-    private void loadDefaultAccounts(){
+    private void loadDefaultAccounts() {
         try {
             String bookUID = GncXmlImporter.parse(GnuCashApplication.getAppContext().getResources().openRawResource(R.raw.default_accounts));
             initAdapters(bookUID);
@@ -530,8 +533,8 @@ public class AccountsDbAdapterTest{
     }
 
 
-	@After
-	public void tearDown() throws Exception {
-		mAccountsDbAdapter.deleteAllRecords();
-	}
+    @After
+    public void tearDown() throws Exception {
+        mAccountsDbAdapter.deleteAllRecords();
+    }
 }

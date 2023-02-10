@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,21 +16,28 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:title="GnuCash Settings">
-    <Preference android:key="@string/key_prefs_header_general"
+    <Preference
+        android:key="@string/key_prefs_header_general"
         android:title="@string/header_general_settings"
-        app:fragment="org.gnucash.android.ui.settings.GeneralPreferenceFragment"/>
-    <Preference android:title="@string/title_manage_books"
-                app:fragment="org.gnucash.android.ui.settings.BookManagerFragment" />
-    <Preference app:fragment="org.gnucash.android.ui.settings.AccountPreferencesFragment"
+        app:fragment="org.gnucash.android.ui.settings.GeneralPreferenceFragment" />
+    <Preference
+        android:title="@string/title_manage_books"
+        app:fragment="org.gnucash.android.ui.settings.BookManagerFragment" />
+    <Preference
+        app:fragment="org.gnucash.android.ui.settings.AccountPreferencesFragment"
         android:title="@string/header_account_settings" />
-    <Preference app:fragment="org.gnucash.android.ui.settings.TransactionsPreferenceFragment"
+    <Preference
+        app:fragment="org.gnucash.android.ui.settings.TransactionsPreferenceFragment"
         android:title="@string/header_transaction_settings" />
-    <Preference app:fragment="org.gnucash.android.ui.settings.BackupPreferenceFragment"
+    <Preference
+        app:fragment="org.gnucash.android.ui.settings.BackupPreferenceFragment"
         android:title="@string/header_backup_and_export_settings" />
-    <Preference app:fragment="org.gnucash.android.ui.settings.AboutPreferenceFragment"
+    <Preference
+        app:fragment="org.gnucash.android.ui.settings.AboutPreferenceFragment"
         android:title="@string/header_about_gnucash" />
     <Preference android:title="@string/label_recommend_app">
-        <intent android:action="android.intent.action.VIEW"
+        <intent
+            android:action="android.intent.action.VIEW"
             android:data="market://details?id=org.gnucash.android" />
     </Preference>
 </PreferenceScreen>

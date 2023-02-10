@@ -18,8 +18,9 @@ package org.gnucash.android.ui.util;
 
 /**
  * Interface for delegates which can be used to execute functions when an AsyncTask is complete
- * @see org.gnucash.android.importer.ImportAsyncTask
+ *
  * @author Ngewi Fet <ngewif@gmail.com>
+ * @see org.gnucash.android.importer.ImportAsyncTask
  */
 public interface TaskDelegate {
 

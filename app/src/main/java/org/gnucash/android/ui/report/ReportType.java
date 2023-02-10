@@ -42,10 +42,10 @@ public enum ReportType {
     Map<String, Class> mReportTypeMap = new HashMap<>();
     int mValue = 4;
 
-    ReportType(int index){
+    ReportType(int index) {
         mValue = index;
         Context context = GnuCashApplication.getAppContext();
-        switch (index){
+        switch (index) {
             case 0:
                 mReportTypeMap.put(context.getString(R.string.title_pie_chart), PieChartFragment.class);
                 break;
@@ -65,10 +65,11 @@ public enum ReportType {
 
     /**
      * Returns the toolbar color to be used for this report type
+     *
      * @return Color resource
      */
-    public @ColorRes int getTitleColor(){
-        switch (mValue){
+    public @ColorRes int getTitleColor() {
+        switch (mValue) {
             case 0:
                 return R.color.account_green;
             case 1:
@@ -83,11 +84,11 @@ public enum ReportType {
         }
     }
 
-    public List<String> getReportNames(){
+    public List<String> getReportNames() {
         return new ArrayList<>(mReportTypeMap.keySet());
     }
 
-    public BaseReportFragment getFragment(String name){
+    public BaseReportFragment getFragment(String name) {
         BaseReportFragment fragment = null;
         try {
             fragment = (BaseReportFragment) mReportTypeMap.get(name).newInstance();

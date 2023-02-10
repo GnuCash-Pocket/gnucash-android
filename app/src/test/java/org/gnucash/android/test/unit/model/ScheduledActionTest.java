@@ -37,7 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ScheduledActionTest {
 
     @Test
-    public void settingStartTime_shouldSetRecurrenceStart(){
+    public void settingStartTime_shouldSetRecurrenceStart() {
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
         long startTime = getTimeInMillis(2014, 8, 26);
         scheduledAction.setStartTime(startTime);
@@ -54,7 +54,7 @@ public class ScheduledActionTest {
     }
 
     @Test
-    public void settingEndTime_shouldSetRecurrenceEnd(){
+    public void settingEndTime_shouldSetRecurrenceEnd() {
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
         long endTime = getTimeInMillis(2014, 8, 26);
         scheduledAction.setEndTime(endTime);
@@ -71,7 +71,7 @@ public class ScheduledActionTest {
     }
 
     @Test
-    public void settingRecurrence_shouldSetScheduledActionStartTime(){
+    public void settingRecurrence_shouldSetScheduledActionStartTime() {
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
         assertThat(scheduledAction.getStartTime()).isEqualTo(0);
 
@@ -83,7 +83,7 @@ public class ScheduledActionTest {
     }
 
     @Test
-    public void settingRecurrence_shouldSetEndTime(){
+    public void settingRecurrence_shouldSetEndTime() {
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
         assertThat(scheduledAction.getStartTime()).isEqualTo(0);
 
@@ -100,7 +100,7 @@ public class ScheduledActionTest {
      * and the last time the action was run
      */
     @Test
-    public void testComputingNextScheduledExecution(){
+    public void testComputingNextScheduledExecution() {
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
         PeriodType periodType = PeriodType.MONTH;
 
@@ -118,7 +118,7 @@ public class ScheduledActionTest {
     }
 
     @Test
-    public void testComputingTimeOfLastSchedule(){
+    public void testComputingTimeOfLastSchedule() {
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
         PeriodType periodType = PeriodType.WEEK;
         Recurrence recurrence = new Recurrence(periodType);
@@ -138,7 +138,7 @@ public class ScheduledActionTest {
     /**
      * Weekly actions scheduled to run on multiple days of the week should be due
      * in each of them in the same week.
-     *
+     * <p>
      * For an action scheduled on Mondays and Thursdays, we test that, if
      * the last run was on Monday, the next should be due on the Thursday
      * of the same week instead of the following week.
@@ -180,7 +180,7 @@ public class ScheduledActionTest {
     /**
      * Weekly actions should return a date in the future when no
      * days of the week have been set in the recurrence.
-     *
+     * <p>
      * See ScheduledAction.computeNextTimeBasedScheduledExecutionTime()
      */
     @Test

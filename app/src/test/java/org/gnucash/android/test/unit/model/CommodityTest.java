@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CommodityTest {
 
     @Test
-    public void setSmallestFraction_shouldNotUseDigits(){
+    public void setSmallestFraction_shouldNotUseDigits() {
         Commodity commodity = new Commodity("Test", "USD", 100);
         assertThat(commodity.getSmallestFraction()).isEqualTo(100);
 
@@ -35,7 +35,7 @@ public class CommodityTest {
     }
 
     @Test
-    public void testSmallestFractionDigits(){
+    public void testSmallestFractionDigits() {
         Commodity commodity = new Commodity("Test", "USD", 100);
         assertThat(commodity.getSmallestFractionDigits()).isEqualTo(2);
 

@@ -50,7 +50,8 @@ public class DeleteAllTransactionsConfirmationDialog extends DoubleConfirmationD
     }
 
     @Override
-    @NonNull public Dialog onCreateDialog(Bundle savedInstanceState) {
+    @NonNull
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
         return getDialogBuilder()
                 .setIcon(android.R.drawable.ic_delete)
                 .setTitle(R.string.title_confirm_delete).setMessage(R.string.msg_delete_all_transactions_confirmation)

@@ -21,7 +21,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
     /**
      * Opens the database adapter with an existing database
      *
-     * @param db        SQLiteDatabase object
+     * @param db SQLiteDatabase object
      */
     public CommoditiesDbAdapter(SQLiteDatabase db) {
         super(db, CommodityEntry.TABLE_NAME, new String[]{
@@ -47,7 +47,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
         Commodity.DEFAULT_COMMODITY = getCommodity(GnuCashApplication.getDefaultCurrencyCode());
     }
 
-    public static CommoditiesDbAdapter getInstance(){
+    public static CommoditiesDbAdapter getInstance() {
         return GnuCashApplication.getCommoditiesDbAdapter();
     }
 
@@ -95,6 +95,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
 
     /**
      * Fetches all commodities in the database sorted in the specified order
+     *
      * @param orderBy SQL statement for orderBy without the ORDER_BY itself
      * @return Cursor holding all commodity records
      */
@@ -105,13 +106,14 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
 
     /**
      * Returns the commodity associated with the ISO4217 currency code
+     *
      * @param currencyCode 3-letter currency code
      * @return Commodity associated with code or null if none is found
      */
-    public Commodity getCommodity(String currencyCode){
+    public Commodity getCommodity(String currencyCode) {
         Cursor cursor = fetchAllRecords(CommodityEntry.COLUMN_MNEMONIC + "=?", new String[]{currencyCode}, null);
         Commodity commodity = null;
-        if (cursor.moveToNext()){
+        if (cursor.moveToNext()) {
             commodity = buildModelInstance(cursor);
         } else {
             String msg = "Commodity not found in the database: " + currencyCode;

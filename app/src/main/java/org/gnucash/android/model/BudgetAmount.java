@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 /**
  * Budget amounts for the different accounts.
  * The {@link Money} amounts are absolute values
+ *
  * @see Budget
  */
 public class BudgetAmount extends BaseModel implements Parcelable {
@@ -38,24 +39,26 @@ public class BudgetAmount extends BaseModel implements Parcelable {
 
     /**
      * Create a new budget amount
-     * @param budgetUID GUID of the budget
+     *
+     * @param budgetUID  GUID of the budget
      * @param accountUID GUID of the account
      */
-    public BudgetAmount(String budgetUID, String accountUID){
+    public BudgetAmount(String budgetUID, String accountUID) {
         this.mBudgetUID = budgetUID;
         this.mAccountUID = accountUID;
     }
 
     /**
      * Creates a new budget amount with the absolute value of {@code amount}
-     * @param amount Money amount of the budget
+     *
+     * @param amount     Money amount of the budget
      * @param accountUID GUID of the account
      */
-    public BudgetAmount(Money amount, String accountUID){
+    public BudgetAmount(Money amount, String accountUID) {
         this.mAmount = amount.abs();
         this.mAccountUID = accountUID;
     }
-    
+
     public String getBudgetUID() {
         return mBudgetUID;
     }
@@ -75,6 +78,7 @@ public class BudgetAmount extends BaseModel implements Parcelable {
     /**
      * Returns the period number of this budget amount
      * <p>The period is zero-based index, and a value of -1 indicates that this budget amount is applicable to all budgeting periods</p>
+     *
      * @return Period number
      */
     public long getPeriodNum() {
@@ -84,6 +88,7 @@ public class BudgetAmount extends BaseModel implements Parcelable {
     /**
      * Set the period number for this budget amount
      * <p>A value of -1 indicates that this BudgetAmount is for all periods</p>
+     *
      * @param periodNum Zero-based period number of the budget amount
      */
     public void setPeriodNum(long periodNum) {
@@ -92,6 +97,7 @@ public class BudgetAmount extends BaseModel implements Parcelable {
 
     /**
      * Returns the Money amount of this budget amount
+     *
      * @return Money amount
      */
     public Money getAmount() {
@@ -101,6 +107,7 @@ public class BudgetAmount extends BaseModel implements Parcelable {
     /**
      * Sets the amount for the budget
      * <p>The absolute value of the amount is used</p>
+     *
      * @param amount Money amount
      */
     public void setAmount(Money amount) {
@@ -121,7 +128,7 @@ public class BudgetAmount extends BaseModel implements Parcelable {
         dest.writeLong(mPeriodNum);
     }
 
-    public static final Parcelable.Creator<BudgetAmount> CREATOR = new Parcelable.Creator<BudgetAmount>(){
+    public static final Parcelable.Creator<BudgetAmount> CREATOR = new Parcelable.Creator<BudgetAmount>() {
 
         @Override
         public BudgetAmount createFromParcel(Parcel source) {
@@ -136,9 +143,10 @@ public class BudgetAmount extends BaseModel implements Parcelable {
 
     /**
      * Private constructor for creating new BudgetAmounts from a Parcel
+     *
      * @param source Parcel
      */
-    private BudgetAmount(Parcel source){
+    private BudgetAmount(Parcel source) {
         setUID(source.readString());
         mBudgetUID = source.readString();
         mAccountUID = source.readString();

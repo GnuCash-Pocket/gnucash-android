@@ -58,8 +58,8 @@ import butterknife.ButterKnife;
 /**
  * Base activity implementing the navigation drawer, to be extended by all activities requiring one.
  * <p>
- *     Each activity inheriting from this class has an indeterminate progress bar at the top,
- *     (above the action bar) which can be used to display busy operations. See {@link #getProgressBar()}
+ * Each activity inheriting from this class has an indeterminate progress bar at the top,
+ * (above the action bar) which can be used to display busy operations. See {@link #getProgressBar()}
  * </p>
  *
  * <p>Sub-classes should simply provide their layout using {@link #getContentView()} and then annotate
@@ -71,16 +71,21 @@ import butterknife.ButterKnife;
  * for the action bar in their XML layout. Otherwise provide another which contains widgets for the
  * toolbar and progress indicator with the IDs {@code R.id.toolbar} and {@code R.id.progress_indicator} respectively.
  * </p>
+ *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public abstract class BaseDrawerActivity extends PasscodeLockActivity implements
-    PopupMenu.OnMenuItemClickListener {
+        PopupMenu.OnMenuItemClickListener {
 
     public static final int ID_MANAGE_BOOKS = 0xB00C;
-    @BindView(R.id.drawer_layout) DrawerLayout mDrawerLayout;
-    @BindView(R.id.nav_view) NavigationView mNavigationView;
-    @BindView(R.id.toolbar) Toolbar mToolbar;
-    @BindView(R.id.toolbar_progress) ProgressBar mToolbarProgress;
+    @BindView(R.id.drawer_layout)
+    DrawerLayout mDrawerLayout;
+    @BindView(R.id.nav_view)
+    NavigationView mNavigationView;
+    @BindView(R.id.toolbar)
+    Toolbar mToolbar;
+    @BindView(R.id.toolbar_progress)
+    ProgressBar mToolbarProgress;
     protected TextView mBookNameTextView;
 
     protected ActionBarDrawerToggle mDrawerToggle;
@@ -104,14 +109,14 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity implements
 
         //if a parameter was passed to open an account within a specific book, then switch
         String bookUID = getIntent().getStringExtra(UxArgument.BOOK_UID);
-        if (bookUID != null && !bookUID.equals(BooksDbAdapter.getInstance().getActiveBookUID())){
+        if (bookUID != null && !bookUID.equals(BooksDbAdapter.getInstance().getActiveBookUID())) {
             BookUtils.activateBook(bookUID);
         }
 
         ButterKnife.bind(this);
         setSupportActionBar(mToolbar);
         final ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null){
+        if (actionBar != null) {
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setTitle(getTitleRes());
@@ -146,6 +151,7 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity implements
 
     /**
      * Return the layout to inflate for this activity
+     *
      * @return Layout resource identifier
      */
     public abstract @LayoutRes int getContentView();
@@ -153,6 +159,7 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity implements
     /**
      * Return the title for this activity.
      * This will be displayed in the action bar
+     *
      * @return String resource identifier
      */
     public abstract @StringRes int getTitleRes();
@@ -162,9 +169,10 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity implements
      * <p>This progress bar is displayed above the toolbar and should be used to show busy status
      * for long operations.<br/>
      * The progress bar visibility is set to {@link View#GONE} by default. Make visible to use </p>
+     *
      * @return Indeterminate progress bar.
      */
-    public ProgressBar getProgressBar(){
+    public ProgressBar getProgressBar() {
         return mToolbarProgress;
     }
 
@@ -209,7 +217,7 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home){
+        if (item.getItemId() == android.R.id.home) {
             if (!mDrawerLayout.isDrawerOpen(mNavigationView))
                 mDrawerLayout.openDrawer(mNavigationView);
             else
@@ -223,15 +231,15 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity implements
     /**
      * Update the display name of the currently active book
      */
-    protected void updateActiveBookName(){
+    protected void updateActiveBookName() {
         mBookNameTextView.setText(BooksDbAdapter.getInstance().getActiveBookDisplayName());
     }
 
     /**
      * Handler for the navigation drawer items
-     * */
+     */
     protected void onDrawerMenuItemClicked(int itemId) {
-        switch (itemId){
+        switch (itemId) {
             case R.id.nav_item_open: { //Open... files
                 //use the storage access framework
                 Intent openDocument = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -247,17 +255,17 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity implements
                 Intent intent = new Intent(this, AccountsActivity.class);
                 intent.putExtra(AccountsActivity.EXTRA_TAB_INDEX,
                         AccountsActivity.INDEX_FAVORITE_ACCOUNTS_FRAGMENT);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
             }
-                break;
+            break;
 
             case R.id.nav_item_reports: {
                 Intent intent = new Intent(this, ReportsActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
             }
-                break;
+            break;
 
 /*
             //todo: Re-enable this when Budget UI is complete
@@ -270,7 +278,7 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity implements
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
             }
-                break;
+            break;
 
             case R.id.nav_item_export:
                 AccountsActivity.openExportFragment(this);
@@ -315,7 +323,7 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity implements
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         long id = item.getItemId();
-        if (id == ID_MANAGE_BOOKS){
+        if (id == ID_MANAGE_BOOKS) {
             Intent intent = new Intent(this, PreferenceActivity.class);
             intent.setAction(PreferenceActivity.ACTION_MANAGE_BOOKS);
             startActivity(intent);
@@ -324,7 +332,7 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity implements
         }
         BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
         String bookUID = booksDbAdapter.getUID(id);
-        if (!bookUID.equals(booksDbAdapter.getActiveBookUID())){
+        if (!bookUID.equals(booksDbAdapter.getActiveBookUID())) {
             BookUtils.loadBook(bookUID);
             finish();
         }
@@ -332,12 +340,12 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity implements
         return true;
     }
 
-    public void onClickAppTitle(View view){
+    public void onClickAppTitle(View view) {
         mDrawerLayout.closeDrawer(mNavigationView);
         AccountsActivity.start(this);
     }
 
-    public void onClickBook(View view){
+    public void onClickBook(View view) {
         PopupMenu popup = new PopupMenu(this, view);
         popup.setOnMenuItemClickListener(this);
 
@@ -348,7 +356,7 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity implements
         while (cursor.moveToNext() && maxRecent++ < 5) {
             long id = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseSchema.BookEntry._ID));
             String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.BookEntry.COLUMN_DISPLAY_NAME));
-            menu.add(0, (int)id, maxRecent, name);
+            menu.add(0, (int) id, maxRecent, name);
         }
         menu.add(0, ID_MANAGE_BOOKS, maxRecent, R.string.menu_manage_books);
 

@@ -17,25 +17,26 @@
 -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <ListView
-              android:id="@id/android:list"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:layout_above="@id/account_balance_toolbar"
-              android:listSelector="@drawable/abc_list_selector_holo_light"
-              android:drawSelectorOnTop="false"/>
+        android:id="@id/android:list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/account_balance_toolbar"
+        android:listSelector="@drawable/abc_list_selector_holo_light"
+        android:drawSelectorOnTop="false" />
 
-    <TextView android:id="@id/android:empty"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="@string/label_no_recurring_transactions"
-            android:layout_gravity="center"
-            android:textAppearance="?android:textAppearanceLarge"
-            style="@style/ListItem"/>
+    <TextView
+        android:id="@id/android:empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="@string/label_no_recurring_transactions"
+        android:layout_gravity="center"
+        android:textAppearance="?android:textAppearanceLarge"
+        style="@style/ListItem" />
 
 </LinearLayout>

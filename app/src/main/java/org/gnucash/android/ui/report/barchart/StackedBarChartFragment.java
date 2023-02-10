@@ -73,7 +73,8 @@ public class StackedBarChartFragment extends BaseReportFragment {
 
     private AccountsDbAdapter mAccountsDbAdapter = AccountsDbAdapter.getInstance();
 
-    @BindView(R.id.bar_chart) BarChart mChart;
+    @BindView(R.id.bar_chart)
+    BarChart mChart;
 
     private boolean mUseAccountColor = true;
     private boolean mTotalPercentageMode = true;
@@ -119,6 +120,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
 
     /**
      * Returns a data object that represents a user data of the specified account types
+     *
      * @return a {@code BarData} instance that represents a user data
      */
     protected BarData getData() {
@@ -219,6 +221,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
 
     /**
      * Returns a data object that represents situation when no user data available
+     *
      * @return a {@code BarData} instance for situation when no user data available
      */
     private BarData getEmptyData() {
@@ -237,6 +240,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
 
     /**
      * Returns the start data of x-axis for the specified account type
+     *
      * @param accountType account type
      * @return the start data
      */
@@ -256,6 +260,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
 
     /**
      * Returns the end data of x-axis for the specified account type
+     *
      * @param accountType account type
      * @return the end data
      */
@@ -275,12 +280,13 @@ public class StackedBarChartFragment extends BaseReportFragment {
 
     /**
      * Converts the specified list of floats to an array
+     *
      * @param list a list of floats
      * @return a float array
      */
     private float[] floatListToArray(List<Float> list) {
         float array[] = new float[list.size()];
-        for (int i = 0;  i < list.size(); i++) {
+        for (int i = 0; i < list.size(); i++) {
             array[i] = list.get(i);
         }
         return array;
