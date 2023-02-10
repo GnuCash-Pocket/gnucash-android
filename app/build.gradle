@@ -20,13 +20,12 @@ static def gitSha() {
 
 
 android {
-    compileSdkVersion 27
-    buildToolsVersion '27.0.3'
+    compileSdk 33
     defaultConfig {
         applicationId "org.gnucash.android"
         testApplicationId 'org.gnucash.android.test'
         minSdkVersion 19
-        targetSdkVersion 27
+        targetSdkVersion 33
         versionCode versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         resValue "string", "app_version_name", "${versionName}"
@@ -139,8 +138,8 @@ android {
 
     compileOptions { //we want switch with strings during xml parsing
         encoding "UTF-8"
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 
     testOptions {
@@ -150,6 +149,12 @@ android {
     }
 
     namespace 'org.gnucash.android'
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']
+        }
+    }
 }
 
 afterEvaluate {
@@ -161,16 +166,9 @@ afterEvaluate {
     }
 }
 
-
 def androidSupportVersion = "27.1.1"
 def androidEspressoVersion = "3.0.0"
 def androidSupportTestVersion = "1.0.0"
-
-repositories {
-    flatDir {
-        dirs 'libs'
-    }
-}
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -198,7 +196,7 @@ dependencies {
     debugImplementation 'com.facebook.stetho:stetho:1.5.0'
 
     implementation 'com.jakewharton:butterknife:10.2.3'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.3'
 
     implementation('com.uservoice:uservoice-android-sdk:1.2.6') {
         exclude module: 'commons-logging'
@@ -209,7 +207,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-crashlytics:18.3.4' // add this line
 
 
-    testImplementation 'org.robolectric:robolectric:3.5.1'
+    testImplementation 'org.robolectric:robolectric:4.2.1'
 
     testImplementation(
             'junit:junit:4.12',

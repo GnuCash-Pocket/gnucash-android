@@ -17,11 +17,11 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <permission-group 
+    <permission-group
         android:name="${applicationId}.permission.group.GNUCASH"
-        android:label="@string/label_permission_group" 
+        android:label="@string/label_permission_group"
         android:description="@string/description_permission_group" />
-    
+
     <permission android:name="${applicationId}.permission.CREATE_ACCOUNT"
         android:label="@string/label_permission_create_account"
         android:permissionGroup="${applicationId}.permission.group.GNUCASH"
@@ -30,7 +30,7 @@
         android:label="@string/label_permission_record_transaction"
         android:permissionGroup="${applicationId}.permission.group.GNUCASH"
         android:protectionLevel="dangerous" />
-    
+
     <uses-permission android:label="@string/label_permission_record_transactions"
                      android:name="org.gnucash.android.permission.RECORD_TRANSACTION" />
     <uses-permission android:label="@string/label_permission_create_accounts"
@@ -52,7 +52,7 @@
         android:allowBackup="true">
         <activity
             android:name=".ui.account.AccountsActivity"
-            android:label="@string/app_name">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -88,7 +88,8 @@
         <activity android:name=".ui.homescreen.WidgetConfigurationActivity"
             android:label="@string/label_widget_configuration"
             android:theme="@style/Dialog.WidgetConfiguration"
-            android:excludeFromRecents="true">
+            android:excludeFromRecents="true"
+            android:exported="true">
 		    <intent-filter>
 		        <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
 		    </intent-filter>
@@ -108,7 +109,8 @@
         <activity
             android:name="com.dropbox.core.android.AuthActivity"
             android:launchMode="singleTask"
-            android:configChanges="orientation|keyboard">
+            android:configChanges="orientation|keyboard"
+            android:exported="true">
             <intent-filter>
                 <!-- Change this to be db- followed by your app key -->
                 <data android:scheme="@string/manifest_dropbox_app_key" />
@@ -125,7 +127,8 @@
               android:permission="android.permission.BIND_JOB_SERVICE" />
         <receiver android:name=".receivers.TransactionRecorder"
             android:label="Records transactions received through intents"
-            android:permission="org.gnucash.android.permission.RECORD_TRANSACTION">
+            android:permission="org.gnucash.android.permission.RECORD_TRANSACTION"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.INSERT" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -134,7 +137,7 @@
         </receiver>
         <receiver android:name=".receivers.AccountCreator"
             android:label="Creates new accounts"
-            android:permission="org.gnucash.android.permission.CREATE_ACCOUNT" 
+            android:permission="org.gnucash.android.permission.CREATE_ACCOUNT"
             android:enabled="true" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.INSERT" />
@@ -142,7 +145,8 @@
                 <data android:mimeType="vnd.android.cursor.item/vnd.${applicationId}.account"/>
             </intent-filter>
         </receiver>
-        <receiver android:name=".receivers.TransactionAppWidgetProvider" >
+        <receiver android:name=".receivers.TransactionAppWidgetProvider"
+            android:exported="true">
 		    <intent-filter>
 		        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
 		    </intent-filter>
