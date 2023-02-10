@@ -41,7 +41,7 @@ import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -210,7 +210,7 @@ public class MigrationHelper {
                         MigrationHelper.moveFile(src, dst);
                     } catch (IOException e) {
                         Log.e(LOG_TAG, "Error migrating " + src.getName());
-                        Crashlytics.logException(e);
+                        FirebaseCrashlytics.getInstance().recordException(e);
                     }
                 }
             } else {
@@ -226,7 +226,7 @@ public class MigrationHelper {
                         MigrationHelper.moveFile(src, dst);
                     } catch (IOException e) {
                         Log.e(LOG_TAG, "Error migrating backup: " + src.getName());
-                        Crashlytics.logException(e);
+                        FirebaseCrashlytics.getInstance().recordException(e);
                     }
                 }
             }
@@ -894,7 +894,7 @@ public class MigrationHelper {
                 importCommodities(db);
             } catch (SAXException | ParserConfigurationException | IOException e) {
                 Log.e(DatabaseHelper.LOG_TAG, "Error loading currencies into the database", e);
-                Crashlytics.logException(e);
+                FirebaseCrashlytics.getInstance().recordException(e);
                 throw new RuntimeException(e);
             }
 
@@ -1549,7 +1549,7 @@ public class MigrationHelper {
                 MigrationHelper.moveFile(src, dst);
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error moving file " + src.getPath());
-                Crashlytics.logException(e);
+                FirebaseCrashlytics.getInstance().recordException(e);
             }
         }
     }
@@ -1587,8 +1587,8 @@ public class MigrationHelper {
                     ex.printStackTrace();
                     String msg = String.format("Error moving files from %s to %s", srcDir.getPath(), dstDir.getPath());
                     Log.e(LOG_TAG, msg);
-                    Crashlytics.log(msg);
-                    Crashlytics.logException(ex);
+                    FirebaseCrashlytics.getInstance().log(msg);
+                    FirebaseCrashlytics.getInstance().recordException(ex);
                 }
 
             }

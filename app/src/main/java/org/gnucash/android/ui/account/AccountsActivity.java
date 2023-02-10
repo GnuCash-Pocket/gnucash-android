@@ -49,7 +49,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.kobakei.ratethisapp.RateThisApp;
 
 import org.gnucash.android.BuildConfig;
@@ -389,7 +389,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
             packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             releaseTitle.append(" - v").append(packageInfo.versionName);
         } catch (NameNotFoundException e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
             Log.e(LOG_TAG, "Error displaying 'Whats new' dialog");
         }
 
@@ -472,8 +472,8 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
         try {
             activity.startActivityForResult(chooser, REQUEST_PICK_ACCOUNTS_FILE);
         } catch (ActivityNotFoundException ex) {
-            Crashlytics.log("No file manager for selecting files available");
-            Crashlytics.logException(ex);
+            FirebaseCrashlytics.getInstance().log("No file manager for selecting files available");
+            FirebaseCrashlytics.getInstance().recordException(ex);
             Toast.makeText(activity, R.string.toast_install_file_manager, Toast.LENGTH_LONG).show();
         }
     }
@@ -494,8 +494,8 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
         try {
             fragment.startActivityForResult(chooser, REQUEST_PICK_ACCOUNTS_FILE);
         } catch (ActivityNotFoundException ex) {
-            Crashlytics.log("No file manager for selecting files available");
-            Crashlytics.logException(ex);
+            FirebaseCrashlytics.getInstance().log("No file manager for selecting files available");
+            FirebaseCrashlytics.getInstance().recordException(ex);
             Toast.makeText(fragment.getActivity(), R.string.toast_install_file_manager, Toast.LENGTH_LONG).show();
         }
     }

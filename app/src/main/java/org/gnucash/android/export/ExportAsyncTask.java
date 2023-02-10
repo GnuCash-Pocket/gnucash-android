@@ -42,6 +42,8 @@ import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.MetadataChangeSet;
+import com.google.firebase.crashlytics.CustomKeysAndValues;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.owncloud.android.lib.common.OwnCloudClient;
 import com.owncloud.android.lib.common.OwnCloudClientFactory;
 import com.owncloud.android.lib.common.OwnCloudCredentialsFactory;
@@ -145,7 +147,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Boolean> {
             mExportedFiles = mExporter.generateExport();
         } catch (final Exception e) {
             Log.e(TAG, "Error exporting: " + e.getMessage());
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
             e.printStackTrace();
             if (mContext instanceof Activity) {
                 ((Activity) mContext).runOnUiThread(new Runnable() {
@@ -167,7 +169,8 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Boolean> {
         try {
             moveToTarget();
         } catch (Exporter.ExporterException e) {
-            Crashlytics.log(Log.ERROR, TAG, "Error sending exported files to target: " + e.getMessage());
+            FirebaseCrashlytics.getInstance().log("Error sending exported files to target");
+            FirebaseCrashlytics.getInstance().recordException(e);
             return false;
         }
 
@@ -371,7 +374,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Boolean> {
                 inputStream.close();
                 exportedFile.delete(); //delete file to prevent cache accumulation
             } catch (IOException e) {
-                Crashlytics.logException(e);
+                FirebaseCrashlytics.getInstance().recordException(e);
                 Log.e(TAG, e.getMessage());
             } catch (com.dropbox.core.DbxException e) {
                 e.printStackTrace();

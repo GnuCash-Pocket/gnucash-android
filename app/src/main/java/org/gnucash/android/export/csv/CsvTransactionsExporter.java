@@ -22,7 +22,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.R;
 import org.gnucash.android.export.ExportParams;
@@ -87,8 +87,8 @@ public class CsvTransactionsExporter extends Exporter {
         try (CsvWriter csvWriter = new CsvWriter(new FileWriter(outputFile), "" + mCsvSeparator)) {
             generateExport(csvWriter);
         } catch (IOException ex) {
-            Crashlytics.log("Error exporting CSV");
-            Crashlytics.logException(ex);
+            FirebaseCrashlytics.getInstance().log("Error exporting CSV");
+            FirebaseCrashlytics.getInstance().recordException(ex);
             throw new ExporterException(mExportParams, ex);
         }
 
@@ -168,7 +168,7 @@ public class CsvTransactionsExporter extends Exporter {
 
             PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow());
         } catch (IOException e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
             throw new ExporterException(mExportParams, e);
         }
     }

@@ -26,7 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.app.JobIntentService;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHelper;
@@ -180,7 +180,7 @@ public class ScheduledActionService extends JobIntentService {
             //wait for async task to finish before we proceed (we are holding a wake lock)
             result = new ExportAsyncTask(GnuCashApplication.getAppContext(), db).execute(params).get();
         } catch (InterruptedException | ExecutionException e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
             Log.e(LOG_TAG, e.getMessage());
         }
         if (!result) {

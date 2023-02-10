@@ -32,8 +32,8 @@ import androidx.annotation.NonNull;
 import androidx.multidex.MultiDexApplication;
 import androidx.preference.PreferenceManager;
 
-import com.crashlytics.android.Crashlytics;
-import com.crashlytics.android.core.CrashlyticsCore;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.google.firebase.crashlytics.internal.common.CrashlyticsCore;
 import com.uservoice.uservoicesdk.Config;
 import com.uservoice.uservoicesdk.UserVoice;
 
@@ -60,7 +60,6 @@ import org.gnucash.android.ui.settings.PreferenceActivity;
 import java.util.Currency;
 import java.util.Locale;
 
-import io.fabric.sdk.android.Fabric;
 
 /**
  * An {@link Application} subclass for retrieving static context
@@ -123,9 +122,7 @@ public class GnuCashApplication extends MultiDexApplication {
         super.onCreate();
         GnuCashApplication.context = getApplicationContext();
 
-        Fabric.with(this, new Crashlytics.Builder().core(
-                        new CrashlyticsCore.Builder().disabled(!isCrashlyticsEnabled()).build())
-                .build());
+        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(isCrashlyticsEnabled());
 
         setUpUserVoice();
 
@@ -159,7 +156,7 @@ public class GnuCashApplication extends MultiDexApplication {
         try {
             mainDb = mDbHelper.getWritableDatabase();
         } catch (SQLException e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
             Log.e("GnuCashApplication", "Error getting database: " + e.getMessage());
             mainDb = mDbHelper.getReadableDatabase();
         }
@@ -283,7 +280,7 @@ public class GnuCashApplication extends MultiDexApplication {
         try { //there are some strange locales out there
             currencyCode = Currency.getInstance(locale).getCurrencyCode();
         } catch (Throwable e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
             Log.e(context.getString(R.string.app_name), "" + e.getMessage());
         } finally {
             currencyCode = prefs.getString(context.getString(R.string.key_default_currency), currencyCode);

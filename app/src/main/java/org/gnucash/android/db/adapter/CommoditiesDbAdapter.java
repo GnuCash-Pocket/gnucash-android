@@ -9,7 +9,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema;
@@ -119,7 +119,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
         } else {
             String msg = "Commodity not found in the database: " + currencyCode;
             Log.e(LOG_TAG, msg);
-            Crashlytics.log(msg);
+            FirebaseCrashlytics.getInstance().log(msg);
         }
         cursor.close();
         return commodity;

@@ -26,7 +26,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
@@ -83,7 +83,7 @@ public class BackupManager {
             } catch (IOException ex) {
                 Log.e(LOG_TAG, "Auto backup failed for book " + bookUID);
                 ex.printStackTrace();
-                Crashlytics.logException(ex);
+                FirebaseCrashlytics.getInstance().recordException(ex);
             }
         }
     }
@@ -124,7 +124,7 @@ public class BackupManager {
             writer.close();
             return true;
         } catch (IOException | Exporter.ExporterException e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
             Log.e("GncXmlExporter", "Error creating XML  backup", e);
             return false;
         }

@@ -34,7 +34,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.model.AccountType;
@@ -137,7 +137,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
             mDb.setTransactionSuccessful();
         } catch (SQLException sqlEx) {
             Log.e(LOG_TAG, sqlEx.getMessage());
-            Crashlytics.logException(sqlEx);
+            FirebaseCrashlytics.getInstance().recordException(sqlEx);
         } finally {
             mDb.endTransaction();
         }
