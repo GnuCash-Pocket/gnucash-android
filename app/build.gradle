@@ -88,7 +88,7 @@ android {
             signingConfig signingConfigs.debug
         }
     }
-    lintOptions {
+    lint {
         abortOnError false
     }
 
