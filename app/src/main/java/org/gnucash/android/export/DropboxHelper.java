@@ -16,6 +16,7 @@
 
 package org.gnucash.android.export;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 
