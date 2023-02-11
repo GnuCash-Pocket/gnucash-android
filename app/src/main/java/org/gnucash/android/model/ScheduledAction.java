@@ -543,7 +543,7 @@ public class ScheduledAction extends BaseModel {
 
     /**
      * Creates an RFC 2445 string which describes this recurring event
-     * <p>See http://recurrance.sourceforge.net/</p>
+     * <p>See <a href="http://recurrance.sourceforge.net/">recurrance</a></p>
      *
      * @return String describing event
      */

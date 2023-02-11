@@ -659,7 +659,6 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             bulkAddRecords(accountsList, UpdateMethod.insert);
         }
         // if fullName is not empty, loop will be entered and then uid will never be null
-        //noinspection ConstantConditions
         return uid;
     }
 

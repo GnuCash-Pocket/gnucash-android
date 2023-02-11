@@ -21,7 +21,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.math.BigDecimal;
@@ -456,7 +455,7 @@ public final class Money implements Comparable<Money> {
      * Returns the string representation of the amount (without currency) of the Money object.
      *
      * <p>This string is not locale-formatted. The decimal operator is a period (.)
-     * For a locale-formatted version, see the method overload {@link #toLocaleString(Locale)}</p>
+     * For a locale-formatted version, see the method {@link #toLocaleString()}</p>
      *
      * @return String representation of the amount (without currency) of the Money object
      */

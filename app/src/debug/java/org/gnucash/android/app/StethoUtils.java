@@ -17,7 +17,7 @@ public class StethoUtils {
      * Sets up Stetho to enable remote debugging from Chrome developer tools.
      *
      * <p>Among other things, allows access to the database and preferences.
-     * See http://facebook.github.io/stetho/#features</p>
+     * See <a href="http://facebook.github.io/stetho/#features">stetho</a></p>
      */
     public static void install(Application application) {
         //don't initialize stetho during tests

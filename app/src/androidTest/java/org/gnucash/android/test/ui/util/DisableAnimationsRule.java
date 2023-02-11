@@ -11,7 +11,7 @@ import java.util.Arrays;
 
 /**
  * Created by Ngewi on 19.04.2016.
- * Credit: https://product.reverb.com/2015/06/06/disabling-animations-in-espresso-for-android-testing/
+ * Credit: <a href="https://product.reverb.com/2015/06/06/disabling-animations-in-espresso-for-android-testing/">reverb.com</a>
  */
 public class DisableAnimationsRule implements TestRule {
     private Method mSetAnimationScalesMethod;

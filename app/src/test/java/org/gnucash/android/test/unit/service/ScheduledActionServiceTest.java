@@ -348,7 +348,7 @@ public class ScheduledActionServiceTest {
      * Tests that a scheduled backup isn't executed before the next scheduled
      * execution according to its recurrence.
      *
-     * <p>Tests for bug https://github.com/codinguser/gnucash-android/issues/583</p>
+     * <p>Tests for bug <a href="https://github.com/codinguser/gnucash-android/issues/583">codinguser/gnucash-android#583</a></p>
      */
     @Test
     public void scheduledBackups_shouldNotRunBeforeNextScheduledExecution() {

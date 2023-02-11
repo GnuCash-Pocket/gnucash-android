@@ -30,7 +30,7 @@ import org.gnucash.android.R;
 
 /**
  * Behavior for floating action button when list is scrolled
- * Courtesy: https://mzgreen.github.io/2015/06/23/How-to-hideshow-Toolbar-when-list-is-scrolling(part3)/
+ * Courtesy: <a href="https://mzgreen.github.io/2015/06/23/How-to-hideshow-Toolbar-when-list-is-scrolling(part3)/">mzgreen</a>
  */
 public class ScrollingFABBehavior extends CoordinatorLayout.Behavior<FloatingActionButton> {
     private int toolbarHeight;
@@ -62,8 +62,7 @@ public class ScrollingFABBehavior extends CoordinatorLayout.Behavior<FloatingAct
         TypedValue tv = new TypedValue();
         int actionBarHeight = R.attr.actionBarSize;
         if (context.getTheme().resolveAttribute(R.attr.actionBarSize, tv, true)) {
-            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data,
-                    context.getResources().getDisplayMetrics());
+            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, context.getResources().getDisplayMetrics());
         }
 
         return actionBarHeight;

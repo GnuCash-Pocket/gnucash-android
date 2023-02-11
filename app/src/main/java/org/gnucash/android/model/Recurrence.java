@@ -163,7 +163,7 @@ public class Recurrence extends BaseModel {
 
     /**
      * Creates an RFC 2445 string which describes this recurring event.
-     * <p>See http://recurrance.sourceforge.net/</p>
+     * <p>See <a href="http://recurrance.sourceforge.net/">reassurance</a></p>
      * <p>The output of this method is not meant for human consumption</p>
      *
      * @return String describing event

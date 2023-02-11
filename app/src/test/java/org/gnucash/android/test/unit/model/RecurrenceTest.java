@@ -73,7 +73,7 @@ public class RecurrenceTest {
     /**
      * When no end period is set, getCount() should return the special value -1.
      *
-     * <p>Tests for bug https://github.com/codinguser/gnucash-android/issues/526</p>
+     * <p>Tests for bug <a href="https://github.com/codinguser/gnucash-android/issues/526">codinguser/gnucash-android#526</a></p>
      */
     @Test
     public void notSettingEndDate_shouldReturnSpecialCountValue() {

@@ -25,7 +25,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 
 /**
- * Code from https://gist.github.com/AnirudhaAgashe/61e523dadbaaf064b9a0
+ * Code from <a href="https://gist.github.com/AnirudhaAgashe/61e523dadbaaf064b9a0">AnirudhaAgashe</a>
  *
  * @author Anirudha Agashe <anirudhaagashe@gmail.com>
  */
