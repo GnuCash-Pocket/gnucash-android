@@ -28,3 +28,4 @@ crashlytics.properties
 fabric.properties
 app/fabric.properties
 app/*.tap
+app/google-services.json

@@ -16,6 +16,10 @@ jobs:
         with:
           java-version: "11"
           distribution: "temurin"
+      - name: Prepare Google Services
+        env:
+          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
+        run: echo $GOOGLE_SERVICES > app/google-services.json
       - name: Prepare Gradle
         uses: gradle/gradle-build-action@v2
       - name: Build
