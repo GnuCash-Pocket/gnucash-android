@@ -32,6 +32,7 @@ import androidx.annotation.NonNull;
 import androidx.multidex.MultiDexApplication;
 import androidx.preference.PreferenceManager;
 
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.uservoice.uservoicesdk.Config;
 import com.uservoice.uservoicesdk.UserVoice;
@@ -121,6 +122,7 @@ public class GnuCashApplication extends MultiDexApplication {
         super.onCreate();
         GnuCashApplication.context = getApplicationContext();
 
+        FirebaseApp.initializeApp(context);
         FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(isCrashlyticsEnabled());
 
         setUpUserVoice();
