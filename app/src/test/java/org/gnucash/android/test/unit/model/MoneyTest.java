@@ -157,7 +157,7 @@ public class MoneyTest {
 
         String symbol = Currency.getInstance("EUR").getSymbol(Locale.GERMANY);
         String actualOuputDE = mMoneyInEur.formattedString(Locale.GERMANY);
-        assertThat(actualOuputDE).isEqualTo("15,75 " + symbol);
+        assertThat(actualOuputDE).isEqualTo("15,75 " + symbol);
 
         symbol = Currency.getInstance("EUR").getSymbol(Locale.GERMANY);
         String actualOuputUS = mMoneyInEur.formattedString(Locale.US);
