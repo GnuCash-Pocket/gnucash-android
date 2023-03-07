@@ -3,7 +3,7 @@ name: CI Build
 on:
   push: { }
   pull_request:
-    branches: [ "master" ]
+    branches: [ master ]
 
 jobs:
   main:
@@ -15,7 +15,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: "11"
-          distribution: "temurin"
+          distribution: temurin
       - name: Prepare Google Services
         env:
           GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
@@ -24,6 +24,11 @@ jobs:
         uses: gradle/gradle-build-action@v2
       - name: Build
         run: ./gradlew assembleDevelopmentDebug
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: Development Debug APK
+          path: app/build/outputs/apk/development/debug/*.apk
       - name: Unit Tests
         run: ./gradlew testDevelopmentDebugUnitTest
       - name: Unit Test Summary
@@ -39,36 +44,18 @@ jobs:
           path: app/build/test-results/testDevelopmentDebugUnitTest/TEST-*.xml
       - name: Lint
         run: ./gradlew lintDevelopmentDebug
-      - name: Upload APK
+      - name: Build
+        run: ./gradlew assembleDevelopmentDebugAndroidTest
+      - name: Upload Instrumentation APK
         uses: actions/upload-artifact@v3
         with:
-          name: "Development Debug APK"
-          path: app/build/outputs/apk/development/debug/*.apk
-  instrumentation-test:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Prepare Java
-        uses: actions/setup-java@v3
+          name: Development Debug AndroidTest APK
+          path: app/build/outputs/apk/androidTest/development/debug/*.apk
+      - name: Login to Google Cloud
+        uses: google-github-actions/auth@v1
         with:
-          java-version: "11"
-          distribution: "temurin"
-      - name: Prepare Gradle
-        uses: gradle/gradle-build-action@v2
+          credentials_json: ${{ secrets.GCLOUD_AUTH }}
+      - name: Set up GCloud SDK
+        uses: google-github-actions/setup-gcloud@v1
       - name: Instrumentation Tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 33
-          script: ./gradlew spoonDevelopmentDebugAndroidTest
-      - name: Instrumentation Test Summary
-        uses: test-summary/action@v2
-        if: always()
-        with:
-          paths: "app/build/spoon/junit-reports/*.xml"
-      - name: Upload Instrumentation Test Results for Report
-        uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: instrumentation-test-results
-          path: app/build/spoon
+        run: gcloud firebase test android run --app app/build/outputs/apk/development/debug/*.apk --test app/build/outputs/apk/androidTest/development/debug/*.apk
