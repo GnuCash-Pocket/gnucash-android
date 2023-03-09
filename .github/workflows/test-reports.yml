@@ -1,9 +1,11 @@
 name: Test Reports
+
 on:
   workflow_run:
-    workflows: [ "CI Build" ]
+    workflows: ["CI Build"]
     types:
       - completed
+
 jobs:
   report:
     runs-on: ubuntu-latest
@@ -16,11 +18,12 @@ jobs:
           path: TEST-*.xml
           reporter: java-junit
           fail-on-error: false
+
       - name: Instrumentation Test Report
         uses: dorny/test-reporter@v1
         with:
           artifact: instrumentation-test-results
           name: Instrumentation Test Report
-          path: *.xml
+          path: test_result_*.xml
           reporter: java-junit
           fail-on-error: false
