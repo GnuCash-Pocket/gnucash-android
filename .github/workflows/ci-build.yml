@@ -27,13 +27,13 @@ jobs:
           GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
       - name: Build Application APK
         run: ./gradlew assembleDevelopmentDebug
-      - name: Rename Instrumentation APK
-        run: mv app/build/outputs/apk/development/debug/*.apk application.apk
+      - name: Rename Application APK
+        run: cp app/build/outputs/apk/development/debug/*.apk application-$RUN_QUALIFIER.apk
       - name: Upload Application APK
         uses: actions/upload-artifact@v3
         with:
-          name: application.apk
-          path: application.apk
+          name: application-apk
+          path: application-${{env.RUN_QUALIFIER}}.apk
           if-no-files-found: error
 
   unit-test:
@@ -106,12 +106,12 @@ jobs:
       - name: Build Instrumentation APK
         run: ./gradlew assembleDevelopmentDebugAndroidTest
       - name: Rename Instrumentation APK
-        run: ./gradlew assembleDevelopmentDebugAndroidTest
+        run: cp app/build/outputs/apk/androidTest/development/debug/*.apk instrumentation-$RUN_QUALIFIER.apk
       - name: Upload Instrumentation APK
         uses: actions/upload-artifact@v3
         with:
-          name: instrumentation.apk
-          path: instrumentation.apk
+          name: instrumentation-apk
+          path: instrumentation-${{env.RUN_QUALIFIER}}.apk
           if-no-files-found: error
 
   instrumentation-test:
@@ -123,11 +123,11 @@ jobs:
       - name: Download Application APK
         uses: actions/download-artifact@v3
         with:
-          name: application.apk
+          name: application-apk
       - name: Download Instrumentation APK
         uses: actions/download-artifact@v3
         with:
-          name: instrumentation.apk
+          name: instrumentation-apk
       - name: Login to Google Cloud
         uses: google-github-actions/auth@v1
         with:
@@ -138,13 +138,13 @@ jobs:
         id: run-instrumentation-test
         run: . ./instrumentation-test.sh
         env:
-          APPLICATION_APK: application.apk
-          INSTRUMENTATION_APK: instrumentation.apk
-          GCLOUD_BUCKET: ${{ env.GCLOUD_BUCKET }}
-          GCLOUD_BUCKET_DIRECTORY: ${{ env.RUN_QUALIFIER }}/redfin-30-en-portrait
+          APPLICATION_APK: application-${{env.RUN_QUALIFIER}}.apk
+          INSTRUMENTATION_APK: instrumentation-${{env.RUN_QUALIFIER}}.apk
+          GCLOUD_BUCKET: ${{ vars.GCLOUD_BUCKET }}
+          GCLOUD_BUCKET_DIRECTORY: ${{env.RUN_QUALIFIER}}/redfin-30-en-portrait
           LOCAL_DIRECTORY: instrumentation-test-results
       - name: Fetch Instrumentation Test Results
-        run: gsutil cp -r gs://${{ env.GCLOUD_BUCKET }}/${{ env.RUN_QUALIFIER }} instrumentation-test-results
+        run: gsutil cp -r gs://${{vars.GCLOUD_BUCKET}}/${{env.RUN_QUALIFIER}} instrumentation-test-results
       - name: Instrumentation Test Summary
         uses: test-summary/action@v2
         with:
@@ -156,4 +156,4 @@ jobs:
           path: instrumentation-test-results
           if-no-files-found: error
       - name: Assert Instrumentation Tests Success
-        run: if ${{ steps.run-instrumentation-test.outputs.test_success }} -ne 'true'; then exit 1; fi
+        run: if ${{steps.run-instrumentation-test.outputs.test_success}} -ne 'true'; then exit 1; fi
