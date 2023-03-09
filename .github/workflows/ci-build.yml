@@ -58,4 +58,4 @@ jobs:
       - name: Set up GCloud SDK
         uses: google-github-actions/setup-gcloud@v1
       - name: Instrumentation Tests
-        run: gcloud firebase test android run --app app/build/outputs/apk/development/debug/*.apk --test app/build/outputs/apk/androidTest/development/debug/*.apk
+        run: gcloud firebase test android run --app app/build/outputs/apk/development/debug/*.apk --test app/build/outputs/apk/androidTest/development/debug/*.apk --results-dir ${{github.repository}}-${{github.run_number}}-${{github.run_attempt}}
