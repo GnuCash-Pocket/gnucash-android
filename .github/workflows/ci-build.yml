@@ -22,9 +22,9 @@ jobs:
         run: echo $GOOGLE_SERVICES > app/google-services.json
       - name: Prepare Gradle
         uses: gradle/gradle-build-action@v2
-      - name: Build
+      - name: Build Application APK
         run: ./gradlew assembleDevelopmentDebug
-      - name: Upload APK
+      - name: Upload Application APK
         uses: actions/upload-artifact@v3
         with:
           name: Development Debug APK
@@ -44,7 +44,7 @@ jobs:
           path: app/build/test-results/testDevelopmentDebugUnitTest/TEST-*.xml
       - name: Lint
         run: ./gradlew lintDevelopmentDebug
-      - name: Build
+      - name: Build Instrumentation APK
         run: ./gradlew assembleDevelopmentDebugAndroidTest
       - name: Upload Instrumentation APK
         uses: actions/upload-artifact@v3
@@ -58,4 +58,4 @@ jobs:
       - name: Set up GCloud SDK
         uses: google-github-actions/setup-gcloud@v1
       - name: Instrumentation Tests
-        run: gcloud firebase test android run --app app/build/outputs/apk/development/debug/*.apk --test app/build/outputs/apk/androidTest/development/debug/*.apk --results-dir ${{github.repository}}-${{github.run_number}}-${{github.run_attempt}}
+        run: gcloud firebase test android run --app app/build/outputs/apk/development/debug/*.apk --test app/build/outputs/apk/androidTest/development/debug/*.apk --results-dir ${{github.run_number}}-${{github.run_attempt}}
