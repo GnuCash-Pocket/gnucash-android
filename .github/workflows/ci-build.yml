@@ -59,6 +59,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v1
       - name: Run Instrumentation Tests
         id: instrumentation-test
+        continue-on-error: true
         run: . ./instrumentation-test.sh
         env:
           APPLICATION_APK: app/build/outputs/apk/development/debug/*.apk
@@ -72,3 +73,5 @@ jobs:
         with:
           name: instrumentation-test-results
           path: instrumentation-test-results
+      - name: Assert Instrumentation Tests
+        run: exit ${{ steps.instrumentation-test.outcome }}

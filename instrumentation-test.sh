@@ -12,10 +12,13 @@ fetched_results="false"
 # 0 = success
 # 10 = test failure
 if [[ "$code" == "0" || "$code" == "10" ]]; then
+    echo "fetching results to $LOCAL_DIRECTORY"
     gsutil cp -r \
         gs://$GCLOUD_BUCKET/$GCLOUD_BUCKET_DIRECTORY \
         $LOCAL_DIRECTORY
     fetched_results="true"
+    echo "successfully fetched results"
+    ls $LOCAL_DIRECTORY
 fi
 
 echo "fetched_results=$fetched_results" >> $GITHUB_OUTPUT
