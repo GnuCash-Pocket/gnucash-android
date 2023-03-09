@@ -27,11 +27,13 @@ jobs:
           GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
       - name: Build Application APK
         run: ./gradlew assembleDevelopmentDebug
+      - name: Rename Instrumentation APK
+        run: mv app/build/outputs/apk/development/debug/*.apk application.apk
       - name: Upload Application APK
         uses: actions/upload-artifact@v3
         with:
-          name: application-apk
-          path: app/build/outputs/apk/development/debug/*.apk
+          name: application.apk
+          path: application.apk
           if-no-files-found: error
 
   unit-test:
@@ -103,11 +105,13 @@ jobs:
           GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
       - name: Build Instrumentation APK
         run: ./gradlew assembleDevelopmentDebugAndroidTest
+      - name: Rename Instrumentation APK
+        run: ./gradlew assembleDevelopmentDebugAndroidTest
       - name: Upload Instrumentation APK
         uses: actions/upload-artifact@v3
         with:
-          name: instrumentation-apk
-          path: app/build/outputs/apk/androidTest/development/debug/*.apk
+          name: instrumentation.apk
+          path: instrumentation.apk
           if-no-files-found: error
 
   instrumentation-test:
@@ -119,13 +123,11 @@ jobs:
       - name: Download Application APK
         uses: actions/download-artifact@v3
         with:
-          name: application-apk
+          name: application.apk
       - name: Download Instrumentation APK
         uses: actions/download-artifact@v3
         with:
-          name: instrumentation-apk
-      - name: Debug artifact
-        run: ls -la && ls -la application-apk
+          name: instrumentation.apk
       - name: Login to Google Cloud
         uses: google-github-actions/auth@v1
         with:
@@ -136,8 +138,8 @@ jobs:
         id: run-instrumentation-test
         run: . ./instrumentation-test.sh
         env:
-          APPLICATION_APK: application-apk/*.apk
-          INSTRUMENTATION_APK: instrumentation-apk/*.apk
+          APPLICATION_APK: application.apk
+          INSTRUMENTATION_APK: instrumentation.apk
           GCLOUD_BUCKET: ${{ env.GCLOUD_BUCKET }}
           GCLOUD_BUCKET_DIRECTORY: ${{ env.RUN_QUALIFIER }}/redfin-30-en-portrait
           LOCAL_DIRECTORY: instrumentation-test-results
