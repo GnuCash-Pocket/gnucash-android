@@ -9,7 +9,7 @@ jobs:
   main:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v3
       - name: Prepare Java
         uses: actions/setup-java@v3
@@ -29,7 +29,7 @@ jobs:
         with:
           name: Development Debug APK
           path: app/build/outputs/apk/development/debug/*.apk
-      - name: Unit Tests
+      - name: Run Unit Tests
         run: ./gradlew testDevelopmentDebugUnitTest
       - name: Unit Test Summary
         uses: test-summary/action@v2
@@ -42,7 +42,7 @@ jobs:
         with:
           name: unit-test-results
           path: app/build/test-results/testDevelopmentDebugUnitTest/TEST-*.xml
-      - name: Lint
+      - name: Run Linter
         run: ./gradlew lintDevelopmentDebug
       - name: Build Instrumentation APK
         run: ./gradlew assembleDevelopmentDebugAndroidTest
@@ -57,13 +57,18 @@ jobs:
           credentials_json: ${{ secrets.GCLOUD_AUTH }}
       - name: Set up GCloud SDK
         uses: google-github-actions/setup-gcloud@v1
-      - name: Instrumentation Tests
-        run: gcloud firebase test android run --app app/build/outputs/apk/development/debug/*.apk --test app/build/outputs/apk/androidTest/development/debug/*.apk --results-dir ${{github.run_number}}-${{github.run_attempt}}
-      - name: Download Instrumentation Test Results
-        run: gsutil cp -r gs://${{ secrets.GCLOUD_BUCKET }}/${{github.run_number}}-${{github.run_attempt}} instrumentation-results
+      - name: Run Instrumentation Tests
+        id: instrumentation-test
+        run: . ./instrumentation-test.sh
+        env:
+          APPLICATION_APK: app/build/outputs/apk/development/debug/*.apk
+          INSTRUMENTATION_APK: app/build/outputs/apk/androidTest/development/debug/*.apk
+          GCLOUD_BUCKET: ${{ secrets.GCLOUD_BUCKET }}
+          GCLOUD_BUCKET_DIRECTORY: ${{github.run_number}}-${{github.run_attempt}}
+          LOCAL_DIRECTORY: instrumentation-test-results
       - name: Upload Instrumentation Test Results for Report
         uses: actions/upload-artifact@v3
-        if: always()
+        if: ${{ steps.instrumentation-test.outputs.fetched_results == 'true' }}
         with:
           name: instrumentation-test-results
-          path: instrumentation-results
+          path: instrumentation-test-results
