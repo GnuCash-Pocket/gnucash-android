@@ -64,7 +64,7 @@ jobs:
         env:
           APPLICATION_APK: app/build/outputs/apk/development/debug/*.apk
           INSTRUMENTATION_APK: app/build/outputs/apk/androidTest/development/debug/*.apk
-          GCLOUD_BUCKET: ${{ secrets.GCLOUD_BUCKET }}
+          GCLOUD_BUCKET: ${{ env.GCLOUD_BUCKET }}
           GCLOUD_BUCKET_DIRECTORY: ${{github.run_number}}-${{github.run_attempt}}
           LOCAL_DIRECTORY: instrumentation-test-results
       - name: Upload Instrumentation Test Results for Report

@@ -9,15 +9,14 @@ code=$?
 
 fetched_results="false"
 # https://firebase.google.com/docs/test-lab/android/command-line#script_exit_codes
-# 0 = success
-# 10 = test failure
 if [[ "$code" == "0" || "$code" == "10" ]]; then
-    echo "fetching results to $LOCAL_DIRECTORY"
-    gsutil cp -r \
-        gs://$GCLOUD_BUCKET/$GCLOUD_BUCKET_DIRECTORY \
-        $LOCAL_DIRECTORY
+    gcloud_url="gs://$GCLOUD_BUCKET/$GCLOUD_BUCKET_DIRECTORY"
+    echo "fetching results from $gcloud_url"
+
+    gsutil cp -r $gcloud_url $LOCAL_DIRECTORY
     fetched_results="true"
-    echo "successfully fetched results"
+
+    echo "successfully saved results to $LOCAL_DIRECTORY"
     ls $LOCAL_DIRECTORY
 fi
 
