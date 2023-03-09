@@ -5,21 +5,19 @@ gcloud firebase test android run \
     --app $APPLICATION_APK \
     --test $INSTRUMENTATION_APK \
     --results-dir $GCLOUD_BUCKET_DIRECTORY
-code=$?
+test_code=$?
+set -e # abort if commands exit with non zero exit code
 
-fetched_results="false"
+test_success="false"
+exit_code=$test_code
 # https://firebase.google.com/docs/test-lab/android/command-line#script_exit_codes
-if [[ "$code" == "0" || "$code" == "10" ]]; then
-    gcloud_url="gs://$GCLOUD_BUCKET/$GCLOUD_BUCKET_DIRECTORY"
-    echo "fetching results from $gcloud_url"
-
-    gsutil cp -r $gcloud_url $LOCAL_DIRECTORY
-    fetched_results="true"
-
-    echo "successfully saved results to $LOCAL_DIRECTORY"
-    ls $LOCAL_DIRECTORY
+if [[ "$test_code" == "0" ]]; then # tests succeeded
+    test_success="true"
+elif [[ "$test_code" == "10" ]]; then # tests failed
+    exit_code=0 # workflow job shouldn't fail just yet
 fi
 
-echo "fetched_results=$fetched_results" >> $GITHUB_OUTPUT
+echo "test_success=$test_success" >> $GITHUB_OUTPUT
 
-exit $code
+exit $exit_code
+

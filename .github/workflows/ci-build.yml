@@ -5,6 +5,9 @@ on:
   pull_request:
     branches: [master]
 
+env:
+  RUN_QUALIFIER: ${{github.run_number}}-${{github.run_attempt}}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -121,6 +124,8 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: instrumentation-apk
+      - name: Debug artifact
+        run: ls -la && ls -la application-apk
       - name: Login to Google Cloud
         uses: google-github-actions/auth@v1
         with:
@@ -128,25 +133,25 @@ jobs:
       - name: Set up GCloud SDK
         uses: google-github-actions/setup-gcloud@v1
       - name: Run Instrumentation Tests
-        id: instrumentation-test
-        continue-on-error: true
+        id: run-instrumentation-test
         run: . ./instrumentation-test.sh
         env:
           APPLICATION_APK: application-apk/*.apk
           INSTRUMENTATION_APK: instrumentation-apk/*.apk
           GCLOUD_BUCKET: ${{ env.GCLOUD_BUCKET }}
-          GCLOUD_BUCKET_DIRECTORY: ${{github.run_number}}-${{github.run_attempt}}/redfin-30-en-portrait
+          GCLOUD_BUCKET_DIRECTORY: ${{ env.RUN_QUALIFIER }}/redfin-30-en-portrait
           LOCAL_DIRECTORY: instrumentation-test-results
+      - name: Fetch Instrumentation Test Results
+        run: gsutil cp -r gs://${{ env.GCLOUD_BUCKET }}/${{ env.RUN_QUALIFIER }} instrumentation-test-results
       - name: Instrumentation Test Summary
         uses: test-summary/action@v2
         with:
           paths: instrumentation-test-results/*.xml
       - name: Upload Instrumentation Test Results for Report
         uses: actions/upload-artifact@v3
-        if: ${{ steps.instrumentation-test.outputs.fetched_results == 'true' }}
         with:
           name: instrumentation-test-results
           path: instrumentation-test-results
           if-no-files-found: error
-      - name: Assert Instrumentation Tests
-        run: exit ${{ steps.instrumentation-test.outcome }}
+      - name: Assert Instrumentation Tests Success
+        run: if ${{ steps.run-instrumentation-test.outputs.test_success }} -ne 'true'; then exit 1; fi
