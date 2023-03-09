@@ -1,12 +1,12 @@
 name: CI Build
 
 on:
-  push: { }
+  push: {}
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
-  main:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -16,41 +16,101 @@ jobs:
         with:
           java-version: "11"
           distribution: temurin
-      - name: Prepare Google Services
-        env:
-          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
-        run: echo $GOOGLE_SERVICES > app/google-services.json
       - name: Prepare Gradle
         uses: gradle/gradle-build-action@v2
+      - name: Prepare Google Services
+        run: echo $GOOGLE_SERVICES > app/google-services.json
+        env:
+          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
       - name: Build Application APK
         run: ./gradlew assembleDevelopmentDebug
       - name: Upload Application APK
         uses: actions/upload-artifact@v3
         with:
-          name: Development Debug APK
+          name: application-apk
           path: app/build/outputs/apk/development/debug/*.apk
+          if-no-files-found: error
+
+  unit-test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Prepare Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: "11"
+          distribution: temurin
+      - name: Prepare Gradle
+        uses: gradle/gradle-build-action@v2
       - name: Run Unit Tests
         run: ./gradlew testDevelopmentDebugUnitTest
       - name: Unit Test Summary
         uses: test-summary/action@v2
-        if: always()
         with:
           paths: app/build/test-results/testDevelopmentDebugUnitTest/TEST-*.xml
       - name: Upload Unit Test Results for Report
         uses: actions/upload-artifact@v3
-        if: always()
         with:
           name: unit-test-results
           path: app/build/test-results/testDevelopmentDebugUnitTest/TEST-*.xml
+          if-no-files-found: error
+      - name: Assert Instrumentation Tests
+        run: exit ${{ steps.instrumentation-test.outcome }}
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Prepare Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: "11"
+          distribution: temurin
+      - name: Prepare Gradle
+        uses: gradle/gradle-build-action@v2
       - name: Run Linter
         run: ./gradlew lintDevelopmentDebug
+
+  instrumentation-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Prepare Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: "11"
+          distribution: temurin
+      - name: Prepare Gradle
+        uses: gradle/gradle-build-action@v2
+      - name: Prepare Google Services
+        run: echo $GOOGLE_SERVICES > app/google-services.json
+        env:
+          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
       - name: Build Instrumentation APK
         run: ./gradlew assembleDevelopmentDebugAndroidTest
       - name: Upload Instrumentation APK
         uses: actions/upload-artifact@v3
         with:
-          name: Development Debug AndroidTest APK
+          name: instrumentation-apk
           path: app/build/outputs/apk/androidTest/development/debug/*.apk
+          if-no-files-found: error
+
+  instrumentation-test:
+    runs-on: ubuntu-latest
+    needs: [build, instrumentation-build]
+    steps:
+      - name: Download Application APK
+        uses: actions/download-artifact@v3
+        with:
+          name: application-apk
+      - name: Download Instrumentation APK
+        uses: actions/download-artifact@v3
+        with:
+          name: instrumentation-apk
       - name: Login to Google Cloud
         uses: google-github-actions/auth@v1
         with:
@@ -62,16 +122,21 @@ jobs:
         continue-on-error: true
         run: . ./instrumentation-test.sh
         env:
-          APPLICATION_APK: app/build/outputs/apk/development/debug/*.apk
-          INSTRUMENTATION_APK: app/build/outputs/apk/androidTest/development/debug/*.apk
+          APPLICATION_APK: application-apk/*.apk
+          INSTRUMENTATION_APK: instrumentation-apk/*.apk
           GCLOUD_BUCKET: ${{ env.GCLOUD_BUCKET }}
-          GCLOUD_BUCKET_DIRECTORY: ${{github.run_number}}-${{github.run_attempt}}
+          GCLOUD_BUCKET_DIRECTORY: ${{github.run_number}}-${{github.run_attempt}}/redfin-30-en-portrait
           LOCAL_DIRECTORY: instrumentation-test-results
+      - name: Instrumentation Test Summary
+        uses: test-summary/action@v2
+        with:
+          paths: instrumentation-test-results/*.xml
       - name: Upload Instrumentation Test Results for Report
         uses: actions/upload-artifact@v3
         if: ${{ steps.instrumentation-test.outputs.fetched_results == 'true' }}
         with:
           name: instrumentation-test-results
           path: instrumentation-test-results
+          if-no-files-found: error
       - name: Assert Instrumentation Tests
         run: exit ${{ steps.instrumentation-test.outcome }}
