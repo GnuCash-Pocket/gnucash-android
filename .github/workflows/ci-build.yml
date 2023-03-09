@@ -44,6 +44,10 @@ jobs:
           distribution: temurin
       - name: Prepare Gradle
         uses: gradle/gradle-build-action@v2
+      - name: Prepare Google Services
+        run: echo $GOOGLE_SERVICES > app/google-services.json
+        env:
+          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
       - name: Run Unit Tests
         run: ./gradlew testDevelopmentDebugUnitTest
       - name: Unit Test Summary
