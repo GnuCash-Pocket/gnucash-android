@@ -50,6 +50,8 @@ jobs:
           GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
       - name: Run Unit Tests
         run: ./gradlew testDevelopmentDebugUnitTest
+        id: unit-test
+        continue-on-error: true
       - name: Unit Test Summary
         uses: test-summary/action@v2
         with:
@@ -60,8 +62,8 @@ jobs:
           name: unit-test-results
           path: app/build/test-results/testDevelopmentDebugUnitTest/TEST-*.xml
           if-no-files-found: error
-      - name: Assert Instrumentation Tests
-        run: exit ${{ steps.instrumentation-test.outcome }}
+      - name: Assert Unit Tests
+        run: exit ${{ steps.unit-test.outcome }}
 
   lint:
     runs-on: ubuntu-latest
