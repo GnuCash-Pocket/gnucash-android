@@ -141,19 +141,22 @@ jobs:
           APPLICATION_APK: application-${{env.RUN_QUALIFIER}}.apk
           INSTRUMENTATION_APK: instrumentation-${{env.RUN_QUALIFIER}}.apk
           GCLOUD_BUCKET: ${{ vars.GCLOUD_BUCKET }}
-          GCLOUD_BUCKET_DIRECTORY: ${{env.RUN_QUALIFIER}}/redfin-30-en-portrait
-          LOCAL_DIRECTORY: instrumentation-test-results
+          GCLOUD_BUCKET_DIRECTORY: ${{env.RUN_QUALIFIER}}
       - name: Fetch Instrumentation Test Results
-        run: mkdir instrumentation-test-results && gsutil cp -r gs://${{vars.GCLOUD_BUCKET}}/${{env.RUN_QUALIFIER}} instrumentation-test-results
+        run: mkdir instrumentation-test-results && gsutil cp -r ${{ env.RESULTS_URL }} instrumentation-test-results && ls instrumentation-test-results
+        env:
+          RESULTS_URL: gs://${{vars.GCLOUD_BUCKET}}/${{env.RUN_QUALIFIER}}/**/test_result_*.xml
       - name: Instrumentation Test Summary
         uses: test-summary/action@v2
         with:
-          paths: instrumentation-test-results/*.xml
+          paths: instrumentation-test-results/test_result_*.xml
       - name: Upload Instrumentation Test Results for Report
         uses: actions/upload-artifact@v3
         with:
           name: instrumentation-test-results
-          path: instrumentation-test-results
+          path: instrumentation-test-results/test_result_*.xml
           if-no-files-found: error
       - name: Assert Instrumentation Tests Success
-        run: if ${{steps.run-instrumentation-test.outputs.test_success}} -ne 'true'; then exit 1; fi
+        run: if [ "$SUCCESS" != "true" ]; then exit 1; fi
+        env:
+          SUCCESS: ${{steps.run-instrumentation-test.outputs.test_success}}

@@ -7,7 +7,7 @@ on:
       - completed
 
 jobs:
-  report:
+  unit-test:
     runs-on: ubuntu-latest
     steps:
       - name: Unit Test Report
@@ -19,6 +19,9 @@ jobs:
           reporter: java-junit
           fail-on-error: false
 
+  instrumentation-test:
+    runs-on: ubuntu-latest
+    steps:
       - name: Instrumentation Test Report
         uses: dorny/test-reporter@v1
         with:
