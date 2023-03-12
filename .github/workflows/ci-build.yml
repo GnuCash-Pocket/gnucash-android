@@ -144,7 +144,7 @@ jobs:
           GCLOUD_BUCKET_DIRECTORY: ${{env.RUN_QUALIFIER}}/redfin-30-en-portrait
           LOCAL_DIRECTORY: instrumentation-test-results
       - name: Fetch Instrumentation Test Results
-        run: gsutil cp -r gs://${{vars.GCLOUD_BUCKET}}/${{env.RUN_QUALIFIER}} instrumentation-test-results
+        run: mkdir instrumentation-test-results && gsutil cp -r gs://${{vars.GCLOUD_BUCKET}}/${{env.RUN_QUALIFIER}} instrumentation-test-results
       - name: Instrumentation Test Summary
         uses: test-summary/action@v2
         with:
