@@ -24,7 +24,7 @@ jobs:
       - name: Prepare Google Services
         run: echo $GOOGLE_SERVICES > app/google-services.json
         env:
-          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
+          GOOGLE_SERVICES: ${{ vars.GOOGLE_SERVICES }}
       - name: Build Application APK
         run: ./gradlew assembleDevelopmentDebug
       - name: Rename Application APK
@@ -52,7 +52,7 @@ jobs:
       - name: Prepare Google Services
         run: echo $GOOGLE_SERVICES > app/google-services.json
         env:
-          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
+          GOOGLE_SERVICES: ${{ vars.GOOGLE_SERVICES }}
       - name: Run Unit Tests
         run: ./gradlew testDevelopmentDebugUnitTest
       - name: Unit Test Summary
@@ -83,7 +83,7 @@ jobs:
       - name: Prepare Google Services
         run: echo $GOOGLE_SERVICES > app/google-services.json
         env:
-          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
+          GOOGLE_SERVICES: ${{ vars.GOOGLE_SERVICES }}
       - name: Run Linter
         run: ./gradlew lintDevelopmentDebug
 
@@ -102,7 +102,7 @@ jobs:
       - name: Prepare Google Services
         run: echo $GOOGLE_SERVICES > app/google-services.json
         env:
-          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
+          GOOGLE_SERVICES: ${{ vars.GOOGLE_SERVICES }}
       - name: Build Instrumentation APK
         run: ./gradlew assembleDevelopmentDebugAndroidTest
       - name: Rename Instrumentation APK
@@ -131,7 +131,7 @@ jobs:
       - name: Login to Google Cloud
         uses: google-github-actions/auth@v1
         with:
-          credentials_json: ${{ secrets.GCLOUD_AUTH }}
+          credentials_json: ${{ vars.GCLOUD_AUTH }}
       - name: Set up GCloud SDK
         uses: google-github-actions/setup-gcloud@v1
       - name: Run Instrumentation Tests
