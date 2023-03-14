@@ -143,7 +143,10 @@ jobs:
           GCLOUD_BUCKET: ${{ vars.GCLOUD_BUCKET }}
           GCLOUD_BUCKET_DIRECTORY: ${{env.RUN_QUALIFIER}}
       - name: Fetch Instrumentation Test Results
-        run: mkdir instrumentation-test-results && gsutil cp -r ${{ env.RESULTS_URL }} instrumentation-test-results && ls instrumentation-test-results
+        run: |
+          mkdir instrumentation-test-results \
+          && gcloud storage cp -r ${{ env.RESULTS_URL }} instrumentation-test-results \
+          && ls instrumentation-test-results
         env:
           RESULTS_URL: gs://${{vars.GCLOUD_BUCKET}}/${{env.RUN_QUALIFIER}}/**/test_result_*.xml
       - name: Instrumentation Test Summary
