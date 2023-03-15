@@ -7,6 +7,79 @@ on:
 
 env:
   RUN_QUALIFIER: ${{github.run_number}}-${{github.run_attempt}}
+  # todo: Replace following envs with vars see https://github.com/community/community/discussions/44322
+  GCLOUD_BUCKET: test-lab-9c68imc4w11aa-i4k7hbj489wyu
+  GCLOUD_SERVICE_ACCOUNT: test-restults-fetcher@gnucash-pocket.iam.gserviceaccount.com
+  GCLOUD_WORKLOAD_IDENTITY_PROVIDER: projects/679335683580/locations/global/workloadIdentityPools/github-main-testing-pool/providers/github
+  GOOGLE_SERVICES: |
+    {
+      "project_info": {
+        "project_number": "679335683580",
+        "project_id": "gnucash-pocket",
+        "storage_bucket": "gnucash-pocket.appspot.com"
+      },
+      "client": [
+        {
+          "client_info": {
+            "mobilesdk_app_id": "1:679335683580:android:4a7289ff6df3b6d0e7fe79",
+            "android_client_info": {
+              "package_name": "org.gnucash.android"
+            }
+          },
+          "oauth_client": [
+            {
+              "client_id": "679335683580-9k138m2htltj52u018gqetisuf6fj3ca.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ],
+          "api_key": [
+            {
+              "current_key": "AIzaSyD3DWSMPA3bE2fm6vChbGy6o_fNYRLCCsQ"
+            }
+          ],
+          "services": {
+            "appinvite_service": {
+              "other_platform_oauth_client": [
+                {
+                  "client_id": "679335683580-9k138m2htltj52u018gqetisuf6fj3ca.apps.googleusercontent.com",
+                  "client_type": 3
+                }
+              ]
+            }
+          }
+        },
+        {
+          "client_info": {
+            "mobilesdk_app_id": "1:679335683580:android:b7412dd4e5dddc59e7fe79",
+            "android_client_info": {
+              "package_name": "org.gnucash.android.devel"
+            }
+          },
+          "oauth_client": [
+            {
+              "client_id": "679335683580-9k138m2htltj52u018gqetisuf6fj3ca.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ],
+          "api_key": [
+            {
+              "current_key": "AIzaSyD3DWSMPA3bE2fm6vChbGy6o_fNYRLCCsQ"
+            }
+          ],
+          "services": {
+            "appinvite_service": {
+              "other_platform_oauth_client": [
+                {
+                  "client_id": "679335683580-9k138m2htltj52u018gqetisuf6fj3ca.apps.googleusercontent.com",
+                  "client_type": 3
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "configuration_version": "1"
+    }
 
 jobs:
   build:
@@ -24,7 +97,7 @@ jobs:
       - name: Prepare Google Services
         run: echo $GOOGLE_SERVICES > app/google-services.json
         env:
-          GOOGLE_SERVICES: ${{ vars.GOOGLE_SERVICES }}
+          GOOGLE_SERVICES: ${{ env.GOOGLE_SERVICES }}
       - name: Build Application APK
         run: ./gradlew assembleDevelopmentDebug
       - name: Rename Application APK
@@ -52,7 +125,7 @@ jobs:
       - name: Prepare Google Services
         run: echo $GOOGLE_SERVICES > app/google-services.json
         env:
-          GOOGLE_SERVICES: ${{ vars.GOOGLE_SERVICES }}
+          GOOGLE_SERVICES: ${{ env.GOOGLE_SERVICES }}
       - name: Run Unit Tests
         run: ./gradlew testDevelopmentDebugUnitTest
       - name: Unit Test Summary
@@ -83,7 +156,7 @@ jobs:
       - name: Prepare Google Services
         run: echo $GOOGLE_SERVICES > app/google-services.json
         env:
-          GOOGLE_SERVICES: ${{ vars.GOOGLE_SERVICES }}
+          GOOGLE_SERVICES: ${{ env.GOOGLE_SERVICES }}
       - name: Run Linter
         run: ./gradlew lintDevelopmentDebug
 
@@ -102,7 +175,7 @@ jobs:
       - name: Prepare Google Services
         run: echo $GOOGLE_SERVICES > app/google-services.json
         env:
-          GOOGLE_SERVICES: ${{ vars.GOOGLE_SERVICES }}
+          GOOGLE_SERVICES: ${{ env.GOOGLE_SERVICES }}
       - name: Build Instrumentation APK
         run: ./gradlew assembleDevelopmentDebugAndroidTest
       - name: Rename Instrumentation APK
@@ -118,8 +191,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, instrumentation-build]
     permissions:
-      contents: 'read'
-      id-token: 'write'
+      contents: read
+      id-token: write
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -134,8 +207,8 @@ jobs:
       - name: Login to Google Cloud
         uses: google-github-actions/auth@v1
         with:
-          workload_identity_provider: ${{ vars.GCLOUD_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.GCLOUD_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ env.GCLOUD_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCLOUD_SERVICE_ACCOUNT }}
       - name: Set up GCloud SDK
         uses: google-github-actions/setup-gcloud@v1
       - name: Run Instrumentation Tests
@@ -144,7 +217,7 @@ jobs:
         env:
           APPLICATION_APK: application-${{env.RUN_QUALIFIER}}.apk
           INSTRUMENTATION_APK: instrumentation-${{env.RUN_QUALIFIER}}.apk
-          GCLOUD_BUCKET: ${{ vars.GCLOUD_BUCKET }}
+          GCLOUD_BUCKET: ${{ env.GCLOUD_BUCKET }}
           GCLOUD_BUCKET_DIRECTORY: ${{env.RUN_QUALIFIER}}
       - name: Fetch Instrumentation Test Results
         run: |
@@ -152,7 +225,7 @@ jobs:
           && gcloud storage cp -r ${{ env.RESULTS_URL }} instrumentation-test-results \
           && ls instrumentation-test-results
         env:
-          RESULTS_URL: gs://${{vars.GCLOUD_BUCKET}}/${{env.RUN_QUALIFIER}}/**/test_result_*.xml
+          RESULTS_URL: gs://${{env.GCLOUD_BUCKET}}/${{env.RUN_QUALIFIER}}/**/test_result_*.xml
       - name: Instrumentation Test Summary
         uses: test-summary/action@v2
         with:
