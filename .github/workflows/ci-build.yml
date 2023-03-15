@@ -134,8 +134,8 @@ jobs:
       - name: Login to Google Cloud
         uses: google-github-actions/auth@v1
         with:
-          workload_identity_provider: projects/679335683580/locations/global/workloadIdentityPools/github-main-testing-pool/providers/github
-          service_account: test-restults-fetcher@gnucash-pocket.iam.gserviceaccount.com
+          workload_identity_provider: ${{ vars.GCLOUD_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCLOUD_SERVICE_ACCOUNT }}
       - name: Set up GCloud SDK
         uses: google-github-actions/setup-gcloud@v1
       - name: Run Instrumentation Tests
