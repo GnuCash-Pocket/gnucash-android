@@ -6,7 +6,6 @@ on:
     branches: [master]
 
 env:
-  RUN_QUALIFIER: ${{github.run_number}}-${{github.run_attempt}}
   # todo: Replace following envs with vars see https://github.com/community/community/discussions/44322
   GCLOUD_BUCKET: test-lab-9c68imc4w11aa-i4k7hbj489wyu
   GCLOUD_SERVICE_ACCOUNT: test-restults-fetcher@gnucash-pocket.iam.gserviceaccount.com
@@ -101,12 +100,12 @@ jobs:
       - name: Build Application APK
         run: ./gradlew assembleDevelopmentDebug
       - name: Rename Application APK
-        run: cp app/build/outputs/apk/development/debug/*.apk application-$RUN_QUALIFIER.apk
+        run: cp app/build/outputs/apk/development/debug/*.apk application.apk
       - name: Upload Application APK
         uses: actions/upload-artifact@v3
         with:
           name: application-apk
-          path: application-${{env.RUN_QUALIFIER}}.apk
+          path: application.apk
           if-no-files-found: error
 
   unit-test:
@@ -179,12 +178,12 @@ jobs:
       - name: Build Instrumentation APK
         run: ./gradlew assembleDevelopmentDebugAndroidTest
       - name: Rename Instrumentation APK
-        run: cp app/build/outputs/apk/androidTest/development/debug/*.apk instrumentation-$RUN_QUALIFIER.apk
+        run: cp app/build/outputs/apk/androidTest/development/debug/*.apk instrumentation.apk
       - name: Upload Instrumentation APK
         uses: actions/upload-artifact@v3
         with:
           name: instrumentation-apk
-          path: instrumentation-${{env.RUN_QUALIFIER}}.apk
+          path: instrumentation.apk
           if-no-files-found: error
 
   instrumentation-test:
@@ -215,17 +214,17 @@ jobs:
         id: run-instrumentation-test
         run: . ./instrumentation-test.sh
         env:
-          APPLICATION_APK: application-${{env.RUN_QUALIFIER}}.apk
-          INSTRUMENTATION_APK: instrumentation-${{env.RUN_QUALIFIER}}.apk
+          APPLICATION_APK: application.apk
+          INSTRUMENTATION_APK: instrumentation.apk
           GCLOUD_BUCKET: ${{ env.GCLOUD_BUCKET }}
-          GCLOUD_BUCKET_DIRECTORY: ${{env.RUN_QUALIFIER}}
+          GCLOUD_BUCKET_DIRECTORY: ${{github.run_number}}
       - name: Fetch Instrumentation Test Results
         run: |
           mkdir instrumentation-test-results \
           && gcloud storage cp -r ${{ env.RESULTS_URL }} instrumentation-test-results \
           && ls instrumentation-test-results
         env:
-          RESULTS_URL: gs://${{env.GCLOUD_BUCKET}}/${{env.RUN_QUALIFIER}}/**/test_result_*.xml
+          RESULTS_URL: gs://${{env.GCLOUD_BUCKET}}/${{github.run_number}}/**/test_result_*.xml
       - name: Instrumentation Test Summary
         uses: test-summary/action@v2
         with:
