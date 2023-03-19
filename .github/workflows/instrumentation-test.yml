@@ -22,13 +22,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
       - name: Download Application APK
-        uses: actions/download-artifact@v3
+        uses: ./.github/actions/download-artifact
         with:
-          name: application-apk
+          artifact-name: application-apk
       - name: Download Instrumentation APK
-        uses: actions/download-artifact@v3
+        uses: ./.github/actions/download-artifact
         with:
-          name: instrumentation-apk
+          artifact-name: instrumentation-apk
       - name: Login to Google Cloud
         uses: google-github-actions/auth@v1
         with:
