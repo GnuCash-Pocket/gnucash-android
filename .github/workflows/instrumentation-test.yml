@@ -1,0 +1,67 @@
+name: Instrumentation Test
+
+on:
+  workflow_run:
+    workflows: ["CI Build"]
+    types:
+      - completed
+
+env:
+  # todo: Replace following envs with vars see https://github.com/community/community/discussions/44322
+  GCLOUD_BUCKET: test-lab-9c68imc4w11aa-i4k7hbj489wyu
+  GCLOUD_SERVICE_ACCOUNT: test-restults-fetcher@gnucash-pocket.iam.gserviceaccount.com
+  GCLOUD_WORKLOAD_IDENTITY_PROVIDER: projects/679335683580/locations/global/workloadIdentityPools/github-main-testing-pool/providers/github
+
+jobs:
+  instrumentation-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Download Application APK
+        uses: actions/download-artifact@v3
+        with:
+          name: application-apk
+      - name: Download Instrumentation APK
+        uses: actions/download-artifact@v3
+        with:
+          name: instrumentation-apk
+      - name: Login to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: ${{ env.GCLOUD_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCLOUD_SERVICE_ACCOUNT }}
+      - name: Set up GCloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+      - name: Run Instrumentation Tests
+        id: run-instrumentation-test
+        run: . ./instrumentation-test.sh
+        env:
+          APPLICATION_APK: application.apk
+          INSTRUMENTATION_APK: instrumentation.apk
+          GCLOUD_BUCKET: ${{ env.GCLOUD_BUCKET }}
+          GCLOUD_BUCKET_DIRECTORY: ${{github.run_number}}
+      - name: Fetch Instrumentation Test Results
+        run: |
+          mkdir instrumentation-test-results \
+          && gcloud storage cp -r ${{ env.RESULTS_URL }} instrumentation-test-results \
+          && ls instrumentation-test-results
+        env:
+          RESULTS_URL: gs://${{env.GCLOUD_BUCKET}}/${{github.run_number}}/**/test_result_*.xml
+      - name: Instrumentation Test Summary
+        uses: test-summary/action@v2
+        with:
+          paths: instrumentation-test-results/test_result_*.xml
+      - name: Upload Instrumentation Test Results for Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: instrumentation-test-results
+          path: instrumentation-test-results/test_result_*.xml
+          if-no-files-found: error
+      - name: Assert Instrumentation Tests Success
+        run: if [ "$SUCCESS" != "true" ]; then exit 1; fi
+        env:
+          SUCCESS: ${{steps.run-instrumentation-test.outputs.test_success}}
