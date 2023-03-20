@@ -17,4 +17,3 @@ jobs:
           name: Instrumentation Test Report
           path: test_result_*.xml
           reporter: java-junit
-          fail-on-error: false
