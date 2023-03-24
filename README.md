@@ -1,6 +1,5 @@
-<a href="https://travis-ci.org/codinguser/gnucash-android" target="_blank">
-<img src="https://travis-ci.org/codinguser/gnucash-android.svg?branch=develop" alt="Travis build status" />
-</a>
+[![CI Build](https://github.com/djbrown/gnucash-android/actions/workflows/ci-build.yml/badge.svg)](https://github.com/djbrown/gnucash-android/actions/workflows/ci-build.yml)
+[![Instrumentation Test](https://github.com/djbrown/gnucash-android/actions/workflows/instrumentation-test.yml/badge.svg)](https://github.com/djbrown/gnucash-android/actions/workflows/instrumentation-test.yml)
 
 # Introduction
 
