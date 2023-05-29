@@ -36,7 +36,7 @@ import android.util.Log;
 import androidx.test.espresso.contrib.DrawerActions;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -77,7 +77,7 @@ public class ExportTransactionsTest {
     public GrantPermissionRule animationPermissionsRule = GrantPermissionRule.grant(Manifest.permission.SET_ANIMATION_SCALE);
 
     @Rule
-    ActivityTestRule<AccountsActivity> rule = new ActivityTestRule<>(AccountsActivity.class);
+    public ActivityTestRule<AccountsActivity> rule = new ActivityTestRule<>(AccountsActivity.class);
 
     @Before
     public void setUp() throws Exception {

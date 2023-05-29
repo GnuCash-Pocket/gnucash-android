@@ -172,20 +172,19 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation(
-            'com.android.support:support-v4:' + androidSupportVersion,
-            'com.android.support:appcompat-v7:' + androidSupportVersion,
-            'com.android.support:design:' + androidSupportVersion,
-            'com.android.support:cardview-v7:' + androidSupportVersion,
-            'com.android.support:preference-v7:' + androidSupportVersion,
-            'com.android.support:recyclerview-v7:' + androidSupportVersion,
+            'androidx.legacy:legacy-support-v4:1.0.0',
+            'androidx.appcompat:appcompat:1.6.1',
+            'com.google.android.material:material:1.9.0',
+            'androidx.cardview:cardview:1.0.0',
+            'androidx.preference:preference:1.2.0',
+            'androidx.recyclerview:recyclerview:1.3.0'
     )
 
     implementation 'net.objecthunter:exp4j:0.4.7'
-    implementation 'androidx.drawerlayout:drawerlayout:1.1.1'
+    implementation 'androidx.drawerlayout:drawerlayout:1.2.0'
     implementation 'androidx.multidex:multidex:2.0.1'
 
     implementation 'com.google.android.gms:play-services-drive:17.0.0'
-    implementation 'com.google.android.material:material:1.8.0'
 
     implementation platform('com.google.firebase:firebase-bom:31.2.1')
     implementation 'com.google.firebase:firebase-crashlytics'
@@ -219,21 +218,21 @@ dependencies {
     testImplementation 'org.robolectric:shadows-multidex:3.0'
 }
 
-def androidSupportTestVersion = "1.0.0"
-def androidEspressoVersion = "3.0.0"
+def androidEspressoVersion = "3.5.1"
 dependencies {
-    androidTestImplementation 'com.android.support:support-annotations:' + androidSupportVersion
+    androidTestImplementation 'androidx.annotation:annotation-experimental:1.3.0'
     //the following are only added so that the app and test version both us the same versions
-    androidTestImplementation 'com.android.support:appcompat-v7:' + androidSupportVersion
-    androidTestImplementation 'com.android.support:design:' + androidSupportVersion
+    androidTestImplementation 'com.google.android.material:material:1.9.0'
 
-    androidTestImplementation 'com.android.support.test:runner:' + androidSupportTestVersion
-    androidTestImplementation 'com.android.support.test:rules:' + androidSupportTestVersion
+    androidTestImplementation 'androidx.test:runner:1.5.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test:rules:1.5.0'
 
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:' + androidEspressoVersion
-    androidTestImplementation 'com.android.support.test.espresso:espresso-intents:' + androidEspressoVersion
+    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
 
-    androidTestImplementation('com.android.support.test.espresso:espresso-contrib:' + androidEspressoVersion) {
+    androidTestImplementation 'androidx.test.espresso:espresso-core:' + androidEspressoVersion
+    androidTestImplementation 'androidx.test.espresso:espresso-intents:' + androidEspressoVersion
+    androidTestImplementation('androidx.test.espresso:espresso-contrib:' + androidEspressoVersion) {
         exclude group: 'com.android.support', module: 'support-v4'
         exclude module: 'recyclerview-v7'
     }

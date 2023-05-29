@@ -30,7 +30,7 @@ import android.util.Log;
 
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -61,7 +61,7 @@ public class FirstRunWizardActivityTest {
     FirstRunWizardActivity mActivity;
 
     @Rule
-    ActivityTestRule<FirstRunWizardActivity> rule = new ActivityTestRule<>(FirstRunWizardActivity.class);
+    public ActivityTestRule<FirstRunWizardActivity> rule = new ActivityTestRule<>(FirstRunWizardActivity.class);
 
     @Rule
     public GrantPermissionRule animationPermissionsRule = GrantPermissionRule.grant(Manifest.permission.SET_ANIMATION_SCALE);
