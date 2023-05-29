@@ -1,5 +1,5 @@
-[![CI Build](https://github.com/djbrown/gnucash-android/actions/workflows/ci-build.yml/badge.svg)](https://github.com/djbrown/gnucash-android/actions/workflows/ci-build.yml)
-[![Instrumentation Test](https://github.com/djbrown/gnucash-android/actions/workflows/instrumentation-test.yml/badge.svg)](https://github.com/djbrown/gnucash-android/actions/workflows/instrumentation-test.yml)
+[![CI Build](https://github.com/GnuCash-Pocket/gnucash-android/actions/workflows/ci-build.yml/badge.svg)](https://github.com/GnuCash-Pocket/gnucash-android/actions/workflows/ci-build.yml)
+[![Instrumentation Test](https://github.com/GnuCash-Pocket/gnucash-android/actions/workflows/instrumentation-test.yml/badge.svg)](https://github.com/GnuCash-Pocket/gnucash-android/actions/workflows/instrumentation-test.yml)
 
 # Introduction
 
