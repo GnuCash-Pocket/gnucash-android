@@ -513,7 +513,7 @@ public class ExportFormFragment extends Fragment implements
         };
 
         View v = getView();
-        assert v != null;
+        if(v == null) return;
 
         mOfxRadioButton.setOnClickListener(radioClickListener);
         mQifRadioButton.setOnClickListener(radioClickListener);

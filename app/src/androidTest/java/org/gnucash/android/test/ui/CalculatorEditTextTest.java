@@ -20,19 +20,28 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.Espresso.pressBack;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withInputType;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 import android.Manifest;
+import android.app.UiAutomation;
 import android.content.Intent;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.InputType;
 import android.util.Log;
 
+import androidx.test.espresso.action.ViewActions;
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.uiautomator.UiDevice;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -45,10 +54,12 @@ import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.test.ui.util.DisableAnimationsRule;
+import org.gnucash.android.test.ui.util.SoftwareKeyboard;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.transaction.TransactionsActivity;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -141,21 +152,24 @@ public class CalculatorEditTextTest {
     public void testShowingHidingOfCalculatorKeyboard() {
         clickOnView(R.id.fab_create_transaction);
 
+        // Verify the input type is correct
+        onView(withId(R.id.input_transaction_amount)).check(matches(allOf(withInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_CLASS_NUMBER))));
+
         // Giving the focus to the amount field shows the keyboard
         onView(withId(R.id.input_transaction_amount)).perform(click());
-        onView(withId(R.id.calculator_keyboard)).check(matches(isDisplayed()));
+        assertThat(SoftwareKeyboard.isKeyboardOpen(), is(true));
 
         // Pressing back hides the keyboard (still with focus)
         pressBack();
-        onView(withId(R.id.calculator_keyboard)).check(matches(not(isDisplayed())));
+        assertThat(SoftwareKeyboard.isKeyboardOpen(), is(false));
 
         // Clicking the amount field already focused shows the keyboard again
         clickOnView(R.id.input_transaction_amount);
-        onView(withId(R.id.calculator_keyboard)).check(matches(isDisplayed()));
+        assertThat(SoftwareKeyboard.isKeyboardOpen(), is(true));
 
-        // Changing the focus to another field hides the keyboard
+        // Changing the focus to another field keeps the software keyboard open
         clickOnView(R.id.input_transaction_name);
-        onView(withId(R.id.calculator_keyboard)).check(matches(not(isDisplayed())));
+        assertThat(SoftwareKeyboard.isKeyboardOpen(), is(true));
     }
 
     /**
