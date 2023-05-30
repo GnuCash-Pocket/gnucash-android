@@ -13,33 +13,33 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <ListPreference
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <androidx.preference.ListPreference
         android:title="@string/title_default_transaction_type"
         android:entryValues="@array/key_transaction_type_values"
         android:entries="@array/transaction_types"
         android:key="@string/key_default_transaction_type"
         android:summary="@string/summary_default_transaction_type" />
 
-    <SwitchPreferenceCompat
+    <androidx.preference.SwitchPreferenceCompat
         android:summary="@string/summary_use_double_entry"
         android:key="@string/key_use_double_entry"
         android:defaultValue="true"
         android:title="@string/title_use_double_entry" />
 
-    <SwitchPreferenceCompat
+    <androidx.preference.SwitchPreferenceCompat
         android:summary="@string/summary_use_compact_list"
         android:key="@string/key_use_compact_list"
         android:dependency="@string/key_use_double_entry"
         android:title="@string/title_use_compact_list" />
 
-    <SwitchPreferenceCompat
+    <androidx.preference.SwitchPreferenceCompat
         android:summary="@string/summary_save_opening_balances"
         android:key="@string/key_save_opening_balances"
         android:defaultValue="false"
         android:title="@string/title_save_opening_balances" />
-    <Preference
+    <androidx.preference.Preference
         android:key="@string/key_delete_all_transactions"
         android:summary="@string/summary_delete_all_transactions"
         android:title="@string/title_delete_all_transactions" />
-</PreferenceScreen>
+</androidx.preference.PreferenceScreen>
