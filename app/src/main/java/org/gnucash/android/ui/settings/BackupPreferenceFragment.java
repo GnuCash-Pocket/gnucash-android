@@ -44,6 +44,7 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.MetadataChangeSet;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -192,7 +193,7 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
         if (key.equals(getString(R.string.key_create_backup))) {
             boolean result = BackupManager.backupActiveBook();
             int msg = result ? R.string.toast_backup_successful : R.string.toast_backup_failed;
-            Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
+            Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show();
         }
 
         return false;

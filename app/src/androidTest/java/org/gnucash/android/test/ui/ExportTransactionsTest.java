@@ -19,7 +19,7 @@ package org.gnucash.android.test.ui;
 import static androidx.test.InstrumentationRegistry.getInstrumentation;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.action.ViewActions.swipeUp;
+import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.RootMatchers.withDecorView;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -34,9 +34,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import androidx.test.espresso.contrib.DrawerActions;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -123,7 +123,7 @@ public class ExportTransactionsTest {
     @Test
     public void testCreateBackup() {
         onView(withId(R.id.drawer_layout)).perform(DrawerActions.open());
-        onView(withId(R.id.nav_view)).perform(swipeUp());
+        onView(withText(R.string.title_settings)).perform(scrollTo());
         onView(withText(R.string.title_settings)).perform(click());
         onView(withText(R.string.header_backup_and_export_settings)).perform(click());
 
