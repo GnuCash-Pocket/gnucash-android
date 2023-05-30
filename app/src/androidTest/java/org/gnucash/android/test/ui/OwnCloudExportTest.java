@@ -20,6 +20,7 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.clearText;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.action.ViewActions.swipeUp;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
@@ -167,7 +168,7 @@ public class OwnCloudExportTest {
     public void OwnCloudCredentials() {
         Assume.assumeTrue(hasActiveInternetConnection());
         onView(withId(R.id.drawer_layout)).perform(DrawerActions.open());
-        onView(withId(R.id.nav_view)).perform(swipeUp());
+        onView(withText(R.string.title_settings)).perform(scrollTo());
         onView(withText(R.string.title_settings)).perform(click());
         onView(withText(R.string.header_backup_and_export_settings)).perform(click());
         onView(withText(R.string.title_owncloud_sync_preference)).perform(click());
@@ -179,7 +180,7 @@ public class OwnCloudExportTest {
         onView(withId(R.id.owncloud_dir)).perform(clearText()).perform(typeText(OC_DIR), closeSoftKeyboard());
         onView(withId(R.id.btn_save)).perform(click());
         sleep(5000);
-//        onView(withId(R.id.btn_save)).perform(click());
+        onView(withId(R.id.btn_save)).perform(click());
 
         assertEquals(mPrefs.getString(mAccountsActivity.getString(R.string.key_owncloud_server), null), OC_SERVER);
         assertEquals(mPrefs.getString(mAccountsActivity.getString(R.string.key_owncloud_username), null), OC_USERNAME);
