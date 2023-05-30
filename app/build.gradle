@@ -172,7 +172,6 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation(
-            'androidx.legacy:legacy-support-v4:1.0.0',
             'androidx.appcompat:appcompat:1.6.1',
             'com.google.android.material:material:1.9.0',
             'androidx.cardview:cardview:1.0.0',

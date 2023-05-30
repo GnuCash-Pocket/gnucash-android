@@ -20,24 +20,20 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
-import androidx.slidingpanelayout.widget.SlidingPaneLayout;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.ui.passcode.PasscodeLockActivity;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
@@ -48,9 +44,6 @@ public class PreferenceActivity extends PasscodeLockActivity implements
 
     public static final String ACTION_MANAGE_BOOKS = "org.gnucash.android.intent.action.MANAGE_BOOKS";
 
-    @BindView(R.id.slidingpane_layout)
-    SlidingPaneLayout mSlidingPaneLayout;
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,32 +51,11 @@ public class PreferenceActivity extends PasscodeLockActivity implements
 
         ButterKnife.bind(this);
 
-        mSlidingPaneLayout.setPanelSlideListener(new SlidingPaneLayout.PanelSlideListener() {
-            @Override
-            public void onPanelSlide(View panel, float slideOffset) {
-                //nothing to see here, move along
-            }
-
-            @Override
-            public void onPanelOpened(View panel) {
-                ActionBar actionBar = getSupportActionBar();
-                assert actionBar != null;
-                actionBar.setTitle(R.string.title_settings);
-            }
-
-            @Override
-            public void onPanelClosed(View panel) {
-                //nothing to see here, move along
-            }
-        });
-
         String action = getIntent().getAction();
         if (action != null && action.equals(ACTION_MANAGE_BOOKS)) {
             loadFragment(new BookManagerFragment());
-            mSlidingPaneLayout.closePane();
         } else {
-            mSlidingPaneLayout.openPane();
-            loadFragment(new GeneralPreferenceFragment());
+            loadFragment(new PreferenceHeadersFragment());
         }
 
         ActionBar actionBar = getSupportActionBar();
@@ -106,7 +78,6 @@ public class PreferenceActivity extends PasscodeLockActivity implements
             return false;
         }
         loadFragment(fragment);
-        mSlidingPaneLayout.closePane();
         return false;
     }
 
@@ -117,11 +88,10 @@ public class PreferenceActivity extends PasscodeLockActivity implements
      */
     private void loadFragment(Fragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager
-                .beginTransaction();
-
-        fragmentTransaction.replace(R.id.fragment_container, fragment);
-        fragmentTransaction.commit();
+        fragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     @Override
@@ -160,13 +130,5 @@ public class PreferenceActivity extends PasscodeLockActivity implements
     public static SharedPreferences getBookSharedPreferences(String bookUID) {
         Context context = GnuCashApplication.getAppContext();
         return context.getSharedPreferences(bookUID, Context.MODE_PRIVATE);
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (mSlidingPaneLayout.isOpen())
-            super.onBackPressed();
-        else
-            mSlidingPaneLayout.openPane();
     }
 }

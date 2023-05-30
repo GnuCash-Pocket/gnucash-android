@@ -13,23 +13,11 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-<androidx.slidingpanelayout.widget.SlidingPaneLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<androidx.fragment.app.FragmentContainerView android:id="@+id/fragment_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/slidingpane_layout">
-
-    <fragment
-        android:name="org.gnucash.android.ui.settings.PreferenceHeadersFragment"
-        android:tag="PreferenceHeadersFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginRight="0dp"
-        android:layout_gravity="left|start" />
-
-    <FrameLayout
-        android:id="@+id/fragment_container"
-        android:layout_width="match_parent"
-        android:layout_weight="1"
-        android:layout_height="match_parent" />
-</androidx.slidingpanelayout.widget.SlidingPaneLayout>
+    android:name="org.gnucash.android.ui.settings.PreferenceHeadersFragment"
+    android:tag="PreferenceHeadersFragment"
+    android:layout_marginEnd="0dp"
+    android:layout_gravity="start"
+    xmlns:android="http://schemas.android.com/apk/res/android" />
