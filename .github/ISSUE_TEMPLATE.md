@@ -1,13 +1,16 @@
-#### Steps to reproduce the behaviour
+## Steps to reproduce the behaviour
 1. <!-- List the detail steps to reproduce the problem here -->
 
-#### Expected behaviour
+## Expected behaviour
 
 
-#### Actual behaviour
+## Actual behaviour
 
 
-#### Software specifications
+## Software specifications
 * GnuCash Android version:
 * System Android version:
 * Device type:
+
+## Suggested Resolution
+<!-- Optional, how to resolve the issue -->
