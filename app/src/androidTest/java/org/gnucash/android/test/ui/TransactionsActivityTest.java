@@ -292,6 +292,8 @@ public class TransactionsActivityTest {
 
     @Test
     public void testAddMultiCurrencyTransaction() {
+        mTransactionsDbAdapter.deleteTransactionsForAccount(TRANSACTIONS_ACCOUNT_UID);
+
         Commodity euro = Commodity.getInstance("EUR");
         Account euroAccount = new Account("Euro Konto", euro);
         mAccountsDbAdapter.addRecord(euroAccount);
