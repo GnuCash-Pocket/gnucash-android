@@ -557,7 +557,9 @@ public class Transaction extends BaseModel {
 
             Element accttype = doc.createElement(OfxHelper.TAG_ACCOUNT_TYPE);
             AccountsDbAdapter acctDbAdapter = AccountsDbAdapter.getInstance();
-            OfxAccountType ofxAccountType = Account.convertToOfxAccountType(acctDbAdapter.getAccountType(transferAccountUID));
+            OfxAccountType ofxAccountType = Account.Companion.convertToOfxAccountType(
+                    acctDbAdapter.getAccountType(transferAccountUID)
+            );
             accttype.appendChild(doc.createTextNode(ofxAccountType.toString()));
 
             Element bankAccountTo = doc.createElement(OfxHelper.TAG_BANK_ACCOUNT_TO);

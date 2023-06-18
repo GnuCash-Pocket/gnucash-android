@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.gnucash.android.model;
+package org.gnucash.android.model
 
 /**
  * Type of transaction, a credit or a debit
@@ -22,24 +21,26 @@ package org.gnucash.android.model;
  * @author Ngewi Fet <ngewif@gmail.com>
  * @author Jesse Shieh <jesse.shieh.pub@gmail.com>
  */
-public enum TransactionType {
+enum class TransactionType {
     DEBIT, CREDIT;
 
-    private TransactionType opposite;
-
-    static {
-        DEBIT.opposite = CREDIT;
-        CREDIT.opposite = DEBIT;
-    }
+    private var opposite: TransactionType? = null
 
     /**
      * Inverts the transaction type.
-     * <p>{@link TransactionType#CREDIT} becomes {@link TransactionType#DEBIT} and vice versa</p>
+     *
+     * [TransactionType.CREDIT] becomes [TransactionType.DEBIT] and vice versa
      *
      * @return Inverted transaction type
      */
-    public TransactionType invert() {
-        return opposite;
+    fun invert(): TransactionType? {
+        return opposite
+    }
+
+    companion object {
+        init {
+            DEBIT.opposite = CREDIT
+            CREDIT.opposite = DEBIT
+        }
     }
 }
-

@@ -318,7 +318,7 @@ public class AccountsActivityTest {
         //no sub-accounts
         assertThat(mAccountsDbAdapter.getSubAccountCount(SIMPLE_ACCOUNT_UID)).isEqualTo(0);
         assertThat(mAccountsDbAdapter.getSubAccountCount(mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID())).isEqualTo(2);
-        assertThat(mAccountsDbAdapter.getSimpleAccountList()).extracting("mAccountType").contains(AccountType.TRADING);
+        assertThat(mAccountsDbAdapter.getSimpleAccountList()).extracting("accountType").contains(AccountType.TRADING);
     }
 
     @Test

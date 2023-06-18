@@ -209,7 +209,7 @@ public class AccountsDbAdapterTest {
         assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(2L);
 
         List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList();
-        assertThat(accounts).extracting("mAccountType").contains(AccountType.ROOT);
+        assertThat(accounts).extracting("accountType").contains(AccountType.ROOT);
 
         String rootAccountUID = mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID();
         assertThat(rootAccountUID).isEqualTo(accounts.get(1).getParentUID());
@@ -361,7 +361,7 @@ public class AccountsDbAdapterTest {
 
         List<Account> accounts = mAccountsDbAdapter.getAllRecords();
         assertThat(accounts).hasSize(3);
-        assertThat(accounts).extracting("mUID").contains(uid);
+        assertThat(accounts).extracting("_uid").contains(uid);
     }
 
     @Test

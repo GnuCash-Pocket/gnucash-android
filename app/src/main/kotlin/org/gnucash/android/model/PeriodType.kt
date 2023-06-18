@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.model
 
-package org.gnucash.android.model;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * Represents a type of period which can be associated with a recurring event
@@ -26,9 +25,8 @@ import java.util.Locale;
  * @author Ngewi Fet <ngewif@gmail.com>
  * @see org.gnucash.android.model.ScheduledAction
  */
-public enum PeriodType {
+enum class PeriodType {
     HOUR, DAY, WEEK, MONTH, YEAR;
-
 
     /**
      * Returns the frequency description of this period type.
@@ -36,22 +34,15 @@ public enum PeriodType {
      *
      * @return Frequency description
      */
-    public String getFrequencyDescription() {
-        switch (this) {
-            case HOUR:
-                return "HOURLY";
-            case DAY:
-                return "DAILY";
-            case WEEK:
-                return "WEEKLY";
-            case MONTH:
-                return "MONTHLY";
-            case YEAR:
-                return "YEARLY";
-            default:
-                return "";
+    val frequencyDescription: String
+        get() = when (this) {
+            HOUR -> "HOURLY"
+            DAY -> "DAILY"
+            WEEK -> "WEEKLY"
+            MONTH -> "MONTHLY"
+            YEAR -> "YEARLY"
+            else -> ""
         }
-    }
 
     /**
      * Returns the parts of the recurrence rule which describe the day or month on which to run the
@@ -60,13 +51,14 @@ public enum PeriodType {
      * @param startTime Start time of transaction used to determine the start day of execution
      * @return String describing the BYxxx parts of the recurrence rule
      */
-    public String getByParts(long startTime) {
-        String partString = "";
+    fun getByParts(startTime: Long): String {
+        var partString = ""
         if (this == WEEK) {
-            String dayOfWeek = new SimpleDateFormat("E", Locale.US).format(new Date(startTime));
+            val dayOfWeek = SimpleDateFormat("E", Locale.US).format(Date(startTime))
             //our parser only supports two-letter day names
-            partString = "BYDAY=" + dayOfWeek.substring(0, dayOfWeek.length() - 1).toUpperCase();
+            partString = "BYDAY=" + dayOfWeek.substring(0, dayOfWeek.length - 1)
+                .uppercase(Locale.getDefault())
         }
-        return partString;
+        return partString
     }
 }
