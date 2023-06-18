@@ -5,7 +5,8 @@ gcloud firebase test android run \
     --app $APPLICATION_APK \
     --test $INSTRUMENTATION_APK \
     --results-dir $GCLOUD_BUCKET_DIRECTORY \
-    --device model=panther,version=33
+    --device model=redfin,version=30 `# Pixel 5` \
+    --device model=panther,version=33 `# Pixel 7`
 test_code=$?
 set -e # abort if commands exit with non zero exit code
 
