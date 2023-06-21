@@ -119,7 +119,7 @@ public class TransactionsDbAdapterTest {
         assertThat(trn.getSplits()).hasSize(2);
 
         String imbalanceAccountUID = mAccountsDbAdapter.getImbalanceAccountUID(Commodity.getInstance(Money.DEFAULT_CURRENCY_CODE));
-        assertThat(trn.getSplits()).extracting("mAccountUID").contains(imbalanceAccountUID);
+        assertThat(trn.getSplits()).extracting("accountUID").contains(imbalanceAccountUID);
     }
 
     @Test
