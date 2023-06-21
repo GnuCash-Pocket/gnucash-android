@@ -415,7 +415,6 @@ class Transaction : BaseModel {
          * Argument key for passing splits as comma-separated multi-line list and each line is a split.
          * The line format is: <type>;<amount>;<account_uid>
          * The amount should be formatted in the US Locale
-         * account_uid > amount > type
          */
         const val EXTRA_SPLITS = "org.gnucash.android.extra.transaction.splits"
 
