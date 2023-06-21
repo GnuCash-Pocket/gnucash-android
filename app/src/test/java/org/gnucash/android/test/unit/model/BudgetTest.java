@@ -49,7 +49,7 @@ public class BudgetTest {
 
         budget.setBudgetAmounts(budgetAmounts);
 
-        assertThat(budget.getBudgetAmounts()).extracting("mBudgetUID")
+        assertThat(budget.getBudgetAmounts()).extracting("budgetUID")
                 .contains(budget.getUID());
     }
 
@@ -89,10 +89,10 @@ public class BudgetTest {
 
         List<BudgetAmount> compactedBudgetAmounts = budget.getCompactedBudgetAmounts();
         assertThat(compactedBudgetAmounts).hasSize(3);
-        assertThat(compactedBudgetAmounts).extracting("mAccountUID")
+        assertThat(compactedBudgetAmounts).extracting("accountUID")
                 .contains("test", "secondAccount");
 
-        assertThat(compactedBudgetAmounts).extracting("mPeriodNum")
+        assertThat(compactedBudgetAmounts).extracting("periodNum")
                 .contains(1L, 2L, 5L).doesNotContain(-1L);
     }
 
@@ -127,10 +127,10 @@ public class BudgetTest {
         List<BudgetAmount> compactedBudgetAmounts = budget.getCompactedBudgetAmounts();
 
         assertThat(compactedBudgetAmounts).hasSize(3);
-        assertThat(compactedBudgetAmounts).extracting("mPeriodNum").hasSize(3)
+        assertThat(compactedBudgetAmounts).extracting("periodNum").hasSize(3)
                 .contains(-1L, 4L).doesNotContain(1L, 2L, 3L);
 
-        assertThat(compactedBudgetAmounts).extracting("mAccountUID").hasSize(3)
+        assertThat(compactedBudgetAmounts).extracting("accountUID").hasSize(3)
                 .contains("first", "second", "third");
 
     }
@@ -151,10 +151,10 @@ public class BudgetTest {
 
         assertThat(expandedBudgetAmount).hasSize(6);
 
-        assertThat(expandedBudgetAmount).extracting("mPeriodNum").hasSize(6)
+        assertThat(expandedBudgetAmount).extracting("periodNum").hasSize(6)
                 .contains(0L, 1L, 2L, 3L, 4L, 5L).doesNotContain(-1L);
 
-        assertThat(expandedBudgetAmount).extracting("mAccountUID").hasSize(6);
+        assertThat(expandedBudgetAmount).extracting("accountUID").hasSize(6);
     }
 
     @Test

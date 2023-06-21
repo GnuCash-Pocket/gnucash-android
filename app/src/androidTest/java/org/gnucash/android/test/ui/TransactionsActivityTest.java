@@ -327,7 +327,7 @@ public class TransactionsActivityTest {
         assertThat(allTransactions).hasSize(transactionCount + 1);
         Transaction multiTrans = allTransactions.get(0);
         assertThat(multiTrans.getSplits()).hasSize(2);
-        assertThat(multiTrans.getSplits()).extracting("mAccountUID")
+        assertThat(multiTrans.getSplits()).extracting("accountUID")
                 .contains(TRANSACTIONS_ACCOUNT_UID)
                 .contains(euroAccount.getUID());
 
@@ -449,7 +449,7 @@ public class TransactionsActivityTest {
         assertThat(mAccountsDbAdapter.isHiddenAccount(imbalanceAcctUID)).isFalse();
 
         //at least one split will belong to the imbalance account
-        assertThat(transaction.getSplits()).extracting("mAccountUID").contains(imbalanceAcctUID);
+        assertThat(transaction.getSplits()).extracting("accountUID").contains(imbalanceAcctUID);
 
         List<Split> imbalanceSplits = mSplitsDbAdapter.getSplitsForTransactionInAccount(transaction.getUID(), imbalanceAcctUID);
         assertThat(imbalanceSplits).hasSize(1);
@@ -711,7 +711,7 @@ public class TransactionsActivityTest {
         assertThat(transactions).hasSize(1);
         Transaction transaction = transactions.get(0);
         assertThat(transaction.getSplits()).hasSize(2);
-        assertThat(transaction.getSplits()).extracting("mAccountUID")
+        assertThat(transaction.getSplits()).extracting("accountUID")
                 .contains(account.getUID()).contains(mBaseAccount.getUID());
 
 
@@ -770,8 +770,8 @@ public class TransactionsActivityTest {
         mTransactionsDbAdapter.addRecord(multiTransaction);
 
         Transaction savedTransaction = mTransactionsDbAdapter.getRecord(multiTransaction.getUID());
-        assertThat(savedTransaction.getSplits()).extracting("mQuantity").contains(expectedQty);
-        assertThat(savedTransaction.getSplits()).extracting("mValue").contains(expectedValue);
+        assertThat(savedTransaction.getSplits()).extracting("_quantity").contains(expectedQty);
+        assertThat(savedTransaction.getSplits()).extracting("value").contains(expectedValue);
 
         refreshTransactionsList();
         onView(withText(trnDescription)).check(matches(isDisplayed())); //transaction was added
@@ -796,11 +796,11 @@ public class TransactionsActivityTest {
 
         //the crux of the test. All splits should now have value and quantity of USD $10
         List<Split> allSplits = singleCurrencyTrn.getSplits();
-        assertThat(allSplits).extracting("mAccountUID")
+        assertThat(allSplits).extracting("accountUID")
                 .contains(mTransferAccount.getUID())
                 .doesNotContain(euroAccount.getUID());
-        assertThat(allSplits).extracting("mValue").contains(expectedValue).doesNotContain(expectedQty);
-        assertThat(allSplits).extracting("mQuantity").contains(expectedValue).doesNotContain(expectedQty);
+        assertThat(allSplits).extracting("value").contains(expectedValue).doesNotContain(expectedQty);
+        assertThat(allSplits).extracting("_quantity").contains(expectedValue).doesNotContain(expectedQty);
     }
 
     /**
@@ -832,8 +832,8 @@ public class TransactionsActivityTest {
         mTransactionsDbAdapter.addRecord(multiTransaction);
 
         Transaction savedTransaction = mTransactionsDbAdapter.getRecord(multiTransaction.getUID());
-        assertThat(savedTransaction.getSplits()).extracting("mQuantity").contains(expectedQty);
-        assertThat(savedTransaction.getSplits()).extracting("mValue").contains(expectedValue);
+        assertThat(savedTransaction.getSplits()).extracting("_quantity").contains(expectedQty);
+        assertThat(savedTransaction.getSplits()).extracting("value").contains(expectedValue);
 
         assertThat(savedTransaction.getSplits(TRANSACTIONS_ACCOUNT_UID).get(0)
                 .isEquivalentTo(multiTransaction.getSplits(TRANSACTIONS_ACCOUNT_UID).get(0)))

@@ -45,7 +45,7 @@ abstract class BaseModel {
      *
      * Although the database automatically has triggers for entering the timestamp,
      * when SQL INSERT OR REPLACE syntax is used, it is possible to override the modified timestamp.
-     * <br></br>In that case, it has to be explicitly set in the SQL statement.
+     * <br />In that case, it has to be explicitly set in the SQL statement.
      *
      */
     var modifiedTimestamp: Timestamp = TimestampHelper.getTimestampFromNow()
@@ -80,13 +80,13 @@ abstract class BaseModel {
     /**
      * Two instances are considered equal if their GUID's are the same
      *
-     * @param o BaseModel instance to compare
+     * @param other BaseModel instance to compare
      * @return `true` if both instances are equal, `false` otherwise
      */
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o !is BaseModel) return false
-        return uID == o.uID
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is BaseModel) return false
+        return uID == other.uID
     }
 
     override fun hashCode(): Int {

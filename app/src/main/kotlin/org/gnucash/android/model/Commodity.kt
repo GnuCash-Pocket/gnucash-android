@@ -47,7 +47,7 @@ class Commodity(
      *
      * i.e. for commodities with no fractions, 1 is returned, for commodities with 2 fractions, 100 is returned
      *
-     * The fraction is a power of 10. So commodities with 2 fraction digits, have fraction of 10^2 = 100.<br></br>
+     * The fraction is a power of 10. So commodities with 2 fraction digits, have fraction of 10^2 = 100.<br />
      * If the parameter is any other value, a default fraction of 100 will be set
      *
      * @param smallestFraction Smallest fraction as power of ten
