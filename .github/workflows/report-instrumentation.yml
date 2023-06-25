@@ -9,6 +9,7 @@ on:
 jobs:
   report:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - device_name: Nokia_1
