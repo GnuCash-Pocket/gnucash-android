@@ -14,6 +14,18 @@ env:
 
 jobs:
   instrumentation-test:
+    strategy:
+      matrix:
+        include:
+          - device_name: Nokia_1
+            device_model: FRT
+            device_version: 27
+          - device_name: Pixel_5
+            device_model: redfin
+            device_version: 30
+          - device_name: Pixel_7
+            device_model: panther
+            device_version: 33
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -43,14 +55,15 @@ jobs:
           APPLICATION_APK: application.apk
           INSTRUMENTATION_APK: instrumentation.apk
           GCLOUD_BUCKET: ${{ env.GCLOUD_BUCKET }}
-          GCLOUD_BUCKET_DIRECTORY: ${{github.run_number}}
+          GCLOUD_BUCKET_DIRECTORY: ${{ github.run_number }}/${{ matrix.device_name }}
+          MODEL: ${{ matrix.device_model }}
+          VERSION: ${{ matrix.device_version }}
       - name: Fetch Instrumentation Test Results
         run: |
           mkdir instrumentation-test-results \
-          && gcloud storage cp -r ${{ env.RESULTS_URL }} instrumentation-test-results \
-          && ls instrumentation-test-results
+          && gcloud storage cp -r ${{ env.RESULTS_URL }} instrumentation-test-results
         env:
-          RESULTS_URL: gs://${{env.GCLOUD_BUCKET}}/${{github.run_number}}/**/test_result_*.xml
+          RESULTS_URL: gs://${{ env.GCLOUD_BUCKET }}/${{ github.run_number }}/${{ matrix.device_name }}/**/test_result_*.xml
       - name: Instrumentation Test Summary
         uses: test-summary/action@v2
         with:
@@ -58,10 +71,10 @@ jobs:
       - name: Upload Instrumentation Test Results for Report
         uses: actions/upload-artifact@v3
         with:
-          name: instrumentation-test-results
+          name: instrumentation-test-results-${{ matrix.device_name }}
           path: instrumentation-test-results/test_result_*.xml
           if-no-files-found: error
       - name: Assert Instrumentation Tests Success
         run: if [ "$SUCCESS" != "true" ]; then exit 1; fi
         env:
-          SUCCESS: ${{steps.run-instrumentation-test.outputs.test_success}}
+          SUCCESS: ${{ steps.run-instrumentation-test.outputs.test_success }}
