@@ -8,12 +8,19 @@ on:
 
 jobs:
   report:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - device_name: Nokia_1
+          - device_name: Pixel_5
+          - device_name: Pixel_7
     runs-on: ubuntu-latest
     steps:
-      - name: Instrumentation Test Report
+      - name: Instrumentation Test Report ${{ matrix.device_name }}
         uses: dorny/test-reporter@v1
         with:
-          artifact: instrumentation-test-results
-          name: Instrumentation Test Report
+          artifact: instrumentation-test-results-${{ matrix.device_name }}
+          name: Instrumentation Test Report ${{ matrix.device_name }}
           path: test_result_*.xml
           reporter: java-junit
