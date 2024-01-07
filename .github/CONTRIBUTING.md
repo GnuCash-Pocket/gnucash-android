@@ -28,15 +28,15 @@ The two instances of GnuCash Android will live side-by-side on your device and n
 * Make small pull requests that are easy to review but which also add value.
 
 ## Coding style
-* Do write comments. You don't have to comment every line, but if you come up with something thats a bit complex/weird, just leave a comment. Bear in mind that you will probably leave the project at some point and that other people will read your code. Undocumented huge amounts of code are nearly worthless!
+* Do write comments. You don't have to comment every line, but if you come up with something that's a bit complex/weird, just leave a comment. Bear in mind that you will probably leave the project at some point and that other people will read your code. Undocumented huge amounts of code are nearly worthless!
 * Please make sure to document every method you write using Javadoc, even if the method seems trivial to you
   * See [this guide](http://www.oracle.com/technetwork/articles/java/index-137868.html) on how to write good Javadoc comments
-* Don't overengineer. Don't try to solve any possible problem in one step, but try to solve problems as easy as possible and improve the solution over time!
+* Don't over-engineer. Don't try to solve any possible problem in one step, but try to solve problems as easy as possible and improve the solution over time!
 * Do generalize sooner or later! (if an old solution, quickly hacked together, poses more problems than it solves today, refactor it!)
 * Keep it compatible. Do not introduce changes to the public API, or configurations too lightly. Don't make incompatible changes without good reasons!
 
 ## Translation
-* Tranlations for GnuCash Android are managed using [CrowdIn](crowdin.com/project/gnucash-android)
+* Translations for GnuCash Android are managed using [CrowdIn](crowdin.com/project/gnucash-android)
 * You can sign up for an account and create/vote for translations.
 * Translations will not be accepted via pull requests
 
