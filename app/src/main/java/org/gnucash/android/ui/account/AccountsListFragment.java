@@ -340,7 +340,7 @@ public class AccountsListFragment extends Fragment implements
         editAccountIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
         editAccountIntent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountsDbAdapter.getUID(accountId));
         editAccountIntent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name());
-        startActivityForResult(editAccountIntent, AccountsActivity.REQUEST_EDIT_ACCOUNT);
+        startActivity(editAccountIntent);
     }
 
     @Override

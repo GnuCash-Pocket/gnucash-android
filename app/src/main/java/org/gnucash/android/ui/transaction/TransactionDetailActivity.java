@@ -101,7 +101,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
         int themeColor = AccountsDbAdapter.getActiveAccountColorResource(mAccountUID);
         actionBar.setBackgroundDrawable(new ColorDrawable(themeColor));
         mToolBar.setBackgroundColor(themeColor);
-        if (Build.VERSION.SDK_INT > 20)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
             getWindow().setStatusBarColor(GnuCashApplication.darken(themeColor));
 
     }

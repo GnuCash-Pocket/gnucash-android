@@ -267,7 +267,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
                 Intent addAccountIntent = new Intent(AccountsActivity.this, FormActivity.class);
                 addAccountIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
                 addAccountIntent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name());
-                startActivityForResult(addAccountIntent, AccountsActivity.REQUEST_EDIT_ACCOUNT);
+                startActivity(addAccountIntent);
             }
         });
     }

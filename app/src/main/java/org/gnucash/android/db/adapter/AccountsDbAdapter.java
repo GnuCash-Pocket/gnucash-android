@@ -1356,4 +1356,19 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             cursor.close();
         }
     }
+
+    public Account getSimpleRecord(@NonNull String uid) {
+        Log.v(LOG_TAG, "Fetching simple record with GUID " + uid);
+
+        Cursor cursor = fetchRecord(uid);
+        try {
+            if (cursor.moveToFirst()) {
+                return buildSimpleAccountInstance(cursor);
+            } else {
+                throw new IllegalArgumentException(LOG_TAG + ": Record with " + uid + " does not exist");
+            }
+        } finally {
+            cursor.close();
+        }
+    }
 }

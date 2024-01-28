@@ -78,7 +78,7 @@
     <string name="label_display_account">הצג חשבון</string>
     <string name="label_hide_account_balance">Hide account balance in widget</string>
     <string name="btn_create_accounts">צור חשבונות</string>
-    <string name="error_no_accounts">לא קיימים חשבונות ב- GnuCassh.\n צור חשבון לפני הוספת widget</string>
+    <string name="error_no_accounts">לא קיימים חשבונות ב- GnuCash.\n צור חשבון לפני הוספת widget</string>
     <string name="title_license">רישיון</string>
     <string name="summary_licence_details">רישיון אפאצ\'י v 2.0. לחץ לפרטים</string>
     <string name="title_general_prefs">העדפות כלליות</string>

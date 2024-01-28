@@ -190,11 +190,9 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
      */
     private void loadFragment(BaseReportFragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager
-                .beginTransaction();
-
-        fragmentTransaction.replace(R.id.fragment_container, fragment);
-        fragmentTransaction.commit();
+        fragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit();
     }
 
     /**
@@ -240,7 +238,7 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
         if (getSupportActionBar() != null)
             getSupportActionBar().setBackgroundDrawable(new ColorDrawable(resolvedColor));
 
-        if (Build.VERSION.SDK_INT > 20)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
             getWindow().setStatusBarColor(GnuCashApplication.darken(resolvedColor));
     }
 

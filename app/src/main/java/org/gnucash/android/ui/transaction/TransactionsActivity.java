@@ -346,8 +346,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
                         addAccountIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
                         addAccountIntent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name());
                         addAccountIntent.putExtra(UxArgument.PARENT_ACCOUNT_UID, mAccountUID);
-                        startActivityForResult(addAccountIntent, AccountsActivity.REQUEST_EDIT_ACCOUNT);
-                        ;
+                        startActivity(addAccountIntent);
                         break;
 
                     case INDEX_TRANSACTIONS_FRAGMENT:
@@ -376,7 +375,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         if (getSupportActionBar() != null)
             getSupportActionBar().setBackgroundDrawable(new ColorDrawable(iColor));
 
-        if (Build.VERSION.SDK_INT > 20)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
             getWindow().setStatusBarColor(GnuCashApplication.darken(iColor));
     }
 
@@ -454,7 +453,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
                 editAccountIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
                 editAccountIntent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
                 editAccountIntent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name());
-                startActivityForResult(editAccountIntent, AccountsActivity.REQUEST_EDIT_ACCOUNT);
+                startActivity(editAccountIntent);
                 return true;
 
             default:
