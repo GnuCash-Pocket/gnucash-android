@@ -509,8 +509,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
      * @param onFinishTask Task to be executed when import is complete
      */
     public static void importXmlFileFromIntent(Activity context, Intent data, TaskDelegate onFinishTask) {
-        BackupManager.backupActiveBook();
-        new ImportAsyncTask(context, onFinishTask).execute(data.getData());
+        new ImportAsyncTask(context, onFinishTask, true).execute(data.getData());
     }
 
     /**

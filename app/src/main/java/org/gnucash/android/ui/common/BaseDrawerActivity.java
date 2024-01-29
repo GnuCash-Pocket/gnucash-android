@@ -312,8 +312,8 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity implements
             case BaseDrawerActivity.REQUEST_OPEN_DOCUMENT: //this uses the Storage Access Framework
                 final int takeFlags = data.getFlags()
                         & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                AccountsActivity.importXmlFileFromIntent(this, data, null);
                 getContentResolver().takePersistableUriPermission(data.getData(), takeFlags);
+                AccountsActivity.importXmlFileFromIntent(this, data, null);
                 break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
