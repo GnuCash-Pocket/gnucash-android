@@ -171,11 +171,10 @@
         <item>共同基金</item>
         <item>貿易</item>
     </string-array>
-    <string-array name="export_formats">
-        <item>QIF</item>
-        <item>OFX</item>
-        <item>XML</item>
-    </string-array>
+    <string name="file_format_csv">Comma-separated values</string>
+    <string name="file_format_qif">Quicken Interchange Format</string>
+    <string name="file_format_ofx">Open Financial eXchange</string>
+    <string name="file_format_xml">GnuCash XML</string>
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
     <string name="color_picker_default_title">選擇顏色</string>
     <!-- Content description for a color square. -->
