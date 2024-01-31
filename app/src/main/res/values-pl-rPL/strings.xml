@@ -40,6 +40,7 @@
     <string name="menu_delete">USUŃ</string>
     <string name="alert_dialog_ok_delete">Usuń</string>
     <string name="alert_dialog_cancel">Anuluj</string>
+    <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">Konto usunięte</string>
     <string name="title_confirm_delete">Potwierdź usunięcie</string>
     <string name="title_edit_transaction">Edytuj transakcję</string>

@@ -40,6 +40,7 @@
     <string name="menu_delete">Poista</string>
     <string name="alert_dialog_ok_delete">Poista</string>
     <string name="alert_dialog_cancel">Peruuta</string>
+    <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">Tili poistettu</string>
     <string name="title_confirm_delete">Vahvista poistaminen</string>
     <string name="title_edit_transaction">Muokkaa tapahtumaa</string>

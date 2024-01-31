@@ -40,6 +40,7 @@
     <string name="menu_delete">حذف</string>
     <string name="alert_dialog_ok_delete">حذف</string>
     <string name="alert_dialog_cancel">إلغاء</string>
+    <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">تم حذف الحساب</string>
     <string name="title_confirm_delete">تأكيد الحذف</string>
     <string name="title_edit_transaction">تحرير المعاملات</string>

@@ -40,6 +40,7 @@
     <string name="menu_delete">删除</string>
     <string name="alert_dialog_ok_delete">删除</string>
     <string name="alert_dialog_cancel">取消</string>
+    <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">科目已删除</string>
     <string name="title_confirm_delete">确认删除</string>
     <string name="title_edit_transaction">修改交易</string>

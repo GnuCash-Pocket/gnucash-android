@@ -40,6 +40,7 @@
     <string name="menu_delete">Elimina</string>
     <string name="alert_dialog_ok_delete">Elimina</string>
     <string name="alert_dialog_cancel">Annulla</string>
+    <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">Conto eliminato</string>
     <string name="title_confirm_delete">Conferma eliminazione</string>
     <string name="title_edit_transaction">Modifica transazione</string>

@@ -40,6 +40,7 @@
     <string name="menu_delete">削除</string>
     <string name="alert_dialog_ok_delete">削除</string>
     <string name="alert_dialog_cancel">キャンセル</string>
+    <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">アカウントは削除されました</string>
     <string name="title_confirm_delete">削除する</string>
     <string name="title_edit_transaction">取引を変更</string>

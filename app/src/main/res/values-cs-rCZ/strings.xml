@@ -40,6 +40,7 @@
     <string name="menu_delete">Smazat</string>
     <string name="alert_dialog_ok_delete">Smazat</string>
     <string name="alert_dialog_cancel">Zrušit</string>
+    <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">Účet smazán</string>
     <string name="title_confirm_delete">Potvrdit smazání</string>
     <string name="title_edit_transaction">Upravit transakci</string>

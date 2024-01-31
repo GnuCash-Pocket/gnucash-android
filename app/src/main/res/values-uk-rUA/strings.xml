@@ -40,6 +40,7 @@
     <string name="menu_delete">Видалити</string>
     <string name="alert_dialog_ok_delete">Видалити</string>
     <string name="alert_dialog_cancel">Скасувати</string>
+    <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">Рахунок видалено</string>
     <string name="title_confirm_delete">Підтвердіть видалення</string>
     <string name="title_edit_transaction">Редагування</string>

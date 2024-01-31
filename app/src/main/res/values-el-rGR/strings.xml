@@ -40,6 +40,7 @@
     <string name="menu_delete">ΔΙΑΓΡΑΦΗ</string>
     <string name="alert_dialog_ok_delete">Διαγραφή</string>
     <string name="alert_dialog_cancel">Ακύρωση</string>
+    <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">Ο λογαριασμός διαγράφηκε</string>
     <string name="title_confirm_delete">Επιβεβαίωση διαγραφής</string>
     <string name="title_edit_transaction">Επεξεργασία Συναλλαγής</string>

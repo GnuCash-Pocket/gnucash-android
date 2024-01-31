@@ -40,6 +40,7 @@
     <string name="menu_delete">Excluir</string>
     <string name="alert_dialog_ok_delete">Apagar</string>
     <string name="alert_dialog_cancel">Cancelar</string>
+    <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">Conta excluída</string>
     <string name="title_confirm_delete">Confirmar exclusão</string>
     <string name="title_edit_transaction">Editar Transação</string>

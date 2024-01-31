@@ -40,6 +40,7 @@
     <string name="menu_delete">Radera</string>
     <string name="alert_dialog_ok_delete">Radera</string>
     <string name="alert_dialog_cancel">Avbryt</string>
+    <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">Kontot raderades</string>
     <string name="title_confirm_delete">Bekräfta radering</string>
     <string name="title_edit_transaction">Redigera transaktion</string>

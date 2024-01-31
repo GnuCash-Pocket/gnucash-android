@@ -104,6 +104,7 @@ public class BackupManager {
      * @param bookUID Unique ID of the book
      * @return {@code true} if backup was successful, {@code false} otherwise
      */
+    // FIXME - Never run this on main thread!
     public static boolean backupBook(String bookUID) {
         OutputStream outputStream;
         try {
