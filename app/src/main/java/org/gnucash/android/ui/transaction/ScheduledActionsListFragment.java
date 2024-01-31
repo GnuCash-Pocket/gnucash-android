@@ -580,7 +580,7 @@ public class ScheduledActionsListFragment extends ListFragment implements
             ExportParams params = ExportParams.parseCsv(scheduledAction.getTag());
             String exportDestination = params.getExportTarget().getDescription();
             if (params.getExportTarget() == ExportParams.ExportTarget.URI) {
-                exportDestination = exportDestination + " (" + Uri.parse(params.getExportLocation()).getHost() + ")";
+                exportDestination = exportDestination + " (" + params.getExportLocation().getHost() + ")";
             }
             primaryTextView.setText(params.getExportFormat().name() + " "
                     + scheduledAction.getActionType().name().toLowerCase() + " to "

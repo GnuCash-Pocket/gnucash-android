@@ -197,7 +197,7 @@
             <TextView
                 android:id="@+id/export_start_time"
                 android:layout_width="0dp"
-                android:layout_weight="1.2"
+                android:layout_weight="1.5"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:textSize="15sp"
