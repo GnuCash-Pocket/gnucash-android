@@ -31,7 +31,6 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -83,6 +82,7 @@ import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import timber.log.Timber;
 
 /**
  * Fragment used for creating and editing accounts
@@ -754,7 +754,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
      * Reads the fields from the account form and saves as a new account
      */
     private void saveAccount() {
-        Log.i("AccountFormFragment", "Saving account");
+        Timber.i("Saving account");
         if (mAccountsDbAdapter == null)
             mAccountsDbAdapter = AccountsDbAdapter.getInstance();
         // accounts to update, in case we're updating full names of a sub account tree

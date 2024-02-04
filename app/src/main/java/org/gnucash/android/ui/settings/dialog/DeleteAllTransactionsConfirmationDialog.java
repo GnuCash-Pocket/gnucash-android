@@ -20,7 +20,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -36,6 +35,8 @@ import org.gnucash.android.util.BackupManager;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import timber.log.Timber;
 
 /**
  * Confirmation dialog for deleting all transactions
@@ -70,7 +71,7 @@ public class DeleteAllTransactionsConfirmationDialog extends DoubleConfirmationD
                                 }
                                 TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
                                 int count = transactionsDbAdapter.deleteAllNonTemplateTransactions();
-                                Log.i("DeleteDialog", String.format("Deleted %d transactions successfully", count));
+                                Timber.i("Deleted %d transactions successfully", count);
 
                                 if (preserveOpeningBalances) {
                                     transactionsDbAdapter.bulkAddRecords(openingBalances, DatabaseAdapter.UpdateMethod.insert);

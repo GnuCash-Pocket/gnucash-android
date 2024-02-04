@@ -20,11 +20,8 @@ package org.gnucash.android.export;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
-
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.BuildConfig;
 import org.gnucash.android.app.GnuCashApplication;
@@ -47,6 +44,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import timber.log.Timber;
+
 /**
  * Base class for the different exporters
  *
@@ -54,11 +53,6 @@ import java.util.Locale;
  * @author Yongxin Wang <fefe.wyx@gmail.com>
  */
 public abstract class Exporter {
-
-    /**
-     * Tag for logging
-     */
-    protected static String LOG_TAG = "Exporter";
 
     /**
      * Application folder on external storage
@@ -190,8 +184,7 @@ public abstract class Exporter {
             Date date = EXPORT_FILENAME_DATE_FORMAT.parse(tokens[0] + "_" + tokens[1]);
             timeMillis = date.getTime();
         } catch (ParseException e) {
-            Log.e("Exporter", "Error parsing time from file name: " + e.getMessage());
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e, "Error parsing time from file name: %s", e.getMessage());
         }
         return timeMillis;
     }

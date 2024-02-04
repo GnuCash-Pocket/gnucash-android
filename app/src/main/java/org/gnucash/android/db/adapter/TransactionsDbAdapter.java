@@ -29,12 +29,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.model.AccountType;
@@ -46,6 +43,8 @@ import org.gnucash.android.util.TimestampHelper;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+
+import timber.log.Timber;
 
 /**
  * Manages persistence of {@link Transaction}s in the database
@@ -104,7 +103,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      */
     @Override
     public void addRecord(@NonNull Transaction transaction, UpdateMethod updateMethod) {
-        Log.d(LOG_TAG, "Adding transaction to the db via " + updateMethod.name());
+        Timber.d("Adding transaction to the db via %s", updateMethod.name());
         mDb.beginTransaction();
         try {
             Split imbalanceSplit = transaction.createAutoBalanceSplit();
@@ -115,10 +114,10 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
             }
             super.addRecord(transaction, updateMethod);
 
-            Log.d(LOG_TAG, "Adding splits for transaction");
+            Timber.d("Adding splits for transaction");
             ArrayList<String> splitUIDs = new ArrayList<>(transaction.getSplits().size());
             for (Split split : transaction.getSplits()) {
-                Log.d(LOG_TAG, "Replace transaction split in db");
+                Timber.d("Replace transaction split in db");
                 if (imbalanceSplit == split) {
                     mSplitsDbAdapter.addRecord(split, UpdateMethod.insert);
                 } else {
@@ -126,18 +125,17 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
                 }
                 splitUIDs.add(split.getUID());
             }
-            Log.d(LOG_TAG, transaction.getSplits().size() + " splits added");
+            Timber.d("%d splits added", transaction.getSplits().size());
 
             long deleted = mDb.delete(SplitEntry.TABLE_NAME,
                     SplitEntry.COLUMN_TRANSACTION_UID + " = ? AND "
                             + SplitEntry.COLUMN_UID + " NOT IN ('" + TextUtils.join("' , '", splitUIDs) + "')",
                     new String[]{transaction.getUID()});
-            Log.d(LOG_TAG, deleted + " splits deleted");
+            Timber.d("%d splits deleted", deleted);
 
             mDb.setTransactionSuccessful();
-        } catch (SQLException sqlEx) {
-            Log.e(LOG_TAG, sqlEx.getMessage());
-            FirebaseCrashlytics.getInstance().recordException(sqlEx);
+        } catch (SQLException e) {
+            Timber.e(e);
         } finally {
             mDb.endTransaction();
         }
@@ -158,7 +156,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         long start = System.nanoTime();
         long rowInserted = super.bulkAddRecords(transactionList, updateMethod);
         long end = System.nanoTime();
-        Log.d(getClass().getSimpleName(), String.format("bulk add transaction time %d ", end - start));
+        Timber.d("bulk add transaction time %d", end - start);
         List<Split> splitList = new ArrayList<>(transactionList.size() * 3);
         for (Transaction transaction : transactionList) {
             splitList.addAll(transaction.getSplits());
@@ -167,7 +165,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
             try {
                 start = System.nanoTime();
                 long nSplits = mSplitsDbAdapter.bulkAddRecords(splitList, updateMethod);
-                Log.d(LOG_TAG, String.format("%d splits inserted in %d ns", nSplits, System.nanoTime() - start));
+                Timber.d("%d splits inserted in %d ns", nSplits, System.nanoTime() - start);
             } finally {
                 SQLiteStatement deleteEmptyTransaction = mDb.compileStatement("DELETE FROM " +
                         TransactionEntry.TABLE_NAME + " WHERE NOT EXISTS ( SELECT * FROM " +
@@ -466,7 +464,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      * @return Number of transactions splits affected
      */
     public int moveTransaction(String transactionUID, String srcAccountUID, String dstAccountUID) {
-        Log.i(LOG_TAG, "Moving transaction ID " + transactionUID
+        Timber.i("Moving transaction ID " + transactionUID
                 + " splits from " + srcAccountUID + " to account " + dstAccountUID);
 
         List<Split> splits = mSplitsDbAdapter.getSplitsForTransactionInAccount(transactionUID, srcAccountUID);

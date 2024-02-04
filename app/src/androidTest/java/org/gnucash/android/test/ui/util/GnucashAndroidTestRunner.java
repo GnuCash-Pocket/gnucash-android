@@ -19,18 +19,19 @@ package org.gnucash.android.test.ui.util;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 
 import androidx.test.runner.AndroidJUnitRunner;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import timber.log.Timber;
+
 /**
  * Custom test runner
  */
 public class GnucashAndroidTestRunner extends AndroidJUnitRunner {
-    private static final String TAG = "GncAndroidTestRunner";
+
     private static final String ANIMATION_PERMISSION = "android.permission.SET_ANIMATION_SCALE";
     private static final float DISABLED = 0.0f;
     private static final float DEFAULT = 1.0f;
@@ -53,12 +54,12 @@ public class GnucashAndroidTestRunner extends AndroidJUnitRunner {
         int permStatus = getContext().checkCallingOrSelfPermission(ANIMATION_PERMISSION);
         if (permStatus == PackageManager.PERMISSION_GRANTED) {
             if (reflectivelyDisableAnimation(DISABLED)) {
-                Log.i(TAG, "All animations disabled.");
+                Timber.i("All animations disabled.");
             } else {
-                Log.i(TAG, "Could not disable animations.");
+                Timber.i("Could not disable animations.");
             }
         } else {
-            Log.i(TAG, "Cannot disable animations due to lack of permission.");
+            Timber.i("Cannot disable animations due to lack of permission.");
         }
     }
 
@@ -66,12 +67,12 @@ public class GnucashAndroidTestRunner extends AndroidJUnitRunner {
         int permStatus = getContext().checkCallingOrSelfPermission(ANIMATION_PERMISSION);
         if (permStatus == PackageManager.PERMISSION_GRANTED) {
             if (reflectivelyDisableAnimation(DEFAULT)) {
-                Log.i(TAG, "All animations enabled.");
+                Timber.i("All animations enabled.");
             } else {
-                Log.i(TAG, "Could not enable animations.");
+                Timber.i("Could not enable animations.");
             }
         } else {
-            Log.i(TAG, "Cannot disable animations due to lack of permission.");
+            Timber.i("Cannot disable animations due to lack of permission.");
         }
     }
 
@@ -94,18 +95,8 @@ public class GnucashAndroidTestRunner extends AndroidJUnitRunner {
             }
             setAnimationScales.invoke(windowManagerObj, currentScales);
             return true;
-        } catch (ClassNotFoundException cnfe) {
-            Log.w(TAG, "Cannot disable animations reflectively.", cnfe);
-        } catch (NoSuchMethodException mnfe) {
-            Log.w(TAG, "Cannot disable animations reflectively.", mnfe);
-        } catch (SecurityException se) {
-            Log.w(TAG, "Cannot disable animations reflectively.", se);
-        } catch (InvocationTargetException ite) {
-            Log.w(TAG, "Cannot disable animations reflectively.", ite);
-        } catch (IllegalAccessException iae) {
-            Log.w(TAG, "Cannot disable animations reflectively.", iae);
-        } catch (RuntimeException re) {
-            Log.w(TAG, "Cannot disable animations reflectively.", re);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | ClassNotFoundException | RuntimeException e) {
+            Timber.w(e, "Cannot disable animations reflectively.");
         }
         return false;
     }

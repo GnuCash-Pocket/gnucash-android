@@ -22,7 +22,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -36,6 +35,8 @@ import org.gnucash.android.util.TimestampHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import timber.log.Timber;
 
 /**
  * Database adapter for creating/modifying book entries
@@ -203,9 +204,9 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
      * Tries to fix the books database.
      */
     public void fixBooksDatabase() {
-        Log.w(LOG_TAG, "Looking for books to set as active...");
+        Timber.v("Looking for books to set as active...");
         if (getRecordsCount() <= 0) {
-            Log.w(LOG_TAG, "No books found in the database. Recovering books records...");
+            Timber.w("No books found in the database. Recovering books records...");
             recoverBookRecords();
         }
         setFirstBookAsActive();
@@ -222,7 +223,7 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
             book.setUID(dbName);
             book.setDisplayName(generateDefaultBookName());
             addRecord(book);
-            Log.w(LOG_TAG, "Recovered book record: " + book.getUID());
+            Timber.i("Recovered book record: %s", book.getUID());
         }
     }
 
@@ -246,13 +247,13 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
     private void setFirstBookAsActive() {
         List<Book> books = getAllRecords();
         if (books.isEmpty()) {
-            Log.w(LOG_TAG, "No books.");
+            Timber.w("No books.");
             return;
         }
         Book firstBook = books.get(0);
         firstBook.setActive(true);
         addRecord(firstBook);
-        Log.w(LOG_TAG, "Book " + firstBook.getUID() + " set as active.");
+        Timber.i("Book " + firstBook.getUID() + " set as active.");
     }
 
     /**

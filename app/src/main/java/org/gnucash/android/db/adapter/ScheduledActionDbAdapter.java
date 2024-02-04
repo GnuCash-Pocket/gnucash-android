@@ -21,7 +21,6 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -32,6 +31,8 @@ import org.gnucash.android.model.ScheduledAction;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import timber.log.Timber;
 
 /**
  * Database adapter for fetching/saving/modifying scheduled events
@@ -62,7 +63,6 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
                 ScheduledActionEntry.COLUMN_EXECUTION_COUNT
         });
         mRecurrenceDbAdapter = recurrenceDbAdapter;
-        LOG_TAG = "ScheduledActionDbAdapter";
     }
 
     /**
@@ -89,7 +89,7 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
 
         //first add the recurrences, they have no dependencies (foreign key constraints)
         long nRecurrences = mRecurrenceDbAdapter.bulkAddRecords(recurrenceList, updateMethod);
-        Log.d(LOG_TAG, String.format("Added %d recurrences for scheduled actions", nRecurrences));
+        Timber.d("Added %d recurrences for scheduled actions", nRecurrences);
 
         return super.bulkAddRecords(scheduledActions, updateMethod);
     }
@@ -121,7 +121,7 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
         contentValues.put(ScheduledActionEntry.COLUMN_TAG, scheduledAction.getTag());
         contentValues.put(ScheduledActionEntry.COLUMN_TOTAL_FREQUENCY, scheduledAction.getTotalPlannedExecutionCount());
 
-        Log.d(LOG_TAG, "Updating scheduled event recurrence attributes");
+        Timber.d("Updating scheduled event recurrence attributes");
         String where = ScheduledActionEntry.COLUMN_UID + "=?";
         String[] whereArgs = new String[]{scheduledAction.getUID()};
         return mDb.update(ScheduledActionEntry.TABLE_NAME, contentValues, where, whereArgs);

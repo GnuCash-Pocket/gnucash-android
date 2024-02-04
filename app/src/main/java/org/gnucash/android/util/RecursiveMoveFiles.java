@@ -15,15 +15,13 @@
  */
 package org.gnucash.android.util;
 
-import android.util.Log;
-
-import org.gnucash.android.db.MigrationHelper;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+
+import timber.log.Timber;
 
 /**
  * Moves all files from one directory  into another.
@@ -89,10 +87,10 @@ public class RecursiveMoveFiles implements Runnable {
                 if (copy(src, dst))
                     src.delete();
             } catch (IOException e) {
-                Log.d(MigrationHelper.LOG_TAG, "Error moving file: " + src.getAbsolutePath());
+                Timber.e(e, "Error moving file: %s", src.getAbsolutePath());
             }
         }
-        Log.d("RecursiveMoveFiles", String.format("Moved %d files from %s to %s", copyCount, src.getPath(), dst.getPath()));
+        Timber.d("Moved %d files from %s to %s", copyCount, src.getPath(), dst.getPath());
         return copyCount;
     }
 

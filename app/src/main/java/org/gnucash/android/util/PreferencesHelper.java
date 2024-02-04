@@ -16,13 +16,14 @@
 package org.gnucash.android.util;
 
 import android.content.Context;
-import android.util.Log;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.ui.settings.PreferenceActivity;
 
 import java.sql.Timestamp;
+
+import timber.log.Timber;
 
 /**
  * A utility class to deal with Android Preferences in a centralized way.
@@ -34,11 +35,6 @@ public final class PreferencesHelper {
      */
     private PreferencesHelper() {
     }
-
-    /**
-     * Tag for logging
-     */
-    private static final String LOG_TAG = "PreferencesHelper";
 
     /**
      * Preference key for saving the last export time
@@ -53,7 +49,7 @@ public final class PreferencesHelper {
      * @see #setLastExportTime(Timestamp, String)
      */
     public static void setLastExportTime(Timestamp lastExportTime) {
-        Log.v(LOG_TAG, "Saving last export time for the currently active book");
+        Timber.v("Saving last export time for the currently active book");
         setLastExportTime(lastExportTime, BooksDbAdapter.getInstance().getActiveBookUID());
     }
 
@@ -65,7 +61,7 @@ public final class PreferencesHelper {
      */
     public static void setLastExportTime(Timestamp lastExportTime, String bookUID) {
         final String utcString = TimestampHelper.getUtcStringFromTimestamp(lastExportTime);
-        Log.d(LOG_TAG, "Storing '" + utcString + "' as lastExportTime in Android Preferences.");
+        Timber.d("Storing '" + utcString + "' as lastExportTime in Android Preferences.");
         GnuCashApplication.getAppContext().getSharedPreferences(bookUID, Context.MODE_PRIVATE)
                 .edit()
                 .putString(PREFERENCE_LAST_EXPORT_TIME_KEY, utcString)
@@ -81,7 +77,7 @@ public final class PreferencesHelper {
         final String utcString = PreferenceActivity.getActiveBookSharedPreferences()
                 .getString(PREFERENCE_LAST_EXPORT_TIME_KEY,
                         TimestampHelper.getUtcStringFromTimestamp(TimestampHelper.getTimestampFromEpochZero()));
-        Log.d(LOG_TAG, "Retrieving '" + utcString + "' as lastExportTime from Android Preferences.");
+        Timber.d("Retrieving '" + utcString + "' as lastExportTime from Android Preferences.");
         return TimestampHelper.getTimestampFromUtcString(utcString);
     }
 
@@ -97,7 +93,7 @@ public final class PreferencesHelper {
                         .getString(PREFERENCE_LAST_EXPORT_TIME_KEY,
                                 TimestampHelper.getUtcStringFromTimestamp(
                                         TimestampHelper.getTimestampFromEpochZero()));
-        Log.d(LOG_TAG, "Retrieving '" + utcString + "' as lastExportTime from Android Preferences.");
+        Timber.d("Retrieving '" + utcString + "' as lastExportTime from Android Preferences.");
         return TimestampHelper.getTimestampFromUtcString(utcString);
     }
 }

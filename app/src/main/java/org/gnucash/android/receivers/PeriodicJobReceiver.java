@@ -18,10 +18,11 @@ package org.gnucash.android.receivers;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 import org.gnucash.android.service.ScheduledActionService;
 import org.gnucash.android.util.BackupJob;
+
+import timber.log.Timber;
 
 /**
  * Receiver to run periodic jobs.
@@ -31,7 +32,6 @@ import org.gnucash.android.util.BackupJob;
  * @author Àlex Magaz Graça <alexandre.magaz@gmail.com>
  */
 public class PeriodicJobReceiver extends BroadcastReceiver {
-    private static final String LOG_TAG = "PeriodicJobReceiver";
 
     public static final String ACTION_BACKUP = "org.gnucash.android.action_backup";
     public static final String ACTION_SCHEDULED_ACTIONS = "org.gnucash.android.action_scheduled_actions";
@@ -39,7 +39,7 @@ public class PeriodicJobReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction() == null) {
-            Log.w(LOG_TAG, "No action was set in the intent. Ignoring...");
+            Timber.w("No action was set in the intent. Ignoring...");
             return;
         }
 

@@ -19,7 +19,6 @@ package org.gnucash.android.ui.report.linechart;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -52,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 
 import butterknife.BindView;
+import timber.log.Timber;
 
 /**
  * Fragment for line chart reports
@@ -123,7 +123,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
      * @return a {@code LineData} instance that represents a user data
      */
     private LineData getData(List<AccountType> accountTypeList) {
-        Log.w(TAG, "getData");
+        Timber.i("getData");
         calculateEarliestAndLatestTimestamps(accountTypeList);
         // LocalDateTime?
         LocalDate startDate;
@@ -137,24 +137,24 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
         }
 
         int count = getDateDiff(new LocalDateTime(startDate.toDate().getTime()), new LocalDateTime(endDate.toDate().getTime()));
-        Log.d(TAG, "X-axis count" + count);
+        Timber.d("X-axis count %d", count);
         List<String> xValues = new ArrayList<>();
         for (int i = 0; i <= count; i++) {
             switch (mGroupInterval) {
                 case MONTH:
                     xValues.add(startDate.toString(X_AXIS_PATTERN));
-                    Log.d(TAG, "X-axis " + startDate.toString("MM yy"));
+                    Timber.d("X-axis " + startDate.toString("MM yy"));
                     startDate = startDate.plusMonths(1);
                     break;
                 case QUARTER:
                     int quarter = getQuarter(new LocalDateTime(startDate.toDate().getTime()));
                     xValues.add("Q" + quarter + startDate.toString(" yy"));
-                    Log.d(TAG, "X-axis " + "Q" + quarter + startDate.toString(" MM yy"));
+                    Timber.d("X-axis " + "Q" + quarter + startDate.toString(" MM yy"));
                     startDate = startDate.plusMonths(3);
                     break;
                 case YEAR:
                     xValues.add(startDate.toString("yyyy"));
-                    Log.d(TAG, "X-axis " + startDate.toString("yyyy"));
+                    Timber.d("X-axis " + startDate.toString("yyyy"));
                     startDate = startDate.plusYears(1);
                     break;
 //                default:
@@ -226,8 +226,8 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
             earliest = new LocalDateTime(mReportPeriodStart);
             latest = new LocalDateTime(mReportPeriodEnd);
         }
-        Log.d(TAG, "Earliest " + accountType + " date " + earliest.toString("dd MM yyyy"));
-        Log.d(TAG, "Latest " + accountType + " date " + latest.toString("dd MM yyyy"));
+        Timber.d("Earliest " + accountType + " date " + earliest.toString("dd MM yyyy"));
+        Timber.d("Latest " + accountType + " date " + latest.toString("dd MM yyyy"));
 
         int xAxisOffset = getDateDiff(new LocalDateTime(mEarliestTransactionTimestamp), earliest);
         int count = getDateDiff(earliest, latest);
@@ -258,8 +258,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
             }
             float balance = mAccountsDbAdapter.getAccountsBalance(accountUIDList, start, end).toFloat();
             values.add(new Entry(balance, i + xAxisOffset));
-            Log.d(TAG, accountType + earliest.toString(" MMM yyyy") + ", balance = " + balance);
-
+            Timber.d(accountType + earliest.toString(" MMM yyyy") + ", balance = " + balance);
         }
 
         return values;

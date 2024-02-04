@@ -25,7 +25,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -41,6 +40,8 @@ import org.gnucash.android.util.TimestampHelper;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
+import timber.log.Timber;
 
 /**
  * Database adapter for managing transaction splits in the database
@@ -83,7 +84,7 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
      * @param split {@link org.gnucash.android.model.Split} to be recorded in DB
      */
     public void addRecord(@NonNull final Split split, UpdateMethod updateMethod) {
-        Log.d(LOG_TAG, "Replace transaction split in db");
+        Timber.d("Replace transaction split in db");
         super.addRecord(split, updateMethod);
 
         long transactionId = getTransactionID(split.getTransactionUID());
@@ -226,7 +227,6 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
                 long amount_num = cursor.getLong(0);
                 long amount_denom = cursor.getLong(1);
                 String commodityCode = cursor.getString(2);
-                //Log.d(getClass().getName(), commodity + " " + amount_num + "/" + amount_denom);
                 if (commodityCode.equals("XXX") || amount_num == 0) {
                     // ignore custom currency
                     continue;
@@ -237,7 +237,6 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
                 if (commodityCode.equals(currencyCode)) {
                     // currency matches
                     total = total.plus(new Money(amount_num, amount_denom, currencyCode));
-                    //Log.d(getClass().getName(), "currency " + commodity + " sub - total " + total);
                 } else {
                     // there is a second currency involved
                     if (commoditiesDbAdapter == null) {
@@ -257,7 +256,6 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
                     BigDecimal amountConverted = amount.multiply(new BigDecimal(price.first))
                             .divide(new BigDecimal(price.second), commodity.getSmallestFractionDigits(), BigDecimal.ROUND_HALF_EVEN);
                     total = total.plus(new Money(amountConverted, commodity));
-                    //Log.d(getClass().getName(), "currency " + commodity + " sub - total " + total);
                 }
             }
             return total;
@@ -336,7 +334,7 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
      * @return Cursor to splits
      */
     public Cursor fetchSplitsForTransaction(String transactionUID) {
-        Log.v(LOG_TAG, "Fetching all splits for transaction UID " + transactionUID);
+        Timber.v("Fetching all splits for transaction UID %s", transactionUID);
         return mDb.query(SplitEntry.TABLE_NAME,
                 null, SplitEntry.COLUMN_TRANSACTION_UID + " = ?",
                 new String[]{transactionUID},
@@ -350,7 +348,7 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
      * @return Cursor containing splits dataset
      */
     public Cursor fetchSplitsForAccount(String accountUID) {
-        Log.d(LOG_TAG, "Fetching all splits for account UID " + accountUID);
+        Timber.d("Fetching all splits for account UID %s", accountUID);
 
         //This is more complicated than a simple "where account_uid=?" query because
         // we need to *not* return any splits which belong to recurring transactions
@@ -381,7 +379,7 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
         if (transactionUID == null || accountUID == null)
             return null;
 
-        Log.v(LOG_TAG, "Fetching all splits for transaction ID " + transactionUID
+        Timber.v("Fetching all splits for transaction ID " + transactionUID
                 + "and account ID " + accountUID);
         return mDb.query(SplitEntry.TABLE_NAME,
                 null, SplitEntry.COLUMN_TRANSACTION_UID + " = ? AND "

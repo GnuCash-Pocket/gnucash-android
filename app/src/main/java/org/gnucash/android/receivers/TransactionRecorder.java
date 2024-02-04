@@ -20,9 +20,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
@@ -41,6 +38,8 @@ import java.io.StringReader;
 import java.math.BigDecimal;
 import java.math.MathContext;
 
+import timber.log.Timber;
+
 /**
  * Broadcast receiver responsible for creating transactions received through {@link Intent}s
  * In order to create a transaction through Intents, broadcast an intent with the arguments needed to
@@ -57,7 +56,7 @@ public class TransactionRecorder extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.i(this.getClass().getName(), "Received transaction recording intent");
+        Timber.i("Received transaction recording intent");
         Bundle args = intent.getExtras();
         String name = args.getString(Intent.EXTRA_TITLE);
         String note = args.getString(Intent.EXTRA_TEXT);
@@ -100,7 +99,7 @@ public class TransactionRecorder extends BroadcastReceiver {
                     transaction.addSplit(split);
                 }
             } catch (IOException e) {
-                FirebaseCrashlytics.getInstance().recordException(e);
+                Timber.e(e);
             }
         }
 

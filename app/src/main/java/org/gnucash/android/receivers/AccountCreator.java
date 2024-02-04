@@ -20,12 +20,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.Commodity;
+
+import timber.log.Timber;
 
 /**
  * Broadcast receiver responsible for creating {@link Account}s received through intents.
@@ -42,7 +43,7 @@ public class AccountCreator extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.i("Gnucash", "Received account creation intent");
+        Timber.i("Received account creation intent");
         Bundle args = intent.getExtras();
 
         Account account = new Account(args.getString(Intent.EXTRA_TITLE));

@@ -21,7 +21,6 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -70,6 +69,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import timber.log.Timber;
 
 /**
  * List Fragment for displaying list of transactions for an account
@@ -78,11 +78,6 @@ import butterknife.ButterKnife;
  */
 public class TransactionsListFragment extends Fragment implements
     Refreshable, LoaderManager.LoaderCallbacks<Cursor>, FragmentResultListener {
-
-    /**
-     * Logging tag
-     */
-    protected static final String LOG_TAG = "TransactionListFragment";
 
     private TransactionsDbAdapter mTransactionsDbAdapter;
     private String mAccountUID;
@@ -211,20 +206,20 @@ public class TransactionsListFragment extends Fragment implements
 
     @Override
     public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
-        Log.d(LOG_TAG, "Creating transactions loader");
+        Timber.d("Creating transactions loader");
         return new TransactionsCursorLoader(getActivity(), mAccountUID);
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        Log.d(LOG_TAG, "Transactions loader finished. Swapping in cursor");
+        Timber.d("Transactions loader finished. Swapping in cursor");
         mTransactionRecyclerAdapter.swapCursor(cursor);
         mTransactionRecyclerAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        Log.d(LOG_TAG, "Resetting transactions loader");
+        Timber.d("Resetting transactions loader");
         mTransactionRecyclerAdapter.swapCursor(null);
     }
 

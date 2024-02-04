@@ -31,7 +31,6 @@ import static org.hamcrest.Matchers.not;
 import android.Manifest;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import androidx.test.espresso.contrib.DrawerActions;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -61,6 +60,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
+import timber.log.Timber;
+
 @RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ExportTransactionsTest {
@@ -89,7 +90,7 @@ public class ExportTransactionsTest {
         try {
             mDb = mDbHelper.getWritableDatabase();
         } catch (SQLException e) {
-            Log.e(getClass().getName(), "Error getting database: " + e.getMessage());
+            Timber.e(e, "Error getting database: " + e.getMessage());
             mDb = mDbHelper.getReadableDatabase();
         }
 

@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +28,8 @@ import com.owncloud.android.lib.resources.status.GetRemoteStatusOperation;
 import com.owncloud.android.lib.resources.users.GetRemoteUserInfoOperation;
 
 import org.gnucash.android.R;
+
+import timber.log.Timber;
 
 /**
  * A fragment for adding an ownCloud account.
@@ -180,7 +181,7 @@ public class OwnCloudDialogFragment extends DialogFragment {
             @Override
             public void onRemoteOperationFinish(RemoteOperation caller, RemoteOperationResult result) {
                 if (!result.isSuccess()) {
-                    Log.e("OC", result.getLogMessage(), result.getException());
+                    Timber.e(result.getException(), result.getLogMessage());
 
                     if (caller instanceof GetRemoteStatusOperation) {
                         mServerError.setTextColor(ContextCompat.getColor(getContext(), R.color.debit_red));

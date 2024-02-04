@@ -18,10 +18,7 @@
 package org.gnucash.android.ui.util;
 
 import android.os.AsyncTask;
-import android.util.Log;
 import android.widget.TextView;
-
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.model.Money;
@@ -29,13 +26,14 @@ import org.gnucash.android.ui.transaction.TransactionsActivity;
 
 import java.lang.ref.WeakReference;
 
+import timber.log.Timber;
+
 /**
  * An asynchronous task for computing the account balance of an account.
  * This is done asynchronously because in cases of deeply nested accounts,
  * it can take some time and would block the UI thread otherwise.
  */
 public class AccountBalanceTask extends AsyncTask<String, Void, Money> {
-    public static final String LOG_TAG = AccountBalanceTask.class.getName();
 
     private final WeakReference<TextView> accountBalanceTextViewReference;
     private final AccountsDbAdapter accountsDbAdapter;
@@ -57,8 +55,7 @@ public class AccountBalanceTask extends AsyncTask<String, Void, Money> {
         try {
             balance = accountsDbAdapter.getAccountBalance(params[0], -1, -1);
         } catch (Exception ex) {
-            Log.e(LOG_TAG, "Error computing account balance ", ex);
-            FirebaseCrashlytics.getInstance().recordException(ex);
+            Timber.e(ex, "Error computing account balance");
         }
         return balance;
     }

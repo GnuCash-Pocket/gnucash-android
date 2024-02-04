@@ -64,7 +64,6 @@ public class QifExporter extends Exporter {
      */
     public QifExporter(ExportParams params) {
         super(params, null);
-        LOG_TAG = "QifExporter";
     }
 
     /**
@@ -75,7 +74,6 @@ public class QifExporter extends Exporter {
      */
     public QifExporter(ExportParams params, SQLiteDatabase db) {
         super(params, db);
-        LOG_TAG = "QifExporter";
     }
 
     @Override

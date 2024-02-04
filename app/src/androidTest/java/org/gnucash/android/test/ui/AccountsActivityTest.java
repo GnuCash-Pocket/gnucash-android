@@ -50,7 +50,6 @@ import android.content.SharedPreferences.Editor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.View;
 
 import androidx.fragment.app.Fragment;
@@ -94,6 +93,8 @@ import org.junit.runner.RunWith;
 
 import java.math.BigDecimal;
 import java.util.List;
+
+import timber.log.Timber;
 
 
 @RunWith(AndroidJUnit4.class)
@@ -141,7 +142,7 @@ public class AccountsActivityTest {
         try {
             mDb = mDbHelper.getWritableDatabase();
         } catch (SQLException e) {
-            Log.e("AccountsActivityTest", "Error getting database: " + e.getMessage());
+            Timber.e(e, "Error getting database: " + e.getMessage());
             mDb = mDbHelper.getReadableDatabase();
         }
         mSplitsDbAdapter = SplitsDbAdapter.getInstance();

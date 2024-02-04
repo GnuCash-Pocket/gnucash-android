@@ -18,11 +18,8 @@
 package org.gnucash.android.importer;
 
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
-
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHelper;
@@ -70,6 +67,8 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.regex.Pattern;
 
+import timber.log.Timber;
+
 /**
  * Handler for parsing the GnuCash XML file.
  * The discovered accounts and transactions are automatically added to the database
@@ -83,11 +82,6 @@ public class GncXmlHandler extends DefaultHandler {
      * ISO 4217 currency code for "No Currency"
      */
     private static final String NO_CURRENCY_CODE = "XXX";
-
-    /**
-     * Tag for logging
-     */
-    private static final String LOG_TAG = "GnuCashAccountImporter";
 
     /*
         ^             anchor for start of string
@@ -536,11 +530,11 @@ public class GncXmlHandler extends DefaultHandler {
                 break;
             case GncXmlHelper.TAG_SLOT_VALUE:
                 if (mInPlaceHolderSlot) {
-                    //Log.v(LOG_TAG, "Setting account placeholder flag");
+                    //Timber.v("Setting account placeholder flag");
                     mAccount.setPlaceHolderFlag(Boolean.parseBoolean(characterString));
                     mInPlaceHolderSlot = false;
                 } else if (mInColorSlot) {
-                    //Log.d(LOG_TAG, "Parsing color code: " + characterString);
+                    //Timber.d("Parsing color code: " + characterString);
                     String color = characterString.trim();
                     //Gnucash exports the account color in format #rrrgggbbb, but we need only #rrggbb.
                     //so we trim the last digit in each block, doesn't affect the color much
@@ -553,8 +547,7 @@ public class GncXmlHandler extends DefaultHandler {
                                 mAccount.setColor(color);
                         } catch (IllegalArgumentException ex) {
                             //sometimes the color entry in the account file is "Not set" instead of just blank. So catch!
-                            Log.e(LOG_TAG, "Invalid color code '" + color + "' for account " + mAccount.getName());
-                            FirebaseCrashlytics.getInstance().recordException(ex);
+                            Timber.e(ex, "Invalid color code '" + color + "' for account " + mAccount.getName());
                         }
                     }
                     mInColorSlot = false;
@@ -626,10 +619,8 @@ public class GncXmlHandler extends DefaultHandler {
                         mPrice.setDate(new Timestamp(GncXmlHelper.parseDate(characterString)));
                     }
                 } catch (ParseException e) {
-                    FirebaseCrashlytics.getInstance().recordException(e);
                     String message = "Unable to parse transaction time - " + characterString;
-                    Log.e(LOG_TAG, message + "\n" + e.getMessage());
-                    FirebaseCrashlytics.getInstance().log(message);
+                    Timber.e(e, message);
                     throw new SAXException(message, e);
                 }
                 break;
@@ -657,8 +648,7 @@ public class GncXmlHandler extends DefaultHandler {
                     mValue = GncXmlHelper.parseSplitAmount(characterString).abs(); // use sign from quantity
                 } catch (ParseException e) {
                     String msg = "Error parsing split quantity - " + characterString;
-                    FirebaseCrashlytics.getInstance().log(msg);
-                    FirebaseCrashlytics.getInstance().recordException(e);
+                    Timber.e(e, msg);
                     throw new SAXException(msg, e);
                 }
                 break;
@@ -668,8 +658,7 @@ public class GncXmlHandler extends DefaultHandler {
                     mQuantity = GncXmlHelper.parseSplitAmount(characterString).abs();
                 } catch (ParseException e) {
                     String msg = "Error parsing split quantity - " + characterString;
-                    FirebaseCrashlytics.getInstance().log(msg);
-                    FirebaseCrashlytics.getInstance().recordException(e);
+                    Timber.e(e, msg);
                     throw new SAXException(msg, e);
                 }
                 break;
@@ -746,8 +735,7 @@ public class GncXmlHandler extends DefaultHandler {
                     mRecurrence.setMultiplier(mRecurrenceMultiplier);
                 } catch (IllegalArgumentException ex) { //the period type constant is not supported
                     String msg = "Unsupported period constant: " + characterString;
-                    Log.e(LOG_TAG, msg);
-                    FirebaseCrashlytics.getInstance().recordException(ex);
+                    Timber.e(ex, msg);
                     mIgnoreScheduledAction = true;
                 }
                 break;
@@ -775,9 +763,7 @@ public class GncXmlHandler extends DefaultHandler {
                     }
                 } catch (ParseException e) {
                     String msg = "Error parsing scheduled action date " + characterString;
-                    Log.e(LOG_TAG, msg + e.getMessage());
-                    FirebaseCrashlytics.getInstance().log(msg);
-                    FirebaseCrashlytics.getInstance().recordException(e);
+                    Timber.e(e, msg);
                     throw new SAXException(msg, e);
                 }
                 break;
@@ -802,7 +788,7 @@ public class GncXmlHandler extends DefaultHandler {
                     }
                     mScheduledActionsList.add(mScheduledAction);
                     int count = generateMissedScheduledTransactions(mScheduledAction);
-                    Log.i(LOG_TAG, String.format("Generated %d transactions from scheduled action", count));
+                    Timber.i("Generated %d transactions from scheduled action", count);
                 }
                 mIgnoreScheduledAction = false;
                 break;
@@ -820,13 +806,12 @@ public class GncXmlHandler extends DefaultHandler {
                     String[] parts = characterString.split("/");
                     if (parts.length != 2) {
                         String message = "Illegal price - " + characterString;
-                        Log.e(LOG_TAG, message);
-                        FirebaseCrashlytics.getInstance().log(message);
+                        Timber.e(message);
                         throw new SAXException(message);
                     } else {
                         mPrice.setValueNum(Long.valueOf(parts[0]));
                         mPrice.setValueDenom(Long.valueOf(parts[1]));
-                        Log.d(getClass().getName(), "price " + characterString +
+                        Timber.d("price " + characterString +
                                 " .. " + mPrice.getValueNum() + "/" + mPrice.getValueDenom());
                     }
                 }
@@ -989,36 +974,35 @@ public class GncXmlHandler extends DefaultHandler {
 
         long startTime = System.nanoTime();
         mAccountsDbAdapter.beginTransaction();
-        Log.d(getClass().getSimpleName(), "bulk insert starts");
+        Timber.d("bulk insert starts");
         try {
             // disable foreign key. The database structure should be ensured by the data inserted.
             // it will make insertion much faster.
             mAccountsDbAdapter.enableForeignKey(false);
-            Log.d(getClass().getSimpleName(), "before clean up db");
+            Timber.d("before clean up db");
             mAccountsDbAdapter.deleteAllRecords();
-            Log.d(getClass().getSimpleName(), String.format("deb clean up done %d ns", System.nanoTime() - startTime));
+            Timber.d("deb clean up done %d ns", System.nanoTime() - startTime);
             long nAccounts = mAccountsDbAdapter.bulkAddRecords(mAccountList, DatabaseAdapter.UpdateMethod.insert);
-            Log.d("Handler:", String.format("%d accounts inserted", nAccounts));
+            Timber.d("%d accounts inserted", nAccounts);
             //We need to add scheduled actions first because there is a foreign key constraint on transactions
             //which are generated from scheduled actions (we do auto-create some transactions during import)
             long nSchedActions = mScheduledActionsDbAdapter.bulkAddRecords(mScheduledActionsList, DatabaseAdapter.UpdateMethod.insert);
-            Log.d("Handler:", String.format("%d scheduled actions inserted", nSchedActions));
+            Timber.d("%d scheduled actions inserted", nSchedActions);
 
             long nTempTransactions = mTransactionsDbAdapter.bulkAddRecords(mTemplateTransactions, DatabaseAdapter.UpdateMethod.insert);
-            Log.d("Handler:", String.format("%d template transactions inserted", nTempTransactions));
+            Timber.d("%d template transactions inserted", nTempTransactions);
 
             long nTransactions = mTransactionsDbAdapter.bulkAddRecords(mTransactionList, DatabaseAdapter.UpdateMethod.insert);
-            Log.d("Handler:", String.format("%d transactions inserted", nTransactions));
+            Timber.d("%d transactions inserted", nTransactions);
 
             long nPrices = mPricesDbAdapter.bulkAddRecords(mPriceList, DatabaseAdapter.UpdateMethod.insert);
-            Log.d(getClass().getSimpleName(), String.format("%d prices inserted", nPrices));
+            Timber.d("%d prices inserted", nPrices);
 
             //// TODO: 01.06.2016 Re-enable import of Budget stuff when the UI is complete
 //            long nBudgets = mBudgetsDbAdapter.bulkAddRecords(mBudgetList, DatabaseAdapter.UpdateMethod.insert);
-//            Log.d(getClass().getSimpleName(), String.format("%d budgets inserted", nBudgets));
 
             long endTime = System.nanoTime();
-            Log.d(getClass().getSimpleName(), String.format("bulk insert time: %d", endTime - startTime));
+            Timber.d("bulk insert time: %d", endTime - startTime);
 
             //if all of the import went smoothly, then add the book to the book db
             booksDbAdapter.addRecord(mBook, DatabaseAdapter.UpdateMethod.insert);
@@ -1050,7 +1034,7 @@ public class GncXmlHandler extends DefaultHandler {
         try {
             return mAccountMap.get(accountUID).getCommodity();
         } catch (Exception e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e);
             return Commodity.DEFAULT_COMMODITY;
         }
     }
@@ -1075,9 +1059,7 @@ public class GncXmlHandler extends DefaultHandler {
             }
         } catch (NumberFormatException | ParseException e) {
             String msg = "Error parsing template credit split amount " + characterString;
-            Log.e(LOG_TAG, msg + "\n" + e.getMessage());
-            FirebaseCrashlytics.getInstance().log(msg);
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e, msg);
         } finally {
             if (splitType == TransactionType.CREDIT)
                 mInCreditNumericSlot = false;

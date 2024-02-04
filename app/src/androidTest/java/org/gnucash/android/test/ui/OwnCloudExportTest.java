@@ -42,7 +42,6 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.util.Log;
 
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.contrib.DrawerActions;
@@ -70,6 +69,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+
+import timber.log.Timber;
 
 
 @RunWith(AndroidJUnit4.class)
@@ -118,7 +119,7 @@ public class OwnCloudExportTest {
         try {
             mDb = mDbHelper.getWritableDatabase();
         } catch (SQLException e) {
-            Log.e(getClass().getName(), "Error getting database: " + e.getMessage());
+            Timber.e(e, "Error getting database: " + e.getMessage());
             mDb = mDbHelper.getReadableDatabase();
         }
 

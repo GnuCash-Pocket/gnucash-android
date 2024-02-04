@@ -5,15 +5,14 @@ import static org.gnucash.android.db.DatabaseSchema.CommodityEntry;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
-
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.model.Commodity;
+
+import timber.log.Timber;
 
 /**
  * Database adapter for {@link org.gnucash.android.model.Commodity}
@@ -118,8 +117,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
             commodity = buildModelInstance(cursor);
         } else {
             String msg = "Commodity not found in the database: " + currencyCode;
-            Log.e(LOG_TAG, msg);
-            FirebaseCrashlytics.getInstance().log(msg);
+            Timber.e(msg);
         }
         cursor.close();
         return commodity;

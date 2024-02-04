@@ -26,7 +26,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import android.Manifest;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
@@ -44,6 +43,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import timber.log.Timber;
 
 /**
  * Tests the first run wizard
@@ -73,7 +74,7 @@ public class FirstRunWizardActivityTest {
         try {
             mDb = mDbHelper.getWritableDatabase();
         } catch (SQLException e) {
-            Log.e(getClass().getName(), "Error getting database: " + e.getMessage());
+            Timber.e(e, "Error getting database: " + e.getMessage());
             mDb = mDbHelper.getReadableDatabase();
         }
         mSplitsDbAdapter = new SplitsDbAdapter(mDb);

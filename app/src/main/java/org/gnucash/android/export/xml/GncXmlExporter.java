@@ -23,9 +23,6 @@ import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
-
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
@@ -61,6 +58,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import timber.log.Timber;
+
 /**
  * Creates a GnuCash XML representation of the accounts and transactions
  *
@@ -82,7 +81,6 @@ public class GncXmlExporter extends Exporter {
      */
     public GncXmlExporter(ExportParams params) {
         super(params, null);
-        LOG_TAG = "GncXmlExporter";
     }
 
     /**
@@ -94,7 +92,6 @@ public class GncXmlExporter extends Exporter {
      */
     public GncXmlExporter(ExportParams params, SQLiteDatabase db) {
         super(params, db);
-        LOG_TAG = "GncXmlExporter";
     }
 
     private void exportSlots(XmlSerializer xmlSerializer,
@@ -201,7 +198,7 @@ public class GncXmlExporter extends Exporter {
                 xmlSerializer.text(parentUID);
                 xmlSerializer.endTag(null, GncXmlHelper.TAG_PARENT_UID);
             } else {
-                Log.d("export", "root account : " + cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_UID)));
+                Timber.d("root account : %s", cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_UID)));
             }
             xmlSerializer.endTag(null, GncXmlHelper.TAG_ACCOUNT);
         }
@@ -784,8 +781,7 @@ public class GncXmlExporter extends Exporter {
 
             generateExport(writer);
         } catch (IOException ex) {
-            FirebaseCrashlytics.getInstance().log("Error exporting XML");
-            FirebaseCrashlytics.getInstance().recordException(ex);
+            Timber.e(ex, "Error exporting XML");
         } finally {
             if (writer != null) {
                 try {
@@ -895,7 +891,7 @@ public class GncXmlExporter extends Exporter {
             xmlSerializer.endDocument();
             xmlSerializer.flush();
         } catch (Exception e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e);
             throw new ExporterException(mExportParams, e);
         }
     }

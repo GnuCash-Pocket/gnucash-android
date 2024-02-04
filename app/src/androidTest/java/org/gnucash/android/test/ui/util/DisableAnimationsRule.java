@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.UiAutomation;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
-import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -17,6 +16,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+
+import timber.log.Timber;
 
 /**
  * Created by Ngewi on 19.04.2016.
@@ -45,7 +46,7 @@ public class DisableAnimationsRule implements TestRule {
             ) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // https://stackoverflow.com/a/75837274/2249464
                     String commandOutput = new String(is.readAllBytes());
-                    Log.d(DisableAnimationsRule.class.getSimpleName(), commandOutput);
+                    Timber.d(commandOutput);
                 }
             }
         }

@@ -30,7 +30,6 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -49,7 +48,6 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.kobakei.ratethisapp.RateThisApp;
 
 import org.gnucash.android.BuildConfig;
@@ -69,6 +67,7 @@ import org.gnucash.android.ui.wizard.FirstRunWizardActivity;
 import org.gnucash.android.util.BackupManager;
 
 import butterknife.BindView;
+import timber.log.Timber;
 
 /**
  * Manages actions related to accounts, displaying, exporting and creating new accounts
@@ -88,11 +87,6 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
      * Request code for opening the account to edit
      */
     public static final int REQUEST_EDIT_ACCOUNT = 0x10;
-
-    /**
-     * Logging tag
-     */
-    protected static final String LOG_TAG = "AccountsActivity";
 
     /**
      * Number of pages to show
@@ -389,8 +383,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
             packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             releaseTitle.append(" - v").append(packageInfo.versionName);
         } catch (NameNotFoundException e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
-            Log.e(LOG_TAG, "Error displaying 'Whats new' dialog");
+            Timber.e(e, "Error displaying 'Whats new' dialog");
         }
 
         return new AlertDialog.Builder(context)
@@ -472,8 +465,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
         try {
             activity.startActivityForResult(chooser, REQUEST_PICK_ACCOUNTS_FILE);
         } catch (ActivityNotFoundException ex) {
-            FirebaseCrashlytics.getInstance().log("No file manager for selecting files available");
-            FirebaseCrashlytics.getInstance().recordException(ex);
+            Timber.e(ex, "No file manager for selecting files available");
             Toast.makeText(activity, R.string.toast_install_file_manager, Toast.LENGTH_LONG).show();
         }
     }
@@ -494,8 +486,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
         try {
             fragment.startActivityForResult(chooser, REQUEST_PICK_ACCOUNTS_FILE);
         } catch (ActivityNotFoundException ex) {
-            FirebaseCrashlytics.getInstance().log("No file manager for selecting files available");
-            FirebaseCrashlytics.getInstance().recordException(ex);
+            Timber.e(ex, "No file manager for selecting files available");
             Toast.makeText(fragment.getActivity(), R.string.toast_install_file_manager, Toast.LENGTH_LONG).show();
         }
     }

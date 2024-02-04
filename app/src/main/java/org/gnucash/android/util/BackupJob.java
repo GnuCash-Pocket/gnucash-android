@@ -17,10 +17,11 @@ package org.gnucash.android.util;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.JobIntentService;
+
+import timber.log.Timber;
 
 
 /**
@@ -31,7 +32,7 @@ import androidx.core.app.JobIntentService;
  * (through {@link org.gnucash.android.receivers.PeriodicJobReceiver}).</p>
  */
 public class BackupJob extends JobIntentService {
-    private static final String LOG_TAG = "BackupJob";
+
     private static final int JOB_ID = 1000;
 
     public static void enqueueWork(Context context) {
@@ -41,7 +42,7 @@ public class BackupJob extends JobIntentService {
 
     @Override
     protected void onHandleWork(@NonNull Intent intent) {
-        Log.i(LOG_TAG, "Doing backup of all books.");
+        Timber.i("Doing backup of all books.");
         BackupManager.backupAllBooks();
     }
 }

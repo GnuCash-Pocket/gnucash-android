@@ -30,10 +30,7 @@ import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 import android.widget.Toast;
-
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.model.Commodity;
@@ -45,6 +42,8 @@ import java.lang.reflect.Method;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import timber.log.Timber;
+
 /**
  * Helper class for managing the SQLite database.
  * Creates the database and handles upgrades
@@ -52,11 +51,6 @@ import javax.xml.parsers.ParserConfigurationException;
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
-
-    /**
-     * Tag for logging
-     */
-    public static final String LOG_TAG = DatabaseHelper.class.getName();
 
     /**
      * SQL statement to create the accounts table in the database
@@ -264,8 +258,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        Log.i(LOG_TAG, "Upgrading database from version "
-                + oldVersion + " to " + newVersion);
+        Timber.i("Upgrading database from version " + oldVersion + " to " + newVersion);
 
         Toast.makeText(GnuCashApplication.getAppContext(), "Upgrading GnuCash database", Toast.LENGTH_SHORT).show();
         /*
@@ -285,19 +278,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 oldVersion = Integer.parseInt(result.toString());
 
             } catch (NoSuchMethodException e) {
-                String msg = String.format("Database upgrade method upgradeToVersion%d(SQLiteDatabase) definition not found ", newVersion);
-                Log.e(LOG_TAG, msg, e);
-                FirebaseCrashlytics.getInstance().log(msg);
-                FirebaseCrashlytics.getInstance().recordException(e);
+                Timber.e(e, "Database upgrade method upgradeToVersion%d(SQLiteDatabase) definition not found", newVersion);
                 throw new RuntimeException(e);
             } catch (IllegalAccessException e) {
-                String msg = String.format("Database upgrade to version %d failed. The upgrade method is inaccessible ", newVersion);
-                Log.e(LOG_TAG, msg, e);
-                FirebaseCrashlytics.getInstance().log(msg);
-                FirebaseCrashlytics.getInstance().recordException(e);
+                Timber.e(e, "Database upgrade to version %d failed. The upgrade method is inaccessible", newVersion);
                 throw new RuntimeException(e);
             } catch (InvocationTargetException e) {
-                FirebaseCrashlytics.getInstance().recordException(e.getTargetException());
+                Timber.e(e);
                 throw new RuntimeException(e.getTargetException());
             }
         }
@@ -310,7 +297,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * @param db Database instance
      */
     private void createDatabaseTables(SQLiteDatabase db) {
-        Log.i(LOG_TAG, "Creating database tables");
+        Timber.i("Creating database tables");
         db.execSQL(ACCOUNTS_TABLE_CREATE);
         db.execSQL(TRANSACTIONS_TABLE_CREATE);
         db.execSQL(SPLITS_TABLE_CREATE);
@@ -362,8 +349,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try {
             MigrationHelper.importCommodities(db);
         } catch (SAXException | ParserConfigurationException | IOException e) {
-            Log.e(LOG_TAG, "Error loading currencies into the database");
-            e.printStackTrace();
+            Timber.e(e, "Error loading currencies into the database");
             throw new RuntimeException(e);
         }
     }

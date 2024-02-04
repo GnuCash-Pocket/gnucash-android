@@ -72,8 +72,6 @@ public abstract class BaseReportFragment extends Fragment implements
      */
     public static final int NO_DATA_COLOR = Color.LTGRAY;
 
-    protected static String TAG = "BaseReportFragment";
-
     /**
      * Reporting period start time
      */
@@ -165,12 +163,6 @@ public abstract class BaseReportFragment extends Fragment implements
      * Sub-classes should call to the base method
      */
     protected abstract void displayReport();
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        TAG = this.getClass().getSimpleName();
-    }
 
     @Nullable
     @Override

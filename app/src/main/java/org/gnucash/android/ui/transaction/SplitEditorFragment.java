@@ -23,7 +23,6 @@ import android.inputmethodservice.KeyboardView;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -72,6 +71,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import timber.log.Timber;
 
 /**
  * Dialog for editing the splits in a transaction
@@ -330,8 +330,7 @@ public class SplitEditorFragment extends Fragment {
             if (expression != null && expression.validate().isValid()) {
                 return new BigDecimal(expression.evaluate());
             } else {
-                Log.v(SplitEditorFragment.this.getClass().getSimpleName(),
-                        "Incomplete expression for updating imbalance: " + expression);
+                Timber.v("Incomplete expression for updating imbalance: %s", expression);
                 return BigDecimal.ZERO;
             }
         }

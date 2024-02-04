@@ -21,7 +21,6 @@ import static org.gnucash.android.ui.report.ReportsActivity.COLORS;
 
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -56,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 
 import butterknife.BindView;
+import timber.log.Timber;
 
 /**
  * Activity used for drawing a bar chart
@@ -198,7 +198,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
                         }
                         colors.add(accountToColorMap.get(account.getUID()));
 
-                        Log.d(TAG, mAccountType + tmpDate.toString(" MMMM yyyy ") + account.getName() + " = " + stack.get(stack.size() - 1));
+                        Timber.d(mAccountType + tmpDate.toString(" MMMM yyyy ") + account.getName() + " = " + stack.get(stack.size() - 1));
                     }
                 }
             }
@@ -255,7 +255,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
             startDate = new LocalDate(mReportPeriodStart);
         }
         startDate = startDate.withDayOfMonth(1);
-        Log.d(TAG, accountType + " X-axis star date: " + startDate.toString("dd MM yyyy"));
+        Timber.d(accountType + " X-axis start date: " + startDate.toString("dd MM yyyy"));
         return startDate;
     }
 
@@ -275,7 +275,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
             endDate = new LocalDate(mReportPeriodEnd);
         }
         endDate = endDate.withDayOfMonth(1);
-        Log.d(TAG, accountType + " X-axis end date: " + endDate.toString("dd MM yyyy"));
+        Timber.d(accountType + " X-axis end date: " + endDate.toString("dd MM yyyy"));
         return endDate;
     }
 

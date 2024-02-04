@@ -40,7 +40,7 @@ The following people (in alphabetical order) contributed (commits on GitHub) to 
 * Mark Haanen
 * Matthew Hague
 * Menelaos Maglis
-* moshe.w@invest.com
+* Moshe Waisberg
 * Ngewi Fet
 * Nicolas Barranger
 * Oleg Kosmakov
