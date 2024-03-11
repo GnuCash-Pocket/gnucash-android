@@ -163,7 +163,7 @@ class Budget : BaseModel {
                     sum = budgetAmount.amount
                 } else {
                     try {
-                        sum = sum.add(budgetAmount.amount!!.abs())
+                        sum = sum.plus(budgetAmount.amount!!.abs())
                     } catch (ex: CurrencyMismatchException) {
                         Log.i(
                             javaClass.simpleName,

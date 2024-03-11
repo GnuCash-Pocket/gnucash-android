@@ -236,7 +236,7 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
                 }
                 if (commodityCode.equals(currencyCode)) {
                     // currency matches
-                    total = total.add(new Money(amount_num, amount_denom, currencyCode));
+                    total = total.plus(new Money(amount_num, amount_denom, currencyCode));
                     //Log.d(getClass().getName(), "currency " + commodity + " sub - total " + total);
                 } else {
                     // there is a second currency involved
@@ -256,7 +256,7 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
                     BigDecimal amount = Money.getBigDecimal(amount_num, amount_denom);
                     BigDecimal amountConverted = amount.multiply(new BigDecimal(price.first))
                             .divide(new BigDecimal(price.second), commodity.getSmallestFractionDigits(), BigDecimal.ROUND_HALF_EVEN);
-                    total = total.add(new Money(amountConverted, commodity));
+                    total = total.plus(new Money(amountConverted, commodity));
                     //Log.d(getClass().getName(), "currency " + commodity + " sub - total " + total);
                 }
             }

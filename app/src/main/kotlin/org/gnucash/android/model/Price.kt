@@ -16,12 +16,8 @@ class Price : BaseModel {
     var date: Timestamp
     var source: String? = null
     var type: String? = null
-    private var mValueNum: Long = 0
-    private var mValueDenom: Long = 0
 
-    constructor() {
-        date = TimestampHelper.getTimestampFromNow()
-    }
+    constructor(): this(null, null)
 
     /**
      * Create new instance with the GUIDs of the commodities
@@ -51,34 +47,36 @@ class Price : BaseModel {
         valueDenom = BigDecimal.ONE.scaleByPowerOfTen(exchangeRate.scale()).toLong()
     }
 
+    private var _valueNum = 0L
     var valueNum: Long
-        get() {
-            reduce()
-            return mValueNum
+        get() = _valueNum
+        set(value) {
+            _valueNum = value
+            reduce(value, valueDenom)
         }
-        set(valueNum) {
-            mValueNum = valueNum
-        }
+    private var _valueDenom = 0L
     var valueDenom: Long
-        get() {
-            reduce()
-            return mValueDenom
-        }
-        set(valueDenom) {
-            mValueDenom = valueDenom
+        get() = _valueDenom
+        set(value) {
+            _valueDenom = value
+            reduce(valueNum, value)
         }
 
-    private fun reduce() {
-        if (mValueDenom < 0) {
-            mValueDenom = -mValueDenom
-            mValueNum = -mValueNum
+    private fun reduce(priceNum: Long, priceDenom: Long) {
+        var valueNum = priceNum
+        var valueDenom = priceDenom
+        var isModified = false
+        if (valueDenom < 0) {
+            valueDenom = -valueDenom
+            valueNum = -valueNum
+            isModified = true
         }
-        if (mValueDenom != 0L && mValueNum != 0L) {
-            var num1 = mValueNum
+        if (valueDenom != 0L && valueNum != 0L) {
+            var num1 = valueNum
             if (num1 < 0) {
                 num1 = -num1
             }
-            var num2 = mValueDenom
+            var num2 = valueDenom
             var commonDivisor: Long = 1
             while (true) {
                 var r = num1 % num2
@@ -94,8 +92,13 @@ class Price : BaseModel {
                 }
                 num2 = r
             }
-            mValueNum /= commonDivisor
-            mValueDenom /= commonDivisor
+            valueNum /= commonDivisor
+            valueDenom /= commonDivisor
+            isModified = true
+        }
+        if (isModified) {
+            _valueNum = valueNum
+            _valueDenom = valueDenom
         }
     }
 
@@ -107,8 +110,8 @@ class Price : BaseModel {
      * Example: "0.123456"
      */
     override fun toString(): String {
-        val numerator = BigDecimal(mValueNum)
-        val denominator = BigDecimal(mValueDenom)
+        val numerator = BigDecimal(valueNum)
+        val denominator = BigDecimal(valueDenom)
         val formatter = NumberFormat.getNumberInstance() as DecimalFormat
         formatter.maximumFractionDigits = 6
         return formatter.format(numerator.divide(denominator, MathContext.DECIMAL32))

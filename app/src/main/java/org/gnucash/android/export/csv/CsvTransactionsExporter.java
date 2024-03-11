@@ -28,6 +28,7 @@ import org.gnucash.android.R;
 import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.Exporter;
 import org.gnucash.android.model.Account;
+import org.gnucash.android.model.Money;
 import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.model.TransactionType;
@@ -100,15 +101,23 @@ public class CsvTransactionsExporter extends Exporter {
      *
      * @param splits Splits to be written
      */
-    private void writeSplitsToCsv(@NonNull List<Split> splits, @NonNull CsvWriter writer) throws IOException {
+    private void writeSplitsToCsv(@NonNull List<Split> splits, @NonNull CsvWriter writer) throws IOException, Money.CurrencyMismatchException {
         int index = 0;
 
         Map<String, Account> uidAccountMap = new HashMap<>();
 
         for (Split split : splits) {
             if (index++ > 0) { // the first split is on the same line as the transactions. But after that, we
-                writer.write("" + mCsvSeparator + mCsvSeparator + mCsvSeparator + mCsvSeparator
-                        + mCsvSeparator + mCsvSeparator + mCsvSeparator + mCsvSeparator);
+                writer.write("" // Date
+                    + mCsvSeparator // Transaction ID
+                    + mCsvSeparator // Number
+                    + mCsvSeparator // Description
+                    + mCsvSeparator // Notes
+                    + mCsvSeparator // Commodity/Currency
+                    + mCsvSeparator // Void Reason
+                    + mCsvSeparator // Action
+                    + mCsvSeparator // Memo
+                );
             }
             writer.writeToken(split.getMemo());
 
@@ -135,7 +144,7 @@ public class CsvTransactionsExporter extends Exporter {
             } else {
                 writer.writeToken(null);
             }
-            writer.writeEndToken(split.getQuantity().divide(split.getValue()).toLocaleString());
+            writer.writeEndToken(split.getQuantity().div(split.getValue().toDouble()).toLocaleString());
         }
     }
 
@@ -167,7 +176,7 @@ public class CsvTransactionsExporter extends Exporter {
             }
 
             PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow());
-        } catch (IOException e) {
+        } catch (Exception e) {
             FirebaseCrashlytics.getInstance().recordException(e);
             throw new ExporterException(mExportParams, e);
         }
