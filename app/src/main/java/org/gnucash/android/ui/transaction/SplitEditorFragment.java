@@ -36,12 +36,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cursoradapter.widget.SimpleCursorAdapter;
 import androidx.fragment.app.Fragment;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
@@ -381,8 +382,7 @@ public class SplitEditorFragment extends Fragment {
      */
     private void saveSplits() {
         if (!canSave()) {
-            Toast.makeText(getActivity(), R.string.toast_error_check_split_amounts,
-                    Toast.LENGTH_SHORT).show();
+            Snackbar.make(getView(), R.string.toast_error_check_split_amounts, Snackbar.LENGTH_SHORT).show();
             return;
         }
 
@@ -402,13 +402,12 @@ public class SplitEditorFragment extends Fragment {
         ArrayList<Split> splitList = new ArrayList<>();
         for (View splitView : mSplitItemViewList) {
             SplitViewHolder viewHolder = (SplitViewHolder) splitView.getTag();
-            if (viewHolder.splitAmountEditText.getValue() == null)
+            BigDecimal enteredAmount = viewHolder.splitAmountEditText.getValue();
+            if (enteredAmount == null)
                 continue;
 
-            BigDecimal amountBigDecimal = viewHolder.splitAmountEditText.getValue();
-
             String currencyCode = mAccountsDbAdapter.getCurrencyCode(mAccountUID);
-            Money valueAmount = new Money(amountBigDecimal.abs(), Commodity.getInstance(currencyCode));
+            Money valueAmount = new Money(enteredAmount.abs(), Commodity.getInstance(currencyCode));
 
             String accountUID = mAccountsDbAdapter.getUID(viewHolder.accountsSpinner.getSelectedItemId());
             Split split = new Split(valueAmount, accountUID);

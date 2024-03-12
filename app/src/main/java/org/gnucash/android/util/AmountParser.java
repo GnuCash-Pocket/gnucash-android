@@ -18,6 +18,9 @@ public class AmountParser {
      * @throws ParseException if the full string couldn't be parsed as an amount.
      */
     public static BigDecimal parse(String amount) throws ParseException {
+        if (amount == null || amount.isEmpty()) {
+            throw new ParseException("Parse error", 0);
+        }
         DecimalFormat formatter = (DecimalFormat) NumberFormat.getNumberInstance();
         formatter.setParseBigDecimal(true);
         ParsePosition parsePosition = new ParsePosition(0);
