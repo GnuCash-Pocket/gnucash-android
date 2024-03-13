@@ -43,6 +43,6 @@ public class BackupJob extends JobIntentService {
     @Override
     protected void onHandleWork(@NonNull Intent intent) {
         Timber.i("Doing backup of all books.");
-        BackupManager.backupAllBooks();
+        BackupManager.backupAllBooks(this);
     }
 }

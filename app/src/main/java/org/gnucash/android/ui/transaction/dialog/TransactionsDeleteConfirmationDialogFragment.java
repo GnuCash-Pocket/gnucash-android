@@ -73,7 +73,7 @@ public class TransactionsDeleteConfirmationDialogFragment extends DialogFragment
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
                                 if (rowId == 0) {
-                                    BackupManager.backupActiveBook(); //create backup before deleting everything
+                                    BackupManager.backupActiveBook(getContext()); //create backup before deleting everything
                                     List<Transaction> openingBalances = new ArrayList<Transaction>();
                                     boolean preserveOpeningBalances = GnuCashApplication.shouldSaveOpeningBalances(false);
                                     if (preserveOpeningBalances) {

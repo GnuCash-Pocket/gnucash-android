@@ -187,7 +187,7 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
         }
 
         if (key.equals(getString(R.string.key_create_backup))) {
-            boolean result = BackupManager.backupActiveBook();
+            boolean result = BackupManager.backupActiveBook(preference.getContext());
             int msg = result ? R.string.toast_backup_successful : R.string.toast_backup_failed;
             Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show();
         }
@@ -465,7 +465,7 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
 
                     final int takeFlags = data.getFlags()
                             & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                    getActivity().getContentResolver().takePersistableUriPermission(backupFileUri, takeFlags);
+                    requireContext().getContentResolver().takePersistableUriPermission(backupFileUri, takeFlags);
 
                     PreferenceActivity.getActiveBookSharedPreferences()
                             .edit()
