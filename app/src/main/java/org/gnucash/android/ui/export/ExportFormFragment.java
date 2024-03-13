@@ -16,6 +16,8 @@
 
 package org.gnucash.android.ui.export;
 
+import static org.gnucash.android.app.IntentExtKt.takePersistableUriPermission;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -591,14 +593,11 @@ public class ExportFormFragment extends Fragment implements
             case REQUEST_EXPORT_FILE:
                 if (resultCode == Activity.RESULT_OK) {
                     if (data != null) {
+                        takePersistableUriPermission(requireContext(), data);
                         Uri location = data.getData();
                         mExportParams.setExportLocation(location);
                         if (location != null) {
                             setExportUriText(location.toString());
-
-                            final int takeFlags = data.getFlags()
-                                & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                            requireContext().getContentResolver().takePersistableUriPermission(location, takeFlags);
                         } else {
                             setExportUriText(null);
                         }

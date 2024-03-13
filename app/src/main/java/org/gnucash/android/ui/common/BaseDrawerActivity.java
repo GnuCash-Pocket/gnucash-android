@@ -15,6 +15,8 @@
  */
 package org.gnucash.android.ui.common;
 
+import static org.gnucash.android.app.IntentExtKt.takePersistableUriPermission;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -310,6 +312,7 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
                         & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                 getContentResolver().takePersistableUriPermission(data.getData(), takeFlags);
                 AccountsActivity.importXmlFileFromIntent(this, data, null);
+                takePersistableUriPermission(this, data);
                 break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
