@@ -78,7 +78,7 @@ public class PreferenceActivity extends PasscodeLockActivity implements
             return false;
         }
         loadFragment(fragment);
-        return false;
+        return true;
     }
 
     /**
