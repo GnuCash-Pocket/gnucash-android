@@ -83,6 +83,8 @@ In order to generate a `google-services.json` configuration file follow these st
 - Skip "_Add Firebase SDK step_".
 - Run app to verify that the configuration is picked up correctly.
 
+You can also follow [these instructions](https://firebase.google.com/docs/android/setup).
+
 ## Support
 
 GitHub [Issues](https://github.com/GnuCash-Pocket/gnucash-android/issues)
