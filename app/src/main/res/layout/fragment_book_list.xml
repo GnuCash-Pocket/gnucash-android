@@ -14,11 +14,11 @@
  limitations under the License.
 -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="@dimen/dialog_padding"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/dialog_padding">
 
     <ListView
         android:id="@id/android:list"
@@ -28,12 +28,12 @@
 
     <TextView
         android:id="@id/android:empty"
+        style="@style/ListItem"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:text="No books in the database"
-        android:layout_gravity="center"
+        android:text="@string/no_books"
         android:textAppearance="?android:textAppearanceLarge"
-        style="@style/ListItem" />
+        android:visibility="gone" />
 
-</LinearLayout>
+</FrameLayout>

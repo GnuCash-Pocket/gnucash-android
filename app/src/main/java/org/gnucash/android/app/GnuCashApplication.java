@@ -119,17 +119,18 @@ public class GnuCashApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        GnuCashApplication.context = getApplicationContext();
+        final Context context = getApplicationContext();
+        GnuCashApplication.context = context;
 
         FirebaseApp.initializeApp(context);
         FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(isCrashlyticsEnabled());
 
         setUpUserVoice();
 
-        BookDbHelper bookDbHelper = new BookDbHelper(getApplicationContext());
+        BookDbHelper bookDbHelper = new BookDbHelper(context);
         mBooksDbAdapter = new BooksDbAdapter(bookDbHelper.getWritableDatabase());
 
-        initializeDatabaseAdapters();
+        initializeDatabaseAdapters(context);
         setDefaultCurrencyCode(getDefaultCurrencyCode());
 
         StethoUtils.install(this);
@@ -139,18 +140,16 @@ public class GnuCashApplication extends Application {
      * Initialize database adapter singletons for use in the application
      * This method should be called every time a new book is opened
      */
-    public static void initializeDatabaseAdapters() {
+    public static void initializeDatabaseAdapters(Context context) {
         if (mDbHelper != null) { //close if open
             mDbHelper.getReadableDatabase().close();
         }
 
         try {
-            mDbHelper = new DatabaseHelper(getAppContext(),
-                    mBooksDbAdapter.getActiveBookUID());
+            mDbHelper = new DatabaseHelper(context, mBooksDbAdapter.getActiveBookUID());
         } catch (BooksDbAdapter.NoActiveBookFoundException e) {
             mBooksDbAdapter.fixBooksDatabase();
-            mDbHelper = new DatabaseHelper(getAppContext(),
-                    mBooksDbAdapter.getActiveBookUID());
+            mDbHelper = new DatabaseHelper(context, mBooksDbAdapter.getActiveBookUID());
         }
         SQLiteDatabase mainDb;
         try {

@@ -16,6 +16,7 @@
 package org.gnucash.android.ui.common;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -75,8 +76,7 @@ import butterknife.ButterKnife;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public abstract class BaseDrawerActivity extends PasscodeLockActivity implements
-        PopupMenu.OnMenuItemClickListener {
+public abstract class BaseDrawerActivity extends PasscodeLockActivity {
 
     public static final int ID_MANAGE_BOOKS = 0xB00C;
     @BindView(R.id.drawer_layout)
@@ -111,7 +111,7 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity implements
         //if a parameter was passed to open an account within a specific book, then switch
         String bookUID = getIntent().getStringExtra(UxArgument.BOOK_UID);
         if (bookUID != null && !bookUID.equals(BooksDbAdapter.getInstance().getActiveBookUID())) {
-            BookUtils.activateBook(bookUID);
+            BookUtils.activateBook(this, bookUID);
         }
 
         ButterKnife.bind(this);
@@ -253,11 +253,7 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity implements
             break;
 
             case R.id.nav_item_favorites: { //favorite accounts
-                Intent intent = new Intent(this, AccountsActivity.class);
-                intent.putExtra(AccountsActivity.EXTRA_TAB_INDEX,
-                        AccountsActivity.INDEX_FAVORITE_ACCOUNTS_FRAGMENT);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
+                AccountsActivity.start(this, AccountsActivity.INDEX_FAVORITE_ACCOUNTS_FRAGMENT);
             }
             break;
 
@@ -321,46 +317,53 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity implements
         }
     }
 
-    @Override
-    public boolean onMenuItemClick(MenuItem item) {
-        long id = item.getItemId();
-        if (id == ID_MANAGE_BOOKS) {
-            Intent intent = new Intent(this, PreferenceActivity.class);
-            intent.setAction(PreferenceActivity.ACTION_MANAGE_BOOKS);
-            startActivity(intent);
-            mDrawerLayout.closeDrawer(mNavigationView);
-            return true;
-        }
-        BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
-        String bookUID = booksDbAdapter.getUID(id);
-        if (!bookUID.equals(booksDbAdapter.getActiveBookUID())) {
-            BookUtils.loadBook(bookUID);
-            finish();
-        }
-        AccountsActivity.start(GnuCashApplication.getAppContext());
-        return true;
-    }
-
     public void onClickAppTitle(View view) {
         mDrawerLayout.closeDrawer(mNavigationView);
         AccountsActivity.start(this);
     }
 
     public void onClickBook(View view) {
-        PopupMenu popup = new PopupMenu(this, view);
-        popup.setOnMenuItemClickListener(this);
+        final Context context = this;
+        PopupMenu popup = new PopupMenu(context, view);
 
+        final String[] bookUIDs = new String[6];
         Menu menu = popup.getMenu();
-        int maxRecent = 0;
-        Cursor cursor = BooksDbAdapter.getInstance().fetchAllRecords(null, null,
+        int id = 0;
+        final BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
+        Cursor cursor = booksDbAdapter.fetchAllRecords(null, null,
                 DatabaseSchema.BookEntry.COLUMN_MODIFIED_AT + " DESC");
-        while (cursor.moveToNext() && maxRecent++ < 5) {
-            long id = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseSchema.BookEntry._ID));
+        while (cursor.moveToNext() && id < 5) {
+            String uid = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.BookEntry.COLUMN_UID));
             String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.BookEntry.COLUMN_DISPLAY_NAME));
-            menu.add(0, (int) id, maxRecent, name);
+            bookUIDs[id] = uid;
+            menu.add(0, id, id, name);
+            id++;
         }
-        menu.add(0, ID_MANAGE_BOOKS, maxRecent, R.string.menu_manage_books);
+        bookUIDs[id] = null;
+        menu.add(0, ID_MANAGE_BOOKS, id, R.string.menu_manage_books);
 
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                int id = item.getItemId();
+                if (id == ID_MANAGE_BOOKS) {
+                    Intent intent = new Intent(context, PreferenceActivity.class);
+                    intent.setAction(PreferenceActivity.ACTION_MANAGE_BOOKS);
+                    startActivity(intent);
+                    mDrawerLayout.closeDrawer(mNavigationView);
+                    return true;
+                }
+                String bookUID = bookUIDs[id];
+                if (!bookUID.equals(booksDbAdapter.getActiveBookUID())) {
+                    BookUtils.loadBook(context, bookUID);
+                    finish();
+                    return true;
+                }
+                AccountsActivity.start(context);
+                return true;
+            }
+        });
         popup.show();
     }
 }

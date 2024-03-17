@@ -148,7 +148,7 @@ public class ImportAsyncTask extends AsyncTask<Uri, Void, Boolean> {
         Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
 
         if (mImportedBookUID != null)
-            BookUtils.loadBook(mImportedBookUID);
+            BookUtils.loadBook(mContext, mImportedBookUID);
 
         if (mDelegate != null)
             mDelegate.onTaskComplete();

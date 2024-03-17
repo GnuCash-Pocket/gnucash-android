@@ -518,10 +518,21 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
      * @param context Application context
      */
     public static void start(Context context) {
-        Intent accountsActivityIntent = new Intent(context, AccountsActivity.class);
-        accountsActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        accountsActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        context.startActivity(accountsActivityIntent);
+        start(context, INDEX_TOP_LEVEL_ACCOUNTS_FRAGMENT);
+    }
+
+    /**
+     * Starts the AccountsActivity and clears the activity stack
+     *
+     * @param context Application context
+     * @param tabIndex the initial tab index to select.
+     */
+    public static void start(Context context, int tabIndex) {
+        Intent intent = new Intent(context, AccountsActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra(AccountsActivity.EXTRA_TAB_INDEX, tabIndex);
+        context.startActivity(intent);
     }
 
     @Override

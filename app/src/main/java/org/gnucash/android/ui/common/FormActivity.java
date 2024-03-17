@@ -65,7 +65,7 @@ public class FormActivity extends PasscodeLockActivity {
         //if a parameter was passed to open an account within a specific book, then switch
         String bookUID = getIntent().getStringExtra(UxArgument.BOOK_UID);
         if (bookUID != null && !bookUID.equals(BooksDbAdapter.getInstance().getActiveBookUID())) {
-            BookUtils.activateBook(bookUID);
+            BookUtils.activateBook(this, bookUID);
         }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
