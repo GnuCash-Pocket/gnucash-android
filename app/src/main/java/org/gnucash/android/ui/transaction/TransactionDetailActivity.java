@@ -58,6 +58,10 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
     TextView mDebitBalance;
     @BindView(R.id.balance_credit)
     TextView mCreditBalance;
+    @BindView(R.id.row_trn_recurrence)
+    View mRowRecurrence;
+    @BindView(R.id.row_trn_notes)
+    View mRowNotes;
 
     @BindView(R.id.fragment_transaction_details)
     TableLayout mDetailTableLayout;
@@ -97,9 +101,8 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
         int themeColor = AccountsDbAdapter.getActiveAccountColorResource(mAccountUID);
         actionBar.setBackgroundDrawable(new ColorDrawable(themeColor));
         mToolBar.setBackgroundColor(themeColor);
-        if (Build.VERSION.SDK_INT > 20)
-            getWindow().setStatusBarColor(GnuCashApplication.darken(themeColor));
 
+        getWindow().setStatusBarColor(GnuCashApplication.darken(themeColor));
     }
 
     class SplitAmountViewHolder {
@@ -163,17 +166,16 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
         if (transaction.getScheduledActionUID() != null) {
             ScheduledAction scheduledAction = ScheduledActionDbAdapter.getInstance().getRecord(transaction.getScheduledActionUID());
             mRecurrence.setText(scheduledAction.getRepeatString());
-            findViewById(R.id.row_trn_recurrence).setVisibility(View.VISIBLE);
-
+            mRowRecurrence.setVisibility(View.VISIBLE);
         } else {
-            findViewById(R.id.row_trn_recurrence).setVisibility(View.GONE);
+            mRowRecurrence.setVisibility(View.GONE);
         }
 
         if (transaction.getNote() != null && !transaction.getNote().isEmpty()) {
             mNotes.setText(transaction.getNote());
-            findViewById(R.id.row_trn_notes).setVisibility(View.VISIBLE);
+            mRowNotes.setVisibility(View.VISIBLE);
         } else {
-            findViewById(R.id.row_trn_notes).setVisibility(View.GONE);
+            mRowNotes.setVisibility(View.GONE);
         }
 
     }

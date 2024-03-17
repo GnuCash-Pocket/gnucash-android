@@ -69,8 +69,6 @@ public abstract class DatabaseAdapter<Model extends BaseModel> {
         insert, update, replace
     }
 
-    ;
-
     /**
      * Opens the database adapter with an existing database
      *

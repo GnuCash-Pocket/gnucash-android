@@ -207,7 +207,7 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
                 if (resultCode == Activity.RESULT_OK && data != null) {
                     ExportParams exportParams = new ExportParams(ExportFormat.CSVA);
                     exportParams.setExportTarget(ExportParams.ExportTarget.URI);
-                    exportParams.setExportLocation(data.getData().toString());
+                    exportParams.setExportLocation(data.getData());
                     ExportAsyncTask exportTask = new ExportAsyncTask(getActivity(), GnuCashApplication.getActiveDb());
 
                     try {

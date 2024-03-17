@@ -29,7 +29,6 @@ import android.os.SystemClock;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.multidex.MultiDexApplication;
 import androidx.preference.PreferenceManager;
 
 import com.google.firebase.FirebaseApp;
@@ -66,7 +65,7 @@ import java.util.Locale;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class GnuCashApplication extends MultiDexApplication {
+public class GnuCashApplication extends Application {
 
     /**
      * Authority (domain) for the file provider. Also used in the app manifest

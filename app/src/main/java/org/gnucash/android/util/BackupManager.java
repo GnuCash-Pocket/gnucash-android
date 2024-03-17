@@ -64,27 +64,9 @@ public class BackupManager {
     static void backupAllBooks() {
         BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
         List<String> bookUIDs = booksDbAdapter.getAllBookUIDs();
-        Context context = GnuCashApplication.getAppContext();
 
         for (String bookUID : bookUIDs) {
-            String backupFile = getBookBackupFileUri(bookUID);
-            if (backupFile == null) {
-                backupBook(bookUID);
-                continue;
-            }
-
-            try (BufferedOutputStream bufferedOutputStream =
-                         new BufferedOutputStream(context.getContentResolver().openOutputStream(Uri.parse(backupFile)))) {
-                GZIPOutputStream gzipOutputStream = new GZIPOutputStream(bufferedOutputStream);
-                OutputStreamWriter writer = new OutputStreamWriter(gzipOutputStream);
-                ExportParams params = new ExportParams(ExportFormat.XML);
-                new GncXmlExporter(params).generateExport(writer);
-                writer.close();
-            } catch (IOException ex) {
-                Log.e(LOG_TAG, "Auto backup failed for book " + bookUID);
-                ex.printStackTrace();
-                FirebaseCrashlytics.getInstance().recordException(ex);
-            }
+            backupBook(bookUID);
         }
     }
 
@@ -104,6 +86,7 @@ public class BackupManager {
      * @param bookUID Unique ID of the book
      * @return {@code true} if backup was successful, {@code false} otherwise
      */
+    // FIXME - Never run this on main thread!
     public static boolean backupBook(String bookUID) {
         OutputStream outputStream;
         try {
@@ -123,7 +106,7 @@ public class BackupManager {
             new GncXmlExporter(params).generateExport(writer);
             writer.close();
             return true;
-        } catch (IOException | Exporter.ExporterException e) {
+        } catch (IOException | Exporter.ExporterException | NullPointerException e) {
             FirebaseCrashlytics.getInstance().recordException(e);
             Log.e("GncXmlExporter", "Error creating XML  backup", e);
             return false;

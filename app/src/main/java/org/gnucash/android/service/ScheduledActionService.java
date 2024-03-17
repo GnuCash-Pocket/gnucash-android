@@ -175,15 +175,15 @@ public class ScheduledActionService extends JobIntentService {
         ExportParams params = ExportParams.parseCsv(scheduledAction.getTag());
         // HACK: the tag isn't updated with the new date, so set the correct by hand
         params.setExportStartTime(new Timestamp(scheduledAction.getLastRunTime()));
-        Boolean result = false;
+        Integer result = null;
         try {
             //wait for async task to finish before we proceed (we are holding a wake lock)
             result = new ExportAsyncTask(GnuCashApplication.getAppContext(), db).execute(params).get();
         } catch (InterruptedException | ExecutionException e) {
             FirebaseCrashlytics.getInstance().recordException(e);
-            Log.e(LOG_TAG, e.getMessage());
+            Log.e(LOG_TAG, e.getMessage(), e);
         }
-        if (!result) {
+        if (result == null || result <= 0) {
             Log.i(LOG_TAG, "Backup/export did not occur. There might have been no"
                     + " new transactions to export or it might have crashed");
             // We don't know if something failed or there weren't transactions to export,

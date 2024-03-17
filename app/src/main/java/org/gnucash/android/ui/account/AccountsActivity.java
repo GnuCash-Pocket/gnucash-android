@@ -267,7 +267,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
                 Intent addAccountIntent = new Intent(AccountsActivity.this, FormActivity.class);
                 addAccountIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
                 addAccountIntent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name());
-                startActivityForResult(addAccountIntent, AccountsActivity.REQUEST_EDIT_ACCOUNT);
+                startActivity(addAccountIntent);
             }
         });
     }
@@ -509,8 +509,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
      * @param onFinishTask Task to be executed when import is complete
      */
     public static void importXmlFileFromIntent(Activity context, Intent data, TaskDelegate onFinishTask) {
-        BackupManager.backupActiveBook();
-        new ImportAsyncTask(context, onFinishTask).execute(data.getData());
+        new ImportAsyncTask(context, onFinishTask, true).execute(data.getData());
     }
 
     /**

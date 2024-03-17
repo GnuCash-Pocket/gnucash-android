@@ -111,7 +111,7 @@ public abstract class Exporter {
     /**
      * GUID of the book being exported
      */
-    protected String mBookUID;
+    private String mBookUID;
 
     public Exporter(ExportParams params, SQLiteDatabase db) {
         this.mExportParams = params;
@@ -142,6 +142,10 @@ public abstract class Exporter {
         mCacheDir = new File(mContext.getCacheDir(), params.getExportFormat().name());
         mCacheDir.mkdir();
         purgeDirectory(mCacheDir);
+    }
+
+    public String getBookUID() {
+        return mBookUID;
     }
 
     /**

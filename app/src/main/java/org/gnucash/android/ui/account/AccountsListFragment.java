@@ -240,21 +240,19 @@ public class AccountsListFragment extends Fragment implements
     }
 
     /**
-     * Delete the account with record ID <code>rowId</code>
+     * Delete the account with UID.
      * It shows the delete confirmation dialog if the account has transactions,
      * else deletes the account immediately
      *
-     * @param rowId The record ID of the account
+     * @param accountUID The UID of the account
      */
-    public void tryDeleteAccount(long rowId) {
-        Account acc = mAccountsDbAdapter.getRecord(rowId);
-        if (acc.getTransactionCount() > 0 || mAccountsDbAdapter.getSubAccountCount(acc.getUID()) > 0) {
-            showConfirmationDialog(rowId);
+    private void tryDeleteAccount(String accountUID) {
+        if (mAccountsDbAdapter.getTransactionCount(accountUID) > 0 || mAccountsDbAdapter.getSubAccountCount(accountUID) > 0) {
+            showConfirmationDialog(accountUID);
         } else {
             BackupManager.backupActiveBook();
             // Avoid calling AccountsDbAdapter.deleteRecord(long). See #654
-            String uid = mAccountsDbAdapter.getUID(rowId);
-            mAccountsDbAdapter.deleteRecord(uid);
+            mAccountsDbAdapter.deleteRecord(accountUID);
             refresh();
         }
     }
@@ -262,13 +260,12 @@ public class AccountsListFragment extends Fragment implements
     /**
      * Shows the delete confirmation dialog
      *
-     * @param id Record ID of account to be deleted after confirmation
+     * @param accountUID Unique ID of account to be deleted after confirmation
      */
-    public void showConfirmationDialog(long id) {
+    private void showConfirmationDialog(String accountUID) {
         DeleteAccountDialogFragment alertFragment =
-                DeleteAccountDialogFragment.newInstance(mAccountsDbAdapter.getUID(id));
-        alertFragment.setTargetFragment(this, 0);
-        alertFragment.show(getActivity().getSupportFragmentManager(), "delete_confirmation_dialog");
+                DeleteAccountDialogFragment.newInstance(accountUID);
+        alertFragment.show(getChildFragmentManager(), "delete_confirmation_dialog");
     }
 
     @Override
@@ -331,16 +328,16 @@ public class AccountsListFragment extends Fragment implements
 
     /**
      * Opens a new activity for creating or editing an account.
-     * If the <code>accountId</code> &lt; 1, then create else edit the account.
+     * If the <code>accountUID</code> is empty, then create else edit the account.
      *
-     * @param accountId Long record ID of account to be edited. Pass 0 to create a new account.
+     * @param accountUID Unique ID of account to be edited. Pass 0 to create a new account.
      */
-    public void openCreateOrEditActivity(long accountId) {
+    public void openCreateOrEditActivity(String accountUID) {
         Intent editAccountIntent = new Intent(AccountsListFragment.this.getActivity(), FormActivity.class);
         editAccountIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
-        editAccountIntent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountsDbAdapter.getUID(accountId));
+        editAccountIntent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
         editAccountIntent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name());
-        startActivityForResult(editAccountIntent, AccountsActivity.REQUEST_EDIT_ACCOUNT);
+        startActivity(editAccountIntent);
     }
 
     @Override
@@ -493,7 +490,7 @@ public class AccountsListFragment extends Fragment implements
         public void onBindViewHolderCursor(final AccountViewHolder holder, final Cursor cursor) {
             final String accountUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_UID));
             mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-            holder.accoundId = mAccountsDbAdapter.getID(accountUID);
+            holder.accountUID = accountUID;
 
             holder.accountName.setText(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_NAME)));
             int subAccountCount = mAccountsDbAdapter.getSubAccountCount(accountUID);
@@ -593,7 +590,8 @@ public class AccountsListFragment extends Fragment implements
             View colorStripView;
             @BindView(R.id.budget_indicator)
             ProgressBar budgetIndicator;
-            long accoundId;
+
+            String accountUID;
 
             public AccountViewHolder(View itemView) {
                 super(itemView);
@@ -617,11 +615,11 @@ public class AccountsListFragment extends Fragment implements
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.context_menu_edit_accounts:
-                        openCreateOrEditActivity(accoundId);
+                        openCreateOrEditActivity(accountUID);
                         return true;
 
                     case R.id.context_menu_delete:
-                        tryDeleteAccount(accoundId);
+                        tryDeleteAccount(accountUID);
                         return true;
 
                     default:

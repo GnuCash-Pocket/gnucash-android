@@ -936,7 +936,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     }
 
     /**
-     * Returns a cursor to the dataset containing sub-accounts of the account with record ID <code>accoundId</code>
+     * Returns a cursor to the dataset containing sub-accounts of the account with record ID <code>accountUID</code>
      *
      * @param accountUID GUID of the parent account
      * @return {@link Cursor} to the sub accounts data set
@@ -1039,7 +1039,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     }
 
     /**
-     * Returns the number of accounts for which the account with ID <code>accoundId</code> is a first level parent
+     * Returns the number of accounts for which the account with ID <code>accountUID</code> is a first level parent
      *
      * @param accountUID String Unique ID (GUID) of the account
      * @return Number of sub accounts
@@ -1355,5 +1355,24 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         } finally {
             cursor.close();
         }
+    }
+
+    public Account getSimpleRecord(@NonNull String uid) {
+        Log.v(LOG_TAG, "Fetching simple record with GUID " + uid);
+
+        Cursor cursor = fetchRecord(uid);
+        try {
+            if (cursor.moveToFirst()) {
+                return buildSimpleAccountInstance(cursor);
+            } else {
+                throw new IllegalArgumentException(LOG_TAG + ": Record with " + uid + " does not exist");
+            }
+        } finally {
+            cursor.close();
+        }
+    }
+
+    public long getTransactionCount(@NonNull String uid) {
+        return mTransactionsAdapter.getTransactionsCountForAccount(uid);
     }
 }

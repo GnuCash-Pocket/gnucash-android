@@ -30,7 +30,7 @@ public enum ExportFormat {
     /**
      * Full name of the export format acronym
      */
-    private String mDescription;
+    private final String mDescription;
 
     ExportFormat(String description) {
         this.mDescription = description;

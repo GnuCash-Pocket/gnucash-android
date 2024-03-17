@@ -40,6 +40,7 @@
     <string name="menu_delete">删除</string>
     <string name="alert_dialog_ok_delete">删除</string>
     <string name="alert_dialog_cancel">取消</string>
+    <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">科目已删除</string>
     <string name="title_confirm_delete">確認刪除</string>
     <string name="title_edit_transaction">編輯交易</string>
@@ -170,11 +171,10 @@
         <item>共同基金</item>
         <item>貿易</item>
     </string-array>
-    <string-array name="export_formats">
-        <item>QIF</item>
-        <item>OFX</item>
-        <item>XML</item>
-    </string-array>
+    <string name="file_format_csv">Comma-separated values</string>
+    <string name="file_format_qif">Quicken Interchange Format</string>
+    <string name="file_format_ofx">Open Financial eXchange</string>
+    <string name="file_format_xml">GnuCash XML</string>
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
     <string name="color_picker_default_title">選擇顏色</string>
     <!-- Content description for a color square. -->
