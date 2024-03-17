@@ -17,6 +17,7 @@
 package org.gnucash.android.ui.export;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -171,33 +172,21 @@ public class ExportFormFragment extends Fragment implements
     /**
      * Event recurrence options
      */
-    private EventRecurrence mEventRecurrence = new EventRecurrence();
+    private final EventRecurrence mEventRecurrence = new EventRecurrence();
 
     /**
      * Recurrence rule
      */
     private String mRecurrenceRule;
 
-    private Calendar mExportStartCalendar = Calendar.getInstance();
+    private final Calendar mExportStartCalendar = Calendar.getInstance();
 
     /**
      * Tag for logging
      */
     private static final String TAG = "ExportFormFragment";
 
-    /**
-     * Export format
-     */
-    private ExportFormat mExportFormat = ExportFormat.QIF;
-
-    private ExportParams.ExportTarget mExportTarget = ExportParams.ExportTarget.SD_CARD;
-
-    /**
-     * The Uri target for the export
-     */
-    private Uri mExportUri;
-
-    private char mExportCsvSeparator = ',';
+    private final ExportParams mExportParams = new ExportParams();
 
     /**
      * Flag to determine if export has been started.
@@ -208,9 +197,9 @@ public class ExportFormFragment extends Fragment implements
     private void onRadioButtonClicked(View view) {
         switch (view.getId()) {
             case R.id.radio_ofx_format:
-                mExportFormat = ExportFormat.OFX;
+                mExportParams.setExportFormat(ExportFormat.OFX);
                 if (GnuCashApplication.isDoubleEntryEnabled()) {
-                    mExportWarningTextView.setText(getActivity().getString(R.string.export_warning_ofx));
+                    mExportWarningTextView.setText(getString(R.string.export_warning_ofx));
                     mExportWarningTextView.setVisibility(View.VISIBLE);
                 } else {
                     mExportWarningTextView.setVisibility(View.GONE);
@@ -221,10 +210,10 @@ public class ExportFormFragment extends Fragment implements
                 break;
 
             case R.id.radio_qif_format:
-                mExportFormat = ExportFormat.QIF;
+                mExportParams.setExportFormat(ExportFormat.QIF);
                 //TODO: Also check that there exist transactions with multiple currencies before displaying warning
                 if (GnuCashApplication.isDoubleEntryEnabled()) {
-                    mExportWarningTextView.setText(getActivity().getString(R.string.export_warning_qif));
+                    mExportWarningTextView.setText(getString(R.string.export_warning_qif));
                     mExportWarningTextView.setVisibility(View.VISIBLE);
                 } else {
                     mExportWarningTextView.setVisibility(View.GONE);
@@ -235,27 +224,27 @@ public class ExportFormFragment extends Fragment implements
                 break;
 
             case R.id.radio_xml_format:
-                mExportFormat = ExportFormat.XML;
+                mExportParams.setExportFormat(ExportFormat.XML);
                 mExportWarningTextView.setText(R.string.export_warning_xml);
                 OptionsViewAnimationUtils.collapse(mExportDateLayout);
                 OptionsViewAnimationUtils.collapse(mCsvOptionsLayout);
                 break;
 
             case R.id.radio_csv_transactions_format:
-                mExportFormat = ExportFormat.CSVT;
+                mExportParams.setExportFormat(ExportFormat.CSVT);
                 mExportWarningTextView.setText(R.string.export_notice_csv);
                 OptionsViewAnimationUtils.expand(mExportDateLayout);
                 OptionsViewAnimationUtils.expand(mCsvOptionsLayout);
                 break;
 
             case R.id.radio_separator_comma_format:
-                mExportCsvSeparator = ',';
+                mExportParams.setCsvSeparator(',');
                 break;
             case R.id.radio_separator_colon_format:
-                mExportCsvSeparator = ':';
+                mExportParams.setCsvSeparator(':');
                 break;
             case R.id.radio_separator_semicolon_format:
-                mExportCsvSeparator = ';';
+                mExportParams.setCsvSeparator(';');
                 break;
         }
     }
@@ -267,7 +256,7 @@ public class ExportFormFragment extends Fragment implements
 
         ButterKnife.bind(this, view);
 
-        bindViewListeners();
+        bindViewListeners(view);
 
         return view;
     }
@@ -325,13 +314,13 @@ public class ExportFormFragment extends Fragment implements
      * Starts the export of transactions with the specified parameters
      */
     private void startExport() {
-        if (mExportTarget == ExportParams.ExportTarget.URI && mExportUri == null) {
+        ExportParams exportParameters = mExportParams;
+
+        if (exportParameters.getExportTarget() == ExportParams.ExportTarget.URI && exportParameters.getExportLocation() == null) {
             mExportStarted = true;
             selectExportFile();
             return;
         }
-
-        ExportParams exportParameters = new ExportParams(mExportFormat);
 
         if (mExportAllSwitch.isChecked()) {
             exportParameters.setExportStartTime(TimestampHelper.getTimestampFromEpochZero());
@@ -339,13 +328,8 @@ public class ExportFormFragment extends Fragment implements
             exportParameters.setExportStartTime(new Timestamp(mExportStartCalendar.getTimeInMillis()));
         }
 
-        exportParameters.setExportTarget(mExportTarget);
-        exportParameters.setExportLocation(mExportUri != null ? mExportUri.toString() : null);
-        exportParameters.setDeleteTransactionsAfterExport(mDeleteAllCheckBox.isChecked());
-        exportParameters.setCsvSeparator(mExportCsvSeparator);
-
         Log.i(TAG, "Commencing async export of transactions");
-        new ExportAsyncTask(getActivity(), GnuCashApplication.getActiveDb()).execute(exportParameters);
+        new ExportAsyncTask(requireContext(), GnuCashApplication.getActiveDb()).execute(exportParameters);
 
         if (mRecurrenceRule != null) {
             ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
@@ -368,9 +352,10 @@ public class ExportFormFragment extends Fragment implements
     /**
      * Bind views to actions when initializing the export form
      */
-    private void bindViewListeners() {
+    private void bindViewListeners(View view) {
+        final Context context = view.getContext();
         // export destination bindings
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getActivity(),
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(context,
                 R.array.export_destinations, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mDestinationSpinner.setAdapter(adapter);
@@ -381,40 +366,42 @@ public class ExportFormFragment extends Fragment implements
                     return;
                 switch (position) {
                     case 0: //Save As..
-                        mExportTarget = ExportParams.ExportTarget.URI;
+                        mExportParams.setExportTarget(ExportParams.ExportTarget.URI);
                         mRecurrenceOptionsView.setVisibility(View.VISIBLE);
-                        if (mExportUri != null)
-                            setExportUriText(mExportUri.toString());
+                        Uri exportUri = mExportParams.getExportLocation();
+                        if (exportUri != null)
+                            setExportUriText(exportUri.toString());
+                        else
+                            setExportUriText(null);
                         break;
                     case 1: //DROPBOX
                         setExportUriText(getString(R.string.label_dropbox_export_destination));
                         mRecurrenceOptionsView.setVisibility(View.VISIBLE);
-                        mExportTarget = ExportParams.ExportTarget.DROPBOX;
+                        mExportParams.setExportTarget(ExportParams.ExportTarget.DROPBOX);
                         String dropboxAppKey = getString(R.string.dropbox_app_key, BackupPreferenceFragment.DROPBOX_APP_KEY);
-                        String dropboxAppSecret = getString(R.string.dropbox_app_secret, BackupPreferenceFragment.DROPBOX_APP_SECRET);
 
                         if (!DropboxHelper.hasToken()) {
-                            Auth.startOAuth2Authentication(getActivity(), dropboxAppKey);
+                            Auth.startOAuth2Authentication(context, dropboxAppKey);
                         }
                         break;
                     case 2: //OwnCloud
                         setExportUriText(null);
                         mRecurrenceOptionsView.setVisibility(View.VISIBLE);
-                        mExportTarget = ExportParams.ExportTarget.OWNCLOUD;
+                        mExportParams.setExportTarget(ExportParams.ExportTarget.OWNCLOUD);
                         if (!(PreferenceManager.getDefaultSharedPreferences(getActivity())
                                 .getBoolean(getString(R.string.key_owncloud_sync), false))) {
                             OwnCloudDialogFragment ocDialog = OwnCloudDialogFragment.newInstance(null);
-                            ocDialog.show(getActivity().getSupportFragmentManager(), "ownCloud dialog");
+                            ocDialog.show(getChildFragmentManager(), "ownCloud dialog");
                         }
                         break;
                     case 3: //Share File
                         setExportUriText(getString(R.string.label_select_destination_after_export));
-                        mExportTarget = ExportParams.ExportTarget.SHARING;
+                        mExportParams.setExportTarget(ExportParams.ExportTarget.SHARING);
                         mRecurrenceOptionsView.setVisibility(View.GONE);
                         break;
 
                     default:
-                        mExportTarget = ExportParams.ExportTarget.SD_CARD;
+                        mExportParams.setExportTarget(ExportParams.ExportTarget.SD_CARD);
                         break;
                 }
             }
@@ -498,31 +485,36 @@ public class ExportFormFragment extends Fragment implements
 
         mExportAllSwitch.setChecked(sharedPrefs.getBoolean(getString(R.string.key_export_all_transactions), false));
         mDeleteAllCheckBox.setChecked(sharedPrefs.getBoolean(getString(R.string.key_delete_transactions_after_export), false));
+        mDeleteAllCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                mExportParams.setDeleteTransactionsAfterExport(isChecked);
+            }
+        });
 
         mRecurrenceTextView.setOnClickListener(new RecurrenceViewClickListener((AppCompatActivity) getActivity(), mRecurrenceRule, this));
 
         //this part (setting the export format) must come after the recurrence view bindings above
         String defaultExportFormat = sharedPrefs.getString(getString(R.string.key_default_export_format), ExportFormat.CSVT.name());
-        mExportFormat = ExportFormat.valueOf(defaultExportFormat);
+        mExportParams.setExportFormat(ExportFormat.valueOf(defaultExportFormat));
 
-        View.OnClickListener radioClickListener = new View.OnClickListener() {
+        RadioButton.OnCheckedChangeListener radioClickListener = new RadioButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View view) {
-                onRadioButtonClicked(view);
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    onRadioButtonClicked(buttonView);
+                }
             }
         };
 
-        View v = getView();
-        if(v == null) return;
+        mOfxRadioButton.setOnCheckedChangeListener(radioClickListener);
+        mQifRadioButton.setOnCheckedChangeListener(radioClickListener);
+        mXmlRadioButton.setOnCheckedChangeListener(radioClickListener);
+        mCsvTransactionsRadioButton.setOnCheckedChangeListener(radioClickListener);
 
-        mOfxRadioButton.setOnClickListener(radioClickListener);
-        mQifRadioButton.setOnClickListener(radioClickListener);
-        mXmlRadioButton.setOnClickListener(radioClickListener);
-        mCsvTransactionsRadioButton.setOnClickListener(radioClickListener);
-
-        mSeparatorCommaButton.setOnClickListener(radioClickListener);
-        mSeparatorColonButton.setOnClickListener(radioClickListener);
-        mSeparatorSemicolonButton.setOnClickListener(radioClickListener);
+        mSeparatorCommaButton.setOnCheckedChangeListener(radioClickListener);
+        mSeparatorColonButton.setOnCheckedChangeListener(radioClickListener);
+        mSeparatorSemicolonButton.setOnCheckedChangeListener(radioClickListener);
 
         ExportFormat defaultFormat = ExportFormat.valueOf(defaultExportFormat.toUpperCase());
         switch (defaultFormat) {
@@ -570,8 +562,7 @@ public class ExportFormFragment extends Fragment implements
         Intent createIntent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         createIntent.setType("*/*").addCategory(Intent.CATEGORY_OPENABLE);
         String bookName = BooksDbAdapter.getInstance().getActiveBookDisplayName();
-
-        String filename = Exporter.buildExportFilename(mExportFormat, bookName);
+        String filename = Exporter.buildExportFilename(mExportParams.getExportFormat(), bookName);
         createIntent.putExtra(Intent.EXTRA_TITLE, filename);
         startActivityForResult(createIntent, REQUEST_EXPORT_FILE);
     }
@@ -583,7 +574,7 @@ public class ExportFormFragment extends Fragment implements
 
         if (mRecurrenceRule != null) {
             mEventRecurrence.parse(mRecurrenceRule);
-            repeatString = EventRecurrenceFormatter.getRepeatString(getActivity(), getResources(),
+            repeatString = EventRecurrenceFormatter.getRepeatString(requireContext(), getResources(),
                     mEventRecurrence, true);
         }
         mRecurrenceTextView.setText(repeatString);
@@ -605,17 +596,23 @@ public class ExportFormFragment extends Fragment implements
             case REQUEST_EXPORT_FILE:
                 if (resultCode == Activity.RESULT_OK) {
                     if (data != null) {
-                        mExportUri = data.getData();
+                        Uri location = data.getData();
+                        mExportParams.setExportLocation(location);
+                        if (location != null) {
+                            setExportUriText(location.toString());
+
+                            final int takeFlags = data.getFlags()
+                                & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                            requireContext().getContentResolver().takePersistableUriPermission(location, takeFlags);
+                        } else {
+                            setExportUriText(null);
+                        }
+                    } else {
+                        setExportUriText(null);
                     }
 
-                    final int takeFlags = data.getFlags()
-                            & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                    getActivity().getContentResolver().takePersistableUriPermission(mExportUri, takeFlags);
-
-                    mTargetUriTextView.setText(mExportUri.toString());
                     if (mExportStarted)
                         startExport();
-
                 }
                 break;
         }

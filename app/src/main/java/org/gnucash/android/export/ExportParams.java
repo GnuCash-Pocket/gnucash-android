@@ -38,10 +38,14 @@ public class ExportParams {
      * It could be stored on the {@link #SD_CARD} or exported through another program via {@link #SHARING}
      */
     public enum ExportTarget {
-        SD_CARD("SD Card"), SHARING("External Service"),
-        DROPBOX("Dropbox"), GOOGLE_DRIVE("Google Drive"), OWNCLOUD("ownCloud"),
+        SD_CARD("SD Card"),
+        SHARING("External Service"),
+        DROPBOX("Dropbox"),
+        GOOGLE_DRIVE("Google Drive"),
+        OWNCLOUD("ownCloud"),
         URI("Sync Service");
-        private String mDescription;
+
+        private final String mDescription;
 
         ExportTarget(String description) {
             mDescription = description;
@@ -78,7 +82,7 @@ public class ExportParams {
      * Location to save the file name being exported.
      * This is typically a Uri and used for {@link ExportTarget#URI} target
      */
-    private String mExportLocation;
+    private Uri mExportLocation;
 
     /**
      * CSV-separator char
@@ -86,11 +90,19 @@ public class ExportParams {
     private char mCsvSeparator = ',';
 
     /**
-     * Creates a new set of paramters and specifies the export format
+     * Creates a new set of parameters.
+     */
+    public ExportParams() {
+        super();
+    }
+
+    /**
+     * Creates a new set of parameters and specifies the export format
      *
      * @param format Format to use when exporting the transactions
      */
     public ExportParams(ExportFormat format) {
+        this();
         setExportFormat(format);
     }
 
@@ -174,7 +186,7 @@ public class ExportParams {
      *
      * @return String representing export file destination.
      */
-    public String getExportLocation() {
+    public Uri getExportLocation() {
         return mExportLocation;
     }
 
@@ -183,7 +195,7 @@ public class ExportParams {
      *
      * @param exportLocation Destination of the export
      */
-    public void setExportLocation(String exportLocation) {
+    public void setExportLocation(Uri exportLocation) {
         mExportLocation = exportLocation;
     }
 
@@ -223,7 +235,7 @@ public class ExportParams {
         return mExportFormat.name() + separator
                 + mExportTarget.name() + separator
                 + TimestampHelper.getUtcStringFromTimestamp(mExportStartTime) + separator
-                + Boolean.toString(mDeleteTransactionsAfterExport) + separator
+                + mDeleteTransactionsAfterExport + separator
                 + (mExportLocation != null ? mExportLocation : "");
     }
 
@@ -240,7 +252,7 @@ public class ExportParams {
         params.setExportStartTime(TimestampHelper.getTimestampFromUtcString(tokens[2]));
         params.setDeleteTransactionsAfterExport(Boolean.parseBoolean(tokens[3]));
         if (tokens.length == 5) {
-            params.setExportLocation(tokens[4]);
+            params.setExportLocation(Uri.parse(tokens[4]));
         }
         return params;
     }

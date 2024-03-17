@@ -32,6 +32,7 @@ import org.gnucash.android.R;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.ui.util.TaskDelegate;
+import org.gnucash.android.util.BackupManager;
 import org.gnucash.android.util.BookUtils;
 
 import java.io.InputStream;
@@ -43,17 +44,22 @@ import java.io.InputStream;
 public class ImportAsyncTask extends AsyncTask<Uri, Void, Boolean> {
     private final Activity mContext;
     private TaskDelegate mDelegate;
+    private final boolean mBackup;
     private ProgressDialog mProgressDialog;
-
     private String mImportedBookUID;
 
     public ImportAsyncTask(Activity context) {
-        this.mContext = context;
+        this(context, null);
     }
 
     public ImportAsyncTask(Activity context, TaskDelegate delegate) {
+        this(context, delegate, false);
+    }
+
+    public ImportAsyncTask(Activity context, TaskDelegate delegate, boolean backup) {
         this.mContext = context;
         this.mDelegate = delegate;
+        this.mBackup = backup;
     }
 
     @Override
@@ -68,19 +74,21 @@ public class ImportAsyncTask extends AsyncTask<Uri, Void, Boolean> {
         //these methods must be called after progressDialog.show()
         mProgressDialog.setProgressNumberFormat(null);
         mProgressDialog.setProgressPercentFormat(null);
-
-
     }
 
     @Override
     protected Boolean doInBackground(Uri... uris) {
-        try {
-            InputStream accountInputStream = mContext.getContentResolver().openInputStream(uris[0]);
-            mImportedBookUID = GncXmlImporter.parse(accountInputStream);
+        if (mBackup) {
+            BackupManager.backupActiveBook();
+        }
 
+        Uri uri = uris[0];
+        try {
+            InputStream accountInputStream = mContext.getContentResolver().openInputStream(uri);
+            mImportedBookUID = GncXmlImporter.parse(accountInputStream);
         } catch (Exception exception) {
-            Log.e(ImportAsyncTask.class.getName(), "" + exception.getMessage());
-            FirebaseCrashlytics.getInstance().log("Could not open: " + uris[0].toString());
+            Log.e(ImportAsyncTask.class.getName(), exception.getMessage());
+            FirebaseCrashlytics.getInstance().log("Could not open: " + uri.toString());
             FirebaseCrashlytics.getInstance().recordException(exception);
             exception.printStackTrace();
 
@@ -98,13 +106,18 @@ public class ImportAsyncTask extends AsyncTask<Uri, Void, Boolean> {
             return false;
         }
 
-        Cursor cursor = mContext.getContentResolver().query(uris[0], null, null, null, null);
+        Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null);
         if (cursor != null && cursor.moveToFirst()) {
             int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
             String displayName = cursor.getString(nameIndex);
+            // Remove short file type extension, e.g. ".xml" or ".gnca".
+            int indexFileType = displayName.lastIndexOf('.');
+            if ((indexFileType > 0) && (indexFileType + 5 >= displayName.length())) {
+                displayName = displayName.substring(0, indexFileType);
+            }
             ContentValues contentValues = new ContentValues();
             contentValues.put(DatabaseSchema.BookEntry.COLUMN_DISPLAY_NAME, displayName);
-            contentValues.put(DatabaseSchema.BookEntry.COLUMN_SOURCE_URI, uris[0].toString());
+            contentValues.put(DatabaseSchema.BookEntry.COLUMN_SOURCE_URI, uri.toString());
             BooksDbAdapter.getInstance().updateRecord(mImportedBookUID, contentValues);
 
             cursor.close();

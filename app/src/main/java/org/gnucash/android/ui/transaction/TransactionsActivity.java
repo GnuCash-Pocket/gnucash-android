@@ -55,12 +55,14 @@ import org.gnucash.android.model.Account;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.account.AccountsActivity;
 import org.gnucash.android.ui.account.AccountsListFragment;
+import org.gnucash.android.ui.account.DeleteAccountDialogFragment;
 import org.gnucash.android.ui.account.OnAccountClickedListener;
 import org.gnucash.android.ui.common.BaseDrawerActivity;
 import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.util.AccountBalanceTask;
+import org.gnucash.android.util.BackupManager;
 import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
 import org.joda.time.LocalDate;
 
@@ -346,8 +348,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
                         addAccountIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
                         addAccountIntent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name());
                         addAccountIntent.putExtra(UxArgument.PARENT_ACCOUNT_UID, mAccountUID);
-                        startActivityForResult(addAccountIntent, AccountsActivity.REQUEST_EDIT_ACCOUNT);
-                        ;
+                        startActivity(addAccountIntent);
                         break;
 
                     case INDEX_TRANSACTIONS_FRAGMENT:
@@ -453,7 +454,11 @@ public class TransactionsActivity extends BaseDrawerActivity implements
                 editAccountIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
                 editAccountIntent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
                 editAccountIntent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name());
-                startActivityForResult(editAccountIntent, AccountsActivity.REQUEST_EDIT_ACCOUNT);
+                startActivity(editAccountIntent);
+                return true;
+
+            case R.id.menu_delete_account:
+                tryDeleteAccount(mAccountUID);
                 return true;
 
             default:
@@ -552,5 +557,34 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         restartIntent.setAction(Intent.ACTION_VIEW);
         restartIntent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
         startActivity(restartIntent);
+    }
+
+    /**
+     * Delete the account with UID.
+     * It shows the delete confirmation dialog if the account has transactions,
+     * else deletes the account immediately
+     *
+     * @param accountUID The UID of the account
+     */
+    private void tryDeleteAccount(String accountUID) {
+        if (mAccountsDbAdapter.getTransactionCount(accountUID) > 0 || mAccountsDbAdapter.getSubAccountCount(accountUID) > 0) {
+            showConfirmationDialog(accountUID);
+        } else {
+            BackupManager.backupActiveBook();
+            // Avoid calling AccountsDbAdapter.deleteRecord(long). See #654
+            mAccountsDbAdapter.deleteRecord(accountUID);
+            refresh();
+        }
+    }
+
+    /**
+     * Shows the delete confirmation dialog
+     *
+     * @param accountUID Unique ID of account to be deleted after confirmation
+     */
+    private void showConfirmationDialog(String accountUID) {
+        DeleteAccountDialogFragment alertFragment =
+            DeleteAccountDialogFragment.newInstance(accountUID);
+        alertFragment.show(getSupportFragmentManager(), "delete_confirmation_dialog");
     }
 }

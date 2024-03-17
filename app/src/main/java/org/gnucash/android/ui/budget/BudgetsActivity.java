@@ -51,11 +51,9 @@ public class BudgetsActivity extends BaseDrawerActivity {
 
         if (savedInstanceState == null) {
             FragmentManager fragmentManager = getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager
-                    .beginTransaction();
-
-            fragmentTransaction.replace(R.id.fragment_container, new BudgetListFragment());
-            fragmentTransaction.commit();
+            fragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, new BudgetListFragment())
+                .commit();
         }
     }
 

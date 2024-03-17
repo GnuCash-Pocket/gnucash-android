@@ -165,13 +165,11 @@ public class BudgetListFragment extends Fragment implements Refreshable,
      * @param budgetUID GUID of budget
      */
     public void onClickBudget(String budgetUID) {
-        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager
-                .beginTransaction();
-
-        fragmentTransaction.replace(R.id.fragment_container, BudgetDetailFragment.newInstance(budgetUID));
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+        FragmentManager fragmentManager = getParentFragmentManager();
+        fragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, BudgetDetailFragment.newInstance(budgetUID))
+            .addToBackStack(null)
+            .commit();
     }
 
     /**

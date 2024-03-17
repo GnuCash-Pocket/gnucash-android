@@ -190,11 +190,9 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
      */
     private void loadFragment(BaseReportFragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager
-                .beginTransaction();
-
-        fragmentTransaction.replace(R.id.fragment_container, fragment);
-        fragmentTransaction.commit();
+        fragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit();
     }
 
     /**

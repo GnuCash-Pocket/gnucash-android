@@ -48,7 +48,7 @@ import android.widget.Spinner;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.cursoradapter.widget.SimpleCursorAdapter;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -76,6 +76,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -283,7 +284,7 @@ public class AccountFormFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (s.toString().length() > 0) {
+                if (!TextUtils.isEmpty(s)) {
                     mTextInputLayout.setErrorEnabled(false);
                 }
             }
@@ -302,7 +303,6 @@ public class AccountFormFragment extends Fragment {
                 //nothing to see here, move along
             }
         });
-
 
         mParentAccountSpinner.setEnabled(false);
 
@@ -351,7 +351,7 @@ public class AccountFormFragment extends Fragment {
 
         ActionBar supportActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (mAccountUID != null) {
-            mAccount = mAccountsDbAdapter.getRecord(mAccountUID);
+            mAccount = mAccountsDbAdapter.getSimpleRecord(mAccountUID);
             supportActionBar.setTitle(R.string.title_edit_account);
         } else {
             supportActionBar.setTitle(R.string.title_create_account);
@@ -540,12 +540,12 @@ public class AccountFormFragment extends Fragment {
      */
     private int[] getAccountColorOptions() {
         Resources res = getResources();
+        int colorDefault = ResourcesCompat.getColor(res, R.color.title_green, null);
         TypedArray colorTypedArray = res.obtainTypedArray(R.array.account_colors);
-        int[] colorOptions = new int[colorTypedArray.length()];
-        for (int i = 0; i < colorTypedArray.length(); i++) {
-            int color = colorTypedArray.getColor(i, ContextCompat.getColor(getContext(),
-                    R.color.title_green));
-            colorOptions[i] = color;
+        int colorLength = colorTypedArray.length();
+        int[] colorOptions = new int[colorLength];
+        for (int i = 0; i < colorLength; i++) {
+            colorOptions[i] = colorTypedArray.getColor(i, colorDefault);
         }
         colorTypedArray.recycle();
         return colorOptions;
@@ -763,18 +763,18 @@ public class AccountFormFragment extends Fragment {
         // accounts to update, in case we're updating full names of a sub account tree
         ArrayList<Account> accountsToUpdate = new ArrayList<>();
         boolean nameChanged = false;
+        String newName = getEnteredName();
         if (mAccount == null) {
-            String name = getEnteredName();
-            if (name.length() == 0) {
+            if (TextUtils.isEmpty(newName)) {
                 mTextInputLayout.setErrorEnabled(true);
                 mTextInputLayout.setError(getString(R.string.toast_no_account_name_entered));
                 return;
             }
-            mAccount = new Account(getEnteredName());
+            mAccount = new Account(newName);
             mAccountsDbAdapter.addRecord(mAccount, DatabaseAdapter.UpdateMethod.insert); //new account, insert it
         } else {
-            nameChanged = !mAccount.getName().equals(getEnteredName());
-            mAccount.setName(getEnteredName());
+            nameChanged = !mAccount.getName().equals(newName);
+            mAccount.setName(newName);
         }
 
         long commodityId = mCurrencySpinner.getSelectedItemId();
@@ -823,7 +823,7 @@ public class AccountFormFragment extends Fragment {
             }
             mAccount.setFullName(newAccountFullName);
             if (mDescendantAccountUIDs != null) {
-                // modifying existing account, e.t. name changed and/or parent changed
+                // modifying existing account, e.g. name changed and/or parent changed
                 if ((nameChanged || parentAccountId != newParentAccountId) && mDescendantAccountUIDs.size() > 0) {
                     // parent change, update all full names of descent accounts
                     accountsToUpdate.addAll(mAccountsDbAdapter.getSimpleAccountList(
@@ -831,7 +831,7 @@ public class AccountFormFragment extends Fragment {
                                     TextUtils.join("','", mDescendantAccountUIDs) + "')", null, null
                     ));
                 }
-                HashMap<String, Account> mapAccount = new HashMap<>();
+                Map<String, Account> mapAccount = new HashMap<>();
                 for (Account acct : accountsToUpdate) mapAccount.put(acct.getUID(), acct);
                 for (String uid : mDescendantAccountUIDs) {
                     // mAccountsDbAdapter.getDescendantAccountUIDs() will ensure a parent-child order

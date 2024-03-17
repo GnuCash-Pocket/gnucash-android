@@ -23,14 +23,19 @@
         android:title="@string/menu_title_favorite"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/menu_edit_account"
-        android:icon="@drawable/content_edit_holo_dark"
-        android:title="@string/title_edit_account"
-        app:showAsAction="never|withText" />
-    <item
         android:id="@+id/menu_compact_trn_view"
         android:icon="@drawable/content_edit_holo_dark"
         android:title="@string/menu_show_compact_view"
         android:checkable="true"
         app:showAsAction="never|withText" />
+    <item
+        android:id="@+id/menu_edit_account"
+        android:icon="@drawable/content_edit_holo_dark"
+        android:title="@string/title_edit_account"
+        app:showAsAction="never|withText" />
+    <item
+        android:id="@+id/menu_delete_account"
+        android:icon="@drawable/content_discard_holo_dark"
+        android:title="@string/title_delete_account"
+        app:showAsAction="never" />
 </menu>
