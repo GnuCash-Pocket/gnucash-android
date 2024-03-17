@@ -377,8 +377,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         if (getSupportActionBar() != null)
             getSupportActionBar().setBackgroundDrawable(new ColorDrawable(iColor));
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            getWindow().setStatusBarColor(GnuCashApplication.darken(iColor));
+        getWindow().setStatusBarColor(GnuCashApplication.darken(iColor));
     }
 
     /**

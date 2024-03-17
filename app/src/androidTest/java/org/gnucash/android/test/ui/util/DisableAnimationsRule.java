@@ -1,5 +1,6 @@
 package org.gnucash.android.test.ui.util;
 
+import android.Manifest;
 import android.app.UiAutomation;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
@@ -32,7 +33,7 @@ public class DisableAnimationsRule implements TestRule {
 
         UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            uiAutomation.adoptShellPermissionIdentity("android.permission.WRITE_SECURE_SETTINGS");
+            uiAutomation.adoptShellPermissionIdentity(Manifest.permission.WRITE_SECURE_SETTINGS);
         }
 
         for (String command : commands) {

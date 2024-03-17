@@ -274,7 +274,7 @@ public class ReportsOverviewFragment extends BaseReportFragment {
         } else {
             ViewCompat.setBackgroundTintList(button, tint);
         }
-        button.setTextColor(ContextCompat.getColor(getContext(), android.R.color.white));
+        button.setTextColor(ContextCompat.getColor(button.getContext(), android.R.color.white));
     }
 
 }
