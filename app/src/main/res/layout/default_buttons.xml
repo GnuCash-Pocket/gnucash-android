@@ -15,11 +15,11 @@
 -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    android:divider="?android:dividerHorizontal"
+    android:orientation="vertical"
     android:paddingTop="5dp"
-    android:divider="?android:attr/dividerHorizontal"
     android:showDividers="middle">
 
     <!-- placeholder, allows the divider to be displayed -->
@@ -28,27 +28,26 @@
         android:layout_height="0dp" />
 
     <LinearLayout
-        style="buttonBarStyle"
+        style="?buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         android:orientation="horizontal">
 
         <Button
             android:id="@+id/btn_cancel"
-            android:layout_width="0dp"
+            style="?buttonBarButtonStyle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            style="?attr/borderlessButtonStyle"
-            android:textColor="@color/theme_accent"
             android:text="@string/btn_cancel" />
 
         <Button
             android:id="@+id/btn_save"
-            android:layout_width="0dp"
+            style="?buttonBarButtonStyle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            style="?attr/borderlessButtonStyle"
-            android:textColor="@color/theme_accent"
             android:text="@string/btn_save" />
     </LinearLayout>
 </LinearLayout>

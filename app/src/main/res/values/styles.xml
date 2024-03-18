@@ -34,7 +34,7 @@
         <item name="android:gravity">center_vertical</item>
     </style>
 
-    <style name="Dropdown.TextView" parent="@style/Widget.AppCompat.Spinner.DropDown.ActionBar">
+    <style name="Dropdown.TextView" parent="Widget.AppCompat.Spinner.DropDown.ActionBar">
         <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
     </style>
 
@@ -42,7 +42,7 @@
         <item name="android:textColor">@android:color/white</item>
     </style>
 
-    <style name="TextAppearance" parent="android:TextAppearance"></style>
+    <style name="TextAppearance" parent="TextAppearance.AppCompat" />
 
     <style name="TextAppearance.EditTransaction_Small">
         <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>

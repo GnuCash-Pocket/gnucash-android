@@ -21,7 +21,7 @@
     <string name="description_view_account_icon">View account details</string>
     <string name="label_no_accounts">No accounts to display</string>
     <string name="label_account_name">Account name</string>
-    <string name="btn_cancel">Cancel</string>
+    <string name="btn_cancel">@android:string/cancel</string>
     <string name="btn_save">Save</string>
     <string name="btn_test">Test</string>
     <string name="label_passcode">Enter Passcode</string>
