@@ -86,6 +86,7 @@ public class WidgetConfigurationActivity extends Activity {
 
     private SimpleCursorAdapter mAccountsCursorAdapter;
 
+    private static final int FLAGS_UPDATE = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -286,7 +287,7 @@ public class WidgetConfigurationActivity extends Activity {
             views.setTextViewText(R.id.transactions_summary, "");
             //set it to simply open the app
             PendingIntent pendingIntent = PendingIntent.getActivity(context, 0,
-                    new Intent(context, AccountsActivity.class), 0);
+                    new Intent(context, AccountsActivity.class), FLAGS_UPDATE);
             views.setOnClickPendingIntent(R.id.widget_layout, pendingIntent);
             views.setOnClickPendingIntent(R.id.btn_new_transaction, pendingIntent);
             appWidgetManager.updateAppWidget(appWidgetId, views);
@@ -318,7 +319,7 @@ public class WidgetConfigurationActivity extends Activity {
         accountViewIntent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
         accountViewIntent.putExtra(UxArgument.BOOK_UID, bookUID);
         PendingIntent accountPendingIntent = PendingIntent
-                .getActivity(context, appWidgetId, accountViewIntent, 0);
+                .getActivity(context, appWidgetId, accountViewIntent, FLAGS_UPDATE);
         views.setOnClickPendingIntent(R.id.widget_layout, accountPendingIntent);
 
         if (accountsDbAdapter.isPlaceholderAccount(accountUID)) {
@@ -332,7 +333,7 @@ public class WidgetConfigurationActivity extends Activity {
             newTransactionIntent.putExtra(UxArgument.BOOK_UID, bookUID);
             newTransactionIntent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
             PendingIntent pendingIntent = PendingIntent
-                    .getActivity(context, appWidgetId, newTransactionIntent, 0);
+                    .getActivity(context, appWidgetId, newTransactionIntent, FLAGS_UPDATE);
             views.setOnClickPendingIntent(R.id.btn_new_transaction, pendingIntent);
             views.setViewVisibility(R.id.btn_view_account, View.GONE);
         }
