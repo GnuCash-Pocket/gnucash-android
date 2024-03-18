@@ -40,6 +40,7 @@
     <string name="menu_delete">Delete</string>
     <string name="alert_dialog_ok_delete">Delete</string>
     <string name="alert_dialog_cancel">Cancel</string>
+    <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">Account deleted</string>
     <string name="title_confirm_delete">Confirm delete</string>
     <string name="title_edit_transaction">Edit Transaction</string>
@@ -175,11 +176,10 @@
         <item>MUTUAL FUND</item>
         <item>TRADING</item>
     </string-array>
-    <string-array name="export_formats">
-        <item>QIF</item>
-        <item>OFX</item>
-        <item>XML</item>
-    </string-array>
+    <string name="file_format_csv">Comma-separated values</string>
+    <string name="file_format_qif">Quicken Interchange Format</string>
+    <string name="file_format_ofx">Open Financial eXchange</string>
+    <string name="file_format_xml">GnuCash XML</string>
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
     <string name="color_picker_default_title">Select a Color</string>
     <!-- Content description for a color square. -->

@@ -150,11 +150,7 @@ public class CalculatorEditText extends AppCompatEditText {
         setInputType(getInputType() | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
 
         // Disable system keyboard appearing on long-press, but for some reason, this prevents the text selection from working.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            setShowSoftInputOnFocus(false);
-        } else {
-            setRawInputType(InputType.TYPE_CLASS_NUMBER);
-        }
+        setShowSoftInputOnFocus(false);
 
         // Although this handler doesn't make sense, if removed, the standard keyboard
         // shows up in addition to the calculator one when the EditText gets a touch event.

@@ -267,7 +267,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
                 Intent addAccountIntent = new Intent(AccountsActivity.this, FormActivity.class);
                 addAccountIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
                 addAccountIntent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name());
-                startActivityForResult(addAccountIntent, AccountsActivity.REQUEST_EDIT_ACCOUNT);
+                startActivity(addAccountIntent);
             }
         });
     }
@@ -509,8 +509,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
      * @param onFinishTask Task to be executed when import is complete
      */
     public static void importXmlFileFromIntent(Activity context, Intent data, TaskDelegate onFinishTask) {
-        BackupManager.backupActiveBook();
-        new ImportAsyncTask(context, onFinishTask).execute(data.getData());
+        new ImportAsyncTask(context, onFinishTask, true).execute(data.getData());
     }
 
     /**
@@ -519,10 +518,21 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
      * @param context Application context
      */
     public static void start(Context context) {
-        Intent accountsActivityIntent = new Intent(context, AccountsActivity.class);
-        accountsActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        accountsActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        context.startActivity(accountsActivityIntent);
+        start(context, INDEX_TOP_LEVEL_ACCOUNTS_FRAGMENT);
+    }
+
+    /**
+     * Starts the AccountsActivity and clears the activity stack
+     *
+     * @param context Application context
+     * @param tabIndex the initial tab index to select.
+     */
+    public static void start(Context context, int tabIndex) {
+        Intent intent = new Intent(context, AccountsActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra(AccountsActivity.EXTRA_TAB_INDEX, tabIndex);
+        context.startActivity(intent);
     }
 
     @Override

@@ -18,6 +18,7 @@ package org.gnucash.android.test.unit.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
 import org.gnucash.android.R;
@@ -91,9 +92,9 @@ public class ScheduledActionServiceTest {
 
     public void createAccounts() {
         try {
-            String bookUID = GncXmlImporter.parse(GnuCashApplication.getAppContext().getResources().openRawResource(R.raw.default_accounts));
-            BookUtils.loadBook(bookUID);
-            //initAdapters(bookUID);
+            Context context = GnuCashApplication.getAppContext();
+            String bookUID = GncXmlImporter.parse(context.getResources().openRawResource(R.raw.default_accounts));
+            BookUtils.loadBook(context, bookUID);
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
             throw new RuntimeException("Could not create default accounts");

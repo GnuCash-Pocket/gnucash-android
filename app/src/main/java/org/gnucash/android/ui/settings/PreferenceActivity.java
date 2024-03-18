@@ -19,15 +19,22 @@ package org.gnucash.android.ui.settings;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.MenuItem;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.core.os.BuildCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
+
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -53,9 +60,9 @@ public class PreferenceActivity extends PasscodeLockActivity implements
 
         String action = getIntent().getAction();
         if (action != null && action.equals(ACTION_MANAGE_BOOKS)) {
-            loadFragment(new BookManagerFragment());
+            loadFragment(new BookManagerFragment(), false);
         } else {
-            loadFragment(new PreferenceHeadersFragment());
+            loadFragment(new PreferenceHeadersFragment(), false);
         }
 
         ActionBar actionBar = getSupportActionBar();
@@ -63,21 +70,30 @@ public class PreferenceActivity extends PasscodeLockActivity implements
         actionBar.setTitle(R.string.title_settings);
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
+
+        if (BuildCompat.isAtLeastT()) {
+            getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+                @Override
+                public void handleOnBackPressed() {
+                    handleBackPressed();
+                }
+            });
+        }
     }
 
     @Override
-    public boolean onPreferenceStartFragment(PreferenceFragmentCompat caller, Preference pref) {
-        String key = pref.getKey();
-        Fragment fragment = null;
+    public boolean onPreferenceStartFragment(@NonNull PreferenceFragmentCompat caller, @NonNull Preference pref) {
+        String fragmentClassName = pref.getFragment();
+        if (TextUtils.isEmpty(fragmentClassName)) return false;
         try {
-            Class<?> clazz = Class.forName(pref.getFragment());
-            fragment = (Fragment) clazz.newInstance();
+            Class<?> clazz = Class.forName(fragmentClassName);
+            Fragment fragment = (Fragment) clazz.newInstance();
+            loadFragment(fragment, true);
+            return true;
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
             //if we do not have a matching class, do nothing
-            return false;
         }
-        loadFragment(fragment);
         return false;
     }
 
@@ -86,28 +102,37 @@ public class PreferenceActivity extends PasscodeLockActivity implements
      *
      * @param fragment BaseReportFragment instance
      */
-    private void loadFragment(Fragment fragment) {
+    private void loadFragment(Fragment fragment, boolean stack) {
         FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .addToBackStack(null)
-                .commit();
+        FragmentTransaction tx = fragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment);
+        if (stack) tx.addToBackStack(null);
+        tx.commit();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                android.app.FragmentManager fm = getFragmentManager();
-                if (fm.getBackStackEntryCount() > 0) {
-                    fm.popBackStack();
-                } else {
-                    finish();
-                }
+                handleBackPressed();
                 return true;
 
             default:
                 return false;
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        handleBackPressed();
+    }
+
+    private void handleBackPressed() {
+        FragmentManager fm = getSupportFragmentManager();
+        if (fm.getBackStackEntryCount() > 0) {
+            fm.popBackStack();
+        } else {
+            finish();
         }
     }
 

@@ -156,10 +156,8 @@ public class ScheduledActionsListFragment extends ListFragment implements
     };
 
     private void setDefaultStatusBarColor() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getActivity().getWindow().setStatusBarColor(
-                    ContextCompat.getColor(getContext(), R.color.theme_primary_dark));
-        }
+        getActivity().getWindow().setStatusBarColor(
+            ContextCompat.getColor(getContext(), R.color.theme_primary_dark));
     }
 
     /**
@@ -372,10 +370,8 @@ public class ScheduledActionsListFragment extends ListFragment implements
         // Start the CAB using the ActionMode.Callback defined above
         mActionMode = ((AppCompatActivity) getActivity())
                 .startSupportActionMode(mActionModeCallbacks);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getActivity().getWindow().setStatusBarColor(
-                    ContextCompat.getColor(getContext(), android.R.color.darker_gray));
-        }
+        getActivity().getWindow().setStatusBarColor(
+            ContextCompat.getColor(getContext(), android.R.color.darker_gray));
     }
 
     /**
@@ -580,7 +576,7 @@ public class ScheduledActionsListFragment extends ListFragment implements
             ExportParams params = ExportParams.parseCsv(scheduledAction.getTag());
             String exportDestination = params.getExportTarget().getDescription();
             if (params.getExportTarget() == ExportParams.ExportTarget.URI) {
-                exportDestination = exportDestination + " (" + Uri.parse(params.getExportLocation()).getHost() + ")";
+                exportDestination = exportDestination + " (" + params.getExportLocation().getHost() + ")";
             }
             primaryTextView.setText(params.getExportFormat().name() + " "
                     + scheduledAction.getActionType().name().toLowerCase() + " to "

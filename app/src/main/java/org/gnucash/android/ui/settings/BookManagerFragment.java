@@ -80,7 +80,7 @@ public class BookManagerFragment extends ListFragment implements
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mCursorAdapter = new BooksCursorAdapter(getActivity(), R.layout.cardview_book,
+        mCursorAdapter = new BooksCursorAdapter(requireContext(), R.layout.cardview_book,
                 null, new String[]{BookEntry.COLUMN_DISPLAY_NAME, BookEntry.COLUMN_SOURCE_URI},
                 new int[]{R.id.primary_text, R.id.secondary_text});
 
@@ -138,7 +138,7 @@ public class BookManagerFragment extends ListFragment implements
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Log.d(LOG_TAG, "Creating loader for books");
-        return new BooksCursorLoader(getActivity());
+        return new BooksCursorLoader(requireContext());
     }
 
     @Override
@@ -175,7 +175,8 @@ public class BookManagerFragment extends ListFragment implements
                 public void onClick(View v) {
                     //do nothing if the active book is tapped
                     if (!BooksDbAdapter.getInstance().getActiveBookUID().equals(bookUID)) {
-                        BookUtils.loadBook(bookUID);
+                        BookUtils.loadBook(v.getContext(), bookUID);
+                        requireActivity().finish();
                     }
                 }
             });
@@ -272,7 +273,8 @@ public class BookManagerFragment extends ListFragment implements
         }
 
         private void setStatisticsText(View view, String bookUID) {
-            DatabaseHelper dbHelper = new DatabaseHelper(GnuCashApplication.getAppContext(), bookUID);
+            final Context context = view.getContext();
+            DatabaseHelper dbHelper = new DatabaseHelper(context, bookUID);
             SQLiteDatabase db = dbHelper.getReadableDatabase();
             TransactionsDbAdapter trnAdapter = new TransactionsDbAdapter(db, new SplitsDbAdapter(db));
             int transactionCount = (int) trnAdapter.getRecordsCount();
@@ -287,7 +289,7 @@ public class BookManagerFragment extends ListFragment implements
 
             if (bookUID.equals(BooksDbAdapter.getInstance().getActiveBookUID())) {
                 ((TextView) view.findViewById(R.id.primary_text))
-                        .setTextColor(ContextCompat.getColor(getContext(), R.color.theme_primary));
+                        .setTextColor(ContextCompat.getColor(context, R.color.theme_primary));
             }
         }
     }
@@ -306,7 +308,6 @@ public class BookManagerFragment extends ListFragment implements
         public Cursor loadInBackground() {
             BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
             Cursor cursor = booksDbAdapter.fetchAllRecords();
-
             registerContentObserver(cursor);
             return cursor;
         }

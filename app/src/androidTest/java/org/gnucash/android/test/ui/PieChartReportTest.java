@@ -125,7 +125,7 @@ public class PieChartReportTest {
         oldActiveBookUID = BooksDbAdapter.getInstance().getActiveBookUID();
         testBookUID = GncXmlImporter.parse(context.getResources().openRawResource(R.raw.default_accounts));
 
-        BookUtils.loadBook(testBookUID);
+        BookUtils.loadBook(context, testBookUID);
         mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
 

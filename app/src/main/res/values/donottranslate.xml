@@ -62,6 +62,12 @@
         <item>OFX</item>
         <item>XML</item>
     </string-array>
+    <string-array name="export_formats" translatable="false">
+        <item>@string/file_format_csv</item>
+        <item>@string/file_format_qif</item>
+        <item>@string/file_format_ofx</item>
+        <item>@string/file_format_xml</item>
+    </string-array>
     <string-array name="key_currency_codes" translatable="false">
         <item>AFN</item>
         <item>DZD</item>

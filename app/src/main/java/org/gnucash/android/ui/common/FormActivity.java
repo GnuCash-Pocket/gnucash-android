@@ -65,7 +65,7 @@ public class FormActivity extends PasscodeLockActivity {
         //if a parameter was passed to open an account within a specific book, then switch
         String bookUID = getIntent().getStringExtra(UxArgument.BOOK_UID);
         if (bookUID != null && !bookUID.equals(BooksDbAdapter.getInstance().getActiveBookUID())) {
-            BookUtils.activateBook(bookUID);
+            BookUtils.activateBook(this, bookUID);
         }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -78,8 +78,6 @@ public class FormActivity extends PasscodeLockActivity {
         actionBar.setHomeAsUpIndicator(R.drawable.ic_close_white_24dp);
 
         final Intent intent = getIntent();
-        String formtypeString = intent.getStringExtra(UxArgument.FORM_TYPE);
-        FormType formType = FormType.valueOf(formtypeString);
 
         mAccountUID = intent.getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
         if (mAccountUID == null) {
@@ -88,9 +86,11 @@ public class FormActivity extends PasscodeLockActivity {
         if (mAccountUID != null) {
             int colorCode = AccountsDbAdapter.getActiveAccountColorResource(mAccountUID);
             actionBar.setBackgroundDrawable(new ColorDrawable(colorCode));
-            if (Build.VERSION.SDK_INT > 20)
-                getWindow().setStatusBarColor(GnuCashApplication.darken(colorCode));
+            getWindow().setStatusBarColor(GnuCashApplication.darken(colorCode));
         }
+
+        String formtypeString = intent.getStringExtra(UxArgument.FORM_TYPE);
+        FormType formType = FormType.valueOf(formtypeString);
         switch (formType) {
             case ACCOUNT:
                 showAccountFormFragment(intent.getExtras());
@@ -119,8 +119,6 @@ public class FormActivity extends PasscodeLockActivity {
             default:
                 throw new IllegalArgumentException("No form display type specified");
         }
-
-
     }
 
     @Override
@@ -218,11 +216,9 @@ public class FormActivity extends PasscodeLockActivity {
      */
     private void showFormFragment(Fragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager
-                .beginTransaction();
-
-        fragmentTransaction.add(R.id.fragment_container, fragment);
-        fragmentTransaction.commit();
+        fragmentManager.beginTransaction()
+            .add(R.id.fragment_container, fragment)
+            .commit();
     }
 
 

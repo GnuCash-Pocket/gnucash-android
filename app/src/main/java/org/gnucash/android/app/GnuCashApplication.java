@@ -29,7 +29,6 @@ import android.os.SystemClock;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.multidex.MultiDexApplication;
 import androidx.preference.PreferenceManager;
 
 import com.google.firebase.FirebaseApp;
@@ -66,7 +65,7 @@ import java.util.Locale;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class GnuCashApplication extends MultiDexApplication {
+public class GnuCashApplication extends Application {
 
     /**
      * Authority (domain) for the file provider. Also used in the app manifest
@@ -120,17 +119,18 @@ public class GnuCashApplication extends MultiDexApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-        GnuCashApplication.context = getApplicationContext();
+        final Context context = getApplicationContext();
+        GnuCashApplication.context = context;
 
         FirebaseApp.initializeApp(context);
         FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(isCrashlyticsEnabled());
 
         setUpUserVoice();
 
-        BookDbHelper bookDbHelper = new BookDbHelper(getApplicationContext());
+        BookDbHelper bookDbHelper = new BookDbHelper(context);
         mBooksDbAdapter = new BooksDbAdapter(bookDbHelper.getWritableDatabase());
 
-        initializeDatabaseAdapters();
+        initializeDatabaseAdapters(context);
         setDefaultCurrencyCode(getDefaultCurrencyCode());
 
         StethoUtils.install(this);
@@ -140,18 +140,16 @@ public class GnuCashApplication extends MultiDexApplication {
      * Initialize database adapter singletons for use in the application
      * This method should be called every time a new book is opened
      */
-    public static void initializeDatabaseAdapters() {
+    public static void initializeDatabaseAdapters(Context context) {
         if (mDbHelper != null) { //close if open
             mDbHelper.getReadableDatabase().close();
         }
 
         try {
-            mDbHelper = new DatabaseHelper(getAppContext(),
-                    mBooksDbAdapter.getActiveBookUID());
+            mDbHelper = new DatabaseHelper(context, mBooksDbAdapter.getActiveBookUID());
         } catch (BooksDbAdapter.NoActiveBookFoundException e) {
             mBooksDbAdapter.fixBooksDatabase();
-            mDbHelper = new DatabaseHelper(getAppContext(),
-                    mBooksDbAdapter.getActiveBookUID());
+            mDbHelper = new DatabaseHelper(context, mBooksDbAdapter.getActiveBookUID());
         }
         SQLiteDatabase mainDb;
         try {

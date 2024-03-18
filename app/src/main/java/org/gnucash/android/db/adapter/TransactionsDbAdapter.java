@@ -202,7 +202,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
     }
 
     /**
-     * Returns a cursor to a set of all transactions which have a split belonging to the accound with unique ID
+     * Returns a cursor to a set of all transactions which have a split belonging to the account with unique ID
      * <code>accountUID</code>.
      *
      * @param accountUID UID of the account whose transactions are to be retrieved
@@ -382,15 +382,10 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      * @return Number of transactions
      */
     public long getRecordsCount() {
-        String queryCount = "SELECT COUNT(*) FROM " + TransactionEntry.TABLE_NAME +
-                " WHERE " + TransactionEntry.COLUMN_TEMPLATE + " =0";
-        Cursor cursor = mDb.rawQuery(queryCount, null);
-        try {
-            cursor.moveToFirst();
-            return cursor.getLong(0);
-        } finally {
-            cursor.close();
-        }
+        String sql = "SELECT COUNT(*) FROM " + TransactionEntry.TABLE_NAME +
+            " WHERE " + TransactionEntry.COLUMN_TEMPLATE + " =0";
+        SQLiteStatement statement = mDb.compileStatement(sql);
+        return statement.simpleQueryForLong();
     }
 
     /**
@@ -412,11 +407,13 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
                 null,
                 null);
         try {
-            cursor.moveToFirst();
-            return cursor.getLong(0);
+            if (cursor != null && cursor.moveToFirst()) {
+                return cursor.getLong(0);
+            }
         } finally {
             cursor.close();
         }
+        return 0L;
     }
 
     /**
@@ -694,4 +691,26 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         return timestamp;
     }
 
+    public long getTransactionsCountForAccount(String accountUID) {
+        SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
+        queryBuilder.setTables(
+            TransactionEntry.TABLE_NAME + " t "
+                + " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON "
+                + "t." + TransactionEntry.COLUMN_UID + " = "
+                + "s." + SplitEntry.COLUMN_TRANSACTION_UID
+        );
+        String[] projectionIn = new String[]{"COUNT(*)"};
+        String selection = "s." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?";
+        String[] selectionArgs = new String[]{accountUID};
+
+        Cursor cursor = queryBuilder.query(mDb, projectionIn, selection, selectionArgs, null, null, null);
+        try {
+            if (cursor != null && cursor.moveToFirst()) {
+                return cursor.getLong(0);
+            }
+        } finally {
+            cursor.close();
+        }
+        return 0L;
+    }
 }
