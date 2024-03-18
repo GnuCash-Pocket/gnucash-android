@@ -15,19 +15,25 @@
 
 package org.gnucash.android.util;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
+import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.export.ExportFormat;
@@ -36,6 +42,7 @@ import org.gnucash.android.export.Exporter;
 import org.gnucash.android.export.xml.GncXmlExporter;
 import org.gnucash.android.model.Book;
 import org.gnucash.android.receivers.PeriodicJobReceiver;
+import org.gnucash.android.ui.common.GnucashProgressDialog;
 import org.gnucash.android.ui.settings.PreferenceActivity;
 
 import java.io.BufferedOutputStream;
@@ -61,6 +68,7 @@ public class BackupManager {
      * Perform an automatic backup of all books in the database.
      * This method is run every time the service is executed
      */
+    @WorkerThread
     static void backupAllBooks() {
         BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
         List<String> bookUIDs = booksDbAdapter.getAllBookUIDs();
@@ -75,6 +83,7 @@ public class BackupManager {
      *
      * @return {@code true} if backup was successful, {@code false} otherwise
      */
+    @WorkerThread
     public static boolean backupActiveBook() {
         return backupBook(BooksDbAdapter.getInstance().getActiveBookUID());
     }
@@ -86,7 +95,7 @@ public class BackupManager {
      * @param bookUID Unique ID of the book
      * @return {@code true} if backup was successful, {@code false} otherwise
      */
-    // FIXME - Never run this on main thread!
+    @WorkerThread
     public static boolean backupBook(String bookUID) {
         OutputStream outputStream;
         try {
@@ -175,5 +184,67 @@ public class BackupManager {
         alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                 SystemClock.elapsedRealtime() + AlarmManager.INTERVAL_FIFTEEN_MINUTES,
                 AlarmManager.INTERVAL_DAY, alarmIntent);
+    }
+
+    public static void backupBookAsync(@Nullable final Activity activity, final String bookUID, @NonNull final Runnable after) {
+        new AsyncTask<>() {
+            private ProgressDialog mProgressDialog;
+
+            @Override
+            protected void onPreExecute() {
+                if (activity != null) {
+                    mProgressDialog = new GnucashProgressDialog(activity);
+                    mProgressDialog.setTitle(R.string.title_create_backup_pref);
+                    mProgressDialog.show();
+                }
+            }
+
+            @Override
+            protected Object doInBackground(Object... objects) {
+                backupBook(bookUID);
+                return Boolean.TRUE;
+            }
+
+            @Override
+            protected void onPostExecute(Object o) {
+                if (mProgressDialog != null) {
+                    mProgressDialog.hide();
+                }
+                after.run();
+            }
+        }.execute();
+    }
+
+    static void backupAllBooksAsync(@Nullable final Activity activity, @NonNull final Runnable after) {
+        new AsyncTask<>() {
+            private ProgressDialog mProgressDialog;
+
+            @Override
+            protected void onPreExecute() {
+                if (activity != null) {
+                    mProgressDialog = new GnucashProgressDialog(activity);
+                    mProgressDialog.setTitle(R.string.title_create_backup_pref);
+                    mProgressDialog.show();
+                }
+            }
+
+            @Override
+            protected Object doInBackground(Object... objects) {
+                backupAllBooks();
+                return Boolean.TRUE;
+            }
+
+            @Override
+            protected void onPostExecute(Object o) {
+                if (mProgressDialog != null) {
+                    mProgressDialog.hide();
+                }
+                after.run();
+            }
+        }.execute();
+    }
+
+    public static void backupActiveBookAsync(@Nullable Activity activity, @NonNull final Runnable after) {
+        backupBookAsync(activity, BooksDbAdapter.getInstance().getActiveBookUID(), after);
     }
 }

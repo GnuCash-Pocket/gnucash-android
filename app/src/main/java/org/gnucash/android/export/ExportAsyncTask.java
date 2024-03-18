@@ -65,6 +65,7 @@ import org.gnucash.android.export.xml.GncXmlExporter;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.ui.account.AccountsActivity;
 import org.gnucash.android.ui.account.AccountsListFragment;
+import org.gnucash.android.ui.common.GnucashProgressDialog;
 import org.gnucash.android.ui.settings.BackupPreferenceFragment;
 import org.gnucash.android.ui.transaction.TransactionsActivity;
 import org.gnucash.android.util.BackupManager;
@@ -115,13 +116,8 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
     protected void onPreExecute() {
         super.onPreExecute();
         if (mContext instanceof Activity) {
-            mProgressDialog = new ProgressDialog(mContext);
+            mProgressDialog = new GnucashProgressDialog((Activity) mContext);
             mProgressDialog.setTitle(R.string.title_progress_exporting_transactions);
-            mProgressDialog.setIndeterminate(true);
-            mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            mProgressDialog.setProgressNumberFormat(null);
-            mProgressDialog.setProgressPercentFormat(null);
-
             mProgressDialog.show();
         }
     }
