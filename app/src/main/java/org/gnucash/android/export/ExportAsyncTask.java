@@ -118,6 +118,8 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
         if (mContext instanceof Activity) {
             mProgressDialog = new GnucashProgressDialog((Activity) mContext);
             mProgressDialog.setTitle(R.string.title_progress_exporting_transactions);
+            mProgressDialog.setCancelable(true);
+            mProgressDialog.setOnCancelListener(dialogInterface -> cancel(true));
             mProgressDialog.show();
         }
     }
@@ -209,8 +211,9 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
 
     private void dismissProgressDialog() {
         if (mContext instanceof Activity) {
-            if (mProgressDialog != null && mProgressDialog.isShowing())
+            if (mProgressDialog != null && mProgressDialog.isShowing()) {
                 mProgressDialog.dismiss();
+            }
             ((Activity) mContext).finish();
         }
     }

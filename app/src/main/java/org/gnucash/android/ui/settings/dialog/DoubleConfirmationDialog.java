@@ -69,8 +69,9 @@ public abstract class DoubleConfirmationDialog extends DialogFragment {
     @Override
     public void onStart() {
         super.onStart();
-        if (getDialog() != null) {
-            ((AlertDialog) getDialog()).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+        final AlertDialog dialog = (AlertDialog) getDialog();
+        if (dialog != null) {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
             setUpConfirmCheckBox();
         }
     }
@@ -93,6 +94,6 @@ public abstract class DoubleConfirmationDialog extends DialogFragment {
      * <p>By default it just dismisses the dialog.</p>
      */
     protected void onNegativeButton() {
-        getDialog().dismiss();
+        dismiss();
     }
 }

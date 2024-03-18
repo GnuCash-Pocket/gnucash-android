@@ -195,6 +195,8 @@ public class BackupManager {
                 if (activity != null) {
                     mProgressDialog = new GnucashProgressDialog(activity);
                     mProgressDialog.setTitle(R.string.title_create_backup_pref);
+                    mProgressDialog.setCancelable(true);
+                    mProgressDialog.setOnCancelListener(dialogInterface -> cancel(true));
                     mProgressDialog.show();
                 }
             }
@@ -224,6 +226,8 @@ public class BackupManager {
                 if (activity != null) {
                     mProgressDialog = new GnucashProgressDialog(activity);
                     mProgressDialog.setTitle(R.string.title_create_backup_pref);
+                    mProgressDialog.setCancelable(true);
+                    mProgressDialog.setOnCancelListener(dialogInterface -> cancel(true));
                     mProgressDialog.show();
                 }
             }

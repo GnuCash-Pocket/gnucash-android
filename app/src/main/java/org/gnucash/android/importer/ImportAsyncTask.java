@@ -68,6 +68,8 @@ public class ImportAsyncTask extends AsyncTask<Uri, Void, Boolean> {
         super.onPreExecute();
         mProgressDialog = new GnucashProgressDialog(mContext);
         mProgressDialog.setTitle(R.string.title_progress_importing_accounts);
+        mProgressDialog.setCancelable(true);
+        mProgressDialog.setOnCancelListener(dialogInterface -> cancel(true));
         mProgressDialog.show();
     }
 
@@ -130,8 +132,9 @@ public class ImportAsyncTask extends AsyncTask<Uri, Void, Boolean> {
     @Override
     protected void onPostExecute(Boolean importSuccess) {
         try {
-            if (mProgressDialog != null && mProgressDialog.isShowing())
+            if (mProgressDialog != null && mProgressDialog.isShowing()) {
                 mProgressDialog.dismiss();
+            }
         } catch (IllegalArgumentException ex) {
             //TODO: This is a hack to catch "View not attached to window" exceptions
             //FIXME by moving the creation and display of the progress dialog to the Fragment
