@@ -33,11 +33,16 @@ import org.gnucash.android.util.BackupManager;
  * @author Àlex Magaz <alexandre.magaz@gmail.com>
  */
 public class DeleteBookConfirmationDialog extends DoubleConfirmationDialog {
+
+    public static final String TAG = "delete_book";
+
+    private static final String EXTRA_BOOK_ID = "book_uid";
+
     @NonNull
     public static DeleteBookConfirmationDialog newInstance(String bookUID) {
         DeleteBookConfirmationDialog frag = new DeleteBookConfirmationDialog();
         Bundle args = new Bundle();
-        args.putString("bookUID", bookUID);
+        args.putString(EXTRA_BOOK_ID, bookUID);
         frag.setArguments(args);
         return frag;
     }
@@ -53,10 +58,13 @@ public class DeleteBookConfirmationDialog extends DoubleConfirmationDialog {
                     @SuppressWarnings("ConstantConditions")
                     @Override
                     public void onClick(DialogInterface dialogInterface, int which) {
-                        final String bookUID = getArguments().getString("bookUID");
+                        final String bookUID = getArguments().getString(EXTRA_BOOK_ID);
                         BackupManager.backupBook(bookUID);
                         BooksDbAdapter.getInstance().deleteBook(bookUID);
-                        ((Refreshable) getTargetFragment()).refresh();
+
+                        Bundle result = new Bundle();
+                        result.putBoolean(Refreshable.EXTRA_REFRESH, true);
+                        getParentFragmentManager().setFragmentResult(TAG, result);
                     }
                 })
                 .create();

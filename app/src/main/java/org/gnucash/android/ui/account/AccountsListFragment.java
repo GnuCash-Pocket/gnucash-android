@@ -38,12 +38,15 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentResultListener;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -78,10 +81,11 @@ import butterknife.ButterKnife;
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class AccountsListFragment extends Fragment implements
-        Refreshable,
-        LoaderManager.LoaderCallbacks<Cursor>,
-        SearchView.OnQueryTextListener,
-        SearchView.OnCloseListener {
+    Refreshable,
+    LoaderManager.LoaderCallbacks<Cursor>,
+    SearchView.OnQueryTextListener,
+    SearchView.OnCloseListener,
+    FragmentResultListener {
 
     AccountRecyclerAdapter mAccountRecyclerAdapter;
     @BindView(R.id.account_recycler_view)
@@ -263,9 +267,11 @@ public class AccountsListFragment extends Fragment implements
      * @param accountUID Unique ID of account to be deleted after confirmation
      */
     private void showConfirmationDialog(String accountUID) {
+        FragmentManager fm = getChildFragmentManager();
         DeleteAccountDialogFragment alertFragment =
                 DeleteAccountDialogFragment.newInstance(accountUID);
-        alertFragment.show(getChildFragmentManager(), "delete_confirmation_dialog");
+        fm.setFragmentResultListener(DeleteAccountDialogFragment.TAG, this, this);
+        alertFragment.show(fm, DeleteAccountDialogFragment.TAG);
     }
 
     @Override
@@ -471,6 +477,13 @@ public class AccountsListFragment extends Fragment implements
         }
     }
 
+    @Override
+    public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
+        if (DeleteAccountDialogFragment.TAG.equals(requestKey)) {
+            boolean refresh = result.getBoolean(Refreshable.EXTRA_REFRESH);
+            if (refresh) refresh();
+        }
+    }
 
     class AccountRecyclerAdapter extends CursorRecyclerAdapter<AccountRecyclerAdapter.AccountViewHolder> {
 

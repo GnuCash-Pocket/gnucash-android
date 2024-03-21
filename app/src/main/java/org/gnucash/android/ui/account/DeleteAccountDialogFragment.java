@@ -55,6 +55,8 @@ import java.util.List;
  */
 public class DeleteAccountDialogFragment extends DialogFragment {
 
+    public static final String TAG = "delete_account_dialog";
+
     /**
      * Spinner for selecting the account to move the transactions to
      */
@@ -235,8 +237,12 @@ public class DeleteAccountDialogFragment extends DialogFragment {
                 //now kill them all!!
                 accountsDbAdapter.recursiveDeleteAccount(accountsDbAdapter.getID(mOriginAccountUID));
 
-                WidgetConfigurationActivity.updateAllWidgets(getActivity());
-                ((Refreshable) getTargetFragment()).refresh();
+                WidgetConfigurationActivity.updateAllWidgets(v.getContext());
+
+                Bundle result = new Bundle();
+                result.putBoolean(Refreshable.EXTRA_REFRESH, true);
+                getParentFragmentManager().setFragmentResult(TAG, result);
+
                 dismiss();
             }
         });
