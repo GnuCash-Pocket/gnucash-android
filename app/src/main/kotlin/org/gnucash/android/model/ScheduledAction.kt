@@ -23,7 +23,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.util.TimeZone
+import org.gnucash.android.export.xml.GncXmlHelper
 
 /**
  * Represents a scheduled event which is stored in the database and run at regular mPeriod
@@ -364,7 +364,7 @@ class ScheduledAction    //all actions are enabled by default
             val ruleBuilder = StringBuilder(recurrence!!.ruleString)
             if (_endDate > 0) {
                 val df = SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'", Locale.US)
-                df.timeZone = TimeZone.getTimeZone("UTC")
+                df.timeZone = GncXmlHelper.TZ_UTC
                 ruleBuilder.append("UNTIL=").append(df.format(Date(_endDate))).append(separator)
             } else if (totalPlannedExecutionCount > 0) {
                 ruleBuilder.append("COUNT=").append(totalPlannedExecutionCount).append(separator)
