@@ -244,7 +244,12 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
      * Sets the first book in the database as active.
      */
     private void setFirstBookAsActive() {
-        Book firstBook = getAllRecords().get(0);
+        List<Book> books = getAllRecords();
+        if (books.isEmpty()) {
+            Log.w(LOG_TAG, "No books.");
+            return;
+        }
+        Book firstBook = books.get(0);
         firstBook.setActive(true);
         addRecord(firstBook);
         Log.w(LOG_TAG, "Book " + firstBook.getUID() + " set as active.");
