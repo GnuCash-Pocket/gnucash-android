@@ -81,6 +81,14 @@ public class AccountsDbAdapterTest {
         initAdapters(null);
     }
 
+    @After
+    public void after() throws Exception {
+        mAccountsDbAdapter.close();
+        mCommoditiesDbAdapter.close();
+        mSplitsDbAdapter.close();
+        mTransactionsDbAdapter.close();
+    }
+
     /**
      * Initialize database adapters for a specific book.
      * This method should be called everytime a new book is loaded into the database

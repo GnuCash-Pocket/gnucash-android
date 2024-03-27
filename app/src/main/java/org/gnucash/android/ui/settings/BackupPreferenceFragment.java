@@ -210,7 +210,7 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         preference.setSummary(newValue.toString());
         if (preference.getKey().equals(getString(R.string.key_default_currency))) {
-            GnuCashApplication.setDefaultCurrencyCode(newValue.toString());
+            GnuCashApplication.setDefaultCurrencyCode(preference.getContext(), newValue.toString());
         }
 
         if (preference.getKey().equals(getString(R.string.key_default_export_email))) {

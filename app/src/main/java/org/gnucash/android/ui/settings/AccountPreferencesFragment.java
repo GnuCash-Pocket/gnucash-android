@@ -178,7 +178,7 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         if (preference.getKey().equals(getString(R.string.key_default_currency))) {
-            GnuCashApplication.setDefaultCurrencyCode(newValue.toString());
+            GnuCashApplication.setDefaultCurrencyCode(preference.getContext(), newValue.toString());
             String fullname = CommoditiesDbAdapter.getInstance().getCommodity(newValue.toString()).getFullname();
             preference.setSummary(fullname);
             return true;

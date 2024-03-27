@@ -214,7 +214,7 @@ dependencies {
 
     testImplementation 'org.robolectric:robolectric:4.11.1'
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.assertj:assertj-core:1.7.1'
+    testImplementation 'org.assertj:assertj-core:3.22.0'
 }
 
 def androidEspressoVersion = "3.5.1"

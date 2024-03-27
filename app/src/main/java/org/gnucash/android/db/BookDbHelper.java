@@ -48,7 +48,7 @@ public class BookDbHelper extends SQLiteOpenHelper {
 
     public static final String LOG_TAG = "BookDbHelper";
 
-    private Context mContext;
+    private final Context mContext;
 
     /**
      * Create the books table
@@ -117,6 +117,11 @@ public class BookDbHelper extends SQLiteOpenHelper {
                     new TransactionsDbAdapter(mainDb, new SplitsDbAdapter(mainDb)));
 
             String rootAccountUID = accountsDbAdapter.getOrCreateGnuCashRootAccountUID();
+            try {
+                accountsDbAdapter.close();
+                helper.close();
+            } catch (IOException ignore) {
+            }
             book.setRootAccountUID(rootAccountUID);
             book.setActive(true);
             insertBook(db, book);

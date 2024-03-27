@@ -152,7 +152,7 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
                         }
                     }
 
-                    GnuCashApplication.setDefaultCurrencyCode(mCurrencyCode);
+                    GnuCashApplication.setDefaultCurrencyCode(view.getContext(), mCurrencyCode);
                     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(FirstRunWizardActivity.this);
                     SharedPreferences.Editor preferenceEditor = preferences.edit();
 

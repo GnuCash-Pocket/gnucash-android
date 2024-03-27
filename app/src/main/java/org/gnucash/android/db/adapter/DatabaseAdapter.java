@@ -34,6 +34,8 @@ import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.BaseModel;
 import org.gnucash.android.util.TimestampHelper;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +46,7 @@ import java.util.List;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public abstract class DatabaseAdapter<Model extends BaseModel> {
+public abstract class DatabaseAdapter<Model extends BaseModel> implements Closeable {
     /**
      * Tag for logging
      */
@@ -832,5 +834,24 @@ public abstract class DatabaseAdapter<Model extends BaseModel> {
      */
     public void endTransaction() {
         mDb.endTransaction();
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (mInsertStatement != null) {
+            mInsertStatement.close();
+            mInsertStatement = null;
+        }
+        if (mReplaceStatement != null) {
+            mReplaceStatement.close();
+            mReplaceStatement = null;
+        }
+        if (mUpdateStatement != null) {
+            mUpdateStatement.close();
+            mUpdateStatement = null;
+        }
+        if (mDb.isOpen()) {
+            mDb.close();
+        }
     }
 }

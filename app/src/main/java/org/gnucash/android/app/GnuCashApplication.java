@@ -56,6 +56,7 @@ import org.gnucash.android.receivers.PeriodicJobReceiver;
 import org.gnucash.android.service.ScheduledActionService;
 import org.gnucash.android.ui.settings.PreferenceActivity;
 
+import java.io.IOException;
 import java.util.Currency;
 import java.util.Locale;
 
@@ -131,14 +132,21 @@ public class GnuCashApplication extends Application {
         mBooksDbAdapter = new BooksDbAdapter(bookDbHelper.getWritableDatabase());
 
         initializeDatabaseAdapters(context);
-        setDefaultCurrencyCode(getDefaultCurrencyCode());
+        setDefaultCurrencyCode(context, getDefaultCurrencyCode());
 
         StethoUtils.install(this);
+    }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        destroyDatabaseAdapters();
     }
 
     /**
      * Initialize database adapter singletons for use in the application
      * This method should be called every time a new book is opened
+     * @param context the context.
      */
     public static void initializeDatabaseAdapters(Context context) {
         if (mDbHelper != null) { //close if open
@@ -169,6 +177,83 @@ public class GnuCashApplication extends Application {
         mCommoditiesDbAdapter = new CommoditiesDbAdapter(mainDb);
         mBudgetAmountsDbAdapter = new BudgetAmountsDbAdapter(mainDb);
         mBudgetsDbAdapter = new BudgetsDbAdapter(mainDb, mBudgetAmountsDbAdapter, mRecurrenceDbAdapter);
+    }
+
+    private static void destroyDatabaseAdapters() {
+        if (mSplitsDbAdapter != null) {
+            try {
+                mSplitsDbAdapter.close();
+                mSplitsDbAdapter = null;
+            } catch (IOException ignore) {
+            }
+        }
+        if (mTransactionsDbAdapter != null) {
+            try {
+                mTransactionsDbAdapter.close();
+                mTransactionsDbAdapter = null;
+            } catch (IOException ignore) {
+            }
+        }
+        if (mAccountsDbAdapter != null) {
+            try {
+                mAccountsDbAdapter.close();
+                mAccountsDbAdapter = null;
+            } catch (IOException ignore) {
+            }
+        }
+        if (mRecurrenceDbAdapter != null) {
+            try {
+                mRecurrenceDbAdapter.close();
+                mRecurrenceDbAdapter = null;
+            } catch (IOException ignore) {
+            }
+        }
+        if (mScheduledActionDbAdapter != null) {
+            try {
+                mScheduledActionDbAdapter.close();
+                mScheduledActionDbAdapter = null;
+            } catch (IOException ignore) {
+            }
+        }
+        if (mPricesDbAdapter != null) {
+            try {
+                mPricesDbAdapter.close();
+                mPricesDbAdapter = null;
+            } catch (IOException ignore) {
+            }
+        }
+        if (mCommoditiesDbAdapter != null) {
+            try {
+                mCommoditiesDbAdapter.close();
+                mCommoditiesDbAdapter = null;
+            } catch (IOException ignore) {
+            }
+        }
+        if (mBudgetAmountsDbAdapter != null) {
+            try {
+                mBudgetAmountsDbAdapter.close();
+                mBudgetAmountsDbAdapter = null;
+            } catch (IOException ignore) {
+            }
+        }
+        if (mBudgetsDbAdapter != null) {
+            try {
+                mBudgetsDbAdapter.close();
+                mBudgetsDbAdapter = null;
+            } catch (IOException ignore) {
+            }
+        }
+        if (mBooksDbAdapter != null) {
+            try {
+                mBooksDbAdapter.close();
+                mBooksDbAdapter = null;
+            } catch (IOException ignore) {
+            }
+        }
+        if (mDbHelper != null) {
+            mDbHelper.close();
+            mDbHelper = null;
+        }
     }
 
     public static AccountsDbAdapter getAccountsDbAdapter() {
@@ -299,8 +384,25 @@ public class GnuCashApplication extends Application {
      * @see #getDefaultCurrencyCode()
      */
     public static void setDefaultCurrencyCode(@NonNull String currencyCode) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-                .putString(getAppContext().getString(R.string.key_default_currency), currencyCode)
+        setDefaultCurrencyCode(context, currencyCode);
+    }
+
+    /**
+     * Sets the default currency for the application in all relevant places:
+     * <ul>
+     *     <li>Shared preferences</li>
+     *     <li>{@link Money#DEFAULT_CURRENCY_CODE}</li>
+     *     <li>{@link Commodity#DEFAULT_COMMODITY}</li>
+     * </ul>
+     *
+     * @param context the context.
+     * @param currencyCode ISO 4217 currency code
+     * @see #getDefaultCurrencyCode()
+     */
+    public static void setDefaultCurrencyCode(@NonNull Context context, @NonNull String currencyCode) {
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .edit()
+                .putString(context.getString(R.string.key_default_currency), currencyCode)
                 .apply();
         Money.DEFAULT_CURRENCY_CODE = currencyCode;
         Commodity.DEFAULT_COMMODITY = mCommoditiesDbAdapter.getCommodity(currencyCode);
