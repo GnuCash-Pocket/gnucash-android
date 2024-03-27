@@ -26,7 +26,8 @@ class Commodity(
     /**
      * This is the currency code for ISO4217 currencies
      */
-    var mnemonic: String, smallestFraction: Int
+    var mnemonic: String,
+    smallestFraction: Int
 ) : BaseModel() {
     enum class Namespace {
         ISO4217

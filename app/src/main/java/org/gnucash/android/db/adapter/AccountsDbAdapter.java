@@ -844,7 +844,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     public Money getAccountBalance(List<AccountType> accountTypes, long start, long end) {
         Money balance = Money.createZeroInstance(GnuCashApplication.getDefaultCurrencyCode());
         for (AccountType accountType : accountTypes) {
-            balance = balance.add(getAccountBalance(accountType, start, end));
+            balance = balance.plus(getAccountBalance(accountType, start, end));
         }
         return balance;
     }
@@ -890,7 +890,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
                 ? splitsDbAdapter.computeSplitBalance(accountUIDList, currencyCode, hasDebitNormalBalance)
                 : splitsDbAdapter.computeSplitBalance(accountUIDList, currencyCode, hasDebitNormalBalance, startTimestamp, endTimestamp);
 
-        return balance.add(splitSum);
+        return balance.plus(splitSum);
     }
 
     /**

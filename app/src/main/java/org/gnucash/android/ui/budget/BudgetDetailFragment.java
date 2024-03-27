@@ -218,10 +218,10 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
                     mBudget.getStartofCurrentPeriod(), mBudget.getEndOfCurrentPeriod());
 
             holder.budgetSpent.setText(spentAmount.abs().formattedString());
-            holder.budgetLeft.setText(projectedAmount.subtract(spentAmount.abs()).formattedString());
+            holder.budgetLeft.setText(projectedAmount.minus(spentAmount.abs()).formattedString());
 
             double budgetProgress = 0;
-            if (projectedAmount.asDouble() != 0) {
+            if (projectedAmount.toDouble() != 0) {
                 budgetProgress = spentAmount.asBigDecimal().divide(projectedAmount.asBigDecimal(),
                         spentAmount.getCommodity().getSmallestFractionDigits(),
                         RoundingMode.HALF_EVEN).doubleValue();
@@ -285,7 +285,7 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
 
             barChart.setData(barData);
             barChart.getAxisLeft().addLimitLine(limitLine);
-            BigDecimal maxValue = budgetAmount.getAmount().add(budgetAmount.getAmount().multiply(new BigDecimal("0.2"))).asBigDecimal();
+            BigDecimal maxValue = budgetAmount.getAmount().plus(budgetAmount.getAmount().times(0.2)).asBigDecimal();
             barChart.getAxisLeft().setAxisMaxValue(maxValue.floatValue());
             barChart.animateX(1000);
             barChart.setAutoScaleMinMaxEnabled(true);

@@ -139,7 +139,7 @@ public class BudgetAmountsDbAdapter extends DatabaseAdapter<BudgetAmount> {
         List<BudgetAmount> budgetAmounts = getBudgetAmounts(accountUID);
         Money sum = Money.createZeroInstance(getAccountCurrencyCode(accountUID));
         for (BudgetAmount budgetAmount : budgetAmounts) {
-            sum = sum.add(budgetAmount.getAmount());
+            sum = sum.plus(budgetAmount.getAmount());
         }
         return sum;
     }

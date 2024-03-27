@@ -212,7 +212,7 @@ dependencies {
 
     debugImplementation 'com.facebook.stetho:stetho:1.5.0'
 
-    testImplementation 'org.robolectric:robolectric:4.3.1'
+    testImplementation 'org.robolectric:robolectric:4.11.1'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.assertj:assertj-core:1.7.1'
 }
