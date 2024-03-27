@@ -21,6 +21,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
+import androidx.annotation.StringRes;
 import androidx.fragment.app.DialogFragment;
 
 import org.gnucash.android.R;
@@ -45,10 +46,14 @@ import java.util.List;
  */
 public class TransactionsDeleteConfirmationDialogFragment extends DialogFragment {
 
-    public static TransactionsDeleteConfirmationDialogFragment newInstance(int title, long id) {
+    private static final String TAG = "transactions_delete_confirmation";
+
+    private static final String EXTRA_TITLE_ID = "title_id";
+
+    public static TransactionsDeleteConfirmationDialogFragment newInstance(@StringRes int titleId, long id) {
         TransactionsDeleteConfirmationDialogFragment frag = new TransactionsDeleteConfirmationDialogFragment();
         Bundle args = new Bundle();
-        args.putInt("title", title);
+        args.putInt(EXTRA_TITLE_ID, titleId);
         args.putLong(UxArgument.SELECTED_TRANSACTION_IDS, id);
         frag.setArguments(args);
         return frag;
@@ -56,12 +61,13 @@ public class TransactionsDeleteConfirmationDialogFragment extends DialogFragment
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        int title = getArguments().getInt("title");
+        int title = getArguments().getInt(EXTRA_TITLE_ID);
         final long rowId = getArguments().getLong(UxArgument.SELECTED_TRANSACTION_IDS);
         int message = rowId == 0 ? R.string.msg_delete_all_transactions_confirmation : R.string.msg_delete_transaction_confirmation;
         return new AlertDialog.Builder(getActivity())
                 .setIcon(android.R.drawable.ic_delete)
-                .setTitle(title).setMessage(message)
+                .setTitle(title)
+                .setMessage(message)
                 .setPositiveButton(R.string.alert_dialog_ok_delete,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
@@ -82,9 +88,11 @@ public class TransactionsDeleteConfirmationDialogFragment extends DialogFragment
                                 } else {
                                     transactionsDbAdapter.deleteRecord(rowId);
                                 }
-                                if (getTargetFragment() instanceof Refreshable) {
-                                    ((Refreshable) getTargetFragment()).refresh();
-                                }
+
+                                Bundle result = new Bundle();
+                                result.putBoolean(Refreshable.EXTRA_REFRESH, true);
+                                getParentFragmentManager().setFragmentResult(TAG, result);
+
                                 WidgetConfigurationActivity.updateAllWidgets(getActivity());
                             }
                         }

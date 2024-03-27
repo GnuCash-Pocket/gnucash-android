@@ -31,11 +31,14 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentResultListener;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -74,7 +77,7 @@ import butterknife.ButterKnife;
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class TransactionsListFragment extends Fragment implements
-        Refreshable, LoaderManager.LoaderCallbacks<Cursor> {
+    Refreshable, LoaderManager.LoaderCallbacks<Cursor>, FragmentResultListener {
 
     /**
      * Logging tag
@@ -225,13 +228,21 @@ public class TransactionsListFragment extends Fragment implements
         mTransactionRecyclerAdapter.swapCursor(null);
     }
 
+    @Override
+    public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
+        if (BulkMoveDialogFragment.TAG.equals(requestKey)) {
+            boolean refresh = result.getBoolean(Refreshable.EXTRA_REFRESH);
+            if (refresh) refresh();
+        }
+    }
+
     /**
      * {@link DatabaseCursorLoader} for loading transactions asynchronously from the database
      *
      * @author Ngewi Fet <ngewif@gmail.com>
      */
     protected static class TransactionsCursorLoader extends DatabaseCursorLoader {
-        private String accountUID;
+        private final String accountUID;
 
         public TransactionsCursorLoader(Context context, String accountUID) {
             super(context);
@@ -385,9 +396,10 @@ public class TransactionsListFragment extends Fragment implements
 
                     case R.id.context_menu_move_transaction:
                         long[] ids = new long[]{transactionId};
+                        FragmentManager fm = getChildFragmentManager();
+                        fm.setFragmentResultListener(BulkMoveDialogFragment.TAG, TransactionsListFragment.this, TransactionsListFragment.this);
                         BulkMoveDialogFragment fragment = BulkMoveDialogFragment.newInstance(ids, mAccountUID);
-                        fragment.show(getActivity().getSupportFragmentManager(), "bulk_move_transactions");
-                        fragment.setTargetFragment(TransactionsListFragment.this, 0);
+                        fragment.show(fm, BulkMoveDialogFragment.TAG);
                         return true;
 
                     default:

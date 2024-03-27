@@ -198,7 +198,7 @@ public class ReportsOverviewFragment extends BaseReportFragment {
                 long start = new LocalDate().minusMonths(2).dayOfMonth().withMinimumValue().toDate().getTime();
                 long end = new LocalDate().plusDays(1).toDate().getTime();
                 double balance = mAccountsDbAdapter.getAccountsBalance(
-                        Collections.singletonList(account.getUID()), start, end).asDouble();
+                        Collections.singletonList(account.getUID()), start, end).toDouble();
                 if (balance > 0) {
                     dataSet.addEntry(new Entry((float) balance, dataSet.getEntryCount()));
                     colors.add(account.getColor() != Account.DEFAULT_COLOR
@@ -226,7 +226,7 @@ public class ReportsOverviewFragment extends BaseReportFragment {
 
         TransactionsActivity.displayBalance(mTotalAssets, mAssetsBalance);
         TransactionsActivity.displayBalance(mTotalLiabilities, mLiabilitiesBalance);
-        TransactionsActivity.displayBalance(mNetWorth, mAssetsBalance.subtract(mLiabilitiesBalance));
+        TransactionsActivity.displayBalance(mNetWorth, mAssetsBalance.minus(mLiabilitiesBalance));
     }
 
     /**

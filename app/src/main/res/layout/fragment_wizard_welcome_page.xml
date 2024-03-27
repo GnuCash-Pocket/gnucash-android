@@ -20,7 +20,7 @@
 
     <TextView
         style="@style/WizardPageTitle"
-        android:drawableLeft="@drawable/ic_launcher"
+        android:drawableLeft="@mipmap/ic_launcher"
         android:drawablePadding="10dp"
         android:gravity="bottom"
         android:text="@string/wizard_title_welcome_to_gnucash" />

@@ -119,7 +119,7 @@ public class BalanceSheetFragment extends BaseReportFragment {
         loadAccountViews(mLiabilityAccountTypes, mLiabilitiesTableLayout);
         loadAccountViews(mEquityAccountTypes, mEquityTableLayout);
 
-        TransactionsActivity.displayBalance(mNetWorth, mAssetsBalance.subtract(mLiabilitiesBalance));
+        TransactionsActivity.displayBalance(mNetWorth, mAssetsBalance.minus(mLiabilitiesBalance));
     }
 
     @Override

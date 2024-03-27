@@ -435,6 +435,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      *
      * @return List of records in the database
      */
+    @NonNull
     public List<Model> getAllRecords() {
         List<Model> modelRecords = new ArrayList<>();
         Cursor c = fetchAllRecords();

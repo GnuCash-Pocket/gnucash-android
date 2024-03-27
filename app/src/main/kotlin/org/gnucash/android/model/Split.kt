@@ -266,14 +266,14 @@ class Split : BaseModel, Parcelable {
      * Two splits are considered equal if all their properties excluding
      * timestamps (created, modified, reconciled) are equal.
      *
-     * @param o Other split to compare for equality
+     * @param other Other split to compare for equality
      * @return `true` if this split is equal to `o`, `false` otherwise
      */
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o == null || javaClass != o.javaClass) return false
-        if (!super.equals(o)) return false
-        val split = o as Split
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        if (!super.equals(other)) return false
+        val split = other as Split
         if (reconcileState != split.reconcileState) return false
         if (!value!!.equals(split.value)) return false
         if (!_quantity!!.equals(split._quantity)) return false
@@ -386,11 +386,11 @@ class Split : BaseModel, Parcelable {
                 if (isDebitSplit) {
                     absAmount
                 } else {
-                    absAmount.negate()
+                    absAmount.unaryMinus()
                 }
             } else {
                 if (isDebitSplit) {
-                    absAmount.negate()
+                    absAmount.unaryMinus()
                 } else {
                     absAmount
                 }

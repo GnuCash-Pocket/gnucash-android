@@ -46,6 +46,8 @@ import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
  */
 public class BulkMoveDialogFragment extends DialogFragment {
 
+    public static final String TAG = "bulk_move_transactions";
+
     /**
      * Spinner for selecting the account to move the transactions to
      */
@@ -170,7 +172,10 @@ public class BulkMoveDialogFragment extends DialogFragment {
                 }
 
                 WidgetConfigurationActivity.updateAllWidgets(getActivity());
-                ((Refreshable) getTargetFragment()).refresh();
+                Bundle result = new Bundle();
+                result.putBoolean(Refreshable.EXTRA_REFRESH, true);
+                getParentFragmentManager().setFragmentResult(TAG, result);
+
                 dismiss();
             }
         });

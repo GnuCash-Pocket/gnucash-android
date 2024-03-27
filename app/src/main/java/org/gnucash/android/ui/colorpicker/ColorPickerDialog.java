@@ -35,6 +35,13 @@ import org.gnucash.android.ui.colorpicker.ColorPickerSwatch.OnColorSelectedListe
  */
 public class ColorPickerDialog extends DialogFragment implements OnColorSelectedListener {
 
+    /**
+     * Tag for the color picker dialog fragment
+     */
+    public static final String COLOR_PICKER_DIALOG_TAG = "color_picker_dialog";
+
+    public static final String EXTRA_COLOR = "color";
+
     public static final int SIZE_LARGE = 1;
     public static final int SIZE_SMALL = 2;
 
@@ -81,6 +88,7 @@ public class ColorPickerDialog extends DialogFragment implements OnColorSelected
         setArguments(bundle);
     }
 
+    @Deprecated
     public void setOnColorSelectedListener(OnColorSelectedListener listener) {
         mListener = listener;
     }
@@ -128,11 +136,9 @@ public class ColorPickerDialog extends DialogFragment implements OnColorSelected
             mListener.onColorSelected(color);
         }
 
-        if (getTargetFragment() instanceof OnColorSelectedListener) {
-            final OnColorSelectedListener listener =
-                    (OnColorSelectedListener) getTargetFragment();
-            listener.onColorSelected(color);
-        }
+        Bundle result = new Bundle();
+        result.putInt(EXTRA_COLOR, color);
+        getParentFragmentManager().setFragmentResult(COLOR_PICKER_DIALOG_TAG, result);
 
         if (color != mSelectedColor) {
             mSelectedColor = color;

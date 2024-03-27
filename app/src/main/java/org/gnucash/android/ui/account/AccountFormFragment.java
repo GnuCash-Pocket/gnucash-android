@@ -17,6 +17,8 @@
 
 package org.gnucash.android.ui.account;
 
+import static org.gnucash.android.ui.colorpicker.ColorPickerDialog.COLOR_PICKER_DIALOG_TAG;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -46,12 +48,14 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.Spinner;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.cursoradapter.widget.SimpleCursorAdapter;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentResultListener;
 
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -65,7 +69,6 @@ import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.colorpicker.ColorPickerDialog;
-import org.gnucash.android.ui.colorpicker.ColorPickerSwatch;
 import org.gnucash.android.ui.colorpicker.ColorSquare;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.settings.PreferenceActivity;
@@ -87,12 +90,7 @@ import butterknife.ButterKnife;
  * @author Ngewi Fet <ngewif@gmail.com>
  * @author Yongxin Wang <fefe.wyx@gmail.com>
  */
-public class AccountFormFragment extends Fragment {
-
-    /**
-     * Tag for the color picker dialog fragment
-     */
-    private static final String COLOR_PICKER_DIALOG_TAG = "color_picker_dialog";
+public class AccountFormFragment extends Fragment implements FragmentResultListener {
 
     /**
      * EditText for the name of the account to be created/edited
@@ -222,16 +220,6 @@ public class AccountFormFragment extends Fragment {
      */
     @BindView(R.id.input_color_picker)
     ColorSquare mColorSquare;
-
-    private final ColorPickerSwatch.OnColorSelectedListener mColorSelectedListener =
-            new ColorPickerSwatch.OnColorSelectedListener() {
-                @Override
-                public void onColorSelected(int color) {
-                    mColorSquare.setBackgroundColor(color);
-                    mSelectedColor = color;
-                }
-            };
-
 
     /**
      * Default constructor
@@ -565,8 +553,17 @@ public class AccountFormFragment extends Fragment {
                 R.string.color_picker_default_title,
                 getAccountColorOptions(),
                 currentColor, 4, 12);
-        colorPickerDialogFragment.setOnColorSelectedListener(mColorSelectedListener);
+        fragmentManager.setFragmentResultListener(COLOR_PICKER_DIALOG_TAG, this, this);
         colorPickerDialogFragment.show(fragmentManager, COLOR_PICKER_DIALOG_TAG);
+    }
+
+    @Override
+    public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
+        if (COLOR_PICKER_DIALOG_TAG.equals(requestKey)) {
+            int color = result.getInt(ColorPickerDialog.EXTRA_COLOR);
+            mColorSquare.setBackgroundColor(color);
+            mSelectedColor = color;
+        }
     }
 
     @Override

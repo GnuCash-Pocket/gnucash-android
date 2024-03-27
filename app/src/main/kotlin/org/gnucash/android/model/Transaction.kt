@@ -240,10 +240,11 @@ class Transaction : BaseModel {
                     return createZeroInstance(_commodity!!.currencyCode)
                 }
                 val amount = split.value!!
-                imbalance =
-                    if (split.type === TransactionType.DEBIT) imbalance.subtract(amount) else imbalance.add(
-                        amount
-                    )
+                imbalance = if (split.type === TransactionType.DEBIT) {
+                    imbalance.minus(amount)
+                } else {
+                    imbalance.plus(amount)
+                }
             }
             return imbalance
         }
@@ -446,16 +447,14 @@ class Transaction : BaseModel {
                 val isDebitSplit = split.type === TransactionType.DEBIT
                 balance = if (isDebitAccount) {
                     if (isDebitSplit) {
-                        balance.add(amount)
+                        balance.plus(amount)
                     } else {
-                        balance.subtract(amount)
+                        balance.minus(amount)
                     }
+                } else if (isDebitSplit) {
+                    balance.minus(amount)
                 } else {
-                    if (isDebitSplit) {
-                        balance.subtract(amount)
-                    } else {
-                        balance.add(amount)
-                    }
+                    balance.plus(amount)
                 }
             }
             return balance

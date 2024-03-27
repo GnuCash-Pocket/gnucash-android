@@ -18,6 +18,7 @@ package org.gnucash.android.test.unit.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 
 import org.gnucash.android.model.Commodity;
@@ -69,7 +70,7 @@ public class MoneyTest {
 
     @Test
     public void testAddition() {
-        Money result = mMoneyInEur.add(new Money("5", CURRENCY_CODE));
+        Money result = mMoneyInEur.plus(new Money("5", CURRENCY_CODE));
         assertEquals("20.75", result.toPlainString());
         assertNotSame(result, mMoneyInEur);
         validateImmutability();
@@ -78,12 +79,12 @@ public class MoneyTest {
     @Test(expected = Money.CurrencyMismatchException.class)
     public void testAdditionWithIncompatibleCurrency() {
         Money addend = new Money("4", "USD");
-        mMoneyInEur.add(addend);
+        mMoneyInEur.plus(addend);
     }
 
     @Test
     public void testSubtraction() {
-        Money result = mMoneyInEur.subtract(new Money("2", CURRENCY_CODE));
+        Money result = mMoneyInEur.minus(new Money("2", CURRENCY_CODE));
         assertEquals(new BigDecimal("13.75"), result.asBigDecimal());
         assertNotSame(result, mMoneyInEur);
         validateImmutability();
@@ -91,13 +92,13 @@ public class MoneyTest {
 
     @Test(expected = Money.CurrencyMismatchException.class)
     public void testSubtractionWithDifferentCurrency() {
-        Money addend = new Money("4", "USD");
-        mMoneyInEur.subtract(addend);
+        Money other = new Money("4", "USD");
+        mMoneyInEur.minus(other);
     }
 
     @Test
     public void testMultiplication() {
-        Money result = mMoneyInEur.multiply(new Money(BigDecimal.TEN, Commodity.getInstance(CURRENCY_CODE)));
+        Money result = mMoneyInEur.times(new Money(BigDecimal.TEN, Commodity.getInstance(CURRENCY_CODE)));
         assertThat("157.50").isEqualTo(result.toPlainString());
         assertThat(result).isNotEqualTo(mMoneyInEur);
         validateImmutability();
@@ -105,13 +106,13 @@ public class MoneyTest {
 
     @Test(expected = Money.CurrencyMismatchException.class)
     public void testMultiplicationWithDifferentCurrencies() {
-        Money addend = new Money("4", "USD");
-        mMoneyInEur.multiply(addend);
+        Money other = new Money("4", "USD");
+        mMoneyInEur.times(other);
     }
 
     @Test
     public void testDivision() {
-        Money result = mMoneyInEur.divide(2);
+        Money result = mMoneyInEur.div(2);
         assertThat(result.toPlainString()).isEqualTo("7.88");
         assertThat(result).isNotEqualTo(mMoneyInEur);
         validateImmutability();
@@ -119,13 +120,13 @@ public class MoneyTest {
 
     @Test(expected = Money.CurrencyMismatchException.class)
     public void testDivisionWithDifferentCurrency() {
-        Money addend = new Money("4", "USD");
-        mMoneyInEur.divide(addend);
+        Money other = new Money("4", "USD");
+        mMoneyInEur.div(other);
     }
 
     @Test
     public void testNegation() {
-        Money result = mMoneyInEur.negate();
+        Money result = mMoneyInEur.unaryMinus();
         assertThat(result.toPlainString()).startsWith("-");
         validateImmutability();
     }
@@ -171,6 +172,7 @@ public class MoneyTest {
     public void validateImmutability() {
         assertEquals(mHashcode, mMoneyInEur.hashCode());
         assertEquals(amountString, mMoneyInEur.toPlainString());
+        assertNotNull(mMoneyInEur.getCommodity());
         assertEquals(CURRENCY_CODE, mMoneyInEur.getCommodity().getCurrencyCode());
     }
 

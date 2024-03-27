@@ -33,6 +33,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
@@ -40,6 +41,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.content.ContextCompat;
 import androidx.cursoradapter.widget.SimpleCursorAdapter;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentResultListener;
 import androidx.fragment.app.ListFragment;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
@@ -65,7 +68,7 @@ import java.sql.Timestamp;
  * Fragment for managing the books in the database
  */
 public class BookManagerFragment extends ListFragment implements
-        LoaderManager.LoaderCallbacks<Cursor>, Refreshable {
+        LoaderManager.LoaderCallbacks<Cursor>, Refreshable, FragmentResultListener {
 
     private static final String LOG_TAG = "BookManagerFragment";
 
@@ -154,6 +157,14 @@ public class BookManagerFragment extends ListFragment implements
         mCursorAdapter.swapCursor(null);
     }
 
+    @Override
+    public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
+        if (DeleteBookConfirmationDialog.TAG.equals(requestKey)) {
+            boolean refresh = result.getBoolean(Refreshable.EXTRA_REFRESH);
+            if (refresh) refresh();
+        }
+    }
+
     private class BooksCursorAdapter extends SimpleCursorAdapter {
 
         BooksCursorAdapter(Context context, int layout, Cursor c, String[] from, int[] to) {
@@ -220,9 +231,10 @@ public class BookManagerFragment extends ListFragment implements
         }
 
         private boolean handleMenuDeleteBook(final String bookUID) {
+            FragmentManager fm = getChildFragmentManager();
+            fm.setFragmentResultListener(DeleteBookConfirmationDialog.TAG, BookManagerFragment.this, BookManagerFragment.this);
             DeleteBookConfirmationDialog dialog = DeleteBookConfirmationDialog.newInstance(bookUID);
-            dialog.show(getFragmentManager(), "delete_book");
-            dialog.setTargetFragment(BookManagerFragment.this, 0);
+            dialog.show(fm, DeleteBookConfirmationDialog.TAG);
             return true;
         }
 

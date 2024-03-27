@@ -734,8 +734,8 @@ public class TransactionFormFragment extends Fragment implements
                     .getPrice(commodityUID, targetCmdtyUID);
 
             if (pricePair.first > 0 && pricePair.second > 0) {
-                quantity = quantity.multiply(pricePair.first.intValue())
-                        .divide(pricePair.second.intValue())
+                quantity = quantity.times(pricePair.first.intValue())
+                        .div(pricePair.second.intValue())
                         .withCurrency(cmdtyDbAdapter.getRecord(targetCmdtyUID));
             }
         }

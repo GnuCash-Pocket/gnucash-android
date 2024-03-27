@@ -27,6 +27,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Collection of helper tags and methods for Gnc XML export
@@ -148,6 +149,7 @@ public abstract class GncXmlHelper {
 
     public static final String RECURRENCE_VERSION = "1.0.0";
     public static final String BOOK_VERSION = "2.0.0";
+    public static final TimeZone TZ_UTC = TimeZone.getTimeZone("UTC");
     public static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", Locale.US);
     public static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 
@@ -172,7 +174,16 @@ public abstract class GncXmlHelper {
      * @param milliseconds Milliseconds since epoch
      */
     public static String formatDate(long milliseconds) {
-        return TIME_FORMATTER.format(new Date(milliseconds));
+        return formatDate(new Date(milliseconds));
+    }
+
+    /**
+     * Formats dates for the GnuCash XML format
+     *
+     * @param date the date to format
+     */
+    public static synchronized String formatDate(Date date) {
+        return TIME_FORMATTER.format(date);
     }
 
     /**

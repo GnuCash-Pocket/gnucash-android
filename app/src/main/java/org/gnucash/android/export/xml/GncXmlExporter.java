@@ -351,7 +351,7 @@ public class GncXmlExporter extends Exporter {
 
                 // date entered, time when the transaction was actually created
                 Timestamp timeEntered = TimestampHelper.getTimestampFromUtcString(cursor.getString(cursor.getColumnIndexOrThrow("trans_date_posted")));
-                String dateEntered = GncXmlHelper.formatDate(timeEntered.getTime());
+                String dateEntered = GncXmlHelper.formatDate(timeEntered);
                 xmlSerializer.startTag(null, GncXmlHelper.TAG_DATE_ENTERED);
                 xmlSerializer.startTag(null, GncXmlHelper.TAG_TS_DATE);
                 xmlSerializer.text(dateEntered);
@@ -663,7 +663,7 @@ public class GncXmlExporter extends Exporter {
                 xmlSerializer.endTag(null, GncXmlHelper.TAG_COMMODITY_ID);
                 xmlSerializer.endTag(null, GncXmlHelper.TAG_PRICE_CURRENCY);
                 // time
-                String strDate = GncXmlHelper.formatDate(TimestampHelper.getTimestampFromUtcString(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.PriceEntry.COLUMN_DATE))).getTime());
+                String strDate = GncXmlHelper.formatDate(TimestampHelper.getTimestampFromUtcString(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.PriceEntry.COLUMN_DATE))));
                 xmlSerializer.startTag(null, GncXmlHelper.TAG_PRICE_TIME);
                 xmlSerializer.startTag(null, GncXmlHelper.TAG_TS_DATE);
                 xmlSerializer.text(strDate);
