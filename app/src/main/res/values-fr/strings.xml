@@ -182,7 +182,7 @@
     <string name="title_all_accounts">Tous</string>
     <string name="summary_create_default_accounts">Crée une structure de compte GnuCash par défaut couramment utilisé</string>
     <string name="title_create_default_accounts">Crée comptes par défaut</string>
-    <string name="msg_confirm_create_default_accounts_setting">Un nouveau livre sera ouvert avec les comptes courants par défaut\n\n Vos comptes et opérations actuels ne seront pas modifiés !</string>
+    <string name="msg_confirm_create_default_accounts_setting">Un nouveau livre sera ouvert avec les comptes courants par défaut\n\n Vos comptes et opérations actuels ne seront pas modifiés!</string>
     <string name="title_scheduled_transactions">Transactions planifiées</string>
     <string name="title_select_export_destination">Selectionnez une destination pour l\'export</string>
     <string name="hint_split_memo">Memo</string>
@@ -264,7 +264,7 @@
     <string name="owncloud_server">https://</string>
     <string name="owncloud_server_invalid">Serveur OC inaccessible</string>
     <string name="owncloud_user_invalid">Nom d’utilisateur/mot de passe OC non valide</string>
-    <string name="owncloud_dir_invalid">Caractères non valides : \\ &lt; &gt; : \&quot; | * ? </string>
+    <string name="owncloud_dir_invalid">Caractères non valides: \\ &lt; &gt; : \&quot; | * ? </string>
     <string name="owncloud_server_ok">Serveur OC OK</string>
     <string name="owncloud_user_ok">Nom d’utilisateur/mot de passe OC OK</string>
     <string name="owncloud_dir_ok">Nom Répertoire OK</string>
@@ -352,7 +352,7 @@
     <string name="title_translate_gnucash">Traduire GnuCash</string>
     <string name="summary_google_plus">Partager des idées, discuter des changements ou signaler des problèmes</string>
     <string name="summary_translate_gnucash">Traduire ou relire sur CrowdIn</string>
-    <string name="toast_no_compatible_apps_to_receive_export">Aucune application compatible pour recevoir les transactions exportées !</string>
+    <string name="toast_no_compatible_apps_to_receive_export">Aucune application compatible pour recevoir les transactions exportées !</string>
     <string name="menu_move_transaction">Déplacer&#8230;</string>
     <string name="menu_duplicate_transaction">Dupliquer</string>
     <string name="title_cash_flow_report">Flux de trésorerie</string>
@@ -396,17 +396,17 @@
     <string name="menu_manage_books">Gérer les livres&#8230;</string>
     <string name="select_chart_to_view_details">Sélectionnez une partie du graphique pour afficher les détails</string>
     <string name="title_confirm_delete_book">Confirmer la suppression du livre</string>
-    <string name="msg_all_book_data_will_be_deleted">Tous les comptes et transactions dans ce livre seront supprimées !</string>
+    <string name="msg_all_book_data_will_be_deleted">Tous les comptes et transactions dans ce livre seront supprimées !</string>
     <string name="btn_delete_book">Supprimer le livre</string>
-    <string name="label_last_export_time">Dernières exportations :</string>
+    <string name="label_last_export_time">Dernières exportations:</string>
     <string name="menu_title_enable_sync">Activer la synchronisation</string>
     <string name="menu_title_new_book">Nouveau livre</string>
     <string name="toast_transaction_has_no_splits_and_cannot_open">La transaction sélectionnée n’a aucun mouvement et ne peut pas être ouvert</string>
     <string name="label_split_count">%1$d mouvements</string>
     <string name="label_inside_account_with_name">dans %1$s</string>
     <plurals name="book_account_stats">
-        <item quantity="one">%d compte</item>
-        <item quantity="other">%d comptes</item>
+        <item quantity="one">%d compte</item>
+        <item quantity="other">%d comptes</item>
     </plurals>
     <plurals name="book_transaction_stats">
         <item quantity="one">%d transaction</item>
