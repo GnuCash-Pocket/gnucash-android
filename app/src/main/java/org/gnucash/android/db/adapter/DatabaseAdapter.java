@@ -21,7 +21,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -39,6 +38,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import timber.log.Timber;
+
 /**
  * Adapter to be used for creating and opening the database for read/write operations.
  * The adapter abstracts several methods for database access and should be subclassed
@@ -47,10 +48,6 @@ import java.util.List;
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public abstract class DatabaseAdapter<Model extends BaseModel> implements Closeable {
-    /**
-     * Tag for logging
-     */
-    protected String LOG_TAG = "DatabaseAdapter";
 
     /**
      * SQLite database
@@ -86,7 +83,6 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
         if (mDb.getVersion() >= 9) {
             createTempView();
         }
-        LOG_TAG = getClass().getSimpleName();
     }
 
     private void createTempView() {
@@ -226,7 +222,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @param updateMethod Method to use for adding the record
      */
     public void addRecord(@NonNull final Model model, UpdateMethod updateMethod) {
-        Log.d(LOG_TAG, String.format("Adding %s record to database: ", model.getClass().getSimpleName()));
+        Timber.d("Adding %s record to database: ", model.getClass().getSimpleName());
         switch (updateMethod) {
             case insert:
                 synchronized (getInsertStatement()) {
@@ -297,12 +293,12 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
 
     public long bulkAddRecords(@NonNull List<Model> modelList, UpdateMethod updateMethod) {
         if (modelList.isEmpty()) {
-            Log.d(LOG_TAG, "Empty model list. Cannot bulk add records, returning 0");
+            Timber.d("Empty model list. Cannot bulk add records, returning 0");
             return 0;
         }
 
-        Log.i(LOG_TAG, String.format("Bulk adding %d %s records to the database", modelList.size(),
-                modelList.size() == 0 ? "null" : modelList.get(0).getClass().getSimpleName()));
+        Timber.i("Bulk adding %d %s records to the database", modelList.size(),
+                modelList.isEmpty() ? "null" : modelList.get(0).getClass().getSimpleName());
         long nRow = 0;
         try {
             mDb.beginTransaction();
@@ -405,14 +401,14 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @throws IllegalArgumentException if the record UID does not exist in thd database
      */
     public Model getRecord(@NonNull String uid) {
-        Log.v(LOG_TAG, "Fetching record with GUID " + uid);
+        Timber.v("Fetching record with GUID %s", uid);
 
         Cursor cursor = fetchRecord(uid);
         try {
             if (cursor.moveToFirst()) {
                 return buildModelInstance(cursor);
             } else {
-                throw new IllegalArgumentException(LOG_TAG + ": Record with " + uid + " does not exist");
+                throw new IllegalArgumentException("Record with " + uid + " does not exist");
             }
         } finally {
             cursor.close();
@@ -533,7 +529,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @return <code>true</code> if deletion was successful, <code>false</code> otherwise
      */
     public boolean deleteRecord(long rowId) {
-        Log.d(LOG_TAG, "Deleting record with id " + rowId + " from " + mTableName);
+        Timber.d("Deleting record with id " + rowId + " from " + mTableName);
         return mDb.delete(mTableName, DatabaseSchema.CommonColumns._ID + "=" + rowId, null) > 0;
     }
 

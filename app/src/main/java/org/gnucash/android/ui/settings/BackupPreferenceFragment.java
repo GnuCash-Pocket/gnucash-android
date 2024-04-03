@@ -25,7 +25,6 @@ import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
@@ -59,6 +58,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import timber.log.Timber;
+
 
 /**
  * Fragment for displaying general preferences
@@ -88,11 +89,6 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
      * Testing app secret for DropBox API
      */
     final static public String DROPBOX_APP_SECRET = "h2t9fphj3nr4wkw";
-
-    /**
-     * String for tagging log statements
-     */
-    public static final String LOG_TAG = "BackupPrefFragment";
 
     /**
      * Client for Google Drive Sync
@@ -324,7 +320,7 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
                                 @Override
                                 public void onResult(DriveFolder.DriveFolderResult result) {
                                     if (!result.getStatus().isSuccess()) {
-                                        Log.e(LOG_TAG, "Error creating the application folder");
+                                        Timber.e("Error creating the application folder");
                                         return;
                                     }
 
@@ -347,13 +343,13 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
                 .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
                     @Override
                     public void onConnectionFailed(ConnectionResult connectionResult) {
-                        Log.e(PreferenceActivity.class.getName(), "Connection to Google Drive failed");
+                        Timber.e("Connection to Google Drive failed");
                         if (connectionResult.hasResolution() && context instanceof Activity) {
                             try {
-                                Log.e(BackupPreferenceFragment.class.getName(), "Trying resolution of Google API connection failure");
+                                Timber.i("Trying resolution of Google API connection failure");
                                 connectionResult.startResolutionForResult((Activity) context, REQUEST_RESOLVE_CONNECTION);
                             } catch (IntentSender.SendIntentException e) {
-                                Log.e(BackupPreferenceFragment.class.getName(), e.getMessage());
+                                Timber.e(e);
                                 Toast.makeText(context, R.string.toast_unable_to_connect_to_google_drive, Toast.LENGTH_LONG).show();
                             }
                         } else {
@@ -369,7 +365,7 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
      * Opens a dialog for a user to select a backup to restore and then restores the backup
      */
     private void restoreBackup() {
-        Log.i("Settings", "Opening GnuCash XML backups for restore");
+        Timber.i("Opening GnuCash XML backups for restore");
         final String bookUID = BooksDbAdapter.getInstance().getActiveBookUID();
 
         final String defaultBackupFile = BackupManager.getBookBackupFileUri(bookUID);

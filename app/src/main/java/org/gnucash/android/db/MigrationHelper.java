@@ -37,11 +37,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.preference.PreferenceManager;
-
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -85,6 +82,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import timber.log.Timber;
+
 /**
  * Collection of helper methods which are used during database migrations
  *
@@ -92,7 +91,6 @@ import javax.xml.parsers.SAXParserFactory;
  */
 @SuppressWarnings("unused")
 public class MigrationHelper {
-    public static final String LOG_TAG = "MigrationHelper";
 
     /**
      * Performs same function as {@link AccountsDbAdapter#getFullyQualifiedAccountName(String)}
@@ -173,8 +171,8 @@ public class MigrationHelper {
      * @throws IOException if an error occurred during the file copy
      */
     static void moveFile(File src, File dst) throws IOException {
-        Log.d(LOG_TAG, String.format(Locale.US, "Moving %s from %s to %s",
-                src.getName(), src.getParent(), dst.getParent()));
+        Timber.d("Moving %s from %s to %s",
+                src.getName(), src.getParent(), dst.getParent());
         FileChannel inChannel = new FileInputStream(src).getChannel();
         FileChannel outChannel = new FileOutputStream(dst).getChannel();
         try {
@@ -182,7 +180,7 @@ public class MigrationHelper {
             if (bytesCopied >= src.length()) {
                 boolean result = src.delete();
                 String msg = result ? "Deleted src file: " : "Could not delete src: ";
-                Log.d(LOG_TAG, msg + src.getPath());
+                Timber.d(msg + src.getPath());
             }
         } finally {
             if (inChannel != null)
@@ -209,8 +207,7 @@ public class MigrationHelper {
                     try {
                         MigrationHelper.moveFile(src, dst);
                     } catch (IOException e) {
-                        Log.e(LOG_TAG, "Error migrating " + src.getName());
-                        FirebaseCrashlytics.getInstance().recordException(e);
+                        Timber.e(e, "Error migrating " + src.getName());
                     }
                 }
             } else {
@@ -225,8 +222,7 @@ public class MigrationHelper {
                     try {
                         MigrationHelper.moveFile(src, dst);
                     } catch (IOException e) {
-                        Log.e(LOG_TAG, "Error migrating backup: " + src.getName());
-                        FirebaseCrashlytics.getInstance().recordException(e);
+                        Timber.e(e, "Error migrating backup: " + src.getName());
                     }
                 }
             }
@@ -269,7 +265,7 @@ public class MigrationHelper {
                 " ADD COLUMN double_account_uid varchar(255)";
 
         //introducing sub accounts
-        Log.i(DatabaseHelper.LOG_TAG, "Adding column for parent accounts");
+        Timber.i("Adding column for parent accounts");
         String addParentAccountSql = "ALTER TABLE " + AccountEntry.TABLE_NAME +
                 " ADD COLUMN " + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " varchar(255)";
 
@@ -278,7 +274,7 @@ public class MigrationHelper {
 
         //update account types to GnuCash account types
         //since all were previously CHECKING, now all will be CASH
-        Log.i(DatabaseHelper.LOG_TAG, "Converting account types to GnuCash compatible types");
+        Timber.i("Converting account types to GnuCash compatible types");
         ContentValues cv = new ContentValues();
         cv.put(SplitEntry.COLUMN_TYPE, AccountType.CASH.toString());
         db.update(AccountEntry.TABLE_NAME, cv, null, null);
@@ -506,7 +502,7 @@ public class MigrationHelper {
      * @return New database version (8) if upgrade successful, old version (7) if unsuccessful
      */
     static int upgradeDbToVersion8(SQLiteDatabase db) {
-        Log.i(DatabaseHelper.LOG_TAG, "Upgrading database to version 8");
+        Timber.i("Upgrading database to version 8");
         int oldVersion = 7;
         new File(Exporter.LEGACY_BASE_FOLDER_PATH + "/backups/").mkdirs();
         new File(Exporter.LEGACY_BASE_FOLDER_PATH + "/exports/").mkdirs();
@@ -515,8 +511,7 @@ public class MigrationHelper {
 
         db.beginTransaction();
         try {
-
-            Log.i(DatabaseHelper.LOG_TAG, "Creating scheduled actions table");
+            Timber.i("Creating scheduled actions table");
             db.execSQL("CREATE TABLE " + ScheduledActionEntry.TABLE_NAME + " ("
                     + ScheduledActionEntry._ID + " integer primary key autoincrement, "
                     + ScheduledActionEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
@@ -536,7 +531,7 @@ public class MigrationHelper {
 
 
             //==============================BEGIN TABLE MIGRATIONS ========================================
-            Log.i(DatabaseHelper.LOG_TAG, "Migrating accounts table");
+            Timber.i("Migrating accounts table");
             // backup transaction table
             db.execSQL("ALTER TABLE " + AccountEntry.TABLE_NAME + " RENAME TO " + AccountEntry.TABLE_NAME + "_bak");
             // create new transaction table
@@ -588,7 +583,7 @@ public class MigrationHelper {
                     + " FROM " + AccountEntry.TABLE_NAME + "_bak;"
             );
 
-            Log.i(DatabaseHelper.LOG_TAG, "Migrating transactions table");
+            Timber.i("Migrating transactions table");
             // backup transaction table
             db.execSQL("ALTER TABLE " + TransactionEntry.TABLE_NAME + " RENAME TO " + TransactionEntry.TABLE_NAME + "_bak");
             // create new transaction table
@@ -629,7 +624,7 @@ public class MigrationHelper {
                     + " FROM " + TransactionEntry.TABLE_NAME + "_bak;"
             );
 
-            Log.i(DatabaseHelper.LOG_TAG, "Migrating splits table");
+            Timber.i("Migrating splits table");
             // backup split table
             db.execSQL("ALTER TABLE " + SplitEntry.TABLE_NAME + " RENAME TO " + SplitEntry.TABLE_NAME + "_bak");
             // create new split table
@@ -678,7 +673,7 @@ public class MigrationHelper {
             //TransactionsDbAdapter transactionsDbAdapter = new TransactionsDbAdapter(db, splitsDbAdapter);
             //AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(db,transactionsDbAdapter);
 
-            Log.i(DatabaseHelper.LOG_TAG, "Creating default root account if none exists");
+            Timber.i("Creating default root account if none exists");
             ContentValues contentValues = new ContentValues();
             //assign a root account to all accounts which had null as parent except ROOT (top-level accounts)
             String rootAccountUID;
@@ -714,7 +709,7 @@ public class MigrationHelper {
             contentValues.put(AccountEntry.COLUMN_PARENT_ACCOUNT_UID, rootAccountUID);
             db.update(AccountEntry.TABLE_NAME, contentValues, AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " IS NULL AND " + AccountEntry.COLUMN_TYPE + " != ?", new String[]{"ROOT"});
 
-            Log.i(DatabaseHelper.LOG_TAG, "Migrating existing recurring transactions");
+            Timber.i("Migrating existing recurring transactions");
             cursor = db.query(TransactionEntry.TABLE_NAME + "_bak", null, "recurrence_period > 0", null, null, null, null);
             long lastRun = System.currentTimeMillis();
             while (cursor.moveToNext()) {
@@ -761,7 +756,7 @@ public class MigrationHelper {
             cursor.close();
 
             //auto-balance existing splits
-            Log.i(DatabaseHelper.LOG_TAG, "Auto-balancing existing transaction splits");
+            Timber.i("Auto-balancing existing transaction splits");
             cursor = db.query(
                     TransactionEntry.TABLE_NAME + " , " + SplitEntry.TABLE_NAME + " ON "
                             + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + "=" + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID
@@ -837,7 +832,7 @@ public class MigrationHelper {
                 cursor.close();
             }
 
-            Log.i(DatabaseHelper.LOG_TAG, "Dropping temporary migration tables");
+            Timber.i("Dropping temporary migration tables");
             db.execSQL("DROP TABLE " + SplitEntry.TABLE_NAME + "_bak");
             db.execSQL("DROP TABLE " + AccountEntry.TABLE_NAME + "_bak");
             db.execSQL("DROP TABLE " + TransactionEntry.TABLE_NAME + "_bak");
@@ -869,7 +864,7 @@ public class MigrationHelper {
      * @throws RuntimeException if the default commodities could not be imported
      */
     static int upgradeDbToVersion9(SQLiteDatabase db) {
-        Log.i(DatabaseHelper.LOG_TAG, "Upgrading database to version 9");
+        Timber.i("Upgrading database to version 9");
         int oldVersion = 8;
 
         db.beginTransaction();
@@ -893,8 +888,7 @@ public class MigrationHelper {
             try {
                 importCommodities(db);
             } catch (SAXException | ParserConfigurationException | IOException e) {
-                Log.e(DatabaseHelper.LOG_TAG, "Error loading currencies into the database", e);
-                FirebaseCrashlytics.getInstance().recordException(e);
+                Timber.e(e, "Error loading currencies into the database");
                 throw new RuntimeException(e);
             }
 
@@ -1100,7 +1094,7 @@ public class MigrationHelper {
      * @return 10 if upgrade was successful, 9 otherwise
      */
     static int upgradeDbToVersion10(SQLiteDatabase db) {
-        Log.i(DatabaseHelper.LOG_TAG, "Upgrading database to version 9");
+        Timber.i("Upgrading database to version 9");
         int oldVersion = 9;
 
         db.beginTransaction();
@@ -1154,7 +1148,7 @@ public class MigrationHelper {
      * @return 11 if upgrade was successful, 10 otherwise
      */
     static int upgradeDbToVersion11(SQLiteDatabase db) {
-        Log.i(DatabaseHelper.LOG_TAG, "Upgrading database to version 9");
+        Timber.i("Upgrading database to version 9");
         int oldVersion = 10;
 
         db.beginTransaction();
@@ -1213,7 +1207,7 @@ public class MigrationHelper {
      * @return 12 if upgrade was successful, 11 otherwise
      */
     static int upgradeDbToVersion12(SQLiteDatabase db) {
-        Log.i(MigrationHelper.LOG_TAG, "Upgrading database to version 12");
+        Timber.i("Upgrading database to version 12");
 
         int oldVersion = 11;
 
@@ -1252,7 +1246,7 @@ public class MigrationHelper {
      * @return New database version, 13 if migration succeeds, 11 otherwise
      */
     static int upgradeDbToVersion13(SQLiteDatabase db) {
-        Log.i(DatabaseHelper.LOG_TAG, "Upgrading database to version 13");
+        Timber.i("Upgrading database to version 13");
         int oldVersion = 12;
 
         db.beginTransaction();
@@ -1455,7 +1449,7 @@ public class MigrationHelper {
         }
 
         //Migrate book-specific preferences away from shared preferences
-        Log.d(LOG_TAG, "Migrating shared preferences into book preferences");
+        Timber.d("Migrating shared preferences into book preferences");
         Context context = GnuCashApplication.getAppContext();
         String keyUseDoubleEntry = context.getString(R.string.key_use_double_entry);
         String keySaveOpeningBalance = context.getString(R.string.key_save_opening_balances);
@@ -1520,12 +1514,12 @@ public class MigrationHelper {
 
         if (!srcDir.exists()) {
             String msg = String.format(Locale.US, "Source directory %s does not exist", srcDir.getPath());
-            Log.e(LOG_TAG, msg);
+            Timber.e(msg);
             throw new IOException(msg);
         }
 
         if (!dstDir.exists() || !dstDir.isDirectory()) {
-            Log.w(LOG_TAG, "Target directory does not exist. Attempting to create..." + dstDir.getPath());
+            Timber.w("Target directory does not exist. Attempting to create..." + dstDir.getPath());
             if (!dstDir.mkdirs()) {
                 throw new IOException(String.format("Target directory %s does not exist and could not be created", dstDir.getPath()));
             }
@@ -1540,7 +1534,7 @@ public class MigrationHelper {
                 dst.mkdir();
                 moveDirectory(src, dst);
                 if (!src.delete())
-                    Log.i(LOG_TAG, "Failed to delete directory: " + src.getPath());
+                    Timber.w("Failed to delete directory: %s", src.getPath());
                 continue;
             }
 
@@ -1548,8 +1542,7 @@ public class MigrationHelper {
                 File dst = new File(dstDir, src.getName());
                 MigrationHelper.moveFile(src, dst);
             } catch (IOException e) {
-                Log.e(LOG_TAG, "Error moving file " + src.getPath());
-                FirebaseCrashlytics.getInstance().recordException(e);
+                Timber.e(e, "Error moving file %s", src.getPath());
             }
         }
     }
@@ -1565,7 +1558,7 @@ public class MigrationHelper {
      * @return New database version
      */
     public static int upgradeDbToVersion14(SQLiteDatabase db) {
-        Log.i(DatabaseHelper.LOG_TAG, "Upgrading database to version 14");
+        Timber.i("Upgrading database to version 14");
         int oldDbVersion = 13;
         File backupFolder = new File(Exporter.BASE_FOLDER_PATH);
         backupFolder.mkdir();
@@ -1583,12 +1576,8 @@ public class MigrationHelper {
                     writer.write("Backup files have been moved to " + dstDir.getPath() +
                             "\nYou can now delete this folder");
                     writer.flush();
-                } catch (IOException | IllegalArgumentException ex) {
-                    ex.printStackTrace();
-                    String msg = String.format("Error moving files from %s to %s", srcDir.getPath(), dstDir.getPath());
-                    Log.e(LOG_TAG, msg);
-                    FirebaseCrashlytics.getInstance().log(msg);
-                    FirebaseCrashlytics.getInstance().recordException(ex);
+                } catch (IOException | IllegalArgumentException e) {
+                    Timber.e(e, "Error moving files from %s to %s", srcDir.getPath(), dstDir.getPath());
                 }
 
             }
@@ -1610,7 +1599,7 @@ public class MigrationHelper {
      * @return New database version, 14 if migration succeeds, 13 otherwise
      */
     static int upgradeDbToVersion15(SQLiteDatabase db) {
-        Log.i(DatabaseHelper.LOG_TAG, "Upgrading database to version 15");
+        Timber.i("Upgrading database to version 15");
         int dbVersion = 14;
 
         db.beginTransaction();

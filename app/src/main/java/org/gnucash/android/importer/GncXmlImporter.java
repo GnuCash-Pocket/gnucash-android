@@ -16,8 +16,6 @@
  */
 package org.gnucash.android.importer;
 
-import android.util.Log;
-
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.util.PreferencesHelper;
 import org.xml.sax.InputSource;
@@ -33,6 +31,8 @@ import java.util.zip.GZIPInputStream;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
+import timber.log.Timber;
 
 /**
  * Importer for Gnucash XML files and GNCA (GnuCash Android) XML files
@@ -63,13 +63,13 @@ public class GncXmlImporter {
             bos = new BufferedInputStream(pb);
 
         //TODO: Set an error handler which can log errors
-        Log.d(GncXmlImporter.class.getSimpleName(), "Start import");
+        Timber.d("Start import");
         GncXmlHandler handler = new GncXmlHandler();
         xr.setContentHandler(handler);
         long startTime = System.nanoTime();
         xr.parse(new InputSource(bos));
         long endTime = System.nanoTime();
-        Log.d(GncXmlImporter.class.getSimpleName(), String.format("%d ns spent on importing the file", endTime - startTime));
+        Timber.d("%d ns spent on importing the file", endTime - startTime);
 
         String bookUID = handler.getBookUID();
         PreferencesHelper.setLastExportTime(

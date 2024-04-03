@@ -23,15 +23,12 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.XmlRes;
 import androidx.appcompat.widget.AppCompatEditText;
-
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
@@ -46,6 +43,8 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
+
+import timber.log.Timber;
 
 /**
  * A custom EditText which supports computations and uses a custom calculator keyboard.
@@ -265,9 +264,7 @@ public class CalculatorEditText extends AppCompatEditText {
             expression = expressionBuilder.build();
         } catch (RuntimeException e) {
             setError(getContext().getString(R.string.label_error_invalid_expression));
-            String msg = "Invalid expression: " + amountString;
-            Log.e(this.getClass().getSimpleName(), msg);
-            FirebaseCrashlytics.getInstance().log(msg);
+            Timber.e(e, "Invalid expression: %s", amountString);
             return "";
         }
 
@@ -276,7 +273,7 @@ public class CalculatorEditText extends AppCompatEditText {
             setValue(result);
         } else {
             setError(getContext().getString(R.string.label_error_invalid_expression));
-            Log.w(VIEW_LOG_TAG, "Expression is null or invalid: " + expression);
+            Timber.w("Expression is null or invalid: %s", expression);
         }
         return getText().toString();
     }
@@ -322,7 +319,7 @@ public class CalculatorEditText extends AppCompatEditText {
             return AmountParser.parse(getText().toString());
         } catch (ParseException e) {
             String msg = "Error parsing amount string " + getText() + " from CalculatorEditText";
-            Log.i(getClass().getSimpleName(), msg, e);
+            Timber.i(e, msg);
             return null;
         }
     }

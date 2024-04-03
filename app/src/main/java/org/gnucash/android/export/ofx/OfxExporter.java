@@ -19,9 +19,6 @@ package org.gnucash.android.export.ofx;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.preference.PreferenceManager;
-import android.util.Log;
-
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -57,6 +54,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import timber.log.Timber;
+
 /**
  * Exports the data in the database in OFX format
  *
@@ -75,7 +74,6 @@ public class OfxExporter extends Exporter {
      */
     public OfxExporter(ExportParams params) {
         super(params, null);
-        LOG_TAG = "OfxExporter";
     }
 
     /**
@@ -86,7 +84,6 @@ public class OfxExporter extends Exporter {
      */
     public OfxExporter(ExportParams params, SQLiteDatabase db) {
         super(params, db);
-        LOG_TAG = "OfxExporter";
     }
 
     /**
@@ -221,9 +218,8 @@ public class OfxExporter extends Exporter {
             }
 
             transformer.transform(source, result);
-        } catch (TransformerException tfException) {
-            Log.e(LOG_TAG, tfException.getMessage());
-            FirebaseCrashlytics.getInstance().recordException(tfException);
+        } catch (TransformerException e) {
+            Timber.e(e);
         }
     }
 

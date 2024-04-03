@@ -19,13 +19,14 @@ package org.gnucash.android.ui.passcode;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.WindowManager.LayoutParams;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.ui.common.UxArgument;
+
+import timber.log.Timber;
 
 /**
  * This activity used as the parent class for enabling passcode lock
@@ -35,8 +36,6 @@ import org.gnucash.android.ui.common.UxArgument;
  * @see org.gnucash.android.ui.transaction.TransactionsActivity
  */
 public class PasscodeLockActivity extends AppCompatActivity {
-
-    private static final String TAG = "PasscodeLockActivity";
 
     @Override
     protected void onResume() {
@@ -61,7 +60,7 @@ public class PasscodeLockActivity extends AppCompatActivity {
         String passCode = prefs.getString(UxArgument.PASSCODE, "");
 
         if (isPassEnabled && !isSessionActive() && !passCode.trim().isEmpty() && !skipPasscode) {
-            Log.v(TAG, "Show passcode screen");
+            Timber.v("Show passcode screen");
             Intent intent = new Intent(this, PasscodeLockScreenActivity.class)
                     .setAction(getIntent().getAction())
                     .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)

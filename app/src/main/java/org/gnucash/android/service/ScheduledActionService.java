@@ -20,13 +20,10 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.app.JobIntentService;
-
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHelper;
@@ -49,6 +46,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import timber.log.Timber;
+
 /**
  * Service for running scheduled events.
  *
@@ -63,7 +62,6 @@ import java.util.concurrent.ExecutionException;
  */
 public class ScheduledActionService extends JobIntentService {
 
-    private static final String LOG_TAG = "ScheduledActionService";
     private static final int JOB_ID = 1001;
 
 
@@ -74,7 +72,7 @@ public class ScheduledActionService extends JobIntentService {
 
     @Override
     protected void onHandleWork(@NonNull Intent intent) {
-        Log.i(LOG_TAG, "Starting scheduled action service");
+        Timber.i("Starting scheduled action service");
 
         BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
         List<Book> books = booksDbAdapter.getAllRecords();
@@ -85,8 +83,8 @@ public class ScheduledActionService extends JobIntentService {
             ScheduledActionDbAdapter scheduledActionDbAdapter = new ScheduledActionDbAdapter(db, recurrenceDbAdapter);
 
             List<ScheduledAction> scheduledActions = scheduledActionDbAdapter.getAllEnabledScheduledActions();
-            Log.i(LOG_TAG, String.format("Processing %d total scheduled actions for Book: %s",
-                    scheduledActions.size(), book.getDisplayName()));
+            Timber.i("Processing %d total scheduled actions for Book: %s",
+                    scheduledActions.size(), book.getDisplayName());
             processScheduledActions(scheduledActions, db);
 
             //close all databases except the currently active database
@@ -94,7 +92,7 @@ public class ScheduledActionService extends JobIntentService {
                 db.close();
         }
 
-        Log.i(LOG_TAG, "Completed service @ " + java.text.DateFormat.getDateTimeInstance().format(new Date()));
+        Timber.i("Completed service @ %s", java.text.DateFormat.getDateTimeInstance().format(new Date()));
     }
 
     /**
@@ -116,7 +114,7 @@ public class ScheduledActionService extends JobIntentService {
             if (scheduledAction.getStartTime() > now    //if schedule begins in the future
                     || !scheduledAction.isEnabled()     // of if schedule is disabled
                     || (totalPlannedExecutions > 0 && executionCount >= totalPlannedExecutions)) { //limit was set and we reached or exceeded it
-                Log.i(LOG_TAG, "Skipping scheduled action: " + scheduledAction.toString());
+                Timber.i("Skipping scheduled action: %s", scheduledAction.toString());
                 continue;
             }
 
@@ -130,7 +128,7 @@ public class ScheduledActionService extends JobIntentService {
      * @param scheduledAction ScheduledEvent to be executed
      */
     private static void executeScheduledEvent(ScheduledAction scheduledAction, SQLiteDatabase db) {
-        Log.i(LOG_TAG, "Executing scheduled action: " + scheduledAction.toString());
+        Timber.i("Executing scheduled action: %s", scheduledAction.toString());
         int executionCount = 0;
 
         switch (scheduledAction.getActionType()) {
@@ -180,11 +178,10 @@ public class ScheduledActionService extends JobIntentService {
             //wait for async task to finish before we proceed (we are holding a wake lock)
             result = new ExportAsyncTask(GnuCashApplication.getAppContext(), db).execute(params).get();
         } catch (InterruptedException | ExecutionException e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
-            Log.e(LOG_TAG, e.getMessage(), e);
+            Timber.e(e);
         }
         if (result == null || result <= 0) {
-            Log.i(LOG_TAG, "Backup/export did not occur. There might have been no"
+            Timber.i("Backup/export did not occur. There might have been no"
                     + " new transactions to export or it might have crashed");
             // We don't know if something failed or there weren't transactions to export,
             // so fall on the safe side and return as if something had failed.
@@ -231,7 +228,7 @@ public class ScheduledActionService extends JobIntentService {
         try {
             trxnTemplate = transactionsDbAdapter.getRecord(actionUID);
         } catch (IllegalArgumentException ex) { //if the record could not be found, abort
-            Log.e(LOG_TAG, "Scheduled transaction with UID " + actionUID + " could not be found in the db with path " + db.getPath());
+            Timber.e(ex, "Scheduled transaction with UID " + actionUID + " could not be found in the db with path " + db.getPath());
             return executionCount;
         }
 

@@ -24,7 +24,6 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.text.format.DateUtils;
-import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -96,6 +95,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import timber.log.Timber;
 
 /**
  * Fragment for creating or editing transactions
@@ -653,7 +653,7 @@ public class TransactionFormFragment extends Fragment implements
                     Date date = DATE_FORMATTER.parse(mDateTextView.getText().toString());
                     dateMillis = date.getTime();
                 } catch (ParseException e) {
-                    Log.e(getTag(), "Error converting input time to Date object");
+                    Timber.e("Error converting input time to Date object");
                 }
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTimeInMillis(dateMillis);
@@ -677,7 +677,7 @@ public class TransactionFormFragment extends Fragment implements
                     Date date = TIME_FORMATTER.parse(mTimeTextView.getText().toString());
                     timeMillis = date.getTime();
                 } catch (ParseException e) {
-                    Log.e(getTag(), "Error converting input time to Date object");
+                    Timber.e("Error converting input time to Date object");
                 }
 
                 Calendar calendar = Calendar.getInstance();

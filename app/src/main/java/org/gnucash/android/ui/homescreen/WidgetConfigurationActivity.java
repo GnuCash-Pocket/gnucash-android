@@ -27,7 +27,6 @@ import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -61,6 +60,7 @@ import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import timber.log.Timber;
 
 /**
  * Activity for configuration which account to display on a widget.
@@ -259,7 +259,7 @@ public class WidgetConfigurationActivity extends Activity {
      * @param appWidgetId ID of the widget to be updated
      */
     public static void updateWidget(final Context context, int appWidgetId) {
-        Log.i("WidgetConfiguration", "Updating widget: " + appWidgetId);
+        Timber.i("Updating widget: %s", appWidgetId);
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
 
         loadOldPreferences(context, appWidgetId);
@@ -279,7 +279,7 @@ public class WidgetConfigurationActivity extends Activity {
         try {
             account = accountsDbAdapter.getRecord(accountUID);
         } catch (IllegalArgumentException e) {
-            Log.i("WidgetConfiguration", "Account not found, resetting widget " + appWidgetId);
+            Timber.e(e, "Account not found, resetting widget %s", appWidgetId);
             //if account has been deleted, let the user know
             RemoteViews views = new RemoteViews(context.getPackageName(),
                     R.layout.widget_4x1);
@@ -347,7 +347,7 @@ public class WidgetConfigurationActivity extends Activity {
      * @param context Application context
      */
     public static void updateAllWidgets(final Context context) {
-        Log.i("WidgetConfiguration", "Updating all widgets");
+        Timber.i("Updating all widgets");
         AppWidgetManager widgetManager = AppWidgetManager.getInstance(context);
         ComponentName componentName = new ComponentName(context, TransactionAppWidgetProvider.class);
         final int[] appWidgetIds = widgetManager.getAppWidgetIds(componentName);

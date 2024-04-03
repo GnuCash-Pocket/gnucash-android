@@ -23,10 +23,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.OpenableColumns;
-import android.util.Log;
 import android.widget.Toast;
-
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.R;
 import org.gnucash.android.db.DatabaseSchema;
@@ -37,6 +34,8 @@ import org.gnucash.android.util.BackupManager;
 import org.gnucash.android.util.BookUtils;
 
 import java.io.InputStream;
+
+import timber.log.Timber;
 
 /**
  * Imports a GnuCash (desktop) account file and displays a progress dialog.
@@ -83,19 +82,14 @@ public class ImportAsyncTask extends AsyncTask<Uri, Void, Boolean> {
         try {
             InputStream accountInputStream = mContext.getContentResolver().openInputStream(uri);
             mImportedBookUID = GncXmlImporter.parse(accountInputStream);
-        } catch (Exception exception) {
-            Log.e(ImportAsyncTask.class.getName(), exception.getMessage());
-            FirebaseCrashlytics.getInstance().log("Could not open: " + uri.toString());
-            FirebaseCrashlytics.getInstance().recordException(exception);
-            exception.printStackTrace();
+        } catch (final Exception exception) {
+            Timber.e(exception, "Could not open: %s", uri);
 
-            final String err_msg = exception.getLocalizedMessage();
-            FirebaseCrashlytics.getInstance().log(err_msg);
             mContext.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     Toast.makeText(mContext,
-                            mContext.getString(R.string.toast_error_importing_accounts) + "\n" + err_msg,
+                            mContext.getString(R.string.toast_error_importing_accounts) + "\n" + exception.getLocalizedMessage(),
                             Toast.LENGTH_LONG).show();
                 }
             });

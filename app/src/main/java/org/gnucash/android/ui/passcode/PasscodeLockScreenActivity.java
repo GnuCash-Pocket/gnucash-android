@@ -19,7 +19,6 @@ package org.gnucash.android.ui.passcode;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,6 +27,8 @@ import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.ui.common.UxArgument;
 
+import timber.log.Timber;
+
 /**
  * Activity for displaying and managing the passcode lock screen.
  *
@@ -35,8 +36,6 @@ import org.gnucash.android.ui.common.UxArgument;
  */
 public class PasscodeLockScreenActivity extends AppCompatActivity
         implements KeyboardFragment.OnPasscodeEnteredListener {
-
-    private static final String TAG = "PassLockScreenActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +47,7 @@ public class PasscodeLockScreenActivity extends AppCompatActivity
     public void onPasscodeEntered(String pass) {
         String passcode = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
                 .getString(UxArgument.PASSCODE, "");
-        Log.d(TAG, "Passcode: " + passcode);
+        Timber.d("Passcode: %s", passcode);
 
         if (pass.equals(passcode)) {
             if (UxArgument.DISABLE_PASSCODE.equals(getIntent().getStringExtra(UxArgument.DISABLE_PASSCODE))) {

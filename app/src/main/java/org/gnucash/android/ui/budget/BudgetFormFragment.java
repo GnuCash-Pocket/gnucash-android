@@ -21,7 +21,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.inputmethodservice.KeyboardView;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -74,6 +73,7 @@ import java.util.GregorianCalendar;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import timber.log.Timber;
 
 /**
  * Fragment for creating or editing Budgets
@@ -297,7 +297,7 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
             Date date = TransactionFormFragment.DATE_FORMATTER.parse(((TextView) v).getText().toString());
             dateMillis = date.getTime();
         } catch (ParseException e) {
-            Log.e(getTag(), "Error converting input time to Date object");
+            Timber.e("Error converting input time to Date object");
         }
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(dateMillis);

@@ -22,7 +22,7 @@ static def gitSha() {
 
 
 android {
-    compileSdk 33
+    compileSdk 34
     defaultConfig {
         applicationId "org.gnucash.android"
         testApplicationId 'org.gnucash.android.test'
@@ -167,15 +167,13 @@ afterEvaluate {
     }
 }
 
-def androidSupportVersion = "27.1.1"
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.21"
 
+    // Jetpack
     implementation(
             'androidx.appcompat:appcompat:1.6.1',
-            'com.google.android.material:material:1.9.0',
+            'com.google.android.material:material:1.11.0',
             'androidx.cardview:cardview:1.0.0',
             'androidx.preference:preference:1.2.0',
             'androidx.recyclerview:recyclerview:1.3.0'
@@ -186,13 +184,15 @@ dependencies {
 
     implementation 'com.google.android.gms:play-services-drive:17.0.0'
 
-    implementation platform('com.google.firebase:firebase-bom:31.2.1')
-    implementation 'com.google.firebase:firebase-crashlytics'
+    // Logging
+    implementation 'com.google.firebase:firebase-crashlytics:18.6.1'
+    implementation "com.jakewharton.timber:timber:5.0.1"
 
+    // Dependency Injection
     implementation 'com.jakewharton:butterknife:10.2.3'
     annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.3'
 
-    implementation('com.uservoice:uservoice-android-sdk:1.2.6') {
+    implementation('com.uservoice:uservoice-android-sdk:1.2.10') {
         exclude module: 'commons-logging'
         exclude module: 'httpcore'
         exclude module: 'httpclient'
@@ -219,9 +219,8 @@ dependencies {
 
 def androidEspressoVersion = "3.5.1"
 dependencies {
-    androidTestImplementation 'androidx.annotation:annotation-experimental:1.3.0'
     //the following are only added so that the app and test version both us the same versions
-    androidTestImplementation 'com.google.android.material:material:1.9.0'
+    androidTestImplementation 'com.google.android.material:material:1.11.0'
 
     androidTestImplementation 'androidx.test:runner:1.5.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

@@ -21,9 +21,6 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
-import android.util.Log;
-
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema.BookEntry;
@@ -38,6 +35,8 @@ import org.gnucash.android.util.RecursiveMoveFiles;
 import java.io.File;
 import java.io.IOException;
 
+import timber.log.Timber;
+
 /**
  * Database helper for managing database which stores information about the books in the application
  * This is a different database from the one which contains the accounts and transaction data because
@@ -45,8 +44,6 @@ import java.io.IOException;
  * switch between them.
  */
 public class BookDbHelper extends SQLiteOpenHelper {
-
-    public static final String LOG_TAG = "BookDbHelper";
 
     private final Context mContext;
 
@@ -76,7 +73,7 @@ public class BookDbHelper extends SQLiteOpenHelper {
         db.execSQL(BOOKS_TABLE_CREATE);
 
         if (mContext.getDatabasePath(DatabaseSchema.LEGACY_DATABASE_NAME).exists()) {
-            Log.d(LOG_TAG, "Legacy database found. Migrating to multibook format");
+            Timber.d("Legacy database found. Migrating to multibook format");
             DatabaseHelper helper = new DatabaseHelper(GnuCashApplication.getAppContext(),
                     DatabaseSchema.LEGACY_DATABASE_NAME);
             SQLiteDatabase mainDb = helper.getWritableDatabase();
@@ -98,8 +95,7 @@ public class BookDbHelper extends SQLiteOpenHelper {
                 MigrationHelper.moveFile(src, dst);
             } catch (IOException e) {
                 String err_msg = "Error renaming database file";
-                FirebaseCrashlytics.getInstance().log(err_msg);
-                Log.e(LOG_TAG, err_msg, e);
+                Timber.e(e, err_msg);
             }
 
             migrateBackupFiles(book.getUID());
@@ -109,7 +105,7 @@ public class BookDbHelper extends SQLiteOpenHelper {
         SQLiteStatement statement = db.compileStatement(sql);
         long count = statement.simpleQueryForLong();
         if (count == 0) { //no book in the database, create a default one
-            Log.i(LOG_TAG, "No books found in database, creating default book");
+            Timber.i("No books found in database, creating default book");
             Book book = new Book();
             DatabaseHelper helper = new DatabaseHelper(GnuCashApplication.getAppContext(), book.getUID());
             SQLiteDatabase mainDb = helper.getWritableDatabase(); //actually create the db
@@ -165,8 +161,7 @@ public class BookDbHelper extends SQLiteOpenHelper {
      * @param activeBookUID GUID of the book for which to migrate the files
      */
     private void migrateBackupFiles(String activeBookUID) {
-
-        Log.d(LOG_TAG, "Moving export and backup files to book-specific folders");
+        Timber.d("Moving export and backup files to book-specific folders");
         File newBasePath = new File(Exporter.LEGACY_BASE_FOLDER_PATH + "/" + activeBookUID);
         newBasePath.mkdirs();
 
@@ -182,8 +177,7 @@ public class BookDbHelper extends SQLiteOpenHelper {
         try {
             nameFile.createNewFile();
         } catch (IOException e) {
-            Log.e(LOG_TAG, "Error creating name file for the database: " + nameFile.getName());
-            e.printStackTrace();
+            Timber.e(e, "Error creating name file for the database: %s", nameFile.getName());
         }
     }
 

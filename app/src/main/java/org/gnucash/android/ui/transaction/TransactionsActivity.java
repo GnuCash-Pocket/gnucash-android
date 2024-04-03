@@ -25,7 +25,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.format.DateUtils;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -71,6 +70,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import butterknife.BindView;
+import timber.log.Timber;
 
 /**
  * Activity for displaying, creating and editing transactions
@@ -79,11 +79,6 @@ import butterknife.BindView;
  */
 public class TransactionsActivity extends BaseDrawerActivity implements
         Refreshable, OnAccountClickedListener, OnTransactionClickedListener {
-
-    /**
-     * Logging tag
-     */
-    protected static final String TAG = "TransactionsActivity";
 
     /**
      * ViewPager index for sub-accounts fragment
@@ -255,7 +250,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
             Bundle args = new Bundle();
             args.putString(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
             transactionsListFragment.setArguments(args);
-            Log.i(TAG, "Opening transactions for account:  " + mAccountUID);
+            Timber.i("Opening transactions for account: %s", mAccountUID);
             return transactionsListFragment;
         }
     }

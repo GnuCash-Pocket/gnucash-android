@@ -28,7 +28,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Color;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -51,6 +50,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+
+import timber.log.Timber;
 
 /**
  * Manages persistence of {@link Account}s in the database
@@ -154,7 +155,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      */
     @Override
     public void addRecord(@NonNull Account account, UpdateMethod updateMethod) {
-        Log.d(LOG_TAG, "Replace account to db");
+        Timber.d("Replace account to db");
         //in-case the account already existed, we want to update the templates based on it as well
         List<Transaction> templateTransactions = mTransactionsAdapter.getScheduledTransactionsForAccount(account.getUID());
         super.addRecord(account, updateMethod);
@@ -379,7 +380,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             return false;
         }
 
-        Log.d(LOG_TAG, "Delete account with rowId with its transactions and sub-accounts: " + accountId);
+        Timber.d("Delete account with rowId with its transactions and sub-accounts: %s", accountId);
 
         List<String> descendantAccountUIDs = getDescendantAccountUIDs(accountUID, null, null);
         mDb.beginTransaction();
@@ -474,7 +475,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
                 null, null, null, null);
         try {
             if (cursor.moveToFirst()) {
-                Log.d(LOG_TAG, "Found parent account UID, returning value");
+                Timber.d("Found parent account UID, returning value");
                 return cursor.getString(cursor.getColumnIndexOrThrow(AccountEntry.COLUMN_PARENT_ACCOUNT_UID));
             } else {
                 return null;
@@ -705,7 +706,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      */
     @Override
     public Cursor fetchAllRecords() {
-        Log.v(LOG_TAG, "Fetching all accounts from db");
+        Timber.v("Fetching all accounts from db");
         String selection = AccountEntry.COLUMN_HIDDEN + " = 0 AND " + AccountEntry.COLUMN_TYPE + " != ?";
         return mDb.query(AccountEntry.TABLE_NAME,
                 null,
@@ -722,7 +723,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return {@link Cursor} to all account records
      */
     public Cursor fetchAllRecordsOrderedByFullName() {
-        Log.v(LOG_TAG, "Fetching all accounts from db");
+        Timber.v("Fetching all accounts from db");
         String selection = AccountEntry.COLUMN_HIDDEN + " = 0 AND " + AccountEntry.COLUMN_TYPE + " != ?";
         return mDb.query(AccountEntry.TABLE_NAME,
                 null,
@@ -745,7 +746,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         if (orderBy == null) {
             orderBy = AccountEntry.COLUMN_NAME + " ASC";
         }
-        Log.v(LOG_TAG, "Fetching all accounts from db where " + where + " order by " + orderBy);
+        Timber.v("Fetching all accounts from db where " + where + " order by " + orderBy);
 
         return mDb.query(AccountEntry.TABLE_NAME,
                 null, where, whereArgs, null, null,
@@ -761,7 +762,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return Cursor set of accounts which fulfill <code>where</code>
      */
     public Cursor fetchAccountsOrderedByFullName(String where, String[] whereArgs) {
-        Log.v(LOG_TAG, "Fetching all accounts from db where " + where);
+        Timber.v("Fetching all accounts from db where %s", where);
         return mDb.query(AccountEntry.TABLE_NAME,
                 null, where, whereArgs, null, null,
                 AccountEntry.COLUMN_FULL_NAME + " ASC");
@@ -777,7 +778,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return Cursor set of accounts which fulfill <code>where</code>
      */
     public Cursor fetchAccountsOrderedByFavoriteAndFullName(String where, String[] whereArgs) {
-        Log.v(LOG_TAG, "Fetching all accounts from db where " + where + " order by Favorite then Name");
+        Timber.v("Fetching all accounts from db where " + where + " order by Favorite then Name");
         return mDb.query(AccountEntry.TABLE_NAME,
                 null, where, whereArgs, null, null,
                 AccountEntry.COLUMN_FAVORITE + " DESC, " + AccountEntry.COLUMN_FULL_NAME + " ASC");
@@ -825,7 +826,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         boolean hasDebitNormalBalance = accountType.hasDebitNormalBalance();
         String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
 
-        Log.d(LOG_TAG, "all account list : " + accountUidList.size());
+        Timber.d("all account list : %d", accountUidList.size());
         SplitsDbAdapter splitsDbAdapter = mTransactionsAdapter.getSplitDbAdapter();
 
         return (startTimestamp == -1 && endTimestamp == -1)
@@ -850,7 +851,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     }
 
     private Money computeBalance(String accountUID, long startTimestamp, long endTimestamp) {
-        Log.d(LOG_TAG, "Computing account balance for account ID " + accountUID);
+        Timber.d("Computing account balance for account ID %s", accountUID);
         String currencyCode = mTransactionsAdapter.getAccountCurrencyCode(accountUID);
         boolean hasDebitNormalBalance = getAccountType(accountUID).hasDebitNormalBalance();
 
@@ -859,7 +860,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
         accountsList.add(0, accountUID);
 
-        Log.d(LOG_TAG, "all account list : " + accountsList.size());
+        Timber.d("all account list : %d", accountsList.size());
         SplitsDbAdapter splitsDbAdapter = mTransactionsAdapter.getSplitDbAdapter();
         return (startTimestamp == -1 && endTimestamp == -1)
                 ? splitsDbAdapter.computeSplitBalance(accountsList, currencyCode, hasDebitNormalBalance)
@@ -942,7 +943,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return {@link Cursor} to the sub accounts data set
      */
     public Cursor fetchSubAccounts(String accountUID) {
-        Log.v(LOG_TAG, "Fetching sub accounts for account id " + accountUID);
+        Timber.v("Fetching sub accounts for account id %s", accountUID);
         String selection = AccountEntry.COLUMN_HIDDEN + " = 0 AND "
                 + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " = ?";
         return mDb.query(AccountEntry.TABLE_NAME,
@@ -994,7 +995,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return Cursor holding set of favorite accounts
      */
     public Cursor fetchFavoriteAccounts() {
-        Log.v(LOG_TAG, "Fetching favorite accounts from db");
+        Timber.v("Fetching favorite accounts from db");
         String condition = AccountEntry.COLUMN_FAVORITE + " = 1";
         return mDb.query(AccountEntry.TABLE_NAME,
                 null, condition, null, null, null,
@@ -1033,7 +1034,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         String defaultCurrencyCode = GnuCashApplication.getDefaultCurrencyCode();
         contentValues.put(AccountEntry.COLUMN_CURRENCY, defaultCurrencyCode);
         contentValues.put(AccountEntry.COLUMN_COMMODITY_UID, getCommodityUID(defaultCurrencyCode));
-        Log.i(LOG_TAG, "Creating ROOT account");
+        Timber.i("Creating ROOT account");
         mDb.insert(AccountEntry.TABLE_NAME, null, contentValues);
         return rootAccount.getUID();
     }
@@ -1358,14 +1359,14 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     }
 
     public Account getSimpleRecord(@NonNull String uid) {
-        Log.v(LOG_TAG, "Fetching simple record with GUID " + uid);
+        Timber.v("Fetching simple record with GUID %s", uid);
 
         Cursor cursor = fetchRecord(uid);
         try {
             if (cursor.moveToFirst()) {
                 return buildSimpleAccountInstance(cursor);
             } else {
-                throw new IllegalArgumentException(LOG_TAG + ": Record with " + uid + " does not exist");
+                throw new IllegalArgumentException("Record with " + uid + " does not exist");
             }
         } finally {
             cursor.close();

@@ -18,11 +18,8 @@ package org.gnucash.android.export.csv;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
-
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.gnucash.android.R;
 import org.gnucash.android.export.ExportParams;
@@ -46,6 +43,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import timber.log.Timber;
+
 /**
  * Creates a GnuCash CSV transactions representation of the accounts and transactions
  *
@@ -65,7 +64,6 @@ public class CsvTransactionsExporter extends Exporter {
     public CsvTransactionsExporter(ExportParams params) {
         super(params, null);
         mCsvSeparator = params.getCsvSeparator();
-        LOG_TAG = "GncXmlExporter";
     }
 
     /**
@@ -78,7 +76,6 @@ public class CsvTransactionsExporter extends Exporter {
     public CsvTransactionsExporter(ExportParams params, SQLiteDatabase db) {
         super(params, db);
         mCsvSeparator = params.getCsvSeparator();
-        LOG_TAG = "GncXmlExporter";
     }
 
     @Override
@@ -88,8 +85,7 @@ public class CsvTransactionsExporter extends Exporter {
         try (CsvWriter csvWriter = new CsvWriter(new FileWriter(outputFile), "" + mCsvSeparator)) {
             generateExport(csvWriter);
         } catch (IOException ex) {
-            FirebaseCrashlytics.getInstance().log("Error exporting CSV");
-            FirebaseCrashlytics.getInstance().recordException(ex);
+            Timber.e(ex, "Error exporting CSV");
             throw new ExporterException(mExportParams, ex);
         }
 
@@ -158,7 +154,7 @@ public class CsvTransactionsExporter extends Exporter {
 
 
             Cursor cursor = mTransactionsDbAdapter.fetchTransactionsModifiedSince(mExportParams.getExportStartTime());
-            Log.d(LOG_TAG, String.format("Exporting %d transactions to CSV", cursor.getCount()));
+            Timber.d("Exporting %d transactions to CSV", cursor.getCount());
             while (cursor.moveToNext()) {
                 Transaction transaction = mTransactionsDbAdapter.buildModelInstance(cursor);
                 Date date = new Date(transaction.getTimeMillis());
@@ -177,7 +173,7 @@ public class CsvTransactionsExporter extends Exporter {
 
             PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow());
         } catch (Exception e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e);
             throw new ExporterException(mExportParams, e);
         }
     }

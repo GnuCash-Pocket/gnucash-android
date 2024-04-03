@@ -34,14 +34,13 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
-
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.ui.passcode.PasscodeLockActivity;
 
 import butterknife.ButterKnife;
+import timber.log.Timber;
 
 /**
  * Activity for unified preferences
@@ -91,7 +90,7 @@ public class PreferenceActivity extends PasscodeLockActivity implements
             loadFragment(fragment, true);
             return true;
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e);
             //if we do not have a matching class, do nothing
         }
         return false;

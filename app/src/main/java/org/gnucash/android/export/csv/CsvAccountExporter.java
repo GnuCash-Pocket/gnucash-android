@@ -18,8 +18,6 @@ package org.gnucash.android.export.csv;
 
 import android.database.sqlite.SQLiteDatabase;
 
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
-
 import org.gnucash.android.R;
 import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.Exporter;
@@ -29,6 +27,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+
+import timber.log.Timber;
 
 /**
  * Creates a GnuCash CSV account representation of the accounts and transactions
@@ -46,7 +46,6 @@ public class CsvAccountExporter extends Exporter {
     public CsvAccountExporter(ExportParams params) {
         super(params, null);
         mCsvSeparator = params.getCsvSeparator();
-        LOG_TAG = "GncXmlExporter";
     }
 
     /**
@@ -59,7 +58,6 @@ public class CsvAccountExporter extends Exporter {
     public CsvAccountExporter(ExportParams params, SQLiteDatabase db) {
         super(params, db);
         mCsvSeparator = params.getCsvSeparator();
-        LOG_TAG = "GncXmlExporter";
     }
 
     @Override
@@ -68,8 +66,7 @@ public class CsvAccountExporter extends Exporter {
         try (CsvWriter writer = new CsvWriter(new FileWriter(outputFile), mCsvSeparator + "")) {
             generateExport(writer);
         } catch (IOException ex) {
-            FirebaseCrashlytics.getInstance().log("Error exporting CSV");
-            FirebaseCrashlytics.getInstance().recordException(ex);
+            Timber.e(ex, "Error exporting CSV");
             throw new ExporterException(mExportParams, ex);
         }
 
@@ -110,7 +107,7 @@ public class CsvAccountExporter extends Exporter {
                 csvWriter.writeEndToken(account.isPlaceholderAccount() ? "T" : "F");
             }
         } catch (IOException e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e);
             throw new ExporterException(mExportParams, e);
         }
     }

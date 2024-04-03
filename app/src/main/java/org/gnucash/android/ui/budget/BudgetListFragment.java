@@ -22,7 +22,6 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -65,6 +64,7 @@ import java.math.RoundingMode;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import timber.log.Timber;
 
 /**
  * Budget list fragment
@@ -72,7 +72,6 @@ import butterknife.ButterKnife;
 public class BudgetListFragment extends Fragment implements Refreshable,
         LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final String LOG_TAG = "BudgetListFragment";
     private static final int REQUEST_EDIT_BUDGET = 0xB;
     private static final int REQUEST_OPEN_ACCOUNT = 0xC;
 
@@ -118,20 +117,20 @@ public class BudgetListFragment extends Fragment implements Refreshable,
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Log.d(LOG_TAG, "Creating the accounts loader");
+        Timber.d("Creating the accounts loader");
         return new BudgetsCursorLoader(getActivity());
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loaderCursor, Cursor cursor) {
-        Log.d(LOG_TAG, "Budget loader finished. Swapping in cursor");
+        Timber.d("Budget loader finished. Swapping in cursor");
         mBudgetRecyclerAdapter.swapCursor(cursor);
         mBudgetRecyclerAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> arg0) {
-        Log.d(LOG_TAG, "Resetting the accounts loader");
+        Timber.d("Resetting the accounts loader");
         mBudgetRecyclerAdapter.swapCursor(null);
     }
 

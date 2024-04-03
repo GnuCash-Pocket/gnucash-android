@@ -1,7 +1,5 @@
 package org.gnucash.android.util;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import java.io.File;
@@ -14,11 +12,12 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import timber.log.Timber;
+
 /**
  * Misc methods for dealing with files.
  */
 public final class FileUtils {
-    private static final String LOG_TAG = "FileUtils";
 
     public static void zipFiles(List<String> files, String zipFileName) throws IOException {
         OutputStream outputStream = new FileOutputStream(zipFileName);
@@ -81,7 +80,7 @@ public final class FileUtils {
             outputStream.flush();
             outputStream.close();
         }
-        Log.i(LOG_TAG, "Deleting temp export file: " + src);
+        Timber.i("Deleting temp export file: %s", src);
         new File(src).delete();
     }
 }

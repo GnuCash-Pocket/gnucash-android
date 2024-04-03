@@ -25,7 +25,6 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -67,6 +66,8 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 
+import timber.log.Timber;
+
 /**
  * Fragment which displays the scheduled actions in the system
  * <p>Currently, it handles the display of scheduled transactions and scheduled exports</p>
@@ -75,11 +76,6 @@ import java.util.List;
  */
 public class ScheduledActionsListFragment extends ListFragment implements
         LoaderManager.LoaderCallbacks<Cursor> {
-
-    /**
-     * Logging tag
-     */
-    protected static final String TAG = "ScheduledActionFragment";
 
     private TransactionsDbAdapter mTransactionsDbAdapter;
     private SimpleCursorAdapter mCursorAdapter;
@@ -124,7 +120,7 @@ public class ScheduledActionsListFragment extends ListFragment implements
                     for (long id : getListView().getCheckedItemIds()) {
 
                         if (mActionType == ScheduledAction.ActionType.TRANSACTION) {
-                            Log.i(TAG, "Cancelling scheduled transaction(s)");
+                            Timber.i("Cancelling scheduled transaction(s)");
                             String trnUID = mTransactionsDbAdapter.getUID(id);
                             ScheduledActionDbAdapter scheduledActionDbAdapter = GnuCashApplication.getScheduledEventDbAdapter();
                             List<ScheduledAction> actions = scheduledActionDbAdapter.getScheduledActionsWithUID(trnUID);
@@ -138,7 +134,7 @@ public class ScheduledActionsListFragment extends ListFragment implements
                                 }
                             }
                         } else if (mActionType == ScheduledAction.ActionType.BACKUP) {
-                            Log.i(TAG, "Removing scheduled exports");
+                            Timber.i("Removing scheduled exports");
                             ScheduledActionDbAdapter.getInstance().deleteRecord(id);
                         }
                     }
@@ -302,7 +298,7 @@ public class ScheduledActionsListFragment extends ListFragment implements
 
     @Override
     public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
-        Log.d(TAG, "Creating transactions loader");
+        Timber.d("Creating transactions loader");
         if (mActionType == ScheduledAction.ActionType.TRANSACTION)
             return new ScheduledTransactionsCursorLoader(getActivity());
         else if (mActionType == ScheduledAction.ActionType.BACKUP) {
@@ -313,14 +309,14 @@ public class ScheduledActionsListFragment extends ListFragment implements
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        Log.d(TAG, "Transactions loader finished. Swapping in cursor");
+        Timber.d("Transactions loader finished. Swapping in cursor");
         mCursorAdapter.swapCursor(cursor);
         mCursorAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        Log.d(TAG, "Resetting transactions loader");
+        Timber.d("Resetting transactions loader");
         mCursorAdapter.swapCursor(null);
     }
 

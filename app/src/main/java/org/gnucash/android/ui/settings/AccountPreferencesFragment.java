@@ -30,8 +30,6 @@ import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
-
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema;
@@ -48,6 +46,8 @@ import org.gnucash.android.ui.settings.dialog.DeleteAllAccountsConfirmationDialo
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+
+import timber.log.Timber;
 
 /**
  * Account settings fragment inside the Settings activity
@@ -213,7 +213,7 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
                     try {
                         exportTask.execute(exportParams).get();
                     } catch (InterruptedException | ExecutionException e) {
-                        FirebaseCrashlytics.getInstance().recordException(e);
+                        Timber.e(e);
                         Toast.makeText(getActivity(), "An error occurred during the Accounts CSV export",
                                 Toast.LENGTH_LONG).show();
                     }

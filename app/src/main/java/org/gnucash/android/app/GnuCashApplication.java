@@ -26,13 +26,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.SystemClock;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
 
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.uservoice.uservoicesdk.Config;
 import com.uservoice.uservoicesdk.UserVoice;
 
@@ -55,10 +53,14 @@ import org.gnucash.android.model.Money;
 import org.gnucash.android.receivers.PeriodicJobReceiver;
 import org.gnucash.android.service.ScheduledActionService;
 import org.gnucash.android.ui.settings.PreferenceActivity;
+import org.gnucash.android.util.CrashlyticsTree;
+import org.gnucash.android.util.LogTree;
 
 import java.io.IOException;
 import java.util.Currency;
 import java.util.Locale;
+
+import timber.log.Timber;
 
 
 /**
@@ -123,8 +125,11 @@ public class GnuCashApplication extends Application {
         final Context context = getApplicationContext();
         GnuCashApplication.context = context;
 
-        FirebaseApp.initializeApp(context);
-        FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(isCrashlyticsEnabled());
+        FirebaseApp.initializeApp(this);
+
+        // Logging
+        Timber.Tree tree = (Timber.Tree) (isCrashlyticsEnabled() ? new CrashlyticsTree(BuildConfig.DEBUG) : new LogTree(BuildConfig.DEBUG));
+        Timber.plant(tree);
 
         setUpUserVoice();
 
@@ -163,8 +168,7 @@ public class GnuCashApplication extends Application {
         try {
             mainDb = mDbHelper.getWritableDatabase();
         } catch (SQLException e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
-            Log.e("GnuCashApplication", "Error getting database: " + e.getMessage());
+            Timber.e(e, "Error getting database: %s", e.getMessage());
             mainDb = mDbHelper.getReadableDatabase();
         }
 
@@ -364,8 +368,7 @@ public class GnuCashApplication extends Application {
         try { //there are some strange locales out there
             currencyCode = Currency.getInstance(locale).getCurrencyCode();
         } catch (Throwable e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
-            Log.e(context.getString(R.string.app_name), "" + e.getMessage());
+            Timber.e(e);
         } finally {
             currencyCode = prefs.getString(context.getString(R.string.key_default_currency), currencyCode);
         }

@@ -21,7 +21,6 @@ import android.content.DialogInterface;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -64,13 +63,13 @@ import org.gnucash.android.util.PreferencesHelper;
 
 import java.sql.Timestamp;
 
+import timber.log.Timber;
+
 /**
  * Fragment for managing the books in the database
  */
 public class BookManagerFragment extends ListFragment implements
         LoaderManager.LoaderCallbacks<Cursor>, Refreshable, FragmentResultListener {
-
-    private static final String LOG_TAG = "BookManagerFragment";
 
     private SimpleCursorAdapter mCursorAdapter;
 
@@ -140,20 +139,20 @@ public class BookManagerFragment extends ListFragment implements
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Log.d(LOG_TAG, "Creating loader for books");
+        Timber.d("Creating loader for books");
         return new BooksCursorLoader(requireContext());
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        Log.d(LOG_TAG, "Finished loading books from database");
+        Timber.d("Finished loading books from database");
         mCursorAdapter.swapCursor(data);
         mCursorAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        Log.d(LOG_TAG, "Resetting books list loader");
+        Timber.d("Resetting books list loader");
         mCursorAdapter.swapCursor(null);
     }
 
