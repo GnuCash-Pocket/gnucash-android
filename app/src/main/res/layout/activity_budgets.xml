@@ -47,7 +47,7 @@
             android:layout_margin="20dp"
             android:onClick="onCreateBudgetClick"
             app:elevation="10dp"
-            android:src="@drawable/ic_add_white_48dp" />
+            android:src="@drawable/ic_add_white" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
