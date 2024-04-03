@@ -82,14 +82,14 @@ public class ImportAsyncTask extends AsyncTask<Uri, Void, Boolean> {
         try {
             InputStream accountInputStream = mContext.getContentResolver().openInputStream(uri);
             mImportedBookUID = GncXmlImporter.parse(accountInputStream);
-        } catch (final Exception exception) {
-            Timber.e(exception, "Could not open: %s", uri);
+        } catch (final Throwable e) {
+            Timber.e(e, "Error importing: %s", uri);
 
             mContext.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     Toast.makeText(mContext,
-                            mContext.getString(R.string.toast_error_importing_accounts) + "\n" + exception.getLocalizedMessage(),
+                            mContext.getString(R.string.toast_error_importing_accounts) + "\n" + e.getLocalizedMessage(),
                             Toast.LENGTH_LONG).show();
                 }
             });

@@ -134,7 +134,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
 
         try {
             exportedFiles = exporter.generateExport();
-        } catch (final Exception e) {
+        } catch (final Throwable e) {
             Timber.e(e, "Error exporting: %s", e.getMessage());
             if (mContext instanceof Activity) {
                 ((Activity) mContext).runOnUiThread(new Runnable() {
@@ -142,7 +142,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
                     public void run() {
                         Toast.makeText(mContext,
                                 mContext.getString(R.string.toast_export_error, exportParams.getExportFormat().name())
-                                        + "\n" + e.getMessage(),
+                                        + "\n" + e.getLocalizedMessage(),
                                 Toast.LENGTH_SHORT).show();
                     }
                 });

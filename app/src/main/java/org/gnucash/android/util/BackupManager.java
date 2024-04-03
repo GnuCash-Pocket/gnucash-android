@@ -149,7 +149,7 @@ public class BackupManager {
             writer.close();
             return true;
         } catch (Throwable e) {
-            Timber.e(e, "Error creating XML  backup");
+            Timber.e(e, "Error creating XML backup");
             return false;
         }
     }
