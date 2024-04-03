@@ -743,8 +743,8 @@ public class MigrationHelper {
                 db.insert(ScheduledActionEntry.TABLE_NAME, null, contentValues);
 
                 //build intent for recurring transactions in the database
-                Intent intent = new Intent(Intent.ACTION_INSERT);
-                intent.setType(Transaction.MIME_TYPE);
+                Intent intent = new Intent(Intent.ACTION_INSERT)
+                    .setType(Transaction.MIME_TYPE);
 
                 //cancel existing pending intent
                 Context context = GnuCashApplication.getAppContext();

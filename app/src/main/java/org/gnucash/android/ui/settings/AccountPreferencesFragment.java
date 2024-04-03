@@ -164,14 +164,13 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
      * Open a chooser for user to pick a file to export to
      */
     private void selectExportFile() {
-        Intent createIntent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        createIntent.setType("*/*").addCategory(Intent.CATEGORY_OPENABLE);
         String bookName = BooksDbAdapter.getInstance().getActiveBookDisplayName();
-
         String filename = Exporter.buildExportFilename(ExportFormat.CSVA, bookName);
-        createIntent.setType("application/text");
 
-        createIntent.putExtra(Intent.EXTRA_TITLE, filename);
+        Intent createIntent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
+            .setType("*/*")
+            .addCategory(Intent.CATEGORY_OPENABLE)
+            .putExtra(Intent.EXTRA_TITLE, filename);
         startActivityForResult(createIntent, REQUEST_EXPORT_FILE);
     }
 

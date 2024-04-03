@@ -480,15 +480,13 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
      * @param paths list of full paths of the files to send to the activity.
      */
     private void shareFiles(ExportParams exportParams, List<String> paths) {
-        Intent shareIntent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-        shareIntent.setType("text/xml");
-
         ArrayList<Uri> exportFiles = convertFilePathsToUris(paths);
-        shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, exportFiles);
-        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-        shareIntent.putExtra(Intent.EXTRA_SUBJECT, mContext.getString(R.string.title_export_email,
-            exportParams.getExportFormat().name()));
+        Intent shareIntent = new Intent(Intent.ACTION_SEND_MULTIPLE)
+            .setType("text/xml")
+            .putParcelableArrayListExtra(Intent.EXTRA_STREAM, exportFiles)
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            .putExtra(Intent.EXTRA_SUBJECT, mContext.getString(R.string.title_export_email,
+                exportParams.getExportFormat().name()));
 
         String defaultEmail = PreferenceManager.getDefaultSharedPreferences(mContext)
                 .getString(mContext.getString(R.string.key_default_export_email), null);

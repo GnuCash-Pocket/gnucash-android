@@ -187,11 +187,13 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
         }
 
         if (key.equals(getString(R.string.key_backup_location))) {
-            Intent createIntent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-            createIntent.setType("*/*");
-            createIntent.addCategory(Intent.CATEGORY_OPENABLE);
             String bookName = BooksDbAdapter.getInstance().getActiveBookDisplayName();
-            createIntent.putExtra(Intent.EXTRA_TITLE, Exporter.sanitizeFilename(bookName) + "_" + getString(R.string.label_backup_filename));
+            String fileName = Exporter.sanitizeFilename(bookName) + "_" + getString(R.string.label_backup_filename);
+
+            Intent createIntent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
+                .setType(BackupManager.MIME_TYPE)
+                .addCategory(Intent.CATEGORY_OPENABLE)
+                .putExtra(Intent.EXTRA_TITLE, fileName);
             startActivityForResult(createIntent, REQUEST_BACKUP_FILE);
         }
 

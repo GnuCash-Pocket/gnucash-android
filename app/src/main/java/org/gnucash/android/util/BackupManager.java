@@ -63,6 +63,7 @@ import timber.log.Timber;
 public class BackupManager {
 
     public static final String KEY_BACKUP_FILE = "book_backup_file_key";
+    public static final String MIME_TYPE = "application/gzip";
 
     /**
      * Perform an automatic backup of all books in the database.

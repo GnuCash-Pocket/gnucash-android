@@ -244,12 +244,12 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
     protected void onDrawerMenuItemClicked(int itemId) {
         switch (itemId) {
             case R.id.nav_item_open: { //Open... files
-                //use the storage access framework
-                Intent openDocument = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                openDocument.addCategory(Intent.CATEGORY_OPENABLE);
-                openDocument.setType("text/*|application/*");
                 String[] mimeTypes = {"text/*", "application/*"};
-                openDocument.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+                //use the storage access framework
+                Intent openDocument = new Intent(Intent.ACTION_OPEN_DOCUMENT)
+                    .addCategory(Intent.CATEGORY_OPENABLE)
+                    .setType("text/*|application/*")
+                    .putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
                 startActivityForResult(openDocument, REQUEST_OPEN_DOCUMENT);
             }
             break;

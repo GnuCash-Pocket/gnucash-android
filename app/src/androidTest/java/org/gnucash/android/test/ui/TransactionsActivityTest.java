@@ -652,14 +652,14 @@ public class TransactionsActivityTest {
     @Test
     public void testLegacyIntentTransactionRecording() {
         int beforeCount = mTransactionsDbAdapter.getTransactionsCount(TRANSACTIONS_ACCOUNT_UID);
-        Intent transactionIntent = new Intent(Intent.ACTION_INSERT);
-        transactionIntent.setType(Transaction.MIME_TYPE);
-        transactionIntent.putExtra(Intent.EXTRA_TITLE, "Power intents");
-        transactionIntent.putExtra(Intent.EXTRA_TEXT, "Intents for sale");
-        transactionIntent.putExtra(Transaction.EXTRA_AMOUNT, new BigDecimal(4.99));
-        transactionIntent.putExtra(Transaction.EXTRA_ACCOUNT_UID, TRANSACTIONS_ACCOUNT_UID);
-        transactionIntent.putExtra(Transaction.EXTRA_TRANSACTION_TYPE, TransactionType.DEBIT.name());
-        transactionIntent.putExtra(Account.EXTRA_CURRENCY_CODE, "USD");
+        Intent transactionIntent = new Intent(Intent.ACTION_INSERT)
+            .setType(Transaction.MIME_TYPE)
+            .putExtra(Intent.EXTRA_TITLE, "Power intents")
+            .putExtra(Intent.EXTRA_TEXT, "Intents for sale")
+            .putExtra(Transaction.EXTRA_AMOUNT, new BigDecimal(4.99))
+            .putExtra(Transaction.EXTRA_ACCOUNT_UID, TRANSACTIONS_ACCOUNT_UID)
+            .putExtra(Transaction.EXTRA_TRANSACTION_TYPE, TransactionType.DEBIT.name())
+            .putExtra(Account.EXTRA_CURRENCY_CODE, "USD");
 
         new TransactionRecorder().onReceive(mTransactionsActivity, transactionIntent);
 

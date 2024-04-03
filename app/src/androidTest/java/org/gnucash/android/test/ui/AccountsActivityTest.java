@@ -473,11 +473,11 @@ public class AccountsActivityTest {
     //TODO: test settings activity
     @Test
     public void testIntentAccountCreation() {
-        Intent intent = new Intent(Intent.ACTION_INSERT);
-        intent.putExtra(Intent.EXTRA_TITLE, "Intent Account");
-        intent.putExtra(Intent.EXTRA_UID, "intent-account");
-        intent.putExtra(Account.EXTRA_CURRENCY_CODE, "EUR");
-        intent.setType(Account.MIME_TYPE);
+        Intent intent = new Intent(Intent.ACTION_INSERT)
+            .putExtra(Intent.EXTRA_TITLE, "Intent Account")
+            .putExtra(Intent.EXTRA_UID, "intent-account")
+            .putExtra(Account.EXTRA_CURRENCY_CODE, "EUR")
+            .setType(Account.MIME_TYPE);
 
         new AccountCreator().onReceive(mAccountsActivity, intent);
 
