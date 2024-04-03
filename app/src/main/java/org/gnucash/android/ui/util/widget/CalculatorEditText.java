@@ -315,10 +315,14 @@ public class CalculatorEditText extends AppCompatEditText {
      */
     public @Nullable BigDecimal getValue() {
         evaluate();
+        String text = getText().toString();
+        if (text.isEmpty()) {
+            return null;
+        }
         try { //catch any exceptions in the conversion e.g. if a string with only "-" is entered
-            return AmountParser.parse(getText().toString());
+            return AmountParser.parse(text);
         } catch (ParseException e) {
-            String msg = "Error parsing amount string " + getText() + " from CalculatorEditText";
+            String msg = "Error parsing amount string \"" + text + "\" from CalculatorEditText";
             Timber.i(e, msg);
             return null;
         }

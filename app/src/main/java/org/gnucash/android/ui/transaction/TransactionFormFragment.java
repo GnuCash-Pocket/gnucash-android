@@ -41,7 +41,6 @@ import android.widget.FilterQueryProvider;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -287,10 +286,10 @@ public class TransactionFormFragment extends Fragment implements
                 || mSplitQuantity != null) //if both accounts have same currency
             return;
 
-        BigDecimal amountBigd = mAmountEditText.getValue();
-        if ((amountBigd == null) || amountBigd.equals(BigDecimal.ZERO))
+        BigDecimal enteredAmount = mAmountEditText.getValue();
+        if ((enteredAmount == null) || enteredAmount.equals(BigDecimal.ZERO))
             return;
-        Money amount = new Money(amountBigd, fromCommodity).abs();
+        Money amount = new Money(enteredAmount, fromCommodity).abs();
 
         TransferFundsDialogFragment fragment
                 = TransferFundsDialogFragment.getInstance(amount, targetCurrencyCode, this);
@@ -610,15 +609,19 @@ public class TransactionFormFragment extends Fragment implements
      * Opens the split editor dialog
      */
     private void openSplitEditor() {
-        if (mAmountEditText.getValue() == null) {
-            Toast.makeText(getActivity(), R.string.toast_enter_amount_to_split, Toast.LENGTH_SHORT).show();
+        BigDecimal enteredAmount = mAmountEditText.getValue();
+        if (enteredAmount == null) {
+            Snackbar.make(getView(), R.string.toast_enter_amount_to_split, Snackbar.LENGTH_SHORT).show();
+            mAmountEditText.requestFocus();
+            mAmountEditText.setError(getString(R.string.toast_enter_amount_to_split));
             return;
+        } else {
+            mAmountEditText.setError(null);
         }
 
         String baseAmountString;
 
         if (mTransaction == null) { //if we are creating a new transaction (not editing an existing one)
-            BigDecimal enteredAmount = mAmountEditText.getValue();
             baseAmountString = enteredAmount.toPlainString();
         } else {
             Money biggestAmount = Money.createZeroInstance(mTransaction.getCurrencyCode());
@@ -717,9 +720,10 @@ public class TransactionFormFragment extends Fragment implements
             return mSplitsList;
         }
 
-        BigDecimal amountBigd = mAmountEditText.getValue();
+        BigDecimal enteredAmount = mAmountEditText.getValue();
+        if (enteredAmount == null) enteredAmount = BigDecimal.ZERO;
         String baseCurrencyCode = mTransactionsDbAdapter.getAccountCurrencyCode(mAccountUID);
-        Money value = new Money(amountBigd, Commodity.getInstance(baseCurrencyCode));
+        Money value = new Money(enteredAmount, Commodity.getInstance(baseCurrencyCode));
         Money quantity = new Money(value);
 
         String transferAcctUID = getTransferAccountUID();
@@ -917,16 +921,15 @@ public class TransactionFormFragment extends Fragment implements
             } else {
                 scheduledAction.setUID(scheduledActionUID);
                 scheduledActionDbAdapter.updateRecurrenceAttributes(scheduledAction);
-                Toast.makeText(getActivity(), R.string.toast_updated_transaction_recurring_schedule, Toast.LENGTH_SHORT).show();
+                Snackbar.make(getView(), R.string.toast_updated_transaction_recurring_schedule, Snackbar.LENGTH_SHORT).show();
             }
         } else {
             if (recurrence != null) {
                 scheduledAction.setActionUID(transactionUID);
                 scheduledActionDbAdapter.addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.replace);
-                Toast.makeText(getActivity(), R.string.toast_scheduled_recurring_transaction, Toast.LENGTH_SHORT).show();
+                Snackbar.make(getView(), R.string.toast_scheduled_recurring_transaction, Snackbar.LENGTH_SHORT).show();
             }
         }
-
     }
 
 
@@ -954,16 +957,18 @@ public class TransactionFormFragment extends Fragment implements
                 return true;
 
             case R.id.menu_save:
-                View parentLayout = getActivity().findViewById(android.R.id.content);
-
                 if (canSave()) {
                     saveNewTransaction();
                 } else {
                     if (mAmountEditText.getValue() == null) {
-                        Snackbar.make(parentLayout, R.string.toast_transanction_amount_required, Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(getView(), R.string.toast_transanction_amount_required, Snackbar.LENGTH_LONG).show();
+                        mAmountEditText.requestFocus();
+                        mAmountEditText.setError(getString(R.string.toast_transanction_amount_required));
+                    } else {
+                        mAmountEditText.setError(null);
                     }
                     if (mUseDoubleEntry && mTransferAccountSpinner.getCount() == 0) {
-                        Snackbar.make(parentLayout,
+                        Snackbar.make(getView(),
                                 R.string.toast_disable_double_entry_to_save_transaction,
                                 Snackbar.LENGTH_LONG).show();
                     }

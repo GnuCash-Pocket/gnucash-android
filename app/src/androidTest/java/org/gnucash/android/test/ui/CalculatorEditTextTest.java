@@ -21,26 +21,20 @@ import static androidx.test.espresso.Espresso.pressBack;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
-import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withInputType;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 
 import android.Manifest;
-import android.app.UiAutomation;
 import android.content.Intent;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.InputType;
 
-import androidx.test.espresso.action.ViewActions;
-import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.uiautomator.UiDevice;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -58,7 +52,6 @@ import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.transaction.TransactionsActivity;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -83,10 +76,6 @@ public class CalculatorEditTextTest {
     private static TransactionsDbAdapter mTransactionsDbAdapter;
     private static SplitsDbAdapter mSplitsDbAdapter;
     private TransactionsActivity mTransactionsActivity;
-
-    public CalculatorEditTextTest() {
-    }
-
 
     @Rule
     public GrantPermissionRule animationPermissionsRule = GrantPermissionRule.grant(Manifest.permission.SET_ANIMATION_SCALE);
@@ -113,7 +102,6 @@ public class CalculatorEditTextTest {
 
     @Before
     public void setUp() throws Exception {
-
         mAccountsDbAdapter.deleteAllRecords();
 
         CommoditiesDbAdapter commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
@@ -132,7 +120,6 @@ public class CalculatorEditTextTest {
         intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, DUMMY_ACCOUNT_UID);
         mActivityRule.launchActivity(intent);
         mTransactionsActivity = mActivityRule.getActivity();
-
     }
 
     /**
