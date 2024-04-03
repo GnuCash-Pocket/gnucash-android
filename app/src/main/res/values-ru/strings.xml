@@ -460,8 +460,6 @@
     <string name="btn_restore">Восстановить</string>
     <string name="title_no_backups_found">Резервные копии не найдены</string>
     <string name="msg_no_backups_to_restore_from">Нет существующих файлов резервных копий для восстановления</string>
-    <!-- This is the filename for default backups. So use only simple characters and no spaces. Do not change the extension -->
-    <string name="label_backup_filename">gnucash_android_backup.gnca</string>
     <string name="label_select_destination_after_export">Выберите пункт назначения после завершения экспорта</string>
     <string name="label_dropbox_export_destination">Экспорт в \' / Apps/GnuCash Android /\' папку на Dropbox</string>
     <string name="title_section_preferences">Настройки</string>

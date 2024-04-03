@@ -440,8 +440,6 @@
     <string name="btn_restore">Restaurer</string>
     <string name="title_no_backups_found">Aucune sauvegarde trouvée</string>
     <string name="msg_no_backups_to_restore_from">Il n\'y a pas de fichiers de sauvegarde existants pour restaurer</string>
-    <!-- This is the filename for default backups. So use only simple characters and no spaces. Do not change the extension -->
-    <string name="label_backup_filename">gnucash_android_backup.gnca</string>
     <string name="label_select_destination_after_export">Sélectionnez la destination une fois l\'exportation terminée</string>
     <string name="label_dropbox_export_destination">Exporter dans le dossier \'/Apps/GnuCash Android/\' sur Dropbox</string>
     <string name="title_section_preferences">Préférences</string>

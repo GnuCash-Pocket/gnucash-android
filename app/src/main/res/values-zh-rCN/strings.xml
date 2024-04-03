@@ -436,8 +436,6 @@
     <string name="btn_restore">还原</string>
     <string name="title_no_backups_found">没有发现备份</string>
     <string name="msg_no_backups_to_restore_from">没有找到备份文件</string>
-    <!-- This is the filename for default backups. So use only simple characters and no spaces. Do not change the extension -->
-    <string name="label_backup_filename">gnucash_android_backup.gnca</string>
     <string name="label_select_destination_after_export">选择导出位置</string>
     <string name="label_dropbox_export_destination">导出到Dropbox的 \'/Apps/GnuCash Android/\' 文件夹</string>
     <string name="title_section_preferences">首选项</string>

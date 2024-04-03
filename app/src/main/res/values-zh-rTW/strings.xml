@@ -439,7 +439,7 @@ No user-identifiable information will be collected as part of this process!
     <string name="title_no_backups_found">沒有找到備份</string>
     <string name="msg_no_backups_to_restore_from">沒有能恢復的備份</string>
     <!-- This is the filename for default backups. So use only simple characters and no spaces. Do not change the extension -->
-    <string name="label_backup_filename">gnucash_android_備份.gnca</string>
+    <string name="label_backup_filename">gnucash_pocket_備份.gnca</string>
     <string name="label_select_destination_after_export">匯出後再選擇目的地</string>
     <string name="label_dropbox_export_destination">匯出到 Dropbox 上的 \'/Apps/GnuCash Android/\' 資料夾</string>
     <string name="title_section_preferences">偏好設定</string>

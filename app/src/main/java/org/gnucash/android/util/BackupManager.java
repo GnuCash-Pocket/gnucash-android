@@ -25,6 +25,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.SystemClock;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -45,7 +46,6 @@ import org.gnucash.android.ui.settings.PreferenceActivity;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
@@ -89,7 +89,7 @@ public class BackupManager {
     }
 
     /**
-     * Backs up the active book to the directory {@link #getBackupFolderPath(String)}.
+     * Backs up the active book to the directory {@link #getBackupFolder(String)}.
      *
      * @return {@code true} if backup was successful, {@code false} otherwise
      */
@@ -99,7 +99,7 @@ public class BackupManager {
     }
 
     /**
-     * Backs up the active book to the directory {@link #getBackupFolderPath(String)}.
+     * Backs up the active book to the directory {@link #getBackupFolder(String)}.
      *
      * @return {@code true} if backup was successful, {@code false} otherwise
      */
@@ -110,7 +110,7 @@ public class BackupManager {
 
     /**
      * Backs up the book with UID {@code bookUID} to the directory
-     * {@link #getBackupFolderPath(String)}.
+     * {@link #getBackupFolder(String)}.
      *
      * @param bookUID Unique ID of the book
      * @return {@code true} if backup was successful, {@code false} otherwise
@@ -122,7 +122,7 @@ public class BackupManager {
 
     /**
      * Backs up the book with UID {@code bookUID} to the directory
-     * {@link #getBackupFolderPath(String)}.
+     * {@link #getBackupFolder(String)}.
      *
      * @param bookUID Unique ID of the book
      * @return {@code true} if backup was successful, {@code false} otherwise
@@ -131,11 +131,11 @@ public class BackupManager {
     public static boolean backupBook(Context context, String bookUID) {
         OutputStream outputStream;
         try {
-            String backupFile = getBookBackupFileUri(bookUID);
-            if (backupFile != null) {
-                outputStream = context.getContentResolver().openOutputStream(Uri.parse(backupFile));
+            Uri backupUri = getBookBackupFileUri(bookUID);
+            if (backupUri != null) {
+                outputStream = context.getContentResolver().openOutputStream(backupUri);
             } else { //no Uri set by user, use default location on SD card
-                backupFile = getBackupFilePath(bookUID);
+                File backupFile = getBackupFile(bookUID);
                 outputStream = new FileOutputStream(backupFile);
             }
 
@@ -158,13 +158,13 @@ public class BackupManager {
      * Backups are done in XML format and are Gzipped (with ".gnca" extension).
      *
      * @param bookUID GUID of the book
-     * @return the file path for backups of the database.
-     * @see #getBackupFolderPath(String)
+     * @return the file for backups of the database.
+     * @see #getBackupFolder(String)
      */
-    private static String getBackupFilePath(String bookUID) {
+    private static File getBackupFile(String bookUID) {
         Book book = BooksDbAdapter.getInstance().getRecord(bookUID);
-        return getBackupFolderPath(book.getUID())
-                + Exporter.buildExportFilename(ExportFormat.XML, book.getDisplayName());
+        return new File(getBackupFolder(book.getUID()),
+                Exporter.buildExportFilename(ExportFormat.XML, book.getDisplayName()));
     }
 
     /**
@@ -172,17 +172,14 @@ public class BackupManager {
      *
      * <p>Each book has its own backup folder.</p>
      *
-     * @return Absolute path to backup folder for the book
+     * @return The backup folder for the book
      */
-    private static String getBackupFolderPath(String bookUID) {
-        String baseFolderPath = GnuCashApplication.getAppContext()
-                .getExternalFilesDir(null)
-                .getAbsolutePath();
-        String path = baseFolderPath + "/" + bookUID + "/backups/";
-        File file = new File(path);
-        if (!file.exists())
-            file.mkdirs();
-        return path;
+    private static File getBackupFolder(String bookUID) {
+        File baseFolder = GnuCashApplication.getAppContext().getExternalFilesDir(null);
+        File folder = new File(baseFolder, bookUID + File.separator + "backups");
+        if (!folder.exists())
+            folder.mkdirs();
+        return folder;
     }
 
     /**
@@ -192,13 +189,17 @@ public class BackupManager {
      * @return DocumentFile for book backups, or null if the user hasn't set any.
      */
     @Nullable
-    public static String getBookBackupFileUri(String bookUID) {
+    public static Uri getBookBackupFileUri(String bookUID) {
         SharedPreferences sharedPreferences = PreferenceActivity.getBookSharedPreferences(bookUID);
-        return sharedPreferences.getString(KEY_BACKUP_FILE, null);
+        String path = sharedPreferences.getString(KEY_BACKUP_FILE, null);
+        if (TextUtils.isEmpty(path)) {
+            return null;
+        }
+        return Uri.parse(path);
     }
 
     public static List<File> getBackupList(String bookUID) {
-        File[] backupFiles = new File(getBackupFolderPath(bookUID)).listFiles();
+        File[] backupFiles = getBackupFolder(bookUID).listFiles();
         Arrays.sort(backupFiles);
         List<File> backupFilesList = Arrays.asList(backupFiles);
         Collections.reverse(backupFilesList);
