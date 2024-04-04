@@ -110,7 +110,7 @@
 
                 <ImageView
                     style="@style/FormIcon"
-                    android:src="@drawable/ic_action_forward" />
+                    android:src="@drawable/ic_account_black" />
 
                 <Spinner
                     android:id="@+id/input_transfer_account_spinner"
