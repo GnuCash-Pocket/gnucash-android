@@ -23,7 +23,7 @@
 
     <item
         android:id="@+id/menu_edit_account"
-        android:icon="@drawable/content_edit_holo_dark"
+        android:icon="@drawable/ic_edit_white"
         android:title="@string/title_edit_account"
         app:showAsAction="never|withText" />
 

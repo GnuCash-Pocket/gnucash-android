@@ -19,7 +19,7 @@
 
     <item
         android:id="@+id/context_menu_edit_accounts"
-        android:icon="@drawable/content_edit_holo_dark"
+        android:icon="@drawable/ic_edit_white"
         android:title="@string/title_edit_account"
         app:showAsAction="always"
         android:orderInCategory="1" />

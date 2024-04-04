@@ -178,5 +178,5 @@
         app:layout_anchorGravity="bottom|left|start"
         android:layout_marginStart="6dp"
         android:scaleType="center"
-        android:src="@drawable/ic_mode_edit_white_24dp" />
+        android:src="@drawable/ic_edit_white" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
