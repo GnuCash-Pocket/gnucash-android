@@ -148,7 +148,7 @@
 
                 <ImageView
                     style="@style/FormIcon"
-                    android:src="@drawable/ic_action_sort_by_size" />
+                    android:src="@drawable/ic_notes_black" />
 
                 <EditText
                     android:id="@+id/input_description"
