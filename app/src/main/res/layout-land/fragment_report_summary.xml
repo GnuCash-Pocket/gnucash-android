@@ -31,7 +31,7 @@ limitations under the License.
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:drawableStart="@drawable/ic_data_usage_white_24dp"
+            android:drawableStart="@drawable/ic_pie_chart_white"
             android:text="@string/title_pie_chart" />
 
         <Button
