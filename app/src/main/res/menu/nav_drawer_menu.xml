@@ -33,7 +33,7 @@
             -->
             <item
                 android:id="@+id/nav_item_reports"
-                android:icon="@drawable/ic_equalizer_black_24dp"
+                android:icon="@drawable/ic_bar_chart_black"
                 android:title="@string/nav_menu_reports" />
         </menu>
     </item>
