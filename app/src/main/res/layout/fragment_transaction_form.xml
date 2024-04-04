@@ -83,10 +83,10 @@
 
                 <ImageView
                     android:id="@+id/btn_split_editor"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
                     android:contentDescription="Open split editor"
-                    android:src="@drawable/content_split_holo_light" />
+                    android:src="@drawable/ic_split_black" />
 
                 <org.gnucash.android.ui.util.widget.TransactionTypeSwitch
                     android:id="@+id/input_transaction_type"
