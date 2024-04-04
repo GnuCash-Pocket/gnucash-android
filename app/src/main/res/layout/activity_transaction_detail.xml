@@ -132,7 +132,7 @@
 
                     <ImageView
                         style="@style/FormIcon"
-                        android:src="@drawable/ic_action_time" />
+                        android:src="@drawable/ic_time_black" />
 
                     <TextView
                         android:id="@+id/trn_time_and_date"
