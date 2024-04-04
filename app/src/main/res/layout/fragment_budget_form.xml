@@ -82,7 +82,7 @@
 
                 <ImageView
                     style="@style/FormIcon"
-                    android:src="@drawable/ic_action_rotate_right" />
+                    android:src="@drawable/ic_repeat_black" />
 
                 <TextView
                     android:id="@+id/input_recurrence"
