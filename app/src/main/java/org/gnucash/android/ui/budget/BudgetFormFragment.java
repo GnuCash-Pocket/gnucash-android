@@ -19,7 +19,6 @@ package org.gnucash.android.ui.budget;
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
-import android.inputmethodservice.KeyboardView;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -27,9 +26,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,9 +39,9 @@ import com.codetroopers.betterpickers.calendardatepicker.CalendarDatePickerDialo
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence;
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrenceFormatter;
 import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment;
-import com.google.android.material.textfield.TextInputLayout;
 
 import org.gnucash.android.R;
+import org.gnucash.android.databinding.FragmentBudgetFormBinding;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BudgetsDbAdapter;
@@ -60,7 +56,6 @@ import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.transaction.TransactionFormFragment;
 import org.gnucash.android.ui.util.RecurrenceParser;
 import org.gnucash.android.ui.util.RecurrenceViewClickListener;
-import org.gnucash.android.ui.util.widget.CalculatorEditText;
 import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
 
 import java.math.BigDecimal;
@@ -69,9 +64,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import timber.log.Timber;
 
 /**
@@ -80,26 +72,6 @@ import timber.log.Timber;
 public class BudgetFormFragment extends Fragment implements RecurrencePickerDialogFragment.OnRecurrenceSetListener, CalendarDatePickerDialogFragment.OnDateSetListener {
 
     public static final int REQUEST_EDIT_BUDGET_AMOUNTS = 0xBA;
-    @BindView(R.id.input_budget_name)
-    EditText mBudgetNameInput;
-    @BindView(R.id.input_description)
-    EditText mDescriptionInput;
-    @BindView(R.id.input_recurrence)
-    TextView mRecurrenceInput;
-    @BindView(R.id.name_text_input_layout)
-    TextInputLayout mNameTextInputLayout;
-    @BindView(R.id.calculator_keyboard)
-    KeyboardView mKeyboardView;
-    @BindView(R.id.input_budget_amount)
-    CalculatorEditText mBudgetAmountInput;
-    @BindView(R.id.input_budget_account_spinner)
-    Spinner mBudgetAccountSpinner;
-    @BindView(R.id.btn_add_budget_amount)
-    Button mAddBudgetAmount;
-    @BindView(R.id.input_start_date)
-    TextView mStartDateInput;
-    @BindView(R.id.budget_amount_layout)
-    View mBudgetAmountLayout;
 
     EventRecurrence mEventRecurrence = new EventRecurrence();
     String mRecurrenceRule;
@@ -112,15 +84,19 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
     private AccountsDbAdapter mAccountsDbAdapter;
     private QualifiedAccountNameCursorAdapter mAccountsCursorAdapter;
 
+    private FragmentBudgetFormBinding mBinding;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_budget_form, container, false);
-        ButterKnife.bind(this, view);
+        mBinding = FragmentBudgetFormBinding.inflate(inflater, container, false);
+        View view = mBinding.getRoot();
 
         view.findViewById(R.id.btn_remove_item).setVisibility(View.GONE);
-        mBudgetAmountInput.bindListeners(mKeyboardView);
-        mStartDateInput.setText(TransactionFormFragment.DATE_FORMATTER.print(mStartDate.getTimeInMillis()));
+        mBinding.budgetAmountLayout.inputBudgetAmount.bindListeners(mBinding.calculatorKeyboard);
+        mBinding.inputStartDate.setText(TransactionFormFragment.DATE_FORMATTER.print(mStartDate.getTimeInMillis()));
+        mBinding.inputStartDate.setOnClickListener(this::onClickBudgetStartDate);
+        mBinding.btnAddBudgetAmount.setOnClickListener(this::onOpenBudgetAmountEditor);
         return view;
     }
 
@@ -142,7 +118,7 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
 
         setHasOptionsMenu(true);
 
-        mBudgetAccountSpinner.setAdapter(mAccountsCursorAdapter);
+        mBinding.budgetAmountLayout.inputBudgetAccountSpinner.setAdapter(mAccountsCursorAdapter);
         String budgetUID = getArguments().getString(UxArgument.BUDGET_UID);
         if (budgetUID != null) { //if we are editing the budget
             initViews(mBudget = mBudgetsDbAdapter.getRecord(budgetUID));
@@ -154,7 +130,7 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
         else
             actionbar.setTitle("Edit Budget");
 
-        mRecurrenceInput.setOnClickListener(
+        mBinding.inputRecurrence.setOnClickListener(
                 new RecurrenceViewClickListener((AppCompatActivity) getActivity(), mRecurrenceRule, this));
     }
 
@@ -164,13 +140,13 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
      * @param budget Budget to use to initialize the views
      */
     private void initViews(Budget budget) {
-        mBudgetNameInput.setText(budget.getName());
-        mDescriptionInput.setText(budget.getDescription());
+        mBinding.inputBudgetName.setText(budget.getName());
+        mBinding.inputDescription.setText(budget.getDescription());
 
         String recurrenceRuleString = budget.getRecurrence().getRuleString();
         mRecurrenceRule = recurrenceRuleString;
         mEventRecurrence.parse(recurrenceRuleString);
-        mRecurrenceInput.setText(budget.getRecurrence().getRepeatString());
+        mBinding.inputRecurrence.setText(budget.getRecurrence().getRepeatString());
 
         mBudgetAmounts = (ArrayList<BudgetAmount>) budget.getCompactedBudgetAmounts();
         toggleAmountInputVisibility();
@@ -184,14 +160,14 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
      * @return List of budget amounts
      */
     private ArrayList<BudgetAmount> extractBudgetAmounts() {
-        BigDecimal value = mBudgetAmountInput.getValue();
+        BigDecimal value = mBinding.budgetAmountLayout.inputBudgetAmount.getValue();
         if (value == null)
             return mBudgetAmounts;
 
         if (mBudgetAmounts.isEmpty()) { //has not been set in budget amounts editor
             ArrayList<BudgetAmount> budgetAmounts = new ArrayList<>();
             Money amount = new Money(value, Commodity.DEFAULT_COMMODITY);
-            String accountUID = mAccountsDbAdapter.getUID(mBudgetAccountSpinner.getSelectedItemId());
+            String accountUID = mAccountsDbAdapter.getUID(mBinding.budgetAmountLayout.inputBudgetAccountSpinner.getSelectedItemId());
             BudgetAmount budgetAmount = new BudgetAmount(amount, accountUID);
             budgetAmounts.add(budgetAmount);
             return budgetAmounts;
@@ -217,21 +193,21 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
         }
 
         mBudgetAmounts = extractBudgetAmounts();
-        String budgetName = mBudgetNameInput.getText().toString();
+        String budgetName = mBinding.inputBudgetName.getText().toString();
         boolean canSave = mRecurrenceRule != null
                 && !budgetName.isEmpty()
                 && !mBudgetAmounts.isEmpty();
 
         if (!canSave) {
             if (budgetName.isEmpty()) {
-                mNameTextInputLayout.setError("A name is required");
-                mNameTextInputLayout.setErrorEnabled(true);
+                mBinding.nameTextInputLayout.setError("A name is required");
+                mBinding.nameTextInputLayout.setErrorEnabled(true);
             } else {
-                mNameTextInputLayout.setErrorEnabled(false);
+                mBinding.nameTextInputLayout.setErrorEnabled(false);
             }
 
             if (mBudgetAmounts.isEmpty()) {
-                mBudgetAmountInput.setError("Enter an amount for the budget");
+                mBinding.budgetAmountLayout.inputBudgetAmount.setError("Enter an amount for the budget");
                 Toast.makeText(getActivity(), "Add budget amounts in order to save the budget",
                         Toast.LENGTH_SHORT).show();
             }
@@ -251,7 +227,7 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
     private void saveBudget() {
         if (!canSave())
             return;
-        String name = mBudgetNameInput.getText().toString().trim();
+        String name = mBinding.inputBudgetName.getText().toString().trim();
 
 
         if (mBudget == null) {
@@ -264,7 +240,7 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
         extractBudgetAmounts();
         mBudget.setBudgetAmounts(mBudgetAmounts);
 
-        mBudget.setDescription(mDescriptionInput.getText().toString().trim());
+        mBudget.setDescription(mBinding.inputDescription.getText().toString().trim());
 
         Recurrence recurrence = RecurrenceParser.parse(mEventRecurrence);
         recurrence.setPeriodStart(new Timestamp(mStartDate.getTimeInMillis()));
@@ -290,8 +266,7 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
         return false;
     }
 
-    @OnClick(R.id.input_start_date)
-    public void onClickBudgetStartDate(View v) {
+    private void onClickBudgetStartDate(View v) {
         long dateMillis = 0;
         try {
             dateMillis = TransactionFormFragment.DATE_FORMATTER.parseMillis(((TextView) v).getText().toString());
@@ -310,8 +285,7 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
         datePickerDialog.show(getFragmentManager(), "date_picker_fragment");
     }
 
-    @OnClick(R.id.btn_add_budget_amount)
-    public void onOpenBudgetAmountEditor(View v) {
+    private void onOpenBudgetAmountEditor(View v) {
         Intent intent = new Intent(getActivity(), FormActivity.class);
         intent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.BUDGET_AMOUNT_EDITOR.name());
         mBudgetAmounts = extractBudgetAmounts();
@@ -328,13 +302,13 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
             repeatString = EventRecurrenceFormatter.getRepeatString(getActivity(), getResources(), mEventRecurrence, true);
         }
 
-        mRecurrenceInput.setText(repeatString);
+        mBinding.inputRecurrence.setText(repeatString);
     }
 
     @Override
     public void onDateSet(CalendarDatePickerDialogFragment dialog, int year, int monthOfYear, int dayOfMonth) {
         Calendar cal = new GregorianCalendar(year, monthOfYear, dayOfMonth);
-        mStartDateInput.setText(TransactionFormFragment.DATE_FORMATTER.print(cal.getTimeInMillis()));
+        mBinding.inputStartDate.setText(TransactionFormFragment.DATE_FORMATTER.print(cal.getTimeInMillis()));
         mStartDate.set(Calendar.YEAR, year);
         mStartDate.set(Calendar.MONTH, monthOfYear);
         mStartDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
@@ -360,15 +334,15 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
      */
     private void toggleAmountInputVisibility() {
         if (mBudgetAmounts.size() > 1) {
-            mBudgetAmountLayout.setVisibility(View.GONE);
-            mAddBudgetAmount.setText("Edit Budget Amounts");
+            mBinding.budgetAmountLayout.getRoot().setVisibility(View.GONE);
+            mBinding.btnAddBudgetAmount.setText("Edit Budget Amounts");
         } else {
-            mAddBudgetAmount.setText("Add Budget Amounts");
-            mBudgetAmountLayout.setVisibility(View.VISIBLE);
+            mBinding.btnAddBudgetAmount.setText("Add Budget Amounts");
+            mBinding.budgetAmountLayout.getRoot().setVisibility(View.VISIBLE);
             if (!mBudgetAmounts.isEmpty()) {
                 BudgetAmount budgetAmount = mBudgetAmounts.get(0);
-                mBudgetAmountInput.setValue(budgetAmount.getAmount().asBigDecimal());
-                mBudgetAccountSpinner.setSelection(mAccountsCursorAdapter.getPosition(budgetAmount.getAccountUID()));
+                mBinding.budgetAmountLayout.inputBudgetAmount.setValue(budgetAmount.getAmount().asBigDecimal());
+                mBinding.budgetAmountLayout.inputBudgetAccountSpinner.setSelection(mAccountsCursorAdapter.getPosition(budgetAmount.getAccountUID()));
             }
         }
     }

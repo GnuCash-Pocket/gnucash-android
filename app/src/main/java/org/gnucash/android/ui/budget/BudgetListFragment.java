@@ -27,10 +27,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -38,7 +34,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -46,6 +41,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.gnucash.android.R;
+import org.gnucash.android.databinding.CardviewBudgetBinding;
+import org.gnucash.android.databinding.FragmentBudgetListBinding;
 import org.gnucash.android.db.DatabaseCursorLoader;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
@@ -58,13 +55,10 @@ import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.util.CursorRecyclerAdapter;
-import org.gnucash.android.ui.util.widget.EmptyRecyclerView;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import timber.log.Timber;
 
 /**
@@ -80,26 +74,23 @@ public class BudgetListFragment extends Fragment implements Refreshable,
 
     private BudgetsDbAdapter mBudgetsDbAdapter;
 
-    @BindView(R.id.budget_recycler_view)
-    EmptyRecyclerView mRecyclerView;
-    @BindView(R.id.empty_view)
-    Button mProposeBudgets;
+    private FragmentBudgetListBinding mBinding;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_budget_list, container, false);
-        ButterKnife.bind(this, view);
+        mBinding = FragmentBudgetListBinding.inflate(inflater, container, false);
+        View view = mBinding.getRoot();
 
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setEmptyView(mProposeBudgets);
+        mBinding.budgetRecyclerView.setHasFixedSize(true);
+        mBinding.budgetRecyclerView.setEmptyView(mBinding.emptyView);
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
-            mRecyclerView.setLayoutManager(gridLayoutManager);
+            mBinding.budgetRecyclerView.setLayoutManager(gridLayoutManager);
         } else {
             LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-            mRecyclerView.setLayoutManager(mLayoutManager);
+            mBinding.budgetRecyclerView.setLayoutManager(mLayoutManager);
         }
         return view;
     }
@@ -111,7 +102,7 @@ public class BudgetListFragment extends Fragment implements Refreshable,
         mBudgetsDbAdapter = BudgetsDbAdapter.getInstance();
         mBudgetRecyclerAdapter = new BudgetRecyclerAdapter(null);
 
-        mRecyclerView.setAdapter(mBudgetRecyclerAdapter);
+        mBinding.budgetRecyclerView.setAdapter(mBudgetRecyclerAdapter);
 
         getLoaderManager().initLoader(0, null, this);
     }
@@ -213,7 +204,7 @@ public class BudgetListFragment extends Fragment implements Refreshable,
             final Budget budget = mBudgetsDbAdapter.buildModelInstance(cursor);
             holder.budgetId = mBudgetsDbAdapter.getID(budget.getUID());
 
-            holder.budgetName.setText(budget.getName());
+            holder.binding.listItem2Lines.primaryText.setText(budget.getName());
 
             AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
             String accountString;
@@ -223,9 +214,9 @@ public class BudgetListFragment extends Fragment implements Refreshable,
             } else {
                 accountString = numberOfAccounts + " budgeted accounts";
             }
-            holder.accountName.setText(accountString);
+            holder.binding.listItem2Lines.secondaryText.setText(accountString);
 
-            holder.budgetRecurrence.setText(budget.getRecurrence().getRepeatString() + " - "
+            holder.binding.budgetRecurrence.setText(budget.getRecurrence().getRepeatString() + " - "
                     + budget.getRecurrence().getDaysLeftInCurrentPeriod() + " days left");
 
             BigDecimal spentAmountValue = BigDecimal.ZERO;
@@ -239,14 +230,14 @@ public class BudgetListFragment extends Fragment implements Refreshable,
             Commodity commodity = budgetTotal.getCommodity();
             String usedAmount = commodity.getSymbol() + spentAmountValue + " of "
                     + budgetTotal.formattedString();
-            holder.budgetAmount.setText(usedAmount);
+            holder.binding.budgetAmount.setText(usedAmount);
 
             double budgetProgress = spentAmountValue.divide(budgetTotal.asBigDecimal(),
                             commodity.getSmallestFractionDigits(), RoundingMode.HALF_EVEN)
                     .doubleValue();
-            holder.budgetIndicator.setProgress((int) (budgetProgress * 100));
+            holder.binding.budgetIndicator.setProgress((int) (budgetProgress * 100));
 
-            holder.budgetAmount.setTextColor(BudgetsActivity.getBudgetProgressColor(1 - budgetProgress));
+            holder.binding.budgetAmount.setTextColor(BudgetsActivity.getBudgetProgressColor(1 - budgetProgress));
 
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -258,40 +249,23 @@ public class BudgetListFragment extends Fragment implements Refreshable,
 
         @Override
         public BudgetViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View v = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.cardview_budget, parent, false);
-
-            return new BudgetViewHolder(v);
+            CardviewBudgetBinding binding = CardviewBudgetBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+            return new BudgetViewHolder(binding);
         }
 
         class BudgetViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener {
-            @BindView(R.id.primary_text)
-            TextView budgetName;
-            @BindView(R.id.secondary_text)
-            TextView accountName;
-            @BindView(R.id.budget_amount)
-            TextView budgetAmount;
-            @BindView(R.id.options_menu)
-            ImageView optionsMenu;
-            @BindView(R.id.budget_indicator)
-            ProgressBar budgetIndicator;
-            @BindView(R.id.budget_recurrence)
-            TextView budgetRecurrence;
             long budgetId;
+            CardviewBudgetBinding binding;
 
-            public BudgetViewHolder(View itemView) {
-                super(itemView);
-                ButterKnife.bind(this, itemView);
-
-                optionsMenu.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        PopupMenu popup = new PopupMenu(getActivity(), v);
-                        popup.setOnMenuItemClickListener(BudgetViewHolder.this);
-                        MenuInflater inflater = popup.getMenuInflater();
-                        inflater.inflate(R.menu.budget_context_menu, popup.getMenu());
-                        popup.show();
-                    }
+            public BudgetViewHolder(CardviewBudgetBinding binding) {
+                super(binding.getRoot());
+                this.binding = binding;
+                binding.optionsMenu.setOnClickListener(v -> {
+                    PopupMenu popup = new PopupMenu(getActivity(), v);
+                    popup.setOnMenuItemClickListener(BudgetViewHolder.this);
+                    MenuInflater inflater = popup.getMenuInflater();
+                    inflater.inflate(R.menu.budget_context_menu, popup.getMenu());
+                    popup.show();
                 });
 
             }
