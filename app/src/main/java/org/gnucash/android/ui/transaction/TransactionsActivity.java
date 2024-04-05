@@ -29,7 +29,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
@@ -39,13 +38,12 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentResultListener;
 import androidx.fragment.app.FragmentStatePagerAdapter;
-import androidx.viewpager.widget.ViewPager;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.databinding.ActivityTransactionsBinding;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
@@ -66,7 +64,6 @@ import org.joda.time.format.DateTimeFormatter;
 
 import java.math.BigDecimal;
 
-import butterknife.BindView;
 import timber.log.Timber;
 
 /**
@@ -108,15 +105,6 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      */
     private Cursor mAccountsCursor = null;
 
-    @BindView(R.id.pager)
-    ViewPager mViewPager;
-    @BindView(R.id.toolbar_spinner)
-    Spinner mToolbarSpinner;
-    @BindView(R.id.tab_layout)
-    TabLayout mTabLayout;
-    @BindView(R.id.fab_create_transaction)
-    FloatingActionButton mCreateFloatingButton;
-
     private SparseArray<Refreshable> mFragmentPageReferenceMap = new SparseArray<>();
 
     /**
@@ -124,6 +112,8 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      * This will determine if the transactions tab is displayed or not
      */
     private boolean mIsPlaceholderAccount;
+
+    private ActivityTransactionsBinding mBinding;
 
     private AdapterView.OnItemSelectedListener mTransactionListNavigationListener = new AdapterView.OnItemSelectedListener() {
 
@@ -133,14 +123,14 @@ public class TransactionsActivity extends BaseDrawerActivity implements
             getIntent().putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID); //update the intent in case the account gets rotated
             mIsPlaceholderAccount = mAccountsDbAdapter.isPlaceholderAccount(mAccountUID);
             if (mIsPlaceholderAccount) {
-                if (mTabLayout.getTabCount() > 1) {
+                if (mBinding.tabLayout.getTabCount() > 1) {
                     mPagerAdapter.notifyDataSetChanged();
-                    mTabLayout.removeTabAt(1);
+                    mBinding.tabLayout.removeTabAt(1);
                 }
             } else {
-                if (mTabLayout.getTabCount() < 2) {
+                if (mBinding.tabLayout.getTabCount() < 2) {
                     mPagerAdapter.notifyDataSetChanged();
-                    mTabLayout.addTab(mTabLayout.newTab().setText(R.string.section_header_transactions));
+                    mBinding.tabLayout.addTab(mBinding.tabLayout.newTab().setText(R.string.section_header_transactions));
                 }
             }
             if (view != null) {
@@ -281,7 +271,8 @@ public class TransactionsActivity extends BaseDrawerActivity implements
 
     @Override
     public void inflateView() {
-        setContentView(R.layout.activity_transactions);
+        mBinding = ActivityTransactionsBinding.inflate(getLayoutInflater());
+        setContentView(mBinding.getRoot());
     }
 
     @Override
@@ -300,21 +291,21 @@ public class TransactionsActivity extends BaseDrawerActivity implements
 
         mIsPlaceholderAccount = mAccountsDbAdapter.isPlaceholderAccount(mAccountUID);
 
-        mTabLayout.addTab(mTabLayout.newTab().setText(R.string.section_header_subaccounts));
+        mBinding.tabLayout.addTab(mBinding.tabLayout.newTab().setText(R.string.section_header_subaccounts));
         if (!mIsPlaceholderAccount) {
-            mTabLayout.addTab(mTabLayout.newTab().setText(R.string.section_header_transactions));
+            mBinding.tabLayout.addTab(mBinding.tabLayout.newTab().setText(R.string.section_header_transactions));
         }
 
         setupActionBarNavigation();
 
         mPagerAdapter = new AccountViewPagerAdapter(getSupportFragmentManager());
-        mViewPager.setAdapter(mPagerAdapter);
-        mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(mTabLayout));
+        mBinding.pager.setAdapter(mPagerAdapter);
+        mBinding.pager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(mBinding.tabLayout));
 
-        mTabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+        mBinding.tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                mViewPager.setCurrentItem(tab.getPosition());
+                mBinding.pager.setCurrentItem(tab.getPosition());
             }
 
             @Override
@@ -331,15 +322,15 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         //if there are no transactions, and there are sub-accounts, show the sub-accounts
         if (TransactionsDbAdapter.getInstance().getTransactionsCount(mAccountUID) == 0
                 && mAccountsDbAdapter.getSubAccountCount(mAccountUID) > 0) {
-            mViewPager.setCurrentItem(INDEX_SUB_ACCOUNTS_FRAGMENT);
+            mBinding.pager.setCurrentItem(INDEX_SUB_ACCOUNTS_FRAGMENT);
         } else {
-            mViewPager.setCurrentItem(INDEX_TRANSACTIONS_FRAGMENT);
+            mBinding.pager.setCurrentItem(INDEX_TRANSACTIONS_FRAGMENT);
         }
 
-        mCreateFloatingButton.setOnClickListener(new View.OnClickListener() {
+        mBinding.fabCreateTransaction.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                switch (mViewPager.getCurrentItem()) {
+                switch (mBinding.pager.getCurrentItem()) {
                     case INDEX_SUB_ACCOUNTS_FRAGMENT:
                         Intent addAccountIntent = new Intent(TransactionsActivity.this, FormActivity.class);
                         addAccountIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
@@ -369,7 +360,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     private void setTitleIndicatorColor() {
         int iColor = AccountsDbAdapter.getActiveAccountColorResource(mAccountUID);
 
-        mTabLayout.setBackgroundColor(iColor);
+        mBinding.tabLayout.setBackgroundColor(iColor);
 
         if (getSupportActionBar() != null)
             getSupportActionBar().setBackgroundDrawable(new ColorDrawable(iColor));
@@ -390,8 +381,8 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         SpinnerAdapter mSpinnerAdapter = new QualifiedAccountNameCursorAdapter(
                 getSupportActionBar().getThemedContext(), mAccountsCursor, R.layout.account_spinner_item);
 
-        mToolbarSpinner.setAdapter(mSpinnerAdapter);
-        mToolbarSpinner.setOnItemSelectedListener(mTransactionListNavigationListener);
+        mBinding.toolbarWithSpinner.toolbarSpinner.setAdapter(mSpinnerAdapter);
+        mBinding.toolbarWithSpinner.toolbarSpinner.setOnItemSelectedListener(mTransactionListNavigationListener);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         updateNavigationSelection();
@@ -408,7 +399,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         while (accountsCursor.moveToNext()) {
             String uid = accountsCursor.getString(accountsCursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_UID));
             if (mAccountUID.equals(uid)) {
-                mToolbarSpinner.setSelection(i);
+                mBinding.toolbarWithSpinner.toolbarSpinner.setSelection(i);
                 break;
             }
             ++i;

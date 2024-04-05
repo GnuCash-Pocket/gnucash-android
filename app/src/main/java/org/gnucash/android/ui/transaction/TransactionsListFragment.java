@@ -48,6 +48,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.databinding.CardviewCompactTransactionBinding;
+import org.gnucash.android.databinding.CardviewTransactionBinding;
+import org.gnucash.android.databinding.FragmentTransactionsListBinding;
 import org.gnucash.android.db.DatabaseCursorLoader;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
@@ -64,13 +67,10 @@ import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity;
 import org.gnucash.android.ui.settings.PreferenceActivity;
 import org.gnucash.android.ui.transaction.dialog.BulkMoveDialogFragment;
 import org.gnucash.android.ui.util.CursorRecyclerAdapter;
-import org.gnucash.android.ui.util.widget.EmptyRecyclerView;
 import org.gnucash.android.util.BackupManager;
 
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import timber.log.Timber;
 
 /**
@@ -87,9 +87,8 @@ public class TransactionsListFragment extends Fragment implements
     private boolean mUseCompactView = false;
 
     private TransactionRecyclerAdapter mTransactionRecyclerAdapter;
-    @BindView(R.id.transaction_recycler_view)
-    EmptyRecyclerView mRecyclerView;
 
+    private FragmentTransactionsListBinding mBinding;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -116,18 +115,18 @@ public class TransactionsListFragment extends Fragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_transactions_list, container, false);
-        ButterKnife.bind(this, view);
+        mBinding = FragmentTransactionsListBinding.inflate(inflater, container, false);
+        View view = mBinding.getRoot();
 
-        mRecyclerView.setHasFixedSize(true);
+        mBinding.transactionRecyclerView.setHasFixedSize(true);
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
-            mRecyclerView.setLayoutManager(gridLayoutManager);
+            mBinding.transactionRecyclerView.setLayoutManager(gridLayoutManager);
         } else {
             LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-            mRecyclerView.setLayoutManager(mLayoutManager);
+            mBinding.transactionRecyclerView.setLayoutManager(mLayoutManager);
         }
-        mRecyclerView.setEmptyView(view.findViewById(R.id.empty_view));
+        mBinding.transactionRecyclerView.setEmptyView(view.findViewById(R.id.empty_view));
 
         return view;
     }
@@ -141,7 +140,7 @@ public class TransactionsListFragment extends Fragment implements
         aBar.setDisplayHomeAsUpEnabled(true);
 
         mTransactionRecyclerAdapter = new TransactionRecyclerAdapter(null);
-        mRecyclerView.setAdapter(mTransactionRecyclerAdapter);
+        mBinding.transactionRecyclerView.setAdapter(mTransactionRecyclerAdapter);
 
         setHasOptionsMenu(true);
     }
@@ -268,10 +267,13 @@ public class TransactionsListFragment extends Fragment implements
 
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            int layoutRes = viewType == ITEM_TYPE_COMPACT ? R.layout.cardview_compact_transaction : R.layout.cardview_transaction;
-            View v = LayoutInflater.from(parent.getContext())
-                    .inflate(layoutRes, parent, false);
-            return new ViewHolder(v);
+            if (viewType == ITEM_TYPE_COMPACT) {
+                CardviewCompactTransactionBinding binding = CardviewCompactTransactionBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+                return new ViewHolder(binding);
+            } else {
+                CardviewTransactionBinding binding = CardviewTransactionBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+                return new ViewHolder(binding);
+            }
         }
 
         @Override
@@ -344,38 +346,47 @@ public class TransactionsListFragment extends Fragment implements
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener {
-            @BindView(R.id.primary_text)
             public TextView primaryText;
-            @BindView(R.id.secondary_text)
             public TextView secondaryText;
-            @BindView(R.id.transaction_amount)
             public TextView transactionAmount;
-            @BindView(R.id.options_menu)
             public ImageView optionsMenu;
 
             //these views are not used in the compact view, hence the nullability
             @Nullable
-            @BindView(R.id.transaction_date)
             public TextView transactionDate;
             @Nullable
-            @BindView(R.id.edit_transaction)
             public ImageView editTransaction;
 
             long transactionId;
 
-            public ViewHolder(View itemView) {
-                super(itemView);
-                ButterKnife.bind(this, itemView);
+            public ViewHolder(CardviewCompactTransactionBinding binding) {
+                super(binding.getRoot());
+                primaryText = binding.listItem2Lines.primaryText;
+                secondaryText = binding.listItem2Lines.secondaryText;
+                transactionAmount = binding.transactionAmount;
+                optionsMenu = binding.optionsMenu;
+                setup();
+            }
+
+            public ViewHolder(CardviewTransactionBinding binding) {
+                super(binding.getRoot());
+                primaryText = binding.listItem2Lines.primaryText;
+                secondaryText = binding.listItem2Lines.secondaryText;
+                transactionAmount = binding.transactionAmount;
+                optionsMenu = binding.optionsMenu;
+                transactionDate = binding.transactionDate;
+                editTransaction = binding.editTransaction;
+                setup();
+            }
+
+            private void setup() {
                 primaryText.setTextSize(18);
-                optionsMenu.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        PopupMenu popup = new PopupMenu(getActivity(), v);
-                        popup.setOnMenuItemClickListener(ViewHolder.this);
-                        MenuInflater inflater = popup.getMenuInflater();
-                        inflater.inflate(R.menu.transactions_context_menu, popup.getMenu());
-                        popup.show();
-                    }
+                optionsMenu.setOnClickListener(v -> {
+                    PopupMenu popup = new PopupMenu(getActivity(), v);
+                    popup.setOnMenuItemClickListener(ViewHolder.this);
+                    MenuInflater inflater = popup.getMenuInflater();
+                    inflater.inflate(R.menu.transactions_context_menu, popup.getMenu());
+                    popup.show();
                 });
             }
 
