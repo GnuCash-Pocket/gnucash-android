@@ -3,20 +3,19 @@ package org.gnucash.android.ui.transaction;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TableLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.widget.Toolbar;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.databinding.ActivityTransactionDetailBinding;
+import org.gnucash.android.databinding.ItemSplitAmountInfoBinding;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
@@ -31,52 +30,26 @@ import org.joda.time.format.DateTimeFormat;
 
 import java.util.MissingFormatArgumentException;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-
 /**
  * Activity for displaying transaction information
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class TransactionDetailActivity extends PasscodeLockActivity {
-
-    @BindView(R.id.trn_description)
-    TextView mTransactionDescription;
-    @BindView(R.id.trn_time_and_date)
-    TextView mTimeAndDate;
-    @BindView(R.id.trn_recurrence)
-    TextView mRecurrence;
-    @BindView(R.id.trn_notes)
-    TextView mNotes;
-    @BindView(R.id.toolbar)
-    Toolbar mToolBar;
-    @BindView(R.id.transaction_account)
-    TextView mTransactionAccount;
-    @BindView(R.id.balance_debit)
-    TextView mDebitBalance;
-    @BindView(R.id.balance_credit)
-    TextView mCreditBalance;
-    @BindView(R.id.row_trn_recurrence)
-    View mRowRecurrence;
-    @BindView(R.id.row_trn_notes)
-    View mRowNotes;
-
-    @BindView(R.id.fragment_transaction_details)
-    TableLayout mDetailTableLayout;
-
     private String mTransactionUID;
     private String mAccountUID;
     private int mDetailTableRows;
 
     public static final int REQUEST_EDIT_TRANSACTION = 0x10;
 
+    private ActivityTransactionDetailBinding mBinding;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_transaction_detail);
+        mBinding = ActivityTransactionDetailBinding.inflate(getLayoutInflater());
+        setContentView(mBinding.getRoot());
 
         mTransactionUID = getIntent().getStringExtra(UxArgument.SELECTED_TRANSACTION_UID);
         mAccountUID = getIntent().getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
@@ -85,8 +58,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
             throw new MissingFormatArgumentException("You must specify both the transaction and account GUID");
         }
 
-        ButterKnife.bind(this);
-        setSupportActionBar(mToolBar);
+        setSupportActionBar(mBinding.toolbar);
 
         ActionBar actionBar = getSupportActionBar();
         assert actionBar != null;
@@ -100,29 +72,25 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
 
         int themeColor = AccountsDbAdapter.getActiveAccountColorResource(mAccountUID);
         actionBar.setBackgroundDrawable(new ColorDrawable(themeColor));
-        mToolBar.setBackgroundColor(themeColor);
+        mBinding.toolbar.setBackgroundColor(themeColor);
 
         getWindow().setStatusBarColor(GnuCashApplication.darken(themeColor));
+
+        mBinding.fabEditTransaction.setOnClickListener(v -> editTransaction());
     }
 
     class SplitAmountViewHolder {
-        @BindView(R.id.split_account_name)
-        TextView accountName;
-        @BindView(R.id.split_debit)
-        TextView splitDebit;
-        @BindView(R.id.split_credit)
-        TextView splitCredit;
-
         View itemView;
+        ItemSplitAmountInfoBinding binding;
 
-        public SplitAmountViewHolder(View view, Split split) {
-            itemView = view;
-            ButterKnife.bind(this, view);
+        public SplitAmountViewHolder(ItemSplitAmountInfoBinding binding, Split split) {
+            this.binding = binding;
+            itemView = binding.getRoot();
 
             AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
-            accountName.setText(accountsDbAdapter.getAccountFullName(split.getAccountUID()));
+            binding.splitAccountName.setText(accountsDbAdapter.getAccountFullName(split.getAccountUID()));
             Money quantity = split.getFormattedQuantity();
-            TextView balanceView = quantity.isNegative() ? splitDebit : splitCredit;
+            TextView balanceView = quantity.isNegative() ? binding.splitDebit : binding.splitCredit;
             TransactionsActivity.displayBalance(balanceView, quantity);
         }
     }
@@ -134,16 +102,16 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
         TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
         Transaction transaction = transactionsDbAdapter.getRecord(mTransactionUID);
 
-        mTransactionDescription.setText(transaction.getDescription());
-        mTransactionAccount.setText(getString(R.string.label_inside_account_with_name, AccountsDbAdapter.getInstance().getAccountFullName(mAccountUID)));
+        mBinding.trnDescription.setText(transaction.getDescription());
+        mBinding.transactionAccount.setText(getString(R.string.label_inside_account_with_name, AccountsDbAdapter.getInstance().getAccountFullName(mAccountUID)));
 
         AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
 
         Money accountBalance = accountsDbAdapter.getAccountBalance(mAccountUID, -1, transaction.getTimeMillis());
-        TextView balanceTextView = accountBalance.isNegative() ? mDebitBalance : mCreditBalance;
+        TextView balanceTextView = accountBalance.isNegative() ? mBinding.balanceDebit : mBinding.balanceCredit;
         TransactionsActivity.displayBalance(balanceTextView, accountBalance);
 
-        mDetailTableRows = mDetailTableLayout.getChildCount();
+        mDetailTableRows = mBinding.fragmentTransactionDetails.getChildCount();
         boolean useDoubleEntry = GnuCashApplication.isDoubleEntryEnabled();
         LayoutInflater inflater = LayoutInflater.from(this);
         int index = 0;
@@ -153,27 +121,28 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
                 //do now show imbalance accounts for single entry use case
                 continue;
             }
-            View view = inflater.inflate(R.layout.item_split_amount_info, mDetailTableLayout, false);
-            SplitAmountViewHolder viewHolder = new SplitAmountViewHolder(view, split);
-            mDetailTableLayout.addView(viewHolder.itemView, index++);
+            ItemSplitAmountInfoBinding binding = ItemSplitAmountInfoBinding.inflate(inflater, mBinding.fragmentTransactionDetails, false);
+            SplitAmountViewHolder viewHolder = new SplitAmountViewHolder(binding, split);
+            mBinding.fragmentTransactionDetails.addView(viewHolder.itemView, index++);
         }
 
+
         String timeAndDate = DateTimeFormat.fullDate().print(transaction.getTimeMillis());
-        mTimeAndDate.setText(timeAndDate);
+        mBinding.trnTimeAndDate.setText(timeAndDate);
 
         if (transaction.getScheduledActionUID() != null) {
             ScheduledAction scheduledAction = ScheduledActionDbAdapter.getInstance().getRecord(transaction.getScheduledActionUID());
-            mRecurrence.setText(scheduledAction.getRepeatString());
-            mRowRecurrence.setVisibility(View.VISIBLE);
+            mBinding.trnRecurrence.setText(scheduledAction.getRepeatString());
+            mBinding.rowTrnRecurrence.setVisibility(View.VISIBLE);
         } else {
-            mRowRecurrence.setVisibility(View.GONE);
+            mBinding.rowTrnRecurrence.setVisibility(View.GONE);
         }
 
         if (transaction.getNote() != null && !transaction.getNote().isEmpty()) {
-            mNotes.setText(transaction.getNote());
-            mRowNotes.setVisibility(View.VISIBLE);
+            mBinding.trnNotes.setText(transaction.getNote());
+            mBinding.rowTrnNotes.setVisibility(View.VISIBLE);
         } else {
-            mRowNotes.setVisibility(View.GONE);
+            mBinding.rowTrnNotes.setVisibility(View.GONE);
         }
 
     }
@@ -191,14 +160,13 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
      */
     private void removeSplitItemViews() {
         // Remove all rows that are not special.
-        mDetailTableLayout.removeViews(0, mDetailTableLayout.getChildCount() - mDetailTableRows);
-        mDebitBalance.setText("");
-        mCreditBalance.setText("");
+        mBinding.fragmentTransactionDetails.removeViews(0, mBinding.fragmentTransactionDetails.getChildCount() - mDetailTableRows);
+        mBinding.balanceDebit.setText("");
+        mBinding.balanceCredit.setText("");
     }
 
 
-    @OnClick(R.id.fab_edit_transaction)
-    public void editTransaction() {
+    private void editTransaction() {
         Intent createTransactionIntent = new Intent(this.getApplicationContext(), FormActivity.class);
         createTransactionIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
         createTransactionIntent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
