@@ -25,7 +25,6 @@ import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -34,13 +33,11 @@ import androidx.fragment.app.DialogFragment;
 import com.squareup.timessquare.CalendarPickerView;
 
 import org.gnucash.android.R;
+import org.gnucash.android.databinding.DialogDateRangePickerBinding;
 import org.joda.time.LocalDate;
 
 import java.util.Date;
 import java.util.List;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 /**
  * Dialog for picking date ranges in terms of months.
@@ -49,18 +46,12 @@ import butterknife.ButterKnife;
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class DateRangePickerDialogFragment extends DialogFragment {
-
-    @BindView(R.id.calendar_view)
-    CalendarPickerView mCalendarPickerView;
-    @BindView(R.id.btn_save)
-    Button mDoneButton;
-    @BindView(R.id.btn_cancel)
-    Button mCancelButton;
-
     private LocalDate mStartRange = LocalDate.now().minusMonths(1);
     private LocalDate mEndRange = LocalDate.now();
     private OnDateRangeSetListener mDateRangeSetListener;
     private static final long ONE_DAY_IN_MILLIS = DateUtils.DAY_IN_MILLIS;
+
+    private DialogDateRangePickerBinding mBinding;
 
     public static DateRangePickerDialogFragment newInstance(OnDateRangeSetListener dateRangeSetListener) {
         DateRangePickerDialogFragment fragment = new DateRangePickerDialogFragment();
@@ -80,17 +71,17 @@ public class DateRangePickerDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.dialog_date_range_picker, container, false);
-        ButterKnife.bind(this, view);
+        mBinding = DialogDateRangePickerBinding.inflate(inflater, container, false);
+        View view = mBinding.getRoot();
 
-        mCalendarPickerView.init(mStartRange.toDate(), mEndRange.toDate())
+        mBinding.calendarView.init(mStartRange.toDate(), mEndRange.toDate())
                 .inMode(CalendarPickerView.SelectionMode.RANGE);
 
-        mDoneButton.setText(R.string.done_label);
-        mDoneButton.setOnClickListener(new View.OnClickListener() {
+        mBinding.defaultButtons.btnSave.setText(R.string.done_label);
+        mBinding.defaultButtons.btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                List<Date> selectedDates = mCalendarPickerView.getSelectedDates();
+                List<Date> selectedDates = mBinding.calendarView.getSelectedDates();
                 int length = selectedDates.size();
                 if (length > 0) {
                     Date startDate = selectedDates.get(0);
@@ -105,7 +96,7 @@ public class DateRangePickerDialogFragment extends DialogFragment {
             }
         });
 
-        mCancelButton.setOnClickListener(new View.OnClickListener() {
+        mBinding.defaultButtons.btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 dismiss();

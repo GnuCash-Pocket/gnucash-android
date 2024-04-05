@@ -27,10 +27,8 @@ import android.preference.PreferenceManager;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -47,6 +45,7 @@ import com.tech.freak.wizardpager.ui.StepPagerStrip;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.databinding.ActivityFirstRunWizardBinding;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.ui.account.AccountsActivity;
 import org.gnucash.android.ui.util.TaskDelegate;
@@ -54,17 +53,11 @@ import org.gnucash.android.ui.util.TaskDelegate;
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
 /**
  * Activity for managing the wizard displayed upon first run of the application
  */
 public class FirstRunWizardActivity extends AppCompatActivity implements
         PageFragmentCallbacks, ReviewFragment.Callbacks, ModelCallbacks {
-
-    @BindView(R.id.pager)
-    ViewPager mPager;
     private MyPagerAdapter mPagerAdapter;
 
     private boolean mEditingAfterReview;
@@ -73,16 +66,11 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
 
     private boolean mConsumePageSelectedEvent;
 
-    @BindView(R.id.btn_save)
-    AppCompatButton mNextButton;
-    @BindView(R.id.btn_cancel)
-    Button mPrevButton;
-    @BindView(R.id.strip)
-    StepPagerStrip mStepPagerStrip;
-
     private List<Page> mCurrentPageSequence;
     private String mAccountOptions;
     private String mCurrencyCode;
+
+    private ActivityFirstRunWizardBinding mBinding;
 
 
     public void onCreate(Bundle savedInstanceState) {
@@ -92,30 +80,30 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
         mWizardModel = createWizardModel(savedInstanceState);
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_first_run_wizard);
-        ButterKnife.bind(this);
+        mBinding = ActivityFirstRunWizardBinding.inflate(getLayoutInflater());
+        setContentView(mBinding.getRoot());
 
         setTitle(getString(R.string.title_setup_gnucash));
 
         mPagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
-        mPager.setAdapter(mPagerAdapter);
-        mStepPagerStrip
+        mBinding.pager.setAdapter(mPagerAdapter);
+        mBinding.strip
                 .setOnPageSelectedListener(new StepPagerStrip.OnPageSelectedListener() {
                     @Override
                     public void onPageStripSelected(int position) {
                         position = Math.min(mPagerAdapter.getCount() - 1,
                                 position);
-                        if (mPager.getCurrentItem() != position) {
-                            mPager.setCurrentItem(position);
+                        if (mBinding.pager.getCurrentItem() != position) {
+                            mBinding.pager.setCurrentItem(position);
                         }
                     }
                 });
 
 
-        mPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+        mBinding.pager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
-                mStepPagerStrip.setCurrentPage(position);
+                mBinding.strip.setCurrentPage(position);
 
                 if (mConsumePageSelectedEvent) {
                     mConsumePageSelectedEvent = false;
@@ -127,10 +115,10 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
             }
         });
 
-        mNextButton.setOnClickListener(new View.OnClickListener() {
+        mBinding.defaultButtons.btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mPager.getCurrentItem() == mCurrentPageSequence.size()) {
+                if (mBinding.pager.getCurrentItem() == mCurrentPageSequence.size()) {
                     ArrayList<ReviewItem> reviewItems = new ArrayList<>();
                     for (Page page : mCurrentPageSequence) {
                         page.getReviewItems(reviewItems);
@@ -166,25 +154,25 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
                     createAccountsAndFinish();
                 } else {
                     if (mEditingAfterReview) {
-                        mPager.setCurrentItem(mPagerAdapter.getCount() - 1);
+                        mBinding.pager.setCurrentItem(mPagerAdapter.getCount() - 1);
                     } else {
-                        mPager.setCurrentItem(mPager.getCurrentItem() + 1);
+                        mBinding.pager.setCurrentItem(mBinding.pager.getCurrentItem() + 1);
                     }
                 }
             }
         });
 
-        mPrevButton.setText(R.string.wizard_btn_back);
+        mBinding.defaultButtons.btnCancel.setText(R.string.wizard_btn_back);
         TypedValue v = new TypedValue();
         getTheme().resolveAttribute(android.R.attr.textAppearanceMedium, v,
                 true);
-        mPrevButton.setTextAppearance(this, v.resourceId);
-        mNextButton.setTextAppearance(this, v.resourceId);
+        mBinding.defaultButtons.btnCancel.setTextAppearance(this, v.resourceId);
+        mBinding.defaultButtons.btnSave.setTextAppearance(this, v.resourceId);
 
-        mPrevButton.setOnClickListener(new View.OnClickListener() {
+        mBinding.defaultButtons.btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mPager.setCurrentItem(mPager.getCurrentItem() - 1);
+                mBinding.pager.setCurrentItem(mBinding.pager.getCurrentItem() - 1);
             }
         });
 
@@ -236,7 +224,7 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
     public void onPageTreeChanged() {
         mCurrentPageSequence = mWizardModel.getCurrentPageSequence();
         recalculateCutOffPage();
-        mStepPagerStrip.setPageCount(mCurrentPageSequence.size() + 1); // + 1 =
+        mBinding.strip.setPageCount(mCurrentPageSequence.size() + 1); // + 1 =
         // review
         // step
         mPagerAdapter.notifyDataSetChanged();
@@ -244,24 +232,24 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
     }
 
     private void updateBottomBar() {
-        int position = mPager.getCurrentItem();
+        int position = mBinding.pager.getCurrentItem();
         final Resources res = getResources();
         if (position == mCurrentPageSequence.size()) {
-            mNextButton.setText(R.string.btn_wizard_finish);
+            mBinding.defaultButtons.btnSave.setText(R.string.btn_wizard_finish);
 
-            mNextButton.setBackgroundDrawable(
+            mBinding.defaultButtons.btnSave.setBackgroundDrawable(
                     new ColorDrawable(ContextCompat.getColor(this, R.color.theme_accent)));
-            mNextButton.setTextColor(ContextCompat.getColor(this, android.R.color.white));
+            mBinding.defaultButtons.btnSave.setTextColor(ContextCompat.getColor(this, android.R.color.white));
         } else {
-            mNextButton.setText(mEditingAfterReview ? R.string.review
+            mBinding.defaultButtons.btnSave.setText(mEditingAfterReview ? R.string.review
                     : R.string.btn_wizard_next);
-            mNextButton.setBackgroundDrawable(
+            mBinding.defaultButtons.btnSave.setBackgroundDrawable(
                     new ColorDrawable(ContextCompat.getColor(this, android.R.color.transparent)));
-            mNextButton.setTextColor(ContextCompat.getColor(this, R.color.theme_accent));
-            mNextButton.setEnabled(position != mPagerAdapter.getCutOffPage());
+            mBinding.defaultButtons.btnSave.setTextColor(ContextCompat.getColor(this, R.color.theme_accent));
+            mBinding.defaultButtons.btnSave.setEnabled(position != mPagerAdapter.getCutOffPage());
         }
 
-        mPrevButton
+        mBinding.defaultButtons.btnCancel
                 .setVisibility(position <= 0 ? View.INVISIBLE : View.VISIBLE);
     }
 
@@ -304,7 +292,7 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
             if (mCurrentPageSequence.get(i).getKey().equals(key)) {
                 mConsumePageSelectedEvent = true;
                 mEditingAfterReview = true;
-                mPager.setCurrentItem(i);
+                mBinding.pager.setCurrentItem(i);
                 updateBottomBar();
                 break;
             }
