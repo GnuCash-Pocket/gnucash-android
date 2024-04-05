@@ -22,6 +22,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
@@ -29,6 +30,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.gnucash.android.R;
+import org.gnucash.android.databinding.FragmentTextReportBinding;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.model.AccountType;
@@ -40,7 +42,6 @@ import org.gnucash.android.ui.transaction.TransactionsActivity;
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindView;
 
 /**
  * Balance sheet report fragment
@@ -48,17 +49,6 @@ import butterknife.BindView;
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class BalanceSheetFragment extends BaseReportFragment {
-
-    @BindView(R.id.table_assets)
-    TableLayout mAssetsTableLayout;
-    @BindView(R.id.table_liabilities)
-    TableLayout mLiabilitiesTableLayout;
-    @BindView(R.id.table_equity)
-    TableLayout mEquityTableLayout;
-
-    @BindView(R.id.total_liability_and_equity)
-    TextView mNetWorth;
-
     AccountsDbAdapter mAccountsDbAdapter = AccountsDbAdapter.getInstance();
 
     private Money mAssetsBalance;
@@ -66,6 +56,14 @@ public class BalanceSheetFragment extends BaseReportFragment {
     private List<AccountType> mAssetAccountTypes;
     private List<AccountType> mLiabilityAccountTypes;
     private List<AccountType> mEquityAccountTypes;
+
+    private FragmentTextReportBinding mBinding;
+
+    @Override
+    public View inflateView(LayoutInflater inflater, ViewGroup container) {
+        mBinding = FragmentTextReportBinding.inflate(inflater, container, false);
+        return mBinding.getRoot();
+    }
 
     @Override
     public ReportType getReportType() {
@@ -106,11 +104,11 @@ public class BalanceSheetFragment extends BaseReportFragment {
 
     @Override
     protected void displayReport() {
-        loadAccountViews(mAssetAccountTypes, mAssetsTableLayout);
-        loadAccountViews(mLiabilityAccountTypes, mLiabilitiesTableLayout);
-        loadAccountViews(mEquityAccountTypes, mEquityTableLayout);
+        loadAccountViews(mAssetAccountTypes, mBinding.tableAssets);
+        loadAccountViews(mLiabilityAccountTypes, mBinding.tableLiabilities);
+        loadAccountViews(mEquityAccountTypes, mBinding.tableEquity);
 
-        TransactionsActivity.displayBalance(mNetWorth, mAssetsBalance.minus(mLiabilitiesBalance));
+        TransactionsActivity.displayBalance(mBinding.totalLiabilityAndEquity, mAssetsBalance.minus(mLiabilitiesBalance));
     }
 
     @Override

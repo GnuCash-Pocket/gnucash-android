@@ -30,7 +30,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
-import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -42,6 +41,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.databinding.ActivityReportsBinding;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.ui.common.BaseDrawerActivity;
@@ -51,7 +51,6 @@ import org.joda.time.LocalDate;
 
 import java.util.List;
 
-import butterknife.BindView;
 import timber.log.Timber;
 
 /**
@@ -78,13 +77,6 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
     };
     private static final String STATE_REPORT_TYPE = "STATE_REPORT_TYPE";
 
-    @BindView(R.id.time_range_spinner)
-    Spinner mTimeRangeSpinner;
-    @BindView(R.id.report_account_type_spinner)
-    Spinner mAccountTypeSpinner;
-    @BindView(R.id.toolbar_spinner)
-    Spinner mReportTypeSpinner;
-
     private TransactionsDbAdapter mTransactionsDbAdapter;
     private AccountType mAccountType = AccountType.EXPENSE;
     private ReportType mReportType = ReportType.NONE;
@@ -96,6 +88,8 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
     private LocalDate mReportPeriodEnd = new LocalDate().plusDays(1);
 
     private GroupInterval mReportGroupInterval = GroupInterval.MONTH;
+
+    private ActivityReportsBinding mBinding;
 
     AdapterView.OnItemSelectedListener mReportTypeSelectedListener = new AdapterView.OnItemSelectedListener() {
 
@@ -115,7 +109,8 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
 
     @Override
     public void inflateView() {
-        setContentView(R.layout.activity_reports);
+        mBinding = ActivityReportsBinding.inflate(getLayoutInflater());
+        setContentView(mBinding.getRoot());
     }
 
     @Override
@@ -133,21 +128,21 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
         ArrayAdapter<String> typesAdapter = new ArrayAdapter<>(actionBar.getThemedContext(),
             android.R.layout.simple_list_item_1,
             ReportType.getReportNames(this));
-        mReportTypeSpinner.setAdapter(typesAdapter);
-        mReportTypeSpinner.setOnItemSelectedListener(mReportTypeSelectedListener);
+        mBinding.toolbarLayout.toolbarSpinner.setAdapter(typesAdapter);
+        mBinding.toolbarLayout.toolbarSpinner.setOnItemSelectedListener(mReportTypeSelectedListener);
 
-        ArrayAdapter<CharSequence> rangeAdapter = ArrayAdapter.createFromResource(this, R.array.report_time_range,
-            android.R.layout.simple_spinner_item);
-        rangeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mTimeRangeSpinner.setAdapter(rangeAdapter);
-        mTimeRangeSpinner.setOnItemSelectedListener(this);
-        mTimeRangeSpinner.setSelection(1);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.report_time_range,
+                android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mBinding.timeRangeSpinner.setAdapter(adapter);
+        mBinding.timeRangeSpinner.setOnItemSelectedListener(this);
+        mBinding.timeRangeSpinner.setSelection(1);
 
         ArrayAdapter<CharSequence> dataAdapter = ArrayAdapter.createFromResource(this,
             R.array.report_account_types, android.R.layout.simple_spinner_item);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mAccountTypeSpinner.setAdapter(dataAdapter);
-        mAccountTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mBinding.reportAccountTypeSpinner.setAdapter(dataAdapter);
+        mBinding.reportAccountTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
                 final AccountType accountType;
@@ -183,7 +178,7 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
             reportType = reportFragment.getReportType();
 
             int visibility = reportFragment.requiresAccountTypeOptions() ? View.VISIBLE : View.GONE;
-            mAccountTypeSpinner.setVisibility(visibility);
+            mBinding.reportAccountTypeSpinner.setVisibility(visibility);
         }
 
         setAppBarColor(reportType.colorId);
@@ -228,7 +223,7 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
      */
     public void updateReportTypeSpinner(@NonNull ReportType reportType) {
         mReportType = reportType;
-        mReportTypeSpinner.setSelection(reportType.ordinal());
+        mBinding.toolbarLayout.toolbarSpinner.setSelection(reportType.ordinal());
     }
 
     private void toggleToolbarTitleVisibility(ReportType reportType) {
@@ -236,9 +231,9 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
         assert actionBar != null;
 
         if (reportType == ReportType.NONE) {
-            mReportTypeSpinner.setVisibility(View.GONE);
+            mBinding.toolbarLayout.toolbarSpinner.setVisibility(View.GONE);
         } else {
-            mReportTypeSpinner.setVisibility(View.VISIBLE);
+            mBinding.toolbarLayout.toolbarSpinner.setVisibility(View.VISIBLE);
         }
         actionBar.setDisplayShowTitleEnabled(reportType == ReportType.NONE);
     }

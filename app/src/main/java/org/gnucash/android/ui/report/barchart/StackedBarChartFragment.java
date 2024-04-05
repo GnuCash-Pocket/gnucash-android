@@ -21,14 +21,16 @@ import static org.gnucash.android.ui.report.ReportsActivity.COLORS;
 
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
@@ -39,6 +41,7 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 
 import org.gnucash.android.R;
+import org.gnucash.android.databinding.FragmentBarChartBinding;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
@@ -55,7 +58,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import butterknife.BindView;
 import timber.log.Timber;
 
 /**
@@ -75,12 +77,17 @@ public class StackedBarChartFragment extends BaseReportFragment {
 
     private AccountsDbAdapter mAccountsDbAdapter = AccountsDbAdapter.getInstance();
 
-    @BindView(R.id.bar_chart)
-    BarChart mChart;
-
     private boolean mUseAccountColor = true;
     private boolean mTotalPercentageMode = true;
     private boolean mChartDataPresent = true;
+
+    private FragmentBarChartBinding mBinding;
+
+    @Override
+    public View inflateView(LayoutInflater inflater, ViewGroup container) {
+        mBinding = FragmentBarChartBinding.inflate(inflater, container, false);
+        return mBinding.getRoot();
+    }
 
     @Override
     public ReportType getReportType() {
@@ -94,15 +101,15 @@ public class StackedBarChartFragment extends BaseReportFragment {
         mUseAccountColor = PreferenceManager.getDefaultSharedPreferences(getActivity())
                 .getBoolean(getString(R.string.key_use_account_color), false);
 
-        mChart.setOnChartValueSelectedListener(this);
-        mChart.setDescription("");
+        mBinding.barChart.setOnChartValueSelectedListener(this);
+        mBinding.barChart.setDescription("");
 //        mChart.setDrawValuesForWholeStack(false);
-        mChart.getXAxis().setDrawGridLines(false);
-        mChart.getAxisRight().setEnabled(false);
-        mChart.getAxisLeft().setStartAtZero(false);
-        mChart.getAxisLeft().enableGridDashedLine(4.0f, 4.0f, 0);
-        mChart.getAxisLeft().setValueFormatter(new LargeValueFormatter(mCommodity.getSymbol()));
-        Legend chartLegend = mChart.getLegend();
+        mBinding.barChart.getXAxis().setDrawGridLines(false);
+        mBinding.barChart.getAxisRight().setEnabled(false);
+        mBinding.barChart.getAxisLeft().setStartAtZero(false);
+        mBinding.barChart.getAxisLeft().enableGridDashedLine(4.0f, 4.0f, 0);
+        mBinding.barChart.getAxisLeft().setValueFormatter(new LargeValueFormatter(mCommodity.getSymbol()));
+        Legend chartLegend = mBinding.barChart.getLegend();
         chartLegend.setForm(Legend.LegendForm.CIRCLE);
         chartLegend.setPosition(Legend.LegendPosition.BELOW_CHART_CENTER);
         chartLegend.setWordWrapEnabled(true);
@@ -287,34 +294,34 @@ public class StackedBarChartFragment extends BaseReportFragment {
 
     @Override
     public void generateReport() {
-        mChart.setData(getData());
+        mBinding.barChart.setData(getData());
         setCustomLegend();
 
-        mChart.getAxisLeft().setDrawLabels(mChartDataPresent);
-        mChart.getXAxis().setDrawLabels(mChartDataPresent);
-        mChart.setTouchEnabled(mChartDataPresent);
+        mBinding.barChart.getAxisLeft().setDrawLabels(mChartDataPresent);
+        mBinding.barChart.getXAxis().setDrawLabels(mChartDataPresent);
+        mBinding.barChart.setTouchEnabled(mChartDataPresent);
     }
 
     @Override
     protected void displayReport() {
-        mChart.notifyDataSetChanged();
-        mChart.highlightValues(null);
+        mBinding.barChart.notifyDataSetChanged();
+        mBinding.barChart.highlightValues(null);
         if (mChartDataPresent) {
-            mChart.animateY(ANIMATION_DURATION);
+            mBinding.barChart.animateY(ANIMATION_DURATION);
         } else {
-            mChart.clearAnimation();
+            mBinding.barChart.clearAnimation();
             mSelectedValueTextView.setText(R.string.label_chart_no_data);
         }
 
-        mChart.invalidate();
+        mBinding.barChart.invalidate();
     }
 
     /**
      * Sets custom legend. Disable legend if its items count greater than {@code COLORS} array size.
      */
     private void setCustomLegend() {
-        Legend legend = mChart.getLegend();
-        IBarDataSet dataSet = mChart.getData().getDataSetByIndex(0);
+        Legend legend = mBinding.barChart.getLegend();
+        IBarDataSet dataSet = mBinding.barChart.getData().getDataSetByIndex(0);
 
         List<Integer> colors = dataSet.getColors();
         List<String> labels = Arrays.asList(dataSet.getStackLabels());
@@ -342,14 +349,14 @@ public class StackedBarChartFragment extends BaseReportFragment {
             item.setChecked(!item.isChecked());
         switch (item.getItemId()) {
             case R.id.menu_toggle_legend:
-                Legend legend = mChart.getLegend();
+                Legend legend = mBinding.barChart.getLegend();
                 if (!legend.isLegendCustom()) {
                     Toast.makeText(getActivity(), R.string.toast_legend_too_long, Toast.LENGTH_LONG).show();
                     item.setChecked(false);
                 } else {
-                    item.setChecked(!mChart.getLegend().isEnabled());
-                    legend.setEnabled(!mChart.getLegend().isEnabled());
-                    mChart.invalidate();
+                    item.setChecked(!mBinding.barChart.getLegend().isEnabled());
+                    legend.setEnabled(!mBinding.barChart.getLegend().isEnabled());
+                    mBinding.barChart.invalidate();
                 }
                 return true;
 
@@ -371,12 +378,12 @@ public class StackedBarChartFragment extends BaseReportFragment {
         BarEntry entry = (BarEntry) e;
         int index = h.getStackIndex() == -1 ? 0 : h.getStackIndex();
         String stackLabels = entry.getData().toString();
-        String label = mChart.getData().getXVals().get(entry.getXIndex()) + ", "
+        String label = mBinding.barChart.getData().getXVals().get(entry.getXIndex()) + ", "
                 + stackLabels.substring(1, stackLabels.length() - 1).split(",")[index];
         double value = Math.abs(entry.getVals()[index]);
         double sum = 0;
         if (mTotalPercentageMode) {
-            for (BarEntry barEntry : getYVals(mChart.getData().getDataSetByIndex(dataSetIndex))) {
+            for (BarEntry barEntry : getYVals(mBinding.barChart.getData().getDataSetByIndex(dataSetIndex))) {
                 sum += barEntry.getNegativeSum() + barEntry.getPositiveSum();
             }
         } else {

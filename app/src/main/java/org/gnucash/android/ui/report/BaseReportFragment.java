@@ -43,6 +43,7 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.databinding.FragmentPieChartBinding;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
@@ -54,14 +55,11 @@ import org.joda.time.Years;
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
 /**
  * Base class for report fragments.
  * <p>All report fragments should extend this class. At the minimum, reports must implement
- * {@link #getLayoutResource()}, {@link #getReportType()}, {@link #generateReport()}, {@link #displayReport()} and {@link #getTitle()}</p>
- * <p>Implementing classes should create their own XML layouts and provide it in {@link #getLayoutResource()}.
+ * {@link #getReportType()}, {@link #generateReport()}, {@link #displayReport()} and {@link #getTitle()}</p>
+ * <p>Implementing classes should create their own XML layouts and inflate it in {@link #inflateView()}.
  * Then annotate any views in the resource using {@code @Bind} annotation from ButterKnife library.
  * This base activity will automatically call {@link ButterKnife#bind(View)} for the layout.
  * </p>
@@ -110,8 +108,6 @@ public abstract class BaseReportFragment extends Fragment implements
 
     protected ReportsActivity mReportsActivity;
 
-    @Nullable
-    @BindView(R.id.selected_chart_slice)
     protected TextView mSelectedValueTextView;
 
     private AsyncTask<Void, Void, Void> mReportGenerator;
@@ -124,16 +120,6 @@ public abstract class BaseReportFragment extends Fragment implements
     @StringRes
     public int getTitle() {
         return getReportType().titleId;
-    }
-
-    /**
-     * Returns the layout resource to use for this report
-     *
-     * @return Layout resource identifier
-     */
-    @LayoutRes
-    public int getLayoutResource() {
-        return getReportType().layoutId;
     }
 
     /**
@@ -177,11 +163,13 @@ public abstract class BaseReportFragment extends Fragment implements
      */
     protected abstract void displayReport();
 
+    protected abstract View inflateView(LayoutInflater inflater, ViewGroup container);
+
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(getLayoutResource(), container, false);
-        ButterKnife.bind(this, view);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflateView(inflater, container);
+        mSelectedValueTextView = view.findViewById(R.id.selected_chart_slice);
         return view;
     }
 
