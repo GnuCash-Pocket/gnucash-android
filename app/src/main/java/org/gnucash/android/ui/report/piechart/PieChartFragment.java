@@ -24,19 +24,22 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.highlight.Highlight;
 
 import org.gnucash.android.R;
+import org.gnucash.android.databinding.FragmentPieChartBinding;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.ui.report.BaseReportFragment;
@@ -47,7 +50,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import butterknife.BindView;
 
 /**
  * Activity used for drawing a pie chart
@@ -69,9 +71,6 @@ public class PieChartFragment extends BaseReportFragment {
      */
     private static final double GROUPING_SMALLER_SLICES_THRESHOLD = 5;
 
-    @BindView(R.id.pie_chart)
-    PieChart mChart;
-
     private AccountsDbAdapter mAccountsDbAdapter;
 
     private boolean mChartDataPresent = true;
@@ -79,6 +78,8 @@ public class PieChartFragment extends BaseReportFragment {
     private boolean mUseAccountColor = true;
 
     private boolean mGroupSmallerSlices = true;
+
+    private FragmentPieChartBinding mBinding;
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
@@ -90,12 +91,12 @@ public class PieChartFragment extends BaseReportFragment {
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
 
 
-        mChart.setCenterTextSize(CENTER_TEXT_SIZE);
-        mChart.setDescription("");
-        mChart.setOnChartValueSelectedListener(this);
-        mChart.getLegend().setForm(LegendForm.CIRCLE);
-        mChart.getLegend().setWordWrapEnabled(true);
-        mChart.getLegend().setPosition(LegendPosition.RIGHT_OF_CHART_INSIDE);
+        mBinding.pieChart.setCenterTextSize(CENTER_TEXT_SIZE);
+        mBinding.pieChart.setDescription("");
+        mBinding.pieChart.setOnChartValueSelectedListener(this);
+        mBinding.pieChart.getLegend().setForm(LegendForm.CIRCLE);
+        mBinding.pieChart.getLegend().setWordWrapEnabled(true);
+        mBinding.pieChart.getLegend().setPosition(LegendPosition.RIGHT_OF_CHART_INSIDE);
 
     }
 
@@ -110,8 +111,9 @@ public class PieChartFragment extends BaseReportFragment {
     }
 
     @Override
-    public int getLayoutResource() {
-        return R.layout.fragment_pie_chart;
+    public View inflateView(LayoutInflater inflater, ViewGroup container) {
+        mBinding = FragmentPieChartBinding.inflate(inflater, container, false);
+        return mBinding.getRoot();
     }
 
     @Override
@@ -119,28 +121,28 @@ public class PieChartFragment extends BaseReportFragment {
         PieData pieData = getData();
         if (pieData != null && pieData.getYValCount() != 0) {
             mChartDataPresent = true;
-            mChart.setData(mGroupSmallerSlices ? groupSmallerSlices(pieData, getActivity()) : pieData);
-            float sum = mChart.getData().getYValueSum();
+            mBinding.pieChart.setData(mGroupSmallerSlices ? groupSmallerSlices(pieData, getActivity()) : pieData);
+            float sum = mBinding.pieChart.getData().getYValueSum();
             String total = getResources().getString(R.string.label_chart_total);
             String currencySymbol = mCommodity.getSymbol();
-            mChart.setCenterText(String.format(TOTAL_VALUE_LABEL_PATTERN, total, sum, currencySymbol));
+            mBinding.pieChart.setCenterText(String.format(TOTAL_VALUE_LABEL_PATTERN, total, sum, currencySymbol));
         } else {
             mChartDataPresent = false;
-            mChart.setCenterText(getResources().getString(R.string.label_chart_no_data));
-            mChart.setData(getEmptyData());
+            mBinding.pieChart.setCenterText(getResources().getString(R.string.label_chart_no_data));
+            mBinding.pieChart.setData(getEmptyData());
         }
     }
 
     @Override
     protected void displayReport() {
         if (mChartDataPresent) {
-            mChart.animateXY(ANIMATION_DURATION, ANIMATION_DURATION);
+            mBinding.pieChart.animateXY(ANIMATION_DURATION, ANIMATION_DURATION);
         }
 
         mSelectedValueTextView.setText(R.string.label_select_pie_slice_to_see_details);
-        mChart.setTouchEnabled(mChartDataPresent);
-        mChart.highlightValues(null);
-        mChart.invalidate();
+        mBinding.pieChart.setTouchEnabled(mChartDataPresent);
+        mBinding.pieChart.highlightValues(null);
+        mBinding.pieChart.invalidate();
     }
 
     /**
@@ -197,9 +199,9 @@ public class PieChartFragment extends BaseReportFragment {
      * Sorts the pie's slices in ascending order
      */
     private void bubbleSort() {
-        List<String> labels = mChart.getData().getXVals();
-        List<Entry> values = getYVals(mChart.getData().getDataSet());
-        List<Integer> colors = mChart.getData().getDataSet().getColors();
+        List<String> labels = mBinding.pieChart.getData().getXVals();
+        List<Entry> values = getYVals(mBinding.pieChart.getData().getDataSet());
+        List<Integer> colors = mBinding.pieChart.getData().getDataSet().getColors();
         float tmp1;
         String tmp2;
         Integer tmp3;
@@ -221,9 +223,9 @@ public class PieChartFragment extends BaseReportFragment {
             }
         }
 
-        mChart.notifyDataSetChanged();
-        mChart.highlightValues(null);
-        mChart.invalidate();
+        mBinding.pieChart.notifyDataSetChanged();
+        mBinding.pieChart.highlightValues(null);
+        mBinding.pieChart.invalidate();
     }
 
     @Override
@@ -247,15 +249,15 @@ public class PieChartFragment extends BaseReportFragment {
                 return true;
             }
             case R.id.menu_toggle_legend: {
-                mChart.getLegend().setEnabled(!mChart.getLegend().isEnabled());
-                mChart.notifyDataSetChanged();
-                mChart.invalidate();
+                mBinding.pieChart.getLegend().setEnabled(!mBinding.pieChart.getLegend().isEnabled());
+                mBinding.pieChart.notifyDataSetChanged();
+                mBinding.pieChart.invalidate();
                 return true;
             }
             case R.id.menu_toggle_labels: {
-                mChart.getData().setDrawValues(!mChart.isDrawSliceTextEnabled());
-                mChart.setDrawSliceText(!mChart.isDrawSliceTextEnabled());
-                mChart.invalidate();
+                mBinding.pieChart.getData().setDrawValues(!mBinding.pieChart.isDrawSliceTextEnabled());
+                mBinding.pieChart.setDrawSliceText(!mBinding.pieChart.isDrawSliceTextEnabled());
+                mBinding.pieChart.invalidate();
                 return true;
             }
             case R.id.menu_group_other_slice: {
@@ -308,9 +310,9 @@ public class PieChartFragment extends BaseReportFragment {
     @Override
     public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
         if (e == null) return;
-        String label = mChart.getData().getXVals().get(e.getXIndex());
+        String label = mBinding.pieChart.getData().getXVals().get(e.getXIndex());
         float value = e.getVal();
-        float percent = value / mChart.getData().getYValueSum() * 100;
+        float percent = value / mBinding.pieChart.getData().getYValueSum() * 100;
         mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label, value, percent));
     }
 }
