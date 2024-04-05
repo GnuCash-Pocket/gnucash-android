@@ -33,7 +33,6 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.ActionBar;
@@ -48,7 +47,6 @@ import com.uservoice.uservoicesdk.UserVoice;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.databinding.ToolbarBinding;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.ui.account.AccountsActivity;
@@ -57,9 +55,6 @@ import org.gnucash.android.ui.report.ReportsActivity;
 import org.gnucash.android.ui.settings.PreferenceActivity;
 import org.gnucash.android.ui.transaction.ScheduledActionsActivity;
 import org.gnucash.android.util.BookUtils;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 
 /**
@@ -79,13 +74,13 @@ import butterknife.ButterKnife;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public abstract class BaseDrawerActivity<BindingT extends ViewBinding> extends PasscodeLockActivity {
+public abstract class BaseDrawerActivity extends PasscodeLockActivity {
 
     public static final int ID_MANAGE_BOOKS = 0xB00C;
-    DrawerLayout mDrawerLayout;
-    NavigationView mNavigationView;
-    Toolbar mToolbar;
-    ProgressBar mToolbarProgress;
+    protected DrawerLayout mDrawerLayout;
+    protected NavigationView mNavigationView;
+    protected Toolbar mToolbar;
+    protected ProgressBar mToolbarProgress;
     protected TextView mBookNameTextView;
 
     protected ActionBarDrawerToggle mDrawerToggle;
@@ -117,7 +112,6 @@ public abstract class BaseDrawerActivity<BindingT extends ViewBinding> extends P
             BookUtils.activateBook(this, bookUID);
         }
 
-        ButterKnife.bind(this);
         setSupportActionBar(mToolbar);
         final ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
