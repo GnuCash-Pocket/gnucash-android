@@ -27,8 +27,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -46,6 +44,8 @@ import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 
 import org.gnucash.android.R;
+import org.gnucash.android.databinding.CardviewBudgetAmountBinding;
+import org.gnucash.android.databinding.FragmentBudgetDetailBinding;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BudgetsDbAdapter;
@@ -56,31 +56,21 @@ import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.transaction.TransactionsActivity;
-import org.gnucash.android.ui.util.widget.EmptyRecyclerView;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 /**
  * Fragment for displaying budget details
  */
 public class BudgetDetailFragment extends Fragment implements Refreshable {
-    @BindView(R.id.primary_text)
-    TextView mBudgetNameTextView;
-    @BindView(R.id.secondary_text)
-    TextView mBudgetDescriptionTextView;
-    @BindView(R.id.budget_recurrence)
-    TextView mBudgetRecurrence;
-    @BindView(R.id.budget_amount_recycler)
-    EmptyRecyclerView mRecyclerView;
-
     private String mBudgetUID;
     private BudgetsDbAdapter mBudgetsDbAdapter;
+
+    private FragmentBudgetDetailBinding mBinding;
 
     public static BudgetDetailFragment newInstance(String budgetUID) {
         BudgetDetailFragment fragment = new BudgetDetailFragment();
@@ -93,18 +83,18 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_budget_detail, container, false);
-        ButterKnife.bind(this, view);
-        mBudgetDescriptionTextView.setMaxLines(3);
+        mBinding = FragmentBudgetDetailBinding.inflate(inflater, container, false);
+        View view = mBinding.getRoot();
+        mBinding.listItem2Lines.secondaryText.setMaxLines(3);
 
-        mRecyclerView.setHasFixedSize(true);
+        mBinding.budgetAmountRecycler.setHasFixedSize(true);
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
-            mRecyclerView.setLayoutManager(gridLayoutManager);
+            mBinding.budgetAmountRecycler.setLayoutManager(gridLayoutManager);
         } else {
             LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-            mRecyclerView.setLayoutManager(mLayoutManager);
+            mBinding.budgetAmountRecycler.setLayoutManager(mLayoutManager);
         }
         return view;
     }
@@ -123,17 +113,17 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
 
     private void bindViews() {
         Budget budget = mBudgetsDbAdapter.getRecord(mBudgetUID);
-        mBudgetNameTextView.setText(budget.getName());
+        mBinding.listItem2Lines.primaryText.setText(budget.getName());
 
         String description = budget.getDescription();
         if (description != null && !description.isEmpty())
-            mBudgetDescriptionTextView.setText(description);
+            mBinding.listItem2Lines.secondaryText.setText(description);
         else {
-            mBudgetDescriptionTextView.setVisibility(View.GONE);
+            mBinding.listItem2Lines.secondaryText.setVisibility(View.GONE);
         }
-        mBudgetRecurrence.setText(budget.getRecurrence().getRepeatString());
+        mBinding.budgetRecurrence.setText(budget.getRecurrence().getRepeatString());
 
-        mRecyclerView.setAdapter(new BudgetAmountAdapter());
+        mBinding.budgetAmountRecycler.setAdapter(new BudgetAmountAdapter());
     }
 
     @Override
@@ -203,8 +193,8 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
 
         @Override
         public BudgetAmountViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(getActivity()).inflate(R.layout.cardview_budget_amount, parent, false);
-            return new BudgetAmountViewHolder(view);
+            CardviewBudgetAmountBinding binding = CardviewBudgetAmountBinding.inflate(LayoutInflater.from(getActivity()), parent, false);
+            return new BudgetAmountViewHolder(binding);
         }
 
         @Override
@@ -213,14 +203,14 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
             Money projectedAmount = budgetAmount.getAmount();
             AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
 
-            holder.budgetAccount.setText(accountsDbAdapter.getAccountFullName(budgetAmount.getAccountUID()));
-            holder.budgetAmount.setText(projectedAmount.formattedString());
+            holder.binding.budgetAccount.setText(accountsDbAdapter.getAccountFullName(budgetAmount.getAccountUID()));
+            holder.binding.budgetAmount.setText(projectedAmount.formattedString());
 
             Money spentAmount = accountsDbAdapter.getAccountBalance(budgetAmount.getAccountUID(),
                     mBudget.getStartofCurrentPeriod(), mBudget.getEndOfCurrentPeriod());
 
-            holder.budgetSpent.setText(spentAmount.abs().formattedString());
-            holder.budgetLeft.setText(projectedAmount.minus(spentAmount.abs()).formattedString());
+            holder.binding.budgetSpent.setText(spentAmount.abs().formattedString());
+            holder.binding.budgetLeft.setText(projectedAmount.minus(spentAmount.abs()).formattedString());
 
             double budgetProgress = 0;
             if (projectedAmount.toDouble() != 0) {
@@ -229,11 +219,11 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
                         RoundingMode.HALF_EVEN).doubleValue();
             }
 
-            holder.budgetIndicator.setProgress((int) (budgetProgress * 100));
-            holder.budgetSpent.setTextColor(BudgetsActivity.getBudgetProgressColor(1 - budgetProgress));
-            holder.budgetLeft.setTextColor(BudgetsActivity.getBudgetProgressColor(1 - budgetProgress));
+            holder.binding.budgetIndicator.setProgress((int) (budgetProgress * 100));
+            holder.binding.budgetSpent.setTextColor(BudgetsActivity.getBudgetProgressColor(1 - budgetProgress));
+            holder.binding.budgetLeft.setTextColor(BudgetsActivity.getBudgetProgressColor(1 - budgetProgress));
 
-            generateChartData(holder.budgetChart, budgetAmount);
+            generateChartData(holder.binding.budgetChart, budgetAmount);
 
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -301,24 +291,12 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
         }
 
         class BudgetAmountViewHolder extends RecyclerView.ViewHolder {
-            @BindView(R.id.budget_account)
-            TextView budgetAccount;
-            @BindView(R.id.budget_amount)
-            TextView budgetAmount;
-            @BindView(R.id.budget_spent)
-            TextView budgetSpent;
-            @BindView(R.id.budget_left)
-            TextView budgetLeft;
-            @BindView(R.id.budget_indicator)
-            ProgressBar budgetIndicator;
-            @BindView(R.id.budget_chart)
-            BarChart budgetChart;
+            CardviewBudgetAmountBinding binding;
 
-            public BudgetAmountViewHolder(View itemView) {
-                super(itemView);
-                ButterKnife.bind(this, itemView);
+            public BudgetAmountViewHolder(CardviewBudgetAmountBinding binding) {
+                super(binding.getRoot());
+                this.binding = binding;
             }
-
         }
     }
 }
