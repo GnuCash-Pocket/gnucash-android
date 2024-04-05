@@ -35,9 +35,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -57,6 +54,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.databinding.CardviewAccountBinding;
+import org.gnucash.android.databinding.FragmentAccountsListBinding;
 import org.gnucash.android.db.DatabaseCursorLoader;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
@@ -69,13 +68,10 @@ import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.util.AccountBalanceTask;
 import org.gnucash.android.ui.util.CursorRecyclerAdapter;
-import org.gnucash.android.ui.util.widget.EmptyRecyclerView;
 import org.gnucash.android.util.BackupManager;
 
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import timber.log.Timber;
 
 /**
@@ -91,10 +87,6 @@ public class AccountsListFragment extends Fragment implements
     FragmentResultListener {
 
     AccountRecyclerAdapter mAccountRecyclerAdapter;
-    @BindView(R.id.account_recycler_view)
-    EmptyRecyclerView mRecyclerView;
-    @BindView(R.id.empty_view)
-    TextView mEmptyTextView;
 
     /**
      * Describes the kinds of accounts that should be loaded in the accounts list.
@@ -140,6 +132,8 @@ public class AccountsListFragment extends Fragment implements
      */
     private SearchView mSearchView;
 
+    private FragmentAccountsListBinding mBinding;
+
     public static AccountsListFragment newInstance(DisplayMode displayMode) {
         AccountsListFragment fragment = new AccountsListFragment();
         fragment.mDisplayMode = displayMode;
@@ -149,34 +143,32 @@ public class AccountsListFragment extends Fragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_accounts_list, container,
-            false);
+        mBinding = FragmentAccountsListBinding.inflate(inflater, container, false);
 
-        ButterKnife.bind(this, v);
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setEmptyView(mEmptyTextView);
+        mBinding.accountRecyclerView.setHasFixedSize(true);
+        mBinding.accountRecyclerView.setEmptyView(mBinding.emptyView);
 
         switch (mDisplayMode) {
 
             case TOP_LEVEL:
-                mEmptyTextView.setText(R.string.label_no_accounts);
+                mBinding.emptyView.setText(R.string.label_no_accounts);
                 break;
             case RECENT:
-                mEmptyTextView.setText(R.string.label_no_recent_accounts);
+                mBinding.emptyView.setText(R.string.label_no_recent_accounts);
                 break;
             case FAVORITES:
-                mEmptyTextView.setText(R.string.label_no_favorite_accounts);
+                mBinding.emptyView.setText(R.string.label_no_favorite_accounts);
                 break;
         }
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
-            mRecyclerView.setLayoutManager(gridLayoutManager);
+            mBinding.accountRecyclerView.setLayoutManager(gridLayoutManager);
         } else {
             LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-            mRecyclerView.setLayoutManager(mLayoutManager);
+            mBinding.accountRecyclerView.setLayoutManager(mLayoutManager);
         }
-        return v;
+        return mBinding.getRoot();
     }
 
     @Override
@@ -202,7 +194,7 @@ public class AccountsListFragment extends Fragment implements
 
         // specify an adapter (see also next example)
         mAccountRecyclerAdapter = new AccountRecyclerAdapter(null);
-        mRecyclerView.setAdapter(mAccountRecyclerAdapter);
+        mBinding.accountRecyclerView.setAdapter(mAccountRecyclerAdapter);
     }
 
     @Override
@@ -214,7 +206,7 @@ public class AccountsListFragment extends Fragment implements
     @Override
     public void onStop() {
         super.onStop();
-        mRecyclerView.setAdapter(null);
+        mBinding.accountRecyclerView.setAdapter(null);
     }
 
     @Override
@@ -371,8 +363,8 @@ public class AccountsListFragment extends Fragment implements
         mAccountRecyclerAdapter.swapCursor(cursor);
         mAccountRecyclerAdapter.notifyDataSetChanged();
         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
-            if (mRecyclerView.getAdapter() == null) {
-                mRecyclerView.setAdapter(mAccountRecyclerAdapter);
+            if (mBinding.accountRecyclerView.getAdapter() == null) {
+                mBinding.accountRecyclerView.setAdapter(mAccountRecyclerAdapter);
             }
         }
     }
@@ -502,11 +494,9 @@ public class AccountsListFragment extends Fragment implements
 
         @NonNull
         @Override
-        public AccountViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View v = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.cardview_account, parent, false);
-
-            return new AccountViewHolder(v);
+        public AccountViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            CardviewAccountBinding binding = CardviewAccountBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+            return new AccountViewHolder(binding);
         }
 
         @Override
@@ -515,30 +505,30 @@ public class AccountsListFragment extends Fragment implements
             mAccountsDbAdapter = AccountsDbAdapter.getInstance();
             holder.accountUID = accountUID;
 
-            holder.accountName.setText(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_NAME)));
+            holder.binding.listItem.primaryText.setText(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_NAME)));
             int subAccountCount = mAccountsDbAdapter.getSubAccountCount(accountUID);
             if (subAccountCount > 0) {
-                holder.description.setVisibility(View.VISIBLE);
+                holder.binding.listItem.secondaryText.setVisibility(View.VISIBLE);
                 String text = getResources().getQuantityString(R.plurals.label_sub_accounts, subAccountCount, subAccountCount);
-                holder.description.setText(text);
+                holder.binding.listItem.secondaryText.setText(text);
             } else
-                holder.description.setVisibility(View.GONE);
+                holder.binding.listItem.secondaryText.setVisibility(View.GONE);
 
             // add a summary of transactions to the account view
 
             // Make sure the balance task is truly multithread
-            new AccountBalanceTask(holder.accountBalance).execute(accountUID);
+            new AccountBalanceTask(holder.binding.accountBalance).execute(accountUID);
 
             String accountColor = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_COLOR_CODE));
             Integer colorValue = parseColor(accountColor);
             int colorCode = (colorValue != null) ? colorValue : Account.DEFAULT_COLOR;
-            holder.colorStripView.setBackgroundColor(colorCode);
+            holder.binding.accountColorStrip.setBackgroundColor(colorCode);
 
             boolean isPlaceholderAccount = mAccountsDbAdapter.isPlaceholderAccount(accountUID);
             if (isPlaceholderAccount) {
-                holder.createTransaction.setVisibility(View.GONE);
+                holder.binding.createTransaction.setVisibility(View.GONE);
             } else {
-                holder.createTransaction.setOnClickListener(new View.OnClickListener() {
+                holder.binding.createTransaction.setOnClickListener(new View.OnClickListener() {
 
                     @Override
                     public void onClick(View v) {
@@ -559,19 +549,19 @@ public class AccountsListFragment extends Fragment implements
                 Money balance = mAccountsDbAdapter.getAccountBalance(accountUID, budget.getStartofCurrentPeriod(), budget.getEndOfCurrentPeriod());
                 double budgetProgress = balance.div(budget.getAmount(accountUID)).asBigDecimal().doubleValue() * 100;
 
-                holder.budgetIndicator.setVisibility(View.VISIBLE);
-                holder.budgetIndicator.setProgress((int) budgetProgress);
+                holder.binding.budgetIndicator.setVisibility(View.VISIBLE);
+                holder.binding.budgetIndicator.setProgress((int) budgetProgress);
             } else {
-                holder.budgetIndicator.setVisibility(View.GONE);
+                holder.binding.budgetIndicator.setVisibility(View.GONE);
             }
 
             if (mAccountsDbAdapter.isFavoriteAccount(accountUID)) {
-                holder.favoriteStatus.setImageResource(R.drawable.ic_favorite_black);
+                holder.binding.favoriteStatus.setImageResource(R.drawable.ic_favorite_black);
             } else {
-                holder.favoriteStatus.setImageResource(R.drawable.ic_favorite_border_black);
+                holder.binding.favoriteStatus.setImageResource(R.drawable.ic_favorite_border_black);
             }
 
-            holder.favoriteStatus.setOnClickListener(new View.OnClickListener() {
+            holder.binding.favoriteStatus.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     boolean isFavoriteAccount = mAccountsDbAdapter.isFavoriteAccount(accountUID);
@@ -582,7 +572,7 @@ public class AccountsListFragment extends Fragment implements
 
                     int drawableResource = !isFavoriteAccount ?
                             R.drawable.ic_favorite_black : R.drawable.ic_favorite_border_black;
-                    holder.favoriteStatus.setImageResource(drawableResource);
+                    holder.binding.favoriteStatus.setImageResource(drawableResource);
                     if (mDisplayMode == DisplayMode.FAVORITES)
                         refresh();
                 }
@@ -597,30 +587,14 @@ public class AccountsListFragment extends Fragment implements
         }
 
         class AccountViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener {
-            @BindView(R.id.primary_text)
-            TextView accountName;
-            @BindView(R.id.secondary_text)
-            TextView description;
-            @BindView(R.id.account_balance)
-            TextView accountBalance;
-            @BindView(R.id.create_transaction)
-            ImageView createTransaction;
-            @BindView(R.id.favorite_status)
-            ImageView favoriteStatus;
-            @BindView(R.id.options_menu)
-            ImageView optionsMenu;
-            @BindView(R.id.account_color_strip)
-            View colorStripView;
-            @BindView(R.id.budget_indicator)
-            ProgressBar budgetIndicator;
-
             String accountUID;
+            CardviewAccountBinding binding;
 
-            public AccountViewHolder(View itemView) {
-                super(itemView);
-                ButterKnife.bind(this, itemView);
+            public AccountViewHolder(CardviewAccountBinding binding) {
+                super(binding.getRoot());
+                this.binding = binding;
 
-                optionsMenu.setOnClickListener(new View.OnClickListener() {
+                binding.optionsMenu.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         PopupMenu popup = new PopupMenu(getActivity(), v);

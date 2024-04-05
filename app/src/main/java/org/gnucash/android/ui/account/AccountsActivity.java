@@ -40,20 +40,18 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.preference.PreferenceManager;
-import androidx.viewpager.widget.ViewPager;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.kobakei.ratethisapp.RateThisApp;
 
 import org.gnucash.android.BuildConfig;
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.databinding.ActivityAccountsBinding;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
@@ -67,7 +65,6 @@ import org.gnucash.android.ui.util.TaskDelegate;
 import org.gnucash.android.ui.wizard.FirstRunWizardActivity;
 import org.gnucash.android.util.BackupManager;
 
-import butterknife.BindView;
 import timber.log.Timber;
 
 /**
@@ -125,20 +122,12 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
     private SparseArray<Refreshable> mFragmentPageReferenceMap = new SparseArray<>();
 
     /**
-     * ViewPager which manages the different tabs
-     */
-    @BindView(R.id.pager)
-    ViewPager mViewPager;
-    @BindView(R.id.fab_create_account)
-    FloatingActionButton mFloatingActionButton;
-    @BindView(R.id.coordinatorLayout)
-    CoordinatorLayout mCoordinatorLayout;
-
-    /**
      * Configuration for rating the app
      */
     public static RateThisApp.Config rateAppConfig = new RateThisApp.Config(14, 100);
     private AccountViewPagerAdapter mPagerAdapter;
+
+    private ActivityAccountsBinding mBinding;
 
     /**
      * Adapter for managing the sub-account and transaction fragment pages in the accounts view
@@ -200,7 +189,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
     }
 
     public AccountsListFragment getCurrentAccountListFragment() {
-        int index = mViewPager.getCurrentItem();
+        int index = mBinding.pager.getCurrentItem();
         Fragment fragment = (Fragment) mFragmentPageReferenceMap.get(index);
         if (fragment == null)
             fragment = mPagerAdapter.getItem(index);
@@ -209,7 +198,8 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
 
     @Override
     public void inflateView() {
-        setContentView(R.layout.activity_accounts);
+        mBinding = ActivityAccountsBinding.inflate(getLayoutInflater());
+        setContentView(mBinding.getRoot());
     }
 
     @Override
@@ -234,13 +224,13 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
 
         //show the simple accounts list
         mPagerAdapter = new AccountViewPagerAdapter(getSupportFragmentManager());
-        mViewPager.setAdapter(mPagerAdapter);
+        mBinding.pager.setAdapter(mPagerAdapter);
 
-        mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+        mBinding.pager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                mViewPager.setCurrentItem(tab.getPosition());
+                mBinding.pager.setCurrentItem(tab.getPosition());
             }
 
             @Override
@@ -256,7 +246,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
 
         setCurrentTab();
 
-        mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
+        mBinding.fabCreateAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent addAccountIntent = new Intent(AccountsActivity.this, FormActivity.class);
@@ -303,7 +293,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
         setIntent(intent);
         setCurrentTab();
 
-        int index = mViewPager.getCurrentItem();
+        int index = mBinding.pager.getCurrentItem();
         Fragment fragment = (Fragment) mFragmentPageReferenceMap.get(index);
         if (fragment != null)
             ((Refreshable) fragment).refresh();
@@ -318,7 +308,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         int lastTabIndex = preferences.getInt(LAST_OPEN_TAB_INDEX, INDEX_TOP_LEVEL_ACCOUNTS_FRAGMENT);
         int index = getIntent().getIntExtra(EXTRA_TAB_INDEX, lastTabIndex);
-        mViewPager.setCurrentItem(index);
+        mBinding.pager.setCurrentItem(index);
     }
 
     /**
@@ -352,7 +342,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
     protected void onDestroy() {
         super.onDestroy();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        preferences.edit().putInt(LAST_OPEN_TAB_INDEX, mViewPager.getCurrentItem()).apply();
+        preferences.edit().putInt(LAST_OPEN_TAB_INDEX, mBinding.pager.getCurrentItem()).apply();
     }
 
     /**
