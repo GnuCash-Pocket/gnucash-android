@@ -28,8 +28,9 @@ import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.LargeValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
-import com.github.mikephil.charting.utils.LargeValueFormatter;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import org.gnucash.android.R;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
@@ -161,7 +162,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
             }
         }
 
-        List<LineDataSet> dataSets = new ArrayList<>();
+        List<ILineDataSet> dataSets = new ArrayList<>();
         for (AccountType accountType : accountTypeList) {
             LineDataSet set = new LineDataSet(getEntryList(accountType), accountType.toString());
             set.setDrawFilled(true);
@@ -173,7 +174,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
         }
 
         LineData lineData = new LineData(xValues, dataSets);
-        if (lineData.getYValueSum() == 0) {
+        if (getYValueSum(lineData) == 0) {
             mChartDataPresent = false;
             return getEmptyData();
         }
@@ -371,8 +372,8 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
 
             case R.id.menu_toggle_average_lines:
                 if (mChart.getAxisLeft().getLimitLines().isEmpty()) {
-                    for (LineDataSet set : mChart.getData().getDataSets()) {
-                        LimitLine line = new LimitLine(set.getYValueSum() / set.getEntryCount(), set.getLabel());
+                    for (ILineDataSet set : mChart.getData().getDataSets()) {
+                        LimitLine line = new LimitLine(getYValueSum(set) / set.getEntryCount(), set.getLabel());
                         line.enableDashedLine(10, 5, 0);
                         line.setLineColor(set.getColor());
                         mChart.getAxisLeft().addLimitLine(line);
@@ -393,8 +394,8 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
         if (e == null) return;
         String label = mChart.getData().getXVals().get(e.getXIndex());
         double value = e.getVal();
-        double sum = mChart.getData().getDataSetByIndex(dataSetIndex).getYValueSum();
-        mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label, value, value / sum * 100));
+        double sum = getYValueSum(mChart.getData().getDataSetByIndex(dataSetIndex));
+        mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label, value, (value * 100) / sum));
     }
 
 }

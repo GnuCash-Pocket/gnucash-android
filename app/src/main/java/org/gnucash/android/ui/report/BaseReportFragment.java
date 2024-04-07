@@ -33,8 +33,10 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import com.github.mikephil.charting.data.ChartData;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.interfaces.datasets.IDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
 import org.gnucash.android.R;
@@ -46,6 +48,9 @@ import org.gnucash.android.ui.common.Refreshable;
 import org.joda.time.LocalDateTime;
 import org.joda.time.Months;
 import org.joda.time.Years;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -345,5 +350,31 @@ public abstract class BaseReportFragment extends Fragment implements
     public void onNothingSelected() {
         if (mSelectedValueTextView != null)
             mSelectedValueTextView.setText(R.string.select_chart_to_view_details);
+    }
+
+    protected static <E extends Entry, T extends IDataSet<E>> int getYValueSum(ChartData<T> data) {
+        return (int) (data.getYMax() - data.getYMin());
+    }
+
+    protected static <E extends Entry> int getYValueSum(IDataSet<E> dataSet) {
+        return (int) (dataSet.getYMax() - dataSet.getYMin());
+    }
+
+    protected static <E extends Entry, T extends IDataSet<E>> List<E> getYVals(ChartData<T> data) {
+        List<E> values = new ArrayList<>();
+        List<T> dataSets = data.getDataSets();
+        for (T dataSet : dataSets) {
+            values.addAll(getYVals(dataSet));
+        }
+        return values;
+    }
+
+    protected static <E extends Entry> List<E> getYVals(IDataSet<E> dataSet) {
+        List<E> values = new ArrayList<>();
+        final int count = dataSet.getEntryCount();
+        for (int i = 0; i < count; i++) {
+            values.add(dataSet.getEntryForIndex(i));
+        }
+        return values;
     }
 }

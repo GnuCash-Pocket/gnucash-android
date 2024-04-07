@@ -197,7 +197,7 @@ public class PieChartFragment extends BaseReportFragment {
      */
     private void bubbleSort() {
         List<String> labels = mChart.getData().getXVals();
-        List<Entry> values = mChart.getData().getDataSet().getYVals();
+        List<Entry> values = getYVals(mChart.getData().getDataSet());
         List<Integer> colors = mChart.getData().getDataSet().getColors();
         float tmp1;
         String tmp2;
@@ -280,7 +280,7 @@ public class PieChartFragment extends BaseReportFragment {
         List<Entry> newEntries = new ArrayList<>();
         List<String> newLabels = new ArrayList<>();
         List<Integer> newColors = new ArrayList<>();
-        List<Entry> entries = data.getDataSet().getYVals();
+        List<Entry> entries = getYVals(data.getDataSet());
         for (int i = 0; i < entries.size(); i++) {
             float val = entries.get(i).getVal();
             if (val / data.getYValueSum() * 100 > GROUPING_SMALLER_SLICES_THRESHOLD) {

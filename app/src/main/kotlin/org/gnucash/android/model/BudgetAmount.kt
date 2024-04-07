@@ -39,7 +39,7 @@ class BudgetAmount : BaseModel, Parcelable {
      *
      * @return Money amount
      */
-    var amount: Money? = null
+    var amount: Money = Money.zeroInstance
         private set
 
     /**
@@ -83,7 +83,7 @@ class BudgetAmount : BaseModel, Parcelable {
         dest.writeString(uID)
         dest.writeString(budgetUID)
         dest.writeString(accountUID)
-        dest.writeString(amount!!.toPlainString())
+        dest.writeString(amount.toPlainString())
         dest.writeLong(periodNum)
     }
 
