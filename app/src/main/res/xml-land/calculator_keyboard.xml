@@ -87,7 +87,7 @@
             android:keyLabel="=" />
         <Key
             android:codes="1002"
-            android:keyIcon="@drawable/ic_chevron_right_white_24dp"
+            android:keyIcon="@drawable/ic_keyboard_arrow_right_white"
             android:keyEdgeFlags="right" />
     </Row>
 </Keyboard>
