@@ -29,6 +29,7 @@
         <androidx.preference.Preference
             android:title="@string/title_restore_backup"
             android:key="@string/key_restore_backup"
+            android:icon="@drawable/ic_restore_black"
             android:summary="@string/summary_restore_backup_pref" />
         <androidx.preference.CheckBoxPreference
             android:title="@string/title_dropbox_sync_preference"
