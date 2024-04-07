@@ -36,7 +36,7 @@
             android:summary="@string/summary_dropbox_sync"
             android:checked="false"
             android:key="@string/key_dropbox_sync"
-            android:icon="@drawable/ic_dropbox_android" />
+            android:icon="@drawable/ic_dropbox" />
 
         <androidx.preference.CheckBoxPreference
             android:title="@string/title_owncloud_sync_preference"
