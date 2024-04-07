@@ -24,7 +24,7 @@
         <menu>
             <item
                 android:id="@+id/nav_item_favorites"
-                android:icon="@drawable/ic_star_black_24dp"
+                android:icon="@drawable/ic_favorite_black"
                 android:title="@string/nav_menu_favorites" />
             <!--
                         <item android:id="@+id/nav_item_budgets"

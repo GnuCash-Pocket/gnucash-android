@@ -72,11 +72,11 @@ public class QualifiedAccountNameCursorAdapter extends SimpleCursorAdapter {
         TextView textView = (TextView) view.findViewById(android.R.id.text1);
         textView.setEllipsize(TextUtils.TruncateAt.MIDDLE);
 
-        Integer isFavorite = cursor.getInt(cursor.getColumnIndex(DatabaseSchema.AccountEntry.COLUMN_FAVORITE));
+        int isFavorite = cursor.getInt(cursor.getColumnIndex(DatabaseSchema.AccountEntry.COLUMN_FAVORITE));
         if (isFavorite == 0) {
             textView.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
         } else {
-            textView.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_star_black_18dp, 0);
+            textView.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_favorite_black, 0);
         }
     }
 

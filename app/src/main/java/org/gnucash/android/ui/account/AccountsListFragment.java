@@ -550,9 +550,9 @@ public class AccountsListFragment extends Fragment implements
 
 
             if (mAccountsDbAdapter.isFavoriteAccount(accountUID)) {
-                holder.favoriteStatus.setImageResource(R.drawable.ic_star_black_24dp);
+                holder.favoriteStatus.setImageResource(R.drawable.ic_favorite_black);
             } else {
-                holder.favoriteStatus.setImageResource(R.drawable.ic_star_border_black_24dp);
+                holder.favoriteStatus.setImageResource(R.drawable.ic_favorite_border_black);
             }
 
             holder.favoriteStatus.setOnClickListener(new View.OnClickListener() {
@@ -565,7 +565,7 @@ public class AccountsListFragment extends Fragment implements
                     mAccountsDbAdapter.updateRecord(accountUID, contentValues);
 
                     int drawableResource = !isFavoriteAccount ?
-                            R.drawable.ic_star_black_24dp : R.drawable.ic_star_border_black_24dp;
+                            R.drawable.ic_favorite_black : R.drawable.ic_favorite_border_black;
                     holder.favoriteStatus.setImageResource(drawableResource);
                     if (mDisplayMode == DisplayMode.FAVORITES)
                         refresh();
