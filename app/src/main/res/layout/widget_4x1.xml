@@ -65,7 +65,7 @@
             android:layout_height="48dp"
             android:layout_marginRight="@dimen/edge_padding"
             android:layout_marginLeft="@dimen/edge_padding"
-            android:src="@drawable/action_about_holo_light"
+            android:src="@drawable/ic_info_black"
             android:background="@drawable/appwidget_bg_clickable"
             android:contentDescription="@string/description_view_account_icon" />
     </LinearLayout>
