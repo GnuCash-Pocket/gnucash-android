@@ -31,7 +31,7 @@
             android:keyLabel="9" />
         <Key
             android:codes="-5"
-            android:keyIcon="@drawable/ic_backspace_normal_dark"
+            android:keyIcon="@drawable/ic_backspace_white"
             android:isRepeatable="true" />
         <Key
             android:codes="1003"

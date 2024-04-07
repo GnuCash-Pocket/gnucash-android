@@ -38,7 +38,7 @@
             android:keyLabel="/" />
         <Key
             android:codes="-5"
-            android:keyIcon="@drawable/ic_backspace_normal_dark"
+            android:keyIcon="@drawable/ic_backspace_white"
             android:isRepeatable="true"
             android:keyEdgeFlags="right" />
     </Row>
