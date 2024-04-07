@@ -16,7 +16,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="100dp"
+    android:layout_height="wrap_content"
     android:background="@color/theme_primary"
     android:orientation="vertical">
 
@@ -25,9 +25,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_margin="16dp"
+        android:layout_margin="10dp"
         android:textSize="20sp"
-        android:drawableStart="@drawable/ic_nav_header"
+        android:drawableStart="@drawable/ic_gnucash"
         android:drawablePadding="10dp"
         android:gravity="center_vertical"
         android:clickable="true"
