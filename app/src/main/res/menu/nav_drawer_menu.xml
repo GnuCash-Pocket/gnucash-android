@@ -43,7 +43,7 @@
         <menu>
             <item
                 android:id="@+id/nav_item_scheduled_actions"
-                android:icon="@drawable/ic_settings_backup_restore_black_24dp"
+                android:icon="@drawable/ic_schedule_black"
                 android:title="@string/nav_menu_scheduled_actions" />
             <item
                 android:id="@+id/nav_item_export"
