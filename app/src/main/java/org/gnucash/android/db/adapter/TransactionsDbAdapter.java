@@ -104,8 +104,8 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
     @Override
     public void addRecord(@NonNull Transaction transaction, UpdateMethod updateMethod) {
         Timber.d("Adding transaction to the db via %s", updateMethod.name());
-        mDb.beginTransaction();
         try {
+            beginTransaction();
             Split imbalanceSplit = transaction.createAutoBalanceSplit();
             if (imbalanceSplit != null) {
                 String imbalanceAccountUID = new AccountsDbAdapter(mDb, this)
@@ -133,11 +133,11 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
                     new String[]{transaction.getUID()});
             Timber.d("%d splits deleted", deleted);
 
-            mDb.setTransactionSuccessful();
+            setTransactionSuccessful();
         } catch (SQLException e) {
             Timber.e(e);
         } finally {
-            mDb.endTransaction();
+            endTransaction();
         }
     }
 

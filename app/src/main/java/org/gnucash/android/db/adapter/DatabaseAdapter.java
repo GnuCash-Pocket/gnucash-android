@@ -293,19 +293,19 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
 
     public long bulkAddRecords(@NonNull List<Model> modelList, UpdateMethod updateMethod) {
         if (modelList.isEmpty()) {
-            Timber.d("Empty model list. Cannot bulk add records, returning 0");
+            Timber.w("Empty model list. Cannot bulk add records, returning 0");
             return 0;
         }
 
         Timber.i("Bulk adding %d %s records to the database", modelList.size(),
                 modelList.isEmpty() ? "null" : modelList.get(0).getClass().getSimpleName());
-        long nRow = 0;
+        long nRow;
         try {
-            mDb.beginTransaction();
+            beginTransaction();
             nRow = doAddModels(modelList, updateMethod);
-            mDb.setTransactionSuccessful();
+            setTransactionSuccessful();
         } finally {
-            mDb.endTransaction();
+            endTransaction();
         }
 
         return nRow;
@@ -829,7 +829,11 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * Expose mDb.endTransaction()
      */
     public void endTransaction() {
-        mDb.endTransaction();
+        try {
+            mDb.endTransaction();
+        } catch (Exception e) {
+            Timber.e(e);
+        }
     }
 
     @Override

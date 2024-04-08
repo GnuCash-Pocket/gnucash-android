@@ -383,8 +383,8 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         Timber.d("Delete account with rowId with its transactions and sub-accounts: %s", accountId);
 
         List<String> descendantAccountUIDs = getDescendantAccountUIDs(accountUID, null, null);
-        mDb.beginTransaction();
         try {
+            beginTransaction();
             descendantAccountUIDs.add(accountUID); //add account to descendants list just for convenience
             for (String descendantAccountUID : descendantAccountUIDs) {
                 mTransactionsAdapter.deleteTransactionsForAccount(descendantAccountUID);
@@ -409,10 +409,10 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
                         null);
             }
 
-            mDb.setTransactionSuccessful();
+            setTransactionSuccessful();
             return true;
         } finally {
-            mDb.endTransaction();
+            endTransaction();
         }
     }
 

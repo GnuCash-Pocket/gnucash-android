@@ -866,9 +866,9 @@ public class TransactionFormFragment extends Fragment implements
         }
 
         mTransaction = transaction;
-        mAccountsDbAdapter.beginTransaction();
 
         try {
+            mAccountsDbAdapter.beginTransaction();
             // 1) mTransactions may be existing or non-existing
             // 2) when mTransactions exists in the db, the splits may exist or not exist in the db
             // So replace is chosen.
