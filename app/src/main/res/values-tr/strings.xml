@@ -111,15 +111,6 @@
     <string name="label_parent_account">Üst hesap</string>
     <string name="title_xml_ofx_header">XML OFX başlığı kullan</string>
     <string name="summary_xml_ofx_header">Masaüstü için GnuCash dışındaki diğer uygulamalar için dışa aktarırken bu seçeneği etkenleştirin</string>
-    <string name="title_whats_new">Yenilikler</string>
-    <string name="whats_new">
-        - Storage Access Framework hizmetini destekleyen yerlere dışa aktarma eklendi\n
-        - Düzenli otomatik yedeklemeler için konum ayarlama seçeneği eklendi (Yedekleme ayarlarına bakın)\n
-        - Bitcoin para birimi desteği eklendi\n
-        - Kitapları yeniden adlandırma özelliği eklendi\n
-        - Bazı hata düzeltmeleri ve iyileştirmeler\n
-	</string>
-    <string name="label_dismiss">Yoksay</string>
     <string name="toast_transanction_amount_required">İşlemi kaydetmek için tutar girin</string>
     <string name="toast_error_importing_accounts">GnuCash hesapları içe aktarılırken bir hata oluştu</string>
     <string name="toast_success_importing_accounts">GnuCash Hesapları başarıyla içe aktarıldı</string>

@@ -111,15 +111,6 @@
     <string name="label_parent_account">Головний рахунок</string>
     <string name="title_xml_ofx_header">Використовувати XML-заголовок OFX</string>
     <string name="summary_xml_ofx_header">Ввімкніть цю опцію, якщо експортуєте в програми відмінні від GnuCash для ПК</string>
-    <string name="title_whats_new">Що нового</string>
-    <string name="whats_new">
-        - Дані можна експортувати до будь-якого сервісу, що підтримує Платформу доступу до сховища (Storage Access Framework)\n
-        - Можна вказати місце для автоматичного резервного копіювання за розкладом (див. розділ параметрів «Резервне копіювання»)\n
-        - Додано Bitcoin до списку валют\n
-        - Книги можна перейменовувати\n
-        - Кілька виправлень та покращень\n
-	</string>
-    <string name="label_dismiss">Відмовитися</string>
     <string name="toast_transanction_amount_required">Введіть суму, щоб зберегти транзакцію</string>
     <string name="toast_error_importing_accounts">Сталася помилка при імпорті рахунків із GnuCash</string>
     <string name="toast_success_importing_accounts">Рахунки із GnuCash успішно імпортовані</string>

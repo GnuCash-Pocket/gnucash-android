@@ -111,14 +111,6 @@
     <string name="label_parent_account">主となる勘定科目</string>
     <string name="title_xml_ofx_header">OFXファイルのヘッダーにXMLを使う</string>
     <string name="summary_xml_ofx_header">GnuCash for desktopではなく他のサードパーティ製ソフトウェアにエクスポートする場合は、このオプションを有効にします</string>
-    <string name="title_whats_new">新着情報</string>
-    <string name="whats_new">
-- ストレージ アクセス フレームワークをサポートしている任意のサービスにエクスポートする機能の追加 \n
-- 定期的な自動バックアップの場所を設定する機能の追加 (バックアップの設定を参照してください) \n
-- Bitcoin 通貨サポートの追加 \n
-- 帳簿の名前を変更するサポートの追加 \n
-- 複数のバグの修正と改善 \n</string>
-    <string name="label_dismiss">消去</string>
     <string name="toast_transanction_amount_required">取引を保存するには金額の入力が必要です</string>
     <string name="toast_error_importing_accounts">GnuCashの勘定科目をインポート中にエラーが発生しました。</string>
     <string name="toast_success_importing_accounts">GnuCashの費目のインポートが成功しました。</string>

@@ -111,15 +111,6 @@
     <string name="label_parent_account">上级科目</string>
     <string name="title_xml_ofx_header">添加 XML OFX 檔頭</string>
     <string name="summary_xml_ofx_header">当匯出數據到GnuCash桌面版以外的程序時需要開啟這個選項。</string>
-    <string name="title_whats_new">更新內容</string>
-    <string name="whats_new">
-        - Added ability to export to any service which supports the Storage Access Framework \n
-        - Added option to set the location for regular automatic backups (See backup settings)\n
-        - Added Bitcoin currency support\n
-        - Added support for renaming books\n
-        - Multiple bug fixes and improvements\n
-	</string>
-    <string name="label_dismiss">知道了</string>
     <string name="toast_transanction_amount_required">輸入金額才能保存交易</string>
     <string name="toast_error_importing_accounts">匯入GnuCash科目時發生錯誤。</string>
     <string name="toast_success_importing_accounts">GnuCash科目資料匯入完成。</string>

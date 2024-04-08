@@ -111,14 +111,6 @@
     <string name="label_parent_account">Conta progenitora</string>
     <string name="title_xml_ofx_header">Use um cabeçalho XML OFX</string>
     <string name="summary_xml_ofx_header">Active esta opção quando fizer exportações para outras aplicações que não seja o GnuCash para Desktop</string>
-    <string name="title_whats_new">O que há de novo</string>
-    <string name="whats_new">
-- Adicionada a funcionalidade de exportar para qualquer serviço que suporte o Storage Access Framework\n
-- Adiciona a opção para a localização para cópias de segurança automáticas (Ver definições de cópia de segurança)\n
-- Adicionada suporte à moeda Bitcoin\n
-- Adicionada funcionalidade de mudar os nomes aos livros\n
-- Várias correcções de bugs e melhoramentos\n</string>
-    <string name="label_dismiss">Descartar</string>
     <string name="toast_transanction_amount_required">Introduza um valor para gravar a transação</string>
     <string name="toast_error_importing_accounts">Ocorreu um erro ao importar as contas do GnuCash</string>
     <string name="toast_success_importing_accounts">Contas do GnuCash importadas com sucesso</string>

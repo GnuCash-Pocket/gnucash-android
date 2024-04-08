@@ -111,14 +111,6 @@
     <string name="label_parent_account">Hauptkonto</string>
     <string name="title_xml_ofx_header">XML-OFX-Header verwenden</string>
     <string name="summary_xml_ofx_header">Diese Option aktivieren, wenn Sie die OFX-Dateien für ein anderes Programm als GnuCash auf dem Desktop exportieren</string>
-    <string name="title_whats_new">Neuigkeiten in dieser Version</string>
-    <string name="whats_new">
-        - Export zu einem beliebigen Dienst mit Storage Access Framework Unterstützung möglich \n
-        - Option, um Ort für regelmäßige automatische Backups, hinzugefügt (Siehe Backup Einstellungen)\n
-        - Bitcoin-Unterstützung hinzugefügt\n
-        - Bücher umbenennen ermöglicht\n
-        - Mehrere Bugfixes and Verbesserungen\n</string>
-    <string name="label_dismiss">Schließen</string>
     <string name="toast_transanction_amount_required">Geben Sie einen Betrag ein, um die Buchung speichern zu können</string>
     <string name="toast_error_importing_accounts">Beim Importieren der GnuCash-Konten ist ein Fehler aufgetreten!</string>
     <string name="toast_success_importing_accounts">GnuCash-Konten wurden erfolgreich importiert</string>
