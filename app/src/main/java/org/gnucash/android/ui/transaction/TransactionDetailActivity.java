@@ -93,7 +93,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
         actionBar.setElevation(0);
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setHomeAsUpIndicator(R.drawable.ic_close_white_24dp);
+        actionBar.setHomeAsUpIndicator(R.drawable.ic_close_white);
         actionBar.setDisplayShowTitleEnabled(false);
 
         bindViews();

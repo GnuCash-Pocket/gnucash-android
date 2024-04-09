@@ -72,7 +72,7 @@
             android:layout_margin="20dp"
             app:elevation="6dp"
             app:layout_behavior="org.gnucash.android.ui.util.ScrollingFABBehavior"
-            android:src="@drawable/ic_add_white_48dp" />
+            android:src="@drawable/ic_add_white" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

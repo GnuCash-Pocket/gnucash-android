@@ -346,10 +346,11 @@
                 android:layout_width="@dimen/passcode_btn"
                 android:layout_height="@dimen/passcode_btn"
                 android:layout_margin="@dimen/passcode_btn_margin"
-                android:src="@drawable/ic_action_backspace"
+                android:src="@drawable/ic_backspace_black"
                 android:hapticFeedbackEnabled="true"
                 android:id="@+id/delete_btn"
-                android:background="@color/transparent" />
+                android:background="@color/transparent"
+                android:contentDescription="\u232B" />
         </TableRow>
 
     </TableLayout>

@@ -61,7 +61,7 @@
             android:paddingBottom="4dp"
             android:paddingLeft="24dp"
             android:scaleType="centerInside"
-            android:src="@drawable/ic_more_vert_black_24dp"
+            android:src="@drawable/ic_more_vert_black"
             tools:ignore="ContentDescription" />
 
         <ImageView
@@ -75,7 +75,7 @@
             android:paddingBottom="4dp"
             android:paddingLeft="24dp"
             android:scaleType="centerInside"
-            android:src="@drawable/ic_add_black_24dp"
+            android:src="@drawable/ic_add_black"
             tools:ignore="ContentDescription" />
 
         <ImageView
@@ -88,7 +88,7 @@
             android:paddingRight="6dp"
             android:paddingLeft="22dp"
             android:paddingBottom="22dp"
-            android:src="@drawable/ic_star_border_black_24dp"
+            android:src="@drawable/ic_favorite_border_black"
             tools:ignore="ContentDescription" />
 
         <TextView

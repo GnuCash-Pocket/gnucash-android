@@ -19,23 +19,23 @@
 
     <item
         android:id="@+id/menu_favorite_account"
-        android:icon="@drawable/ic_star_border_white_24dp"
+        android:icon="@drawable/ic_favorite_white"
         android:title="@string/menu_title_favorite"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/menu_compact_trn_view"
-        android:icon="@drawable/content_edit_holo_dark"
+        android:icon="@android:drawable/ic_menu_view"
         android:title="@string/menu_show_compact_view"
         android:checkable="true"
         app:showAsAction="never|withText" />
     <item
         android:id="@+id/menu_edit_account"
-        android:icon="@drawable/content_edit_holo_dark"
+        android:icon="@drawable/ic_edit_white"
         android:title="@string/title_edit_account"
         app:showAsAction="never|withText" />
     <item
         android:id="@+id/menu_delete_account"
-        android:icon="@drawable/content_discard_holo_dark"
+        android:icon="@drawable/ic_delete_white"
         android:title="@string/title_delete_account"
         app:showAsAction="never" />
 </menu>

@@ -423,7 +423,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
 
         boolean isFavoriteAccount = AccountsDbAdapter.getInstance().isFavoriteAccount(mAccountUID);
 
-        int favoriteIcon = isFavoriteAccount ? R.drawable.ic_star_white_24dp : R.drawable.ic_star_border_white_24dp;
+        int favoriteIcon = isFavoriteAccount ? R.drawable.ic_favorite_white : R.drawable.ic_favorite_border_white;
         favoriteAccountMenuItem.setIcon(favoriteIcon);
         return super.onPrepareOptionsMenu(menu);
 

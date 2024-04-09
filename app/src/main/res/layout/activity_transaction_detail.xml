@@ -132,7 +132,7 @@
 
                     <ImageView
                         style="@style/FormIcon"
-                        android:src="@drawable/ic_action_time" />
+                        android:src="@drawable/ic_time_black" />
 
                     <TextView
                         android:id="@+id/trn_time_and_date"
@@ -145,7 +145,7 @@
 
                     <ImageView
                         style="@style/FormIcon"
-                        android:src="@drawable/ic_action_sort_by_size" />
+                        android:src="@drawable/ic_notes_black" />
 
                     <TextView
                         android:id="@+id/trn_notes"
@@ -158,7 +158,7 @@
 
                     <ImageView
                         style="@style/FormIcon"
-                        android:src="@drawable/ic_action_rotate_right" />
+                        android:src="@drawable/ic_repeat_black" />
 
                     <TextView
                         android:id="@+id/trn_recurrence"
@@ -178,5 +178,5 @@
         app:layout_anchorGravity="bottom|left|start"
         android:layout_marginStart="6dp"
         android:scaleType="center"
-        android:src="@drawable/ic_mode_edit_white_24dp" />
+        android:src="@drawable/ic_edit_white" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

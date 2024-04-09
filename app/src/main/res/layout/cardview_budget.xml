@@ -70,7 +70,7 @@
                 android:paddingBottom="4dp"
                 android:paddingLeft="24dp"
                 android:scaleType="centerInside"
-                android:src="@drawable/ic_more_vert_black_24dp"
+                android:src="@drawable/ic_more_vert_black"
                 tools:ignore="ContentDescription" />
 
             <LinearLayout

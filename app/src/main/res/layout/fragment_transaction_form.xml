@@ -83,10 +83,10 @@
 
                 <ImageView
                     android:id="@+id/btn_split_editor"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
                     android:contentDescription="Open split editor"
-                    android:src="@drawable/content_split_holo_light" />
+                    android:src="@drawable/ic_split_black" />
 
                 <org.gnucash.android.ui.util.widget.TransactionTypeSwitch
                     android:id="@+id/input_transaction_type"
@@ -110,7 +110,7 @@
 
                 <ImageView
                     style="@style/FormIcon"
-                    android:src="@drawable/ic_action_forward" />
+                    android:src="@drawable/ic_account_black" />
 
                 <Spinner
                     android:id="@+id/input_transfer_account_spinner"
@@ -125,7 +125,7 @@
 
                 <ImageView
                     style="@style/FormIcon"
-                    android:src="@drawable/ic_action_time" />
+                    android:src="@drawable/ic_time_black" />
 
                 <TextView
                     android:id="@+id/input_date"
@@ -148,7 +148,7 @@
 
                 <ImageView
                     style="@style/FormIcon"
-                    android:src="@drawable/ic_action_sort_by_size" />
+                    android:src="@drawable/ic_notes_black" />
 
                 <EditText
                     android:id="@+id/input_description"
@@ -167,7 +167,7 @@
 
                 <ImageView
                     style="@style/FormIcon"
-                    android:src="@drawable/ic_action_rotate_right" />
+                    android:src="@drawable/ic_repeat_black" />
 
                 <TextView
                     android:id="@+id/input_recurrence"

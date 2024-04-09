@@ -73,7 +73,7 @@ limitations under the License.
             android:paddingRight="6dp"
             android:paddingLeft="22dp"
             android:paddingBottom="22dp"
-            android:src="@drawable/ic_close_black_24dp"
+            android:src="@drawable/ic_close_black"
             tools:ignore="ContentDescription" />
     </LinearLayout>
 
