@@ -33,8 +33,9 @@ import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.formatter.LargeValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
-import com.github.mikephil.charting.utils.LargeValueFormatter;
+import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 
 import org.gnucash.android.R;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
@@ -212,7 +213,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
         set.setStackLabels(labels.toArray(new String[labels.size()]));
         set.setColors(colors);
 
-        if (set.getYValueSum() == 0) {
+        if (getYValueSum(set) == 0) {
             mChartDataPresent = false;
             return getEmptyData();
         }
@@ -323,7 +324,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
      */
     private void setCustomLegend() {
         Legend legend = mChart.getLegend();
-        BarDataSet dataSet = mChart.getData().getDataSetByIndex(0);
+        IBarDataSet dataSet = mChart.getData().getDataSetByIndex(0);
 
         LinkedHashSet<String> labels = new LinkedHashSet<>(Arrays.asList(dataSet.getStackLabels()));
         LinkedHashSet<Integer> colors = new LinkedHashSet<>(dataSet.getColors());
@@ -385,7 +386,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
         double value = Math.abs(entry.getVals()[index]);
         double sum = 0;
         if (mTotalPercentageMode) {
-            for (BarEntry barEntry : mChart.getData().getDataSetByIndex(dataSetIndex).getYVals()) {
+            for (BarEntry barEntry : getYVals(mChart.getData().getDataSetByIndex(dataSetIndex))) {
                 sum += barEntry.getNegativeSum() + barEntry.getPositiveSum();
             }
         } else {
@@ -393,5 +394,4 @@ public class StackedBarChartFragment extends BaseReportFragment {
         }
         mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label.trim(), value, value / sum * 100));
     }
-
 }

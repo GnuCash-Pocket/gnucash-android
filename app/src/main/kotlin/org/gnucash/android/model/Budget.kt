@@ -15,11 +15,11 @@
  */
 package org.gnucash.android.model
 
-import android.util.Log
 import org.gnucash.android.model.Money.Companion.zeroInstance
 import org.gnucash.android.model.Money.CurrencyMismatchException
 import org.joda.time.LocalDateTime
 import java.math.BigDecimal
+import timber.log.Timber
 
 /**
  * Budgets model
@@ -163,12 +163,9 @@ class Budget : BaseModel {
                     sum = budgetAmount.amount
                 } else {
                     try {
-                        sum = sum.plus(budgetAmount.amount!!.abs())
+                        sum = sum.plus(budgetAmount.amount.abs())
                     } catch (ex: CurrencyMismatchException) {
-                        Log.i(
-                            javaClass.simpleName,
-                            "Skip some budget amounts with different currency"
-                        )
+                        Timber.w("Skip some budget amounts with different currency")
                     }
                 }
             }
@@ -300,7 +297,7 @@ class Budget : BaseModel {
 
             for (budgetAmount in _budgetAmounts) {
                 val accountUID = budgetAmount.accountUID
-                val amount = budgetAmount.amount!!.asBigDecimal()
+                val amount = budgetAmount.amount.asBigDecimal()
 
                 if (accountAmountMap.containsKey(accountUID)) {
                     accountAmountMap[accountUID]!!.add(amount)
