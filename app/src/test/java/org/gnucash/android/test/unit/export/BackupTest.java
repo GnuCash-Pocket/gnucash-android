@@ -60,8 +60,7 @@ public class BackupTest {
         assertThat(xmlFiles).hasSize(1);
         assertThat(new File(xmlFiles.get(0)))
                 .exists()
-                .hasExtension(ExportFormat.XML.getExtension().substring(1));
-
+                .hasExtension(ExportFormat.XML.extension.substring(1));
     }
 
     /**

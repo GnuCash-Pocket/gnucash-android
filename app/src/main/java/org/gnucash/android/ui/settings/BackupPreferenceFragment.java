@@ -27,12 +27,16 @@ import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.CheckBoxPreference;
+import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
@@ -50,6 +54,7 @@ import com.google.android.material.snackbar.Snackbar;
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
+import org.gnucash.android.export.ExportFormat;
 import org.gnucash.android.export.Exporter;
 import org.gnucash.android.importer.ImportAsyncTask;
 import org.gnucash.android.ui.settings.dialog.OwnCloudDialogFragment;
@@ -133,9 +138,16 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
 
         String keyDefaultExportFormat = getString(R.string.key_default_export_format);
         pref = findPreference(keyDefaultExportFormat);
-        String defaultExportFormat = sharedPrefs.getString(keyDefaultExportFormat, null);
-        if (defaultExportFormat != null && !defaultExportFormat.trim().isEmpty()) {
-            pref.setSummary(defaultExportFormat);
+        if (pref.getSummaryProvider() == null) {
+            pref.setSummaryProvider(preference -> {
+                ListPreference listPreference = (ListPreference) preference;
+                String value = listPreference.getValue();
+                if (TextUtils.isEmpty(value)) {
+                    return getString(R.string.summary_default_export_format);
+                }
+                ExportFormat format = ExportFormat.of(value);
+                return getString(format.labelId);
+            });
         }
         pref.setOnPreferenceChangeListener(this);
 
@@ -206,7 +218,10 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
      */
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        preference.setSummary(newValue.toString());
+        if (preference.getSummaryProvider() == null) {
+            String summary = (newValue != null) ? newValue.toString() : null;
+            preference.setSummary(summary);
+        }
         if (preference.getKey().equals(getString(R.string.key_default_currency))) {
             GnuCashApplication.setDefaultCurrencyCode(preference.getContext(), newValue.toString());
         }
@@ -218,15 +233,8 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
             }
         }
 
-        if (preference.getKey().equals(getString(R.string.key_default_export_format))) {
-            String exportFormat = newValue.toString();
-            if (exportFormat == null || exportFormat.trim().isEmpty()) {
-                preference.setSummary(R.string.summary_default_export_format);
-            }
-        }
         return true;
     }
-
 
     /**
      * Toggles the checkbox of the DropBox Sync preference if a DropBox account is linked
