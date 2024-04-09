@@ -490,8 +490,8 @@ public class ExportFormFragment extends Fragment implements
         mRecurrenceTextView.setOnClickListener(new RecurrenceViewClickListener((AppCompatActivity) getActivity(), mRecurrenceRule, this));
 
         //this part (setting the export format) must come after the recurrence view bindings above
-        String defaultExportFormat = sharedPrefs.getString(getString(R.string.key_default_export_format), ExportFormat.CSVT.name());
-        mExportParams.setExportFormat(ExportFormat.valueOf(defaultExportFormat));
+        String defaultExportFormat = sharedPrefs.getString(getString(R.string.key_default_export_format), ExportFormat.CSVT.value);
+        mExportParams.setExportFormat(ExportFormat.of(defaultExportFormat));
 
         RadioButton.OnCheckedChangeListener radioClickListener = new RadioButton.OnCheckedChangeListener() {
             @Override
@@ -511,7 +511,7 @@ public class ExportFormFragment extends Fragment implements
         mSeparatorColonButton.setOnCheckedChangeListener(radioClickListener);
         mSeparatorSemicolonButton.setOnCheckedChangeListener(radioClickListener);
 
-        ExportFormat defaultFormat = ExportFormat.valueOf(defaultExportFormat.toUpperCase());
+        ExportFormat defaultFormat = ExportFormat.of(defaultExportFormat.toUpperCase());
         switch (defaultFormat) {
             case QIF:
                 mQifRadioButton.performClick();

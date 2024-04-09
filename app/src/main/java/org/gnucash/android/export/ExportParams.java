@@ -247,7 +247,7 @@ public class ExportParams {
      */
     public static ExportParams parseCsv(String csvParams) {
         String[] tokens = csvParams.split(";");
-        ExportParams params = new ExportParams(ExportFormat.valueOf(tokens[0]));
+        ExportParams params = new ExportParams(ExportFormat.of(tokens[0]));
         params.setExportTarget(ExportTarget.valueOf(tokens[1]));
         params.setExportStartTime(TimestampHelper.getTimestampFromUtcString(tokens[2]));
         params.setDeleteTransactionsAfterExport(Boolean.parseBoolean(tokens[3]));

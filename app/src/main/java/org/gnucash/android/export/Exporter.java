@@ -165,7 +165,7 @@ public abstract class Exporter {
                 + "_gnucash_export_" + sanitizeFilename(bookName) +
                 (format == ExportFormat.CSVA ? "_accounts" : "") +
                 (format == ExportFormat.CSVT ? "_transactions" : "") +
-                format.getExtension();
+                format.extension;
     }
 
     /**

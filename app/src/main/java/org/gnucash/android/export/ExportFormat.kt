@@ -13,52 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.export;
+package org.gnucash.android.export
+
+import androidx.annotation.StringRes
+import org.gnucash.android.R
 
 /**
  * Enumeration of the different export formats supported by the application
  *
- * @author Ngewi Fet <ngewif@gmail.com>
+ * @author Ngewi Fet <ngewif></ngewif>@gmail.com>
  */
-public enum ExportFormat {
-    QIF("Quicken Interchange Format"),
-    OFX("Open Financial eXchange"),
-    XML("GnuCash XML"),
-    CSVA("GnuCash accounts CSV"),
-    CSVT("GnuCash transactions CSV");
-
+enum class ExportFormat(
+    @JvmField
+    val value: String,
+    /**
+     * The file extension for this export format including the period e.g. ".qif"
+     */
+    @JvmField
+    val extension: String,
     /**
      * Full name of the export format acronym
      */
-    private final String mDescription;
+    private val description: String,
+    /** The label id. */
+    @JvmField
+    @StringRes val labelId: Int
+) {
+    QIF("QIF", ".qif", "Quicken Interchange Format", R.string.file_format_qif),
+    OFX("OFX", ".ofx", "Open Financial eXchange", R.string.file_format_ofx),
+    XML("XML", ".gnca", "GnuCash XML", R.string.file_format_xml),
+    CSVA("CSVA", ".csv", "GnuCash accounts CSV", R.string.file_format_csv),
+    CSVT("CSVT", ".csv", "GnuCash transactions CSV", R.string.file_format_csv);
 
-    ExportFormat(String description) {
-        this.mDescription = description;
+    override fun toString(): String {
+        return description
     }
 
-    /**
-     * Returns the file extension for this export format including the period e.g. ".qif"
-     *
-     * @return String file extension for the export format
-     */
-    public String getExtension() {
-        switch (this) {
-            case QIF:
-                return ".qif";
-            case OFX:
-                return ".ofx";
-            case XML:
-                return ".gnca";
-            case CSVA:
-            case CSVT:
-                return ".csv";
-            default:
-                return ".txt";
+    companion object {
+        private val values = values()
+
+        @JvmStatic
+        fun of(key: String): ExportFormat {
+            return values.firstOrNull { it.value == key } ?: XML
         }
-    }
-
-    @Override
-    public String toString() {
-        return mDescription;
     }
 }

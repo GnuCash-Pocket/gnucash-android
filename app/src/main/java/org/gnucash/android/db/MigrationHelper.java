@@ -1109,7 +1109,7 @@ public class MigrationHelper {
             while (cursor.moveToNext()) {
                 String paramString = cursor.getString(cursor.getColumnIndexOrThrow(ScheduledActionEntry.COLUMN_TAG));
                 String[] tokens = paramString.split(";");
-                ExportParams params = new ExportParams(ExportFormat.valueOf(tokens[0]));
+                ExportParams params = new ExportParams(ExportFormat.of(tokens[0]));
                 params.setExportTarget(ExportParams.ExportTarget.valueOf(tokens[1]));
                 params.setDeleteTransactionsAfterExport(Boolean.parseBoolean(tokens[3]));
 
