@@ -394,8 +394,8 @@ public class MigrationHelper {
      */
     static int upgradeDbToVersion7(SQLiteDatabase db) {
         int oldVersion = 6;
-        db.beginTransaction();
         try {
+            db.beginTransaction();
             // backup transaction table
             db.execSQL("ALTER TABLE " + TransactionEntry.TABLE_NAME + " RENAME TO " + TransactionEntry.TABLE_NAME + "_bak");
             // create new transaction table
@@ -509,8 +509,8 @@ public class MigrationHelper {
         //start moving the files in background thread before we do the database stuff
         new Thread(moveExportedFilesToNewDefaultLocation).start();
 
-        db.beginTransaction();
         try {
+            db.beginTransaction();
             Timber.i("Creating scheduled actions table");
             db.execSQL("CREATE TABLE " + ScheduledActionEntry.TABLE_NAME + " ("
                     + ScheduledActionEntry._ID + " integer primary key autoincrement, "
@@ -867,8 +867,8 @@ public class MigrationHelper {
         Timber.i("Upgrading database to version 9");
         int oldVersion = 8;
 
-        db.beginTransaction();
         try {
+            db.beginTransaction();
             db.execSQL("CREATE TABLE " + CommodityEntry.TABLE_NAME + " ("
                     + CommodityEntry._ID + " integer primary key autoincrement, "
                     + CommodityEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
@@ -1097,8 +1097,8 @@ public class MigrationHelper {
         Timber.i("Upgrading database to version 9");
         int oldVersion = 9;
 
-        db.beginTransaction();
         try {
+            db.beginTransaction();
             Cursor cursor = db.query(ScheduledActionEntry.TABLE_NAME,
                     new String[]{ScheduledActionEntry.COLUMN_UID, ScheduledActionEntry.COLUMN_TAG},
                     ScheduledActionEntry.COLUMN_TYPE + " = ?",
@@ -1151,8 +1151,8 @@ public class MigrationHelper {
         Timber.i("Upgrading database to version 9");
         int oldVersion = 10;
 
-        db.beginTransaction();
         try {
+            db.beginTransaction();
             Cursor cursor = db.query(ScheduledActionEntry.TABLE_NAME, null,
                     ScheduledActionEntry.COLUMN_TYPE + "= ?",
                     new String[]{ScheduledAction.ActionType.BACKUP.name()}, null, null, null);
@@ -1249,8 +1249,8 @@ public class MigrationHelper {
         Timber.i("Upgrading database to version 13");
         int oldVersion = 12;
 
-        db.beginTransaction();
         try {
+            db.beginTransaction();
             db.execSQL("CREATE TABLE " + RecurrenceEntry.TABLE_NAME + " ("
                     + RecurrenceEntry._ID + " integer primary key autoincrement, "
                     + RecurrenceEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
@@ -1602,8 +1602,8 @@ public class MigrationHelper {
         Timber.i("Upgrading database to version 15");
         int dbVersion = 14;
 
-        db.beginTransaction();
         try {
+            db.beginTransaction();
             ContentValues contentValues = new ContentValues();
             contentValues.putNull(AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID);
             db.update(

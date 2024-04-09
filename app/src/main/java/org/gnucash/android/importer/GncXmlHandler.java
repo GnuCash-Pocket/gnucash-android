@@ -973,9 +973,9 @@ public class GncXmlHandler extends DefaultHandler {
         //we on purpose do not set the book active. Only import. Caller should handle activation
 
         long startTime = System.nanoTime();
-        mAccountsDbAdapter.beginTransaction();
         Timber.d("bulk insert starts");
         try {
+            mAccountsDbAdapter.beginTransaction();
             // disable foreign key. The database structure should be ensured by the data inserted.
             // it will make insertion much faster.
             mAccountsDbAdapter.enableForeignKey(false);
