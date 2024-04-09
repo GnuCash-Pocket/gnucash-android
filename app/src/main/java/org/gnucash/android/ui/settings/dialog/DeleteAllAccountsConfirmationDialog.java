@@ -49,7 +49,7 @@ public class DeleteAllAccountsConfirmationDialog extends DoubleConfirmationDialo
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 Context context = getDialog().getContext();
-                                BackupManager.backupActiveBook();
+                                BackupManager.backupActiveBook(context);
                                 AccountsDbAdapter.getInstance().deleteAllRecords();
                                 Toast.makeText(context, R.string.toast_all_accounts_deleted, Toast.LENGTH_SHORT).show();
                                 WidgetConfigurationActivity.updateAllWidgets(context);

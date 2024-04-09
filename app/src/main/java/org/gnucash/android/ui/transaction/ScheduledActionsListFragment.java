@@ -115,7 +115,7 @@ public class ScheduledActionsListFragment extends ListFragment implements
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.context_menu_delete:
-                    BackupManager.backupActiveBook();
+                    BackupManager.backupActiveBook(getContext());
 
                     for (long id : getListView().getCheckedItemIds()) {
 

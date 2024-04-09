@@ -59,7 +59,7 @@ public class DeleteBookConfirmationDialog extends DoubleConfirmationDialog {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int which) {
                         final String bookUID = getArguments().getString(EXTRA_BOOK_ID);
-                        BackupManager.backupBook(bookUID);
+                        BackupManager.backupBook(getContext(), bookUID);
                         BooksDbAdapter.getInstance().deleteBook(bookUID);
 
                         Bundle result = new Bundle();

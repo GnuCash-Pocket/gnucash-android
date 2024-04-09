@@ -68,11 +68,21 @@ public class BackupManager {
      */
     @WorkerThread
     static void backupAllBooks() {
+        Context context = GnuCashApplication.getAppContext();
+        backupAllBooks(context);
+    }
+
+    /**
+     * Perform an automatic backup of all books in the database.
+     * This method is run every time the service is executed
+     */
+    @WorkerThread
+    static void backupAllBooks(Context context) {
         BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
         List<String> bookUIDs = booksDbAdapter.getAllBookUIDs();
 
         for (String bookUID : bookUIDs) {
-            backupBook(bookUID);
+            backupBook(context, bookUID);
         }
     }
 
@@ -83,7 +93,16 @@ public class BackupManager {
      */
     @WorkerThread
     public static boolean backupActiveBook() {
-        return backupBook(BooksDbAdapter.getInstance().getActiveBookUID());
+        return backupActiveBook(GnuCashApplication.getAppContext());
+    }
+
+    /**
+     * Backs up the active book to the directory {@link #getBackupFolderPath(String)}.
+     *
+     * @return {@code true} if backup was successful, {@code false} otherwise
+     */
+    public static boolean backupActiveBook(Context context) {
+        return backupBook(context, BooksDbAdapter.getInstance().getActiveBookUID());
     }
 
     /**
@@ -95,11 +114,22 @@ public class BackupManager {
      */
     @WorkerThread
     public static boolean backupBook(String bookUID) {
+        return backupBook(GnuCashApplication.getAppContext(), bookUID);
+    }
+
+    /**
+     * Backs up the book with UID {@code bookUID} to the directory
+     * {@link #getBackupFolderPath(String)}.
+     *
+     * @param bookUID Unique ID of the book
+     * @return {@code true} if backup was successful, {@code false} otherwise
+     */
+    public static boolean backupBook(Context context, String bookUID) {
         OutputStream outputStream;
         try {
             String backupFile = getBookBackupFileUri(bookUID);
             if (backupFile != null) {
-                outputStream = GnuCashApplication.getAppContext().getContentResolver().openOutputStream(Uri.parse(backupFile));
+                outputStream = context.getContentResolver().openOutputStream(Uri.parse(backupFile));
             } else { //no Uri set by user, use default location on SD card
                 backupFile = getBackupFilePath(bookUID);
                 outputStream = new FileOutputStream(backupFile);
@@ -231,7 +261,7 @@ public class BackupManager {
 
             @Override
             protected Object doInBackground(Object... objects) {
-                backupAllBooks();
+                backupAllBooks(activity);
                 return Boolean.TRUE;
             }
 

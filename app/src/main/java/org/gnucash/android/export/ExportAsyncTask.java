@@ -458,7 +458,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
      */
     private void backupAndDeleteTransactions() {
         Timber.i("Backup and deleting transactions after export");
-        BackupManager.backupActiveBook(); //create backup before deleting everything
+        BackupManager.backupActiveBook(mContext); //create backup before deleting everything
         List<Transaction> openingBalances = new ArrayList<>();
         boolean preserveOpeningBalances = GnuCashApplication.shouldSaveOpeningBalances(false);
 
