@@ -15,12 +15,15 @@
 -->
 <paths>
     <cache-path
+        name="csv"
+        path="CSVT" />
+    <cache-path
         name="ofx"
-        path="OFX/" />
+        path="OFX" />
     <cache-path
         name="qif"
-        path="QIF/" />
+        path="QIF" />
     <cache-path
         name="xml"
-        path="XML/" />
+        path="XML" />
 </paths>
