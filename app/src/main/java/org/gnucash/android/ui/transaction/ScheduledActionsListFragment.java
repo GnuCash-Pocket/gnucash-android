@@ -16,6 +16,8 @@
 
 package org.gnucash.android.ui.transaction;
 
+import static org.gnucash.android.util.ContentExtKt.getDocumentName;
+
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -574,7 +576,7 @@ public class ScheduledActionsListFragment extends ListFragment implements
             ExportParams params = ExportParams.parseCsv(scheduledAction.getTag());
             String exportDestination = params.getExportTarget().getDescription();
             if (params.getExportTarget() == ExportParams.ExportTarget.URI) {
-                exportDestination = exportDestination + " (" + getName(params.getExportLocation()) + ")";
+                exportDestination = exportDestination + " (" + getDocumentName(params.getExportLocation(), context) + ")";
             }
             String description = context.getString(
                 R.string.schedule_export_desription,
@@ -645,22 +647,6 @@ public class ScheduledActionsListFragment extends ListFragment implements
             registerContentObserver(c);
             return c;
         }
-    }
-
-    private static final String[] PROJECTION_NAME = {DocumentsContract.Document.COLUMN_DISPLAY_NAME};
-    private static final int INDEX_NAME = 0;
-
-    private String getName(Uri uri) {
-        String name = uri.getAuthority();
-        ContentResolver resolver = requireContext().getContentResolver();
-        Cursor cursor = resolver.query(uri, PROJECTION_NAME, null, null, null);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                name = cursor.getString(INDEX_NAME);
-            }
-            cursor.close();
-        }
-        return name;
     }
 }
 

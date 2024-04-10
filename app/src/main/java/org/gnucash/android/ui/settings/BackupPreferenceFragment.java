@@ -17,6 +17,7 @@
 package org.gnucash.android.ui.settings;
 
 import static org.gnucash.android.app.IntentExtKt.takePersistableUriPermission;
+import static org.gnucash.android.util.ContentExtKt.getDocumentName;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -105,9 +106,6 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
      */
     public static GoogleApiClient mGoogleApiClient;
 
-    private static final String[] PROJECTION_NAME = {DocumentsContract.Document.COLUMN_DISPLAY_NAME};
-    private static final int INDEX_NAME = 0;
-
     @Override
     public void onCreatePreferences(Bundle bundle, String s) {
         addPreferencesFromResource(R.xml.fragment_backup_preferences);
@@ -166,7 +164,7 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
         pref.setOnPreferenceClickListener(this);
         Uri defaultBackupLocation = BackupManager.getBookBackupFileUri(BooksDbAdapter.getInstance().getActiveBookUID());
         if (defaultBackupLocation != null) {
-            pref.setSummary(getName(defaultBackupLocation));
+            pref.setSummary(getDocumentName(defaultBackupLocation, pref.getContext()));
         }
 
         pref = findPreference(getString(R.string.key_dropbox_sync));
@@ -486,22 +484,9 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
                             .apply();
 
                     Preference pref = findPreference(getString(R.string.key_backup_location));
-                    pref.setSummary(getName(backupFileUri));
+                    pref.setSummary(getDocumentName(backupFileUri, pref.getContext()));
                 }
                 break;
         }
-    }
-
-    private String getName(Uri uri) {
-        String name = uri.getAuthority();
-        ContentResolver resolver = requireContext().getContentResolver();
-        Cursor cursor = resolver.query(uri, PROJECTION_NAME, null, null, null);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                name = cursor.getString(INDEX_NAME);
-            }
-            cursor.close();
-        }
-        return name;
     }
 }
