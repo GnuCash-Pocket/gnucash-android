@@ -23,50 +23,50 @@
         android:id="@+id/widget_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center_vertical"
         android:background="@drawable/appwidget_dark_bg_clickable"
+        android:gravity="center_vertical"
         android:orientation="horizontal">
 
         <TextView
             android:id="@+id/account_name"
             android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_marginStart="@dimen/edge_padding"
             android:layout_weight="1"
+            android:ellipsize="end"
             android:gravity="center_vertical"
             android:singleLine="true"
-            android:ellipsize="end"
-            android:layout_marginLeft="@dimen/edge_padding"
+            android:text="@string/label_account_name"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@android:color/white"
-            android:text="@string/label_account_name" />
+            android:textColor="@android:color/white" />
 
         <TextView
             android:id="@+id/transactions_summary"
+            style="@style/ListItemText"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:singleLine="true"
-            style="@style/ListItemText"
-            android:layout_marginLeft="@dimen/widget_margin"
-            android:layout_marginRight="@dimen/widget_margin" />
+            android:layout_marginStart="@dimen/widget_margin"
+            android:layout_marginEnd="@dimen/widget_margin"
+            android:singleLine="true" />
 
         <ImageButton
             android:id="@+id/btn_new_transaction"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_marginRight="@dimen/edge_padding"
-            android:layout_marginLeft="@dimen/edge_padding"
-            android:src="@drawable/ic_add_black"
+            android:layout_marginStart="@dimen/edge_padding"
+            android:layout_marginEnd="@dimen/edge_padding"
             android:background="@drawable/appwidget_bg_clickable"
-            android:contentDescription="@string/description_add_transaction_icon" />
+            android:contentDescription="@string/description_add_transaction_icon"
+            android:src="@drawable/ic_add_black" />
 
         <ImageButton
             android:id="@+id/btn_view_account"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_marginRight="@dimen/edge_padding"
-            android:layout_marginLeft="@dimen/edge_padding"
-            android:src="@drawable/ic_info_black"
+            android:layout_marginStart="@dimen/edge_padding"
+            android:layout_marginEnd="@dimen/edge_padding"
             android:background="@drawable/appwidget_bg_clickable"
-            android:contentDescription="@string/description_view_account_icon" />
+            android:contentDescription="@string/description_view_account_icon"
+            android:src="@drawable/ic_info_black" />
     </LinearLayout>
 </FrameLayout>

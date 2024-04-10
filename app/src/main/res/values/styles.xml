@@ -73,10 +73,10 @@
     </style>
 
     <style name="ImageButton.Transparent" parent="@android:style/Widget.ImageButton">
-        <item name="android:background">@drawable/selected_background</item>
+        <item name="android:background">?android:attr/selectableItemBackground</item>
     </style>
 
-    <style name="Dialog.WidgetConfiguration" parent="android:Theme.Dialog"></style>
+    <style name="Dialog.WidgetConfiguration" parent="Theme.AppCompat.Light.Dialog"/>
 
     <style name="FormRow">
         <item name="android:layout_width">match_parent</item>
