@@ -38,5 +38,4 @@
         android:visibility="gone"
         android:textColor="@color/theme_accent"
         android:text="@string/label_no_transactions" />
-    <!-- TODO: Added account_balance_toolbar.xml layout at some point in the future, if necessary-->
 </RelativeLayout>

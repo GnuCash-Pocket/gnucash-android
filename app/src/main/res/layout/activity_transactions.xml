@@ -27,9 +27,9 @@
 
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/fragment_container"
-            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
             <include layout="@layout/toolbar_with_spinner" />
 
@@ -38,11 +38,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="?attr/colorPrimary"
-                app:elevation="10dp"
                 android:minHeight="?attr/actionBarSize"
-                app:tabIndicatorColor="@android:color/white"
+                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+                app:elevation="10dp"
                 app:tabGravity="fill"
-                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+                app:tabIndicatorColor="@android:color/white" />
 
         </com.google.android.material.appbar.AppBarLayout>
 
@@ -52,27 +52,16 @@
             android:layout_height="wrap_content"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-        <include
-            layout="@layout/account_balance_toolbar"
-            android:id="@+id/account_balance_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:visibility="gone"
-            app:layout_scrollFlags="scroll|enterAlways" />
-
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_create_transaction"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_above="@id/account_balance_toolbar"
-            android:layout_gravity="end|bottom|right"
-            android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
+            android:layout_gravity="end|bottom"
             android:layout_margin="20dp"
+            android:src="@drawable/ic_add_white"
             app:elevation="6dp"
-            app:layout_behavior="org.gnucash.android.ui.util.ScrollingFABBehavior"
-            android:src="@drawable/ic_add_white" />
+            app:layout_behavior="org.gnucash.android.ui.util.ScrollingFABBehavior" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

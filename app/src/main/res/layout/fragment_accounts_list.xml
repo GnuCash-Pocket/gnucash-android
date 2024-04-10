@@ -20,8 +20,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <!-- TODO: Added account_balance_toolbar.xml layout at some point in the future, if necessary-->
-
     <org.gnucash.android.ui.util.widget.EmptyRecyclerView
         android:id="@+id/account_recycler_view"
         android:scrollbars="vertical"
