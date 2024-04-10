@@ -459,7 +459,6 @@
     <string name="label_dropbox_export_destination">Export to \'/Apps/GnuCash Android/\' folder on Dropbox</string>
     <string name="title_section_preferences">Preferences</string>
     <string name="yes_sure">Yes, I\'m sure</string>
-    <string name="key_export_accounts_csv">export_accounts_csv_key</string>
     <string name="summary_export_accounts_csv">Export all accounts (without transactions) to CSV</string>
     <string name="title_export_accounts_csv">Export as CSV</string>
     <string name="label_csv_separator">Separator</string>
