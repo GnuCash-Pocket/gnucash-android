@@ -22,14 +22,13 @@
     android:orientation="vertical">
 
     <ListView
-        android:id="@id/android:list"
+        android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:listSelector="@drawable/abc_list_selector_holo_light"
         android:drawSelectorOnTop="false" />
 
     <TextView
-        android:id="@id/android:empty"
+        android:id="@android:id/empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"

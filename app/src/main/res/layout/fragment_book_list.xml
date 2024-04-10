@@ -21,13 +21,13 @@
     android:padding="@dimen/dialog_padding">
 
     <ListView
-        android:id="@id/android:list"
+        android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:divider="@null" />
 
     <TextView
-        android:id="@id/android:empty"
+        android:id="@android:id/empty"
         style="@style/ListItem"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
