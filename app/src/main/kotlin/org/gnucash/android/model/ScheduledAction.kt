@@ -15,6 +15,7 @@
  */
 package org.gnucash.android.model
 
+import androidx.annotation.StringRes
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.joda.time.LocalDateTime
@@ -57,8 +58,9 @@ class ScheduledAction    //all actions are enabled by default
     /**
      * Types of events which can be scheduled
      */
-    enum class ActionType {
-        TRANSACTION, BACKUP
+    enum class ActionType(@JvmField @StringRes val labelId: Int) {
+        TRANSACTION(R.string.action_transaction),
+        BACKUP(R.string.action_backup)
     }
 
     /**

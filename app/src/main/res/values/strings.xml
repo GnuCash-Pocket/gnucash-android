@@ -497,4 +497,7 @@
         <item>Tax</item>
         <item>Placeholder</item>
     </string-array>
+    <string name="action_transaction">transaction to</string>
+    <string name="action_backup">backup to</string>
+    <string name="schedule_export_desription" translatable="false">"%1$s %2$s %3$s"</string>
 </resources>

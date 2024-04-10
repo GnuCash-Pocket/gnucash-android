@@ -17,6 +17,7 @@
 package org.gnucash.android.ui.transaction;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -25,6 +26,7 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -572,11 +574,15 @@ public class ScheduledActionsListFragment extends ListFragment implements
             ExportParams params = ExportParams.parseCsv(scheduledAction.getTag());
             String exportDestination = params.getExportTarget().getDescription();
             if (params.getExportTarget() == ExportParams.ExportTarget.URI) {
-                exportDestination = exportDestination + " (" + params.getExportLocation().getHost() + ")";
+                exportDestination = exportDestination + " (" + getName(params.getExportLocation()) + ")";
             }
-            primaryTextView.setText(params.getExportFormat().name() + " "
-                    + scheduledAction.getActionType().name().toLowerCase() + " to "
-                    + exportDestination);
+            String description = context.getString(
+                R.string.schedule_export_desription,
+                params.getExportFormat().name(),
+                context.getString(scheduledAction.getActionType().labelId),
+                exportDestination
+            );
+            primaryTextView.setText(description);
 
             view.findViewById(R.id.right_text).setVisibility(View.GONE);
 
@@ -641,5 +647,20 @@ public class ScheduledActionsListFragment extends ListFragment implements
         }
     }
 
+    private static final String[] PROJECTION_NAME = {DocumentsContract.Document.COLUMN_DISPLAY_NAME};
+    private static final int INDEX_NAME = 0;
+
+    private String getName(Uri uri) {
+        String name = uri.getAuthority();
+        ContentResolver resolver = requireContext().getContentResolver();
+        Cursor cursor = resolver.query(uri, PROJECTION_NAME, null, null, null);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                name = cursor.getString(INDEX_NAME);
+            }
+            cursor.close();
+        }
+        return name;
+    }
 }
 

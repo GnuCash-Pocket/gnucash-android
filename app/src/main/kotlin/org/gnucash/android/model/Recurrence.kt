@@ -329,7 +329,7 @@ class Recurrence(periodType: PeriodType) : BaseModel() {
      * @return String describing the period type
      */
     private val frequencyRepeatString: String
-        private get() {
+        get() {
             val res = GnuCashApplication.getAppContext().resources
             return when (periodType) {
                 PeriodType.HOUR -> res.getQuantityString(
@@ -374,7 +374,6 @@ class Recurrence(periodType: PeriodType) : BaseModel() {
          */
         @JvmStatic
         fun fromLegacyPeriod(period: Long): Recurrence {
-
             var result = (period / RecurrenceParser.YEAR_MILLIS).toInt()
             if (result > 0) {
                 val recurrence = Recurrence(PeriodType.YEAR)
