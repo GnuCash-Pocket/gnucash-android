@@ -38,6 +38,6 @@
     <androidx.preference.Preference android:title="@string/label_recommend_app">
         <intent
             android:action="android.intent.action.VIEW"
-            android:data="market://details?id=org.gnucash.android" />
+            android:data="@string/playstore_url" />
     </androidx.preference.Preference>
 </androidx.preference.PreferenceScreen>
