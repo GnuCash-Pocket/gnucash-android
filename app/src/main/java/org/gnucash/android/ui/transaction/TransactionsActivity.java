@@ -117,8 +117,6 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     Spinner mToolbarSpinner;
     @BindView(R.id.tab_layout)
     TabLayout mTabLayout;
-    @BindView(R.id.transactions_sum)
-    TextView mSumTextView;
     @BindView(R.id.fab_create_transaction)
     FloatingActionButton mCreateFloatingButton;
 
@@ -266,9 +264,6 @@ public class TransactionsActivity extends BaseDrawerActivity implements
 
         if (mPagerAdapter != null)
             mPagerAdapter.notifyDataSetChanged();
-
-        new AccountBalanceTask(mSumTextView).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mAccountUID);
-
     }
 
     @Override
