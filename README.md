@@ -29,7 +29,7 @@ There are different ways to get the GnuCash app for Android; through the app sto
 
 Original app by [codinguser](https://github.com/codinguser/) was here:
 
-<a href="http://play.google.com/store/apps/details?id=org.gnucash.android">
+<a href="http://play.google.com/store/apps/details?id=org.gnucash.pocket.pnemonic">
   <img alt="Android app on Google Play" src="http://developer.android.com/images/brand/en_generic_rgb_wo_60.png" />
 </a>
 
