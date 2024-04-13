@@ -39,7 +39,6 @@
     <string name="key_export_accounts_csv" translatable="false">export_accounts_csv_key</string>
     <!-- This is the filename for default backups. So use only simple characters and no spaces. Do not change the extension -->
     <string name="label_backup_filename" translatable="false">gnucash_pocket_backup.gnca</string>
-    <string name="playstore_url" translatable="false">"market://details?id=org.gnucash.pocket"</string>
     <string-array name="key_transaction_type_values" translatable="false">
         <item>CREDIT</item>
         <item>DEBIT</item>

@@ -24,19 +24,18 @@ static def gitSha() {
 android {
     compileSdk 34
     defaultConfig {
-        applicationId "org.gnucash.android"
-        testApplicationId 'org.gnucash.android.test'
+        applicationId "org.gnucash.pocket"
         minSdkVersion 21
         targetSdkVersion 33
         versionCode versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         resValue "string", "app_version_name", "${versionName}"
         resValue "string", "app_minor_version", "${versionMinor}"
+        resValue "string", "app_playstore_url", "market://details?id=${applicationId}"
         buildConfigField "boolean", "CAN_REQUEST_RATING", "false"
         buildConfigField "String", "BUILD_TIME", "\"${buildTime()}\""
 
         testInstrumentationRunner "org.gnucash.android.test.ui.util.GnucashAndroidTestRunner"
-
     }
 
     packagingOptions {
@@ -93,10 +92,9 @@ android {
 
     productFlavors {
         development {
-            applicationId 'org.gnucash.android.devel'
-            testApplicationId 'org.gnucash.android.devel.test'
-            resValue "string", "app_name", "GnuCash-devel"
+            applicationIdSuffix '.devel'
             versionName "${versionMajor}.${versionMinor}.${versionPatch}-dev${versionBuild}_r${gitSha()}"
+            resValue "string", "app_name", "GnuCash-devel"
             resValue "string", "app_version_name", "${versionName}"
 
             resValue "string", "dropbox_app_key", "dhjh8ke9wf05948"
@@ -105,8 +103,8 @@ android {
         }
 
         beta {
-            resValue "string", "app_name", "GnuCash - beta"
             versionName "${versionMajor}.${versionMinor}.${versionPatch}-beta${versionBuild}"
+            resValue "string", "app_name", "GnuCash - beta"
             resValue "string", "app_version_name", "${versionName}"
 
             if (project.hasProperty("RELEASE_DROPBOX_APP_KEY")) {
@@ -121,8 +119,8 @@ android {
         }
 
         production {
-            resValue "string", "app_name", "GnuCash"
             buildConfigField "boolean", "CAN_REQUEST_RATING", "true"
+            resValue "string", "app_name", "GnuCash"
 
             if (project.hasProperty("RELEASE_DROPBOX_APP_KEY")) {
                 resValue "string", "dropbox_app_key", RELEASE_DROPBOX_APP_KEY
