@@ -15,7 +15,7 @@
 -->
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:title="GnuCash Settings">
+    android:title="@string/title_settings">
     <androidx.preference.Preference
         android:key="@string/key_prefs_header_general"
         android:title="@string/header_general_settings"
@@ -38,6 +38,6 @@
     <androidx.preference.Preference android:title="@string/label_recommend_app">
         <intent
             android:action="android.intent.action.VIEW"
-            android:data="@string/playstore_url" />
+            android:data="@string/app_playstore_url" />
     </androidx.preference.Preference>
 </androidx.preference.PreferenceScreen>
