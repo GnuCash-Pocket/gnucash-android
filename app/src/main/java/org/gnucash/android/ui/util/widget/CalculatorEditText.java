@@ -35,6 +35,7 @@ import net.objecthunter.exp4j.ExpressionBuilder;
 
 import org.gnucash.android.R;
 import org.gnucash.android.model.Commodity;
+import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.util.AmountParser;
 
@@ -54,27 +55,27 @@ import timber.log.Timber;
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class CalculatorEditText extends AppCompatEditText {
+    @Nullable
     private CalculatorKeyboard mCalculatorKeyboard;
 
     private Commodity mCommodity = Commodity.DEFAULT_COMMODITY;
-    private Context mContext;
 
     /**
      * Flag which is set if the contents of this view have been modified
      */
     private boolean isContentModified = false;
 
+    @XmlRes
     private int mCalculatorKeysLayout;
     private KeyboardView mCalculatorKeyboardView;
+    private final DecimalFormat formatter = (DecimalFormat) NumberFormat.getInstance(Locale.getDefault());
 
     public CalculatorEditText(Context context) {
-        super(context);
-        this.mContext = context;
+        super(context, null);
     }
 
     public CalculatorEditText(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(context, attrs);
+        this(context, attrs, 0);
     }
 
     public CalculatorEditText(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -90,7 +91,6 @@ public class CalculatorEditText extends AppCompatEditText {
      * @param attrs   View attributes
      */
     private void init(Context context, AttributeSet attrs) {
-        this.mContext = context;
         TypedArray a = context.getTheme().obtainStyledAttributes(
                 attrs,
                 R.styleable.CalculatorEditText,
@@ -105,12 +105,10 @@ public class CalculatorEditText extends AppCompatEditText {
         addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
             }
 
             @Override
@@ -118,19 +116,29 @@ public class CalculatorEditText extends AppCompatEditText {
                 isContentModified = true;
             }
         });
-    }
 
-    public void bindListeners(CalculatorKeyboard calculatorKeyboard) {
-        mCalculatorKeyboard = calculatorKeyboard;
-        mContext = calculatorKeyboard.getContext();
         setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
                     setSelection(getText().length());
-                    mCalculatorKeyboard.showCustomKeyboard(v);
                 } else {
-                    mCalculatorKeyboard.hideCustomKeyboard();
+                    evaluate();
+                }
+            }
+        });
+    }
+
+    public void bindListeners(final CalculatorKeyboard calculatorKeyboard) {
+        mCalculatorKeyboard = calculatorKeyboard;
+        setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    setSelection(getText().length());
+                    calculatorKeyboard.showCustomKeyboard(v);
+                } else {
+                    calculatorKeyboard.hideCustomKeyboard();
                     evaluate();
                 }
             }
@@ -141,7 +149,7 @@ public class CalculatorEditText extends AppCompatEditText {
             // by tapping on an edit box that already had focus (but that had the keyboard hidden).
             @Override
             public void onClick(View v) {
-                mCalculatorKeyboard.showCustomKeyboard(v);
+                calculatorKeyboard.showCustomKeyboard(v);
             }
         });
 
@@ -162,14 +170,17 @@ public class CalculatorEditText extends AppCompatEditText {
             }
         });
 
-        ((FormActivity) mContext).setOnBackListener(mCalculatorKeyboard);
+        Context context = getContext();
+        if (context instanceof FormActivity) {
+            ((FormActivity) context).setOnBackListener(calculatorKeyboard);
+        }
     }
 
     /**
      * Initializes listeners on the EditText
      */
     public void bindListeners(KeyboardView keyboardView) {
-        bindListeners(new CalculatorKeyboard(mContext, keyboardView, mCalculatorKeysLayout));
+        bindListeners(new CalculatorKeyboard(getContext(), keyboardView, mCalculatorKeysLayout));
     }
 
     /**
@@ -222,7 +233,7 @@ public class CalculatorEditText extends AppCompatEditText {
     /**
      * Sets the calculator keyboard to use for this EditText
      *
-     * @param keyboard Properly intialized calculator keyobard
+     * @param keyboard Properly initialized calculator keyboard
      */
     public void setCalculatorKeyboard(CalculatorKeyboard keyboard) {
         this.mCalculatorKeyboard = keyboard;
@@ -254,23 +265,33 @@ public class CalculatorEditText extends AppCompatEditText {
      */
     public String evaluate() {
         String amountString = getCleanString();
-        if (amountString.isEmpty())
-            return amountString;
+        if (amountString.isEmpty()) {
+            return "";
+        }
 
         ExpressionBuilder expressionBuilder = new ExpressionBuilder(amountString);
         Expression expression;
 
         try {
             expression = expressionBuilder.build();
-        } catch (RuntimeException e) {
+        } catch (Throwable e) {
             setError(getContext().getString(R.string.label_error_invalid_expression));
-            Timber.e(e, "Invalid expression: %s", amountString);
+            Timber.w(e, "Invalid expression: %s", amountString);
             return "";
         }
 
         if (expression != null && expression.validate().isValid()) {
-            BigDecimal result = new BigDecimal(expression.evaluate());
-            setValue(result);
+            BigDecimal amount = BigDecimal.valueOf(expression.evaluate());
+            try {
+                Money money = new Money(amount, getCommodity());
+                // Currently amount has limit of 64 bits.
+                money.getNumerator();
+            } catch (ArithmeticException e) {
+                setError(getContext().getString(R.string.label_error_invalid_expression));
+                Timber.w(e, "Invalid expression: %s", amountString);
+                return "";
+            }
+            setValue(amount);
         } else {
             setError(getContext().getString(R.string.label_error_invalid_expression));
             Timber.w("Expression is null or invalid: %s", expression);
@@ -314,8 +335,7 @@ public class CalculatorEditText extends AppCompatEditText {
      * @return BigDecimal value
      */
     public @Nullable BigDecimal getValue() {
-        evaluate();
-        String text = getText().toString();
+        String text = evaluate();
         if (text.isEmpty()) {
             return null;
         }
@@ -336,13 +356,10 @@ public class CalculatorEditText extends AppCompatEditText {
      * @param amount BigDecimal amount
      */
     public void setValue(BigDecimal amount) {
-        BigDecimal newAmount = amount.setScale(mCommodity.getSmallestFractionDigits(), BigDecimal.ROUND_HALF_EVEN);
-
-        DecimalFormat formatter = (DecimalFormat) NumberFormat.getInstance(Locale.getDefault());
         formatter.setMinimumFractionDigits(0);
         formatter.setMaximumFractionDigits(mCommodity.getSmallestFractionDigits());
         formatter.setGroupingUsed(false);
-        String resultString = formatter.format(newAmount.doubleValue());
+        String resultString = formatter.format(amount);
 
         super.setText(resultString);
         setSelection(resultString.length());

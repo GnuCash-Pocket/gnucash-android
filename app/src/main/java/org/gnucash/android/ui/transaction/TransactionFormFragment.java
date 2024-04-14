@@ -872,16 +872,16 @@ public class TransactionFormFragment extends Fragment implements
             // 1) mTransactions may be existing or non-existing
             // 2) when mTransactions exists in the db, the splits may exist or not exist in the db
             // So replace is chosen.
-            mTransactionsDbAdapter.addRecord(mTransaction, DatabaseAdapter.UpdateMethod.replace);
+            mTransactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.replace);
 
             if (mSaveTemplateCheckbox.isChecked()) {//template is automatically checked when a transaction is scheduled
                 if (!mEditMode) { //means it was new transaction, so a new template
-                    Transaction templateTransaction = new Transaction(mTransaction, true);
+                    Transaction templateTransaction = new Transaction(transaction, true);
                     templateTransaction.setTemplate(true);
                     mTransactionsDbAdapter.addRecord(templateTransaction, DatabaseAdapter.UpdateMethod.replace);
                     scheduleRecurringTransaction(templateTransaction.getUID());
                 } else
-                    scheduleRecurringTransaction(mTransaction.getUID());
+                    scheduleRecurringTransaction(transaction.getUID());
             } else {
                 String scheduledActionUID = getArguments().getString(UxArgument.SCHEDULED_ACTION_UID);
                 if (scheduledActionUID != null) { //we were editing a schedule and it was turned off
@@ -890,14 +890,19 @@ public class TransactionFormFragment extends Fragment implements
             }
 
             mAccountsDbAdapter.setTransactionSuccessful();
+
+            //update widgets, if any
+            WidgetConfigurationActivity.updateAllWidgets(requireContext());
+
+            finish(Activity.RESULT_OK);
+        } catch (ArithmeticException ae) {
+            Timber.e(ae);
+            Snackbar.make(getView(), R.string.error_invalid_amount, Snackbar.LENGTH_LONG).show();
+        } catch (Throwable e) {
+            Timber.e(e);
         } finally {
             mAccountsDbAdapter.endTransaction();
         }
-
-        //update widgets, if any
-        WidgetConfigurationActivity.updateAllWidgets(getActivity().getApplicationContext());
-
-        finish(Activity.RESULT_OK);
     }
 
     /**

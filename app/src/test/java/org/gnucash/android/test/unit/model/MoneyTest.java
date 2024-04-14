@@ -17,9 +17,15 @@
 package org.gnucash.android.test.unit.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
+import net.objecthunter.exp4j.ValidationResult;
 
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
@@ -176,4 +182,23 @@ public class MoneyTest {
         assertEquals(CURRENCY_CODE, mMoneyInEur.getCommodity().getCurrencyCode());
     }
 
+    @Test
+    public void overflow() throws Exception {
+        Money rounding = new Money("12345678901234567.89", CURRENCY_CODE);
+        assertThat("12345678901234567.89").isEqualTo(rounding.toPlainString());
+        assertThat("€12,345,678,901,234,567.89").isEqualTo(rounding.formattedString(Locale.US));
+        assertThat(rounding.getNumerator()).isEqualTo(1234567890123456789L);
+        assertThat(rounding.getDenominator()).isEqualTo(100L);
+
+        ExpressionBuilder expressionBuilder = new ExpressionBuilder("123456789012345678.90");
+        Expression expression = expressionBuilder.build();
+        ValidationResult validationResult = expression.validate();
+        assertTrue(validationResult.isValid());
+        double value = expression.evaluate();
+        assertEquals(123456789012345678.90, value, 1e-2);
+
+        Money overflow = new Money("1234567890123456789.00", CURRENCY_CODE);
+        assertThat("1234567890123456789.00").isEqualTo(overflow.toPlainString());
+        assertThatThrownBy(() -> overflow.getNumerator()).isInstanceOf(ArithmeticException.class);
+    }
 }
