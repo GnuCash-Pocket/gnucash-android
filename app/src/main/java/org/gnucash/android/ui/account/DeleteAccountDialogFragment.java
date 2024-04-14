@@ -15,6 +15,8 @@
  */
 package org.gnucash.android.ui.account;
 
+import android.app.Activity;
+import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -214,38 +216,47 @@ public class DeleteAccountDialogFragment extends DialogFragment {
 
             @Override
             public void onClick(View v) {
-                BackupManager.backupActiveBook(v.getContext());
+                final Activity activity = requireActivity();
+                BackupManager.backupActiveBookAsync(activity, result -> {
+                    if (!result) {
+                        dismiss();
+                        return null;
+                    }
 
-                AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
-
-                if ((mTransactionCount > 0) && mMoveTransactionsRadioButton.isChecked()) {
-                    long targetAccountId = mTransactionsDestinationAccountSpinner.getSelectedItemId();
-                    //move all the splits
-                    SplitsDbAdapter.getInstance().updateRecords(DatabaseSchema.SplitEntry.COLUMN_ACCOUNT_UID + " = ?",
-                            new String[]{mOriginAccountUID}, DatabaseSchema.SplitEntry.COLUMN_ACCOUNT_UID, accountsDbAdapter.getUID(targetAccountId));
-                }
-
-                if ((mSubAccountCount > 0) && mMoveAccountsRadioButton.isChecked()) {
-                    long targetAccountId = mAccountsDestinationAccountSpinner.getSelectedItemId();
-                    AccountsDbAdapter.getInstance().reassignDescendantAccounts(mOriginAccountUID, accountsDbAdapter.getUID(targetAccountId));
-                }
-
-                if (GnuCashApplication.isDoubleEntryEnabled()) { //reassign splits to imbalance
-                    TransactionsDbAdapter.getInstance().deleteTransactionsForAccount(mOriginAccountUID);
-                }
-
-                //now kill them all!!
-                accountsDbAdapter.recursiveDeleteAccount(accountsDbAdapter.getID(mOriginAccountUID));
-
-                WidgetConfigurationActivity.updateAllWidgets(v.getContext());
-
-                Bundle result = new Bundle();
-                result.putBoolean(Refreshable.EXTRA_REFRESH, true);
-                getParentFragmentManager().setFragmentResult(TAG, result);
-
-                dismiss();
+                    didBackup(activity);
+                    dismiss();
+                    return null;
+                });
             }
         });
     }
 
+    private void didBackup(Context context) {
+        AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
+
+        if ((mTransactionCount > 0) && mMoveTransactionsRadioButton.isChecked()) {
+            long targetAccountId = mTransactionsDestinationAccountSpinner.getSelectedItemId();
+            //move all the splits
+            SplitsDbAdapter.getInstance().updateRecords(DatabaseSchema.SplitEntry.COLUMN_ACCOUNT_UID + " = ?",
+                new String[]{mOriginAccountUID}, DatabaseSchema.SplitEntry.COLUMN_ACCOUNT_UID, accountsDbAdapter.getUID(targetAccountId));
+        }
+
+        if ((mSubAccountCount > 0) && mMoveAccountsRadioButton.isChecked()) {
+            long targetAccountId = mAccountsDestinationAccountSpinner.getSelectedItemId();
+            AccountsDbAdapter.getInstance().reassignDescendantAccounts(mOriginAccountUID, accountsDbAdapter.getUID(targetAccountId));
+        }
+
+        if (GnuCashApplication.isDoubleEntryEnabled()) { //reassign splits to imbalance
+            TransactionsDbAdapter.getInstance().deleteTransactionsForAccount(mOriginAccountUID);
+        }
+
+        //now kill them all!!
+        accountsDbAdapter.recursiveDeleteAccount(accountsDbAdapter.getID(mOriginAccountUID));
+
+        WidgetConfigurationActivity.updateAllWidgets(context);
+
+        Bundle result = new Bundle();
+        result.putBoolean(Refreshable.EXTRA_REFRESH, true);
+        getParentFragmentManager().setFragmentResult(TAG, result);
+    }
 }
