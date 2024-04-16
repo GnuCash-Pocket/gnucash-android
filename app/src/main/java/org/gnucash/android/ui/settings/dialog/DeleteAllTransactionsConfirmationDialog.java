@@ -16,6 +16,7 @@
  */
 package org.gnucash.android.ui.settings.dialog;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -60,27 +61,33 @@ public class DeleteAllTransactionsConfirmationDialog extends DoubleConfirmationD
                 .setPositiveButton(R.string.alert_dialog_ok_delete,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                Context context = getActivity();
-                                BackupManager.backupActiveBook(context);
-
-                                AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
-                                List<Transaction> openingBalances = new ArrayList<>();
-                                boolean preserveOpeningBalances = GnuCashApplication.shouldSaveOpeningBalances(false);
-                                if (preserveOpeningBalances) {
-                                    openingBalances = accountsDbAdapter.getAllOpeningBalanceTransactions();
-                                }
-                                TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
-                                int count = transactionsDbAdapter.deleteAllNonTemplateTransactions();
-                                Timber.i("Deleted %d transactions successfully", count);
-
-                                if (preserveOpeningBalances) {
-                                    transactionsDbAdapter.bulkAddRecords(openingBalances, DatabaseAdapter.UpdateMethod.insert);
-                                }
-                                Toast.makeText(context, R.string.toast_all_transactions_deleted, Toast.LENGTH_SHORT).show();
-                                WidgetConfigurationActivity.updateAllWidgets(getActivity());
+                                final Activity activity = requireActivity();
+                                BackupManager.backupActiveBookAsync(activity, result -> {
+                                    if (!result) return null;
+                                    didBackup(activity);
+                                    return null;
+                                });
                             }
                         }
 
                 ).create();
+    }
+
+    private void didBackup(Context context) {
+        AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
+        List<Transaction> openingBalances = new ArrayList<>();
+        boolean preserveOpeningBalances = GnuCashApplication.shouldSaveOpeningBalances(false);
+        if (preserveOpeningBalances) {
+            openingBalances = accountsDbAdapter.getAllOpeningBalanceTransactions();
+        }
+        TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
+        int count = transactionsDbAdapter.deleteAllNonTemplateTransactions();
+        Timber.i("Deleted %d transactions successfully", count);
+
+        if (preserveOpeningBalances) {
+            transactionsDbAdapter.bulkAddRecords(openingBalances, DatabaseAdapter.UpdateMethod.insert);
+        }
+        Toast.makeText(context, R.string.toast_all_transactions_deleted, Toast.LENGTH_SHORT).show();
+        WidgetConfigurationActivity.updateAllWidgets(getActivity());
     }
 }

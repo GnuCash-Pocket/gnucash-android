@@ -201,9 +201,11 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
         }
 
         if (key.equals(getString(R.string.key_create_backup))) {
-            boolean result = BackupManager.backupActiveBook(preference.getContext());
-            int msg = result ? R.string.toast_backup_successful : R.string.toast_backup_failed;
-            Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show();
+            BackupManager.backupActiveBookAsync(requireActivity(), result -> {
+                int msg = result ? R.string.toast_backup_successful : R.string.toast_backup_failed;
+                Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show();
+                return null;
+            });
         }
 
         return false;

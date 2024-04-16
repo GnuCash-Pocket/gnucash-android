@@ -53,6 +53,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
 import timber.log.Timber;
 
 /**
@@ -101,6 +103,7 @@ public class BackupManager {
      *
      * @return {@code true} if backup was successful, {@code false} otherwise
      */
+    @WorkerThread
     public static boolean backupActiveBook(Context context) {
         return backupBook(context, BooksDbAdapter.getInstance().getActiveBookUID());
     }
@@ -124,6 +127,7 @@ public class BackupManager {
      * @param bookUID Unique ID of the book
      * @return {@code true} if backup was successful, {@code false} otherwise
      */
+    @WorkerThread
     public static boolean backupBook(Context context, String bookUID) {
         OutputStream outputStream;
         try {
@@ -143,7 +147,7 @@ public class BackupManager {
             new GncXmlExporter(params).generateExport(writer);
             writer.close();
             return true;
-        } catch (IOException | Exporter.ExporterException | NullPointerException e) {
+        } catch (Throwable e) {
             Timber.e(e, "Error creating XML  backup");
             return false;
         }
@@ -213,8 +217,8 @@ public class BackupManager {
                 AlarmManager.INTERVAL_DAY, alarmIntent);
     }
 
-    public static void backupBookAsync(@Nullable final Activity activity, final String bookUID, @NonNull final Runnable after) {
-        new AsyncTask<>() {
+    public static void backupBookAsync(@Nullable final Activity activity, final String bookUID, @NonNull final Function1<Boolean, Unit> after) {
+        new AsyncTask<Object, Void, Boolean>() {
             private ProgressDialog mProgressDialog;
 
             @Override
@@ -229,23 +233,23 @@ public class BackupManager {
             }
 
             @Override
-            protected Object doInBackground(Object... objects) {
+            protected Boolean doInBackground(Object... objects) {
                 backupBook(bookUID);
                 return Boolean.TRUE;
             }
 
             @Override
-            protected void onPostExecute(Object o) {
+            protected void onPostExecute(Boolean result) {
                 if (mProgressDialog != null) {
                     mProgressDialog.hide();
                 }
-                after.run();
+                after.invoke(result);
             }
         }.execute();
     }
 
-    static void backupAllBooksAsync(@Nullable final Activity activity, @NonNull final Runnable after) {
-        new AsyncTask<>() {
+    static void backupAllBooksAsync(@Nullable final Activity activity, @NonNull final Function1<Boolean, Unit> after) {
+        new AsyncTask<Object, Void, Boolean>() {
             private ProgressDialog mProgressDialog;
 
             @Override
@@ -260,22 +264,22 @@ public class BackupManager {
             }
 
             @Override
-            protected Object doInBackground(Object... objects) {
+            protected Boolean doInBackground(Object... objects) {
                 backupAllBooks(activity);
                 return Boolean.TRUE;
             }
 
             @Override
-            protected void onPostExecute(Object o) {
+            protected void onPostExecute(Boolean result) {
                 if (mProgressDialog != null) {
                     mProgressDialog.hide();
                 }
-                after.run();
+                after.invoke(result);
             }
         }.execute();
     }
 
-    public static void backupActiveBookAsync(@Nullable Activity activity, @NonNull final Runnable after) {
+    public static void backupActiveBookAsync(@Nullable Activity activity, @NonNull final Function1<Boolean, Unit> after) {
         backupBookAsync(activity, BooksDbAdapter.getInstance().getActiveBookUID(), after);
     }
 }

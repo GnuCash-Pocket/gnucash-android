@@ -286,9 +286,10 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
         //when someone launches the app to view a (.gnucash or .gnca) file
         Uri data = intent.getData();
         if (data != null) {
-            BackupManager.backupActiveBook(this);
+            Activity activity = this;
+            BackupManager.backupActiveBook(activity);
             intent.setData(null);
-            new ImportAsyncTask(this).execute(data);
+            new ImportAsyncTask(activity).execute(data);
             removeFirstRunFlag();
         }
     }

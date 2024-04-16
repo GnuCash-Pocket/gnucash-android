@@ -16,8 +16,8 @@
 
 package org.gnucash.android.ui.settings.dialog;
 
+import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -36,8 +36,7 @@ import org.gnucash.android.util.BackupManager;
 public class DeleteAllAccountsConfirmationDialog extends DoubleConfirmationDialog {
 
     public static DeleteAllAccountsConfirmationDialog newInstance() {
-        DeleteAllAccountsConfirmationDialog frag = new DeleteAllAccountsConfirmationDialog();
-        return frag;
+        return new DeleteAllAccountsConfirmationDialog();
     }
 
     @Override
@@ -48,11 +47,14 @@ public class DeleteAllAccountsConfirmationDialog extends DoubleConfirmationDialo
                 .setPositiveButton(R.string.alert_dialog_ok_delete,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                Context context = getDialog().getContext();
-                                BackupManager.backupActiveBook(context);
-                                AccountsDbAdapter.getInstance().deleteAllRecords();
-                                Toast.makeText(context, R.string.toast_all_accounts_deleted, Toast.LENGTH_SHORT).show();
-                                WidgetConfigurationActivity.updateAllWidgets(context);
+                                Activity activity = requireActivity();
+                                BackupManager.backupActiveBookAsync(activity, result -> {
+                                    if (!result) return null;
+                                    AccountsDbAdapter.getInstance().deleteAllRecords();
+                                    Toast.makeText(activity, R.string.toast_all_accounts_deleted, Toast.LENGTH_SHORT).show();
+                                    WidgetConfigurationActivity.updateAllWidgets(activity);
+                                    return null;
+                                });
                             }
                         }
                 )
