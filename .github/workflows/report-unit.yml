@@ -5,15 +5,23 @@ on:
     workflows: ["CI Build"]
     types:
       - completed
+  workflow_call:
 
 jobs:
   report:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Code for Annotations
+        uses: actions/checkout@v4
+      - name: Download Unit Test Results # see https://github.com/dorny/test-reporter/issues/363
+        uses: actions/download-artifact@v4 # https://github.com/dorny/test-reporter/issues/363
+        with:
+          name: unit-test-results
+          github-token: ${{ github.token }}
+          run-id: ${{ github.event.workflow_run.id || github.run_id }}
       - name: Unit Test Report
         uses: dorny/test-reporter@v1
         with:
-          artifact: unit-test-results
           name: Unit Test Report
           path: TEST-*.xml
           reporter: java-junit

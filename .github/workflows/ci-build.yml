@@ -4,6 +4,7 @@ on:
   push: {}
   pull_request:
     branches: [master]
+  workflow_call:
 
 env:
   GOOGLE_SERVICES: |
@@ -81,14 +82,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Prepare Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: "17"
           distribution: temurin
       - name: Prepare Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
       - name: Prepare Google Services
         run: echo $GOOGLE_SERVICES > app/google-services.json
         env:
@@ -98,7 +99,7 @@ jobs:
       - name: Rename Application APK
         run: cp app/build/outputs/apk/development/debug/*.apk application.apk
       - name: Upload Application APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: application-apk
           path: application.apk
@@ -109,14 +110,14 @@ jobs:
     needs: build
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Prepare Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: "17"
           distribution: temurin
       - name: Prepare Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
       - name: Prepare Google Services
         run: echo $GOOGLE_SERVICES > app/google-services.json
         env:
@@ -129,7 +130,7 @@ jobs:
         with:
           paths: app/build/test-results/testDevelopmentDebugUnitTest/TEST-*.xml
       - name: Upload Unit Test Results for Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: unit-test-results
@@ -140,14 +141,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Prepare Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: "17"
           distribution: temurin
       - name: Prepare Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
       - name: Prepare Google Services
         run: echo $GOOGLE_SERVICES > app/google-services.json
         env:
@@ -159,14 +160,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Prepare Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: "17"
           distribution: temurin
       - name: Prepare Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3
       - name: Prepare Google Services
         run: echo $GOOGLE_SERVICES > app/google-services.json
         env:
@@ -176,7 +177,7 @@ jobs:
       - name: Rename Instrumentation APK
         run: cp app/build/outputs/apk/androidTest/development/debug/*.apk instrumentation.apk
       - name: Upload Instrumentation APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: instrumentation-apk
           path: instrumentation.apk

@@ -1,10 +1,10 @@
-name: Instrumentation Test
+name: Nightly Build
 
 on:
-  workflow_run:
-    workflows: ["CI Build"]
-    types:
-      - completed
+  schedule:
+    - cron: 45 4 * * *
+
+  workflow_dispatch:
 
 env:
   # todo: Replace following envs with vars see https://github.com/community/community/discussions/44322
@@ -13,7 +13,15 @@ env:
   GCLOUD_WORKLOAD_IDENTITY_PROVIDER: projects/679335683580/locations/global/workloadIdentityPools/github-main-testing-pool/providers/github
 
 jobs:
+  ci-build:
+    uses: ./.github/workflows/ci-build.yml
+
+  report-unit:
+    uses: ./.github/workflows/report-unit.yml
+    needs: ci-build
+  
   instrumentation-test:
+    needs: ci-build
     strategy:
       fail-fast: false
       matrix:
@@ -31,24 +39,25 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      checks: write
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Download Application APK
-        uses: ./.github/actions/download-artifact
+        uses: actions/download-artifact@v4
         with:
-          artifact-name: application-apk
+          name: application-apk
       - name: Download Instrumentation APK
-        uses: ./.github/actions/download-artifact
+        uses: actions/download-artifact@v4
         with:
-          artifact-name: instrumentation-apk
+          name: instrumentation-apk
       - name: Login to Google Cloud
-        uses: google-github-actions/auth@v1
+        uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ env.GCLOUD_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ env.GCLOUD_SERVICE_ACCOUNT }}
       - name: Set up GCloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+        uses: google-github-actions/setup-gcloud@v2
       - name: Run Instrumentation Tests
         id: run-instrumentation-test
         run: . ./instrumentation-test.sh
@@ -66,16 +75,12 @@ jobs:
         env:
           RESULTS_URL: gs://${{ env.GCLOUD_BUCKET }}/${{ github.run_number }}/${{ matrix.device_name }}/**/test_result_*.xml
       - name: Instrumentation Test Summary
-        uses: test-summary/action@v2
+        uses: test-summary/action@v2.2 # See https://github.com/test-summary/action/issues/44
         with:
           paths: instrumentation-test-results/test_result_*.xml
-      - name: Upload Instrumentation Test Results for Report
-        uses: actions/upload-artifact@v3
+      - name: Instrumentation Test Report ${{ matrix.device_name }}
+        uses: dorny/test-reporter@v1
         with:
-          name: instrumentation-test-results-${{ matrix.device_name }}
+          name: Instrumentation Test Report ${{ matrix.device_name }}
           path: instrumentation-test-results/test_result_*.xml
-          if-no-files-found: error
-      - name: Assert Instrumentation Tests Success
-        run: if [ "$SUCCESS" != "true" ]; then exit 1; fi
-        env:
-          SUCCESS: ${{ steps.run-instrumentation-test.outputs.test_success }}
+          reporter: java-junit

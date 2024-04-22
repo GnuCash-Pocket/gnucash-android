@@ -1,5 +1,5 @@
 [![CI Build](https://github.com/GnuCash-Pocket/gnucash-android/actions/workflows/ci-build.yml/badge.svg)](https://github.com/GnuCash-Pocket/gnucash-android/actions/workflows/ci-build.yml)
-[![Instrumentation Test](https://github.com/GnuCash-Pocket/gnucash-android/actions/workflows/instrumentation-test.yml/badge.svg)](https://github.com/GnuCash-Pocket/gnucash-android/actions/workflows/instrumentation-test.yml)
+[![Nightly Build](https://github.com/GnuCash-Pocket/gnucash-android/actions/workflows/nightly-build.yml/badge.svg)](https://github.com/GnuCash-Pocket/gnucash-android/actions/workflows/nightly-build-test.yml)
 
 # Introduction
 
