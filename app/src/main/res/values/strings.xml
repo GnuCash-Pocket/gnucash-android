@@ -379,6 +379,7 @@
         <item>All time</item>
         <item>Custom range…</item>
     </string-array>
+    <string name="report_time_range_picker_title">"Pick time range"</string>
 
     <!-- Passcode lock -->
     <string name="digit_one">1</string>

@@ -378,6 +378,7 @@
         <item>All time</item>
         <item>Custom range&#8230;</item>
     </string-array>
+    <string name="report_time_range_picker_title">"Pick time range"</string>
     <!-- Passcode lock -->
     <string name="digit_one">1</string>
     <!-- In the English locale, digit 1 has no text on it. This is simply empty space. If your locale has text on digit 1, then translate-->

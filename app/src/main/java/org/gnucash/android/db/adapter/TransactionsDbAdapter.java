@@ -638,7 +638,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
     /**
      * Returns the most recent `modified_at` timestamp of non-template transactions in the database
      *
-     * @return Last moodified time in milliseconds or current time if there is none in the database
+     * @return Last modified time in milliseconds or current time if there is none in the database
      */
     public Timestamp getTimestampOfLastModification() {
         Cursor cursor = mDb.query(TransactionEntry.TABLE_NAME,
