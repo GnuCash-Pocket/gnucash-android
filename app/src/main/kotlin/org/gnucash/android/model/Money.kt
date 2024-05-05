@@ -15,6 +15,9 @@
  */
 package org.gnucash.android.model
 
+import android.os.Build
+import android.os.Parcel
+import android.os.Parcelable
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.RoundingMode
@@ -34,7 +37,7 @@ import timber.log.Timber
  *
  * @author Ngewi Fet<ngewif@gmail.com>
  */
-class Money : Number, Comparable<Money> {
+class Money : Number, Comparable<Money>, Parcelable {
     /**
      * Currency of the account
      */
@@ -59,9 +62,22 @@ class Money : Number, Comparable<Money> {
      * @param commodity Commodity of the money
      */
     constructor(amount: BigDecimal, commodity: Commodity) {
+        //commodity has to be set first. Because we use it's scale
         this.commodity = commodity
-        setAmount(amount) //commodity has to be set first. Because we use it's scale
+        setAmount(amount)
     }
+
+    /**
+     * Constructs a new money amount given the numerator and denominator of the amount.
+     * The rounding mode used for the division is [BigDecimal.ROUND_HALF_EVEN]
+     *
+     * @param amount    Value of the amount
+     * @param currencyCode 3-character currency code string
+     */
+    constructor(amount: BigDecimal, currencyCode: String?) : this(
+        amount,
+        Commodity.getInstance(currencyCode)!!
+    )
 
     /**
      * Creates a new money amount
@@ -78,11 +94,10 @@ class Money : Number, Comparable<Money> {
      * @param amount       Numerical value of the Money
      * @param currencyCode Currency code as specified by ISO 4217
      */
-    constructor(amount: String?, currencyCode: String?) {
-        //commodity has to be set first
-        commodity = Commodity.getInstance(currencyCode) ?: Commodity.DEFAULT_COMMODITY
-        setAmount(BigDecimal(amount))
-    }
+    constructor(amount: String?, currencyCode: String?) : this(
+        BigDecimal(amount),
+        currencyCode
+    )
 
     /**
      * Constructs a new money amount given the numerator and denominator of the amount.
@@ -92,10 +107,10 @@ class Money : Number, Comparable<Money> {
      * @param denominator  Denominator as integer
      * @param currencyCode 3-character currency code string
      */
-    constructor(numerator: Long, denominator: Long, currencyCode: String) {
-        _amount = getBigDecimal(numerator, denominator)
-        setCommodity(currencyCode)
-    }
+    constructor(numerator: Long, denominator: Long, currencyCode: String) : this(
+        getBigDecimal(numerator, denominator),
+        currencyCode
+    )
 
     /**
      * Copy constructor.
@@ -103,10 +118,7 @@ class Money : Number, Comparable<Money> {
      *
      * @param money Money instance to be cloned
      */
-    constructor(money: Money) {
-        setCommodity(money.commodity)
-        setAmount(money.asBigDecimal())
-    }
+    constructor(money: Money) : this(money.asBigDecimal(), money.commodity)
 
     /**
      * Returns a new `Money` object the currency specified by `currency`
@@ -487,6 +499,26 @@ class Money : Number, Comparable<Money> {
     val isAmountZero: Boolean
         get() = _amount.compareTo(BigDecimal.ZERO) == 0
 
+    constructor(parcel: Parcel) {
+        val amount: BigDecimal? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            parcel.readSerializable(javaClass.classLoader, BigDecimal::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            parcel.readSerializable() as? BigDecimal
+        }
+        setCommodity(parcel.readString()!!)
+        setAmount(amount!!)
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeSerializable(_amount)
+        parcel.writeString(commodity.currencyCode)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
     inner class CurrencyMismatchException : IllegalArgumentException() {
         override val message: String
             get() = "Cannot perform operation on Money instances with different currencies"
@@ -539,5 +571,29 @@ class Money : Number, Comparable<Money> {
             val commodity = Commodity.getInstance(currencyCode) ?: Commodity.DEFAULT_COMMODITY
             return Money(BigDecimal.ZERO, commodity)
         }
+
+        @JvmField
+        val CREATOR = object : Parcelable.Creator<Money> {
+            override fun createFromParcel(parcel: Parcel): Money {
+                return Money(parcel)
+            }
+
+            override fun newArray(size: Int): Array<Money?> {
+                return arrayOfNulls(size)
+            }
+        }
+    }
+}
+
+fun Parcel.writeMoney(value: Money?, flags: Int) {
+    writeParcelable(value, flags)
+}
+
+fun Parcel.readMoney(): Money? {
+    val clazz = Money::class.java
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        readParcelable(clazz.classLoader, clazz)
+    } else {
+        readParcelable(clazz.classLoader)
     }
 }

@@ -743,9 +743,9 @@ public class GncXmlExporter extends Exporter {
             xmlSerializer.endTag(null, GncXmlHelper.TAG_BUDGET_RECURRENCE);
 
             //export budget slots
-            ArrayList<String> slotKey = new ArrayList<>();
-            ArrayList<String> slotType = new ArrayList<>();
-            ArrayList<String> slotValue = new ArrayList<>();
+            List<String> slotKey = new ArrayList<>();
+            List<String> slotType = new ArrayList<>();
+            List<String> slotValue = new ArrayList<>();
 
             xmlSerializer.startTag(null, GncXmlHelper.TAG_BUDGET_SLOTS);
             for (BudgetAmount budgetAmount : budget.getExpandedBudgetAmounts()) {

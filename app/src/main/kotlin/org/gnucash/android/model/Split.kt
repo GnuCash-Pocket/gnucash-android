@@ -2,6 +2,7 @@ package org.gnucash.android.model
 
 import android.os.Parcel
 import android.os.Parcelable
+import java.lang.StringBuilder
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import java.sql.Timestamp
 
@@ -221,16 +222,22 @@ class Split : BaseModel, Parcelable {
      * @return the converted CSV string of this split
      */
     fun toCsv(): String {
-        val sep = ";"
         //TODO: add reconciled state and date
-        var splitString = (uID + sep + value!!.numerator + sep + value!!.denominator
-                + sep + value!!.commodity.currencyCode + sep + _quantity!!.numerator
-                + sep + _quantity!!.denominator + sep + _quantity!!.commodity.currencyCode
-                + sep + transactionUID + sep + accountUID + sep + type!!.name)
+        val splitString = StringBuilder()
+            .append(uID)
+            .append(SEPARATOR_CSV).append(value!!.numerator)
+            .append(SEPARATOR_CSV).append(value!!.denominator)
+            .append(SEPARATOR_CSV).append(value!!.commodity.currencyCode)
+            .append(SEPARATOR_CSV).append(_quantity!!.numerator)
+            .append(SEPARATOR_CSV).append(_quantity!!.denominator)
+            .append(SEPARATOR_CSV).append(_quantity!!.commodity.currencyCode)
+            .append(SEPARATOR_CSV).append(transactionUID)
+            .append(SEPARATOR_CSV).append(accountUID)
+            .append(SEPARATOR_CSV).append(type!!.name)
         if (memo != null) {
-            splitString = splitString + sep + memo
+            splitString.append(SEPARATOR_CSV).append(memo)
         }
-        return splitString
+        return splitString.toString()
     }
 
     /**
@@ -305,13 +312,8 @@ class Split : BaseModel, Parcelable {
         dest.writeString(transactionUID)
         dest.writeString(type!!.name)
 
-        dest.writeLong(value!!.numerator)
-        dest.writeLong(value!!.denominator)
-        dest.writeString(value!!.commodity.currencyCode)
-
-        dest.writeLong(_quantity!!.numerator)
-        dest.writeLong(_quantity!!.denominator)
-        dest.writeString(_quantity!!.commodity.currencyCode)
+        dest.writeMoney(value!!, flags)
+        dest.writeMoney(_quantity!!, flags)
 
         dest.writeString(memo.orEmpty())
         dest.writeString(reconcileState.toString())
@@ -330,18 +332,10 @@ class Split : BaseModel, Parcelable {
         transactionUID = source.readString()
         type = TransactionType.valueOf(source.readString()!!)
 
-        val valueNum = source.readLong()
-        val valueDenom = source.readLong()
-        val valueCurrency = source.readString()
-        value = Money(valueNum, valueDenom, valueCurrency!!).abs()
+        value = source.readMoney()
+        _quantity = source.readMoney()
 
-        val qtyNum = source.readLong()
-        val qtyDenom = source.readLong()
-        val qtyCurrency = source.readString()
-        _quantity = Money(qtyNum, qtyDenom, qtyCurrency!!).abs()
-
-        val memo = source.readString()
-        this.memo = if (memo!!.isEmpty()) null else memo
+        memo = source.readString()
         reconcileState = source.readString()!![0]
         reconcileDate = Timestamp.valueOf(source.readString())
     }
@@ -361,6 +355,8 @@ class Split : BaseModel, Parcelable {
          * Flag indicating that the split has been cleared, but not reconciled
          */
         const val FLAG_CLEARED = 'c'
+
+        private const val SEPARATOR_CSV = ";"
 
         /**
          * Splits are saved as absolute values to the database, with no negative numbers.
@@ -413,7 +409,7 @@ class Split : BaseModel, Parcelable {
         fun parseSplit(splitCsvString: String): Split {
             //TODO: parse reconciled state and date
             val tokens =
-                splitCsvString.split(";".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                splitCsvString.split(SEPARATOR_CSV.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             return if (tokens.size < 8) { //old format splits
                 val amount = Money(tokens[0], tokens[1])
                 val split = Split(amount, tokens[2])
@@ -449,7 +445,7 @@ class Split : BaseModel, Parcelable {
          */
         @JvmField
         val CREATOR: Parcelable.Creator<Split> = object : Parcelable.Creator<Split> {
-            override fun createFromParcel(source: Parcel): Split? {
+            override fun createFromParcel(source: Parcel): Split {
                 return Split(source)
             }
 
