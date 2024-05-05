@@ -207,13 +207,14 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
                     ExportParams exportParams = new ExportParams(ExportFormat.CSVA);
                     exportParams.setExportTarget(ExportParams.ExportTarget.URI);
                     exportParams.setExportLocation(data.getData());
-                    ExportAsyncTask exportTask = new ExportAsyncTask(getActivity(), GnuCashApplication.getActiveDb());
+                    Activity context = requireActivity();
+                    ExportAsyncTask exportTask = new ExportAsyncTask(context, GnuCashApplication.getActiveDb());
 
                     try {
                         exportTask.execute(exportParams).get();
                     } catch (InterruptedException | ExecutionException e) {
                         Timber.e(e);
-                        Toast.makeText(getActivity(), "An error occurred during the Accounts CSV export",
+                        Toast.makeText(context, "An error occurred during the Accounts CSV export",
                                 Toast.LENGTH_LONG).show();
                     }
                 }

@@ -326,7 +326,7 @@ public class ExportFormFragment extends Fragment implements
         }
 
         Timber.i("Commencing async export of transactions");
-        new ExportAsyncTask(requireContext(), GnuCashApplication.getActiveDb()).execute(exportParameters);
+        new ExportAsyncTask(requireActivity(), GnuCashApplication.getActiveDb()).execute(exportParameters);
 
         if (mRecurrenceRule != null) {
             ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
