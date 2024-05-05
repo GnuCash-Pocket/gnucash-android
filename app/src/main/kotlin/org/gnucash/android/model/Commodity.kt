@@ -22,12 +22,26 @@ import org.gnucash.android.db.adapter.CommoditiesDbAdapter
  * At the moment only ISO4217 currencies are supported
  */
 class Commodity(
+    /**
+     * Official full name of the currency
+     */
     var fullname: String?,
     /**
      * This is the currency code for ISO4217 currencies
      */
     var mnemonic: String,
-    smallestFraction: Int
+    /**
+     * The smallest fraction supported by the commodity as a power of 10.
+     *
+     * i.e. for commodities with no fractions, 1 is returned, for commodities with 2 fractions, 100 is returned
+     *
+     * The fraction is a power of 10. So commodities with 2 fraction digits, have fraction of 10^2 = 100.<br />
+     * If the parameter is any other value, a default fraction of 100 will be set
+     *
+     * @param smallestFraction Smallest fraction as power of ten
+     * @throws IllegalArgumentException if the smallest fraction is not a power of 10
+     */
+    var smallestFraction: Int
 ) : BaseModel() {
     enum class Namespace {
         ISO4217
@@ -43,30 +57,7 @@ class Commodity(
     var cusip: String? = null
     var localSymbol: String? = ""
 
-    /**
-     * The smallest fraction supported by the commodity as a power of 10.
-     *
-     * i.e. for commodities with no fractions, 1 is returned, for commodities with 2 fractions, 100 is returned
-     *
-     * The fraction is a power of 10. So commodities with 2 fraction digits, have fraction of 10^2 = 100.<br />
-     * If the parameter is any other value, a default fraction of 100 will be set
-     *
-     * @param smallestFraction Smallest fraction as power of ten
-     * @throws IllegalArgumentException if the smallest fraction is not a power of 10
-     */
-    var smallestFraction = 0
     var quoteFlag = 0
-
-    /**
-     * Create a new commodity
-     *
-     * @param fullname         Official full name of the currency
-     * @param mnemonic         Official abbreviated designation for the currency
-     * @param smallestFraction Number of sub-units that the basic commodity can be divided into, as power of 10. e.g. 10^&lt;number_of_fraction_digits&gt;
-     */
-    init {
-        this.smallestFraction = smallestFraction
-    }
 
     /**
      * Alias for [.getMnemonic]
@@ -133,18 +124,6 @@ class Commodity(
     }
 
     companion object {
-        /**
-         * Default commodity for device locale
-         *
-         * This value is set when a new application instance is created in [GnuCashApplication.onCreate].
-         * The value initialized here is just a placeholder for unit tests
-         */
-        @JvmField
-        var DEFAULT_COMMODITY = Commodity(
-            "US Dollars",
-            "USD",
-            100
-        ) //this value is a stub. Will be overwritten when the app is launched
         @JvmField
         var USD = Commodity("", "USD", 100)
         @JvmField
@@ -159,6 +138,19 @@ class Commodity(
         var JPY = Commodity("", "JPY", 1)
         @JvmField
         var AUD = Commodity("", "AUD", 100)
+
+        /**
+         * Default commodity for device locale
+         *
+         * This value is set when a new application instance is created in [GnuCashApplication.onCreate].
+         * The value initialized here is just a placeholder for unit tests
+         */
+        @JvmField
+        var DEFAULT_COMMODITY = Commodity(
+            USD.fullname,
+            USD.mnemonic,
+            USD.smallestFraction
+        ) //this value is a stub. Will be overwritten when the app is launched
 
         /**
          * Returns an instance of commodity for the specified currencyCode

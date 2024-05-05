@@ -99,7 +99,7 @@ public class GncXmlExporter extends Exporter {
                              List<String> slotType,
                              List<String> slotValue) throws IOException {
         if (slotKey == null || slotType == null || slotValue == null ||
-                slotKey.size() == 0 || slotType.size() != slotKey.size() || slotValue.size() != slotKey.size()) {
+            slotKey.isEmpty() || slotType.size() != slotKey.size() || slotValue.size() != slotKey.size()) {
             return;
         }
 
@@ -736,9 +736,9 @@ public class GncXmlExporter extends Exporter {
             xmlSerializer.endTag(null, GncXmlHelper.TAG_BUDGET_RECURRENCE);
 
             //export budget slots
-            ArrayList<String> slotKey = new ArrayList<>();
-            ArrayList<String> slotType = new ArrayList<>();
-            ArrayList<String> slotValue = new ArrayList<>();
+            List<String> slotKey = new ArrayList<>();
+            List<String> slotType = new ArrayList<>();
+            List<String> slotValue = new ArrayList<>();
 
             xmlSerializer.startTag(null, GncXmlHelper.TAG_BUDGET_SLOTS);
             for (BudgetAmount budgetAmount : budget.getExpandedBudgetAmounts()) {

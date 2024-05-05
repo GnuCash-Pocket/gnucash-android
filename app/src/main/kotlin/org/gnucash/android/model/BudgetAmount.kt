@@ -83,7 +83,7 @@ class BudgetAmount : BaseModel, Parcelable {
         dest.writeString(uID)
         dest.writeString(budgetUID)
         dest.writeString(accountUID)
-        dest.writeString(amount.toPlainString())
+        dest.writeMoney(amount, flags)
         dest.writeLong(periodNum)
     }
 
@@ -96,7 +96,7 @@ class BudgetAmount : BaseModel, Parcelable {
         uID = source.readString()
         budgetUID = source.readString()
         accountUID = source.readString()
-        amount = Money(BigDecimal(source.readString()), Commodity.DEFAULT_COMMODITY)
+        amount = source.readMoney()!!
         periodNum = source.readLong()
     }
 

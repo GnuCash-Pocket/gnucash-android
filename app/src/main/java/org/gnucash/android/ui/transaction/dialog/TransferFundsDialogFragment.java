@@ -219,12 +219,12 @@ public class TransferFundsDialogFragment extends DialogFragment {
                 mExchangeRateInputLayout.setError(getString(R.string.error_invalid_exchange_rate));
                 return;
             }
-            price = new Price(originCommodityUID, targetCommodityUID, rate);
-
             mConvertedAmount = mOriginAmount.times(rate).withCurrency(mTargetCommodity);
-        }
 
-        if (mConvertedAmountRadioButton.isChecked()) {
+            price = new Price(originCommodityUID, targetCommodityUID, rate);
+            price.setSource(Price.SOURCE_USER);
+            PricesDbAdapter.getInstance().addRecord(price);
+        } else if (mConvertedAmountRadioButton.isChecked()) {
             BigDecimal amount;
             try {
                 amount = AmountParser.parse(mConvertedAmountInput.getText().toString());
@@ -238,10 +238,9 @@ public class TransferFundsDialogFragment extends DialogFragment {
             // fractions cannot be exactly represented by BigDecimal.
             price.setValueNum(mConvertedAmount.getNumerator() * mOriginAmount.getDenominator());
             price.setValueDenom(mOriginAmount.getNumerator() * mConvertedAmount.getDenominator());
+            price.setSource(Price.SOURCE_USER);
+            PricesDbAdapter.getInstance().addRecord(price);
         }
-
-        price.setSource(Price.SOURCE_USER);
-        PricesDbAdapter.getInstance().addRecord(price);
 
         if (mOnTransferFundsListener != null)
             mOnTransferFundsListener.transferComplete(mConvertedAmount);
