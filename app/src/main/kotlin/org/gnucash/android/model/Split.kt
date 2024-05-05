@@ -224,8 +224,8 @@ class Split : BaseModel, Parcelable {
         val sep = ";"
         //TODO: add reconciled state and date
         var splitString = (uID + sep + value!!.numerator + sep + value!!.denominator
-                + sep + value!!.commodity!!.currencyCode + sep + _quantity!!.numerator
-                + sep + _quantity!!.denominator + sep + _quantity!!.commodity!!.currencyCode
+                + sep + value!!.commodity.currencyCode + sep + _quantity!!.numerator
+                + sep + _quantity!!.denominator + sep + _quantity!!.commodity.currencyCode
                 + sep + transactionUID + sep + accountUID + sep + type!!.name)
         if (memo != null) {
             splitString = splitString + sep + memo
@@ -307,13 +307,13 @@ class Split : BaseModel, Parcelable {
 
         dest.writeLong(value!!.numerator)
         dest.writeLong(value!!.denominator)
-        dest.writeString(value!!.commodity!!.currencyCode)
+        dest.writeString(value!!.commodity.currencyCode)
 
         dest.writeLong(_quantity!!.numerator)
         dest.writeLong(_quantity!!.denominator)
-        dest.writeString(_quantity!!.commodity!!.currencyCode)
+        dest.writeString(_quantity!!.commodity.currencyCode)
 
-        dest.writeString(if (memo == null) "" else memo)
+        dest.writeString(memo.orEmpty())
         dest.writeString(reconcileState.toString())
         dest.writeString(reconcileDate.toString())
     }
