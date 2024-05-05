@@ -849,8 +849,9 @@ public class TransactionFormFragment extends Fragment implements
      * and save a transaction
      */
     private void saveNewTransaction() {
-        //determine whether we need to do currency conversion
+        mAmountEditText.setError(null);
 
+        //determine whether we need to do currency conversion
         if (isMultiCurrencyTransaction() && !splitEditorUsed() && !mCurrencyConversionDone) {
             onSaveAttempt = true;
             startTransferFunds();
@@ -894,7 +895,7 @@ public class TransactionFormFragment extends Fragment implements
             finish(Activity.RESULT_OK);
         } catch (ArithmeticException ae) {
             Timber.e(ae);
-            Snackbar.make(getView(), R.string.error_invalid_amount, Snackbar.LENGTH_LONG).show();
+            mAmountEditText.setError(getString(R.string.error_invalid_amount));
         } catch (Throwable e) {
             Timber.e(e);
         } finally {

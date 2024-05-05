@@ -274,14 +274,6 @@ class Money : Number, Comparable<Money>, Parcelable {
         currencyFormat.setMinimumFractionDigits(commodity.smallestFractionDigits)
         currencyFormat.setMaximumFractionDigits(commodity.smallestFractionDigits)
         return currencyFormat.format(_amount)
-        /*
-// 	old currency formatting code
-		NumberFormat formatter = NumberFormat.getInstance(locale);
-		formatter.setMinimumFractionDigits(mCommodity.getSmallestFractionDigits());
-		formatter.setMaximumFractionDigits(mCommodity.getSmallestFractionDigits());
-		Currency currency = Currency.getInstance(mCommodity.getCurrencyCode());
-		return formatter.format(toDouble()) + " " + currency.getSymbol(locale);
-*/
     }
 
     /**

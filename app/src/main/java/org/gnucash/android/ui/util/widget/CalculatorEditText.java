@@ -18,9 +18,9 @@ package org.gnucash.android.ui.util.widget;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.inputmethodservice.KeyboardView;
-import android.os.Build;
 import android.text.Editable;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -29,9 +29,6 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.annotation.XmlRes;
 import androidx.appcompat.widget.AppCompatEditText;
-
-import net.objecthunter.exp4j.Expression;
-import net.objecthunter.exp4j.ExpressionBuilder;
 
 import org.gnucash.android.R;
 import org.gnucash.android.model.Commodity;
@@ -265,26 +262,15 @@ public class CalculatorEditText extends AppCompatEditText {
      */
     public String evaluate() {
         String amountString = getCleanString();
-        if (amountString.isEmpty()) {
+        if (TextUtils.isEmpty(amountString)) {
             return "";
         }
 
-        ExpressionBuilder expressionBuilder = new ExpressionBuilder(amountString);
-        Expression expression;
-
-        try {
-            expression = expressionBuilder.build();
-        } catch (Throwable e) {
-            setError(getContext().getString(R.string.label_error_invalid_expression));
-            Timber.w(e, "Invalid expression: %s", amountString);
-            return "";
-        }
-
-        if (expression != null && expression.validate().isValid()) {
-            BigDecimal amount = BigDecimal.valueOf(expression.evaluate());
+        BigDecimal amount = AmountParser.evaluate(amountString);
+        if (amount != null) {
             try {
                 Money money = new Money(amount, getCommodity());
-                // Currently amount has limit of 64 bits.
+                // Currently the numerator has a limit of 64 bits.
                 money.getNumerator();
             } catch (ArithmeticException e) {
                 setError(getContext().getString(R.string.label_error_invalid_expression));
@@ -294,7 +280,7 @@ public class CalculatorEditText extends AppCompatEditText {
             setValue(amount);
         } else {
             setError(getContext().getString(R.string.label_error_invalid_expression));
-            Timber.w("Expression is null or invalid: %s", expression);
+            Timber.w("Invalid expression: %s", amountString);
         }
         return getText().toString();
     }

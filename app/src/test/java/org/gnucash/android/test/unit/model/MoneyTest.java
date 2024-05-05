@@ -21,16 +21,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-
-import net.objecthunter.exp4j.Expression;
-import net.objecthunter.exp4j.ExpressionBuilder;
-import net.objecthunter.exp4j.ValidationResult;
 
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.test.unit.testutil.ShadowCrashlytics;
 import org.gnucash.android.test.unit.testutil.ShadowUserVoice;
+import org.gnucash.android.util.AmountParser;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -183,22 +179,33 @@ public class MoneyTest {
     }
 
     @Test
-    public void overflow() throws Exception {
+    public void overflow() {
         Money rounding = new Money("12345678901234567.89", CURRENCY_CODE);
         assertThat("12345678901234567.89").isEqualTo(rounding.toPlainString());
         assertThat("€12,345,678,901,234,567.89").isEqualTo(rounding.formattedString(Locale.US));
         assertThat(rounding.getNumerator()).isEqualTo(1234567890123456789L);
         assertThat(rounding.getDenominator()).isEqualTo(100L);
 
-        ExpressionBuilder expressionBuilder = new ExpressionBuilder("123456789012345678.90");
-        Expression expression = expressionBuilder.build();
-        ValidationResult validationResult = expression.validate();
-        assertTrue(validationResult.isValid());
-        double value = expression.evaluate();
-        assertEquals(123456789012345678.90, value, 1e-2);
-
         Money overflow = new Money("1234567890123456789.00", CURRENCY_CODE);
         assertThat("1234567890123456789.00").isEqualTo(overflow.toPlainString());
         assertThatThrownBy(() -> overflow.getNumerator()).isInstanceOf(ArithmeticException.class);
+    }
+
+    @Test
+    @Config(sdk = 25)
+    public void evaluate_25() {
+        BigDecimal value = AmountParser.evaluate("123456789012345678.90");
+        assertNotNull(value);
+        assertEquals(123456789012345678.90, value.doubleValue(), 1e-2);
+        assertEquals(123456789012345680L, value.longValue());
+    }
+
+    @Test
+    @Config(sdk = 26)
+    public void evaluate_26() {
+        BigDecimal value = AmountParser.evaluate("123456789012345678.90");
+        assertNotNull(value);
+        assertEquals(123456789012345678.90, value.doubleValue(), 1e-2);
+        assertEquals(123456789012345678L, value.longValue());
     }
 }
