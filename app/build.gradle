@@ -187,6 +187,7 @@ dependencies {
     )
 
     implementation 'net.objecthunter:exp4j:0.4.7'
+    implementation 'com.ezylang:EvalEx:3.2.0'
     implementation 'androidx.drawerlayout:drawerlayout:1.2.0'
 
     implementation 'com.google.android.gms:play-services-drive:17.0.0'

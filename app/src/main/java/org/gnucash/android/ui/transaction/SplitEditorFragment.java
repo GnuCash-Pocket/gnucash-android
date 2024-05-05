@@ -44,9 +44,6 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.snackbar.Snackbar;
 
-import net.objecthunter.exp4j.Expression;
-import net.objecthunter.exp4j.ExpressionBuilder;
-
 import org.gnucash.android.R;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
@@ -64,6 +61,7 @@ import org.gnucash.android.ui.transaction.dialog.TransferFundsDialogFragment;
 import org.gnucash.android.ui.util.widget.CalculatorEditText;
 import org.gnucash.android.ui.util.widget.CalculatorKeyboard;
 import org.gnucash.android.ui.util.widget.TransactionTypeSwitch;
+import org.gnucash.android.util.AmountParser;
 import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
 
 import java.math.BigDecimal;
@@ -316,24 +314,8 @@ public class SplitEditorFragment extends Fragment {
          */
         public BigDecimal getAmountValue() {
             String amountString = splitAmountEditText.getCleanString();
-            if (amountString.isEmpty())
-                return BigDecimal.ZERO;
-
-            ExpressionBuilder expressionBuilder = new ExpressionBuilder(amountString);
-            Expression expression;
-
-            try {
-                expression = expressionBuilder.build();
-            } catch (RuntimeException e) {
-                return BigDecimal.ZERO;
-            }
-
-            if (expression != null && expression.validate().isValid()) {
-                return new BigDecimal(expression.evaluate());
-            } else {
-                Timber.v("Incomplete expression for updating imbalance: %s", expression);
-                return BigDecimal.ZERO;
-            }
+            BigDecimal amount = AmountParser.evaluate(amountString);
+            return (amount != null) ? amount : BigDecimal.ZERO;
         }
     }
 
@@ -389,7 +371,6 @@ public class SplitEditorFragment extends Fragment {
         Intent data = new Intent();
         data.putParcelableArrayListExtra(UxArgument.SPLIT_LIST, extractSplitsFromView());
         getActivity().setResult(Activity.RESULT_OK, data);
-
         getActivity().finish();
     }
 
