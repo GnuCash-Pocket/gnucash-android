@@ -131,7 +131,7 @@ class Transaction : BaseModel {
         if (!imbalance.isAmountZero) {
             // yes, this is on purpose the account UID is set to the currency.
             // This should be overridden before saving to db
-            val split = Split(imbalance, _commodity!!.currencyCode)
+            val split = Split(imbalance, commodity.currencyCode)
             split.type = if (imbalance.isNegative) TransactionType.CREDIT else TransactionType.DEBIT
             addSplit(split)
             return split
@@ -226,13 +226,13 @@ class Transaction : BaseModel {
      */
     private val imbalance: Money
         get() {
-            var imbalance = createZeroInstance(_commodity!!.currencyCode)
+            var imbalance = createZeroInstance(commodity.currencyCode)
             for (split in _splitList) {
-                if (split.quantity!!.commodity!! != _commodity) {
+                if (split.quantity!!.commodity != _commodity) {
                     // this may happen when importing XML exported from GNCA before 2.0.0
                     // these transactions should only be imported from XML exported from GNC desktop
                     // so imbalance split should not be generated for them
-                    return createZeroInstance(_commodity!!.currencyCode)
+                    return createZeroInstance(commodity.currencyCode)
                 }
                 val amount = split.value!!
                 imbalance = if (split.type === TransactionType.DEBIT) {
@@ -250,7 +250,7 @@ class Transaction : BaseModel {
      * @return ISO 4217 currency code string
      */
     val currencyCode: String
-        get() = _commodity!!.currencyCode
+        get() = commodity.currencyCode
 
     /**
      * The commodity for this transaction
@@ -429,7 +429,7 @@ class Transaction : BaseModel {
             var balance = createZeroInstance(accountCurrencyCode)
             for (split in splitList) {
                 if (split.accountUID != accountUID) continue
-                val amount: Money = if (split.value!!.commodity!!.currencyCode == accountCurrencyCode) {
+                val amount: Money = if (split.value!!.commodity.currencyCode == accountCurrencyCode) {
                     split.value!!
                 } else { //if this split belongs to the account, then either its value or quantity is in the account currency
                     split.quantity!!

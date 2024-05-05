@@ -144,7 +144,7 @@ class Account : BaseModel {
      * @param transaction [Transaction] to be added to the account
      */
     fun addTransaction(transaction: Transaction) {
-        transaction.commodity = _commodity!!
+        transaction.commodity = commodity
         _transactionsList.add(transaction)
     }
 
@@ -183,7 +183,7 @@ class Account : BaseModel {
      */
     val balance: Money
         get() {
-            var balance = Money.createZeroInstance(_commodity!!.currencyCode)
+            var balance = Money.createZeroInstance(commodity.currencyCode)
             for (transaction in _transactionsList) {
                 balance = balance.plus(transaction.getBalance(uID!!))
             }
@@ -305,7 +305,7 @@ class Account : BaseModel {
      */
     fun toOfx(doc: Document, parent: Element, exportStartTime: Timestamp?) {
         val currency = doc.createElement(OfxHelper.TAG_CURRENCY_DEF)
-        currency.appendChild(doc.createTextNode(_commodity!!.currencyCode))
+        currency.appendChild(doc.createTextNode(commodity.currencyCode))
 
         //================= BEGIN BANK ACCOUNT INFO (BANKACCTFROM) =================================
         val bankId = doc.createElement(OfxHelper.TAG_BANK_ID)
