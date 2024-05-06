@@ -32,6 +32,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
 
+import com.dropbox.core.DbxException;
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.FileMetadata;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -364,10 +365,8 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
                 Timber.i("Successfully uploaded file " + metadata.getName() + " to DropBox");
                 inputStream.close();
                 exportedFile.delete(); //delete file to prevent cache accumulation
-            } catch (IOException e) {
+            } catch (IOException | DbxException e) {
                 Timber.e(e);
-            } catch (com.dropbox.core.DbxException e) {
-                e.printStackTrace();
             }
         }
     }

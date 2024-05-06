@@ -582,7 +582,7 @@ public class GncXmlHandler extends DefaultHandler {
                             mBudgetAmount.setAmount(new Money(bigDecimal, Commodity.DEFAULT_COMMODITY));
                         } catch (ParseException e) {
                             mBudgetAmount.setAmount(Money.getZeroInstance()); //just put zero, in case it was a formula we couldnt parse
-                            e.printStackTrace();
+                            Timber.e(e);
                         } finally {
                             mBudget.addBudgetAmount(mBudgetAmount);
                         }

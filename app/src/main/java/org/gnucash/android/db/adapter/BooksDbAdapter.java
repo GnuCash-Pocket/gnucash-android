@@ -175,7 +175,7 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
                         "There is no active book in the app.\n"
                                 + "This should NEVER happen - fix your bugs!\n"
                                 + getNoActiveBookFoundExceptionInfo());
-                e.printStackTrace();
+                Timber.e(e);
                 throw e;
             }
             cursor.moveToFirst();

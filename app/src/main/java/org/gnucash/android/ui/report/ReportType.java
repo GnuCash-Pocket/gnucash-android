@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import timber.log.Timber;
+
 /**
  * Different types of reports
  * <p>This class also contains mappings for the reports of the different types which are available
@@ -93,10 +95,8 @@ public enum ReportType {
         BaseReportFragment fragment = null;
         try {
             fragment = (BaseReportFragment) mReportTypeMap.get(name).newInstance();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+        } catch (InstantiationException | IllegalAccessException e) {
+            Timber.e(e);
         }
         return fragment;
     }
