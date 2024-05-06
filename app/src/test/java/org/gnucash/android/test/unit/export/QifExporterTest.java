@@ -38,6 +38,7 @@ import org.gnucash.android.model.Transaction;
 import org.gnucash.android.test.unit.testutil.ShadowCrashlytics;
 import org.gnucash.android.test.unit.testutil.ShadowUserVoice;
 import org.gnucash.android.util.TimestampHelper;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,9 +66,15 @@ public class QifExporterTest {
         BooksDbAdapter booksDbAdapter = new BooksDbAdapter(bookDbHelper.getWritableDatabase());
         Book testBook = new Book("testRootAccountUID");
         booksDbAdapter.addRecord(testBook);
+        booksDbAdapter.close();
         DatabaseHelper databaseHelper =
                 new DatabaseHelper(GnuCashApplication.getAppContext(), testBook.getUID());
         mDb = databaseHelper.getWritableDatabase();
+    }
+
+    @After
+    public void tearDown() {
+        mDb.close();
     }
 
     /**

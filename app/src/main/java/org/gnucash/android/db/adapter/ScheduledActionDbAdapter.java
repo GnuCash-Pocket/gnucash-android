@@ -235,6 +235,7 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
         while (cursor.moveToNext()) {
             scheduledActions.add(buildModelInstance(cursor));
         }
+        cursor.close();
         return scheduledActions;
     }
 

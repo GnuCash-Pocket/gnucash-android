@@ -172,8 +172,8 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
                 "1")) {
             if (cursor.getCount() == 0) {
                 NoActiveBookFoundException e = new NoActiveBookFoundException(
-                        "There is no active book in the app."
-                                + "This should NEVER happen, fix your bugs!\n"
+                        "There is no active book in the app.\n"
+                                + "This should NEVER happen - fix your bugs!\n"
                                 + getNoActiveBookFoundExceptionInfo());
                 e.printStackTrace();
                 throw e;

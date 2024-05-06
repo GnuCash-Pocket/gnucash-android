@@ -39,6 +39,7 @@ import org.gnucash.android.model.Transaction;
 import org.gnucash.android.model.TransactionType;
 import org.gnucash.android.test.unit.testutil.ShadowCrashlytics;
 import org.gnucash.android.test.unit.testutil.ShadowUserVoice;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -75,6 +76,20 @@ public class GncXmlHandlerTest {
         mBooksDbAdapter = BooksDbAdapter.getInstance();
         mBooksDbAdapter.deleteAllRecords();
         assertThat(mBooksDbAdapter.getRecordsCount()).isZero();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        mBooksDbAdapter.close();
+        if (mTransactionsDbAdapter != null) {
+            mTransactionsDbAdapter.close();
+        }
+        if (mAccountsDbAdapter != null) {
+            mAccountsDbAdapter.close();
+        }
+        if (mScheduledActionDbAdapter != null) {
+            mScheduledActionDbAdapter.close();
+        }
     }
 
     private String importGnuCashXml(String filename) {

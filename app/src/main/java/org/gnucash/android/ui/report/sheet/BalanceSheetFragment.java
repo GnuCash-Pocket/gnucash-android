@@ -152,6 +152,7 @@ public class BalanceSheetFragment extends BaseReportFragment {
             TransactionsActivity.displayBalance(balanceTextView, balance);
             tableLayout.addView(view);
         }
+        cursor.close();
 
         View totalView = inflater.inflate(R.layout.row_balance_sheet, tableLayout, false);
         TableLayout.LayoutParams layoutParams = (TableLayout.LayoutParams) totalView.getLayoutParams();

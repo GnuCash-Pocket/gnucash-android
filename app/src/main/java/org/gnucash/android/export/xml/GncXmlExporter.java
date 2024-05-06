@@ -596,6 +596,7 @@ public class GncXmlExporter extends Exporter {
 
             xmlSerializer.endTag(null, GncXmlHelper.TAG_SCHEDULED_ACTION);
         }
+        cursor.close();
     }
 
     /**

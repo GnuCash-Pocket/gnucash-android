@@ -170,6 +170,7 @@ public class CsvTransactionsExporter extends Exporter {
                 csvWriter.writeToken(null); // Action
                 writeSplitsToCsv(transaction.getSplits(), csvWriter);
             }
+            cursor.close();
 
             PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow());
         } catch (Exception e) {
