@@ -144,12 +144,12 @@ public class QifExporterTest extends BookHelperTest {
         accountsDbAdapter.addRecord(account);
 
         Account foreignAccount = new Account("US Konto", Commodity.getInstance("USD"));
-        Transaction multiCulti = new Transaction("Multicurrency");
-        Split split = new Split(new Money("12", "USD"), new Money("15", "EUR"), foreignAccount.getUID());
-        Split split2 = split.createPair(account.getUID());
-        multiCulti.addSplit(split);
-        multiCulti.addSplit(split2);
-        foreignAccount.addTransaction(multiCulti);
+        Transaction multiCurr = new Transaction("multi-currency");
+        Split split1 = new Split(new Money("12", "USD"), new Money("15", "EUR"), foreignAccount.getUID());
+        Split split2 = split1.createPair(account.getUID());
+        multiCurr.addSplit(split1);
+        multiCurr.addSplit(split2);
+        foreignAccount.addTransaction(multiCurr);
 
         accountsDbAdapter.addRecord(foreignAccount);
 

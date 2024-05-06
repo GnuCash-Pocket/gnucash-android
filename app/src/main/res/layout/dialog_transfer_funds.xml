@@ -16,11 +16,12 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:fillViewport="true">
 
         <TableLayout
             android:orientation="vertical"
@@ -96,8 +97,7 @@
 
                 <RadioButton
                     android:id="@+id/radio_exchange_rate"
-                    android:layout_width="0dp"
-                    android:layout_weight="0.5"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="false" />
 
@@ -148,8 +148,7 @@
 
                 <RadioButton
                     android:id="@+id/radio_converted_amount"
-                    android:layout_width="0dp"
-                    android:layout_weight="0.5"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="true" />
 
@@ -175,7 +174,7 @@
                 <TextView
                     android:id="@+id/target_currency"
                     android:textSize="16sp"
-                    android:layout_weight="0.7"
+                    android:layout_weight="0.5"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"

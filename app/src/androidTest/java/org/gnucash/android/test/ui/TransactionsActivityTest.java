@@ -739,7 +739,7 @@ public class TransactionsActivityTest {
      * <p>
      * Basically the test works like this:
      *     <ol>
-     *         <li>Create a multicurrency transaction</li>
+     *         <li>Create a multi-currency transaction</li>
      *         <li>Change the transfer account so that both splits are of the same currency</li>
      *         <li>We now expect both the values and quantities of the splits to be the same</li>
      *     </ol>
