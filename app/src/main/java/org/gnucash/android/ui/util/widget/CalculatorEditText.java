@@ -26,6 +26,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.XmlRes;
 import androidx.appcompat.widget.AppCompatEditText;
@@ -61,6 +62,7 @@ public class CalculatorEditText extends AppCompatEditText {
      * Flag which is set if the contents of this view have been modified
      */
     private boolean isContentModified = false;
+    private String originalText = "";
 
     @XmlRes
     private int mCalculatorKeysLayout;
@@ -111,7 +113,7 @@ public class CalculatorEditText extends AppCompatEditText {
 
             @Override
             public void afterTextChanged(Editable s) {
-                isContentModified = true;
+                isContentModified = !TextUtils.equals(originalText, s);
             }
         });
 
@@ -125,6 +127,8 @@ public class CalculatorEditText extends AppCompatEditText {
                 }
             }
         });
+
+        setValue(null, true);
     }
 
     public void bindListeners(final CalculatorKeyboard calculatorKeyboard) {
@@ -302,6 +306,7 @@ public class CalculatorEditText extends AppCompatEditText {
      *
      * @return String with the amount in the EditText or empty string if there is no input
      */
+    @NonNull
     public String getCleanString() {
         return getText().toString().replaceAll(",", ".").trim();
     }
@@ -342,11 +347,19 @@ public class CalculatorEditText extends AppCompatEditText {
      *
      * @param amount BigDecimal amount
      */
-    public void setValue(BigDecimal amount) {
+    public void setValue(@Nullable BigDecimal amount) {
+        setValue(amount, false);
+    }
+
+    public void setValue(@Nullable BigDecimal amount, boolean isOriginal) {
         formatter.setMinimumFractionDigits(0);
         formatter.setMaximumFractionDigits(mCommodity.getSmallestFractionDigits());
         formatter.setGroupingUsed(false);
-        String resultString = formatter.format(amount);
+        String resultString = (amount != null) ? formatter.format(amount) : "";
+
+        if (isOriginal) {
+            originalText = resultString;
+        }
 
         setText(resultString);
         setSelection(resultString.length());

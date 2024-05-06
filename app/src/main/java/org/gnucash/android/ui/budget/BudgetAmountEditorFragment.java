@@ -147,8 +147,7 @@ public class BudgetAmountEditorFragment extends Fragment {
     private boolean canSave() {
         for (View budgetAmountView : mBudgetAmountViews) {
             BudgetAmountViewHolder viewHolder = (BudgetAmountViewHolder) budgetAmountView.getTag();
-            viewHolder.amountEditText.evaluate();
-            if (viewHolder.amountEditText.getError() != null) {
+            if (!viewHolder.amountEditText.isInputValid()) {
                 return false;
             }
             //at least one account should be loaded (don't create budget with empty account tree
