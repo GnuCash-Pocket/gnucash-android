@@ -16,11 +16,19 @@
 
 package org.gnucash.android.ui.util.widget;
 
+import static java.lang.Math.max;
+import static java.lang.Math.round;
+
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
+import androidx.appcompat.widget.DrawableUtils;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
 
@@ -42,7 +50,10 @@ import java.util.List;
 public class TransactionTypeSwitch extends SwitchCompat {
     private AccountType mAccountType = AccountType.EXPENSE;
 
-    List<OnCheckedChangeListener> mOnCheckedChangeListeners = new ArrayList<>();
+    private final List<OnCheckedChangeListener> mOnCheckedChangeListeners = new ArrayList<>();
+
+    private int textWidthMax;
+    private final Rect tempRect = new Rect();
 
     public TransactionTypeSwitch(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
@@ -58,66 +69,104 @@ public class TransactionTypeSwitch extends SwitchCompat {
 
     public void setAccountType(AccountType accountType) {
         this.mAccountType = accountType;
-        Context context = getContext().getApplicationContext();
+        Context context = getContext();
+        final String textOn;
+        final String textOff;
         switch (mAccountType) {
             case CASH:
-                setTextOn(context.getString(R.string.label_spend));
-                setTextOff(context.getString(R.string.label_receive));
+                textOn = context.getString(R.string.label_spend);
+                textOff = context.getString(R.string.label_receive);
                 break;
             case BANK:
-                setTextOn(context.getString(R.string.label_withdrawal));
-                setTextOff(context.getString(R.string.label_deposit));
+                textOn = context.getString(R.string.label_withdrawal);
+                textOff = context.getString(R.string.label_deposit);
                 break;
             case CREDIT:
-                setTextOn(context.getString(R.string.label_payment));
-                setTextOff(context.getString(R.string.label_charge));
+                textOn = context.getString(R.string.label_payment);
+                textOff = context.getString(R.string.label_charge);
                 break;
             case ASSET:
             case EQUITY:
             case LIABILITY:
-                setTextOn(context.getString(R.string.label_decrease));
-                setTextOff(context.getString(R.string.label_increase));
+                textOn = context.getString(R.string.label_decrease);
+                textOff = context.getString(R.string.label_increase);
                 break;
             case INCOME:
-                setTextOn(context.getString(R.string.label_charge));
-                setTextOff(context.getString(R.string.label_income));
+                textOn = context.getString(R.string.label_charge);
+                textOff = context.getString(R.string.label_income);
                 break;
             case EXPENSE:
-                setTextOn(context.getString(R.string.label_rebate));
-                setTextOff(context.getString(R.string.label_expense));
+                textOn = context.getString(R.string.label_rebate);
+                textOff = context.getString(R.string.label_expense);
                 break;
             case PAYABLE:
-                setTextOn(context.getString(R.string.label_payment));
-                setTextOff(context.getString(R.string.label_bill));
+                textOn = context.getString(R.string.label_payment);
+                textOff = context.getString(R.string.label_bill);
                 break;
             case RECEIVABLE:
-                setTextOn(context.getString(R.string.label_payment));
-                setTextOff(context.getString(R.string.label_invoice));
+                textOn = context.getString(R.string.label_payment);
+                textOff = context.getString(R.string.label_invoice);
                 break;
             case STOCK:
             case MUTUAL:
-                setTextOn(context.getString(R.string.label_buy));
-                setTextOff(context.getString(R.string.label_sell));
+                textOn = context.getString(R.string.label_buy);
+                textOff = context.getString(R.string.label_sell);
                 break;
             case CURRENCY:
             case ROOT:
             default:
-                setTextOn(context.getString(R.string.label_debit));
-                setTextOff(context.getString(R.string.label_credit));
+                textOn = context.getString(R.string.label_debit);
+                textOff = context.getString(R.string.label_credit);
                 break;
         }
-        setText(isChecked() ? getTextOn() : getTextOff());
-        invalidate();
+
+        setTextOn(textOn);
+        setTextOff(textOff);
+        setText(isChecked() ? textOn : textOff);
+
+        TextPaint paint = getPaint();
+        float widthOn = paint.measureText(textOn);
+        float widthOff = paint.measureText(textOff);
+        textWidthMax = round(max(widthOn, widthOff));
+    }
+
+    @Override
+    public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        if (textWidthMax > 0) {
+            final Rect padding = tempRect;
+            final int thumbWidth;
+            int paddingLeft = 0;
+            int paddingRight = 0;
+            Drawable thumbDrawable = getThumbDrawable();
+            if (thumbDrawable != null) {
+                // Cached thumb width does not include padding.
+                thumbDrawable.getPadding(padding);
+                thumbWidth = thumbDrawable.getIntrinsicWidth() - padding.left - padding.right;
+                // Adjust left and right padding to ensure there's enough room for the
+                // thumb's padding (when present).
+                @SuppressLint("RestrictedApi")
+                final Rect inset = DrawableUtils.getOpticalBounds(thumbDrawable);
+                paddingLeft = Math.max(padding.left, inset.left);
+                paddingRight = Math.max(padding.right, inset.right);
+            } else {
+                thumbWidth = 0;
+            }
+            final int switchWidth = Math.max(getSwitchMinWidth(), 2 * thumbWidth + paddingLeft + paddingRight);
+            int width = getPaddingStart() + textWidthMax + switchWidth + getPaddingEnd();
+            widthMeasureSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY);
+        }
+
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     /**
      * Set a checked change listener to monitor the amount view and currency views and update the display (color & balance accordingly)
      *
-     * @param amoutView        Amount string {@link android.widget.EditText}
+     * @param amountView        Amount string {@link android.widget.EditText}
      * @param currencyTextView Currency symbol text view
      */
-    public void setAmountFormattingListener(CalculatorEditText amoutView, TextView currencyTextView) {
-        setOnCheckedChangeListener(new OnTypeChangedListener(amoutView, currencyTextView));
+    public void setAmountFormattingListener(CalculatorEditText amountView, TextView currencyTextView) {
+        setOnCheckedChangeListener(new OnTypeChangedListener(amountView, currencyTextView));
     }
 
     /**
@@ -156,8 +205,8 @@ public class TransactionTypeSwitch extends SwitchCompat {
     }
 
     private class OnTypeChangedListener implements OnCheckedChangeListener {
-        private CalculatorEditText mAmountEditText;
-        private TextView mCurrencyTextView;
+        private final CalculatorEditText mAmountEditText;
+        private final TextView mCurrencyTextView;
 
         /**
          * Constructor with the amount view
