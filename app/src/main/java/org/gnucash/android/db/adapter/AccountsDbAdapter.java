@@ -20,17 +20,19 @@ package org.gnucash.android.db.adapter;
 import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
 import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
+import static org.gnucash.android.util.ColorExtKt.parseColor;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
-import android.graphics.Color;
 import android.text.TextUtils;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -209,8 +211,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     protected @NonNull SQLiteStatement setBindings(@NonNull SQLiteStatement stmt, @NonNull final Account account) {
         stmt.clearBindings();
         stmt.bindString(1, account.getName());
-        if (account.getDescription() != null)
-            stmt.bindString(2, account.getDescription());
+        stmt.bindString(2, account.getDescription());
         stmt.bindString(3, account.getAccountType().name());
         stmt.bindString(4, account.getCommodity().getCurrencyCode());
         if (account.getColor() != Account.DEFAULT_COLOR) {
@@ -443,20 +444,19 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         Account account = new Account(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_NAME)));
         populateBaseModelAttributes(c, account);
 
-        String description = c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_DESCRIPTION));
-        account.setDescription(description == null ? "" : description);
+        account.setDescription(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_DESCRIPTION)));
         account.setParentUID(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_PARENT_ACCOUNT_UID)));
         account.setAccountType(AccountType.valueOf(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_TYPE))));
         String currencyCode = c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_CURRENCY));
         account.setCommodity(mCommoditiesDbAdapter.getCommodity(currencyCode));
-        account.setPlaceHolderFlag(c.getInt(c.getColumnIndexOrThrow(AccountEntry.COLUMN_PLACEHOLDER)) == 1);
+        account.setPlaceHolderFlag(c.getInt(c.getColumnIndexOrThrow(AccountEntry.COLUMN_PLACEHOLDER)) != 0);
         account.setDefaultTransferAccountUID(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID)));
         String color = c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_COLOR_CODE));
-        if (color != null)
+        if (!TextUtils.isEmpty(color))
             account.setColor(color);
-        account.setFavorite(c.getInt(c.getColumnIndexOrThrow(AccountEntry.COLUMN_FAVORITE)) == 1);
+        account.setFavorite(c.getInt(c.getColumnIndexOrThrow(AccountEntry.COLUMN_FAVORITE)) != 0);
         account.setFullName(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_FULL_NAME)));
-        account.setHidden(c.getInt(c.getColumnIndexOrThrow(AccountEntry.COLUMN_HIDDEN)) == 1);
+        account.setHidden(c.getInt(c.getColumnIndexOrThrow(AccountEntry.COLUMN_HIDDEN)) != 0);
         return account;
     }
 
@@ -1154,7 +1154,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      */
     public boolean isPlaceholderAccount(String accountUID) {
         String isPlaceholder = getAttribute(accountUID, AccountEntry.COLUMN_PLACEHOLDER);
-        return Integer.parseInt(isPlaceholder) == 1;
+        return Integer.parseInt(isPlaceholder) != 0;
     }
 
     /**
@@ -1165,7 +1165,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      */
     public boolean isHiddenAccount(String accountUID) {
         String isHidden = getAttribute(accountUID, AccountEntry.COLUMN_HIDDEN);
-        return Integer.parseInt(isHidden) == 1;
+        return Integer.parseInt(isHidden) != 0;
     }
 
     /**
@@ -1176,7 +1176,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      */
     public boolean isFavoriteAccount(String accountUID) {
         String isFavorite = getAttribute(accountUID, AccountEntry.COLUMN_FAVORITE);
-        return Integer.parseInt(isFavorite) == 1;
+        return Integer.parseInt(isFavorite) != 0;
     }
 
     /**
@@ -1257,26 +1257,24 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @param accountUID GUID of the account
      * @return Android resource ID representing the color which can be directly set to a view
      */
+    @ColorInt
     public static int getActiveAccountColorResource(@NonNull String accountUID) {
         AccountsDbAdapter accountsDbAdapter = getInstance();
 
-        String colorCode = null;
-        int iColor = -1;
         String parentAccountUID = accountUID;
         while (parentAccountUID != null) {
-            colorCode = accountsDbAdapter.getAccountColorCode(accountsDbAdapter.getID(parentAccountUID));
-            if (colorCode != null) {
-                iColor = Color.parseColor(colorCode);
-                break;
+            String colorCode = accountsDbAdapter.getAccountColorCode(accountsDbAdapter.getID(parentAccountUID));
+            if (!TextUtils.isEmpty(colorCode)) {
+                Integer color = parseColor(colorCode);
+                if (color != null) {
+                    return color;
+                }
             }
             parentAccountUID = accountsDbAdapter.getParentAccountUID(parentAccountUID);
         }
 
-        if (colorCode == null) {
-            iColor = GnuCashApplication.getAppContext().getResources().getColor(R.color.theme_primary);
-        }
-
-        return iColor;
+        Context context = GnuCashApplication.getAppContext();
+        return ResourcesCompat.getColor(context.getResources(), R.color.theme_primary, null);
     }
 
     /**

@@ -16,6 +16,8 @@
 
 package org.gnucash.android.ui.account;
 
+import static org.gnucash.android.util.ColorExtKt.parseColor;
+
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.ContentValues;
@@ -23,7 +25,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -519,7 +520,8 @@ public class AccountsListFragment extends Fragment implements
             new AccountBalanceTask(holder.accountBalance).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, accountUID);
 
             String accountColor = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_COLOR_CODE));
-            int colorCode = accountColor == null ? Color.TRANSPARENT : Color.parseColor(accountColor);
+            Integer colorValue = parseColor(accountColor);
+            int colorCode = (colorValue != null) ? colorValue : Account.DEFAULT_COLOR;
             holder.colorStripView.setBackgroundColor(colorCode);
 
             boolean isPlaceholderAccount = mAccountsDbAdapter.isPlaceholderAccount(accountUID);

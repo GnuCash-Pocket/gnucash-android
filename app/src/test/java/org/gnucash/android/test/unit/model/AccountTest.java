@@ -16,6 +16,7 @@
 package org.gnucash.android.test.unit.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.gnucash.android.util.ColorExtKt.parseColor;
 
 import android.graphics.Color;
 
@@ -62,16 +63,18 @@ public class AccountTest {
         assertThat(term.getCurrencyCode()).isEqualTo("JPY");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testSetInvalidColorCode() {
         Account account = new Account("Test");
         account.setColor("443859");
+        assertThat(account.getColor()).isEqualTo(Account.DEFAULT_COLOR);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testSetColorWithAlphaComponent() {
         Account account = new Account("Test");
-        account.setColor(Color.parseColor("#aa112233"));
+        account.setColor(parseColor("#aa112233"));
+        assertThat(account.getColor()).isEqualTo(Color.rgb(0xaa, 0x11, 0x22));
     }
 
     @Test
@@ -97,5 +100,36 @@ public class AccountTest {
         Account account = new Account("Test account");
         assertThat(account.getDescription()).isEqualTo("");
         assertThat(account.getColor()).isEqualTo(Account.DEFAULT_COLOR);
+    }
+
+    @Test
+    public void colors() {
+        Account account = new Account("Name");
+        assertThat(account.getColor()).isEqualTo(Account.DEFAULT_COLOR);
+        account.setColor("null");
+        assertThat(account.getColor()).isEqualTo(Account.DEFAULT_COLOR);
+        account.setColor("blah");
+        assertThat(account.getColor()).isEqualTo(Account.DEFAULT_COLOR);
+        account.setColor("aliceblue");
+        assertThat(account.getColor()).isEqualTo(Color.rgb(240, 248, 255));
+        assertThat(account.getColorHexString()).isEqualTo("#F0F8FF");
+        account.setColor("#0000ff");
+        assertThat(account.getColor()).isEqualTo(Color.BLUE);
+        assertThat(account.getColorHexString()).isEqualTo("#0000FF");
+        account.setColor("#fff");
+        assertThat(account.getColor()).isEqualTo(Color.WHITE);
+        assertThat(account.getColorHexString()).isEqualTo("#FFFFFF");
+        account.setColor("rgb(0,255,0)");
+        assertThat(account.getColor()).isEqualTo(Color.GREEN);
+        assertThat(account.getColorHexString()).isEqualTo("#00FF00");
+        account.setColor("rgba(255, 0, 0, 0.5)");
+        assertThat(account.getColor()).isEqualTo(Color.RED);
+        assertThat(account.getColorHexString()).isEqualTo("#FF0000");
+        account.setColor("hsl(300, 100%, 50%)");
+        assertThat(account.getColor()).isEqualTo(Color.MAGENTA);
+        assertThat(account.getColorHexString()).isEqualTo("#FF00FF");
+        account.setColor("hsla(0, 100%, 50%, 1.0)");
+        assertThat(account.getColor()).isEqualTo(Color.RED);
+        assertThat(account.getColorHexString()).isEqualTo("#FF0000");
     }
 }

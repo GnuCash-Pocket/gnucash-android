@@ -537,13 +537,9 @@ public class GncXmlHandler extends DefaultHandler {
                     String color = characterString.trim();
                     //Gnucash exports the account color in format #rrrgggbbb, but we need only #rrggbb.
                     //so we trim the last digit in each block, doesn't affect the color much
-                    if (!color.equals("Not Set")) {
-                        // avoid known exception, printStackTrace is very time consuming
-                        if (!Pattern.matches(ACCOUNT_COLOR_HEX_REGEX, color))
-                            color = "#" + color.replaceAll(".(.)?", "$1").replace("null", "");
+                    if (mAccount != null) {
                         try {
-                            if (mAccount != null)
-                                mAccount.setColor(color);
+                            mAccount.setColor(color);
                         } catch (IllegalArgumentException ex) {
                             //sometimes the color entry in the account file is "Not set" instead of just blank. So catch!
                             Timber.e(ex, "Invalid color code '" + color + "' for account " + mAccount.getName());
@@ -556,16 +552,16 @@ public class GncXmlHandler extends DefaultHandler {
                 } else if (mIsNote) {
                     if (mTransaction != null) {
                         mTransaction.setNote(characterString);
-                        mIsNote = false;
                     }
+                    mIsNote = false;
                 } else if (mInDefaultTransferAccount) {
                     mAccount.setDefaultTransferAccountUID(characterString);
                     mInDefaultTransferAccount = false;
                 } else if (mInExported) {
                     if (mTransaction != null) {
                         mTransaction.setExported(Boolean.parseBoolean(characterString));
-                        mInExported = false;
                     }
+                    mInExported = false;
                 } else if (mInTemplates && mInSplitAccountSlot) {
                     mSplit.setAccountUID(characterString);
                     mInSplitAccountSlot = false;
