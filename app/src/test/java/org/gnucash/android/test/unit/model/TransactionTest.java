@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 21, packageName = "org.gnucash.android", shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
+@Config(sdk = 21, shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
 public class TransactionTest {
 
     @Test

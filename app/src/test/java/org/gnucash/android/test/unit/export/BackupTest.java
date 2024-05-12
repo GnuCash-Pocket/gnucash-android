@@ -46,7 +46,7 @@ import javax.xml.parsers.ParserConfigurationException;
  * Test backup and restore functionality
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 21, packageName = "org.gnucash.android", shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
+@Config(sdk = 21, shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
 public class BackupTest {
 
     @Before

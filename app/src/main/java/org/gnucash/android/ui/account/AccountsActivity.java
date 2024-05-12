@@ -117,7 +117,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
     /**
      * Key for putting argument for tab into bundle arguments
      */
-    public static final String EXTRA_TAB_INDEX = "org.gnucash.android.extra.TAB_INDEX";
+    public static final String EXTRA_TAB_INDEX = BuildConfig.APPLICATION_ID + ".extra.TAB_INDEX";
 
     /**
      * Map containing fragments for the different tabs

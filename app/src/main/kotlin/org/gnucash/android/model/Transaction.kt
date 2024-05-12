@@ -378,21 +378,21 @@ class Transaction : BaseModel {
          *
          */
         @Deprecated("use {@link Split}s instead")
-        const val EXTRA_ACCOUNT_UID = "org.gnucash.android.extra.account_uid"
+        const val EXTRA_ACCOUNT_UID = "${BuildConfig.APPLICATION_ID}.extra.account_uid"
 
         /**
          * Key for specifying the double entry account
          *
          */
         @Deprecated("use {@link Split}s instead")
-        const val EXTRA_DOUBLE_ACCOUNT_UID = "org.gnucash.android.extra.double_account_uid"
+        const val EXTRA_DOUBLE_ACCOUNT_UID = "${BuildConfig.APPLICATION_ID}.extra.double_account_uid"
 
         /**
          * Key for identifying the amount of the transaction through an Intent
          *
          */
         @Deprecated("use {@link Split}s instead")
-        const val EXTRA_AMOUNT = "org.gnucash.android.extra.amount"
+        const val EXTRA_AMOUNT = "${BuildConfig.APPLICATION_ID}.extra.amount"
 
         /**
          * Extra key for the transaction type.
@@ -400,14 +400,14 @@ class Transaction : BaseModel {
          *
          */
         @Deprecated("use {@link Split}s instead")
-        const val EXTRA_TRANSACTION_TYPE = "org.gnucash.android.extra.transaction_type"
+        const val EXTRA_TRANSACTION_TYPE = "${BuildConfig.APPLICATION_ID}.extra.transaction_type"
 
         /**
          * Argument key for passing splits as comma-separated multi-line list and each line is a split.
          * The line format is: <type>;<amount>;<account_uid>
          * The amount should be formatted in the US Locale
          */
-        const val EXTRA_SPLITS = "org.gnucash.android.extra.transaction.splits"
+        const val EXTRA_SPLITS = "${BuildConfig.APPLICATION_ID}.extra.transaction.splits"
 
         /**
          * Computes the balance of the splits belonging to a particular account.

@@ -34,6 +34,7 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
+import org.gnucash.android.BuildConfig;
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
@@ -48,7 +49,7 @@ import timber.log.Timber;
 public class PreferenceActivity extends PasscodeLockActivity implements
         PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
 
-    public static final String ACTION_MANAGE_BOOKS = "org.gnucash.android.intent.action.MANAGE_BOOKS";
+    public static final String ACTION_MANAGE_BOOKS = BuildConfig.APPLICATION_ID + ".action.MANAGE_BOOKS";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

@@ -19,6 +19,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import org.gnucash.android.BuildConfig;
 import org.gnucash.android.service.ScheduledActionService;
 import org.gnucash.android.util.BackupJob;
 
@@ -33,8 +34,8 @@ import timber.log.Timber;
  */
 public class PeriodicJobReceiver extends BroadcastReceiver {
 
-    public static final String ACTION_BACKUP = "org.gnucash.android.action_backup";
-    public static final String ACTION_SCHEDULED_ACTIONS = "org.gnucash.android.action_scheduled_actions";
+    public static final String ACTION_BACKUP = BuildConfig.APPLICATION_ID + ".ACTION_BACKUP";
+    public static final String ACTION_SCHEDULED_ACTIONS = BuildConfig.APPLICATION_ID + ".ACTION_SCHEDULED_ACTIONS";
 
     @Override
     public void onReceive(Context context, Intent intent) {

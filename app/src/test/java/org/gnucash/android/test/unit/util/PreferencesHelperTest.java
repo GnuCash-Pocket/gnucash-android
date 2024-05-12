@@ -29,7 +29,7 @@ import org.robolectric.annotation.Config;
 import java.sql.Timestamp;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 21, packageName = "org.gnucash.android", shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
+@Config(sdk = 21, shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
 public class PreferencesHelperTest {
 
     @Test

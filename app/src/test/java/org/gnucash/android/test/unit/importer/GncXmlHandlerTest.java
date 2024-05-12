@@ -42,7 +42,7 @@ import java.util.Calendar;
  * Imports GnuCash XML files and checks the objects defined in them are imported correctly.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 21, packageName = "org.gnucash.android", shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
+@Config(sdk = 21, shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
 public class GncXmlHandlerTest extends BookHelperTest {
 
     /**
