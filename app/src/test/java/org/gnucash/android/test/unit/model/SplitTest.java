@@ -22,7 +22,7 @@ import java.math.BigDecimal;
  * @author Ngewi
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 21, packageName = "org.gnucash.android", shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
+@Config(sdk = 21, shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
 public class SplitTest {
     @Test
     public void amounts_shouldBeStoredUnsigned() {

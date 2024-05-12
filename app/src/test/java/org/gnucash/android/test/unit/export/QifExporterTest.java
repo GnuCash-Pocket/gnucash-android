@@ -59,9 +59,7 @@ import java.util.zip.ZipFile;
 
 @RunWith(RobolectricTestRunner.class)
 //package is required so that resources can be found in dev mode
-@Config(sdk = 21,
-    packageName = "org.gnucash.android",
-    shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
+@Config(sdk = 21, shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
 public class QifExporterTest extends BookHelperTest {
 
     private String mBookUID;

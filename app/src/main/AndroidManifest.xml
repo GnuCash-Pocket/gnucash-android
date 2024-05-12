@@ -32,9 +32,9 @@
         android:protectionLevel="dangerous" />
 
     <uses-permission android:label="@string/label_permission_record_transactions"
-                     android:name="org.gnucash.android.permission.RECORD_TRANSACTION" />
+                     android:name="${applicationId}.permission.RECORD_TRANSACTION" />
     <uses-permission android:label="@string/label_permission_create_accounts"
-                     android:name="org.gnucash.android.permission.CREATE_ACCOUNT" />
+                     android:name="${applicationId}.permission.CREATE_ACCOUNT" />
 
     <uses-permission android:name="android.permission.VIBRATE"
                      android:label="Allow device to vibrate with notifications" />
@@ -127,7 +127,7 @@
               android:permission="android.permission.BIND_JOB_SERVICE" />
         <receiver android:name=".receivers.TransactionRecorder"
             android:label="Records transactions received through intents"
-            android:permission="org.gnucash.android.permission.RECORD_TRANSACTION"
+            android:permission="${applicationId}.permission.RECORD_TRANSACTION"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.INSERT" />
@@ -137,7 +137,7 @@
         </receiver>
         <receiver android:name=".receivers.AccountCreator"
             android:label="Creates new accounts"
-            android:permission="org.gnucash.android.permission.CREATE_ACCOUNT"
+            android:permission="${applicationId}.permission.CREATE_ACCOUNT"
             android:enabled="true" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.INSERT" />
@@ -163,8 +163,8 @@
         <receiver
             android:name=".receivers.PeriodicJobReceiver" android:exported="false">
             <intent-filter>
-                <action android:name="org.gnucash.android.action_backup" />
-                <action android:name="org.gnucash.android.action_scheduled_actions" />
+                <action android:name="${applicationId}.ACTION_BACKUP" />
+                <action android:name="${applicationId}.ACTION_SCHEDULED_ACTIONS" />
             </intent-filter>
         </receiver>
         <provider

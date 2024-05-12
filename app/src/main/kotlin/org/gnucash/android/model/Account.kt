@@ -385,13 +385,13 @@ class Account : BaseModel {
         /**
          * An extra key for passing the currency code (according ISO 4217) in an intent
          */
-        const val EXTRA_CURRENCY_CODE = "org.gnucash.android.extra.currency_code"
+        const val EXTRA_CURRENCY_CODE = "${BuildConfig.APPLICATION_ID}.extra.currency_code"
 
         /**
          * Extra key for passing the unique ID of the parent account when creating a
          * new account using Intents
          */
-        const val EXTRA_PARENT_UID = "org.gnucash.android.extra.parent_uid"
+        const val EXTRA_PARENT_UID = "${BuildConfig.APPLICATION_ID}.extra.parent_uid"
 
         private const val maskRGB: Int = 0xFFFFFF
         private const val maskOpaque: Int = 0xFF000000.toInt()

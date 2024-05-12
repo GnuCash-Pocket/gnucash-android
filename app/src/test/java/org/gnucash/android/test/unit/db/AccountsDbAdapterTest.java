@@ -66,7 +66,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 @RunWith(RobolectricTestRunner.class)
 //package is required so that resources can be found in dev mode
-@Config(sdk = 21, packageName = "org.gnucash.android", shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
+@Config(sdk = 21, shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
 public class AccountsDbAdapterTest {
 
     private static final String BRAVO_ACCOUNT_NAME = "Bravo";

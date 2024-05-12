@@ -15,11 +15,12 @@
  */
 package org.gnucash.android.export.ofx;
 
+import org.gnucash.android.BuildConfig;
+
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -82,7 +83,7 @@ public class OfxHelper {
     /**
      * ID which will be used as the bank ID for OFX from this app
      */
-    public static String APP_ID = "org.gnucash.android";
+    public static String APP_ID = BuildConfig.APPLICATION_ID;
 
     /**
      * Returns the current time formatted using the pattern {@link #OFX_DATE_PATTERN}

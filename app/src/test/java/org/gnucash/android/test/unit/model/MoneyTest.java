@@ -38,7 +38,7 @@ import java.util.Currency;
 import java.util.Locale;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = 21, packageName = "org.gnucash.android", shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
+@Config(sdk = 21, shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
 public class MoneyTest {
 
     private static final String CURRENCY_CODE = "EUR";
