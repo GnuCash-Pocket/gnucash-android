@@ -16,9 +16,13 @@
 package org.gnucash.android.model
 
 import android.graphics.Color
+import androidx.annotation.ColorInt
 import java.sql.Timestamp
 import org.gnucash.android.BuildConfig
 import org.gnucash.android.export.ofx.OfxHelper
+import org.gnucash.android.util.NotSet
+import org.gnucash.android.util.formatHexRGB
+import org.gnucash.android.util.parseColor
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
@@ -56,7 +60,7 @@ class Account : BaseModel {
     /**
      * Account description
      */
-    var description = ""
+    var description: String? = ""
 
     /**
      * Commodity used by this account
@@ -90,11 +94,6 @@ class Account : BaseModel {
      * These accounts cannot have transactions
      */
     private var _isPlaceholderAccount = false
-
-    /**
-     * Account color field in hex format #rrggbb
-     */
-    private var _color = DEFAULT_COLOR
 
     /**
      * `true` if this account is flagged as a favorite account, `false` if not
@@ -194,18 +193,15 @@ class Account : BaseModel {
     /**
      * The color of the account.
      */
-    var color: Int
-        get() = _color
+    @ColorInt
+    var color: Int = DEFAULT_COLOR
         /**
-         * Sets the color of the account.
+         * Sets the opaque color of the account.
          *
-         * @param color Color as an int as returned by [Color].
-         * @throws java.lang.IllegalArgumentException if the color is transparent,
-         * which is not supported.
+         * @param value Color as an int as returned by [Color].
          */
-        set(color) {
-            require(Color.alpha(color) >= 255) { "Transparent colors are not supported: $color" }
-            _color = color
+        set(value) {
+            field = (value and maskRGB) or maskOpaque
         }
 
     /**
@@ -214,7 +210,7 @@ class Account : BaseModel {
      * @return Hex color of the account
      */
     val colorHexString: String
-        get() = String.format("#%06X", 0xFFFFFF and _color)
+        get() = color.formatHexRGB()
 
     /**
      * Sets the color of the account.
@@ -223,9 +219,12 @@ class Account : BaseModel {
      * @throws java.lang.IllegalArgumentException if the color code is not properly formatted or
      * the color is transparent.
      */
-    //TODO: Allow use of #aarrggbb format as well
     fun setColor(colorCode: String) {
-        color = Color.parseColor(colorCode)
+        if (colorCode == NotSet) {
+            color = DEFAULT_COLOR
+            return
+        }
+        color = parseColor(colorCode) ?: DEFAULT_COLOR
     }
 
     //todo: should we also change commodity of transactions? Transactions can have splits from different accounts
@@ -376,9 +375,12 @@ class Account : BaseModel {
 
         /**
          * Default color, if not set explicitly through [.setColor].
+         * @see https://github.com/Gnucash/gnucash/blob/stable/gnucash/gnome-utils/dialog-account.c
          */
         // TODO: get it from a theme value?
-        const val DEFAULT_COLOR = Color.LTGRAY
+        @ColorInt
+        @JvmField
+        val DEFAULT_COLOR = Color.rgb(237,236,235)
 
         /**
          * An extra key for passing the currency code (according ISO 4217) in an intent
@@ -390,6 +392,9 @@ class Account : BaseModel {
          * new account using Intents
          */
         const val EXTRA_PARENT_UID = "org.gnucash.android.extra.parent_uid"
+
+        private const val maskRGB: Int = 0xFFFFFF
+        private const val maskOpaque: Int = 0xFF000000.toInt()
 
         /**
          * Maps the `accountType` to the corresponding account type.
@@ -403,10 +408,19 @@ class Account : BaseModel {
          */
         fun convertToOfxAccountType(accountType: AccountType?): OfxAccountType {
             return when (accountType) {
-                AccountType.CREDIT, AccountType.LIABILITY -> OfxAccountType.CREDITLINE
-                AccountType.CASH, AccountType.INCOME, AccountType.EXPENSE, AccountType.PAYABLE, AccountType.RECEIVABLE -> OfxAccountType.CHECKING
-                AccountType.BANK, AccountType.ASSET -> OfxAccountType.SAVINGS
-                AccountType.MUTUAL, AccountType.STOCK, AccountType.EQUITY, AccountType.CURRENCY -> OfxAccountType.MONEYMRKT
+                AccountType.CREDIT,
+                AccountType.LIABILITY -> OfxAccountType.CREDITLINE
+                AccountType.CASH,
+                AccountType.INCOME,
+                AccountType.EXPENSE,
+                AccountType.PAYABLE,
+                AccountType.RECEIVABLE -> OfxAccountType.CHECKING
+                AccountType.BANK,
+                AccountType.ASSET -> OfxAccountType.SAVINGS
+                AccountType.MUTUAL,
+                AccountType.STOCK,
+                AccountType.EQUITY,
+                AccountType.CURRENCY -> OfxAccountType.MONEYMRKT
                 else -> OfxAccountType.CHECKING
             }
         }

@@ -17,7 +17,8 @@
 
 package org.gnucash.android.ui.report.linechart;
 
-import android.graphics.Color;
+import static org.gnucash.android.util.ColorExtKt.parseColor;
+
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -66,12 +67,12 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     private static final int ANIMATION_DURATION = 3000;
     private static final int NO_DATA_BAR_COUNTS = 5;
     private static final int[] COLORS = {
-            Color.parseColor("#68F1AF"), Color.parseColor("#cc1f09"), Color.parseColor("#EE8600"),
-            Color.parseColor("#1469EB"), Color.parseColor("#B304AD"),
+            parseColor("#68F1AF"), parseColor("#cc1f09"), parseColor("#EE8600"),
+            parseColor("#1469EB"), parseColor("#B304AD"),
     };
     private static final int[] FILL_COLORS = {
-            Color.parseColor("#008000"), Color.parseColor("#FF0000"), Color.parseColor("#BE6B00"),
-            Color.parseColor("#0065FF"), Color.parseColor("#8F038A"),
+            parseColor("#008000"), parseColor("#FF0000"), parseColor("#BE6B00"),
+            parseColor("#0065FF"), parseColor("#8F038A"),
     };
 
     private AccountsDbAdapter mAccountsDbAdapter = AccountsDbAdapter.getInstance();

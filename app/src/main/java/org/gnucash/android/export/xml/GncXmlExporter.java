@@ -24,6 +24,7 @@ import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.SystemClock;
+import android.text.TextUtils;
 
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
@@ -73,7 +74,7 @@ public class GncXmlExporter extends Exporter {
      * Root account for template accounts
      */
     private Account mRootTemplateAccount;
-    private Map<String, Account> mTransactionToTemplateAccountMap = new TreeMap<>();
+    private final Map<String, Account> mTransactionToTemplateAccountMap = new TreeMap<>();
 
     /**
      * Construct a new exporter with export parameters
@@ -100,7 +101,7 @@ public class GncXmlExporter extends Exporter {
                              List<String> slotType,
                              List<String> slotValue) throws IOException {
         if (slotKey == null || slotType == null || slotValue == null ||
-                slotKey.size() == 0 || slotType.size() != slotKey.size() || slotValue.size() != slotKey.size()) {
+            slotKey.isEmpty() || slotType.size() != slotKey.size() || slotValue.size() != slotKey.size()) {
             return;
         }
 
@@ -157,7 +158,7 @@ public class GncXmlExporter extends Exporter {
             xmlSerializer.endTag(null, GncXmlHelper.TAG_COMMODITY_SCU);
             // account description
             String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_DESCRIPTION));
-            if (description != null && !description.equals("")) {
+            if (!TextUtils.isEmpty(description)) {
                 xmlSerializer.startTag(null, GncXmlHelper.TAG_ACCT_DESCRIPTION);
                 xmlSerializer.text(description);
                 xmlSerializer.endTag(null, GncXmlHelper.TAG_ACCT_DESCRIPTION);
@@ -171,14 +172,14 @@ public class GncXmlExporter extends Exporter {
             slotValue.add(Boolean.toString(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER)) != 0));
 
             String color = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_COLOR_CODE));
-            if (color != null && color.length() > 0) {
+            if (!TextUtils.isEmpty(color)) {
                 slotKey.add(GncXmlHelper.KEY_COLOR);
                 slotType.add(GncXmlHelper.ATTR_VALUE_STRING);
                 slotValue.add(color);
             }
 
             String defaultTransferAcctUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID));
-            if (defaultTransferAcctUID != null && defaultTransferAcctUID.length() > 0) {
+            if (!TextUtils.isEmpty(defaultTransferAcctUID)) {
                 slotKey.add(GncXmlHelper.KEY_DEFAULT_TRANSFER_ACCOUNT);
                 slotType.add(GncXmlHelper.ATTR_VALUE_STRING);
                 slotValue.add(defaultTransferAcctUID);
@@ -194,7 +195,7 @@ public class GncXmlExporter extends Exporter {
 
             // parent uid
             String parentUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_PARENT_ACCOUNT_UID));
-            if (!acct_type.equals("ROOT") && parentUID != null && parentUID.length() > 0) {
+            if (!acct_type.equals("ROOT") && !TextUtils.isEmpty(parentUID)) {
                 xmlSerializer.startTag(null, GncXmlHelper.TAG_PARENT_UID);
                 xmlSerializer.attribute(null, GncXmlHelper.ATTR_KEY_TYPE, GncXmlHelper.ATTR_VALUE_GUID);
                 xmlSerializer.text(parentUID);
@@ -368,14 +369,14 @@ public class GncXmlExporter extends Exporter {
                 ArrayList<String> slotValue = new ArrayList<>();
 
                 String notes = cursor.getString(cursor.getColumnIndexOrThrow("trans_notes"));
-                if (notes != null && notes.length() > 0) {
+                if (!TextUtils.isEmpty(notes)) {
                     slotKey.add(GncXmlHelper.KEY_NOTES);
                     slotType.add(GncXmlHelper.ATTR_VALUE_STRING);
                     slotValue.add(notes);
                 }
 
                 String scheduledActionUID = cursor.getString(cursor.getColumnIndexOrThrow("trans_from_sched_action"));
-                if (scheduledActionUID != null && !scheduledActionUID.isEmpty()) {
+                if (!TextUtils.isEmpty(scheduledActionUID)) {
                     slotKey.add(GncXmlHelper.KEY_FROM_SCHED_ACTION);
                     slotType.add(GncXmlHelper.ATTR_VALUE_GUID);
                     slotValue.add(scheduledActionUID);
@@ -395,7 +396,7 @@ public class GncXmlExporter extends Exporter {
             xmlSerializer.endTag(null, GncXmlHelper.TAG_SPLIT_ID);
             // memo
             String memo = cursor.getString(cursor.getColumnIndexOrThrow("split_memo"));
-            if (memo != null && memo.length() > 0) {
+            if (!TextUtils.isEmpty(memo)) {
                 xmlSerializer.startTag(null, GncXmlHelper.TAG_SPLIT_MEMO);
                 xmlSerializer.text(memo);
                 xmlSerializer.endTag(null, GncXmlHelper.TAG_SPLIT_MEMO);
@@ -481,7 +482,7 @@ public class GncXmlExporter extends Exporter {
 
             xmlSerializer.endTag(null, GncXmlHelper.TAG_TRN_SPLIT);
         }
-        if (!lastTrxUID.equals("")) { // there's an unfinished transaction, close it
+        if (!TextUtils.isEmpty(lastTrxUID)) { // there's an unfinished transaction, close it
             xmlSerializer.endTag(null, GncXmlHelper.TAG_TRN_SPLITS);
             xmlSerializer.endTag(null, GncXmlHelper.TAG_TRANSACTION);
         }
@@ -575,7 +576,7 @@ public class GncXmlExporter extends Exporter {
             }
 
             String tag = cursor.getString(cursor.getColumnIndexOrThrow(ScheduledActionEntry.COLUMN_TAG));
-            if (tag != null && !tag.isEmpty()) {
+            if (!TextUtils.isEmpty(tag )) {
                 xmlSerializer.startTag(null, GncXmlHelper.TAG_SX_TAG);
                 xmlSerializer.text(tag);
                 xmlSerializer.endTag(null, GncXmlHelper.TAG_SX_TAG);
@@ -678,7 +679,7 @@ public class GncXmlExporter extends Exporter {
                 xmlSerializer.endTag(null, GncXmlHelper.TAG_PRICE_SOURCE);
                 // type, optional
                 String type = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.PriceEntry.COLUMN_TYPE));
-                if (type != null && !type.equals("")) {
+                if (!TextUtils.isEmpty(type)) {
                     xmlSerializer.startTag(null, GncXmlHelper.TAG_PRICE_TYPE);
                     xmlSerializer.text(type);
                     xmlSerializer.endTag(null, GncXmlHelper.TAG_PRICE_TYPE);

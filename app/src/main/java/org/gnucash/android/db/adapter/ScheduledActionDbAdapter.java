@@ -189,8 +189,8 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
         event.setEnabled(enabled);
         event.setTotalPlannedExecutionCount(numOccurrences);
         event.setExecutionCount(execCount);
-        event.setAutoCreate(autoCreate == 1);
-        event.setAutoNotify(autoNotify == 1);
+        event.setAutoCreate(autoCreate != 0);
+        event.setAutoNotify(autoNotify != 0);
         event.setAdvanceCreateDays(advanceCreate);
         event.setAdvanceNotifyDays(advanceNotify);
         //TODO: optimize by doing overriding fetchRecord(String) and join the two tables
