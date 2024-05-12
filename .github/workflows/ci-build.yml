@@ -19,7 +19,7 @@ env:
           "client_info": {
             "mobilesdk_app_id": "1:679335683580:android:4a7289ff6df3b6d0e7fe79",
             "android_client_info": {
-              "package_name": "org.gnucash.android"
+              "package_name": "org.gnucash.pocket"
             }
           },
           "oauth_client": [
@@ -48,7 +48,7 @@ env:
           "client_info": {
             "mobilesdk_app_id": "1:679335683580:android:b7412dd4e5dddc59e7fe79",
             "android_client_info": {
-              "package_name": "org.gnucash.android.devel"
+              "package_name": "org.gnucash.pocket.devel"
             }
           },
           "oauth_client": [
