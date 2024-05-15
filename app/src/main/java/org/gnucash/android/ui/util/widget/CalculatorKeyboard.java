@@ -71,7 +71,7 @@ public class CalculatorKeyboard {
         @Override
         public void onKey(int primaryCode, int[] keyCodes) {
             View focusCurrent = ((Activity) mContext).getWindow().getCurrentFocus();
-            assert focusCurrent != null;
+            if (focusCurrent == null) return;
 
             /*
             if (focusCurrent == null || focusCurrent.getClass() != EditText.class)
