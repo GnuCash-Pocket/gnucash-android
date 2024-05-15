@@ -361,7 +361,7 @@ public class CalculatorEditText extends AppCompatEditText {
         formatter.setGroupingUsed(false);
         String resultString = formatter.format(amount);
 
-        super.setText(resultString);
+        setText(resultString);
         setSelection(resultString.length());
     }
 }
