@@ -208,8 +208,8 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
     }
 
     @Override
-    public int getContentView() {
-        return R.layout.activity_accounts;
+    public void inflateView() {
+        setContentView(R.layout.activity_accounts);
     }
 
     @Override
