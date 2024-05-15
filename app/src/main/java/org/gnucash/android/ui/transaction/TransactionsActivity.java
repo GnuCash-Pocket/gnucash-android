@@ -280,8 +280,8 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     }
 
     @Override
-    public int getContentView() {
-        return R.layout.activity_transactions;
+    public void inflateView() {
+        setContentView(R.layout.activity_transactions);
     }
 
     @Override

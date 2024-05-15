@@ -117,8 +117,8 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
     };
 
     @Override
-    public int getContentView() {
-        return R.layout.activity_reports;
+    public void inflateView() {
+        setContentView(R.layout.activity_reports);
     }
 
     @Override

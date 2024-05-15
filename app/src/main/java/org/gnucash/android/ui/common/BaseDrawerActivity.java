@@ -41,12 +41,14 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.viewbinding.ViewBinding;
 
 import com.google.android.material.navigation.NavigationView;
 import com.uservoice.uservoicesdk.UserVoice;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.databinding.ToolbarBinding;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.ui.account.AccountsActivity;
@@ -67,9 +69,7 @@ import butterknife.ButterKnife;
  * (above the action bar) which can be used to display busy operations. See {@link #getProgressBar()}
  * </p>
  *
- * <p>Sub-classes should simply provide their layout using {@link #getContentView()} and then annotate
- * any variables they wish to use with {@link ButterKnife#bind(Activity)} annotations. The view
- * binding will be done in this base abstract class.<br>
+ * <p>Sub-classes should simply inflate their root view in {@link #inflateView()}.
  * The activity layout of the subclass is expected to contain {@code DrawerLayout} and
  * a {@code NavigationView}.<br>
  * Sub-class should also consider using the {@code toolbar.xml} or {@code toolbar_with_spinner.xml}
@@ -79,16 +79,12 @@ import butterknife.ButterKnife;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public abstract class BaseDrawerActivity extends PasscodeLockActivity {
+public abstract class BaseDrawerActivity<BindingT extends ViewBinding> extends PasscodeLockActivity {
 
     public static final int ID_MANAGE_BOOKS = 0xB00C;
-    @BindView(R.id.drawer_layout)
     DrawerLayout mDrawerLayout;
-    @BindView(R.id.nav_view)
     NavigationView mNavigationView;
-    @BindView(R.id.toolbar)
     Toolbar mToolbar;
-    @BindView(R.id.toolbar_progress)
     ProgressBar mToolbarProgress;
     protected TextView mBookNameTextView;
 
@@ -109,7 +105,11 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(getContentView());
+        inflateView();
+        mDrawerLayout = findViewById(R.id.drawer_layout);
+        mNavigationView = findViewById(R.id.nav_view);
+        mToolbar = findViewById(R.id.toolbar);
+        mToolbarProgress = findViewById(R.id.toolbar_progress);
 
         //if a parameter was passed to open an account within a specific book, then switch
         String bookUID = getIntent().getStringExtra(UxArgument.BOOK_UID);
@@ -154,11 +154,9 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
     }
 
     /**
-     * Return the layout to inflate for this activity
-     *
-     * @return Layout resource identifier
+     * Inflate the view for this activity. This method should be implemented by the sub-class.
      */
-    public abstract @LayoutRes int getContentView();
+    public abstract void inflateView();
 
     /**
      * Return the title for this activity.

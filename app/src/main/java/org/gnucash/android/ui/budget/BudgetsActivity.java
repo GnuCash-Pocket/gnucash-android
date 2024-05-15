@@ -36,8 +36,8 @@ public class BudgetsActivity extends BaseDrawerActivity {
     public static final int REQUEST_CREATE_BUDGET = 0xA;
 
     @Override
-    public int getContentView() {
-        return R.layout.activity_budgets;
+    public void inflateView() {
+        setContentView(R.layout.activity_budgets);
     }
 
     @Override
