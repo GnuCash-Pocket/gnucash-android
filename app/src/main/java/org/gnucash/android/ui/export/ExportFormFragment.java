@@ -387,7 +387,7 @@ public class ExportFormFragment extends Fragment implements
                         if (!(PreferenceManager.getDefaultSharedPreferences(getActivity())
                                 .getBoolean(getString(R.string.key_owncloud_sync), false))) {
                             OwnCloudDialogFragment ocDialog = OwnCloudDialogFragment.newInstance(null);
-                            ocDialog.show(getChildFragmentManager(), "ownCloud dialog");
+                            ocDialog.show(getParentFragmentManager(), "ownCloud dialog");
                         }
                         break;
                     case 3: //Share File

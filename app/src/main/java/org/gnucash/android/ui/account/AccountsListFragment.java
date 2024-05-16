@@ -266,7 +266,7 @@ public class AccountsListFragment extends Fragment implements
      * @param accountUID Unique ID of account to be deleted after confirmation
      */
     private void showConfirmationDialog(String accountUID) {
-        FragmentManager fm = getChildFragmentManager();
+        FragmentManager fm = getParentFragmentManager();
         DeleteAccountDialogFragment alertFragment =
                 DeleteAccountDialogFragment.newInstance(accountUID);
         fm.setFragmentResultListener(DeleteAccountDialogFragment.TAG, this, this);
