@@ -31,20 +31,26 @@
             android:key="@string/key_restore_backup"
             android:icon="@drawable/ic_restore_black"
             android:summary="@string/summary_restore_backup_pref" />
-        <androidx.preference.CheckBoxPreference
+        <androidx.preference.SwitchPreference
             android:title="@string/title_dropbox_sync_preference"
             android:summary="@string/summary_dropbox_sync"
-            android:checked="false"
+            android:defaultValue="false"
             android:key="@string/key_dropbox_sync"
             android:icon="@drawable/ic_dropbox" />
 
-        <androidx.preference.CheckBoxPreference
+        <androidx.preference.SwitchPreference
             android:title="@string/title_owncloud_sync_preference"
             android:summary="@string/summary_owncloud_sync"
-            android:checked="false"
+            android:defaultValue="false"
             android:key="@string/key_owncloud_sync"
             android:icon="@drawable/ic_owncloud" />
-    </androidx.preference.PreferenceCategory>>
+
+        <androidx.preference.SwitchPreference
+            android:title="@string/title_delete_transaction_backup"
+            android:summary="@string/summary_delete_transaction_backup"
+            android:defaultValue="true"
+            android:key="@string/key_delete_transaction_backup"             />
+    </androidx.preference.PreferenceCategory>
     <androidx.preference.PreferenceCategory android:title="@string/title_export_preference_category">
 
         <androidx.preference.ListPreference

@@ -37,6 +37,7 @@
     <string name="key_dropbox_access_token" translatable="false">dropbox_access_token</string>
     <string name="key_backup_location" translatable="false">backup_location</string>
     <string name="key_export_accounts_csv" translatable="false">export_accounts_csv_key</string>
+    <string name="key_delete_transaction_backup" translatable="false">delete_transaction_backup</string>
     <!-- This is the filename for default backups. So use only simple characters and no spaces. Do not change the extension -->
     <string name="label_backup_filename" translatable="false">gnucash_pocket_backup.gnca</string>
     <string name="playstore_url" translatable="false">"market://details?id=org.gnucash.pocket"</string>

@@ -251,6 +251,8 @@
     <string name="title_dropbox_sync_preference">Enable DropBox</string>
     <string name="title_owncloud_sync_preference">Enable ownCloud </string>
     <string name="title_backup_preference_category">Backup</string>
+    <string name="title_delete_transaction_backup">When delete transaction?</string>
+    <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>
     <string name="summary_dropbox_sync">Enable exporting to DropBox</string>
     <string name="summary_owncloud_sync">Enable exporting to ownCloud</string>
     <string name="title_backup_prefs">Backup Preferences</string>
