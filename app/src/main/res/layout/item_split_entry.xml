@@ -23,7 +23,6 @@ limitations under the License.
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/account_purple"
         android:minHeight="40dp">
 
         <TextView
@@ -43,7 +42,7 @@ limitations under the License.
             android:layout_height="match_parent"
             android:layout_marginBottom="@dimen/dialog_padding"
             android:layout_weight="1"
-            android:background="@color/review_green"
+            android:focusableInTouchMode="true"
             android:gravity="center_vertical"
             android:hint="@string/label_transaction_amount"
             android:inputType="none"
@@ -57,7 +56,6 @@ limitations under the License.
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="top"
-            android:background="@color/account_blue"
             android:checked="true"
             android:paddingStart="10dp"
             android:paddingEnd="0dp"

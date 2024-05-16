@@ -36,7 +36,7 @@
                 android:id="@+id/input_transaction_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_span="2"
+                android:layout_span="4"
                 android:background="@android:color/transparent"
                 android:completionThreshold="1"
                 android:hint="@string/label_transaction_name"
@@ -68,7 +68,7 @@
                 android:id="@+id/input_transaction_amount"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="3"
+                android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:hint="@string/label_transaction_amount"
                 android:inputType="numberDecimal"
@@ -115,7 +115,7 @@
                 android:id="@+id/input_transfer_account_spinner"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="5" />
+                android:layout_weight="1" />
         </TableRow>
 
         <View style="@style/Divider" />
@@ -153,7 +153,7 @@
                 android:id="@+id/input_description"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="5"
+                android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:hint="@string/label_transaction_description"
                 android:inputType="textMultiLine|textCapSentences"
@@ -173,7 +173,7 @@
                 style="@style/Dropdown.TextView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="5"
+                android:layout_weight="1"
                 android:gravity="center"
                 android:text="@string/label_tap_to_create_schedule" />
 
