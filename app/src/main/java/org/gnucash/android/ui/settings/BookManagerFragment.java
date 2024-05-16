@@ -262,7 +262,7 @@ public class BookManagerFragment extends ListFragment implements
         }
 
         private boolean handleMenuDeleteBook(final String bookUID) {
-            FragmentManager fm = getChildFragmentManager();
+            FragmentManager fm = getParentFragmentManager();
             fm.setFragmentResultListener(DeleteBookConfirmationDialog.TAG, BookManagerFragment.this, BookManagerFragment.this);
             DeleteBookConfirmationDialog dialog = DeleteBookConfirmationDialog.newInstance(bookUID);
             dialog.show(fm, DeleteBookConfirmationDialog.TAG);

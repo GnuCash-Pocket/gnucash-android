@@ -21,6 +21,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
 
 import org.gnucash.android.R;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
@@ -58,6 +59,7 @@ public class DeleteBookConfirmationDialog extends DoubleConfirmationDialog {
                     @SuppressWarnings("ConstantConditions")
                     @Override
                     public void onClick(DialogInterface dialogInterface, int which) {
+                        final FragmentManager fm = getParentFragmentManager();
                         final String bookUID = getArguments().getString(EXTRA_BOOK_ID);
                         BackupManager.backupBookAsync(requireActivity(), bookUID, backed -> {
                             Bundle result = new Bundle();
@@ -65,7 +67,7 @@ public class DeleteBookConfirmationDialog extends DoubleConfirmationDialog {
                                 BooksDbAdapter.getInstance().deleteBook(bookUID);
                                 result.putBoolean(Refreshable.EXTRA_REFRESH, true);
                             }
-                            getParentFragmentManager().setFragmentResult(TAG, result);
+                            fm.setFragmentResult(TAG, result);
                             return null;
                         });
                     }
