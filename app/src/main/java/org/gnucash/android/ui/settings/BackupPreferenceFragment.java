@@ -35,15 +35,13 @@ import android.text.TextUtils;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.CheckBoxPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
+import androidx.preference.TwoStatePreference;
 
 import com.dropbox.core.android.Auth;
 import com.google.android.gms.common.ConnectionResult;
@@ -251,7 +249,7 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
     public void toggleDropboxPreference(Preference pref) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String accessToken = prefs.getString(getString(R.string.key_dropbox_access_token), null);
-        ((CheckBoxPreference) pref).setChecked(accessToken != null);
+        ((TwoStatePreference) pref).setChecked(accessToken != null);
     }
 
     /**
@@ -261,7 +259,7 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
      */
     public void toggleOwnCloudPreference(Preference pref) {
         SharedPreferences mPrefs = getActivity().getSharedPreferences(getString(R.string.owncloud_pref), Context.MODE_PRIVATE);
-        ((CheckBoxPreference) pref).setChecked(mPrefs.getBoolean(getString(R.string.owncloud_sync), false));
+        ((TwoStatePreference) pref).setChecked(mPrefs.getBoolean(getString(R.string.owncloud_sync), false));
     }
 
     /**
@@ -272,7 +270,7 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
     public void toggleGoogleDrivePreference(Preference pref) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String appFolderId = sharedPreferences.getString(getString(R.string.key_google_drive_app_folder_id), null);
-        ((CheckBoxPreference) pref).setChecked(appFolderId != null);
+        ((TwoStatePreference) pref).setChecked(appFolderId != null);
     }
 
 

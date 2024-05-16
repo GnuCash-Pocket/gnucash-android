@@ -16,6 +16,7 @@
 
 package org.gnucash.android.ui.transaction;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -373,28 +374,15 @@ public class TransactionsListFragment extends Fragment implements
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.context_menu_delete:
-                        BackupManager.backupActiveBookAsync(getActivity(), result -> {
-                            mTransactionsDbAdapter.deleteRecord(transactionId);
-                            WidgetConfigurationActivity.updateAllWidgets(getActivity());
-                            refresh();
-                            return null;
-                        });
+                        deleteTransaction(transactionId);
                         return true;
 
                     case R.id.context_menu_duplicate_transaction:
-                        Transaction transaction = mTransactionsDbAdapter.getRecord(transactionId);
-                        Transaction duplicate = new Transaction(transaction, true);
-                        duplicate.setTime(System.currentTimeMillis());
-                        mTransactionsDbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.insert);
-                        refresh();
+                        duplicateTransaction(transactionId);
                         return true;
 
                     case R.id.context_menu_move_transaction:
-                        long[] ids = new long[]{transactionId};
-                        FragmentManager fm = getChildFragmentManager();
-                        fm.setFragmentResultListener(BulkMoveDialogFragment.TAG, TransactionsListFragment.this, TransactionsListFragment.this);
-                        BulkMoveDialogFragment fragment = BulkMoveDialogFragment.newInstance(ids, mAccountUID);
-                        fragment.show(fm, BulkMoveDialogFragment.TAG);
+                        moveTransaction(transactionId);
                         return true;
 
                     default:
@@ -403,5 +391,37 @@ public class TransactionsListFragment extends Fragment implements
                 }
             }
         }
+    }
+
+    private void deleteTransaction(long transactionId) {
+        final Activity activity = requireActivity();
+        if (GnuCashApplication.shouldBackupTransactions(activity)) {
+            BackupManager.backupActiveBookAsync(activity, result -> {
+                mTransactionsDbAdapter.deleteRecord(transactionId);
+                WidgetConfigurationActivity.updateAllWidgets(activity);
+                refresh();
+                return null;
+            });
+        } else {
+            mTransactionsDbAdapter.deleteRecord(transactionId);
+            WidgetConfigurationActivity.updateAllWidgets(activity);
+            refresh();
+        }
+    }
+
+    private void duplicateTransaction(long transactionId) {
+        Transaction transaction = mTransactionsDbAdapter.getRecord(transactionId);
+        Transaction duplicate = new Transaction(transaction, true);
+        duplicate.setTime(System.currentTimeMillis());
+        mTransactionsDbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.insert);
+        refresh();
+    }
+
+    private void moveTransaction(long transactionId) {
+        long[] ids = new long[]{transactionId};
+        FragmentManager fm = getParentFragmentManager();
+        fm.setFragmentResultListener(BulkMoveDialogFragment.TAG, TransactionsListFragment.this, TransactionsListFragment.this);
+        BulkMoveDialogFragment fragment = BulkMoveDialogFragment.newInstance(ids, mAccountUID);
+        fragment.show(fm, BulkMoveDialogFragment.TAG);
     }
 }

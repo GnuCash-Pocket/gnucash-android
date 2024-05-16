@@ -48,8 +48,7 @@ import timber.log.Timber;
 public class DeleteAllTransactionsConfirmationDialog extends DoubleConfirmationDialog {
 
     public static DeleteAllTransactionsConfirmationDialog newInstance() {
-        DeleteAllTransactionsConfirmationDialog frag = new DeleteAllTransactionsConfirmationDialog();
-        return frag;
+        return new DeleteAllTransactionsConfirmationDialog();
     }
 
     @Override
@@ -64,7 +63,7 @@ public class DeleteAllTransactionsConfirmationDialog extends DoubleConfirmationD
                                 final Activity activity = requireActivity();
                                 BackupManager.backupActiveBookAsync(activity, result -> {
                                     if (!result) return null;
-                                    didBackup(activity);
+                                    deleteAll(activity);
                                     return null;
                                 });
                             }
@@ -73,7 +72,9 @@ public class DeleteAllTransactionsConfirmationDialog extends DoubleConfirmationD
                 ).create();
     }
 
-    private void didBackup(Context context) {
+    public void deleteAll(Context context) {
+        // TODO show a "Deleting Transactions" progress dialog.
+
         AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
         List<Transaction> openingBalances = new ArrayList<>();
         boolean preserveOpeningBalances = GnuCashApplication.shouldSaveOpeningBalances(false);
@@ -88,6 +89,6 @@ public class DeleteAllTransactionsConfirmationDialog extends DoubleConfirmationD
             transactionsDbAdapter.bulkAddRecords(openingBalances, DatabaseAdapter.UpdateMethod.insert);
         }
         Toast.makeText(context, R.string.toast_all_transactions_deleted, Toast.LENGTH_SHORT).show();
-        WidgetConfigurationActivity.updateAllWidgets(getActivity());
+        WidgetConfigurationActivity.updateAllWidgets(context);
     }
 }

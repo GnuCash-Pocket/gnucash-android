@@ -14,8 +14,8 @@ import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
-import androidx.preference.CheckBoxPreference;
 import androidx.preference.Preference;
+import androidx.preference.TwoStatePreference;
 
 import com.owncloud.android.lib.common.OwnCloudClient;
 import com.owncloud.android.lib.common.OwnCloudClientFactory;
@@ -66,7 +66,7 @@ public class OwnCloudDialogFragment extends DialogFragment {
     private SharedPreferences mPrefs;
     private Context mContext;
 
-    private static CheckBoxPreference ocCheckBox;
+    private static TwoStatePreference ocCheckBox;
 
     /**
      * Use this factory method to create a new instance of
@@ -76,7 +76,7 @@ public class OwnCloudDialogFragment extends DialogFragment {
      */
     public static OwnCloudDialogFragment newInstance(Preference pref) {
         OwnCloudDialogFragment fragment = new OwnCloudDialogFragment();
-        ocCheckBox = pref == null ? null : (CheckBoxPreference) pref;
+        ocCheckBox = pref == null ? null : (TwoStatePreference) pref;
         return fragment;
     }
 

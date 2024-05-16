@@ -70,23 +70,27 @@ public class BackupManager {
      * This method is run every time the service is executed
      */
     @WorkerThread
-    static void backupAllBooks() {
+    static boolean backupAllBooks() {
         Context context = GnuCashApplication.getAppContext();
-        backupAllBooks(context);
+        return backupAllBooks(context);
     }
 
     /**
      * Perform an automatic backup of all books in the database.
      * This method is run every time the service is executed
+     * @return `true` when all books were successfully backed-up.
      */
     @WorkerThread
-    static void backupAllBooks(Context context) {
+    static boolean backupAllBooks(Context context) {
         BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
         List<String> bookUIDs = booksDbAdapter.getAllBookUIDs();
 
         for (String bookUID : bookUIDs) {
-            backupBook(context, bookUID);
+            if (!backupBook(context, bookUID)) {
+                return false;
+            }
         }
+        return true;
     }
 
     /**
@@ -107,18 +111,6 @@ public class BackupManager {
     @WorkerThread
     public static boolean backupActiveBook(Context context) {
         return backupBook(context, BooksDbAdapter.getInstance().getActiveBookUID());
-    }
-
-    /**
-     * Backs up the book with UID {@code bookUID} to the directory
-     * {@link #getBackupFolder(String)}.
-     *
-     * @param bookUID Unique ID of the book
-     * @return {@code true} if backup was successful, {@code false} otherwise
-     */
-    @WorkerThread
-    public static boolean backupBook(String bookUID) {
-        return backupBook(GnuCashApplication.getAppContext(), bookUID);
     }
 
     /**
@@ -150,8 +142,8 @@ public class BackupManager {
             return true;
         } catch (Throwable e) {
             Timber.e(e, "Error creating XML backup");
-            return false;
         }
+        return false;
     }
 
     /**
@@ -236,8 +228,7 @@ public class BackupManager {
 
             @Override
             protected Boolean doInBackground(Object... objects) {
-                backupBook(bookUID);
-                return Boolean.TRUE;
+                return backupBook(activity, bookUID);
             }
 
             @Override
@@ -267,8 +258,7 @@ public class BackupManager {
 
             @Override
             protected Boolean doInBackground(Object... objects) {
-                backupAllBooks(activity);
-                return Boolean.TRUE;
+                return backupAllBooks(activity);
             }
 
             @Override
