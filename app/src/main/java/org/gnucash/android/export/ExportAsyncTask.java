@@ -177,6 +177,8 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
      */
     @Override
     protected void onPostExecute(Integer exportSuccessful) {
+        dismissProgressDialog();
+
         final ExportParams exportParams = mExportParams;
         if (exportSuccessful > 0) {
             if (mContext instanceof Activity)
@@ -187,7 +189,6 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
             }
         } else {
             if (mContext instanceof Activity) {
-                dismissProgressDialog();
                 if (exportSuccessful == 0) {
                     Toast.makeText(mContext,
                         R.string.toast_no_transactions_to_export,
@@ -199,15 +200,20 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
                 }
             }
         }
-
-        dismissProgressDialog();
     }
 
     private void dismissProgressDialog() {
-        if (mContext instanceof Activity) {
+        try {
             if (mProgressDialog != null && mProgressDialog.isShowing()) {
                 mProgressDialog.dismiss();
             }
+        } catch (IllegalArgumentException ex) {
+            //TODO: This is a hack to catch "View not attached to window" exceptions
+            //FIXME by moving the creation and display of the progress dialog to the Fragment
+        } finally {
+            mProgressDialog = null;
+        }
+        if (mContext instanceof Activity) {
             ((Activity) mContext).finish();
         }
     }

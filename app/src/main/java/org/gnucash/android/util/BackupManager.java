@@ -160,8 +160,8 @@ public class BackupManager {
     private static File getBackupFile(@NonNull String bookUID, @Nullable ExportParams params) {
         Book book = BooksDbAdapter.getInstance().getRecord(bookUID);
         ExportFormat format = (params != null) ? params.getExportFormat() : ExportFormat.XML;
-        String name = Exporter.buildExportFilename(format, book.getDisplayName()) + ".gz";return new File(getBackupFolder(book.getUID()),
-            name);
+        String name = Exporter.buildExportFilename(format, book.getDisplayName()) + ".gz";
+        return new File(getBackupFolder(book.getUID()), name);
     }
 
     /**
@@ -237,8 +237,15 @@ public class BackupManager {
 
             @Override
             protected void onPostExecute(Boolean result) {
-                if (mProgressDialog != null) {
-                    mProgressDialog.hide();
+                try {
+                    if (mProgressDialog != null && mProgressDialog.isShowing()) {
+                        mProgressDialog.dismiss();
+                    }
+                } catch (IllegalArgumentException ex) {
+                    //TODO: This is a hack to catch "View not attached to window" exceptions
+                    //FIXME by moving the creation and display of the progress dialog to the Fragment
+                } finally {
+                    mProgressDialog = null;
                 }
                 if (!result) {
                     Toast.makeText(activity, R.string.toast_backup_failed, Toast.LENGTH_SHORT).show();
