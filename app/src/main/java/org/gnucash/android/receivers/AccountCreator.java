@@ -20,6 +20,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
@@ -45,20 +46,25 @@ public class AccountCreator extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Timber.i("Received account creation intent");
         Bundle args = intent.getExtras();
+        if (args == null) {
+            Timber.w("Account arguments required");
+            return;
+        }
 
-        Account account = new Account(args.getString(Intent.EXTRA_TITLE));
+        String name = args.getString(Intent.EXTRA_TITLE);
+        if (TextUtils.isEmpty(name)) {
+            Timber.w("Account name required");
+            return;
+        }
+        Account account = new Account(name);
         account.setParentUID(args.getString(Account.EXTRA_PARENT_UID));
 
         String currencyCode = args.getString(Account.EXTRA_CURRENCY_CODE);
-        if (currencyCode != null) {
-            Commodity commodity = Commodity.getInstance(currencyCode);
-            if (commodity != null) {
-                account.setCommodity(commodity);
-            } else {
-                throw new IllegalArgumentException("Commodity with '" + currencyCode
-                        + "' currency code not found in the database");
-            }
+        Commodity commodity = Commodity.getInstance(currencyCode);
+        if (commodity == null) {
+            commodity = Commodity.DEFAULT_COMMODITY;
         }
+        account.setCommodity(commodity);
 
         String uid = args.getString(Intent.EXTRA_UID);
         if (uid != null)

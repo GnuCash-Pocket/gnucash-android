@@ -5,8 +5,10 @@ import static org.gnucash.android.db.DatabaseSchema.CommodityEntry;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema;
@@ -110,7 +112,11 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
      * @param currencyCode 3-letter currency code
      * @return Commodity associated with code or null if none is found
      */
+    @Nullable
     public Commodity getCommodity(String currencyCode) {
+        if (TextUtils.isEmpty(currencyCode)) {
+            return null;
+        }
         Cursor cursor = fetchAllRecords(CommodityEntry.COLUMN_MNEMONIC + "=?", new String[]{currencyCode}, null);
         Commodity commodity = null;
         if (cursor.moveToNext()) {

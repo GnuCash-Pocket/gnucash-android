@@ -89,31 +89,33 @@ public class FormActivity extends PasscodeLockActivity {
             getWindow().setStatusBarColor(GnuCashApplication.darken(colorCode));
         }
 
-        String formtypeString = intent.getStringExtra(UxArgument.FORM_TYPE);
+        Bundle args = intent.getExtras();
+        if (args == null) args = new Bundle();
+        String formtypeString = args.getString(UxArgument.FORM_TYPE);
         FormType formType = FormType.valueOf(formtypeString);
         switch (formType) {
             case ACCOUNT:
-                showAccountFormFragment(intent.getExtras());
+                showAccountFormFragment(args);
                 break;
 
             case TRANSACTION:
-                showTransactionFormFragment(intent.getExtras());
+                showTransactionFormFragment(args);
                 break;
 
             case EXPORT:
-                showExportFormFragment(null);
+                showExportFormFragment(args);
                 break;
 
             case SPLIT_EDITOR:
-                showSplitEditorFragment(intent.getExtras());
+                showSplitEditorFragment(args);
                 break;
 
             case BUDGET:
-                showBudgetFormFragment(intent.getExtras());
+                showBudgetFormFragment(args);
                 break;
 
             case BUDGET_AMOUNT_EDITOR:
-                showBudgetAmountEditorFragment(intent.getExtras());
+                showBudgetAmountEditorFragment(args);
                 break;
 
             default:

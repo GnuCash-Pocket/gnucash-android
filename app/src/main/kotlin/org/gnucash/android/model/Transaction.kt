@@ -44,11 +44,6 @@ class Transaction : BaseModel {
     private var _splitList: MutableList<Split> = ArrayList()
 
     /**
-     * Name describing the transaction
-     */
-    private var _description: String? = null
-
-    /**
      * An extra note giving details about the transaction
      */
     var note: String? = ""
@@ -269,10 +264,9 @@ class Transaction : BaseModel {
     /**
      * A description of the transaction
      */
-    var description: String?
-        get() = _description
-        set(description) {
-            _description = description!!.trim { it <= ' ' }
+    var description: String? = ""
+        set(value) {
+            field = value?.trim { it <= ' ' }.orEmpty()
         }
 
     /**
@@ -335,7 +329,7 @@ class Transaction : BaseModel {
         transactionNode.appendChild(transID)
 
         val name = doc.createElement(OfxHelper.TAG_NAME)
-        name.appendChild(doc.createTextNode(_description))
+        name.appendChild(doc.createTextNode(description))
         transactionNode.appendChild(name)
 
         if (note != null && note!!.isNotEmpty()) {

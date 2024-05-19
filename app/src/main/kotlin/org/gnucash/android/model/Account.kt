@@ -16,11 +16,11 @@
 package org.gnucash.android.model
 
 import android.graphics.Color
+import java.sql.Timestamp
 import org.gnucash.android.BuildConfig
 import org.gnucash.android.export.ofx.OfxHelper
 import org.w3c.dom.Document
 import org.w3c.dom.Element
-import java.sql.Timestamp
 
 /**
  * An account represents a transaction account in with [Transaction]s may be recorded
@@ -77,7 +77,7 @@ class Account : BaseModel {
     /**
      * Account UID of the parent account. Can be null
      */
-    private var _parentAccountUID: String? = null
+    var parentUID: String? = null
 
     /**
      * Save UID of a default account for transfers.
@@ -150,24 +150,23 @@ class Account : BaseModel {
     }
 
     /**
-     * Sets a list of transactions for this account.
-     * Overrides any previous transactions with those in the list.
-     * The account UID and currency of the transactions will be set to the unique ID
-     * and currency of the account respectively
-     *
-     * @param transactionsList List of [Transaction]s to be set.
-     */
-    fun setTransactions(transactionsList: MutableList<Transaction>) {
-        _transactionsList = transactionsList
-    }
-
-    /**
      * Returns a list of transactions for this account
      *
      * @return Array list of transactions for the account
      */
-    val transactions: List<Transaction>
+    var transactions: List<Transaction>
         get() = _transactionsList
+        /**
+         * Sets a list of transactions for this account.
+         * Overrides any previous transactions with those in the list.
+         * The account UID and currency of the transactions will be set to the unique ID
+         * and currency of the account respectively
+         *
+         * @param value List of [Transaction]s to be set.
+         */
+        set(value) {
+            _transactionsList = value.toMutableList()
+        }
 
     /**
      * Returns the number of transactions in this account
@@ -238,24 +237,6 @@ class Account : BaseModel {
         set(value) {
             _commodity = value
         }
-
-    /**
-     * Sets the Unique Account Identifier of the parent account
-     *
-     * @param parentUID String Unique ID of parent account
-     */
-    fun setParentUID(parentUID: String?) {
-        _parentAccountUID = parentUID
-    }
-
-    /**
-     * Returns the Unique Account Identifier of the parent account
-     *
-     * @return String Unique ID of parent account
-     */
-    fun getParentUID(): String? {
-        return _parentAccountUID
-    }
 
     /**
      * Returns `true` if this account is a placeholder account, `false` otherwise.
