@@ -20,6 +20,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
@@ -58,26 +59,36 @@ public class TransactionRecorder extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Timber.i("Received transaction recording intent");
         Bundle args = intent.getExtras();
+        if (args == null) {
+            Timber.w("Transaction arguments required");
+            return;
+        }
+
         String name = args.getString(Intent.EXTRA_TITLE);
+        if (TextUtils.isEmpty(name)) {
+            Timber.w("Transaction name required");
+            return;
+        }
         String note = args.getString(Intent.EXTRA_TEXT);
 
         String currencyCode = args.getString(Account.EXTRA_CURRENCY_CODE);
-        if (currencyCode == null)
-            currencyCode = Money.DEFAULT_CURRENCY_CODE;
+        Commodity commodity = Commodity.getInstance(currencyCode);
+        if (commodity == null) {
+            commodity = Commodity.DEFAULT_COMMODITY;
+        }
 
         Transaction transaction = new Transaction(name);
         transaction.setTime(System.currentTimeMillis());
         transaction.setNote(note);
-        transaction.setCommodity(Commodity.getInstance(currencyCode));
+        transaction.setCommodity(commodity);
 
         //Parse deprecated args for compatibility. Transactions were bound to accounts, now only splits are
         String accountUID = args.getString(Transaction.EXTRA_ACCOUNT_UID);
         if (accountUID != null) {
             TransactionType type = TransactionType.valueOf(args.getString(Transaction.EXTRA_TRANSACTION_TYPE));
             BigDecimal amountBigDecimal = (BigDecimal) args.getSerializable(Transaction.EXTRA_AMOUNT);
-            Commodity commodity = CommoditiesDbAdapter.getInstance().getCommodity(currencyCode);
             amountBigDecimal = amountBigDecimal.setScale(commodity.getSmallestFractionDigits(), BigDecimal.ROUND_HALF_EVEN).round(MathContext.DECIMAL128);
-            Money amount = new Money(amountBigDecimal, Commodity.getInstance(currencyCode));
+            Money amount = new Money(amountBigDecimal, commodity);
             Split split = new Split(amount, accountUID);
             split.setType(type);
             transaction.addSplit(split);
@@ -92,7 +103,7 @@ public class TransactionRecorder extends BroadcastReceiver {
         if (splits != null) {
             StringReader stringReader = new StringReader(splits);
             BufferedReader bufferedReader = new BufferedReader(stringReader);
-            String line = null;
+            String line;
             try {
                 while ((line = bufferedReader.readLine()) != null) {
                     Split split = Split.parseSplit(line);

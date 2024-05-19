@@ -166,7 +166,7 @@ class Commodity(
          * @param currencyCode ISO 4217 currency code (3-letter)
          */
         @JvmStatic
-        fun getInstance(currencyCode: String?): Commodity {
+        fun getInstance(currencyCode: String?): Commodity? {
             return when (currencyCode) {
                 "USD" -> USD
                 "EUR" -> EUR

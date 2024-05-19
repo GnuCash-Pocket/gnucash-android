@@ -80,7 +80,7 @@ class Money : Number, Comparable<Money> {
      */
     constructor(amount: String?, currencyCode: String?) {
         //commodity has to be set first
-        commodity = Commodity.getInstance(currencyCode)
+        commodity = Commodity.getInstance(currencyCode) ?: Commodity.DEFAULT_COMMODITY
         setAmount(BigDecimal(amount))
     }
 
@@ -136,7 +136,7 @@ class Money : Number, Comparable<Money> {
      * @param currencyCode ISO 4217 currency code
      */
     private fun setCommodity(currencyCode: String) {
-        commodity = Commodity.getInstance(currencyCode)
+        commodity = Commodity.getInstance(currencyCode)!!
     }
 
     /**
@@ -536,7 +536,7 @@ class Money : Number, Comparable<Money> {
          */
         @JvmStatic
         fun createZeroInstance(currencyCode: String): Money {
-            val commodity = Commodity.getInstance(currencyCode)
+            val commodity = Commodity.getInstance(currencyCode) ?: Commodity.DEFAULT_COMMODITY
             return Money(BigDecimal.ZERO, commodity)
         }
     }
