@@ -21,22 +21,22 @@ import static org.gnucash.android.util.ContentExtKt.getDocumentName;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.DocumentsContract;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.preference.CheckBoxPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -67,7 +67,6 @@ import org.joda.time.format.DateTimeFormatter;
 import java.io.File;
 
 import timber.log.Timber;
-
 
 /**
  * Fragment for displaying general preferences
@@ -203,9 +202,16 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
         }
 
         if (key.equals(getString(R.string.key_create_backup))) {
-            BackupManager.backupActiveBookAsync(requireActivity(), result -> {
+            final Fragment fragment = this;
+            final Activity activity = requireActivity();
+            BackupManager.backupActiveBookAsync(activity, result -> {
                 int msg = result ? R.string.toast_backup_successful : R.string.toast_backup_failed;
-                Snackbar.make(requireView(), msg, Snackbar.LENGTH_SHORT).show();
+                if (fragment.isVisible()) {
+                    View view = fragment.getView();
+                    Snackbar.make(view, msg, Snackbar.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(activity, msg, Toast.LENGTH_LONG).show();
+                }
                 return null;
             });
         }
