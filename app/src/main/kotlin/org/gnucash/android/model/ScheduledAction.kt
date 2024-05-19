@@ -20,11 +20,11 @@ import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.joda.time.LocalDateTime
 import java.sql.Timestamp
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import org.gnucash.android.export.xml.GncXmlHelper
+import org.joda.time.format.DateTimeFormat
 
 /**
  * Represents a scheduled event which is stored in the database and run at regular mPeriod
@@ -365,9 +365,8 @@ class ScheduledAction    //all actions are enabled by default
             val separator = ";"
             val ruleBuilder = StringBuilder(recurrence!!.ruleString)
             if (_endDate > 0) {
-                val df = SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'", Locale.US)
-                df.timeZone = GncXmlHelper.TZ_UTC
-                ruleBuilder.append("UNTIL=").append(df.format(Date(_endDate))).append(separator)
+                val df = DateTimeFormat.forPattern("yyyyMMdd'T'HHmmss'Z'").withZoneUTC()
+                ruleBuilder.append("UNTIL=").append(df.print(_endDate)).append(separator)
             } else if (totalPlannedExecutionCount > 0) {
                 ruleBuilder.append("COUNT=").append(totalPlannedExecutionCount).append(separator)
             }

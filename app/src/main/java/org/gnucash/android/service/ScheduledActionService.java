@@ -39,10 +39,10 @@ import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.model.Book;
 import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Transaction;
+import org.joda.time.format.DateTimeFormat;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -92,7 +92,7 @@ public class ScheduledActionService extends JobIntentService {
                 db.close();
         }
 
-        Timber.i("Completed service @ %s", java.text.DateFormat.getDateTimeInstance().format(new Date()));
+        Timber.i("Completed service @ %s", DateTimeFormat.longDateTime().print(System.currentTimeMillis()));
     }
 
     /**

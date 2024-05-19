@@ -54,7 +54,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.util.Calendar;
-import java.util.Date;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -185,9 +184,9 @@ public class GncXmlHandlerTest {
         assertThat(transaction.isExported()).isTrue();
         assertThat(transaction.isTemplate()).isFalse();
         assertThat(transaction.getTimeMillis()).
-                isEqualTo(GncXmlHelper.parseDate("2016-08-23 00:00:00 +0200"));
+                isEqualTo(GncXmlHelper.parseDateTime("2016-08-23 00:00:00 +0200"));
         assertThat(transaction.getCreatedTimestamp().getTime()).
-                isEqualTo(GncXmlHelper.parseDate("2016-08-23 12:44:19 +0200"));
+                isEqualTo(GncXmlHelper.parseDateTime("2016-08-23 12:44:19 +0200"));
 
         // Check splits
         assertThat(transaction.getSplits().size()).isEqualTo(2);
@@ -325,9 +324,9 @@ public class GncXmlHandlerTest {
         assertThat(scheduledTransaction.isExported()).isTrue();
         assertThat(scheduledTransaction.isTemplate()).isTrue();
         assertThat(scheduledTransaction.getTimeMillis())
-                .isEqualTo(GncXmlHelper.parseDate("2016-08-24 00:00:00 +0200"));
+                .isEqualTo(GncXmlHelper.parseDateTime("2016-08-24 00:00:00 +0200"));
         assertThat(scheduledTransaction.getCreatedTimestamp().getTime())
-                .isEqualTo(GncXmlHelper.parseDate("2016-08-24 19:50:15 +0200"));
+                .isEqualTo(GncXmlHelper.parseDateTime("2016-08-24 19:50:15 +0200"));
 
         // Check splits
         assertThat(scheduledTransaction.getSplits().size()).isEqualTo(2);
@@ -374,9 +373,8 @@ public class GncXmlHandlerTest {
         // Until we implement parsing of days of the week for scheduled actions,
         // we'll just use the day of the week of the start time.
         int dayOfWeekFromByDays = scheduledTransaction.getRecurrence().getByDays().get(0);
-        Date startTime = new Date(scheduledTransaction.getStartTime());
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(startTime);
+        calendar.setTimeInMillis(scheduledTransaction.getStartTime());
         int dayOfWeekFromStartTime = calendar.get(Calendar.DAY_OF_WEEK);
         assertThat(dayOfWeekFromByDays).isEqualTo(dayOfWeekFromStartTime);
     }

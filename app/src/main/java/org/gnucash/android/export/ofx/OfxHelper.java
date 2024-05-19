@@ -15,9 +15,11 @@
  */
 package org.gnucash.android.export.ofx;
 
-import java.text.SimpleDateFormat;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -30,7 +32,7 @@ public class OfxHelper {
     /**
      * A date formatter used when creating file names for the exported data
      */
-    public final static SimpleDateFormat OFX_DATE_FORMATTER = new SimpleDateFormat("yyyyMMddHHmmss", Locale.US);
+    public final static String OFX_DATE_PATTERN = "yyyyMMddHHmmss.SSS";
 
     /**
      * The Transaction ID is usually the client ID sent in a request.
@@ -83,7 +85,7 @@ public class OfxHelper {
     public static String APP_ID = "org.gnucash.android";
 
     /**
-     * Returns the current time formatted using the pattern in {@link #OFX_DATE_FORMATTER}
+     * Returns the current time formatted using the pattern {@link #OFX_DATE_PATTERN}
      *
      * @return Current time as a formatted string
      * @see #getOfxFormattedTime(long)
@@ -93,18 +95,38 @@ public class OfxHelper {
     }
 
     /**
-     * Returns a formatted string representation of time in <code>milliseconds</code>
+     * Returns a formatted string representation of time in <code>milliseconds</code>.
+     * According to the OFX Banking Specification,
+     * "The complete form is: YYYYMMDDHHMMSS.XXX [gmt offset[:tz name]]"
+     * "For example, “19961005132200.124[-5:EST]” represents October 5, 1996, at 1:22 and 124 milliseconds p.m., in Eastern Standard Time.
+     * This is the same as 6:22 p.m. Greenwich Mean Time (GMT)."
      *
-     * @param milliseconds Long value representing the time to be formatted
+     * @param date Long value representing the time to be formatted
      * @return Formatted string representation of time in <code>milliseconds</code>
      */
-    public static String getOfxFormattedTime(long milliseconds) {
-        Date date = new Date(milliseconds);
-        String dateString = OFX_DATE_FORMATTER.format(date);
-        TimeZone tz = Calendar.getInstance().getTimeZone();
-        int offset = tz.getRawOffset();
-        int hours = (int) ((offset / (1000 * 60 * 60)) % 24);
-        String sign = offset > 0 ? "+" : "";
-        return dateString + "[" + sign + hours + ":" + tz.getDisplayName(false, TimeZone.SHORT, Locale.getDefault()) + "]";
+    public static String getOfxFormattedTime(long date) {
+        return getOfxFormattedTime(date, TimeZone.getDefault());
+    }
+
+    /**
+     * Returns a formatted string representation of time in <code>milliseconds</code>.
+     * According to the OFX Banking Specification,
+     * "The complete form is: YYYYMMDDHHMMSS.XXX [gmt offset[:tz name]]"
+     * "For example, “19961005132200.124[-5:EST]” represents October 5, 1996, at 1:22 and 124 milliseconds p.m., in Eastern Standard Time.
+     * This is the same as 6:22 p.m. Greenwich Mean Time (GMT)."
+     *
+     * @param date Long value representing the time to be formatted
+     * @param timeZone the time zone.
+     * @return Formatted string representation of time in <code>milliseconds</code>
+     */
+    public static String getOfxFormattedTime(long date, TimeZone timeZone) {
+        TimeZone tz = (timeZone != null) ? timeZone : TimeZone.getDefault();
+        DateTimeZone zone = DateTimeZone.forTimeZone(tz);
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(OFX_DATE_PATTERN).withZone(zone);
+        int offsetMillis = zone.getOffset(date);
+        int hours = (int) ((offsetMillis / (1000 * 60 * 60)) % 24);
+        String sign = offsetMillis > 0 ? "+" : "";
+        String tzName = zone.getShortName(date, Locale.ROOT);
+        return formatter.print(date) + "[" + sign + hours + ":" + tzName + "]";
     }
 }

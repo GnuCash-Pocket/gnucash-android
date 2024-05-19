@@ -18,19 +18,30 @@ package org.gnucash.android.test.unit.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.export.xml.GncXmlHelper;
 import org.gnucash.android.model.Commodity;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 
 /**
  * Test the helper methods used for generating GnuCash XML
  */
 public class GncXmlHelperTest {
+
+    private static final TimeZone TZ_UTC = DateTimeZone.UTC.toTimeZone();
 
     /**
      * Tests the parsing of split amounts
@@ -67,9 +78,8 @@ public class GncXmlHelperTest {
 
     @Test
     public void testDateFormat_Leap_UTC() {
-        TimeZone tz = GncXmlHelper.TZ_UTC;
         Calendar cal = Calendar.getInstance();
-        cal.setTimeZone(tz);
+        cal.setTimeZone(TZ_UTC);
         cal.set(Calendar.YEAR, 2024);
         cal.set(Calendar.MONTH, Calendar.FEBRUARY);
         cal.set(Calendar.DAY_OF_MONTH, 28);
@@ -78,16 +88,15 @@ public class GncXmlHelperTest {
         cal.set(Calendar.SECOND, 56);
         cal.set(Calendar.MILLISECOND, 999);
 
-        GncXmlHelper.TIME_FORMATTER.setTimeZone(tz);
-        String formatted = GncXmlHelper.formatDate(cal.getTimeInMillis());
+        String formatted = GncXmlHelper.formatDateTime(cal);
         assertThat(formatted).isEqualTo("2024-02-28 12:34:56 +0000");
 
         cal.add(Calendar.DAY_OF_MONTH, 1);
-        formatted = GncXmlHelper.formatDate(cal.getTimeInMillis());
+        formatted = GncXmlHelper.formatDateTime(cal);
         assertThat(formatted).isEqualTo("2024-02-29 12:34:56 +0000");
 
         cal.add(Calendar.DAY_OF_MONTH, 1);
-        formatted = GncXmlHelper.formatDate(cal.getTimeInMillis());
+        formatted = GncXmlHelper.formatDateTime(cal);
         assertThat(formatted).isEqualTo("2024-03-01 12:34:56 +0000");
     }
 
@@ -104,24 +113,22 @@ public class GncXmlHelperTest {
         cal.set(Calendar.SECOND, 56);
         cal.set(Calendar.MILLISECOND, 999);
 
-        GncXmlHelper.TIME_FORMATTER.setTimeZone(tz);
-        String formatted = GncXmlHelper.formatDate(cal.getTimeInMillis());
+        String formatted = GncXmlHelper.formatDateTime(cal);
         assertThat(formatted).isEqualTo("2024-02-28 12:34:56 +0200");
 
         cal.add(Calendar.DAY_OF_MONTH, 1);
-        formatted = GncXmlHelper.formatDate(cal.getTimeInMillis());
+        formatted = GncXmlHelper.formatDateTime(cal);
         assertThat(formatted).isEqualTo("2024-02-29 12:34:56 +0200");
 
         cal.add(Calendar.DAY_OF_MONTH, 1);
-        formatted = GncXmlHelper.formatDate(cal.getTimeInMillis());
+        formatted = GncXmlHelper.formatDateTime(cal);
         assertThat(formatted).isEqualTo("2024-03-01 12:34:56 +0200");
     }
 
     @Test
     public void testDateFormat_Threads() throws Throwable {
-        TimeZone tz = GncXmlHelper.TZ_UTC;
         Calendar cal = Calendar.getInstance();
-        cal.setTimeZone(tz);
+        cal.setTimeZone(TZ_UTC);
         cal.set(Calendar.YEAR, 2024);
         cal.set(Calendar.MONTH, Calendar.JANUARY);
         cal.set(Calendar.DAY_OF_MONTH, 1);
@@ -130,11 +137,9 @@ public class GncXmlHelperTest {
         cal.set(Calendar.SECOND, 56);
         cal.set(Calendar.MILLISECOND, 999);
 
-        GncXmlHelper.TIME_FORMATTER.setTimeZone(tz);
-
-        FormatRunner r1 = new FormatRunner(cal.getTimeInMillis(), "2024-01-01 12:34:56 +0000");
+        FormatRunner r1 = new FormatRunner((Calendar) cal.clone(), "2024-01-01 12:34:56 +0000");
         cal.add(Calendar.DAY_OF_MONTH, 1);
-        FormatRunner r2 = new FormatRunner(cal.getTimeInMillis(), "2024-01-02 12:34:56 +0000");
+        FormatRunner r2 = new FormatRunner((Calendar) cal.clone(), "2024-01-02 12:34:56 +0000");
 
         Thread t1 = new Thread(r1);
         Thread t2 = new Thread(r2);
@@ -152,12 +157,12 @@ public class GncXmlHelperTest {
 
     private static class FormatRunner implements Runnable {
 
-        private final long timeInMillis;
+        private final Calendar calendar;
         private final String expected;
         Throwable error;
 
-        private FormatRunner(long timeInMillis, String expected) {
-            this.timeInMillis = timeInMillis;
+        private FormatRunner(Calendar calendar, String expected) {
+            this.calendar = calendar;
             this.expected = expected;
         }
 
@@ -165,7 +170,7 @@ public class GncXmlHelperTest {
         public void run() {
             try {
                 for (int i = 0; i < 1000; i++) {
-                    assertThat(GncXmlHelper.formatDate(timeInMillis)).isEqualTo(expected);
+                    assertThat(GncXmlHelper.formatDateTime(calendar)).isEqualTo(expected);
                     try {
                         Thread.sleep(1);
                     } catch (InterruptedException ignore) {
@@ -175,5 +180,65 @@ public class GncXmlHelperTest {
                 error = e;
             }
         }
+    }
+
+    @Test
+    public void testDateTimeFormat_Timestamp_UTC() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeZone(TZ_UTC);
+        cal.set(Calendar.YEAR, 2024);
+        cal.set(Calendar.MONTH, Calendar.MAY);
+        cal.set(Calendar.DAY_OF_MONTH, 19);
+        cal.set(Calendar.HOUR_OF_DAY, 12);
+        cal.set(Calendar.MINUTE, 34);
+        cal.set(Calendar.SECOND, 56);
+        cal.set(Calendar.MILLISECOND, 999);
+
+        Timestamp ts = new Timestamp(cal.getTimeInMillis());
+        String formatted = GncXmlHelper.formatDateTime(ts);
+        assertThat(formatted).isEqualTo("2024-05-19 12:34:56 +0000");
+    }
+
+    @Test
+    public void testDateFormat_to_DateTimeFormat() {
+        long now = System.currentTimeMillis();
+
+        DateFormat df = DateFormat.getInstance();
+        DateTimeFormatter dtf = DateTimeFormat.shortDateTime();
+        assertThat(df.format(new Date(now))).isEqualTo(dtf.print(now));
+
+        df = DateFormat.getDateInstance();
+        dtf = DateTimeFormat.mediumDate();
+        assertThat(df.format(new Date(now))).isEqualTo(dtf.print(now));
+
+        df = DateFormat.getDateInstance(DateFormat.FULL);
+        dtf = DateTimeFormat.fullDate();
+        assertThat(df.format(new Date(now))).isEqualTo(dtf.print(now));
+    }
+
+    @Test
+    public void testDateTimeFormat_forPattern() {
+        long now = System.currentTimeMillis();
+
+        DateFormat df = new SimpleDateFormat("E", Locale.US);
+        DateTimeFormatter dtf = DateTimeFormat.forPattern("E");
+        assertThat(df.format(new Date(now))).isEqualTo(dtf.print(now));
+
+        df = new SimpleDateFormat("EEEE", GnuCashApplication.getDefaultLocale());
+        dtf = DateTimeFormat.forPattern("EEEE");
+        assertThat(df.format(new Date(now))).isEqualTo(dtf.print(now));
+
+        df = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US);
+        dtf = DateTimeFormat.forPattern("yyyyMMdd_HHmmss");
+        assertThat(df.format(new Date(now))).isEqualTo(dtf.print(now));
+
+        df = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'", Locale.US);
+        df.setTimeZone(TZ_UTC);
+        dtf = DateTimeFormat.forPattern("yyyyMMdd'T'HHmmss'Z'").withZoneUTC();
+        assertThat(df.format(new Date(now))).isEqualTo(dtf.print(now));
+
+        df = new SimpleDateFormat("EEE, d MMM");
+        dtf = DateTimeFormat.forPattern("EEE, d MMM");
+        assertThat(df.format(new Date(now))).isEqualTo(dtf.print(now));
     }
 }

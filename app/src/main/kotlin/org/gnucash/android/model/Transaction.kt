@@ -313,11 +313,7 @@ class Transaction : BaseModel {
         transactionNode.appendChild(datePosted)
 
         val dateUser = doc.createElement(OfxHelper.TAG_DATE_USER)
-        dateUser.appendChild(
-            doc.createTextNode(
-                OfxHelper.getOfxFormattedTime(timeMillis)
-            )
-        )
+        dateUser.appendChild(doc.createTextNode(OfxHelper.getOfxFormattedTime(timeMillis)))
         transactionNode.appendChild(dateUser)
 
         val amount = doc.createElement(OfxHelper.TAG_TRANSACTION_AMOUNT)

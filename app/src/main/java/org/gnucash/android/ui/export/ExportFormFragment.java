@@ -77,15 +77,12 @@ import org.gnucash.android.util.PreferencesHelper;
 import org.gnucash.android.util.TimestampHelper;
 
 import java.sql.Timestamp;
-import java.text.ParseException;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import timber.log.Timber;
-
 
 /**
  * Dialog fragment for exporting accounts and transactions in various formats
@@ -415,11 +412,10 @@ public class ExportFormFragment extends Fragment implements
 
         //**************** export start time bindings ******************
         Timestamp timestamp = PreferencesHelper.getLastExportTime();
-        mExportStartCalendar.setTimeInMillis(timestamp.getTime());
-
-        final Date date = new Date(timestamp.getTime());
-        mExportStartDate.setText(TransactionFormFragment.DATE_FORMATTER.format(date));
-        mExportStartTime.setText(TransactionFormFragment.TIME_FORMATTER.format(date));
+        final long date = timestamp.getTime();
+        mExportStartCalendar.setTimeInMillis(date);
+        mExportStartDate.setText(TransactionFormFragment.DATE_FORMATTER.print(date));
+        mExportStartTime.setText(TransactionFormFragment.TIME_FORMATTER.print(date));
 
         mExportStartDate.setOnClickListener(new View.OnClickListener() {
 
@@ -427,9 +423,8 @@ public class ExportFormFragment extends Fragment implements
             public void onClick(View v) {
                 long dateMillis = 0;
                 try {
-                    Date date = TransactionFormFragment.DATE_FORMATTER.parse(mExportStartDate.getText().toString());
-                    dateMillis = date.getTime();
-                } catch (ParseException e) {
+                    dateMillis = TransactionFormFragment.DATE_FORMATTER.parseMillis(mExportStartDate.getText().toString());
+                } catch (IllegalArgumentException e) {
                     Timber.e(e, "Error converting input time to Date object");
                 }
                 Calendar calendar = Calendar.getInstance();
@@ -451,12 +446,10 @@ public class ExportFormFragment extends Fragment implements
             public void onClick(View v) {
                 long timeMillis = 0;
                 try {
-                    Date date = TransactionFormFragment.TIME_FORMATTER.parse(mExportStartTime.getText().toString());
-                    timeMillis = date.getTime();
-                } catch (ParseException e) {
+                    timeMillis = TransactionFormFragment.TIME_FORMATTER.parseMillis(mExportStartTime.getText().toString());
+                } catch (IllegalArgumentException e) {
                     Timber.e(e, "Error converting input time to Date object");
                 }
-
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTimeInMillis(timeMillis);
 
@@ -617,7 +610,7 @@ public class ExportFormFragment extends Fragment implements
     @Override
     public void onDateSet(CalendarDatePickerDialogFragment dialog, int year, int monthOfYear, int dayOfMonth) {
         Calendar cal = new GregorianCalendar(year, monthOfYear, dayOfMonth);
-        mExportStartDate.setText(TransactionFormFragment.DATE_FORMATTER.format(cal.getTime()));
+        mExportStartDate.setText(TransactionFormFragment.DATE_FORMATTER.print(cal.getTimeInMillis()));
         mExportStartCalendar.set(Calendar.YEAR, year);
         mExportStartCalendar.set(Calendar.MONTH, monthOfYear);
         mExportStartCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
@@ -626,7 +619,7 @@ public class ExportFormFragment extends Fragment implements
     @Override
     public void onTimeSet(RadialTimePickerDialogFragment dialog, int hourOfDay, int minute) {
         Calendar cal = new GregorianCalendar(0, 0, 0, hourOfDay, minute);
-        mExportStartTime.setText(TransactionFormFragment.TIME_FORMATTER.format(cal.getTime()));
+        mExportStartTime.setText(TransactionFormFragment.TIME_FORMATTER.print(cal.getTimeInMillis()));
         mExportStartCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
         mExportStartCalendar.set(Calendar.MINUTE, minute);
     }

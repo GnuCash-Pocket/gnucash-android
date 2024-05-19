@@ -19,15 +19,18 @@ package org.gnucash.android.export.xml;
 
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.ui.transaction.TransactionFormFragment;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Instant;
+import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
 
 /**
  * Collection of helper tags and methods for Gnc XML export
@@ -149,9 +152,8 @@ public abstract class GncXmlHelper {
 
     public static final String RECURRENCE_VERSION = "1.0.0";
     public static final String BOOK_VERSION = "2.0.0";
-    public static final TimeZone TZ_UTC = TimeZone.getTimeZone("UTC");
-    public static final SimpleDateFormat TIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", Locale.US);
-    public static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss Z");
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
 
     public static final String KEY_PLACEHOLDER = "placeholder";
     public static final String KEY_COLOR = "color";
@@ -167,14 +169,13 @@ public abstract class GncXmlHelper {
     public static final String KEY_FROM_SCHED_ACTION = "from-sched-xaction";
     public static final String KEY_DEFAULT_TRANSFER_ACCOUNT = "default_transfer_account";
 
-
     /**
      * Formats dates for the GnuCash XML format
      *
      * @param milliseconds Milliseconds since epoch
      */
     public static String formatDate(long milliseconds) {
-        return formatDate(new Date(milliseconds));
+        return DATE_FORMATTER.print(milliseconds);
     }
 
     /**
@@ -182,8 +183,67 @@ public abstract class GncXmlHelper {
      *
      * @param date the date to format
      */
-    public static synchronized String formatDate(Date date) {
-        return TIME_FORMATTER.format(date);
+    public static String formatDate(LocalDate date) {
+        return DATE_FORMATTER.print(date);
+    }
+
+    /**
+     * Formats dates for the GnuCash XML format
+     *
+     * @param calendar the calendar to format
+     */
+    public static String formatDate(Calendar calendar) {
+        Instant instant = new Instant(calendar);
+        return DATE_FORMATTER.withZone(DateTimeZone.forTimeZone(calendar.getTimeZone())).print(instant);
+    }
+
+    /**
+     * Formats dates for the GnuCash XML format
+     *
+     * @param milliseconds Milliseconds since epoch
+     */
+    public static String formatDateTime(long milliseconds) {
+        return TIME_FORMATTER.print(milliseconds);
+    }
+
+    /**
+     * Formats dates for the GnuCash XML format
+     *
+     * @param date the date to format
+     */
+    public static String formatDateTime(Date date) {
+        Instant instant = new Instant(date);
+        return TIME_FORMATTER.print(instant);
+    }
+
+    /**
+     * Formats dates for the GnuCash XML format
+     *
+     * @param date the date to format
+     */
+    public static String formatDateTime(LocalDate date) {
+        return TIME_FORMATTER.print(date);
+    }
+
+    /**
+     * Formats dates for the GnuCash XML format
+     *
+     * @param calendar the calendar to format
+     */
+    public static String formatDateTime(Calendar calendar) {
+        Instant instant = new Instant(calendar);
+        return TIME_FORMATTER.withZone(DateTimeZone.forTimeZone(calendar.getTimeZone())).print(instant);
+    }
+
+    /**
+     * Parses a date string formatted in the format "yyyy-MM-dd"
+     *
+     * @param dateString String date representation
+     * @return Time in milliseconds since epoch
+     * @throws ParseException if the date string could not be parsed e.g. because of different format
+     */
+    public static long parseDate(String dateString) throws ParseException {
+        return DATE_FORMATTER.parseMillis(dateString);
     }
 
     /**
@@ -193,9 +253,8 @@ public abstract class GncXmlHelper {
      * @return Time in milliseconds since epoch
      * @throws ParseException if the date string could not be parsed e.g. because of different format
      */
-    public static long parseDate(String dateString) throws ParseException {
-        Date date = TIME_FORMATTER.parse(dateString);
-        return date.getTime();
+    public static long parseDateTime(String dateString) throws ParseException {
+        return TIME_FORMATTER.parseMillis(dateString);
     }
 
     /**

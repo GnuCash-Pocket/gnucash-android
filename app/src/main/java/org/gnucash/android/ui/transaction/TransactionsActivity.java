@@ -21,8 +21,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.format.DateUtils;
 import android.util.SparseArray;
@@ -52,7 +50,6 @@ import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.Money;
-import org.gnucash.android.ui.account.AccountsActivity;
 import org.gnucash.android.ui.account.AccountsListFragment;
 import org.gnucash.android.ui.account.DeleteAccountDialogFragment;
 import org.gnucash.android.ui.account.OnAccountClickedListener;
@@ -60,14 +57,13 @@ import org.gnucash.android.ui.common.BaseDrawerActivity;
 import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
-import org.gnucash.android.ui.util.AccountBalanceTask;
 import org.gnucash.android.util.BackupManager;
 import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
 import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import butterknife.BindView;
 import timber.log.Timber;
@@ -94,7 +90,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      * Number of pages to show
      */
     private static final int DEFAULT_NUM_PAGES = 2;
-    private static SimpleDateFormat mDayMonthDateFormat = new SimpleDateFormat("EEE, d MMM");
+    private static DateTimeFormatter dayMonthFormatter = DateTimeFormat.forPattern("EEE, d MMM");
 
     /**
      * GUID of {@link Account} whose transactions are displayed
@@ -510,11 +506,11 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     public static String getPrettyDateFormat(Context context, long dateMillis) {
         LocalDate transactionTime = new LocalDate(dateMillis);
         LocalDate today = new LocalDate();
-        String prettyDateText = null;
+        final String prettyDateText;
         if (transactionTime.compareTo(today.minusDays(1)) >= 0 && transactionTime.compareTo(today.plusDays(1)) <= 0) {
             prettyDateText = DateUtils.getRelativeTimeSpanString(dateMillis, System.currentTimeMillis(), DateUtils.DAY_IN_MILLIS).toString();
         } else if (transactionTime.getYear() == today.getYear()) {
-            prettyDateText = mDayMonthDateFormat.format(new Date(dateMillis));
+            prettyDateText = dayMonthFormatter.print(dateMillis);
         } else {
             prettyDateText = DateUtils.formatDateTime(context, dateMillis, DateUtils.FORMAT_ABBREV_MONTH | DateUtils.FORMAT_SHOW_YEAR);
         }

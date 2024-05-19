@@ -19,16 +19,12 @@ package org.gnucash.android.ui.transaction;
 import static org.gnucash.android.util.ContentExtKt.getDocumentName;
 
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Rect;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.DocumentsContract;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -65,9 +61,8 @@ import org.gnucash.android.model.Transaction;
 import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.util.BackupManager;
+import org.joda.time.format.DateTimeFormat;
 
-import java.text.DateFormat;
-import java.util.Date;
 import java.util.List;
 
 import timber.log.Timber;
@@ -489,7 +484,7 @@ public class ScheduledActionsListFragment extends ListFragment implements
                 ((TextView) view.findViewById(R.id.primary_text)).setTextColor(
                         ContextCompat.getColor(getContext(), android.R.color.darker_gray));
                 descriptionTextView.setText(getString(R.string.label_scheduled_action_ended,
-                        DateFormat.getInstance().format(new Date(scheduledAction.getLastRunTime()))));
+                    DateTimeFormat.shortDateTime().print(scheduledAction.getLastRunTime())));
             } else {
                 descriptionTextView.setText(scheduledAction.getRepeatString());
             }
@@ -595,7 +590,7 @@ public class ScheduledActionsListFragment extends ListFragment implements
                 ((TextView) view.findViewById(R.id.primary_text))
                         .setTextColor(ContextCompat.getColor(getContext(), android.R.color.darker_gray));
                 descriptionTextView.setText(getString(R.string.label_scheduled_action_ended,
-                        DateFormat.getInstance().format(new Date(scheduledAction.getLastRunTime()))));
+                    DateTimeFormat.shortDateTime().print(scheduledAction.getLastRunTime())));
             } else {
                 descriptionTextView.setText(scheduledAction.getRepeatString());
             }
