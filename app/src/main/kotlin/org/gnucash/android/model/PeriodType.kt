@@ -15,9 +15,8 @@
  */
 package org.gnucash.android.model
 
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
+import org.joda.time.format.DateTimeFormat
 
 /**
  * Represents a type of period which can be associated with a recurring event
@@ -54,11 +53,15 @@ enum class PeriodType {
     fun getByParts(startTime: Long): String {
         var partString = ""
         if (this == WEEK) {
-            val dayOfWeek = SimpleDateFormat("E", Locale.US).format(Date(startTime))
+            val dayOfWeek = dayOfWeekFormatter.print(startTime)
             //our parser only supports two-letter day names
             partString = "BYDAY=" + dayOfWeek.substring(0, dayOfWeek.length - 1)
                 .uppercase(Locale.getDefault())
         }
         return partString
+    }
+
+    companion object {
+        private val dayOfWeekFormatter = DateTimeFormat.forPattern("E")
     }
 }

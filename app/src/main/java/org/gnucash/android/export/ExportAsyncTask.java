@@ -68,15 +68,14 @@ import org.gnucash.android.ui.common.GnucashProgressDialog;
 import org.gnucash.android.ui.settings.BackupPreferenceFragment;
 import org.gnucash.android.ui.transaction.TransactionsActivity;
 import org.gnucash.android.util.BackupManager;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -492,9 +491,9 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
         if (defaultEmail != null && defaultEmail.trim().length() > 0)
             shareIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{defaultEmail});
 
-        SimpleDateFormat formatter = (SimpleDateFormat) SimpleDateFormat.getDateTimeInstance();
+        DateTimeFormatter formatter = DateTimeFormat.fullDateTime();
         String extraText = mContext.getString(R.string.description_export_email)
-                + " " + formatter.format(new Date(System.currentTimeMillis()));
+                + " " + formatter.print(System.currentTimeMillis());
         shareIntent.putExtra(Intent.EXTRA_TEXT, extraText);
 
         if (mContext instanceof Activity) {

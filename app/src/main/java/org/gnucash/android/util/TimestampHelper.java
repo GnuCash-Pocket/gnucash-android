@@ -15,8 +15,6 @@
  */
 package org.gnucash.android.util;
 
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -38,11 +36,10 @@ public final class TimestampHelper {
     /**
      * We are using Joda Time classes because they are thread-safe.
      */
-    private static final DateTimeZone UTC_TIME_ZONE = DateTimeZone.forID("UTC");
     private static final DateTimeFormatter UTC_DATE_FORMAT =
-            DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+            DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZoneUTC();
     private static final DateTimeFormatter UTC_DATE_WITH_MILLISECONDS_FORMAT =
-            DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS");
+            DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").withZoneUTC();
 
     /**
      * Get a {@link String} representing the {@link Timestamp}
@@ -52,7 +49,7 @@ public final class TimestampHelper {
      * @return The formatted {@link String}.
      */
     public static String getUtcStringFromTimestamp(Timestamp timestamp) {
-        return UTC_DATE_WITH_MILLISECONDS_FORMAT.withZone(UTC_TIME_ZONE).print(timestamp.getTime());
+        return UTC_DATE_WITH_MILLISECONDS_FORMAT.print(timestamp.getTime());
     }
 
     /**
@@ -72,17 +69,18 @@ public final class TimestampHelper {
      * @return A {@link Timestamp} for given utcString.
      */
     public static Timestamp getTimestampFromUtcString(String utcString) {
-        DateTime dateTime;
+        // NB: `Timestamp.valueOf(utcString)` uses current time zone, and *not* UTC.
+        long millis;
         try {
 
-            dateTime = UTC_DATE_WITH_MILLISECONDS_FORMAT.withZone(UTC_TIME_ZONE).parseDateTime(utcString);
-            return new Timestamp(dateTime.getMillis());
+            millis = UTC_DATE_WITH_MILLISECONDS_FORMAT.parseMillis(utcString);
+            return new Timestamp(millis);
 
         } catch (IllegalArgumentException firstException) {
             try {
                 // In case of parsing of string without milliseconds.
-                dateTime = UTC_DATE_FORMAT.withZone(UTC_TIME_ZONE).parseDateTime(utcString);
-                return new Timestamp(dateTime.getMillis());
+                millis = UTC_DATE_FORMAT.parseMillis(utcString);
+                return new Timestamp(millis);
 
             } catch (IllegalArgumentException secondException) {
                 // If we are here:

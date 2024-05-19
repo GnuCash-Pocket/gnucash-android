@@ -27,6 +27,7 @@ import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.export.ExportFormat;
 import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.ofx.OfxExporter;
+import org.gnucash.android.export.ofx.OfxHelper;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.Book;
 import org.gnucash.android.model.Money;
@@ -43,7 +44,9 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.io.File;
+import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 
 
 @RunWith(RobolectricTestRunner.class)
@@ -111,5 +114,26 @@ public class OfxExporterTest {
         File file = new File(exportedFiles.get(0));
         assertThat(file).exists().hasExtension("ofx");
         assertThat(file.length()).isGreaterThan(0L);
+    }
+
+    @Test
+    public void testDateTime() {
+        TimeZone tz = TimeZone.getTimeZone("EST");
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeZone(tz);
+        cal.set(Calendar.YEAR, 1996);
+        cal.set(Calendar.MONTH, Calendar.DECEMBER);
+        cal.set(Calendar.DAY_OF_MONTH, 5);
+        cal.set(Calendar.HOUR_OF_DAY, 13);
+        cal.set(Calendar.MINUTE, 22);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 124);
+
+        String formatted = OfxHelper.getOfxFormattedTime(cal.getTimeInMillis(), tz);
+        assertThat(formatted).isEqualTo("19961205132200.124[-5:EST]");
+
+        cal.set(Calendar.MONTH, Calendar.OCTOBER);
+        formatted = OfxHelper.getOfxFormattedTime(cal.getTimeInMillis(), tz);
+        assertThat(formatted).isEqualTo("19961005142200.124[-4:EDT]");
     }
 }

@@ -31,16 +31,14 @@ import org.gnucash.android.model.Transaction;
 import org.gnucash.android.model.TransactionType;
 import org.gnucash.android.util.PreferencesHelper;
 import org.gnucash.android.util.TimestampHelper;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import timber.log.Timber;
@@ -54,7 +52,7 @@ public class CsvTransactionsExporter extends Exporter {
 
     private char mCsvSeparator;
 
-    private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+    private final DateTimeFormatter dateFormat = DateTimeFormat.forPattern("yyyy-MM-dd");
 
     /**
      * Construct a new exporter with export parameters
@@ -135,7 +133,7 @@ public class CsvTransactionsExporter extends Exporter {
             writer.writeToken(sign + split.getQuantity().toLocaleString());
             writer.writeToken("" + split.getReconcileState());
             if (split.getReconcileState() == Split.FLAG_RECONCILED) {
-                String recDateString = dateFormat.format(new Date(split.getReconcileDate().getTime()));
+                String recDateString = dateFormat.print(split.getReconcileDate().getTime());
                 writer.writeToken(recDateString);
             } else {
                 writer.writeToken(null);
@@ -157,8 +155,7 @@ public class CsvTransactionsExporter extends Exporter {
             Timber.d("Exporting %d transactions to CSV", cursor.getCount());
             while (cursor.moveToNext()) {
                 Transaction transaction = mTransactionsDbAdapter.buildModelInstance(cursor);
-                Date date = new Date(transaction.getTimeMillis());
-                csvWriter.writeToken(dateFormat.format(date));
+                csvWriter.writeToken(dateFormat.print(transaction.getTimeMillis()));
                 csvWriter.writeToken(transaction.getUID());
                 csvWriter.writeToken(null);  //Transaction number
 

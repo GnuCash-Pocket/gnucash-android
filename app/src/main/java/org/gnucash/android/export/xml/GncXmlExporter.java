@@ -339,7 +339,7 @@ public class GncXmlExporter extends Exporter {
                 xmlSerializer.endTag(null, GncXmlHelper.TAG_COMMODITY_ID);
                 xmlSerializer.endTag(null, GncXmlHelper.TAG_TRX_CURRENCY);
                 // date posted, time which user put on the transaction
-                String strDate = GncXmlHelper.formatDate(cursor.getLong(cursor.getColumnIndexOrThrow("trans_time")));
+                String strDate = GncXmlHelper.formatDateTime(cursor.getLong(cursor.getColumnIndexOrThrow("trans_time")));
                 xmlSerializer.startTag(null, GncXmlHelper.TAG_DATE_POSTED);
                 xmlSerializer.startTag(null, GncXmlHelper.TAG_TS_DATE);
                 xmlSerializer.text(strDate);
@@ -348,7 +348,7 @@ public class GncXmlExporter extends Exporter {
 
                 // date entered, time when the transaction was actually created
                 Timestamp timeEntered = TimestampHelper.getTimestampFromUtcString(cursor.getString(cursor.getColumnIndexOrThrow("trans_date_posted")));
-                String dateEntered = GncXmlHelper.formatDate(timeEntered);
+                String dateEntered = GncXmlHelper.formatDateTime(timeEntered);
                 xmlSerializer.startTag(null, GncXmlHelper.TAG_DATE_ENTERED);
                 xmlSerializer.startTag(null, GncXmlHelper.TAG_TS_DATE);
                 xmlSerializer.text(dateEntered);
@@ -611,7 +611,7 @@ public class GncXmlExporter extends Exporter {
     private void serializeDate(XmlSerializer xmlSerializer, String tag, long timeMillis) throws IOException {
         xmlSerializer.startTag(null, tag);
         xmlSerializer.startTag(null, GncXmlHelper.TAG_GDATE);
-        xmlSerializer.text(GncXmlHelper.DATE_FORMATTER.format(timeMillis));
+        xmlSerializer.text(GncXmlHelper.formatDateTime(timeMillis));
         xmlSerializer.endTag(null, GncXmlHelper.TAG_GDATE);
         xmlSerializer.endTag(null, tag);
     }
@@ -661,7 +661,7 @@ public class GncXmlExporter extends Exporter {
                 xmlSerializer.endTag(null, GncXmlHelper.TAG_COMMODITY_ID);
                 xmlSerializer.endTag(null, GncXmlHelper.TAG_PRICE_CURRENCY);
                 // time
-                String strDate = GncXmlHelper.formatDate(TimestampHelper.getTimestampFromUtcString(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.PriceEntry.COLUMN_DATE))));
+                String strDate = GncXmlHelper.formatDateTime(TimestampHelper.getTimestampFromUtcString(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.PriceEntry.COLUMN_DATE))));
                 xmlSerializer.startTag(null, GncXmlHelper.TAG_PRICE_TIME);
                 xmlSerializer.startTag(null, GncXmlHelper.TAG_TS_DATE);
                 xmlSerializer.text(strDate);

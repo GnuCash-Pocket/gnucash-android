@@ -36,13 +36,11 @@ import org.gnucash.android.db.adapter.RecurrenceDbAdapter;
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
 import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.io.File;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import timber.log.Timber;
 
@@ -81,7 +79,7 @@ public abstract class Exporter {
      */
     private final File mCacheDir;
 
-    private static final SimpleDateFormat EXPORT_FILENAME_DATE_FORMAT = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US);
+    private static final String EXPORT_FILENAME_DATE_PATTERN = "yyyyMMdd_HHmmss";
 
     /**
      * Adapter for retrieving accounts to export
@@ -161,7 +159,8 @@ public abstract class Exporter {
      * @return String containing the file name
      */
     public static String buildExportFilename(ExportFormat format, String bookName) {
-        return EXPORT_FILENAME_DATE_FORMAT.format(new Date(System.currentTimeMillis()))
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(EXPORT_FILENAME_DATE_PATTERN);
+        return formatter.print(System.currentTimeMillis())
                 + "_gnucash_export_" + sanitizeFilename(bookName) +
                 (format == ExportFormat.CSVA ? "_accounts" : "") +
                 (format == ExportFormat.CSVT ? "_transactions" : "") +
@@ -181,9 +180,9 @@ public abstract class Exporter {
             return timeMillis;
         }
         try {
-            Date date = EXPORT_FILENAME_DATE_FORMAT.parse(tokens[0] + "_" + tokens[1]);
-            timeMillis = date.getTime();
-        } catch (ParseException e) {
+            DateTimeFormatter formatter = DateTimeFormat.forPattern(EXPORT_FILENAME_DATE_PATTERN);
+            timeMillis = formatter.parseMillis(tokens[0] + "_" + tokens[1]);
+        } catch (IllegalArgumentException e) {
             Timber.e(e, "Error parsing time from file name: %s", e.getMessage());
         }
         return timeMillis;

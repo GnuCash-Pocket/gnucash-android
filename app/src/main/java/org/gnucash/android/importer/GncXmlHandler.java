@@ -60,7 +60,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -607,16 +606,16 @@ public class GncXmlHandler extends DefaultHandler {
             case GncXmlHelper.TAG_TS_DATE:
                 try {
                     if (mIsDatePosted && mTransaction != null) {
-                        mTransaction.setTime(GncXmlHelper.parseDate(characterString));
+                        mTransaction.setTime(GncXmlHelper.parseDateTime(characterString));
                         mIsDatePosted = false;
                     }
                     if (mIsDateEntered && mTransaction != null) {
-                        Timestamp timestamp = new Timestamp(GncXmlHelper.parseDate(characterString));
+                        Timestamp timestamp = new Timestamp(GncXmlHelper.parseDateTime(characterString));
                         mTransaction.setCreatedTimestamp(timestamp);
                         mIsDateEntered = false;
                     }
                     if (mPrice != null) {
-                        mPrice.setDate(new Timestamp(GncXmlHelper.parseDate(characterString)));
+                        mPrice.setDate(new Timestamp(GncXmlHelper.parseDateTime(characterString)));
                     }
                 } catch (ParseException e) {
                     String message = "Unable to parse transaction time - " + characterString;
@@ -741,7 +740,7 @@ public class GncXmlHandler extends DefaultHandler {
                 break;
             case GncXmlHelper.TAG_GDATE:
                 try {
-                    long date = GncXmlHelper.DATE_FORMATTER.parse(characterString).getTime();
+                    long date = GncXmlHelper.parseDate(characterString);
                     if (mIsScheduledStart && mScheduledAction != null) {
                         mScheduledAction.setCreatedTimestamp(new Timestamp(date));
                         mIsScheduledStart = false;
@@ -1120,7 +1119,7 @@ public class GncXmlHandler extends DefaultHandler {
      */
     private void setMinimalScheduledActionByDays() {
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date(mScheduledAction.getStartTime()));
+        calendar.setTimeInMillis(mScheduledAction.getStartTime());
         mScheduledAction.getRecurrence().setByDays(
                 Collections.singletonList(calendar.get(Calendar.DAY_OF_WEEK)));
     }

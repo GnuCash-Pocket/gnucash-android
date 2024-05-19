@@ -36,7 +36,6 @@ import com.squareup.timessquare.CalendarPickerView;
 import org.gnucash.android.R;
 import org.joda.time.LocalDate;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -58,8 +57,8 @@ public class DateRangePickerDialogFragment extends DialogFragment {
     @BindView(R.id.btn_cancel)
     Button mCancelButton;
 
-    private Date mStartRange = LocalDate.now().minusMonths(1).toDate();
-    private Date mEndRange = LocalDate.now().toDate();
+    private LocalDate mStartRange = LocalDate.now().minusMonths(1);
+    private LocalDate mEndRange = LocalDate.now();
     private OnDateRangeSetListener mDateRangeSetListener;
     private static final long ONE_DAY_IN_MILLIS = DateUtils.DAY_IN_MILLIS;
 
@@ -72,8 +71,8 @@ public class DateRangePickerDialogFragment extends DialogFragment {
     public static DateRangePickerDialogFragment newInstance(long startDate, long endDate,
                                                             OnDateRangeSetListener dateRangeSetListener) {
         DateRangePickerDialogFragment fragment = new DateRangePickerDialogFragment();
-        fragment.mStartRange = new Date(min(startDate, endDate));
-        fragment.mEndRange = new Date(max(startDate, endDate));
+        fragment.mStartRange = new LocalDate(min(startDate, endDate));
+        fragment.mEndRange = new LocalDate(max(startDate, endDate));
         fragment.mDateRangeSetListener = dateRangeSetListener;
         return fragment;
     }
@@ -84,10 +83,8 @@ public class DateRangePickerDialogFragment extends DialogFragment {
         View view = inflater.inflate(R.layout.dialog_date_range_picker, container, false);
         ButterKnife.bind(this, view);
 
-        Date today = new Date();
-        mCalendarPickerView.init(mStartRange, mEndRange)
-                .inMode(CalendarPickerView.SelectionMode.RANGE)
-                .withSelectedDate(today);
+        mCalendarPickerView.init(mStartRange.toDate(), mEndRange.toDate())
+                .inMode(CalendarPickerView.SelectionMode.RANGE);
 
         mDoneButton.setText(R.string.done_label);
         mDoneButton.setOnClickListener(new View.OnClickListener() {
@@ -102,7 +99,7 @@ public class DateRangePickerDialogFragment extends DialogFragment {
                     // CalendarPicker returns the start of the selected day but we want all transactions of that day to be included.
                     // Therefore we have to add 24 hours to the endDate.
                     endDate.setTime(endDate.getTime() + ONE_DAY_IN_MILLIS);
-                    mDateRangeSetListener.onDateRangeSet(startDate, endDate);
+                    mDateRangeSetListener.onDateRangeSet(LocalDate.fromDateFields(startDate), LocalDate.fromDateFields(endDate));
                 }
                 dismiss();
             }
@@ -126,6 +123,6 @@ public class DateRangePickerDialogFragment extends DialogFragment {
     }
 
     public interface OnDateRangeSetListener {
-        void onDateRangeSet(Date startDate, Date endDate);
+        void onDateRangeSet(LocalDate startDate, LocalDate endDate);
     }
 }

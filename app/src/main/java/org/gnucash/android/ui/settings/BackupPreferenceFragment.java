@@ -63,11 +63,10 @@ import org.gnucash.android.export.Exporter;
 import org.gnucash.android.importer.ImportAsyncTask;
 import org.gnucash.android.ui.settings.dialog.OwnCloudDialogFragment;
 import org.gnucash.android.util.BackupManager;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.io.File;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import timber.log.Timber;
 
@@ -423,11 +422,11 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
 
 
         final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.select_dialog_singlechoice);
-        final DateFormat dateFormatter = SimpleDateFormat.getDateTimeInstance();
+        final DateTimeFormatter dateFormatter = DateTimeFormat.longDateTime();
         for (File backupFile : BackupManager.getBackupList(bookUID)) {
             long time = Exporter.getExportTime(backupFile.getName());
             if (time > 0)
-                arrayAdapter.add(dateFormatter.format(new Date(time)));
+                arrayAdapter.add(dateFormatter.print(time));
             else //if no timestamp was found in the filename, just use the name
                 arrayAdapter.add(backupFile.getName());
         }

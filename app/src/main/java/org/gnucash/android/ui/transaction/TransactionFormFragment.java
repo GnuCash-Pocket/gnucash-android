@@ -82,13 +82,12 @@ import org.gnucash.android.ui.util.RecurrenceViewClickListener;
 import org.gnucash.android.ui.util.widget.CalculatorEditText;
 import org.gnucash.android.ui.util.widget.TransactionTypeSwitch;
 import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.math.BigDecimal;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -133,14 +132,14 @@ public class TransactionFormFragment extends Fragment implements
     private Transaction mTransaction;
 
     /**
-     * Formats a {@link Date} object into a date string of the format dd MMM yyyy e.g. 18 July 2012
+     * Formats milliseconds into a date string of the format "dd MMM yyyy" e.g. 18 July 2012
      */
-    public final static DateFormat DATE_FORMATTER = DateFormat.getDateInstance();
+    public final static DateTimeFormatter DATE_FORMATTER = DateTimeFormat.mediumDate();
 
     /**
-     * Formats a {@link Date} object to time string of format HH:mm e.g. 15:25
+     * Formats milliseconds to time string of format "HH:mm" e.g. 15:25
      */
-    public final static DateFormat TIME_FORMATTER = DateFormat.getTimeInstance();
+    public final static DateTimeFormatter TIME_FORMATTER = DateTimeFormat.mediumTime();
 
     /**
      * Button for setting the transaction type, either credit or debit
@@ -481,8 +480,8 @@ public class TransactionFormFragment extends Fragment implements
         }
         mCurrencyTextView.setText(mTransaction.getCommodity().getSymbol());
         mNotesEditText.setText(mTransaction.getNote());
-        mDateTextView.setText(DATE_FORMATTER.format(mTransaction.getTimeMillis()));
-        mTimeTextView.setText(TIME_FORMATTER.format(mTransaction.getTimeMillis()));
+        mDateTextView.setText(DATE_FORMATTER.print(mTransaction.getTimeMillis()));
+        mTimeTextView.setText(TIME_FORMATTER.print(mTransaction.getTimeMillis()));
         Calendar cal = GregorianCalendar.getInstance();
         cal.setTimeInMillis(mTransaction.getTimeMillis());
         mDate = mTime = cal;
@@ -553,9 +552,9 @@ public class TransactionFormFragment extends Fragment implements
      * Initialize views with default data for new transactions
      */
     private void initalizeViews() {
-        Date time = new Date(System.currentTimeMillis());
-        mDateTextView.setText(DATE_FORMATTER.format(time));
-        mTimeTextView.setText(TIME_FORMATTER.format(time));
+        long now = System.currentTimeMillis();
+        mDateTextView.setText(DATE_FORMATTER.print(now));
+        mTimeTextView.setText(TIME_FORMATTER.print(now));
         mTime = mDate = Calendar.getInstance();
 
         mTransactionTypeSwitch.setAccountType(mAccountType);
@@ -653,9 +652,8 @@ public class TransactionFormFragment extends Fragment implements
             public void onClick(View v) {
                 long dateMillis = 0;
                 try {
-                    Date date = DATE_FORMATTER.parse(mDateTextView.getText().toString());
-                    dateMillis = date.getTime();
-                } catch (ParseException e) {
+                    dateMillis = DATE_FORMATTER.parseMillis(mDateTextView.getText().toString());
+                } catch (IllegalArgumentException e) {
                     Timber.e("Error converting input time to Date object");
                 }
                 Calendar calendar = Calendar.getInstance();
@@ -677,9 +675,8 @@ public class TransactionFormFragment extends Fragment implements
             public void onClick(View v) {
                 long timeMillis = 0;
                 try {
-                    Date date = TIME_FORMATTER.parse(mTimeTextView.getText().toString());
-                    timeMillis = date.getTime();
-                } catch (ParseException e) {
+                    timeMillis = TIME_FORMATTER.parseMillis(mTimeTextView.getText().toString());
+                } catch (IllegalArgumentException e) {
                     Timber.e("Error converting input time to Date object");
                 }
 
@@ -1029,7 +1026,7 @@ public class TransactionFormFragment extends Fragment implements
     @Override
     public void onDateSet(CalendarDatePickerDialogFragment calendarDatePickerDialog, int year, int monthOfYear, int dayOfMonth) {
         Calendar cal = new GregorianCalendar(year, monthOfYear, dayOfMonth);
-        mDateTextView.setText(DATE_FORMATTER.format(cal.getTime()));
+        mDateTextView.setText(DATE_FORMATTER.print(cal.getTimeInMillis()));
         mDate.set(Calendar.YEAR, year);
         mDate.set(Calendar.MONTH, monthOfYear);
         mDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
@@ -1038,7 +1035,7 @@ public class TransactionFormFragment extends Fragment implements
     @Override
     public void onTimeSet(RadialTimePickerDialogFragment radialTimePickerDialog, int hourOfDay, int minute) {
         Calendar cal = new GregorianCalendar(0, 0, 0, hourOfDay, minute);
-        mTimeTextView.setText(TIME_FORMATTER.format(cal.getTime()));
+        mTimeTextView.setText(TIME_FORMATTER.print(cal.getTimeInMillis()));
         mTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
         mTime.set(Calendar.MINUTE, minute);
     }
