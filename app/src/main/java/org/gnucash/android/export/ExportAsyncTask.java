@@ -27,6 +27,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -47,7 +48,6 @@ import com.owncloud.android.lib.common.OwnCloudClientFactory;
 import com.owncloud.android.lib.common.OwnCloudCredentialsFactory;
 import com.owncloud.android.lib.common.operations.RemoteOperationResult;
 import com.owncloud.android.lib.resources.files.CreateRemoteFolderOperation;
-import com.owncloud.android.lib.resources.files.FileUtils;
 import com.owncloud.android.lib.resources.files.UploadRemoteFileOperation;
 
 import org.gnucash.android.R;
@@ -68,6 +68,7 @@ import org.gnucash.android.ui.common.GnucashProgressDialog;
 import org.gnucash.android.ui.settings.BackupPreferenceFragment;
 import org.gnucash.android.ui.transaction.TransactionsActivity;
 import org.gnucash.android.util.BackupManager;
+import org.gnucash.android.util.FileUtils;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -284,8 +285,8 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
             try {
                 OutputStream outputStream = mContext.getContentResolver().openOutputStream(exportUri);
                 // Now we always get just one file exported (multi-currency QIFs are zipped)
-                org.gnucash.android.util.FileUtils.moveFile(exportedFiles.get(0), outputStream);
-            } catch (IOException ex) {
+                FileUtils.moveFile(exportedFiles.get(0), outputStream);
+            } catch (Exception ex) {
                 throw new Exporter.ExporterException(exportParams, ex);
             }
         }
@@ -392,7 +393,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
                 OwnCloudCredentialsFactory.newBasicCredentials(mOC_username, mOC_password)
         );
 
-        if (mOC_dir.length() != 0) {
+        if (!TextUtils.isEmpty(mOC_dir)) {
             RemoteOperationResult dirResult = new CreateRemoteFolderOperation(
                     mOC_dir, true).execute(mClient);
             if (!dirResult.isSuccess()) {
@@ -400,7 +401,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
             }
         }
         for (String exportedFilePath : exportedFiles) {
-            String remotePath = mOC_dir + FileUtils.PATH_SEPARATOR + stripPathPart(exportedFilePath);
+            String remotePath = mOC_dir + com.owncloud.android.lib.resources.files.FileUtils.PATH_SEPARATOR + stripPathPart(exportedFilePath);
             String mimeType = exporter.getExportMimeType();
 
             RemoteOperationResult result = new UploadRemoteFileOperation(
@@ -424,7 +425,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
      * external storage, which is accessible to the user.
      *
      * @return The list of files moved to the SD card.
-     * @deprecated Use the Storage Access Framework to save to SD card. See {@link #moveExportToUri()}
+     * @deprecated Use the Storage Access Framework to save to SD card. See {@link #moveExportToUri(ExportParams, List)}
      */
     @Deprecated
     private List<String> moveExportToSDCard(ExportParams exportParams, Exporter exporter, List<String> exportedFiles) throws Exporter.ExporterException {
@@ -435,7 +436,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
         for (String src : exportedFiles) {
             String dst = Exporter.getExportFolderPath(exporter.getBookUID()) + stripPathPart(src);
             try {
-                org.gnucash.android.util.FileUtils.moveFile(src, dst);
+                FileUtils.moveFile(src, dst);
                 dstFiles.add(dst);
             } catch (IOException e) {
                 throw new Exporter.ExporterException(exportParams, e);
