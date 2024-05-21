@@ -349,7 +349,7 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
 
             @Override
-            public boolean onMenuItemClick(MenuItem item) {
+            public boolean onMenuItemClick(@NonNull MenuItem item) {
                 int id = item.getItemId();
                 if (id == ID_MANAGE_BOOKS) {
                     Intent intent = new Intent(context, PreferenceActivity.class);

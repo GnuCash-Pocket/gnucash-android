@@ -58,7 +58,7 @@ public class CsvAccountExporter extends Exporter {
     @Override
     public List<String> generateExport() throws ExporterException {
         String outputFile = getExportCacheFilePath();
-        try (CsvWriter writer = new CsvWriter(new FileWriter(outputFile), mCsvSeparator + "")) {
+        try (CsvWriter writer = new CsvWriter(new FileWriter(outputFile), String.valueOf(mCsvSeparator))) {
             generateExport(writer);
             close();
         } catch (IOException ex) {

@@ -198,6 +198,8 @@ public class BookManagerFragment extends ListFragment implements
 
     private class BooksCursorAdapter extends SimpleCursorAdapter {
 
+        private final String activeBookUID = GnuCashApplication.getActiveBookUID();
+
         BooksCursorAdapter(Context context, int layout, Cursor c, String[] from, int[] to) {
             super(context, layout, c, from, to, 0);
         }
@@ -212,11 +214,16 @@ public class BookManagerFragment extends ListFragment implements
             setStatisticsText(view, bookUID);
             setUpMenu(view, context, cursor, bookUID);
 
+            if (activeBookUID.equals(bookUID)) {
+                ((TextView) view.findViewById(R.id.primary_text))
+                    .setTextColor(ContextCompat.getColor(context, R.color.theme_primary));
+            }
+
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     //do nothing if the active book is tapped
-                    if (!GnuCashApplication.getActiveBookUID().equals(bookUID)) {
+                    if (!activeBookUID.equals(bookUID)) {
                         BookUtils.loadBook(v.getContext(), bookUID);
                         requireActivity().finish();
                     }
@@ -237,7 +244,7 @@ public class BookManagerFragment extends ListFragment implements
 
                     popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                         @Override
-                        public boolean onMenuItemClick(MenuItem item) {
+                        public boolean onMenuItemClick(@NonNull MenuItem item) {
                             switch (item.getItemId()) {
                                 case R.id.ctx_menu_rename_book:
                                     return handleMenuRenameBook(bookName, bookUID);
@@ -329,11 +336,6 @@ public class BookManagerFragment extends ListFragment implements
             String stats = accountStats + ", " + transactionStats;
             TextView statsText = (TextView) view.findViewById(R.id.secondary_text);
             statsText.setText(stats);
-
-            if (bookUID.equals(GnuCashApplication.getActiveBookUID())) {
-                ((TextView) view.findViewById(R.id.primary_text))
-                        .setTextColor(ContextCompat.getColor(context, R.color.theme_primary));
-            }
         }
     }
 

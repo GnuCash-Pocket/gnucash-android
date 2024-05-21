@@ -32,6 +32,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
@@ -296,7 +297,7 @@ public class BudgetListFragment extends Fragment implements Refreshable,
             }
 
             @Override
-            public boolean onMenuItemClick(MenuItem item) {
+            public boolean onMenuItemClick(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.context_menu_edit_budget:
                         editBudget(budgetId);

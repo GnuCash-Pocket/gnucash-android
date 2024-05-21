@@ -35,15 +35,22 @@ import org.gnucash.android.util.BackupManager;
  */
 public class DeleteBookConfirmationDialog extends DoubleConfirmationDialog {
 
-    public static final String TAG = "delete_book";
+    public static final String TAG = "delete_book_confirm";
 
     private static final String EXTRA_BOOK_ID = "book_uid";
+    private static final String EXTRA_REQUEST_KEY = "request_key";
 
     @NonNull
     public static DeleteBookConfirmationDialog newInstance(String bookUID) {
+        return newInstance(bookUID, TAG);
+    }
+
+    @NonNull
+    public static DeleteBookConfirmationDialog newInstance(String bookUID, @NonNull String requestKey) {
         DeleteBookConfirmationDialog frag = new DeleteBookConfirmationDialog();
         Bundle args = new Bundle();
         args.putString(EXTRA_BOOK_ID, bookUID);
+        args.putString(EXTRA_REQUEST_KEY, requestKey);
         frag.setArguments(args);
         return frag;
     }
@@ -53,21 +60,23 @@ public class DeleteBookConfirmationDialog extends DoubleConfirmationDialog {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         return getDialogBuilder()
                 .setTitle(R.string.title_confirm_delete_book)
-                .setIcon(R.drawable.ic_close_black)
+                .setIcon(R.drawable.ic_delete_black)
                 .setMessage(R.string.msg_all_book_data_will_be_deleted)
                 .setPositiveButton(R.string.btn_delete_book, new DialogInterface.OnClickListener() {
                     @SuppressWarnings("ConstantConditions")
                     @Override
                     public void onClick(DialogInterface dialogInterface, int which) {
                         final FragmentManager fm = getParentFragmentManager();
-                        final String bookUID = getArguments().getString(EXTRA_BOOK_ID);
+                        Bundle args = getArguments();
+                        final String bookUID = args.getString(EXTRA_BOOK_ID);
+                        final String requestKey = args.getString(EXTRA_REQUEST_KEY);
                         BackupManager.backupBookAsync(requireActivity(), bookUID, backed -> {
                             Bundle result = new Bundle();
                             if (backed) {
                                 BooksDbAdapter.getInstance().deleteBook(bookUID);
                                 result.putBoolean(Refreshable.EXTRA_REFRESH, true);
                             }
-                            fm.setFragmentResult(TAG, result);
+                            fm.setFragmentResult(requestKey, result);
                             return null;
                         });
                     }
