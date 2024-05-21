@@ -25,6 +25,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.content.ContextCompat;
@@ -148,7 +149,7 @@ public class ReportsOverviewFragment extends BaseReportFragment {
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
         menu.findItem(R.id.menu_group_reports_by).setVisible(false);
     }
 

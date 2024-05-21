@@ -273,7 +273,8 @@ public class AccountsListFragment extends Fragment implements
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
         if (mParentAccountUID != null)
             inflater.inflate(R.menu.sub_account_actions, menu);
         else {

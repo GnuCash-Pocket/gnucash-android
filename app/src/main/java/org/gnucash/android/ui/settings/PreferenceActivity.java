@@ -110,7 +110,7 @@ public class PreferenceActivity extends PasscodeLockActivity implements
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 handleBackPressed();

@@ -34,6 +34,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.LayoutRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -219,7 +220,7 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             if (!mDrawerLayout.isDrawerOpen(mNavigationView))
                 mDrawerLayout.openDrawer(mNavigationView);

@@ -17,6 +17,7 @@
 package org.gnucash.android.ui.export;
 
 import static org.gnucash.android.app.IntentExtKt.takePersistableUriPermission;
+import static org.gnucash.android.util.ContentExtKt.getDocumentName;
 
 import android.app.Activity;
 import android.content.Context;
@@ -25,6 +26,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -42,6 +44,8 @@ import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
@@ -73,6 +77,7 @@ import org.gnucash.android.ui.settings.dialog.OwnCloudDialogFragment;
 import org.gnucash.android.ui.transaction.TransactionFormFragment;
 import org.gnucash.android.ui.util.RecurrenceParser;
 import org.gnucash.android.ui.util.RecurrenceViewClickListener;
+import org.gnucash.android.util.ContentExtKt;
 import org.gnucash.android.util.PreferencesHelper;
 import org.gnucash.android.util.TimestampHelper;
 
@@ -256,14 +261,13 @@ public class ExportFormFragment extends Fragment implements
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.default_save_actions, menu);
-        MenuItem menuItem = menu.findItem(R.id.menu_save);
-        menuItem.setTitle(R.string.btn_export);
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.export_actions, menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_save:
                 startExport();
@@ -363,10 +367,7 @@ public class ExportFormFragment extends Fragment implements
                         mExportParams.setExportTarget(ExportParams.ExportTarget.URI);
                         mRecurrenceOptionsView.setVisibility(View.VISIBLE);
                         Uri exportUri = mExportParams.getExportLocation();
-                        if (exportUri != null)
-                            setExportUriText(exportUri.toString());
-                        else
-                            setExportUriText(null);
+                        setExportUri(exportUri);
                         break;
                     case 1: //DROPBOX
                         setExportUriText(getString(R.string.label_dropbox_export_destination));
@@ -379,7 +380,7 @@ public class ExportFormFragment extends Fragment implements
                         }
                         break;
                     case 2: //OwnCloud
-                        setExportUriText(null);
+                        setExportUri(null);
                         mRecurrenceOptionsView.setVisibility(View.VISIBLE);
                         mExportParams.setExportTarget(ExportParams.ExportTarget.OWNCLOUD);
                         if (!(PreferenceManager.getDefaultSharedPreferences(getActivity())
@@ -535,13 +536,26 @@ public class ExportFormFragment extends Fragment implements
      *
      * @param filepath Path to export file. If {@code null}, the view will be hidden and nothing displayed
      */
-    private void setExportUriText(String filepath) {
-        if (filepath == null) {
+    private void setExportUriText(@Nullable String filepath) {
+        if (TextUtils.isEmpty(filepath)) {
             mTargetUriTextView.setVisibility(View.GONE);
             mTargetUriTextView.setText("");
         } else {
             mTargetUriTextView.setText(filepath);
             mTargetUriTextView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    /**
+     * Display the file path of the file where the export will be saved
+     *
+     * @param uri URI to export file. If {@code null}, the view will be hidden and nothing displayed
+     */
+    private void setExportUri(@Nullable Uri uri) {
+        if (uri == null) {
+            setExportUriText("");
+        } else {
+            setExportUriText(getDocumentName(uri, getContext()));
         }
     }
 
@@ -591,13 +605,9 @@ public class ExportFormFragment extends Fragment implements
                         takePersistableUriPermission(requireContext(), data);
                         Uri location = data.getData();
                         mExportParams.setExportLocation(location);
-                        if (location != null) {
-                            setExportUriText(location.toString());
-                        } else {
-                            setExportUriText(null);
-                        }
+                        setExportUri(location);
                     } else {
-                        setExportUriText(null);
+                        setExportUri(null);
                     }
 
                     if (mExportStarted)

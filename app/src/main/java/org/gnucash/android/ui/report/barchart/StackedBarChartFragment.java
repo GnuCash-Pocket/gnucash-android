@@ -25,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.github.mikephil.charting.charts.BarChart;
@@ -337,7 +338,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
         menu.findItem(R.id.menu_percentage_mode).setVisible(mChartDataPresent);
         // hide pie/line chart specific menu items
         menu.findItem(R.id.menu_order_by_size).setVisible(false);
@@ -347,7 +348,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.isCheckable())
             item.setChecked(!item.isChecked());
         switch (item.getItemId()) {

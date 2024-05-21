@@ -110,12 +110,13 @@ public class BookManagerFragment extends ListFragment implements
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.book_list_actions, menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_create_book:
                 AccountsActivity.createDefaultAccounts(GnuCashApplication.getDefaultCurrencyCode(), getActivity());

@@ -27,6 +27,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.LayoutRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.ActionBar;
@@ -274,7 +275,8 @@ public abstract class BaseReportFragment extends Fragment implements
 
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.chart_actions, menu);
     }
 

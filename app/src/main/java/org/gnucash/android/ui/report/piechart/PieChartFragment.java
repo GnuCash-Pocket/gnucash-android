@@ -27,6 +27,7 @@ import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.github.mikephil.charting.charts.PieChart;
@@ -226,7 +227,7 @@ public class PieChartFragment extends BaseReportFragment {
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
         menu.findItem(R.id.menu_order_by_size).setVisible(mChartDataPresent);
         menu.findItem(R.id.menu_toggle_labels).setVisible(mChartDataPresent);
         menu.findItem(R.id.menu_group_other_slice).setVisible(mChartDataPresent);
@@ -237,7 +238,7 @@ public class PieChartFragment extends BaseReportFragment {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.isCheckable())
             item.setChecked(!item.isChecked());
         switch (item.getItemId()) {

@@ -33,6 +33,7 @@ import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.Spinner;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
@@ -283,7 +284,7 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_group_reports_by:
                 return true;
