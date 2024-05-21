@@ -180,12 +180,13 @@ public class TransactionsListFragment extends Fragment implements
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.transactions_list_actions, menu);
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
         super.onPrepareOptionsMenu(menu);
         MenuItem item = menu.findItem(R.id.menu_compact_trn_view);
         item.setChecked(mUseCompactView);
@@ -193,7 +194,7 @@ public class TransactionsListFragment extends Fragment implements
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_compact_trn_view:
                 item.setChecked(!item.isChecked());

@@ -37,6 +37,7 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cursoradapter.widget.SimpleCursorAdapter;
@@ -171,12 +172,13 @@ public class SplitEditorFragment extends Fragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.split_editor_actions, menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         switch (item.getItemId()) {
             case android.R.id.home:

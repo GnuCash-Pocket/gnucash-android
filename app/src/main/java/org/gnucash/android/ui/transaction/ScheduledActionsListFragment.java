@@ -39,6 +39,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
@@ -236,13 +237,14 @@ public class ScheduledActionsListFragment extends ListFragment implements
 
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
         if (mActionType == ScheduledAction.ActionType.BACKUP)
             inflater.inflate(R.menu.scheduled_export_actions, menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_add_scheduled_export:
                 Intent intent = new Intent(getActivity(), FormActivity.class);

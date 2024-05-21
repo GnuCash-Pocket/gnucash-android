@@ -943,12 +943,13 @@ public class TransactionFormFragment extends Fragment implements
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.default_save_actions, menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         //hide the keyboard if it is visible
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(mDescriptionEditText.getApplicationWindowToken(), 0);

@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 
@@ -207,7 +208,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 finish();

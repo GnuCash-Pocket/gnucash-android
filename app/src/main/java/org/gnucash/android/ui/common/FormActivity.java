@@ -22,6 +22,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
@@ -124,7 +125,7 @@ public class FormActivity extends PasscodeLockActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 setResult(RESULT_CANCELED);
@@ -219,7 +220,7 @@ public class FormActivity extends PasscodeLockActivity {
     private void showFormFragment(Fragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
-            .add(R.id.fragment_container, fragment)
+            .replace(R.id.fragment_container, fragment)
             .commit();
     }
 
