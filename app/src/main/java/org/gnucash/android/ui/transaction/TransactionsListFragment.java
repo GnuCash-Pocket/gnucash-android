@@ -372,7 +372,7 @@ public class TransactionsListFragment extends Fragment implements
             }
 
             @Override
-            public boolean onMenuItemClick(MenuItem item) {
+            public boolean onMenuItemClick(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.context_menu_delete:
                         deleteTransaction(transactionId);

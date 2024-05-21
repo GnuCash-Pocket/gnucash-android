@@ -132,6 +132,7 @@ public class BackupManager {
                 File backupFile = getBackupFile(bookUID, params);
                 outputStream = new FileOutputStream(backupFile);
             }
+            params.setExportLocation(backupUri);
 
             BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
             GZIPOutputStream gzipOutputStream = new GZIPOutputStream(bufferedOutputStream);
@@ -240,35 +241,10 @@ public class BackupManager {
                 }
                 after.invoke(result);
             }
-        }.execute();
-    }
-
-    static void backupAllBooksAsync(@Nullable final Activity activity, @NonNull final Function1<Boolean, Unit> after) {
-        new AsyncTask<Object, Void, Boolean>() {
-            private ProgressDialog mProgressDialog;
 
             @Override
-            protected void onPreExecute() {
-                if (activity != null) {
-                    mProgressDialog = new GnucashProgressDialog(activity);
-                    mProgressDialog.setTitle(R.string.title_create_backup_pref);
-                    mProgressDialog.setCancelable(true);
-                    mProgressDialog.setOnCancelListener(dialogInterface -> cancel(true));
-                    mProgressDialog.show();
-                }
-            }
-
-            @Override
-            protected Boolean doInBackground(Object... objects) {
-                return backupAllBooks(activity);
-            }
-
-            @Override
-            protected void onPostExecute(Boolean result) {
-                if (mProgressDialog != null) {
-                    mProgressDialog.hide();
-                }
-                after.invoke(result);
+            protected void onCancelled() {
+                after.invoke(Boolean.FALSE);
             }
         }.execute();
     }

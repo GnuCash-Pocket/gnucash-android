@@ -73,7 +73,7 @@ public class CsvTransactionsExporter extends Exporter {
     public List<String> generateExport() throws ExporterException {
         String outputFile = getExportCacheFilePath();
 
-        try (CsvWriter csvWriter = new CsvWriter(new FileWriter(outputFile), "" + mCsvSeparator)) {
+        try (CsvWriter csvWriter = new CsvWriter(new FileWriter(outputFile), String.valueOf(mCsvSeparator))) {
             generateExport(csvWriter);
             close();
         } catch (IOException ex) {
@@ -125,7 +125,7 @@ public class CsvTransactionsExporter extends Exporter {
             String sign = split.getType() == TransactionType.CREDIT ? "-" : "";
             writer.writeToken(sign + split.getQuantity().formattedString());
             writer.writeToken(sign + split.getQuantity().toLocaleString());
-            writer.writeToken("" + split.getReconcileState());
+            writer.writeToken(String.valueOf(split.getReconcileState()));
             if (split.getReconcileState() == Split.FLAG_RECONCILED) {
                 String recDateString = dateFormat.print(split.getReconcileDate().getTime());
                 writer.writeToken(recDateString);

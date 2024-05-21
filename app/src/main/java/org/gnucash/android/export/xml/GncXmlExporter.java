@@ -851,24 +851,24 @@ public class GncXmlExporter extends Exporter {
             }
             xmlSerializer.startTag(null, GncXmlHelper.TAG_COUNT_DATA);
             xmlSerializer.attribute(null, GncXmlHelper.ATTR_KEY_CD_TYPE, "commodity");
-            xmlSerializer.text(commodities.size() + "");
+            xmlSerializer.text(String.valueOf(commodities.size()));
             xmlSerializer.endTag(null, GncXmlHelper.TAG_COUNT_DATA);
             //account count
             xmlSerializer.startTag(null, GncXmlHelper.TAG_COUNT_DATA);
             xmlSerializer.attribute(null, GncXmlHelper.ATTR_KEY_CD_TYPE, "account");
-            xmlSerializer.text(mAccountsDbAdapter.getRecordsCount() + "");
+            xmlSerializer.text(String.valueOf(mAccountsDbAdapter.getRecordsCount()));
             xmlSerializer.endTag(null, GncXmlHelper.TAG_COUNT_DATA);
             //transaction count
             xmlSerializer.startTag(null, GncXmlHelper.TAG_COUNT_DATA);
             xmlSerializer.attribute(null, GncXmlHelper.ATTR_KEY_CD_TYPE, "transaction");
-            xmlSerializer.text(mTransactionsDbAdapter.getRecordsCount() + "");
+            xmlSerializer.text(String.valueOf(mTransactionsDbAdapter.getRecordsCount()));
             xmlSerializer.endTag(null, GncXmlHelper.TAG_COUNT_DATA);
             //price count
             long priceCount = mPricesDbAdapter.getRecordsCount();
             if (priceCount > 0) {
                 xmlSerializer.startTag(null, GncXmlHelper.TAG_COUNT_DATA);
                 xmlSerializer.attribute(null, GncXmlHelper.ATTR_KEY_CD_TYPE, "price");
-                xmlSerializer.text(priceCount + "");
+                xmlSerializer.text(String.valueOf(priceCount));
                 xmlSerializer.endTag(null, GncXmlHelper.TAG_COUNT_DATA);
             }
             // export the commodities used in the DB

@@ -16,8 +16,8 @@ fun Uri.getDocumentName(context: Context?): String {
         name = lastPath
     }
     if (context != null) {
-        val resolver: ContentResolver = context.getContentResolver()
         try {
+            val resolver: ContentResolver = context.contentResolver
             val cursor = resolver.query(this, PROJECTION_DOCUMENT_NAME, null, null, null)
             if (cursor != null) {
                 if (cursor.moveToFirst()) {
@@ -27,6 +27,7 @@ fun Uri.getDocumentName(context: Context?): String {
             }
         } catch (e: Exception) {
             Timber.w(e, "Cannot get document name for %s", this)
+            return ""
         }
     }
     return name

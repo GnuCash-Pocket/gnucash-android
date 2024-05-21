@@ -626,7 +626,7 @@ public class AccountsListFragment extends Fragment implements
 
 
             @Override
-            public boolean onMenuItemClick(MenuItem item) {
+            public boolean onMenuItemClick(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.context_menu_edit_accounts:
                         openCreateOrEditActivity(accountUID);
