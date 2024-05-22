@@ -93,7 +93,7 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
 
     protected ActionBarDrawerToggle mDrawerToggle;
 
-    public static final int REQUEST_OPEN_DOCUMENT = 0x20;
+    private static final int REQUEST_OPEN_DOCUMENT = 0x20;
 
     private class DrawerItemClickListener implements NavigationView.OnNavigationItemSelectedListener {
 
