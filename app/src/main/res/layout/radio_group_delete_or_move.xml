@@ -15,10 +15,10 @@
 -->
 <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
-    android:padding="@dimen/dialog_padding"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_width="match_parent">
+    android:orientation="vertical"
+    android:padding="@dimen/dialog_padding">
 
     <TextView
         android:id="@+id/title_content"
@@ -30,21 +30,23 @@
     <TextView
         android:id="@+id/description"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginTop="8dp"
         tools:text="@string/label_delete_account_transactions_description" />
 
     <RadioButton
         android:id="@+id/radio_delete"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginTop="8dp"
         android:text="@string/label_delete_sub_accounts" />
 
     <RadioButton
         android:id="@+id/radio_move"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
         android:checked="true"
+        android:gravity="center_vertical"
         android:text="@string/label_move_to" />
 
     <Spinner

@@ -55,21 +55,19 @@ public class DeleteAllTransactionsConfirmationDialog extends DoubleConfirmationD
     @NonNull
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         return getDialogBuilder()
-                .setIcon(android.R.drawable.ic_delete)
-                .setTitle(R.string.title_confirm_delete).setMessage(R.string.msg_delete_all_transactions_confirmation)
-                .setPositiveButton(R.string.alert_dialog_ok_delete,
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                final Activity activity = requireActivity();
-                                BackupManager.backupActiveBookAsync(activity, result -> {
-                                    if (!result) return null;
-                                    deleteAll(activity);
-                                    return null;
-                                });
-                            }
-                        }
-
-                ).create();
+            .setIcon(R.drawable.ic_warning_black)
+            .setTitle(R.string.title_confirm_delete)
+            .setMessage(R.string.msg_delete_all_transactions_confirmation)
+            .setPositiveButton(R.string.alert_dialog_ok_delete, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        final Activity activity = requireActivity();
+                        BackupManager.backupActiveBookAsync(activity, result -> {
+                            deleteAll(activity);
+                            return null;
+                        });
+                    }
+                }
+            ).create();
     }
 
     public void deleteAll(Context context) {

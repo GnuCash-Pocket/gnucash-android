@@ -16,13 +16,16 @@
  */
 package org.gnucash.android.ui.transaction.dialog;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.annotation.StringRes;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -44,6 +47,7 @@ import java.util.List;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
+@Deprecated
 public class TransactionsDeleteConfirmationDialogFragment extends DialogFragment {
 
     private static final String TAG = "transactions_delete_confirmation";
@@ -65,45 +69,52 @@ public class TransactionsDeleteConfirmationDialogFragment extends DialogFragment
         final long rowId = getArguments().getLong(UxArgument.SELECTED_TRANSACTION_IDS);
         int message = rowId == 0 ? R.string.msg_delete_all_transactions_confirmation : R.string.msg_delete_transaction_confirmation;
         return new AlertDialog.Builder(getActivity())
-                .setIcon(android.R.drawable.ic_delete)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton(R.string.alert_dialog_ok_delete,
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
-                                if (rowId == 0) {
-                                    BackupManager.backupActiveBook(getContext()); //create backup before deleting everything
-                                    List<Transaction> openingBalances = new ArrayList<Transaction>();
-                                    boolean preserveOpeningBalances = GnuCashApplication.shouldSaveOpeningBalances(false);
-                                    if (preserveOpeningBalances) {
-                                        openingBalances = AccountsDbAdapter.getInstance().getAllOpeningBalanceTransactions();
-                                    }
-
-                                    transactionsDbAdapter.deleteAllRecords();
-
-                                    if (preserveOpeningBalances) {
-                                        transactionsDbAdapter.bulkAddRecords(openingBalances, DatabaseAdapter.UpdateMethod.insert);
-                                    }
-                                } else {
-                                    transactionsDbAdapter.deleteRecord(rowId);
+            .setIcon(R.drawable.ic_warning_black)
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton(R.string.alert_dialog_ok_delete, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        final FragmentManager fm = getParentFragmentManager();
+                        final Activity activity = requireActivity();
+                        final TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
+                        if (rowId == 0) {
+                            //create backup before deleting everything
+                            BackupManager.backupActiveBookAsync(activity, result -> {
+                                List<Transaction> openingBalances = new ArrayList<Transaction>();
+                                boolean preserveOpeningBalances = GnuCashApplication.shouldSaveOpeningBalances(false);
+                                if (preserveOpeningBalances) {
+                                    openingBalances = AccountsDbAdapter.getInstance().getAllOpeningBalanceTransactions();
                                 }
 
-                                Bundle result = new Bundle();
-                                result.putBoolean(Refreshable.EXTRA_REFRESH, true);
-                                getParentFragmentManager().setFragmentResult(TAG, result);
+                                transactionsDbAdapter.deleteAllRecords();
 
-                                WidgetConfigurationActivity.updateAllWidgets(getActivity());
-                            }
+                                if (preserveOpeningBalances) {
+                                    transactionsDbAdapter.bulkAddRecords(openingBalances, DatabaseAdapter.UpdateMethod.insert);
+                                }
+                                refresh(activity, fm);
+                                return null;
+                            });
+                        } else {
+                            transactionsDbAdapter.deleteRecord(rowId);
+                            refresh(activity, fm);
                         }
-                )
-                .setNegativeButton(R.string.alert_dialog_cancel,
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                dismiss();
-                            }
-                        }
-                )
-                .create();
+                    }
+                }
+            )
+            .setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        dismiss();
+                    }
+                }
+            )
+            .create();
+    }
+
+    private void refresh(Context context, FragmentManager fragmentManager) {
+        Bundle result = new Bundle();
+        result.putBoolean(Refreshable.EXTRA_REFRESH, true);
+        fragmentManager.setFragmentResult(TAG, result);
+
+        WidgetConfigurationActivity.updateAllWidgets(context);
     }
 }

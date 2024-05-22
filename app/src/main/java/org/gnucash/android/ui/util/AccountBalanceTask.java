@@ -45,6 +45,7 @@ public class AccountBalanceTask extends AsyncTask<String, Void, Money> {
 
     @Override
     protected Money doInBackground(String... params) {
+        String accountUID = params[0];
         //if the view for which we are doing this job is dead, kill the job as well
         if (accountBalanceTextViewReference.get() == null) {
             cancel(true);
@@ -53,7 +54,7 @@ public class AccountBalanceTask extends AsyncTask<String, Void, Money> {
 
         Money balance = Money.getZeroInstance();
         try {
-            balance = accountsDbAdapter.getAccountBalance(params[0], -1, -1);
+            balance = accountsDbAdapter.getAccountBalance(accountUID, -1, -1);
         } catch (Exception ex) {
             Timber.e(ex, "Error computing account balance");
         }

@@ -26,9 +26,4 @@
     <include
         android:id="@+id/transactions_options"
         layout="@layout/radio_group_delete_or_move" />
-
-    <include
-        layout="@layout/default_buttons"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
 </LinearLayout>

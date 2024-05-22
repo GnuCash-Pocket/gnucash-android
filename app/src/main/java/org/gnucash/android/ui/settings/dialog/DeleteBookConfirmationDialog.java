@@ -60,22 +60,20 @@ public class DeleteBookConfirmationDialog extends DoubleConfirmationDialog {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         return getDialogBuilder()
                 .setTitle(R.string.title_confirm_delete_book)
-                .setIcon(R.drawable.ic_delete_black)
+                .setIcon(R.drawable.ic_warning_black)
                 .setMessage(R.string.msg_all_book_data_will_be_deleted)
                 .setPositiveButton(R.string.btn_delete_book, new DialogInterface.OnClickListener() {
                     @SuppressWarnings("ConstantConditions")
                     @Override
                     public void onClick(DialogInterface dialogInterface, int which) {
-                        final FragmentManager fm = getParentFragmentManager();
                         Bundle args = getArguments();
                         final String bookUID = args.getString(EXTRA_BOOK_ID);
                         final String requestKey = args.getString(EXTRA_REQUEST_KEY);
+                        final FragmentManager fm = getParentFragmentManager();
                         BackupManager.backupBookAsync(requireActivity(), bookUID, backed -> {
+                            boolean deleted = BooksDbAdapter.getInstance().deleteBook(bookUID);
                             Bundle result = new Bundle();
-                            if (backed) {
-                                BooksDbAdapter.getInstance().deleteBook(bookUID);
-                                result.putBoolean(Refreshable.EXTRA_REFRESH, true);
-                            }
+                            result.putBoolean(Refreshable.EXTRA_REFRESH, deleted);
                             fm.setFragmentResult(requestKey, result);
                             return null;
                         });
