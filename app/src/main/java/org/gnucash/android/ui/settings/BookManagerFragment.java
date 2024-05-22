@@ -16,8 +16,12 @@
 
 package org.gnucash.android.ui.settings;
 
+import static org.gnucash.android.app.IntentExtKt.takePersistableUriPermission;
+
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -71,6 +75,8 @@ import timber.log.Timber;
 public class BookManagerFragment extends ListFragment implements
         LoaderManager.LoaderCallbacks<Cursor>, Refreshable, FragmentResultListener {
 
+    private static final int REQUEST_OPEN_DOCUMENT = 0x20;
+
     private SimpleCursorAdapter mCursorAdapter;
 
     @Override
@@ -118,7 +124,17 @@ public class BookManagerFragment extends ListFragment implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_create_book:
-                AccountsActivity.createDefaultAccounts(GnuCashApplication.getDefaultCurrencyCode(), getActivity());
+                AccountsActivity.createDefaultAccounts(GnuCashApplication.getDefaultCurrencyCode(), requireActivity());
+                return true;
+
+            case R.id.menu_open_book:
+                String[] mimeTypes = {"text/*", "application/*"};
+                //use the storage access framework
+                Intent openDocument = new Intent(Intent.ACTION_OPEN_DOCUMENT)
+                    .addCategory(Intent.CATEGORY_OPENABLE)
+                    .setType("text/*|application/*")
+                    .putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+                startActivityForResult(openDocument, REQUEST_OPEN_DOCUMENT);
                 return true;
 
             default:
@@ -162,6 +178,21 @@ public class BookManagerFragment extends ListFragment implements
             boolean refresh = result.getBoolean(Refreshable.EXTRA_REFRESH);
             if (refresh) refresh();
         }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == REQUEST_OPEN_DOCUMENT) {
+                Activity context = requireActivity();
+                final int takeFlags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                context.getContentResolver().takePersistableUriPermission(data.getData(), takeFlags);
+                AccountsActivity.importXmlFileFromIntent(context, data, null);
+                takePersistableUriPermission(context, data);
+                return;
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     private class BooksCursorAdapter extends SimpleCursorAdapter {
