@@ -57,13 +57,13 @@ public abstract class DoubleConfirmationDialog extends DialogFragment {
     @NonNull
     protected AlertDialog.Builder getDialogBuilder() {
         return new AlertDialog.Builder(getActivity())
-                .setView(R.layout.dialog_double_confirm)
-                .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        onNegativeButton();
-                    }
-                });
+            .setView(R.layout.dialog_double_confirm)
+            .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    onNegativeButton();
+                }
+            });
     }
 
     @Override
@@ -71,19 +71,19 @@ public abstract class DoubleConfirmationDialog extends DialogFragment {
         super.onStart();
         final AlertDialog dialog = (AlertDialog) getDialog();
         if (dialog != null) {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
-            setUpConfirmCheckBox();
+            setUpConfirmCheckBox(dialog);
         }
     }
 
     @SuppressWarnings("ConstantConditions")
-    private void setUpConfirmCheckBox() {
-        final AlertDialog dialog = (AlertDialog) getDialog();
+    private void setUpConfirmCheckBox(@NonNull final AlertDialog dialog) {
         CheckBox confirmCheckBox = dialog.findViewById(R.id.checkbox_confirm);
+        if (confirmCheckBox == null) return;
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
         confirmCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(b);
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(isChecked);
             }
         });
     }

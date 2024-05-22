@@ -42,22 +42,21 @@ public class DeleteAllAccountsConfirmationDialog extends DoubleConfirmationDialo
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         return getDialogBuilder()
-                .setIcon(android.R.drawable.ic_delete)
-                .setTitle(R.string.title_confirm_delete).setMessage(R.string.confirm_delete_all_accounts)
-                .setPositiveButton(R.string.alert_dialog_ok_delete,
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                Activity activity = requireActivity();
-                                BackupManager.backupActiveBookAsync(activity, result -> {
-                                    if (!result) return null;
-                                    AccountsDbAdapter.getInstance().deleteAllRecords();
-                                    Toast.makeText(activity, R.string.toast_all_accounts_deleted, Toast.LENGTH_SHORT).show();
-                                    WidgetConfigurationActivity.updateAllWidgets(activity);
-                                    return null;
-                                });
-                            }
-                        }
-                )
-                .create();
+            .setIcon(R.drawable.ic_warning_black)
+            .setTitle(R.string.title_confirm_delete)
+            .setMessage(R.string.confirm_delete_all_accounts)
+            .setPositiveButton(R.string.alert_dialog_ok_delete, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        Activity activity = requireActivity();
+                        BackupManager.backupActiveBookAsync(activity, result -> {
+                            AccountsDbAdapter.getInstance().deleteAllRecords();
+                            Toast.makeText(activity, R.string.toast_all_accounts_deleted, Toast.LENGTH_SHORT).show();
+                            WidgetConfigurationActivity.updateAllWidgets(activity);
+                            return null;
+                        });
+                    }
+                }
+            )
+            .create();
     }
 }

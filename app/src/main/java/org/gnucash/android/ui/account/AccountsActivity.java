@@ -285,13 +285,15 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
      */
     private void handleOpenFileIntent(Intent intent) {
         //when someone launches the app to view a (.gnucash or .gnca) file
-        Uri data = intent.getData();
+        final Uri data = intent.getData();
         if (data != null) {
             Activity activity = this;
-            BackupManager.backupActiveBook(activity);
-            intent.setData(null);
-            new ImportAsyncTask(activity).execute(data);
-            removeFirstRunFlag();
+            BackupManager.backupActiveBookAsync(activity, result -> {
+                intent.setData(null);
+                new ImportAsyncTask(activity).execute(data);
+                removeFirstRunFlag(activity);
+                return null;
+            });
         }
     }
 
@@ -540,12 +542,12 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
     /**
      * Removes the flag indicating that the app is being run for the first time.
      * This is called every time the app is started because the next time won't be the first time
+     * @param context the context.
      */
-    public static void removeFirstRunFlag() {
-        Context context = GnuCashApplication.getAppContext();
+    public static void removeFirstRunFlag(Context context) {
         Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
         editor.putBoolean(context.getString(R.string.key_first_run), false);
-        editor.commit();
+        editor.apply();
     }
 
 }

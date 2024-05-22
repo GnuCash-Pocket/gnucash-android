@@ -26,6 +26,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -159,8 +160,8 @@ public class BackupManager {
     private static File getBackupFile(@NonNull String bookUID, @Nullable ExportParams params) {
         Book book = BooksDbAdapter.getInstance().getRecord(bookUID);
         ExportFormat format = (params != null) ? params.getExportFormat() : ExportFormat.XML;
-        String name = Exporter.buildExportFilename(format, book.getDisplayName()) + ".gz";
-        return new File(getBackupFolder(book.getUID()), name);
+        String name = Exporter.buildExportFilename(format, book.getDisplayName()) + ".gz";return new File(getBackupFolder(book.getUID()),
+            name);
     }
 
     /**
@@ -238,6 +239,9 @@ public class BackupManager {
             protected void onPostExecute(Boolean result) {
                 if (mProgressDialog != null) {
                     mProgressDialog.hide();
+                }
+                if (!result) {
+                    Toast.makeText(activity, R.string.toast_backup_failed, Toast.LENGTH_SHORT).show();
                 }
                 after.invoke(result);
             }
