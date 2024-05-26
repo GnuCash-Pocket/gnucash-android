@@ -137,7 +137,7 @@ public class AccountsActivityTest {
     public static void prepTest() {
         preventFirstRunDialogs(GnuCashApplication.getAppContext());
 
-        String activeBookUID = BooksDbAdapter.getInstance().getActiveBookUID();
+        String activeBookUID = GnuCashApplication.getActiveBookUID();
         mDbHelper = new DatabaseHelper(GnuCashApplication.getAppContext(), activeBookUID);
         try {
             mDb = mDbHelper.getWritableDatabase();

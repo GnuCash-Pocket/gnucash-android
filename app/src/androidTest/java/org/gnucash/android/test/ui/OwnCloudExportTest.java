@@ -113,7 +113,7 @@ public class OwnCloudExportTest {
         preventFirstRunDialogs(getInstrumentation().getTargetContext());
 
         // creates Account and transaction
-        String activeBookUID = BooksDbAdapter.getInstance().getActiveBookUID();
+        String activeBookUID = GnuCashApplication.getActiveBookUID();
         DatabaseHelper mDbHelper = new DatabaseHelper(mAccountsActivity, activeBookUID);
         SQLiteDatabase mDb;
         try {

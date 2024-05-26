@@ -85,7 +85,7 @@ public class ExportTransactionsTest {
         AccountsActivityTest.preventFirstRunDialogs(getInstrumentation().getTargetContext());
         mAcccountsActivity = rule.getActivity();
 
-        String activeBookUID = BooksDbAdapter.getInstance().getActiveBookUID();
+        String activeBookUID = GnuCashApplication.getActiveBookUID();
         mDbHelper = new DatabaseHelper(rule.getActivity(), activeBookUID);
         try {
             mDb = mDbHelper.getWritableDatabase();

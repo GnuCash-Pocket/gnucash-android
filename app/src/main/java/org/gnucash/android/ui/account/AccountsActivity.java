@@ -324,7 +324,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
      * <p>Also handles displaying the What's New dialog</p>
      */
     private void init() {
-        PreferenceManager.setDefaultValues(this, BooksDbAdapter.getInstance().getActiveBookUID(),
+        PreferenceManager.setDefaultValues(this, GnuCashApplication.getActiveBookUID(),
                 Context.MODE_PRIVATE, R.xml.fragment_transaction_preferences, true);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);

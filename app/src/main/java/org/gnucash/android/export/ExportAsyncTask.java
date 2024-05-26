@@ -96,16 +96,17 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
 
     private ProgressDialog mProgressDialog;
 
-    private final SQLiteDatabase mDb;
+    private final String mBookUID;
 
     /**
      * Export parameters
      */
     private ExportParams mExportParams;
 
-    public ExportAsyncTask(Context context, SQLiteDatabase db) {
+    public ExportAsyncTask(Context context, String bookUID) {
+        super();
         this.mContext = context;
-        this.mDb = db;
+        this.mBookUID = bookUID;
     }
 
     @Override
@@ -142,9 +143,9 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
                     @Override
                     public void run() {
                         Toast.makeText(mContext,
-                                mContext.getString(R.string.toast_export_error, exportParams.getExportFormat().name())
-                                        + "\n" + e.getLocalizedMessage(),
-                                Toast.LENGTH_SHORT).show();
+                            mContext.getString(R.string.toast_export_error, exportParams.getExportFormat().name())
+                                + "\n" + e.getLocalizedMessage(),
+                            Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -189,12 +190,12 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
                 dismissProgressDialog();
                 if (exportSuccessful == 0) {
                     Toast.makeText(mContext,
-                            R.string.toast_no_transactions_to_export,
-                            Toast.LENGTH_LONG).show();
+                        R.string.toast_no_transactions_to_export,
+                        Toast.LENGTH_LONG).show();
                 } else {
                     Toast.makeText(mContext,
-                            mContext.getString(R.string.toast_export_error, exportParams.getExportFormat().name()),
-                            Toast.LENGTH_LONG).show();
+                        mContext.getString(R.string.toast_export_error, exportParams.getExportFormat().name()),
+                        Toast.LENGTH_LONG).show();
                 }
             }
         }
@@ -219,16 +220,16 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
     private Exporter getExporter(ExportParams exportParams) {
         switch (exportParams.getExportFormat()) {
             case QIF:
-                return new QifExporter(exportParams, mDb);
+                return new QifExporter(mContext, exportParams, mBookUID);
             case OFX:
-                return new OfxExporter(exportParams, mDb);
+                return new OfxExporter(mContext, exportParams, mBookUID);
             case CSVA:
-                return new CsvAccountExporter(exportParams, mDb);
+                return new CsvAccountExporter(mContext, exportParams, mBookUID);
             case CSVT:
-                return new CsvTransactionsExporter(exportParams, mDb);
+                return new CsvTransactionsExporter(mContext, exportParams, mBookUID);
             case XML:
             default:
-                return new GncXmlExporter(exportParams, mDb);
+                return new GncXmlExporter(mContext, exportParams, mBookUID);
         }
     }
 
@@ -310,10 +311,10 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
         try {
             for (String exportedFilePath : exportedFiles) {
                 DriveApi.DriveContentsResult driveContentsResult =
-                        Drive.DriveApi.newDriveContents(googleApiClient).await(1, TimeUnit.MINUTES);
+                    Drive.DriveApi.newDriveContents(googleApiClient).await(1, TimeUnit.MINUTES);
                 if (!driveContentsResult.getStatus().isSuccess()) {
                     throw new Exporter.ExporterException(exportParams,
-                            "Error while trying to create new file contents");
+                        "Error while trying to create new file contents");
                 }
                 final DriveContents driveContents = driveContentsResult.getDriveContents();
                 OutputStream outputStream = driveContents.getOutputStream();
@@ -330,13 +331,13 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
                 exportedFile.delete();
 
                 MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                        .setTitle(exportedFile.getName())
-                        .setMimeType(exporter.getExportMimeType())
-                        .build();
+                    .setTitle(exportedFile.getName())
+                    .setMimeType(exporter.getExportMimeType())
+                    .build();
                 // create a file on root folder
                 DriveFolder.DriveFileResult driveFileResult =
-                        folder.createFile(googleApiClient, changeSet, driveContents)
-                                .await(1, TimeUnit.MINUTES);
+                    folder.createFile(googleApiClient, changeSet, driveContents)
+                        .await(1, TimeUnit.MINUTES);
                 if (!driveFileResult.getStatus().isSuccess())
                     throw new Exporter.ExporterException(exportParams, "Error creating file in Google Drive");
 
@@ -360,8 +361,8 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
             try {
                 FileInputStream inputStream = new FileInputStream(exportedFile);
                 FileMetadata metadata = dbxClient.files()
-                        .uploadBuilder("/" + exportedFile.getName())
-                        .uploadAndFinish(inputStream);
+                    .uploadBuilder("/" + exportedFile.getName())
+                    .uploadAndFinish(inputStream);
                 Timber.i("Successfully uploaded file " + metadata.getName() + " to DropBox");
                 inputStream.close();
                 exportedFile.delete(); //delete file to prevent cache accumulation
@@ -390,12 +391,12 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
         Uri serverUri = Uri.parse(mOC_server);
         OwnCloudClient mClient = OwnCloudClientFactory.createOwnCloudClient(serverUri, this.mContext, true);
         mClient.setCredentials(
-                OwnCloudCredentialsFactory.newBasicCredentials(mOC_username, mOC_password)
+            OwnCloudCredentialsFactory.newBasicCredentials(mOC_username, mOC_password)
         );
 
         if (!TextUtils.isEmpty(mOC_dir)) {
             RemoteOperationResult dirResult = new CreateRemoteFolderOperation(
-                    mOC_dir, true).execute(mClient);
+                mOC_dir, true).execute(mClient);
             if (!dirResult.isSuccess()) {
                 Timber.w("Error creating folder (it may happen if it already exists): %s", dirResult.getLogMessage());
             }
@@ -405,9 +406,9 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
             String mimeType = exporter.getExportMimeType();
 
             RemoteOperationResult result = new UploadRemoteFileOperation(
-                    exportedFilePath, remotePath, mimeType,
-                    getFileLastModifiedTimestamp(exportedFilePath))
-                    .execute(mClient);
+                exportedFilePath, remotePath, mimeType,
+                getFileLastModifiedTimestamp(exportedFilePath))
+                .execute(mClient);
             if (!result.isSuccess())
                 throw new Exporter.ExporterException(exportParams, result.getLogMessage());
 
@@ -461,9 +462,10 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
         List<Transaction> openingBalances = new ArrayList<>();
         boolean preserveOpeningBalances = GnuCashApplication.shouldSaveOpeningBalances(false);
 
-        TransactionsDbAdapter transactionsDbAdapter = new TransactionsDbAdapter(mDb, new SplitsDbAdapter(mDb));
+        SQLiteDatabase db = GnuCashApplication.getActiveDb();
+        TransactionsDbAdapter transactionsDbAdapter = new TransactionsDbAdapter(db, new SplitsDbAdapter(db));
         if (preserveOpeningBalances) {
-            openingBalances = new AccountsDbAdapter(mDb, transactionsDbAdapter).getAllOpeningBalanceTransactions();
+            openingBalances = new AccountsDbAdapter(db, transactionsDbAdapter).getAllOpeningBalanceTransactions();
         }
         transactionsDbAdapter.deleteAllNonTemplateTransactions();
 
@@ -488,23 +490,23 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
                 exportParams.getExportFormat().name()));
 
         String defaultEmail = PreferenceManager.getDefaultSharedPreferences(mContext)
-                .getString(mContext.getString(R.string.key_default_export_email), null);
+            .getString(mContext.getString(R.string.key_default_export_email), null);
         if (defaultEmail != null && defaultEmail.trim().length() > 0)
             shareIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{defaultEmail});
 
         DateTimeFormatter formatter = DateTimeFormat.fullDateTime();
         String extraText = mContext.getString(R.string.description_export_email)
-                + " " + formatter.print(System.currentTimeMillis());
+            + " " + formatter.print(System.currentTimeMillis());
         shareIntent.putExtra(Intent.EXTRA_TEXT, extraText);
 
         if (mContext instanceof Activity) {
             List<ResolveInfo> activities = mContext.getPackageManager().queryIntentActivities(shareIntent, 0);
             if (activities != null && !activities.isEmpty()) {
                 mContext.startActivity(Intent.createChooser(shareIntent,
-                        mContext.getString(R.string.title_select_export_destination)));
+                    mContext.getString(R.string.title_select_export_destination)));
             } else {
                 Toast.makeText(mContext, R.string.toast_no_compatible_apps_to_receive_export,
-                        Toast.LENGTH_LONG).show();
+                    Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -542,29 +544,29 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
                 break;
             case OWNCLOUD:
                 targetLocation = mContext.getSharedPreferences(
-                        mContext.getString(R.string.owncloud_pref),
-                        Context.MODE_PRIVATE).getBoolean(
-                        mContext.getString(R.string.owncloud_sync), false) ?
+                    mContext.getString(R.string.owncloud_pref),
+                    Context.MODE_PRIVATE).getBoolean(
+                    mContext.getString(R.string.owncloud_sync), false) ?
 
-                        "ownCloud -> " +
-                                mContext.getSharedPreferences(
-                                        mContext.getString(R.string.owncloud_pref),
-                                        Context.MODE_PRIVATE).getString(
-                                        mContext.getString(R.string.key_owncloud_dir), null) :
-                        "ownCloud sync not enabled";
+                    "ownCloud -> " +
+                        mContext.getSharedPreferences(
+                            mContext.getString(R.string.owncloud_pref),
+                            Context.MODE_PRIVATE).getString(
+                            mContext.getString(R.string.key_owncloud_dir), null) :
+                    "ownCloud sync not enabled";
                 break;
             default:
                 targetLocation = mContext.getString(R.string.label_export_target_external_service);
         }
         Toast.makeText(mContext,
-                String.format(mContext.getString(R.string.toast_exported_to), targetLocation),
-                Toast.LENGTH_LONG).show();
+            String.format(mContext.getString(R.string.toast_exported_to), targetLocation),
+            Toast.LENGTH_LONG).show();
     }
 
     private void refreshViews() {
         if (mContext instanceof AccountsActivity) {
             AccountsListFragment fragment =
-                    ((AccountsActivity) mContext).getCurrentAccountListFragment();
+                ((AccountsActivity) mContext).getCurrentAccountListFragment();
             if (fragment != null)
                 fragment.refresh();
         }

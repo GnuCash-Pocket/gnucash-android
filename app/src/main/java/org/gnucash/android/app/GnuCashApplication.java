@@ -300,6 +300,11 @@ public class GnuCashApplication extends Application {
         return mBooksDbAdapter;
     }
 
+    @NonNull
+    public static String getActiveBookUID() {
+        return getBooksDbAdapter().getActiveBookUID();
+    }
+
     /**
      * Returns the currently active database in the application
      *

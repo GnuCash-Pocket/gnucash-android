@@ -208,7 +208,7 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
                     exportParams.setExportTarget(ExportParams.ExportTarget.URI);
                     exportParams.setExportLocation(data.getData());
                     Activity context = requireActivity();
-                    ExportAsyncTask exportTask = new ExportAsyncTask(context, GnuCashApplication.getActiveDb());
+                    ExportAsyncTask exportTask = new ExportAsyncTask(context, GnuCashApplication.getActiveBookUID());
 
                     try {
                         exportTask.execute(exportParams).get();

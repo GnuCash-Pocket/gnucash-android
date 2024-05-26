@@ -17,12 +17,12 @@ package org.gnucash.android.test.unit.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
 import androidx.annotation.NonNull;
 
 import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.BookDbHelper;
 import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
@@ -63,15 +63,16 @@ import java.util.zip.ZipFile;
     packageName = "org.gnucash.android",
     shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
 public class QifExporterTest extends BookHelperTest {
+
+    private String mBookUID;
     private SQLiteDatabase mDb;
 
     @Before
     public void setUp() throws Exception {
-        BookDbHelper bookDbHelper = new BookDbHelper(GnuCashApplication.getAppContext());
-        BooksDbAdapter booksDbAdapter = new BooksDbAdapter(bookDbHelper.getWritableDatabase());
+        BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
         Book testBook = new Book("testRootAccountUID");
         booksDbAdapter.addRecord(testBook);
-        booksDbAdapter.close();
+        mBookUID = testBook.getUID();
         DatabaseHelper databaseHelper =
             new DatabaseHelper(GnuCashApplication.getAppContext(), testBook.getUID());
         mDb = databaseHelper.getWritableDatabase();
@@ -79,6 +80,8 @@ public class QifExporterTest extends BookHelperTest {
 
     @After
     public void tearDown() {
+        BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
+        booksDbAdapter.deleteBook(mBookUID);
         mDb.close();
     }
 
@@ -88,11 +91,12 @@ public class QifExporterTest extends BookHelperTest {
      */
     @Test
     public void testWithNoTransactionsToExport_shouldNotCreateAnyFile() {
+        Context context = GnuCashApplication.getAppContext();
         ExportParams exportParameters = new ExportParams(ExportFormat.QIF);
         exportParameters.setExportStartTime(TimestampHelper.getTimestampFromEpochZero());
         exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
         exportParameters.setDeleteTransactionsAfterExport(false);
-        QifExporter exporter = new QifExporter(exportParameters, mDb);
+        QifExporter exporter = new QifExporter(context, exportParameters, mBookUID);
         assertThat(exporter.generateExport()).isEmpty();
     }
 
@@ -101,6 +105,7 @@ public class QifExporterTest extends BookHelperTest {
      */
     @Test
     public void testGenerateQIFExport() {
+        Context context = GnuCashApplication.getAppContext();
         AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(mDb);
 
         Account account = new Account("Basic Account");
@@ -115,8 +120,8 @@ public class QifExporterTest extends BookHelperTest {
         exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
         exportParameters.setDeleteTransactionsAfterExport(false);
 
-        QifExporter qifExporter = new QifExporter(exportParameters, mDb);
-        List<String> exportedFiles = qifExporter.generateExport();
+        QifExporter exporter = new QifExporter(context, exportParameters, mBookUID);
+        List<String> exportedFiles = exporter.generateExport();
 
         assertThat(exportedFiles).hasSize(1);
         File file = new File(exportedFiles.get(0));
@@ -131,6 +136,7 @@ public class QifExporterTest extends BookHelperTest {
      */
     // @Test Fails randomly. Sometimes it doesn't split the QIF.
     public void multiCurrencyTransactions_shouldResultInMultipleZippedQifFiles() throws IOException {
+        Context context = GnuCashApplication.getAppContext();
         AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(mDb);
 
         Account account = new Account("Basic Account", Commodity.getInstance("EUR"));
@@ -154,8 +160,8 @@ public class QifExporterTest extends BookHelperTest {
         exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
         exportParameters.setDeleteTransactionsAfterExport(false);
 
-        QifExporter qifExporter = new QifExporter(exportParameters, mDb);
-        List<String> exportedFiles = qifExporter.generateExport();
+        QifExporter exporter = new QifExporter(context, exportParameters, mBookUID);
+        List<String> exportedFiles = exporter.generateExport();
 
         assertThat(exportedFiles).hasSize(1);
         File file = new File(exportedFiles.get(0));
@@ -168,7 +174,8 @@ public class QifExporterTest extends BookHelperTest {
      * Test that the memo and description fields of transactions are exported.
      */
     @Test
-    public void memoAndDescription_shouldBeExported() throws IOException {
+    public void memoAndDescription_shouldBeExported() throws Exception {
+        Context context = GnuCashApplication.getAppContext();
         String expectedDescription = "my description";
         String expectedMemo = "my memo";
         String expectedAccountName = "Basic Account";
@@ -189,8 +196,8 @@ public class QifExporterTest extends BookHelperTest {
         exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
         exportParameters.setDeleteTransactionsAfterExport(false);
 
-        QifExporter qifExporter = new QifExporter(exportParameters, mDb);
-        List<String> exportedFiles = qifExporter.generateExport();
+        QifExporter exporter = new QifExporter(context, exportParameters, mBookUID);
+        List<String> exportedFiles = exporter.generateExport();
 
         assertThat(exportedFiles).hasSize(1);
         File file = new File(exportedFiles.get(0));
@@ -213,6 +220,7 @@ public class QifExporterTest extends BookHelperTest {
      */
     @Test
     public void simpleTransactionExport() throws Exception {
+        Context context = GnuCashApplication.getAppContext();
         String bookUID = importGnuCashXml("simpleTransactionImport.xml");
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
 
@@ -226,7 +234,7 @@ public class QifExporterTest extends BookHelperTest {
         exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
         exportParameters.setDeleteTransactionsAfterExport(false);
 
-        QifExporter qifExporter = new QifExporter(exportParameters, mImportedDb);
+        QifExporter qifExporter = new QifExporter(context, exportParameters, bookUID);
         List<String> exportedFiles = qifExporter.generateExport();
 
         assertThat(exportedFiles).hasSize(1);
@@ -250,6 +258,7 @@ public class QifExporterTest extends BookHelperTest {
      */
     @Test
     public void transactionWithNonDefaultSplitsImport() throws Exception {
+        Context context = GnuCashApplication.getAppContext();
         String bookUID = importGnuCashXml("transactionWithNonDefaultSplitsImport.xml");
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
 
@@ -268,7 +277,7 @@ public class QifExporterTest extends BookHelperTest {
         exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
         exportParameters.setDeleteTransactionsAfterExport(false);
 
-        QifExporter qifExporter = new QifExporter(exportParameters, mImportedDb);
+        QifExporter qifExporter = new QifExporter(context, exportParameters, bookUID);
         List<String> exportedFiles = qifExporter.generateExport();
 
         assertThat(exportedFiles).hasSize(1);
@@ -295,6 +304,7 @@ public class QifExporterTest extends BookHelperTest {
      */
     @Test
     public void amountAndSplit_shouldBeExported() throws IOException {
+        Context context = GnuCashApplication.getAppContext();
         String expectedDescription = "my description";
         String expectedMemo = "my memo";
         String expectedAccountName1 = "Basic Account";
@@ -325,7 +335,7 @@ public class QifExporterTest extends BookHelperTest {
         exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
         exportParameters.setDeleteTransactionsAfterExport(false);
 
-        QifExporter qifExporter = new QifExporter(exportParameters, mDb);
+        QifExporter qifExporter = new QifExporter(context, exportParameters, mBookUID);
         List<String> exportedFiles = qifExporter.generateExport();
 
         assertThat(exportedFiles).hasSize(1);

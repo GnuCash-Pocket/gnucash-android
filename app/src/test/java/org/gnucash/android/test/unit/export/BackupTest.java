@@ -17,6 +17,8 @@ package org.gnucash.android.test.unit.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import android.content.Context;
+
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
@@ -54,13 +56,15 @@ public class BackupTest {
 
     @Test
     public void shouldCreateBackupFileName() throws Exporter.ExporterException {
-        Exporter exporter = new GncXmlExporter(new ExportParams(ExportFormat.XML));
+        Context context = GnuCashApplication.getAppContext();
+        String bookUID = GnuCashApplication.getActiveBookUID();
+        Exporter exporter = new GncXmlExporter(context, new ExportParams(ExportFormat.XML), bookUID);
         List<String> xmlFiles = exporter.generateExport();
 
         assertThat(xmlFiles).hasSize(1);
         assertThat(new File(xmlFiles.get(0)))
-                .exists()
-                .hasExtension(ExportFormat.XML.extension.substring(1));
+            .exists()
+            .hasExtension(ExportFormat.XML.extension.substring(1));
     }
 
     /**
@@ -70,6 +74,8 @@ public class BackupTest {
         try {
             String bookUID = GncXmlImporter.parse(GnuCashApplication.getAppContext().getResources().openRawResource(R.raw.default_accounts));
             BooksDbAdapter.getInstance().setActive(bookUID);
+            assertThat(BooksDbAdapter.getInstance().getActiveBookUID()).isEqualTo(bookUID);
+            assertThat(GnuCashApplication.getActiveBookUID()).isEqualTo(bookUID);
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
             throw new RuntimeException("Could not create default accounts");

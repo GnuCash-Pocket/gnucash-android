@@ -25,6 +25,7 @@ import androidx.annotation.NonNull;
 
 import org.gnucash.android.BuildConfig;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
@@ -39,7 +40,9 @@ import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import timber.log.Timber;
@@ -50,7 +53,7 @@ import timber.log.Timber;
  * @author Ngewi Fet <ngewif@gmail.com>
  * @author Yongxin Wang <fefe.wyx@gmail.com>
  */
-public abstract class Exporter {
+public abstract class Exporter implements Closeable {
 
     /**
      * Application folder on external storage
@@ -58,7 +61,7 @@ public abstract class Exporter {
      * @deprecated Use {@link #BASE_FOLDER_PATH} instead
      */
     @Deprecated
-    public static final String LEGACY_BASE_FOLDER_PATH = Environment.getExternalStorageDirectory() + "/" + BuildConfig.APPLICATION_ID;
+    public static final String LEGACY_BASE_FOLDER_PATH = Environment.getExternalStorageDirectory() + File.separator + BuildConfig.APPLICATION_ID;
 
     /**
      * Application folder on external storage
@@ -68,6 +71,7 @@ public abstract class Exporter {
     /**
      * Export options
      */
+    @NonNull
     protected final ExportParams mExportParams;
 
     /**
@@ -81,6 +85,7 @@ public abstract class Exporter {
 
     private static final String EXPORT_FILENAME_DATE_PATTERN = "yyyyMMdd_HHmmss";
 
+    protected final BooksDbAdapter mBooksDbADapter;
     /**
      * Adapter for retrieving accounts to export
      * Subclasses should close this object when they are done with exporting
@@ -103,39 +108,37 @@ public abstract class Exporter {
     /**
      * GUID of the book being exported
      */
-    private String mBookUID;
+    @NonNull
+    private final String mBookUID;
 
-    public Exporter(ExportParams params, SQLiteDatabase db) {
-        this.mExportParams = params;
-        mContext = GnuCashApplication.getAppContext();
-        if (db == null) {
-            mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-            mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
-            mSplitsDbAdapter = SplitsDbAdapter.getInstance();
-            mPricesDbAdapter = PricesDbAdapter.getInstance();
-            mCommoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
-            mBudgetsDbAdapter = BudgetsDbAdapter.getInstance();
-            mScheduledActionDbAdapter = ScheduledActionDbAdapter.getInstance();
-            mDb = GnuCashApplication.getActiveDb();
-        } else {
-            mDb = db;
-            mSplitsDbAdapter = new SplitsDbAdapter(db);
-            mTransactionsDbAdapter = new TransactionsDbAdapter(db, mSplitsDbAdapter);
-            mAccountsDbAdapter = new AccountsDbAdapter(db, mTransactionsDbAdapter);
-            mPricesDbAdapter = new PricesDbAdapter(db);
-            mCommoditiesDbAdapter = new CommoditiesDbAdapter(db);
-            RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(db);
-            mBudgetsDbAdapter = new BudgetsDbAdapter(db, new BudgetAmountsDbAdapter(db), recurrenceDbAdapter);
-            mScheduledActionDbAdapter = new ScheduledActionDbAdapter(db, recurrenceDbAdapter);
-        }
+    protected Exporter(@NonNull Context context,
+                       @NonNull ExportParams params,
+                       @NonNull String bookUID) {
+        super();
+        mContext = context;
+        mExportParams = params;
+        mBookUID = bookUID;
+        mBooksDbADapter = BooksDbAdapter.getInstance();
 
-        mBookUID = new File(mDb.getPath()).getName(); //this depends on the database file always having the name of the book GUID
+        DatabaseHelper dbHelper = new DatabaseHelper(context, bookUID);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        mDb = db;
+        mSplitsDbAdapter = new SplitsDbAdapter(db);
+        mTransactionsDbAdapter = new TransactionsDbAdapter(db, mSplitsDbAdapter);
+        mAccountsDbAdapter = new AccountsDbAdapter(db, mTransactionsDbAdapter);
+        mPricesDbAdapter = new PricesDbAdapter(db);
+        mCommoditiesDbAdapter = new CommoditiesDbAdapter(db);
+        RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(db);
+        mBudgetsDbAdapter = new BudgetsDbAdapter(db, new BudgetAmountsDbAdapter(db), recurrenceDbAdapter);
+        mScheduledActionDbAdapter = new ScheduledActionDbAdapter(db, recurrenceDbAdapter);
+
         mExportCacheFilePath = null;
-        mCacheDir = new File(mContext.getCacheDir(), params.getExportFormat().name());
-        mCacheDir.mkdir();
+        mCacheDir = new File(context.getCacheDir(), params.getExportFormat().name());
+        mCacheDir.mkdirs();
         purgeDirectory(mCacheDir);
     }
 
+    @NonNull
     public String getBookUID() {
         return mBookUID;
     }
@@ -158,13 +161,14 @@ public abstract class Exporter {
      * @param bookName Name of the book being exported. This name will be included in the generated file name
      * @return String containing the file name
      */
+    @NonNull
     public static String buildExportFilename(ExportFormat format, String bookName) {
         DateTimeFormatter formatter = DateTimeFormat.forPattern(EXPORT_FILENAME_DATE_PATTERN);
         return formatter.print(System.currentTimeMillis())
-                + "_gnucash_export_" + sanitizeFilename(bookName) +
-                (format == ExportFormat.CSVA ? "_accounts" : "") +
-                (format == ExportFormat.CSVT ? "_transactions" : "") +
-                format.extension;
+            + "_gnucash_export_" + sanitizeFilename(bookName) +
+            (format == ExportFormat.CSVA ? "_accounts" : "") +
+            (format == ExportFormat.CSVT ? "_transactions" : "") +
+            format.extension;
     }
 
     /**
@@ -200,7 +204,7 @@ public abstract class Exporter {
      *
      * @param directory File descriptor for directory
      */
-    private void purgeDirectory(File directory) {
+    private void purgeDirectory(@NonNull File directory) {
         for (File file : directory.listFiles()) {
             if (file.isDirectory())
                 purgeDirectory(file);
@@ -221,9 +225,9 @@ public abstract class Exporter {
         // avoid issues like #448
         if (mExportCacheFilePath == null) {
             String cachePath = mCacheDir.getAbsolutePath();
-            if (!cachePath.endsWith("/"))
-                cachePath += "/";
-            String bookName = BooksDbAdapter.getInstance().getAttribute(mBookUID, DatabaseSchema.BookEntry.COLUMN_DISPLAY_NAME);
+            if (!cachePath.endsWith(File.separator))
+                cachePath += File.separator;
+            String bookName = mBooksDbADapter.getAttribute(mBookUID, DatabaseSchema.BookEntry.COLUMN_DISPLAY_NAME);
             mExportCacheFilePath = cachePath + buildExportFilename(mExportParams.getExportFormat(), bookName);
         }
 
@@ -237,37 +241,50 @@ public abstract class Exporter {
      * @param bookUID GUID of the book being exported. Each book has its own export path
      * @return Absolute path to export folder for active book
      */
+    @NonNull
     public static String getExportFolderPath(String bookUID) {
-        String path = BASE_FOLDER_PATH + "/" + bookUID + "/exports/";
+        String path = BASE_FOLDER_PATH + File.separator + bookUID + File.separator + "exports" + File.separator;
         File file = new File(path);
         if (!file.exists())
             file.mkdirs();
         return path;
     }
 
-
     /**
      * Returns the MIME type for this exporter.
      *
      * @return MIME type as string
      */
+    @NonNull
     public String getExportMimeType() {
         return "text/plain";
+    }
+
+    @Override
+    public void close() throws IOException {
+        mAccountsDbAdapter.close();
+        mBudgetsDbAdapter.close();
+        mCommoditiesDbAdapter.close();
+        mPricesDbAdapter.close();
+        mScheduledActionDbAdapter.close();
+        mSplitsDbAdapter.close();
+        mTransactionsDbAdapter.close();
+        mDb.close();
     }
 
     public static class ExporterException extends RuntimeException {
 
         public ExporterException(ExportParams params) {
-            super("Failed to generate export with parameters:  " + params.toString());
+            super("Failed to generate export with parameters: " + params);
         }
 
         public ExporterException(@NonNull ExportParams params, @NonNull String msg) {
-            super("Failed to generate export with parameters: " + params.toString() + " - " + msg);
+            super("Failed to generate export with parameters: " + params + " - " + msg);
         }
 
         public ExporterException(ExportParams params, Throwable throwable) {
-            super("Failed to generate " + params.getExportFormat().toString() + "-" + throwable.getMessage(),
-                    throwable);
+            super("Failed to generate export " + params.getExportFormat() + " - " + throwable.getMessage(),
+                throwable);
         }
     }
 }
