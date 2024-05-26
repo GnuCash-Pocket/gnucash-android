@@ -120,7 +120,6 @@ public class OfxExporter extends Exporter {
 
             //mark as exported
             accountsDbAdapter.markAsExported(account.getUID());
-
         }
     }
 
