@@ -112,7 +112,7 @@ public class QifExporter extends Exporter {
                     null,
                     // trans_time ASC : put transactions in time order
                     // trans_uid ASC  : put splits from the same transaction together
-                    "acct1_currency ASC, trans_time ASC, trans_uid ASC"
+                    "acct1_currency ASC, trans_uid ASC, trans_time ASC"
             );
 
             File file = new File(getExportCacheFilePath());
