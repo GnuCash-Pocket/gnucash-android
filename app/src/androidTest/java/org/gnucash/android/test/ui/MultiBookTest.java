@@ -37,6 +37,7 @@ import androidx.test.rule.GrantPermissionRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.gnucash.android.R;
+import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.model.Book;
 import org.gnucash.android.test.ui.util.DisableAnimationsRule;
@@ -88,7 +89,7 @@ public class MultiBookTest {
         shouldOpenBookManager();
         onView(withText(book.getDisplayName())).perform(click());
 
-        assertThat(BooksDbAdapter.getInstance().getActiveBookUID()).isEqualTo(book.getUID());
+        assertThat(GnuCashApplication.getActiveBookUID()).isEqualTo(book.getUID());
     }
 
     @Test

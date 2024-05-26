@@ -65,7 +65,7 @@ public class FormActivity extends PasscodeLockActivity {
 
         //if a parameter was passed to open an account within a specific book, then switch
         String bookUID = getIntent().getStringExtra(UxArgument.BOOK_UID);
-        if (bookUID != null && !bookUID.equals(BooksDbAdapter.getInstance().getActiveBookUID())) {
+        if (bookUID != null && !bookUID.equals(GnuCashApplication.getActiveBookUID())) {
             BookUtils.activateBook(this, bookUID);
         }
 

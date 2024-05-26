@@ -17,8 +17,10 @@
 
 package org.gnucash.android.export.ofx;
 
-import android.database.sqlite.SQLiteDatabase;
+import android.content.Context;
 import android.preference.PreferenceManager;
+
+import androidx.annotation.NonNull;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -26,7 +28,6 @@ import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.Exporter;
 import org.gnucash.android.model.Account;
-import org.gnucash.android.model.Transaction;
 import org.gnucash.android.util.PreferencesHelper;
 import org.gnucash.android.util.TimestampHelper;
 import org.w3c.dom.Document;
@@ -70,20 +71,16 @@ public class OfxExporter extends Exporter {
     private List<Account> mAccountsList;
 
     /**
-     * Builds an XML representation of the {@link Account}s and {@link Transaction}s in the database
-     */
-    public OfxExporter(ExportParams params) {
-        super(params, null);
-    }
-
-    /**
      * Overloaded constructor. Initializes the export parameters and the database to export
      *
-     * @param params Export options
-     * @param db     SQLiteDatabase to export
+     * @param context The context.
+     * @param params Parameters for the export
+     * @param bookUID The book UID.
      */
-    public OfxExporter(ExportParams params, SQLiteDatabase db) {
-        super(params, db);
+    public OfxExporter(@NonNull Context context,
+                       @NonNull ExportParams params,
+                       @NonNull String bookUID) {
+        super(context, params, bookUID);
     }
 
     /**
@@ -177,6 +174,7 @@ public class OfxExporter extends Exporter {
             File file = new File(getExportCacheFilePath());
             writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
             writer.write(generateOfxExport());
+            close();
         } catch (IOException e) {
             throw new ExporterException(mExportParams, e);
         } finally {
@@ -227,6 +225,7 @@ public class OfxExporter extends Exporter {
      *
      * @return MIME type as string
      */
+    @NonNull
     public String getExportMimeType() {
         return "text/xml";
     }

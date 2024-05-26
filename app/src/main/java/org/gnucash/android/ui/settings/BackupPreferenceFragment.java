@@ -159,7 +159,7 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
 
         pref = findPreference(getString(R.string.key_backup_location));
         pref.setOnPreferenceClickListener(this);
-        Uri defaultBackupLocation = BackupManager.getBookBackupFileUri(BooksDbAdapter.getInstance().getActiveBookUID());
+        Uri defaultBackupLocation = BackupManager.getBookBackupFileUri(GnuCashApplication.getActiveBookUID());
         if (defaultBackupLocation != null) {
             pref.setSummary(getDocumentName(defaultBackupLocation, pref.getContext()));
         }
@@ -380,7 +380,7 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
      */
     private void restoreBackup() {
         Timber.i("Opening GnuCash XML backups for restore");
-        final String bookUID = BooksDbAdapter.getInstance().getActiveBookUID();
+        final String bookUID = GnuCashApplication.getActiveBookUID();
 
         final Uri defaultBackupFile = BackupManager.getBookBackupFileUri(bookUID);
         if (defaultBackupFile != null) {

@@ -216,7 +216,7 @@ public class BookManagerFragment extends ListFragment implements
                 @Override
                 public void onClick(View v) {
                     //do nothing if the active book is tapped
-                    if (!BooksDbAdapter.getInstance().getActiveBookUID().equals(bookUID)) {
+                    if (!GnuCashApplication.getActiveBookUID().equals(bookUID)) {
                         BookUtils.loadBook(v.getContext(), bookUID);
                         requireActivity().finish();
                     }
@@ -252,7 +252,7 @@ public class BookManagerFragment extends ListFragment implements
                         }
                     });
 
-                    String activeBookUID = BooksDbAdapter.getInstance().getActiveBookUID();
+                    String activeBookUID = GnuCashApplication.getActiveBookUID();
                     if (activeBookUID.equals(bookUID)) {//we cannot delete the active book
                         popupMenu.getMenu().findItem(R.id.ctx_menu_delete_book).setEnabled(false);
                     }
@@ -330,7 +330,7 @@ public class BookManagerFragment extends ListFragment implements
             TextView statsText = (TextView) view.findViewById(R.id.secondary_text);
             statsText.setText(stats);
 
-            if (bookUID.equals(BooksDbAdapter.getInstance().getActiveBookUID())) {
+            if (bookUID.equals(GnuCashApplication.getActiveBookUID())) {
                 ((TextView) view.findViewById(R.id.primary_text))
                         .setTextColor(ContextCompat.getColor(context, R.color.theme_primary));
             }

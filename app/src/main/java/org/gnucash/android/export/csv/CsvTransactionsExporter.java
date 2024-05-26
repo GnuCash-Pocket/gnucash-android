@@ -16,8 +16,8 @@
 
 package org.gnucash.android.export.csv;
 
+import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 
 import androidx.annotation.NonNull;
 
@@ -50,29 +50,22 @@ import timber.log.Timber;
  */
 public class CsvTransactionsExporter extends Exporter {
 
-    private char mCsvSeparator;
+    private final char mCsvSeparator;
 
     private final DateTimeFormatter dateFormat = DateTimeFormat.forPattern("yyyy-MM-dd");
-
-    /**
-     * Construct a new exporter with export parameters
-     *
-     * @param params Parameters for the export
-     */
-    public CsvTransactionsExporter(ExportParams params) {
-        super(params, null);
-        mCsvSeparator = params.getCsvSeparator();
-    }
 
     /**
      * Overloaded constructor.
      * Creates an exporter with an already open database instance.
      *
+     * @param context The context.
      * @param params Parameters for the export
-     * @param db     SQLite database
+     * @param bookUID The book UID.
      */
-    public CsvTransactionsExporter(ExportParams params, SQLiteDatabase db) {
-        super(params, db);
+    public CsvTransactionsExporter(@NonNull Context context,
+                                   @NonNull ExportParams params,
+                                   @NonNull String bookUID) {
+        super(context, params, bookUID);
         mCsvSeparator = params.getCsvSeparator();
     }
 
@@ -82,6 +75,7 @@ public class CsvTransactionsExporter extends Exporter {
 
         try (CsvWriter csvWriter = new CsvWriter(new FileWriter(outputFile), "" + mCsvSeparator)) {
             generateExport(csvWriter);
+            close();
         } catch (IOException ex) {
             Timber.e(ex, "Error exporting CSV");
             throw new ExporterException(mExportParams, ex);

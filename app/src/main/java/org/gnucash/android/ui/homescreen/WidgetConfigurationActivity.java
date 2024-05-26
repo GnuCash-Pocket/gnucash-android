@@ -40,6 +40,7 @@ import androidx.cursoradapter.widget.SimpleCursorAdapter;
 import androidx.preference.PreferenceManager;
 
 import org.gnucash.android.R;
+import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.BookDbHelper;
 import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.DatabaseSchema;
@@ -241,7 +242,7 @@ public class WidgetConfigurationActivity extends Activity {
         SharedPreferences preferences = PreferenceActivity.getActiveBookSharedPreferences();
         String accountUID = preferences.getString(UxArgument.SELECTED_ACCOUNT_UID + appWidgetId, null);
         if (accountUID != null) {
-            String bookUID = BooksDbAdapter.getInstance().getActiveBookUID();
+            String bookUID = GnuCashApplication.getActiveBookUID();
             boolean hideAccountBalance = preferences.getBoolean(UxArgument.HIDE_ACCOUNT_BALANCE_IN_WIDGET + appWidgetId, false);
             configureWidget(context, appWidgetId, bookUID, accountUID, hideAccountBalance);
             preferences.edit()

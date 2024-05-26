@@ -21,15 +21,16 @@ import static org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry;
 import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
 import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 
+import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+
+import androidx.annotation.NonNull;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.RecurrenceDbAdapter;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.Exporter;
 import org.gnucash.android.model.Account;
@@ -75,25 +76,21 @@ public class GncXmlExporter extends Exporter {
      */
     private Account mRootTemplateAccount;
     private final Map<String, Account> mTransactionToTemplateAccountMap = new TreeMap<>();
-
-    /**
-     * Construct a new exporter with export parameters
-     *
-     * @param params Parameters for the export
-     */
-    public GncXmlExporter(ExportParams params) {
-        super(params, null);
-    }
+    private final RecurrenceDbAdapter mRecurrenceDbAdapter;
 
     /**
      * Overloaded constructor.
      * Creates an exporter with an already open database instance.
      *
-     * @param params Parameters for the export
-     * @param db     SQLite database
+     * @param context The context.
+     * @param params  Parameters for the export
+     * @param bookUID The book UID.
      */
-    public GncXmlExporter(ExportParams params, SQLiteDatabase db) {
-        super(params, db);
+    public GncXmlExporter(@NonNull Context context,
+                          @NonNull ExportParams params,
+                          @NonNull String bookUID) {
+        super(context, params, bookUID);
+        mRecurrenceDbAdapter = new RecurrenceDbAdapter(mDb);
     }
 
     private void exportSlots(XmlSerializer xmlSerializer,
@@ -152,7 +149,7 @@ public class GncXmlExporter extends Exporter {
             xmlSerializer.endTag(null, GncXmlHelper.TAG_COMMODITY_ID);
             xmlSerializer.endTag(null, GncXmlHelper.TAG_ACCT_COMMODITY);
             // commodity scu
-            Commodity commodity = CommoditiesDbAdapter.getInstance().getCommodity(acctCurrencyCode);
+            Commodity commodity = mCommoditiesDbAdapter.getCommodity(acctCurrencyCode);
             xmlSerializer.startTag(null, GncXmlHelper.TAG_COMMODITY_SCU);
             xmlSerializer.text(Integer.toString(commodity.getSmallestFraction()));
             xmlSerializer.endTag(null, GncXmlHelper.TAG_COMMODITY_SCU);
@@ -272,25 +269,25 @@ public class GncXmlExporter extends Exporter {
             where = TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + "=1";
         }
         final Cursor cursor = mTransactionsDbAdapter.fetchTransactionsWithSplits(
-                new String[]{
-                        TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " AS trans_uid",
-                        TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_DESCRIPTION + " AS trans_desc",
-                        TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_NOTES + " AS trans_notes",
-                        TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " AS trans_time",
-                        TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_EXPORTED + " AS trans_exported",
-                        TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_CURRENCY + " AS trans_currency",
-                        TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_CREATED_AT + " AS trans_date_posted",
-                        TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_SCHEDX_ACTION_UID + " AS trans_from_sched_action",
-                        SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_UID + " AS split_uid",
-                        SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_MEMO + " AS split_memo",
-                        SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TYPE + " AS split_type",
-                        SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_VALUE_NUM + " AS split_value_num",
-                        SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_VALUE_DENOM + " AS split_value_denom",
-                        SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_QUANTITY_NUM + " AS split_quantity_num",
-                        SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_QUANTITY_DENOM + " AS split_quantity_denom", SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID + " AS split_acct_uid"},
-                where, null,
-                TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " ASC , " +
-                        TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " ASC ");
+            new String[]{
+                TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " AS trans_uid",
+                TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_DESCRIPTION + " AS trans_desc",
+                TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_NOTES + " AS trans_notes",
+                TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " AS trans_time",
+                TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_EXPORTED + " AS trans_exported",
+                TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_CURRENCY + " AS trans_currency",
+                TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_CREATED_AT + " AS trans_date_posted",
+                TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_SCHEDX_ACTION_UID + " AS trans_from_sched_action",
+                SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_UID + " AS split_uid",
+                SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_MEMO + " AS split_memo",
+                SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TYPE + " AS split_type",
+                SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_VALUE_NUM + " AS split_value_num",
+                SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_VALUE_DENOM + " AS split_value_denom",
+                SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_QUANTITY_NUM + " AS split_quantity_num",
+                SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_QUANTITY_DENOM + " AS split_quantity_denom", SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID + " AS split_acct_uid"},
+            where, null,
+            TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " ASC , " +
+                TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " ASC ");
         String lastTrxUID = "";
         Commodity trnCommodity = null;
 
@@ -499,7 +496,7 @@ public class GncXmlExporter extends Exporter {
         Timber.i("export scheduled transactions");
         //for now we will export only scheduled transactions to XML
         Cursor cursor = mScheduledActionDbAdapter.fetchAllRecords(
-                ScheduledActionEntry.COLUMN_TYPE + "=?", new String[]{ScheduledAction.ActionType.TRANSACTION.name()}, null);
+            ScheduledActionEntry.COLUMN_TYPE + "=?", new String[]{ScheduledAction.ActionType.TRANSACTION.name()}, null);
 
         while (cursor.moveToNext()) {
             ScheduledAction scheduledAction = mScheduledActionDbAdapter.buildModelInstance(cursor);
@@ -521,7 +518,7 @@ public class GncXmlExporter extends Exporter {
 
             ScheduledAction.ActionType actionType = scheduledAction.getActionType();
             if (actionType == ScheduledAction.ActionType.TRANSACTION) {
-                String description = TransactionsDbAdapter.getInstance().getAttribute(actionUID, TransactionEntry.COLUMN_DESCRIPTION);
+                String description = mTransactionsDbAdapter.getAttribute(actionUID, TransactionEntry.COLUMN_DESCRIPTION);
                 xmlSerializer.text(description);
             } else {
                 xmlSerializer.text(actionType.name());
@@ -593,7 +590,7 @@ public class GncXmlExporter extends Exporter {
             xmlSerializer.attribute(null, GncXmlHelper.ATTR_KEY_VERSION, GncXmlHelper.RECURRENCE_VERSION);
 
             String recurrenceUID = cursor.getString(cursor.getColumnIndexOrThrow(ScheduledActionEntry.COLUMN_RECURRENCE_UID));
-            Recurrence recurrence = RecurrenceDbAdapter.getInstance().getRecord(recurrenceUID);
+            Recurrence recurrence = mRecurrenceDbAdapter.getRecord(recurrenceUID);
             exportRecurrence(xmlSerializer, recurrence);
             xmlSerializer.endTag(null, GncXmlHelper.TAG_GNC_RECURRENCE);
             xmlSerializer.endTag(null, GncXmlHelper.TAG_SX_SCHEDULE);
@@ -687,7 +684,7 @@ public class GncXmlExporter extends Exporter {
                 // value
                 xmlSerializer.startTag(null, GncXmlHelper.TAG_PRICE_VALUE);
                 xmlSerializer.text(cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseSchema.PriceEntry.COLUMN_VALUE_NUM))
-                        + "/" + cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseSchema.PriceEntry.COLUMN_VALUE_DENOM)));
+                    + "/" + cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseSchema.PriceEntry.COLUMN_VALUE_DENOM)));
                 xmlSerializer.endTag(null, GncXmlHelper.TAG_PRICE_VALUE);
                 xmlSerializer.endTag(null, GncXmlHelper.TAG_PRICE);
             }
@@ -788,6 +785,7 @@ public class GncXmlExporter extends Exporter {
             writer = new OutputStreamWriter(bufferedOutputStream);
 
             generateExport(writer);
+            close();
         } catch (IOException ex) {
             Timber.e(ex, "Error exporting XML");
         } finally {
@@ -817,7 +815,7 @@ public class GncXmlExporter extends Exporter {
         final long timeStart = SystemClock.elapsedRealtime();
         try {
             String[] namespaces = new String[]{"gnc", "act", "book", "cd", "cmdty", "price", "slot",
-                    "split", "trn", "ts", "sx", "bgt", "recurrence"};
+                "split", "trn", "ts", "sx", "bgt", "recurrence"};
             XmlSerializer xmlSerializer = XmlPullParserFactory.newInstance().newSerializer();
             try {
                 xmlSerializer.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output", true);
@@ -913,6 +911,7 @@ public class GncXmlExporter extends Exporter {
      *
      * @return MIME type as string
      */
+    @NonNull
     public String getExportMimeType() {
         return "text/xml";
     }

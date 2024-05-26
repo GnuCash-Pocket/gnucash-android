@@ -17,10 +17,10 @@ package org.gnucash.android.test.unit.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
 import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.BookDbHelper;
 import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
@@ -53,25 +53,28 @@ import java.util.TimeZone;
 @RunWith(RobolectricTestRunner.class)
 //package is required so that resources can be found in dev mode
 @Config(sdk = 21,
-        packageName = "org.gnucash.android",
-        shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
+    packageName = "org.gnucash.android",
+    shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
 public class OfxExporterTest extends BookHelperTest {
+
+    private String mBookUID;
     private SQLiteDatabase mDb;
 
     @Before
     public void setUp() throws Exception {
-        BookDbHelper bookDbHelper = new BookDbHelper(GnuCashApplication.getAppContext());
-        BooksDbAdapter booksDbAdapter = new BooksDbAdapter(bookDbHelper.getWritableDatabase());
+        BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
         Book testBook = new Book("testRootAccountUID");
         booksDbAdapter.addRecord(testBook);
-        booksDbAdapter.close();
+        mBookUID = testBook.getUID();
         DatabaseHelper databaseHelper =
-                new DatabaseHelper(GnuCashApplication.getAppContext(), testBook.getUID());
+            new DatabaseHelper(GnuCashApplication.getAppContext(), testBook.getUID());
         mDb = databaseHelper.getWritableDatabase();
     }
 
     @After
     public void tearDown() {
+        BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
+        booksDbAdapter.deleteBook(mBookUID);
         mDb.close();
     }
 
@@ -81,11 +84,12 @@ public class OfxExporterTest extends BookHelperTest {
      */
     @Test
     public void testWithNoTransactionsToExport_shouldNotCreateAnyFile() {
+        Context context = GnuCashApplication.getAppContext();
         ExportParams exportParameters = new ExportParams(ExportFormat.OFX);
         exportParameters.setExportStartTime(TimestampHelper.getTimestampFromEpochZero());
         exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
         exportParameters.setDeleteTransactionsAfterExport(false);
-        OfxExporter exporter = new OfxExporter(exportParameters, mDb);
+        OfxExporter exporter = new OfxExporter(context, exportParameters, mBookUID);
         assertThat(exporter.generateExport()).isEmpty();
     }
 
@@ -94,6 +98,7 @@ public class OfxExporterTest extends BookHelperTest {
      */
     //FIXME: test failing with NPE
     public void testGenerateOFXExport() {
+        Context context = GnuCashApplication.getAppContext();
         AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(mDb);
 
         Account account = new Account("Basic Account");
@@ -108,8 +113,8 @@ public class OfxExporterTest extends BookHelperTest {
         exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
         exportParameters.setDeleteTransactionsAfterExport(false);
 
-        OfxExporter ofxExporter = new OfxExporter(exportParameters, mDb);
-        List<String> exportedFiles = ofxExporter.generateExport();
+        OfxExporter exporter = new OfxExporter(context, exportParameters, mBookUID);
+        List<String> exportedFiles = exporter.generateExport();
 
         assertThat(exportedFiles).hasSize(1);
         File file = new File(exportedFiles.get(0));

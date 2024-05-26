@@ -21,8 +21,8 @@ import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
 import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 
 import androidx.annotation.NonNull;
 
@@ -60,20 +60,14 @@ public class QifExporter extends Exporter {
     /**
      * Initialize the exporter
      *
-     * @param params Export options
+     * @param context The context.
+     * @param params Parameters for the export
+     * @param bookUID The book UID.
      */
-    public QifExporter(ExportParams params) {
-        super(params, null);
-    }
-
-    /**
-     * Initialize the exporter
-     *
-     * @param params Options for export
-     * @param db     SQLiteDatabase to export
-     */
-    public QifExporter(ExportParams params, SQLiteDatabase db) {
-        super(params, db);
+    public QifExporter(@NonNull Context context,
+                       @NonNull ExportParams params,
+                       @NonNull String bookUID) {
+        super(context, params, bookUID);
     }
 
     @Override
@@ -252,6 +246,7 @@ public class QifExporter extends Exporter {
 
             /// export successful
             PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow());
+            close();
 
             List<String> exportedFiles = splitQIF(file);
             if (exportedFiles.isEmpty())
@@ -317,6 +312,7 @@ public class QifExporter extends Exporter {
      *
      * @return MIME type as string
      */
+    @NonNull
     public String getExportMimeType() {
         return "text/plain";
     }

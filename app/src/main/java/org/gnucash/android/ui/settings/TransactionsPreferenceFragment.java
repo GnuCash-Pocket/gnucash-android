@@ -47,7 +47,7 @@ public class TransactionsPreferenceFragment extends PreferenceFragmentCompat imp
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getPreferenceManager().setSharedPreferencesName(BooksDbAdapter.getInstance().getActiveBookUID());
+        getPreferenceManager().setSharedPreferencesName(GnuCashApplication.getActiveBookUID());
 
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         actionBar.setHomeButtonEnabled(true);

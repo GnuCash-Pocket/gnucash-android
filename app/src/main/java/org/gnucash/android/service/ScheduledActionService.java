@@ -39,6 +39,7 @@ import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.model.Book;
 import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Transaction;
+import org.gnucash.android.util.BookUtils;
 import org.joda.time.format.DateTimeFormat;
 
 import java.sql.Timestamp;
@@ -84,7 +85,7 @@ public class ScheduledActionService extends JobIntentService {
 
             List<ScheduledAction> scheduledActions = scheduledActionDbAdapter.getAllEnabledScheduledActions();
             Timber.i("Processing %d total scheduled actions for Book: %s",
-                    scheduledActions.size(), book.getDisplayName());
+                scheduledActions.size(), book.getDisplayName());
             processScheduledActions(scheduledActions, db);
 
             //close all databases except the currently active database
@@ -112,8 +113,8 @@ public class ScheduledActionService extends JobIntentService {
             //the end time of the ScheduledAction is not handled here because
             //it is handled differently for transactions and backups. See the individual methods.
             if (scheduledAction.getStartTime() > now    //if schedule begins in the future
-                    || !scheduledAction.isEnabled()     // of if schedule is disabled
-                    || (totalPlannedExecutions > 0 && executionCount >= totalPlannedExecutions)) { //limit was set and we reached or exceeded it
+                || !scheduledAction.isEnabled()     // of if schedule is disabled
+                || (totalPlannedExecutions > 0 && executionCount >= totalPlannedExecutions)) { //limit was set and we reached or exceeded it
                 Timber.i("Skipping scheduled action: %s", scheduledAction.toString());
                 continue;
             }
@@ -137,7 +138,7 @@ public class ScheduledActionService extends JobIntentService {
                 break;
 
             case BACKUP:
-                executionCount += executeBackup(scheduledAction, db);
+                executionCount += executeBackup(scheduledAction, GnuCashApplication.getActiveBookUID());
                 break;
         }
 
@@ -150,11 +151,11 @@ public class ScheduledActionService extends JobIntentService {
             // Update the last run time and execution count
             ContentValues contentValues = new ContentValues();
             contentValues.put(DatabaseSchema.ScheduledActionEntry.COLUMN_LAST_RUN,
-                    scheduledAction.getLastRunTime());
+                scheduledAction.getLastRunTime());
             contentValues.put(DatabaseSchema.ScheduledActionEntry.COLUMN_EXECUTION_COUNT,
-                    scheduledAction.getExecutionCount());
+                scheduledAction.getExecutionCount());
             db.update(DatabaseSchema.ScheduledActionEntry.TABLE_NAME, contentValues,
-                    DatabaseSchema.ScheduledActionEntry.COLUMN_UID + "=?", new String[]{scheduledAction.getUID()});
+                DatabaseSchema.ScheduledActionEntry.COLUMN_UID + "=?", new String[]{scheduledAction.getUID()});
         }
     }
 
@@ -163,10 +164,10 @@ public class ScheduledActionService extends JobIntentService {
      * The backup will be executed only once, even if multiple schedules were missed
      *
      * @param scheduledAction Scheduled action referencing the backup
-     * @param db              SQLiteDatabase to backup
+     * @param bookUID The book UID.
      * @return Number of times backup is executed. This should either be 1 or 0
      */
-    private static int executeBackup(ScheduledAction scheduledAction, SQLiteDatabase db) {
+    private static int executeBackup(ScheduledAction scheduledAction, String bookUID) {
         if (!shouldExecuteScheduledBackup(scheduledAction))
             return 0;
 
@@ -176,13 +177,13 @@ public class ScheduledActionService extends JobIntentService {
         Integer result = null;
         try {
             //wait for async task to finish before we proceed (we are holding a wake lock)
-            result = new ExportAsyncTask(GnuCashApplication.getAppContext(), db).execute(params).get();
+            result = new ExportAsyncTask(GnuCashApplication.getAppContext(), bookUID).execute(params).get();
         } catch (InterruptedException | ExecutionException e) {
             Timber.e(e);
         }
         if (result == null || result <= 0) {
             Timber.i("Backup/export did not occur. There might have been no"
-                    + " new transactions to export or it might have crashed");
+                + " new transactions to export or it might have crashed");
             // We don't know if something failed or there weren't transactions to export,
             // so fall on the safe side and return as if something had failed.
             // FIXME: Change ExportAsyncTask to distinguish between the two cases

@@ -50,7 +50,7 @@ public final class PreferencesHelper {
      */
     public static void setLastExportTime(Timestamp lastExportTime) {
         Timber.v("Saving last export time for the currently active book");
-        setLastExportTime(lastExportTime, BooksDbAdapter.getInstance().getActiveBookUID());
+        setLastExportTime(lastExportTime, GnuCashApplication.getActiveBookUID());
     }
 
     /**

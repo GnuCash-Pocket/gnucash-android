@@ -142,7 +142,7 @@ public class PreferenceActivity extends PasscodeLockActivity implements
      * @return Shared preferences file
      */
     public static SharedPreferences getActiveBookSharedPreferences() {
-        return getBookSharedPreferences(BooksDbAdapter.getInstance().getActiveBookUID());
+        return getBookSharedPreferences(GnuCashApplication.getActiveBookUID());
     }
 
     /**

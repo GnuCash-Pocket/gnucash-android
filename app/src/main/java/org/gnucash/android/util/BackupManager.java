@@ -110,7 +110,7 @@ public class BackupManager {
      */
     @WorkerThread
     public static boolean backupActiveBook(Context context) {
-        return backupBook(context, BooksDbAdapter.getInstance().getActiveBookUID());
+        return backupBook(context, GnuCashApplication.getActiveBookUID());
     }
 
     /**
@@ -122,13 +122,14 @@ public class BackupManager {
      */
     @WorkerThread
     public static boolean backupBook(Context context, String bookUID) {
+        ExportParams params = new ExportParams(ExportFormat.XML);
         OutputStream outputStream;
         try {
             Uri backupUri = getBookBackupFileUri(bookUID);
             if (backupUri != null) {
                 outputStream = context.getContentResolver().openOutputStream(backupUri);
             } else { //no Uri set by user, use default location on SD card
-                File backupFile = getBackupFile(bookUID);
+                File backupFile = getBackupFile(bookUID, params);
                 outputStream = new FileOutputStream(backupFile);
             }
 
@@ -136,8 +137,7 @@ public class BackupManager {
             GZIPOutputStream gzipOutputStream = new GZIPOutputStream(bufferedOutputStream);
             OutputStreamWriter writer = new OutputStreamWriter(gzipOutputStream);
 
-            ExportParams params = new ExportParams(ExportFormat.XML);
-            new GncXmlExporter(params).generateExport(writer);
+            new GncXmlExporter(context, params, bookUID).generateExport(writer);
             writer.close();
             return true;
         } catch (Throwable e) {
@@ -151,13 +151,15 @@ public class BackupManager {
      * Backups are done in XML format and are Gzipped (with ".gnca" extension).
      *
      * @param bookUID GUID of the book
+     * @param params the export parameters.
      * @return the file for backups of the database.
      * @see #getBackupFolder(String)
      */
-    private static File getBackupFile(String bookUID) {
+    private static File getBackupFile(@NonNull String bookUID, @Nullable ExportParams params) {
         Book book = BooksDbAdapter.getInstance().getRecord(bookUID);
-        return new File(getBackupFolder(book.getUID()),
-                Exporter.buildExportFilename(ExportFormat.XML, book.getDisplayName()));
+        ExportFormat format = (params != null) ? params.getExportFormat() : ExportFormat.XML;
+        String name = Exporter.buildExportFilename(format, book.getDisplayName()) + ".gz";
+        return new File(getBackupFolder(book.getUID()), name);
     }
 
     /**
@@ -204,11 +206,11 @@ public class BackupManager {
         Intent intent = new Intent(context, PeriodicJobReceiver.class);
         intent.setAction(PeriodicJobReceiver.ACTION_BACKUP);
         PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() + AlarmManager.INTERVAL_FIFTEEN_MINUTES,
-                AlarmManager.INTERVAL_DAY, alarmIntent);
+            SystemClock.elapsedRealtime() + AlarmManager.INTERVAL_FIFTEEN_MINUTES,
+            AlarmManager.INTERVAL_DAY, alarmIntent);
     }
 
     public static void backupBookAsync(@Nullable final Activity activity, final String bookUID, @NonNull final Function1<Boolean, Unit> after) {
@@ -272,6 +274,6 @@ public class BackupManager {
     }
 
     public static void backupActiveBookAsync(@Nullable Activity activity, @NonNull final Function1<Boolean, Unit> after) {
-        backupBookAsync(activity, BooksDbAdapter.getInstance().getActiveBookUID(), after);
+        backupBookAsync(activity, GnuCashApplication.getActiveBookUID(), after);
     }
 }

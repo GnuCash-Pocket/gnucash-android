@@ -90,7 +90,7 @@ public class CalculatorEditTextTest {
 
     @BeforeClass
     public static void prepTestCase() {
-        String activeBookUID = BooksDbAdapter.getInstance().getActiveBookUID();
+        String activeBookUID = GnuCashApplication.getActiveBookUID();
         mDbHelper = new DatabaseHelper(GnuCashApplication.getAppContext(), activeBookUID);
 
         mSplitsDbAdapter = SplitsDbAdapter.getInstance();
