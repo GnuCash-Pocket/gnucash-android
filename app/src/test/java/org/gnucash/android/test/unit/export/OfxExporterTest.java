@@ -33,6 +33,7 @@ import org.gnucash.android.model.Book;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
+import org.gnucash.android.test.unit.BookHelperTest;
 import org.gnucash.android.test.unit.testutil.ShadowCrashlytics;
 import org.gnucash.android.test.unit.testutil.ShadowUserVoice;
 import org.gnucash.android.util.TimestampHelper;
@@ -54,7 +55,7 @@ import java.util.TimeZone;
 @Config(sdk = 21,
         packageName = "org.gnucash.android",
         shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
-public class OfxExporterTest {
+public class OfxExporterTest extends BookHelperTest {
     private SQLiteDatabase mDb;
 
     @Before
@@ -114,6 +115,7 @@ public class OfxExporterTest {
         File file = new File(exportedFiles.get(0));
         assertThat(file).exists().hasExtension("ofx");
         assertThat(file.length()).isGreaterThan(0L);
+        file.delete();
     }
 
     @Test

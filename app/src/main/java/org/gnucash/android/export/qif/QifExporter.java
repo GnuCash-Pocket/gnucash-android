@@ -78,7 +78,7 @@ public class QifExporter extends Exporter {
 
     @Override
     public List<String> generateExport() throws ExporterException {
-        final String newLine = "\n";
+        final String newLine = QifHelper.NEW_LINE;
         TransactionsDbAdapter transactionsDbAdapter = mTransactionsDbAdapter;
         try {
             String lastExportTimeStamp = TimestampHelper.getUtcStringFromTimestamp(mExportParams.getExportStartTime());
@@ -300,7 +300,7 @@ public class QifExporter extends Exporter {
                     if (out == null) {
                         throw new IllegalArgumentException(file.getPath() + " format is not correct");
                     }
-                    out.append(line).append('\n');
+                    out.append(line).append(QifHelper.NEW_LINE);
                 }
             }
         } finally {

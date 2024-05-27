@@ -24,6 +24,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -269,7 +270,8 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
         return bookDatabases;
     }
 
-    private boolean isBookDatabase(String databaseName) {
+    @VisibleForTesting
+    public static boolean isBookDatabase(String databaseName) {
         return databaseName.matches("[a-z0-9]{32}"); // UID regex
     }
 

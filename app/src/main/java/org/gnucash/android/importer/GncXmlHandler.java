@@ -277,7 +277,7 @@ public class GncXmlHandler extends DefaultHandler {
 
     private BudgetsDbAdapter mBudgetsDbAdapter;
     private Book mBook;
-    private SQLiteDatabase mainDb;
+    private SQLiteDatabase mDB;
 
     /**
      * Creates a handler for handling XML stream events when parsing the XML backup file
@@ -293,14 +293,14 @@ public class GncXmlHandler extends DefaultHandler {
         mBook = new Book();
 
         DatabaseHelper databaseHelper = new DatabaseHelper(GnuCashApplication.getAppContext(), mBook.getUID());
-        mainDb = databaseHelper.getWritableDatabase();
-        mTransactionsDbAdapter = new TransactionsDbAdapter(mainDb, new SplitsDbAdapter(mainDb));
-        mAccountsDbAdapter = new AccountsDbAdapter(mainDb, mTransactionsDbAdapter);
-        RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(mainDb);
-        mScheduledActionsDbAdapter = new ScheduledActionDbAdapter(mainDb, recurrenceDbAdapter);
-        mCommoditiesDbAdapter = new CommoditiesDbAdapter(mainDb);
-        mPricesDbAdapter = new PricesDbAdapter(mainDb);
-        mBudgetsDbAdapter = new BudgetsDbAdapter(mainDb, new BudgetAmountsDbAdapter(mainDb), recurrenceDbAdapter);
+        mDB = databaseHelper.getWritableDatabase();
+        mTransactionsDbAdapter = new TransactionsDbAdapter(mDB, new SplitsDbAdapter(mDB));
+        mAccountsDbAdapter = new AccountsDbAdapter(mDB, mTransactionsDbAdapter);
+        RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(mDB);
+        mScheduledActionsDbAdapter = new ScheduledActionDbAdapter(mDB, recurrenceDbAdapter);
+        mCommoditiesDbAdapter = new CommoditiesDbAdapter(mDB);
+        mPricesDbAdapter = new PricesDbAdapter(mDB);
+        mBudgetsDbAdapter = new BudgetsDbAdapter(mDB, new BudgetAmountsDbAdapter(mDB), recurrenceDbAdapter);
 
 
         mContent = new StringBuilder();
@@ -1005,7 +1005,7 @@ public class GncXmlHandler extends DefaultHandler {
         } finally {
             mAccountsDbAdapter.enableForeignKey(true);
             mAccountsDbAdapter.endTransaction();
-            mainDb.close(); //close it after import
+            mDB.close(); //close it after import
         }
     }
 

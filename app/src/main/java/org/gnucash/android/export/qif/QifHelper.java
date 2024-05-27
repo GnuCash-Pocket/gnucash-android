@@ -21,6 +21,8 @@ import org.gnucash.android.model.AccountType;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.util.Locale;
+
 /**
  * @author Ngewi Fet <ngewif@gmail.com>
  */
@@ -39,15 +41,15 @@ public class QifHelper {
     public static final String SPLIT_PERCENTAGE_PREFIX = "%";
     public static final String ACCOUNT_HEADER = "!Account";
     public static final String ACCOUNT_NAME_PREFIX = "N";
-
+    public static final String NEW_LINE = "\n";
     public static final String INTERNAL_CURRENCY_PREFIX = "*";
 
     public static final String ENTRY_TERMINATOR = "^";
-    private static final DateTimeFormatter QIF_DATE_FORMATTER = DateTimeFormat.forPattern("yyyy/M/d");
+    private static final DateTimeFormatter QIF_DATE_FORMATTER = DateTimeFormat.forPattern("yyyy/M/d", Locale.ROOT);
 
     /**
-     * Formats the date for QIF in the form d MMMM YYYY.
-     * For example 25 January 2013
+     * Formats the date for QIF in the form YYYY/MM/DD.
+     * For example 25 January 2013 becomes "2013/1/25".
      *
      * @param timeMillis Time in milliseconds since epoch
      * @return Formatted date from the time
