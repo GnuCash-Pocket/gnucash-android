@@ -16,20 +16,9 @@
 package org.gnucash.android.test.unit.importer;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
 
-import android.database.sqlite.SQLiteDatabase;
-
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseHelper;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.db.adapter.RecurrenceDbAdapter;
-import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
-import org.gnucash.android.db.adapter.SplitsDbAdapter;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.export.xml.GncXmlHelper;
-import org.gnucash.android.importer.GncXmlHandler;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Money;
@@ -37,86 +26,23 @@ import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.model.TransactionType;
+import org.gnucash.android.test.unit.BookHelperTest;
 import org.gnucash.android.test.unit.testutil.ShadowCrashlytics;
 import org.gnucash.android.test.unit.testutil.ShadowUserVoice;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.ParseException;
 import java.util.Calendar;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 /**
  * Imports GnuCash XML files and checks the objects defined in them are imported correctly.
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 21, packageName = "org.gnucash.android", shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
-public class GncXmlHandlerTest {
-    private BooksDbAdapter mBooksDbAdapter;
-    private TransactionsDbAdapter mTransactionsDbAdapter;
-    private AccountsDbAdapter mAccountsDbAdapter;
-    private ScheduledActionDbAdapter mScheduledActionDbAdapter;
-
-    @Before
-    public void setUp() throws Exception {
-        mBooksDbAdapter = BooksDbAdapter.getInstance();
-        mBooksDbAdapter.deleteAllRecords();
-        assertThat(mBooksDbAdapter.getRecordsCount()).isZero();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        mBooksDbAdapter.close();
-        if (mTransactionsDbAdapter != null) {
-            mTransactionsDbAdapter.close();
-        }
-        if (mAccountsDbAdapter != null) {
-            mAccountsDbAdapter.close();
-        }
-        if (mScheduledActionDbAdapter != null) {
-            mScheduledActionDbAdapter.close();
-        }
-    }
-
-    private String importGnuCashXml(String filename) {
-        SAXParser parser;
-        GncXmlHandler handler = null;
-        try {
-            parser = SAXParserFactory.newInstance().newSAXParser();
-            XMLReader reader = parser.getXMLReader();
-            handler = new GncXmlHandler();
-            reader.setContentHandler(handler);
-            InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filename);
-            InputSource inputSource = new InputSource(new BufferedInputStream(inputStream));
-            reader.parse(inputSource);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();
-            fail();
-        }
-        return handler.getBookUID();
-    }
-
-    private void setUpDbAdapters(String bookUID) {
-        DatabaseHelper databaseHelper = new DatabaseHelper(GnuCashApplication.getAppContext(), bookUID);
-        SQLiteDatabase mainDb = databaseHelper.getReadableDatabase();
-        mTransactionsDbAdapter = new TransactionsDbAdapter(mainDb, new SplitsDbAdapter(mainDb));
-        mAccountsDbAdapter = new AccountsDbAdapter(mainDb, mTransactionsDbAdapter);
-        RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(mainDb);
-        mScheduledActionDbAdapter = new ScheduledActionDbAdapter(mainDb, recurrenceDbAdapter);
-    }
+public class GncXmlHandlerTest extends BookHelperTest {
 
     /**
      * Tests basic accounts import.
@@ -133,7 +59,7 @@ public class GncXmlHandlerTest {
     @Test
     public void accountsImport() {
         String bookUID = importGnuCashXml("accountsImport.xml");
-        setUpDbAdapters(bookUID);
+        assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
 
         assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(5); // 4 accounts + root
 
@@ -170,7 +96,7 @@ public class GncXmlHandlerTest {
     @Test
     public void simpleTransactionImport() throws ParseException {
         String bookUID = importGnuCashXml("simpleTransactionImport.xml");
-        setUpDbAdapters(bookUID);
+        assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
 
         assertThat(mTransactionsDbAdapter.getRecordsCount()).isEqualTo(1);
 
@@ -221,7 +147,7 @@ public class GncXmlHandlerTest {
     @Test
     public void transactionWithNonDefaultSplitsImport() throws ParseException {
         String bookUID = importGnuCashXml("transactionWithNonDefaultSplitsImport.xml");
-        setUpDbAdapters(bookUID);
+        assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
 
         assertThat(mTransactionsDbAdapter.getRecordsCount()).isEqualTo(1);
 
@@ -271,7 +197,7 @@ public class GncXmlHandlerTest {
     @Test
     public void multiCurrencyTransactionImport() throws ParseException {
         String bookUID = importGnuCashXml("multiCurrencyTransactionImport.xml");
-        setUpDbAdapters(bookUID);
+        assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
 
         assertThat(mTransactionsDbAdapter.getRecordsCount()).isEqualTo(1);
 
@@ -309,7 +235,7 @@ public class GncXmlHandlerTest {
     // slots and transactions without amount are ignored.
     public void simpleScheduledTransactionImport() throws ParseException {
         String bookUID = importGnuCashXml("simpleScheduledTransactionImport.xml");
-        setUpDbAdapters(bookUID);
+        assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
 
         assertThat(mTransactionsDbAdapter.getTemplateTransactionsCount()).isEqualTo(1);
 
@@ -362,7 +288,7 @@ public class GncXmlHandlerTest {
     @Test
     public void importingScheduledAction_shouldSetByDays() throws ParseException {
         String bookUID = importGnuCashXml("importingScheduledAction_shouldSetByDays.xml");
-        setUpDbAdapters(bookUID);
+        assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
 
         ScheduledAction scheduledTransaction =
                 mScheduledActionDbAdapter.getRecord("b5a13acb5a9459ebed10d06b75bbad10");
@@ -388,7 +314,7 @@ public class GncXmlHandlerTest {
     @Test
     public void bug562_scheduledTransactionImportedWithImbalancedSplits() throws ParseException {
         String bookUID = importGnuCashXml("bug562_scheduledTransactionImportedWithImbalancedSplits.xml");
-        setUpDbAdapters(bookUID);
+        assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
 
         assertThat(mTransactionsDbAdapter.getTemplateTransactionsCount()).isEqualTo(1);
 

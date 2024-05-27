@@ -26,15 +26,20 @@ import org.gnucash.android.db.BookDbHelper;
 import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
+import org.gnucash.android.db.adapter.SplitsDbAdapter;
+import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.export.ExportFormat;
 import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.qif.QifExporter;
+import org.gnucash.android.export.qif.QifHelper;
 import org.gnucash.android.model.Account;
+import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Book;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
+import org.gnucash.android.test.unit.BookHelperTest;
 import org.gnucash.android.test.unit.testutil.ShadowCrashlytics;
 import org.gnucash.android.test.unit.testutil.ShadowUserVoice;
 import org.gnucash.android.util.TimestampHelper;
@@ -55,9 +60,9 @@ import java.util.zip.ZipFile;
 @RunWith(RobolectricTestRunner.class)
 //package is required so that resources can be found in dev mode
 @Config(sdk = 21,
-        packageName = "org.gnucash.android",
-        shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
-public class QifExporterTest {
+    packageName = "org.gnucash.android",
+    shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
+public class QifExporterTest extends BookHelperTest {
     private SQLiteDatabase mDb;
 
     @Before
@@ -68,7 +73,7 @@ public class QifExporterTest {
         booksDbAdapter.addRecord(testBook);
         booksDbAdapter.close();
         DatabaseHelper databaseHelper =
-                new DatabaseHelper(GnuCashApplication.getAppContext(), testBook.getUID());
+            new DatabaseHelper(GnuCashApplication.getAppContext(), testBook.getUID());
         mDb = databaseHelper.getWritableDatabase();
     }
 
@@ -117,6 +122,7 @@ public class QifExporterTest {
         File file = new File(exportedFiles.get(0));
         assertThat(file).exists().hasExtension("qif");
         assertThat(file.length()).isGreaterThan(0L);
+        file.delete();
     }
 
     /**
@@ -155,6 +161,7 @@ public class QifExporterTest {
         File file = new File(exportedFiles.get(0));
         assertThat(file).exists().hasExtension("zip");
         assertThat(new ZipFile(file).size()).isEqualTo(2);
+        file.delete();
     }
 
     /**
@@ -164,12 +171,13 @@ public class QifExporterTest {
     public void memoAndDescription_shouldBeExported() throws IOException {
         String expectedDescription = "my description";
         String expectedMemo = "my memo";
+        String expectedAccountName = "Basic Account";
 
         AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(mDb);
 
-        Account account = new Account("Basic Account");
+        Account account = new Account(expectedAccountName);
         Transaction transaction = new Transaction("One transaction");
-        transaction.addSplit(new Split(Money.createZeroInstance("EUR"), account.getUID()));
+        transaction.addSplit(new Split(new Money("123.45", "EUR"), account.getUID()));
         transaction.setDescription(expectedDescription);
         transaction.setNote(expectedMemo);
         account.addTransaction(transaction);
@@ -188,8 +196,158 @@ public class QifExporterTest {
         File file = new File(exportedFiles.get(0));
         String fileContent = readFileContent(file);
         assertThat(file).exists().hasExtension("qif");
-        assertThat(fileContent.contains(expectedDescription));
-        assertThat(fileContent.contains(expectedMemo));
+        String[] lines = fileContent.split(QifHelper.NEW_LINE);
+        assertThat(lines).isNotEmpty();
+        assertThat(lines[0]).isEqualTo(QifHelper.ACCOUNT_HEADER);
+        assertThat(lines).contains(QifHelper.ACCOUNT_NAME_PREFIX + expectedAccountName);
+        assertThat(lines).contains(QifHelper.PAYEE_PREFIX + expectedDescription);
+        assertThat(lines).contains(QifHelper.MEMO_PREFIX + expectedMemo);
+        assertThat(lines).contains(QifHelper.SPLIT_CATEGORY_PREFIX + "Imbalance-USD");
+        assertThat(lines).contains(QifHelper.SPLIT_AMOUNT_PREFIX + "-123.45");
+        assertThat(lines).contains(QifHelper.ENTRY_TERMINATOR);
+        file.delete();
+    }
+
+    /**
+     * Tests exporting a simple transaction with default splits.
+     */
+    @Test
+    public void simpleTransactionExport() throws Exception {
+        String bookUID = importGnuCashXml("simpleTransactionImport.xml");
+        assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
+
+        assertThat(mTransactionsDbAdapter.getRecordsCount()).isEqualTo(1);
+
+        Transaction transaction = mTransactionsDbAdapter.getRecord("b33c8a6160494417558fd143731fc26a");
+        assertThat(transaction.getSplits().size()).isEqualTo(2);
+
+        ExportParams exportParameters = new ExportParams(ExportFormat.QIF);
+        exportParameters.setExportStartTime(TimestampHelper.getTimestampFromEpochZero());
+        exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
+        exportParameters.setDeleteTransactionsAfterExport(false);
+
+        QifExporter qifExporter = new QifExporter(exportParameters, mImportedDb);
+        List<String> exportedFiles = qifExporter.generateExport();
+
+        assertThat(exportedFiles).hasSize(1);
+        File file = new File(exportedFiles.get(0));
+        String fileContent = readFileContent(file);
+        assertThat(file).exists().hasExtension("qif");
+        String[] lines = fileContent.split(QifHelper.NEW_LINE);
+        assertThat(lines).isNotEmpty();
+        assertThat(lines[0]).isEqualTo(QifHelper.ACCOUNT_HEADER);
+        assertThat(lines).contains(QifHelper.ACCOUNT_NAME_PREFIX + "Expenses:Dining");
+        assertThat(lines).contains(QifHelper.PAYEE_PREFIX + "Kahuna Burger");
+        assertThat(lines).contains(QifHelper.SPLIT_CATEGORY_PREFIX + "Assets:Cash in Wallet");
+        assertThat(lines).contains(QifHelper.SPLIT_AMOUNT_PREFIX + "10.00");
+        assertThat(lines).contains(QifHelper.DATE_PREFIX + "2016/8/23");
+        assertThat(lines).contains(QifHelper.ENTRY_TERMINATOR);
+        file.delete();
+    }
+
+    /**
+     * Tests exporting a transaction with non-default splits.
+     */
+    @Test
+    public void transactionWithNonDefaultSplitsImport() throws Exception {
+        String bookUID = importGnuCashXml("transactionWithNonDefaultSplitsImport.xml");
+        assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
+
+        assertThat(mTransactionsDbAdapter.getRecordsCount()).isEqualTo(1);
+
+        Transaction transaction = mTransactionsDbAdapter.getRecord("042ff745a80e94e6237fb0549f6d32ae");
+
+        // Ensure it's the correct one
+        assertThat(transaction.getDescription()).isEqualTo("Tandoori Mahal");
+
+        // Check splits
+        assertThat(transaction.getSplits().size()).isEqualTo(3);
+
+        ExportParams exportParameters = new ExportParams(ExportFormat.QIF);
+        exportParameters.setExportStartTime(TimestampHelper.getTimestampFromEpochZero());
+        exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
+        exportParameters.setDeleteTransactionsAfterExport(false);
+
+        QifExporter qifExporter = new QifExporter(exportParameters, mImportedDb);
+        List<String> exportedFiles = qifExporter.generateExport();
+
+        assertThat(exportedFiles).hasSize(1);
+        File file = new File(exportedFiles.get(0));
+        String fileContent = readFileContent(file);
+        assertThat(file).exists().hasExtension("qif");
+        String[] lines = fileContent.split(QifHelper.NEW_LINE);
+        assertThat(lines).isNotEmpty();
+        assertThat(lines[0]).isEqualTo(QifHelper.ACCOUNT_HEADER);
+        assertThat(lines).contains(QifHelper.ACCOUNT_NAME_PREFIX + "Expenses:Dining");
+        assertThat(lines).contains(QifHelper.PAYEE_PREFIX + "Tandoori Mahal");
+        assertThat(lines).contains(QifHelper.DATE_PREFIX + "2016/9/18");
+        assertThat(lines).contains(QifHelper.SPLIT_CATEGORY_PREFIX + "Assets:Bank");
+        assertThat(lines).contains(QifHelper.SPLIT_AMOUNT_PREFIX + "45.00");
+        assertThat(lines).contains(QifHelper.SPLIT_CATEGORY_PREFIX + "Assets:Cash in Wallet");
+        assertThat(lines).contains(QifHelper.SPLIT_AMOUNT_PREFIX + "5.00");
+        assertThat(lines).contains(QifHelper.SPLIT_MEMO_PREFIX + "tip");
+        assertThat(lines).contains(QifHelper.ENTRY_TERMINATOR);
+        file.delete();
+    }
+
+    /**
+     * Test that the memo and description fields of transactions are exported.
+     */
+    @Test
+    public void amountAndSplit_shouldBeExported() throws IOException {
+        String expectedDescription = "my description";
+        String expectedMemo = "my memo";
+        String expectedAccountName1 = "Basic Account";
+        String expectedAccountName2 = "Cash in Wallet";
+
+        AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(mDb);
+        Account account1 = new Account(expectedAccountName1, Commodity.EUR);
+        account1.setAccountType(AccountType.EXPENSE);
+        accountsDbAdapter.addRecord(account1);
+        Account account2 = new Account(expectedAccountName2, Commodity.EUR);
+        account2.setAccountType(AccountType.CASH);
+        accountsDbAdapter.addRecord(account2);
+
+        SplitsDbAdapter splitsDbAdapter = new SplitsDbAdapter(mDb);
+        TransactionsDbAdapter transactionsDbAdapter = new TransactionsDbAdapter(mDb, splitsDbAdapter);
+        Transaction transaction = new Transaction("One transaction");
+        Split split1 = new Split(new Money(123.45, Commodity.EUR), account1.getUID());
+        Split split2 = split1.createPair(account2.getUID());
+        split2.setAccountUID(account2.getUID());
+        transaction.addSplit(split1);
+        transaction.addSplit(split2);
+        transaction.setDescription(expectedDescription);
+        transaction.setNote(expectedMemo);
+        transactionsDbAdapter.addRecord(transaction);
+
+        ExportParams exportParameters = new ExportParams(ExportFormat.QIF);
+        exportParameters.setExportStartTime(TimestampHelper.getTimestampFromEpochZero());
+        exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
+        exportParameters.setDeleteTransactionsAfterExport(false);
+
+        QifExporter qifExporter = new QifExporter(exportParameters, mDb);
+        List<String> exportedFiles = qifExporter.generateExport();
+
+        assertThat(exportedFiles).hasSize(1);
+        File file = new File(exportedFiles.get(0));
+        String fileContent = readFileContent(file);
+        assertThat(file).exists().hasExtension("qif");
+        String[] lines = fileContent.split(QifHelper.NEW_LINE);
+        assertThat(lines).isNotEmpty();
+        assertThat(lines[0]).isEqualTo(QifHelper.ACCOUNT_HEADER);
+        assertThat(lines).contains(QifHelper.PAYEE_PREFIX + expectedDescription);
+        assertThat(lines).contains(QifHelper.MEMO_PREFIX + expectedMemo);
+        if (lines[1].equals(QifHelper.ACCOUNT_NAME_PREFIX + expectedAccountName1)) {
+            assertThat(lines).contains(QifHelper.ACCOUNT_NAME_PREFIX + expectedAccountName1);
+            assertThat(lines).contains(QifHelper.SPLIT_CATEGORY_PREFIX + expectedAccountName2);
+            assertThat(lines).contains(QifHelper.SPLIT_AMOUNT_PREFIX + "-123.45");
+        } else {
+            assertThat(lines).contains(QifHelper.ACCOUNT_NAME_PREFIX + expectedAccountName2);
+            assertThat(lines).contains(QifHelper.SPLIT_CATEGORY_PREFIX + expectedAccountName1);
+            assertThat(lines).contains(QifHelper.SPLIT_AMOUNT_PREFIX + "123.45");
+        }
+        assertThat(lines).contains(QifHelper.ENTRY_TERMINATOR);
+        file.delete();
     }
 
     @NonNull

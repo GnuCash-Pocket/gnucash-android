@@ -27,6 +27,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -413,7 +414,7 @@ public class ExportFormFragment extends Fragment implements
 
         //**************** export start time bindings ******************
         Timestamp timestamp = PreferencesHelper.getLastExportTime();
-        final long date = timestamp.getTime();
+        final long date = timestamp.getTime() - DateUtils.WEEK_IN_MILLIS;
         mExportStartCalendar.setTimeInMillis(date);
         mExportStartDate.setText(TransactionFormFragment.DATE_FORMATTER.print(date));
         mExportStartTime.setText(TransactionFormFragment.TIME_FORMATTER.print(date));
