@@ -75,7 +75,8 @@ public class CalculatorEditText extends AppCompatEditText {
     }
 
     public CalculatorEditText(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
+        super(context, attrs);
+        init(context, attrs);
     }
 
     public CalculatorEditText(Context context, AttributeSet attrs, int defStyleAttr) {
