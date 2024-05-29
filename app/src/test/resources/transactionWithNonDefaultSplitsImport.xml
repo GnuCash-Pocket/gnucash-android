@@ -164,7 +164,7 @@
                 <cmdty:id>USD</cmdty:id>
             </trn:currency>
             <trn:date-posted>
-                <ts:date>2016-09-18 00:00:00 +0200</ts:date>
+                <ts:date>2016-09-18 10:00:00 +0200</ts:date>
             </trn:date-posted>
             <trn:date-entered>
                 <ts:date>2016-09-18 19:31:41 +0200</ts:date>

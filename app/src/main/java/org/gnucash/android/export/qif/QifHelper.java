@@ -21,8 +21,6 @@ import org.gnucash.android.model.AccountType;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import java.util.Locale;
-
 /**
  * @author Ngewi Fet <ngewif@gmail.com>
  */
@@ -45,7 +43,7 @@ public class QifHelper {
     public static final String INTERNAL_CURRENCY_PREFIX = "*";
 
     public static final String ENTRY_TERMINATOR = "^";
-    private static final DateTimeFormatter QIF_DATE_FORMATTER = DateTimeFormat.forPattern("yyyy/M/d", Locale.ROOT);
+    private static final DateTimeFormatter QIF_DATE_FORMATTER = DateTimeFormat.forPattern("yyyy/M/d");
 
     /**
      * Formats the date for QIF in the form YYYY/MM/DD.

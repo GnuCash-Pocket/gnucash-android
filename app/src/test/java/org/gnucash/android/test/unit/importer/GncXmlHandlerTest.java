@@ -29,6 +29,7 @@ import org.gnucash.android.model.TransactionType;
 import org.gnucash.android.test.unit.BookHelperTest;
 import org.gnucash.android.test.unit.testutil.ShadowCrashlytics;
 import org.gnucash.android.test.unit.testutil.ShadowUserVoice;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -110,7 +111,7 @@ public class GncXmlHandlerTest extends BookHelperTest {
         assertThat(transaction.isExported()).isTrue();
         assertThat(transaction.isTemplate()).isFalse();
         assertThat(transaction.getTimeMillis()).
-                isEqualTo(GncXmlHelper.parseDateTime("2016-08-23 00:00:00 +0200"));
+                isEqualTo(GncXmlHelper.parseDateTime("2016-08-23 10:00:00 +0200"));
         assertThat(transaction.getCreatedTimestamp().getTime()).
                 isEqualTo(GncXmlHelper.parseDateTime("2016-08-23 12:44:19 +0200"));
 
@@ -233,6 +234,7 @@ public class GncXmlHandlerTest extends BookHelperTest {
      */
     //@Test Disabled as currently amounts are only read from credit/debit-numeric
     // slots and transactions without amount are ignored.
+    @Ignore
     public void simpleScheduledTransactionImport() throws ParseException {
         String bookUID = importGnuCashXml("simpleScheduledTransactionImport.xml");
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
@@ -250,7 +252,7 @@ public class GncXmlHandlerTest extends BookHelperTest {
         assertThat(scheduledTransaction.isExported()).isTrue();
         assertThat(scheduledTransaction.isTemplate()).isTrue();
         assertThat(scheduledTransaction.getTimeMillis())
-                .isEqualTo(GncXmlHelper.parseDateTime("2016-08-24 00:00:00 +0200"));
+                .isEqualTo(GncXmlHelper.parseDateTime("2016-08-24 10:00:00 +0200"));
         assertThat(scheduledTransaction.getCreatedTimestamp().getTime())
                 .isEqualTo(GncXmlHelper.parseDateTime("2016-08-24 19:50:15 +0200"));
 
