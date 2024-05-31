@@ -40,7 +40,6 @@ enum class PeriodType {
             WEEK -> "WEEKLY"
             MONTH -> "MONTHLY"
             YEAR -> "YEARLY"
-            else -> ""
         }
 
     /**

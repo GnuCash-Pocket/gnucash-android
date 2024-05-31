@@ -287,6 +287,7 @@ public abstract class GncXmlHelper {
      * @return Formatted split amount
      * @deprecated Just use the values for numerator and denominator which are saved in the database
      */
+    @Deprecated
     public static String formatSplitAmount(BigDecimal amount, Commodity commodity) {
         int denomInt = commodity.getSmallestFraction();
         BigDecimal denom = new BigDecimal(denomInt);

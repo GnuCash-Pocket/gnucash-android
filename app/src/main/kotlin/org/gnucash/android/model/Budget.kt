@@ -368,7 +368,7 @@ class Budget : BaseModel {
 
                     for (period in 0 until numberOfPeriods) {
                         val bgtAmount = BudgetAmount(uID, accountUID)
-                        bgtAmount.setAmount(budgetAmount.amount!!)
+                        bgtAmount.setAmount(budgetAmount.amount)
                         bgtAmount.periodNum = period
                         amountsToAdd.add(bgtAmount)
                     }
