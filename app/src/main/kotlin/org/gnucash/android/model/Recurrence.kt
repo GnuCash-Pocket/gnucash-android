@@ -258,7 +258,6 @@ class Recurrence(periodType: PeriodType) : BaseModel() {
                 PeriodType.WEEK -> Weeks.weeks(multiple)
                 PeriodType.MONTH -> Months.months(multiple)
                 PeriodType.YEAR -> Years.years(multiple)
-                else -> Months.months(multiple)
             }
             var count = 0
             var startTime = LocalDateTime(periodStart.time)
@@ -304,7 +303,6 @@ class Recurrence(periodType: PeriodType) : BaseModel() {
             PeriodType.WEEK -> localDate.plusWeeks(occurrenceDuration)
             PeriodType.MONTH -> localDate.plusMonths(occurrenceDuration)
             PeriodType.YEAR -> localDate.plusYears(occurrenceDuration)
-            else -> localDate.plusMonths(occurrenceDuration)
         }
         periodEnd = Timestamp(endDate.toDateTime().millis)
     }
