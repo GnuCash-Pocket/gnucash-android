@@ -58,6 +58,7 @@ import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.model.ScheduledAction;
+import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.ui.common.UxArgument;
@@ -474,13 +475,20 @@ public class ScheduledActionsListFragment extends ListFragment implements
             Transaction transaction = mTransactionsDbAdapter.buildModelInstance(cursor);
 
             TextView amountTextView = (TextView) view.findViewById(R.id.right_text);
-            if (transaction.getSplits().size() == 2) {
-                if (transaction.getSplits().get(0).isPairOf(transaction.getSplits().get(1))) {
-                    amountTextView.setText(transaction.getSplits().get(0).getValue().formattedString());
+            String text = "";
+            List<Split> splits = transaction.getSplits();
+            if (splits.size() == 2) {
+                Split first = splits.get(0);
+                for (Split split : splits) {
+                    if ((first != split) && first.isPairOf(split)) {
+                        text = first.getValue().formattedString();
+                        break;
+                    }
                 }
             } else {
-                amountTextView.setText(getString(R.string.label_split_count, transaction.getSplits().size()));
+                text = getString(R.string.label_split_count, splits.size());
             }
+            amountTextView.setText(text);
             TextView descriptionTextView = (TextView) view.findViewById(R.id.secondary_text);
 
             ScheduledActionDbAdapter scheduledActionDbAdapter = ScheduledActionDbAdapter.getInstance();

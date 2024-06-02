@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -306,20 +307,27 @@ public class TransactionsListFragment extends Fragment implements
 
                 List<Split> splits = SplitsDbAdapter.getInstance().getSplitsForTransaction(transactionUID);
                 String text = "";
+                String error = null;
 
-                if (splits.size() == 2 && splits.get(0).isPairOf(splits.get(1))) {
-                    for (Split split : splits) {
-                        if (!split.getAccountUID().equals(mAccountUID)) {
-                            text = AccountsDbAdapter.getInstance().getFullyQualifiedAccountName(split.getAccountUID());
-                            break;
+                if (splits.size() == 2) {
+                    if (splits.get(0).isPairOf(splits.get(1))) {
+                        for (Split split : splits) {
+                            if (!split.getAccountUID().equals(mAccountUID)) {
+                                text = AccountsDbAdapter.getInstance().getFullyQualifiedAccountName(split.getAccountUID());
+                                break;
+                            }
                         }
                     }
+                    if (TextUtils.isEmpty(text)) {
+                        text = getString(R.string.label_split_count, splits.size());
+                        error = getString(R.string.imbalance_account_name);
+                    }
                 }
-
                 if (splits.size() > 2) {
-                    text = splits.size() + " splits";
+                    text = getString(R.string.label_split_count, splits.size());
                 }
                 holder.secondaryText.setText(text);
+                holder.secondaryText.setError(error);
                 holder.transactionDate.setText(dateText);
 
                 holder.editTransaction.setOnClickListener(new View.OnClickListener() {
