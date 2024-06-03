@@ -17,13 +17,16 @@ package org.gnucash.android.importer;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.provider.OpenableColumns;
+import android.text.TextUtils;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.gnucash.android.R;
 import org.gnucash.android.db.DatabaseSchema;
@@ -32,6 +35,7 @@ import org.gnucash.android.ui.common.GnucashProgressDialog;
 import org.gnucash.android.ui.util.TaskDelegate;
 import org.gnucash.android.util.BackupManager;
 import org.gnucash.android.util.BookUtils;
+import org.gnucash.android.util.ContentExtKt;
 
 import java.io.InputStream;
 
@@ -41,22 +45,21 @@ import timber.log.Timber;
  * Imports a GnuCash (desktop) account file and displays a progress dialog.
  * The AccountsActivity is opened when importing is done.
  */
-public class ImportAsyncTask extends AsyncTask<Uri, Void, Boolean> {
+public class ImportAsyncTask extends AsyncTask<Uri, Void, String> {
     private final Activity mContext;
-    private TaskDelegate mDelegate;
+    private final TaskDelegate mDelegate;
     private final boolean mBackup;
     private ProgressDialog mProgressDialog;
-    private String mImportedBookUID;
 
-    public ImportAsyncTask(Activity context) {
+    public ImportAsyncTask(@NonNull Activity context) {
         this(context, null);
     }
 
-    public ImportAsyncTask(Activity context, TaskDelegate delegate) {
+    public ImportAsyncTask(@NonNull Activity context, @Nullable TaskDelegate delegate) {
         this(context, delegate, false);
     }
 
-    public ImportAsyncTask(Activity context, TaskDelegate delegate, boolean backup) {
+    public ImportAsyncTask(@NonNull Activity context, @Nullable TaskDelegate delegate, boolean backup) {
         this.mContext = context;
         this.mDelegate = delegate;
         this.mBackup = backup;
@@ -73,15 +76,17 @@ public class ImportAsyncTask extends AsyncTask<Uri, Void, Boolean> {
     }
 
     @Override
-    protected Boolean doInBackground(Uri... uris) {
+    protected String doInBackground(Uri... uris) {
         if (mBackup) {
             BackupManager.backupActiveBook();
         }
 
         Uri uri = uris[0];
+        ContentResolver contentResolver = mContext.getContentResolver();
+        String bookUID;
         try {
-            InputStream accountInputStream = mContext.getContentResolver().openInputStream(uri);
-            mImportedBookUID = GncXmlImporter.parse(accountInputStream);
+            InputStream accountInputStream = contentResolver.openInputStream(uri);
+            bookUID = GncXmlImporter.parse(accountInputStream);
         } catch (final Throwable e) {
             Timber.e(e, "Error importing: %s", uri);
 
@@ -89,42 +94,36 @@ public class ImportAsyncTask extends AsyncTask<Uri, Void, Boolean> {
                 @Override
                 public void run() {
                     Toast.makeText(mContext,
-                            mContext.getString(R.string.toast_error_importing_accounts) + "\n" + e.getLocalizedMessage(),
-                            Toast.LENGTH_LONG).show();
+                        mContext.getString(R.string.toast_error_importing_accounts) + "\n" + e.getLocalizedMessage(),
+                        Toast.LENGTH_LONG).show();
                 }
             });
 
-            return false;
+            return null;
         }
 
-        Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-            String displayName = cursor.getString(nameIndex);
-            // Remove short file type extension, e.g. ".xml" or ".gnca".
-            int indexFileType = displayName.lastIndexOf('.');
-            if ((indexFileType > 0) && (indexFileType + 5 >= displayName.length())) {
-                displayName = displayName.substring(0, indexFileType);
-            }
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(DatabaseSchema.BookEntry.COLUMN_DISPLAY_NAME, displayName);
-            contentValues.put(DatabaseSchema.BookEntry.COLUMN_SOURCE_URI, uri.toString());
-            BooksDbAdapter.getInstance().updateRecord(mImportedBookUID, contentValues);
-
-            cursor.close();
+        String displayName = ContentExtKt.getDocumentName(uri, mContext);
+        // Remove short file type extension, e.g. ".xml" or ".gnca".
+        int indexFileType = displayName.lastIndexOf('.');
+        if ((indexFileType > 0) && (indexFileType + 5 >= displayName.length())) {
+            displayName = displayName.substring(0, indexFileType);
         }
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DatabaseSchema.BookEntry.COLUMN_DISPLAY_NAME, displayName);
+        contentValues.put(DatabaseSchema.BookEntry.COLUMN_SOURCE_URI, uri.toString());
+        BooksDbAdapter.getInstance().updateRecord(bookUID, contentValues);
 
         //set the preferences to their default values
-        mContext.getSharedPreferences(mImportedBookUID, Context.MODE_PRIVATE)
-                .edit()
-                .putBoolean(mContext.getString(R.string.key_use_double_entry), true)
-                .apply();
+        mContext.getSharedPreferences(bookUID, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(mContext.getString(R.string.key_use_double_entry), true)
+            .apply();
 
-        return true;
+        return bookUID;
     }
 
     @Override
-    protected void onPostExecute(Boolean importSuccess) {
+    protected void onPostExecute(String bookUID) {
         try {
             if (mProgressDialog != null && mProgressDialog.isShowing()) {
                 mProgressDialog.dismiss();
@@ -136,11 +135,14 @@ public class ImportAsyncTask extends AsyncTask<Uri, Void, Boolean> {
             mProgressDialog = null;
         }
 
-        int message = importSuccess ? R.string.toast_success_importing_accounts : R.string.toast_error_importing_accounts;
-        Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
-
-        if (mImportedBookUID != null)
-            BookUtils.loadBook(mContext, mImportedBookUID);
+        if (!TextUtils.isEmpty(bookUID)) {
+            int message = R.string.toast_success_importing_accounts;
+            Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
+            BookUtils.loadBook(mContext, bookUID);
+        } else {
+            int message = R.string.toast_error_importing_accounts;
+            Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
+        }
 
         if (mDelegate != null)
             mDelegate.onTaskComplete();

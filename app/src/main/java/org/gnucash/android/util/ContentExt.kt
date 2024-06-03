@@ -14,6 +14,10 @@ fun Uri.getDocumentName(context: Context?): String {
     val lastPath = this.lastPathSegment
     if ((lastPath != null) && lastPath.indexOf('.') > 0) {
         name = lastPath
+        val indexSlash = lastPath.lastIndexOf('/')
+        if ((indexSlash >= 0) && (indexSlash < name.lastIndex)) {
+            name = name.substring(indexSlash + 1)
+        }
     }
     if (context != null) {
         try {
