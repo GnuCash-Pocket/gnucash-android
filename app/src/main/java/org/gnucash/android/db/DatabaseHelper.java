@@ -32,6 +32,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.model.Commodity;
 import org.xml.sax.SAXException;
@@ -352,5 +354,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Timber.e(e, "Error loading currencies into the database");
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Escape the given argument for use in a {@code LIKE} statement.
+     * @hide
+     */
+    public static String escapeForLike(@NonNull String arg) {
+        // Shamelessly borrowed from com.android.providers.media.util.DatabaseUtils
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < arg.length(); i++) {
+            final char c = arg.charAt(i);
+            switch (c) {
+                case '%': sb.append('\\');
+                    break;
+                case '_': sb.append('\\');
+                    break;
+            }
+            sb.append(c);
+        }
+        return sb.toString();
     }
 }

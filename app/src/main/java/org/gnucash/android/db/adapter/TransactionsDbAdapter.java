@@ -17,6 +17,7 @@
 
 package org.gnucash.android.db.adapter;
 
+import static org.gnucash.android.db.DatabaseHelper.escapeForLike;
 import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import static org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry;
 import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
@@ -24,6 +25,7 @@ import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
@@ -555,13 +557,17 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         String[] projectionIn = new String[]{TransactionEntry.TABLE_NAME + ".*"};
         String selection = "(" + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
                 + " OR " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + "=1 )"
-                + " AND " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_DESCRIPTION + " LIKE '" + prefix + "%'";
+                + " AND " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_DESCRIPTION + " LIKE '" + escapeForLike(prefix) + "%'";
         String[] selectionArgs = new String[]{accountUID};
         String sortOrder = TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " DESC";
+        String subquery = queryBuilder.buildQuery(projectionIn, selection, null, null, sortOrder, null);
+
+        // Need to use inner subquery because ORDER BY must be before GROUP BY!
+        SQLiteQueryBuilder queryBuilder2 = new SQLiteQueryBuilder();
+        queryBuilder2.setTables("(" + subquery + ")");
         String groupBy = TransactionEntry.COLUMN_DESCRIPTION;
         String limit = Integer.toString(5);
-
-        return queryBuilder.query(mDb, projectionIn, selection, selectionArgs, groupBy, null, sortOrder, limit);
+        return queryBuilder2.query(mDb, null, null, selectionArgs, groupBy, null, null, limit);
     }
 
     /**

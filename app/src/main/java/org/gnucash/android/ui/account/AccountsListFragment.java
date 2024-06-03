@@ -16,6 +16,7 @@
 
 package org.gnucash.android.ui.account;
 
+import static org.gnucash.android.db.DatabaseHelper.escapeForLike;
 import static org.gnucash.android.util.ColorExtKt.parseColor;
 
 import android.app.Activity;
@@ -461,7 +462,7 @@ public class AccountsListFragment extends Fragment implements
             if (mFilter != null) {
                 cursor = adapter
                     .fetchAccounts(DatabaseSchema.AccountEntry.COLUMN_HIDDEN + "= 0 AND "
-                            + DatabaseSchema.AccountEntry.COLUMN_NAME + " LIKE '%" + mFilter + "%'",
+                            + DatabaseSchema.AccountEntry.COLUMN_NAME + " LIKE '%" + escapeForLike(mFilter) + "%'",
                         null, null);
             } else if (!TextUtils.isEmpty(mParentAccountUID))
                 cursor = adapter.fetchSubAccounts(mParentAccountUID);
