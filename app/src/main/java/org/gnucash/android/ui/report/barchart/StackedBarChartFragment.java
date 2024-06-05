@@ -52,7 +52,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -211,7 +210,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
 
         BarDataSet set = new BarDataSet(values, "");
         set.setDrawValues(false);
-        set.setStackLabels(labels.toArray(new String[labels.size()]));
+        set.setStackLabels(labels.toArray(new String[0]));
         set.setColors(colors);
 
         if (getYValueSum(set) == 0) {
@@ -327,11 +326,11 @@ public class StackedBarChartFragment extends BaseReportFragment {
         Legend legend = mChart.getLegend();
         IBarDataSet dataSet = mChart.getData().getDataSetByIndex(0);
 
-        LinkedHashSet<String> labels = new LinkedHashSet<>(Arrays.asList(dataSet.getStackLabels()));
-        LinkedHashSet<Integer> colors = new LinkedHashSet<>(dataSet.getColors());
+        List<Integer> colors = dataSet.getColors();
+        List<String> labels = Arrays.asList(dataSet.getStackLabels());
 
-        if (COLORS.length >= labels.size()) {
-            legend.setCustom(new ArrayList<>(colors), new ArrayList<>(labels));
+        if (colors.size() == labels.size()) {
+            legend.setCustom(colors, labels);
             return;
         }
         legend.setEnabled(false);
