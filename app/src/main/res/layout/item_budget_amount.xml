@@ -61,9 +61,9 @@
                 android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:paddingTop="6dp"
-                android:paddingRight="6dp"
-                android:paddingLeft="22dp"
-                android:paddingBottom="22dp"
+                android:paddingEnd="6dp"
+                android:paddingStart="22dp"
+                android:paddingBottom="6dp"
                 android:src="@drawable/ic_close_black"
                 tools:ignore="ContentDescription" />
         </TableRow>

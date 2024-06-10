@@ -127,8 +127,6 @@ public class CalculatorEditText extends AppCompatEditText {
                 }
             }
         });
-
-        setValue(null, true);
     }
 
     public void bindListeners(final CalculatorKeyboard calculatorKeyboard) {
