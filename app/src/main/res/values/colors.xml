@@ -41,4 +41,6 @@
     <color name="kbd_key_delete">#CFE0BC</color>
     <color name="kbd_key_digit">@android:color/white</color>
     <color name="kbd_key_op">#E5F5D5</color>
+
+    <color name="item_checked">#CCCCCC</color>
 </resources>
