@@ -72,7 +72,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import timber.log.Timber;
 
 /**
  * Dialog for editing the splits in a transaction
@@ -202,7 +201,7 @@ public class SplitEditorFragment extends Fragment {
                 saveSplits();
                 return true;
 
-            case R.id.menu_add_split:
+            case R.id.menu_add:
                 addSplitView(null);
                 return true;
 

@@ -299,11 +299,11 @@ public class BudgetListFragment extends Fragment implements Refreshable,
             @Override
             public boolean onMenuItemClick(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
-                    case R.id.context_menu_edit_budget:
+                    case R.id.menu_edit:
                         editBudget(budgetId);
                         return true;
 
-                    case R.id.context_menu_delete:
+                    case R.id.menu_delete:
                         deleteBudget(budgetId);
                         return true;
 
