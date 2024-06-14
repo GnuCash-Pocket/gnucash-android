@@ -218,7 +218,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
 
         init();
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
+        TabLayout tabLayout = findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText(R.string.title_recent_accounts));
         tabLayout.addTab(tabLayout.newTab().setText(R.string.title_all_accounts));
         tabLayout.addTab(tabLayout.newTab().setText(R.string.title_favorite_accounts));

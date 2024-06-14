@@ -20,14 +20,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/ctx_menu_rename_book"
+        android:id="@+id/menu_rename"
         android:icon="@drawable/ic_edit_black"
         android:orderInCategory="1"
         android:title="@string/menu_rename"
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/ctx_menu_sync_book"
+        android:id="@+id/menu_sync"
         android:checkable="true"
         android:icon="@drawable/ic_sync_black"
         android:orderInCategory="2"
@@ -36,7 +36,7 @@
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/ctx_menu_delete_book"
+        android:id="@+id/menu_delete"
         android:icon="@drawable/ic_delete_black"
         android:orderInCategory="3"
         android:title="@string/menu_delete"

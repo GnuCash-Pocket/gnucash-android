@@ -632,11 +632,11 @@ public class AccountsListFragment extends Fragment implements
             @Override
             public boolean onMenuItemClick(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
-                    case R.id.context_menu_edit_accounts:
+                    case R.id.menu_edit:
                         openCreateOrEditActivity(accountUID);
                         return true;
 
-                    case R.id.context_menu_delete:
+                    case R.id.menu_delete:
                         tryDeleteAccount(accountUID);
                         return true;
 

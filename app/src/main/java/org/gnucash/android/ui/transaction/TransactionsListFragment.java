@@ -187,7 +187,7 @@ public class TransactionsListFragment extends Fragment implements
     @Override
     public void onPrepareOptionsMenu(@NonNull Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        MenuItem item = menu.findItem(R.id.menu_compact_trn_view);
+        MenuItem item = menu.findItem(R.id.menu_toggle_compact);
         item.setChecked(mUseCompactView);
         item.setEnabled(GnuCashApplication.isDoubleEntryEnabled()); //always compact for single-entry
     }
@@ -195,7 +195,7 @@ public class TransactionsListFragment extends Fragment implements
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_compact_trn_view:
+            case R.id.menu_toggle_compact:
                 item.setChecked(!item.isChecked());
                 mUseCompactView = !mUseCompactView;
                 refresh();
@@ -342,15 +342,15 @@ public class TransactionsListFragment extends Fragment implements
             @Override
             public boolean onMenuItemClick(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
-                    case R.id.context_menu_delete:
+                    case R.id.menu_delete:
                         deleteTransaction(transactionId);
                         return true;
 
-                    case R.id.context_menu_duplicate_transaction:
+                    case R.id.menu_duplicate:
                         duplicateTransaction(transactionId);
                         return true;
 
-                    case R.id.context_menu_move_transaction:
+                    case R.id.menu_move:
                         moveTransaction(transactionId);
                         return true;
 

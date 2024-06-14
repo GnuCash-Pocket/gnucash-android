@@ -128,7 +128,7 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
         if (mBudget == null)
             actionbar.setTitle("Create Budget");
         else
-            actionbar.setTitle("Edit Budget");
+            actionbar.setTitle(R.string.title_edit_budget);
 
         mBinding.inputRecurrence.setOnClickListener(
                 new RecurrenceViewClickListener((AppCompatActivity) getActivity(), mRecurrenceRule, this));

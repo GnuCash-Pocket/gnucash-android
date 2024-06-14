@@ -163,7 +163,7 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_edit_budget:
+            case R.id.menu_edit:
                 Intent addAccountIntent = new Intent(getActivity(), FormActivity.class);
                 addAccountIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
                 addAccountIntent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.BUDGET.name());

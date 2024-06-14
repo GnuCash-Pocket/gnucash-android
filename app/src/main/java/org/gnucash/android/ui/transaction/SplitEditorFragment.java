@@ -191,7 +191,7 @@ public class SplitEditorFragment extends Fragment {
                 saveSplits();
                 return true;
 
-            case R.id.menu_add_split:
+            case R.id.menu_add:
                 addSplitView(null);
                 return true;
 
@@ -283,7 +283,7 @@ public class SplitEditorFragment extends Fragment {
         }
 
         @Override
-        public void transferComplete(Money amount) {
+        public void transferComplete(Money value, Money amount) {
             mCurrencyConversionDone = true;
             quantity = amount;
 

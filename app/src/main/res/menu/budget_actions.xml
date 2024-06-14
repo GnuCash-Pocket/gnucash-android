@@ -9,10 +9,10 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/menu_edit_budget"
+        android:id="@+id/menu_edit"
         android:icon="@drawable/ic_edit_white"
         android:orderInCategory="2"
-        android:title="Edit Budget"
+        android:title="@string/title_edit_budget"
         app:showAsAction="never" />
 
 </menu>

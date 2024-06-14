@@ -16,7 +16,7 @@ limitations under the License.
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/menu_add_budget_amount"
+        android:id="@+id/menu_add"
         android:icon="@drawable/ic_add_white"
         android:title="Add Budget Amount"
         app:showAsAction="always" />

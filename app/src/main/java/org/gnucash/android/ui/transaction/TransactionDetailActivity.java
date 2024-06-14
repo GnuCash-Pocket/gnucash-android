@@ -206,13 +206,13 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
             case android.R.id.home:
                 finish();
                 return true;
-            case R.id.context_menu_move_transaction:
+            case R.id.menu_move:
                 moveTransaction(mTransactionUID);
                 return true;
-            case R.id.context_menu_duplicate_transaction:
+            case R.id.menu_duplicate:
                 duplicateTransaction(mTransactionUID);
                 return true;
-            case R.id.context_menu_delete:
+            case R.id.menu_delete:
                 deleteTransaction(mTransactionUID);
                 return true;
             default:

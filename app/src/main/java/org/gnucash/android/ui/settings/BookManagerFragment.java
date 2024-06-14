@@ -122,11 +122,11 @@ public class BookManagerFragment extends ListFragment implements
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_create_book:
+            case R.id.menu_create:
                 AccountsActivity.createDefaultAccounts(GnuCashApplication.getDefaultCurrencyCode(), requireActivity());
                 return true;
 
-            case R.id.menu_open_book:
+            case R.id.menu_open:
                 String[] mimeTypes = {"text/*", "application/*"};
                 //use the storage access framework
                 Intent openDocument = new Intent(Intent.ACTION_OPEN_DOCUMENT)
@@ -244,12 +244,12 @@ public class BookManagerFragment extends ListFragment implements
                         @Override
                         public boolean onMenuItemClick(@NonNull MenuItem item) {
                             switch (item.getItemId()) {
-                                case R.id.ctx_menu_rename_book:
+                                case R.id.menu_rename:
                                     return handleMenuRenameBook(bookName, bookUID);
-                                case R.id.ctx_menu_sync_book:
+                                case R.id.menu_sync:
                                     //TODO implement sync
                                     return false;
-                                case R.id.ctx_menu_delete_book:
+                                case R.id.menu_delete:
                                     return handleMenuDeleteBook(bookUID);
                                 default:
                                     return true;
@@ -259,7 +259,7 @@ public class BookManagerFragment extends ListFragment implements
 
                     String activeBookUID = GnuCashApplication.getActiveBookUID();
                     if (activeBookUID.equals(bookUID)) {//we cannot delete the active book
-                        popupMenu.getMenu().findItem(R.id.ctx_menu_delete_book).setEnabled(false);
+                        popupMenu.getMenu().findItem(R.id.menu_delete).setEnabled(false);
                     }
                     popupMenu.show();
                 }

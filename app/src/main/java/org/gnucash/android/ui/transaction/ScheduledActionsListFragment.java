@@ -115,7 +115,7 @@ public class ScheduledActionsListFragment extends ListFragment implements
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             switch (item.getItemId()) {
-                case R.id.context_menu_delete:
+                case R.id.menu_delete:
                     final Activity activity = requireActivity();
                     BackupManager.backupActiveBookAsync(activity, result -> {
                         afterBackup(activity, mode);
@@ -253,7 +253,7 @@ public class ScheduledActionsListFragment extends ListFragment implements
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_add_scheduled_export:
+            case R.id.menu_create:
                 Intent intent = new Intent(getActivity(), FormActivity.class);
                 intent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.EXPORT.name());
                 startActivityForResult(intent, 0x1);
