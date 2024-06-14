@@ -57,7 +57,14 @@ public class FormActivity extends PasscodeLockActivity {
     @Nullable
     private CalculatorKeyboard mOnBackListener;
 
-    public enum FormType {ACCOUNT, TRANSACTION, EXPORT, SPLIT_EDITOR, BUDGET, BUDGET_AMOUNT_EDITOR}
+    public enum FormType {
+        ACCOUNT,
+        TRANSACTION,
+        EXPORT,
+        SPLIT_EDITOR,
+        BUDGET,
+        BUDGET_AMOUNT_EDITOR
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,8 +72,10 @@ public class FormActivity extends PasscodeLockActivity {
         binding = ActivityFormBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        final Intent intent = getIntent();
+
         //if a parameter was passed to open an account within a specific book, then switch
-        String bookUID = getIntent().getStringExtra(UxArgument.BOOK_UID);
+        String bookUID = intent.getStringExtra(UxArgument.BOOK_UID);
         if (bookUID != null && !bookUID.equals(GnuCashApplication.getActiveBookUID())) {
             BookUtils.activateBook(this, bookUID);
         }
@@ -78,8 +87,6 @@ public class FormActivity extends PasscodeLockActivity {
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeAsUpIndicator(R.drawable.ic_close);
-
-        final Intent intent = getIntent();
 
         mAccountUID = intent.getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
         if (mAccountUID == null) {

@@ -90,14 +90,23 @@ import timber.log.Timber;
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class ExportFormFragment extends Fragment implements
-        RecurrencePickerDialogFragment.OnRecurrenceSetListener,
-        CalendarDatePickerDialogFragment.OnDateSetListener,
-        RadialTimePickerDialogFragment.OnTimeSetListener {
+    RecurrencePickerDialogFragment.OnRecurrenceSetListener,
+    CalendarDatePickerDialogFragment.OnDateSetListener,
+    RadialTimePickerDialogFragment.OnTimeSetListener {
 
     /**
      * Request code for intent to pick export file destination
      */
     private static final int REQUEST_EXPORT_FILE = 0x14;
+
+    //Save As..
+    private static final int TARGET_URI = 0;
+    //DROPBOX
+    private static final int TARGET_DROPBOX = 1;
+    //OwnCloud
+    private static final int TARGET_OWNCLOUD = 2;
+    //Share File
+    private static final int TARGET_SHARE = 3;
 
     /**
      * Event recurrence options
@@ -112,6 +121,7 @@ public class ExportFormFragment extends Fragment implements
     private final Calendar mExportStartCalendar = Calendar.getInstance();
 
     private final ExportParams mExportParams = new ExportParams();
+    private ScheduledAction mScheduledAction;
 
     /**
      * Flag to determine if export has been started.
@@ -186,6 +196,100 @@ public class ExportFormFragment extends Fragment implements
     }
 
     @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        Bundle args = getArguments();
+        if ((args == null) || args.isEmpty()) {
+            return;
+        }
+        String scheduledUID = args.getString(UxArgument.SCHEDULED_UID);
+        if (TextUtils.isEmpty(scheduledUID)) {
+            return;
+        }
+        ScheduledActionDbAdapter scheduledActionDbAdapter = ScheduledActionDbAdapter.getInstance();
+        ScheduledAction scheduledAction = scheduledActionDbAdapter.getRecord(scheduledUID);
+        if (scheduledAction == null) {
+            return;
+        }
+        bindForm(scheduledAction);
+    }
+
+    private void bindForm(@NonNull ScheduledAction scheduledAction) {
+        mScheduledAction = scheduledAction;
+        String tag = scheduledAction.getTag();
+        if (TextUtils.isEmpty(tag)) {
+            return;
+        }
+        ExportParams exportParams = ExportParams.parseCsv(tag);
+        ExportFormat exportFormat = exportParams.getExportFormat();
+        Uri uri = exportParams.getExportLocation();
+        ExportParams.ExportTarget exportTarget = exportParams.getExportTarget();
+        char csvSeparator = exportParams.getCsvSeparator();
+        Timestamp startTime = exportParams.getExportStartTime();
+
+        switch (exportTarget) {
+            case DROPBOX, GOOGLE_DRIVE:
+                mDestinationSpinner.setSelection(TARGET_DROPBOX);
+                break;
+            case OWNCLOUD:
+                mDestinationSpinner.setSelection(TARGET_OWNCLOUD);
+                break;
+            case SD_CARD, URI:
+                mDestinationSpinner.setSelection(TARGET_URI);
+                break;
+            case SHARING:
+                mDestinationSpinner.setSelection(TARGET_SHARE);
+                break;
+        }
+
+        setExportUri(uri);
+
+        switch (exportFormat) {
+            case CSVA:
+            case CSVT:
+                mCsvTransactionsRadioButton.setChecked(true);
+                break;
+            case OFX:
+                mOfxRadioButton.setChecked(true);
+                break;
+            case QIF:
+                mQifRadioButton.setChecked(true);
+                break;
+            case XML:
+                mXmlRadioButton.setChecked(true);
+                break;
+        }
+
+        switch (csvSeparator) {
+            case ',':
+                mSeparatorCommaButton.setChecked(true);
+                break;
+            case ':':
+                mSeparatorColonButton.setChecked(true);
+                break;
+            case ';':
+                mSeparatorSemicolonButton.setChecked(true);
+                break;
+        }
+
+        long startTimeMills = startTime.getTime();
+        if (startTimeMills > 0L) {
+            mExportStartCalendar.setTimeInMillis(startTimeMills);
+            mExportStartDate.setText(TransactionFormFragment.DATE_FORMATTER.print(startTimeMills));
+            mExportStartTime.setText(TransactionFormFragment.TIME_FORMATTER.print(startTimeMills));
+            mExportAllSwitch.setChecked(false);
+        } else {
+            mExportAllSwitch.setChecked(true);
+        }
+
+        mDeleteAllCheckBox.setChecked(exportParams.shouldDeleteTransactionsAfterExport());
+
+        String rrule = scheduledAction.getRuleString();
+        onRecurrenceSet(rrule);
+    }
+
+    @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.export_actions, menu);
@@ -199,7 +303,7 @@ public class ExportFormFragment extends Fragment implements
                 return true;
 
             case android.R.id.home:
-                getActivity().finish();
+                requireActivity().finish();
                 return true;
 
             default:
@@ -211,7 +315,8 @@ public class ExportFormFragment extends Fragment implements
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        ActionBar supportActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        AppCompatActivity activity = (AppCompatActivity) requireActivity();
+        ActionBar supportActionBar = activity.getSupportActionBar();
         assert supportActionBar != null;
         supportActionBar.setTitle(R.string.title_export_dialog);
         setHasOptionsMenu(true);
@@ -254,17 +359,24 @@ public class ExportFormFragment extends Fragment implements
         new ExportAsyncTask(requireActivity(), GnuCashApplication.getActiveBookUID()).execute(exportParameters);
 
         if (mRecurrenceRule != null) {
-            ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
+            DatabaseAdapter.UpdateMethod updateMethod = DatabaseAdapter.UpdateMethod.replace;
+            ScheduledAction scheduledAction = mScheduledAction;
+            if (scheduledAction == null) {
+                scheduledAction = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
+                scheduledAction.setActionUID(BaseModel.generateUID());
+                updateMethod = DatabaseAdapter.UpdateMethod.insert;
+            }
             scheduledAction.setRecurrence(RecurrenceParser.parse(mEventRecurrence));
             scheduledAction.setTag(exportParameters.toCsv());
-            scheduledAction.setActionUID(BaseModel.generateUID());
-            ScheduledActionDbAdapter.getInstance().addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.insert);
+            ScheduledActionDbAdapter.getInstance().addRecord(scheduledAction, updateMethod);
+            mScheduledAction = scheduledAction;
         }
 
         int position = mBinding.spinnerExportDestination.getSelectedItemPosition();
         PreferenceManager.getDefaultSharedPreferences(getActivity())
-                .edit().putInt(getString(R.string.key_last_export_destination), position)
-                .apply();
+            .edit()
+            .putInt(getString(R.string.key_last_export_destination), position)
+            .apply();
 
         // finish the activity will cause the progress dialog to be leaked
         // which would throw an exception
@@ -278,7 +390,7 @@ public class ExportFormFragment extends Fragment implements
         final Context context = view.getContext();
         // export destination bindings
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(context,
-                R.array.export_destinations, android.R.layout.simple_spinner_item);
+            R.array.export_destinations, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mBinding.spinnerExportDestination.setAdapter(adapter);
         mBinding.spinnerExportDestination.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -287,13 +399,13 @@ public class ExportFormFragment extends Fragment implements
                 if (view == null) //the item selection is fired twice by the Android framework. Ignore the first one
                     return;
                 switch (position) {
-                    case 0: //Save As..
+                    case TARGET_URI:
                         mExportParams.setExportTarget(ExportParams.ExportTarget.URI);
                         mBinding.recurrenceOptions.setVisibility(View.VISIBLE);
                         Uri exportUri = mExportParams.getExportLocation();
                         setExportUri(exportUri);
                         break;
-                    case 1: //DROPBOX
+                    case TARGET_DROPBOX:
                         setExportUriText(getString(R.string.label_dropbox_export_destination));
                         mBinding.recurrenceOptions.setVisibility(View.VISIBLE);
                         mExportParams.setExportTarget(ExportParams.ExportTarget.DROPBOX);
@@ -302,17 +414,17 @@ public class ExportFormFragment extends Fragment implements
                             DropboxHelper.authenticate(context);
                         }
                         break;
-                    case 2: //OwnCloud
+                    case TARGET_OWNCLOUD:
                         setExportUri(null);
                         mBinding.recurrenceOptions.setVisibility(View.VISIBLE);
                         mExportParams.setExportTarget(ExportParams.ExportTarget.OWNCLOUD);
                         if (!(PreferenceManager.getDefaultSharedPreferences(getActivity())
-                                .getBoolean(getString(R.string.key_owncloud_sync), false))) {
+                            .getBoolean(getString(R.string.key_owncloud_sync), false))) {
                             OwnCloudDialogFragment ocDialog = OwnCloudDialogFragment.newInstance(null);
                             ocDialog.show(getParentFragmentManager(), "ownCloud dialog");
                         }
                         break;
-                    case 3: //Share File
+                    case TARGET_SHARE:
                         setExportUriText(getString(R.string.label_select_destination_after_export));
                         mExportParams.setExportTarget(ExportParams.ExportTarget.SHARING);
                         mBinding.recurrenceOptions.setVisibility(View.GONE);
@@ -331,7 +443,7 @@ public class ExportFormFragment extends Fragment implements
         });
 
         int position = PreferenceManager.getDefaultSharedPreferences(getActivity())
-                .getInt(getString(R.string.key_last_export_destination), 0);
+            .getInt(getString(R.string.key_last_export_destination), 0);
         mBinding.spinnerExportDestination.setSelection(position);
 
         //**************** export start time bindings ******************
@@ -380,7 +492,7 @@ public class ExportFormFragment extends Fragment implements
                 RadialTimePickerDialogFragment timePickerDialog = new RadialTimePickerDialogFragment();
                 timePickerDialog.setOnTimeSetListener(ExportFormFragment.this);
                 timePickerDialog.setStartTime(calendar.get(Calendar.HOUR_OF_DAY),
-                        calendar.get(Calendar.MINUTE));
+                    calendar.get(Calendar.MINUTE));
                 timePickerDialog.show(getFragmentManager(), "time_picker_dialog_fragment");
             }
         });
@@ -406,7 +518,8 @@ public class ExportFormFragment extends Fragment implements
             }
         });
 
-        mBinding.inputRecurrence.setOnClickListener(new RecurrenceViewClickListener((AppCompatActivity) getActivity(), mRecurrenceRule, this));
+        AppCompatActivity activity = (AppCompatActivity) requireActivity();
+        mBinding.inputRecurrence.setOnClickListener(new RecurrenceViewClickListener(activity, mRecurrenceRule, this));
 
         //this part (setting the export format) must come after the recurrence view bindings above
         String defaultExportFormat = sharedPrefs.getString(getString(R.string.key_default_export_format), ExportFormat.CSVT.value);
@@ -476,6 +589,7 @@ public class ExportFormFragment extends Fragment implements
      * @param uri URI to export file. If {@code null}, the view will be hidden and nothing displayed
      */
     private void setExportUri(@Nullable Uri uri) {
+        mExportParams.setExportLocation(uri);
         if (uri == null) {
             setExportUriText("");
         } else {
@@ -531,7 +645,6 @@ public class ExportFormFragment extends Fragment implements
                     if (data != null) {
                         takePersistableUriPermission(requireContext(), data);
                         Uri location = data.getData();
-                        mExportParams.setExportLocation(location);
                         setExportUri(location);
                     } else {
                         setExportUri(null);
@@ -575,8 +688,8 @@ class OptionsViewAnimationUtils {
             @Override
             protected void applyTransformation(float interpolatedTime, Transformation t) {
                 v.getLayoutParams().height = interpolatedTime == 1
-                        ? ViewGroup.LayoutParams.WRAP_CONTENT
-                        : (int) (targetHeight * interpolatedTime);
+                    ? ViewGroup.LayoutParams.WRAP_CONTENT
+                    : (int) (targetHeight * interpolatedTime);
                 v.requestLayout();
             }
 

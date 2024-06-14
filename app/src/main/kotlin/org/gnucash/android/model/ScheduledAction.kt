@@ -28,7 +28,7 @@ import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
 
 /**
- * Represents a scheduled event which is stored in the database and run at regular mPeriod
+ * Represents a scheduled event which is stored in the database and run at regular period
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
