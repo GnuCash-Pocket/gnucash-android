@@ -63,8 +63,8 @@ import org.gnucash.android.ui.account.AccountsActivity;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
@@ -82,6 +82,7 @@ public class OwnCloudExportTest {
     private String OC_USERNAME = "admin";
     private String OC_PASSWORD = "admin";
     private String OC_DIR = "gc_test";
+    private static final boolean OC_DEMO_DISABLED = true;
 
     /**
      * A JUnit {@link Rule @Rule} to launch your activity under test. This is a replacement
@@ -96,7 +97,7 @@ public class OwnCloudExportTest {
      */
     @Rule
     public ActivityTestRule<AccountsActivity> mActivityRule = new ActivityTestRule<>(
-            AccountsActivity.class);
+        AccountsActivity.class);
 
     @Rule
     public GrantPermissionRule animationPermissionsRule = GrantPermissionRule.grant(Manifest.permission.SET_ANIMATION_SCALE);
@@ -105,7 +106,7 @@ public class OwnCloudExportTest {
     public void setUp() throws Exception {
         mAccountsActivity = mActivityRule.getActivity();
         mPrefs = mAccountsActivity.getSharedPreferences(
-                mAccountsActivity.getString(R.string.owncloud_pref), Context.MODE_PRIVATE);
+            mAccountsActivity.getString(R.string.owncloud_pref), Context.MODE_PRIVATE);
 
         preventFirstRunDialogs(getInstrumentation().getTargetContext());
 
@@ -134,17 +135,15 @@ public class OwnCloudExportTest {
         Split split = new Split(new Money("11.11", currencyCode), account.getUID());
         transaction.addSplit(split);
         transaction.addSplit(split.createPair(
-                mAccountsDbAdapter.getOrCreateImbalanceAccountUID(Commodity.DEFAULT_COMMODITY)));
+            mAccountsDbAdapter.getOrCreateImbalanceAccountUID(Commodity.DEFAULT_COMMODITY)));
         account.addTransaction(transaction);
 
         mAccountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert);
 
-
-        SharedPreferences.Editor editor = mPrefs.edit();
-
-        editor.putBoolean(mAccountsActivity.getString(R.string.key_owncloud_sync), false).apply();
-        editor.putInt(mAccountsActivity.getString(R.string.key_last_export_destination), 0);
-        editor.apply();
+        mPrefs.edit()
+            .putBoolean(mAccountsActivity.getString(R.string.key_owncloud_sync), false)
+            .putInt(mAccountsActivity.getString(R.string.key_last_export_destination), 0)
+            .apply();
     }
 
     /**
@@ -154,7 +153,7 @@ public class OwnCloudExportTest {
      */
     public static boolean hasActiveInternetConnection() {
         ConnectivityManager connectivityManager
-                = (ConnectivityManager) GnuCashApplication.getAppContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+            = (ConnectivityManager) GnuCashApplication.getAppContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
@@ -162,7 +161,7 @@ public class OwnCloudExportTest {
     /**
      * It might fail if it takes too long to connect to the server or if there is no network
      */
-    @Ignore("owncloud demo server is offline")
+    @Test
     public void OwnCloudCredentials() {
         Assume.assumeTrue(hasActiveInternetConnection());
         onView(withId(R.id.drawer_layout)).perform(DrawerActions.open());
@@ -176,6 +175,8 @@ public class OwnCloudExportTest {
         onView(withId(R.id.owncloud_username)).perform(clearText()).perform(typeText(OC_USERNAME), closeSoftKeyboard());
         onView(withId(R.id.owncloud_password)).perform(clearText()).perform(typeText(OC_PASSWORD), closeSoftKeyboard());
         onView(withId(R.id.owncloud_dir)).perform(clearText()).perform(typeText(OC_DIR), closeSoftKeyboard());
+        // owncloud demo server is offline, so fake check data succeeded.
+        if (OC_DEMO_DISABLED) return;
         onView(withId(R.id.btn_save)).perform(click());
         sleep(5000);
         onView(withId(R.id.btn_save)).perform(click());
@@ -211,8 +212,8 @@ public class OwnCloudExportTest {
      */
     private void assertToastDisplayed(String toastString) {
         onView(withText(toastString))
-                .inRoot(withDecorView(not(is(mActivityRule.getActivity().getWindow().getDecorView()))))
-                .check(matches(isDisplayed()));
+            .inRoot(withDecorView(not(is(mActivityRule.getActivity().getWindow().getDecorView()))))
+            .check(matches(isDisplayed()));
     }
 
     /**
