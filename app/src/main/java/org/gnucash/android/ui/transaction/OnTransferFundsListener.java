@@ -26,7 +26,8 @@ public interface OnTransferFundsListener {
     /**
      * Method called after the funds have been converted to the desired currency
      *
+     * @param value Funds in old currency
      * @param amount Funds in new currency
      */
-    void transferComplete(Money amount);
+    void transferComplete(Money value, Money amount);
 }

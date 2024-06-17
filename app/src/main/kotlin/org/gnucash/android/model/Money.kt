@@ -100,6 +100,18 @@ class Money : Number, Comparable<Money>, Parcelable {
     )
 
     /**
+     * Overloaded constructor.
+     * Accepts strings as arguments and parses them to create the Money object
+     *
+     * @param amount    Numerical value of the Money
+     * @param commodity Commodity of the money
+     */
+    constructor(amount: String?, commodity: Commodity) : this(
+        BigDecimal(amount),
+        commodity
+    )
+
+    /**
      * Constructs a new money amount given the numerator and denominator of the amount.
      * The rounding mode used for the division is [BigDecimal.ROUND_HALF_EVEN]
      *
@@ -163,8 +175,8 @@ class Money : Number, Comparable<Money>, Parcelable {
             _amount.scaleByPowerOfTen(scale).longValueExact()
         } catch (e: ArithmeticException) {
             val msg = "Currency " + commodity.currencyCode +
-                " with scale " + scale +
-                " has amount " + _amount
+                    " with scale " + scale +
+                    " has amount " + _amount
             Timber.e(e, msg)
             throw ArithmeticException(msg)
         }

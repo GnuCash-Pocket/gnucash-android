@@ -810,19 +810,20 @@ public class TransactionsActivityTest {
     @Test
     public void editingTransferAccount_shouldKeepSplitAmountsConsistent() {
         mTransactionsDbAdapter.deleteAllRecords(); //clean slate
-        Commodity euroCommodity = CommoditiesDbAdapter.getInstance().getCommodity("EUR");
-        Account euroAccount = new Account("Euro Account", euroCommodity);
+        String currencyOther = "EUR".equals(COMMODITY.getCurrencyCode()) ? "USD" : "EUR";
+        Commodity commodityOther = CommoditiesDbAdapter.getInstance().getCommodity(currencyOther);
+        Account accountOther = new Account("Other Account", commodityOther);
 
-        mAccountsDbAdapter.addRecord(euroAccount);
+        mAccountsDbAdapter.addRecord(accountOther);
 
         Money expectedValue = new Money(BigDecimal.TEN, COMMODITY);
-        Money expectedQty = new Money("5", "EUR");
+        Money expectedQty = new Money("5", commodityOther);
 
         String trnDescription = "Multicurrency Test Trn";
         Transaction multiTransaction = new Transaction(trnDescription);
         Split split1 = new Split(expectedValue, TRANSACTIONS_ACCOUNT_UID);
         split1.setType(TransactionType.CREDIT);
-        Split split2 = new Split(expectedValue, expectedQty, euroAccount.getUID());
+        Split split2 = new Split(expectedValue, expectedQty, accountOther.getUID());
         split2.setType(TransactionType.DEBIT);
         multiTransaction.addSplit(split1);
         multiTransaction.addSplit(split2);
@@ -849,9 +850,11 @@ public class TransactionsActivityTest {
         onView(withText(TRANSFER_ACCOUNT_NAME)).perform(click());
 
         onView(withId(R.id.input_transfer_account_spinner)).perform(click());
-        onView(withText(euroAccount.getFullName())).perform(click());
+        onView(withText(accountOther.getFullName())).perform(click());
         // Exchange dialog should be shown already.
-        onView(withId(R.id.input_converted_amount)).perform(typeText("5"));
+        onView(withId(R.id.input_converted_amount))
+            .check(matches(isDisplayed()))
+            .perform(typeText("5"));
         Espresso.closeSoftKeyboard();
         onView(withId(R.id.btn_save)).perform(click());
 
@@ -876,7 +879,6 @@ public class TransactionsActivityTest {
         Split transferAcctSplit = editedTransaction.getSplits(TRANSFER_ACCOUNT_UID).get(0);
         assertThat(transferAcctSplit.getQuantity()).isEqualTo(expectedValue);
         assertThat(transferAcctSplit.getValue()).isEqualTo(expectedValue);
-
     }
 
     /**
