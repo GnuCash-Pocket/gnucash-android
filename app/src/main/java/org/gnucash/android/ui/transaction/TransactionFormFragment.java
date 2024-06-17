@@ -312,8 +312,7 @@ public class TransactionFormFragment extends Fragment implements
         super.onActivityCreated(savedInstanceState);
         setHasOptionsMenu(true);
 
-        SharedPreferences sharedPrefs = PreferenceActivity.getActiveBookSharedPreferences();
-        mUseDoubleEntry = sharedPrefs.getBoolean(getString(R.string.key_use_double_entry), false);
+        mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled();
         if (!mUseDoubleEntry) {
             mDoubleEntryLayout.setVisibility(View.GONE);
             mOpenSplitEditor.setVisibility(View.GONE);

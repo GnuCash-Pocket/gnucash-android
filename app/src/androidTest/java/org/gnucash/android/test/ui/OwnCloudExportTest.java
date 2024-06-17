@@ -21,7 +21,6 @@ import static androidx.test.espresso.action.ViewActions.clearText;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.scrollTo;
-import static androidx.test.espresso.action.ViewActions.swipeUp;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.RootMatchers.withDecorView;
@@ -45,15 +44,14 @@ import android.net.NetworkInfo;
 
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.contrib.DrawerActions;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.model.Account;
@@ -65,8 +63,8 @@ import org.gnucash.android.ui.account.AccountsActivity;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
@@ -105,7 +103,6 @@ public class OwnCloudExportTest {
 
     @Before
     public void setUp() throws Exception {
-
         mAccountsActivity = mActivityRule.getActivity();
         mPrefs = mAccountsActivity.getSharedPreferences(
                 mAccountsActivity.getString(R.string.owncloud_pref), Context.MODE_PRIVATE);
@@ -165,7 +162,7 @@ public class OwnCloudExportTest {
     /**
      * It might fail if it takes too long to connect to the server or if there is no network
      */
-    @Test
+    @Ignore("owncloud demo server is offline")
     public void OwnCloudCredentials() {
         Assume.assumeTrue(hasActiveInternetConnection());
         onView(withId(R.id.drawer_layout)).perform(DrawerActions.open());
