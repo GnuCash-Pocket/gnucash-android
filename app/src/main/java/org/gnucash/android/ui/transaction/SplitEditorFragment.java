@@ -275,7 +275,7 @@ public class SplitEditorFragment extends Fragment {
         }
 
         @Override
-        public void transferComplete(Money amount) {
+        public void transferComplete(Money value, Money amount) {
             mCurrencyConversionDone = true;
             quantity = amount;
 

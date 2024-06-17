@@ -876,7 +876,6 @@ public class TransactionsActivityTest {
         Split transferAcctSplit = editedTransaction.getSplits(TRANSFER_ACCOUNT_UID).get(0);
         assertThat(transferAcctSplit.getQuantity()).isEqualTo(expectedValue);
         assertThat(transferAcctSplit.getValue()).isEqualTo(expectedValue);
-
     }
 
     /**

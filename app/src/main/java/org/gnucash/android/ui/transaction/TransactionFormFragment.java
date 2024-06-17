@@ -19,7 +19,6 @@ package org.gnucash.android.ui.transaction;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -250,13 +249,14 @@ public class TransactionFormFragment extends Fragment implements
     private boolean onSaveAttempt = false;
 
     /**
-     * Split quantity which will be set from the funds transfer dialog
+     * Split value for the current account.
+     */
+    private Money mSplitValue;
+    /**
+     * Split quantity for the transfer account.
      */
     private Money mSplitQuantity;
 
-    /**
-     * Create the view and retrieve references to the UI elements
-     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -276,26 +276,32 @@ public class TransactionFormFragment extends Fragment implements
      * Starts the transfer of funds from one currency to another
      */
     private void startTransferFunds() {
-        if (!mAmountEditText.isInputModified()) {
-            transferComplete(mSplitQuantity);
-            return;
-        }
-
         String fromCurrencyCode = mTransactionsDbAdapter.getAccountCurrencyCode(mAccountUID);
-        Commodity fromCommodity = Commodity.getInstance(fromCurrencyCode);
-        Cursor cursor = (Cursor) mTransferAccountSpinner.getSelectedItem();
-        String targetCurrencyCode = cursor.getString(cursor.getColumnIndex(DatabaseSchema.AccountEntry.COLUMN_CURRENCY));
-
-        if (fromCurrencyCode.equals(targetCurrencyCode)) return; //if both accounts have same currency
 
         BigDecimal enteredAmount = mAmountEditText.getValue();
-        if ((enteredAmount == null) || enteredAmount.equals(BigDecimal.ZERO))
+        if ((enteredAmount == null) || enteredAmount.equals(BigDecimal.ZERO)) {
             return;
+        }
+        Commodity fromCommodity = Commodity.getInstance(fromCurrencyCode);
         Money amount = new Money(enteredAmount, fromCommodity).abs();
 
-        if (mSplitQuantity != null) {
-            if (amount.equals(mSplitQuantity)) return;
+        //if both accounts have same currency
+        Cursor cursor = (Cursor) mTransferAccountSpinner.getSelectedItem();
+        String targetCurrencyCode = cursor.getString(cursor.getColumnIndex(DatabaseSchema.AccountEntry.COLUMN_CURRENCY));
+        if (fromCurrencyCode.equals(targetCurrencyCode)) {
+            transferComplete(amount, amount);
+            return;
         }
+
+        if (amount.equals(mSplitValue)
+            && (mSplitQuantity != null)
+            && !amount.equals(mSplitQuantity)
+        ) {
+            transferComplete(amount, mSplitQuantity);
+            return;
+        }
+        mSplitValue = null;
+        mSplitQuantity = null;
 
         TransferFundsDialogFragment fragment
                 = TransferFundsDialogFragment.getInstance(amount, targetCurrencyCode, this);
@@ -494,12 +500,14 @@ public class TransactionFormFragment extends Fragment implements
         mSplitsList = new ArrayList<>(transaction.getSplits());
         toggleAmountInputEntryMode(mSplitsList.size() <= 2);
 
+        mSplitValue = null;
+        mSplitQuantity = null;
         if (mSplitsList.size() == 2) {
             for (Split split : mSplitsList) {
                 if (split.getAccountUID().equals(mAccountUID)) {
-                    if (!split.getQuantity().getCommodity().equals(transaction.getCommodity())) {
-                        mSplitQuantity = split.getQuantity();
-                    }
+                    mSplitValue = split.getValue();
+                } else if (!split.getQuantity().getCommodity().equals(transaction.getCommodity())) {
+                    mSplitQuantity = split.getQuantity();
                 }
             }
         }
@@ -735,13 +743,17 @@ public class TransactionFormFragment extends Fragment implements
             String commodityUID = cmdtyDbAdapter.getCommodityUID(baseCurrencyCode);
             String targetCmdtyUID = cmdtyDbAdapter.getCommodityUID(transferCurrencyCode);
 
-            Pair<Long, Long> pricePair = PricesDbAdapter.getInstance()
+            if ((value.equals(mSplitValue)) && mSplitQuantity != null) {
+                quantity = mSplitQuantity;
+            } else {
+                Pair<Long, Long> pricePair = PricesDbAdapter.getInstance()
                     .getPrice(commodityUID, targetCmdtyUID);
 
-            if (pricePair.first > 0 && pricePair.second > 0) {
-                quantity = quantity.times(pricePair.first.intValue())
+                if (pricePair.first > 0 && pricePair.second > 0) {
+                    quantity = quantity.times(pricePair.first.intValue())
                         .div(pricePair.second.intValue())
                         .withCurrency(cmdtyDbAdapter.getRecord(targetCmdtyUID));
+                }
             }
         }
 
@@ -866,7 +878,7 @@ public class TransactionFormFragment extends Fragment implements
         mAmountEditText.setError(null);
 
         //determine whether we need to do currency conversion
-        if (isMultiCurrencyTransaction() && !splitEditorUsed() && !mCurrencyConversionDone) {
+        if (isMultiCurrencyTransaction() && !splitEditorUsed() && !onSaveAttempt) {
             onSaveAttempt = true;
             startTransferFunds();
             return;
@@ -1017,7 +1029,7 @@ public class TransactionFormFragment extends Fragment implements
      */
     public void setSplitList(List<Split> splitList) {
         mSplitsList = splitList;
-        Money balance = Transaction.computeBalance(mAccountUID, mSplitsList);
+        Money balance = Transaction.computeBalance(mAccountUID, splitList);
 
         mAmountEditText.setValue(balance.asBigDecimal());
         mTransactionTypeSwitch.setChecked(balance.isNegative());
@@ -1077,14 +1089,9 @@ public class TransactionFormFragment extends Fragment implements
         return stripped;
     }
 
-    /**
-     * Flag for checking where the TransferFunds dialog has already been displayed to the user
-     */
-    private boolean mCurrencyConversionDone = false;
-
     @Override
-    public void transferComplete(Money amount) {
-        mCurrencyConversionDone = true;
+    public void transferComplete(Money value, Money amount) {
+        mSplitValue = value;
         mSplitQuantity = amount;
 
         //The transfer dialog was called while attempting to save. So try saving again
