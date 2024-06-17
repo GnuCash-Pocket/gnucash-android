@@ -30,11 +30,6 @@ class Split : BaseModel, Parcelable {
         private set
 
     /**
-     * Amount of the split in the currency of the account to which the split belongs
-     */
-    private var _quantity: Money? = null
-
-    /**
      * Transaction UID which this split belongs to
      */
     var transactionUID: String? = ""
@@ -112,7 +107,7 @@ class Split : BaseModel, Parcelable {
         type = sourceSplit.type
         transactionUID = sourceSplit.transactionUID
         value = Money(sourceSplit.value!!)
-        _quantity = Money(sourceSplit._quantity!!)
+        quantity = Money(sourceSplit.quantity!!)
 
         //todo: clone reconciled status
         if (generateUID) {
@@ -140,10 +135,9 @@ class Split : BaseModel, Parcelable {
      * The quantity is in the currency of the account to which the split is associated
      * @see .getValue
      */
-    var quantity: Money?
-        get() = _quantity
-        set(quantity) {
-            _quantity = quantity!!.abs()
+    var quantity: Money? = null
+        set(value) {
+            field = value?.abs()
         }
 
     /**
@@ -160,7 +154,7 @@ class Split : BaseModel, Parcelable {
         pair.type = type!!.invert()
         pair.memo = memo
         pair.transactionUID = transactionUID
-        pair.quantity = _quantity
+        pair.quantity = quantity
         return pair
     }
 
@@ -193,7 +187,7 @@ class Split : BaseModel, Parcelable {
      * @see .getFormattedAmount
      */
     val formattedQuantity: Money
-        get() = getFormattedAmount(_quantity, accountUID, type)
+        get() = getFormattedAmount(quantity, accountUID, type)
 
     /**
      * Check if this split is reconciled
@@ -228,9 +222,9 @@ class Split : BaseModel, Parcelable {
             .append(SEPARATOR_CSV).append(value!!.numerator)
             .append(SEPARATOR_CSV).append(value!!.denominator)
             .append(SEPARATOR_CSV).append(value!!.commodity.currencyCode)
-            .append(SEPARATOR_CSV).append(_quantity!!.numerator)
-            .append(SEPARATOR_CSV).append(_quantity!!.denominator)
-            .append(SEPARATOR_CSV).append(_quantity!!.commodity.currencyCode)
+            .append(SEPARATOR_CSV).append(quantity!!.numerator)
+            .append(SEPARATOR_CSV).append(quantity!!.denominator)
+            .append(SEPARATOR_CSV).append(quantity!!.commodity.currencyCode)
             .append(SEPARATOR_CSV).append(transactionUID)
             .append(SEPARATOR_CSV).append(accountUID)
             .append(SEPARATOR_CSV).append(type!!.name)
@@ -262,7 +256,7 @@ class Split : BaseModel, Parcelable {
         if (super.equals(split)) return true
         if (reconcileState != split.reconcileState) return false
         if (!value!!.equals(split.value)) return false
-        if (!_quantity!!.equals(split._quantity)) return false
+        if (!quantity!!.equals(split.quantity)) return false
         if (transactionUID != split.transactionUID) return false
         if (accountUID != split.accountUID) return false
         if (type !== split.type) return false
@@ -283,7 +277,7 @@ class Split : BaseModel, Parcelable {
         val split = other as Split
         if (reconcileState != split.reconcileState) return false
         if (!value!!.equals(split.value)) return false
-        if (!_quantity!!.equals(split._quantity)) return false
+        if (!quantity!!.equals(split.quantity)) return false
         if (transactionUID != split.transactionUID) return false
         if (accountUID != split.accountUID) return false
         if (type !== split.type) return false
@@ -293,7 +287,7 @@ class Split : BaseModel, Parcelable {
     override fun hashCode(): Int {
         var result = super.hashCode()
         result = 31 * result + value.hashCode()
-        result = 31 * result + _quantity.hashCode()
+        result = 31 * result + quantity.hashCode()
         result = 31 * result + transactionUID.hashCode()
         result = 31 * result + accountUID.hashCode()
         result = 31 * result + type.hashCode()
@@ -312,8 +306,8 @@ class Split : BaseModel, Parcelable {
         dest.writeString(transactionUID)
         dest.writeString(type!!.name)
 
-        dest.writeMoney(value!!, flags)
-        dest.writeMoney(_quantity!!, flags)
+        dest.writeMoney(value, flags)
+        dest.writeMoney(quantity, flags)
 
         dest.writeString(memo.orEmpty())
         dest.writeString(reconcileState.toString())
@@ -333,7 +327,7 @@ class Split : BaseModel, Parcelable {
         type = TransactionType.valueOf(source.readString()!!)
 
         value = source.readMoney()
-        _quantity = source.readMoney()
+        quantity = source.readMoney()
 
         memo = source.readString()
         reconcileState = source.readString()!![0]

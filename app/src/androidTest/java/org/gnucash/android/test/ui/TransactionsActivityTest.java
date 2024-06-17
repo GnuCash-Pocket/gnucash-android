@@ -769,7 +769,7 @@ public class TransactionsActivityTest {
         mTransactionsDbAdapter.addRecord(multiTransaction);
 
         Transaction savedTransaction = mTransactionsDbAdapter.getRecord(multiTransaction.getUID());
-        assertThat(savedTransaction.getSplits()).extracting("_quantity").contains(expectedQty);
+        assertThat(savedTransaction.getSplits()).extracting("quantity").contains(expectedQty);
         assertThat(savedTransaction.getSplits()).extracting("value").contains(expectedValue);
 
         refreshTransactionsList();
@@ -799,7 +799,7 @@ public class TransactionsActivityTest {
                 .contains(mTransferAccount.getUID())
                 .doesNotContain(euroAccount.getUID());
         assertThat(allSplits).extracting("value").contains(expectedValue).doesNotContain(expectedQty);
-        assertThat(allSplits).extracting("_quantity").contains(expectedValue).doesNotContain(expectedQty);
+        assertThat(allSplits).extracting("quantity").contains(expectedValue).doesNotContain(expectedQty);
     }
 
     /**
@@ -831,7 +831,7 @@ public class TransactionsActivityTest {
         mTransactionsDbAdapter.addRecord(multiTransaction);
 
         Transaction savedTransaction = mTransactionsDbAdapter.getRecord(multiTransaction.getUID());
-        assertThat(savedTransaction.getSplits()).extracting("_quantity").contains(expectedQty);
+        assertThat(savedTransaction.getSplits()).extracting("quantity").contains(expectedQty);
         assertThat(savedTransaction.getSplits()).extracting("value").contains(expectedValue);
 
         assertThat(savedTransaction.getSplits(TRANSACTIONS_ACCOUNT_UID).get(0)
@@ -850,6 +850,7 @@ public class TransactionsActivityTest {
 
         onView(withId(R.id.input_transfer_account_spinner)).perform(click());
         onView(withText(euroAccount.getFullName())).perform(click());
+        // Exchange dialog should be shown already.
         onView(withId(R.id.input_converted_amount)).perform(typeText("5"));
         Espresso.closeSoftKeyboard();
         onView(withId(R.id.btn_save)).perform(click());

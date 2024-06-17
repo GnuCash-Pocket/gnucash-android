@@ -56,6 +56,7 @@ import androidx.fragment.app.FragmentResultListener;
 
 import org.gnucash.android.R;
 import org.gnucash.android.databinding.FragmentAccountFormBinding;
+import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
@@ -172,9 +173,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-
-        SharedPreferences sharedPrefs = PreferenceActivity.getActiveBookSharedPreferences();
-        mUseDoubleEntry = sharedPrefs.getBoolean(getString(R.string.key_use_double_entry), true);
+        mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled();
     }
 
     /**
