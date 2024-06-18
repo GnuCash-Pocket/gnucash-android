@@ -276,7 +276,7 @@ public class PieChartReportTest {
                 }
             });
         } catch (Throwable t) {
-            System.err.println("Faile to refresh reports");
+            System.err.println("Failed to refresh reports");
         }
     }
 

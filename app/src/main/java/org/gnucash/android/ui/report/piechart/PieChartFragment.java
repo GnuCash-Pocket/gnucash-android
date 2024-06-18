@@ -100,18 +100,8 @@ public class PieChartFragment extends BaseReportFragment {
     }
 
     @Override
-    public int getTitle() {
-        return R.string.title_pie_chart;
-    }
-
-    @Override
     public ReportType getReportType() {
         return ReportType.PIE_CHART;
-    }
-
-    @Override
-    public int getLayoutResource() {
-        return R.layout.fragment_pie_chart;
     }
 
     @Override
@@ -310,7 +300,7 @@ public class PieChartFragment extends BaseReportFragment {
         if (e == null) return;
         String label = mChart.getData().getXVals().get(e.getXIndex());
         float value = e.getVal();
-        float percent = value / mChart.getData().getYValueSum() * 100;
+        float percent = (value * 100) / mChart.getData().getYValueSum();
         mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label, value, percent));
     }
 }

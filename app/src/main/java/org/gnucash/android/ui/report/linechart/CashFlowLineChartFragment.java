@@ -88,16 +88,6 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     LineChart mChart;
 
     @Override
-    public int getLayoutResource() {
-        return R.layout.fragment_line_chart;
-    }
-
-    @Override
-    public int getTitle() {
-        return R.string.title_cash_flow_report;
-    }
-
-    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 

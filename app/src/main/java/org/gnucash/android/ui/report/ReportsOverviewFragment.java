@@ -98,16 +98,6 @@ public class ReportsOverviewFragment extends BaseReportFragment {
     }
 
     @Override
-    public int getLayoutResource() {
-        return R.layout.fragment_report_summary;
-    }
-
-    @Override
-    public int getTitle() {
-        return R.string.title_reports;
-    }
-
-    @Override
     public ReportType getReportType() {
         return ReportType.NONE;
     }
@@ -245,28 +235,26 @@ public class ReportsOverviewFragment extends BaseReportFragment {
 
     @OnClick({R.id.btn_bar_chart, R.id.btn_pie_chart, R.id.btn_line_chart, R.id.btn_balance_sheet})
     public void onClickChartTypeButton(View view) {
-        BaseReportFragment fragment;
+        ReportType reportType;
         switch (view.getId()) {
             case R.id.btn_pie_chart:
-                fragment = new PieChartFragment();
+                reportType = ReportType.PIE_CHART;
                 break;
             case R.id.btn_bar_chart:
-                fragment = new StackedBarChartFragment();
+                reportType = ReportType.BAR_CHART;
                 break;
             case R.id.btn_line_chart:
-                fragment = new CashFlowLineChartFragment();
+                reportType = ReportType.LINE_CHART;
                 break;
             case R.id.btn_balance_sheet:
-                fragment = new BalanceSheetFragment();
+                reportType = ReportType.TEXT;
                 break;
             default:
-                fragment = this;
+                reportType = ReportType.NONE;
                 break;
         }
-        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .commit();
+
+        mReportsActivity.showReport(reportType);
     }
 
     public void setButtonTint(Button button, ColorStateList tint) {

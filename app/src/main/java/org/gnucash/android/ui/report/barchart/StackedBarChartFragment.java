@@ -84,16 +84,6 @@ public class StackedBarChartFragment extends BaseReportFragment {
     private boolean mChartDataPresent = true;
 
     @Override
-    public int getTitle() {
-        return R.string.title_cash_flow_report;
-    }
-
-    @Override
-    public int getLayoutResource() {
-        return R.layout.fragment_bar_chart;
-    }
-
-    @Override
     public ReportType getReportType() {
         return ReportType.BAR_CHART;
     }

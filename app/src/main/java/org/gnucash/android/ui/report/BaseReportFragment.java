@@ -15,6 +15,7 @@
  */
 package org.gnucash.android.ui.report;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -71,7 +72,7 @@ import butterknife.ButterKnife;
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public abstract class BaseReportFragment extends Fragment implements
-        OnChartValueSelectedListener, ReportOptionsListener, Refreshable {
+    OnChartValueSelectedListener, ReportOptionsListener, Refreshable {
 
     /**
      * Color for chart with no data
@@ -120,14 +121,20 @@ public abstract class BaseReportFragment extends Fragment implements
      *
      * @return Title string identifier
      */
-    public abstract @StringRes int getTitle();
+    @StringRes
+    public int getTitle() {
+        return getReportType().titleId;
+    }
 
     /**
      * Returns the layout resource to use for this report
      *
      * @return Layout resource identifier
      */
-    public abstract @LayoutRes int getLayoutResource();
+    @LayoutRes
+    public int getLayoutResource() {
+        return getReportType().layoutId;
+    }
 
     /**
      * Returns what kind of report this is
@@ -188,7 +195,7 @@ public abstract class BaseReportFragment extends Fragment implements
 
         setHasOptionsMenu(true);
         mCommodity = CommoditiesDbAdapter.getInstance()
-                .getCommodity(GnuCashApplication.getDefaultCurrencyCode());
+            .getCommodity(GnuCashApplication.getDefaultCurrencyCode());
 
         ReportsActivity reportsActivity = (ReportsActivity) getActivity();
         mReportPeriodStart = reportsActivity.getReportPeriodStart();
@@ -205,18 +212,19 @@ public abstract class BaseReportFragment extends Fragment implements
     @Override
     public void onResume() {
         super.onResume();
-        mReportsActivity.setAppBarColor(getReportType().getTitleColor());
-        mReportsActivity.toggleToolbarTitleVisibility();
+        mReportsActivity.onFragmentResumed(this);
         toggleBaseReportingOptionsVisibility();
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (!(getActivity() instanceof ReportsActivity))
+        Activity activity = getActivity();
+        if (activity instanceof ReportsActivity) {
+            mReportsActivity = (ReportsActivity) activity;
+        } else {
             throw new RuntimeException("Report fragments can only be used with the ReportsActivity");
-        else
-            mReportsActivity = (ReportsActivity) getActivity();
+        }
     }
 
     @Override
@@ -234,12 +242,7 @@ public abstract class BaseReportFragment extends Fragment implements
             timeRangeLayout.setVisibility(visibility);
             dateRangeDivider.setVisibility(visibility);
         }
-
-        View accountTypeSpinner = mReportsActivity.findViewById(R.id.report_account_type_spinner);
-        int visibility = requiresAccountTypeOptions() ? View.VISIBLE : View.GONE;
-        accountTypeSpinner.setVisibility(visibility);
     }
-
 
     /**
      * Calculates difference between two date values accordingly to {@code mGroupInterval}

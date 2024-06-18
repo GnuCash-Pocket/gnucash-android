@@ -19,18 +19,18 @@ package org.gnucash.android.ui.report;
 import android.content.Context;
 
 import androidx.annotation.ColorRes;
+import androidx.annotation.LayoutRes;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 
 import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.ui.report.barchart.StackedBarChartFragment;
 import org.gnucash.android.ui.report.linechart.CashFlowLineChartFragment;
 import org.gnucash.android.ui.report.piechart.PieChartFragment;
 import org.gnucash.android.ui.report.sheet.BalanceSheetFragment;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import timber.log.Timber;
 
@@ -40,64 +40,49 @@ import timber.log.Timber;
  * in the system. When adding a new report, make sure to add a mapping in the constructor</p>
  */
 public enum ReportType {
-    PIE_CHART(0), BAR_CHART(1), LINE_CHART(2), TEXT(3), NONE(4);
+    PIE_CHART(R.string.title_pie_chart, R.color.account_green, R.layout.fragment_pie_chart, PieChartFragment.class),
+    BAR_CHART(R.string.title_bar_chart, R.color.account_red, R.layout.fragment_bar_chart, StackedBarChartFragment.class),
+    LINE_CHART(R.string.title_cash_flow_report, R.color.account_blue, R.layout.fragment_line_chart, CashFlowLineChartFragment.class),
+    TEXT(R.string.title_balance_sheet_report, R.color.account_purple, R.layout.fragment_text_report, BalanceSheetFragment.class),
+    NONE(R.string.title_reports, R.color.theme_primary, R.layout.fragment_report_summary, ReportsOverviewFragment.class);
 
-    Map<String, Class> mReportTypeMap = new HashMap<>();
-    int mValue = 4;
+    @StringRes
+    final int titleId;
+    @ColorRes
+    final int colorId;
+    @LayoutRes
+    final int layoutId;
+    @Nullable
+    final Class<? extends BaseReportFragment> fragmentClass;
 
-    ReportType(int index) {
-        mValue = index;
-        Context context = GnuCashApplication.getAppContext();
-        switch (index) {
-            case 0:
-                mReportTypeMap.put(context.getString(R.string.title_pie_chart), PieChartFragment.class);
-                break;
-            case 1:
-                mReportTypeMap.put(context.getString(R.string.title_bar_chart), StackedBarChartFragment.class);
-                break;
-            case 2:
-                mReportTypeMap.put(context.getString(R.string.title_cash_flow_report), CashFlowLineChartFragment.class);
-                break;
-            case 3:
-                mReportTypeMap.put(context.getString(R.string.title_balance_sheet_report), BalanceSheetFragment.class);
-                break;
-            case 4:
-                break;
-        }
+    ReportType(@StringRes int titleId,
+               @ColorRes int colorId,
+               @LayoutRes int layoutId,
+               @Nullable Class<? extends BaseReportFragment> fragmentClass) {
+        this.titleId = titleId;
+        this.colorId = colorId;
+        this.layoutId = layoutId;
+        this.fragmentClass = fragmentClass;
     }
 
-    /**
-     * Returns the toolbar color to be used for this report type
-     *
-     * @return Color resource
-     */
-    public @ColorRes int getTitleColor() {
-        switch (mValue) {
-            case 0:
-                return R.color.account_green;
-            case 1:
-                return R.color.account_red;
-            case 2:
-                return R.color.account_blue;
-            case 3:
-                return R.color.account_purple;
-            case 4:
-            default:
-                return R.color.theme_primary;
-        }
-    }
-
-    public List<String> getReportNames() {
-        return new ArrayList<>(mReportTypeMap.keySet());
-    }
-
-    public BaseReportFragment getFragment(String name) {
+    @Nullable
+    public BaseReportFragment getFragment() {
         BaseReportFragment fragment = null;
         try {
-            fragment = (BaseReportFragment) mReportTypeMap.get(name).newInstance();
+            fragment = fragmentClass.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
             Timber.e(e);
         }
         return fragment;
+    }
+
+    public static List<String> getReportNames(Context context) {
+        ReportType[] values = ReportType.values();
+        List<String> names = new ArrayList<>(values.length);
+        for (ReportType value : values) {
+            if (value == ReportType.NONE) continue;
+            names.add(context.getString(value.titleId));
+        }
+        return names;
     }
 }
