@@ -12,7 +12,7 @@ private const val INDEX_DOCUMENT_NAME = 0
 fun Uri.getDocumentName(context: Context?): String {
     var name: String = this.authority ?: this.host ?: ""
     val lastPath = this.lastPathSegment
-    if ((lastPath != null) && lastPath.indexOf('.') > 0) {
+    if (!lastPath.isNullOrEmpty()) {
         name = lastPath
         val indexSlash = lastPath.lastIndexOf('/')
         if ((indexSlash >= 0) && (indexSlash < name.lastIndex)) {

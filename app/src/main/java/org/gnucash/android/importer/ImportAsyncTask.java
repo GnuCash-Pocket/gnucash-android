@@ -31,6 +31,7 @@ import androidx.annotation.Nullable;
 import org.gnucash.android.R;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
+import org.gnucash.android.model.Book;
 import org.gnucash.android.ui.common.GnucashProgressDialog;
 import org.gnucash.android.ui.util.TaskDelegate;
 import org.gnucash.android.util.BackupManager;
@@ -83,34 +84,31 @@ public class ImportAsyncTask extends AsyncTask<Uri, Void, String> {
 
         Uri uri = uris[0];
         ContentResolver contentResolver = mContext.getContentResolver();
+        Book book;
         String bookUID;
         try {
             InputStream accountInputStream = contentResolver.openInputStream(uri);
-            bookUID = GncXmlImporter.parse(accountInputStream);
+            book = GncXmlImporter.parseBook(accountInputStream);
+            book.setSourceUri(uri);
+            bookUID = book.getUID();
         } catch (final Throwable e) {
             Timber.e(e, "Error importing: %s", uri);
-
-            mContext.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(mContext,
-                        mContext.getString(R.string.toast_error_importing_accounts) + "\n" + e.getLocalizedMessage(),
-                        Toast.LENGTH_LONG).show();
-                }
-            });
-
             return null;
         }
 
-        String displayName = ContentExtKt.getDocumentName(uri, mContext);
-        // Remove short file type extension, e.g. ".xml" or ".gnca".
-        int indexFileType = displayName.lastIndexOf('.');
-        if ((indexFileType > 0) && (indexFileType + 5 >= displayName.length())) {
-            displayName = displayName.substring(0, indexFileType);
-        }
         ContentValues contentValues = new ContentValues();
-        contentValues.put(DatabaseSchema.BookEntry.COLUMN_DISPLAY_NAME, displayName);
         contentValues.put(DatabaseSchema.BookEntry.COLUMN_SOURCE_URI, uri.toString());
+
+        String displayName = book.getDisplayName();
+        if (TextUtils.isEmpty(displayName)) {
+            displayName = ContentExtKt.getDocumentName(uri, mContext);
+            // Remove short file type extension, e.g. ".xml" or ".gnca".
+            int indexFileType = displayName.lastIndexOf('.');
+            if ((indexFileType > 0) && (indexFileType + 5 >= displayName.length())) {
+                displayName = displayName.substring(0, indexFileType);
+            }
+            contentValues.put(DatabaseSchema.BookEntry.COLUMN_DISPLAY_NAME, displayName);
+        }
         BooksDbAdapter.getInstance().updateRecord(bookUID, contentValues);
 
         //set the preferences to their default values

@@ -22,6 +22,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
@@ -56,7 +57,6 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
                 BookEntry.COLUMN_TEMPLATE_GUID,
                 BookEntry.COLUMN_SOURCE_URI,
                 BookEntry.COLUMN_ACTIVE,
-                BookEntry.COLUMN_UID,
                 BookEntry.COLUMN_LAST_SYNC
         });
     }
@@ -93,15 +93,15 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
     @Override
     protected @NonNull SQLiteStatement setBindings(@NonNull SQLiteStatement stmt, @NonNull final Book book) {
         stmt.clearBindings();
-        String displayName = book.getDisplayName() == null ? generateDefaultBookName() : book.getDisplayName();
+        String displayName = TextUtils.isEmpty(book.getDisplayName()) ? generateDefaultBookName() : book.getDisplayName();
         stmt.bindString(1, displayName);
         stmt.bindString(2, book.getRootAccountUID());
         stmt.bindString(3, book.getRootTemplateUID());
         if (book.getSourceUri() != null)
             stmt.bindString(4, book.getSourceUri().toString());
         stmt.bindLong(5, book.isActive() ? 1L : 0L);
-        stmt.bindString(6, book.getUID());
-        stmt.bindString(7, TimestampHelper.getUtcStringFromTimestamp(book.getLastSync()));
+        stmt.bindString(6, TimestampHelper.getUtcStringFromTimestamp(book.getLastSync()));
+        stmt.bindString(7, book.getUID());
         return stmt;
     }
 
@@ -317,11 +317,10 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
 
         String sql = "SELECT COUNT(*) FROM " + mTableName + " WHERE " + BookEntry.COLUMN_DISPLAY_NAME + " = ?";
         SQLiteStatement statement = mDb.compileStatement(sql);
+        Context context = GnuCashApplication.getAppContext();
 
         while (true) {
-            Context context = GnuCashApplication.getAppContext();
             String name = context.getString(R.string.book_default_name, bookCount);
-            //String name = "Book" + " " + bookCount;
 
             statement.clearBindings();
             statement.bindString(1, name);

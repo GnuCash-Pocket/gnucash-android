@@ -64,7 +64,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-import java.util.regex.Pattern;
 
 import timber.log.Timber;
 
@@ -276,7 +275,7 @@ public class GncXmlHandler extends DefaultHandler {
     private Map<String, Integer> mCurrencyCount;
 
     private BudgetsDbAdapter mBudgetsDbAdapter;
-    private Book mBook;
+    private final Book mBook = new Book();
     private SQLiteDatabase mDB;
 
     /**
@@ -290,8 +289,6 @@ public class GncXmlHandler extends DefaultHandler {
      * Initialize the GnuCash XML handler
      */
     private void init() {
-        mBook = new Book();
-
         DatabaseHelper databaseHelper = new DatabaseHelper(GnuCashApplication.getAppContext(), mBook.getUID());
         mDB = databaseHelper.getWritableDatabase();
         mTransactionsDbAdapter = new TransactionsDbAdapter(mDB, new SplitsDbAdapter(mDB));
@@ -976,7 +973,7 @@ public class GncXmlHandler extends DefaultHandler {
             mAccountsDbAdapter.enableForeignKey(false);
             Timber.d("before clean up db");
             mAccountsDbAdapter.deleteAllRecords();
-            Timber.d("deb clean up done %d ns", System.nanoTime() - startTime);
+            Timber.d("db clean up done %d ns", System.nanoTime() - startTime);
             long nAccounts = mAccountsDbAdapter.bulkAddRecords(mAccountList, DatabaseAdapter.UpdateMethod.insert);
             Timber.d("%d accounts inserted", nAccounts);
             //We need to add scheduled actions first because there is a foreign key constraint on transactions
@@ -1014,8 +1011,17 @@ public class GncXmlHandler extends DefaultHandler {
      *
      * @return GUID of the newly imported book
      */
-    public @NonNull String getBookUID() {
-        return mBook.getUID();
+    public @NonNull String getImportedBookUID() {
+        return getImportedBook().getUID();
+    }
+
+    /**
+     * Returns the just-imported book
+     *
+     * @return the newly imported book
+     */
+    public @NonNull Book getImportedBook() {
+        return mBook;
     }
 
     /**

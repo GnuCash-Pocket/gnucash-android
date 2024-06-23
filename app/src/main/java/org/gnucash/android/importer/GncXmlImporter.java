@@ -17,6 +17,7 @@
 package org.gnucash.android.importer;
 
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
+import org.gnucash.android.model.Book;
 import org.gnucash.android.util.PreferencesHelper;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -48,6 +49,16 @@ public class GncXmlImporter {
      * @return GUID of the book into which the XML was imported
      */
     public static String parse(InputStream gncXmlInputStream) throws ParserConfigurationException, SAXException, IOException {
+        return parseBook(gncXmlInputStream).getUID();
+    }
+
+    /**
+     * Parse GnuCash XML input and populates the database
+     *
+     * @param gncXmlInputStream InputStream source of the GnuCash XML file
+     * @return the book into which the XML was imported
+     */
+    public static Book parseBook(InputStream gncXmlInputStream) throws ParserConfigurationException, SAXException, IOException {
         SAXParserFactory spf = SAXParserFactory.newInstance();
         SAXParser sp = spf.newSAXParser();
         XMLReader xr = sp.getXMLReader();
@@ -71,12 +82,13 @@ public class GncXmlImporter {
         long endTime = System.nanoTime();
         Timber.d("%d ns spent on importing the file", endTime - startTime);
 
-        String bookUID = handler.getBookUID();
+        Book book = handler.getImportedBook();
+        String bookUID = book.getUID();
         PreferencesHelper.setLastExportTime(
                 TransactionsDbAdapter.getInstance().getTimestampOfLastModification(),
                 bookUID
         );
 
-        return bookUID;
+        return book;
     }
 }
