@@ -83,7 +83,7 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
         book.setDisplayName(displayName);
         book.setRootTemplateUID(rootTemplateGUID);
         book.setSourceUri(uriString == null ? null : Uri.parse(uriString));
-        book.setActive(active > 0);
+        book.setActive(active != 0);
         book.setLastSync(TimestampHelper.getTimestampFromUtcString(lastSync));
 
         populateBaseModelAttributes(cursor, book);
