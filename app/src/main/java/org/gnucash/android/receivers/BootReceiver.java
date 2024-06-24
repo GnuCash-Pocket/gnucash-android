@@ -20,7 +20,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.service.ScheduledActionService;
 import org.gnucash.android.util.BackupManager;
 
 /**
@@ -33,7 +33,7 @@ public class BootReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        GnuCashApplication.startScheduledActionExecutionService(context);
+        ScheduledActionService.schedulePeriodicActions(context);
         BackupManager.schedulePeriodicBackups(context);
     }
 }

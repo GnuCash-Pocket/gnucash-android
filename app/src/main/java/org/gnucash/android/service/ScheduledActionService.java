@@ -16,10 +16,13 @@
 
 package org.gnucash.android.service;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
@@ -39,7 +42,7 @@ import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.model.Book;
 import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Transaction;
-import org.gnucash.android.util.BookUtils;
+import org.gnucash.android.receivers.PeriodicJobReceiver;
 import org.joda.time.format.DateTimeFormat;
 
 import java.sql.Timestamp;
@@ -65,20 +68,47 @@ public class ScheduledActionService extends JobIntentService {
 
     private static final int JOB_ID = 1001;
 
-
     public static void enqueueWork(Context context) {
         Intent intent = new Intent(context, ScheduledActionService.class);
         enqueueWork(context, ScheduledActionService.class, JOB_ID, intent);
+    }
+
+    /**
+     * Starts the service for scheduled events and schedules an alarm to call the service twice daily.
+     * <p>If the alarm already exists, this method does nothing. If not, the alarm will be created
+     * Hence, there is no harm in calling the method repeatedly</p>
+     *
+     * @param context Application context
+     */
+    public static void schedulePeriodicActions(Context context) {
+        Intent intent = new Intent(context, PeriodicJobReceiver.class);
+        intent.setAction(PeriodicJobReceiver.ACTION_SCHEDULED_ACTIONS);
+        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent,
+            PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_MUTABLE);
+
+        if (alarmIntent != null) //if service is already scheduled, just return
+            return;
+
+        alarmIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_MUTABLE);
+
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            SystemClock.elapsedRealtime() + AlarmManager.INTERVAL_FIFTEEN_MINUTES / 15,
+            AlarmManager.INTERVAL_HOUR, alarmIntent);
+
+        enqueueWork(context);
     }
 
     @Override
     protected void onHandleWork(@NonNull Intent intent) {
         Timber.i("Starting scheduled action service");
 
+        final Context context = this;
+        final String activeBookUID = GnuCashApplication.getActiveBookUID();
         BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
         List<Book> books = booksDbAdapter.getAllRecords();
         for (Book book : books) { //// TODO: 20.04.2017 Retrieve only the book UIDs with new method
-            DatabaseHelper dbHelper = new DatabaseHelper(GnuCashApplication.getAppContext(), book.getUID());
+            DatabaseHelper dbHelper = new DatabaseHelper(context, book.getUID());
             SQLiteDatabase db = dbHelper.getWritableDatabase();
             RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(db);
             ScheduledActionDbAdapter scheduledActionDbAdapter = new ScheduledActionDbAdapter(db, recurrenceDbAdapter);
@@ -86,11 +116,12 @@ public class ScheduledActionService extends JobIntentService {
             List<ScheduledAction> scheduledActions = scheduledActionDbAdapter.getAllEnabledScheduledActions();
             Timber.i("Processing %d total scheduled actions for Book: %s",
                 scheduledActions.size(), book.getDisplayName());
-            processScheduledActions(scheduledActions, db);
+            processScheduledActions(context, scheduledActions, db);
 
             //close all databases except the currently active database
-            if (!db.getPath().equals(GnuCashApplication.getActiveDb().getPath()))
-                db.close();
+            if (!activeBookUID.equals(book.getUID())) {
+                dbHelper.close();
+            }
         }
 
         Timber.i("Completed service @ %s", DateTimeFormat.longDateTime().print(System.currentTimeMillis()));
@@ -99,46 +130,70 @@ public class ScheduledActionService extends JobIntentService {
     /**
      * Process scheduled actions and execute any pending actions
      *
+     * @param context          The application context.
      * @param scheduledActions List of scheduled actions
      */
     //made public static for testing. Do not call these methods directly
     @VisibleForTesting
-    public static void processScheduledActions(List<ScheduledAction> scheduledActions, SQLiteDatabase db) {
+    static void processScheduledActions(Context context, List<ScheduledAction> scheduledActions, SQLiteDatabase db) {
         for (ScheduledAction scheduledAction : scheduledActions) {
-
-            long now = System.currentTimeMillis();
-            int totalPlannedExecutions = scheduledAction.getTotalPlannedExecutionCount();
-            int executionCount = scheduledAction.getExecutionCount();
-
-            //the end time of the ScheduledAction is not handled here because
-            //it is handled differently for transactions and backups. See the individual methods.
-            if (scheduledAction.getStartTime() > now    //if schedule begins in the future
-                || !scheduledAction.isEnabled()     // of if schedule is disabled
-                || (totalPlannedExecutions > 0 && executionCount >= totalPlannedExecutions)) { //limit was set and we reached or exceeded it
-                Timber.i("Skipping scheduled action: %s", scheduledAction.toString());
-                continue;
-            }
-
-            executeScheduledEvent(scheduledAction, db);
+            processScheduledAction(context, scheduledAction, db);
         }
+    }
+
+    /**
+     * Process scheduled action and execute any pending actions
+     *
+     * @param scheduledAction The scheduled action.
+     */
+    //made public static for testing. Do not call these methods directly
+    @VisibleForTesting
+    static void processScheduledAction(@NonNull ScheduledAction scheduledAction, SQLiteDatabase db) {
+        processScheduledAction(GnuCashApplication.getAppContext(), scheduledAction, db);
+    }
+
+    /**
+     * Process scheduled action and execute any pending actions
+     *
+     * @param context         The application context.
+     * @param scheduledAction The scheduled action.
+     */
+    //made public static for testing. Do not call these methods directly
+    @VisibleForTesting
+    static void processScheduledAction(Context context, @NonNull ScheduledAction scheduledAction, SQLiteDatabase db) {
+        long now = System.currentTimeMillis();
+        int totalPlannedExecutions = scheduledAction.getTotalPlannedExecutionCount();
+        int executionCount = scheduledAction.getExecutionCount();
+
+        //the end time of the ScheduledAction is not handled here because
+        //it is handled differently for transactions and backups. See the individual methods.
+        if (scheduledAction.getStartTime() > now    //if schedule begins in the future
+            || !scheduledAction.isEnabled()     // of if schedule is disabled
+            || (totalPlannedExecutions > 0 && executionCount >= totalPlannedExecutions)) { //limit was set and we reached or exceeded it
+            Timber.i("Skipping scheduled action: %s", scheduledAction.toString());
+            return;
+        }
+
+        executeScheduledEvent(context, scheduledAction, db);
     }
 
     /**
      * Executes a scheduled event according to the specified parameters
      *
+     * @param context         The application context.
      * @param scheduledAction ScheduledEvent to be executed
      */
-    private static void executeScheduledEvent(ScheduledAction scheduledAction, SQLiteDatabase db) {
+    private static void executeScheduledEvent(Context context, ScheduledAction scheduledAction, SQLiteDatabase db) {
         Timber.i("Executing scheduled action: %s", scheduledAction.toString());
         int executionCount = 0;
 
         switch (scheduledAction.getActionType()) {
             case TRANSACTION:
-                executionCount += executeTransactions(scheduledAction, db);
+                executionCount += executeTransactions(context, scheduledAction, db);
                 break;
 
             case BACKUP:
-                executionCount += executeBackup(scheduledAction, GnuCashApplication.getActiveBookUID());
+                executionCount += executeBackup(context, scheduledAction, GnuCashApplication.getActiveBookUID());
                 break;
         }
 
@@ -163,11 +218,12 @@ public class ScheduledActionService extends JobIntentService {
      * Executes scheduled backups for a given scheduled action.
      * The backup will be executed only once, even if multiple schedules were missed
      *
+     * @param context         The application context.
      * @param scheduledAction Scheduled action referencing the backup
-     * @param bookUID The book UID.
+     * @param bookUID         The book UID.
      * @return Number of times backup is executed. This should either be 1 or 0
      */
-    private static int executeBackup(ScheduledAction scheduledAction, String bookUID) {
+    private static int executeBackup(Context context, ScheduledAction scheduledAction, String bookUID) {
         if (!shouldExecuteScheduledBackup(scheduledAction))
             return 0;
 
@@ -177,7 +233,7 @@ public class ScheduledActionService extends JobIntentService {
         Integer result = null;
         try {
             //wait for async task to finish before we proceed (we are holding a wake lock)
-            result = new ExportAsyncTask(GnuCashApplication.getAppContext(), bookUID).execute(params).get();
+            result = new ExportAsyncTask(context, bookUID).execute(params).get();
         } catch (InterruptedException | ExecutionException e) {
             Timber.e(e);
         }
@@ -221,7 +277,7 @@ public class ScheduledActionService extends JobIntentService {
      * @param db              SQLiteDatabase where the transactions are to be executed
      * @return Number of transactions created as a result of this action
      */
-    private static int executeTransactions(ScheduledAction scheduledAction, SQLiteDatabase db) {
+    private static int executeTransactions(Context context, ScheduledAction scheduledAction, SQLiteDatabase db) {
         int executionCount = 0;
         String actionUID = scheduledAction.getActionUID();
         TransactionsDbAdapter transactionsDbAdapter = new TransactionsDbAdapter(db, new SplitsDbAdapter(db));

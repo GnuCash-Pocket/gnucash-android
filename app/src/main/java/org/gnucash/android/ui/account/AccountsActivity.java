@@ -56,8 +56,8 @@ import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.importer.ImportAsyncTask;
+import org.gnucash.android.service.ScheduledActionService;
 import org.gnucash.android.ui.common.BaseDrawerActivity;
 import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.ui.common.Refreshable;
@@ -344,7 +344,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
         if (hasNewFeatures()) {
             showWhatsNewDialog(this);
         }
-        GnuCashApplication.startScheduledActionExecutionService(this);
+        ScheduledActionService.schedulePeriodicActions(this);
         BackupManager.schedulePeriodicBackups(this);
     }
 

@@ -18,6 +18,7 @@ package org.gnucash.android.receivers;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.text.TextUtils;
 
 import org.gnucash.android.BuildConfig;
 import org.gnucash.android.service.ScheduledActionService;
@@ -39,14 +40,15 @@ public class PeriodicJobReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (intent.getAction() == null) {
+        String action = intent.getAction();
+        if (TextUtils.isEmpty(action)) {
             Timber.w("No action was set in the intent. Ignoring...");
             return;
         }
 
-        if (intent.getAction().equals(ACTION_BACKUP)) {
+        if (action.equals(ACTION_BACKUP)) {
             BackupJob.enqueueWork(context);
-        } else if (intent.getAction().equals(ACTION_SCHEDULED_ACTIONS)) {
+        } else if (action.equals(ACTION_SCHEDULED_ACTIONS)) {
             ScheduledActionService.enqueueWork(context);
         }
     }
