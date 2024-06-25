@@ -86,7 +86,6 @@
                     android:id="@+id/radio_csv_transactions_format"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:checked="true"
                     android:text="@string/file_format_csv" />
 
                 <RadioButton
@@ -236,15 +235,24 @@
                 android:layout_marginStart="8dp"
                 android:text="@string/label_recurring_transaction" />
 
-            <TextView
-                android:id="@+id/input_recurrence"
-                style="@style/Dropdown.TextView"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:minHeight="40dp"
-                android:text="@string/label_tap_to_create_schedule" />
+                android:orientation="horizontal">
 
+                <ImageView
+                    style="@style/FormIcon"
+                    android:src="@drawable/ic_repeat" />
+
+                <TextView
+                    android:id="@+id/input_recurrence"
+                    style="@style/Dropdown.TextView"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/label_tap_to_create_schedule" />
+            </LinearLayout>
         </LinearLayout>
 
     </LinearLayout>

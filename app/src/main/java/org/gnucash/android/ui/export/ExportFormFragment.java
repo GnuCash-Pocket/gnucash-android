@@ -441,6 +441,7 @@ public class ExportFormFragment extends Fragment implements
             case XML:
                 mBinding.radioXmlFormat.performClick();
                 break;
+            case CSVA:
             case CSVT:
                 mBinding.radioCsvTransactionsFormat.performClick();
                 break;
