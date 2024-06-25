@@ -439,18 +439,6 @@ public class GnuCashApplication extends Application {
     }
 
     /**
-     * Starts the service for scheduled events and schedules an alarm to call the service twice daily.
-     * <p>If the alarm already exists, this method does nothing. If not, the alarm will be created
-     * Hence, there is no harm in calling the method repeatedly</p>
-     *
-     * @param context Application context
-     */
-    @Deprecated
-    public static void startScheduledActionExecutionService(Context context) {
-        ScheduledActionService.schedulePeriodicActions(context);
-    }
-
-    /**
      * Sets up UserVoice.
      *
      * <p>Allows users to contact with us and access help topics.</p>

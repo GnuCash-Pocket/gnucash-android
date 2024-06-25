@@ -344,8 +344,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
         if (hasNewFeatures()) {
             showWhatsNewDialog(this);
         }
-        ScheduledActionService.schedulePeriodicActions(this);
-        BackupManager.schedulePeriodicBackups(this);
+        ScheduledActionService.schedulePeriodic(this);
     }
 
     @Override
