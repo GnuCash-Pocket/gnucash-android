@@ -279,7 +279,8 @@
     <string name="label_no_recent_accounts">最近使用した勘定科目はありません</string>
     <string name="label_no_favorite_accounts">お気に入りの勘定科目はありません</string>
     <string name="nav_menu_scheduled_actions">予定のアクション</string>
-    <string name="label_scheduled_action_ended">"終了。最後の実行 %1$s"</string>
+    <string name="label_scheduled_action">"%1$s。最後の実行 %2$s"</string>
+    <string name="label_scheduled_action_ended">"終了"</string>
     <string name="btn_wizard_next">次へ</string>
     <string name="btn_wizard_finish">完了</string>
     <string name="wizard_title_default_currency">デフォルトの通貨</string>

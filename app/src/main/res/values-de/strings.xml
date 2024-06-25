@@ -284,7 +284,8 @@ No user-identifiable information will be collected as part of this process!</str
     <string name="label_no_recent_accounts">Keine kürzlich verwendeten Konten</string>
     <string name="label_no_favorite_accounts">Keine bevorzugten Konten</string>
     <string name="nav_menu_scheduled_actions">Geplante Aktionen</string>
-    <string name="label_scheduled_action_ended">"Ended, last executed on "</string>
+    <string name="label_scheduled_action">"%1$s, last executed on %2$s"</string>
+    <string name="label_scheduled_action_ended">"Ended"</string>
     <string name="btn_wizard_next">Weiter</string>
     <string name="btn_wizard_finish">Fertig</string>
     <string name="wizard_title_default_currency">Standardwährung</string>

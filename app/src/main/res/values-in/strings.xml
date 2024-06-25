@@ -277,7 +277,8 @@
     <string name="label_no_recent_accounts">Tidak ada akun terbaru</string>
     <string name="label_no_favorite_accounts">Tidak ada akun favorit</string>
     <string name="nav_menu_scheduled_actions">Tindakan yang Dijadwalkan</string>
-    <string name="label_scheduled_action_ended">"Telah berakhir, terakhir dieksekusi pada %1$s"</string>
+    <string name="label_scheduled_action">"%1$s, terakhir dieksekusi pada %2$s"</string>
+    <string name="label_scheduled_action_ended">"Telah berakhir"</string>
     <string name="btn_wizard_next">Berikutnya</string>
     <string name="btn_wizard_finish">Selesai</string>
     <string name="wizard_title_default_currency">Mata Uang Default</string>

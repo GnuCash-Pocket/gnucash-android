@@ -284,7 +284,8 @@ Konto docelowe używa innej waluty niż konto wyjściowe</string>
     <string name="label_no_recent_accounts">Brak ostatnich kont</string>
     <string name="label_no_favorite_accounts">Brak ulubionych kont</string>
     <string name="nav_menu_scheduled_actions">Zaplanowane akcje</string>
-    <string name="label_scheduled_action_ended">"Zakończone, ostatnie wykonanie o %1$s"</string>
+    <string name="label_scheduled_action">"%1$s, ostatnie wykonanie o %2$s"</string>
+    <string name="label_scheduled_action_ended">"Zakończone"</string>
     <string name="btn_wizard_next">Dalej</string>
     <string name="btn_wizard_finish">Zrobione</string>
     <string name="wizard_title_default_currency">Domyślna waluta</string>

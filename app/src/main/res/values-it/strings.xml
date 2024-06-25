@@ -283,7 +283,8 @@
     <string name="label_no_recent_accounts">Nessun conto recente</string>
     <string name="label_no_favorite_accounts">Nessun conto preferito</string>
     <string name="nav_menu_scheduled_actions">Azioni pianificate</string>
-    <string name="label_scheduled_action_ended">"Terminata, ultima esecuzione il %1$s"</string>
+    <string name="label_scheduled_action">"%1$s, ultima esecuzione il %2$s"</string>
+    <string name="label_scheduled_action_ended">"Terminata"</string>
     <string name="btn_wizard_next">Avanti</string>
     <string name="btn_wizard_finish">Fatto</string>
     <string name="wizard_title_default_currency">Valuta predefinita</string>

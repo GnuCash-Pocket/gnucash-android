@@ -278,7 +278,8 @@
     <string name="label_no_recent_accounts">Aucun comptes récents</string>
     <string name="label_no_favorite_accounts">Aucun comptes favoris</string>
     <string name="nav_menu_scheduled_actions">Actions prévues</string>
-    <string name="label_scheduled_action_ended">"Fini, dernière exécution le "</string>
+    <string name="label_scheduled_action">"%1$s, dernière exécution le %2$s"</string>
+    <string name="label_scheduled_action_ended">"Fini"</string>
     <string name="btn_wizard_next">Suivant</string>
     <string name="btn_wizard_finish">Terminer</string>
     <string name="wizard_title_default_currency">Monnaie par défaut</string>

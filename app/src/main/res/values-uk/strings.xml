@@ -283,7 +283,8 @@
     <string name="label_no_recent_accounts">Немає нещодавніх рахунків</string>
     <string name="label_no_favorite_accounts">Немає закладок рахунків</string>
     <string name="nav_menu_scheduled_actions">Планування</string>
-    <string name="label_scheduled_action_ended">"Закінчений, останнє виконання "</string>
+    <string name="label_scheduled_action">"%1$s, останнє виконання %2$s"</string>
+    <string name="label_scheduled_action_ended">"Закінчений"</string>
     <string name="btn_wizard_next">Далі</string>
     <string name="btn_wizard_finish">Готово</string>
     <string name="wizard_title_default_currency">Ваша звичайна валюта</string>

@@ -287,7 +287,8 @@ No user-identifiable information will be collected as part of this process!
     <string name="label_no_recent_accounts">Geen recente rekeningen</string>
     <string name="label_no_favorite_accounts">Geen favoriete rekeningen</string>
     <string name="nav_menu_scheduled_actions">Geplande acties</string>
-    <string name="label_scheduled_action_ended">"Ended, last executed on "</string>
+    <string name="label_scheduled_action">"%1$s, last executed on %2$s"</string>
+    <string name="label_scheduled_action_ended">"Ended"</string>
     <string name="btn_wizard_next">Volgende</string>
     <string name="btn_wizard_finish">Klaar</string>
     <string name="wizard_title_default_currency">Standaard munteenheid</string>

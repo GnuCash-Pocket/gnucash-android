@@ -194,7 +194,7 @@ public class ScheduledActionService {
         }
 
         if (executionCount > 0) {
-            scheduledAction.setLastRun(System.currentTimeMillis());
+            scheduledAction.setLastRunTime(System.currentTimeMillis());
             // Set the execution count in the object because it will be checked
             // for the next iteration in the calling loop.
             // This call is important, do not remove!!

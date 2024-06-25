@@ -284,7 +284,8 @@
     <string name="label_no_recent_accounts">No hi ha comptes recents</string>
     <string name="label_no_favorite_accounts">No hi ha comptes preferits</string>
     <string name="nav_menu_scheduled_actions">Accions periòdiques</string>
-    <string name="label_scheduled_action_ended">"Ended, last executed on %1$s"</string>
+    <string name="label_scheduled_action">"%1$s, last executed on %2$s"</string>
+    <string name="label_scheduled_action_ended">"Ended"</string>
     <string name="btn_wizard_next">Següent</string>
     <string name="btn_wizard_finish">Fet</string>
     <string name="wizard_title_default_currency">Moneda per defecte</string>

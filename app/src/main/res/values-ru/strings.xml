@@ -284,7 +284,8 @@
     <string name="label_no_recent_accounts">Нет последних счетов</string>
     <string name="label_no_favorite_accounts">Нет избранных счетов</string>
     <string name="nav_menu_scheduled_actions">Запланированные действия</string>
-    <string name="label_scheduled_action_ended">"Завершено. Последний раз выполнено "</string>
+    <string name="label_scheduled_action">"%1$s, Последний раз выполнено %2$s"</string>
+    <string name="label_scheduled_action_ended">"Завершено"</string>
     <string name="btn_wizard_next">Далее</string>
     <string name="btn_wizard_finish">Конец</string>
     <string name="wizard_title_default_currency">Валюта по умолчанию</string>

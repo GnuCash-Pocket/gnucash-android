@@ -82,7 +82,7 @@ public class ScheduledActionDbAdapterTest extends GnuCashTest {
         scheduledAction.setEnabled(true);
         scheduledAction.setStartTime(11111);
         scheduledAction.setEndTime(33333);
-        scheduledAction.setLastRun(22222);
+        scheduledAction.setLastRunTime(22222);
         scheduledAction.setExecutionCount(3);
         scheduledAction.setRecurrence(new Recurrence(PeriodType.MONTH));
         scheduledAction.setTag("QIF;SD_CARD;2016-06-25 12:56:07.175;false");

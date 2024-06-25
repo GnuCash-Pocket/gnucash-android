@@ -281,7 +281,8 @@
     <string name="label_no_recent_accounts">Ingen nylige kontoer</string>
     <string name="label_no_favorite_accounts">Ingen favoritt kontoer</string>
     <string name="nav_menu_scheduled_actions">Planlagte handlinger</string>
-    <string name="label_scheduled_action_ended">"Avsluttet. Sist kjørt på %1$s"</string>
+    <string name="label_scheduled_action">"%1$s, Sist kjørt på %2$s"</string>
+    <string name="label_scheduled_action_ended">"Avsluttet"</string>
     <string name="btn_wizard_next">Neste</string>
     <string name="btn_wizard_finish">Ferdig</string>
     <string name="wizard_title_default_currency">Standardvaluta</string>

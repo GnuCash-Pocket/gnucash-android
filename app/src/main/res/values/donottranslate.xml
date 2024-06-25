@@ -245,4 +245,5 @@
         <item>ZWL</item>
         <item>PLN</item>
     </string-array>
+    <string name="schedule_export_description" translatable="false">"%1$s %2$s %3$s"</string>
 </resources>

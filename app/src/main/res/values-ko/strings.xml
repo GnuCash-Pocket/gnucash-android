@@ -281,7 +281,8 @@
     <string name="label_no_recent_accounts">최근 계정 없음</string>
     <string name="label_no_favorite_accounts">즐겨찾기에 등록된 계정 없음</string>
     <string name="nav_menu_scheduled_actions">예약된 작업</string>
-    <string name="label_scheduled_action_ended">"완료, 마지막으로 %1$s에 실행"</string>
+    <string name="label_scheduled_action">"%1$s, 마지막으로 %2$s에 실행"</string>
+    <string name="label_scheduled_action_ended">"완료"</string>
     <string name="btn_wizard_next">다음</string>
     <string name="btn_wizard_finish">완료</string>
     <string name="wizard_title_default_currency">기본 통화</string>

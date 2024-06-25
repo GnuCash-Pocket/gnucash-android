@@ -282,7 +282,8 @@ Neste processo não serão recolhidas informações do utilizador!</string>
     <string name="label_no_recent_accounts">Sem Contas recentes</string>
     <string name="label_no_favorite_accounts">Sem Contas favoritas</string>
     <string name="nav_menu_scheduled_actions">Ações Agendadas</string>
-    <string name="label_scheduled_action_ended">"Feito, execução completada em %1$s"</string>
+    <string name="label_scheduled_action">"%1$s, execução completada em %2$s"</string>
+    <string name="label_scheduled_action_ended">"Feito"</string>
     <string name="btn_wizard_next">Avançar</string>
     <string name="btn_wizard_finish">Finalizar</string>
     <string name="wizard_title_default_currency">Moeda padrão</string>

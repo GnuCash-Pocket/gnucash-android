@@ -288,7 +288,8 @@
     <string name="label_no_recent_accounts">No recent accounts</string>
     <string name="label_no_favorite_accounts">No favorite accounts</string>
     <string name="nav_menu_scheduled_actions">Scheduled Actions</string>
-    <string name="label_scheduled_action_ended">"Ended, last executed on %1$s"</string>
+    <string name="label_scheduled_action">"%1$s, last executed on %2$s"</string>
+    <string name="label_scheduled_action_ended">"Ended"</string>
     <string name="btn_wizard_next">Next</string>
     <string name="btn_wizard_finish">Done</string>
     <string name="wizard_title_default_currency">Default Currency</string>

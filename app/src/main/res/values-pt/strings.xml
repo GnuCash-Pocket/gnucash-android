@@ -282,7 +282,8 @@ Neste processo não serão recolhidas informações do utilizador!</string>
     <string name="label_no_recent_accounts">Sem Contas recentes</string>
     <string name="label_no_favorite_accounts">Sem Contas favoritas</string>
     <string name="nav_menu_scheduled_actions">Acções agendadas</string>
-    <string name="label_scheduled_action_ended">"Feito, execução completada em %1$s"</string>
+    <string name="label_scheduled_action">"%1$s, execução completada em %2$s"</string>
+    <string name="label_scheduled_action_ended">"Feito"</string>
     <string name="btn_wizard_next">Seguinte</string>
     <string name="btn_wizard_finish">Feito</string>
     <string name="wizard_title_default_currency">Moeda padrão</string>
@@ -383,7 +384,7 @@ Neste processo não serão recolhidas informações do utilizador!</string>
     <string name="menu_title_enable_sync">Permitir a sincronização</string>
     <string name="menu_title_new_book">Novo Livro</string>
     <string name="toast_transaction_has_no_splits_and_cannot_open">A transação selecionadas não tem divisões e não pode ser aberta</string>
-    <string name="label_split_count">Servidor OC não encontrado</string>
+    <string name="label_split_count">%1$d divisões</string>
     <string name="label_inside_account_with_name">em %1$s</string>
     <plurals name="book_account_stats">
         <item quantity="one">%d conta</item>

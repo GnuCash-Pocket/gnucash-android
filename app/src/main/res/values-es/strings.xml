@@ -280,7 +280,8 @@ Este proceso solo recoge información que no permite identificar al usuario</str
     <string name="label_no_recent_accounts">No hay cuentas recientes</string>
     <string name="label_no_favorite_accounts">No hay cuentas favoritas</string>
     <string name="nav_menu_scheduled_actions">Acciones Programadas</string>
-    <string name="label_scheduled_action_ended">"Completada, última ejecución "</string>
+    <string name="label_scheduled_action">"%1$s, última ejecución %2$s"</string>
+    <string name="label_scheduled_action_ended">"Completada"</string>
     <string name="btn_wizard_next">Siguiente</string>
     <string name="btn_wizard_finish">Hecho</string>
     <string name="wizard_title_default_currency">Divisa por defecto</string>

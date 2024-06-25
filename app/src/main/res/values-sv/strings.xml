@@ -276,7 +276,8 @@
     <string name="label_no_recent_accounts">Inga senaste konton</string>
     <string name="label_no_favorite_accounts">Inga favorit konton</string>
     <string name="nav_menu_scheduled_actions">Schemalagda åtgärder</string>
-    <string name="label_scheduled_action_ended">"Slutade, senast utförda på %1$s"</string>
+    <string name="label_scheduled_action">"%1$s, senast utförda på %2$s"</string>
+    <string name="label_scheduled_action_ended">"Slutade"</string>
     <string name="btn_wizard_next">Nästa</string>
     <string name="btn_wizard_finish">Klar</string>
     <string name="wizard_title_default_currency">Standardvaluta</string>

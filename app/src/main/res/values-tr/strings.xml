@@ -286,7 +286,8 @@
     <string name="label_no_recent_accounts">Son hesap yok</string>
     <string name="label_no_favorite_accounts">Son favori hesap yok</string>
     <string name="nav_menu_scheduled_actions">Zamanlanmış Eylemler</string>
-    <string name="label_scheduled_action_ended">"Sonlandı, son eylem zamanı %1$s"</string>
+    <string name="label_scheduled_action">"%1$s, son eylem zamanı %2$s"</string>
+    <string name="label_scheduled_action_ended">"Sonlandı"</string>
     <string name="btn_wizard_next">İleri</string>
     <string name="btn_wizard_finish">Tamamlandı</string>
     <string name="wizard_title_default_currency">Öntanımlı Para Birimi</string>

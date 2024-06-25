@@ -283,7 +283,8 @@ No user-identifiable information will be collected as part of this process!
     <string name="label_no_recent_accounts">沒有最近的科目</string>
     <string name="label_no_favorite_accounts">沒有最星标的科目</string>
     <string name="nav_menu_scheduled_actions">計畫的操作</string>
-    <string name="label_scheduled_action_ended">"Ended, last executed on "</string>
+    <string name="label_scheduled_action">"%1$s, last executed on %2$s"</string>
+    <string name="label_scheduled_action_ended">"Ended"</string>
     <string name="btn_wizard_next">下一个</string>
     <string name="btn_wizard_finish">完成</string>
     <string name="wizard_title_default_currency">預設貨幣：</string>
