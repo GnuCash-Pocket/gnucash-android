@@ -16,17 +16,15 @@
 
 package org.gnucash.android.service;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
-import androidx.core.app.JobIntentService;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHelper;
@@ -42,13 +40,15 @@ import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.model.Book;
 import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Transaction;
-import org.gnucash.android.receivers.PeriodicJobReceiver;
+import org.gnucash.android.util.BackupManager;
+import org.gnucash.android.work.ActionWorker;
 import org.joda.time.format.DateTimeFormat;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import timber.log.Timber;
 
@@ -58,19 +58,16 @@ import timber.log.Timber;
  * <p>It's run every time the <code>enqueueWork</code> is called. It goes
  * through all scheduled event entries in the the database and executes them.</p>
  *
- * <p>Scheduled runs of the service should be achieved using an
- * {@link android.app.AlarmManager}, with
- * {@link org.gnucash.android.receivers.PeriodicJobReceiver} as an intermediary.</p>
- *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class ScheduledActionService extends JobIntentService {
+public class ScheduledActionService {
 
-    private static final int JOB_ID = 1001;
+    public static void schedulePeriodic(@NonNull Context context) {
+        WorkManager.getInstance(context)
+            .cancelAllWork();
 
-    public static void enqueueWork(@NonNull Context context) {
-        Intent intent = new Intent(context, ScheduledActionService.class);
-        enqueueWork(context, ScheduledActionService.class, JOB_ID, intent);
+        schedulePeriodicActions(context);
+        BackupManager.schedulePeriodicBackups(context);
     }
 
     /**
@@ -81,28 +78,17 @@ public class ScheduledActionService extends JobIntentService {
      * @param context Application context
      */
     public static void schedulePeriodicActions(@NonNull Context context) {
-        Intent intent = new Intent(context, PeriodicJobReceiver.class);
-        intent.setAction(PeriodicJobReceiver.ACTION_SCHEDULED_ACTIONS);
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent,
-            PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_MUTABLE);
+        Timber.i("Scheduling actions");
+        WorkRequest request = new PeriodicWorkRequest.Builder(ActionWorker.class, 1, TimeUnit.HOURS)
+            .setInitialDelay(15, TimeUnit.SECONDS)
+            .build();
 
-        if (alarmIntent != null) //if service is already scheduled, just return
-            return;
-
-        alarmIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_MUTABLE);
-
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            SystemClock.elapsedRealtime() + AlarmManager.INTERVAL_FIFTEEN_MINUTES / 15,
-            AlarmManager.INTERVAL_HOUR, alarmIntent);
-
-        enqueueWork(context);
+        WorkManager.getInstance(context)
+            .enqueue(request);
     }
 
-    @Override
-    protected void onHandleWork(@NonNull Intent intent) {
+    public void doWork(@NonNull Context context) {
         Timber.i("Starting scheduled action service");
-        final Context context = this;
         try {
             processScheduledBooks(context);
             Timber.i("Completed service @ %s", DateTimeFormat.longDateTime().print(System.currentTimeMillis()));
@@ -247,12 +233,13 @@ public class ScheduledActionService extends JobIntentService {
         } catch (InterruptedException | ExecutionException e) {
             Timber.e(e);
         }
-        if (result == null || result <= 0) {
-            Timber.i("Backup/export did not occur. There might have been no"
-                + " new transactions to export or it might have crashed");
-            // We don't know if something failed or there weren't transactions to export,
-            // so fall on the safe side and return as if something had failed.
-            // FIXME: Change ExportAsyncTask to distinguish between the two cases
+        if (result == null || result < 0) {
+            Timber.w("Backup/export did not occur. There was a problem.");
+            return 0;
+        }
+        if (result == 0) {
+            Timber.i("Backup/export did not occur." +
+                " There might have been no new transactions to export");
             return 0;
         }
         return 1;

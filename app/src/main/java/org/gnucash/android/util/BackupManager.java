@@ -16,21 +16,20 @@
 package org.gnucash.android.util;
 
 import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.SystemClock;
 import android.text.TextUtils;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -40,9 +39,9 @@ import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.Exporter;
 import org.gnucash.android.export.xml.GncXmlExporter;
 import org.gnucash.android.model.Book;
-import org.gnucash.android.receivers.PeriodicJobReceiver;
 import org.gnucash.android.ui.common.GnucashProgressDialog;
 import org.gnucash.android.ui.settings.PreferenceActivity;
+import org.gnucash.android.work.BackupWorker;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -52,6 +51,7 @@ import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPOutputStream;
 
 import kotlin.Unit;
@@ -82,7 +82,8 @@ public class BackupManager {
      * @return `true` when all books were successfully backed-up.
      */
     @WorkerThread
-    static boolean backupAllBooks(Context context) {
+    public static boolean backupAllBooks(Context context) {
+        Timber.i("Doing backup of all books.");
         BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
         List<String> bookUIDs = booksDbAdapter.getAllBookUIDs();
 
@@ -143,7 +144,7 @@ public class BackupManager {
             writer.close();
             return true;
         } catch (Throwable e) {
-            Timber.e(e, "Error creating XML backup");
+            Timber.e(e, "Error creating backup");
         }
         return false;
     }
@@ -204,18 +205,13 @@ public class BackupManager {
     }
 
     public static void schedulePeriodicBackups(Context context) {
-        Timber.i("Scheduling backup job");
-        Intent intent = new Intent(context, PeriodicJobReceiver.class);
-        intent.setAction(PeriodicJobReceiver.ACTION_BACKUP);
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0, intent,
-            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
-        if (alarmIntent == null) {
-            return;
-        }
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            SystemClock.elapsedRealtime() + AlarmManager.INTERVAL_FIFTEEN_MINUTES / 15,
-            AlarmManager.INTERVAL_DAY, alarmIntent);
+        Timber.i("Scheduling backups");
+        WorkRequest request = new PeriodicWorkRequest.Builder(BackupWorker.class, 1, TimeUnit.DAYS)
+            .setInitialDelay(15, TimeUnit.MINUTES)
+            .build();
+
+        WorkManager.getInstance(context)
+            .enqueue(request);
     }
 
     public static void backupBookAsync(@Nullable final Activity activity, final String bookUID, @NonNull final Function1<Boolean, Unit> after) {

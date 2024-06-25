@@ -44,7 +44,6 @@ import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
 import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Commodity;
-import org.gnucash.android.service.ScheduledActionService;
 import org.gnucash.android.ui.settings.PreferenceActivity;
 import org.gnucash.android.util.CrashlyticsTree;
 import org.gnucash.android.util.LogTree;
@@ -436,18 +435,6 @@ public class GnuCashApplication extends Application {
             locale = Locale.US;
         }
         return locale;
-    }
-
-    /**
-     * Starts the service for scheduled events and schedules an alarm to call the service twice daily.
-     * <p>If the alarm already exists, this method does nothing. If not, the alarm will be created
-     * Hence, there is no harm in calling the method repeatedly</p>
-     *
-     * @param context Application context
-     */
-    @Deprecated
-    public static void startScheduledActionExecutionService(Context context) {
-        ScheduledActionService.schedulePeriodicActions(context);
     }
 
     /**
