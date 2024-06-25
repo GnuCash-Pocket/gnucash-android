@@ -295,7 +295,7 @@ public class ScheduledActionServiceTest {
                 .minusMonths(4).minusDays(2).toDate().getTime());
         scheduledBackup.setRecurrence(PeriodType.MONTH, 1);
         scheduledBackup.setExecutionCount(2);
-        scheduledBackup.setLastRun(LocalDateTime.now().minusMonths(2).toDate().getTime());
+        scheduledBackup.setLastRunTime(LocalDateTime.now().minusMonths(2).toDate().getTime());
         long previousLastRun = scheduledBackup.getLastRunTime();
 
         ExportParams backupParams = new ExportParams(ExportFormat.XML);
@@ -335,7 +335,7 @@ public class ScheduledActionServiceTest {
         ScheduledAction scheduledBackup = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
         scheduledBackup.setStartTime(
                 LocalDateTime.now().withDayOfWeek(DateTimeConstants.WEDNESDAY).toDate().getTime());
-        scheduledBackup.setLastRun(scheduledBackup.getStartTime());
+        scheduledBackup.setLastRunTime(scheduledBackup.getStartTime());
         long previousLastRun = scheduledBackup.getLastRunTime();
         scheduledBackup.setExecutionCount(1);
         Recurrence recurrence = new Recurrence(PeriodType.WEEK);
@@ -367,7 +367,7 @@ public class ScheduledActionServiceTest {
     public void scheduledBackups_shouldNotIncludeTransactionsPreviousToTheLastRun() {
         ScheduledAction scheduledBackup = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
         scheduledBackup.setStartTime(LocalDateTime.now().minusDays(15).toDate().getTime());
-        scheduledBackup.setLastRun(LocalDateTime.now().minusDays(8).toDate().getTime());
+        scheduledBackup.setLastRunTime(LocalDateTime.now().minusDays(8).toDate().getTime());
         long previousLastRun = scheduledBackup.getLastRunTime();
         scheduledBackup.setExecutionCount(1);
         Recurrence recurrence = new Recurrence(PeriodType.WEEK);
@@ -426,7 +426,7 @@ public class ScheduledActionServiceTest {
     public void scheduledBackups_shouldIncludeTransactionsAfterTheLastRun() {
         ScheduledAction scheduledBackup = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
         scheduledBackup.setStartTime(LocalDateTime.now().minusDays(15).toDate().getTime());
-        scheduledBackup.setLastRun(LocalDateTime.now().minusDays(8).toDate().getTime());
+        scheduledBackup.setLastRunTime(LocalDateTime.now().minusDays(8).toDate().getTime());
         long previousLastRun = scheduledBackup.getLastRunTime();
         scheduledBackup.setExecutionCount(1);
         Recurrence recurrence = new Recurrence(PeriodType.WEEK);

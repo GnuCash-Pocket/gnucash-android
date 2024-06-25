@@ -150,7 +150,7 @@ public class ScheduledActionTest {
         recurrence.setByDays(Arrays.asList(Calendar.MONDAY, Calendar.THURSDAY));
         scheduledAction.setRecurrence(recurrence);
         scheduledAction.setStartTime(new DateTime(2016, 6, 6, 9, 0).getMillis());
-        scheduledAction.setLastRun(new DateTime(2017, 4, 17, 9, 0).getMillis()); // Monday
+        scheduledAction.setLastRunTime(new DateTime(2017, 4, 17, 9, 0).getMillis()); // Monday
 
         long expectedNextDueDate = new DateTime(2017, 4, 20, 9, 0).getMillis(); // Thursday
         assertThat(scheduledAction.computeNextTimeBasedScheduledExecutionTime())
@@ -169,7 +169,7 @@ public class ScheduledActionTest {
         recurrence.setByDays(Collections.singletonList(Calendar.WEDNESDAY));
         scheduledAction.setRecurrence(recurrence);
         scheduledAction.setStartTime(new DateTime(2016, 6, 6, 9, 0).getMillis());
-        scheduledAction.setLastRun(new DateTime(2017, 4, 12, 9, 0).getMillis()); // Wednesday
+        scheduledAction.setLastRunTime(new DateTime(2017, 4, 12, 9, 0).getMillis()); // Wednesday
 
         // Wednesday, 2 weeks after the last run
         long expectedNextDueDate = new DateTime(2017, 4, 26, 9, 0).getMillis();
@@ -190,7 +190,7 @@ public class ScheduledActionTest {
         recurrence.setByDays(Collections.<Integer>emptyList());
         scheduledAction.setRecurrence(recurrence);
         scheduledAction.setStartTime(new DateTime(2016, 6, 6, 9, 0).getMillis());
-        scheduledAction.setLastRun(new DateTime(2017, 4, 12, 9, 0).getMillis());
+        scheduledAction.setLastRunTime(new DateTime(2017, 4, 12, 9, 0).getMillis());
 
         long now = LocalDateTime.now().toDate().getTime();
         assertThat(scheduledAction.computeNextTimeBasedScheduledExecutionTime()).isGreaterThan(now);
