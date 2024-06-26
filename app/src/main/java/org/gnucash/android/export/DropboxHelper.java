@@ -19,6 +19,7 @@ package org.gnucash.android.export;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.text.TextUtils;
 
 import androidx.preference.PreferenceManager;
 
@@ -28,7 +29,6 @@ import com.dropbox.core.v2.DbxClientV2;
 
 import org.gnucash.android.BuildConfig;
 import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
 
 /**
  * Helper class for commonly used DropBox methods
@@ -48,18 +48,12 @@ public class DropboxHelper {
      *
      * @return Retrieved access token. Could be null if authentication failed or was canceled.
      */
-    public static String retrieveAndSaveToken() {
-        Context context = GnuCashApplication.getAppContext();
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String keyAccessToken = context.getString(R.string.key_dropbox_access_token);
-        String accessToken = sharedPrefs.getString(keyAccessToken, null);
-        if (accessToken != null)
+    public static String retrieveAndSaveToken(Context context) {
+        String accessToken = Auth.getOAuth2Token();
+        if (TextUtils.isEmpty(accessToken)) {
             return accessToken;
-
-        accessToken = Auth.getOAuth2Token();
-        sharedPrefs.edit()
-                .putString(keyAccessToken, accessToken)
-                .apply();
+        }
+        setAccessToken(context, accessToken);
         return accessToken;
     }
 
@@ -68,15 +62,13 @@ public class DropboxHelper {
      *
      * @return DropBox client for API v2
      */
-    public static DbxClientV2 getClient() {
+    public static DbxClientV2 getClient(Context context) {
         if (sDbxClient != null)
             return sDbxClient;
 
-        Context context = GnuCashApplication.getAppContext();
-        String accessToken = PreferenceManager.getDefaultSharedPreferences(context)
-                .getString(context.getString(R.string.key_dropbox_access_token), null);
-        if (accessToken == null)
-            accessToken = Auth.getOAuth2Token();
+        String accessToken = getAccessToken(context);
+        if (TextUtils.isEmpty(accessToken))
+            return null;
 
         DbxRequestConfig config = new DbxRequestConfig(BuildConfig.APPLICATION_ID);
         sDbxClient = new DbxClientV2(config, accessToken);
@@ -89,10 +81,39 @@ public class DropboxHelper {
      *
      * @return {@code true} if token exists, {@code false} otherwise
      */
-    public static boolean hasToken() {
-        Context context = GnuCashApplication.getAppContext();
+    public static boolean hasToken(Context context) {
+        String accessToken = getAccessToken(context);
+        return !TextUtils.isEmpty(accessToken);
+    }
+
+    public static String getAccessToken(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String accessToken = prefs.getString(context.getString(R.string.key_dropbox_access_token), null);
-        return accessToken != null;
+        String keyAccessToken = context.getString(R.string.key_dropbox_access_token);
+        String accessToken = prefs.getString(keyAccessToken, null);
+        if (TextUtils.isEmpty(accessToken)) {
+            accessToken = Auth.getOAuth2Token();
+        }
+        return accessToken;
+    }
+
+    private static void setAccessToken(Context context, String accessToken) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String keyAccessToken = context.getString(R.string.key_dropbox_access_token);
+        prefs.edit()
+            .putString(keyAccessToken, accessToken)
+            .apply();
+    }
+
+    public static void deleteAccessToken(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String keyAccessToken = context.getString(R.string.key_dropbox_access_token);
+        prefs.edit()
+            .remove(keyAccessToken)
+            .apply();
+    }
+
+    public static void authenticate(Context context) {
+        String dropboxAppKey = context.getString(R.string.dropbox_app_key);
+        Auth.startOAuth2Authentication(context, dropboxAppKey);
     }
 }

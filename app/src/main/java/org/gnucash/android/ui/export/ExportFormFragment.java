@@ -58,7 +58,6 @@ import com.codetroopers.betterpickers.radialtimepicker.RadialTimePickerDialogFra
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence;
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrenceFormatter;
 import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment;
-import com.dropbox.core.android.Auth;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -78,7 +77,6 @@ import org.gnucash.android.ui.settings.dialog.OwnCloudDialogFragment;
 import org.gnucash.android.ui.transaction.TransactionFormFragment;
 import org.gnucash.android.ui.util.RecurrenceParser;
 import org.gnucash.android.ui.util.RecurrenceViewClickListener;
-import org.gnucash.android.util.ContentExtKt;
 import org.gnucash.android.util.PreferencesHelper;
 import org.gnucash.android.util.TimestampHelper;
 
@@ -296,7 +294,7 @@ public class ExportFormFragment extends Fragment implements
     @Override
     public void onResume() {
         super.onResume();
-        DropboxHelper.retrieveAndSaveToken();
+        DropboxHelper.retrieveAndSaveToken(requireContext());
     }
 
     @Override
@@ -305,7 +303,7 @@ public class ExportFormFragment extends Fragment implements
         // When the user try to export sharing to 3rd party service like DropBox
         // then pausing all activities. That cause passcode screen appearing happened.
         // We use a disposable flag to skip this unnecessary passcode screen.
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
         prefs.edit().putBoolean(UxArgument.SKIP_PASSCODE_SCREEN, true).apply();
     }
 
@@ -374,10 +372,9 @@ public class ExportFormFragment extends Fragment implements
                         setExportUriText(getString(R.string.label_dropbox_export_destination));
                         mRecurrenceOptionsView.setVisibility(View.VISIBLE);
                         mExportParams.setExportTarget(ExportParams.ExportTarget.DROPBOX);
-                        String dropboxAppKey = getString(R.string.dropbox_app_key, BackupPreferenceFragment.DROPBOX_APP_KEY);
 
-                        if (!DropboxHelper.hasToken()) {
-                            Auth.startOAuth2Authentication(context, dropboxAppKey);
+                        if (!DropboxHelper.hasToken(context)) {
+                            DropboxHelper.authenticate(context);
                         }
                         break;
                     case 2: //OwnCloud
