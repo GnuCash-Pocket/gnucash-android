@@ -247,7 +247,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         createDatabaseTables(db);
-
     }
 
     @Override
@@ -257,38 +256,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        Timber.i("Upgrading database from version " + oldVersion + " to " + newVersion);
-
-        Toast.makeText(GnuCashApplication.getAppContext(), "Upgrading GnuCash database", Toast.LENGTH_SHORT).show();
-        /*
-         * NOTE: In order to modify the database, create a new static method in the MigrationHelper class
-         * called upgradeDbToVersion<#>, e.g. int upgradeDbToVersion10(SQLiteDatabase) in order to upgrade to version 10.
-         * The upgrade method should return the new (upgraded) database version as the return value.
-         * Then all you need to do is increment the DatabaseSchema.DATABASE_VERSION to the appropriate number to trigger an upgrade.
-         */
-        if (oldVersion > newVersion) {
-            throw new IllegalArgumentException("Database downgrades are not supported at the moment");
-        }
-
-        while (oldVersion < newVersion) {
-            try {
-                Method method = MigrationHelper.class.getDeclaredMethod("upgradeDbToVersion" + (oldVersion + 1), SQLiteDatabase.class);
-                Object result = method.invoke(null, db);
-                oldVersion = Integer.parseInt(result.toString());
-
-            } catch (NoSuchMethodException e) {
-                Timber.e(e, "Database upgrade method upgradeToVersion%d(SQLiteDatabase) definition not found", newVersion);
-                throw new RuntimeException(e);
-            } catch (IllegalAccessException e) {
-                Timber.e(e, "Database upgrade to version %d failed. The upgrade method is inaccessible", newVersion);
-                throw new RuntimeException(e);
-            } catch (InvocationTargetException e) {
-                Timber.e(e);
-                throw new RuntimeException(e.getTargetException());
-            }
-        }
-    }
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {}
 
 
     /**
