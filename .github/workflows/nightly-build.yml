@@ -19,7 +19,7 @@ jobs:
   report-unit:
     uses: ./.github/workflows/report-unit.yml
     needs: ci-build
-  
+
   instrumentation-test:
     needs: ci-build
     strategy:
@@ -75,7 +75,7 @@ jobs:
         env:
           RESULTS_URL: gs://${{ env.GCLOUD_BUCKET }}/${{ github.run_number }}/${{ matrix.device_name }}/**/test_result_*.xml
       - name: Instrumentation Test Summary
-        uses: test-summary/action@v2.2 # See https://github.com/test-summary/action/issues/44
+        uses: test-summary/action@v2
         with:
           paths: instrumentation-test-results/test_result_*.xml
       - name: Instrumentation Test Report ${{ matrix.device_name }}
