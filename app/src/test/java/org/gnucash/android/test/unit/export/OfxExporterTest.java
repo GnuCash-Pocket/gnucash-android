@@ -53,7 +53,7 @@ import java.util.TimeZone;
 @RunWith(RobolectricTestRunner.class)
 //package is required so that resources can be found in dev mode
 @Config(sdk = 21, shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
-public class OfxExporterTest extends BookHelperTest {
+public class OfxExporterTest {
 
     private String mBookUID;
     private SQLiteDatabase mDb;
