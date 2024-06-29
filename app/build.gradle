@@ -97,9 +97,8 @@ android {
             resValue "string", "app_name", "GnuCash-devel"
             resValue "string", "app_version_name", "${versionName}"
 
-            resValue "string", "dropbox_app_key", "dhjh8ke9wf05948"
-            resValue "string", "dropbox_app_secret", "h2t9fphj3nr4wkw"
-            resValue "string", "manifest_dropbox_app_key", "db-dhjh8ke9wf05948"
+            buildConfigField "String", "DROPBOX_APP_KEY", "\"dhjh8ke9wf05948\""
+            manifestPlaceholders.dropbox_app_key = "db-dhjh8ke9wf05948"
         }
 
         beta {
@@ -108,13 +107,11 @@ android {
             resValue "string", "app_version_name", "${versionName}"
 
             if (project.hasProperty("RELEASE_DROPBOX_APP_KEY")) {
-                resValue "string", "dropbox_app_key", RELEASE_DROPBOX_APP_KEY
-                resValue "string", "dropbox_app_secret", RELEASE_DROPBOX_APP_SECRET
-                resValue "string", "manifest_dropbox_app_key", "db-${RELEASE_DROPBOX_APP_KEY}"
+                buildConfigField "String", "DROPBOX_APP_KEY", "\"${RELEASE_DROPBOX_APP_KEY}\""
+                manifestPlaceholders.dropbox_app_key = "db-${RELEASE_DROPBOX_APP_KEY}"
             } else {
-                resValue "string", "dropbox_app_key", "dhjh8ke9wf05948"
-                resValue "string", "dropbox_app_secret", "h2t9fphj3nr4wkw"
-                resValue "string", "manifest_dropbox_app_key", "db-dhjh8ke9wf05948"
+                buildConfigField "String", "DROPBOX_APP_KEY", "\"dhjh8ke9wf05948\""
+                manifestPlaceholders.dropbox_app_key = "db-dhjh8ke9wf05948"
             }
         }
 
@@ -123,13 +120,11 @@ android {
             resValue "string", "app_name", "GnuCash"
 
             if (project.hasProperty("RELEASE_DROPBOX_APP_KEY")) {
-                resValue "string", "dropbox_app_key", RELEASE_DROPBOX_APP_KEY
-                resValue "string", "dropbox_app_secret", RELEASE_DROPBOX_APP_SECRET
-                resValue "string", "manifest_dropbox_app_key", "db-${RELEASE_DROPBOX_APP_KEY}"
+                buildConfigField "String", "DROPBOX_APP_KEY", "\"${RELEASE_DROPBOX_APP_KEY}\""
+                manifestPlaceholders.dropbox_app_key = "db-${RELEASE_DROPBOX_APP_KEY}"
             } else {
-                resValue "string", "dropbox_app_key", "dhjh8ke9wf05948"
-                resValue "string", "dropbox_app_secret", "h2t9fphj3nr4wkw"
-                resValue "string", "manifest_dropbox_app_key", "db-dhjh8ke9wf05948"
+                buildConfigField "String", "DROPBOX_APP_KEY", "\"dhjh8ke9wf05948\""
+                manifestPlaceholders.dropbox_app_key = "db-dhjh8ke9wf05948"
             }
         }
     }

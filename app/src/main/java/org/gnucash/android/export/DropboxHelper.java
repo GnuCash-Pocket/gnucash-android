@@ -35,6 +35,8 @@ import org.gnucash.android.R;
  */
 public class DropboxHelper {
 
+    private static final String DROPBOX_APP_KEY = BuildConfig.DROPBOX_APP_KEY;
+
     /**
      * DropBox API v2 client for making requests to DropBox
      */
@@ -67,8 +69,10 @@ public class DropboxHelper {
             return sDbxClient;
 
         String accessToken = getAccessToken(context);
-        if (TextUtils.isEmpty(accessToken))
+        if (TextUtils.isEmpty(accessToken)) {
+            DropboxHelper.authenticate(context);
             return null;
+        }
 
         DbxRequestConfig config = new DbxRequestConfig(BuildConfig.APPLICATION_ID);
         sDbxClient = new DbxClientV2(config, accessToken);
@@ -113,7 +117,6 @@ public class DropboxHelper {
     }
 
     public static void authenticate(Context context) {
-        String dropboxAppKey = context.getString(R.string.dropbox_app_key);
-        Auth.startOAuth2Authentication(context, dropboxAppKey);
+        Auth.startOAuth2Authentication(context, DROPBOX_APP_KEY);
     }
 }
