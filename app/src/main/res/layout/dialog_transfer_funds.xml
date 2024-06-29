@@ -182,9 +182,10 @@
             </TableRow>
 
             <include
+                android:id="@+id/defaultButtons"
                 layout="@layout/default_buttons"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content" />
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
         </TableLayout>
     </ScrollView>
 

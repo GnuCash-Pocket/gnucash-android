@@ -20,12 +20,14 @@ package org.gnucash.android.ui.report.linechart;
 import static org.gnucash.android.util.ColorExtKt.parseColor;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
-import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.data.Entry;
@@ -36,6 +38,7 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import org.gnucash.android.R;
+import org.gnucash.android.databinding.FragmentLineChartBinding;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
@@ -54,7 +57,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import butterknife.BindView;
 import timber.log.Timber;
 
 /**
@@ -84,12 +86,12 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     private long mLatestTransactionTimestamp;
     private boolean mChartDataPresent = true;
 
-    @BindView(R.id.line_chart)
-    LineChart mChart;
+    private FragmentLineChartBinding mBinding;
 
     @Override
-    public int getLayoutResource() {
-        return R.layout.fragment_line_chart;
+    public View inflateView(LayoutInflater inflater, ViewGroup container) {
+        mBinding = FragmentLineChartBinding.inflate(inflater, container, false);
+        return mBinding.getRoot();
     }
 
     @Override
@@ -101,14 +103,14 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mChart.setOnChartValueSelectedListener(this);
-        mChart.setDescription("");
-        mChart.getXAxis().setDrawGridLines(false);
-        mChart.getAxisRight().setEnabled(false);
-        mChart.getAxisLeft().enableGridDashedLine(4.0f, 4.0f, 0);
-        mChart.getAxisLeft().setValueFormatter(new LargeValueFormatter(mCommodity.getSymbol()));
+        mBinding.lineChart.setOnChartValueSelectedListener(this);
+        mBinding.lineChart.setDescription("");
+        mBinding.lineChart.getXAxis().setDrawGridLines(false);
+        mBinding.lineChart.getAxisRight().setEnabled(false);
+        mBinding.lineChart.getAxisLeft().enableGridDashedLine(4.0f, 4.0f, 0);
+        mBinding.lineChart.getAxisLeft().setValueFormatter(new LargeValueFormatter(mCommodity.getSymbol()));
 
-        Legend legend = mChart.getLegend();
+        Legend legend = mBinding.lineChart.getLegend();
         legend.setPosition(Legend.LegendPosition.BELOW_CHART_CENTER);
         legend.setTextSize(16);
         legend.setForm(Legend.LegendForm.CIRCLE);
@@ -313,7 +315,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     protected void generateReport() {
         LineData lineData = getData(new ArrayList<>(Arrays.asList(AccountType.INCOME, AccountType.EXPENSE)));
         if (lineData != null) {
-            mChart.setData(lineData);
+            mBinding.lineChart.setData(lineData);
             mChartDataPresent = true;
         } else {
             mChartDataPresent = false;
@@ -323,15 +325,15 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     @Override
     protected void displayReport() {
         if (!mChartDataPresent) {
-            mChart.getAxisLeft().setAxisMaxValue(10);
-            mChart.getAxisLeft().setDrawLabels(false);
-            mChart.getXAxis().setDrawLabels(false);
-            mChart.setTouchEnabled(false);
+            mBinding.lineChart.getAxisLeft().setAxisMaxValue(10);
+            mBinding.lineChart.getAxisLeft().setDrawLabels(false);
+            mBinding.lineChart.getXAxis().setDrawLabels(false);
+            mBinding.lineChart.setTouchEnabled(false);
             mSelectedValueTextView.setText(getResources().getString(R.string.label_chart_no_data));
         } else {
-            mChart.animateX(ANIMATION_DURATION);
+            mBinding.lineChart.animateX(ANIMATION_DURATION);
         }
-        mChart.invalidate();
+        mBinding.lineChart.invalidate();
     }
 
     @Override
@@ -339,8 +341,8 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
         if (mReportPeriodStart != start || mReportPeriodEnd != end) {
             mReportPeriodStart = start;
             mReportPeriodEnd = end;
-            mChart.setData(getData(new ArrayList<>(Arrays.asList(AccountType.INCOME, AccountType.EXPENSE))));
-            mChart.invalidate();
+            mBinding.lineChart.setData(getData(new ArrayList<>(Arrays.asList(AccountType.INCOME, AccountType.EXPENSE))));
+            mBinding.lineChart.invalidate();
         }
     }
 
@@ -348,8 +350,8 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     public void onGroupingUpdated(GroupInterval groupInterval) {
         if (mGroupInterval != groupInterval) {
             mGroupInterval = groupInterval;
-            mChart.setData(getData(new ArrayList<>(Arrays.asList(AccountType.INCOME, AccountType.EXPENSE))));
-            mChart.invalidate();
+            mBinding.lineChart.setData(getData(new ArrayList<>(Arrays.asList(AccountType.INCOME, AccountType.EXPENSE))));
+            mBinding.lineChart.invalidate();
         }
     }
 
@@ -369,22 +371,22 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
             item.setChecked(!item.isChecked());
         switch (item.getItemId()) {
             case R.id.menu_toggle_legend:
-                mChart.getLegend().setEnabled(!mChart.getLegend().isEnabled());
-                mChart.invalidate();
+                mBinding.lineChart.getLegend().setEnabled(!mBinding.lineChart.getLegend().isEnabled());
+                mBinding.lineChart.invalidate();
                 return true;
 
             case R.id.menu_toggle_average_lines:
-                if (mChart.getAxisLeft().getLimitLines().isEmpty()) {
-                    for (ILineDataSet set : mChart.getData().getDataSets()) {
+                if (mBinding.lineChart.getAxisLeft().getLimitLines().isEmpty()) {
+                    for (ILineDataSet set : mBinding.lineChart.getData().getDataSets()) {
                         LimitLine line = new LimitLine(getYValueSum(set) / set.getEntryCount(), set.getLabel());
                         line.enableDashedLine(10, 5, 0);
                         line.setLineColor(set.getColor());
-                        mChart.getAxisLeft().addLimitLine(line);
+                        mBinding.lineChart.getAxisLeft().addLimitLine(line);
                     }
                 } else {
-                    mChart.getAxisLeft().removeAllLimitLines();
+                    mBinding.lineChart.getAxisLeft().removeAllLimitLines();
                 }
-                mChart.invalidate();
+                mBinding.lineChart.invalidate();
                 return true;
 
             default:
@@ -395,9 +397,9 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     @Override
     public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
         if (e == null) return;
-        String label = mChart.getData().getXVals().get(e.getXIndex());
+        String label = mBinding.lineChart.getData().getXVals().get(e.getXIndex());
         double value = e.getVal();
-        double sum = getYValueSum(mChart.getData().getDataSetByIndex(dataSetIndex));
+        double sum = getYValueSum(mBinding.lineChart.getData().getDataSetByIndex(dataSetIndex));
         mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label, value, (value * 100) / sum));
     }
 
