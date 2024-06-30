@@ -53,7 +53,7 @@ import timber.log.Timber;
  * @author Ngewi Fet <ngewif@gmail.com>
  * @author Yongxin Wang <fefe.wyx@gmail.com>
  */
-public abstract class Exporter implements Closeable {
+public abstract class Exporter {
 
     /**
      * Application folder on external storage
@@ -260,8 +260,7 @@ public abstract class Exporter implements Closeable {
         return "text/plain";
     }
 
-    @Override
-    public void close() throws IOException {
+    protected void close() throws IOException {
         mAccountsDbAdapter.close();
         mBudgetsDbAdapter.close();
         mCommoditiesDbAdapter.close();

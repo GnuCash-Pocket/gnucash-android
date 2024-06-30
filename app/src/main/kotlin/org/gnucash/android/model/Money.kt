@@ -277,6 +277,22 @@ class Money : Number, Comparable<Money>, Parcelable {
     }
 
     /**
+     * Returns a string representation of the Money object formatted according to
+     * the `locale` without the currency symbol.
+     * The output precision is limited to the number of fractional digits supported by the currency
+     *
+     * @param locale Locale to use when formatting the object. Defaults to Locale.getDefault().
+     * @return String containing formatted Money representation
+     */
+    @JvmOverloads
+    fun formattedStringWithoutSymbol(locale: Locale = Locale.getDefault()): String {
+        val format = NumberFormat.getNumberInstance(locale)
+        format.setMinimumFractionDigits(commodity.smallestFractionDigits)
+        format.setMaximumFractionDigits(commodity.smallestFractionDigits)
+        return format.format(_amount)
+    }
+
+    /**
      * Returns a new Money object whose amount is the negated value of this object amount.
      * The original `Money` object remains unchanged.
      *
@@ -419,21 +435,12 @@ class Money : Number, Comparable<Money>, Parcelable {
      *
      *
      * This string is not locale-formatted. The decimal operator is a period (.)
-     * For a locale-formatted version, see the method [.toLocaleString]
+     * For a locale-formatted version, see the method `formattedStringWithoutSymbol()`.
      *
      * @return String representation of the amount (without currency) of the Money object
      */
     fun toPlainString(): String {
         return _amount.setScale(commodity.smallestFractionDigits, roundingMode).toPlainString()
-    }
-
-    /**
-     * Returns a locale-specific representation of the amount of the Money object (excluding the currency)
-     *
-     * @return String representation of the amount (without currency) of the Money object
-     */
-    fun toLocaleString(): String {
-        return String.format(Locale.getDefault(), "%.2f", toDouble())
     }
 
     /**
