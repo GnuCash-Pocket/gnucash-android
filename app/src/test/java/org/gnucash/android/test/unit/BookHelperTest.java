@@ -52,7 +52,7 @@ public abstract class BookHelperTest {
             Timber.e(e);
             fail();
         }
-        String bookUID = handler.getBookUID();
+        String bookUID = handler.getImportedBookUID();
         setUpDbAdapters(bookUID);
         return bookUID;
     }
