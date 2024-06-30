@@ -41,17 +41,6 @@ public class DatabaseSchema {
      */
     public static final int DATABASE_VERSION = 15;
 
-    /**
-     * Name of the database
-     * <p>This was used when the application had only one database per instance.
-     * Now there can be multiple databases for each book imported
-     * </p>
-     *
-     * @deprecated Each database uses the GUID of the root account as name
-     */
-    @Deprecated
-    public static final String LEGACY_DATABASE_NAME = "gnucash_db";
-
     //no instances are to be instantiated
     private DatabaseSchema() {
     }
