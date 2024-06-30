@@ -133,9 +133,6 @@ public class GnuCashApplication extends Application {
 
         setUpUserVoice();
 
-        BookDbHelper bookDbHelper = new BookDbHelper(context);
-        mBooksDbAdapter = new BooksDbAdapter(bookDbHelper.getWritableDatabase());
-
         initializeDatabaseAdapters(context);
         setDefaultCurrencyCode(context, getDefaultCurrencyCode());
 
@@ -154,16 +151,21 @@ public class GnuCashApplication extends Application {
      * @param context the context.
      */
     public static void initializeDatabaseAdapters(Context context) {
+        BookDbHelper bookDbHelper = new BookDbHelper(context);
+        mBooksDbAdapter = new BooksDbAdapter(bookDbHelper.getWritableDatabase());
+
         if (mDbHelper != null) { //close if open
             mDbHelper.getReadableDatabase().close();
         }
 
+        String bookUID;
         try {
-            mDbHelper = new DatabaseHelper(context, mBooksDbAdapter.getActiveBookUID());
+            bookUID = mBooksDbAdapter.getActiveBookUID();
         } catch (BooksDbAdapter.NoActiveBookFoundException e) {
             mBooksDbAdapter.fixBooksDatabase();
-            mDbHelper = new DatabaseHelper(context, mBooksDbAdapter.getActiveBookUID());
+            bookUID = mBooksDbAdapter.getActiveBookUID();
         }
+        mDbHelper = new DatabaseHelper(context, bookUID);
         SQLiteDatabase mainDb;
         try {
             mainDb = mDbHelper.getWritableDatabase();
