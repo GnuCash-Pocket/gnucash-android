@@ -68,16 +68,6 @@ public class BalanceSheetFragment extends BaseReportFragment {
     private List<AccountType> mEquityAccountTypes;
 
     @Override
-    public int getLayoutResource() {
-        return R.layout.fragment_text_report;
-    }
-
-    @Override
-    public int getTitle() {
-        return R.string.title_balance_sheet_report;
-    }
-
-    @Override
     public ReportType getReportType() {
         return ReportType.TEXT;
     }

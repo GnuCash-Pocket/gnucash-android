@@ -100,18 +100,8 @@ public class PieChartFragment extends BaseReportFragment {
     }
 
     @Override
-    public int getTitle() {
-        return R.string.title_pie_chart;
-    }
-
-    @Override
     public ReportType getReportType() {
         return ReportType.PIE_CHART;
-    }
-
-    @Override
-    public int getLayoutResource() {
-        return R.layout.fragment_pie_chart;
     }
 
     @Override
