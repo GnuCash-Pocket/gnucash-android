@@ -34,7 +34,6 @@ import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentResultListener;
@@ -418,7 +417,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        MenuItem favoriteAccountMenuItem = menu.findItem(R.id.menu_favorite_account);
+        MenuItem favoriteAccountMenuItem = menu.findItem(R.id.menu_favorite);
 
         if (favoriteAccountMenuItem == null) //when the activity is used to edit a transaction
             return super.onPrepareOptionsMenu(menu);
@@ -437,7 +436,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
             case android.R.id.home:
                 return super.onOptionsItemSelected(item);
 
-            case R.id.menu_favorite_account:
+            case R.id.menu_favorite:
                 AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
                 long accountId = accountsDbAdapter.getID(mAccountUID);
                 boolean isFavorite = accountsDbAdapter.isFavoriteAccount(mAccountUID);
@@ -446,7 +445,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
                 supportInvalidateOptionsMenu();
                 return true;
 
-            case R.id.menu_edit_account:
+            case R.id.menu_edit:
                 Intent editAccountIntent = new Intent(this, FormActivity.class);
                 editAccountIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
                 editAccountIntent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
@@ -454,7 +453,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
                 startActivity(editAccountIntent);
                 return true;
 
-            case R.id.menu_delete_account:
+            case R.id.menu_delete:
                 tryDeleteAccount(mAccountUID);
                 return true;
 

@@ -1460,8 +1460,7 @@ public class MigrationHelper {
         String lastExportTime = sharedPrefs.getString(keyLastExportTime, TimestampHelper.getTimestampFromEpochZero().toString());
         boolean useDoubleEntry = sharedPrefs.getBoolean(keyUseDoubleEntry, true);
         boolean saveOpeningBalance = sharedPrefs.getBoolean(keySaveOpeningBalance, false);
-        boolean useCompactTrnView = PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(context.getString(R.string.key_use_double_entry), !useDoubleEntry);
+        boolean useCompactTrnView = !useDoubleEntry;
 
         String rootAccountUID = getGnuCashRootAccountUID(db);
         SharedPreferences bookPrefs = context.getSharedPreferences(rootAccountUID, Context.MODE_PRIVATE);

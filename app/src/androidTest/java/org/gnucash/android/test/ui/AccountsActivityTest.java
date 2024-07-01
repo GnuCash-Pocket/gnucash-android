@@ -65,7 +65,6 @@ import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.db.adapter.SplitsDbAdapter;
@@ -79,7 +78,7 @@ import org.gnucash.android.model.Transaction;
 import org.gnucash.android.receivers.AccountCreator;
 import org.gnucash.android.test.ui.util.DisableAnimationsRule;
 import org.gnucash.android.ui.account.AccountsActivity;
-import org.gnucash.android.ui.account.AccountsListFragment;
+import org.gnucash.android.ui.common.Refreshable;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -149,12 +148,12 @@ public class AccountsActivityTest {
         mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
         CommoditiesDbAdapter commoditiesDbAdapter = new CommoditiesDbAdapter(mDb); //initialize commodity constants
+        assertThat(commoditiesDbAdapter.isOpen()).isTrue();
     }
 
     @Before
     public void setUp() throws Exception {
         mAccountsActivity = mActivityRule.getActivity();
-//        testPreconditions();
 
         mAccountsDbAdapter.deleteAllRecords(); //clear the data
 
@@ -331,7 +330,6 @@ public class AccountsActivityTest {
 //        onView(withId(R.id.options_menu)).perform(click()); //there should only be one account visible
         sleep(1000);
         onView(withText(R.string.title_edit_account)).check(matches(isDisplayed())).perform(click());
-//        onView(withId(R.id.context_menu_edit_accounts)).check(matches(isDisplayed())).perform(click());
         onView(withId(R.id.fragment_account_form)).check(matches(isDisplayed()));
 
         String editedAccountName = "An Edited Account";
@@ -393,7 +391,7 @@ public class AccountsActivityTest {
         onView(allOf(withParent(hasDescendant(withText(SIMPLE_ACCOUNT_NAME))),
                 withId(R.id.options_menu))).perform(click());
 
-        onView(withText(R.string.menu_delete)).perform(click());
+        onView(withText(R.string.title_delete_account)).perform(click());
 
         assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(1);
 
@@ -413,7 +411,7 @@ public class AccountsActivityTest {
 
         onView(allOf(withParent(hasDescendant(withText(SIMPLE_ACCOUNT_NAME))),
                 withId(R.id.options_menu))).perform(click());
-        onView(withText(R.string.menu_delete)).perform(click());
+        onView(withText(R.string.title_delete_account)).perform(click());
 
         onView(allOf(withParent(withId(R.id.accounts_options)),
                 withId(R.id.radio_delete))).perform(click());
@@ -439,7 +437,7 @@ public class AccountsActivityTest {
 
         onView(allOf(withParent(hasDescendant(withText(SIMPLE_ACCOUNT_NAME))),
                 withId(R.id.options_menu))).perform(click());
-        onView(withText(R.string.menu_delete)).perform(click());
+        onView(withText(R.string.title_delete_account)).perform(click());
 
         //// FIXME: 17.08.2016 This enabled check fails during some test runs - not reliable, investigate why
         onView(allOf(withParent(withId(R.id.accounts_options)),
@@ -529,7 +527,7 @@ public class AccountsActivityTest {
                 @Override
                 public void run() {
                     Fragment fragment = mAccountsActivity.getCurrentAccountListFragment();
-                    ((AccountsListFragment) fragment).refresh();
+                    ((Refreshable) fragment).refresh();
                 }
             });
         } catch (Throwable throwable) {

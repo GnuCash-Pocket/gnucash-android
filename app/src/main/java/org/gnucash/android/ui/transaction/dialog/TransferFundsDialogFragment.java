@@ -92,7 +92,6 @@ public class TransferFundsDialogFragment extends DialogFragment {
     Money mOriginAmount;
     private Commodity mTargetCommodity;
 
-    Money mConvertedAmount;
     OnTransferFundsListener mOnTransferFundsListener;
 
     public static TransferFundsDialogFragment getInstance(Money transactionAmount, String targetCurrencyCode,
@@ -206,10 +205,11 @@ public class TransferFundsDialogFragment extends DialogFragment {
      * Converts the currency amount with the given exchange rate and saves the price to the db
      */
     private void transferFunds() {
-        Price price = null;
+        Price price;
 
         String originCommodityUID = mOriginAmount.getCommodity().getUID();
         String targetCommodityUID = mTargetCommodity.getUID();
+        Money convertedAmount = null;
 
         if (mExchangeRateRadioButton.isChecked()) {
             BigDecimal rate;
@@ -219,7 +219,7 @@ public class TransferFundsDialogFragment extends DialogFragment {
                 mExchangeRateInputLayout.setError(getString(R.string.error_invalid_exchange_rate));
                 return;
             }
-            mConvertedAmount = mOriginAmount.times(rate).withCurrency(mTargetCommodity);
+            convertedAmount = mOriginAmount.times(rate).withCurrency(mTargetCommodity);
 
             price = new Price(originCommodityUID, targetCommodityUID, rate);
             price.setSource(Price.SOURCE_USER);
@@ -232,18 +232,19 @@ public class TransferFundsDialogFragment extends DialogFragment {
                 mConvertedAmountInputLayout.setError(getString(R.string.error_invalid_amount));
                 return;
             }
-            mConvertedAmount = new Money(amount, mTargetCommodity);
+            convertedAmount = new Money(amount, mTargetCommodity);
 
             price = new Price(originCommodityUID, targetCommodityUID);
             // fractions cannot be exactly represented by BigDecimal.
-            price.setValueNum(mConvertedAmount.getNumerator() * mOriginAmount.getDenominator());
-            price.setValueDenom(mOriginAmount.getNumerator() * mConvertedAmount.getDenominator());
+            price.setValueNum(convertedAmount.getNumerator() * mOriginAmount.getDenominator());
+            price.setValueDenom(mOriginAmount.getNumerator() * convertedAmount.getDenominator());
             price.setSource(Price.SOURCE_USER);
             PricesDbAdapter.getInstance().addRecord(price);
         }
 
-        if (mOnTransferFundsListener != null)
-            mOnTransferFundsListener.transferComplete(mConvertedAmount);
+        if (mOnTransferFundsListener != null && convertedAmount != null) {
+            mOnTransferFundsListener.transferComplete(mOriginAmount, convertedAmount);
+        }
 
         dismiss();
     }
