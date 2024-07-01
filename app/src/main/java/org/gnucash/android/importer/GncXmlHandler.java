@@ -748,7 +748,7 @@ public class GncXmlHandler extends DefaultHandler {
                     }
 
                     if (mIsLastRun && mScheduledAction != null) {
-                        mScheduledAction.setLastRun(date);
+                        mScheduledAction.setLastRunTime(date);
                         mIsLastRun = false;
                     }
 
@@ -1103,7 +1103,7 @@ public class GncXmlHandler extends DefaultHandler {
                 }
             }
         }
-        scheduledAction.setLastRun(lastRuntime);
+        scheduledAction.setLastRunTime(lastRuntime);
         return generatedTransactionCount;
     }
 

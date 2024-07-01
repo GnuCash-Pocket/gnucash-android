@@ -149,7 +149,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
                     }
                 });
             }
-            return 0;
+            return -1;
         }
 
         if (exportedFiles.isEmpty())

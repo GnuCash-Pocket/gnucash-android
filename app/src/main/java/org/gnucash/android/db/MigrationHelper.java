@@ -503,6 +503,7 @@ public class MigrationHelper {
      */
     static int upgradeDbToVersion8(SQLiteDatabase db) {
         Timber.i("Upgrading database to version 8");
+        final Context context = GnuCashApplication.getAppContext();
         int oldVersion = 7;
         new File(Exporter.LEGACY_BASE_FOLDER_PATH + "/backups/").mkdirs();
         new File(Exporter.LEGACY_BASE_FOLDER_PATH + "/exports/").mkdirs();
@@ -747,7 +748,6 @@ public class MigrationHelper {
                     .setType(Transaction.MIME_TYPE);
 
                 //cancel existing pending intent
-                Context context = GnuCashApplication.getAppContext();
                 PendingIntent recurringPendingIntent = PendingIntent.getBroadcast(context,
                         (int) transactionId, intent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_MUTABLE);
                 AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
@@ -784,7 +784,7 @@ public class MigrationHelper {
                     BigDecimal decimalImbalance = BigDecimal.valueOf(imbalance).setScale(2, BigDecimal.ROUND_HALF_UP);
                     if (decimalImbalance.compareTo(BigDecimal.ZERO) != 0) {
                         String currencyCode = cursor.getString(cursor.getColumnIndexOrThrow("trans_currency"));
-                        String imbalanceAccountName = GnuCashApplication.getAppContext().getString(R.string.imbalance_account_name) + "-" + currencyCode;
+                        String imbalanceAccountName = context.getString(R.string.imbalance_account_name) + "-" + currencyCode;
                         String imbalanceAccountUID;
                         Cursor c = db.query(AccountEntry.TABLE_NAME, new String[]{AccountEntry.COLUMN_UID},
                                 AccountEntry.COLUMN_FULL_NAME + "= ?", new String[]{imbalanceAccountName},
@@ -843,7 +843,7 @@ public class MigrationHelper {
             db.endTransaction();
         }
 
-        GnuCashApplication.startScheduledActionExecutionService(GnuCashApplication.getAppContext());
+        ScheduledActionService.schedulePeriodic(context);
 
         return oldVersion;
     }
@@ -1473,28 +1473,7 @@ public class MigrationHelper {
                 .putBoolean(keyUseCompactView, useCompactTrnView)
                 .apply();
 
-        rescheduleServiceAlarm();
-
-
         return oldVersion;
-    }
-
-    /**
-     * Cancel the existing alarm for the scheduled service and restarts/reschedules the service
-     */
-    private static void rescheduleServiceAlarm() {
-        Context context = GnuCashApplication.getAppContext();
-
-        //cancel the existing pending intent so that the alarm can be rescheduled
-        Intent alarmIntent = new Intent(context, ScheduledActionService.class);
-        PendingIntent pendingIntent = PendingIntent.getService(context, 0, alarmIntent, PendingIntent.FLAG_NO_CREATE);
-        if (pendingIntent != null) {
-            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-            alarmManager.cancel(pendingIntent);
-            pendingIntent.cancel();
-        }
-
-        GnuCashApplication.startScheduledActionExecutionService(context);
     }
 
     /**
@@ -1627,8 +1606,6 @@ public class MigrationHelper {
                 .remove(context.getString(R.string.key_last_export_destination))
                 .apply();
 
-        //the default interval has been changed from daily to hourly with this release. So reschedule alarm
-        rescheduleServiceAlarm();
         return dbVersion;
     }
 }
