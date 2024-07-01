@@ -27,7 +27,7 @@ import org.gnucash.android.export.xml.GncXmlHelper
 import org.joda.time.format.DateTimeFormat
 
 /**
- * Represents a scheduled event which is stored in the database and run at regular mPeriod
+ * Represents a scheduled event which is stored in the database and run at regular period
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
@@ -60,6 +60,7 @@ class ScheduledAction    //all actions are enabled by default
      */
     enum class ActionType(@JvmField @StringRes val labelId: Int) {
         TRANSACTION(R.string.action_transaction),
+        // TODO rename `BACKUP` to `EXPORT`
         BACKUP(R.string.action_backup)
     }
 
