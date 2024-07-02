@@ -305,7 +305,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
 
         int index = mViewPager.getCurrentItem();
         Fragment fragment = (Fragment) mFragmentPageReferenceMap.get(index);
-        if (fragment != null)
+        if (fragment instanceof Refreshable)
             ((Refreshable) fragment).refresh();
 
         handleOpenFileIntent(intent);

@@ -59,6 +59,7 @@ import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.ui.common.FormActivity;
+import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.util.BackupManager;
 import org.joda.time.format.DateTimeFormat;
@@ -76,6 +77,7 @@ import timber.log.Timber;
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class ScheduledActionsListFragment extends ListFragment implements
+    Refreshable,
     LoaderManager.LoaderCallbacks<Cursor> {
 
     private TransactionsDbAdapter mTransactionsDbAdapter;
@@ -149,7 +151,7 @@ public class ScheduledActionsListFragment extends ListFragment implements
         mode.finish();
         setDefaultStatusBarColor();
         getLoaderManager().destroyLoader(0);
-        refreshList();
+        refresh();
     }
 
     private void setDefaultStatusBarColor() {
@@ -223,19 +225,21 @@ public class ScheduledActionsListFragment extends ListFragment implements
         }
     }
 
-    /**
-     * Reload the list of transactions and recompute account balances
-     */
-    public void refreshList() {
+    @Override
+    public void refresh() {
         getLoaderManager().restartLoader(0, null, this);
+    }
+
+    @Override
+    public void refresh(String uid) {
+        refresh();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        refreshList();
+        refresh();
     }
-
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
@@ -302,6 +306,8 @@ public class ScheduledActionsListFragment extends ListFragment implements
             .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
             .putExtra(UxArgument.SCHEDULED_ACTION_UID, scheduledActionUid);
         startActivity(intent);
+        // The db row id has probable changed.
+        getLoaderManager().destroyLoader(0);
     }
 
     @Override
@@ -393,7 +399,7 @@ public class ScheduledActionsListFragment extends ListFragment implements
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
-            refreshList();
+            refresh();
             super.onActivityResult(requestCode, resultCode, data);
         }
     }
