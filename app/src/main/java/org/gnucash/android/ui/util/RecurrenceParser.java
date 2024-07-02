@@ -56,6 +56,7 @@ public class RecurrenceParser {
      * @param eventRecurrence EventRecurrence object
      * @return Recurrence object
      */
+    @Nullable
     public static Recurrence parse(EventRecurrence eventRecurrence) {
         if (eventRecurrence == null)
             return null;

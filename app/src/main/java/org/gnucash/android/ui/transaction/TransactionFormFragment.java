@@ -40,10 +40,12 @@ import android.widget.FilterQueryProvider;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cursoradapter.widget.SimpleCursorAdapter;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 
 import com.codetroopers.betterpickers.calendardatepicker.CalendarDatePickerDialogFragment;
 import com.codetroopers.betterpickers.radialtimepicker.RadialTimePickerDialogFragment;
@@ -158,7 +160,7 @@ public class TransactionFormFragment extends Fragment implements
      */
     AccountType mAccountType;
 
-
+    private RecurrenceViewClickListener mRecurrenceViewClickListener;
     private String mRecurrenceRule;
     private EventRecurrence mEventRecurrence = new EventRecurrence();
 
@@ -202,6 +204,21 @@ public class TransactionFormFragment extends Fragment implements
         });
 
         return v;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        setListeners();
+        //updateTransferAccountsList must only be called after initializing mAccountsDbAdapter
+        updateTransferAccountsList();
+        initalizeViews();
+
+        if (mTransaction == null) {
+            initTransactionNameAutocomplete();
+        } else {
+            initializeViewsWithTransaction(mTransaction);
+        }
     }
 
     /**
@@ -251,9 +268,9 @@ public class TransactionFormFragment extends Fragment implements
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        setHasOptionsMenu(true);
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Bundle args = getArguments();
 
         mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled();
         if (!mUseDoubleEntry) {
@@ -261,71 +278,42 @@ public class TransactionFormFragment extends Fragment implements
             mBinding.btnSplitEditor.setVisibility(View.GONE);
         }
 
-        mAccountUID = getArguments().getString(UxArgument.SELECTED_ACCOUNT_UID);
+        mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID);
         assert (mAccountUID != null);
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
         mAccountType = mAccountsDbAdapter.getAccountType(mAccountUID);
 
-        String transactionUID = getArguments().getString(UxArgument.SELECTED_TRANSACTION_UID);
+        mEditMode = false;
+
+        String transactionUID = args.getString(UxArgument.SELECTED_TRANSACTION_UID);
         mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
-        if (transactionUID != null) {
-            mTransaction = mTransactionsDbAdapter.getRecord(transactionUID);
+        Transaction transaction = null;
+        if (!TextUtils.isEmpty(transactionUID)) {
+            transaction = mTransactionsDbAdapter.getRecord(transactionUID);
+            if (transaction != null) {
+                mEditMode = true;
+                String scheduledActionUID = args.getString(UxArgument.SCHEDULED_ACTION_UID);
+                if (!TextUtils.isEmpty(scheduledActionUID)) {
+                    transaction.setScheduledActionUID(scheduledActionUID);
+                }
+            }
         }
+        mTransaction = transaction;
+    }
 
-        setListeners();
-        //updateTransferAccountsList must only be called after initializing mAccountsDbAdapter
-        updateTransferAccountsList();
-        mBinding.inputTransferAccountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            /**
-             * Flag for ignoring first call to this listener.
-             * The first call is during layout, but we want it called only in response to user interaction
-             */
-            boolean userInteraction = false;
-
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-                removeFavoriteIconFromSelectedView((TextView) view);
-
-                if (mSplitsList.size() == 2) { //when handling simple transfer to one account
-                    for (Split split : mSplitsList) {
-                        if (!split.getAccountUID().equals(mAccountUID)) {
-                            split.setAccountUID(mAccountsDbAdapter.getUID(id));
-                        }
-                        // else case is handled when saving the transactions
-                    }
-                }
-                if (!userInteraction) {
-                    userInteraction = true;
-                    return;
-                }
-                startTransferFunds();
-            }
-
-            // Removes the icon from view to avoid visual clutter
-            private void removeFavoriteIconFromSelectedView(TextView view) {
-                if (view != null) {
-                    view.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-                //nothing to see here, move along
-            }
-        });
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        setHasOptionsMenu(true);
 
         ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
         assert actionBar != null;
 //        actionBar.setSubtitle(mAccountsDbAdapter.getFullyQualifiedAccountName(mAccountUID));
 
-        initializeViews();
-        if (mTransaction == null) {
-            actionBar.setTitle(R.string.title_add_transaction);
-            initTransactionNameAutocomplete();
-        } else {
+        if (mEditMode) {
             actionBar.setTitle(R.string.title_edit_transaction);
-            initializeViewsWithTransaction(mTransaction);
-            mEditMode = true;
+        } else {
+            actionBar.setTitle(R.string.title_add_transaction);
         }
 
         requireActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
@@ -384,12 +372,12 @@ public class TransactionFormFragment extends Fragment implements
         mBinding.inputTransactionName.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                mTransaction = new Transaction(mTransactionsDbAdapter.getRecord(id), true);
-                mTransaction.setTime(System.currentTimeMillis());
+                Transaction transaction = new Transaction(mTransactionsDbAdapter.getRecord(id), true);
+                transaction.setTime(System.currentTimeMillis());
                 //we check here because next method will modify it and we want to catch user-modification
                 boolean amountEntered = mBinding.inputTransactionAmount.isInputModified();
-                initializeViewsWithTransaction(mTransaction);
-                List<Split> splitList = mTransaction.getSplits();
+                initializeViewsWithTransaction(transaction);
+                List<Split> splitList = transaction.getSplits();
                 boolean isSplitPair = splitList.size() == 2 && splitList.get(0).isPairOf(splitList.get(1));
                 if (isSplitPair) {
                     mSplitsList.clear();
@@ -416,7 +404,7 @@ public class TransactionFormFragment extends Fragment implements
      * Initialize views in the fragment with information from a transaction.
      * This method is called if the fragment is used for editing a transaction
      */
-    private void initializeViewsWithTransaction(Transaction transaction) {
+    private void initializeViewsWithTransaction(@NonNull Transaction transaction) {
         setTextToEnd(mBinding.inputTransactionName, transaction.getDescription());
 
         mBinding.inputTransactionType.setAccountType(mAccountType);
@@ -468,13 +456,11 @@ public class TransactionFormFragment extends Fragment implements
         mBinding.inputTransactionAmount.setCommodity(commodity);
 
         mBinding.checkboxSaveTemplate.setChecked(mTransaction.isTemplate());
-        String scheduledActionUID = getArguments().getString(UxArgument.SCHEDULED_ACTION_UID);
-        if (scheduledActionUID != null && !scheduledActionUID.isEmpty()) {
+        String scheduledActionUID = transaction.getScheduledActionUID();
+        if (!TextUtils.isEmpty(scheduledActionUID)) {
             Context context = mBinding.inputRecurrence.getContext();
             ScheduledAction scheduledAction = ScheduledActionDbAdapter.getInstance().getRecord(scheduledActionUID);
-            mRecurrenceRule = scheduledAction.getRuleString();
-            mEventRecurrence.parse(mRecurrenceRule);
-            mBinding.inputRecurrence.setText(scheduledAction.getRepeatString(context));
+            onRecurrenceSet(scheduledAction.getRuleString());
         }
     }
 
@@ -532,6 +518,9 @@ public class TransactionFormFragment extends Fragment implements
                 }
                 currentAccountUID = mAccountsDbAdapter.getParentAccountUID(currentAccountUID);
             } while (!currentAccountUID.equals(rootAccountUID));
+        } else {
+            mDoubleEntryLayout.setVisibility(View.GONE);
+            mOpenSplitEditor.setVisibility(View.GONE);
         }
     }
 
@@ -641,7 +630,47 @@ public class TransactionFormFragment extends Fragment implements
             }
         });
 
-        mBinding.inputRecurrence.setOnClickListener(new RecurrenceViewClickListener((AppCompatActivity) requireActivity(), mRecurrenceRule, this));
+        mRecurrenceViewClickListener = new RecurrenceViewClickListener((AppCompatActivity) requireActivity(), mRecurrenceRule, this);
+        mBinding.inputRecurrence.setOnClickListener(mRecurrenceViewClickListener);
+
+        mBinding.inputTransferAccountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            /**
+             * Flag for ignoring first call to this listener.
+             * The first call is during layout, but we want it called only in response to user interaction
+             */
+            boolean userInteraction = false;
+
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+                removeFavoriteIconFromSelectedView((TextView) view);
+
+                if (mSplitsList.size() == 2) { //when handling simple transfer to one account
+                    for (Split split : mSplitsList) {
+                        if (!split.getAccountUID().equals(mAccountUID)) {
+                            split.setAccountUID(mAccountsDbAdapter.getUID(id));
+                        }
+                        // else case is handled when saving the transactions
+                    }
+                }
+                if (!userInteraction) {
+                    userInteraction = true;
+                    return;
+                }
+                startTransferFunds();
+            }
+
+            // Removes the icon from view to avoid visual clutter
+            private void removeFavoriteIconFromSelectedView(TextView view) {
+                if (view != null) {
+                    view.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                //nothing to see here, move along
+            }
+        });
     }
 
     /**
@@ -813,6 +842,7 @@ public class TransactionFormFragment extends Fragment implements
      * and save a transaction
      */
     private void saveNewTransaction() {
+        final Context context = mBinding.inputTransactionAmount.getContext();
         mBinding.inputTransactionAmount.setError(null);
 
         //determine whether we need to do currency conversion
@@ -822,39 +852,45 @@ public class TransactionFormFragment extends Fragment implements
             return;
         }
 
+        boolean isTemplate = mSaveTemplateCheckbox.isChecked();
+        Transaction transactionOld = mTransaction;
         Transaction transaction = extractTransactionFromView();
-        if (mEditMode) { //if editing an existing transaction
-            transaction.setUID(mTransaction.getUID());
+        String scheduledActionUID = null;
+
+        if (transactionOld != null) { //if editing an existing transaction
+            transaction.setUID(transactionOld.getUID());
+            transaction.setTemplate(transactionOld.isTemplate());
+            scheduledActionUID = transactionOld.getScheduledActionUID();
         }
+        boolean wasScheduled = !TextUtils.isEmpty(scheduledActionUID);
 
         mTransaction = transaction;
 
         try {
             mAccountsDbAdapter.beginTransaction();
-            // 1) mTransactions may be existing or non-existing
-            // 2) when mTransactions exists in the db, the splits may exist or not exist in the db
-            // So replace is chosen.
-            mTransactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.replace);
 
-            if (mBinding.checkboxSaveTemplate.isChecked()) {//template is automatically checked when a transaction is scheduled
-                if (!mEditMode) { //means it was new transaction, so a new template
+            if (isTemplate) { //template is automatically checked when a transaction is scheduled
+                if (mEditMode && wasScheduled) {
+                    transaction.setScheduledActionUID(scheduledActionUID);
+                    scheduleRecurringTransaction(transaction);
+                } else { //means it was new transaction, so a new template
                     Transaction templateTransaction = new Transaction(transaction, true);
                     templateTransaction.setTemplate(true);
-                    mTransactionsDbAdapter.addRecord(templateTransaction, DatabaseAdapter.UpdateMethod.replace);
-                    scheduleRecurringTransaction(templateTransaction.getUID());
-                } else
-                    scheduleRecurringTransaction(transaction.getUID());
-            } else {
-                String scheduledActionUID = getArguments().getString(UxArgument.SCHEDULED_ACTION_UID);
-                if (scheduledActionUID != null) { //we were editing a schedule and it was turned off
-                    ScheduledActionDbAdapter.getInstance().deleteRecord(scheduledActionUID);
+                    mTransactionsDbAdapter.addRecord(templateTransaction, DatabaseAdapter.UpdateMethod.insert);
+                    scheduleRecurringTransaction(templateTransaction);
                 }
             }
 
-            mAccountsDbAdapter.setTransactionSuccessful();
+            // 1) Transactions may be existing or non-existing
+            // 2) when transaction exists in the db, the splits may exist or not exist in the db
+            // So replace is chosen.
+            mTransactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.replace);
 
-            //update widgets, if any
-            WidgetConfigurationActivity.updateAllWidgets(requireContext());
+            if (!isTemplate && wasScheduled) { //we were editing a schedule and it was turned off
+                ScheduledActionDbAdapter.getInstance().deleteRecord(scheduledActionUID);
+            }
+
+            mAccountsDbAdapter.setTransactionSuccessful();
 
             finish(Activity.RESULT_OK);
         } catch (ArithmeticException ae) {
@@ -872,7 +908,8 @@ public class TransactionFormFragment extends Fragment implements
      *
      * @see #saveNewTransaction()
      */
-    private void scheduleRecurringTransaction(String transactionUID) {
+    private void scheduleRecurringTransaction(@NonNull Transaction transaction) {
+        String transactionUID = transaction.getUID();
         ScheduledActionDbAdapter scheduledActionDbAdapter = ScheduledActionDbAdapter.getInstance();
 
         Recurrence recurrence = RecurrenceParser.parse(mEventRecurrence);
@@ -880,11 +917,12 @@ public class TransactionFormFragment extends Fragment implements
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
         scheduledAction.setRecurrence(recurrence);
 
-        String scheduledActionUID = getArguments().getString(UxArgument.SCHEDULED_ACTION_UID);
+        String scheduledActionUID = transaction.getScheduledActionUID();
 
-        if (scheduledActionUID != null) { //if we are editing an existing schedule
+        if (!TextUtils.isEmpty(scheduledActionUID)) { //if we are editing an existing schedule
             if (recurrence == null) {
                 scheduledActionDbAdapter.deleteRecord(scheduledActionUID);
+                transaction.setScheduledActionUID(null);
             } else {
                 scheduledAction.setUID(scheduledActionUID);
                 scheduledActionDbAdapter.updateRecurrenceAttributes(scheduledAction);
@@ -894,6 +932,8 @@ public class TransactionFormFragment extends Fragment implements
             if (recurrence != null) {
                 scheduledAction.setActionUID(transactionUID);
                 scheduledActionDbAdapter.addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.replace);
+                scheduledActionUID = scheduledAction.getUID();
+                transaction.setScheduledActionUID(scheduledActionUID);
                 Snackbar.make(getView(), R.string.toast_scheduled_recurring_transaction, Snackbar.LENGTH_SHORT).show();
             }
         }
@@ -979,13 +1019,20 @@ public class TransactionFormFragment extends Fragment implements
      * Depends on how the fragment was loaded, it might have a backstack or not
      */
     private void finish(int resultCode) {
-        if (requireActivity().getSupportFragmentManager().getBackStackEntryCount() == 0) {
-            requireActivity().setResult(resultCode);
+        final FragmentActivity activity = requireActivity();
+
+        if (resultCode == Activity.RESULT_OK) {
+            //update widgets, if any
+            WidgetConfigurationActivity.updateAllWidgets(activity);
+        }
+
+        if (activity.getSupportFragmentManager().getBackStackEntryCount() == 0) {
+            activity.setResult(resultCode);
             //means we got here directly from the accounts list activity, need to finish
-            requireActivity().finish();
+            activity.finish();
         } else {
             //go back to transactions list
-            requireActivity().getSupportFragmentManager().popBackStack();
+            activity.getSupportFragmentManager().popBackStack();
         }
     }
 
@@ -1043,6 +1090,10 @@ public class TransactionFormFragment extends Fragment implements
         Timber.i("TX reoccurs: %s", rrule);
         Context context = mBinding.inputRecurrence.getContext();
         mRecurrenceRule = rrule;
+        if (mRecurrenceViewClickListener != null) {
+            mRecurrenceViewClickListener.setRecurrence(rrule);
+        }
+
         String repeatString = null;
         if (!TextUtils.isEmpty(rrule)) {
             mEventRecurrence.parse(rrule);
@@ -1052,6 +1103,7 @@ public class TransactionFormFragment extends Fragment implements
             mBinding.checkboxSaveTemplate.setChecked(true);
             mBinding.checkboxSaveTemplate.setEnabled(false);
         } else {
+            repeatString = getString(R.string.label_tap_to_create_schedule);
             mBinding.checkboxSaveTemplate.setEnabled(true);
             mBinding.checkboxSaveTemplate.setChecked(false);
         }

@@ -760,6 +760,20 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
     }
 
     /**
+     * Returns an attribute from a specific column in the database for a specific record.
+     * <p>The attribute is returned as a string which can then be converted to another type if
+     * the caller was expecting something other type </p>
+     *
+     * @param model the record with a GUID.
+     * @param columnName Name of the column to be retrieved
+     * @return String value of the column entry
+     * @throws IllegalArgumentException if either the {@code recordUID} or {@code columnName} do not exist in the database
+     */
+    public String getAttribute(@NonNull Model model, @NonNull String columnName) {
+        return getAttribute(mTableName, getUID(model), columnName);
+    }
+
+    /**
      * Returns an attribute from a specific column in the database for a specific record and specific table.
      * <p>The attribute is returned as a string which can then be converted to another type if
      * the caller was expecting something other type </p>
@@ -864,5 +878,9 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
             close();
         } catch (IOException ignore) {
         }
+    }
+
+    public String getUID(Model model) {
+        return model.getUID();
     }
 }

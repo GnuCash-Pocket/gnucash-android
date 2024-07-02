@@ -16,6 +16,7 @@
 
 package org.gnucash.android.ui.transaction.dialog;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -36,7 +37,6 @@ import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity;
-import org.gnucash.android.ui.transaction.TransactionsActivity;
 import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
 
 /**
@@ -151,13 +151,14 @@ public class BulkMoveDialogFragment extends DialogFragment {
                 if (mTransactionIds == null) {
                     dismiss();
                 }
+                Context context = v.getContext();
 
                 String srcAccountUID = mOriginAccountUID;
                 long dstAccountId = mDestinationAccountSpinner.getSelectedItemId();
                 String dstAccountUID = AccountsDbAdapter.getInstance().getUID(dstAccountId);
                 TransactionsDbAdapter trxnAdapter = TransactionsDbAdapter.getInstance();
-                if (!trxnAdapter.getAccountCurrencyCode(dstAccountUID).equals(trxnAdapter.getAccountCurrencyCode(mOriginAccountUID))) {
-                    Toast.makeText(getActivity(), R.string.toast_incompatible_currency, Toast.LENGTH_LONG).show();
+                if (!trxnAdapter.getAccountCurrencyCode(dstAccountUID).equals(trxnAdapter.getAccountCurrencyCode(srcAccountUID))) {
+                    Toast.makeText(context, R.string.toast_incompatible_currency, Toast.LENGTH_LONG).show();
                     return;
                 }
 
@@ -165,7 +166,7 @@ public class BulkMoveDialogFragment extends DialogFragment {
                     trxnAdapter.moveTransaction(trxnAdapter.getUID(trxnId), srcAccountUID, dstAccountUID);
                 }
 
-                WidgetConfigurationActivity.updateAllWidgets(getActivity());
+                WidgetConfigurationActivity.updateAllWidgets(context);
                 Bundle result = new Bundle();
                 result.putBoolean(Refreshable.EXTRA_REFRESH, true);
                 result.putString(UxArgument.SELECTED_ACCOUNT_UID, dstAccountUID);
