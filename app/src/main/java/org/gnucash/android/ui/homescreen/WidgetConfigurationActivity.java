@@ -29,10 +29,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.RemoteViews;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
@@ -41,6 +38,7 @@ import androidx.preference.PreferenceManager;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.databinding.WidgetConfigurationBinding;
 import org.gnucash.android.db.BookDbHelper;
 import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.DatabaseSchema;
@@ -59,8 +57,6 @@ import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
 
 import java.util.Locale;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import timber.log.Timber;
 
 /**
@@ -73,29 +69,18 @@ public class WidgetConfigurationActivity extends Activity {
     private AccountsDbAdapter mAccountsDbAdapter;
     private int mAppWidgetId;
 
-    @BindView(R.id.input_accounts_spinner)
-    Spinner mAccountsSpinner;
-    @BindView(R.id.input_books_spinner)
-    Spinner mBooksSpinner;
-    @BindView(R.id.input_hide_account_balance)
-    CheckBox mHideAccountBalance;
-    @BindView(R.id.btn_save)
-    Button mOkButton;
-    @BindView(R.id.btn_cancel)
-    Button mCancelButton;
-
-
     private SimpleCursorAdapter mAccountsCursorAdapter;
 
     private static final int FLAGS_UPDATE = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
 
+    private WidgetConfigurationBinding mBinding;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.widget_configuration);
+        mBinding = WidgetConfigurationBinding.inflate(getLayoutInflater());
+        setContentView(mBinding.getRoot());
         setResult(RESULT_CANCELED);
-
-        ButterKnife.bind(this);
 
         BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
         Cursor booksCursor = booksDbAdapter.fetchAllRecords();
@@ -115,8 +100,8 @@ public class WidgetConfigurationActivity extends Activity {
                 new String[]{DatabaseSchema.BookEntry.COLUMN_DISPLAY_NAME},
                 new int[]{android.R.id.text1}, 0);
         booksCursorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mBooksSpinner.setAdapter(booksCursorAdapter);
-        mBooksSpinner.setSelection(position);
+        mBinding.inputBooksSpinner.setAdapter(booksCursorAdapter);
+        mBinding.inputBooksSpinner.setSelection(position);
 
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
         Cursor cursor = mAccountsDbAdapter.fetchAllRecordsOrderedByFullName();
@@ -129,11 +114,11 @@ public class WidgetConfigurationActivity extends Activity {
         mAccountsCursorAdapter = new QualifiedAccountNameCursorAdapter(this, cursor);
         //without this line, the app crashes when a user tries to select an account
         mAccountsCursorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mAccountsSpinner.setAdapter(mAccountsCursorAdapter);
+        mBinding.inputAccountsSpinner.setAdapter(mAccountsCursorAdapter);
 
         boolean passcodeEnabled = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
                 .getBoolean(UxArgument.ENABLED_PASSCODE, false);
-        mHideAccountBalance.setChecked(passcodeEnabled);
+        mBinding.inputHideAccountBalance.setChecked(passcodeEnabled);
 
         bindListeners();
     }
@@ -142,7 +127,7 @@ public class WidgetConfigurationActivity extends Activity {
      * Sets click listeners for the buttons in the dialog
      */
     private void bindListeners() {
-        mBooksSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mBinding.inputBooksSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Book book = BooksDbAdapter.getInstance().getRecord(id);
@@ -160,44 +145,34 @@ public class WidgetConfigurationActivity extends Activity {
             }
         });
 
-        mOkButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                Intent intent = getIntent();
-                Bundle extras = intent.getExtras();
-                if (extras != null) {
-                    mAppWidgetId = extras.getInt(
-                            AppWidgetManager.EXTRA_APPWIDGET_ID,
-                            AppWidgetManager.INVALID_APPWIDGET_ID);
-                }
-
-                if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
-                    finish();
-                    return;
-                }
-
-                String bookUID = BooksDbAdapter.getInstance().getUID(mBooksSpinner.getSelectedItemId());
-                String accountUID = mAccountsDbAdapter.getUID(mAccountsSpinner.getSelectedItemId());
-                boolean hideAccountBalance = mHideAccountBalance.isChecked();
-
-                configureWidget(WidgetConfigurationActivity.this, mAppWidgetId, bookUID, accountUID, hideAccountBalance);
-                updateWidget(WidgetConfigurationActivity.this, mAppWidgetId);
-
-                Intent resultValue = new Intent();
-                resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
-                setResult(RESULT_OK, resultValue);
-                finish();
+        mBinding.defaultButtons.btnSave.setOnClickListener(unusedView -> {
+            Intent intent = getIntent();
+            Bundle extras = intent.getExtras();
+            if (extras != null) {
+                mAppWidgetId = extras.getInt(
+                        AppWidgetManager.EXTRA_APPWIDGET_ID,
+                        AppWidgetManager.INVALID_APPWIDGET_ID);
             }
+
+            if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+                finish();
+                return;
+            }
+
+            String bookUID = BooksDbAdapter.getInstance().getUID(mBinding.inputBooksSpinner.getSelectedItemId());
+            String accountUID = mAccountsDbAdapter.getUID(mBinding.inputAccountsSpinner.getSelectedItemId());
+            boolean hideAccountBalance = mBinding.inputHideAccountBalance.isChecked();
+
+            configureWidget(WidgetConfigurationActivity.this, mAppWidgetId, bookUID, accountUID, hideAccountBalance);
+            updateWidget(WidgetConfigurationActivity.this, mAppWidgetId);
+
+            Intent resultValue = new Intent();
+            resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
+            setResult(RESULT_OK, resultValue);
+            finish();
         });
 
-        mCancelButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        mBinding.defaultButtons.btnCancel.setOnClickListener(unusedView -> finish());
     }
 
     /**

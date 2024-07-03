@@ -24,19 +24,14 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.EditText;
-import android.widget.RadioButton;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
-import com.google.android.material.textfield.TextInputLayout;
-
 import org.gnucash.android.R;
+import org.gnucash.android.databinding.DialogTransferFundsBinding;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.PricesDbAdapter;
 import org.gnucash.android.model.Commodity;
@@ -51,49 +46,19 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 /**
  * Dialog fragment for handling currency conversions when inputting transactions.
  * <p>This is used whenever a multi-currency transaction is being created.</p>
  */
 public class TransferFundsDialogFragment extends DialogFragment {
-
-    @BindView(R.id.from_currency)
-    TextView mFromCurrencyLabel;
-    @BindView(R.id.to_currency)
-    TextView mToCurrencyLabel;
-    @BindView(R.id.target_currency)
-    TextView mConvertedAmountCurrencyLabel;
-    @BindView(R.id.amount_to_convert)
-    TextView mStartAmountLabel;
-    @BindView(R.id.input_exchange_rate)
-    EditText mExchangeRateInput;
-    @BindView(R.id.input_converted_amount)
-    EditText mConvertedAmountInput;
-    @BindView(R.id.btn_fetch_exchange_rate)
-    Button mFetchExchangeRateButton;
-    @BindView(R.id.radio_exchange_rate)
-    RadioButton mExchangeRateRadioButton;
-    @BindView(R.id.radio_converted_amount)
-    RadioButton mConvertedAmountRadioButton;
-    @BindView(R.id.label_exchange_rate_example)
-    TextView mSampleExchangeRate;
-    @BindView(R.id.exchange_rate_text_input_layout)
-    TextInputLayout mExchangeRateInputLayout;
-    @BindView(R.id.converted_amount_text_input_layout)
-    TextInputLayout mConvertedAmountInputLayout;
-
-    @BindView(R.id.btn_save)
-    Button mSaveButton;
-    @BindView(R.id.btn_cancel)
-    Button mCancelButton;
     Money mOriginAmount;
     private Commodity mTargetCommodity;
 
     Money mConvertedAmount;
     OnTransferFundsListener mOnTransferFundsListener;
+
+    private DialogTransferFundsBinding mBinding;
 
     public static TransferFundsDialogFragment getInstance(Money transactionAmount, String targetCurrencyCode,
                                                           OnTransferFundsListener transferFundsListener) {
@@ -107,16 +72,16 @@ public class TransferFundsDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.dialog_transfer_funds, container, false);
-        ButterKnife.bind(this, view);
+        mBinding = DialogTransferFundsBinding.inflate(inflater, container, false);
+        View view = mBinding.getRoot();
 
-        TransactionsActivity.displayBalance(mStartAmountLabel, mOriginAmount);
+        TransactionsActivity.displayBalance(mBinding.amountToConvert, mOriginAmount);
         String fromCurrencyCode = mOriginAmount.getCommodity().getCurrencyCode();
-        mFromCurrencyLabel.setText(fromCurrencyCode);
-        mToCurrencyLabel.setText(mTargetCommodity.getCurrencyCode());
-        mConvertedAmountCurrencyLabel.setText(mTargetCommodity.getCurrencyCode());
+        mBinding.fromCurrency.setText(fromCurrencyCode);
+        mBinding.toCurrency.setText(mTargetCommodity.getCurrencyCode());
+        mBinding.targetCurrency.setText(mTargetCommodity.getCurrencyCode());
 
-        mSampleExchangeRate.setText(String.format(getString(R.string.sample_exchange_rate),
+        mBinding.labelExchangeRateExample.setText(String.format(getString(R.string.sample_exchange_rate),
                 fromCurrencyCode,
                 mTargetCommodity.getCurrencyCode()));
         final InputLayoutErrorClearer textChangeListener = new InputLayoutErrorClearer();
@@ -132,7 +97,7 @@ public class TransferFundsDialogFragment extends DialogFragment {
             Price price = new Price(commodityUID, currencyUID);
             price.setValueNum(pricePair.first);
             price.setValueDenom(pricePair.second);
-            mExchangeRateInput.setText(price.toString());
+            mBinding.inputExchangeRate.setText(price.toString());
 
             BigDecimal numerator = new BigDecimal(pricePair.first);
             BigDecimal denominator = new BigDecimal(pricePair.second);
@@ -140,57 +105,46 @@ public class TransferFundsDialogFragment extends DialogFragment {
             BigDecimal convertedAmount = mOriginAmount.asBigDecimal().multiply(numerator)
                     .divide(denominator, mTargetCommodity.getSmallestFractionDigits(), BigDecimal.ROUND_HALF_EVEN);
             DecimalFormat formatter = (DecimalFormat) NumberFormat.getNumberInstance();
-            mConvertedAmountInput.setText(formatter.format(convertedAmount));
+            mBinding.inputConvertedAmount.setText(formatter.format(convertedAmount));
         }
 
-        mExchangeRateInput.addTextChangedListener(textChangeListener);
-        mConvertedAmountInput.addTextChangedListener(textChangeListener);
+        mBinding.inputExchangeRate.addTextChangedListener(textChangeListener);
+        mBinding.inputConvertedAmount.addTextChangedListener(textChangeListener);
 
-        mConvertedAmountRadioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        mBinding.radioConvertedAmount.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mConvertedAmountInput.setEnabled(isChecked);
-                mConvertedAmountInputLayout.setErrorEnabled(isChecked);
-                mExchangeRateRadioButton.setChecked(!isChecked);
+                mBinding.inputConvertedAmount.setEnabled(isChecked);
+                mBinding.convertedAmountTextInputLayout.setErrorEnabled(isChecked);
+                mBinding.radioExchangeRate.setChecked(!isChecked);
                 if (isChecked) {
-                    mConvertedAmountInput.requestFocus();
+                    mBinding.inputConvertedAmount.requestFocus();
                 }
             }
         });
 
-        mExchangeRateRadioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        mBinding.radioExchangeRate.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mExchangeRateInput.setEnabled(isChecked);
-                mExchangeRateInputLayout.setErrorEnabled(isChecked);
-                mFetchExchangeRateButton.setEnabled(isChecked);
-                mConvertedAmountRadioButton.setChecked(!isChecked);
+                mBinding.inputExchangeRate.setEnabled(isChecked);
+                mBinding.exchangeRateTextInputLayout.setErrorEnabled(isChecked);
+                mBinding.btnFetchExchangeRate.setEnabled(isChecked);
+                mBinding.radioConvertedAmount.setChecked(!isChecked);
                 if (isChecked) {
-                    mExchangeRateInput.requestFocus();
+                    mBinding.inputExchangeRate.requestFocus();
                 }
             }
         });
 
-        mFetchExchangeRateButton.setOnClickListener(new View.OnClickListener() {
+        mBinding.btnFetchExchangeRate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //TODO: Pull the exchange rate for the currency here
             }
         });
 
-        mCancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
-            }
-        });
-
-        mSaveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                transferFunds();
-            }
-        });
+        mBinding.defaultButtons.btnCancel.setOnClickListener(unusedView -> dismiss());
+        mBinding.defaultButtons.btnSave.setOnClickListener(unusedView -> transferFunds());
         return view;
     }
 
@@ -211,12 +165,12 @@ public class TransferFundsDialogFragment extends DialogFragment {
         String originCommodityUID = mOriginAmount.getCommodity().getUID();
         String targetCommodityUID = mTargetCommodity.getUID();
 
-        if (mExchangeRateRadioButton.isChecked()) {
+        if (mBinding.radioExchangeRate.isChecked()) {
             BigDecimal rate;
             try {
-                rate = AmountParser.parse(mExchangeRateInput.getText().toString());
+                rate = AmountParser.parse(mBinding.inputExchangeRate.getText().toString());
             } catch (ParseException e) {
-                mExchangeRateInputLayout.setError(getString(R.string.error_invalid_exchange_rate));
+                mBinding.exchangeRateTextInputLayout.setError(getString(R.string.error_invalid_exchange_rate));
                 return;
             }
             mConvertedAmount = mOriginAmount.times(rate).withCurrency(mTargetCommodity);
@@ -224,12 +178,12 @@ public class TransferFundsDialogFragment extends DialogFragment {
             price = new Price(originCommodityUID, targetCommodityUID, rate);
             price.setSource(Price.SOURCE_USER);
             PricesDbAdapter.getInstance().addRecord(price);
-        } else if (mConvertedAmountRadioButton.isChecked()) {
+        } else if (mBinding.radioConvertedAmount.isChecked()) {
             BigDecimal amount;
             try {
-                amount = AmountParser.parse(mConvertedAmountInput.getText().toString());
+                amount = AmountParser.parse(mBinding.inputConvertedAmount.getText().toString());
             } catch (ParseException e) {
-                mConvertedAmountInputLayout.setError(getString(R.string.error_invalid_amount));
+                mBinding.convertedAmountTextInputLayout.setError(getString(R.string.error_invalid_amount));
                 return;
             }
             mConvertedAmount = new Money(amount, mTargetCommodity);
@@ -249,7 +203,7 @@ public class TransferFundsDialogFragment extends DialogFragment {
     }
 
     /**
-     * Hides the error message from mConvertedAmountInputLayout and mExchangeRateInputLayout
+     * Hides the error message from mBinding.convertedAmountTextInputLayout and mBinding.exchangeRateTextInputLayout
      * when the user edits their content.
      */
     private class InputLayoutErrorClearer implements TextWatcher {
@@ -263,8 +217,8 @@ public class TransferFundsDialogFragment extends DialogFragment {
 
         @Override
         public void afterTextChanged(Editable s) {
-            mConvertedAmountInputLayout.setErrorEnabled(false);
-            mExchangeRateInputLayout.setErrorEnabled(false);
+            mBinding.convertedAmountTextInputLayout.setErrorEnabled(false);
+            mBinding.exchangeRateTextInputLayout.setErrorEnabled(false);
         }
     }
 }

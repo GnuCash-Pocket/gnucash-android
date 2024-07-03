@@ -42,8 +42,8 @@ public class ScheduledActionsActivity extends BaseDrawerActivity {
     ViewPager mViewPager;
 
     @Override
-    public int getContentView() {
-        return R.layout.activity_scheduled_events;
+    public void inflateView() {
+        setContentView(R.layout.activity_scheduled_events);
     }
 
     @Override

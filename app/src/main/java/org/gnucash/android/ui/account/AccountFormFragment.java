@@ -41,10 +41,8 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.EditText;
 import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
@@ -56,9 +54,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentResultListener;
 
-import com.google.android.material.textfield.TextInputLayout;
-
 import org.gnucash.android.R;
+import org.gnucash.android.databinding.FragmentAccountFormBinding;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
@@ -68,7 +65,6 @@ import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.colorpicker.ColorPickerDialog;
-import org.gnucash.android.ui.colorpicker.ColorSquare;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.settings.PreferenceActivity;
 import org.gnucash.android.util.CommoditiesCursorAdapter;
@@ -80,8 +76,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import timber.log.Timber;
 
 /**
@@ -91,23 +85,6 @@ import timber.log.Timber;
  * @author Yongxin Wang <fefe.wyx@gmail.com>
  */
 public class AccountFormFragment extends Fragment implements FragmentResultListener {
-
-    /**
-     * EditText for the name of the account to be created/edited
-     */
-    @BindView(R.id.input_account_name)
-    EditText mNameEditText;
-
-    @BindView(R.id.name_text_input_layout)
-    TextInputLayout mTextInputLayout;
-
-    /**
-     * Spinner for selecting the currency of the account
-     * Currencies listed are those specified by ISO 4217
-     */
-    @BindView(R.id.input_currency_spinner)
-    Spinner mCurrencySpinner;
-
     /**
      * Accounts database adapter
      */
@@ -159,51 +136,6 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
     private SimpleCursorAdapter mParentAccountCursorAdapter;
 
     /**
-     * Spinner for parent account list
-     */
-    @BindView(R.id.input_parent_account)
-    Spinner mParentAccountSpinner;
-
-    /**
-     * Checkbox which activates the parent account spinner when selected
-     * Leaving this unchecked means it is a top-level root account
-     */
-    @BindView(R.id.checkbox_parent_account)
-    CheckBox mParentCheckBox;
-
-    /**
-     * Spinner for the account type
-     *
-     * @see org.gnucash.android.model.AccountType
-     */
-    @BindView(R.id.input_account_type_spinner)
-    Spinner mAccountTypeSpinner;
-
-    /**
-     * Checkbox for activating the default transfer account spinner
-     */
-    @BindView(R.id.checkbox_default_transfer_account)
-    CheckBox mDefaultTransferAccountCheckBox;
-
-    /**
-     * Spinner for selecting the default transfer account
-     */
-    @BindView(R.id.input_default_transfer_account)
-    Spinner mDefaultTransferAccountSpinner;
-
-    /**
-     * Account description input text view
-     */
-    @BindView(R.id.input_account_description)
-    EditText mDescriptionEditText;
-
-    /**
-     * Checkbox indicating if account is a placeholder account
-     */
-    @BindView(R.id.checkbox_placeholder_account)
-    CheckBox mPlaceholderCheckBox;
-
-    /**
      * Cursor adapter which binds to the spinner for default transfer account
      */
     private SimpleCursorAdapter mDefaultTransferAccountCursorAdapter;
@@ -215,11 +147,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
 
     private int mSelectedColor = Account.DEFAULT_COLOR;
 
-    /**
-     * Trigger for color picker dialog
-     */
-    @BindView(R.id.input_color_picker)
-    ColorSquare mColorSquare;
+    private FragmentAccountFormBinding mBinding;
 
     /**
      * Default constructor
@@ -256,10 +184,9 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_account_form, container, false);
-        ButterKnife.bind(this, view);
+        mBinding = FragmentAccountFormBinding.inflate(inflater, container, false);
 
-        mNameEditText.addTextChangedListener(new TextWatcher() {
+        mBinding.inputAccountName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 //nothing to see here, move along
@@ -273,12 +200,12 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
             @Override
             public void afterTextChanged(Editable s) {
                 if (!TextUtils.isEmpty(s)) {
-                    mTextInputLayout.setErrorEnabled(false);
+                    mBinding.nameTextInputLayout.setErrorEnabled(false);
                 }
             }
         });
 
-        mAccountTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mBinding.inputAccountTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 loadParentAccountList(getSelectedAccountType());
@@ -292,32 +219,32 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
             }
         });
 
-        mParentAccountSpinner.setEnabled(false);
+        mBinding.inputParentAccount.setEnabled(false);
 
-        mParentCheckBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+        mBinding.checkboxParentAccount.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mParentAccountSpinner.setEnabled(isChecked);
+                mBinding.inputParentAccount.setEnabled(isChecked);
             }
         });
 
-        mDefaultTransferAccountSpinner.setEnabled(false);
-        mDefaultTransferAccountCheckBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+        mBinding.inputDefaultTransferAccount.setEnabled(false);
+        mBinding.checkboxDefaultTransferAccount.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                mDefaultTransferAccountSpinner.setEnabled(isChecked);
+                mBinding.inputDefaultTransferAccount.setEnabled(isChecked);
             }
         });
 
-        mColorSquare.setOnClickListener(new View.OnClickListener() {
+        mBinding.inputColorPicker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 showColorPickerDialog();
             }
         });
 
-        return view;
+        return mBinding.getRoot();
     }
 
 
@@ -332,7 +259,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
                 getActivity(), android.R.layout.simple_spinner_item);
         commoditiesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-        mCurrencySpinner.setAdapter(commoditiesAdapter);
+        mBinding.inputCurrencySpinner.setAdapter(commoditiesAdapter);
 
 
         mAccountUID = getArguments().getString(UxArgument.SELECTED_ACCOUNT_UID);
@@ -390,12 +317,12 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
 
         if (mAccountsDbAdapter.getTransactionMaxSplitNum(mAccount.getUID()) > 1) {
             //TODO: Allow changing the currency and effecting the change for all transactions without any currency exchange (purely cosmetic change)
-            mCurrencySpinner.setEnabled(false);
+            mBinding.inputCurrencySpinner.setEnabled(false);
         }
 
-        mNameEditText.setText(account.getName());
-        mNameEditText.setSelection(mNameEditText.getText().length());
-        mDescriptionEditText.setText(account.getDescription());
+        mBinding.inputAccountName.setText(account.getName());
+        mBinding.inputAccountName.setSelection(mBinding.inputAccountName.getText().length());
+        mBinding.inputAccountDescription.setText(account.getDescription());
 
         if (mUseDoubleEntry) {
             if (account.getDefaultTransferAccountUID() != null) {
@@ -415,9 +342,9 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
             }
         }
 
-        mPlaceholderCheckBox.setChecked(account.isPlaceholderAccount());
+        mBinding.checkboxPlaceholderAccount.setChecked(account.isPlaceholderAccount());
         mSelectedColor = account.getColor();
-        mColorSquare.setBackgroundColor(account.getColor());
+        mBinding.inputColorPicker.setBackgroundColor(account.getColor());
 
         setAccountTypeSelection(account.getAccountType());
     }
@@ -427,7 +354,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
      */
     private void initializeViews() {
         setSelectedCurrency(Money.DEFAULT_CURRENCY_CODE);
-        mColorSquare.setBackgroundColor(Color.LTGRAY);
+        mBinding.inputColorPicker.setBackgroundColor(Color.LTGRAY);
         mParentAccountUID = getArguments().getString(UxArgument.PARENT_ACCOUNT_UID);
 
 
@@ -448,7 +375,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
     private void setAccountTypeSelection(AccountType accountType) {
         String[] accountTypeEntries = getResources().getStringArray(R.array.key_account_type_entries);
         int accountTypeIndex = Arrays.asList(accountTypeEntries).indexOf(accountType.name());
-        mAccountTypeSpinner.setSelection(accountTypeIndex);
+        mBinding.inputAccountTypeSpinner.setSelection(accountTypeIndex);
     }
 
     /**
@@ -472,12 +399,12 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
         CommoditiesDbAdapter commodityDbAdapter = CommoditiesDbAdapter.getInstance();
         long commodityId = commodityDbAdapter.getID(commodityDbAdapter.getCommodityUID(currencyCode));
         int position = 0;
-        for (int i = 0; i < mCurrencySpinner.getCount(); i++) {
-            if (commodityId == mCurrencySpinner.getItemIdAtPosition(i)) {
+        for (int i = 0; i < mBinding.inputCurrencySpinner.getCount(); i++) {
+            if (commodityId == mBinding.inputCurrencySpinner.getItemIdAtPosition(i)) {
                 position = i;
             }
         }
-        mCurrencySpinner.setSelection(position);
+        mBinding.inputCurrencySpinner.setSelection(position);
     }
 
     /**
@@ -492,9 +419,9 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
 
         for (int pos = 0; pos < mParentAccountCursorAdapter.getCount(); pos++) {
             if (mParentAccountCursorAdapter.getItemId(pos) == parentAccountId) {
-                mParentCheckBox.setChecked(true);
-                mParentAccountSpinner.setEnabled(true);
-                mParentAccountSpinner.setSelection(pos, true);
+                mBinding.checkboxParentAccount.setChecked(true);
+                mBinding.inputParentAccount.setEnabled(true);
+                mBinding.inputParentAccount.setSelection(pos, true);
                 break;
             }
         }
@@ -507,14 +434,14 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
      */
     private void setDefaultTransferAccountSelection(long defaultTransferAccountId, boolean enableTransferAccount) {
         if (defaultTransferAccountId > 0) {
-            mDefaultTransferAccountCheckBox.setChecked(enableTransferAccount);
-            mDefaultTransferAccountSpinner.setEnabled(enableTransferAccount);
+            mBinding.checkboxDefaultTransferAccount.setChecked(enableTransferAccount);
+            mBinding.inputDefaultTransferAccount.setEnabled(enableTransferAccount);
         } else
             return;
 
         for (int pos = 0; pos < mDefaultTransferAccountCursorAdapter.getCount(); pos++) {
             if (mDefaultTransferAccountCursorAdapter.getItemId(pos) == defaultTransferAccountId) {
-                mDefaultTransferAccountSpinner.setSelection(pos);
+                mBinding.inputDefaultTransferAccount.setSelection(pos);
                 break;
             }
         }
@@ -561,7 +488,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
     public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
         if (COLOR_PICKER_DIALOG_TAG.equals(requestKey)) {
             int color = result.getInt(ColorPickerDialog.EXTRA_COLOR);
-            mColorSquare.setBackgroundColor(color);
+            mBinding.inputColorPicker.setBackgroundColor(color);
             mSelectedColor = color;
         }
     }
@@ -599,13 +526,13 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
         Cursor defaultTransferAccountCursor = mAccountsDbAdapter.fetchAccountsOrderedByFullName(condition,
                 new String[]{AccountType.ROOT.name()});
 
-        if (mDefaultTransferAccountSpinner.getCount() <= 0) {
+        if (mBinding.inputDefaultTransferAccount.getCount() <= 0) {
             setDefaultTransferAccountInputsVisible(false);
         }
 
         mDefaultTransferAccountCursorAdapter = new QualifiedAccountNameCursorAdapter(getActivity(),
                 defaultTransferAccountCursor);
-        mDefaultTransferAccountSpinner.setAdapter(mDefaultTransferAccountCursorAdapter);
+        mBinding.inputDefaultTransferAccount.setAdapter(mDefaultTransferAccountCursorAdapter);
     }
 
     /**
@@ -637,7 +564,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
         final View view = getView();
         assert view != null;
         if (mParentAccountCursor.getCount() <= 0) {
-            mParentCheckBox.setChecked(false); //disable before hiding, else we can still read it when saving
+            mBinding.checkboxParentAccount.setChecked(false); //disable before hiding, else we can still read it when saving
             view.findViewById(R.id.layout_parent_account).setVisibility(View.GONE);
             view.findViewById(R.id.label_parent_account).setVisibility(View.GONE);
         } else {
@@ -647,7 +574,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
 
         mParentAccountCursorAdapter = new QualifiedAccountNameCursorAdapter(
                 getActivity(), mParentAccountCursor);
-        mParentAccountSpinner.setAdapter(mParentAccountCursorAdapter);
+        mBinding.inputParentAccount.setAdapter(mParentAccountCursorAdapter);
     }
 
     /**
@@ -718,7 +645,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
                 getActivity(), android.R.layout.simple_list_item_1, accountTypes);
 
         accountTypesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mAccountTypeSpinner.setAdapter(accountTypesAdapter);
+        mBinding.inputAccountTypeSpinner.setAdapter(accountTypesAdapter);
 
     }
 
@@ -729,7 +656,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
     private void finishFragment() {
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
                 Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(mNameEditText.getWindowToken(), 0);
+        imm.hideSoftInputFromWindow(mBinding.inputAccountName.getWindowToken(), 0);
 
         final String action = getActivity().getIntent().getAction();
         if (action != null && action.equals(Intent.ACTION_INSERT_OR_EDIT)) {
@@ -763,8 +690,8 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
         String newName = getEnteredName();
         if (mAccount == null) {
             if (TextUtils.isEmpty(newName)) {
-                mTextInputLayout.setErrorEnabled(true);
-                mTextInputLayout.setError(getString(R.string.toast_no_account_name_entered));
+                mBinding.nameTextInputLayout.setErrorEnabled(true);
+                mBinding.nameTextInputLayout.setError(getString(R.string.toast_no_account_name_entered));
                 return;
             }
             mAccount = new Account(newName);
@@ -774,21 +701,21 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
             mAccount.setName(newName);
         }
 
-        long commodityId = mCurrencySpinner.getSelectedItemId();
+        long commodityId = mBinding.inputCurrencySpinner.getSelectedItemId();
         Commodity commodity = CommoditiesDbAdapter.getInstance().getRecord(commodityId);
         mAccount.setCommodity(commodity);
 
         AccountType selectedAccountType = getSelectedAccountType();
         mAccount.setAccountType(selectedAccountType);
 
-        mAccount.setDescription(mDescriptionEditText.getText().toString());
-        mAccount.setPlaceHolderFlag(mPlaceholderCheckBox.isChecked());
+        mAccount.setDescription(mBinding.inputAccountDescription.getText().toString());
+        mAccount.setPlaceHolderFlag(mBinding.checkboxPlaceholderAccount.isChecked());
         mAccount.setColor(mSelectedColor);
 
         long newParentAccountId;
         String newParentAccountUID;
-        if (mParentCheckBox.isChecked()) {
-            newParentAccountId = mParentAccountSpinner.getSelectedItemId();
+        if (mBinding.checkboxParentAccount.isChecked()) {
+            newParentAccountId = mBinding.inputParentAccount.getSelectedItemId();
             newParentAccountUID = mAccountsDbAdapter.getUID(newParentAccountId);
             mAccount.setParentUID(newParentAccountUID);
         } else {
@@ -798,9 +725,9 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
         }
         mAccount.setParentUID(newParentAccountUID);
 
-        if (mDefaultTransferAccountCheckBox.isChecked()
-                && mDefaultTransferAccountSpinner.getSelectedItemId() != Spinner.INVALID_ROW_ID) {
-            long id = mDefaultTransferAccountSpinner.getSelectedItemId();
+        if (mBinding.checkboxDefaultTransferAccount.isChecked()
+                && mBinding.inputDefaultTransferAccount.getSelectedItemId() != Spinner.INVALID_ROW_ID) {
+            long id = mBinding.inputDefaultTransferAccount.getSelectedItemId();
             mAccount.setDefaultTransferAccountUID(mAccountsDbAdapter.getUID(id));
         } else {
             //explicitly set in case of removal of default account
@@ -860,7 +787,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
      * @return {@link org.gnucash.android.model.AccountType} currently selected
      */
     private AccountType getSelectedAccountType() {
-        int selectedAccountTypeIndex = mAccountTypeSpinner.getSelectedItemPosition();
+        int selectedAccountTypeIndex = mBinding.inputAccountTypeSpinner.getSelectedItemPosition();
         String[] accountTypeEntries = getResources().getStringArray(R.array.key_account_type_entries);
         return AccountType.valueOf(accountTypeEntries[selectedAccountTypeIndex]);
     }
@@ -871,7 +798,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
      * @return Name of the account which has been entered in the EditText
      */
     private String getEnteredName() {
-        return mNameEditText.getText().toString().trim();
+        return mBinding.inputAccountName.getText().toString().trim();
     }
 
 }

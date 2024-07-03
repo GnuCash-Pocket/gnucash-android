@@ -42,6 +42,7 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.databinding.FragmentPieChartBinding;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
@@ -52,9 +53,6 @@ import org.joda.time.Years;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 /**
  * Base class for report fragments.
@@ -109,8 +107,6 @@ public abstract class BaseReportFragment extends Fragment implements
 
     protected ReportsActivity mReportsActivity;
 
-    @Nullable
-    @BindView(R.id.selected_chart_slice)
     protected TextView mSelectedValueTextView;
 
     private AsyncTask<Void, Void, Void> mReportGenerator;
@@ -121,13 +117,6 @@ public abstract class BaseReportFragment extends Fragment implements
      * @return Title string identifier
      */
     public abstract @StringRes int getTitle();
-
-    /**
-     * Returns the layout resource to use for this report
-     *
-     * @return Layout resource identifier
-     */
-    public abstract @LayoutRes int getLayoutResource();
 
     /**
      * Returns what kind of report this is
@@ -170,11 +159,13 @@ public abstract class BaseReportFragment extends Fragment implements
      */
     protected abstract void displayReport();
 
+    protected abstract View inflateView(LayoutInflater inflater, ViewGroup container);
+
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(getLayoutResource(), container, false);
-        ButterKnife.bind(this, view);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflateView(inflater, container);
+        mSelectedValueTextView = view.findViewById(R.id.selected_chart_slice);
         return view;
     }
 
@@ -275,8 +266,7 @@ public abstract class BaseReportFragment extends Fragment implements
 
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.chart_actions, menu);
     }
 
