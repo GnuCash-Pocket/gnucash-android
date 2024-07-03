@@ -44,6 +44,10 @@
         <item>CREDIT</item>
         <item>DEBIT</item>
     </string-array>
+    <string-array name="transaction_types" translatable="false">
+        <item>@string/label_credit</item>
+        <item>@string/label_debit</item>
+    </string-array>
     <string-array name="key_account_type_entries" translatable="false">
         <item>CASH</item>
         <item>BANK</item>

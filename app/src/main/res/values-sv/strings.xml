@@ -96,10 +96,6 @@
     <string name="title_account_preferences">Kontoinställningar</string>
     <string name="title_default_transaction_type">Standard transaktionstyp</string>
     <string name="summary_default_transaction_type">Typ av transaktion att använda som standard, KREDIT eller DEBIT</string>
-    <string-array name="transaction_types">
-        <item>KREDIT</item>
-        <item>DEBIT</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">Är du säker du vill radera alla transaktioner?</string>
     <string name="msg_delete_transaction_confirmation">Är du säker du vill radera denna transaktion?</string>
     <string name="title_export_preference_category">Exportera</string>

@@ -96,10 +96,6 @@
     <string name="title_account_preferences">科目设置</string>
     <string name="title_default_transaction_type">默认交易类型</string>
     <string name="summary_default_transaction_type">默认的交易类型，借方或贷方</string>
-    <string-array name="transaction_types">
-        <item>贷方</item>
-        <item>借方</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">确定删除所有交易？</string>
     <string name="msg_delete_transaction_confirmation">确定删除此项交易？</string>
     <string name="title_export_preference_category">导出设置</string>
