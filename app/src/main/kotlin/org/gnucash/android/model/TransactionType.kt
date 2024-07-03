@@ -21,8 +21,12 @@ package org.gnucash.android.model
  * @author Ngewi Fet <ngewif@gmail.com>
  * @author Jesse Shieh <jesse.shieh.pub@gmail.com>
  */
-enum class TransactionType {
-    DEBIT, CREDIT;
+enum class TransactionType(
+    @JvmField
+    val value: String
+) {
+    DEBIT("DEBIT"),
+    CREDIT("CREDIT");
 
     private var opposite: TransactionType? = null
 
@@ -41,6 +45,11 @@ enum class TransactionType {
         init {
             DEBIT.opposite = CREDIT
             CREDIT.opposite = DEBIT
+        }
+
+        @JvmStatic
+        fun of(value: String?): TransactionType {
+            return values().firstOrNull { it.value == value } ?: DEBIT
         }
     }
 }

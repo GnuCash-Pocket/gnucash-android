@@ -487,14 +487,16 @@ public class TransactionFormFragment extends Fragment implements
      * Initialize views with default data for new transactions
      */
     private void initializeViews() {
+        Context context = mTransactionTypeSwitch.getContext();
+
         long now = System.currentTimeMillis();
         mBinding.inputDate.setText(DATE_FORMATTER.print(now));
         mBinding.inputTime.setText(TIME_FORMATTER.print(now));
         mTime = mDate = Calendar.getInstance();
 
         mBinding.inputTransactionType.setAccountType(mAccountType);
-        String typePref = PreferenceActivity.getActiveBookSharedPreferences().getString(getString(R.string.key_default_transaction_type), "DEBIT");
-        mBinding.inputTransactionType.setChecked(TransactionType.valueOf(typePref));
+        TransactionType txType = GnuCashApplication.getDefaultTransactionType(context);
+        mBinding.inputTransactionType.setChecked(txType);
 
         String code = GnuCashApplication.getDefaultCurrencyCode();
         if (mAccountUID != null) {

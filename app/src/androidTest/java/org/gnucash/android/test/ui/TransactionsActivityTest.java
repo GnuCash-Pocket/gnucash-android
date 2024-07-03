@@ -150,6 +150,9 @@ public class TransactionsActivityTest {
 
     @Before
     public void setUp() throws Exception {
+        setDoubleEntryEnabled(true);
+        setDefaultTransactionType(TransactionType.DEBIT);
+
         mAccountsDbAdapter.deleteAllRecords();
         mAccountsDbAdapter.addRecord(mBaseAccount, DatabaseAdapter.UpdateMethod.insert);
         mAccountsDbAdapter.addRecord(mTransferAccount, DatabaseAdapter.UpdateMethod.insert);
@@ -253,7 +256,6 @@ public class TransactionsActivityTest {
     //TODO: Add test for only one account but with double-entry enabled
     @Test
     public void testAddTransaction() {
-        setDoubleEntryEnabled(true);
         setDefaultTransactionType(TransactionType.DEBIT);
         validateTransactionListDisplayed();
 
@@ -293,7 +295,6 @@ public class TransactionsActivityTest {
         mAccountsDbAdapter.addRecord(euroAccount);
 
         int transactionCount = mTransactionsDbAdapter.getTransactionsCount(TRANSACTIONS_ACCOUNT_UID);
-        setDoubleEntryEnabled(true);
         setDefaultTransactionType(TransactionType.DEBIT);
         validateTransactionListDisplayed();
 
@@ -404,7 +405,6 @@ public class TransactionsActivityTest {
      */
     @Test
     public void testSplitEditor() {
-        setDoubleEntryEnabled(true);
         setDefaultTransactionType(TransactionType.DEBIT);
         mTransactionsDbAdapter.deleteAllRecords();
 
@@ -455,10 +455,11 @@ public class TransactionsActivityTest {
 
 
     private void setDoubleEntryEnabled(boolean enabled) {
+        Context context = GnuCashApplication.getAppContext();
         SharedPreferences prefs = PreferenceActivity.getActiveBookSharedPreferences();
-        Editor editor = prefs.edit();
-        editor.putBoolean(mTransactionsActivity.getString(R.string.key_use_double_entry), enabled);
-        editor.apply();
+        prefs.edit()
+            .putBoolean(context.getString(R.string.key_use_double_entry), enabled)
+            .apply();
     }
 
     @Test
@@ -470,10 +471,11 @@ public class TransactionsActivityTest {
     }
 
     private void setDefaultTransactionType(TransactionType type) {
+        Context context = GnuCashApplication.getAppContext();
         SharedPreferences prefs = PreferenceActivity.getActiveBookSharedPreferences();
-        Editor editor = prefs.edit();
-        editor.putString(mTransactionsActivity.getString(R.string.key_default_transaction_type), type.name());
-        editor.commit();
+        prefs.edit()
+            .putString(context.getString(R.string.key_default_transaction_type), type.value)
+            .commit();
     }
 
     //FIXME: Improve on this test
@@ -593,9 +595,6 @@ public class TransactionsActivityTest {
      */
     @Test
     public void editingSplit_shouldNotSetAmountToZero() {
-        setDoubleEntryEnabled(true);
-        setDefaultTransactionType(TransactionType.DEBIT);
-
         mTransactionsDbAdapter.deleteAllRecords();
 
         Account account = new Account("Z Account", Commodity.getInstance(CURRENCY_CODE));
@@ -773,6 +772,7 @@ public class TransactionsActivityTest {
                 withId(R.id.edit_transaction))).perform(click());
 
         //now change the transfer account to be no longer multi-currency
+        onView(withId(R.id.input_transfer_account_spinner)).check(matches(isDisplayed()));
         onView(withId(R.id.input_transfer_account_spinner)).perform(click());
         onView(withText(mTransferAccount.getFullName())).perform(click());
 

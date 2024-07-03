@@ -44,6 +44,7 @@ import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
 import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Commodity;
+import org.gnucash.android.model.TransactionType;
 import org.gnucash.android.ui.settings.PreferenceActivity;
 import org.gnucash.android.util.CrashlyticsTree;
 import org.gnucash.android.util.LogTree;
@@ -447,5 +448,17 @@ public class GnuCashApplication extends Application {
     public static boolean shouldBackupTransactions(Context context) {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         return sharedPrefs.getBoolean(context.getString(R.string.key_delete_transaction_backup), true);
+    }
+
+    /**
+     * Get the default transaction type.
+     *
+     * @param context The context.
+     * @return <code>DEBIT</code> or <code>CREDIT</code>
+     */
+    public static TransactionType getDefaultTransactionType(@NonNull Context context) {
+        SharedPreferences sharedPrefs = PreferenceActivity.getActiveBookSharedPreferences();
+        String value = sharedPrefs.getString(context.getString(R.string.key_default_transaction_type), null);
+        return TransactionType.of(value);
     }
 }
