@@ -26,7 +26,7 @@ android {
     defaultConfig {
         applicationId "org.gnucash.pocket"
         minSdkVersion 21
-        targetSdkVersion 33
+        targetSdkVersion 34
         versionCode versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         resValue "string", "app_version_name", "${versionName}"
