@@ -303,6 +303,16 @@ public class SplitEditorFragment extends Fragment {
 
             updateTransferAccountsList(accountsSpinner);
 
+            accountsSpinner.setOnItemSelectedListener(new SplitAccountListener(splitTypeSwitch, this));
+            splitTypeSwitch.setAmountFormattingListener(splitAmountEditText, splitCurrencyTextView);
+            splitTypeSwitch.addOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    mImbalanceWatcher.afterTextChanged(null);
+                }
+            });
+            splitAmountEditText.addTextChangedListener(mImbalanceWatcher);
+
             if (split != null) {
                 splitAmountEditText.setCommodity(split.getValue().getCommodity());
                 splitAmountEditText.setValue(split.getFormattedValue().asBigDecimal(), true);
@@ -318,16 +328,6 @@ public class SplitEditorFragment extends Fragment {
                 splitUidTextView.setText(BaseModel.generateUID());
                 splitTypeSwitch.setChecked(mBaseAmount.signum() > 0);
             }
-
-            accountsSpinner.setOnItemSelectedListener(new SplitAccountListener(splitTypeSwitch, this));
-            splitTypeSwitch.setAmountFormattingListener(splitAmountEditText, splitCurrencyTextView);
-            splitTypeSwitch.addOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    mImbalanceWatcher.afterTextChanged(null);
-                }
-            });
-            splitAmountEditText.addTextChangedListener(mImbalanceWatcher);
         }
 
         /**
