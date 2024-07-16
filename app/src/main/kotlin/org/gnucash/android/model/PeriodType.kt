@@ -15,8 +15,7 @@
  */
 package org.gnucash.android.model
 
-import java.util.Locale
-import org.joda.time.format.DateTimeFormat
+import java.util.Calendar
 
 /**
  * Represents a type of period which can be associated with a recurring event
@@ -50,17 +49,32 @@ enum class PeriodType {
      * @return String describing the BYxxx parts of the recurrence rule
      */
     fun getByParts(startTime: Long): String {
-        var partString = ""
         if (this == WEEK) {
-            val dayOfWeek = dayOfWeekFormatter.print(startTime)
+            val cal = Calendar.getInstance()
+            cal.timeInMillis = startTime
+            val dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
             //our parser only supports two-letter day names
-            partString = "BYDAY=" + dayOfWeek.substring(0, dayOfWeek.length - 1)
-                .uppercase(Locale.getDefault())
+            return "BYDAY=${weekdaySymbols[dayOfWeek]}"
         }
-        return partString
+        return ""
     }
 
     companion object {
-        private val dayOfWeekFormatter = DateTimeFormat.forPattern("E")
+        private val weekdaySymbols: Map<Int, String> = mapOf(
+            // SUNDAY
+            Calendar.SUNDAY to "SU",
+            // MONDAY
+            Calendar.MONDAY to "MO",
+            // TUESDAY
+            Calendar.TUESDAY to "TU",
+            // WEDNESDAY
+            Calendar.WEDNESDAY to "WE",
+            // THURSDAY
+            Calendar.THURSDAY to "TH",
+            // FRIDAY
+            Calendar.FRIDAY to "FR",
+            // SATURDAY
+            Calendar.SATURDAY to "SA"
+        )
     }
 }
