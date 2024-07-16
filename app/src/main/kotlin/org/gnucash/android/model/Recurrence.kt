@@ -28,7 +28,6 @@ import org.joda.time.Weeks
 import org.joda.time.Years
 import java.sql.Timestamp
 import java.util.Collections
-import java.util.Date
 import org.joda.time.format.DateTimeFormat
 
 /**
@@ -36,16 +35,17 @@ import org.joda.time.format.DateTimeFormat
  *
  * Basically a wrapper around [PeriodType]
  */
-class Recurrence(periodType: PeriodType) : BaseModel() {
+class Recurrence(
     /**
      * Return the [PeriodType] for this recurrence
      */
     var periodType: PeriodType
+) : BaseModel() {
 
     /**
      * Timestamp of start of recurrence
      */
-    var periodStart: Timestamp
+    var periodStart: Timestamp = Timestamp(System.currentTimeMillis())
 
     /**
      * End date of the recurrence period
@@ -63,11 +63,6 @@ class Recurrence(periodType: PeriodType) : BaseModel() {
      * e.g. bi-weekly actions have period type [PeriodType.WEEK] and multiplier 2.
      */
     var multiplier = 1 //multiplier for the period type
-
-    init {
-        this.periodType = periodType
-        periodStart = Timestamp(System.currentTimeMillis())
-    }
 
     /**
      * Returns an approximate period for this recurrence
@@ -129,16 +124,18 @@ class Recurrence(periodType: PeriodType) : BaseModel() {
 
 //        =======================================================================
             //This section complies with the formal rules, but the betterpickers library doesn't like/need it
-//        SimpleDateFormat startDateFormat = new SimpleDateFormat("'TZID'=zzzz':'yyyyMMdd'T'HHmmss", Locale.US);
+//        SimpleDateFormat startDateFormat = new SimpleDateFormat("'TZID'=zzzz':'yyyyMMdd'T'HHmmss", Locale.ROOT);
 //        ruleBuilder.append("DTSTART;");
 //        ruleBuilder.append(startDateFormat.format(new Date(mStartDate)));
 //            ruleBuilder.append("\n");
 //        ruleBuilder.append("RRULE:");
 //        ========================================================================
-            ruleBuilder.append("FREQ=").append(periodType.frequencyDescription).append(separator)
-            ruleBuilder.append("INTERVAL=").append(multiplier).append(separator)
-            if (count > 0) ruleBuilder.append("COUNT=").append(count).append(separator)
-            ruleBuilder.append(periodType.getByParts(periodStart.time)).append(separator)
+            ruleBuilder.append("FREQ=").append(periodType.frequencyDescription)
+                .append(separator).append("INTERVAL=").append(multiplier)
+                .append(separator).append(periodType.getByParts(periodStart.time))
+            if (count > 0) {
+                ruleBuilder.append(separator).append("COUNT=").append(count)
+            }
             return ruleBuilder.toString()
         }
 

@@ -24,6 +24,7 @@ import org.joda.time.DateTime;
 import org.junit.Test;
 
 import java.sql.Timestamp;
+import java.util.Locale;
 
 /**
  * Test {@link Recurrence}s
@@ -67,7 +68,6 @@ public class RecurrenceTest {
         recurrence.setPeriodEnd(new Timestamp(endTime.getMillis()));
 
         assertThat(recurrence.getCount()).isEqualTo(7);
-
     }
 
     /**
@@ -83,5 +83,18 @@ public class RecurrenceTest {
         recurrence.setPeriodStart(new Timestamp(start.getMillis()));
 
         assertThat(recurrence.getCount()).isEqualTo(-1);
+    }
+
+    @Test
+    public void no_language() {
+        Locale locale = Locale.getDefault();
+        Locale.setDefault(Locale.ITALY);
+        Recurrence recurrence = new Recurrence(PeriodType.WEEK);
+        DateTime start = new DateTime(2024, 1, 1, 0, 0);
+        recurrence.setPeriodStart(new Timestamp(start.getMillis()));
+        assertThat(recurrence.getPeriodType()).isEqualTo(PeriodType.WEEK);
+        String ruleString = recurrence.getRuleString();
+        assertThat(ruleString).isEqualTo("FREQ=WEEKLY;INTERVAL=1;BYDAY=MO");
+        Locale.setDefault(locale);
     }
 }
