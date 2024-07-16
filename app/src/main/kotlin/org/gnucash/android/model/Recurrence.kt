@@ -15,8 +15,11 @@
  */
 package org.gnucash.android.model
 
+import android.content.Context
+import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence
+import java.sql.Timestamp
+import java.util.Collections
 import org.gnucash.android.R
-import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.ui.util.RecurrenceParser
 import org.joda.time.Days
 import org.joda.time.Hours
@@ -26,8 +29,6 @@ import org.joda.time.Months
 import org.joda.time.ReadablePeriod
 import org.joda.time.Weeks
 import org.joda.time.Years
-import java.sql.Timestamp
-import java.util.Collections
 import org.joda.time.format.DateTimeFormat
 
 /**
@@ -41,6 +42,8 @@ class Recurrence(
      */
     var periodType: PeriodType
 ) : BaseModel() {
+
+    private val event = EventRecurrence()
 
     /**
      * Timestamp of start of recurrence
@@ -91,22 +94,20 @@ class Recurrence(
      *
      * @return String description of repeat schedule
      */
-    val repeatString: String
-        get() {
-            val repeatBuilder = StringBuilder(frequencyRepeatString)
-            val context = GnuCashApplication.getAppContext()
-            val dayOfWeek = dayOfWeekFormatter.print(periodStart.time)
-            if (periodType === PeriodType.WEEK) {
-                repeatBuilder.append(" ")
-                    .append(context.getString(R.string.repeat_on_weekday, dayOfWeek))
-            }
-            if (periodEnd != null) {
-                val endDateString = DateTimeFormat.mediumDate().print(periodEnd!!.time)
-                repeatBuilder.append(", ")
-                    .append(context.getString(R.string.repeat_until_date, endDateString))
-            }
-            return repeatBuilder.toString()
+    fun getRepeatString(context: Context): String {
+        val repeatBuilder = StringBuilder(frequencyRepeatString(context))
+        val dayOfWeek = dayOfWeekFormatter.print(periodStart.time)
+        if (periodType === PeriodType.WEEK) {
+            repeatBuilder.append(" ")
+                .append(context.getString(R.string.repeat_on_weekday, dayOfWeek))
         }
+        if (periodEnd != null) {
+            val endDateString = DateTimeFormat.mediumDate().print(periodEnd!!.time)
+            repeatBuilder.append(", ")
+                .append(context.getString(R.string.repeat_until_date, endDateString))
+        }
+        return repeatBuilder.toString()
+    }
 
     /**
      * Creates an RFC 2445 string which describes this recurring event.
@@ -118,26 +119,7 @@ class Recurrence(
      * @return String describing event
      */
     val ruleString: String
-        get() {
-            val separator = ";"
-            val ruleBuilder = StringBuilder()
-
-//        =======================================================================
-            //This section complies with the formal rules, but the betterpickers library doesn't like/need it
-//        SimpleDateFormat startDateFormat = new SimpleDateFormat("'TZID'=zzzz':'yyyyMMdd'T'HHmmss", Locale.ROOT);
-//        ruleBuilder.append("DTSTART;");
-//        ruleBuilder.append(startDateFormat.format(new Date(mStartDate)));
-//            ruleBuilder.append("\n");
-//        ruleBuilder.append("RRULE:");
-//        ========================================================================
-            ruleBuilder.append("FREQ=").append(periodType.frequencyDescription)
-                .append(separator).append("INTERVAL=").append(multiplier)
-                .append(separator).append(periodType.getByParts(periodStart.time))
-            if (count > 0) {
-                ruleBuilder.append(separator).append("COUNT=").append(count)
-            }
-            return ruleBuilder.toString()
-        }
+        get() = event.toString()
 
     /**
      * Return the number of days left in this period
@@ -318,42 +300,41 @@ class Recurrence(
      *
      * @return String describing the period type
      */
-    private val frequencyRepeatString: String
-        get() {
-            val res = GnuCashApplication.getAppContext().resources
-            return when (periodType) {
-                PeriodType.HOUR -> res.getQuantityString(
-                    R.plurals.label_every_x_hours,
-                    multiplier,
-                    multiplier
-                )
+    private fun frequencyRepeatString(context: Context): String {
+        val res = context.resources
+        return when (periodType) {
+            PeriodType.HOUR -> res.getQuantityString(
+                R.plurals.label_every_x_hours,
+                multiplier,
+                multiplier
+            )
 
-                PeriodType.DAY -> res.getQuantityString(
-                    R.plurals.label_every_x_days,
-                    multiplier,
-                    multiplier
-                )
+            PeriodType.DAY -> res.getQuantityString(
+                R.plurals.label_every_x_days,
+                multiplier,
+                multiplier
+            )
 
-                PeriodType.WEEK -> res.getQuantityString(
-                    R.plurals.label_every_x_weeks,
-                    multiplier,
-                    multiplier
-                )
+            PeriodType.WEEK -> res.getQuantityString(
+                R.plurals.label_every_x_weeks,
+                multiplier,
+                multiplier
+            )
 
-                PeriodType.MONTH -> res.getQuantityString(
-                    R.plurals.label_every_x_months,
-                    multiplier,
-                    multiplier
-                )
+            PeriodType.MONTH -> res.getQuantityString(
+                R.plurals.label_every_x_months,
+                multiplier,
+                multiplier
+            )
 
-                PeriodType.YEAR -> res.getQuantityString(
-                    R.plurals.label_every_x_years,
-                    multiplier,
-                    multiplier
-                )
+            PeriodType.YEAR -> res.getQuantityString(
+                R.plurals.label_every_x_years,
+                multiplier,
+                multiplier
+            )
 
-            }
         }
+    }
 
     companion object {
         private val dayOfWeekFormatter = DateTimeFormat.forPattern("EEEE")

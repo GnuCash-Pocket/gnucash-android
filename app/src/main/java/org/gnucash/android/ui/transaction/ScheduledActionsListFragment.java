@@ -502,7 +502,7 @@ public class ScheduledActionsListFragment extends ListFragment implements
                 descriptionTextView.setText(getString(R.string.label_scheduled_action_ended,
                     DateTimeFormat.shortDateTime().print(scheduledAction.getLastRunTime())));
             } else {
-                descriptionTextView.setText(scheduledAction.getRepeatString());
+                descriptionTextView.setText(scheduledAction.getRepeatString(context));
             }
         }
     }
@@ -600,15 +600,15 @@ public class ScheduledActionsListFragment extends ListFragment implements
             view.findViewById(R.id.right_text).setVisibility(View.GONE);
 
             TextView descriptionTextView = (TextView) view.findViewById(R.id.secondary_text);
-            descriptionTextView.setText(scheduledAction.getRepeatString());
+            descriptionTextView.setText(scheduledAction.getRepeatString(context));
             long endTime = scheduledAction.getEndTime();
             if (endTime > 0 && endTime < System.currentTimeMillis()) {
                 ((TextView) view.findViewById(R.id.primary_text))
-                    .setTextColor(ContextCompat.getColor(getContext(), android.R.color.darker_gray));
+                    .setTextColor(ContextCompat.getColor(context, android.R.color.darker_gray));
                 descriptionTextView.setText(getString(R.string.label_scheduled_action_ended,
                     DateTimeFormat.shortDateTime().print(scheduledAction.getLastRunTime())));
             } else {
-                descriptionTextView.setText(scheduledAction.getRepeatString());
+                descriptionTextView.setText(scheduledAction.getRepeatString(context));
             }
         }
     }

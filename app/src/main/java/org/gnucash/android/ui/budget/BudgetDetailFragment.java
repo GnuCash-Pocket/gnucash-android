@@ -17,6 +17,7 @@
 package org.gnucash.android.ui.budget;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -114,6 +115,7 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
     }
 
     private void bindViews() {
+        Context context = mBinding.budgetRecurrence.getContext();
         Budget budget = mBudgetsDbAdapter.getRecord(mBudgetUID);
         mBinding.listItem2Lines.primaryText.setText(budget.getName());
 
@@ -123,7 +125,7 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
         else {
             mBinding.listItem2Lines.secondaryText.setVisibility(View.GONE);
         }
-        mBinding.budgetRecurrence.setText(budget.getRecurrence().getRepeatString());
+        mBinding.budgetRecurrence.setText(budget.getRecurrence().getRepeatString(context));
 
         mBinding.budgetAmountRecycler.setAdapter(new BudgetAmountAdapter());
     }

@@ -204,6 +204,7 @@ public class BudgetListFragment extends Fragment implements Refreshable,
 
         @Override
         public void onBindViewHolderCursor(BudgetViewHolder holder, Cursor cursor) {
+            Context context = holder.itemView.getContext();
             final Budget budget = mBudgetsDbAdapter.buildModelInstance(cursor);
             holder.bind(budget);
         }
@@ -258,6 +259,7 @@ public class BudgetListFragment extends Fragment implements Refreshable,
             }
 
             public void bind(final Budget budget) {
+                Context context = itemView.getContext();
                 this.budgetUID = budget.getUID();
 
                 budgetName.setText(budget.getName());
@@ -272,7 +274,7 @@ public class BudgetListFragment extends Fragment implements Refreshable,
                 }
                 accountName.setText(accountString);
 
-                budgetRecurrence.setText(budget.getRecurrence().getRepeatString() + " - "
+                budgetRecurrence.setText(budget.getRecurrence().getRepeatString(context) + " - "
                     + budget.getRecurrence().getDaysLeftInCurrentPeriod() + " days left");
 
                 BigDecimal spentAmountValue = BigDecimal.ZERO;

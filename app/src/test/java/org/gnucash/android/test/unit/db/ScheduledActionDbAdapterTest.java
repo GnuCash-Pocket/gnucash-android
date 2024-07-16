@@ -2,6 +2,7 @@ package org.gnucash.android.test.unit.db;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import android.content.Context;
 import android.content.res.Resources;
 
 import org.gnucash.android.R;
@@ -56,18 +57,18 @@ public class ScheduledActionDbAdapterTest extends GnuCashTest {
 
     @Test
     public void testGenerateRepeatString() {
+        Context context = RuntimeEnvironment.getApplication();
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
         PeriodType periodType = PeriodType.MONTH;
         Recurrence recurrence = new Recurrence(periodType);
         recurrence.setMultiplier(2);
         scheduledAction.setRecurrence(recurrence);
         scheduledAction.setTotalPlannedExecutionCount(4);
-        Resources res = GnuCashApplication.getAppContext().getResources();
+        Resources res = context.getResources();
         String repeatString = res.getQuantityString(R.plurals.label_every_x_months, 2, 2) + ", " +
                 res.getString(R.string.repeat_x_times, 4);
 
-        assertThat(scheduledAction.getRepeatString().trim()).isEqualTo(repeatString);
-
+        assertThat(scheduledAction.getRepeatString(context).trim()).isEqualTo(repeatString);
     }
 
     @Test
