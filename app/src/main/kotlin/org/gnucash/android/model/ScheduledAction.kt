@@ -15,15 +15,14 @@
  */
 package org.gnucash.android.model
 
+import android.content.Context
 import androidx.annotation.StringRes
-import org.gnucash.android.R
-import org.gnucash.android.app.GnuCashApplication
-import org.joda.time.LocalDateTime
 import java.sql.Timestamp
 import java.util.Calendar
 import java.util.Date
-import java.util.Locale
-import org.gnucash.android.export.xml.GncXmlHelper
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication
+import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
 
 /**
@@ -342,16 +341,14 @@ class ScheduledAction    //all actions are enabled by default
      *
      * @return String description of repeat schedule
      */
-    val repeatString: String
-        get() {
-            val ruleBuilder = StringBuilder(recurrence!!.repeatString)
-            val context = GnuCashApplication.getAppContext()
-            if (_endDate <= 0 && totalPlannedExecutionCount > 0) {
-                ruleBuilder.append(", ")
-                    .append(context.getString(R.string.repeat_x_times, totalPlannedExecutionCount))
-            }
-            return ruleBuilder.toString()
+    fun getRepeatString(context: Context): String {
+        val ruleBuilder = StringBuilder(recurrence!!.getRepeatString(context))
+        if (_endDate <= 0 && totalPlannedExecutionCount > 0) {
+            ruleBuilder.append(", ")
+                .append(context.getString(R.string.repeat_x_times, totalPlannedExecutionCount))
         }
+        return ruleBuilder.toString()
+    }
 
     /**
      * Creates an RFC 2445 string which describes this recurring event
@@ -418,7 +415,7 @@ class ScheduledAction    //all actions are enabled by default
     }
 
     override fun toString(): String {
-        return actionType.name + " - " + repeatString
+        return actionType.name + " - " + getRepeatString(GnuCashApplication.getAppContext())
     }
 
     companion object {

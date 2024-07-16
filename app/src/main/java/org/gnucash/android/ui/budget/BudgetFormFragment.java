@@ -17,6 +17,7 @@
 package org.gnucash.android.ui.budget;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.inputmethodservice.KeyboardView;
@@ -164,13 +165,14 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
      * @param budget Budget to use to initialize the views
      */
     private void initViews(Budget budget) {
+        Context context = mBudgetNameInput.getContext();
         mBudgetNameInput.setText(budget.getName());
         mDescriptionInput.setText(budget.getDescription());
 
         String recurrenceRuleString = budget.getRecurrence().getRuleString();
         mRecurrenceRule = recurrenceRuleString;
         mEventRecurrence.parse(recurrenceRuleString);
-        mRecurrenceInput.setText(budget.getRecurrence().getRepeatString());
+        mRecurrenceInput.setText(budget.getRecurrence().getRepeatString(context));
 
         mBudgetAmounts = (ArrayList<BudgetAmount>) budget.getCompactedBudgetAmounts();
         toggleAmountInputVisibility();
