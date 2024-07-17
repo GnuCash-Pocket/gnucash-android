@@ -57,6 +57,7 @@ import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.model.TransactionType;
+import org.gnucash.android.model.WeekendAdjust;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -229,11 +230,6 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     private String mBudgetAmountAccountUID = null;
 
     /**
-     * Multiplier for the recurrence period type. e.g. period type of week and multiplier of 2 means bi-weekly
-     */
-    private int mRecurrenceMultiplier = 1;
-
-    /**
      * Flag which says to ignore template transactions until we successfully parse a split amount
      * Is updated for each transaction template split parsed
      */
@@ -359,7 +355,6 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
 
             case TAG_GNC_RECURRENCE:
             case TAG_BUDGET_RECURRENCE:
-                mRecurrenceMultiplier = 1;
                 mRecurrence = new Recurrence(PeriodType.MONTH);
                 break;
             case TAG_BUDGET_SLOTS:
@@ -735,18 +730,20 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 mScheduledAction.setTotalPlannedExecutionCount(Integer.parseInt(characterString));
                 break;
             case TAG_RX_MULT:
-                mRecurrenceMultiplier = Integer.parseInt(characterString);
+                mRecurrence.setMultiplier(Integer.parseInt(characterString));
                 break;
             case TAG_RX_PERIOD_TYPE:
-                try {
-                    PeriodType periodType = PeriodType.valueOf(characterString.toUpperCase());
+                PeriodType periodType = PeriodType.of(characterString);
+                if (periodType != PeriodType.ONCE) {
                     mRecurrence.setPeriodType(periodType);
-                    mRecurrence.setMultiplier(mRecurrenceMultiplier);
-                } catch (IllegalArgumentException ex) { //the period type constant is not supported
-                    String msg = "Unsupported period constant: " + characterString;
-                    Timber.e(ex, msg);
+                } else {
+                    Timber.e("Unsupported period: %s", characterString);
                     mIgnoreScheduledAction = true;
                 }
+                break;
+            case TAG_RX_WEEKEND_ADJ:
+                WeekendAdjust weekendAdjust = WeekendAdjust.of(characterString);
+                mRecurrence.setWeekendAdjust(weekendAdjust);
                 break;
             case TAG_GDATE:
                 try {

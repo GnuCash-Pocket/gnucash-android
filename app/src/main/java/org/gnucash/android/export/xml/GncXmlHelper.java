@@ -143,11 +143,12 @@ public abstract class GncXmlHelper {
     public static final String TAG_SX_TAG = "sx:tag";
     public static final String TAG_SX_TEMPL_ACCOUNT = "sx:templ-acct";
     public static final String TAG_SX_SCHEDULE = "sx:schedule";
-    public static final String TAG_GNC_RECURRENCE = "gnc:recurrence";
 
+    public static final String TAG_GNC_RECURRENCE = "gnc:recurrence";
     public static final String TAG_RX_MULT = "recurrence:mult";
     public static final String TAG_RX_PERIOD_TYPE = "recurrence:period_type";
     public static final String TAG_RX_START = "recurrence:start";
+    public static final String TAG_RX_WEEKEND_ADJ =  "recurrence:weekend_adj";
 
 
     public static final String TAG_BUDGET = "gnc:budget";

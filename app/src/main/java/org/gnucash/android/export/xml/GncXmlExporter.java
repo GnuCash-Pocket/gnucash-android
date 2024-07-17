@@ -48,6 +48,7 @@ import org.gnucash.android.model.Price;
 import org.gnucash.android.model.Recurrence;
 import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.TransactionType;
+import org.gnucash.android.model.WeekendAdjust;
 import org.gnucash.android.util.TimestampHelper;
 import org.xmlpull.v1.XmlPullParserFactory;
 import org.xmlpull.v1.XmlSerializer;
@@ -728,11 +729,24 @@ public class GncXmlExporter extends Exporter {
         xmlSerializer.text(String.valueOf(recurrence.getMultiplier()));
         xmlSerializer.endTag(null, TAG_RX_MULT);
         xmlSerializer.startTag(null, TAG_RX_PERIOD_TYPE);
-        xmlSerializer.text(periodType.name().toLowerCase());
+        xmlSerializer.text(periodType.value);
         xmlSerializer.endTag(null, TAG_RX_PERIOD_TYPE);
 
         long recurrenceStartTime = recurrence.getPeriodStart().getTime();
         serializeDate(xmlSerializer, TAG_RX_START, recurrenceStartTime);
+
+        WeekendAdjust weekendAdjust = recurrence.getWeekendAdjust();
+        if (weekendAdjust != WeekendAdjust.NONE) {
+            /* In r17725 and r17751, I introduced this extra XML child
+            element, but this means a gnucash-2.2.x cannot read the SX
+            recurrence of a >=2.3.x file anymore, which is bad. In order
+            to improve this broken backward compatibility for most of the
+            cases, we don't write out this XML element as long as it is
+            only "none". */
+            xmlSerializer.startTag(null, GncXmlHelper.TAG_RX_WEEKEND_ADJ);
+            xmlSerializer.text(weekendAdjust.value);
+            xmlSerializer.endTag(null, GncXmlHelper.TAG_RX_WEEKEND_ADJ);
+        }
     }
 
     private void exportBudgets(XmlSerializer xmlSerializer) throws IOException {
