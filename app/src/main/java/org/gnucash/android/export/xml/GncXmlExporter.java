@@ -712,7 +712,7 @@ public class GncXmlExporter extends Exporter {
         xmlSerializer.text(periodType.value);
         xmlSerializer.endTag(null, GncXmlHelper.TAG_RX_PERIOD_TYPE);
 
-        long recurrenceStartTime = recurrence.getPeriodStart().getTime();
+        long recurrenceStartTime = recurrence.getPeriodStart();
         serializeDate(xmlSerializer, GncXmlHelper.TAG_RX_START, recurrenceStartTime);
 
         WeekendAdjust weekendAdjust = recurrence.getWeekendAdjust();

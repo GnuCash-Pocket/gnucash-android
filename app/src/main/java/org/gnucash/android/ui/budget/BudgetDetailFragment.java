@@ -219,7 +219,7 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
             holder.budgetAmount.setText(projectedAmount.formattedString());
 
             Money spentAmount = accountsDbAdapter.getAccountBalance(budgetAmount.getAccountUID(),
-                    mBudget.getStartofCurrentPeriod(), mBudget.getEndOfCurrentPeriod());
+                    mBudget.getStartOfCurrentPeriod(), mBudget.getEndOfCurrentPeriod());
 
             holder.budgetSpent.setText(spentAmount.abs().formattedString());
             holder.budgetLeft.setText(projectedAmount.minus(spentAmount.abs()).formattedString());

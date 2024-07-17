@@ -22,6 +22,8 @@ import org.gnucash.android.model.PeriodType;
 import org.gnucash.android.model.Recurrence;
 import org.joda.time.DateTime;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 
 import java.sql.Timestamp;
 import java.util.Locale;
@@ -29,6 +31,7 @@ import java.util.Locale;
 /**
  * Test {@link Recurrence}s
  */
+@RunWith(RobolectricTestRunner.class)
 public class RecurrenceTest {
 
     @Test
@@ -36,11 +39,11 @@ public class RecurrenceTest {
         Recurrence recurrence = new Recurrence(PeriodType.MONTH);
 
         DateTime startTime = new DateTime(2015, 10, 5, 0, 0);
-        recurrence.setPeriodStart(new Timestamp(startTime.getMillis()));
+        recurrence.setPeriodStart(startTime.getMillis());
         recurrence.setPeriodEnd(3);
 
         DateTime expectedEndtime = new DateTime(2016, 1, 5, 0, 0);
-        assertThat(recurrence.getPeriodEnd().getTime()).isEqualTo(expectedEndtime.getMillis());
+        assertThat(recurrence.getPeriodEnd()).isEqualTo(expectedEndtime.getMillis());
     }
 
     /**
@@ -51,7 +54,7 @@ public class RecurrenceTest {
         Recurrence recurrence = new Recurrence(PeriodType.MONTH);
 
         DateTime start = new DateTime(2015, 10, 5, 0, 0);
-        recurrence.setPeriodStart(new Timestamp(start.getMillis()));
+        recurrence.setPeriodStart(start.getMillis());
 
         DateTime end = new DateTime(2016, 8, 5, 0, 0);
         recurrence.setPeriodEnd(new Timestamp(end.getMillis()));
@@ -64,7 +67,7 @@ public class RecurrenceTest {
         PeriodType biWeekly = PeriodType.WEEK;
         recurrence = new Recurrence(biWeekly);
         recurrence.setMultiplier(2);
-        recurrence.setPeriodStart(new Timestamp(startTime.getMillis()));
+        recurrence.setPeriodStart(startTime.getMillis());
         recurrence.setPeriodEnd(new Timestamp(endTime.getMillis()));
 
         assertThat(recurrence.getCount()).isEqualTo(7);
@@ -80,7 +83,7 @@ public class RecurrenceTest {
         Recurrence recurrence = new Recurrence(PeriodType.MONTH);
 
         DateTime start = new DateTime(2015, 10, 5, 0, 0);
-        recurrence.setPeriodStart(new Timestamp(start.getMillis()));
+        recurrence.setPeriodStart(start.getMillis());
 
         assertThat(recurrence.getCount()).isEqualTo(-1);
     }
@@ -91,7 +94,7 @@ public class RecurrenceTest {
         Locale.setDefault(Locale.ITALY);
         Recurrence recurrence = new Recurrence(PeriodType.WEEK);
         DateTime start = new DateTime(2024, 1, 1, 0, 0);
-        recurrence.setPeriodStart(new Timestamp(start.getMillis()));
+        recurrence.setPeriodStart(start.getMillis());
         assertThat(recurrence.getPeriodType()).isEqualTo(PeriodType.WEEK);
         String ruleString = recurrence.getRuleString();
         assertThat(ruleString).isEqualTo("FREQ=WEEKLY;INTERVAL=1;BYDAY=MO");

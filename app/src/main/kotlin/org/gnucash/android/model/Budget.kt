@@ -181,16 +181,26 @@ class Budget : BaseModel {
      *
      * @return Start timestamp in milliseconds
      */
-    val startofCurrentPeriod: Long
+    val startOfCurrentPeriod: Long
         get() {
             var localDate = LocalDateTime()
-            val interval = recurrence!!.multiplier
-            localDate = when (recurrence!!.periodType) {
-                PeriodType.HOUR -> localDate.millisOfDay().withMinimumValue().plusHours(interval)
-                PeriodType.DAY -> localDate.millisOfDay().withMinimumValue().plusDays(interval)
-                PeriodType.WEEK -> localDate.dayOfWeek().withMinimumValue().minusDays(interval)
-                PeriodType.MONTH -> localDate.dayOfMonth().withMinimumValue().minusMonths(interval)
-                PeriodType.YEAR -> localDate.dayOfYear().withMinimumValue().minusYears(interval)
+            recurrence?.let { recurrence ->
+                val interval = recurrence.multiplier
+                localDate = when (recurrence.periodType) {
+                    PeriodType.HOUR -> localDate.millisOfDay().withMinimumValue()
+                        .plusHours(interval)
+
+                    PeriodType.DAY -> localDate.millisOfDay().withMinimumValue().plusDays(interval)
+                    PeriodType.WEEK -> localDate.dayOfWeek().withMinimumValue().minusDays(interval)
+                    PeriodType.MONTH -> localDate.dayOfMonth().withMinimumValue()
+                        .minusMonths(interval)
+
+                    PeriodType.YEAR -> localDate.dayOfYear().withMinimumValue().minusYears(interval)
+                    PeriodType.ONCE -> localDate
+                    PeriodType.LAST_WEEKDAY -> TODO()
+                    PeriodType.NTH_WEEKDAY -> TODO()
+                    PeriodType.END_OF_MONTH -> TODO()
+                }
             }
             return localDate.toDate().time
         }
@@ -203,35 +213,53 @@ class Budget : BaseModel {
     val endOfCurrentPeriod: Long
         get() {
             var localDate = LocalDateTime()
-            val interval = recurrence!!.multiplier
-            localDate = when (recurrence!!.periodType) {
-                PeriodType.HOUR -> localDate.millisOfDay().withMaximumValue().plusHours(interval)
-                PeriodType.DAY -> localDate.millisOfDay().withMaximumValue().plusDays(interval)
-                PeriodType.WEEK -> localDate.dayOfWeek().withMaximumValue().plusWeeks(interval)
-                PeriodType.MONTH -> localDate.dayOfMonth().withMaximumValue().plusMonths(interval)
-                PeriodType.YEAR -> localDate.dayOfYear().withMaximumValue().plusYears(interval)
+            recurrence?.let { recurrence ->
+                val interval = recurrence.multiplier
+                localDate = when (recurrence.periodType) {
+                    PeriodType.HOUR -> localDate.millisOfDay().withMaximumValue()
+                        .plusHours(interval)
+
+                    PeriodType.DAY -> localDate.millisOfDay().withMaximumValue().plusDays(interval)
+                    PeriodType.WEEK -> localDate.dayOfWeek().withMaximumValue().plusWeeks(interval)
+                    PeriodType.MONTH -> localDate.dayOfMonth().withMaximumValue()
+                        .plusMonths(interval)
+
+                    PeriodType.YEAR -> localDate.dayOfYear().withMaximumValue().plusYears(interval)
+                    PeriodType.ONCE -> localDate
+                    PeriodType.LAST_WEEKDAY -> TODO()
+                    PeriodType.NTH_WEEKDAY -> TODO()
+                    PeriodType.END_OF_MONTH -> TODO()
+                }
             }
             return localDate.toDate().time
         }
 
     fun getStartOfPeriod(periodNum: Int): Long {
-        var localDate = LocalDateTime(recurrence!!.periodStart.time)
-        val interval = recurrence!!.multiplier * periodNum
-        localDate = when (recurrence!!.periodType) {
-            PeriodType.HOUR -> localDate.millisOfDay().withMinimumValue()
-                .plusHours(interval)
+        var localDate = LocalDateTime()
+        recurrence?.let { recurrence ->
+            localDate = LocalDateTime(recurrence.periodStart)
+            val interval = recurrence.multiplier * periodNum
+            localDate = when (recurrence.periodType) {
+                PeriodType.HOUR -> localDate.millisOfDay().withMinimumValue()
+                    .plusHours(interval)
 
-            PeriodType.DAY -> localDate.millisOfDay().withMinimumValue()
-                .plusDays(interval)
+                PeriodType.DAY -> localDate.millisOfDay().withMinimumValue()
+                    .plusDays(interval)
 
-            PeriodType.WEEK -> localDate.dayOfWeek().withMinimumValue()
-                .minusDays(interval)
+                PeriodType.WEEK -> localDate.dayOfWeek().withMinimumValue()
+                    .minusDays(interval)
 
-            PeriodType.MONTH -> localDate.dayOfMonth().withMinimumValue()
-                .minusMonths(interval)
+                PeriodType.MONTH -> localDate.dayOfMonth().withMinimumValue()
+                    .minusMonths(interval)
 
-            PeriodType.YEAR -> localDate.dayOfYear().withMinimumValue()
-                .minusYears(interval)
+                PeriodType.YEAR -> localDate.dayOfYear().withMinimumValue()
+                    .minusYears(interval)
+
+                PeriodType.ONCE -> localDate
+                PeriodType.LAST_WEEKDAY -> TODO()
+                PeriodType.NTH_WEEKDAY -> TODO()
+                PeriodType.END_OF_MONTH -> TODO()
+            }
         }
         return localDate.toDate().time
     }
@@ -244,20 +272,27 @@ class Budget : BaseModel {
      */
     fun getEndOfPeriod(periodNum: Int): Long {
         var localDate = LocalDateTime()
-        val interval = recurrence!!.multiplier * periodNum
-        localDate = when (recurrence!!.periodType) {
-            PeriodType.HOUR -> localDate.plusHours(interval)
-            PeriodType.DAY -> localDate.millisOfDay().withMaximumValue()
-                .plusDays(interval)
+        recurrence?.let { recurrence ->
+            val interval = recurrence.multiplier * periodNum
+            localDate = when (recurrence.periodType) {
+                PeriodType.HOUR -> localDate.plusHours(interval)
+                PeriodType.DAY -> localDate.millisOfDay().withMaximumValue()
+                    .plusDays(interval)
 
-            PeriodType.WEEK -> localDate.dayOfWeek().withMaximumValue()
-                .plusWeeks(interval)
+                PeriodType.WEEK -> localDate.dayOfWeek().withMaximumValue()
+                    .plusWeeks(interval)
 
-            PeriodType.MONTH -> localDate.dayOfMonth().withMaximumValue()
-                .plusMonths(interval)
+                PeriodType.MONTH -> localDate.dayOfMonth().withMaximumValue()
+                    .plusMonths(interval)
 
-            PeriodType.YEAR -> localDate.dayOfYear().withMaximumValue()
-                .plusYears(interval)
+                PeriodType.YEAR -> localDate.dayOfYear().withMaximumValue()
+                    .plusYears(interval)
+
+                PeriodType.ONCE -> TODO()
+                PeriodType.LAST_WEEKDAY -> TODO()
+                PeriodType.NTH_WEEKDAY -> TODO()
+                PeriodType.END_OF_MONTH -> TODO()
+            }
         }
         return localDate.toDate().time
     }

@@ -747,7 +747,7 @@ public class GncXmlHandler extends DefaultHandler {
                     }
 
                     if (mIsRecurrenceStart && mScheduledAction != null) {
-                        mRecurrence.setPeriodStart(new Timestamp(date));
+                        mRecurrence.setPeriodStart(date);
                         mIsRecurrenceStart = false;
                     }
                 } catch (ParseException e) {
