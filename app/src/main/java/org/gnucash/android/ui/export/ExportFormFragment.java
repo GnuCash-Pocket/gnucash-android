@@ -498,13 +498,16 @@ public class ExportFormFragment extends Fragment implements
 
     @Override
     public void onRecurrenceSet(String rrule) {
+        Timber.i("Export reoccurs: %s", rrule);
+        Context context = mRecurrenceTextView.getContext();
         mRecurrenceRule = rrule;
-        String repeatString = getString(R.string.label_tap_to_create_schedule);
-
-        if (mRecurrenceRule != null) {
-            mEventRecurrence.parse(mRecurrenceRule);
-            repeatString = EventRecurrenceFormatter.getRepeatString(requireContext(), getResources(),
-                    mEventRecurrence, true);
+        String repeatString = null;
+        if (!TextUtils.isEmpty(rrule)) {
+            mEventRecurrence.parse(rrule);
+            repeatString = EventRecurrenceFormatter.getRepeatString(context, context.getResources(), mEventRecurrence, true);
+        }
+        if (TextUtils.isEmpty(repeatString)) {
+            repeatString = context.getString(R.string.label_tap_to_create_schedule);
         }
         mBinding.inputRecurrence.setText(repeatString);
     }

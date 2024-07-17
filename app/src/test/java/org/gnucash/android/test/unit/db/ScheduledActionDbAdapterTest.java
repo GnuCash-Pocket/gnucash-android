@@ -57,7 +57,7 @@ public class ScheduledActionDbAdapterTest extends GnuCashTest {
 
     @Test
     public void testGenerateRepeatString() {
-        Context context = RuntimeEnvironment.getApplication();
+        Context context = GnuCashApplication.getAppContext();
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
         PeriodType periodType = PeriodType.MONTH;
         Recurrence recurrence = new Recurrence(periodType);
@@ -65,7 +65,7 @@ public class ScheduledActionDbAdapterTest extends GnuCashTest {
         scheduledAction.setRecurrence(recurrence);
         scheduledAction.setTotalPlannedExecutionCount(4);
         Resources res = context.getResources();
-        String repeatString = res.getQuantityString(R.plurals.label_every_x_months, 2, 2) + ", " +
+        String repeatString = recurrence.frequencyRepeatString(context) + ", " +
                 res.getString(R.string.repeat_x_times, 4);
 
         assertThat(scheduledAction.getRepeatString(context).trim()).isEqualTo(repeatString);

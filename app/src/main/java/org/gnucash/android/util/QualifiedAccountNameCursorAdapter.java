@@ -108,7 +108,7 @@ public class QualifiedAccountNameCursorAdapter extends SimpleCursorAdapter {
      * Returns the position of a given account in the adapter
      *
      * @param accountUID GUID of the account
-     * @return Position of the account or -1 if the account is not found
+     * @return Position of the account or `-1` if the account is not found
      */
     public int getItemPosition(@Nullable String accountUID) {
         if (TextUtils.isEmpty(accountUID)) return -1;

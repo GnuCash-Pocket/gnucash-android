@@ -50,6 +50,7 @@ import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.report.piechart.PieChartFragment;
 import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -178,8 +179,9 @@ public class ReportsOverviewFragment extends BaseReportFragment {
                     && !account.isPlaceholderAccount()
                     && account.getCommodity().equals(mCommodity)) {
 
-                long start = new LocalDate().minusMonths(2).dayOfMonth().withMinimumValue().toDate().getTime();
-                long end = new LocalDate().plusDays(1).toDate().getTime();
+                LocalDateTime now = LocalDateTime.now();
+                long start = now.minusMonths(2).dayOfMonth().withMinimumValue().toDateTime().getMillis();
+                long end = now.plusDays(1).toDateTime().getMillis();
                 double balance = mAccountsDbAdapter.getAccountsBalance(
                         Collections.singletonList(account.getUID()), start, end).toDouble();
                 if (balance > 0) {

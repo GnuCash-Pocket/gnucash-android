@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -96,8 +97,8 @@ import timber.log.Timber;
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class TransactionFormFragment extends Fragment implements
-        CalendarDatePickerDialogFragment.OnDateSetListener, RadialTimePickerDialogFragment.OnTimeSetListener,
-        RecurrencePickerDialogFragment.OnRecurrenceSetListener, OnTransferFundsListener {
+    CalendarDatePickerDialogFragment.OnDateSetListener, RadialTimePickerDialogFragment.OnTimeSetListener,
+    RecurrencePickerDialogFragment.OnRecurrenceSetListener, OnTransferFundsListener {
 
     private static final int REQUEST_SPLIT_EDITOR = 0x11;
 
@@ -235,7 +236,7 @@ public class TransactionFormFragment extends Fragment implements
         mSplitQuantity = null;
 
         TransferFundsDialogFragment fragment
-                = TransferFundsDialogFragment.getInstance(amount, targetCurrencyCode, this);
+            = TransferFundsDialogFragment.getInstance(amount, targetCurrencyCode, this);
         fragment.show(getParentFragmentManager(), "transfer_funds_editor;" + fromCurrencyCode + ";" + targetCurrencyCode + ";" + amount.toPlainString());
     }
 
@@ -348,7 +349,7 @@ public class TransactionFormFragment extends Fragment implements
 
             long timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_TIMESTAMP));
             String dateString = DateUtils.formatDateTime(view.getContext(), timestamp,
-                    DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_YEAR);
+                DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_YEAR);
 
             TextView secondaryTextView = (TextView) view.findViewById(R.id.secondary_text);
             secondaryTextView.setText(balance.formattedString() + " on " + dateString); //TODO: Extract string
@@ -363,7 +364,7 @@ public class TransactionFormFragment extends Fragment implements
         final String[] from = new String[]{DatabaseSchema.TransactionEntry.COLUMN_DESCRIPTION};
 
         SimpleCursorAdapter adapter = new DropDownCursorAdapter(
-                requireContext(), R.layout.dropdown_item_2lines, null, from, to);
+            requireContext(), R.layout.dropdown_item_2lines, null, from, to);
 
         adapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter() {
             @Override
@@ -469,10 +470,11 @@ public class TransactionFormFragment extends Fragment implements
         mBinding.checkboxSaveTemplate.setChecked(mTransaction.isTemplate());
         String scheduledActionUID = getArguments().getString(UxArgument.SCHEDULED_ACTION_UID);
         if (scheduledActionUID != null && !scheduledActionUID.isEmpty()) {
+            Context context = mRecurrenceTextView.getContext();
             ScheduledAction scheduledAction = ScheduledActionDbAdapter.getInstance().getRecord(scheduledActionUID);
             mRecurrenceRule = scheduledAction.getRuleString();
             mEventRecurrence.parse(mRecurrenceRule);
-            mBinding.inputRecurrence.setText(scheduledAction.getRepeatString(requireContext()));
+            mBinding.inputRecurrence.setText(scheduledAction.getRepeatString(context));
         }
     }
 
@@ -539,9 +541,9 @@ public class TransactionFormFragment extends Fragment implements
      */
     private void updateTransferAccountsList() {
         String conditions = "(" + DatabaseSchema.AccountEntry.COLUMN_UID + " != ?"
-                + " AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + " != ?"
-                + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0"
-                + ")";
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + " != ?"
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0"
+            + ")";
 
         if (mCursor != null) {
             mCursor.close();
@@ -611,8 +613,8 @@ public class TransactionFormFragment extends Fragment implements
                 int monthOfYear = calendar.get(Calendar.MONTH);
                 int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
                 CalendarDatePickerDialogFragment datePickerDialog = new CalendarDatePickerDialogFragment()
-                        .setOnDateSetListener(TransactionFormFragment.this)
-                        .setPreselectedDate(year, monthOfYear, dayOfMonth);
+                    .setOnDateSetListener(TransactionFormFragment.this)
+                    .setPreselectedDate(year, monthOfYear, dayOfMonth);
                 datePickerDialog.show(getFragmentManager(), "date_picker_fragment");
             }
         });
@@ -632,9 +634,9 @@ public class TransactionFormFragment extends Fragment implements
                 calendar.setTimeInMillis(timeMillis);
 
                 RadialTimePickerDialogFragment timePickerDialog = new RadialTimePickerDialogFragment()
-                        .setOnTimeSetListener(TransactionFormFragment.this)
-                        .setStartTime(calendar.get(Calendar.HOUR_OF_DAY),
-                                calendar.get(Calendar.MINUTE));
+                    .setOnTimeSetListener(TransactionFormFragment.this)
+                    .setStartTime(calendar.get(Calendar.HOUR_OF_DAY),
+                        calendar.get(Calendar.MINUTE));
                 timePickerDialog.show(getFragmentManager(), "time_picker_dialog_fragment");
             }
         });
@@ -745,12 +747,12 @@ public class TransactionFormFragment extends Fragment implements
      */
     private @NonNull Transaction extractTransactionFromView() {
         Calendar cal = new GregorianCalendar(
-                mDate.get(Calendar.YEAR),
-                mDate.get(Calendar.MONTH),
-                mDate.get(Calendar.DAY_OF_MONTH),
-                mTime.get(Calendar.HOUR_OF_DAY),
-                mTime.get(Calendar.MINUTE),
-                mTime.get(Calendar.SECOND));
+            mDate.get(Calendar.YEAR),
+            mDate.get(Calendar.MONTH),
+            mDate.get(Calendar.DAY_OF_MONTH),
+            mTime.get(Calendar.HOUR_OF_DAY),
+            mTime.get(Calendar.MINUTE),
+            mTime.get(Calendar.SECOND));
         String description = mBinding.inputTransactionName.getText().toString();
         String notes = mBinding.inputDescription.getText().toString();
         String currencyCode = mAccountsDbAdapter.getAccountCurrencyCode(mAccountUID);
@@ -935,8 +937,8 @@ public class TransactionFormFragment extends Fragment implements
                     }
                     if (mUseDoubleEntry && mBinding.inputTransferAccountSpinner.getCount() == 0) {
                         Snackbar.make(getView(),
-                                R.string.toast_disable_double_entry_to_save_transaction,
-                                Snackbar.LENGTH_LONG).show();
+                            R.string.toast_disable_double_entry_to_save_transaction,
+                            Snackbar.LENGTH_LONG).show();
                     }
                 }
                 return true;
@@ -954,8 +956,8 @@ public class TransactionFormFragment extends Fragment implements
      */
     private boolean canSave() {
         return (mUseDoubleEntry && mBinding.inputTransactionAmount.isInputValid()
-                && mBinding.inputTransferAccountSpinner.getCount() > 0)
-                || (!mUseDoubleEntry && mBinding.inputTransactionAmount.isInputValid());
+            && mBinding.inputTransferAccountSpinner.getCount() > 0)
+            || (!mUseDoubleEntry && mBinding.inputTransactionAmount.isInputValid());
     }
 
     /**
@@ -1038,11 +1040,13 @@ public class TransactionFormFragment extends Fragment implements
 
     @Override
     public void onRecurrenceSet(String rrule) {
+        Timber.i("TX reoccurs: %s", rrule);
+        Context context = mRecurrenceTextView.getContext();
         mRecurrenceRule = rrule;
-        String repeatString = getString(R.string.label_tap_to_create_schedule);
-        if (mRecurrenceRule != null) {
-            mEventRecurrence.parse(mRecurrenceRule);
-            repeatString = EventRecurrenceFormatter.getRepeatString(requireContext(), getResources(), mEventRecurrence, true);
+        String repeatString = null;
+        if (!TextUtils.isEmpty(rrule)) {
+            mEventRecurrence.parse(rrule);
+            repeatString = EventRecurrenceFormatter.getRepeatString(context, context.getResources(), mEventRecurrence, true);
 
             //when recurrence is set, we will definitely be saving a template
             mBinding.checkboxSaveTemplate.setChecked(true);
@@ -1050,6 +1054,9 @@ public class TransactionFormFragment extends Fragment implements
         } else {
             mBinding.checkboxSaveTemplate.setEnabled(true);
             mBinding.checkboxSaveTemplate.setChecked(false);
+        }
+        if (TextUtils.isEmpty(repeatString)) {
+            repeatString = context.getString(R.string.label_tap_to_create_schedule);
         }
 
         mBinding.inputRecurrence.setText(repeatString);

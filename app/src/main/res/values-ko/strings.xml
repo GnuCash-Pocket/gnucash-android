@@ -267,21 +267,6 @@
     <string name="owncloud_server_ok">Owncloud서버 정상</string>
     <string name="owncloud_user_ok">아이디와 비밀번호 확인</string>
     <string name="owncloud_dir_ok">폴더 확인</string>
-    <plurals name="label_every_x_hours">
-        <item quantity="other">Every %d hours</item>
-    </plurals>
-    <plurals name="label_every_x_days">
-        <item quantity="other">%d일마다</item>
-    </plurals>
-    <plurals name="label_every_x_weeks">
-        <item quantity="other">%d주마다</item>
-    </plurals>
-    <plurals name="label_every_x_months">
-        <item quantity="other">%d개월마다</item>
-    </plurals>
-    <plurals name="label_every_x_years">
-        <item quantity="other">%d년마다</item>
-    </plurals>
     <string name="title_enable_crashlytics">비정상 종료시 로그함</string>
     <string name="msg_enable_crashlytics">앱 비정상 작동시 개발자들에게 자동으로 관련 정보를 보냅니다.</string>
     <string name="label_export_format"> 내보낼 형식</string>
@@ -418,7 +403,6 @@
     <string name="switch_export_transactions_from_all_time">All time</string>
     <string name="label_recommend_app">Recommend in Play Store</string>
     <string name="repeat_until_date">until %1$s</string>
-    <string name="repeat_on_weekday">on %1$s</string>
     <string name="repeat_x_times">for %1$d times</string>
     <string name="menu_show_compact_view">Compact View</string>
     <string name="book_default_name">Book %1$d</string>

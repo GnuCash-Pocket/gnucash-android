@@ -265,26 +265,6 @@
     <string name="owncloud_server_ok">Servidor OC correcto</string>
     <string name="owncloud_user_ok">Usuario/contraseña OC correctos</string>
     <string name="owncloud_dir_ok">Nombre del directorio correcto</string>
-    <plurals name="label_every_x_hours">
-        <item quantity="one">Cada %d horas</item>
-        <item quantity="other">Cada %d horas</item>
-    </plurals>
-    <plurals name="label_every_x_days">
-        <item quantity="one">Diario</item>
-        <item quantity="other">Cada %d días</item>
-    </plurals>
-    <plurals name="label_every_x_weeks">
-        <item quantity="one">Semanal</item>
-        <item quantity="other">Cada %d semanas</item>
-    </plurals>
-    <plurals name="label_every_x_months">
-        <item quantity="one">Mensual</item>
-        <item quantity="other">Cada %d meses</item>
-    </plurals>
-    <plurals name="label_every_x_years">
-        <item quantity="one">Anual</item>
-        <item quantity="other">Cada %d años</item>
-    </plurals>
     <string name="title_enable_crashlytics">Activar registro de cuelgues</string>
     <string name="msg_enable_crashlytics">Activar para enviar información de errores a los desarolladores (recomendado).
 Este proceso solo recoge información que no permite identificar al usuario</string>
@@ -424,7 +404,6 @@ Este proceso solo recoge información que no permite identificar al usuario</str
     <string name="switch_export_transactions_from_all_time">Todos los tiempos</string>
     <string name="label_recommend_app">Recomendar en Play Store</string>
     <string name="repeat_until_date">hasta %1$s</string>
-    <string name="repeat_on_weekday">en %1$s</string>
     <string name="repeat_x_times">%1$d veces</string>
     <string name="menu_show_compact_view">Vista compacta</string>
     <string name="book_default_name">Libro %1$d</string>

@@ -270,36 +270,6 @@
     <string name="owncloud_server_ok">OC сервер ОК</string>
     <string name="owncloud_user_ok">OC имя/пароль ОК</string>
     <string name="owncloud_dir_ok">Имя папки ОК</string>
-    <plurals name="label_every_x_hours">
-        <item quantity="one">Каждый час</item>
-        <item quantity="few">Каждые %d часа</item>
-        <item quantity="many">Every %d hours</item>
-        <item quantity="other">Каждые %d часов</item>
-    </plurals>
-    <plurals name="label_every_x_days">
-        <item quantity="one">Ежедневно</item>
-        <item quantity="few">Каждые %d дня</item>
-        <item quantity="many">Every %d days</item>
-        <item quantity="other">Каждые %d дней</item>
-    </plurals>
-    <plurals name="label_every_x_weeks">
-        <item quantity="one">Еженедельно</item>
-        <item quantity="few">Каждые %d недели</item>
-        <item quantity="many">Every %d weeks</item>
-        <item quantity="other">Каждые %d недель</item>
-    </plurals>
-    <plurals name="label_every_x_months">
-        <item quantity="one">Ежемесячно</item>
-        <item quantity="few">Каждые %d месяца</item>
-        <item quantity="many">Every %d months</item>
-        <item quantity="other">Каждые %d месяцев</item>
-    </plurals>
-    <plurals name="label_every_x_years">
-        <item quantity="one">Ежегодно</item>
-        <item quantity="few">Каждые %d года</item>
-        <item quantity="many">Every %d years</item>
-        <item quantity="other">Каждые %d лет</item>
-    </plurals>
     <string name="title_enable_crashlytics">Записывать отказы программы</string>
     <string name="msg_enable_crashlytics">Включить запись отказов программы (рекомендуем). Обещаем не собирать приватную информацию.</string>
     <string name="label_export_format">Формат </string>
@@ -442,7 +412,6 @@
     <string name="switch_export_transactions_from_all_time">Всё время</string>
     <string name="label_recommend_app">Рекомендовать в Play Store</string>
     <string name="repeat_until_date">до %1$s</string>
-    <string name="repeat_on_weekday">в %1$s</string>
     <string name="repeat_x_times">для %1$d раз</string>
     <string name="menu_show_compact_view">Компактный вид</string>
     <string name="book_default_name">Книга %1$d</string>

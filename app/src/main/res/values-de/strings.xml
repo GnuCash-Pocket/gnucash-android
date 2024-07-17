@@ -269,26 +269,6 @@
     <string name="owncloud_server_ok">OC-Server OK</string>
     <string name="owncloud_user_ok">OC Benutzername/Passwort OK</string>
     <string name="owncloud_dir_ok">Dir-Name OK</string>
-    <plurals name="label_every_x_hours">
-        <item quantity="one">Stündlich</item>
-        <item quantity="other">Alle %d Stunden</item>
-    </plurals>
-    <plurals name="label_every_x_days">
-        <item quantity="one">Täglich</item>
-        <item quantity="other">Jeden %d. Tag</item>
-    </plurals>
-    <plurals name="label_every_x_weeks">
-        <item quantity="one">Wöchentlich</item>
-        <item quantity="other">Jede %d. Woche</item>
-    </plurals>
-    <plurals name="label_every_x_months">
-        <item quantity="one">Monatlich</item>
-        <item quantity="other">Jenden %d. Monat</item>
-    </plurals>
-    <plurals name="label_every_x_years">
-        <item quantity="one">Jährlich</item>
-        <item quantity="other">Alle %d Jahre</item>
-    </plurals>
     <string name="title_enable_crashlytics">Absturzprotokollierung aktivieren</string>
     <string name="msg_enable_crashlytics">Enable to send information about malfunctions to the developers for improvement (recommended).
 No user-identifiable information will be collected as part of this process!</string>
@@ -428,7 +408,6 @@ No user-identifiable information will be collected as part of this process!</str
     <string name="switch_export_transactions_from_all_time">Zeitlich unbegrenzt</string>
     <string name="label_recommend_app">Im Play Store empfehlen</string>
     <string name="repeat_until_date">bis %1$s</string>
-    <string name="repeat_on_weekday">am %1$s</string>
     <string name="repeat_x_times">für %1$d Mal</string>
     <string name="menu_show_compact_view">Kompakte Ansicht</string>
     <string name="book_default_name">Buch %1$d</string>

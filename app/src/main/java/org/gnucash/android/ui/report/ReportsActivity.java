@@ -47,6 +47,7 @@ import org.gnucash.android.ui.common.BaseDrawerActivity;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.util.dialog.DateRangePickerDialogFragment;
 import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
 
 import java.util.List;
 
@@ -74,8 +75,8 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
     public enum GroupInterval {WEEK, MONTH, QUARTER, YEAR, ALL}
 
     // default time range is the last 3 months
-    private LocalDate mReportPeriodStart = new LocalDate().minusMonths(2).dayOfMonth().withMinimumValue();
-    private LocalDate mReportPeriodEnd = new LocalDate().plusDays(1);
+    private LocalDate mReportPeriodStart = LocalDate.now().minusMonths(2).dayOfMonth().withMinimumValue();
+    private LocalDate mReportPeriodEnd = LocalDate.now().plusDays(1);
 
     private GroupInterval mReportGroupInterval = GroupInterval.MONTH;
 
@@ -250,7 +251,9 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
         List<Fragment> fragments = getSupportFragmentManager().getFragments();
         for (Fragment fragment : fragments) {
             if (fragment instanceof ReportOptionsListener) {
-                ((ReportOptionsListener) fragment).onTimeRangeUpdated(mReportPeriodStart.toDate().getTime(), mReportPeriodEnd.toDate().getTime());
+                long startTime = mReportPeriodStart.toDate().getTime();
+                long endTime = mReportPeriodEnd.toDate().getTime();
+                ((ReportOptionsListener) fragment).onTimeRangeUpdated(startTime, endTime);
             }
         }
     }
@@ -321,19 +324,20 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        mReportPeriodEnd = new LocalDate().plusDays(1);
+        LocalDate now = LocalDate.now();
+        mReportPeriodEnd = now.plusDays(1);
         switch (position) {
             case 0: //current month
-                mReportPeriodStart = new LocalDate().dayOfMonth().withMinimumValue();
+                mReportPeriodStart = now.dayOfMonth().withMinimumValue();
                 break;
             case 1: // last 3 months. x-2, x-1, x
-                mReportPeriodStart = new LocalDate().minusMonths(2).dayOfMonth().withMinimumValue();
+                mReportPeriodStart = now.minusMonths(2).dayOfMonth().withMinimumValue();
                 break;
             case 2:
-                mReportPeriodStart = new LocalDate().minusMonths(5).dayOfMonth().withMinimumValue();
+                mReportPeriodStart = now.minusMonths(5).dayOfMonth().withMinimumValue();
                 break;
             case 3:
-                mReportPeriodStart = new LocalDate().minusMonths(11).dayOfMonth().withMinimumValue();
+                mReportPeriodStart = now.minusMonths(11).dayOfMonth().withMinimumValue();
                 break;
             case 4: //ALL TIME
                 mReportPeriodStart = new LocalDate(-1L);
@@ -343,7 +347,6 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
                 String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
                 long earliest = mTransactionsDbAdapter.getTimestampOfEarliestTransaction(mAccountType, currencyCode);
                 long latest = mTransactionsDbAdapter.getTimestampOfLatestTransaction(mAccountType, currencyCode);
-                LocalDate now = new LocalDate();
                 long today = now.toDate().getTime();
                 long tomorrow = now.plusDays(1).toDate().getTime();
                 DialogFragment rangeFragment = DateRangePickerDialogFragment.newInstance(

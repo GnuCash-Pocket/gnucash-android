@@ -265,21 +265,6 @@
     <string name="owncloud_server_ok">OC サーバー OK</string>
     <string name="owncloud_user_ok">OC ユーザー名/パスワード OK</string>
     <string name="owncloud_dir_ok">ディレクトリ名 OK</string>
-    <plurals name="label_every_x_hours">
-        <item quantity="other">%d 時間ごと</item>
-    </plurals>
-    <plurals name="label_every_x_days">
-        <item quantity="other">%d 日ごと</item>
-    </plurals>
-    <plurals name="label_every_x_weeks">
-        <item quantity="other">%d 週間ごと</item>
-    </plurals>
-    <plurals name="label_every_x_months">
-        <item quantity="other">%d ヶ月ごと</item>
-    </plurals>
-    <plurals name="label_every_x_years">
-        <item quantity="other">%d 年ごと</item>
-    </plurals>
     <string name="title_enable_crashlytics">クラッシュ ログを有効する</string>
     <string name="msg_enable_crashlytics">アプリの異常に関する情報を自動的に開発者に送信します。</string>
     <string name="label_export_format"> フォーマット</string>
@@ -416,7 +401,6 @@
     <string name="switch_export_transactions_from_all_time">全期間</string>
     <string name="label_recommend_app">Play ストア でお勧め</string>
     <string name="repeat_until_date">%1$s まで</string>
-    <string name="repeat_on_weekday">%1$s に</string>
     <string name="repeat_x_times">%1$d 回</string>
     <string name="menu_show_compact_view">コンパクト表示</string>
     <string name="book_default_name">帳簿 %1$d</string>

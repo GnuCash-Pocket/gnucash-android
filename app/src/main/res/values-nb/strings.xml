@@ -262,26 +262,6 @@
     <string name="owncloud_server_ok">OC serveren OK</string>
     <string name="owncloud_user_ok">OC brukernavn/passord OK</string>
     <string name="owncloud_dir_ok">Mappenavn OK</string>
-    <plurals name="label_every_x_hours">
-        <item quantity="one">Hver time</item>
-        <item quantity="other">Hver %d time</item>
-    </plurals>
-    <plurals name="label_every_x_days">
-        <item quantity="one">Daglig</item>
-        <item quantity="other">Hver %d dag</item>
-    </plurals>
-    <plurals name="label_every_x_weeks">
-        <item quantity="one">Ukentlig</item>
-        <item quantity="other">Hver %d uke</item>
-    </plurals>
-    <plurals name="label_every_x_months">
-        <item quantity="one">Månedlig</item>
-        <item quantity="other">Hver %d måned</item>
-    </plurals>
-    <plurals name="label_every_x_years">
-        <item quantity="one">Årlig</item>
-        <item quantity="other">Hvert %d år</item>
-    </plurals>
     <string name="title_enable_crashlytics">Aktiver Logging av feil</string>
     <string name="msg_enable_crashlytics">Send automatisk informasjon om feil på app til utviklerne.</string>
     <string name="label_export_format"> Format</string>
@@ -420,7 +400,6 @@
     <string name="switch_export_transactions_from_all_time">All time</string>
     <string name="label_recommend_app">Anbefal i Play Store</string>
     <string name="repeat_until_date">inntil %1$s</string>
-    <string name="repeat_on_weekday">on %1$s</string>
     <string name="repeat_x_times">for %1$d times</string>
     <string name="menu_show_compact_view">Kompaktvisning</string>
     <string name="book_default_name">Regnskap %1$d</string>

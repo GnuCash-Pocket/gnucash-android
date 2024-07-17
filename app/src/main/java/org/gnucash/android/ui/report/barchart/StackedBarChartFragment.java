@@ -131,23 +131,23 @@ public class StackedBarChartFragment extends BaseReportFragment {
             long end = 0;
             switch (mGroupInterval) {
                 case MONTH:
-                    start = tmpDate.dayOfMonth().withMinimumValue().millisOfDay().withMinimumValue().toDate().getTime();
-                    end = tmpDate.dayOfMonth().withMaximumValue().millisOfDay().withMaximumValue().toDate().getTime();
+                    start = tmpDate.dayOfMonth().withMinimumValue().millisOfDay().withMinimumValue().toDateTime().getMillis();
+                    end = tmpDate.dayOfMonth().withMaximumValue().millisOfDay().withMaximumValue().toDateTime().getMillis();
 
                     xValues.add(tmpDate.toString(X_AXIS_MONTH_PATTERN));
                     tmpDate = tmpDate.plusMonths(1);
                     break;
                 case QUARTER:
                     int quarter = getQuarter(tmpDate);
-                    start = tmpDate.withMonthOfYear(quarter * 3 - 2).dayOfMonth().withMinimumValue().millisOfDay().withMinimumValue().toDate().getTime();
-                    end = tmpDate.withMonthOfYear(quarter * 3).dayOfMonth().withMaximumValue().millisOfDay().withMaximumValue().toDate().getTime();
+                    start = tmpDate.withMonthOfYear(quarter * 3 - 2).dayOfMonth().withMinimumValue().millisOfDay().withMinimumValue().toDateTime().getMillis();
+                    end = tmpDate.withMonthOfYear(quarter * 3).dayOfMonth().withMaximumValue().millisOfDay().withMaximumValue().toDateTime().getMillis();
 
                     xValues.add(String.format(X_AXIS_QUARTER_PATTERN, quarter, tmpDate.toString(" YY")));
                     tmpDate = tmpDate.plusMonths(3);
                     break;
                 case YEAR:
-                    start = tmpDate.dayOfYear().withMinimumValue().millisOfDay().withMinimumValue().toDate().getTime();
-                    end = tmpDate.dayOfYear().withMaximumValue().millisOfDay().withMaximumValue().toDate().getTime();
+                    start = tmpDate.dayOfYear().withMinimumValue().millisOfDay().withMinimumValue().toDateTime().getMillis();
+                    end = tmpDate.dayOfYear().withMaximumValue().millisOfDay().withMaximumValue().toDateTime().getMillis();
 
                     xValues.add(tmpDate.toString(X_AXIS_YEAR_PATTERN));
                     tmpDate = tmpDate.plusYears(1);

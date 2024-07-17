@@ -264,26 +264,6 @@
     <string name="owncloud_server_ok">Serveur OC OK</string>
     <string name="owncloud_user_ok">Nom d’utilisateur/mot de passe OC OK</string>
     <string name="owncloud_dir_ok">Nom Répertoire OK</string>
-    <plurals name="label_every_x_hours">
-        <item quantity="one">Par heure</item>
-        <item quantity="other">Toutes les %d heures</item>
-    </plurals>
-    <plurals name="label_every_x_days">
-        <item quantity="one">Quotidien</item>
-        <item quantity="other">Tous les %d jours</item>
-    </plurals>
-    <plurals name="label_every_x_weeks">
-        <item quantity="one">Hebdomadaire</item>
-        <item quantity="other">Toutes les %d semaines</item>
-    </plurals>
-    <plurals name="label_every_x_months">
-        <item quantity="one">Mensuel</item>
-        <item quantity="other">Tous les %d mois</item>
-    </plurals>
-    <plurals name="label_every_x_years">
-        <item quantity="one">Annuel</item>
-        <item quantity="other">Tous les %d ans</item>
-    </plurals>
     <string name="title_enable_crashlytics">Activer le rapport de crash</string>
     <string name="msg_enable_crashlytics">Envoyer automatiquement les informations de dysfonctionnement de l’app aux développeurs. Aucune information permettant d\'identifier l\'utilisateur ne sera recueillie dans le cadre de ce processus!</string>
     <string name="label_export_format">Format</string>
@@ -422,7 +402,6 @@
     <string name="switch_export_transactions_from_all_time">Tous les temps</string>
     <string name="label_recommend_app">Recommander dans le PlayStore</string>
     <string name="repeat_until_date">jusqu\'à %1$s</string>
-    <string name="repeat_on_weekday">sur %1$s</string>
     <string name="repeat_x_times">pour les %1$d fois</string>
     <string name="menu_show_compact_view">Vue compacte</string>
     <string name="book_default_name">Livre %1$d</string>

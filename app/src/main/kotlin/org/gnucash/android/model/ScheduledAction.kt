@@ -19,9 +19,11 @@ import android.content.Context
 import androidx.annotation.StringRes
 import java.sql.Timestamp
 import java.util.Calendar
-import java.util.Date
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.util.dayOfWeek
+import org.gnucash.android.util.lastDayOfMonth
+import org.gnucash.android.util.lastDayOfWeek
 import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
 
@@ -114,30 +116,32 @@ class ScheduledAction    //all actions are enabled by default
      * This relies on the number of executions of the scheduled action
      *
      * This is different from [.getLastRunTime] which returns the date when the system last
-     * run the scheduled action.
+     * ran the scheduled action.
      *
-     * @return Time of last schedule, or -1 if the scheduled action has never been run
+     * @return Time of last schedule, or `-1` if the scheduled action has never been run
      */
     val timeOfLastSchedule: Long
         get() {
-            if (executionCount <= 0) return -1
-            var startTime = LocalDateTime(_startDate)
+            val count = executionCount
+            if (count <= 0) return -1
             recurrence?.let { recurrence ->
+                var startDate = LocalDateTime(_startDate)
                 val multiplier = recurrence.multiplier
-                val factor = (executionCount - 1) * multiplier
-                startTime = when (recurrence.periodType) {
-                    PeriodType.HOUR -> startTime.plusHours(factor)
-                    PeriodType.DAY -> startTime.plusDays(factor)
-                    PeriodType.WEEK -> startTime.plusWeeks(factor)
-                    PeriodType.MONTH -> startTime.plusMonths(factor)
-                    PeriodType.YEAR -> startTime.plusYears(factor)
-                    PeriodType.ONCE -> startTime
-                    PeriodType.LAST_WEEKDAY -> TODO()
-                    PeriodType.NTH_WEEKDAY -> TODO()
-                    PeriodType.END_OF_MONTH -> TODO()
+                val factor = (count - 1) * multiplier
+                startDate = when (recurrence.periodType) {
+                    PeriodType.ONCE -> startDate
+                    PeriodType.HOUR -> startDate.plusHours(factor)
+                    PeriodType.DAY -> startDate.plusDays(factor)
+                    PeriodType.WEEK -> startDate.plusWeeks(factor)
+                    PeriodType.MONTH -> startDate.plusMonths(factor)
+                    PeriodType.YEAR -> startDate.plusYears(factor)
+                    PeriodType.LAST_WEEKDAY -> startDate.plusMonths(factor).lastDayOfWeek(startDate)
+                    PeriodType.NTH_WEEKDAY -> startDate.plusMonths(factor).dayOfWeek(startDate)
+                    PeriodType.END_OF_MONTH -> startDate.plusMonths(factor).lastDayOfMonth()
                 }
+                return startDate.toDateTime().millis
             }
-            return startTime.toDate().time
+            return _startDate
         }
 
     /**
@@ -180,21 +184,21 @@ class ScheduledAction    //all actions are enabled by default
         if (startTime <= 0) { // has never been run
             return _startDate
         }
-        val recurrence = this.recurrence ?: return _startDate
+        val recurrence = recurrence ?: return _startDate
         val multiplier = recurrence.multiplier
-        var nextScheduledExecution = LocalDateTime.fromDateFields(Date(startTime))
-        nextScheduledExecution = when (recurrence.periodType) {
-            PeriodType.HOUR -> nextScheduledExecution.plusHours(multiplier)
-            PeriodType.DAY -> nextScheduledExecution.plusDays(multiplier)
-            PeriodType.WEEK -> computeNextWeeklyExecutionStartingAt(nextScheduledExecution)
-            PeriodType.MONTH -> nextScheduledExecution.plusMonths(multiplier)
-            PeriodType.YEAR -> nextScheduledExecution.plusYears(multiplier)
-            PeriodType.ONCE -> nextScheduledExecution
-            PeriodType.LAST_WEEKDAY -> TODO()
-            PeriodType.NTH_WEEKDAY -> TODO()
-            PeriodType.END_OF_MONTH -> TODO()
+        val startDate = LocalDateTime(startTime)
+        val nextScheduledExecution = when (recurrence.periodType) {
+            PeriodType.ONCE -> startDate
+            PeriodType.HOUR -> startDate.plusHours(multiplier)
+            PeriodType.DAY -> startDate.plusDays(multiplier)
+            PeriodType.WEEK -> computeNextWeeklyExecutionStartingAt(startDate)
+            PeriodType.MONTH -> startDate.plusMonths(multiplier)
+            PeriodType.YEAR -> startDate.plusYears(multiplier)
+            PeriodType.LAST_WEEKDAY -> startDate.plusMonths(multiplier).lastDayOfWeek(startDate)
+            PeriodType.NTH_WEEKDAY -> startDate.plusMonths(multiplier).dayOfWeek(startDate)
+            PeriodType.END_OF_MONTH -> startDate.plusMonths(multiplier).lastDayOfMonth()
         }
-        return nextScheduledExecution.toDate().time
+        return nextScheduledExecution.toDateTime().millis
     }
 
     /**
@@ -209,7 +213,7 @@ class ScheduledAction    //all actions are enabled by default
      * were set in the Recurrence.
      */
     private fun computeNextWeeklyExecutionStartingAt(startTime: LocalDateTime): LocalDateTime {
-        val recurrence = this.recurrence ?: return startTime
+        val recurrence = recurrence ?: return startTime
         if (recurrence.byDays.isEmpty()) return LocalDateTime.now()
             .plusDays(1) // Just a date in the future
 
@@ -275,9 +279,7 @@ class ScheduledAction    //all actions are enabled by default
         get() = _endDate
         set(endDate) {
             _endDate = endDate
-            if (recurrence != null) {
-                recurrence!!.setPeriodEnd(Timestamp(_endDate))
-            }
+            recurrence?.setPeriodEnd(Timestamp(_endDate))
         }
 
     /**
@@ -369,8 +371,9 @@ class ScheduledAction    //all actions are enabled by default
      */
     val ruleString: String
         get() {
+            val recurrence = recurrence ?: return ""
             val separator = ";"
-            val ruleBuilder = StringBuilder(recurrence!!.ruleString)
+            val ruleBuilder = StringBuilder(recurrence.ruleString)
             if (_endDate > 0) {
                 val df = DateTimeFormat.forPattern("yyyyMMdd'T'HHmmss'Z'").withZoneUTC()
                 ruleBuilder.append("UNTIL=").append(df.print(_endDate)).append(separator)

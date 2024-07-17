@@ -24,6 +24,8 @@ import org.gnucash.android.model.ScheduledAction;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDateTime;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 
 import java.sql.Timestamp;
 import java.util.Arrays;
@@ -34,6 +36,7 @@ import java.util.Collections;
 /**
  * Test scheduled actions
  */
+@RunWith(RobolectricTestRunner.class)
 public class ScheduledActionTest {
 
     @Test
@@ -192,13 +195,14 @@ public class ScheduledActionTest {
         scheduledAction.setStartTime(new DateTime(2016, 6, 6, 9, 0).getMillis());
         scheduledAction.setLastRun(new DateTime(2017, 4, 12, 9, 0).getMillis());
 
-        long now = LocalDateTime.now().toDate().getTime();
+        long now = LocalDateTime.now().toDateTime().getMillis();
         assertThat(scheduledAction.computeNextTimeBasedScheduledExecutionTime()).isGreaterThan(now);
     }
 
     private long getTimeInMillis(int year, int month, int day) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(year, month, day);
+        calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTimeInMillis();
     }
 

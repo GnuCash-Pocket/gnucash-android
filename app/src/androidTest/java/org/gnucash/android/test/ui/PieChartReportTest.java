@@ -169,7 +169,7 @@ public class PieChartReportTest {
      */
     private void addTransactionForPreviousMonth(int minusMonths) {
         Transaction transaction = new Transaction(TRANSACTION2_NAME);
-        transaction.setTime(new LocalDateTime().minusMonths(minusMonths).toDate().getTime());
+        transaction.setTime(new LocalDateTime().minusMonths(minusMonths).toDateTime().getMillis());
 
         Split split = new Split(new Money(BigDecimal.valueOf(TRANSACTION2_AMOUNT), commodity), BOOKS_EXPENSE_ACCOUNT_UID);
         split.setType(TransactionType.DEBIT);

@@ -267,21 +267,6 @@
     <string name="owncloud_server_ok">OC 服务器正常</string>
     <string name="owncloud_user_ok">OC 用户名/密码正确</string>
     <string name="owncloud_dir_ok">目录名正确</string>
-    <plurals name="label_every_x_hours">
-        <item quantity="other">每隔%d小时</item>
-    </plurals>
-    <plurals name="label_every_x_days">
-        <item quantity="other">每 %d 天</item>
-    </plurals>
-    <plurals name="label_every_x_weeks">
-        <item quantity="other">每 %d 周</item>
-    </plurals>
-    <plurals name="label_every_x_months">
-        <item quantity="other">每 %d 月</item>
-    </plurals>
-    <plurals name="label_every_x_years">
-        <item quantity="other">每 %d 年</item>
-    </plurals>
     <string name="title_enable_crashlytics">启用崩溃日志</string>
     <string name="msg_enable_crashlytics">发送崩溃日志给开发者来帮助改进软件，里面没有个人的隐私信息。</string>
     <string name="label_export_format">文件格式：</string>
@@ -418,7 +403,6 @@
     <string name="switch_export_transactions_from_all_time">全部</string>
     <string name="label_recommend_app">在 Play Store 上推荐</string>
     <string name="repeat_until_date">直到%1$s</string>
-    <string name="repeat_on_weekday">在%1$s</string>
     <string name="repeat_x_times">%1$d 次</string>
     <string name="menu_show_compact_view">紧凑视图</string>
     <string name="book_default_name">账簿 %1$d</string>

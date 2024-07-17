@@ -246,20 +246,20 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
             switch (mGroupInterval) {
                 case QUARTER:
                     int quarter = getQuarter(earliest);
-                    start = earliest.withMonthOfYear(quarter * 3 - 2).dayOfMonth().withMinimumValue().millisOfDay().withMinimumValue().toDate().getTime();
-                    end = earliest.withMonthOfYear(quarter * 3).dayOfMonth().withMaximumValue().millisOfDay().withMaximumValue().toDate().getTime();
+                    start = earliest.withMonthOfYear(quarter * 3 - 2).dayOfMonth().withMinimumValue().millisOfDay().withMinimumValue().toDateTime().getMillis();
+                    end = earliest.withMonthOfYear(quarter * 3).dayOfMonth().withMaximumValue().millisOfDay().withMaximumValue().toDateTime().getMillis();
 
                     earliest = earliest.plusMonths(3);
                     break;
                 case MONTH:
-                    start = earliest.dayOfMonth().withMinimumValue().millisOfDay().withMinimumValue().toDate().getTime();
-                    end = earliest.dayOfMonth().withMaximumValue().millisOfDay().withMaximumValue().toDate().getTime();
+                    start = earliest.dayOfMonth().withMinimumValue().millisOfDay().withMinimumValue().toDateTime().getMillis();
+                    end = earliest.dayOfMonth().withMaximumValue().millisOfDay().withMaximumValue().toDateTime().getMillis();
 
                     earliest = earliest.plusMonths(1);
                     break;
                 case YEAR:
-                    start = earliest.dayOfYear().withMinimumValue().millisOfDay().withMinimumValue().toDate().getTime();
-                    end = earliest.dayOfYear().withMaximumValue().millisOfDay().withMaximumValue().toDate().getTime();
+                    start = earliest.dayOfYear().withMinimumValue().millisOfDay().withMinimumValue().toDateTime().getMillis();
+                    end = earliest.dayOfYear().withMaximumValue().millisOfDay().withMaximumValue().toDateTime().getMillis();
 
                     earliest = earliest.plusYears(1);
                     break;

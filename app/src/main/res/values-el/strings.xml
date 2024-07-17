@@ -281,26 +281,6 @@
     <string name="owncloud_server_ok">OC server OK</string>
     <string name="owncloud_user_ok">OC username/password OK</string>
     <string name="owncloud_dir_ok">Dir name OK</string>
-    <plurals name="label_every_x_hours">
-        <item quantity="one">Hourly</item>
-        <item quantity="other">Every %d hours</item>
-    </plurals>
-    <plurals name="label_every_x_days">
-        <item quantity="one">Daily</item>
-        <item quantity="other">Every %d days</item>
-    </plurals>
-    <plurals name="label_every_x_weeks">
-        <item quantity="one">Weekly</item>
-        <item quantity="other">Every %d weeks</item>
-    </plurals>
-    <plurals name="label_every_x_months">
-        <item quantity="one">Monthly</item>
-        <item quantity="other">Every %d months</item>
-    </plurals>
-    <plurals name="label_every_x_years">
-        <item quantity="one">Yearly</item>
-        <item quantity="other">Every %d years</item>
-    </plurals>
     <string name="title_enable_crashlytics">Enable Crash Logging</string>
     <string name="msg_enable_crashlytics">Enable to send information about malfunctions to the developers for improvement (recommended).
 No user-identifiable information will be collected as part of this process!
@@ -441,7 +421,6 @@ No user-identifiable information will be collected as part of this process!
     <string name="switch_export_transactions_from_all_time">All time</string>
     <string name="label_recommend_app">Recommend in Play Store</string>
     <string name="repeat_until_date">until %1$s</string>
-    <string name="repeat_on_weekday">on %1$s</string>
     <string name="repeat_x_times">for %1$d times</string>
     <string name="menu_show_compact_view">Compact View</string>
     <string name="book_default_name">Book %1$d</string>

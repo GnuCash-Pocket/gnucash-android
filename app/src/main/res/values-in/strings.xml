@@ -263,21 +263,6 @@
     <string name="owncloud_server_ok">Server OC OK</string>
     <string name="owncloud_user_ok">OC username / password OK</string>
     <string name="owncloud_dir_ok">Nama Dir OK</string>
-    <plurals name="label_every_x_hours">
-        <item quantity="other">Per jam</item>
-    </plurals>
-    <plurals name="label_every_x_days">
-        <item quantity="other">Setiap %d hari</item>
-    </plurals>
-    <plurals name="label_every_x_weeks">
-        <item quantity="other">Setiap %d minggu</item>
-    </plurals>
-    <plurals name="label_every_x_months">
-        <item quantity="other">Setiap %d bulan</item>
-    </plurals>
-    <plurals name="label_every_x_years">
-        <item quantity="other">Setiap %d tahun</item>
-    </plurals>
     <string name="title_enable_crashlytics">Aktifkan Pencatatan Kerusakan</string>
     <string name="msg_enable_crashlytics">Mengirim informasi secara otomatis tentang malfungsi aplikasi ke pengembang.</string>
     <string name="label_export_format"> Format</string>
@@ -414,7 +399,6 @@
     <string name="switch_export_transactions_from_all_time">Sepanjang waktu</string>
     <string name="label_recommend_app">Merekomendasikan di Play Store</string>
     <string name="repeat_until_date">sampai %1$s</string>
-    <string name="repeat_on_weekday">di %1$s</string>
     <string name="repeat_x_times">untuk %1$d kali</string>
     <string name="menu_show_compact_view">Tampilan Sederhana</string>
     <string name="book_default_name">Buku %1$d</string>

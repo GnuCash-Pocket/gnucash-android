@@ -262,26 +262,6 @@
     <string name="owncloud_server_ok">OC server OK</string>
     <string name="owncloud_user_ok">OC användarnamn/lösenord OK</string>
     <string name="owncloud_dir_ok">Dir namn OK</string>
-    <plurals name="label_every_x_hours">
-        <item quantity="one">Varje timme</item>
-        <item quantity="other">Varje %d timme</item>
-    </plurals>
-    <plurals name="label_every_x_days">
-        <item quantity="one">Dagligen</item>
-        <item quantity="other">Varje %d dagar</item>
-    </plurals>
-    <plurals name="label_every_x_weeks">
-        <item quantity="one">Veckovis</item>
-        <item quantity="other">Var %d:e vecka</item>
-    </plurals>
-    <plurals name="label_every_x_months">
-        <item quantity="one">Månadsvis</item>
-        <item quantity="other">Varje %d månad</item>
-    </plurals>
-    <plurals name="label_every_x_years">
-        <item quantity="one">Årligen</item>
-        <item quantity="other">Varje %d år</item>
-    </plurals>
     <string name="title_enable_crashlytics">Aktivera kraschloggning</string>
     <string name="msg_enable_crashlytics">Skicka automatiskt information om app-fel till utvecklarna.</string>
     <string name="label_export_format"> Format</string>
@@ -420,7 +400,6 @@
     <string name="switch_export_transactions_from_all_time">All tid</string>
     <string name="label_recommend_app">Rekommendera i Play Store</string>
     <string name="repeat_until_date">tills %1$s</string>
-    <string name="repeat_on_weekday">på %1$s</string>
     <string name="repeat_x_times">för %1$d gånger</string>
     <string name="menu_show_compact_view">Kompakt vy</string>
     <string name="book_default_name">Bokföring %1$d</string>

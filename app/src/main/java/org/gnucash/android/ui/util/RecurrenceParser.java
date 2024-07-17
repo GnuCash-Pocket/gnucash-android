@@ -16,6 +16,7 @@
 
 package org.gnucash.android.ui.util;
 
+import android.text.format.DateUtils;
 import android.text.format.Time;
 
 import androidx.annotation.NonNull;
@@ -41,13 +42,13 @@ import java.util.List;
 public class RecurrenceParser {
     //these are time millisecond constants which are used for scheduled actions.
     //they may not be calendar accurate, but they serve the purpose for scheduling approximate time for background service execution
-    public static final long SECOND_MILLIS = 1000;
-    public static final long MINUTE_MILLIS = 60 * SECOND_MILLIS;
-    public static final long HOUR_MILLIS = 60 * MINUTE_MILLIS;
-    public static final long DAY_MILLIS = 24 * HOUR_MILLIS;
-    public static final long WEEK_MILLIS = 7 * DAY_MILLIS;
+    public static final long SECOND_MILLIS = DateUtils.SECOND_IN_MILLIS;
+    public static final long MINUTE_MILLIS = DateUtils.MINUTE_IN_MILLIS;
+    public static final long HOUR_MILLIS = DateUtils.HOUR_IN_MILLIS;
+    public static final long DAY_MILLIS = DateUtils.DAY_IN_MILLIS;
+    public static final long WEEK_MILLIS = DateUtils.WEEK_IN_MILLIS;
     public static final long MONTH_MILLIS = 30 * DAY_MILLIS;
-    public static final long YEAR_MILLIS = 12 * MONTH_MILLIS;
+    public static final long YEAR_MILLIS = DateUtils.YEAR_IN_MILLIS;
 
     /**
      * Parse an {@link EventRecurrence} into a {@link Recurrence} object

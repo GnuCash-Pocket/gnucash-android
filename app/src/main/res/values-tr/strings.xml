@@ -272,26 +272,6 @@
     <string name="owncloud_server_ok">OC sunucu Tamam</string>
     <string name="owncloud_user_ok">OC kullanıcı adı/parola Tamam</string>
     <string name="owncloud_dir_ok">Dizin adı Tamam</string>
-    <plurals name="label_every_x_hours">
-        <item quantity="one">Saatlik</item>
-        <item quantity="other">Her %d saatte</item>
-    </plurals>
-    <plurals name="label_every_x_days">
-        <item quantity="one">Günlük</item>
-        <item quantity="other">Her %d gün</item>
-    </plurals>
-    <plurals name="label_every_x_weeks">
-        <item quantity="one">Haftalık</item>
-        <item quantity="other">Her %d hafta</item>
-    </plurals>
-    <plurals name="label_every_x_months">
-        <item quantity="one">Aylık</item>
-        <item quantity="other">Her %d ay</item>
-    </plurals>
-    <plurals name="label_every_x_years">
-        <item quantity="one">Yıllık</item>
-        <item quantity="other">Her %d yıl</item>
-    </plurals>
     <string name="title_enable_crashlytics">Hata Kaydını Etkinleştir</string>
     <string name="msg_enable_crashlytics">Uygulama arıza bilgilerini otomatik olarak geliştiricilere gönder.</string>
     <string name="label_export_format"> Biçim</string>
@@ -429,7 +409,6 @@
     <string name="switch_export_transactions_from_all_time">Tüm zaman</string>
     <string name="label_recommend_app">Play Store\'da Beğen</string>
     <string name="repeat_until_date">%1$s kadar</string>
-    <string name="repeat_on_weekday">%1$s</string>
     <string name="repeat_x_times">%1$d kere</string>
     <string name="menu_show_compact_view">Sıkı Görünüm</string>
     <string name="book_default_name">Kitap %1$d</string>

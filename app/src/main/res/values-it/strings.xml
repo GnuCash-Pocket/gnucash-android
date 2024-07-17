@@ -269,26 +269,6 @@
     <string name="owncloud_server_ok">Server OC OK</string>
     <string name="owncloud_user_ok">Nome utente/password OC OK</string>
     <string name="owncloud_dir_ok">Nome directory OK</string>
-    <plurals name="label_every_x_hours">
-        <item quantity="one">Ogni ora</item>
-        <item quantity="other">Ogni %d ore</item>
-    </plurals>
-    <plurals name="label_every_x_days">
-        <item quantity="one">Ogni giorno</item>
-        <item quantity="other">Ogni %d giorni</item>
-    </plurals>
-    <plurals name="label_every_x_weeks">
-        <item quantity="one">Ogni settimana</item>
-        <item quantity="other">Ogni %d settimane</item>
-    </plurals>
-    <plurals name="label_every_x_months">
-        <item quantity="one">Ogni mese</item>
-        <item quantity="other">Ogni %d mesi</item>
-    </plurals>
-    <plurals name="label_every_x_years">
-        <item quantity="one">Ogni anno</item>
-        <item quantity="other">Ogni %d anni</item>
-    </plurals>
     <string name="title_enable_crashlytics">Attiva la registrazione dei crash</string>
     <string name="msg_enable_crashlytics">Invia automaticamente delle informazioni sul malfunzionamento dell\'app agli sviluppatori.</string>
     <string name="label_export_format"> Formato</string>
@@ -427,7 +407,6 @@
     <string name="switch_export_transactions_from_all_time">Da sempre</string>
     <string name="label_recommend_app">Consigliala sul Play Store</string>
     <string name="repeat_until_date">fino al %1$s</string>
-    <string name="repeat_on_weekday">il %1$s</string>
     <string name="repeat_x_times">per %1$d volte</string>
     <string name="menu_show_compact_view">Visualizzazione compatta</string>
     <string name="book_default_name">Libro %1$d</string>

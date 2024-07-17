@@ -269,31 +269,6 @@
     <string name="owncloud_server_ok">Сервер знайдено</string>
     <string name="owncloud_user_ok">Ім’я користувача та пароль вірні</string>
     <string name="owncloud_dir_ok">Ім’я папки підходить</string>
-    <plurals name="label_every_x_hours">
-        <item quantity="one">Щогодини</item>
-        <item quantity="few">Кожних %d годин</item>
-        <item quantity="other">Кожних %d годин</item>
-    </plurals>
-    <plurals name="label_every_x_days">
-        <item quantity="one">Щодня</item>
-        <item quantity="few">Раз на %d дні</item>
-        <item quantity="other">Раз на %d днів</item>
-    </plurals>
-    <plurals name="label_every_x_weeks">
-        <item quantity="one">Щотижня</item>
-        <item quantity="few">Раз на %d тижні</item>
-        <item quantity="other">Раз на %d тижнів</item>
-    </plurals>
-    <plurals name="label_every_x_months">
-        <item quantity="one">Щомісяця</item>
-        <item quantity="few">Раз на %d місяці</item>
-        <item quantity="other">Раз на %d місяців</item>
-    </plurals>
-    <plurals name="label_every_x_years">
-        <item quantity="one">Щороку</item>
-        <item quantity="few">Раз на %d роки</item>
-        <item quantity="other">Раз на %d років</item>
-    </plurals>
     <string name="title_enable_crashlytics">Вести журнал відмов програми</string>
     <string name="msg_enable_crashlytics">Вести журнал відмов програми (рекомендуємо). Обіцяємо не збирати приватну інформацію.</string>
     <string name="label_export_format">Формат </string>
@@ -434,7 +409,6 @@
     <string name="switch_export_transactions_from_all_time">Весь час</string>
     <string name="label_recommend_app">Напишіть відгук у Play Маркеті</string>
     <string name="repeat_until_date">до %1$s</string>
-    <string name="repeat_on_weekday">%1$s</string>
     <string name="repeat_x_times">%1$d разів</string>
     <string name="menu_show_compact_view">Компактне подання</string>
     <string name="book_default_name">Книга %1$d</string>
