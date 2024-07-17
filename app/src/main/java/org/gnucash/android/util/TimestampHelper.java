@@ -49,7 +49,18 @@ public final class TimestampHelper {
      * @return The formatted {@link String}.
      */
     public static String getUtcStringFromTimestamp(Timestamp timestamp) {
-        return UTC_DATE_WITH_MILLISECONDS_FORMAT.print(timestamp.getTime());
+        return getUtcStringFromTimestamp(timestamp.getTime());
+    }
+
+    /**
+     * Get a {@link String} representing the {@link Timestamp}
+     * in UTC time zone and 'yyyy-MM-dd HH:mm:ss.SSS' format.
+     *
+     * @param timestamp The timestamp to format.
+     * @return The formatted {@link String}.
+     */
+    public static String getUtcStringFromTimestamp(Long timestamp) {
+        return UTC_DATE_WITH_MILLISECONDS_FORMAT.print(timestamp);
     }
 
     /**

@@ -280,7 +280,7 @@ public class BudgetListFragment extends Fragment implements Refreshable,
                 BigDecimal spentAmountValue = BigDecimal.ZERO;
                 for (BudgetAmount budgetAmount : budget.getCompactedBudgetAmounts()) {
                     Money balance = accountsDbAdapter.getAccountBalance(budgetAmount.getAccountUID(),
-                        budget.getStartofCurrentPeriod(), budget.getEndOfCurrentPeriod());
+                        budget.getStartOfCurrentPeriod(), budget.getEndOfCurrentPeriod());
                     spentAmountValue = spentAmountValue.add(balance.asBigDecimal());
                 }
 

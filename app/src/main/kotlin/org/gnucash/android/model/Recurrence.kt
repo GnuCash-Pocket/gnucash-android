@@ -48,12 +48,12 @@ class Recurrence(
     /**
      * Timestamp of start of recurrence
      */
-    var periodStart: Timestamp = Timestamp(System.currentTimeMillis())
+    var periodStart: Long = System.currentTimeMillis()
 
     /**
      * End date of the recurrence period
      */
-    var periodEnd: Timestamp? = null
+    var periodEnd: Long? = null
         private set
 
     /**
@@ -101,12 +101,12 @@ class Recurrence(
     fun getRepeatString(context: Context): String {
         val repeatBuilder = StringBuilder(frequencyRepeatString(context))
         if (periodType === PeriodType.WEEK) {
-            val dayOfWeek = dayOfWeekFormatter.print(periodStart.time)
+            val dayOfWeek = dayOfWeekFormatter.print(periodStart)
             repeatBuilder.append(" ")
                 .append(context.getString(R.string.repeat_on_weekday, dayOfWeek))
         }
-        if (periodEnd != null) {
-            val endDateString = DateTimeFormat.mediumDate().print(periodEnd!!.time)
+        periodEnd?.let { periodEnd ->
+            val endDateString = DateTimeFormat.mediumDate().print(periodEnd)
             repeatBuilder.append(", ")
                 .append(context.getString(R.string.repeat_until_date, endDateString))
         }
@@ -167,36 +167,36 @@ class Recurrence(
      * @return Number of periods in this recurrence
      */
     fun getNumberOfPeriods(numberOfPeriods: Int): Int {
-        val startDate = LocalDateTime(periodStart.time)
+        val startDate = LocalDateTime(periodStart)
         val endDate: LocalDateTime
         val interval = multiplier
-        when (periodType) {
+        return when (periodType) {
             PeriodType.HOUR -> {
                 endDate = startDate.plusHours(numberOfPeriods)
-                return Hours.hoursBetween(startDate, endDate).hours
+                Hours.hoursBetween(startDate, endDate).hours
             }
 
             PeriodType.DAY -> {
                 endDate = startDate.plusDays(numberOfPeriods)
-                return Days.daysBetween(startDate, endDate).days
+                Days.daysBetween(startDate, endDate).days
             }
 
             PeriodType.WEEK -> {
                 endDate = startDate.dayOfWeek().withMaximumValue().plusWeeks(numberOfPeriods)
-                return Weeks.weeksBetween(startDate, endDate).weeks / interval
+                Weeks.weeksBetween(startDate, endDate).weeks / interval
             }
 
             PeriodType.MONTH -> {
                 endDate = startDate.dayOfMonth().withMaximumValue().plusMonths(numberOfPeriods)
-                return Months.monthsBetween(startDate, endDate).months / interval
+                Months.monthsBetween(startDate, endDate).months / interval
             }
 
             PeriodType.YEAR -> {
                 endDate = startDate.dayOfYear().withMaximumValue().plusYears(numberOfPeriods)
-                return Years.yearsBetween(startDate, endDate).years / interval
+                Years.yearsBetween(startDate, endDate).years / interval
             }
 
-            PeriodType.ONCE -> TODO()
+            PeriodType.ONCE -> 1
             PeriodType.LAST_WEEKDAY -> TODO()
             PeriodType.NTH_WEEKDAY -> TODO()
             PeriodType.END_OF_MONTH -> TODO()
@@ -209,19 +209,19 @@ class Recurrence(
      * @return String of current period
      */
     fun getTextOfCurrentPeriod(periodNum: Int): String {
-        val startDate = LocalDate(periodStart.time)
-        when (periodType) {
-            PeriodType.HOUR -> {}
-            PeriodType.DAY -> return startDate.dayOfWeek().asText
-            PeriodType.WEEK -> return startDate.weekOfWeekyear().asText
-            PeriodType.MONTH -> return startDate.monthOfYear().asText
-            PeriodType.YEAR -> return startDate.year().asText
-            PeriodType.ONCE -> TODO()
+        val startDate = LocalDate(periodStart)
+        return when (periodType) {
+            PeriodType.HOUR -> ""
+            PeriodType.DAY -> startDate.dayOfWeek().asText
+            PeriodType.WEEK -> startDate.weekOfWeekyear().asText
+            PeriodType.MONTH -> startDate.monthOfYear().asText
+            PeriodType.YEAR -> startDate.year().asText
+            PeriodType.ONCE -> "Once"
             PeriodType.LAST_WEEKDAY -> TODO()
             PeriodType.NTH_WEEKDAY -> TODO()
             PeriodType.END_OF_MONTH -> TODO()
+            else -> "Period $periodNum"
         }
-        return "Period $periodNum"
     }
 
     /**
@@ -246,7 +246,7 @@ class Recurrence(
      */
     val count: Int
         get() {
-            if (periodEnd == null) return -1
+            val periodEnd = this.periodEnd ?: return -1
             val multiple = multiplier
             val jodaPeriod: ReadablePeriod = when (periodType) {
                 PeriodType.HOUR -> Hours.hours(multiple)
@@ -260,8 +260,8 @@ class Recurrence(
                 PeriodType.END_OF_MONTH -> TODO()
             }
             var count = 0
-            var startTime = LocalDateTime(periodStart.time)
-            while (startTime.toDateTime().millis < periodEnd!!.time) {
+            var startTime = LocalDateTime(periodStart)
+            while (startTime.toDateTime().millis < periodEnd) {
                 ++count
                 startTime += jodaPeriod
             }
@@ -296,21 +296,20 @@ class Recurrence(
      * @param numberOfOccurences Number of occurences from the start time
      */
     fun setPeriodEnd(numberOfOccurences: Int) {
-        val localDate = LocalDateTime(periodStart.time)
-        val endDate: LocalDateTime
+        val localDate = LocalDateTime(periodStart)
         val occurrenceDuration = numberOfOccurences * multiplier
-        endDate = when (periodType) {
+        val endDate: LocalDateTime = when (periodType) {
             PeriodType.HOUR -> localDate.plusHours(occurrenceDuration)
             PeriodType.DAY -> localDate.plusDays(occurrenceDuration)
             PeriodType.WEEK -> localDate.plusWeeks(occurrenceDuration)
             PeriodType.MONTH -> localDate.plusMonths(occurrenceDuration)
             PeriodType.YEAR -> localDate.plusYears(occurrenceDuration)
-            PeriodType.ONCE -> TODO()
+            PeriodType.ONCE -> localDate
             PeriodType.LAST_WEEKDAY -> TODO()
             PeriodType.NTH_WEEKDAY -> TODO()
             PeriodType.END_OF_MONTH -> TODO()
         }
-        periodEnd = Timestamp(endDate.toDateTime().millis)
+        periodEnd = endDate.toDateTime().millis
     }
 
     /**
@@ -319,7 +318,7 @@ class Recurrence(
      * @param endTimestamp End time in milliseconds
      */
     fun setPeriodEnd(endTimestamp: Timestamp?) {
-        periodEnd = endTimestamp
+        periodEnd = endTimestamp?.time
     }
 
     /**
@@ -360,7 +359,7 @@ class Recurrence(
                 multiplier
             )
 
-            PeriodType.ONCE -> TODO()
+            PeriodType.ONCE -> "Once"
             PeriodType.LAST_WEEKDAY -> TODO()
             PeriodType.NTH_WEEKDAY -> TODO()
             PeriodType.END_OF_MONTH -> TODO()

@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.model.PeriodType;
 import org.gnucash.android.model.Recurrence;
+import org.gnucash.android.util.TimestampHelper;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -70,7 +71,7 @@ public class RecurrenceDbAdapter extends DatabaseAdapter<Recurrence> {
 
         Recurrence recurrence = new Recurrence(periodType);
         recurrence.setMultiplier((int) multiplier);
-        recurrence.setPeriodStart(Timestamp.valueOf(periodStart));
+        recurrence.setPeriodStart(Timestamp.valueOf(periodStart).getTime());
         if (periodEnd != null)
             recurrence.setPeriodEnd(Timestamp.valueOf(periodEnd));
         recurrence.setByDays(stringToByDays(byDays));
@@ -88,7 +89,7 @@ public class RecurrenceDbAdapter extends DatabaseAdapter<Recurrence> {
         if (!recurrence.getByDays().isEmpty())
             stmt.bindString(3, byDaysToString(recurrence.getByDays()));
         //recurrence should always have a start date
-        stmt.bindString(4, recurrence.getPeriodStart().toString());
+        stmt.bindString(4, TimestampHelper.getUtcStringFromTimestamp(recurrence.getPeriodStart()));
 
         if (recurrence.getPeriodEnd() != null)
             stmt.bindString(5, recurrence.getPeriodEnd().toString());

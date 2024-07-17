@@ -92,7 +92,7 @@ public class RecurrenceParser {
         parseEndTime(eventRecurrence, recurrence);
         recurrence.setByDays(parseByDay(eventRecurrence.byday));
         if (eventRecurrence.startDate != null)
-            recurrence.setPeriodStart(new Timestamp(eventRecurrence.startDate.toMillis(false)));
+            recurrence.setPeriodStart(eventRecurrence.startDate.toMillis(false));
 
         return recurrence;
     }

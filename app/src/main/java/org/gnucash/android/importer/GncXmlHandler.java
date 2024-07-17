@@ -764,7 +764,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                     }
 
                     if (mIsRecurrenceStart && mScheduledAction != null) {
-                        mRecurrence.setPeriodStart(new Timestamp(date));
+                        mRecurrence.setPeriodStart(date);
                         mIsRecurrenceStart = false;
                     }
                 } catch (ParseException e) {

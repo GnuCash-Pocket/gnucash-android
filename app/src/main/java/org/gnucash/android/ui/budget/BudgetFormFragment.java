@@ -251,7 +251,7 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
         mBudget.setDescription(mBinding.inputDescription.getText().toString().trim());
 
         Recurrence recurrence = RecurrenceParser.parse(mEventRecurrence);
-        recurrence.setPeriodStart(new Timestamp(mStartDate.getTimeInMillis()));
+        recurrence.setPeriodStart(mStartDate.getTimeInMillis());
         mBudget.setRecurrence(recurrence);
 
         mBudgetsDbAdapter.addRecord(mBudget, DatabaseAdapter.UpdateMethod.insert);

@@ -44,13 +44,13 @@ public class ScheduledActionTest {
         assertThat(scheduledAction.getRecurrence()).isNull();
 
         Recurrence recurrence = new Recurrence(PeriodType.MONTH);
-        assertThat(recurrence.getPeriodStart().getTime()).isNotEqualTo(startTime);
+        assertThat(recurrence.getPeriodStart()).isNotEqualTo(startTime);
         scheduledAction.setRecurrence(recurrence);
-        assertThat(recurrence.getPeriodStart().getTime()).isEqualTo(startTime);
+        assertThat(recurrence.getPeriodStart()).isEqualTo(startTime);
 
         long newStartTime = getTimeInMillis(2015, 6, 6);
         scheduledAction.setStartTime(newStartTime);
-        assertThat(recurrence.getPeriodStart().getTime()).isEqualTo(newStartTime);
+        assertThat(recurrence.getPeriodStart()).isEqualTo(newStartTime);
     }
 
     @Test
@@ -63,11 +63,11 @@ public class ScheduledActionTest {
         Recurrence recurrence = new Recurrence(PeriodType.MONTH);
         assertThat(recurrence.getPeriodEnd()).isNull();
         scheduledAction.setRecurrence(recurrence);
-        assertThat(recurrence.getPeriodEnd().getTime()).isEqualTo(endTime);
+        assertThat(recurrence.getPeriodEnd()).isEqualTo(endTime);
 
         long newEndTime = getTimeInMillis(2015, 6, 6);
         scheduledAction.setEndTime(newEndTime);
-        assertThat(recurrence.getPeriodEnd().getTime()).isEqualTo(newEndTime);
+        assertThat(recurrence.getPeriodEnd()).isEqualTo(newEndTime);
     }
 
     @Test
@@ -77,7 +77,7 @@ public class ScheduledActionTest {
 
         long startTime = getTimeInMillis(2014, 8, 26);
         Recurrence recurrence = new Recurrence(PeriodType.WEEK);
-        recurrence.setPeriodStart(new Timestamp(startTime));
+        recurrence.setPeriodStart(startTime);
         scheduledAction.setRecurrence(recurrence);
         assertThat(scheduledAction.getStartTime()).isEqualTo(startTime);
     }
@@ -107,7 +107,7 @@ public class ScheduledActionTest {
         Recurrence recurrence = new Recurrence(periodType);
         recurrence.setMultiplier(2);
         DateTime startDate = new DateTime(2015, 8, 15, 12, 0);
-        recurrence.setPeriodStart(new Timestamp(startDate.getMillis()));
+        recurrence.setPeriodStart(startDate.getMillis());
         scheduledAction.setRecurrence(recurrence);
 
         assertThat(scheduledAction.computeNextCountBasedScheduledExecutionTime()).isEqualTo(startDate.getMillis());
