@@ -600,7 +600,6 @@ public class ScheduledActionsListFragment extends ListFragment implements
             view.findViewById(R.id.right_text).setVisibility(View.GONE);
 
             TextView descriptionTextView = (TextView) view.findViewById(R.id.secondary_text);
-            descriptionTextView.setText(scheduledAction.getRepeatString(context));
             long endTime = scheduledAction.getEndTime();
             if (endTime > 0 && endTime < System.currentTimeMillis()) {
                 ((TextView) view.findViewById(R.id.primary_text))

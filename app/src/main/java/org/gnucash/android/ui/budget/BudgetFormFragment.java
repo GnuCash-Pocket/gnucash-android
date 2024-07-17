@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.inputmethodservice.KeyboardView;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -65,7 +66,6 @@ import org.gnucash.android.ui.util.widget.CalculatorEditText;
 import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -156,7 +156,7 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
             actionbar.setTitle("Edit Budget");
 
         mRecurrenceInput.setOnClickListener(
-                new RecurrenceViewClickListener((AppCompatActivity) getActivity(), mRecurrenceRule, this));
+            new RecurrenceViewClickListener((AppCompatActivity) getActivity(), mRecurrenceRule, this));
     }
 
     /**
@@ -211,18 +211,18 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
      */
     private boolean canSave() {
         if (mEventRecurrence.until != null && mEventRecurrence.until.length() > 0
-                || mEventRecurrence.count <= 0) {
+            || mEventRecurrence.count <= 0) {
             Toast.makeText(getActivity(),
-                    "Set a number periods in the recurrence dialog to save the budget",
-                    Toast.LENGTH_SHORT).show();
+                "Set a number periods in the recurrence dialog to save the budget",
+                Toast.LENGTH_SHORT).show();
             return false;
         }
 
         mBudgetAmounts = extractBudgetAmounts();
         String budgetName = mBudgetNameInput.getText().toString();
         boolean canSave = mRecurrenceRule != null
-                && !budgetName.isEmpty()
-                && !mBudgetAmounts.isEmpty();
+            && !budgetName.isEmpty()
+            && !mBudgetAmounts.isEmpty();
 
         if (!canSave) {
             if (budgetName.isEmpty()) {
@@ -235,12 +235,12 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
             if (mBudgetAmounts.isEmpty()) {
                 mBudgetAmountInput.setError("Enter an amount for the budget");
                 Toast.makeText(getActivity(), "Add budget amounts in order to save the budget",
-                        Toast.LENGTH_SHORT).show();
+                    Toast.LENGTH_SHORT).show();
             }
 
             if (mRecurrenceRule == null) {
                 Toast.makeText(getActivity(), "Set a repeat pattern to create a budget!",
-                        Toast.LENGTH_SHORT).show();
+                    Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -323,13 +323,17 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
 
     @Override
     public void onRecurrenceSet(String rrule) {
+        Timber.i("Budget reoccurs: %s", rrule);
+        Context context = mRecurrenceInput.getContext();
         mRecurrenceRule = rrule;
-        String repeatString = getString(R.string.label_tap_to_create_schedule);
-        if (mRecurrenceRule != null) {
-            mEventRecurrence.parse(mRecurrenceRule);
-            repeatString = EventRecurrenceFormatter.getRepeatString(getActivity(), getResources(), mEventRecurrence, true);
+        String repeatString = null;
+        if (!TextUtils.isEmpty(rrule)) {
+            mEventRecurrence.parse(rrule);
+            repeatString = EventRecurrenceFormatter.getRepeatString(context, context.getResources(), mEventRecurrence, true);
         }
-
+        if (TextUtils.isEmpty(repeatString)) {
+            repeatString = context.getString(R.string.label_tap_to_create_schedule);
+        }
         mRecurrenceInput.setText(repeatString);
     }
 
