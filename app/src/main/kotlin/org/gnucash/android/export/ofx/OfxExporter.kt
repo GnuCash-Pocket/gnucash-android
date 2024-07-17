@@ -53,15 +53,14 @@ import javax.xml.transform.stream.StreamResult
  */
 class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
     Exporter(context, params, bookUID) {
-    private lateinit var mAccountsList: List<Account>
-
     /**
      * Converts all expenses into OFX XML format and adds them to the XML document.
      *
+     * @param accounts List of accounts to export.
      * @param doc DOM document of the OFX expenses.
      * @param parent Parent node for all expenses in report.
      */
-    private fun generateOfx(doc: Document, parent: Element) {
+    private fun generateOfx(accounts: List<Account>, doc: Document, parent: Element) {
         val transactionUid = doc.createElement(OfxHelper.TAG_TRANSACTION_UID)
         // Unsolicited because the data exported is not as a result of a request.
         transactionUid.appendChild(doc.createTextNode(OfxHelper.UNSOLICITED_TRANSACTION_ID))
@@ -71,9 +70,14 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
         val bankmsgs = doc.createElement(OfxHelper.TAG_BANK_MESSAGES_V1)
         bankmsgs.appendChild(statementTransactionResponse)
         parent.appendChild(bankmsgs)
-        mAccountsList
+        accounts
             .filter { it.transactionCount > 0 }
-            .filter { GnuCashApplication.isDoubleEntryEnabled() || it.name?.contains ("Imbalance") != true }
+            .filter {
+                GnuCashApplication.isDoubleEntryEnabled() ||
+                        // TODO: investigate whether skipping the imbalance accounts makes sense.
+                        // Also, using locale-dependant names here is error-prone.
+                        it.name?.contains(mContext.getString(R.string.imbalance_account_name)) != true
+            }
             .forEach { account ->
                 // Add account details (transactions) to the XML document.
                 account.toOfx(doc, statementTransactionResponse, mExportParams.exportStartTime)
@@ -85,17 +89,18 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
     /**
      * Generate OFX export file from the transactions in the database.
      *
+     * @param accounts List of accounts to export.
      * @return String containing OFX export.
      * @throws ExporterException if an XML builder could not be created.
      */
     @Throws(ExporterException::class)
-    private fun generateOfxExport(): String {
+    private fun generateOfxExport(accounts: List<Account>): String {
         val document = makeDocBuilder().newDocument()
         val root = document.createElement("OFX")
         val pi = document.createProcessingInstruction("OFX", OfxHelper.OFX_HEADER)
         document.appendChild(pi)
         document.appendChild(root)
-        generateOfx(document, root)
+        generateOfx(accounts, document, root)
         val useXmlHeader = PreferenceManager.getDefaultSharedPreferences(mContext)
             .getBoolean(mContext.getString(R.string.key_xml_ofx_header), false)
         PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow())
@@ -107,7 +112,7 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
         // If we want SGML OFX headers, write first to string and then prepend header.
         val ofxNode = document.getElementsByTagName("OFX").item(0)
         write(ofxNode, stringWriter, true)
-        return OfxHelper.OFX_SGML_HEADER + "\n" + stringWriter.toString()
+        return OfxHelper.OFX_SGML_HEADER + "\n" + stringWriter
     }
 
     @Throws(ExporterException::class)
@@ -122,8 +127,8 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
 
     @Throws(ExporterException::class)
     override fun generateExport(): List<String> {
-        mAccountsList = mAccountsDbAdapter.getExportableAccounts(mExportParams.exportStartTime)
-        if (mAccountsList.isEmpty()) { // Nothing to export, so no files generated
+        val accounts = mAccountsDbAdapter.getExportableAccounts(mExportParams.exportStartTime)
+        if (accounts.isEmpty()) { // Nothing to export, so no files generated
             close()
             return listOf()
         }
@@ -131,7 +136,7 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
         try {
             val file = File(exportCacheFilePath)
             writer = BufferedWriter(OutputStreamWriter(FileOutputStream(file), "UTF-8"))
-            writer.write(generateOfxExport())
+            writer.write(generateOfxExport(accounts))
             close()
         } catch (e: IOException) {
             throw ExporterException(mExportParams, e)
@@ -156,7 +161,7 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
      */
     private fun write(node: Node, outputWriter: Writer, omitXmlDeclaration: Boolean) {
         try {
-            val transformerFactory = TransformerFactory .newInstance()
+            val transformerFactory = TransformerFactory.newInstance()
             val transformer = transformerFactory.newTransformer()
             val source = DOMSource(node)
             val result = StreamResult(outputWriter)
