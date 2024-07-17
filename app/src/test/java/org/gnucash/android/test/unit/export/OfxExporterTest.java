@@ -55,27 +55,6 @@ import java.util.TimeZone;
 @Config(sdk = 21, shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
 public class OfxExporterTest {
 
-    private String mBookUID;
-    private SQLiteDatabase mDb;
-
-    @Before
-    public void setUp() throws Exception {
-        BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
-        Book testBook = new Book("testRootAccountUID");
-        booksDbAdapter.addRecord(testBook);
-        mBookUID = testBook.getUID();
-        DatabaseHelper databaseHelper =
-            new DatabaseHelper(GnuCashApplication.getAppContext(), testBook.getUID());
-        mDb = databaseHelper.getWritableDatabase();
-    }
-
-    @After
-    public void tearDown() {
-        BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
-        booksDbAdapter.deleteBook(mBookUID);
-        mDb.close();
-    }
-
     /**
      * When there aren't new or modified transactions, the OFX exporter
      * shouldn't create any file.
@@ -87,17 +66,17 @@ public class OfxExporterTest {
         exportParameters.setExportStartTime(TimestampHelper.getTimestampFromEpochZero());
         exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
         exportParameters.setDeleteTransactionsAfterExport(false);
-        OfxExporter exporter = new OfxExporter(context, exportParameters, mBookUID);
+        OfxExporter exporter = new OfxExporter(context, exportParameters, GnuCashApplication.getActiveBookUID());
         assertThat(exporter.generateExport()).isEmpty();
     }
 
     /**
      * Test that OFX files are generated
      */
-    //FIXME: test failing with NPE
+    @Test
     public void testGenerateOFXExport() {
         Context context = GnuCashApplication.getAppContext();
-        AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(mDb);
+        AccountsDbAdapter accountsDbAdapter = GnuCashApplication.getAccountsDbAdapter();
 
         Account account = new Account("Basic Account");
         Transaction transaction = new Transaction("One transaction");
@@ -111,7 +90,7 @@ public class OfxExporterTest {
         exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
         exportParameters.setDeleteTransactionsAfterExport(false);
 
-        OfxExporter exporter = new OfxExporter(context, exportParameters, mBookUID);
+        OfxExporter exporter = new OfxExporter(context, exportParameters, GnuCashApplication.getActiveBookUID());
         List<String> exportedFiles = exporter.generateExport();
 
         assertThat(exportedFiles).hasSize(1);
