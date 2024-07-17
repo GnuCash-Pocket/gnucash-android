@@ -65,7 +65,7 @@ class Recurrence(
      * The multiplier for the period type. The default multiplier is 1.
      * e.g. bi-weekly actions have period type [PeriodType.WEEK] and multiplier 2.
      */
-    var multiplier = 1 //multiplier for the period type
+    var multiplier = 1
 
     /**
      * Returns an approximate period for this recurrence
@@ -85,6 +85,10 @@ class Recurrence(
                 PeriodType.WEEK -> baseMillis = RecurrenceParser.WEEK_MILLIS
                 PeriodType.MONTH -> baseMillis = RecurrenceParser.MONTH_MILLIS
                 PeriodType.YEAR -> baseMillis = RecurrenceParser.YEAR_MILLIS
+                PeriodType.ONCE -> TODO()
+                PeriodType.LAST_WEEKDAY -> TODO()
+                PeriodType.NTH_WEEKDAY -> TODO()
+                PeriodType.END_OF_MONTH -> TODO()
             }
             return multiplier * baseMillis
         }
@@ -96,8 +100,8 @@ class Recurrence(
      */
     fun getRepeatString(context: Context): String {
         val repeatBuilder = StringBuilder(frequencyRepeatString(context))
-        val dayOfWeek = dayOfWeekFormatter.print(periodStart.time)
         if (periodType === PeriodType.WEEK) {
+            val dayOfWeek = dayOfWeekFormatter.print(periodStart.time)
             repeatBuilder.append(" ")
                 .append(context.getString(R.string.repeat_on_weekday, dayOfWeek))
         }
@@ -146,6 +150,11 @@ class Recurrence(
 
                 PeriodType.YEAR -> endDate =
                     startDate.dayOfYear().withMaximumValue().plusYears(interval)
+
+                PeriodType.ONCE -> TODO()
+                PeriodType.LAST_WEEKDAY -> TODO()
+                PeriodType.NTH_WEEKDAY -> TODO()
+                PeriodType.END_OF_MONTH -> TODO()
             }
             return Days.daysBetween(startDate, endDate).days
         }
@@ -186,6 +195,11 @@ class Recurrence(
                 endDate = startDate.dayOfYear().withMaximumValue().plusYears(numberOfPeriods)
                 return Years.yearsBetween(startDate, endDate).years / interval
             }
+
+            PeriodType.ONCE -> TODO()
+            PeriodType.LAST_WEEKDAY -> TODO()
+            PeriodType.NTH_WEEKDAY -> TODO()
+            PeriodType.END_OF_MONTH -> TODO()
         }
     }
 
@@ -202,6 +216,10 @@ class Recurrence(
             PeriodType.WEEK -> return startDate.weekOfWeekyear().asText
             PeriodType.MONTH -> return startDate.monthOfYear().asText
             PeriodType.YEAR -> return startDate.year().asText
+            PeriodType.ONCE -> TODO()
+            PeriodType.LAST_WEEKDAY -> TODO()
+            PeriodType.NTH_WEEKDAY -> TODO()
+            PeriodType.END_OF_MONTH -> TODO()
         }
         return "Period $periodNum"
     }
@@ -230,13 +248,16 @@ class Recurrence(
         get() {
             if (periodEnd == null) return -1
             val multiple = multiplier
-            val jodaPeriod: ReadablePeriod
-            jodaPeriod = when (periodType) {
+            val jodaPeriod: ReadablePeriod = when (periodType) {
                 PeriodType.HOUR -> Hours.hours(multiple)
                 PeriodType.DAY -> Days.days(multiple)
                 PeriodType.WEEK -> Weeks.weeks(multiple)
                 PeriodType.MONTH -> Months.months(multiple)
                 PeriodType.YEAR -> Years.years(multiple)
+                PeriodType.ONCE -> TODO()
+                PeriodType.LAST_WEEKDAY -> TODO()
+                PeriodType.NTH_WEEKDAY -> TODO()
+                PeriodType.END_OF_MONTH -> TODO()
             }
             var count = 0
             var startTime = LocalDateTime(periodStart.time)
@@ -267,6 +288,8 @@ class Recurrence(
 */
         }
 
+    var weekendAdjust: WeekendAdjust = WeekendAdjust.NONE
+
     /**
      * Sets the end time of this recurrence by specifying the number of occurences
      *
@@ -282,6 +305,10 @@ class Recurrence(
             PeriodType.WEEK -> localDate.plusWeeks(occurrenceDuration)
             PeriodType.MONTH -> localDate.plusMonths(occurrenceDuration)
             PeriodType.YEAR -> localDate.plusYears(occurrenceDuration)
+            PeriodType.ONCE -> TODO()
+            PeriodType.LAST_WEEKDAY -> TODO()
+            PeriodType.NTH_WEEKDAY -> TODO()
+            PeriodType.END_OF_MONTH -> TODO()
         }
         periodEnd = Timestamp(endDate.toDateTime().millis)
     }
@@ -333,6 +360,10 @@ class Recurrence(
                 multiplier
             )
 
+            PeriodType.ONCE -> TODO()
+            PeriodType.LAST_WEEKDAY -> TODO()
+            PeriodType.NTH_WEEKDAY -> TODO()
+            PeriodType.END_OF_MONTH -> TODO()
         }
     }
 
