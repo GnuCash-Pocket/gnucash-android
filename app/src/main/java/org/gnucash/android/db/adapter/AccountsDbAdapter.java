@@ -440,7 +440,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @param c Cursor pointing to account record in database
      * @return {@link Account} object constructed from database record
      */
-    private Account buildSimpleAccountInstance(Cursor c) {
+    public Account buildSimpleAccountInstance(Cursor c) {
         Account account = new Account(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_NAME)));
         populateBaseModelAttributes(c, account);
 

@@ -18,9 +18,11 @@ package org.gnucash.android.test.unit.importer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.gnucash.android.db.adapter.BooksDbAdapter;
+import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.export.xml.GncXmlHelper;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
+import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Split;
@@ -37,6 +39,7 @@ import org.robolectric.annotation.Config;
 
 import java.text.ParseException;
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * Imports GnuCash XML files and checks the objects defined in them are imported correctly.
@@ -95,7 +98,7 @@ public class GncXmlHandlerTest extends BookHelperTest {
      * @throws ParseException
      */
     @Test
-    public void simpleTransactionImport() throws ParseException {
+    public void simpleTransactionImport() throws Exception {
         String bookUID = importGnuCashXml("simpleTransactionImport.xml");
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
 
@@ -146,7 +149,7 @@ public class GncXmlHandlerTest extends BookHelperTest {
      * @throws ParseException
      */
     @Test
-    public void transactionWithNonDefaultSplitsImport() throws ParseException {
+    public void transactionWithNonDefaultSplitsImport() {
         String bookUID = importGnuCashXml("transactionWithNonDefaultSplitsImport.xml");
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
 
@@ -196,7 +199,7 @@ public class GncXmlHandlerTest extends BookHelperTest {
      * @throws ParseException
      */
     @Test
-    public void multiCurrencyTransactionImport() throws ParseException {
+    public void multiCurrencyTransactionImport() {
         String bookUID = importGnuCashXml("multiCurrencyTransactionImport.xml");
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
 
@@ -207,6 +210,7 @@ public class GncXmlHandlerTest extends BookHelperTest {
         // Ensure it's the correct one
         assertThat(transaction.getDescription()).isEqualTo("Salad express");
         assertThat(transaction.getCommodity().getCurrencyCode()).isEqualTo("USD");
+        assertThat(transaction.getCommodity().getSmallestFraction()).isEqualTo(100);
 
         // Check splits
         assertThat(transaction.getSplits().size()).isEqualTo(2);
@@ -216,7 +220,11 @@ public class GncXmlHandlerTest extends BookHelperTest {
         assertThat(split1.getAccountUID()).isEqualTo("6a7cf8267314992bdddcee56d71a3908");
         assertThat(split1.getTransactionUID()).isEqualTo("ded49386f8ea319ccaee043ba062b3e1");
         assertThat(split1.getType()).isEqualTo(TransactionType.DEBIT);
+        assertThat(split1.getValue().getNumerator()).isEqualTo(2000);
+        assertThat(split1.getValue().getDenominator()).isEqualTo(100);
         assertThat(split1.getValue()).isEqualTo(new Money("20", "USD"));
+        assertThat(split1.getQuantity().getNumerator()).isEqualTo(2000);
+        assertThat(split1.getQuantity().getDenominator()).isEqualTo(100);
         assertThat(split1.getQuantity()).isEqualTo(new Money("20", "USD"));
 
         Split split2 = transaction.getSplits().get(1);
@@ -224,7 +232,11 @@ public class GncXmlHandlerTest extends BookHelperTest {
         assertThat(split2.getAccountUID()).isEqualTo("0469e915a22ba7846aca0e69f9f9b683");
         assertThat(split2.getTransactionUID()).isEqualTo("ded49386f8ea319ccaee043ba062b3e1");
         assertThat(split2.getType()).isEqualTo(TransactionType.CREDIT);
+        assertThat(split2.getValue().getNumerator()).isEqualTo(2000);
+        assertThat(split2.getValue().getDenominator()).isEqualTo(100);
         assertThat(split2.getValue()).isEqualTo(new Money("20", "USD"));
+        assertThat(split2.getQuantity().getNumerator()).isEqualTo(1793);
+        assertThat(split2.getQuantity().getDenominator()).isEqualTo(100);
         assertThat(split2.getQuantity()).isEqualTo(new Money("17.93", "EUR"));
         assertThat(split2.isPairOf(split1)).isTrue();
     }
@@ -235,7 +247,7 @@ public class GncXmlHandlerTest extends BookHelperTest {
     //@Test Disabled as currently amounts are only read from credit/debit-numeric
     // slots and transactions without amount are ignored.
     @Ignore
-    public void simpleScheduledTransactionImport() throws ParseException {
+    public void simpleScheduledTransactionImport() throws Exception {
         String bookUID = importGnuCashXml("simpleScheduledTransactionImport.xml");
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
 
@@ -288,7 +300,7 @@ public class GncXmlHandlerTest extends BookHelperTest {
      * week of the recursion.
      */
     @Test
-    public void importingScheduledAction_shouldSetByDays() throws ParseException {
+    public void importingScheduledAction_shouldSetByDays() {
         String bookUID = importGnuCashXml("importingScheduledAction_shouldSetByDays.xml");
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
 
@@ -314,7 +326,7 @@ public class GncXmlHandlerTest extends BookHelperTest {
      * debit slots in each split.</p>
      */
     @Test
-    public void bug562_scheduledTransactionImportedWithImbalancedSplits() throws ParseException {
+    public void bug562_scheduledTransactionImportedWithImbalancedSplits() {
         String bookUID = importGnuCashXml("bug562_scheduledTransactionImportedWithImbalancedSplits.xml");
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
 
@@ -346,5 +358,41 @@ public class GncXmlHandlerTest extends BookHelperTest {
         // of from the slots
         //assertThat(split2.getQuantity()).isEqualTo(new Money("20", "USD"));
         assertThat(split2.isPairOf(split1)).isTrue();
+    }
+
+    @Test
+    public void commodities() {
+        String bookUID = importGnuCashXml("commodities.xml");
+        assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
+
+        CommoditiesDbAdapter commoditiesDbAdapter = mCommoditiesDbAdapter;
+        assertThat(commoditiesDbAdapter).isNotNull();
+        List<Commodity> commodities = commoditiesDbAdapter.getAllRecords();
+        assertThat(commodities).isNotNull();
+        assertThat(commodities.size()).isGreaterThanOrEqualTo(3);
+
+        Commodity commodity1 = commodities.stream()
+            .filter(c -> c.getCurrencyCode().equals("APPS"))
+            .findFirst()
+            .get();
+        assertThat(commodity1).isNotNull();
+        assertThat(commodity1.getNamespace()).isEqualTo("NASDAQ");
+        assertThat(commodity1.getFullname()).isEqualTo("Digital Turbine");
+        assertThat(commodity1.getSmallestFraction()).isEqualTo(10000);
+        assertThat(commodity1.getQuoteFlag()).isFalse();
+        assertThat(commodity1.getQuoteSource()).isNull();
+        assertThat(commodity1.getQuoteTimeZone()).isNull();
+
+        Commodity commodity2 = commodities.stream()
+            .filter(c -> c.getCurrencyCode().equals("QUAN_ELSS_TAX_KBGFAS"))
+            .findFirst()
+            .get();
+        assertThat(commodity2).isNotNull();
+        assertThat(commodity2.getNamespace()).isEqualTo("MF");
+        assertThat(commodity2.getFullname()).isEqualTo("Quant ELSS Growth");
+        assertThat(commodity2.getSmallestFraction()).isEqualTo(10000);
+        assertThat(commodity2.getQuoteFlag()).isTrue();
+        assertThat(commodity2.getQuoteSource()).isEqualTo("googleweb");
+        assertThat(commodity2.getQuoteTimeZone()).isNull();
     }
 }
