@@ -127,7 +127,7 @@ class Transaction : BaseModel {
      * @return Split whose amount is the imbalance of this transaction
      */
     fun createAutoBalanceSplit(): Split? {
-        val imbalance = imbalance //returns imbalance of 0 for multicurrency transactions
+        val imbalance = imbalance //returns imbalance of 0 for multi-currency transactions
         if (!imbalance.isAmountZero) {
             // yes, this is on purpose the account UID is set to the currency.
             // This should be overridden before saving to db
@@ -226,19 +226,23 @@ class Transaction : BaseModel {
      */
     private val imbalance: Money
         get() {
+            val commodity = this.commodity
             var imbalance = createZeroInstance(commodity.currencyCode)
-            for (split in _splitList) {
-                if (split.quantity!!.commodity != _commodity) {
+            for (split in splits) {
+                if (split.quantity!!.commodity != commodity) {
                     // this may happen when importing XML exported from GNCA before 2.0.0
                     // these transactions should only be imported from XML exported from GNC desktop
                     // so imbalance split should not be generated for them
                     return createZeroInstance(commodity.currencyCode)
                 }
                 val amount = split.value!!
+                if (amount.commodity != commodity) {
+                    return createZeroInstance(commodity.currencyCode)
+                }
                 imbalance = if (split.type === TransactionType.DEBIT) {
-                    imbalance.minus(amount)
+                    imbalance - amount
                 } else {
-                    imbalance.plus(amount)
+                    imbalance + amount
                 }
             }
             return imbalance
@@ -437,14 +441,14 @@ class Transaction : BaseModel {
                 val isDebitSplit = split.type === TransactionType.DEBIT
                 balance = if (isDebitAccount) {
                     if (isDebitSplit) {
-                        balance.plus(amount)
+                        balance + amount
                     } else {
-                        balance.minus(amount)
+                        balance - amount
                     }
                 } else if (isDebitSplit) {
-                    balance.minus(amount)
+                    balance - amount
                 } else {
-                    balance.plus(amount)
+                    balance + amount
                 }
             }
             return balance

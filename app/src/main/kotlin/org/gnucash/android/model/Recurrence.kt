@@ -263,7 +263,7 @@ class Recurrence(periodType: PeriodType) : BaseModel() {
             var startTime = LocalDateTime(periodStart.time)
             while (startTime.toDateTime().millis < periodEnd!!.time) {
                 ++count
-                startTime = startTime.plus(jodaPeriod)
+                startTime += jodaPeriod
             }
             return count
 

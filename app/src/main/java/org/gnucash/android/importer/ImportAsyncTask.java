@@ -93,6 +93,7 @@ public class ImportAsyncTask extends AsyncTask<Uri, Void, String> {
             bookUID = book.getUID();
         } catch (final Throwable e) {
             Timber.e(e, "Error importing: %s", uri);
+            //TODO delete the partial book at `uri`
             return null;
         }
 

@@ -266,7 +266,7 @@ class Money : Number, Comparable<Money>, Parcelable {
         val symbol = if (commodity == Commodity.USD && locale != Locale.US) {
             "US$"
         } else {
-            commodity.symbol
+            if (commodity.isCurrency) commodity.symbol else commodity.symbol + " "
         }
         val decimalFormatSymbols = (currencyFormat as DecimalFormat).decimalFormatSymbols
         decimalFormatSymbols.currencySymbol = symbol

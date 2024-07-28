@@ -15,6 +15,7 @@
  */
 package org.gnucash.android.model
 
+import java.util.TimeZone
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 
 /**
@@ -37,17 +38,19 @@ class Commodity(
      *
      * The fraction is a power of 10. So commodities with 2 fraction digits, have fraction of 10^2 = 100.<br />
      * If the parameter is any other value, a default fraction of 100 will be set
-     *
-     * @param smallestFraction Smallest fraction as power of ten
-     * @throws IllegalArgumentException if the smallest fraction is not a power of 10
      */
-    var smallestFraction: Int
+    var smallestFraction: Int = 100
 ) : BaseModel() {
-    enum class Namespace {
-        ISO4217
-    } //Namespace for commodities
 
-    var namespace = Namespace.ISO4217
+    var namespace = COMMODITY_ISO4217
+        set(value) {
+            var ns = value
+            if (value == COMMODITY_CURRENCY) ns = COMMODITY_ISO4217
+            field = ns
+        }
+
+    val isCurrency: Boolean
+        get() = (COMMODITY_ISO4217 == namespace || COMMODITY_CURRENCY == namespace)
 
     /**
      * Returns the mnemonic, or currency code for ISO4217 currencies
@@ -55,9 +58,12 @@ class Commodity(
      * @return Mnemonic of the commodity
      */
     var cusip: String? = null
+
     var localSymbol: String? = ""
 
-    var quoteFlag = 0
+    val quoteFlag: Boolean get() = !quoteSource.isNullOrEmpty()
+    var quoteSource: String? = null
+    var quoteTimeZone: TimeZone? = null
 
     /**
      * Alias for [.getMnemonic]
@@ -76,9 +82,7 @@ class Commodity(
      * @return
      */
     val symbol: String
-        get() = if (localSymbol == null || localSymbol!!.isEmpty()) {
-            mnemonic
-        } else localSymbol!!
+        get() = if (localSymbol.isNullOrEmpty()) mnemonic else localSymbol!!
 
     /**
      * Returns the (minimum) number of digits that this commodity supports in its fractional part
@@ -123,19 +127,44 @@ class Commodity(
         return mnemonic.hashCode()
     }
 
+    fun setQuoteTimeZone(id: String?) {
+        if (id.isNullOrEmpty()) {
+            this.quoteTimeZone = null
+        } else {
+            this.quoteTimeZone = TimeZone.getTimeZone(id)
+        }
+    }
+
+    fun getQuoteTimeZoneId(): String? = quoteTimeZone?.id
+
     companion object {
+        const val COMMODITY_CURRENCY = "CURRENCY"
+        const val COMMODITY_ISO4217 = "ISO4217"
+        const val TEMPLATE = "template"
+
+        /**
+         * ISO 4217 currency code for "No Currency"
+         */
+        const val NO_CURRENCY_CODE = "XXX"
+
         @JvmField
         var USD = Commodity("", "USD", 100)
+
         @JvmField
         var EUR = Commodity("", "EUR", 100)
+
         @JvmField
         var GBP = Commodity("", "GBP", 100)
+
         @JvmField
         var CHF = Commodity("", "CHF", 100)
+
         @JvmField
         var CAD = Commodity("", "CAD", 100)
+
         @JvmField
         var JPY = Commodity("", "JPY", 1)
+
         @JvmField
         var AUD = Commodity("", "AUD", 100)
 

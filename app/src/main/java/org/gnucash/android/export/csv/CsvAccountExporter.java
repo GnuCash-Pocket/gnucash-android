@@ -78,7 +78,7 @@ public class CsvAccountExporter extends Exporter {
     public void generateExport(final CsvWriter csvWriter) throws ExporterException {
         try {
             List<String> names = Arrays.asList(mContext.getResources().getStringArray(R.array.csv_account_headers));
-            List<Account> accounts = mAccountsDbAdapter.getAllRecords();
+            List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList();
 
             for (int i = 0; i < names.size(); i++) {
                 csvWriter.writeToken(names.get(i));
@@ -96,7 +96,7 @@ public class CsvAccountExporter extends Exporter {
                 csvWriter.writeToken(null); //Account notes
 
                 csvWriter.writeToken(account.getCommodity().getCurrencyCode());
-                csvWriter.writeToken("CURRENCY");
+                csvWriter.writeToken(account.getCommodity().getNamespace());
                 csvWriter.writeToken(account.isHidden() ? "T" : "F");
 
                 csvWriter.writeToken("F"); //Tax

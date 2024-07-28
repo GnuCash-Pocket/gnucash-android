@@ -39,7 +39,6 @@ import java.util.Date;
  * @author Yongxin Wang <fefe.wyx@gmail.com>
  */
 public abstract class GncXmlHelper {
-    public static final String TAG_GNC_PREFIX = "gnc:";
 
     public static final String ATTR_KEY_CD_TYPE = "cd:type";
     public static final String ATTR_KEY_TYPE = "type";
@@ -60,22 +59,32 @@ public abstract class GncXmlHelper {
     public static final String TAG_COUNT_DATA = "gnc:count-data";
 
     public static final String TAG_COMMODITY = "gnc:commodity";
+    public static final String TAG_COMMODITY_FRACTION = "cmdty:fraction";
+    public static final String TAG_COMMODITY_GET_QUOTES = "cmdty:get_quotes";
     public static final String TAG_COMMODITY_ID = "cmdty:id";
+    public static final String TAG_COMMODITY_NAME = "cmdty:name";
+    public static final String TAG_COMMODITY_QUOTE_SOURCE = "cmdty:quote_source";
+    public static final String TAG_COMMODITY_QUOTE_TZ = "cmdty:quote_tz";
+    public static final String TAG_COMMODITY_SLOTS = "cmdty:slots";
     public static final String TAG_COMMODITY_SPACE = "cmdty:space";
+    public static final String TAG_COMMODITY_XCODE = "cmdty:xcode";
+    public static final String COMMODITY_CURRENCY = Commodity.COMMODITY_CURRENCY;
+    public static final String COMMODITY_ISO4217 = Commodity.COMMODITY_ISO4217;
+    public static final String COMMODITY_TEMPLATE = Commodity.COMMODITY_ISO4217;
 
     public static final String TAG_ACCOUNT = "gnc:account";
     public static final String TAG_ACCT_NAME = "act:name";
     public static final String TAG_ACCT_ID = "act:id";
     public static final String TAG_ACCT_TYPE = "act:type";
     public static final String TAG_ACCT_COMMODITY = "act:commodity";
-    public static final String TAG_COMMODITY_SCU = "act:commodity-scu";
-    public static final String TAG_PARENT_UID = "act:parent";
+    public static final String TAG_ACCT_COMMODITY_SCU = "act:commodity-scu";
+    public static final String TAG_ACCT_PARENT = "act:parent";
+    public static final String TAG_ACCT_DESCRIPTION = "act:description";
 
     public static final String TAG_SLOT_KEY = "slot:key";
     public static final String TAG_SLOT_VALUE = "slot:value";
     public static final String TAG_ACCT_SLOTS = "act:slots";
     public static final String TAG_SLOT = "slot";
-    public static final String TAG_ACCT_DESCRIPTION = "act:description";
 
     public static final String TAG_TRANSACTION = "gnc:transaction";
     public static final String TAG_TRX_ID = "trn:id";
@@ -160,7 +169,7 @@ public abstract class GncXmlHelper {
     public static final String KEY_FAVORITE = "favorite";
     public static final String KEY_NOTES = "notes";
     public static final String KEY_EXPORTED = "exported";
-    public static final String KEY_SCHEDX_ACTION = "sched-xaction";
+    public static final String KEY_SCHED_XACTION = "sched-xaction";
     public static final String KEY_SPLIT_ACCOUNT_SLOT = "account";
     public static final String KEY_DEBIT_FORMULA = "debit-formula";
     public static final String KEY_CREDIT_FORMULA = "credit-formula";

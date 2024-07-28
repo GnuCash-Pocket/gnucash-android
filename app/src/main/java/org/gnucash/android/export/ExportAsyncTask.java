@@ -415,8 +415,8 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
     }
 
     private static String getFileLastModifiedTimestamp(String path) {
-        Long timeStampLong = new File(path).lastModified() / 1000;
-        return timeStampLong.toString();
+        long timeStampLong = new File(path).lastModified() / 1000;
+        return Long.toString(timeStampLong);
     }
 
     /**

@@ -92,7 +92,7 @@ public class PieChartReportTest {
     private static final String GIFTS_RECEIVED_INCOME_ACCOUNT_UID = "b01950c0df0890b6543209d51c8e0b0f";
     private static final String GIFTS_RECEIVED_INCOME_ACCOUNT_NAME = "Gifts Received";
 
-    public static Commodity CURRENCY;
+    public static Commodity commodity;
 
     private static AccountsDbAdapter mAccountsDbAdapter;
     private static TransactionsDbAdapter mTransactionsDbAdapter;
@@ -114,7 +114,7 @@ public class PieChartReportTest {
 
     public PieChartReportTest() {
         //nothing to se here, move along
-        CURRENCY = new Commodity("US Dollars", "USD", 100);
+        commodity = new Commodity("US Dollars", "USD", 100);
     }
 
     @BeforeClass
@@ -127,10 +127,10 @@ public class PieChartReportTest {
         mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
 
-        CURRENCY = CommoditiesDbAdapter.getInstance().getCommodity("USD");
+        commodity = CommoditiesDbAdapter.getInstance().getCommodity("USD");
 
         PreferenceActivity.getActiveBookSharedPreferences().edit()
-                .putString(context.getString(R.string.key_default_currency), CURRENCY.getCurrencyCode())
+                .putString(context.getString(R.string.key_default_currency), commodity.getCurrencyCode())
                 .commit();
     }
 
@@ -152,7 +152,7 @@ public class PieChartReportTest {
         Transaction transaction = new Transaction(TRANSACTION_NAME);
         transaction.setTime(System.currentTimeMillis());
 
-        Split split = new Split(new Money(BigDecimal.valueOf(TRANSACTION_AMOUNT), CURRENCY), DINING_EXPENSE_ACCOUNT_UID);
+        Split split = new Split(new Money(BigDecimal.valueOf(TRANSACTION_AMOUNT), commodity), DINING_EXPENSE_ACCOUNT_UID);
         split.setType(TransactionType.DEBIT);
 
         transaction.addSplit(split);
@@ -170,7 +170,7 @@ public class PieChartReportTest {
         Transaction transaction = new Transaction(TRANSACTION2_NAME);
         transaction.setTime(new LocalDateTime().minusMonths(minusMonths).toDate().getTime());
 
-        Split split = new Split(new Money(BigDecimal.valueOf(TRANSACTION2_AMOUNT), CURRENCY), BOOKS_EXPENSE_ACCOUNT_UID);
+        Split split = new Split(new Money(BigDecimal.valueOf(TRANSACTION2_AMOUNT), commodity), BOOKS_EXPENSE_ACCOUNT_UID);
         split.setType(TransactionType.DEBIT);
 
         transaction.addSplit(split);
@@ -200,7 +200,7 @@ public class PieChartReportTest {
 
     @Test
     public void testSpinner() throws Exception {
-        Split split = new Split(new Money(BigDecimal.valueOf(TRANSACTION3_AMOUNT), CURRENCY), GIFTS_RECEIVED_INCOME_ACCOUNT_UID);
+        Split split = new Split(new Money(BigDecimal.valueOf(TRANSACTION3_AMOUNT), commodity), GIFTS_RECEIVED_INCOME_ACCOUNT_UID);
         Transaction transaction = new Transaction(TRANSACTION3_NAME);
         transaction.addSplit(split);
         transaction.addSplit(split.createPair(CASH_IN_WALLET_ASSET_ACCOUNT_UID));

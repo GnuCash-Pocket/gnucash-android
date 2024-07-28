@@ -163,7 +163,7 @@ class Budget : BaseModel {
                     sum = budgetAmount.amount
                 } else {
                     try {
-                        sum = sum.plus(budgetAmount.amount.abs())
+                        sum += budgetAmount.amount.abs()
                     } catch (ex: CurrencyMismatchException) {
                         Timber.w("Skip some budget amounts with different currency")
                     }
