@@ -184,7 +184,7 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
         event.setStartTime(startTime);
         event.setEndTime(endTime);
         event.setActionUID(actionUid);
-        event.setLastRun(lastRun);
+        event.setLastRunTime(lastRun);
         event.setTag(tag);
         event.setEnabled(enabled);
         event.setTotalPlannedExecutionCount(numOccurrences);
