@@ -145,14 +145,14 @@ public class OwnCloudDialogFragment extends DialogFragment {
     }
 
     private void save() {
-        SharedPreferences.Editor edit = mPrefs.edit();
-        edit.clear();
-        edit.putString(getString(R.string.key_owncloud_server), mOC_server);
-        edit.putString(getString(R.string.key_owncloud_username), mOC_username);
-        edit.putString(getString(R.string.key_owncloud_password), mOC_password);
-        edit.putString(getString(R.string.key_owncloud_dir), mOC_dir);
-        edit.putBoolean(getString(R.string.owncloud_sync), true);
-        edit.apply();
+        mPrefs.edit()
+            .clear()
+            .putString(getString(R.string.key_owncloud_server), mOC_server)
+            .putString(getString(R.string.key_owncloud_username), mOC_username)
+            .putString(getString(R.string.key_owncloud_password), mOC_password)
+            .putString(getString(R.string.key_owncloud_dir), mOC_dir)
+            .putBoolean(getString(R.string.owncloud_sync), true)
+            .apply();
 
         if (ocCheckBox != null) ocCheckBox.setChecked(true);
 
@@ -175,7 +175,8 @@ public class OwnCloudDialogFragment extends DialogFragment {
                 OwnCloudCredentialsFactory.newBasicCredentials(mOC_username, mOC_password)
         );
 
-        final Handler mHandler = new Handler();
+        final Context context = mServer.getContext();
+        final Handler handler = new Handler();
 
         OnRemoteOperationListener listener = new OnRemoteOperationListener() {
             @Override
@@ -184,23 +185,23 @@ public class OwnCloudDialogFragment extends DialogFragment {
                     Timber.e(result.getException(), result.getLogMessage());
 
                     if (caller instanceof GetRemoteStatusOperation) {
-                        mServerError.setTextColor(ContextCompat.getColor(getContext(), R.color.debit_red));
+                        mServerError.setTextColor(ContextCompat.getColor(context, R.color.debit_red));
                         mServerError.setText(getString(R.string.owncloud_server_invalid));
                         mServerError.setVisibility(View.VISIBLE);
 
                     } else if (caller instanceof GetRemoteUserInfoOperation &&
                             mServerError.getText().toString().equals(getString(R.string.owncloud_server_ok))) {
-                        mUsernameError.setTextColor(ContextCompat.getColor(getContext(), R.color.debit_red));
+                        mUsernameError.setTextColor(ContextCompat.getColor(context, R.color.debit_red));
                         mUsernameError.setText(getString(R.string.owncloud_user_invalid));
                         mUsernameError.setVisibility(View.VISIBLE);
                     }
                 } else {
                     if (caller instanceof GetRemoteStatusOperation) {
-                        mServerError.setTextColor(ContextCompat.getColor(getContext(), R.color.theme_primary));
+                        mServerError.setTextColor(ContextCompat.getColor(context, R.color.theme_primary));
                         mServerError.setText(getString(R.string.owncloud_server_ok));
                         mServerError.setVisibility(View.VISIBLE);
                     } else if (caller instanceof GetRemoteUserInfoOperation) {
-                        mUsernameError.setTextColor(ContextCompat.getColor(getContext(), R.color.theme_primary));
+                        mUsernameError.setTextColor(ContextCompat.getColor(context, R.color.theme_primary));
                         mUsernameError.setText(getString(R.string.owncloud_user_ok));
                         mUsernameError.setVisibility(View.VISIBLE);
                     }
@@ -210,17 +211,17 @@ public class OwnCloudDialogFragment extends DialogFragment {
         };
 
         GetRemoteStatusOperation g = new GetRemoteStatusOperation(mContext);
-        g.execute(mClient, listener, mHandler);
+        g.execute(mClient, listener, handler);
 
         GetRemoteUserInfoOperation gu = new GetRemoteUserInfoOperation();
-        gu.execute(mClient, listener, mHandler);
+        gu.execute(mClient, listener, handler);
 
         if (FileUtils.isValidPath(mOC_dir, false)) {
-            mDirError.setTextColor(ContextCompat.getColor(getContext(), R.color.theme_primary));
+            mDirError.setTextColor(ContextCompat.getColor(context, R.color.theme_primary));
             mDirError.setText(getString(R.string.owncloud_dir_ok));
             mDirError.setVisibility(View.VISIBLE);
         } else {
-            mDirError.setTextColor(ContextCompat.getColor(getContext(), R.color.debit_red));
+            mDirError.setTextColor(ContextCompat.getColor(context, R.color.debit_red));
             mDirError.setText(getString(R.string.owncloud_dir_invalid));
             mDirError.setVisibility(View.VISIBLE);
         }

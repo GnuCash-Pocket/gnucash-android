@@ -122,7 +122,7 @@ public class MultiBookTest {
 
         shouldOpenBookManager();
 
-        onView(withId(R.id.menu_create_book))
+        onView(withId(R.id.menu_create))
                 .check(matches(isDisplayed()))
                 .perform(click());
 
