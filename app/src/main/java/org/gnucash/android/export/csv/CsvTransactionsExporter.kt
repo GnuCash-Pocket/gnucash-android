@@ -95,7 +95,7 @@ class CsvTransactionsExporter(context: Context,
             } else {
                 writer.writeToken(null)
             }
-            writer.writeEndToken(split.quantity!!.div(split.value!!).formattedStringWithoutSymbol())
+            writer.writeEndToken((split.quantity!! / split.value!!).formattedStringWithoutSymbol())
         }
     }
 

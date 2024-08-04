@@ -5,17 +5,22 @@ import static org.junit.Assert.fail;
 
 import android.database.sqlite.SQLiteDatabase;
 
+import org.gnucash.android.BuildConfig;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
+import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.RecurrenceDbAdapter;
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
 import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.importer.GncXmlHandler;
+import org.gnucash.android.util.ConsoleTree;
+import org.gnucash.android.util.LogTree;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -36,6 +41,11 @@ public abstract class BookHelperTest {
     protected TransactionsDbAdapter mTransactionsDbAdapter;
     protected AccountsDbAdapter mAccountsDbAdapter;
     protected ScheduledActionDbAdapter mScheduledActionDbAdapter;
+    protected CommoditiesDbAdapter mCommoditiesDbAdapter;
+
+    static {
+        Timber.plant((Timber.Tree) new ConsoleTree(BuildConfig.DEBUG));
+    }
 
     protected String importGnuCashXml(String filename) {
         SAXParser parser;
@@ -64,6 +74,7 @@ public abstract class BookHelperTest {
         mAccountsDbAdapter = new AccountsDbAdapter(mainDb, mTransactionsDbAdapter);
         RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(mainDb);
         mScheduledActionDbAdapter = new ScheduledActionDbAdapter(mainDb, recurrenceDbAdapter);
+        mCommoditiesDbAdapter = new CommoditiesDbAdapter(mainDb);
         mImportedDb = mainDb;
     }
 
