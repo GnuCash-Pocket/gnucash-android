@@ -138,17 +138,6 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
             exportedFiles = exporter.generateExport();
         } catch (final Throwable e) {
             Timber.e(e, "Error exporting: %s", e.getMessage());
-            if (mContext instanceof Activity) {
-                ((Activity) mContext).runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(mContext,
-                            mContext.getString(R.string.toast_export_error, exportParams.getExportFormat().name())
-                                + "\n" + e.getLocalizedMessage(),
-                            Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
             return 0;
         }
 
@@ -157,7 +146,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
 
         try {
             moveToTarget(exportParams, exporter, exportedFiles);
-        } catch (Exporter.ExporterException e) {
+        } catch (Throwable e) {
             Timber.e(e, "Error sending exported files to target");
             return -exportedFiles.size();
         }
@@ -303,7 +292,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
      * Move the exported files to a GnuCash folder on Google Drive
      *
      * @throws Exporter.ExporterException if something failed while moving the exported file
-     * @deprecated Explicit Google Drive integration is deprecated, use Storage Access Framework. See {@link #moveExportToUri()}
+     * @deprecated Explicit Google Drive integration is deprecated, use Storage Access Framework. See {@link #moveExportToUri(ExportParams, List)}
      */
     @Deprecated
     private void moveExportToGoogleDrive(ExportParams exportParams, Exporter exporter, List<String> exportedFiles) throws Exporter.ExporterException {
@@ -360,7 +349,10 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
     private void moveExportToDropbox(ExportParams exportParams, List<String> exportedFiles) {
         Timber.i("Uploading exported files to DropBox");
 
-        DbxClientV2 dbxClient = DropboxHelper.getClient();
+        DbxClientV2 dbxClient = DropboxHelper.getClient(mContext);
+        if (dbxClient == null) {
+            throw new Exporter.ExporterException(exportParams, "Dropbox client required");
+        }
 
         for (String exportedFilePath : exportedFiles) {
             File exportedFile = new File(exportedFilePath);

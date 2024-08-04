@@ -113,7 +113,7 @@
             android:exported="true">
             <intent-filter>
                 <!-- Change this to be db- followed by your app key -->
-                <data android:scheme="@string/manifest_dropbox_app_key" />
+                <data android:scheme="${dropbox_app_key}" />
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <category android:name="android.intent.category.DEFAULT" />
