@@ -21,6 +21,7 @@ import static org.gnucash.android.db.DatabaseSchema.RecurrenceEntry;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,8 +29,8 @@ import androidx.annotation.Nullable;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.model.PeriodType;
 import org.gnucash.android.model.Recurrence;
+import org.gnucash.android.util.TimestampHelper;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -61,18 +62,17 @@ public class RecurrenceDbAdapter extends DatabaseAdapter<Recurrence> {
     @Override
     public Recurrence buildModelInstance(@NonNull Cursor cursor) {
         String type = cursor.getString(cursor.getColumnIndexOrThrow(RecurrenceEntry.COLUMN_PERIOD_TYPE));
-        long multiplier = cursor.getLong(cursor.getColumnIndexOrThrow(RecurrenceEntry.COLUMN_MULTIPLIER));
+        int multiplier = cursor.getInt(cursor.getColumnIndexOrThrow(RecurrenceEntry.COLUMN_MULTIPLIER));
         String periodStart = cursor.getString(cursor.getColumnIndexOrThrow(RecurrenceEntry.COLUMN_PERIOD_START));
         String periodEnd = cursor.getString(cursor.getColumnIndexOrThrow(RecurrenceEntry.COLUMN_PERIOD_END));
         String byDays = cursor.getString(cursor.getColumnIndexOrThrow(RecurrenceEntry.COLUMN_BYDAY));
 
-        PeriodType periodType = PeriodType.valueOf(type);
-
+        PeriodType periodType = PeriodType.of(type);
         Recurrence recurrence = new Recurrence(periodType);
-        recurrence.setMultiplier((int) multiplier);
-        recurrence.setPeriodStart(Timestamp.valueOf(periodStart));
+        recurrence.setMultiplier(multiplier);
+        recurrence.setPeriodStart(TimestampHelper.getTimestampFromUtcString(periodStart).getTime());
         if (periodEnd != null)
-            recurrence.setPeriodEnd(Timestamp.valueOf(periodEnd));
+            recurrence.setPeriodEnd(TimestampHelper.getTimestampFromUtcString(periodEnd));
         recurrence.setByDays(stringToByDays(byDays));
 
         populateBaseModelAttributes(cursor, recurrence);
@@ -88,10 +88,10 @@ public class RecurrenceDbAdapter extends DatabaseAdapter<Recurrence> {
         if (!recurrence.getByDays().isEmpty())
             stmt.bindString(3, byDaysToString(recurrence.getByDays()));
         //recurrence should always have a start date
-        stmt.bindString(4, recurrence.getPeriodStart().toString());
+        stmt.bindString(4, TimestampHelper.getUtcStringFromTimestamp(recurrence.getPeriodStart()));
 
         if (recurrence.getPeriodEnd() != null)
-            stmt.bindString(5, recurrence.getPeriodEnd().toString());
+            stmt.bindString(5, TimestampHelper.getUtcStringFromTimestamp(recurrence.getPeriodEnd()));
         stmt.bindString(6, recurrence.getUID());
 
         return stmt;
@@ -146,7 +146,7 @@ public class RecurrenceDbAdapter extends DatabaseAdapter<Recurrence> {
      * @return list of days of the week as Calendar constants.
      */
     private static @NonNull List<Integer> stringToByDays(@Nullable String byDaysString) {
-        if (byDaysString == null)
+        if (TextUtils.isEmpty(byDaysString))
             return Collections.emptyList();
 
         List<Integer> byDaysList = new ArrayList<>();
@@ -174,7 +174,8 @@ public class RecurrenceDbAdapter extends DatabaseAdapter<Recurrence> {
                     byDaysList.add(Calendar.SUNDAY);
                     break;
                 default:
-                    throw new RuntimeException("bad day of week: " + day);
+                    // Issue #172 - "LU" is Latin
+                    //throw new RuntimeException("bad day of week: " + day);
             }
         }
         return byDaysList;
