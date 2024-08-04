@@ -32,6 +32,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
+import androidx.fragment.app.Fragment;
 
 import com.dropbox.core.DbxException;
 import com.dropbox.core.v2.DbxClientV2;
@@ -63,10 +64,9 @@ import org.gnucash.android.export.qif.QifExporter;
 import org.gnucash.android.export.xml.GncXmlExporter;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.ui.account.AccountsActivity;
-import org.gnucash.android.ui.account.AccountsListFragment;
 import org.gnucash.android.ui.common.GnucashProgressDialog;
+import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.settings.BackupPreferenceFragment;
-import org.gnucash.android.ui.transaction.TransactionsActivity;
 import org.gnucash.android.util.BackupManager;
 import org.gnucash.android.util.FileUtils;
 import org.joda.time.format.DateTimeFormat;
@@ -570,14 +570,14 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
     }
 
     private void refreshViews() {
+        if (mContext instanceof Refreshable) {
+            ((Refreshable) mContext).refresh();
+        } else
         if (mContext instanceof AccountsActivity) {
-            AccountsListFragment fragment =
+            Fragment fragment =
                 ((AccountsActivity) mContext).getCurrentAccountListFragment();
-            if (fragment != null)
-                fragment.refresh();
-        }
-        if (mContext instanceof TransactionsActivity) {
-            ((TransactionsActivity) mContext).refresh();
+            if (fragment instanceof Refreshable)
+                ((Refreshable) fragment).refresh();
         }
     }
 }

@@ -97,10 +97,6 @@
     <string name="title_account_preferences">Προτιμήσεις Λογαριασμών</string>
     <string name="title_default_transaction_type">Προεπιλογή Τύπου Κίνησης</string>
     <string name="summary_default_transaction_type">Ο προεπιλεγμένος τύπος κίνησης, ΠΙΣΤΩΣΗ ή ΧΡΕΩΣΗ</string>
-    <string-array name="transaction_types">
-        <item>ΠΙΣΤΩΣΗ</item>
-        <item>ΧΡΕΩΣΗ</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">Σίγουρα θέλετε να διαγράψετε ΌΛΕΣ τις κινήσεις;</string>
     <string name="msg_delete_transaction_confirmation">Σίγουρα θέλετε να διαγράψετε αυτή τη κίνηση;</string>
     <string name="title_export_preference_category">Εξαγωγή</string>

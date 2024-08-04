@@ -65,7 +65,6 @@ import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.db.adapter.SplitsDbAdapter;
@@ -528,8 +527,8 @@ public class AccountsActivityTest {
             mActivityRule.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Fragment fragment = mAccountsActivity.getCurrentAccountListFragment();
-                    ((AccountsListFragment) fragment).refresh();
+                    AccountsListFragment fragment = mAccountsActivity.getCurrentAccountListFragment();
+                    fragment.refresh();
                 }
             });
         } catch (Throwable throwable) {

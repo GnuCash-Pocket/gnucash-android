@@ -96,10 +96,6 @@
     <string name="title_account_preferences">Preferencias de cuenta</string>
     <string name="title_default_transaction_type">Tipo de transacción por defecto</string>
     <string name="summary_default_transaction_type">El tipo de transacción a utilizar por defecto: ABONO o CARGO</string>
-    <string-array name="transaction_types">
-        <item>ABONO</item>
-        <item>CARGO</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">¿Estás seguro de Borrar TODAS las transacciones?</string>
     <string name="msg_delete_transaction_confirmation">¿Borrar esta transacción?</string>
     <string name="title_export_preference_category">Exportar</string>

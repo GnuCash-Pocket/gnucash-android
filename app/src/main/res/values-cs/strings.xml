@@ -96,10 +96,6 @@
     <string name="title_account_preferences">Předvolby účtu</string>
     <string name="title_default_transaction_type">Výchozí typ transakce</string>
     <string name="summary_default_transaction_type">Typ transakce pro výchozí použití, KREDITNÍ nebo DEBETNÍ</string>
-    <string-array name="transaction_types">
-        <item>ÚVĚR</item>
-        <item>DEBET</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">Opravdu chcete odstranit všechny transakce?</string>
     <string name="msg_delete_transaction_confirmation">Opravdu chcete odstranit tuto transakci?</string>
     <string name="title_export_preference_category">Export</string>
