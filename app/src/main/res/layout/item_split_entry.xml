@@ -40,14 +40,11 @@ limitations under the License.
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:focusableInTouchMode="true"
             android:gravity="center_vertical"
             android:hint="@string/label_transaction_amount"
-            android:inputType="none"
             android:nextFocusDown="@+id/input_split_memo"
             android:textColor="@color/debit_red"
-            android:textSize="18sp"
-            gnucash:keyboardKeysLayout="@xml/calculator_keyboard" />
+            android:textSize="18sp" />
 
         <org.gnucash.android.ui.util.widget.TransactionTypeSwitch
             android:id="@+id/btn_split_type"

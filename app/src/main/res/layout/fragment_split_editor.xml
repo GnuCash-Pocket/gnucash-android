@@ -68,14 +68,7 @@ limitations under the License.
         </LinearLayout>
     </ScrollView>
 
-    <android.inputmethodservice.KeyboardView
+    <include
         android:id="@+id/calculator_keyboard"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:visibility="gone" />
+        layout="@layout/kbd_calculator" />
 </RelativeLayout>

@@ -15,20 +15,25 @@
  */
 package org.gnucash.android.ui.util.widget;
 
+import static org.gnucash.android.app.ContextExtKt.getActivity;
+import static org.gnucash.android.ui.util.widget.ViewExtKt.addFilter;
+
+import android.app.Activity;
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.inputmethodservice.KeyboardView;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.XmlRes;
 import androidx.appcompat.widget.AppCompatEditText;
 
 import org.gnucash.android.R;
@@ -47,12 +52,13 @@ import timber.log.Timber;
 
 /**
  * A custom EditText which supports computations and uses a custom calculator keyboard.
- * <p>After the view is inflated, make sure to call {@link #bindListeners(KeyboardView)}
+ * <p>After the view is inflated, make sure to call {@link #bindKeyboard(KeyboardView)}
  * with the view from your layout where the calculator keyboard should be displayed.</p>
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class CalculatorEditText extends AppCompatEditText {
+
     @Nullable
     private CalculatorKeyboard mCalculatorKeyboard;
 
@@ -64,43 +70,38 @@ public class CalculatorEditText extends AppCompatEditText {
     private boolean isContentModified = false;
     private String originalText = "";
 
-    @XmlRes
-    private int mCalculatorKeysLayout;
-    private KeyboardView mCalculatorKeyboardView;
     private final DecimalFormat formatter = (DecimalFormat) NumberFormat.getInstance(Locale.getDefault());
 
     public CalculatorEditText(Context context) {
         super(context, null);
+        init();
     }
 
     public CalculatorEditText(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context, attrs);
+        init();
     }
 
     public CalculatorEditText(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(context, attrs);
+        init();
     }
 
     /**
-     * Overloaded constructor
-     * Reads any attributes which are specified in XML and applies them
-     *
-     * @param context Activity context
-     * @param attrs   View attributes
+     * Initialize.
      */
-    private void init(Context context, AttributeSet attrs) {
-        TypedArray a = context.getTheme().obtainStyledAttributes(
-                attrs,
-                R.styleable.CalculatorEditText,
-                0, 0);
+    private void init() {
+        setBackground(null);
+        setSingleLine(true);
 
-        try {
-            mCalculatorKeysLayout = a.getResourceId(R.styleable.CalculatorEditText_keyboardKeysLayout, R.xml.calculator_keyboard);
-        } finally {
-            a.recycle();
-        }
+        // Disable spell check (hex strings look like words to Android)
+        setInputType(InputType.TYPE_NULL);
+        setRawInputType(InputType.TYPE_CLASS_NUMBER);
+
+        addFilter(this, CalculatorKeyboard.getFilter());
+
+        // Disable system keyboard appearing on long-press, but for some reason, this prevents the text selection from working.
+        setShowSoftInputOnFocus(false);
 
         addTextChangedListener(new TextWatcher() {
             @Override
@@ -117,28 +118,30 @@ public class CalculatorEditText extends AppCompatEditText {
             }
         });
 
-        setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        setOnEditorActionListener(new OnEditorActionListener() {
             @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    setSelection(getText().length());
-                } else {
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if ((actionId & EditorInfo.IME_MASK_ACTION) > EditorInfo.IME_ACTION_NONE) {
                     evaluate();
+                    return true;
                 }
+                return false;
             }
         });
-    }
 
-    public void bindListeners(final CalculatorKeyboard calculatorKeyboard) {
-        mCalculatorKeyboard = calculatorKeyboard;
         setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
+                CalculatorKeyboard calculatorKeyboard = mCalculatorKeyboard;
                 if (hasFocus) {
                     setSelection(getText().length());
-                    calculatorKeyboard.showCustomKeyboard(v);
+                    if (calculatorKeyboard != null) {
+                        calculatorKeyboard.showCustomKeyboard(v);
+                    }
                 } else {
-                    calculatorKeyboard.hideCustomKeyboard();
+                    if (calculatorKeyboard != null) {
+                        calculatorKeyboard.hideCustomKeyboard();
+                    }
                     evaluate();
                 }
             }
@@ -149,15 +152,16 @@ public class CalculatorEditText extends AppCompatEditText {
             // by tapping on an edit box that already had focus (but that had the keyboard hidden).
             @Override
             public void onClick(View v) {
-                calculatorKeyboard.showCustomKeyboard(v);
+                CalculatorKeyboard calculatorKeyboard = mCalculatorKeyboard;
+                if (calculatorKeyboard != null) {
+                    calculatorKeyboard.showCustomKeyboard(v);
+                }
             }
         });
+    }
 
-        // Disable spell check (hex strings look like words to Android)
-        setInputType(getInputType() | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-
-        // Disable system keyboard appearing on long-press, but for some reason, this prevents the text selection from working.
-        setShowSoftInputOnFocus(false);
+    private void bindKeyboard(@Nullable final CalculatorKeyboard calculatorKeyboard) {
+        mCalculatorKeyboard = calculatorKeyboard;
 
         // Although this handler doesn't make sense, if removed, the standard keyboard
         // shows up in addition to the calculator one when the EditText gets a touch event.
@@ -170,73 +174,26 @@ public class CalculatorEditText extends AppCompatEditText {
             }
         });
 
-        Context context = getContext();
-        if (context instanceof FormActivity) {
-            ((FormActivity) context).setOnBackListener(calculatorKeyboard);
+        Activity activity = getActivity(this);
+        if (activity instanceof FormActivity) {
+            ((FormActivity) activity).setOnBackListener(calculatorKeyboard);
         }
     }
 
     /**
      * Initializes listeners on the EditText
      */
-    public void bindListeners(KeyboardView keyboardView) {
-        bindListeners(new CalculatorKeyboard(getContext(), keyboardView, mCalculatorKeysLayout));
+    public void bindKeyboard(@NonNull KeyboardView keyboardView) {
+        bindKeyboard(new CalculatorKeyboard(keyboardView));
     }
 
-    /**
-     * Returns the calculator keyboard instantiated by this EditText
-     *
-     * @return CalculatorKeyboard
-     */
-    public CalculatorKeyboard getCalculatorKeyboard() {
-        return mCalculatorKeyboard;
-    }
-
-    /**
-     * Returns the view Id of the keyboard view
-     *
-     * @return Keyboard view
-     */
-    public KeyboardView getCalculatorKeyboardView() {
-        return mCalculatorKeyboardView;
-    }
-
-    /**
-     * Set the keyboard view used for displaying the keyboard
-     *
-     * @param calculatorKeyboardView Calculator keyboard view
-     */
-    public void setCalculatorKeyboardView(KeyboardView calculatorKeyboardView) {
-        this.mCalculatorKeyboardView = calculatorKeyboardView;
-        bindListeners(calculatorKeyboardView);
-    }
-
-    /**
-     * Returns the XML resource ID describing the calculator keys layout
-     *
-     * @return XML resource ID
-     */
-    public @XmlRes int getCalculatorKeysLayout() {
-        return mCalculatorKeysLayout;
-    }
-
-    /**
-     * Sets the XML resource describing the layout of the calculator keys
-     *
-     * @param calculatorKeysLayout XML resource ID
-     */
-    public void setCalculatorKeysLayout(@XmlRes int calculatorKeysLayout) {
-        this.mCalculatorKeysLayout = calculatorKeysLayout;
-        bindListeners(mCalculatorKeyboardView);
-    }
-
-    /**
-     * Sets the calculator keyboard to use for this EditText
-     *
-     * @param keyboard Properly initialized calculator keyboard
-     */
-    public void setCalculatorKeyboard(CalculatorKeyboard keyboard) {
-        this.mCalculatorKeyboard = keyboard;
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (CalculatorKeyboard.onKeyDown(keyCode, event)) {
+            evaluate();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     /**

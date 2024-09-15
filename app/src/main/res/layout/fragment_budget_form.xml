@@ -14,7 +14,7 @@
  limitations under the License.
 -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -132,14 +132,7 @@
         </TableLayout>
     </ScrollView>
 
-    <android.inputmethodservice.KeyboardView
+    <include
         android:id="@+id/calculator_keyboard"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:visibility="gone" />
-</RelativeLayout>
+        layout="@layout/kbd_calculator" />
+</FrameLayout>

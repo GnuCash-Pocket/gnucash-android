@@ -14,178 +14,182 @@
  limitations under the License.
 -->
 
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:gnucash="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:animateLayoutChanges="true"
-    android:fillViewport="true">
+    android:layout_height="match_parent">
 
-    <TableLayout
-        android:id="@+id/fragment_transaction_form"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/dialog_padding"
-        android:stretchColumns="1">
+        android:animateLayoutChanges="true"
+        android:fillViewport="true">
 
-        <TableRow style="@style/FormRow">
-
-            <AutoCompleteTextView
-                android:id="@+id/input_transaction_name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_span="4"
-                android:background="@null"
-                android:completionThreshold="1"
-                android:hint="@string/label_transaction_name"
-                android:imeOptions="actionNext"
-                android:inputType="textCapSentences"
-                android:nextFocusDown="@+id/input_transaction_amount"
-                android:singleLine="true"
-                android:textSize="22sp">
-
-                <requestFocus />
-            </AutoCompleteTextView>
-        </TableRow>
-
-        <View
-            style="@style/Divider"
-            android:layout_marginLeft="0dp" />
-
-        <TableRow style="@style/FormRow">
-
-            <TextView
-                android:id="@+id/currency_symbol"
-                style="@style/FormIcon"
-                android:gravity="center"
-                android:text="$"
-                android:textColor="@color/debit_red"
-                android:textSize="22sp" />
-
-            <org.gnucash.android.ui.util.widget.CalculatorEditText
-                android:id="@+id/input_transaction_amount"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@null"
-                android:hint="@string/label_transaction_amount"
-                android:inputType="numberDecimal"
-                android:nextFocusDown="@+id/input_description"
-                android:singleLine="true"
-                android:textColor="@color/debit_red"
-                android:textIsSelectable="true"
-                android:textSize="20sp"
-                gnucash:keyboardKeysLayout="@xml/calculator_keyboard" />
-
-            <ImageView
-                android:id="@+id/btn_split_editor"
-                style="@style/FormIcon"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:contentDescription="@string/title_split_editor"
-                android:src="@drawable/ic_split" />
-
-            <org.gnucash.android.ui.util.widget.TransactionTypeSwitch
-                android:id="@+id/input_transaction_type"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:gravity="end|center_vertical"
-                android:textColor="@color/debit_red"
-                android:textOff="@string/label_credit"
-                android:textOn="@string/label_debit"
-                android:textSize="14sp"
-                tools:text="@string/label_debit" />
-
-        </TableRow>
-
-        <View style="@style/Divider" />
-
-        <TableRow
-            android:id="@+id/layout_double_entry"
-            style="@style/FormRow">
-
-            <ImageView
-                style="@style/FormIcon"
-                android:src="@drawable/ic_account" />
-
-            <Spinner
-                android:id="@+id/input_transfer_account_spinner"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-        </TableRow>
-
-        <View style="@style/Divider" />
-
-        <TableRow style="@style/FormRow">
-
-            <ImageView
-                style="@style/FormIcon"
-                android:src="@drawable/ic_day" />
-
-            <TextView
-                android:id="@+id/input_date"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="3"
-                android:gravity="center" />
-
-            <TextView
-                android:id="@+id/input_time"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:gravity="center" />
-        </TableRow>
-
-        <View style="@style/Divider" />
-
-        <TableRow style="@style/FormRow">
-
-            <ImageView
-                style="@style/FormIcon"
-                android:src="@drawable/ic_notes" />
-
-            <EditText
-                android:id="@+id/input_description"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@null"
-                android:hint="@string/label_transaction_description"
-                android:inputType="textMultiLine|textCapSentences"
-                android:singleLine="false" />
-        </TableRow>
-
-        <View style="@style/Divider" />
-
-        <TableRow style="@style/FormRow">
-
-            <ImageView
-                style="@style/FormIcon"
-                android:src="@drawable/ic_repeat" />
-
-            <TextView
-                android:id="@+id/input_recurrence"
-                style="@style/Dropdown.TextView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="@string/label_tap_to_create_schedule" />
-
-        </TableRow>
-
-        <CheckBox
-            android:id="@+id/checkbox_save_template"
+        <TableLayout
+            android:id="@+id/fragment_transaction_form"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/form_row_bottom_margin"
-            android:text="@string/label_save_template"
-            android:visibility="gone" />
-        <!-- Not exposing the transaction template checkbox to the UI at this time -->
-    </TableLayout>
-</ScrollView>
+            android:orientation="vertical"
+            android:padding="@dimen/dialog_padding"
+            android:stretchColumns="1">
+
+            <TableRow style="@style/FormRow">
+
+                <AutoCompleteTextView
+                    android:id="@+id/input_transaction_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_span="4"
+                    android:background="@null"
+                    android:completionThreshold="1"
+                    android:hint="@string/label_transaction_name"
+                    android:imeOptions="actionNext"
+                    android:inputType="textCapSentences"
+                    android:nextFocusDown="@+id/input_transaction_amount"
+                    android:singleLine="true"
+                    android:textSize="22sp">
+
+                    <requestFocus />
+                </AutoCompleteTextView>
+            </TableRow>
+
+            <View
+                style="@style/Divider"
+                android:layout_marginStart="0dp" />
+
+            <TableRow style="@style/FormRow">
+
+                <TextView
+                    android:id="@+id/currency_symbol"
+                    style="@style/FormIcon"
+                    android:gravity="center"
+                    android:text="$"
+                    android:textColor="@color/debit_red"
+                    android:textSize="22sp" />
+
+                <org.gnucash.android.ui.util.widget.CalculatorEditText
+                    android:id="@+id/input_transaction_amount"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="@string/label_transaction_amount"
+                    android:nextFocusDown="@+id/input_description"
+                    android:textColor="@color/debit_red"
+                    android:textSize="20sp" />
+
+                <ImageView
+                    android:id="@+id/btn_split_editor"
+                    style="@style/FormIcon"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:contentDescription="@string/title_split_editor"
+                    android:src="@drawable/ic_split" />
+
+                <org.gnucash.android.ui.util.widget.TransactionTypeSwitch
+                    android:id="@+id/input_transaction_type"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:gravity="end|center_vertical"
+                    android:textColor="@color/debit_red"
+                    android:textOff="@string/label_credit"
+                    android:textOn="@string/label_debit"
+                    android:textSize="14sp"
+                    tools:text="@string/label_debit" />
+
+            </TableRow>
+
+            <View style="@style/Divider" />
+
+            <TableRow
+                android:id="@+id/layout_double_entry"
+                style="@style/FormRow">
+
+                <ImageView
+                    style="@style/FormIcon"
+                    android:src="@drawable/ic_account" />
+
+                <Spinner
+                    android:id="@+id/input_transfer_account_spinner"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+            </TableRow>
+
+            <View style="@style/Divider" />
+
+            <TableRow style="@style/FormRow">
+
+                <ImageView
+                    style="@style/FormIcon"
+                    android:src="@drawable/ic_day" />
+
+                <TextView
+                    android:id="@+id/input_date"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="3"
+                    android:gravity="center" />
+
+                <TextView
+                    android:id="@+id/input_time"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:gravity="center" />
+            </TableRow>
+
+            <View style="@style/Divider" />
+
+            <TableRow style="@style/FormRow">
+
+                <ImageView
+                    style="@style/FormIcon"
+                    android:src="@drawable/ic_notes" />
+
+                <EditText
+                    android:id="@+id/input_description"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:hint="@string/label_transaction_description"
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:singleLine="false" />
+            </TableRow>
+
+            <View style="@style/Divider" />
+
+            <TableRow style="@style/FormRow">
+
+                <ImageView
+                    style="@style/FormIcon"
+                    android:src="@drawable/ic_repeat" />
+
+                <TextView
+                    android:id="@+id/input_recurrence"
+                    style="@style/Dropdown.TextView"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/label_tap_to_create_schedule" />
+
+            </TableRow>
+
+            <CheckBox
+                android:id="@+id/checkbox_save_template"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/form_row_bottom_margin"
+                android:text="@string/label_save_template"
+                android:visibility="gone" />
+            <!-- Not exposing the transaction template checkbox to the UI at this time -->
+        </TableLayout>
+    </ScrollView>
+
+    <include
+        android:id="@+id/calculator_keyboard"
+        layout="@layout/kbd_calculator" />
+</FrameLayout>

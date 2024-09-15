@@ -14,8 +14,4 @@
  limitations under the License.
 -->
 <resources>
-    <declare-styleable name="CalculatorEditText">
-        <attr name="keyboardKeysLayout" format="reference" />
-    </declare-styleable>
-
 </resources>
