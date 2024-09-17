@@ -16,6 +16,8 @@
 
 package org.gnucash.android.ui.transaction;
 
+import static org.gnucash.android.ui.util.widget.ViewExtKt.setTextToEnd;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -416,8 +418,7 @@ public class TransactionFormFragment extends Fragment implements
      * This method is called if the fragment is used for editing a transaction
      */
     private void initializeViewsWithTransaction(Transaction transaction) {
-        mBinding.inputTransactionName.setText(transaction.getDescription());
-        mBinding.inputTransactionName.setSelection(mBinding.inputTransactionName.getText().length());
+        setTextToEnd(mBinding.inputTransactionName, transaction.getDescription());
 
         mBinding.inputTransactionType.setAccountType(mAccountType);
         mBinding.inputTransactionType.setChecked(transaction.getBalance(mAccountUID).isNegative());

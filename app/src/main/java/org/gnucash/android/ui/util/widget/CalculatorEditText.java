@@ -17,6 +17,7 @@ package org.gnucash.android.ui.util.widget;
 
 import static org.gnucash.android.app.ContextExtKt.getActivity;
 import static org.gnucash.android.ui.util.widget.ViewExtKt.addFilter;
+import static org.gnucash.android.ui.util.widget.ViewExtKt.setTextToEnd;
 
 import android.app.Activity;
 import android.content.Context;
@@ -132,6 +133,7 @@ public class CalculatorEditText extends AppCompatEditText {
         setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
+                if (v != CalculatorEditText.this) return;
                 CalculatorKeyboard calculatorKeyboard = mCalculatorKeyboard;
                 if (hasFocus) {
                     setSelection(getText().length());
@@ -316,7 +318,6 @@ public class CalculatorEditText extends AppCompatEditText {
             originalText = resultString;
         }
 
-        setText(resultString);
-        setSelection(resultString.length());
+        setTextToEnd(this, resultString);
     }
 }
