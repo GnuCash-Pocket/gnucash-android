@@ -1,6 +1,7 @@
 package org.gnucash.android.ui.transaction;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
@@ -145,7 +146,8 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
 
         mDetailTableRows = mDetailTableLayout.getChildCount();
         boolean useDoubleEntry = GnuCashApplication.isDoubleEntryEnabled();
-        LayoutInflater inflater = LayoutInflater.from(this);
+        Context context = this;
+        LayoutInflater inflater = LayoutInflater.from(context);
         int index = 0;
         for (Split split : transaction.getSplits()) {
             if (!useDoubleEntry && split.getAccountUID().equals(
@@ -163,7 +165,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
 
         if (transaction.getScheduledActionUID() != null) {
             ScheduledAction scheduledAction = ScheduledActionDbAdapter.getInstance().getRecord(transaction.getScheduledActionUID());
-            mRecurrence.setText(scheduledAction.getRepeatString());
+            mRecurrence.setText(scheduledAction.getRepeatString(context));
             mRowRecurrence.setVisibility(View.VISIBLE);
         } else {
             mRowRecurrence.setVisibility(View.GONE);

@@ -17,6 +17,7 @@
 package org.gnucash.android.ui.budget;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -122,6 +123,7 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
     }
 
     private void bindViews() {
+        Context context = mBudgetDescriptionTextView.getContext();
         Budget budget = mBudgetsDbAdapter.getRecord(mBudgetUID);
         mBudgetNameTextView.setText(budget.getName());
 
@@ -131,7 +133,7 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
         else {
             mBudgetDescriptionTextView.setVisibility(View.GONE);
         }
-        mBudgetRecurrence.setText(budget.getRecurrence().getRepeatString());
+        mBudgetRecurrence.setText(budget.getRecurrence().getRepeatString(context));
 
         mRecyclerView.setAdapter(new BudgetAmountAdapter());
     }
@@ -217,7 +219,7 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
             holder.budgetAmount.setText(projectedAmount.formattedString());
 
             Money spentAmount = accountsDbAdapter.getAccountBalance(budgetAmount.getAccountUID(),
-                    mBudget.getStartofCurrentPeriod(), mBudget.getEndOfCurrentPeriod());
+                    mBudget.getStartOfCurrentPeriod(), mBudget.getEndOfCurrentPeriod());
 
             holder.budgetSpent.setText(spentAmount.abs().formattedString());
             holder.budgetLeft.setText(projectedAmount.minus(spentAmount.abs()).formattedString());
