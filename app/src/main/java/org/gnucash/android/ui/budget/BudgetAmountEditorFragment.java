@@ -17,6 +17,7 @@ package org.gnucash.android.ui.budget;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.inputmethodservice.KeyboardView;
 import android.os.Bundle;
@@ -47,6 +48,7 @@ import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.util.widget.CalculatorEditText;
+import org.gnucash.android.ui.util.widget.CalculatorKeyboard;
 import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
 
 import java.math.BigDecimal;
@@ -94,8 +96,8 @@ public class BudgetAmountEditorFragment extends Fragment {
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         assert actionBar != null;
@@ -235,6 +237,19 @@ public class BudgetAmountEditorFragment extends Fragment {
         return budgetAmounts;
     }
 
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        View view = getView();
+        if (view instanceof ViewGroup parent) {
+            mKeyboardView = CalculatorKeyboard.rebind(parent, mKeyboardView, null);
+            for (View budgetAmountView : mBudgetAmountViews) {
+                BudgetAmountViewHolder viewHolder = (BudgetAmountViewHolder) budgetAmountView.getTag();
+                viewHolder.amountEditText.bindKeyboard(mKeyboardView);
+            }
+        }
+    }
+
     /**
      * View holder for budget amounts
      */
@@ -254,7 +269,7 @@ public class BudgetAmountEditorFragment extends Fragment {
             ButterKnife.bind(this, view);
             itemView.setTag(this);
 
-            amountEditText.bindListeners(mKeyboardView);
+            amountEditText.bindKeyboard(mKeyboardView);
             budgetAccountSpinner.setAdapter(mAccountCursorAdapter);
 
             budgetAccountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
