@@ -516,6 +516,7 @@ public class ExportFormFragment extends Fragment implements
             case XML:
                 mXmlRadioButton.performClick();
                 break;
+            case CSVA:
             case CSVT:
                 mCsvTransactionsRadioButton.performClick();
                 break;
