@@ -39,7 +39,7 @@ public class DatabaseSchema {
      * Version number of database containing accounts and transactions info.
      * With any change to the database schema, this number must increase
      */
-    public static final int DATABASE_VERSION = 15;
+    public static final int DATABASE_VERSION = 16;
 
     //no instances are to be instantiated
     private DatabaseSchema() {
@@ -206,9 +206,14 @@ public class DatabaseSchema {
         public static final String COLUMN_CUSIP = "cusip";
 
         /**
-         * TRUE if prices are to be downloaded for this commodity from a quote source
+         * Prices are to be downloaded for this commodity from a quote source.
          */
-        public static final String COLUMN_QUOTE_FLAG = "quote_flag";
+        public static final String COLUMN_QUOTE_SOURCE = "quote_source";
+
+        /**
+         * Time zone of the quote source.
+         */
+        public static final String COLUMN_QUOTE_TZ = "quote_tz";
 
         public static final String INDEX_UID = "commodities_uid_index";
     }

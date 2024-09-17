@@ -43,7 +43,7 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
         stmt.clearBindings();
         stmt.bindString(1, price.getCommodityUID());
         stmt.bindString(2, price.getCurrencyUID());
-        stmt.bindString(3, price.getDate().toString());
+        stmt.bindString(3, TimestampHelper.getUtcStringFromTimestamp(price.getDate()));
         if (price.getSource() != null) {
             stmt.bindString(4, price.getSource());
         }

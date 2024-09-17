@@ -28,12 +28,12 @@ import org.xml.sax.XMLReader;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Timestamp;
-import java.util.TimeZone;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
+import timber.log.Timber;
 
 /**
  * Collection of helper methods which are used during database migrations
@@ -52,7 +52,7 @@ public class MigrationHelper {
         XMLReader xr = sp.getXMLReader();
 
         InputStream commoditiesInputStream = GnuCashApplication.getAppContext().getResources()
-                .openRawResource(R.raw.iso_4217_currencies);
+            .openRawResource(R.raw.iso_4217_currencies);
         BufferedInputStream bos = new BufferedInputStream(commoditiesInputStream);
 
         /* Create handler to handle XML Tags ( extends DefaultHandler ) */
@@ -60,5 +60,34 @@ public class MigrationHelper {
 
         xr.setContentHandler(handler);
         xr.parse(new InputSource(bos));
+    }
+
+    public static void migrate(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if (oldVersion < 16) {
+            migrateTo16(db);
+        }
+    }
+
+    /**
+     * Upgrade the database to version 16.
+     *
+     * @param db the database.
+     */
+    private static void migrateTo16(SQLiteDatabase db) {
+        Timber.i("Upgrading database to version 16");
+
+        String sqlAddQuoteSource = "ALTER TABLE " + DatabaseSchema.CommodityEntry.TABLE_NAME +
+            " ADD COLUMN " + DatabaseSchema.CommodityEntry.COLUMN_QUOTE_SOURCE + " varchar(255)";
+        String sqlAddQuoteTZ = "ALTER TABLE " + DatabaseSchema.CommodityEntry.TABLE_NAME +
+            " ADD COLUMN " + DatabaseSchema.CommodityEntry.COLUMN_QUOTE_TZ + " varchar(100)";
+
+        try {
+            db.beginTransaction();
+            db.execSQL(sqlAddQuoteSource);
+            db.execSQL(sqlAddQuoteTZ);
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
     }
 }
