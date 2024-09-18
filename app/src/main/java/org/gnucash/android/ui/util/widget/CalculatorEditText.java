@@ -21,7 +21,6 @@ import static org.gnucash.android.ui.util.widget.ViewExtKt.setTextToEnd;
 
 import android.app.Activity;
 import android.content.Context;
-import android.inputmethodservice.KeyboardView;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -38,6 +37,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatEditText;
 
 import org.gnucash.android.R;
+import org.gnucash.android.inputmethodservice.CalculatorKeyboardView;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.common.FormActivity;
@@ -53,7 +53,7 @@ import timber.log.Timber;
 
 /**
  * A custom EditText which supports computations and uses a custom calculator keyboard.
- * <p>After the view is inflated, make sure to call {@link #bindKeyboard(KeyboardView)}
+ * <p>After the view is inflated, make sure to call {@link #bindKeyboard(CalculatorKeyboardView)}
  * with the view from your layout where the calculator keyboard should be displayed.</p>
  *
  * @author Ngewi Fet <ngewif@gmail.com>
@@ -185,7 +185,7 @@ public class CalculatorEditText extends AppCompatEditText {
     /**
      * Initializes listeners on the EditText
      */
-    public void bindKeyboard(@NonNull KeyboardView keyboardView) {
+    public void bindKeyboard(@NonNull CalculatorKeyboardView keyboardView) {
         bindKeyboard(new CalculatorKeyboard(keyboardView));
     }
 

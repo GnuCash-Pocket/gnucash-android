@@ -34,4 +34,6 @@
     <dimen name="passcode_btn_margin">10dp</dimen>
     <dimen name="elevation_default">10dp</dimen>
 
+    <dimen name="kbd_key_height">48dp</dimen>
+    <dimen name="kbd_key_radius">25dp</dimen>
 </resources>

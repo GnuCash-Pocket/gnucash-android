@@ -34,4 +34,11 @@
     <color name="theme_accent">#FFAB00</color> <!-- A700 -->
 
     <color name="widget_bg">#CCFFFFFF</color>
+
+    <color name="kbd_bg">#EEF2F8F2</color>
+    <color name="kbd_key_action">#A8E368</color>
+    <color name="kbd_key_clear">#CFE0BC</color>
+    <color name="kbd_key_delete">#CFE0BC</color>
+    <color name="kbd_key_digit">@android:color/white</color>
+    <color name="kbd_key_op">#E5F5D5</color>
 </resources>

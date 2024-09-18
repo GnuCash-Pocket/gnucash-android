@@ -146,4 +146,38 @@
         <item name="android:background">?attr/colorPrimary</item>
         <item name="elevation">@dimen/elevation_default</item>
     </style>
+
+    <style name="CalculatorKeyboard">
+        <item name="android:background">@color/kbd_bg</item>
+        <item name="android:focusable">true</item>
+        <item name="android:focusableInTouchMode">true</item>
+    </style>
+
+    <style name="CalculatorKeyboard.Key" parent="Widget.AppCompat.Button.Borderless.Colored">
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:focusable">false</item>
+        <item name="android:background">@drawable/bg_key</item>
+        <item name="android:layout_margin">2dp</item>
+    </style>
+
+    <style name="CalculatorKeyboard.Key.Clear">
+        <item name="backgroundTint">@color/kbd_key_clear</item>
+    </style>
+
+    <style name="CalculatorKeyboard.Key.Digit">
+        <item name="backgroundTint">@color/kbd_key_digit</item>
+    </style>
+
+    <style name="CalculatorKeyboard.Key.Delete">
+        <item name="backgroundTint">@color/kbd_key_delete</item>
+    </style>
+
+    <style name="CalculatorKeyboard.Key.Operator">
+        <item name="backgroundTint">@color/kbd_key_op</item>
+    </style>
+
+    <style name="CalculatorKeyboard.Key.Action">
+        <item name="backgroundTint">@color/kbd_key_action</item>
+    </style>
 </resources>

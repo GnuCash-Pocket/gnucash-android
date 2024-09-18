@@ -29,7 +29,6 @@ import static org.gnucash.android.app.ContextExtKt.getActivity;
 import android.app.Activity;
 import android.content.Context;
 import android.inputmethodservice.Keyboard;
-import android.inputmethodservice.KeyboardView;
 import android.inputmethodservice.KeyboardView.OnKeyboardActionListener;
 import android.provider.Settings;
 import android.text.Editable;
@@ -50,6 +49,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.gnucash.android.R;
+import org.gnucash.android.inputmethodservice.CalculatorKeyboardView;
 
 import java.text.DecimalFormatSymbols;
 
@@ -69,17 +69,14 @@ import java.text.DecimalFormatSymbols;
 public class CalculatorKeyboard {
 
     private static final String ACCEPTED = "0123456789+*/()";
-    private static final int KEY_CODE_CLEAR = -3;
-    private static final int KEY_CODE_DELETE = -5;
-    private static final int KEY_CODE_EVALUATE = '=';
-    private static final String KEY_LABEL_DECIMAL = ".";
-    private static final String KEY_LABEL_EVALUATE = "=";
-    private static final String KEY_LABEL_MINUS = "-";
+    private static final int KEY_CODE_CLEAR = CalculatorKeyboardView.KEY_CODE_CLEAR;
+    private static final int KEY_CODE_DELETE = CalculatorKeyboardView.KEY_CODE_DELETE;
+    private static final int KEY_CODE_EVALUATE = CalculatorKeyboardView.KEY_CODE_EVALUATE;
 
     /**
      * A link to the KeyboardView that is used to render this CalculatorKeyboard.
      */
-    private final KeyboardView keyboardView;
+    private final CalculatorKeyboardView keyboardView;
     private final Window window;
     private final InputMethodManager inputMethodManager;
     private final boolean isHapticFeedback;
@@ -101,7 +98,7 @@ public class CalculatorKeyboard {
      *
      * @param keyboardView KeyboardView in the layout
      */
-    public CalculatorKeyboard(@NonNull KeyboardView keyboardView) {
+    public CalculatorKeyboard(@NonNull CalculatorKeyboardView keyboardView) {
         this.keyboardView = keyboardView;
         Context context = keyboardView.getContext();
         inputMethodManager = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
@@ -109,22 +106,6 @@ public class CalculatorKeyboard {
         // Hide the standard keyboard initially
         window = getActivity(keyboardView).getWindow();
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
-
-        final DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance();
-        final String decimalSeparator = Character.toString(symbols.getDecimalSeparator());
-        final String minusSign = Character.toString(symbols.getMinusSign());
-        Keyboard keyboard = new Keyboard(context, R.xml.calculator_keyboard);
-        for (Keyboard.Key key : keyboard.getKeys()) {
-            if (TextUtils.equals(KEY_LABEL_DECIMAL, key.label)) {
-                key.label = decimalSeparator;
-                key.text = decimalSeparator;
-            } else if (TextUtils.equals(KEY_LABEL_MINUS, key.label)) {
-                key.label = minusSign;
-                key.text = minusSign;
-            }
-        }
-        keyboardView.setKeyboard(keyboard);
-        keyboardView.setPreviewEnabled(false); // NOTE Do not show the preview balloons
 
         OnKeyboardActionListener keyboardActionListener = new OnKeyboardActionListener() {
 
@@ -182,11 +163,6 @@ public class CalculatorKeyboard {
                 }
                 Editable editable = calculatorEditText.getText();
                 if (editable == null) {
-                    return;
-                }
-
-                if (KEY_LABEL_EVALUATE.equals(text)) {
-                    calculatorEditText.evaluate();
                     return;
                 }
 
@@ -257,8 +233,10 @@ public class CalculatorKeyboard {
     public static InputFilter getFilter() {
         final DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance();
         final char decimalSeparator = symbols.getDecimalSeparator();
+        final char decimalMoneySeparator = symbols.getMonetaryDecimalSeparator();
         final char minusSign = symbols.getMinusSign();
-        final String accepted = ACCEPTED + decimalSeparator + minusSign;
+        final char zeroDigit = symbols.getZeroDigit();
+        final String accepted = ACCEPTED + decimalSeparator + decimalMoneySeparator + minusSign + zeroDigit;
         return DigitsKeyListener.getInstance(accepted);
     }
 
@@ -270,9 +248,14 @@ public class CalculatorKeyboard {
         return primaryCode == KEY_CODE_EVALUATE;
     }
 
-    public static KeyboardView rebind(@NonNull ViewGroup parent, @NonNull KeyboardView keyboardView, @Nullable CalculatorEditText calculatorEditText) {
+    public static CalculatorKeyboardView rebind(
+        @NonNull ViewGroup parent,
+        @NonNull CalculatorKeyboardView keyboardView,
+        @Nullable CalculatorEditText calculatorEditText
+    ) {
         parent.removeView(keyboardView);
-        keyboardView = (KeyboardView) LayoutInflater.from(parent.getContext()).inflate(R.layout.kbd_calculator, parent, false);
+        final LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
+        keyboardView = (CalculatorKeyboardView) layoutInflater.inflate(R.layout.kbd_calculator, parent, false);
         parent.addView(keyboardView);
         if (calculatorEditText != null) {
             calculatorEditText.bindKeyboard(keyboardView);
