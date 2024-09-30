@@ -38,6 +38,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
@@ -404,24 +405,21 @@ public class ScheduledActionsListFragment extends ListFragment implements
         }
     }
 
-    private String formatDescription(@NonNull Context context, @NonNull ScheduledAction scheduledAction) {
-        long runTime = scheduledAction.getLastRunTime();
-        final String label;
-        if (runTime > 0) {
-            long endTime = scheduledAction.getEndTime();
-            final String period;
-            if (endTime > 0 && endTime < System.currentTimeMillis()) {
-                period = getString(R.string.label_scheduled_action_ended);
-            } else {
-                period = scheduledAction.getRepeatString(context);
-            }
-            label = getString(R.string.label_scheduled_action,
-                period,
-                DateTimeFormat.shortDateTime().print(runTime));
-        } else {
-            label = scheduledAction.getRepeatString(context);
+    @Nullable
+    private String formatDescription(@NonNull Context context, @Nullable ScheduledAction scheduledAction) {
+        if (scheduledAction == null) return null;
+        long endTime = scheduledAction.getEndTime();
+        long lastTime = scheduledAction.getLastRunTime();
+
+        if (endTime > 0 && endTime < System.currentTimeMillis()) {
+            return getString(R.string.label_scheduled_action_ended, DateTimeFormat.shortDateTime().print(lastTime));
         }
-        return label;
+        if (lastTime > 0) {
+            return getString(R.string.label_scheduled_action_last,
+                scheduledAction.getRepeatString(context),
+                DateTimeFormat.shortDateTime().print(lastTime));
+        }
+        return scheduledAction.getRepeatString(context);
     }
 
     private void editExport(@NonNull ScheduledAction scheduledAction) {
