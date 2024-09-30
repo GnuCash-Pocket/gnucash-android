@@ -22,6 +22,7 @@ import static java.lang.Math.min;
 
 import android.app.DatePickerDialog;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -162,7 +163,11 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
         if (savedInstanceState == null) {
             showOverview();
         } else {
-            mReportType = (ReportType) savedInstanceState.getSerializable(STATE_REPORT_TYPE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                mReportType = savedInstanceState.getSerializable(STATE_REPORT_TYPE, ReportType.class);
+            } else {
+                mReportType = (ReportType) savedInstanceState.getSerializable(STATE_REPORT_TYPE);
+            }
         }
     }
 

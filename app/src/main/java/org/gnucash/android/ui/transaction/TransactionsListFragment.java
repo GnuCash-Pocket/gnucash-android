@@ -208,21 +208,22 @@ public class TransactionsListFragment extends Fragment implements
         }
     }
 
+    @NonNull
     @Override
-    public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Timber.d("Creating transactions loader");
         return new TransactionsCursorLoader(getActivity(), mAccountUID);
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor cursor) {
         Timber.d("Transactions loader finished. Swapping in cursor");
         mTransactionRecyclerAdapter.swapCursor(cursor);
         mTransactionRecyclerAdapter.notifyDataSetChanged();
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         Timber.d("Resetting transactions loader");
         mTransactionRecyclerAdapter.swapCursor(null);
     }

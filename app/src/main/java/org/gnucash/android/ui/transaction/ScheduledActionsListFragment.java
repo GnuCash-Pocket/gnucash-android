@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
@@ -80,6 +81,8 @@ import timber.log.Timber;
 public class ScheduledActionsListFragment extends ListFragment implements
     Refreshable,
     LoaderManager.LoaderCallbacks<Cursor> {
+
+    private static final String EXTRA_ACTION_TYPE = "schedule_action_type";
 
     private TransactionsDbAdapter mTransactionsDbAdapter;
     private SimpleCursorAdapter mCursorAdapter;
@@ -167,9 +170,11 @@ public class ScheduledActionsListFragment extends ListFragment implements
      * @param actionType Type of scheduled action to be displayed
      * @return New instance of fragment
      */
-    public static Fragment getInstance(ScheduledAction.ActionType actionType) {
+    public static ScheduledActionsListFragment getInstance(ScheduledAction.ActionType actionType) {
+        Bundle arguments = new Bundle();
+        arguments.putSerializable(EXTRA_ACTION_TYPE, actionType);
         ScheduledActionsListFragment fragment = new ScheduledActionsListFragment();
-        fragment.mActionType = actionType;
+        fragment.setArguments(arguments);
         return fragment;
     }
 
@@ -177,6 +182,16 @@ public class ScheduledActionsListFragment extends ListFragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Context context = requireContext();
+
+        Bundle args = getArguments();
+        if (args != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                mActionType = args.getSerializable(EXTRA_ACTION_TYPE, ScheduledAction.ActionType.class);
+            } else {
+                mActionType = (ScheduledAction.ActionType) args.getSerializable(EXTRA_ACTION_TYPE);
+            }
+        }
+
         mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
         switch (mActionType) {
             case TRANSACTION:
@@ -311,26 +326,25 @@ public class ScheduledActionsListFragment extends ListFragment implements
         getLoaderManager().destroyLoader(0);
     }
 
+    @NonNull
     @Override
-    public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Timber.d("Creating transactions loader");
-        if (mActionType == ScheduledAction.ActionType.TRANSACTION)
-            return new ScheduledTransactionsCursorLoader(getActivity());
-        else if (mActionType == ScheduledAction.ActionType.BACKUP) {
-            return new ScheduledExportCursorLoader(getActivity());
+        if (mActionType == ScheduledAction.ActionType.BACKUP) {
+            return new ScheduledExportCursorLoader(requireContext());
         }
-        return null;
+        return new ScheduledTransactionsCursorLoader(requireContext());
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor cursor) {
         Timber.d("Transactions loader finished. Swapping in cursor");
         mCursorAdapter.swapCursor(cursor);
         mCursorAdapter.notifyDataSetChanged();
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         Timber.d("Resetting transactions loader");
         mCursorAdapter.swapCursor(null);
     }

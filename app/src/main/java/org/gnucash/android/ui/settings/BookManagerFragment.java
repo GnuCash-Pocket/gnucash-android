@@ -152,6 +152,7 @@ public class BookManagerFragment extends ListFragment implements
         refresh();
     }
 
+    @NonNull
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Timber.d("Creating loader for books");
@@ -159,14 +160,14 @@ public class BookManagerFragment extends ListFragment implements
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
         Timber.d("Finished loading books from database");
         mCursorAdapter.swapCursor(data);
         mCursorAdapter.notifyDataSetChanged();
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         Timber.d("Resetting books list loader");
         mCursorAdapter.swapCursor(null);
     }

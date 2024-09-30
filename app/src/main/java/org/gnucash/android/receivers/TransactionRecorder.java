@@ -19,10 +19,10 @@ package org.gnucash.android.receivers;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
@@ -83,7 +83,12 @@ public class TransactionRecorder extends BroadcastReceiver {
         String accountUID = args.getString(Transaction.EXTRA_ACCOUNT_UID);
         if (accountUID != null) {
             TransactionType type = TransactionType.valueOf(args.getString(Transaction.EXTRA_TRANSACTION_TYPE));
-            BigDecimal amountBigDecimal = (BigDecimal) args.getSerializable(Transaction.EXTRA_AMOUNT);
+            BigDecimal amountBigDecimal;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                amountBigDecimal = args.getSerializable(Transaction.EXTRA_AMOUNT, BigDecimal.class);
+            } else {
+                amountBigDecimal = (BigDecimal) args.getSerializable(Transaction.EXTRA_AMOUNT);
+            }
             amountBigDecimal = amountBigDecimal.setScale(commodity.getSmallestFractionDigits(), BigDecimal.ROUND_HALF_EVEN).round(MathContext.DECIMAL128);
             Money amount = new Money(amountBigDecimal, commodity);
             Split split = new Split(amount, accountUID);
