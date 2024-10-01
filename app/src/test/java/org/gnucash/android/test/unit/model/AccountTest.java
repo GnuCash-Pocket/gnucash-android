@@ -32,7 +32,7 @@ public class AccountTest extends GnuCashTest {
     @Test
     public void testAccountUsesDefaultCurrency() {
         Account account = new Account("Dummy account");
-        assertThat(account.getCommodity().getCurrencyCode()).isEqualTo(Money.DEFAULT_CURRENCY_CODE);
+        assertThat(account.getCommodity().getCurrencyCode()).isEqualTo(Commodity.DEFAULT_COMMODITY.getCurrencyCode());
     }
 
     @Test
@@ -48,7 +48,7 @@ public class AccountTest extends GnuCashTest {
         Transaction trx = new Transaction("Underground");
         Transaction term = new Transaction("Tube");
 
-        assertThat(trx.getCurrencyCode()).isEqualTo(Money.DEFAULT_CURRENCY_CODE);
+        assertThat(trx.getCurrencyCode()).isEqualTo(Commodity.DEFAULT_COMMODITY.getCurrencyCode());
 
         acc1.addTransaction(trx);
         acc1.addTransaction(term);

@@ -79,11 +79,13 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     /**
      * Transactions database adapter for manipulating transactions associated with accounts
      */
+    @NonNull
     private final TransactionsDbAdapter mTransactionsAdapter;
 
     /**
      * Commodities database adapter for commodity manipulation
      */
+    @NonNull
     private final CommoditiesDbAdapter mCommoditiesDbAdapter;
 
     /**
@@ -91,7 +93,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      *
      * @param db SQliteDatabase instance
      */
-    public AccountsDbAdapter(SQLiteDatabase db, TransactionsDbAdapter transactionsDbAdapter) {
+    public AccountsDbAdapter(@NonNull SQLiteDatabase db, @NonNull TransactionsDbAdapter transactionsDbAdapter) {
         super(db, AccountEntry.TABLE_NAME, new String[]{
                 AccountEntry.COLUMN_NAME,
                 AccountEntry.COLUMN_DESCRIPTION,
@@ -120,24 +122,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @param db Database to create an adapter for
      */
     public AccountsDbAdapter(SQLiteDatabase db) {
-        super(db, AccountEntry.TABLE_NAME, new String[]{
-                AccountEntry.COLUMN_NAME,
-                AccountEntry.COLUMN_DESCRIPTION,
-                AccountEntry.COLUMN_TYPE,
-                AccountEntry.COLUMN_CURRENCY,
-                AccountEntry.COLUMN_COLOR_CODE,
-                AccountEntry.COLUMN_FAVORITE,
-                AccountEntry.COLUMN_FULL_NAME,
-                AccountEntry.COLUMN_PLACEHOLDER,
-                AccountEntry.COLUMN_CREATED_AT,
-                AccountEntry.COLUMN_HIDDEN,
-                AccountEntry.COLUMN_COMMODITY_UID,
-                AccountEntry.COLUMN_PARENT_ACCOUNT_UID,
-                AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID
-        });
-
-        mTransactionsAdapter = new TransactionsDbAdapter(db, new SplitsDbAdapter(db));
-        mCommoditiesDbAdapter = new CommoditiesDbAdapter(db);
+        this(db, new TransactionsDbAdapter(db, new SplitsDbAdapter(db)));
     }
 
     /**

@@ -185,19 +185,25 @@ class Commodity(
          * Returns an instance of commodity for the specified currencyCode
          *
          * @param currencyCode ISO 4217 currency code (3-letter)
+         * @return the commodity, or default commodity.
          */
         @JvmStatic
-        fun getInstance(currencyCode: String?): Commodity? {
-            return when (currencyCode) {
-                "USD" -> USD
-                "EUR" -> EUR
-                "GBP" -> GBP
-                "CHF" -> CHF
-                "JPY" -> JPY
-                "AUD" -> AUD
-                "CAD" -> CAD
-                else -> CommoditiesDbAdapter.getInstance().getCommodity(currencyCode)
+        fun getInstance(currencyCode: String?): Commodity {
+            if (currencyCode.isNullOrEmpty()) {
+                return DEFAULT_COMMODITY
             }
+            when (currencyCode) {
+                "AUD" -> return AUD
+                "CAD" -> return CAD
+                "CHF" -> return CHF
+                "EUR" -> return EUR
+                "GBP" -> return GBP
+                "JPY" -> return JPY
+                "USD" -> return USD
+            }
+
+            val adapter = CommoditiesDbAdapter.getInstance()
+            return adapter?.getCommodity(currencyCode) ?: DEFAULT_COMMODITY
         }
 
         @JvmStatic

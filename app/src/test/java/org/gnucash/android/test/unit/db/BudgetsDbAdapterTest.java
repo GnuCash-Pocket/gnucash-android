@@ -26,6 +26,7 @@ import org.gnucash.android.db.adapter.RecurrenceDbAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.Budget;
 import org.gnucash.android.model.BudgetAmount;
+import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.PeriodType;
 import org.gnucash.android.model.Recurrence;
@@ -75,10 +76,11 @@ public class BudgetsDbAdapterTest extends GnuCashTest {
         assertThat(mBudgetsDbAdapter.getRecordsCount()).isZero();
         assertThat(mBudgetAmountsDbAdapter.getRecordsCount()).isZero();
         assertThat(mRecurrenceDbAdapter.getRecordsCount()).isZero();
+        String defaucltCurrencyCode = Commodity.DEFAULT_COMMODITY.getCurrencyCode();
 
         Budget budget = new Budget("Test");
         budget.addBudgetAmount(new BudgetAmount(Money.getZeroInstance(), mAccount.getUID()));
-        budget.addBudgetAmount(new BudgetAmount(new Money("10", Money.DEFAULT_CURRENCY_CODE), mSecondAccount.getUID()));
+        budget.addBudgetAmount(new BudgetAmount(new Money("10", defaucltCurrencyCode), mSecondAccount.getUID()));
         Recurrence recurrence = new Recurrence(PeriodType.MONTH);
         budget.setRecurrence(recurrence);
 
@@ -88,7 +90,7 @@ public class BudgetsDbAdapterTest extends GnuCashTest {
         assertThat(mRecurrenceDbAdapter.getRecordsCount()).isEqualTo(1);
 
         budget.getBudgetAmounts().clear();
-        BudgetAmount budgetAmount = new BudgetAmount(new Money("5", Money.DEFAULT_CURRENCY_CODE), mAccount.getUID());
+        BudgetAmount budgetAmount = new BudgetAmount(new Money("5", defaucltCurrencyCode), mAccount.getUID());
         budget.addBudgetAmount(budgetAmount);
         mBudgetsDbAdapter.addRecord(budget);
 
@@ -132,9 +134,10 @@ public class BudgetsDbAdapterTest extends GnuCashTest {
         budget.addBudgetAmount(new BudgetAmount(Money.getZeroInstance(), mAccount.getUID()));
         budgets.add(budget);
 
+        String defaultCurrencyCode = Commodity.DEFAULT_COMMODITY.getCurrencyCode();
         budget = new Budget("Random", new Recurrence(PeriodType.WEEK));
-        budget.addBudgetAmount(new BudgetAmount(new Money("10.50", Money.DEFAULT_CURRENCY_CODE), mAccount.getUID()));
-        budget.addBudgetAmount(new BudgetAmount(new Money("32.35", Money.DEFAULT_CURRENCY_CODE), mSecondAccount.getUID()));
+        budget.addBudgetAmount(new BudgetAmount(new Money("10.50", defaultCurrencyCode), mAccount.getUID()));
+        budget.addBudgetAmount(new BudgetAmount(new Money("32.35", defaultCurrencyCode), mSecondAccount.getUID()));
 
         budgets.add(budget);
         return budgets;

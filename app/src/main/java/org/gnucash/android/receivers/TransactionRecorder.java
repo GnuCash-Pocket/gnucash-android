@@ -73,9 +73,6 @@ public class TransactionRecorder extends BroadcastReceiver {
 
         String currencyCode = args.getString(Account.EXTRA_CURRENCY_CODE);
         Commodity commodity = Commodity.getInstance(currencyCode);
-        if (commodity == null) {
-            commodity = Commodity.DEFAULT_COMMODITY;
-        }
 
         Transaction transaction = new Transaction(name);
         transaction.setTime(System.currentTimeMillis());

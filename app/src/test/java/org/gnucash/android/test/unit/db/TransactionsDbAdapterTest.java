@@ -37,7 +37,7 @@ import java.util.List;
 public class TransactionsDbAdapterTest extends GnuCashTest {
     private static final String ALPHA_ACCOUNT_NAME = "Alpha";
     private static final String BRAVO_ACCOUNT_NAME = "Bravo";
-    private static final Commodity DEFAULT_CURRENCY = Commodity.getInstance(Money.DEFAULT_CURRENCY_CODE);
+    private static final Commodity DEFAULT_CURRENCY = Commodity.DEFAULT_COMMODITY;
 
     private AccountsDbAdapter mAccountsDbAdapter;
     private TransactionsDbAdapter mTransactionsDbAdapter;
@@ -110,7 +110,7 @@ public class TransactionsDbAdapterTest extends GnuCashTest {
         Transaction trn = mTransactionsDbAdapter.getRecord(transaction.getUID());
         assertThat(trn.getSplits()).hasSize(2);
 
-        String imbalanceAccountUID = mAccountsDbAdapter.getImbalanceAccountUID(Commodity.getInstance(Money.DEFAULT_CURRENCY_CODE));
+        String imbalanceAccountUID = mAccountsDbAdapter.getImbalanceAccountUID(Commodity.DEFAULT_COMMODITY);
         assertThat(trn.getSplits()).extracting("accountUID").contains(imbalanceAccountUID);
     }
 

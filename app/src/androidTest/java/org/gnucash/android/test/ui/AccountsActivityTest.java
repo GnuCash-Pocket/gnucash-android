@@ -240,7 +240,7 @@ public class AccountsActivityTest {
         Account newestAccount = accounts.get(0); //because of alphabetical sorting
 
         assertThat(newestAccount.getName()).isEqualTo(NEW_ACCOUNT_NAME);
-        assertThat(newestAccount.getCommodity().getCurrencyCode()).isEqualTo(Money.DEFAULT_CURRENCY_CODE);
+        assertThat(newestAccount.getCommodity().getCurrencyCode()).isEqualTo(Commodity.DEFAULT_COMMODITY.getCurrencyCode());
         assertThat(newestAccount.isPlaceholderAccount()).isTrue();
     }
 
@@ -353,7 +353,7 @@ public class AccountsActivityTest {
                 isDisplayed())).perform(click());
 
         Account account = new Account("Transfer Account");
-        account.setCommodity(Commodity.getInstance(ACCOUNTS_CURRENCY.getCurrencyCode()));
+        account.setCommodity(ACCOUNTS_CURRENCY);
         Transaction transaction = new Transaction("Simple transaction");
         transaction.setCommodity(ACCOUNTS_CURRENCY);
         Split split = new Split(new Money(BigDecimal.TEN, ACCOUNTS_CURRENCY), account.getUID());

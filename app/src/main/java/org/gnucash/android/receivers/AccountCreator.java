@@ -61,9 +61,6 @@ public class AccountCreator extends BroadcastReceiver {
 
         String currencyCode = args.getString(Account.EXTRA_CURRENCY_CODE);
         Commodity commodity = Commodity.getInstance(currencyCode);
-        if (commodity == null) {
-            commodity = Commodity.DEFAULT_COMMODITY;
-        }
         account.setCommodity(commodity);
 
         String uid = args.getString(Intent.EXTRA_UID);

@@ -124,7 +124,7 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
                         .setPositiveButton(R.string.btn_create_accounts, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int which) {
-                                AccountsActivity.createDefaultAccounts(Money.DEFAULT_CURRENCY_CODE, getActivity());
+                                AccountsActivity.createDefaultAccounts(Commodity.DEFAULT_COMMODITY.getCurrencyCode(), getActivity());
                             }
                         })
                         .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {

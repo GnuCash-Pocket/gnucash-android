@@ -63,7 +63,6 @@ import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.colorpicker.ColorPickerDialog;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.settings.PreferenceActivity;
@@ -353,10 +352,9 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
      * Initialize views with defaults for new account
      */
     private void initializeViews() {
-        setSelectedCurrency(Money.DEFAULT_CURRENCY_CODE);
+        setSelectedCurrency(Commodity.DEFAULT_COMMODITY.getCurrencyCode());
         mBinding.inputColorPicker.setBackgroundColor(Color.LTGRAY);
         mParentAccountUID = getArguments().getString(UxArgument.PARENT_ACCOUNT_UID);
-
 
         if (mParentAccountUID != null) {
             AccountType parentAccountType = mAccountsDbAdapter.getAccountType(mParentAccountUID);
@@ -397,6 +395,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
      */
     private void setSelectedCurrency(String currencyCode) {
         CommoditiesDbAdapter commodityDbAdapter = CommoditiesDbAdapter.getInstance();
+        if (commodityDbAdapter == null) return;
         long commodityId = commodityDbAdapter.getID(commodityDbAdapter.getCommodityUID(currencyCode));
         int position = 0;
         for (int i = 0; i < mBinding.inputCurrencySpinner.getCount(); i++) {
