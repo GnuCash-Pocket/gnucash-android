@@ -26,8 +26,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.SystemClock;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
 
 import com.google.firebase.FirebaseApp;
@@ -86,26 +88,27 @@ public class GnuCashApplication extends Application {
     public static long PASSCODE_SESSION_INIT_TIME = 0L;
 
     private static Context context;
-
+    @Nullable
     private static AccountsDbAdapter mAccountsDbAdapter;
-
+    @Nullable
     private static TransactionsDbAdapter mTransactionsDbAdapter;
-
+    @Nullable
     private static SplitsDbAdapter mSplitsDbAdapter;
-
+    @Nullable
     private static ScheduledActionDbAdapter mScheduledActionDbAdapter;
-
+    @Nullable
     private static CommoditiesDbAdapter mCommoditiesDbAdapter;
-
+    @Nullable
     private static PricesDbAdapter mPricesDbAdapter;
-
+    @Nullable
     private static BudgetsDbAdapter mBudgetsDbAdapter;
-
+    @Nullable
     private static BudgetAmountsDbAdapter mBudgetAmountsDbAdapter;
-
+    @Nullable
     private static RecurrenceDbAdapter mRecurrenceDbAdapter;
-
+    @Nullable
     private static BooksDbAdapter mBooksDbAdapter;
+    @Nullable
     private static DatabaseHelper mDbHelper;
 
     /**
@@ -158,13 +161,13 @@ public class GnuCashApplication extends Application {
             mDbHelper.getReadableDatabase().close();
         }
 
-        String bookUID;
+        String bookUID = null;
         try {
             bookUID = mBooksDbAdapter.getActiveBookUID();
         } catch (BooksDbAdapter.NoActiveBookFoundException e) {
             mBooksDbAdapter.fixBooksDatabase();
-            bookUID = mBooksDbAdapter.getActiveBookUID();
         }
+        if (TextUtils.isEmpty(bookUID)) return;
         mDbHelper = new DatabaseHelper(context, bookUID);
         SQLiteDatabase mainDb;
         try {
@@ -262,49 +265,60 @@ public class GnuCashApplication extends Application {
         }
     }
 
+    @Nullable
     public static AccountsDbAdapter getAccountsDbAdapter() {
         return mAccountsDbAdapter;
     }
 
+    @Nullable
     public static TransactionsDbAdapter getTransactionDbAdapter() {
         return mTransactionsDbAdapter;
     }
 
+    @Nullable
     public static SplitsDbAdapter getSplitsDbAdapter() {
         return mSplitsDbAdapter;
     }
 
+    @Nullable
     public static ScheduledActionDbAdapter getScheduledEventDbAdapter() {
         return mScheduledActionDbAdapter;
     }
 
+    @Nullable
     public static CommoditiesDbAdapter getCommoditiesDbAdapter() {
         return mCommoditiesDbAdapter;
     }
 
+    @Nullable
     public static PricesDbAdapter getPricesDbAdapter() {
         return mPricesDbAdapter;
     }
 
+    @Nullable
     public static BudgetsDbAdapter getBudgetDbAdapter() {
         return mBudgetsDbAdapter;
     }
 
+    @Nullable
     public static RecurrenceDbAdapter getRecurrenceDbAdapter() {
         return mRecurrenceDbAdapter;
     }
 
+    @Nullable
     public static BudgetAmountsDbAdapter getBudgetAmountsDbAdapter() {
         return mBudgetAmountsDbAdapter;
     }
 
+    @Nullable
     public static BooksDbAdapter getBooksDbAdapter() {
         return mBooksDbAdapter;
     }
 
-    @NonNull
+    @Nullable
     public static String getActiveBookUID() {
-        return getBooksDbAdapter().getActiveBookUID();
+        BooksDbAdapter adapter = getBooksDbAdapter();
+        return (adapter != null) ? adapter.getActiveBookUID() : null;
     }
 
     /**
@@ -312,8 +326,9 @@ public class GnuCashApplication extends Application {
      *
      * @return Currently active {@link SQLiteDatabase}
      */
+    @Nullable
     public static SQLiteDatabase getActiveDb() {
-        return mDbHelper.getWritableDatabase();
+        return (mDbHelper != null) ? mDbHelper.getWritableDatabase() : null;
     }
 
     /**
@@ -321,6 +336,7 @@ public class GnuCashApplication extends Application {
      *
      * @return Application {@link Context} object
      */
+    @NonNull
     public static Context getAppContext() {
         return GnuCashApplication.context;
     }
@@ -370,7 +386,7 @@ public class GnuCashApplication extends Application {
     public static String getDefaultCurrencyCode() {
         Locale locale = getDefaultLocale();
 
-        String currencyCode = "USD"; //start with USD as the default
+        String currencyCode = Money.DEFAULT_CURRENCY_CODE; //start with USD as the default
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         try { //there are some strange locales out there
             currencyCode = Currency.getInstance(locale).getCurrencyCode();
@@ -414,8 +430,7 @@ public class GnuCashApplication extends Application {
                 .edit()
                 .putString(context.getString(R.string.key_default_currency), currencyCode)
                 .apply();
-        Money.DEFAULT_CURRENCY_CODE = currencyCode;
-        Commodity.DEFAULT_COMMODITY = mCommoditiesDbAdapter.getCommodity(currencyCode);
+        Commodity.DEFAULT_COMMODITY = Commodity.getInstance(currencyCode);
     }
 
     /**
@@ -424,6 +439,7 @@ public class GnuCashApplication extends Application {
      *
      * @return The default locale for this device
      */
+    @NonNull
     public static Locale getDefaultLocale() {
         Locale locale = Locale.getDefault();
         //sometimes the locale en_UK is returned which causes a crash with Currency

@@ -65,6 +65,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
         Commodity.DEFAULT_COMMODITY = getCommodity(GnuCashApplication.getDefaultCurrencyCode());
     }
 
+    @Nullable
     public static CommoditiesDbAdapter getInstance() {
         return GnuCashApplication.getCommoditiesDbAdapter();
     }
@@ -86,6 +87,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
 
     @Override
     public Commodity buildModelInstance(@NonNull final Cursor cursor) {
+        String uid = cursor.getString(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_UID));
         String fullname = cursor.getString(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_FULLNAME));
         String mnemonic = cursor.getString(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_MNEMONIC));
         String namespace = cursor.getString(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_NAMESPACE));
@@ -96,6 +98,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
         int quoteFlag = cursor.getInt(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_QUOTE_FLAG));
 
         Commodity commodity = new Commodity(fullname, mnemonic, fraction);
+        commodity.setUID(uid);
         commodity.setNamespace(Commodity.Namespace.valueOf(namespace));
         commodity.setCusip(cusip);
         commodity.setQuoteFlag(quoteFlag);

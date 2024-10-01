@@ -353,7 +353,7 @@ public class AccountsActivityTest {
                 isDisplayed())).perform(click());
 
         Account account = new Account("Transfer Account");
-        account.setCommodity(Commodity.getInstance(ACCOUNTS_CURRENCY.getCurrencyCode()));
+        account.setCommodity(ACCOUNTS_CURRENCY);
         Transaction transaction = new Transaction("Simple transaction");
         transaction.setCommodity(ACCOUNTS_CURRENCY);
         Split split = new Split(new Money(BigDecimal.TEN, ACCOUNTS_CURRENCY), account.getUID());

@@ -430,7 +430,6 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
         mColorSquare.setBackgroundColor(Color.LTGRAY);
         mParentAccountUID = getArguments().getString(UxArgument.PARENT_ACCOUNT_UID);
 
-
         if (mParentAccountUID != null) {
             AccountType parentAccountType = mAccountsDbAdapter.getAccountType(mParentAccountUID);
             setAccountTypeSelection(parentAccountType);
@@ -470,6 +469,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
      */
     private void setSelectedCurrency(String currencyCode) {
         CommoditiesDbAdapter commodityDbAdapter = CommoditiesDbAdapter.getInstance();
+        if (commodityDbAdapter == null) return;
         long commodityId = commodityDbAdapter.getID(commodityDbAdapter.getCommodityUID(currencyCode));
         int position = 0;
         for (int i = 0; i < mCurrencySpinner.getCount(); i++) {
