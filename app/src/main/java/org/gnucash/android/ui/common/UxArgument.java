@@ -35,7 +35,7 @@ public final class UxArgument {
     /**
      * Key for the origin account as argument when moving accounts
      */
-    public static final String ORIGIN_ACCOUNT_UID = "origin_acccount_uid";
+    public static final String ORIGIN_ACCOUNT_UID = "origin_account_uid";
 
     /**
      * Key for checking whether the passcode is enabled or not
@@ -81,6 +81,16 @@ public final class UxArgument {
      * Key for passing argument for the parent account GUID.
      */
     public static final String PARENT_ACCOUNT_UID = "parent_account_uid";
+
+    /**
+     * Key for passing the transaction UID to the transactions editor
+     */
+    public static final String TRANSACTION_UID = "transaction_uid";
+
+    /**
+     * Key for passing the scheduled UID to the transactions editor
+     */
+    public static final String SCHEDULED_UID = "scheduled_uid";
 
     /**
      * Key for passing the scheduled action UID to the transactions editor

@@ -96,10 +96,6 @@
     <string name="title_account_preferences">Account Preferences</string>
     <string name="title_default_transaction_type">Default Transaction Type</string>
     <string name="summary_default_transaction_type">The type of transaction to use by default, CREDIT or DEBIT</string>
-    <string-array name="transaction_types">
-        <item>CREDIT</item>
-        <item>DEBIT</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">Are you sure you want to delete ALL transactions?</string>
     <string name="msg_delete_transaction_confirmation">Are you sure you want to delete this transaction?</string>
     <string name="title_export_preference_category">Export</string>
@@ -314,6 +310,7 @@
     <string name="label_no_favorite_accounts">No favorite accounts</string>
     <string name="nav_menu_scheduled_actions">Scheduled Actions</string>
     <string name="label_scheduled_action_ended">"Ended, last executed on %1$s"</string>
+    <string name="label_scheduled_action_last">"%1$s, last executed on %2$s"</string>
     <string name="btn_wizard_next">Next</string>
     <string name="btn_wizard_finish">Done</string>
     <string name="wizard_title_default_currency">Default Currency</string>

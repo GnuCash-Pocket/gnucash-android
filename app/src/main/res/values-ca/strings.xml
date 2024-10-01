@@ -96,10 +96,6 @@
     <string name="title_account_preferences">Preferències de comptes</string>
     <string name="title_default_transaction_type">Tipus d\'assentament per defecte</string>
     <string name="summary_default_transaction_type">Tipus de transacció a utilitzar per defecte, CRÈDIT o DÈBIT</string>
-    <string-array name="transaction_types">
-        <item>CRÈDIT</item>
-        <item>DÈBIT</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">Esteu segur que voleu suprimir TOTES les transaccions?</string>
     <string name="msg_delete_transaction_confirmation">Esteu segur que voleu suprimir aquesta transacció?</string>
     <string name="title_export_preference_category">Exportació</string>

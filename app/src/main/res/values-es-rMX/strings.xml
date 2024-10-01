@@ -96,10 +96,6 @@
     <string name="title_account_preferences">Preferencias de cuentas</string>
     <string name="title_default_transaction_type">Tipo de transacción por defecto</string>
     <string name="summary_default_transaction_type">El tipo de transacción a utilizar por defecto: ABONO o CARGO</string>
-    <string-array name="transaction_types">
-        <item>ABONO</item>
-        <item>CARGO</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">¿Borrar TODAS las transacciones?</string>
     <string name="msg_delete_transaction_confirmation">¿Borrar esta transacción?</string>
     <string name="title_export_preference_category">Exportación</string>
@@ -304,7 +300,7 @@ Este proceso solo recoge información que no permite identificar al usuario</str
     <string name="label_no_recent_accounts">No hay cuentas recientes</string>
     <string name="label_no_favorite_accounts">No hay cuentas favoritas</string>
     <string name="nav_menu_scheduled_actions">Acciones Programadas</string>
-    <string name="label_scheduled_action_ended">"Completada, última ejecución "</string>
+    <string name="label_scheduled_action_ended">"Completada, última ejecución %1$s"</string>
     <string name="btn_wizard_next">Siguiente</string>
     <string name="btn_wizard_finish">Hecho</string>
     <string name="wizard_title_default_currency">Divisa por defecto</string>

@@ -19,6 +19,7 @@
         android:entryValues="@array/key_transaction_type_values"
         android:entries="@array/transaction_types"
         android:key="@string/key_default_transaction_type"
+        android:defaultValue="@string/label_debit"
         android:summary="@string/summary_default_transaction_type" />
 
     <androidx.preference.SwitchPreferenceCompat

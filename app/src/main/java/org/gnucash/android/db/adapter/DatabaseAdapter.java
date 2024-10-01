@@ -223,20 +223,24 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      */
     public void addRecord(@NonNull final Model model, UpdateMethod updateMethod) {
         Timber.d("Adding %s record to database: ", model.getClass().getSimpleName());
+        final SQLiteStatement statement;
         switch (updateMethod) {
             case insert:
-                synchronized (getInsertStatement()) {
-                    setBindings(getInsertStatement(), model).execute();
+                statement = getInsertStatement();
+                synchronized (statement) {
+                    setBindings(statement, model).execute();
                 }
                 break;
             case update:
-                synchronized (getUpdateStatement()) {
-                    setBindings(getUpdateStatement(), model).execute();
+                statement = getUpdateStatement();
+                synchronized (statement) {
+                    setBindings(statement, model).execute();
                 }
                 break;
             default:
-                synchronized (getReplaceStatement()) {
-                    setBindings(getReplaceStatement(), model).execute();
+                statement = getReplaceStatement();
+                synchronized (statement) {
+                    setBindings(statement, model).execute();
                 }
                 break;
         }
@@ -756,6 +760,20 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
     }
 
     /**
+     * Returns an attribute from a specific column in the database for a specific record.
+     * <p>The attribute is returned as a string which can then be converted to another type if
+     * the caller was expecting something other type </p>
+     *
+     * @param model the record with a GUID.
+     * @param columnName Name of the column to be retrieved
+     * @return String value of the column entry
+     * @throws IllegalArgumentException if either the {@code recordUID} or {@code columnName} do not exist in the database
+     */
+    public String getAttribute(@NonNull Model model, @NonNull String columnName) {
+        return getAttribute(mTableName, getUID(model), columnName);
+    }
+
+    /**
      * Returns an attribute from a specific column in the database for a specific record and specific table.
      * <p>The attribute is returned as a string which can then be converted to another type if
      * the caller was expecting something other type </p>
@@ -853,5 +871,9 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
         if (mDb.isOpen()) {
             mDb.close();
         }
+    }
+
+    public String getUID(Model model) {
+        return model.getUID();
     }
 }

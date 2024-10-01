@@ -96,10 +96,6 @@
     <string name="title_account_preferences">科目設置</string>
     <string name="title_default_transaction_type">預設交易類型</string>
     <string name="summary_default_transaction_type">預設的交易類型，借方或貸方</string>
-    <string-array name="transaction_types">
-        <item>貸方</item>
-        <item>借方</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">確定刪除所有交易？</string>
     <string name="msg_delete_transaction_confirmation">確定刪除此項交易？</string>
     <string name="title_export_preference_category">匯出設置</string>
@@ -302,7 +298,7 @@ No user-identifiable information will be collected as part of this process!
     <string name="label_no_recent_accounts">沒有最近的科目</string>
     <string name="label_no_favorite_accounts">沒有最星标的科目</string>
     <string name="nav_menu_scheduled_actions">計畫的操作</string>
-    <string name="label_scheduled_action_ended">"Ended, last executed on "</string>
+    <string name="label_scheduled_action_ended">"Ended, last executed on %1$s"</string>
     <string name="btn_wizard_next">下一个</string>
     <string name="btn_wizard_finish">完成</string>
     <string name="wizard_title_default_currency">預設貨幣：</string>

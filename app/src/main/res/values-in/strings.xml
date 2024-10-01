@@ -96,10 +96,6 @@
     <string name="title_account_preferences">Preferensi Akun</string>
     <string name="title_default_transaction_type">Tipe Transaksi Default</string>
     <string name="summary_default_transaction_type">Tipe transaksi untuk digunakan secara default, KREDIT atau DEBET</string>
-    <string-array name="transaction_types">
-        <item>KREDIT</item>
-        <item>DEBIT</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">Apakah Anda yakin Anda ingin menghapus SEMUA transaksi?</string>
     <string name="msg_delete_transaction_confirmation">Apakah Anda yakin ingin menghapus transaksi ini?</string>
     <string name="title_export_preference_category">Ekspor</string>
