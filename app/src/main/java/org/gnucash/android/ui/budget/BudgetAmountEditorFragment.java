@@ -26,6 +26,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -43,6 +46,7 @@ import org.gnucash.android.model.BudgetAmount;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.common.UxArgument;
+import org.gnucash.android.ui.util.widget.CalculatorEditText;
 import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
 
 import java.math.BigDecimal;
@@ -97,15 +101,14 @@ public class BudgetAmountEditorFragment extends Fragment {
         if (budgetAmounts != null) {
             if (budgetAmounts.isEmpty()) {
                 BudgetAmountViewHolder viewHolder = (BudgetAmountViewHolder) addBudgetAmountView(null).getTag();
-                viewHolder.binding.btnRemoveItem.setVisibility(View.GONE); //there should always be at least one
+                viewHolder.removeItemBtn.setVisibility(View.GONE); //there should always be at least one
             } else {
                 loadBudgetAmountViews(budgetAmounts);
             }
         } else {
             BudgetAmountViewHolder viewHolder = (BudgetAmountViewHolder) addBudgetAmountView(null).getTag();
-            viewHolder.binding.btnRemoveItem.setVisibility(View.GONE); //there should always be at least one
+            viewHolder.removeItemBtn.setVisibility(View.GONE); //there should always be at least one
         }
-
     }
 
     @Override
@@ -138,11 +141,11 @@ public class BudgetAmountEditorFragment extends Fragment {
     private boolean canSave() {
         for (View budgetAmountView : mBudgetAmountViews) {
             BudgetAmountViewHolder viewHolder = (BudgetAmountViewHolder) budgetAmountView.getTag();
-            if (!viewHolder.binding.inputBudgetAmount.isInputValid()) {
+            if (!viewHolder.amountEditText.isInputValid()) {
                 return false;
             }
             //at least one account should be loaded (don't create budget with empty account tree
-            if (viewHolder.binding.inputBudgetAccountSpinner.getCount() == 0) {
+            if (viewHolder.budgetAccountSpinner.getCount() == 0) {
                 Toast.makeText(getActivity(), "You need an account hierarchy to create a budget!",
                         Toast.LENGTH_SHORT).show();
                 return false;
@@ -214,11 +217,11 @@ public class BudgetAmountEditorFragment extends Fragment {
         List<BudgetAmount> budgetAmounts = new ArrayList<>();
         for (View view : mBudgetAmountViews) {
             BudgetAmountViewHolder viewHolder = (BudgetAmountViewHolder) view.getTag();
-            BigDecimal amountValue = viewHolder.binding.inputBudgetAmount.getValue();
+            BigDecimal amountValue = viewHolder.amountEditText.getValue();
             if (amountValue == null)
                 continue;
             Money amount = new Money(amountValue, Commodity.DEFAULT_COMMODITY);
-            String accountUID = mAccountsDbAdapter.getUID(viewHolder.binding.inputBudgetAccountSpinner.getSelectedItemId());
+            String accountUID = mAccountsDbAdapter.getUID(viewHolder.budgetAccountSpinner.getSelectedItemId());
             BudgetAmount budgetAmount = new BudgetAmount(amount, accountUID);
             budgetAmounts.add(budgetAmount);
         }
@@ -229,23 +232,29 @@ public class BudgetAmountEditorFragment extends Fragment {
      * View holder for budget amounts
      */
     class BudgetAmountViewHolder {
-        View itemView;
-        ItemBudgetAmountBinding binding;
+        final View itemView;
+        private final TextView currencySymbolTextView;
+        private final CalculatorEditText amountEditText;
+        private final ImageView removeItemBtn;
+        private final Spinner budgetAccountSpinner;
 
-        public BudgetAmountViewHolder(ItemBudgetAmountBinding binding) {
-            this.binding = binding;
+        public BudgetAmountViewHolder(final ItemBudgetAmountBinding binding) {
+            this.currencySymbolTextView = binding.currencySymbol;
+            this.amountEditText = binding.inputBudgetAmount;
+            this.removeItemBtn = binding.btnRemoveItem;
+            this.budgetAccountSpinner = binding.inputBudgetAccountSpinner;
             itemView = binding.getRoot();
             itemView.setTag(this);
 
-            binding.inputBudgetAmount.bindListeners(mBinding.calculatorKeyboard);
-            binding.inputBudgetAccountSpinner.setAdapter(mAccountCursorAdapter);
+            amountEditText.bindListeners(mBinding.calculatorKeyboard);
+            budgetAccountSpinner.setAdapter(mAccountCursorAdapter);
 
-            binding.inputBudgetAccountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            budgetAccountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     String currencyCode = mAccountsDbAdapter.getCurrencyCode(mAccountsDbAdapter.getUID(id));
                     Commodity commodity = Commodity.getInstance(currencyCode);
-                    binding.currencySymbol.setText(commodity.getSymbol());
+                    currencySymbolTextView.setText(commodity.getSymbol());
                 }
 
                 @Override
@@ -254,7 +263,7 @@ public class BudgetAmountEditorFragment extends Fragment {
                 }
             });
 
-            binding.btnRemoveItem.setOnClickListener(new View.OnClickListener() {
+            removeItemBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     mBinding.budgetAmountLayout.removeView(itemView);
@@ -264,8 +273,8 @@ public class BudgetAmountEditorFragment extends Fragment {
         }
 
         public void bindViews(BudgetAmount budgetAmount) {
-            binding.inputBudgetAmount.setValue(budgetAmount.getAmount().asBigDecimal());
-            binding.inputBudgetAccountSpinner.setSelection(mAccountCursorAdapter.getPosition(budgetAmount.getAccountUID()));
+            amountEditText.setValue(budgetAmount.getAmount().asBigDecimal());
+            budgetAccountSpinner.setSelection(mAccountCursorAdapter.getPosition(budgetAmount.getAccountUID()));
         }
     }
 }

@@ -27,6 +27,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -82,7 +84,7 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mBinding = FragmentBudgetDetailBinding.inflate(inflater, container, false);
         View view = mBinding.getRoot();
         mBinding.listItem2Lines.secondaryText.setMaxLines(3);
@@ -200,39 +202,7 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
         @Override
         public void onBindViewHolder(BudgetAmountViewHolder holder, final int position) {
             BudgetAmount budgetAmount = mBudgetAmounts.get(position);
-            Money projectedAmount = budgetAmount.getAmount();
-            AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
-
-            holder.binding.budgetAccount.setText(accountsDbAdapter.getAccountFullName(budgetAmount.getAccountUID()));
-            holder.binding.budgetAmount.setText(projectedAmount.formattedString());
-
-            Money spentAmount = accountsDbAdapter.getAccountBalance(budgetAmount.getAccountUID(),
-                    mBudget.getStartofCurrentPeriod(), mBudget.getEndOfCurrentPeriod());
-
-            holder.binding.budgetSpent.setText(spentAmount.abs().formattedString());
-            holder.binding.budgetLeft.setText(projectedAmount.minus(spentAmount.abs()).formattedString());
-
-            double budgetProgress = 0;
-            if (projectedAmount.toDouble() != 0) {
-                budgetProgress = spentAmount.asBigDecimal().divide(projectedAmount.asBigDecimal(),
-                        spentAmount.getCommodity().getSmallestFractionDigits(),
-                        RoundingMode.HALF_EVEN).doubleValue();
-            }
-
-            holder.binding.budgetIndicator.setProgress((int) (budgetProgress * 100));
-            holder.binding.budgetSpent.setTextColor(BudgetsActivity.getBudgetProgressColor(1 - budgetProgress));
-            holder.binding.budgetLeft.setTextColor(BudgetsActivity.getBudgetProgressColor(1 - budgetProgress));
-
-            generateChartData(holder.binding.budgetChart, budgetAmount);
-
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(getActivity(), TransactionsActivity.class);
-                    intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mBudgetAmounts.get(position).getAccountUID());
-                    startActivityForResult(intent, 0x10);
-                }
-            });
+            holder.bind(mBudget, budgetAmount);
         }
 
         /**
@@ -291,11 +261,57 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
         }
 
         class BudgetAmountViewHolder extends RecyclerView.ViewHolder {
-            CardviewBudgetAmountBinding binding;
+            private final TextView budgetAccount;
+            private final TextView budgetAmount;
+            private final TextView budgetSpent;
+            private final TextView budgetLeft;
+            private final ProgressBar budgetIndicator;
+            private final BarChart budgetChart;
 
             public BudgetAmountViewHolder(CardviewBudgetAmountBinding binding) {
                 super(binding.getRoot());
-                this.binding = binding;
+                this.budgetAccount = binding.budgetAccount;
+                this.budgetAmount = binding.budgetAmount;
+                this.budgetSpent = binding.budgetSpent;
+                this.budgetLeft = binding.budgetLeft;
+                this.budgetIndicator = binding.budgetIndicator;
+                this.budgetChart = binding.budgetChart;
+            }
+
+            public void bind(Budget budget, final BudgetAmount budgetAmount) {
+                Money projectedAmount = budgetAmount.getAmount();
+                AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
+                Money spentAmount = accountsDbAdapter.getAccountBalance(budgetAmount.getAccountUID(),
+                    budget.getStartofCurrentPeriod(), budget.getEndOfCurrentPeriod());
+
+                budgetAccount.setText(accountsDbAdapter.getAccountFullName(budgetAmount.getAccountUID()));
+                this.budgetAmount.setText(projectedAmount.formattedString());
+
+                budgetSpent.setText(spentAmount.abs().formattedString());
+                budgetLeft.setText(projectedAmount.minus(spentAmount.abs()).formattedString());
+
+                double budgetProgress = 0;
+                if (projectedAmount.toDouble() != 0) {
+                    budgetProgress = spentAmount.asBigDecimal().divide(projectedAmount.asBigDecimal(),
+                        spentAmount.getCommodity().getSmallestFractionDigits(),
+                        RoundingMode.HALF_EVEN).doubleValue();
+                }
+
+                budgetIndicator.setProgress((int) (budgetProgress * 100));
+                budgetSpent.setTextColor(BudgetsActivity.getBudgetProgressColor(1 - budgetProgress));
+                budgetLeft.setTextColor(BudgetsActivity.getBudgetProgressColor(1 - budgetProgress));
+
+                generateChartData(budgetChart, budgetAmount);
+
+                itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String accountUID = budgetAmount.getAccountUID();
+                        Intent intent = new Intent(getActivity(), TransactionsActivity.class);
+                        intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
+                        startActivityForResult(intent, 0x10);
+                    }
+                });
             }
         }
     }
