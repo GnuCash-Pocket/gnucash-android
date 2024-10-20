@@ -27,6 +27,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -166,23 +169,23 @@ public class BudgetListFragment extends Fragment implements Refreshable,
     /**
      * Launches the FormActivity for editing the budget
      *
-     * @param budgetId Db record Id of the budget
+     * @param budgetUID Db record UID of the budget
      */
-    private void editBudget(long budgetId) {
+    private void editBudget(String budgetUID) {
         Intent addAccountIntent = new Intent(getActivity(), FormActivity.class);
         addAccountIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
         addAccountIntent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.BUDGET.name());
-        addAccountIntent.putExtra(UxArgument.BUDGET_UID, mBudgetsDbAdapter.getUID(budgetId));
+        addAccountIntent.putExtra(UxArgument.BUDGET_UID, budgetUID);
         startActivityForResult(addAccountIntent, REQUEST_EDIT_BUDGET);
     }
 
     /**
      * Delete the budget from the database
      *
-     * @param budgetId Database record ID
+     * @param budgetUID Database record UID
      */
-    private void deleteBudget(long budgetId) {
-        BudgetsDbAdapter.getInstance().deleteRecord(budgetId);
+    private void deleteBudget(String budgetUID) {
+        BudgetsDbAdapter.getInstance().deleteRecord(budgetUID);
         refresh();
     }
 
@@ -202,49 +205,7 @@ public class BudgetListFragment extends Fragment implements Refreshable,
         @Override
         public void onBindViewHolderCursor(BudgetViewHolder holder, Cursor cursor) {
             final Budget budget = mBudgetsDbAdapter.buildModelInstance(cursor);
-            holder.budgetId = mBudgetsDbAdapter.getID(budget.getUID());
-
-            holder.binding.listItem2Lines.primaryText.setText(budget.getName());
-
-            AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
-            String accountString;
-            int numberOfAccounts = budget.getNumberOfAccounts();
-            if (numberOfAccounts == 1) {
-                accountString = accountsDbAdapter.getAccountFullName(budget.getBudgetAmounts().get(0).getAccountUID());
-            } else {
-                accountString = numberOfAccounts + " budgeted accounts";
-            }
-            holder.binding.listItem2Lines.secondaryText.setText(accountString);
-
-            holder.binding.budgetRecurrence.setText(budget.getRecurrence().getRepeatString() + " - "
-                    + budget.getRecurrence().getDaysLeftInCurrentPeriod() + " days left");
-
-            BigDecimal spentAmountValue = BigDecimal.ZERO;
-            for (BudgetAmount budgetAmount : budget.getCompactedBudgetAmounts()) {
-                Money balance = accountsDbAdapter.getAccountBalance(budgetAmount.getAccountUID(),
-                        budget.getStartofCurrentPeriod(), budget.getEndOfCurrentPeriod());
-                spentAmountValue = spentAmountValue.add(balance.asBigDecimal());
-            }
-
-            Money budgetTotal = budget.getAmountSum();
-            Commodity commodity = budgetTotal.getCommodity();
-            String usedAmount = commodity.getSymbol() + spentAmountValue + " of "
-                    + budgetTotal.formattedString();
-            holder.binding.budgetAmount.setText(usedAmount);
-
-            double budgetProgress = spentAmountValue.divide(budgetTotal.asBigDecimal(),
-                            commodity.getSmallestFractionDigits(), RoundingMode.HALF_EVEN)
-                    .doubleValue();
-            holder.binding.budgetIndicator.setProgress((int) (budgetProgress * 100));
-
-            holder.binding.budgetAmount.setTextColor(BudgetsActivity.getBudgetProgressColor(1 - budgetProgress));
-
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onClickBudget(budget.getUID());
-                }
-            });
+            holder.bind(budget);
         }
 
         @Override
@@ -254,36 +215,92 @@ public class BudgetListFragment extends Fragment implements Refreshable,
         }
 
         class BudgetViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener {
-            long budgetId;
-            CardviewBudgetBinding binding;
+            private final TextView budgetName;
+            private final TextView accountName;
+            private final TextView budgetAmount;
+            private final ImageView optionsMenu;
+            private final ProgressBar budgetIndicator;
+            private final TextView budgetRecurrence;
+            private String budgetUID;
 
             public BudgetViewHolder(CardviewBudgetBinding binding) {
                 super(binding.getRoot());
-                this.binding = binding;
-                binding.optionsMenu.setOnClickListener(v -> {
+                this.budgetName = binding.listItem2Lines.primaryText;
+                this.accountName = binding.listItem2Lines.secondaryText;
+                this.budgetAmount = binding.budgetAmount;
+                this.optionsMenu = binding.optionsMenu;
+                this.budgetIndicator = binding.budgetIndicator;
+                this.budgetRecurrence = binding.budgetRecurrence;
+
+                optionsMenu.setOnClickListener(v -> {
                     PopupMenu popup = new PopupMenu(getActivity(), v);
                     popup.setOnMenuItemClickListener(BudgetViewHolder.this);
                     MenuInflater inflater = popup.getMenuInflater();
                     inflater.inflate(R.menu.budget_context_menu, popup.getMenu());
                     popup.show();
                 });
-
             }
 
             @Override
             public boolean onMenuItemClick(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.context_menu_edit_budget:
-                        editBudget(budgetId);
+                        editBudget(budgetUID);
                         return true;
 
                     case R.id.context_menu_delete:
-                        deleteBudget(budgetId);
+                        deleteBudget(budgetUID);
                         return true;
 
                     default:
                         return false;
                 }
+            }
+
+            public void bind(final Budget budget) {
+                this.budgetUID = budget.getUID();
+
+                budgetName.setText(budget.getName());
+
+                AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
+                String accountString;
+                int numberOfAccounts = budget.getNumberOfAccounts();
+                if (numberOfAccounts == 1) {
+                    accountString = accountsDbAdapter.getAccountFullName(budget.getBudgetAmounts().get(0).getAccountUID());
+                } else {
+                    accountString = numberOfAccounts + " budgeted accounts";
+                }
+                accountName.setText(accountString);
+
+                budgetRecurrence.setText(budget.getRecurrence().getRepeatString() + " - "
+                    + budget.getRecurrence().getDaysLeftInCurrentPeriod() + " days left");
+
+                BigDecimal spentAmountValue = BigDecimal.ZERO;
+                for (BudgetAmount budgetAmount : budget.getCompactedBudgetAmounts()) {
+                    Money balance = accountsDbAdapter.getAccountBalance(budgetAmount.getAccountUID(),
+                        budget.getStartofCurrentPeriod(), budget.getEndOfCurrentPeriod());
+                    spentAmountValue = spentAmountValue.add(balance.asBigDecimal());
+                }
+
+                Money budgetTotal = budget.getAmountSum();
+                Commodity commodity = budgetTotal.getCommodity();
+                String usedAmount = commodity.getSymbol() + spentAmountValue + " of "
+                    + budgetTotal.formattedString();
+                budgetAmount.setText(usedAmount);
+
+                double budgetProgress = spentAmountValue.divide(budgetTotal.asBigDecimal(),
+                        commodity.getSmallestFractionDigits(), RoundingMode.HALF_EVEN)
+                    .doubleValue();
+                budgetIndicator.setProgress((int) (budgetProgress * 100));
+
+                budgetAmount.setTextColor(BudgetsActivity.getBudgetProgressColor(1 - budgetProgress));
+
+                itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        onClickBudget(budget.getUID());
+                    }
+                });
             }
         }
     }

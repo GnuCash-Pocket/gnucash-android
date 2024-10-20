@@ -256,7 +256,7 @@ public class TransactionsListFragment extends Fragment implements
         }
     }
 
-    public class TransactionRecyclerAdapter extends CursorRecyclerAdapter<TransactionRecyclerAdapter.ViewHolder> {
+    public class TransactionRecyclerAdapter extends CursorRecyclerAdapter<TransactionRecyclerAdapter.TransactionViewHolder> {
 
         public static final int ITEM_TYPE_COMPACT = 0x111;
         public static final int ITEM_TYPE_FULL = 0x100;
@@ -266,13 +266,13 @@ public class TransactionsListFragment extends Fragment implements
         }
 
         @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public TransactionViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             if (viewType == ITEM_TYPE_COMPACT) {
                 CardviewCompactTransactionBinding binding = CardviewCompactTransactionBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
-                return new ViewHolder(binding);
+                return new TransactionViewHolder(binding);
             } else {
                 CardviewTransactionBinding binding = CardviewTransactionBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
-                return new ViewHolder(binding);
+                return new TransactionViewHolder(binding);
             }
         }
 
@@ -282,93 +282,36 @@ public class TransactionsListFragment extends Fragment implements
         }
 
         @Override
-        public void onBindViewHolderCursor(ViewHolder holder, Cursor cursor) {
-            holder.transactionId = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry._ID));
-
-            String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_DESCRIPTION));
-            holder.primaryText.setText(description);
-
-            final String transactionUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_UID));
-            Money amount = mTransactionsDbAdapter.getBalance(transactionUID, mAccountUID);
-            TransactionsActivity.displayBalance(holder.transactionAmount, amount);
-
-            long dateMillis = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_TIMESTAMP));
-            String dateText = TransactionsActivity.getPrettyDateFormat(getActivity(), dateMillis);
-
-            final long id = holder.transactionId;
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onListItemClick(id);
-                }
-            });
-
-            if (mUseCompactView) {
-                holder.secondaryText.setText(dateText);
-            } else {
-
-                List<Split> splits = SplitsDbAdapter.getInstance().getSplitsForTransaction(transactionUID);
-                String text = "";
-                String error = null;
-
-                if (splits.size() == 2) {
-                    if (splits.get(0).isPairOf(splits.get(1))) {
-                        for (Split split : splits) {
-                            if (!split.getAccountUID().equals(mAccountUID)) {
-                                text = AccountsDbAdapter.getInstance().getFullyQualifiedAccountName(split.getAccountUID());
-                                break;
-                            }
-                        }
-                    }
-                    if (TextUtils.isEmpty(text)) {
-                        text = getString(R.string.label_split_count, splits.size());
-                        error = getString(R.string.imbalance_account_name);
-                    }
-                }
-                if (splits.size() > 2) {
-                    text = getString(R.string.label_split_count, splits.size());
-                }
-                holder.secondaryText.setText(text);
-                holder.secondaryText.setError(error);
-                holder.transactionDate.setText(dateText);
-
-                holder.editTransaction.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(getActivity(), FormActivity.class);
-                        intent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name());
-                        intent.putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID);
-                        intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
-                        startActivity(intent);
-                    }
-                });
-            }
+        public void onBindViewHolderCursor(TransactionViewHolder holder, Cursor cursor) {
+            holder.bind(cursor);
         }
 
-        public class ViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener {
-            public TextView primaryText;
-            public TextView secondaryText;
-            public TextView transactionAmount;
-            public ImageView optionsMenu;
+        public class TransactionViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener {
+            private final TextView primaryText;
+            private final TextView secondaryText;
+            private final TextView transactionAmount;
+            private final ImageView optionsMenu;
 
             //these views are not used in the compact view, hence the nullability
             @Nullable
-            public TextView transactionDate;
+            public final TextView transactionDate;
             @Nullable
-            public ImageView editTransaction;
+            public final ImageView editTransaction;
 
-            long transactionId;
+            private long transactionId;
 
-            public ViewHolder(CardviewCompactTransactionBinding binding) {
+            public TransactionViewHolder(CardviewCompactTransactionBinding binding) {
                 super(binding.getRoot());
                 primaryText = binding.listItem2Lines.primaryText;
                 secondaryText = binding.listItem2Lines.secondaryText;
                 transactionAmount = binding.transactionAmount;
                 optionsMenu = binding.optionsMenu;
+                transactionDate = null;
+                editTransaction = null;
                 setup();
             }
 
-            public ViewHolder(CardviewTransactionBinding binding) {
+            public TransactionViewHolder(CardviewTransactionBinding binding) {
                 super(binding.getRoot());
                 primaryText = binding.listItem2Lines.primaryText;
                 secondaryText = binding.listItem2Lines.secondaryText;
@@ -383,10 +326,17 @@ public class TransactionsListFragment extends Fragment implements
                 primaryText.setTextSize(18);
                 optionsMenu.setOnClickListener(v -> {
                     PopupMenu popup = new PopupMenu(getActivity(), v);
-                    popup.setOnMenuItemClickListener(ViewHolder.this);
+                    popup.setOnMenuItemClickListener(TransactionViewHolder.this);
                     MenuInflater inflater = popup.getMenuInflater();
                     inflater.inflate(R.menu.transactions_context_menu, popup.getMenu());
                     popup.show();
+                });
+
+                itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        onListItemClick(transactionId);
+                    }
                 });
             }
 
@@ -407,7 +357,60 @@ public class TransactionsListFragment extends Fragment implements
 
                     default:
                         return false;
+                }
+            }
 
+            public void bind(@NonNull Cursor cursor) {
+                transactionId = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry._ID));
+
+                String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_DESCRIPTION));
+                primaryText.setText(description);
+
+                final String transactionUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_UID));
+                Money amount = mTransactionsDbAdapter.getBalance(transactionUID, mAccountUID);
+                TransactionsActivity.displayBalance(transactionAmount, amount);
+
+                long dateMillis = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_TIMESTAMP));
+                String dateText = TransactionsActivity.getPrettyDateFormat(getActivity(), dateMillis);
+
+                if (mUseCompactView) {
+                    secondaryText.setText(dateText);
+                } else {
+                    List<Split> splits = SplitsDbAdapter.getInstance().getSplitsForTransaction(transactionUID);
+                    String text = "";
+                    String error = null;
+
+                    if (splits.size() == 2) {
+                        if (splits.get(0).isPairOf(splits.get(1))) {
+                            for (Split split : splits) {
+                                if (!split.getAccountUID().equals(mAccountUID)) {
+                                    text = AccountsDbAdapter.getInstance().getFullyQualifiedAccountName(split.getAccountUID());
+                                    break;
+                                }
+                            }
+                        }
+                        if (TextUtils.isEmpty(text)) {
+                            text = getString(R.string.label_split_count, splits.size());
+                            error = getString(R.string.imbalance_account_name);
+                        }
+                    }
+                    if (splits.size() > 2) {
+                        text = getString(R.string.label_split_count, splits.size());
+                    }
+                    secondaryText.setText(text);
+                    secondaryText.setError(error);
+                    transactionDate.setText(dateText);
+
+                    editTransaction.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(getActivity(), FormActivity.class);
+                            intent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name());
+                            intent.putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID);
+                            intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
+                            startActivity(intent);
+                        }
+                    });
                 }
             }
         }

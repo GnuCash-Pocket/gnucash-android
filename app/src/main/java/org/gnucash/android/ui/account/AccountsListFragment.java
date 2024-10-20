@@ -26,8 +26,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -36,7 +34,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -502,100 +504,33 @@ public class AccountsListFragment extends Fragment implements
 
         @Override
         public void onBindViewHolderCursor(@NonNull final AccountViewHolder holder, @NonNull final Cursor cursor) {
-            final String accountUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_UID));
-            mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-            holder.accountUID = accountUID;
-
-            holder.binding.listItem.primaryText.setText(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_NAME)));
-            int subAccountCount = mAccountsDbAdapter.getSubAccountCount(accountUID);
-            if (subAccountCount > 0) {
-                holder.binding.listItem.secondaryText.setVisibility(View.VISIBLE);
-                String text = getResources().getQuantityString(R.plurals.label_sub_accounts, subAccountCount, subAccountCount);
-                holder.binding.listItem.secondaryText.setText(text);
-            } else
-                holder.binding.listItem.secondaryText.setVisibility(View.GONE);
-
-            // add a summary of transactions to the account view
-
-            // Make sure the balance task is truly multithread
-            new AccountBalanceTask(holder.binding.accountBalance).execute(accountUID);
-
-            String accountColor = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_COLOR_CODE));
-            Integer colorValue = parseColor(accountColor);
-            int colorCode = (colorValue != null) ? colorValue : Account.DEFAULT_COLOR;
-            holder.binding.accountColorStrip.setBackgroundColor(colorCode);
-
-            boolean isPlaceholderAccount = mAccountsDbAdapter.isPlaceholderAccount(accountUID);
-            if (isPlaceholderAccount) {
-                holder.binding.createTransaction.setVisibility(View.GONE);
-            } else {
-                holder.binding.createTransaction.setOnClickListener(new View.OnClickListener() {
-
-                    @Override
-                    public void onClick(View v) {
-                        Context context = v.getContext();
-                        Intent intent = new Intent(context, FormActivity.class);
-                        intent.setAction(Intent.ACTION_INSERT_OR_EDIT);
-                        intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
-                        intent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name());
-                        context.startActivity(intent);
-                    }
-                });
-            }
-
-            List<Budget> budgets = BudgetsDbAdapter.getInstance().getAccountBudgets(accountUID);
-            //TODO: include fetch only active budgets
-            if (budgets.size() == 1) {
-                Budget budget = budgets.get(0);
-                Money balance = mAccountsDbAdapter.getAccountBalance(accountUID, budget.getStartofCurrentPeriod(), budget.getEndOfCurrentPeriod());
-                double budgetProgress = balance.div(budget.getAmount(accountUID)).asBigDecimal().doubleValue() * 100;
-
-                holder.binding.budgetIndicator.setVisibility(View.VISIBLE);
-                holder.binding.budgetIndicator.setProgress((int) budgetProgress);
-            } else {
-                holder.binding.budgetIndicator.setVisibility(View.GONE);
-            }
-
-            if (mAccountsDbAdapter.isFavoriteAccount(accountUID)) {
-                holder.binding.favoriteStatus.setImageResource(R.drawable.ic_favorite_black);
-            } else {
-                holder.binding.favoriteStatus.setImageResource(R.drawable.ic_favorite_border_black);
-            }
-
-            holder.binding.favoriteStatus.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    boolean isFavoriteAccount = mAccountsDbAdapter.isFavoriteAccount(accountUID);
-
-                    ContentValues contentValues = new ContentValues();
-                    contentValues.put(DatabaseSchema.AccountEntry.COLUMN_FAVORITE, !isFavoriteAccount);
-                    mAccountsDbAdapter.updateRecord(accountUID, contentValues);
-
-                    int drawableResource = !isFavoriteAccount ?
-                            R.drawable.ic_favorite_black : R.drawable.ic_favorite_border_black;
-                    holder.binding.favoriteStatus.setImageResource(drawableResource);
-                    if (mDisplayMode == DisplayMode.FAVORITES)
-                        refresh();
-                }
-            });
-
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onListItemClick(accountUID);
-                }
-            });
+            holder.bind(cursor);
         }
 
         class AccountViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener {
-            String accountUID;
-            CardviewAccountBinding binding;
+            private final TextView accountName;
+            private final TextView description;
+            private final TextView accountBalance;
+            private final ImageView createTransaction;
+            private final ImageView favoriteStatus;
+            private final ImageView optionsMenu;
+            private final View colorStripView;
+            private final ProgressBar budgetIndicator;
+
+            private String accountUID;
 
             public AccountViewHolder(CardviewAccountBinding binding) {
                 super(binding.getRoot());
-                this.binding = binding;
+                this.accountName = binding.listItem.primaryText;
+                this.description = binding.listItem.secondaryText;
+                this.accountBalance = binding.accountBalance;
+                this.createTransaction = binding.createTransaction;
+                this.favoriteStatus = binding.favoriteStatus;
+                this.optionsMenu = binding.optionsMenu;
+                this.colorStripView = binding.accountColorStrip;
+                this.budgetIndicator = binding.budgetIndicator;
 
-                binding.optionsMenu.setOnClickListener(new View.OnClickListener() {
+                optionsMenu.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         PopupMenu popup = new PopupMenu(getActivity(), v);
@@ -605,9 +540,94 @@ public class AccountsListFragment extends Fragment implements
                         popup.show();
                     }
                 });
-
             }
 
+            public void bind(@NonNull final Cursor cursor) {
+                final String accountUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_UID));
+                this.accountUID = accountUID;
+
+                accountName.setText(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_NAME)));
+                int subAccountCount = mAccountsDbAdapter.getSubAccountCount(accountUID);
+                if (subAccountCount > 0) {
+                    description.setVisibility(View.VISIBLE);
+                    String text = getResources().getQuantityString(R.plurals.label_sub_accounts, subAccountCount, subAccountCount);
+                    description.setText(text);
+                } else {
+                    description.setVisibility(View.GONE);
+                }
+
+                // add a summary of transactions to the account view
+
+                // Make sure the balance task is truly multi-thread
+                new AccountBalanceTask(accountBalance).execute(accountUID);
+
+                String accountColor = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_COLOR_CODE));
+                Integer colorValue = parseColor(accountColor);
+                int colorCode = (colorValue != null) ? colorValue : Account.DEFAULT_COLOR;
+                colorStripView.setBackgroundColor(colorCode);
+
+                boolean isPlaceholderAccount = mAccountsDbAdapter.isPlaceholderAccount(accountUID);
+                if (isPlaceholderAccount) {
+                    createTransaction.setVisibility(View.GONE);
+                } else {
+                    createTransaction.setOnClickListener(new View.OnClickListener() {
+
+                        @Override
+                        public void onClick(View v) {
+                            Context context = v.getContext();
+                            Intent intent = new Intent(context, FormActivity.class);
+                            intent.setAction(Intent.ACTION_INSERT_OR_EDIT);
+                            intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
+                            intent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name());
+                            context.startActivity(intent);
+                        }
+                    });
+                }
+
+                List<Budget> budgets = BudgetsDbAdapter.getInstance().getAccountBudgets(accountUID);
+                //TODO: include fetch only active budgets
+                if (budgets.size() == 1) {
+                    Budget budget = budgets.get(0);
+                    Money balance = mAccountsDbAdapter.getAccountBalance(accountUID, budget.getStartofCurrentPeriod(), budget.getEndOfCurrentPeriod());
+                    double budgetProgress = balance.div(budget.getAmount(accountUID)).asBigDecimal().doubleValue() * 100;
+
+                    budgetIndicator.setVisibility(View.VISIBLE);
+                    budgetIndicator.setProgress((int) budgetProgress);
+                } else {
+                    budgetIndicator.setVisibility(View.GONE);
+                }
+
+                if (mAccountsDbAdapter.isFavoriteAccount(accountUID)) {
+                    favoriteStatus.setImageResource(R.drawable.ic_favorite_black);
+                } else {
+                    favoriteStatus.setImageResource(R.drawable.ic_favorite_border_black);
+                }
+
+                favoriteStatus.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        boolean isFavoriteAccount = mAccountsDbAdapter.isFavoriteAccount(accountUID);
+
+                        ContentValues contentValues = new ContentValues();
+                        contentValues.put(DatabaseSchema.AccountEntry.COLUMN_FAVORITE, !isFavoriteAccount);
+                        mAccountsDbAdapter.updateRecord(accountUID, contentValues);
+
+                        @DrawableRes int drawableResource = isFavoriteAccount ?
+                            R.drawable.ic_favorite_border_black : R.drawable.ic_favorite_black;
+                        favoriteStatus.setImageResource(drawableResource);
+                        if (mDisplayMode == DisplayMode.FAVORITES) {
+                            refresh();
+                        }
+                    }
+                });
+
+                itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        onListItemClick(accountUID);
+                    }
+                });
+            }
 
             @Override
             public boolean onMenuItemClick(@NonNull MenuItem item) {

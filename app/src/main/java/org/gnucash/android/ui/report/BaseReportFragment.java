@@ -27,7 +27,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
@@ -43,7 +42,6 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.databinding.FragmentPieChartBinding;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;

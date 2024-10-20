@@ -80,11 +80,9 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
     }
 
     class SplitAmountViewHolder {
-        View itemView;
-        ItemSplitAmountInfoBinding binding;
+        private final View itemView;
 
         public SplitAmountViewHolder(ItemSplitAmountInfoBinding binding, Split split) {
-            this.binding = binding;
             itemView = binding.getRoot();
 
             AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
