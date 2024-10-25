@@ -72,7 +72,7 @@ limitations under the License.
             android:paddingTop="6dp"
             android:paddingEnd="6dp"
             android:paddingBottom="6dp"
-            android:src="@drawable/ic_close_black"
+            android:src="@drawable/ic_close"
             tools:ignore="ContentDescription" />
     </LinearLayout>
 
@@ -86,7 +86,7 @@ limitations under the License.
             android:id="@+id/input_split_memo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
+            android:background="@null"
             android:gravity="top"
             android:hint="@string/hint_split_memo"
             android:inputType="textMultiLine|textCapSentences"

@@ -559,7 +559,7 @@ public class AccountsListFragment extends Fragment implements
                 // add a summary of transactions to the account view
 
                 // Make sure the balance task is truly multi-thread
-                new AccountBalanceTask(accountBalance).execute(accountUID);
+                new AccountBalanceTask(accountBalance, description.getCurrentTextColor()).execute(accountUID);
 
                 String accountColor = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_COLOR_CODE));
                 Integer colorValue = parseColor(accountColor);
@@ -598,9 +598,9 @@ public class AccountsListFragment extends Fragment implements
                 }
 
                 if (mAccountsDbAdapter.isFavoriteAccount(accountUID)) {
-                    favoriteStatus.setImageResource(R.drawable.ic_favorite_black);
+                    favoriteStatus.setImageResource(R.drawable.ic_favorite);
                 } else {
-                    favoriteStatus.setImageResource(R.drawable.ic_favorite_border_black);
+                    favoriteStatus.setImageResource(R.drawable.ic_favorite_border);
                 }
 
                 favoriteStatus.setOnClickListener(new View.OnClickListener() {
@@ -613,7 +613,7 @@ public class AccountsListFragment extends Fragment implements
                         mAccountsDbAdapter.updateRecord(accountUID, contentValues);
 
                         @DrawableRes int drawableResource = isFavoriteAccount ?
-                            R.drawable.ic_favorite_border_black : R.drawable.ic_favorite_black;
+                            R.drawable.ic_favorite_border : R.drawable.ic_favorite;
                         favoriteStatus.setImageResource(drawableResource);
                         if (mDisplayMode == DisplayMode.FAVORITES) {
                             refresh();

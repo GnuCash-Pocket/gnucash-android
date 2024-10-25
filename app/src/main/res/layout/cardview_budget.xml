@@ -70,7 +70,7 @@
                 android:paddingTop="20dp"
                 android:paddingBottom="4dp"
                 android:scaleType="centerInside"
-                android:src="@drawable/ic_more_vert_black"
+                android:src="@drawable/ic_more_vert"
                 tools:ignore="ContentDescription" />
 
             <LinearLayout
@@ -89,7 +89,7 @@
                     android:gravity="right"
                     android:maxLines="1"
                     android:padding="5dp"
-                    android:textColor="@android:color/black"
+                    android:textColor="?android:textColorPrimary"
                     android:textSize="18sp"
                     tools:text="$ 2000 of $ 2,500" />
 

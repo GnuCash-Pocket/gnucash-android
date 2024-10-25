@@ -43,14 +43,12 @@
 
                 <EditText
                     android:id="@+id/input_budget_name"
-                    style="@style/ListItemText"
+                    style="@style/ListItemPrimaryText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:ellipsize="start"
                     android:ems="15"
                     android:hint="Budget name"
-                    android:inputType="textCapWords"
-                    android:singleLine="true"></EditText>
+                    android:inputType="textCapWords" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <TableRow
@@ -60,14 +58,14 @@
 
                 <ImageView
                     style="@style/FormIcon"
-                    android:src="@drawable/ic_notes_black" />
+                    android:src="@drawable/ic_notes" />
 
                 <EditText
                     android:id="@+id/input_description"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="5"
-                    android:background="@android:color/transparent"
+                    android:background="@null"
                     android:hint="Description"
                     android:inputType="textMultiLine|textCapSentences"
                     android:singleLine="false" />
@@ -82,7 +80,7 @@
 
                 <ImageView
                     style="@style/FormIcon"
-                    android:src="@drawable/ic_repeat_black" />
+                    android:src="@drawable/ic_repeat" />
 
                 <TextView
                     android:id="@+id/input_recurrence"
@@ -115,7 +113,7 @@
                     android:clickable="true"
                     android:gravity="left"
                     android:padding="3dp"
-                    android:textColor="@android:color/black"
+                    android:textColor="?android:textColorPrimary"
                     android:textSize="16sp"
                     tools:text="29.11.2015" />
             </TableRow>

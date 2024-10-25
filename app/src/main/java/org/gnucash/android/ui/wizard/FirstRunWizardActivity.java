@@ -21,16 +21,16 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.ColorDrawable;
+import android.content.res.ColorStateList;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.util.TypedValue;
 import android.view.View;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
@@ -72,6 +72,11 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
 
     private ActivityFirstRunWizardBinding mBinding;
 
+    private Drawable btnSaveDefaultBackground;
+    private ColorStateList btnSaveDefaultColor;
+    private Drawable btnSaveFinishBackground;
+    private ColorStateList btnSaveFinishColor;
+
     public void onCreate(Bundle savedInstanceState) {
         // we need to construct the wizard model before we call super.onCreate, because it's used in
         // onGetPage (which is indirectly called through super.onCreate if savedInstanceState is not
@@ -108,18 +113,18 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
         });
 
         mBinding.defaultButtons.btnCancel.setText(R.string.wizard_btn_back);
-        TypedValue v = new TypedValue();
-        getTheme().resolveAttribute(android.R.attr.textAppearanceMedium, v,
-            true);
-        mBinding.defaultButtons.btnCancel.setTextAppearance(this, v.resourceId);
-        mBinding.defaultButtons.btnSave.setTextAppearance(this, v.resourceId);
-
         mBinding.defaultButtons.btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 gotoPreviousPage();
             }
         });
+
+        btnSaveDefaultBackground = mBinding.defaultButtons.btnSave.getBackground();
+        btnSaveDefaultColor = mBinding.defaultButtons.btnSave.getTextColors();
+        Button button = new Button(this);
+        btnSaveFinishBackground = button.getBackground();
+        btnSaveFinishColor = button.getTextColors();
 
         onPageTreeChanged();
         updateBottomBar();
@@ -178,16 +183,12 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
         int position = mBinding.pager.getCurrentItem();
         if (position == pages.size()) {
             mBinding.defaultButtons.btnSave.setText(R.string.btn_wizard_finish);
-
-            mBinding.defaultButtons.btnSave.setBackgroundDrawable(
-                new ColorDrawable(ContextCompat.getColor(this, R.color.theme_accent)));
-            mBinding.defaultButtons.btnSave.setTextColor(ContextCompat.getColor(this, android.R.color.white));
+            mBinding.defaultButtons.btnSave.setBackground(btnSaveFinishBackground);
+            mBinding.defaultButtons.btnSave.setTextColor(btnSaveFinishColor);
         } else {
-            mBinding.defaultButtons.btnSave.setText(mEditingAfterReview ? R.string.review
-                : R.string.btn_wizard_next);
-            mBinding.defaultButtons.btnSave.setBackgroundDrawable(
-                new ColorDrawable(ContextCompat.getColor(this, android.R.color.transparent)));
-            mBinding.defaultButtons.btnSave.setTextColor(ContextCompat.getColor(this, R.color.theme_accent));
+            mBinding.defaultButtons.btnSave.setText(mEditingAfterReview ? R.string.review : R.string.btn_wizard_next);
+            mBinding.defaultButtons.btnSave.setBackground(btnSaveDefaultBackground);
+            mBinding.defaultButtons.btnSave.setTextColor(btnSaveDefaultColor);
         }
 
         mBinding.defaultButtons.btnCancel

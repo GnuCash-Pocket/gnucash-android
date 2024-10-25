@@ -342,7 +342,7 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
             if (!mBudgetAmounts.isEmpty()) {
                 BudgetAmount budgetAmount = mBudgetAmounts.get(0);
                 mBinding.budgetAmountLayout.inputBudgetAmount.setValue(budgetAmount.getAmount().asBigDecimal());
-                mBinding.budgetAmountLayout.inputBudgetAccountSpinner.setSelection(mAccountsCursorAdapter.getPosition(budgetAmount.getAccountUID()));
+                mBinding.budgetAmountLayout.inputBudgetAccountSpinner.setSelection(mAccountsCursorAdapter.getItemPosition(budgetAmount.getAccountUID()));
             }
         }
     }

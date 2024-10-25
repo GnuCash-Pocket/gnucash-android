@@ -1,5 +1,7 @@
 package org.gnucash.android.ui.transaction;
 
+import static org.gnucash.android.ui.util.TextViewExtKt.displayBalance;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -52,12 +55,15 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
     public static final int REQUEST_EDIT_TRANSACTION = 0x10;
 
     private ActivityTransactionDetailBinding mBinding;
+    @ColorInt
+    private int colorBalanceZero;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         mBinding = ActivityTransactionDetailBinding.inflate(getLayoutInflater());
+        colorBalanceZero = mBinding.balanceCredit.getCurrentTextColor();
         setContentView(mBinding.getRoot());
 
         mTransactionUID = getIntent().getStringExtra(UxArgument.SELECTED_TRANSACTION_UID);
@@ -99,6 +105,8 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
 
     class SplitAmountViewHolder {
         private final View itemView;
+        @ColorInt
+        private final int colorBalanceZero;
 
         public SplitAmountViewHolder(ItemSplitAmountInfoBinding binding, Split split) {
             itemView = binding.getRoot();
@@ -107,7 +115,8 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
             binding.splitAccountName.setText(accountsDbAdapter.getAccountFullName(split.getAccountUID()));
             Money quantity = split.getFormattedQuantity();
             TextView balanceView = quantity.isNegative() ? binding.splitDebit : binding.splitCredit;
-            TransactionsActivity.displayBalance(balanceView, quantity);
+            colorBalanceZero = balanceView.getCurrentTextColor();
+            displayBalance(balanceView, quantity, colorBalanceZero);
         }
     }
 
@@ -125,7 +134,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
 
         Money accountBalance = accountsDbAdapter.getAccountBalance(mAccountUID, -1, transaction.getTimeMillis());
         TextView balanceTextView = accountBalance.isNegative() ? mBinding.balanceDebit : mBinding.balanceCredit;
-        TransactionsActivity.displayBalance(balanceTextView, accountBalance);
+        displayBalance(balanceTextView, accountBalance, colorBalanceZero);
 
         mDetailTableRows = mBinding.fragmentTransactionDetails.getChildCount();
         boolean useDoubleEntry = GnuCashApplication.isDoubleEntryEnabled();

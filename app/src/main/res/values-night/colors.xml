@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Wizard Pager - Review page -->
+    <color name="text_light" tools:ignore="MissingDefaultResource">#66FFFFFF</color>
+
+    <color name="widget_bg">#CC000000</color>
+</resources>

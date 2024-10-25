@@ -21,21 +21,19 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.database.Cursor;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
-import android.widget.TextView;
+import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.widget.PopupMenu;
+import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -43,16 +41,17 @@ import com.google.android.material.navigation.NavigationView;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
+import org.gnucash.android.model.Book;
 import org.gnucash.android.ui.account.AccountsActivity;
-import org.gnucash.android.ui.passcode.PasscodeHelper;
 import org.gnucash.android.ui.passcode.PasscodeLockActivity;
 import org.gnucash.android.ui.report.ReportsActivity;
 import org.gnucash.android.ui.settings.PreferenceActivity;
 import org.gnucash.android.ui.transaction.ScheduledActionsActivity;
 import org.gnucash.android.util.BookUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Base activity implementing the navigation drawer, to be extended by all activities requiring one.
@@ -73,12 +72,11 @@ import org.gnucash.android.util.BookUtils;
  */
 public abstract class BaseDrawerActivity extends PasscodeLockActivity {
 
-    public static final int ID_MANAGE_BOOKS = 0xB00C;
     protected DrawerLayout mDrawerLayout;
     protected NavigationView mNavigationView;
     protected Toolbar mToolbar;
     protected ProgressBar mToolbarProgress;
-    protected TextView mBookNameTextView;
+    protected Spinner mBookNameSpinner;
 
     protected ActionBarDrawerToggle mDrawerToggle;
 
@@ -98,10 +96,6 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         inflateView();
-        mDrawerLayout = findViewById(R.id.drawer_layout);
-        mNavigationView = findViewById(R.id.nav_view);
-        mToolbar = findViewById(R.id.toolbar);
-        mToolbarProgress = findViewById(R.id.toolbar_progress);
 
         //if a parameter was passed to open an account within a specific book, then switch
         String bookUID = getIntent().getStringExtra(UxArgument.BOOK_UID);
@@ -117,8 +111,6 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
             actionBar.setTitle(getTitleRes());
         }
 
-        mToolbarProgress.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
-
         View headerView = mNavigationView.getHeaderView(0);
         headerView.findViewById(R.id.drawer_title).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -127,13 +119,7 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
             }
         });
 
-        mBookNameTextView = (TextView) headerView.findViewById(R.id.book_name);
-        mBookNameTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onClickBook(v);
-            }
-        });
+        mBookNameSpinner = headerView.findViewById(R.id.book_name);
         updateActiveBookName();
         setUpNavigationDrawer();
     }
@@ -158,15 +144,14 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
     public abstract @StringRes int getTitleRes();
 
     /**
-     * Returns the progress bar for the activity.
-     * <p>This progress bar is displayed above the toolbar and should be used to show busy status
+     * The progress bar is displayed above the toolbar and should be used to show busy status
      * for long operations.<br/>
      * The progress bar visibility is set to {@link View#GONE} by default. Make visible to use </p>
      *
-     * @return Indeterminate progress bar.
+     * @param isVisible Is the progress bar visible?
      */
-    public ProgressBar getProgressBar() {
-        return mToolbarProgress;
+    public void showProgressBar(boolean isVisible) {
+        mToolbarProgress.setVisibility(isVisible ? View.VISIBLE : View.GONE);
     }
 
     /**
@@ -176,10 +161,10 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
         mNavigationView.setNavigationItemSelectedListener(new DrawerItemClickListener());
 
         mDrawerToggle = new ActionBarDrawerToggle(
-                this,                  /* host Activity */
-                mDrawerLayout,         /* DrawerLayout object */
-                R.string.drawer_open,  /* "open drawer" description */
-                R.string.drawer_close  /* "close drawer" description */
+            this,                  /* host Activity */
+            mDrawerLayout,         /* DrawerLayout object */
+            R.string.drawer_open,  /* "open drawer" description */
+            R.string.drawer_close  /* "close drawer" description */
         ) {
 
             /** Called when a drawer has settled in a completely closed state. */
@@ -225,7 +210,53 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
      * Update the display name of the currently active book
      */
     protected void updateActiveBookName() {
-        mBookNameTextView.setText(BooksDbAdapter.getInstance().getActiveBookDisplayName());
+        final List<Book> books = BooksDbAdapter.getInstance().getAllRecords();
+        final int count = books.size();
+        int activeBookIndex = -1;
+        List<String> names = new ArrayList<>();
+
+        for (int i = 0; i < count; i++) {
+            Book book = books.get(i);
+            names.add(book.getDisplayName());
+            if (book.isActive() && (activeBookIndex < 0)) {
+                activeBookIndex = i;
+            }
+        }
+        names.add(getString(R.string.menu_manage_books));
+
+        Context context = new ContextThemeWrapper(this, R.style.Theme_GnuCash_Toolbar);
+        String[] entries = names.toArray(new String[0]);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, entries);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mBookNameSpinner.setAdapter(adapter);
+
+        final int activeBookPosition = activeBookIndex;
+        mBookNameSpinner.setSelection(activeBookIndex);
+
+        mBookNameSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (position == activeBookPosition) {
+                    return;
+                }
+                final Context context = view.getContext();
+                if (position == parent.getCount() - 1) {
+                    Intent intent = new Intent(context, PreferenceActivity.class);
+                    intent.setAction(PreferenceActivity.ACTION_MANAGE_BOOKS);
+                    startActivity(intent);
+                    mDrawerLayout.closeDrawer(mNavigationView);
+                    return;
+                }
+                Book book = books.get(position);
+                BookUtils.loadBook(context, book.getUID());
+                finish();
+                AccountsActivity.start(context);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
     }
 
     /**
@@ -311,50 +342,5 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
     public void onClickAppTitle(View view) {
         mDrawerLayout.closeDrawer(mNavigationView);
         AccountsActivity.start(this);
-    }
-
-    public void onClickBook(View view) {
-        final Context context = this;
-        PopupMenu popup = new PopupMenu(context, view);
-
-        final String[] bookUIDs = new String[6];
-        Menu menu = popup.getMenu();
-        int id = 0;
-        final BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
-        Cursor cursor = booksDbAdapter.fetchAllRecords(null, null,
-                DatabaseSchema.BookEntry.COLUMN_MODIFIED_AT + " DESC");
-        while (cursor.moveToNext() && id < 5) {
-            String uid = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.BookEntry.COLUMN_UID));
-            String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.BookEntry.COLUMN_DISPLAY_NAME));
-            bookUIDs[id] = uid;
-            menu.add(0, id, id, name);
-            id++;
-        }
-        bookUIDs[id] = null;
-        menu.add(0, ID_MANAGE_BOOKS, id, R.string.menu_manage_books);
-
-        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-
-            @Override
-            public boolean onMenuItemClick(@NonNull MenuItem item) {
-                int id = item.getItemId();
-                if (id == ID_MANAGE_BOOKS) {
-                    Intent intent = new Intent(context, PreferenceActivity.class);
-                    intent.setAction(PreferenceActivity.ACTION_MANAGE_BOOKS);
-                    startActivity(intent);
-                    mDrawerLayout.closeDrawer(mNavigationView);
-                    return true;
-                }
-                String bookUID = bookUIDs[id];
-                if (!bookUID.equals(booksDbAdapter.getActiveBookUID())) {
-                    BookUtils.loadBook(context, bookUID);
-                    finish();
-                    return true;
-                }
-                AccountsActivity.start(context);
-                return true;
-            }
-        });
-        popup.show();
     }
 }

@@ -69,7 +69,7 @@ public class TransactionsDeleteConfirmationDialogFragment extends DialogFragment
         final long rowId = getArguments().getLong(UxArgument.SELECTED_TRANSACTION_IDS);
         int message = rowId == 0 ? R.string.msg_delete_all_transactions_confirmation : R.string.msg_delete_transaction_confirmation;
         return new AlertDialog.Builder(getActivity())
-            .setIcon(R.drawable.ic_warning_black)
+            .setIcon(R.drawable.ic_warning)
             .setTitle(title)
             .setMessage(message)
             .setPositiveButton(R.string.alert_dialog_ok_delete, new DialogInterface.OnClickListener() {

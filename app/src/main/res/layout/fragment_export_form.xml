@@ -190,7 +190,7 @@
                 android:layout_weight="2"
                 android:clickable="true"
                 android:gravity="center"
-                android:textColor="@android:color/black"
+                android:textColor="?android:textColorPrimary"
                 android:textSize="15sp"
                 tools:text="@tools:sample/date/ddmmyy" />
 
@@ -201,7 +201,7 @@
                 android:layout_weight="1.5"
                 android:clickable="true"
                 android:gravity="center"
-                android:textColor="@android:color/black"
+                android:textColor="?android:textColorPrimary"
                 android:textSize="15sp"
                 tools:text="@tools:sample/date/hhmm" />
 

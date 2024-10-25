@@ -121,7 +121,7 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
                 new AlertDialog.Builder(getActivity())
                         .setTitle(R.string.title_create_default_accounts)
                         .setMessage(R.string.msg_confirm_create_default_accounts_setting)
-                        .setIcon(R.drawable.ic_warning_black)
+                        .setIcon(R.drawable.ic_warning)
                         .setPositiveButton(R.string.btn_create_accounts, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int which) {

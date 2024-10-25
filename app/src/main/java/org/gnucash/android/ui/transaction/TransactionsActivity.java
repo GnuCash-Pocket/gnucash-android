@@ -32,6 +32,7 @@ import android.widget.AdapterView;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -47,7 +48,6 @@ import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
-import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.account.AccountsListFragment;
 import org.gnucash.android.ui.account.DeleteAccountDialogFragment;
 import org.gnucash.android.ui.account.OnAccountClickedListener;
@@ -60,8 +60,6 @@ import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-
-import java.math.BigDecimal;
 
 import timber.log.Timber;
 
@@ -272,6 +270,10 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     public void inflateView() {
         mBinding = ActivityTransactionsBinding.inflate(getLayoutInflater());
         setContentView(mBinding.getRoot());
+        mDrawerLayout = mBinding.drawerLayout;
+        mNavigationView = mBinding.navView;
+        mToolbar = mBinding.toolbarLayout.toolbar;
+        mToolbarProgress = mBinding.toolbarLayout.toolbarProgress.progress;
     }
 
     @Override
@@ -380,8 +382,8 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         SpinnerAdapter mSpinnerAdapter = new QualifiedAccountNameCursorAdapter(
                 getSupportActionBar().getThemedContext(), mAccountsCursor, R.layout.account_spinner_item);
 
-        mBinding.toolbarWithSpinner.toolbarSpinner.setAdapter(mSpinnerAdapter);
-        mBinding.toolbarWithSpinner.toolbarSpinner.setOnItemSelectedListener(mTransactionListNavigationListener);
+        mBinding.toolbarLayout.toolbarSpinner.setAdapter(mSpinnerAdapter);
+        mBinding.toolbarLayout.toolbarSpinner.setOnItemSelectedListener(mTransactionListNavigationListener);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         updateNavigationSelection();
@@ -398,7 +400,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         while (accountsCursor.moveToNext()) {
             String uid = accountsCursor.getString(accountsCursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_UID));
             if (mAccountUID.equals(uid)) {
-                mBinding.toolbarWithSpinner.toolbarSpinner.setSelection(i);
+                mBinding.toolbarLayout.toolbarSpinner.setSelection(i);
                 break;
             }
             ++i;
@@ -415,7 +417,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
 
         boolean isFavoriteAccount = AccountsDbAdapter.getInstance().isFavoriteAccount(mAccountUID);
 
-        int favoriteIcon = isFavoriteAccount ? R.drawable.ic_favorite_white : R.drawable.ic_favorite_border_white;
+        @DrawableRes int favoriteIcon = isFavoriteAccount ? R.drawable.ic_favorite : R.drawable.ic_favorite_border;
         favoriteAccountMenuItem.setIcon(favoriteIcon);
         return super.onPrepareOptionsMenu(menu);
 
@@ -483,23 +485,6 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      */
     public String getCurrentAccountUID() {
         return mAccountUID;
-    }
-
-    /**
-     * Display the balance of a transaction in a text view and format the text color to match the sign of the amount
-     *
-     * @param balanceTextView {@link android.widget.TextView} where balance is to be displayed
-     * @param balance         {@link org.gnucash.android.model.Money} balance to display
-     */
-    public static void displayBalance(TextView balanceTextView, Money balance) {
-        balanceTextView.setText(balance.formattedString());
-        Context context = GnuCashApplication.getAppContext();
-        int fontColor = balance.isNegative() ?
-                context.getResources().getColor(R.color.debit_red) :
-                context.getResources().getColor(R.color.credit_green);
-        if (balance.asBigDecimal().compareTo(BigDecimal.ZERO) == 0)
-            fontColor = context.getResources().getColor(android.R.color.black);
-        balanceTextView.setTextColor(fontColor);
     }
 
     /**

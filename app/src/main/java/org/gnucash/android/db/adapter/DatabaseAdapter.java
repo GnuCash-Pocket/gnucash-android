@@ -854,4 +854,11 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
             mDb.close();
         }
     }
+
+    public void closeQuietly() {
+        try {
+            close();
+        } catch (IOException ignore) {
+        }
+    }
 }

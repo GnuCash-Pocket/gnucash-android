@@ -40,7 +40,7 @@
             android:codes="-5"
             android:isRepeatable="true"
             android:keyEdgeFlags="right"
-            android:keyIcon="@drawable/ic_backspace_white" />
+            android:keyIcon="@drawable/ic_backspace" />
     </Row>
     <Row>
         <Key
@@ -88,6 +88,6 @@
         <Key
             android:codes="1002"
             android:keyEdgeFlags="right"
-            android:keyIcon="@drawable/ic_keyboard_arrow_right_white" />
+            android:keyIcon="@drawable/ic_keyboard_arrow_right" />
     </Row>
 </Keyboard>

@@ -31,17 +31,16 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <include layout="@layout/toolbar" />
+            <include
+                android:id="@+id/toolbar_layout"
+                layout="@layout/toolbar" />
 
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tab_layout"
+                style="@style/GnuCash.TabLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/colorPrimary"
-                android:minHeight="?attr/actionBarSize"
-                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-                app:elevation="10dp"
-                app:tabIndicatorColor="@android:color/white" />
+                android:theme="@style/Theme.GnuCash.TabLayout" />
 
         </com.google.android.material.appbar.AppBarLayout>
 

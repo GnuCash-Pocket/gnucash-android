@@ -14,29 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:layout_weight="1"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    tools:layout_width="match_parent">
 
     <TextView
         android:id="@+id/primary_text"
-        style="@style/ListItemText"
+        style="@style/ListItemPrimaryText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:ellipsize="end"
-        android:singleLine="true"
         tools:text="Primary text" />
 
     <TextView
         android:id="@+id/secondary_text"
+        style="@style/ListItemSecondaryText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/primary_text"
         android:ellipsize="middle"
-        android:singleLine="true"
-        android:textAppearance="?android:attr/textAppearanceSmall"
         tools:text="Secondary text" />
-</RelativeLayout>
+</LinearLayout>

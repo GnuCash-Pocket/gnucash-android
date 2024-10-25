@@ -31,7 +31,7 @@ limitations under the License.
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:drawableStart="@drawable/ic_pie_chart_white"
+            android:drawableStart="@drawable/ic_pie_chart"
             android:text="@string/title_pie_chart" />
 
         <Button
@@ -39,7 +39,7 @@ limitations under the License.
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:drawableStart="@drawable/ic_bar_chart_white"
+            android:drawableStart="@drawable/ic_bar_chart"
             android:text="@string/title_bar_chart" />
 
         <Button
@@ -47,7 +47,7 @@ limitations under the License.
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:drawableStart="@drawable/ic_line_chart_white"
+            android:drawableStart="@drawable/ic_line_chart"
             android:text="@string/title_line_chart" />
 
         <Button
@@ -55,7 +55,7 @@ limitations under the License.
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:drawableStart="@drawable/ic_balance_white"
+            android:drawableStart="@drawable/ic_balance"
             android:text="@string/title_report_sheet" />
     </LinearLayout>
 

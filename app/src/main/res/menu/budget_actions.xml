@@ -3,14 +3,14 @@
 
     <item
         android:id="@+id/menu_goto_account"
-        android:icon="@drawable/ic_account_black"
+        android:icon="@drawable/ic_account"
         android:orderInCategory="1"
         android:title="Go to Account"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/menu_edit"
-        android:icon="@drawable/ic_edit_white"
+        android:icon="@drawable/ic_edit"
         android:orderInCategory="2"
         android:title="@string/title_edit_budget"
         app:showAsAction="never" />

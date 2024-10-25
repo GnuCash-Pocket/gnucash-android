@@ -23,12 +23,11 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.LayoutRes;
-import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.cursoradapter.widget.SimpleCursorAdapter;
 
 import org.gnucash.android.R;
 import org.gnucash.android.db.DatabaseSchema;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
 
 /**
  * Cursor adapter which looks up the fully qualified account name and returns that instead of just the simple name.
@@ -38,6 +37,9 @@ import org.gnucash.android.db.adapter.AccountsDbAdapter;
  */
 public class QualifiedAccountNameCursorAdapter extends SimpleCursorAdapter {
 
+    private int columnIndexUID = 0;
+    private int columnIndexFavorite = 0;
+
     /**
      * Initialize the Cursor adapter for account names using default spinner views
      *
@@ -45,10 +47,7 @@ public class QualifiedAccountNameCursorAdapter extends SimpleCursorAdapter {
      * @param cursor  Cursor to accounts
      */
     public QualifiedAccountNameCursorAdapter(Context context, Cursor cursor) {
-        super(context, android.R.layout.simple_spinner_item, cursor,
-                new String[]{DatabaseSchema.AccountEntry.COLUMN_FULL_NAME},
-                new int[]{android.R.id.text1}, 0);
-        setDropDownViewResource(R.layout.account_spinner_dropdown_item);
+        this(context, cursor, android.R.layout.simple_spinner_item);
     }
 
     /**
@@ -58,12 +57,31 @@ public class QualifiedAccountNameCursorAdapter extends SimpleCursorAdapter {
      * @param cursor              Cursor to account data
      * @param selectedSpinnerItem Layout resource for selected item text
      */
-    public QualifiedAccountNameCursorAdapter(Context context, Cursor cursor,
-                                             @LayoutRes int selectedSpinnerItem) {
-        super(context, selectedSpinnerItem, cursor,
-                new String[]{DatabaseSchema.AccountEntry.COLUMN_FULL_NAME},
-                new int[]{android.R.id.text1}, 0);
+    public QualifiedAccountNameCursorAdapter(Context context, Cursor cursor, @LayoutRes int selectedSpinnerItem) {
+        super(context, selectedSpinnerItem, cursor, new String[]{DatabaseSchema.AccountEntry.COLUMN_FULL_NAME}, new int[]{android.R.id.text1}, 0);
         setDropDownViewResource(R.layout.account_spinner_dropdown_item);
+    }
+
+    @Override
+    protected void init(Context context, Cursor c, boolean autoRequery) {
+        super.init(context, c, autoRequery);
+        columnIndexUID = -1;
+        columnIndexFavorite = -1;
+        if (c != null) {
+            columnIndexUID = c.getColumnIndex(DatabaseSchema.AccountEntry.COLUMN_UID);
+            columnIndexFavorite = c.getColumnIndex(DatabaseSchema.AccountEntry.COLUMN_FAVORITE);
+        }
+    }
+
+    @Override
+    public Cursor swapCursor(@Nullable Cursor c) {
+        columnIndexUID = -1;
+        columnIndexFavorite = -1;
+        if (c != null) {
+            columnIndexUID = c.getColumnIndex(DatabaseSchema.AccountEntry.COLUMN_UID);
+            columnIndexFavorite = c.getColumnIndex(DatabaseSchema.AccountEntry.COLUMN_FAVORITE);
+        }
+        return super.swapCursor(c);
     }
 
     @Override
@@ -72,12 +90,24 @@ public class QualifiedAccountNameCursorAdapter extends SimpleCursorAdapter {
         TextView textView = (TextView) view.findViewById(android.R.id.text1);
         textView.setEllipsize(TextUtils.TruncateAt.MIDDLE);
 
-        int isFavorite = cursor.getInt(cursor.getColumnIndex(DatabaseSchema.AccountEntry.COLUMN_FAVORITE));
+        int isFavorite = cursor.getInt(columnIndexFavorite);
         if (isFavorite == 0) {
             textView.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
         } else {
-            textView.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_favorite_black, 0);
+            textView.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_favorite, 0);
         }
+    }
+
+    @Nullable
+    public String getItemUID(int position) {
+        final int count = getCount();
+        final Cursor cursor = getCursor();
+        if (count > 0 && cursor != null) {
+            if (cursor.moveToPosition(position)) {
+                return cursor.getString(columnIndexUID);
+            }
+        }
+        return null;
     }
 
     /**
@@ -86,11 +116,12 @@ public class QualifiedAccountNameCursorAdapter extends SimpleCursorAdapter {
      * @param accountUID GUID of the account
      * @return Position of the account or -1 if the account is not found
      */
-    public int getPosition(@NonNull String accountUID) {
-        long accountId = AccountsDbAdapter.getInstance().getID(accountUID);
-        for (int pos = 0; pos < getCount(); pos++) {
-            if (getItemId(pos) == accountId) {
-                return pos;
+    public int getItemPosition(@Nullable String accountUID) {
+        if (TextUtils.isEmpty(accountUID)) return -1;
+        final int count = getCount();
+        for (int i = 0; i < count; i++) {
+            if (accountUID.equals(getItemUID(i))) {
+                return i;
             }
         }
         return -1;

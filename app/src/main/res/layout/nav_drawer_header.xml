@@ -14,38 +14,41 @@
  limitations under the License.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.GnuCash.Toolbar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/theme_primary"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:theme="@style/Theme.GnuCash.Toolbar">
 
-    <TextView
+    <LinearLayout
         android:id="@+id/drawer_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_margin="10dp"
         android:clickable="true"
-        android:drawableStart="@drawable/ic_gnucash"
-        android:drawablePadding="10dp"
         android:gravity="center_vertical"
-        android:text="@string/app_name"
-        android:textColor="@android:color/white"
-        android:textSize="20sp" />
+        android:orientation="horizontal"
+        android:padding="10dp">
 
-    <TextView
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/ic_gnucash" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:gravity="center_vertical"
+            android:text="@string/app_name"
+            android:textColor="?android:textColorPrimary"
+            android:textSize="20sp" />
+    </LinearLayout>
+
+    <Spinner
         android:id="@+id/book_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/dialog_padding"
-        android:clickable="true"
-        android:drawableEnd="@drawable/ic_arrow_drop_down_white"
-        android:ellipsize="end"
-        android:gravity="center_vertical"
-        android:padding="5dp"
-        android:singleLine="true"
-        android:textColor="@android:color/white"
-        android:textSize="@dimen/text_size_medium"
-        tools:text="Current Book Name" />
+        android:minHeight="?android:attr/listPreferredItemHeight" />
 </LinearLayout>

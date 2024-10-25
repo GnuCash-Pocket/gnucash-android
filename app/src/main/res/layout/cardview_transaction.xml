@@ -55,7 +55,7 @@
             android:paddingLeft="24dp"
             android:paddingTop="20dp"
             android:scaleType="centerInside"
-            android:src="@drawable/ic_more_vert_black"
+            android:src="@drawable/ic_more_vert"
             tools:ignore="ContentDescription" />
 
         <ImageView
@@ -68,7 +68,7 @@
             android:paddingTop="6dp"
             android:paddingRight="6dp"
             android:paddingBottom="22dp"
-            android:src="@drawable/ic_edit_black"
+            android:src="@drawable/ic_edit"
             tools:ignore="ContentDescription" />
 
         <TextView
@@ -92,7 +92,7 @@
             android:layout_marginBottom="4dp"
             android:gravity="left|bottom|start"
             android:singleLine="true"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="?android:textColorTertiary"
             android:textSize="14sp"
             tools:text="Sat, 04 July" />
     </RelativeLayout>

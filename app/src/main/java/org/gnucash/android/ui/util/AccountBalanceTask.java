@@ -17,12 +17,15 @@
 
 package org.gnucash.android.ui.util;
 
+import static org.gnucash.android.ui.util.TextViewExtKt.displayBalance;
+
 import android.os.AsyncTask;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
+
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.model.Money;
-import org.gnucash.android.ui.transaction.TransactionsActivity;
 
 import java.lang.ref.WeakReference;
 
@@ -37,10 +40,13 @@ public class AccountBalanceTask extends AsyncTask<String, Void, Money> {
 
     private final WeakReference<TextView> accountBalanceTextViewReference;
     private final AccountsDbAdapter accountsDbAdapter;
+    @ColorInt
+    private final int colorBalanceZero;
 
-    public AccountBalanceTask(TextView balanceTextView) {
+    public AccountBalanceTask(TextView balanceTextView, @ColorInt int colorZero) {
         accountBalanceTextViewReference = new WeakReference<>(balanceTextView);
         accountsDbAdapter = AccountsDbAdapter.getInstance();
+        colorBalanceZero = colorZero;
     }
 
     @Override
@@ -66,7 +72,7 @@ public class AccountBalanceTask extends AsyncTask<String, Void, Money> {
         if (accountBalanceTextViewReference.get() != null && balance != null) {
             final TextView balanceTextView = accountBalanceTextViewReference.get();
             if (balanceTextView != null) {
-                TransactionsActivity.displayBalance(balanceTextView, balance);
+                displayBalance(balanceTextView, balance, colorBalanceZero);
             }
         }
     }

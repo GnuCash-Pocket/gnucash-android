@@ -16,6 +16,8 @@
 
 package org.gnucash.android.ui.transaction.dialog;
 
+import static org.gnucash.android.ui.util.TextViewExtKt.displayBalance;
+
 import android.app.Dialog;
 import android.os.Bundle;
 import android.text.Editable;
@@ -26,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
@@ -58,6 +61,8 @@ public class TransferFundsDialogFragment extends DialogFragment {
     OnTransferFundsListener mOnTransferFundsListener;
 
     private DialogTransferFundsBinding mBinding;
+    @ColorInt
+    private int colorBalanceZero;
 
     public static TransferFundsDialogFragment getInstance(Money transactionAmount, String targetCurrencyCode,
                                                           OnTransferFundsListener transferFundsListener) {
@@ -72,9 +77,10 @@ public class TransferFundsDialogFragment extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mBinding = DialogTransferFundsBinding.inflate(inflater, container, false);
+        colorBalanceZero = mBinding.amountToConvert.getCurrentTextColor();
         View view = mBinding.getRoot();
 
-        TransactionsActivity.displayBalance(mBinding.amountToConvert, mOriginAmount);
+        displayBalance(mBinding.amountToConvert, mOriginAmount, colorBalanceZero);
         String fromCurrencyCode = mOriginAmount.getCommodity().getCurrencyCode();
         mBinding.fromCurrency.setText(fromCurrencyCode);
         mBinding.toCurrency.setText(mTargetCommodity.getCurrencyCode());

@@ -64,7 +64,7 @@
                 android:paddingTop="6dp"
                 android:paddingEnd="6dp"
                 android:paddingBottom="6dp"
-                android:src="@drawable/ic_close_black"
+                android:src="@drawable/ic_close"
                 tools:ignore="ContentDescription" />
         </TableRow>
 
@@ -79,7 +79,7 @@
 
             <ImageView
                 style="@style/FormIcon"
-                android:src="@drawable/ic_account_black" />
+                android:src="@drawable/ic_account" />
 
             <Spinner
                 android:id="@+id/input_budget_account_spinner"

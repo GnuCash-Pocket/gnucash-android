@@ -24,10 +24,10 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
-        android:gravity="left"
-        android:paddingLeft="@dimen/list_item_padding_left"
+        android:gravity="start"
+        android:paddingStart="@dimen/list_item_padding_left"
         android:paddingTop="16dp"
-        android:paddingRight="@dimen/list_item_padding_right"
+        android:paddingEnd="@dimen/list_item_padding_right"
         android:paddingBottom="8dp" />
 
     <androidx.viewpager2.widget.ViewPager2

@@ -48,7 +48,7 @@ import android.widget.Spinner;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.res.ResourcesCompat;
+import androidx.core.content.ContextCompat;
 import androidx.cursoradapter.widget.SimpleCursorAdapter;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -254,7 +254,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
         super.onActivityCreated(savedInstanceState);
 
         CommoditiesCursorAdapter commoditiesAdapter = new CommoditiesCursorAdapter(
-                getActivity(), android.R.layout.simple_spinner_item);
+            getActivity(), android.R.layout.simple_spinner_item);
         commoditiesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         mBinding.inputCurrencySpinner.setAdapter(commoditiesAdapter);
@@ -453,7 +453,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
      */
     private int[] getAccountColorOptions() {
         Resources res = getResources();
-        int colorDefault = ResourcesCompat.getColor(res, R.color.title_green, null);
+        int colorDefault = ContextCompat.getColor(requireContext(), R.color.title_green);
         TypedArray colorTypedArray = res.obtainTypedArray(R.array.account_colors);
         int colorLength = colorTypedArray.length();
         int[] colorOptions = new int[colorLength];
@@ -475,9 +475,9 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
         }
 
         ColorPickerDialog colorPickerDialogFragment = ColorPickerDialog.newInstance(
-                R.string.color_picker_default_title,
-                getAccountColorOptions(),
-                currentColor, 4, 12);
+            R.string.color_picker_default_title,
+            getAccountColorOptions(),
+            currentColor, 4, 12);
         fragmentManager.setFragmentResultListener(COLOR_PICKER_DIALOG_TAG, this, this);
         colorPickerDialogFragment.show(fragmentManager, COLOR_PICKER_DIALOG_TAG);
     }
@@ -517,19 +517,19 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
      */
     private void loadDefaultTransferAccountList() {
         String condition = DatabaseSchema.AccountEntry.COLUMN_UID + " != '" + mAccountUID + "' " //when creating a new account mAccountUID is null, so don't use whereArgs
-                + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0"
-                + " AND " + DatabaseSchema.AccountEntry.COLUMN_HIDDEN + "=0"
-                + " AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + " != ?";
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0"
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_HIDDEN + "=0"
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + " != ?";
 
         Cursor defaultTransferAccountCursor = mAccountsDbAdapter.fetchAccountsOrderedByFullName(condition,
-                new String[]{AccountType.ROOT.name()});
+            new String[]{AccountType.ROOT.name()});
 
         if (mBinding.inputDefaultTransferAccount.getCount() <= 0) {
             setDefaultTransferAccountInputsVisible(false);
         }
 
         mDefaultTransferAccountCursorAdapter = new QualifiedAccountNameCursorAdapter(getActivity(),
-                defaultTransferAccountCursor);
+            defaultTransferAccountCursor);
         mBinding.inputDefaultTransferAccount.setAdapter(mDefaultTransferAccountCursorAdapter);
     }
 
@@ -541,7 +541,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
      */
     private void loadParentAccountList(AccountType accountType) {
         String condition = DatabaseSchema.SplitEntry.COLUMN_TYPE + " IN ("
-                + getAllowedParentAccountTypes(accountType) + ") AND " + DatabaseSchema.AccountEntry.COLUMN_HIDDEN + "!=1 ";
+            + getAllowedParentAccountTypes(accountType) + ") AND " + DatabaseSchema.AccountEntry.COLUMN_HIDDEN + "!=1 ";
 
         if (mAccount != null) {  //if editing an account
             mDescendantAccountUIDs = mAccountsDbAdapter.getDescendantAccountUIDs(mAccount.getUID(), null, null);
@@ -551,7 +551,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
                 descendantAccountUIDs.add(rootAccountUID);
             // limit cyclic account hierarchies.
             condition += " AND (" + DatabaseSchema.AccountEntry.COLUMN_UID + " NOT IN ( '"
-                    + TextUtils.join("','", descendantAccountUIDs) + "','" + mAccountUID + "' ) )";
+                + TextUtils.join("','", descendantAccountUIDs) + "','" + mAccountUID + "' ) )";
         }
 
         //if we are reloading the list, close the previous cursor first
@@ -571,7 +571,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
         }
 
         mParentAccountCursorAdapter = new QualifiedAccountNameCursorAdapter(
-                getActivity(), mParentAccountCursor);
+            getActivity(), mParentAccountCursor);
         mBinding.inputParentAccount.setAdapter(mParentAccountCursorAdapter);
     }
 
@@ -640,7 +640,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
     private void loadAccountTypesList() {
         String[] accountTypes = getResources().getStringArray(R.array.account_type_entry_values);
         ArrayAdapter<String> accountTypesAdapter = new ArrayAdapter<>(
-                getActivity(), android.R.layout.simple_list_item_1, accountTypes);
+            getActivity(), android.R.layout.simple_spinner_item, accountTypes);
 
         accountTypesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mBinding.inputAccountTypeSpinner.setAdapter(accountTypesAdapter);
@@ -653,7 +653,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
      */
     private void finishFragment() {
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
-                Context.INPUT_METHOD_SERVICE);
+            Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(mBinding.inputAccountName.getWindowToken(), 0);
 
         final String action = getActivity().getIntent().getAction();
@@ -724,7 +724,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
         mAccount.setParentUID(newParentAccountUID);
 
         if (mBinding.checkboxDefaultTransferAccount.isChecked()
-                && mBinding.inputDefaultTransferAccount.getSelectedItemId() != Spinner.INVALID_ROW_ID) {
+            && mBinding.inputDefaultTransferAccount.getSelectedItemId() != Spinner.INVALID_ROW_ID) {
             long id = mBinding.inputDefaultTransferAccount.getSelectedItemId();
             mAccount.setDefaultTransferAccountUID(mAccountsDbAdapter.getUID(id));
         } else {
@@ -741,7 +741,7 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
                 newAccountFullName = mAccount.getName();
             } else {
                 newAccountFullName = mAccountsDbAdapter.getAccountFullName(newParentAccountUID) +
-                        AccountsDbAdapter.ACCOUNT_NAME_SEPARATOR + mAccount.getName();
+                    AccountsDbAdapter.ACCOUNT_NAME_SEPARATOR + mAccount.getName();
             }
             mAccount.setFullName(newAccountFullName);
             if (mDescendantAccountUIDs != null) {
@@ -749,8 +749,8 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
                 if ((nameChanged || parentAccountId != newParentAccountId) && mDescendantAccountUIDs.size() > 0) {
                     // parent change, update all full names of descent accounts
                     accountsToUpdate.addAll(mAccountsDbAdapter.getSimpleAccountList(
-                            DatabaseSchema.AccountEntry.COLUMN_UID + " IN ('" +
-                                    TextUtils.join("','", mDescendantAccountUIDs) + "')", null, null
+                        DatabaseSchema.AccountEntry.COLUMN_UID + " IN ('" +
+                            TextUtils.join("','", mDescendantAccountUIDs) + "')", null, null
                     ));
                 }
                 Map<String, Account> mapAccount = new HashMap<>();
@@ -763,9 +763,9 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
                         acct.setFullName(mAccount.getFullName() + AccountsDbAdapter.ACCOUNT_NAME_SEPARATOR + acct.getName());
                     } else {
                         acct.setFullName(
-                                mapAccount.get(acct.getParentUID()).getFullName() +
-                                        AccountsDbAdapter.ACCOUNT_NAME_SEPARATOR +
-                                        acct.getName()
+                            mapAccount.get(acct.getParentUID()).getFullName() +
+                                AccountsDbAdapter.ACCOUNT_NAME_SEPARATOR +
+                                acct.getName()
                         );
                     }
                 }

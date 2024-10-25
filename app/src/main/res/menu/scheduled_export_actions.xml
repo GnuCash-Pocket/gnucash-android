@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/menu_create"
-        android:icon="@drawable/ic_add_white"
+        android:icon="@drawable/ic_add"
         android:title="@string/title_create_export_schedule"
         app:showAsAction="always" />
 </menu>

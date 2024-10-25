@@ -28,18 +28,21 @@
         <item name="android:gravity">center_vertical</item>
     </style>
 
-    <style name="ListItemText">
-        <item name="android:textSize">20sp</item>
-        <item name="android:textColor">@android:color/black</item>
+    <style name="ListItemPrimaryText">
+        <item name="android:textAppearance">?android:textAppearanceLarge</item>
         <item name="android:gravity">center_vertical</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="ListItemSecondaryText">
+        <item name="android:textAppearance">?android:textAppearanceSmall</item>
+        <item name="android:textColor">?android:textColorSecondary</item>
+        <item name="android:singleLine">true</item>
     </style>
 
     <style name="Dropdown.TextView" parent="Widget.AppCompat.Spinner.DropDown.ActionBar">
         <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
-    </style>
-
-    <style name="ButtonBaseStyle">
-        <item name="android:textColor">@android:color/white</item>
     </style>
 
     <style name="TextAppearance" parent="TextAppearance.AppCompat" />
@@ -48,7 +51,6 @@
         <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
         <item name="textAllCaps">true</item>
         <item name="android:textSize">14sp</item>
-        <item name="android:textColor">#FFAAAAAA</item>
     </style>
 
     <style name="TextAppearance.EditTransaction_LabelSmall" parent="TextAppearance.EditTransaction_Small">
@@ -72,11 +74,11 @@
         <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
     </style>
 
-    <style name="ImageButton.Transparent" parent="@android:style/Widget.ImageButton">
+    <style name="ImageButton.Transparent" parent="Widget.AppCompat.ImageButton">
         <item name="android:background">?android:attr/selectableItemBackground</item>
     </style>
 
-    <style name="Dialog.WidgetConfiguration" parent="Theme.AppCompat.Light.Dialog" />
+    <style name="Theme.GnuCash.WidgetConfiguration" />
 
     <style name="FormRow">
         <item name="android:layout_width">match_parent</item>
@@ -87,7 +89,7 @@
         <item name="android:layout_marginTop">@dimen/form_row_bottom_margin</item>
     </style>
 
-    <style name="NumericButton" parent="@android:style/Widget.Button">
+    <style name="NumericButton" parent="Widget.AppCompat.Button">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_weight">1</item>
@@ -96,7 +98,7 @@
         <item name="android:background">@drawable/numeric_button</item>
     </style>
 
-    <style name="PasscodeEditText" parent="@android:style/Widget.EditText">
+    <style name="PasscodeEditText" parent="Widget.AppCompat.EditText">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:cursorVisible">false</item>
@@ -121,7 +123,7 @@
         <item name="android:layout_marginEnd">10dp</item>
     </style>
 
-    <style name="ActionMenuText" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="ActionMenuText" parent="Theme.AppCompat.DayNight.DarkActionBar">
         <item name="android:textSize">16sp</item>
         <item name="android:textAllCaps">true</item>
     </style>
@@ -131,11 +133,17 @@
         <item name="android:layout_weight">5</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textSize">16sp</item>
-        <item name="android:textColor">@android:color/black</item>
+        <item name="android:textColor">?android:textColorPrimary</item>
     </style>
 
-    <style name="CustomDialog" parent="Theme.AppCompat.Light.Dialog">
-        <item name="android:windowNoTitle">false</item>
+    <style name="GnuCash.TabLayout" parent="Widget.Design.TabLayout">
+        <item name="android:background">?attr/colorPrimary</item>
+        <item name="android:minHeight">?attr/actionBarSize</item>
+        <item name="elevation">@dimen/elevation_default</item>
     </style>
 
+    <style name="Widget.GnuCash.Toolbar" parent="Widget.AppCompat.Toolbar">
+        <item name="android:background">?attr/colorPrimary</item>
+        <item name="elevation">@dimen/elevation_default</item>
+    </style>
 </resources>

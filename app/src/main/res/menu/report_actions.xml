@@ -2,7 +2,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/menu_group_reports_by"
-        android:icon="@drawable/ic_filter_list_white"
+        android:icon="@drawable/ic_filter_list"
         android:title="@string/menu_group_by"
         app:showAsAction="ifRoom|withText">
         <menu>

@@ -31,21 +31,20 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <include layout="@layout/toolbar" />
+            <include
+                android:id="@+id/toolbar_layout"
+                layout="@layout/toolbar" />
 
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tab_layout"
+                style="@style/GnuCash.TabLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/colorPrimary"
-                android:minHeight="?attr/actionBarSize"
-                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-                app:elevation="10dp"
-                app:tabIndicatorColor="@android:color/white" />
+                android:theme="@style/Theme.GnuCash.TabLayout" />
 
         </com.google.android.material.appbar.AppBarLayout>
 
-        <androidx.viewpager.widget.ViewPager
+        <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/pager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -58,9 +57,10 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:layout_alignParentBottom="true"
-            android:layout_gravity="end|bottom|right"
+            android:layout_gravity="end|bottom"
             android:layout_margin="20dp"
-            android:src="@drawable/ic_add_white"
+            android:contentDescription="@string/title_create_account"
+            android:src="@drawable/ic_add"
             app:elevation="10dp" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
@@ -72,6 +72,4 @@
         android:layout_gravity="start"
         app:headerLayout="@layout/nav_drawer_header"
         app:menu="@menu/nav_drawer_menu" />
-
 </androidx.drawerlayout.widget.DrawerLayout>
-

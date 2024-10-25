@@ -30,7 +30,9 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <include layout="@layout/toolbar" />
+            <include
+                android:id="@+id/toolbar_layout"
+                layout="@layout/toolbar" />
 
             <FrameLayout
                 android:id="@+id/fragment_container"
@@ -43,10 +45,10 @@
             android:id="@+id/fab_create_budget"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end|bottom|right"
+            android:layout_gravity="end|bottom"
             android:layout_margin="20dp"
             android:onClick="onCreateBudgetClick"
-            android:src="@drawable/ic_add_white"
+            android:src="@drawable/ic_add"
             app:elevation="10dp" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
@@ -58,6 +60,4 @@
         android:layout_gravity="start"
         app:headerLayout="@layout/nav_drawer_header"
         app:menu="@menu/nav_drawer_menu" />
-
 </androidx.drawerlayout.widget.DrawerLayout>
-

@@ -14,59 +14,43 @@
  limitations under the License.
 -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/widget_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/widget_margin">
+    android:background="@color/widget_bg"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/edge_padding"
+    android:paddingTop="@dimen/widget_margin"
+    android:paddingEnd="@dimen/edge_padding"
+    android:paddingBottom="@dimen/widget_margin"
+    android:theme="@style/Theme.GnuCash">
 
-    <LinearLayout
-        android:id="@+id/widget_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/appwidget_dark_bg_clickable"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+    <TextView
+        android:id="@+id/account_name"
+        style="?android:textAppearanceLarge"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:maxLines="2"
+        android:text="@string/label_account_name" />
 
-        <TextView
-            android:id="@+id/account_name"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="@dimen/edge_padding"
-            android:layout_weight="1"
-            android:ellipsize="end"
-            android:gravity="center_vertical"
-            android:singleLine="true"
-            android:text="@string/label_account_name"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@android:color/white" />
+    <TextView
+        android:id="@+id/transactions_summary"
+        style="@style/ListItemPrimaryText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/widget_margin"
+        android:layout_marginEnd="@dimen/widget_margin"
+        tools:text="$100.00" />
 
-        <TextView
-            android:id="@+id/transactions_summary"
-            style="@style/ListItemText"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginStart="@dimen/widget_margin"
-            android:layout_marginEnd="@dimen/widget_margin"
-            android:singleLine="true" />
-
-        <ImageButton
-            android:id="@+id/btn_new_transaction"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="@dimen/edge_padding"
-            android:layout_marginEnd="@dimen/edge_padding"
-            android:background="@drawable/appwidget_bg_clickable"
-            android:contentDescription="@string/description_add_transaction_icon"
-            android:src="@drawable/ic_add_black" />
-
-        <ImageButton
-            android:id="@+id/btn_view_account"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="@dimen/edge_padding"
-            android:layout_marginEnd="@dimen/edge_padding"
-            android:background="@drawable/appwidget_bg_clickable"
-            android:contentDescription="@string/description_view_account_icon"
-            android:src="@drawable/ic_info_black" />
-    </LinearLayout>
-</FrameLayout>
+    <ImageButton
+        android:id="@+id/btn_new_transaction"
+        android:layout_width="@dimen/widget_button_size"
+        android:layout_height="@dimen/widget_button_size"
+        android:layout_marginStart="@dimen/edge_padding"
+        android:contentDescription="@string/description_add_transaction_icon"
+        android:src="@drawable/ic_add" />
+</LinearLayout>

@@ -526,8 +526,7 @@ public class AccountsActivityTest {
             mActivityRule.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Fragment fragment = mAccountsActivity.getCurrentAccountListFragment();
-                    ((Refreshable) fragment).refresh();
+                    mAccountsActivity.refresh();
                 }
             });
         } catch (Throwable throwable) {
