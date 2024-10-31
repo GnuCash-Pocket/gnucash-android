@@ -31,7 +31,7 @@ import androidx.recyclerview.widget.RecyclerView;
  */
 public class EmptyRecyclerView extends RecyclerView {
     @Nullable
-    View emptyView;
+    private View emptyView;
 
     public EmptyRecyclerView(Context context) {
         super(context);
@@ -45,9 +45,12 @@ public class EmptyRecyclerView extends RecyclerView {
         super(context, attrs, defStyle);
     }
 
-    void checkIfEmpty() {
-        if (emptyView != null && getAdapter() != null) {
-            emptyView.setVisibility(getAdapter().getItemCount() > 0 ? GONE : VISIBLE);
+    private void checkIfEmpty() {
+        if (emptyView != null) {
+            Adapter adapter = getAdapter();
+            int count = (adapter != null) ? adapter.getItemCount() : 0;
+            setVisibility(count > 0 ? VISIBLE : INVISIBLE);
+            emptyView.setVisibility(count > 0 ? GONE : VISIBLE);
         }
     }
 
@@ -60,8 +63,20 @@ public class EmptyRecyclerView extends RecyclerView {
         }
 
         @Override
+        public void onItemRangeChanged(int positionStart, int itemCount) {
+            super.onItemRangeChanged(positionStart, itemCount);
+            checkIfEmpty();
+        }
+
+        @Override
         public void onItemRangeInserted(int positionStart, int itemCount) {
             super.onItemRangeInserted(positionStart, itemCount);
+            checkIfEmpty();
+        }
+
+        @Override
+        public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+            super.onItemRangeMoved(fromPosition, toPosition, itemCount);
             checkIfEmpty();
         }
 

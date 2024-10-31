@@ -90,14 +90,14 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
         View view = mBinding.getRoot();
         mBinding.listItem2Lines.secondaryText.setMaxLines(3);
 
-        mBinding.budgetAmountRecycler.setHasFixedSize(true);
+        mBinding.list.setHasFixedSize(true);
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
-            mBinding.budgetAmountRecycler.setLayoutManager(gridLayoutManager);
+            mBinding.list.setLayoutManager(gridLayoutManager);
         } else {
             LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-            mBinding.budgetAmountRecycler.setLayoutManager(mLayoutManager);
+            mBinding.list.setLayoutManager(mLayoutManager);
         }
         return view;
     }
@@ -127,7 +127,7 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
         }
         mBinding.budgetRecurrence.setText(budget.getRecurrence().getRepeatString(context));
 
-        mBinding.budgetAmountRecycler.setAdapter(new BudgetAmountAdapter());
+        mBinding.list.setAdapter(new BudgetAmountAdapter());
     }
 
     @Override

@@ -32,7 +32,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
-import androidx.fragment.app.Fragment;
 
 import com.dropbox.core.DbxException;
 import com.dropbox.core.v2.DbxClientV2;
@@ -63,7 +62,6 @@ import org.gnucash.android.export.ofx.OfxExporter;
 import org.gnucash.android.export.qif.QifExporter;
 import org.gnucash.android.export.xml.GncXmlExporter;
 import org.gnucash.android.model.Transaction;
-import org.gnucash.android.ui.account.AccountsActivity;
 import org.gnucash.android.ui.common.GnucashProgressDialog;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.settings.BackupPreferenceFragment;
@@ -564,10 +562,6 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
     private void refreshViews() {
         if (mContext instanceof Refreshable) {
             ((Refreshable) mContext).refresh();
-        } else if (mContext instanceof AccountsActivity) {
-            ((AccountsActivity) mContext).refresh();
-        } else if (mContext instanceof TransactionsActivity) {
-            ((TransactionsActivity) mContext).refresh();
         }
     }
 }

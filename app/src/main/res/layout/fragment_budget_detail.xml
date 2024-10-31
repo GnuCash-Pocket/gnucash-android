@@ -40,7 +40,7 @@
         tools:text="$2,500 monthly" />
 
     <org.gnucash.android.ui.util.widget.EmptyRecyclerView
-        android:id="@+id/budget_amount_recycler"
+        android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="@dimen/edge_padding" />

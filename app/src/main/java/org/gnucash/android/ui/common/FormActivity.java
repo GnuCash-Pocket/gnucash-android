@@ -88,9 +88,12 @@ public class FormActivity extends PasscodeLockActivity {
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeAsUpIndicator(R.drawable.ic_close);
 
-        mAccountUID = intent.getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
+        Bundle args = intent.getExtras();
+        if (args == null) args = new Bundle();
+
+        mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID);
         if (mAccountUID == null) {
-            mAccountUID = intent.getStringExtra(UxArgument.PARENT_ACCOUNT_UID);
+            mAccountUID = args.getString(UxArgument.PARENT_ACCOUNT_UID);
         }
         if (mAccountUID != null) {
             int colorCode = AccountsDbAdapter.getActiveAccountColorResource(mAccountUID);
@@ -98,8 +101,6 @@ public class FormActivity extends PasscodeLockActivity {
             getWindow().setStatusBarColor(GnuCashApplication.darken(colorCode));
         }
 
-        Bundle args = intent.getExtras();
-        if (args == null) args = new Bundle();
         String formtypeString = args.getString(UxArgument.FORM_TYPE);
         FormType formType = FormType.valueOf(formtypeString);
         switch (formType) {

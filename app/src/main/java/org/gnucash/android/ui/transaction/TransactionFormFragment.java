@@ -212,7 +212,7 @@ public class TransactionFormFragment extends Fragment implements
         setListeners();
         //updateTransferAccountsList must only be called after initializing mAccountsDbAdapter
         updateTransferAccountsList();
-        initalizeViews();
+        initializeViews();
 
         if (mTransaction == null) {
             initTransactionNameAutocomplete();
@@ -455,7 +455,7 @@ public class TransactionFormFragment extends Fragment implements
         Commodity commodity = Commodity.getInstance(currencyCode);
         mBinding.inputTransactionAmount.setCommodity(commodity);
 
-        mBinding.checkboxSaveTemplate.setChecked(mTransaction.isTemplate());
+        mBinding.checkboxSaveTemplate.setChecked(transaction.isTemplate());
         String scheduledActionUID = transaction.getScheduledActionUID();
         if (!TextUtils.isEmpty(scheduledActionUID)) {
             Context context = mBinding.inputRecurrence.getContext();
@@ -487,7 +487,7 @@ public class TransactionFormFragment extends Fragment implements
      * Initialize views with default data for new transactions
      */
     private void initializeViews() {
-        Context context = mTransactionTypeSwitch.getContext();
+        Context context = mBinding.inputTransactionType.getContext();
 
         long now = System.currentTimeMillis();
         mBinding.inputDate.setText(DATE_FORMATTER.print(now));
@@ -521,8 +521,8 @@ public class TransactionFormFragment extends Fragment implements
                 currentAccountUID = mAccountsDbAdapter.getParentAccountUID(currentAccountUID);
             } while (!currentAccountUID.equals(rootAccountUID));
         } else {
-            mDoubleEntryLayout.setVisibility(View.GONE);
-            mOpenSplitEditor.setVisibility(View.GONE);
+            mBinding.layoutDoubleEntry.setVisibility(View.GONE);
+            mBinding.btnSplitEditor.setVisibility(View.GONE);
         }
     }
 
@@ -844,7 +844,6 @@ public class TransactionFormFragment extends Fragment implements
      * and save a transaction
      */
     private void saveNewTransaction() {
-        final Context context = mBinding.inputTransactionAmount.getContext();
         mBinding.inputTransactionAmount.setError(null);
 
         //determine whether we need to do currency conversion
@@ -854,7 +853,7 @@ public class TransactionFormFragment extends Fragment implements
             return;
         }
 
-        boolean isTemplate = mSaveTemplateCheckbox.isChecked();
+        boolean isTemplate = mBinding.checkboxSaveTemplate.isChecked();
         Transaction transactionOld = mTransaction;
         Transaction transaction = extractTransactionFromView();
         String scheduledActionUID = null;

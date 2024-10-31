@@ -37,8 +37,8 @@ import org.gnucash.android.ui.common.BaseDrawerActivity;
  */
 public class ScheduledActionsActivity extends BaseDrawerActivity {
 
-    public static final int INDEX_SCHEDULED_TRANSACTIONS = 0;
-    public static final int INDEX_SCHEDULED_EXPORTS = 1;
+    private static final int INDEX_SCHEDULED_TRANSACTIONS = 0;
+    private static final int INDEX_SCHEDULED_EXPORTS = 1;
 
     private ActivityScheduledEventsBinding binding;
 
@@ -117,9 +117,9 @@ public class ScheduledActionsActivity extends BaseDrawerActivity {
         public Fragment getItem(int position) {
             switch (position) {
                 case INDEX_SCHEDULED_TRANSACTIONS:
-                    return ScheduledActionsListFragment.getInstance(ScheduledAction.ActionType.TRANSACTION);
+                    return new ScheduledTransactionsListFragment();
                 case INDEX_SCHEDULED_EXPORTS:
-                    return ScheduledActionsListFragment.getInstance(ScheduledAction.ActionType.BACKUP);
+                    return new ScheduledExportsListFragment();
             }
             return null;
         }

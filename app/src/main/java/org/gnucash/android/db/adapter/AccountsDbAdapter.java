@@ -493,6 +493,28 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     }
 
     /**
+     * Returns the color code for the account in format #rrggbb
+     *
+     * @param accountUID UID of the account
+     * @return String color code of account or null if none
+     */
+    public String getAccountColorCode(String accountUID) {
+        Cursor c = mDb.query(AccountEntry.TABLE_NAME,
+                new String[]{AccountEntry._ID, AccountEntry.COLUMN_COLOR_CODE},
+                AccountEntry.COLUMN_UID + "=?",
+                new String[]{accountUID}, null, null, null);
+        try {
+            if (c.moveToFirst()) {
+                return c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_COLOR_CODE));
+            } else {
+                return null;
+            }
+        } finally {
+            c.close();
+        }
+    }
+
+    /**
      * Overloaded method. Resolves the account unique ID from the row ID and makes a call to {@link #getAccountType(String)}
      *
      * @param accountId Database row ID of the account
@@ -1246,7 +1268,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
         String parentAccountUID = accountUID;
         while (parentAccountUID != null) {
-            String colorCode = accountsDbAdapter.getAccountColorCode(accountsDbAdapter.getID(parentAccountUID));
+            String colorCode = accountsDbAdapter.getAccountColorCode(parentAccountUID);
             if (!TextUtils.isEmpty(colorCode)) {
                 Integer color = parseColor(colorCode);
                 if (color != null) {

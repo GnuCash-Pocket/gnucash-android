@@ -68,11 +68,6 @@ public final class UxArgument {
     public static final String TRANSACTION_UID = "transaction_uid";
 
     /**
-     * Key for passing the scheduled UID to the transactions editor
-     */
-    public static final String SCHEDULED_UID = "scheduled_uid";
-
-    /**
      * Key for passing the scheduled action UID to the transactions editor
      */
     public static final String SCHEDULED_ACTION_UID = "scheduled_action_uid";

@@ -171,7 +171,7 @@ public class TransactionsActivityTest {
 
 
     private void validateTransactionListDisplayed() {
-        onView(withId(R.id.transaction_recycler_view)).check(matches(isDisplayed()));
+        onView(withId(android.R.id.list)).check(matches(isDisplayed()));
     }
 
     private int getTransactionCount() {
