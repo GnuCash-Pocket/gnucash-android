@@ -120,7 +120,7 @@ public class BudgetAmountEditorFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_add_budget_amount:
+            case R.id.menu_add:
                 addBudgetAmountView(null);
                 return true;
 
