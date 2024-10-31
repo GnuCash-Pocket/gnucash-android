@@ -96,10 +96,6 @@
     <string name="title_account_preferences">Рахунки</string>
     <string name="title_default_transaction_type">Початковий тип транзакції</string>
     <string name="summary_default_transaction_type">Початковий тип транзакції: КРЕДИТ або ДЕБЕТ</string>
-    <string-array name="transaction_types">
-        <item>КРЕДИТ</item>
-        <item>ДЕБЕТ</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">Бажаєте видалити ВСІ транзакції?</string>
     <string name="msg_delete_transaction_confirmation">Бажаєте видалити цю транзакцію?</string>
     <string name="title_export_preference_category">Експорт</string>

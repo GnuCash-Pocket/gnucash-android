@@ -64,14 +64,8 @@ public class TransactionsPreferenceFragment extends PreferenceFragmentCompat imp
         super.onResume();
 
         SharedPreferences sharedPreferences = getPreferenceManager().getSharedPreferences();
-        String defaultTransactionType = sharedPreferences.getString(
-                getString(R.string.key_default_transaction_type),
-                getString(R.string.label_debit));
-        Preference pref = findPreference(getString(R.string.key_default_transaction_type));
-        setLocalizedSummary(pref, defaultTransactionType);
-        pref.setOnPreferenceChangeListener(this);
 
-        pref = findPreference(getString(R.string.key_use_double_entry));
+        Preference pref = findPreference(getString(R.string.key_use_double_entry));
         pref.setOnPreferenceChangeListener(this);
 
         String keyCompactView = getString(R.string.key_use_compact_list);
@@ -101,8 +95,6 @@ public class TransactionsPreferenceFragment extends PreferenceFragmentCompat imp
         if (preference.getKey().equals(getString(R.string.key_use_double_entry))) {
             boolean useDoubleEntry = (Boolean) newValue;
             setImbalanceAccountsHidden(useDoubleEntry);
-        } else {
-            setLocalizedSummary(preference, newValue.toString());
         }
         return true;
     }
@@ -138,16 +130,4 @@ public class TransactionsPreferenceFragment extends PreferenceFragmentCompat imp
             }
         }
     }
-
-    /**
-     * Localizes the label for DEBIT/CREDIT in the settings summary
-     *
-     * @param preference Preference whose summary is to be localized
-     * @param value      New value for the preference summary
-     */
-    private void setLocalizedSummary(Preference preference, String value) {
-        String localizedLabel = value.equals("DEBIT") ? getString(R.string.label_debit) : getActivity().getString(R.string.label_credit);
-        preference.setSummary(localizedLabel);
-    }
-
 }

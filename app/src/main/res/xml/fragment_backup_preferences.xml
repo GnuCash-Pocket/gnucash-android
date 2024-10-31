@@ -60,6 +60,7 @@
             android:summary="@string/summary_default_export_format"
             android:title="@string/title_default_export_format" />
         <androidx.preference.EditTextPreference
+            android:icon="@drawable/ic_attach_email"
             android:inputType="textEmailAddress"
             android:key="@string/key_default_export_email"
             android:summary="@string/summary_default_export_email"
@@ -69,6 +70,7 @@
             android:summary="@string/hint_export_choice"
             android:title="@string/title_export_all_transactions" />
         <androidx.preference.SwitchPreferenceCompat
+            android:icon="@drawable/ic_delete"
             android:key="@string/key_delete_transactions_after_export"
             android:summary="@string/hint_delete_after_export"
             android:title="@string/title_always_delete_exported_transactions" />

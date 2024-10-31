@@ -96,10 +96,6 @@
     <string name="title_account_preferences">Hesap Tercihleri</string>
     <string name="title_default_transaction_type">Öntanımlı İşlem Türü</string>
     <string name="summary_default_transaction_type">Öntanımlı kullanmak üzere işlem türü, KREDİ veya BANKA</string>
-    <string-array name="transaction_types">
-        <item>KREDİ</item>
-        <item>BANKA</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">TÜM işlemleri silmek istediğinizden emin misiniz?</string>
     <string name="msg_delete_transaction_confirmation">Bu işlemi silmek istediğinizden emin misiniz?</string>
     <string name="title_export_preference_category">Dışa Aktar</string>

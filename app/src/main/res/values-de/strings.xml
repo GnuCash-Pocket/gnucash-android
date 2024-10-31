@@ -96,10 +96,6 @@
     <string name="title_account_preferences">Einstellungen Konten</string>
     <string name="title_default_transaction_type">Voreinstellung Buchungsart</string>
     <string name="summary_default_transaction_type">Die voreingestellte Buchungsart: Soll oder Haben</string>
-    <string-array name="transaction_types">
-        <item>Haben</item>
-        <item>Soll</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">Wollen Sie wirklich ALLE Buchungen löschen?</string>
     <string name="msg_delete_transaction_confirmation">Wollen Sie wirklich diese Buchung löschen?</string>
     <string name="title_export_preference_category">Exportieren</string>
