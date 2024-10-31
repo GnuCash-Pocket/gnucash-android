@@ -304,7 +304,7 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
     @Override
     public void onRecurrenceSet(String rrule) {
         Timber.i("Budget reoccurs: %s", rrule);
-        Context context = mRecurrenceInput.getContext();
+        Context context = mBinding.inputRecurrence.getContext();
         mRecurrenceRule = rrule;
         String repeatString = null;
         if (!TextUtils.isEmpty(rrule)) {

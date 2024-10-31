@@ -499,7 +499,7 @@ public class ExportFormFragment extends Fragment implements
     @Override
     public void onRecurrenceSet(String rrule) {
         Timber.i("Export reoccurs: %s", rrule);
-        Context context = mRecurrenceTextView.getContext();
+        Context context = mBinding.inputRecurrence.getContext();
         mRecurrenceRule = rrule;
         String repeatString = null;
         if (!TextUtils.isEmpty(rrule)) {
