@@ -17,6 +17,9 @@ package org.gnucash.android.ui.wizard;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.tech.freak.wizardpager.model.AbstractWizardModel;
 import com.tech.freak.wizardpager.model.BranchPage;
 import com.tech.freak.wizardpager.model.Page;
@@ -25,9 +28,11 @@ import com.tech.freak.wizardpager.model.SingleFixedChoicePage;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.model.Commodity;
 
-import java.util.Arrays;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
@@ -35,42 +40,97 @@ import java.util.TreeSet;
  */
 public class FirstRunWizardModel extends AbstractWizardModel {
 
+    public String titleWelcome;
+
+    public String titleCurrency;
+    public String titleOtherCurrency;
+    public String optionCurrencyOther;
+    private Map<String, String> currencies;
+
+    public String titleAccount;
+
+    public String titleFeedback;
+    public String optionFeedbackSend;
+    public String optionFeedbackDisable;
+
+    public String optionAccountDefault;
+    public String optionAccountImport;
+    public String optionAccountUser;
+
     public FirstRunWizardModel(Context context) {
         super(context);
     }
 
     @Override
     protected PageList onNewRootPageList() {
-        String defaultCurrencyCode = GnuCashApplication.getDefaultCurrencyCode();
-        BranchPage defaultCurrencyPage = new BranchPage(this, mContext.getString(R.string.wizard_title_default_currency));
+        final Context context = mContext;
 
-        String[] currencies = new String[]{defaultCurrencyCode, "CHF", "EUR", "GBP", "USD"};
-        Set<String> currencySet = new TreeSet<>(Arrays.asList(currencies));
+        titleWelcome = context.getString(R.string.wizard_title_welcome_to_gnucash);
+        Page welomePage = new WelcomePage(this, titleWelcome);
 
+        titleOtherCurrency = context.getString(R.string.wizard_title_select_currency);
 
-        defaultCurrencyPage.setChoices(currencySet.toArray(new String[currencySet.size()]));
-        defaultCurrencyPage.setRequired(true);
-        defaultCurrencyPage.setValue(defaultCurrencyCode);
+        CurrencySelectPage otherCurrencyPage = new CurrencySelectPage(this, titleOtherCurrency)
+            .setChoices();
+        currencies = new HashMap<>();
+        currencies.putAll(otherCurrencyPage.currencies);
 
-        Page defaultAccountsPage = new SingleFixedChoicePage(this, mContext.getString(R.string.wizard_title_account_setup))
-                .setChoices(mContext.getString(R.string.wizard_option_create_default_accounts),
-                        mContext.getString(R.string.wizard_option_import_my_accounts),
-                        mContext.getString(R.string.wizard_option_let_me_handle_it))
-                .setValue(mContext.getString(R.string.wizard_option_create_default_accounts))
-                .setRequired(true);
-        for (String currency : currencySet) {
-            defaultCurrencyPage.addBranch(currency, defaultAccountsPage);
+        titleAccount = context.getString(R.string.wizard_title_account_setup);
+        optionAccountDefault = context.getString(R.string.wizard_option_create_default_accounts);
+        optionAccountImport = context.getString(R.string.wizard_option_import_my_accounts);
+        optionAccountUser = context.getString(R.string.wizard_option_let_me_handle_it);
+
+        Page accountsPage = new SingleFixedChoicePage(this, titleAccount)
+            .setChoices(optionAccountDefault, optionAccountImport, optionAccountUser)
+            .setValue(optionAccountDefault)
+            .setRequired(true);
+
+        titleCurrency = context.getString(R.string.wizard_title_default_currency);
+        optionCurrencyOther = context.getString(R.string.wizard_option_currency_other);
+
+        SortedSet<String> currenciesLabels = new TreeSet<>();
+        String currencyDefault = addCurrency(Commodity.DEFAULT_COMMODITY);
+        currenciesLabels.add(currencyDefault);
+        currenciesLabels.add(addCurrency(Commodity.AUD));
+        currenciesLabels.add(addCurrency(Commodity.CAD));
+        currenciesLabels.add(addCurrency(Commodity.CHF));
+        currenciesLabels.add(addCurrency(Commodity.EUR));
+        currenciesLabels.add(addCurrency(Commodity.GBP));
+        currenciesLabels.add(addCurrency(Commodity.JPY));
+        currenciesLabels.add(addCurrency(Commodity.USD));
+
+        BranchPage currencyPage = new BranchPage(this, titleCurrency);
+        for (String code : currenciesLabels) {
+            currencyPage.addBranch(code, accountsPage);
         }
+        currencyPage.addBranch(optionCurrencyOther, otherCurrencyPage, accountsPage)
+            .setValue(currencyDefault)
+            .setRequired(true);
 
-        defaultCurrencyPage.addBranch(mContext.getString(R.string.wizard_option_currency_other),
-                new CurrencySelectPage(this, mContext.getString(R.string.wizard_title_select_currency)), defaultAccountsPage).setRequired(true);
+        titleFeedback = context.getString(R.string.wizard_title_feedback_options);
+        optionFeedbackSend = context.getString(R.string.wizard_option_auto_send_crash_reports);
+        optionFeedbackDisable = context.getString(R.string.wizard_option_disable_crash_reports);
+
+        Page feedbackPage = new SingleFixedChoicePage(this, titleFeedback)
+            .setChoices(optionFeedbackSend, optionFeedbackDisable)
+            .setRequired(true);
+
         return new PageList(
-                new WelcomePage(this, mContext.getString(R.string.wizard_title_welcome_to_gnucash)),
-                defaultCurrencyPage,
-                new SingleFixedChoicePage(this, mContext.getString(R.string.wizard_title_feedback_options))
-                        .setChoices(mContext.getString(R.string.wizard_option_auto_send_crash_reports),
-                                mContext.getString(R.string.wizard_option_disable_crash_reports))
-                        .setRequired(true)
+            welomePage,
+            currencyPage,
+            feedbackPage
         );
+    }
+
+    private String addCurrency(@NonNull Commodity commodity) {
+        String code = commodity.getCurrencyCode();
+        String label = code + " - " + commodity.getFullname();
+        currencies.put(label, code);
+        return label;
+    }
+
+    @Nullable
+    public String getCurrencyByLabel(String label) {
+        return currencies.get(label);
     }
 }

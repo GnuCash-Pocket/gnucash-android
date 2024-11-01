@@ -20,7 +20,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -32,13 +31,13 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.export.ExportAsyncTask;
 import org.gnucash.android.export.ExportFormat;
 import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.Exporter;
+import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.account.AccountsActivity;
 import org.gnucash.android.ui.settings.dialog.DeleteAllAccountsConfirmationDialog;
@@ -75,14 +74,13 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         actionBar.setTitle(R.string.title_account_preferences);
 
-        Cursor cursor = CommoditiesDbAdapter.getInstance().fetchAllRecords(DatabaseSchema.CommodityEntry.COLUMN_MNEMONIC + " ASC");
-        while (cursor.moveToNext()) {
-            String code = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.CommodityEntry.COLUMN_MNEMONIC));
-            String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.CommodityEntry.COLUMN_FULLNAME));
+        List<Commodity> commodities = CommoditiesDbAdapter.getInstance().getAllRecords();
+        for (Commodity commodity : commodities) {
+            String code = commodity.getCurrencyCode();
+            String name = commodity.getFullname();
             mCurrencyEntries.add(code + " - " + name);
             mCurrencyEntryValues.add(code);
         }
-        cursor.close();
     }
 
     @Override

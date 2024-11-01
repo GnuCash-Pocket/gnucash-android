@@ -16,39 +16,47 @@
 
 package org.gnucash.android.ui.wizard;
 
-import android.text.TextUtils;
-
-import androidx.fragment.app.Fragment;
+import androidx.annotation.NonNull;
 
 import com.tech.freak.wizardpager.model.ModelCallbacks;
-import com.tech.freak.wizardpager.model.Page;
-import com.tech.freak.wizardpager.model.ReviewItem;
+import com.tech.freak.wizardpager.model.SingleFixedChoicePage;
+
+import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
+import org.gnucash.android.model.Commodity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Page displaying all the commodities in the database
  */
-public class CurrencySelectPage extends Page {
+public class CurrencySelectPage extends SingleFixedChoicePage {
 
-    public static final String CURRENCY_CODE_DATA_KEY = "currency_code_data_key";
+    final Map<String, String> currencies = new HashMap<>();
 
-    protected CurrencySelectPage(ModelCallbacks callbacks, String title) {
+    public CurrencySelectPage(ModelCallbacks callbacks, String title) {
         super(callbacks, title);
     }
 
-    @Override
-    public Fragment createFragment() {
-        return CurrencySelectFragment.newInstance(getKey());
+    public CurrencySelectPage setChoices() {
+        currencies.clear();
+        CommoditiesDbAdapter adapter = GnuCashApplication.getCommoditiesDbAdapter();
+        List<Commodity> commodities = adapter.getAllRecords();
+        List<String> choices = new ArrayList<>();
+        for (Commodity commodity : commodities) {
+            choices.add(addCurrency(commodity));
+        }
+        setChoices(choices.toArray(new String[0]));
+        return this;
     }
 
-    @Override
-    public void getReviewItems(ArrayList<ReviewItem> arrayList) {
-        arrayList.add(new ReviewItem(getTitle(), mData.getString(CURRENCY_CODE_DATA_KEY), getKey()));
-    }
-
-    @Override
-    public boolean isCompleted() {
-        return !TextUtils.isEmpty(mData.getString(CURRENCY_CODE_DATA_KEY));
+    private String addCurrency(@NonNull Commodity commodity) {
+        String code = commodity.getCurrencyCode();
+        String label = code + " - " + commodity.getFullname();
+        currencies.put(label, code);
+        return label;
     }
 }
