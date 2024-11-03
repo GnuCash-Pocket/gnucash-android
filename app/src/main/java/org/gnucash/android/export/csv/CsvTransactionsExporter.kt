@@ -16,6 +16,8 @@
 package org.gnucash.android.export.csv
 
 import android.content.Context
+import java.io.FileWriter
+import java.io.IOException
 import org.gnucash.android.R
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
@@ -27,20 +29,20 @@ import org.gnucash.android.util.PreferencesHelper
 import org.gnucash.android.util.TimestampHelper
 import org.joda.time.format.DateTimeFormat
 import timber.log.Timber
-import java.io.FileWriter
-import java.io.IOException
-import java.util.Arrays
 
 /**
  * Creates a GnuCash CSV transactions representation of the accounts and transactions
  *
  * @author Semyannikov Gleb <nightdevgame></nightdevgame>@gmail.com>
  */
-class CsvTransactionsExporter(context: Context,
-                              params: ExportParams,
-                              bookUID: String) : Exporter(context, params, bookUID) {
+class CsvTransactionsExporter(
+    context: Context,
+    params: ExportParams,
+    bookUID: String
+) : Exporter(context, params, bookUID) {
     private val mCsvSeparator = params.csvSeparator
     private val dateFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
+    private val accountCache: MutableMap<String, Account> = HashMap()
 
     @Throws(ExporterException::class)
     override fun generateExport(): List<String> {
@@ -62,7 +64,6 @@ class CsvTransactionsExporter(context: Context,
 
     @Throws(IOException::class, CurrencyMismatchException::class)
     private fun writeSplitsToCsv(splits: List<Split>, writer: CsvWriter) {
-        val accountCache: MutableMap<String, Account> = HashMap()
         for ((index, split) in splits.withIndex()) {
             if (index > 0) {
                 // The first split is on the same line as the transactions. But after that, the
@@ -81,7 +82,7 @@ class CsvTransactionsExporter(context: Context,
             writer.writeToken(split.memo)
             val accountUID = split.accountUID!!
             val account = accountCache.getOrPut(accountUID) {
-                mAccountsDbAdapter.getRecord(accountUID)
+                mAccountsDbAdapter.getSimpleRecord(accountUID)
             }
             writer.writeToken(account.fullName)
             writer.writeToken(account.name)
@@ -110,12 +111,13 @@ class CsvTransactionsExporter(context: Context,
             Timber.d("Exporting %d transactions to CSV", cursor.count)
             while (cursor.moveToNext()) {
                 val transaction = mTransactionsDbAdapter.buildModelInstance(cursor)
+                val commodity = transaction.commodity
                 csvWriter.writeToken(dateFormat.print(transaction.timeMillis))
                 csvWriter.writeToken(transaction.uID)
                 csvWriter.writeToken(null)  // Transaction number
                 csvWriter.writeToken(transaction.description)
                 csvWriter.writeToken(transaction.note)
-                csvWriter.writeToken("CURRENCY::${transaction.currencyCode}")
+                csvWriter.writeToken("${commodity.namespace}::${commodity.currencyCode}")
                 csvWriter.writeToken(null)  // Void Reason
                 csvWriter.writeToken(null)  // Action
                 writeSplitsToCsv(transaction.splits, csvWriter)

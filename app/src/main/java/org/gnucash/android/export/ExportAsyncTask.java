@@ -138,7 +138,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
             exportedFiles = exporter.generateExport();
         } catch (final Throwable e) {
             Timber.e(e, "Error exporting: %s", e.getMessage());
-            return 0;
+            return -1;
         }
 
         if (exportedFiles.isEmpty())

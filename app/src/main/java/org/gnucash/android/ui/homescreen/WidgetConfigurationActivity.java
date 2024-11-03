@@ -252,7 +252,7 @@ public class WidgetConfigurationActivity extends Activity {
 
         final Account account;
         try {
-            account = accountsDbAdapter.getRecord(accountUID);
+            account = accountsDbAdapter.getSimpleRecord(accountUID);
         } catch (IllegalArgumentException e) {
             Timber.e(e, "Account not found, resetting widget %s", appWidgetId);
             //if account has been deleted, let the user know
