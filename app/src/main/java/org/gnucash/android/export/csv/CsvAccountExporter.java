@@ -58,11 +58,10 @@ public class CsvAccountExporter extends Exporter {
     @Override
     public List<String> generateExport() throws ExporterException {
         String outputFile = getExportCacheFilePath();
-        try (CsvWriter writer = new CsvWriter(new FileWriter(outputFile), String.valueOf(mCsvSeparator))) {
+        try (CsvWriter writer = new CsvWriter(new FileWriter(outputFile), Character.toString(mCsvSeparator))) {
             generateExport(writer);
             close();
         } catch (IOException ex) {
-            Timber.e(ex, "Error exporting CSV");
             throw new ExporterException(mExportParams, ex);
         }
 
@@ -103,7 +102,6 @@ public class CsvAccountExporter extends Exporter {
                 csvWriter.writeEndToken(account.isPlaceholderAccount() ? "T" : "F");
             }
         } catch (IOException e) {
-            Timber.e(e);
             throw new ExporterException(mExportParams, e);
         }
     }

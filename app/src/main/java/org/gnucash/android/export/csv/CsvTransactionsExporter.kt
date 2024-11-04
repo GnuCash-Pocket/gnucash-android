@@ -97,7 +97,7 @@ class CsvTransactionsExporter(
             } else {
                 writer.writeToken(null)
             }
-            writer.writeEndToken((quantity / split.value!!).formattedStringWithoutSymbol())
+            writer.writeEndToken((quantity / split.value!!.toBigDecimal()).formattedStringWithoutSymbol())
         }
     }
 
@@ -126,7 +126,6 @@ class CsvTransactionsExporter(
             cursor.close()
             PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow())
         } catch (e: Exception) {
-            Timber.e(e, "Error while exporting transactions to CSV")
             throw ExporterException(mExportParams, e)
         }
     }

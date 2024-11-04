@@ -17,6 +17,8 @@
 package org.gnucash.android.export.csv;
 
 
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 
 import java.io.BufferedWriter;
@@ -30,10 +32,11 @@ import java.io.Writer;
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class CsvWriter extends BufferedWriter {
-    private String separator = ",";
+
+    private final String separator;
 
     public CsvWriter(Writer writer) {
-        super(writer);
+        this(writer, ",");
     }
 
     public CsvWriter(Writer writer, String separator) {
@@ -43,7 +46,7 @@ public class CsvWriter extends BufferedWriter {
 
     @Override
     public void write(@NonNull String str) throws IOException {
-        this.write(str, 0, str.length());
+        write(str, 0, str.length());
     }
 
     /**
@@ -56,12 +59,10 @@ public class CsvWriter extends BufferedWriter {
      * @throws IOException if the token could not be written to the underlying stream
      */
     public void writeToken(String token) throws IOException {
-        if (token == null || token.isEmpty()) {
-            write(separator);
-        } else {
-            token = escape(token);
-            write(token + separator);
+        if (!TextUtils.isEmpty(token)) {
+            write(escape(token));
         }
+        write(separator);
     }
 
     /**
@@ -73,7 +74,7 @@ public class CsvWriter extends BufferedWriter {
     @NonNull
     private String escape(@NonNull String token) {
         if (token.contains(separator)) {
-            return "\"" + token + "\"";
+            return "\"" + token.replaceAll("\"", "\"\"") + "\"";
         }
         return token;
     }
@@ -88,10 +89,10 @@ public class CsvWriter extends BufferedWriter {
      * @throws IOException if token could not be written to underlying writer
      */
     public void writeEndToken(String token) throws IOException {
-        if (token != null && !token.isEmpty()) {
+        if (!TextUtils.isEmpty(token)) {
             write(escape(token));
         }
-        this.newLine();
+        newLine();
     }
 
 }
