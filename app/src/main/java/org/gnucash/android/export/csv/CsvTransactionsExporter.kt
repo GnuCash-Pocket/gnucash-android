@@ -87,8 +87,9 @@ class CsvTransactionsExporter(
             writer.writeToken(account.fullName)
             writer.writeToken(account.name)
             val sign = if (split.type == TransactionType.CREDIT) "-" else ""
-            writer.writeToken(sign + split.quantity!!.formattedString())
-            writer.writeToken(sign + split.quantity!!.formattedStringWithoutSymbol())
+            val quantity = split.quantity!!
+            writer.writeToken(sign + quantity.formattedString())
+            writer.writeToken(sign + quantity.formattedStringWithoutSymbol())
             writer.writeToken(split.reconcileState.toString())
             if (split.reconcileState == Split.FLAG_RECONCILED) {
                 val recDateString = dateFormat.print(split.reconcileDate.getTime())
@@ -96,7 +97,7 @@ class CsvTransactionsExporter(
             } else {
                 writer.writeToken(null)
             }
-            writer.writeEndToken((split.quantity!! / split.value!!).formattedStringWithoutSymbol())
+            writer.writeEndToken((quantity / split.value!!).formattedStringWithoutSymbol())
         }
     }
 
