@@ -17,14 +17,10 @@ package org.gnucash.android.model
 
 import android.graphics.Color
 import androidx.annotation.ColorInt
-import java.sql.Timestamp
 import org.gnucash.android.BuildConfig
-import org.gnucash.android.export.ofx.OfxHelper
 import org.gnucash.android.util.NotSet
 import org.gnucash.android.util.formatHexRGB
 import org.gnucash.android.util.parseColor
-import org.w3c.dom.Document
-import org.w3c.dom.Element
 
 /**
  * An account represents a transaction account in with [Transaction]s may be recorded
@@ -283,75 +279,6 @@ class Account : BaseModel {
      */
     fun setDefaultTransferAccountUID(defaultTransferAccountUID: String?) {
         _defaultTransferAccountUID = defaultTransferAccountUID
-    }
-
-    /**
-     * Converts this account's transactions into XML and adds them to the DOM document
-     *
-     * @param doc             XML DOM document for the OFX data
-     * @param parent          Parent node to which to add this account's transactions in XML
-     * @param exportStartTime Time from which to export transactions which are created/modified after
-     */
-    fun toOfx(doc: Document, parent: Element, exportStartTime: Timestamp?) {
-        val currency = doc.createElement(OfxHelper.TAG_CURRENCY_DEF)
-        currency.appendChild(doc.createTextNode(commodity.currencyCode))
-
-        //================= BEGIN BANK ACCOUNT INFO (BANKACCTFROM) =================================
-        val bankId = doc.createElement(OfxHelper.TAG_BANK_ID)
-        bankId.appendChild(doc.createTextNode(OfxHelper.APP_ID))
-        val acctId = doc.createElement(OfxHelper.TAG_ACCOUNT_ID)
-        acctId.appendChild(doc.createTextNode(uID))
-        val accttype = doc.createElement(OfxHelper.TAG_ACCOUNT_TYPE)
-        val ofxAccountType = convertToOfxAccountType(
-            accountType
-        ).toString()
-        accttype.appendChild(doc.createTextNode(ofxAccountType))
-        val bankFrom = doc.createElement(OfxHelper.TAG_BANK_ACCOUNT_FROM)
-        bankFrom.appendChild(bankId)
-        bankFrom.appendChild(acctId)
-        bankFrom.appendChild(accttype)
-
-        //================= END BANK ACCOUNT INFO ============================================
-
-
-        //================= BEGIN ACCOUNT BALANCE INFO =================================
-        val balance = balance.toPlainString()
-        val formattedCurrentTimeString = OfxHelper.getFormattedCurrentTime()
-        val balanceAmount = doc.createElement(OfxHelper.TAG_BALANCE_AMOUNT)
-        balanceAmount.appendChild(doc.createTextNode(balance))
-        val dtasof = doc.createElement(OfxHelper.TAG_DATE_AS_OF)
-        dtasof.appendChild(doc.createTextNode(formattedCurrentTimeString))
-        val ledgerBalance = doc.createElement(OfxHelper.TAG_LEDGER_BALANCE)
-        ledgerBalance.appendChild(balanceAmount)
-        ledgerBalance.appendChild(dtasof)
-
-        //================= END ACCOUNT BALANCE INFO =================================
-
-
-        //================= BEGIN TIME PERIOD INFO =================================
-        val dtstart = doc.createElement(OfxHelper.TAG_DATE_START)
-        dtstart.appendChild(doc.createTextNode(formattedCurrentTimeString))
-        val dtend = doc.createElement(OfxHelper.TAG_DATE_END)
-        dtend.appendChild(doc.createTextNode(formattedCurrentTimeString))
-
-        //================= END TIME PERIOD INFO =================================
-
-
-        //================= BEGIN TRANSACTIONS LIST =================================
-        val bankTransactionsList = doc.createElement(OfxHelper.TAG_BANK_TRANSACTION_LIST)
-        bankTransactionsList.appendChild(dtstart)
-        bankTransactionsList.appendChild(dtend)
-        for (transaction in _transactionsList) {
-            if (transaction.modifiedTimestamp.before(exportStartTime)) continue
-            bankTransactionsList.appendChild(transaction.toOFX(doc, uID!!))
-        }
-        //================= END TRANSACTIONS LIST =================================
-        val statementTransactions = doc.createElement(OfxHelper.TAG_STATEMENT_TRANSACTIONS)
-        statementTransactions.appendChild(currency)
-        statementTransactions.appendChild(bankFrom)
-        statementTransactions.appendChild(bankTransactionsList)
-        statementTransactions.appendChild(ledgerBalance)
-        parent.appendChild(statementTransactions)
     }
 
     companion object {
