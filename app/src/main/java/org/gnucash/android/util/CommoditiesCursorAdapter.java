@@ -27,6 +27,7 @@ import androidx.cursoradapter.widget.SimpleCursorAdapter;
 
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
+import org.gnucash.android.model.Commodity;
 
 /**
  * Cursor adapter for displaying list of commodities.
@@ -51,6 +52,6 @@ public class CommoditiesCursorAdapter extends SimpleCursorAdapter {
         String currencyName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.CommodityEntry.COLUMN_FULLNAME));
         String currencyCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.CommodityEntry.COLUMN_MNEMONIC));
 
-        textView.setText(currencyCode + " - " + currencyName);
+        textView.setText(currencyCode + Commodity.LABEL_SEPARATOR + currencyName);
     }
 }

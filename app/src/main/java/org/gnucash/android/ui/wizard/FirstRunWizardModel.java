@@ -124,7 +124,7 @@ public class FirstRunWizardModel extends AbstractWizardModel {
 
     private String addCurrency(@NonNull Commodity commodity) {
         String code = commodity.getCurrencyCode();
-        String label = code + " - " + commodity.getFullname();
+        String label = code + Commodity.LABEL_SEPARATOR + commodity.getFullname();
         currencies.put(label, code);
         return label;
     }

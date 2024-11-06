@@ -25,10 +25,11 @@ import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.model.Commodity;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Page displaying all the commodities in the database
@@ -45,7 +46,7 @@ public class CurrencySelectPage extends SingleFixedChoicePage {
         currencies.clear();
         CommoditiesDbAdapter adapter = GnuCashApplication.getCommoditiesDbAdapter();
         List<Commodity> commodities = adapter.getAllRecords();
-        List<String> choices = new ArrayList<>();
+        SortedSet<String> choices = new TreeSet<>();
         for (Commodity commodity : commodities) {
             choices.add(addCurrency(commodity));
         }
@@ -55,7 +56,7 @@ public class CurrencySelectPage extends SingleFixedChoicePage {
 
     private String addCurrency(@NonNull Commodity commodity) {
         String code = commodity.getCurrencyCode();
-        String label = code + " - " + commodity.getFullname();
+        String label = code + Commodity.LABEL_SEPARATOR + commodity.getFullname();
         currencies.put(label, code);
         return label;
     }
