@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
   Copyright 2012 Roman Nurik
   Copyright 2015 Ngewi Fet
 
@@ -25,10 +25,10 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:gravity="left"
-        android:paddingBottom="8dp"
         android:paddingLeft="@dimen/list_item_padding_left"
+        android:paddingTop="16dp"
         android:paddingRight="@dimen/list_item_padding_right"
-        android:paddingTop="16dp" />
+        android:paddingBottom="8dp" />
 
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/pager"

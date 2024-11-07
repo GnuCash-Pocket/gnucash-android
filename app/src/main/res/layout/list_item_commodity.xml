@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,11 +16,11 @@
 <CheckedTextView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@android:id/text1"
-    android:layout_height="?android:attr/listPreferredItemHeight"
     android:layout_width="match_parent"
-    android:textAppearance="?android:attr/textAppearanceMedium"
-    android:gravity="center_vertical"
-    android:textColor="@android:color/black"
-    android:checked="false"
+    android:layout_height="?android:attr/listPreferredItemHeight"
     android:checkMark="?android:attr/listChoiceIndicatorSingle"
+    android:checked="false"
+    android:gravity="center_vertical"
+    android:textAppearance="?android:attr/textAppearanceMedium"
+    android:textColor="@android:color/black"
     tools:text="USD - United States Dollars" />

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
 Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:padding="@dimen/dialog_padding"
-    android:orientation="vertical"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/dialog_padding">
 
     <TableLayout
         android:layout_width="match_parent"
@@ -70,50 +70,50 @@ limitations under the License.
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:text="@string/label_last_3_months_expenses" />
+        android:text="@string/label_last_3_months_expenses"
+        android:textSize="16sp" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/card_report_summary_chart"
-        android:layout_height="wrap_content"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/edge_padding"
         android:minHeight="200dp">
 
         <com.github.mikephil.charting.charts.PieChart
             android:id="@+id/pie_chart"
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="250dp" />
+            android:layout_height="250dp"
+            android:orientation="horizontal" />
     </androidx.cardview.widget.CardView>
 
     <androidx.cardview.widget.CardView
         android:id="@+id/card_total"
-        app:elevation="10dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_width="match_parent">
+        app:elevation="10dp">
 
         <TableLayout
-            android:padding="@dimen/dialog_padding"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:padding="@dimen/dialog_padding">
 
             <TableRow>
 
                 <TextView
                     android:layout_width="0dp"
-                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:textSize="18sp"
-                    android:text="@string/label_total_assets" />
+                    android:layout_weight="1"
+                    android:text="@string/label_total_assets"
+                    android:textSize="18sp" />
 
                 <TextView
                     android:id="@+id/total_assets"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="right"
                     android:textSize="18sp"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
                     tools:text="$ 2,500" />
             </TableRow>
 
@@ -121,38 +121,38 @@ limitations under the License.
 
                 <TextView
                     android:layout_width="0dp"
-                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:textSize="18sp"
-                    android:text="@string/label_total_liabilities" />
+                    android:layout_weight="1"
+                    android:text="@string/label_total_liabilities"
+                    android:textSize="18sp" />
 
                 <TextView
                     android:id="@+id/total_liabilities"
-                    android:layout_weight="1"
-                    android:textSize="18sp"
-                    tools:text="$ 2,700"
-                    android:gravity="right"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="right"
+                    android:textSize="18sp"
+                    tools:text="$ 2,700" />
             </TableRow>
 
             <TableRow>
 
                 <TextView
                     android:layout_width="0dp"
-                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:textSize="18sp"
-                    android:text="@string/label_net_worth" />
+                    android:layout_weight="1"
+                    android:text="@string/label_net_worth"
+                    android:textSize="18sp" />
 
                 <TextView
                     android:id="@+id/net_worth"
-                    android:layout_weight="1"
-                    tools:text="$ -200"
-                    android:textSize="18sp"
-                    android:gravity="right"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="right"
+                    android:textSize="18sp"
+                    tools:text="$ -200" />
             </TableRow>
         </TableLayout>
     </androidx.cardview.widget.CardView>

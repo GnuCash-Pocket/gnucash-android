@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
  Copyright (c) 2012 - 2015 Ngewi Fet <ngewif@gmail.com>
  
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,8 +22,8 @@
         android:id="@+id/fragment_account_form"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/dialog_padding"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="@dimen/dialog_padding">
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/name_text_input_layout"
@@ -32,47 +32,47 @@
 
             <EditText
                 android:id="@+id/input_account_name"
+                style="@style/ListItemText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/form_row_bottom_margin"
-                android:ems="15"
-                android:inputType="textCapWords"
-                android:singleLine="true"
                 android:ellipsize="start"
+                android:ems="15"
                 android:hint="@string/label_account_name"
-                style="@style/ListItemText"></EditText>
+                android:inputType="textCapWords"
+                android:singleLine="true"></EditText>
         </com.google.android.material.textfield.TextInputLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="@dimen/form_row_bottom_margin">
+            android:layout_marginBottom="@dimen/form_row_bottom_margin"
+            android:orientation="horizontal">
 
             <TextView
-                android:text="@string/label_account_currency"
-                android:layout_height="match_parent"
+                style="@style/TextAppearance.EditTransaction_Small"
                 android:layout_width="wrap_content"
-                android:gravity="center_vertical"
+                android:layout_height="match_parent"
                 android:layout_marginLeft="8dp"
                 android:layout_marginRight="@dimen/dialog_padding"
-                style="@style/TextAppearance.EditTransaction_Small" />
+                android:gravity="center_vertical"
+                android:text="@string/label_account_currency" />
 
             <Spinner
                 android:id="@+id/input_currency_spinner"
-                android:minHeight="?android:attr/listPreferredItemHeight"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:minHeight="?android:attr/listPreferredItemHeight" />
 
         </LinearLayout>
 
 
         <TextView
-            android:text="@string/label_account_color_and_type"
-            android:layout_height="wrap_content"
+            style="@style/TextAppearance.EditTransaction_LabelSmall"
             android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="-8dp"
-            style="@style/TextAppearance.EditTransaction_LabelSmall" />
+            android:text="@string/label_account_color_and_type" />
 
         <LinearLayout
             android:id="@+id/layout_color_type"
@@ -82,27 +82,27 @@
 
             <org.gnucash.android.ui.colorpicker.ColorSquare
                 android:id="@+id/input_color_picker"
+                style="?android:attr/quickContactBadgeStyleSmallWindowMedium"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:layout_marginLeft="8dp"
                 android:layout_gravity="center_vertical"
-                style="?android:attr/quickContactBadgeStyleSmallWindowMedium" />
+                android:layout_marginLeft="8dp" />
 
             <Spinner
                 android:id="@+id/input_account_type_spinner"
                 android:layout_width="0dp"
-                android:minHeight="?android:attr/listPreferredItemHeight"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dialog_padding"
                 android:layout_weight="1"
-                android:layout_marginLeft="@dimen/dialog_padding" />
+                android:minHeight="?android:attr/listPreferredItemHeight" />
         </LinearLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/description_input_layout"
-            android:layout_marginBottom="10dp"
-            android:layout_marginLeft="9dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="9dp"
+            android:layout_marginBottom="10dp">
 
             <EditText
                 android:id="@+id/input_account_description"
@@ -110,8 +110,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/form_row_bottom_margin"
                 android:ems="15"
-                android:inputType="textCapSentences"
-                android:hint="@string/hint_account_description"></EditText>
+                android:hint="@string/hint_account_description"
+                android:inputType="textCapSentences"></EditText>
         </com.google.android.material.textfield.TextInputLayout>
 
         <CheckBox
@@ -123,11 +123,11 @@
 
         <TextView
             android:id="@+id/label_parent_account"
-            android:text="@string/label_parent_account"
-            android:layout_height="wrap_content"
+            style="@style/TextAppearance.EditTransaction_LabelSmall"
             android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="-8dip"
-            style="@style/TextAppearance.EditTransaction_LabelSmall" />
+            android:text="@string/label_parent_account" />
 
         <LinearLayout
             android:id="@+id/layout_parent_account"
@@ -150,11 +150,11 @@
 
         <TextView
             android:id="@+id/label_default_transfer_account"
-            android:text="@string/label_default_transfer_account"
-            android:layout_height="wrap_content"
+            style="@style/TextAppearance.EditTransaction_LabelSmall"
             android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="-8dip"
-            style="@style/TextAppearance.EditTransaction_LabelSmall" />
+            android:text="@string/label_default_transfer_account" />
 
         <LinearLayout
             android:id="@+id/layout_default_transfer_account"

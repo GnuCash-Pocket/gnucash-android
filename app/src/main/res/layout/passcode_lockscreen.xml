@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
  Copyright (c) 2014 Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,9 +22,9 @@
 
     <fragment
         android:id="@+id/listFragment"
+        class="org.gnucash.android.ui.passcode.KeyboardFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:layout="@layout/fragment_numeric_keyboard"
-        class="org.gnucash.android.ui.passcode.KeyboardFragment" />
+        tools:layout="@layout/fragment_numeric_keyboard" />
 
 </LinearLayout>

@@ -1,5 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
-
 <!--
  Copyright (c) 2014 Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
 
@@ -28,7 +26,7 @@
     <item android:state_enabled="true">
         <shape android:shape="oval">
             <padding android:bottom="5dp" android:left="5dp" android:right="5dp" android:top="5dp" />
-            <stroke android:color="@color/theme_primary" android:width="1dp" />
+            <stroke android:width="1dp" android:color="@color/theme_primary" />
             <solid android:color="@color/transparent" />
         </shape>
     </item>

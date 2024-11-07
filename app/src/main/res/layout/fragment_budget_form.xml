@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
  
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,16 +16,16 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:animateLayoutChanges="true"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:orientation="vertical">
 
     <ScrollView
         android:id="@+id/scroll_view"
-        android:layout_above="@id/calculator_keyboard"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_above="@id/calculator_keyboard">
 
         <TableLayout
             android:id="@+id/budget_info_table"
@@ -36,21 +36,21 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/name_text_input_layout"
-                android:paddingLeft="@dimen/dialog_padding"
-                android:paddingRight="@dimen/dialog_padding"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:paddingLeft="@dimen/dialog_padding"
+                android:paddingRight="@dimen/dialog_padding">
 
                 <EditText
                     android:id="@+id/input_budget_name"
+                    style="@style/ListItemText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:ems="15"
-                    android:inputType="textCapWords"
-                    android:singleLine="true"
                     android:ellipsize="start"
+                    android:ems="15"
                     android:hint="Budget name"
-                    style="@style/ListItemText"></EditText>
+                    android:inputType="textCapWords"
+                    android:singleLine="true"></EditText>
             </com.google.android.material.textfield.TextInputLayout>
 
             <TableRow
@@ -65,12 +65,12 @@
                 <EditText
                     android:id="@+id/input_description"
                     android:layout_width="0dp"
-                    android:layout_weight="5"
                     android:layout_height="wrap_content"
-                    android:singleLine="false"
+                    android:layout_weight="5"
                     android:background="@android:color/transparent"
                     android:hint="Description"
-                    android:inputType="textMultiLine|textCapSentences" />
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:singleLine="false" />
             </TableRow>
 
             <View style="@style/Divider" />
@@ -86,12 +86,12 @@
 
                 <TextView
                     android:id="@+id/input_recurrence"
+                    style="@style/Dropdown.TextView"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="5"
                     android:gravity="left"
-                    android:text="Set budget period"
-                    style="@style/Dropdown.TextView" />
+                    android:text="Set budget period" />
 
             </TableRow>
 
@@ -102,22 +102,22 @@
 
                 <TextView
                     android:layout_width="0dp"
-                    android:layout_weight="1.2"
                     android:layout_height="wrap_content"
-                    android:textAllCaps="true"
-                    android:text="START" />
+                    android:layout_weight="1.2"
+                    android:text="START"
+                    android:textAllCaps="true" />
 
                 <TextView
                     android:id="@+id/input_start_date"
                     android:layout_width="0dp"
-                    android:layout_weight="5"
                     android:layout_height="wrap_content"
-                    tools:text="29.11.2015"
+                    android:layout_weight="5"
                     android:clickable="true"
-                    android:textSize="16sp"
+                    android:gravity="left"
                     android:padding="3dp"
                     android:textColor="@android:color/black"
-                    android:gravity="left" />
+                    android:textSize="16sp"
+                    tools:text="29.11.2015" />
             </TableRow>
 
             <include
@@ -129,8 +129,8 @@
                 style="?attr/borderlessButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/theme_accent"
-                android:text="Add Budget Amounts" />
+                android:text="Add Budget Amounts"
+                android:textColor="@color/theme_accent" />
         </TableLayout>
     </ScrollView>
 
@@ -138,9 +138,9 @@
         android:id="@+id/calculator_keyboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:visibility="gone" />

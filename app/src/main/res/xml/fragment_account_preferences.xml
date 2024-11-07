@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,16 +15,16 @@
 -->
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <androidx.preference.ListPreference
-        android:summary="@string/summary_default_currency"
-        android:key="@string/key_default_currency"
         android:dialogTitle="@string/title_choose_currency"
-        android:title="@string/title_default_currency"
         android:entries="@array/key_currency_codes"
-        android:entryValues="@array/key_currency_codes" />
+        android:entryValues="@array/key_currency_codes"
+        android:key="@string/key_default_currency"
+        android:summary="@string/summary_default_currency"
+        android:title="@string/title_default_currency" />
     <androidx.preference.Preference
         android:key="@string/key_create_default_accounts"
-        android:title="@string/title_create_default_accounts"
-        android:summary="@string/summary_create_default_accounts" />
+        android:summary="@string/summary_create_default_accounts"
+        android:title="@string/title_create_default_accounts" />
     <androidx.preference.Preference
         android:key="@string/key_import_accounts"
         android:summary="@string/summary_import_accounts"

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,18 +15,18 @@
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <include
         android:id="@+id/list_item_2_lines"
         layout="@layout/list_item_2_lines"
-        android:paddingTop="6dp"
-        android:layout_height="wrap_content"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_margin="@dimen/dialog_padding"
-        android:layout_toRightOf="@id/account_color_strip" />
+        android:layout_toRightOf="@id/account_color_strip"
+        android:paddingTop="6dp" />
 
     <TextView
         android:id="@+id/budget_recurrence"
@@ -34,15 +34,15 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/dialog_padding"
         android:layout_marginRight="@dimen/dialog_padding"
+        android:gravity="left|start"
         android:singleLine="true"
         android:textSize="15sp"
-        android:gravity="left|start"
         tools:text="$2,500 monthly" />
 
     <org.gnucash.android.ui.util.widget.EmptyRecyclerView
         android:id="@+id/budget_amount_recycler"
-        android:layout_marginTop="@dimen/edge_padding"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/edge_padding" />
 
 </LinearLayout>

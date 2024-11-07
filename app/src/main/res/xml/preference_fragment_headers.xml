@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,17 +24,17 @@
         android:title="@string/title_manage_books"
         app:fragment="org.gnucash.android.ui.settings.BookManagerFragment" />
     <androidx.preference.Preference
-        app:fragment="org.gnucash.android.ui.settings.AccountPreferencesFragment"
-        android:title="@string/header_account_settings" />
+        android:title="@string/header_account_settings"
+        app:fragment="org.gnucash.android.ui.settings.AccountPreferencesFragment" />
     <androidx.preference.Preference
-        app:fragment="org.gnucash.android.ui.settings.TransactionsPreferenceFragment"
-        android:title="@string/header_transaction_settings" />
+        android:title="@string/header_transaction_settings"
+        app:fragment="org.gnucash.android.ui.settings.TransactionsPreferenceFragment" />
     <androidx.preference.Preference
-        app:fragment="org.gnucash.android.ui.settings.BackupPreferenceFragment"
-        android:title="@string/header_backup_and_export_settings" />
+        android:title="@string/header_backup_and_export_settings"
+        app:fragment="org.gnucash.android.ui.settings.BackupPreferenceFragment" />
     <androidx.preference.Preference
-        app:fragment="org.gnucash.android.ui.settings.AboutPreferenceFragment"
-        android:title="@string/header_about_gnucash" />
+        android:title="@string/header_about_gnucash"
+        app:fragment="org.gnucash.android.ui.settings.AboutPreferenceFragment" />
     <androidx.preference.Preference android:title="@string/label_recommend_app">
         <intent
             android:action="android.intent.action.VIEW"

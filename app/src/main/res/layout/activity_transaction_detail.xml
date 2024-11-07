@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,17 +20,17 @@
     android:layout_height="match_parent">
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
-            android:background="?attr/colorPrimary"
             android:layout_width="match_parent"
             android:layout_height="128dp"
-            android:minHeight="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
             android:gravity="center_vertical"
+            android:minHeight="?attr/actionBarSize"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
@@ -45,26 +45,26 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="@dimen/edge_padding"
                     android:layout_marginRight="@dimen/edge_padding"
-                    tools:text="@tools:sample/lorem/random"
                     android:gravity="bottom"
                     android:maxLines="3"
                     android:paddingBottom="20dp"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title" />
+                    android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
+                    tools:text="@tools:sample/lorem/random" />
 
                 <TextView
                     android:id="@+id/transaction_account"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="bottom"
                     android:layout_gravity="bottom"
                     android:layout_marginStart="8dp"
                     android:layout_marginLeft="8dp"
                     android:layout_marginEnd="8dp"
                     android:layout_marginRight="8dp"
-                    android:maxLines="1"
                     android:ellipsize="start"
-                    android:textStyle="italic"
+                    android:gravity="bottom"
+                    android:maxLines="1"
                     android:textColor="@android:color/white"
+                    android:textStyle="italic"
                     tools:text="Expenses:Computer" />
             </LinearLayout>
         </androidx.appcompat.widget.Toolbar>
@@ -77,58 +77,58 @@
                 android:id="@+id/fragment_transaction_details"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="@dimen/dialog_padding"
                 android:layout_marginTop="20dp"
-                android:stretchColumns="1"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:padding="@dimen/dialog_padding"
+                android:stretchColumns="1">
 
                 <TableRow
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:weightSum="5"
+                    android:layout_marginLeft="6dp"
                     android:paddingTop="5dp"
                     android:paddingBottom="5dp"
-                    android:layout_marginLeft="6dp">
+                    android:weightSum="5">
 
                     <TextView
                         android:layout_width="0dp"
-                        android:layout_weight="2"
                         android:layout_height="wrap_content"
+                        android:layout_weight="2"
                         android:gravity="center_vertical|right"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
                         android:text="@string/account_balance"
-                        android:textColor="@android:color/black" />
+                        android:textColor="@android:color/black"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/balance_debit"
                         android:layout_width="0dp"
-                        android:layout_weight="1.5"
                         android:layout_height="wrap_content"
-                        android:gravity="right"
                         android:layout_gravity="center"
+                        android:layout_weight="1.5"
+                        android:gravity="right"
+                        android:textColor="@android:color/black"
                         android:textSize="16sp"
                         android:textStyle="bold"
-                        tools:text="$ 2000"
-                        android:textColor="@android:color/black" />
+                        tools:text="$ 2000" />
 
                     <TextView
                         android:id="@+id/balance_credit"
                         android:layout_width="0dp"
-                        android:layout_weight="1.5"
                         android:layout_height="wrap_content"
-                        android:gravity="right"
                         android:layout_gravity="center"
+                        android:layout_weight="1.5"
+                        android:gravity="right"
+                        android:textColor="@android:color/black"
                         android:textSize="16sp"
                         android:textStyle="bold"
-                        tools:text="$ 2000"
-                        android:textColor="@android:color/black" />
+                        tools:text="$ 2000" />
                 </TableRow>
 
                 <TableRow
                     android:id="@+id/row_time_and_date"
-                    android:layout_marginTop="20dp"
-                    style="@style/FormRow">
+                    style="@style/FormRow"
+                    android:layout_marginTop="20dp">
 
                     <ImageView
                         style="@style/FormIcon"
@@ -171,12 +171,12 @@
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_edit_transaction"
-        android:layout_height="40dp"
         android:layout_width="40dp"
-        app:fabCustomSize="40dp"
-        app:layout_anchor="@id/toolbar"
-        app:layout_anchorGravity="bottom|left|start"
+        android:layout_height="40dp"
         android:layout_marginStart="6dp"
         android:scaleType="center"
-        android:src="@drawable/ic_edit_white" />
+        android:src="@drawable/ic_edit_white"
+        app:fabCustomSize="40dp"
+        app:layout_anchor="@id/toolbar"
+        app:layout_anchorGravity="bottom|left|start" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

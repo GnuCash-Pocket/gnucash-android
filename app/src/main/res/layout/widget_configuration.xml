@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
  Copyright (c) 2012 Ngewi Fet <ngewif@gmail.com>
  
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,12 +22,12 @@
 
     <TextView
         android:id="@+id/label_book"
-        android:text="Book"
-        android:layout_height="wrap_content"
+        style="@style/TextAppearance.EditTransaction_LabelSmall"
         android:layout_width="wrap_content"
-        android:layout_marginBottom="-8dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        style="@style/TextAppearance.EditTransaction_LabelSmall" />
+        android:layout_marginBottom="-8dp"
+        android:text="Book" />
 
     <Spinner
         android:id="@+id/input_books_spinner"
@@ -37,12 +37,12 @@
 
     <TextView
         android:id="@+id/label_account"
-        android:text="@string/label_display_account"
-        android:layout_height="wrap_content"
+        style="@style/TextAppearance.EditTransaction_LabelSmall"
         android:layout_width="wrap_content"
-        android:layout_marginBottom="-8dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        style="@style/TextAppearance.EditTransaction_LabelSmall" />
+        android:layout_marginBottom="-8dp"
+        android:text="@string/label_display_account" />
 
     <Spinner
         android:id="@+id/input_accounts_spinner"
@@ -55,8 +55,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="@string/label_hide_account_balance"
-        android:checked="true" />
+        android:checked="true"
+        android:text="@string/label_hide_account_balance" />
 
     <include
         android:id="@+id/default_buttons"

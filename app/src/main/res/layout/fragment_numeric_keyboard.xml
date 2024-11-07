@@ -1,5 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
-
 <!--
  Copyright (c) 2014 Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
 
@@ -37,8 +35,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
             android:layout_marginTop="25dp"
+            android:gravity="center"
             android:orientation="horizontal">
 
             <EditText
@@ -83,72 +81,72 @@
 
 
             <LinearLayout
+                android:id="@+id/one_btn"
                 android:layout_width="@dimen/passcode_btn"
                 android:layout_height="@dimen/passcode_btn"
                 android:layout_margin="@dimen/passcode_btn_margin"
-                android:orientation="vertical"
                 android:background="@drawable/numeric_button"
-                android:gravity="center"
                 android:clickable="true"
-                android:id="@+id/one_btn">
+                android:gravity="center"
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="@string/digit_one" />
+                    android:text="@string/digit_one"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="@string/digit_one_text" />
+                    android:text="@string/digit_one_text"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/two_btn"
                 android:layout_width="@dimen/passcode_btn"
                 android:layout_height="@dimen/passcode_btn"
                 android:layout_margin="@dimen/passcode_btn_margin"
-                android:orientation="vertical"
                 android:background="@drawable/numeric_button"
-                android:gravity="center"
                 android:clickable="true"
-                android:id="@+id/two_btn">
+                android:gravity="center"
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="@string/digit_two" />
+                    android:text="@string/digit_two"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="@string/digit_two_text" />
+                    android:text="@string/digit_two_text"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/three_btn"
                 android:layout_width="@dimen/passcode_btn"
                 android:layout_height="@dimen/passcode_btn"
                 android:layout_margin="@dimen/passcode_btn_margin"
-                android:orientation="vertical"
                 android:background="@drawable/numeric_button"
-                android:gravity="center"
                 android:clickable="true"
-                android:id="@+id/three_btn">
+                android:gravity="center"
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="@string/digit_three" />
+                    android:text="@string/digit_three"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="@string/digit_three_text" />
+                    android:text="@string/digit_three_text"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
 
 
@@ -160,72 +158,72 @@
             android:gravity="center">
 
             <LinearLayout
+                android:id="@+id/four_btn"
                 android:layout_width="@dimen/passcode_btn"
                 android:layout_height="@dimen/passcode_btn"
                 android:layout_margin="@dimen/passcode_btn_margin"
-                android:orientation="vertical"
                 android:background="@drawable/numeric_button"
-                android:gravity="center"
                 android:clickable="true"
-                android:id="@+id/four_btn">
+                android:gravity="center"
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="@string/digit_four" />
+                    android:text="@string/digit_four"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="@string/digit_four_text" />
+                    android:text="@string/digit_four_text"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/five_btn"
                 android:layout_width="@dimen/passcode_btn"
                 android:layout_height="@dimen/passcode_btn"
                 android:layout_margin="@dimen/passcode_btn_margin"
-                android:orientation="vertical"
                 android:background="@drawable/numeric_button"
-                android:gravity="center"
                 android:clickable="true"
-                android:id="@+id/five_btn">
+                android:gravity="center"
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="@string/digit_five" />
+                    android:text="@string/digit_five"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="@string/digit_five_text" />
+                    android:text="@string/digit_five_text"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/six_btn"
                 android:layout_width="@dimen/passcode_btn"
                 android:layout_height="@dimen/passcode_btn"
                 android:layout_margin="@dimen/passcode_btn_margin"
-                android:orientation="vertical"
                 android:background="@drawable/numeric_button"
-                android:gravity="center"
                 android:clickable="true"
-                android:id="@+id/six_btn">
+                android:gravity="center"
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="@string/digit_six" />
+                    android:text="@string/digit_six"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="@string/digit_six_text" />
+                    android:text="@string/digit_six_text"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
 
         </TableRow>
@@ -237,72 +235,72 @@
             android:gravity="center">
 
             <LinearLayout
+                android:id="@+id/seven_btn"
                 android:layout_width="@dimen/passcode_btn"
                 android:layout_height="@dimen/passcode_btn"
                 android:layout_margin="@dimen/passcode_btn_margin"
-                android:orientation="vertical"
                 android:background="@drawable/numeric_button"
-                android:gravity="center"
                 android:clickable="true"
-                android:id="@+id/seven_btn">
+                android:gravity="center"
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="@string/digit_seven" />
+                    android:text="@string/digit_seven"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="@string/digit_seven_text" />
+                    android:text="@string/digit_seven_text"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/eight_btn"
                 android:layout_width="@dimen/passcode_btn"
                 android:layout_height="@dimen/passcode_btn"
                 android:layout_margin="@dimen/passcode_btn_margin"
-                android:orientation="vertical"
                 android:background="@drawable/numeric_button"
-                android:gravity="center"
                 android:clickable="true"
-                android:id="@+id/eight_btn">
+                android:gravity="center"
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="@string/digit_eight" />
+                    android:text="@string/digit_eight"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="@string/digit_eight_text" />
+                    android:text="@string/digit_eight_text"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/nine_btn"
                 android:layout_width="@dimen/passcode_btn"
                 android:layout_height="@dimen/passcode_btn"
                 android:layout_margin="@dimen/passcode_btn_margin"
-                android:orientation="vertical"
                 android:background="@drawable/numeric_button"
-                android:gravity="center"
                 android:clickable="true"
-                android:id="@+id/nine_btn">
+                android:gravity="center"
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="@string/digit_nine" />
+                    android:text="@string/digit_nine"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="@string/digit_nine_text" />
+                    android:text="@string/digit_nine_text"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
 
 
@@ -320,37 +318,37 @@
                 android:visibility="invisible" />
 
             <LinearLayout
+                android:id="@+id/zero_btn"
                 android:layout_width="@dimen/passcode_btn"
                 android:layout_height="@dimen/passcode_btn"
                 android:layout_margin="@dimen/passcode_btn_margin"
-                android:orientation="vertical"
                 android:background="@drawable/numeric_button"
-                android:gravity="center"
                 android:clickable="true"
-                android:id="@+id/zero_btn">
+                android:gravity="center"
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:text="@string/digit_zero" />
+                    android:text="@string/digit_zero"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="@string/digit_zero_text" />
+                    android:text="@string/digit_zero_text"
+                    android:textAppearance="?android:attr/textAppearanceSmall" />
             </LinearLayout>
 
             <ImageButton
+                android:id="@+id/delete_btn"
                 android:layout_width="@dimen/passcode_btn"
                 android:layout_height="@dimen/passcode_btn"
                 android:layout_margin="@dimen/passcode_btn_margin"
-                android:src="@drawable/ic_backspace_black"
-                android:hapticFeedbackEnabled="true"
-                android:id="@+id/delete_btn"
                 android:background="@color/transparent"
-                android:contentDescription="\u232B" />
+                android:contentDescription="\u232B"
+                android:hapticFeedbackEnabled="true"
+                android:src="@drawable/ic_backspace_black" />
         </TableRow>
 
     </TableLayout>

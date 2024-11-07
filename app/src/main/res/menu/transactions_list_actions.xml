@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
  Copyright (c) 2012 Ngewi Fet <ngewif@gmail.com>
  
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,9 +24,9 @@
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/menu_compact_trn_view"
+        android:checkable="true"
         android:icon="@android:drawable/ic_menu_view"
         android:title="@string/menu_show_compact_view"
-        android:checkable="true"
         app:showAsAction="never|withText" />
     <item
         android:id="@+id/menu_edit_account"

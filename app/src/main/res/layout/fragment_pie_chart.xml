@@ -1,5 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
-
 <!--
  Copyright (c) 2014 Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
@@ -19,33 +17,33 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
-    android:padding="@dimen/dialog_padding"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/dialog_padding">
 
     <TextView
         android:id="@+id/selected_chart_slice"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:padding="5dp"
         android:textSize="16sp"
-        tools:text="Selected chart slice"
-        android:gravity="center" />
+        tools:text="Selected chart slice" />
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:padding="@dimen/dialog_padding"
-        android:layout_marginBottom="@dimen/edge_padding"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_marginBottom="@dimen/edge_padding"
+        android:layout_weight="1"
+        android:padding="@dimen/dialog_padding">
 
         <com.github.mikephil.charting.charts.PieChart
             android:id="@+id/pie_chart"
-            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:minHeight="400dp" />
+            android:minHeight="400dp"
+            android:orientation="horizontal" />
     </androidx.cardview.widget.CardView>
 
 </LinearLayout>

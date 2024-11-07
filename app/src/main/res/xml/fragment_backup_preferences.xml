@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
  Copyright (c) 2012 Ngewi Fet <ngewif@gmail.com>
  
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,60 +17,60 @@
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <androidx.preference.PreferenceCategory android:title="@string/title_backup_preference_category">
         <androidx.preference.Preference
-            android:title="@string/title_select_backup_file"
-            android:key="@string/key_backup_location"
             android:icon="@drawable/ic_folder_open_black"
-            android:summary="@string/summary_select_backup_file" />
+            android:key="@string/key_backup_location"
+            android:summary="@string/summary_select_backup_file"
+            android:title="@string/title_select_backup_file" />
         <androidx.preference.Preference
-            android:title="@string/title_create_backup_pref"
-            android:key="@string/key_create_backup"
             android:icon="@drawable/ic_backup_black"
-            android:summary="@string/summary_create_backup_pref" />
+            android:key="@string/key_create_backup"
+            android:summary="@string/summary_create_backup_pref"
+            android:title="@string/title_create_backup_pref" />
         <androidx.preference.Preference
-            android:title="@string/title_restore_backup"
-            android:key="@string/key_restore_backup"
             android:icon="@drawable/ic_restore_black"
-            android:summary="@string/summary_restore_backup_pref" />
+            android:key="@string/key_restore_backup"
+            android:summary="@string/summary_restore_backup_pref"
+            android:title="@string/title_restore_backup" />
         <androidx.preference.SwitchPreference
-            android:title="@string/title_dropbox_sync_preference"
-            android:summary="@string/summary_dropbox_sync"
             android:defaultValue="false"
+            android:icon="@drawable/ic_dropbox"
             android:key="@string/key_dropbox_sync"
-            android:icon="@drawable/ic_dropbox" />
+            android:summary="@string/summary_dropbox_sync"
+            android:title="@string/title_dropbox_sync_preference" />
 
         <androidx.preference.SwitchPreference
-            android:title="@string/title_owncloud_sync_preference"
-            android:summary="@string/summary_owncloud_sync"
             android:defaultValue="false"
+            android:icon="@drawable/ic_owncloud"
             android:key="@string/key_owncloud_sync"
-            android:icon="@drawable/ic_owncloud" />
+            android:summary="@string/summary_owncloud_sync"
+            android:title="@string/title_owncloud_sync_preference" />
 
         <androidx.preference.SwitchPreference
-            android:title="@string/title_delete_transaction_backup"
-            android:summary="@string/summary_delete_transaction_backup"
             android:defaultValue="true"
-            android:key="@string/key_delete_transaction_backup"             />
+            android:key="@string/key_delete_transaction_backup"
+            android:summary="@string/summary_delete_transaction_backup"
+            android:title="@string/title_delete_transaction_backup" />
     </androidx.preference.PreferenceCategory>
     <androidx.preference.PreferenceCategory android:title="@string/title_export_preference_category">
 
         <androidx.preference.ListPreference
-            android:title="@string/title_default_export_format"
-            android:entryValues="@array/key_export_format_values"
             android:entries="@array/export_formats"
+            android:entryValues="@array/key_export_format_values"
             android:key="@string/key_default_export_format"
-            android:summary="@string/summary_default_export_format" />
+            android:summary="@string/summary_default_export_format"
+            android:title="@string/title_default_export_format" />
         <androidx.preference.EditTextPreference
-            android:title="@string/title_default_export_email"
+            android:inputType="textEmailAddress"
             android:key="@string/key_default_export_email"
             android:summary="@string/summary_default_export_email"
-            android:inputType="textEmailAddress" />
+            android:title="@string/title_default_export_email" />
         <androidx.preference.SwitchPreferenceCompat
-            android:summary="@string/hint_export_choice"
             android:key="@string/key_export_all_transactions"
+            android:summary="@string/hint_export_choice"
             android:title="@string/title_export_all_transactions" />
         <androidx.preference.SwitchPreferenceCompat
-            android:summary="@string/hint_delete_after_export"
             android:key="@string/key_delete_transactions_after_export"
+            android:summary="@string/hint_delete_after_export"
             android:title="@string/title_always_delete_exported_transactions" />
         <androidx.preference.SwitchPreferenceCompat
             android:key="@string/key_xml_ofx_header"

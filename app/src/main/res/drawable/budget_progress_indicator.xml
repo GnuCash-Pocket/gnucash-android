@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,11 +30,11 @@
         <clip>
             <shape>
                 <gradient
-                    android:startColor="#234"
+                    android:angle="270"
                     android:centerColor="#234"
                     android:centerY="0.75"
                     android:endColor="#a24"
-                    android:angle="270" />
+                    android:startColor="#234" />
             </shape>
         </clip>
     </item>
@@ -43,11 +43,11 @@
         <clip>
             <shape>
                 <gradient
-                    android:startColor="#319d67"
+                    android:angle="0"
                     android:centerColor="#ee8600"
                     android:centerY="0.75"
                     android:endColor="#e00404"
-                    android:angle="0" />
+                    android:startColor="#319d67" />
             </shape>
         </clip>
     </item>

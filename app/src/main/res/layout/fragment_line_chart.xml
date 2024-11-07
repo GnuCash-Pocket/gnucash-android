@@ -1,5 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
-
 <!--
  Copyright (c) 2015 Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
@@ -19,33 +17,33 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
-    android:padding="@dimen/dialog_padding"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/dialog_padding">
 
     <TextView
         android:id="@+id/selected_chart_slice"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginBottom="@dimen/edge_padding"
         android:layout_weight="0.5"
+        android:gravity="center"
         android:padding="5dp"
         android:textSize="16sp"
-        android:layout_marginBottom="@dimen/edge_padding"
-        tools:text="Selected point description"
-        android:gravity="center" />
+        tools:text="Selected point description" />
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:padding="@dimen/dialog_padding"
         android:layout_height="0dp"
-        android:layout_weight="5">
+        android:layout_weight="5"
+        android:padding="@dimen/dialog_padding">
 
         <com.github.mikephil.charting.charts.LineChart
             android:id="@+id/line_chart"
-            android:minHeight="300dp"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:minHeight="300dp" />
 
     </androidx.cardview.widget.CardView>
 

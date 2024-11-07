@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
  
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,9 +27,9 @@
 
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/fragment_container"
-            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
             <include layout="@layout/toolbar" />
 
@@ -38,10 +38,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="?attr/colorPrimary"
-                app:elevation="10dp"
                 android:minHeight="?attr/actionBarSize"
-                app:tabIndicatorColor="@android:color/white"
-                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+                app:elevation="10dp"
+                app:tabIndicatorColor="@android:color/white" />
 
         </com.google.android.material.appbar.AppBarLayout>
 

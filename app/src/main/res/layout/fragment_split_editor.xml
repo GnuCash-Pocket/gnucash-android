@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
 Copyright (c) 2014 Ngewi Fet <ngewif@gmail.com>
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,9 +15,9 @@ limitations under the License.
 -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:animateLayoutChanges="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     tools:context=".ui.common.FormActivity">
 
     <LinearLayout
@@ -30,31 +30,31 @@ limitations under the License.
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:textAppearance="?android:attr/textAppearanceSmall"
             android:gravity="center_vertical"
-            android:text="@string/label_imbalance" />
+            android:text="@string/label_imbalance"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <TextView
             android:id="@+id/imbalance_textview"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:textAppearance="?android:attr/textAppearanceSmall"
             android:gravity="right|center_vertical"
+            android:textAppearance="?android:attr/textAppearanceSmall"
             tools:text="$200" />
     </LinearLayout>
 
     <include
+        layout="@layout/horizontal_line"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_below="@id/imbalance_layout"
-        layout="@layout/horizontal_line" />
+        android:layout_below="@id/imbalance_layout" />
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/imbalance_layout"
         android:layout_above="@+id/calculator_keyboard"
+        android:layout_below="@id/imbalance_layout"
         android:padding="@dimen/dialog_padding">
 
         <LinearLayout
@@ -71,9 +71,9 @@ limitations under the License.
         android:id="@+id/calculator_keyboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:visibility="gone" />

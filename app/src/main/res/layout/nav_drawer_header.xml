@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
  Copyright (c) 2015 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,26 +26,26 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:layout_margin="10dp"
-        android:textSize="20sp"
+        android:clickable="true"
         android:drawableStart="@drawable/ic_gnucash"
         android:drawablePadding="10dp"
         android:gravity="center_vertical"
-        android:clickable="true"
         android:text="@string/app_name"
-        android:textColor="@android:color/white" />
+        android:textColor="@android:color/white"
+        android:textSize="20sp" />
 
     <TextView
         android:id="@+id/book_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="5dp"
+        android:layout_marginStart="@dimen/dialog_padding"
+        android:clickable="true"
+        android:drawableEnd="@drawable/ic_arrow_drop_down_white"
+        android:ellipsize="end"
         android:gravity="center_vertical"
+        android:padding="5dp"
+        android:singleLine="true"
         android:textColor="@android:color/white"
         android:textSize="@dimen/text_size_medium"
-        android:singleLine="true"
-        android:ellipsize="end"
-        android:layout_marginStart="@dimen/dialog_padding"
-        android:drawableEnd="@drawable/ic_arrow_drop_down_white"
-        android:clickable="true"
         tools:text="Current Book Name" />
 </LinearLayout>

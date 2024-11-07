@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
  Copyright (c) 2017 Ngewi Fet <ngewif@gmail.com>
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +24,7 @@
         android:id="@+id/input_book_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
         android:inputType="textCapWords"
+        android:textSize="16sp"
         tools:text="Book Name" />
 </LinearLayout>

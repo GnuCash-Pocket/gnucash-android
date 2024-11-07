@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
  Copyright (c) 2012 Ngewi Fet <ngewif@gmail.com>
  
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,20 +22,20 @@
 
     <org.gnucash.android.ui.util.widget.EmptyRecyclerView
         android:id="@+id/transaction_recycler_view"
-        android:scrollbars="vertical"
-        android:paddingBottom="@dimen/card_min_height"
-        android:clipToPadding="false"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="@dimen/card_min_height"
+        android:scrollbars="vertical" />
 
     <TextView
         android:id="@+id/empty_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:textSize="20sp"
-        android:gravity="center"
         android:layout_gravity="center"
-        android:visibility="gone"
+        android:gravity="center"
+        android:text="@string/label_no_transactions"
         android:textColor="@color/theme_accent"
-        android:text="@string/label_no_transactions" />
+        android:textSize="20sp"
+        android:visibility="gone" />
 </RelativeLayout>
