@@ -467,6 +467,7 @@
     <string name="label_csv_separator">Separator</string>
     <string name="export_notice_csv">Exports transactions as CSV</string>
     <string name="no_books">No books in the database</string>
+    <!-- Copied from "csv-transactions-export.cpp" -->
     <string-array name="csv_transaction_headers">
         <item>Date</item>
         <item>Transaction ID</item>
@@ -479,8 +480,10 @@
         <item>Memo</item>
         <item>Full Account Name</item>
         <item>Account Name</item>
-        <item>Amount With Symbol</item>
-        <item>Amount</item>
+        <item>Amount With Sym</item>
+        <item>Amount Num.</item>
+        <item>Value With Sym</item>
+        <item>Value Num.</item>
         <item>Reconcile</item>
         <item>Reconcile Date</item>
         <item>Rate/Price</item>

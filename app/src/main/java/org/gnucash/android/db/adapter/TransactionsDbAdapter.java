@@ -346,8 +346,8 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         queryBuilder.setTables(TransactionEntry.TABLE_NAME);
         String startTimeString = TimestampHelper.getUtcStringFromTimestamp(timestamp);
-        return queryBuilder.query(mDb, null, TransactionEntry.COLUMN_MODIFIED_AT + " >= \"" + startTimeString + "\"",
-                null, null, null, TransactionEntry.COLUMN_TIMESTAMP + " ASC", null);
+        return queryBuilder.query(mDb, null, TransactionEntry.COLUMN_MODIFIED_AT + " >= ?",
+                new String[]{startTimeString}, null, null, TransactionEntry.COLUMN_TIMESTAMP + " ASC", null);
     }
 
     public Cursor fetchTransactionsWithSplitsWithTransactionAccount(String[] columns, String where, String[] whereArgs, String orderBy) {

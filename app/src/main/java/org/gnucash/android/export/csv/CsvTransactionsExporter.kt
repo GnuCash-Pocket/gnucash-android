@@ -16,13 +16,14 @@
 package org.gnucash.android.export.csv
 
 import android.content.Context
+import com.opencsv.CSVWriterBuilder
+import com.opencsv.ICSVWriter
 import java.io.FileWriter
 import java.io.IOException
 import org.gnucash.android.R
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
 import org.gnucash.android.model.Account
-import org.gnucash.android.model.Money.CurrencyMismatchException
 import org.gnucash.android.model.Split
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.util.PreferencesHelper
@@ -47,81 +48,79 @@ class CsvTransactionsExporter(
     @Throws(ExporterException::class)
     override fun generateExport(): List<String> {
         val outputFile = getExportCacheFilePath()
-        var csvWriter: CsvWriter? = null
 
         try {
-            csvWriter = CsvWriter(FileWriter(outputFile), mCsvSeparator.toString())
-            generateExport(csvWriter)
+            FileWriter(outputFile).use { writer ->
+                val csvWriter = CSVWriterBuilder(writer).withSeparator(mCsvSeparator).build()
+                generateExport(csvWriter)
+                csvWriter.close()
+            }
             return listOf(outputFile)
-        } catch (ex: IOException) {
-            Timber.e(ex, "Error exporting CSV")
-            throw ExporterException(mExportParams, ex)
+        } catch (e: Exception) {
+            Timber.e(e, "Error exporting CSV")
+            throw ExporterException(mExportParams, e)
         } finally {
-            csvWriter?.close()
-            close()
+            try {
+                close()
+            } catch (ignore: java.lang.Exception) {
+            }
         }
     }
 
-    @Throws(IOException::class, CurrencyMismatchException::class)
-    private fun writeSplitsToCsv(splits: List<Split>, writer: CsvWriter) {
-        for ((index, split) in splits.withIndex()) {
-            if (index > 0) {
-                // The first split is on the same line as the transactions. But after that, the
-                // transaction-specific fields are empty.
-                writer.write("" // Date
-                        + mCsvSeparator // Transaction ID
-                        + mCsvSeparator // Number
-                        + mCsvSeparator // Description
-                        + mCsvSeparator // Notes
-                        + mCsvSeparator // Commodity/Currency
-                        + mCsvSeparator // Void Reason
-                        + mCsvSeparator // Action
-                        + mCsvSeparator // Memo
-                )
-            }
-            writer.writeToken(split.memo)
+    @Throws(IOException::class)
+    private fun writeSplitsToCsv(splits: List<Split>, fields: Array<String?>, writer: ICSVWriter) {
+        for (split in splits) {
+            fields[8] = split.memo
             val accountUID = split.accountUID!!
             val account = accountCache.getOrPut(accountUID) {
                 mAccountsDbAdapter.getSimpleRecord(accountUID)
             }
-            writer.writeToken(account.fullName)
-            writer.writeToken(account.name)
+            fields[9] = account.fullName
+            fields[10] = account.name
+
             val sign = if (split.type == TransactionType.CREDIT) "-" else ""
             val quantity = split.quantity!!
-            writer.writeToken(sign + quantity.formattedString())
-            writer.writeToken(sign + quantity.formattedStringWithoutSymbol())
-            writer.writeToken(split.reconcileState.toString())
+            fields[11] = sign + quantity.formattedString()
+            fields[12] = sign + quantity.formattedStringWithoutSymbol()
+            val value = split.value!!
+            fields[13] = sign + value.formattedString()
+            fields[14] = sign + value.formattedStringWithoutSymbol()
+
+            fields[15] = split.reconcileState.toString()
             if (split.reconcileState == Split.FLAG_RECONCILED) {
                 val recDateString = dateFormat.print(split.reconcileDate.getTime())
-                writer.writeToken(recDateString)
+                fields[16] = recDateString
             } else {
-                writer.writeToken(null)
+                fields[16] = null
             }
-            writer.writeEndToken((quantity / split.value!!.toBigDecimal()).formattedStringWithoutSymbol())
+            fields[17] = (value / quantity.toBigDecimal()).formattedStringWithoutSymbol()
+
+            writer.writeNext(fields)
         }
     }
 
     @Throws(ExporterException::class)
-    private fun generateExport(csvWriter: CsvWriter) {
+    private fun generateExport(writer: ICSVWriter) {
         try {
-            mContext.resources.getStringArray(R.array.csv_transaction_headers).forEach {
-               csvWriter.writeToken(it)
-            }
-            csvWriter.newLine()
-            val cursor = mTransactionsDbAdapter.fetchTransactionsModifiedSince(mExportParams.exportStartTime)
+            val headers = mContext.resources.getStringArray(R.array.csv_transaction_headers)
+            writer.writeNext(headers)
+
+            val cursor =
+                mTransactionsDbAdapter.fetchTransactionsModifiedSince(mExportParams.exportStartTime)
             Timber.d("Exporting %d transactions to CSV", cursor.count)
             while (cursor.moveToNext()) {
                 val transaction = mTransactionsDbAdapter.buildModelInstance(cursor)
                 val commodity = transaction.commodity
-                csvWriter.writeToken(dateFormat.print(transaction.timeMillis))
-                csvWriter.writeToken(transaction.uID)
-                csvWriter.writeToken(null)  // Transaction number
-                csvWriter.writeToken(transaction.description)
-                csvWriter.writeToken(transaction.note)
-                csvWriter.writeToken("${commodity.namespace}::${commodity.currencyCode}")
-                csvWriter.writeToken(null)  // Void Reason
-                csvWriter.writeToken(null)  // Action
-                writeSplitsToCsv(transaction.splits, csvWriter)
+                val fields = Array<String?>(headers.size) { null }
+                fields[0] = dateFormat.print(transaction.timeMillis)
+                fields[1] = transaction.uID
+                fields[2] = null  // Transaction number
+                fields[3] = transaction.description
+                fields[4] = transaction.note
+                fields[5] = "${commodity.namespace}::${commodity.currencyCode}"
+                fields[6] = null  // Void Reason
+                fields[7] = null  // Action
+                writeSplitsToCsv(transaction.splits, fields, writer)
             }
             cursor.close()
             PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow())

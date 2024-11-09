@@ -20,6 +20,9 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.opencsv.CSVWriterBuilder;
+import com.opencsv.ICSVWriter;
+
 import org.gnucash.android.R;
 import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.Exporter;
@@ -27,10 +30,9 @@ import org.gnucash.android.model.Account;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
+import java.io.Writer;
+import java.util.Collections;
 import java.util.List;
-
-import timber.log.Timber;
 
 /**
  * Creates a GnuCash CSV account representation of the accounts and transactions
@@ -45,7 +47,7 @@ public class CsvAccountExporter extends Exporter {
      * Creates an exporter with an already open database instance.
      *
      * @param context The context.
-     * @param params Parameters for the export
+     * @param params  Parameters for the export
      * @param bookUID The book UID.
      */
     public CsvAccountExporter(@NonNull Context context,
@@ -58,51 +60,56 @@ public class CsvAccountExporter extends Exporter {
     @Override
     public List<String> generateExport() throws ExporterException {
         String outputFile = getExportCacheFilePath();
-        try (CsvWriter writer = new CsvWriter(new FileWriter(outputFile), Character.toString(mCsvSeparator))) {
-            generateExport(writer);
-            close();
-        } catch (IOException ex) {
+        try (Writer writer = new FileWriter(outputFile)) {
+            ICSVWriter csvWriter = new CSVWriterBuilder(writer).withSeparator(mCsvSeparator).build();
+            generateExport(csvWriter);
+            csvWriter.close();
+            return Collections.singletonList(outputFile);
+        } catch (Exception ex) {
             throw new ExporterException(mExportParams, ex);
+        } finally {
+            try {
+                close();
+            } catch (Exception ignore) {
+            }
         }
-
-        return Arrays.asList(outputFile);
     }
 
     /**
      * Writes out all the accounts in the system as CSV to the provided writer
      *
      * @param csvWriter Destination for the CSV export
-     * @throws ExporterException if an error occurred while writing to the stream
+     * @throws IOException if an error occurred while writing to the stream
      */
-    public void generateExport(final CsvWriter csvWriter) throws ExporterException {
-        try {
-            List<String> names = Arrays.asList(mContext.getResources().getStringArray(R.array.csv_account_headers));
-            List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList();
+    public void generateExport(final ICSVWriter csvWriter) throws IOException {
+        String[] names = mContext.getResources().getStringArray(R.array.csv_account_headers);
+        List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList();
 
-            for (int i = 0; i < names.size(); i++) {
-                csvWriter.writeToken(names.get(i));
-            }
+        csvWriter.writeNext(names);
 
-            csvWriter.newLine();
-            for (Account account : accounts) {
-                csvWriter.writeToken(account.getAccountType().toString());
-                csvWriter.writeToken(account.getFullName());
-                csvWriter.writeToken(account.getName());
+        final String[] fields = new String[names.length];
+        for (Account account : accounts) {
+            fields[0] = account.getAccountType().toString();
+            fields[1] = account.getFullName();
+            fields[2] = account.getName();
 
-                csvWriter.writeToken(null); //Account code
-                csvWriter.writeToken(account.getDescription());
-                csvWriter.writeToken(account.getColorHexString());
-                csvWriter.writeToken(null); //Account notes
+            fields[3] = null; //Account code
+            fields[4] = account.getDescription();
+            fields[5] = account.getColorHexString();
+            fields[6] = null; //Account notes
 
-                csvWriter.writeToken(account.getCommodity().getCurrencyCode());
-                csvWriter.writeToken(account.getCommodity().getNamespace());
-                csvWriter.writeToken(account.isHidden() ? "T" : "F");
+            fields[7] = account.getCommodity().getCurrencyCode();
+            fields[8] = account.getCommodity().getNamespace();
+            fields[9] = format(account.isHidden());
 
-                csvWriter.writeToken("F"); //Tax
-                csvWriter.writeEndToken(account.isPlaceholderAccount() ? "T" : "F");
-            }
-        } catch (IOException e) {
-            throw new ExporterException(mExportParams, e);
+            fields[10] = format(false); //Tax
+            fields[11] = format(account.isPlaceholderAccount());
+
+            csvWriter.writeNext(fields);
         }
+    }
+
+    private String format(boolean value) {
+        return value ? "T" : "F";
     }
 }
