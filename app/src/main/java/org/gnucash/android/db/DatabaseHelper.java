@@ -149,7 +149,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COMMODITIES_TABLE_CREATE = "CREATE TABLE " + DatabaseSchema.CommodityEntry.TABLE_NAME + " ("
             + CommodityEntry._ID + " integer primary key autoincrement, "
             + CommodityEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
-            + CommodityEntry.COLUMN_NAMESPACE + " varchar(255) not null default '" + Commodity.COMMODITY_ISO4217 + "', "
+            + CommodityEntry.COLUMN_NAMESPACE + " varchar(255) not null default '" + Commodity.COMMODITY_CURRENCY + "', "
             + CommodityEntry.COLUMN_FULLNAME + " varchar(255) not null, "
             + CommodityEntry.COLUMN_MNEMONIC + " varchar(255) not null, "
             + CommodityEntry.COLUMN_LOCAL_SYMBOL + " varchar(255) not null default '', "

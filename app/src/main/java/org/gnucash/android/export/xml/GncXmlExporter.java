@@ -311,7 +311,7 @@ public class GncXmlExporter extends Exporter {
                 trnCommodity = CommoditiesDbAdapter.getInstance().getCommodity(currencyCode);//Currency.getInstance(currencyCode);
                 xmlSerializer.startTag(null, TAG_TRX_CURRENCY);
                 xmlSerializer.startTag(null, TAG_COMMODITY_SPACE);
-                xmlSerializer.text(COMMODITY_ISO4217);
+                xmlSerializer.text(COMMODITY_CURRENCY);
                 xmlSerializer.endTag(null, TAG_COMMODITY_SPACE);
                 xmlSerializer.startTag(null, TAG_COMMODITY_ID);
                 xmlSerializer.text(currencyCode);

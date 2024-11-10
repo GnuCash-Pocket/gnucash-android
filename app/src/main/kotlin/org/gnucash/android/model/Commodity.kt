@@ -42,15 +42,15 @@ class Commodity(
     var smallestFraction: Int = 100
 ) : BaseModel() {
 
-    var namespace = COMMODITY_ISO4217
+    var namespace = COMMODITY_CURRENCY
         set(value) {
             var ns = value
-            if (value == COMMODITY_CURRENCY) ns = COMMODITY_ISO4217
+            if (value == COMMODITY_ISO4217) ns = COMMODITY_CURRENCY
             field = ns
         }
 
     val isCurrency: Boolean
-        get() = (COMMODITY_ISO4217 == namespace || COMMODITY_CURRENCY == namespace)
+        get() = (COMMODITY_CURRENCY == namespace || COMMODITY_ISO4217 == namespace)
 
     /**
      * Returns the mnemonic, or currency code for ISO4217 currencies

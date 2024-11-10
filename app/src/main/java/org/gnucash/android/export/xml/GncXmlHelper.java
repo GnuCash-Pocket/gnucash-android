@@ -70,7 +70,7 @@ public abstract class GncXmlHelper {
     public static final String TAG_COMMODITY_XCODE = "cmdty:xcode";
     public static final String COMMODITY_CURRENCY = Commodity.COMMODITY_CURRENCY;
     public static final String COMMODITY_ISO4217 = Commodity.COMMODITY_ISO4217;
-    public static final String COMMODITY_TEMPLATE = Commodity.COMMODITY_ISO4217;
+    public static final String COMMODITY_TEMPLATE = Commodity.COMMODITY_CURRENCY;
 
     public static final String TAG_ACCOUNT = "gnc:account";
     public static final String TAG_ACCT_NAME = "act:name";
