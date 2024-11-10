@@ -37,8 +37,8 @@ import org.gnucash.android.db.DatabaseSchema;
  */
 public class QualifiedAccountNameCursorAdapter extends SimpleCursorAdapter {
 
-    private int columnIndexUID = 0;
-    private int columnIndexFavorite = 0;
+    private int columnIndexUID = -1;
+    private int columnIndexFavorite = -1;
 
     /**
      * Initialize the Cursor adapter for account names using default spinner views
@@ -60,28 +60,22 @@ public class QualifiedAccountNameCursorAdapter extends SimpleCursorAdapter {
     public QualifiedAccountNameCursorAdapter(Context context, Cursor cursor, @LayoutRes int selectedSpinnerItem) {
         super(context, selectedSpinnerItem, cursor, new String[]{DatabaseSchema.AccountEntry.COLUMN_FULL_NAME}, new int[]{android.R.id.text1}, 0);
         setDropDownViewResource(R.layout.account_spinner_dropdown_item);
-    }
-
-    @Override
-    protected void init(Context context, Cursor c, boolean autoRequery) {
-        super.init(context, c, autoRequery);
-        columnIndexUID = -1;
-        columnIndexFavorite = -1;
-        if (c != null) {
-            columnIndexUID = c.getColumnIndex(DatabaseSchema.AccountEntry.COLUMN_UID);
-            columnIndexFavorite = c.getColumnIndex(DatabaseSchema.AccountEntry.COLUMN_FAVORITE);
-        }
+        initCursor(cursor);
     }
 
     @Override
     public Cursor swapCursor(@Nullable Cursor c) {
+        initCursor(c);
+        return super.swapCursor(c);
+    }
+
+    private void initCursor(@Nullable Cursor c) {
         columnIndexUID = -1;
         columnIndexFavorite = -1;
         if (c != null) {
             columnIndexUID = c.getColumnIndex(DatabaseSchema.AccountEntry.COLUMN_UID);
             columnIndexFavorite = c.getColumnIndex(DatabaseSchema.AccountEntry.COLUMN_FAVORITE);
         }
-        return super.swapCursor(c);
     }
 
     @Override
