@@ -150,7 +150,7 @@ public class BackupManager {
 
     /**
      * Returns the full path of a file to make database backup of the specified book.
-     * Backups are done in XML format and are Gzipped (with ".gnca" extension).
+     * Backups are done in XML format and are Gzipped (with ".gnucash" extension).
      *
      * @param bookUID GUID of the book
      * @param params the export parameters.

@@ -41,7 +41,7 @@ enum class ExportFormat(
 ) {
     QIF("QIF", ".qif", "Quicken Interchange Format", R.string.file_format_qif),
     OFX("OFX", ".ofx", "Open Financial eXchange", R.string.file_format_ofx),
-    XML("XML", ".gnca", "GnuCash XML", R.string.file_format_xml),
+    XML("XML", ".gnucash", "GnuCash XML", R.string.file_format_xml),
     CSVA("CSVA", ".csv", "GnuCash accounts CSV", R.string.file_format_csv),
     CSVT("CSVT", ".csv", "GnuCash transactions CSV", R.string.file_format_csv);
 
