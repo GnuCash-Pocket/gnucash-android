@@ -78,7 +78,7 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
         for (Commodity commodity : commodities) {
             String code = commodity.getCurrencyCode();
             String name = commodity.getFullname();
-            mCurrencyEntries.add(code + Commodity.LABEL_SEPARATOR + name);
+            mCurrencyEntries.add(commodity.formatListItem());
             mCurrencyEntryValues.add(code);
         }
     }

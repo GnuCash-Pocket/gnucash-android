@@ -171,6 +171,16 @@ class Commodity(
             }
         }
 
-        const val LABEL_SEPARATOR = " \u2014 "
+        @JvmStatic
+        fun formatListItem(currencyCode: String, name: String?): String {
+            if (name.isNullOrEmpty()) {
+                return currencyCode
+            }
+            return "$currencyCode ($name)"
+        }
+    }
+
+    fun formatListItem(): String {
+        return formatListItem(currencyCode, fullname)
     }
 }

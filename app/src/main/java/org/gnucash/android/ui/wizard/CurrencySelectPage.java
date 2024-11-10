@@ -56,7 +56,7 @@ public class CurrencySelectPage extends SingleFixedChoicePage {
 
     private String addCurrency(@NonNull Commodity commodity) {
         String code = commodity.getCurrencyCode();
-        String label = code + Commodity.LABEL_SEPARATOR + commodity.getFullname();
+        String label = commodity.formatListItem();
         currencies.put(label, code);
         return label;
     }

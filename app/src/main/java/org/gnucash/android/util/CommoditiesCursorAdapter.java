@@ -52,6 +52,6 @@ public class CommoditiesCursorAdapter extends SimpleCursorAdapter {
         String currencyName = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.CommodityEntry.COLUMN_FULLNAME));
         String currencyCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.CommodityEntry.COLUMN_MNEMONIC));
 
-        textView.setText(currencyCode + Commodity.LABEL_SEPARATOR + currencyName);
+        textView.setText(Commodity.formatListItem(currencyCode, currencyName));
     }
 }
