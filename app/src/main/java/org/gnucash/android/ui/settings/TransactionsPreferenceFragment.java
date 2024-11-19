@@ -24,13 +24,12 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.SwitchPreferenceCompat;
+import androidx.preference.SwitchPreference;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.ui.settings.dialog.DeleteAllTransactionsConfirmationDialog;
 
@@ -69,15 +68,15 @@ public class TransactionsPreferenceFragment extends PreferenceFragmentCompat imp
         pref.setOnPreferenceChangeListener(this);
 
         String keyCompactView = getString(R.string.key_use_compact_list);
-        SwitchPreferenceCompat switchPref = (SwitchPreferenceCompat) findPreference(keyCompactView);
+        SwitchPreference switchPref = findPreference(keyCompactView);
         switchPref.setChecked(sharedPreferences.getBoolean(keyCompactView, false));
 
         String keySaveBalance = getString(R.string.key_save_opening_balances);
-        switchPref = (SwitchPreferenceCompat) findPreference(keySaveBalance);
+        switchPref = findPreference(keySaveBalance);
         switchPref.setChecked(sharedPreferences.getBoolean(keySaveBalance, false));
 
         String keyDoubleEntry = getString(R.string.key_use_double_entry);
-        switchPref = (SwitchPreferenceCompat) findPreference(keyDoubleEntry);
+        switchPref = findPreference(keyDoubleEntry);
         switchPref.setChecked(sharedPreferences.getBoolean(keyDoubleEntry, true));
 
         Preference preference = findPreference(getString(R.string.key_delete_all_transactions));

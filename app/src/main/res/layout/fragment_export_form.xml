@@ -205,7 +205,7 @@
                 android:textSize="15sp"
                 tools:text="@tools:sample/date/hhmm" />
 
-            <androidx.appcompat.widget.SwitchCompat
+            <Switch
                 android:id="@+id/switch_export_all"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -213,7 +213,8 @@
                 android:checked="false"
                 android:paddingStart="5dp"
                 android:paddingEnd="5dp"
-                android:text="@string/switch_export_transactions_from_all_time" />
+                android:text="@string/switch_export_transactions_from_all_time"
+                tools:ignore="UseSwitchCompatOrMaterialXml" />
         </LinearLayout>
 
         <CheckBox
