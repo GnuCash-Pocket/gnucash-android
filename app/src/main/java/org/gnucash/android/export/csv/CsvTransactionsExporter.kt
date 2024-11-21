@@ -93,7 +93,11 @@ class CsvTransactionsExporter(
             } else {
                 fields[16] = null
             }
-            fields[17] = (value / quantity.toBigDecimal()).formattedStringWithoutSymbol()
+            if (quantity.isAmountZero) {
+                fields[17] = "1"
+            } else {
+                fields[17] = (value / quantity.toBigDecimal()).formattedStringWithoutSymbol()
+            }
 
             writer.writeNext(fields)
         }
