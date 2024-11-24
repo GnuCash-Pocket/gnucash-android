@@ -35,7 +35,7 @@ public final class UxArgument {
     /**
      * Key for the origin account as argument when moving accounts
      */
-    public static final String ORIGIN_ACCOUNT_UID = "origin_acccount_uid";
+    public static final String ORIGIN_ACCOUNT_UID = "origin_account_uid";
 
     /**
      * Key for checking whether the passcode is enabled or not

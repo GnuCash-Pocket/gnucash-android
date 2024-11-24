@@ -2,21 +2,26 @@ package org.gnucash.android.ui.transaction;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentResultListener;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.databinding.ActivityTransactionDetailBinding;
 import org.gnucash.android.databinding.ItemSplitAmountInfoBinding;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
+import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Money;
@@ -24,8 +29,12 @@ import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.ui.common.FormActivity;
+import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
+import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity;
 import org.gnucash.android.ui.passcode.PasscodeLockActivity;
+import org.gnucash.android.ui.transaction.dialog.BulkMoveDialogFragment;
+import org.gnucash.android.util.BackupManager;
 import org.joda.time.format.DateTimeFormat;
 
 import java.util.MissingFormatArgumentException;
@@ -35,7 +44,7 @@ import java.util.MissingFormatArgumentException;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class TransactionDetailActivity extends PasscodeLockActivity {
+public class TransactionDetailActivity extends PasscodeLockActivity implements FragmentResultListener, Refreshable {
     private String mTransactionUID;
     private String mAccountUID;
     private int mDetailTableRows;
@@ -54,29 +63,38 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
         mTransactionUID = getIntent().getStringExtra(UxArgument.SELECTED_TRANSACTION_UID);
         mAccountUID = getIntent().getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
 
-        if (mTransactionUID == null || mAccountUID == null) {
+        if (TextUtils.isEmpty(mTransactionUID) || TextUtils.isEmpty(mAccountUID)) {
             throw new MissingFormatArgumentException("You must specify both the transaction and account GUID");
         }
+
+        int themeColor = AccountsDbAdapter.getActiveAccountColorResource(mAccountUID);
+        mBinding.toolbar.setBackgroundColor(themeColor);
 
         setSupportActionBar(mBinding.toolbar);
 
         ActionBar actionBar = getSupportActionBar();
         assert actionBar != null;
-        actionBar.setElevation(0);
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setHomeAsUpIndicator(R.drawable.ic_close_white);
         actionBar.setDisplayShowTitleEnabled(false);
 
         bindViews();
 
-        int themeColor = AccountsDbAdapter.getActiveAccountColorResource(mAccountUID);
-        actionBar.setBackgroundDrawable(new ColorDrawable(themeColor));
-        mBinding.toolbar.setBackgroundColor(themeColor);
-
         getWindow().setStatusBarColor(GnuCashApplication.darken(themeColor));
 
         mBinding.fabEditTransaction.setOnClickListener(v -> editTransaction());
+    }
+
+    @Override
+    public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
+        if (BulkMoveDialogFragment.TAG.equals(requestKey)) {
+            String accountrUID = result.getString(UxArgument.SELECTED_ACCOUNT_UID);
+            if (!TextUtils.isEmpty(accountrUID)) {
+                mAccountUID = accountrUID;
+            }
+            boolean refresh = result.getBoolean(Refreshable.EXTRA_REFRESH);
+            if (refresh) refresh();
+        }
     }
 
     class SplitAmountViewHolder {
@@ -115,7 +133,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
         int index = 0;
         for (Split split : transaction.getSplits()) {
             if (!useDoubleEntry && split.getAccountUID().equals(
-                    accountsDbAdapter.getImbalanceAccountUID(split.getValue().getCommodity()))) {
+                accountsDbAdapter.getImbalanceAccountUID(split.getValue().getCommodity()))) {
                 //do now show imbalance accounts for single entry use case
                 continue;
             }
@@ -145,12 +163,16 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
 
     }
 
-    /**
-     * Refreshes the transaction information
-     */
-    private void refresh() {
+    @Override
+    public void refresh() {
         removeSplitItemViews();
         bindViews();
+    }
+
+    @Override
+    public void refresh(String uid) {
+        mTransactionUID = uid;
+        refresh();
     }
 
     /**
@@ -163,9 +185,8 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
         mBinding.balanceCredit.setText("");
     }
 
-
     private void editTransaction() {
-        Intent createTransactionIntent = new Intent(this.getApplicationContext(), FormActivity.class);
+        Intent createTransactionIntent = new Intent(this, FormActivity.class);
         createTransactionIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
         createTransactionIntent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
         createTransactionIntent.putExtra(UxArgument.SELECTED_TRANSACTION_UID, mTransactionUID);
@@ -174,10 +195,25 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.transactions_context_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
+                return true;
+            case R.id.context_menu_move_transaction:
+                moveTransaction(mTransactionUID);
+                return true;
+            case R.id.context_menu_duplicate_transaction:
+                duplicateTransaction(mTransactionUID);
+                return true;
+            case R.id.context_menu_delete:
+                deleteTransaction(mTransactionUID);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -188,6 +224,54 @@ public class TransactionDetailActivity extends PasscodeLockActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
             refresh();
+            return;
         }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void moveTransaction(@Nullable String transactionUID) {
+        if (TextUtils.isEmpty(transactionUID)) return;
+        long transactionId = TransactionsDbAdapter.getInstance().getID(transactionUID);
+        if (transactionId < 0) return;
+        long[] ids = new long[]{transactionId};
+        BulkMoveDialogFragment fragment = BulkMoveDialogFragment.newInstance(ids, mAccountUID);
+        FragmentManager fm = getSupportFragmentManager();
+        fm.setFragmentResultListener(BulkMoveDialogFragment.TAG, this, this);
+        fragment.show(fm, BulkMoveDialogFragment.TAG);
+    }
+
+    private void deleteTransaction(@Nullable String transactionUID) {
+        if (TextUtils.isEmpty(transactionUID)) return;
+
+        final Activity activity = this;
+        final TransactionsDbAdapter dbAdapter = TransactionsDbAdapter.getInstance();
+        if (GnuCashApplication.shouldBackupTransactions(activity)) {
+            BackupManager.backupActiveBookAsync(activity, result -> {
+                dbAdapter.deleteRecord(transactionUID);
+                WidgetConfigurationActivity.updateAllWidgets(activity);
+                finish();
+                return null;
+            });
+        } else {
+            dbAdapter.deleteRecord(transactionUID);
+            WidgetConfigurationActivity.updateAllWidgets(activity);
+            finish();
+        }
+    }
+
+    private void duplicateTransaction(@Nullable String transactionUID) {
+        if (TextUtils.isEmpty(transactionUID)) return;
+
+        TransactionsDbAdapter dbAdapter = TransactionsDbAdapter.getInstance();
+        Transaction transaction = dbAdapter.getRecord(transactionUID);
+        Transaction duplicate = new Transaction(transaction, true);
+        duplicate.setTime(System.currentTimeMillis());
+        dbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.insert);
+
+        // Show the new transaction
+        Intent intent = new Intent(getIntent())
+            .putExtra(UxArgument.SELECTED_TRANSACTION_UID, duplicate.getUID())
+            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
+        startActivity(intent);
     }
 }
