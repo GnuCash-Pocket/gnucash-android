@@ -35,14 +35,18 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.collection.LongSparseArray;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
-import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -85,11 +89,6 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
      * Request code for opening the account to edit
      */
     public static final int REQUEST_EDIT_ACCOUNT = 0x10;
-
-    /**
-     * Number of pages to show
-     */
-    private static final int DEFAULT_NUM_PAGES = 3;
 
     /**
      * Index for the recent accounts tab
@@ -137,14 +136,39 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
     /**
      * Adapter for managing the sub-account and transaction fragment pages in the accounts view
      */
-    private class AccountViewPagerAdapter extends FragmentStateAdapter {
+    private static class AccountViewPagerAdapter extends RecyclerView.Adapter<FragmentViewHolder> {
+        /**
+         * Number of pages to show
+         */
+        private static final int DEFAULT_NUM_PAGES = 3;
+
+        private final FragmentManager fragmentManager;
+        private final LongSparseArray<Fragment> fragments = new LongSparseArray<>();
 
         public AccountViewPagerAdapter(FragmentActivity activity) {
-            super(activity);
+            super();
+            fragmentManager = activity.getSupportFragmentManager();
+            setHasStableIds(true);
+        }
+
+        @Override
+        public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
+            super.onDetachedFromRecyclerView(recyclerView);
+
+            FragmentTransaction tx = fragmentManager.beginTransaction();
+            final int count = getItemCount();
+            for (int i = 0; i < count; i++) {
+                long itemId = getItemId(i);
+                Fragment fragment = fragments.get(itemId);
+                if (fragment != null) {
+                    tx.remove(fragment);
+                }
+            }
+            tx.commitAllowingStateLoss();
+            fragments.clear();
         }
 
         @NonNull
-        @Override
         public Fragment createFragment(int position) {
             switch (position) {
                 case INDEX_RECENT_ACCOUNTS_FRAGMENT:
@@ -159,9 +183,33 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
             }
         }
 
+        @NonNull
+        @Override
+        public FragmentViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return FragmentViewHolder.create(parent);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull FragmentViewHolder holder, int position) {
+            long itemId = getItemId(position);
+            Fragment fragment = holder.getFragment();
+            if (fragment == null) {
+                fragment = createFragment(position);
+                holder.bind(fragment, fragmentManager);
+                fragments.put(itemId, fragment);
+            } else {
+                System.out.println("~!@ fragment=" + fragment);
+            }
+        }
+
         @Override
         public int getItemCount() {
             return DEFAULT_NUM_PAGES;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
         }
     }
 
@@ -190,9 +238,9 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
         init();
 
         TabLayout tabLayout = mBinding.tabLayout;
-        tabLayout.addTab(tabLayout.newTab().setText(R.string.title_recent_accounts));
-        tabLayout.addTab(tabLayout.newTab().setText(R.string.title_all_accounts));
-        tabLayout.addTab(tabLayout.newTab().setText(R.string.title_favorite_accounts));
+        tabLayout.addTab(tabLayout.newTab());
+        tabLayout.addTab(tabLayout.newTab());
+        tabLayout.addTab(tabLayout.newTab());
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
         //show the simple accounts list
