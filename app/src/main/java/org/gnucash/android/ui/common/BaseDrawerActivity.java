@@ -46,6 +46,7 @@ import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.ui.account.AccountsActivity;
+import org.gnucash.android.ui.passcode.PasscodeHelper;
 import org.gnucash.android.ui.passcode.PasscodeLockActivity;
 import org.gnucash.android.ui.report.ReportsActivity;
 import org.gnucash.android.ui.settings.PreferenceActivity;
@@ -277,6 +278,7 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
                 break;
 
             //case R.id.nav_item_help:
+            //    PasscodeHelper.skipPasscodeScreen(this);
             //    break;
         }
         mDrawerLayout.closeDrawer(mNavigationView);

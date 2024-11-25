@@ -101,8 +101,6 @@ public class BookManagerFragment extends ListFragment implements
 
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         assert actionBar != null;
-        actionBar.setHomeButtonEnabled(true);
-        actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setTitle(R.string.title_manage_books);
         setHasOptionsMenu(true);
 

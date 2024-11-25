@@ -14,17 +14,10 @@
  limitations under the License.
 -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
-
-    <fragment
-        android:id="@+id/listFragment"
-        class="org.gnucash.android.ui.passcode.KeyboardFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:layout="@layout/fragment_numeric_keyboard" />
-
-</LinearLayout>
+    android:orientation="vertical"
+    tools:layout="@layout/fragment_numeric_keyboard" />

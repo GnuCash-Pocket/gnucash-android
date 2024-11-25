@@ -67,7 +67,7 @@ import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.Exporter;
 import org.gnucash.android.model.BaseModel;
 import org.gnucash.android.model.ScheduledAction;
-import org.gnucash.android.ui.common.UxArgument;
+import org.gnucash.android.ui.passcode.PasscodeHelper;
 import org.gnucash.android.ui.settings.BackupPreferenceFragment;
 import org.gnucash.android.ui.settings.dialog.OwnCloudDialogFragment;
 import org.gnucash.android.ui.transaction.TransactionFormFragment;
@@ -229,8 +229,7 @@ public class ExportFormFragment extends Fragment implements
         // When the user try to export sharing to 3rd party service like DropBox
         // then pausing all activities. That cause passcode screen appearing happened.
         // We use a disposable flag to skip this unnecessary passcode screen.
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
-        prefs.edit().putBoolean(UxArgument.SKIP_PASSCODE_SCREEN, true).apply();
+        PasscodeHelper.skipPasscodeScreen(requireContext());
     }
 
     /**

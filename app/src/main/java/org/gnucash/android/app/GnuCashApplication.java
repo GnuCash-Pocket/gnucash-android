@@ -73,16 +73,6 @@ public class GnuCashApplication extends Application {
      */
     public static final String FILE_PROVIDER_AUTHORITY = BuildConfig.APPLICATION_ID + ".fileprovider";
 
-    /**
-     * Lifetime of passcode session
-     */
-    public static final long SESSION_TIMEOUT = 5 * 1000;
-
-    /**
-     * Init time of passcode session
-     */
-    public static long PASSCODE_SESSION_INIT_TIME = 0L;
-
     private static Context context;
 
     private static AccountsDbAdapter mAccountsDbAdapter;
@@ -474,5 +464,4 @@ public class GnuCashApplication extends Application {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         return sharedPrefs.getBoolean(context.getString(R.string.key_delete_transaction_backup), true);
     }
-
 }
