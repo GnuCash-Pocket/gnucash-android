@@ -42,7 +42,7 @@ import timber.log.Timber;
 public enum ReportType {
     PIE_CHART(R.string.title_pie_chart, R.color.account_green, R.layout.fragment_pie_chart, PieChartFragment.class),
     BAR_CHART(R.string.title_bar_chart, R.color.account_red, R.layout.fragment_bar_chart, StackedBarChartFragment.class),
-    LINE_CHART(R.string.title_cash_flow_report, R.color.account_blue, R.layout.fragment_line_chart, CashFlowLineChartFragment.class),
+    LINE_CHART(R.string.title_line_chart, R.color.account_blue, R.layout.fragment_line_chart, CashFlowLineChartFragment.class),
     TEXT(R.string.title_balance_sheet_report, R.color.account_purple, R.layout.fragment_text_report, BalanceSheetFragment.class),
     NONE(R.string.title_reports, R.color.theme_primary, R.layout.fragment_report_summary, ReportsOverviewFragment.class);
 
