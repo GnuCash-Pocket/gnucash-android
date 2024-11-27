@@ -47,14 +47,10 @@ import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.model.TransactionType;
-import org.gnucash.android.test.unit.testutil.ShadowCrashlytics;
-import org.gnucash.android.test.unit.testutil.ShadowUserVoice;
+import org.gnucash.android.test.unit.GnuCashTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
@@ -64,10 +60,7 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-@RunWith(RobolectricTestRunner.class)
-//package is required so that resources can be found in dev mode
-@Config(sdk = 21, shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
-public class AccountsDbAdapterTest {
+public class AccountsDbAdapterTest extends GnuCashTest {
 
     private static final String BRAVO_ACCOUNT_NAME = "Bravo";
     private static final String ALPHA_ACCOUNT_NAME = "Alpha";

@@ -27,13 +27,8 @@ import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.model.TransactionType;
 import org.gnucash.android.test.unit.BookHelperTest;
-import org.gnucash.android.test.unit.testutil.ShadowCrashlytics;
-import org.gnucash.android.test.unit.testutil.ShadowUserVoice;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.text.ParseException;
 import java.util.Calendar;
@@ -41,8 +36,6 @@ import java.util.Calendar;
 /**
  * Imports GnuCash XML files and checks the objects defined in them are imported correctly.
  */
-@RunWith(RobolectricTestRunner.class)
-@Config(sdk = 21, shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
 public class GncXmlHandlerTest extends BookHelperTest {
 
     /**

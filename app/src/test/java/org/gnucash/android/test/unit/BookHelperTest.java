@@ -30,7 +30,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import timber.log.Timber;
 
-public abstract class BookHelperTest {
+public abstract class BookHelperTest extends GnuCashTest {
     protected SQLiteDatabase mImportedDb;
     protected BooksDbAdapter mBooksDbAdapter;
     protected TransactionsDbAdapter mTransactionsDbAdapter;

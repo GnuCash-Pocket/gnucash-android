@@ -6,24 +6,16 @@ import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.importer.GncXmlImporter;
-import org.gnucash.android.test.unit.testutil.ShadowCrashlytics;
-import org.gnucash.android.test.unit.testutil.ShadowUserVoice;
+import org.gnucash.android.test.unit.GnuCashTest;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-
-@RunWith(RobolectricTestRunner.class)
-//package is required so that resources can be found in dev mode
-@Config(sdk = 21, shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
-public class BackupManagerTest {
+public class BackupManagerTest extends GnuCashTest {
     private BooksDbAdapter mBooksDbAdapter;
 
     @Before

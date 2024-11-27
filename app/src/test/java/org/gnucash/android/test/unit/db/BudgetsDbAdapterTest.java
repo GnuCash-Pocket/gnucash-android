@@ -29,14 +29,10 @@ import org.gnucash.android.model.BudgetAmount;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.PeriodType;
 import org.gnucash.android.model.Recurrence;
-import org.gnucash.android.test.unit.testutil.ShadowCrashlytics;
-import org.gnucash.android.test.unit.testutil.ShadowUserVoice;
+import org.gnucash.android.test.unit.GnuCashTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,10 +40,7 @@ import java.util.List;
 /**
  * Tests for the budgets database adapter
  */
-@RunWith(RobolectricTestRunner.class)
-//package is required so that resources can be found in dev mode
-@Config(sdk = 21, shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
-public class BudgetsDbAdapterTest {
+public class BudgetsDbAdapterTest extends GnuCashTest {
 
     private BudgetsDbAdapter mBudgetsDbAdapter;
     private RecurrenceDbAdapter mRecurrenceDbAdapter;

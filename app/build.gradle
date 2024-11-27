@@ -22,11 +22,11 @@ static def gitSha() {
 
 
 android {
-    compileSdk 34
+    compileSdk = 34
     defaultConfig {
         applicationId "org.gnucash.pocket"
-        minSdkVersion 21
-        targetSdkVersion 33
+        minSdk = 21
+        targetSdk = 34
         versionCode versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         resValue "string", "app_version_name", "${versionName}"
@@ -142,9 +142,12 @@ android {
     }
 
     compileOptions { //we want switch with strings during xml parsing
-        encoding "UTF-8"
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     testOptions {
@@ -172,16 +175,14 @@ afterEvaluate {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.21"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"
 
     // Jetpack
-    implementation(
-            'androidx.appcompat:appcompat:1.6.1',
-            'com.google.android.material:material:1.11.0',
-            'androidx.cardview:cardview:1.0.0',
-            'androidx.preference:preference:1.2.0',
-            'androidx.recyclerview:recyclerview:1.3.0'
-    )
+    implementation('androidx.appcompat:appcompat:1.7.0')
+    implementation('com.google.android.material:material:1.12.0')
+    implementation('androidx.cardview:cardview:1.0.0')
+    implementation('androidx.preference:preference-ktx:1.2.1')
+    implementation('androidx.recyclerview:recyclerview:1.3.2')
 
     implementation 'net.objecthunter:exp4j:0.4.7'
     implementation 'com.ezylang:EvalEx:3.2.0'
@@ -190,16 +191,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services-drive:17.0.0'
 
     // Logging
-    implementation 'com.google.firebase:firebase-crashlytics:18.6.1'
+    implementation 'com.google.firebase:firebase-crashlytics:19.2.1'
     implementation "com.jakewharton.timber:timber:5.0.1"
 
-    implementation('com.uservoice:uservoice-android-sdk:1.2.10') {
-        exclude module: 'commons-logging'
-        exclude module: 'httpcore'
-        exclude module: 'httpclient'
-    }
-
-    implementation 'org.jraf:android-switch-backport:2.0.1@aar'
     implementation 'com.github.nextcloud:android-library:1.0.31'
     implementation 'com.squareup:android-times-square:1.6.5@aar'
     implementation 'com.github.PhilJay:MPAndroidChart:2.2.4'
@@ -209,26 +203,21 @@ dependencies {
     implementation 'com.code-troopers.betterpickers:library:3.1.0'
     implementation 'com.github.techfreak:wizardpager:1.0.3'
     implementation 'com.dropbox.core:dropbox-core-sdk:3.0.3'
-    implementation 'io.github.kobakei:ratethisapp:1.1.3'
+    implementation 'com.kobakei:ratethisapp:0.0.7'
 
     debugImplementation 'com.facebook.stetho:stetho:1.5.0'
 
     testImplementation 'org.robolectric:robolectric:4.11.1'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.assertj:assertj-core:3.22.0'
-}
 
-def androidEspressoVersion = "3.5.1"
-dependencies {
-    //the following are only added so that the app and test version both us the same versions
-    androidTestImplementation 'com.google.android.material:material:1.11.0'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test:rules:1.6.1'
 
-    androidTestImplementation 'androidx.test:runner:1.5.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test:rules:1.5.0'
+    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.3.0'
 
-    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
-
+    def androidEspressoVersion = "3.5.1"
     androidTestImplementation 'androidx.test.espresso:espresso-core:' + androidEspressoVersion
     androidTestImplementation 'androidx.test.espresso:espresso-intents:' + androidEspressoVersion
     androidTestImplementation('androidx.test.espresso:espresso-contrib:' + androidEspressoVersion) {

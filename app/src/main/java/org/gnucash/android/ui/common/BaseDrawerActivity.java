@@ -20,13 +20,11 @@ import static org.gnucash.android.app.IntentExtKt.takePersistableUriPermission;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -40,10 +38,8 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.viewbinding.ViewBinding;
 
 import com.google.android.material.navigation.NavigationView;
-import com.uservoice.uservoicesdk.UserVoice;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -280,11 +276,8 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
                 startActivity(new Intent(this, PreferenceActivity.class));
                 break;
 
-            case R.id.nav_item_help:
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-                prefs.edit().putBoolean(UxArgument.SKIP_PASSCODE_SCREEN, true).apply();
-                UserVoice.launchUserVoice(this);
-                break;
+            //case R.id.nav_item_help:
+            //    break;
         }
         mDrawerLayout.closeDrawer(mNavigationView);
     }
