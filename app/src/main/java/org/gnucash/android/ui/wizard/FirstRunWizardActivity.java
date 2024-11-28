@@ -17,30 +17,30 @@
 
 package org.gnucash.android.ui.wizard;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.View;
-import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentStatePagerAdapter;
-import androidx.viewpager.widget.ViewPager;
+import androidx.fragment.app.FragmentActivity;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.tech.freak.wizardpager.model.AbstractWizardModel;
 import com.tech.freak.wizardpager.model.ModelCallbacks;
 import com.tech.freak.wizardpager.model.Page;
 import com.tech.freak.wizardpager.model.ReviewItem;
 import com.tech.freak.wizardpager.ui.PageFragmentCallbacks;
-import com.tech.freak.wizardpager.ui.ReviewFragment;
 import com.tech.freak.wizardpager.ui.StepPagerStrip;
 
 import org.gnucash.android.R;
@@ -57,21 +57,20 @@ import java.util.List;
  * Activity for managing the wizard displayed upon first run of the application
  */
 public class FirstRunWizardActivity extends AppCompatActivity implements
-        PageFragmentCallbacks, ReviewFragment.Callbacks, ModelCallbacks {
-    private MyPagerAdapter mPagerAdapter;
+    PageFragmentCallbacks, ReviewFragment.Callbacks, ModelCallbacks {
+
+    private static final String STATE_MODEL = "model";
+    private static final int STEP_REVIEW = 1;
+
+    private WizardPagerAdapter mPagerAdapter;
 
     private boolean mEditingAfterReview;
 
-    private AbstractWizardModel mWizardModel;
+    private FirstRunWizardModel mWizardModel;
 
-    private boolean mConsumePageSelectedEvent;
-
-    private List<Page> mCurrentPageSequence;
-    private String mAccountOptions;
-    private String mCurrencyCode;
+    private int pagesCompletedCount;
 
     private ActivityFirstRunWizardBinding mBinding;
-
 
     public void onCreate(Bundle savedInstanceState) {
         // we need to construct the wizard model before we call super.onCreate, because it's used in
@@ -83,34 +82,20 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
         mBinding = ActivityFirstRunWizardBinding.inflate(getLayoutInflater());
         setContentView(mBinding.getRoot());
 
-        setTitle(getString(R.string.title_setup_gnucash));
-
-        mPagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
+        mPagerAdapter = new WizardPagerAdapter(this);
         mBinding.pager.setAdapter(mPagerAdapter);
         mBinding.strip
-                .setOnPageSelectedListener(new StepPagerStrip.OnPageSelectedListener() {
-                    @Override
-                    public void onPageStripSelected(int position) {
-                        position = Math.min(mPagerAdapter.getCount() - 1,
-                                position);
-                        if (mBinding.pager.getCurrentItem() != position) {
-                            mBinding.pager.setCurrentItem(position);
-                        }
-                    }
-                });
+            .setOnPageSelectedListener(new StepPagerStrip.OnPageSelectedListener() {
+                @Override
+                public void onPageStripSelected(int position) {
+                    gotoPage(position);
+                }
+            });
 
-
-        mBinding.pager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+        mBinding.pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
                 mBinding.strip.setCurrentPage(position);
-
-                if (mConsumePageSelectedEvent) {
-                    mConsumePageSelectedEvent = false;
-                    return;
-                }
-
-                mEditingAfterReview = false;
                 updateBottomBar();
             }
         });
@@ -118,61 +103,21 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
         mBinding.defaultButtons.btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mBinding.pager.getCurrentItem() == mCurrentPageSequence.size()) {
-                    ArrayList<ReviewItem> reviewItems = new ArrayList<>();
-                    for (Page page : mCurrentPageSequence) {
-                        page.getReviewItems(reviewItems);
-                    }
-
-                    mCurrencyCode = GnuCashApplication.getDefaultCurrencyCode();
-                    mAccountOptions = getString(R.string.wizard_option_let_me_handle_it); //default value, do nothing
-                    String feedbackOption = getString(R.string.wizard_option_disable_crash_reports);
-                    for (ReviewItem reviewItem : reviewItems) {
-                        String title = reviewItem.getTitle();
-                        if (title.equals(getString(R.string.wizard_title_default_currency))) {
-                            mCurrencyCode = reviewItem.getDisplayValue();
-                        } else if (title.equals(getString(R.string.wizard_title_select_currency))) {
-                            mCurrencyCode = reviewItem.getDisplayValue();
-                        } else if (title.equals(getString(R.string.wizard_title_account_setup))) {
-                            mAccountOptions = reviewItem.getDisplayValue();
-                        } else if (title.equals(getString(R.string.wizard_title_feedback_options))) {
-                            feedbackOption = reviewItem.getDisplayValue();
-                        }
-                    }
-
-                    GnuCashApplication.setDefaultCurrencyCode(view.getContext(), mCurrencyCode);
-                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(FirstRunWizardActivity.this);
-                    SharedPreferences.Editor preferenceEditor = preferences.edit();
-
-                    if (feedbackOption.equals(getString(R.string.wizard_option_auto_send_crash_reports))) {
-                        preferenceEditor.putBoolean(getString(R.string.key_enable_crashlytics), true);
-                    } else {
-                        preferenceEditor.putBoolean(getString(R.string.key_enable_crashlytics), false);
-                    }
-                    preferenceEditor.apply();
-
-                    createAccountsAndFinish();
-                } else {
-                    if (mEditingAfterReview) {
-                        mBinding.pager.setCurrentItem(mPagerAdapter.getCount() - 1);
-                    } else {
-                        mBinding.pager.setCurrentItem(mBinding.pager.getCurrentItem() + 1);
-                    }
-                }
+                gotoNextPage();
             }
         });
 
         mBinding.defaultButtons.btnCancel.setText(R.string.wizard_btn_back);
         TypedValue v = new TypedValue();
         getTheme().resolveAttribute(android.R.attr.textAppearanceMedium, v,
-                true);
+            true);
         mBinding.defaultButtons.btnCancel.setTextAppearance(this, v.resourceId);
         mBinding.defaultButtons.btnSave.setTextAppearance(this, v.resourceId);
 
         mBinding.defaultButtons.btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mBinding.pager.setCurrentItem(mBinding.pager.getCurrentItem() - 1);
+                gotoPreviousPage();
             }
         });
 
@@ -181,18 +126,18 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
     }
 
     /**
-     * Create the wizard model for the activity, taking into accoun the savedInstanceState if it
+     * Create the wizard model for the activity, taking into account the savedInstanceState if it
      * exists (and if it contains a "model" key that we can use).
      *
      * @param savedInstanceState the instance state available in {{@link #onCreate(Bundle)}}
      * @return an appropriate wizard model for this activity
      */
-    private AbstractWizardModel createWizardModel(Bundle savedInstanceState) {
-        AbstractWizardModel model = new FirstRunWizardModel(this);
+    private FirstRunWizardModel createWizardModel(Bundle savedInstanceState) {
+        FirstRunWizardModel model = new FirstRunWizardModel(this);
         if (savedInstanceState != null) {
-            Bundle wizardModel = savedInstanceState.getBundle("model");
-            if (wizardModel != null) {
-                model.load(wizardModel);
+            Bundle savedValues = savedInstanceState.getBundle(STATE_MODEL);
+            if (savedValues != null) {
+                model.load(savedValues);
             }
         }
         model.registerListener(this);
@@ -203,70 +148,66 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
      * Create accounts depending on the user preference (import or default set) and finish this activity
      * <p>This method also removes the first run flag from the application</p>
      */
-    private void createAccountsAndFinish() {
-        AccountsActivity.removeFirstRunFlag(this);
-
-        if (mAccountOptions.equals(getString(R.string.wizard_option_create_default_accounts))) {
+    private void createAccountsAndFinish(@NonNull String accountOption, String currencyCode) {
+        if (accountOption.equals(mWizardModel.optionAccountDefault)) {
             //save the UID of the active book, and then delete it after successful import
             String bookUID = GnuCashApplication.getActiveBookUID();
-            AccountsActivity.createDefaultAccounts(mCurrencyCode, FirstRunWizardActivity.this);
+            AccountsActivity.createDefaultAccounts(currencyCode, FirstRunWizardActivity.this);
             BooksDbAdapter.getInstance().deleteBook(bookUID); //a default book is usually created
             finish();
-        } else if (mAccountOptions.equals(getString(R.string.wizard_option_import_my_accounts))) {
+        } else if (accountOption.equals(mWizardModel.optionAccountImport)) {
             AccountsActivity.startXmlFileChooser(this);
         } else { //user prefers to handle account creation themselves
             AccountsActivity.start(this);
             finish();
         }
+
+        AccountsActivity.removeFirstRunFlag(this);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onPageTreeChanged() {
-        mCurrentPageSequence = mWizardModel.getCurrentPageSequence();
+        mPagerAdapter.setPages(mWizardModel.getCurrentPageSequence());
         recalculateCutOffPage();
-        mBinding.strip.setPageCount(mCurrentPageSequence.size() + 1); // + 1 =
-        // review
-        // step
-        mPagerAdapter.notifyDataSetChanged();
         updateBottomBar();
     }
 
     private void updateBottomBar() {
+        List<Page> pages = mPagerAdapter.data;
         int position = mBinding.pager.getCurrentItem();
-        final Resources res = getResources();
-        if (position == mCurrentPageSequence.size()) {
+        if (position == pages.size()) {
             mBinding.defaultButtons.btnSave.setText(R.string.btn_wizard_finish);
 
             mBinding.defaultButtons.btnSave.setBackgroundDrawable(
-                    new ColorDrawable(ContextCompat.getColor(this, R.color.theme_accent)));
+                new ColorDrawable(ContextCompat.getColor(this, R.color.theme_accent)));
             mBinding.defaultButtons.btnSave.setTextColor(ContextCompat.getColor(this, android.R.color.white));
         } else {
             mBinding.defaultButtons.btnSave.setText(mEditingAfterReview ? R.string.review
-                    : R.string.btn_wizard_next);
+                : R.string.btn_wizard_next);
             mBinding.defaultButtons.btnSave.setBackgroundDrawable(
-                    new ColorDrawable(ContextCompat.getColor(this, android.R.color.transparent)));
+                new ColorDrawable(ContextCompat.getColor(this, android.R.color.transparent)));
             mBinding.defaultButtons.btnSave.setTextColor(ContextCompat.getColor(this, R.color.theme_accent));
-            mBinding.defaultButtons.btnSave.setEnabled(position != mPagerAdapter.getCutOffPage());
         }
 
         mBinding.defaultButtons.btnCancel
-                .setVisibility(position <= 0 ? View.INVISIBLE : View.VISIBLE);
+            .setVisibility(position <= 0 ? View.INVISIBLE : View.VISIBLE);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case AccountsActivity.REQUEST_PICK_ACCOUNTS_FILE:
-                if (resultCode == Activity.RESULT_OK && data != null) {
-                    AccountsActivity.importXmlFileFromIntent(this, data, new TaskDelegate() {
-                        @Override
-                        public void onTaskComplete() {
-                            finish();
-                        }
-                    });
-                }
-                break;
+        if (requestCode == AccountsActivity.REQUEST_PICK_ACCOUNTS_FILE) {
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                AccountsActivity.importXmlFileFromIntent(this, data, new TaskDelegate() {
+                    @Override
+                    public void onTaskComplete() {
+                        finish();
+                    }
+                });
+            }
+            return;
         }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -276,9 +217,9 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBundle("model", mWizardModel.save());
+        outState.putBundle(STATE_MODEL, mWizardModel.save());
     }
 
     @Override
@@ -288,25 +229,21 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
 
     @Override
     public void onEditScreenAfterReview(String key) {
-        for (int i = mCurrentPageSequence.size() - 1; i >= 0; i--) {
-            if (mCurrentPageSequence.get(i).getKey().equals(key)) {
-                mConsumePageSelectedEvent = true;
+        mEditingAfterReview = false;
+        List<Page> pages = mPagerAdapter.data;
+        for (int i = pages.size() - 1; i >= 0; i--) {
+            if (pages.get(i).getKey().equals(key)) {
                 mEditingAfterReview = true;
-                mBinding.pager.setCurrentItem(i);
-                updateBottomBar();
-                break;
+                gotoPage(i);
+                return;
             }
         }
     }
 
     @Override
     public void onPageDataChanged(Page page) {
-        if (page.isRequired()) {
-            if (recalculateCutOffPage()) {
-                mPagerAdapter.notifyDataSetChanged();
-                updateBottomBar();
-            }
-        }
+        recalculateCutOffPage();
+        updateBottomBar();
     }
 
     @Override
@@ -314,75 +251,130 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
         return mWizardModel.findByKey(key);
     }
 
-    private boolean recalculateCutOffPage() {
+    private void recalculateCutOffPage() {
+        List<Page> pages = mPagerAdapter.data;
         // Cut off the pager adapter at first required page that isn't completed
-        int cutOffPage = mCurrentPageSequence.size() + 1;
-        for (int i = 0; i < mCurrentPageSequence.size(); i++) {
-            Page page = mCurrentPageSequence.get(i);
-            if (page.isRequired() && !page.isCompleted()) {
-                cutOffPage = i;
+        pagesCompletedCount = 0;
+        int count = pages.size();
+        for (int i = 0; i < count; i++) {
+            Page page = pages.get(i);
+            if (page.isCompleted()) {
+                pagesCompletedCount++;
+            } else if (page.isRequired()) {
                 break;
             }
         }
-
-        if (mPagerAdapter.getCutOffPage() != cutOffPage) {
-            mPagerAdapter.setCutOffPage(cutOffPage);
-            return true;
-        }
-
-        return false;
+        pagesCompletedCount += STEP_REVIEW;
+        mBinding.strip.setPageCount(pagesCompletedCount);
+        mPagerAdapter.notifyDataSetChanged();
     }
 
-    public class MyPagerAdapter extends FragmentStatePagerAdapter {
-        private int mCutOffPage;
-        private Fragment mPrimaryItem;
+    private void gotoNextPage() {
+        int position = mBinding.pager.getCurrentItem();
+        int positionNext = position + 1;
+        int count = mPagerAdapter.data.size() + STEP_REVIEW;
+        if (positionNext >= count) {
+            applySettings();
+        } else if (mEditingAfterReview) {
+            mEditingAfterReview = false;
+            gotoPage(count - 1);
+        } else {
+            Page page = mPagerAdapter.getItem(position);
+            if (page.isCompleted()) {
+                gotoPage(positionNext);
+            }
+        }
+    }
 
-        public MyPagerAdapter(FragmentManager fm) {
-            super(fm);
+    private void gotoPreviousPage() {
+        int position = mBinding.pager.getCurrentItem() - 1;
+        gotoPage(Math.max(0, position));
+    }
+
+    private void gotoPage(int position) {
+        mBinding.pager.setCurrentItem(position);
+    }
+
+    private void applySettings() {
+        List<Page> pages = mPagerAdapter.data;
+        ArrayList<ReviewItem> reviewItems = new ArrayList<>();
+        for (Page page : pages) {
+            page.getReviewItems(reviewItems);
         }
 
+        String currencyLabel = null;
+        String accountOption = mWizardModel.optionAccountUser;
+        String feedbackOption = "";
+        for (ReviewItem reviewItem : reviewItems) {
+            String title = reviewItem.getTitle();
+            if (title.equals(mWizardModel.titleCurrency)) {
+                currencyLabel = reviewItem.getDisplayValue();
+            } else if (title.equals(mWizardModel.titleOtherCurrency)) {
+                currencyLabel = reviewItem.getDisplayValue();
+            } else if (title.equals(mWizardModel.titleAccount)) {
+                accountOption = reviewItem.getDisplayValue();
+            } else if (title.equals(mWizardModel.titleFeedback)) {
+                feedbackOption = reviewItem.getDisplayValue();
+            }
+        }
+
+        if (TextUtils.isEmpty(currencyLabel) || TextUtils.isEmpty(accountOption)) {
+            return;
+        }
+        String currencyCode = mWizardModel.getCurrencyByLabel(currencyLabel);
+        if (TextUtils.isEmpty(currencyCode)) {
+            return;
+        }
+
+        Context context = FirstRunWizardActivity.this;
+        GnuCashApplication.setDefaultCurrencyCode(context, currencyCode);
+        PreferenceManager.getDefaultSharedPreferences(context)
+            .edit()
+            .putBoolean(getString(R.string.key_enable_crashlytics), feedbackOption.equals(mWizardModel.optionFeedbackSend))
+            .apply();
+
+        createAccountsAndFinish(accountOption, currencyCode);
+    }
+
+    public class WizardPagerAdapter extends FragmentStateAdapter {
+
+        private final List<Page> data = new ArrayList<>();
+
+        public WizardPagerAdapter(FragmentActivity activity) {
+            super(activity);
+        }
+
+        @SuppressLint("NotifyDataSetChanged")
+        public void setPages(List<Page> pages) {
+            data.clear();
+            data.addAll(pages);
+            notifyDataSetChanged();
+        }
+
+        @NonNull
         @Override
-        public Fragment getItem(int i) {
-            if (i >= mCurrentPageSequence.size()) {
+        public Fragment createFragment(int position) {
+            if (position >= data.size()) {
                 return new ReviewFragment();
             }
-
-            return mCurrentPageSequence.get(i).createFragment();
+            return getItem(position).createFragment();
         }
 
         @Override
-        public int getItemPosition(Object object) {
-            // TODO: be smarter about this
-            if (object == mPrimaryItem) {
-                // Re-use the current fragment (its position never changes)
-                return POSITION_UNCHANGED;
+        public int getItemCount() {
+            return pagesCompletedCount;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            if (position >= data.size()) {
+                return 0;
             }
-
-            return POSITION_NONE;
+            return getItem(position).hashCode();
         }
 
-        @Override
-        public void setPrimaryItem(ViewGroup container, int position,
-                                   Object object) {
-            super.setPrimaryItem(container, position, object);
-            mPrimaryItem = (Fragment) object;
-        }
-
-        @Override
-        public int getCount() {
-            return Math.min(mCutOffPage + 1, mCurrentPageSequence == null ? 1
-                    : mCurrentPageSequence.size() + 1);
-        }
-
-        public void setCutOffPage(int cutOffPage) {
-            if (cutOffPage < 0) {
-                cutOffPage = Integer.MAX_VALUE;
-            }
-            mCutOffPage = cutOffPage;
-        }
-
-        public int getCutOffPage() {
-            return mCutOffPage;
+        public Page getItem(int position) {
+            return data.get(position);
         }
     }
 }

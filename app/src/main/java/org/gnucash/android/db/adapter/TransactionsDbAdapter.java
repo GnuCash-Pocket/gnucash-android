@@ -322,17 +322,9 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      *
      * @return List of all transactions
      */
+    @Deprecated
     public List<Transaction> getAllTransactions() {
-        Cursor cursor = fetchAllRecords();
-        List<Transaction> transactions = new ArrayList<Transaction>();
-        try {
-            while (cursor.moveToNext()) {
-                transactions.add(buildModelInstance(cursor));
-            }
-        } finally {
-            cursor.close();
-        }
-        return transactions;
+        return getAllRecords();
     }
 
     public Cursor fetchTransactionsWithSplits(String[] columns, @Nullable String where, @Nullable String[] whereArgs, @Nullable String orderBy) {

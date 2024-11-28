@@ -323,10 +323,10 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
         boolean firstRun = prefs.getBoolean(getString(R.string.key_first_run), true);
 
         if (firstRun) {
-            startActivity(new Intent(GnuCashApplication.getAppContext(), FirstRunWizardActivity.class));
-
             //default to using double entry and save the preference explicitly
             prefs.edit().putBoolean(getString(R.string.key_use_double_entry), true).apply();
+
+            startActivity(new Intent(GnuCashApplication.getAppContext(), FirstRunWizardActivity.class));
             finish();
             return;
         }
@@ -535,9 +535,10 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
      * @param context the context.
      */
     public static void removeFirstRunFlag(Context context) {
-        Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
-        editor.putBoolean(context.getString(R.string.key_first_run), false);
-        editor.apply();
+        PreferenceManager.getDefaultSharedPreferences(context)
+            .edit()
+            .putBoolean(context.getString(R.string.key_first_run), false)
+            .apply();
     }
 
 }
