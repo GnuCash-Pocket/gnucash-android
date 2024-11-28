@@ -353,10 +353,10 @@ public class AccountsListFragment extends Fragment implements
         String parentAccountUID = arguments == null ? null : arguments.getString(UxArgument.PARENT_ACCOUNT_UID);
 
         Context context = requireContext();
-        if (mCurrentFilter != null) {
-            return new AccountsCursorLoader(context, mCurrentFilter);
-        } else {
+        if (TextUtils.isEmpty(mCurrentFilter)) {
             return new AccountsCursorLoader(context, parentAccountUID, mDisplayMode);
+        } else {
+            return new AccountsCursorLoader(context, mCurrentFilter);
         }
     }
 

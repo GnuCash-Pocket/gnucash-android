@@ -176,7 +176,6 @@ public class TransactionsListFragment extends Fragment implements
         intent.putExtra(UxArgument.SELECTED_TRANSACTION_UID, mTransactionsDbAdapter.getUID(id));
         intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
         startActivity(intent);
-//		mTransactionEditListener.editTransaction(mTransactionsDbAdapter.getUID(id));
     }
 
     @Override

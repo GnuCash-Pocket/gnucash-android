@@ -158,6 +158,7 @@ public class BulkMoveDialogFragment extends DialogFragment {
                     dismiss();
                 }
 
+                String srcAccountUID = mOriginAccountUID;
                 long dstAccountId = mDestinationAccountSpinner.getSelectedItemId();
                 String dstAccountUID = AccountsDbAdapter.getInstance().getUID(dstAccountId);
                 TransactionsDbAdapter trxnAdapter = TransactionsDbAdapter.getInstance();
@@ -165,7 +166,6 @@ public class BulkMoveDialogFragment extends DialogFragment {
                     Toast.makeText(getActivity(), R.string.toast_incompatible_currency, Toast.LENGTH_LONG).show();
                     return;
                 }
-                String srcAccountUID = ((TransactionsActivity) getActivity()).getCurrentAccountUID();
 
                 for (long trxnId : mTransactionIds) {
                     trxnAdapter.moveTransaction(trxnAdapter.getUID(trxnId), srcAccountUID, dstAccountUID);
@@ -174,6 +174,7 @@ public class BulkMoveDialogFragment extends DialogFragment {
                 WidgetConfigurationActivity.updateAllWidgets(getActivity());
                 Bundle result = new Bundle();
                 result.putBoolean(Refreshable.EXTRA_REFRESH, true);
+                result.putString(UxArgument.SELECTED_ACCOUNT_UID, dstAccountUID);
                 getParentFragmentManager().setFragmentResult(TAG, result);
 
                 dismiss();
