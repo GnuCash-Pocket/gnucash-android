@@ -74,9 +74,9 @@ class Money : Number, Comparable<Money>, Parcelable {
      * @param amount    Value of the amount
      * @param currencyCode 3-character currency code string
      */
-    constructor(amount: BigDecimal, currencyCode: String?) : this(
+    constructor(amount: BigDecimal, currencyCode: String) : this(
         amount,
-        Commodity.getInstance(currencyCode)!!
+        Commodity.getInstance(currencyCode)
     )
 
     /**
@@ -94,7 +94,7 @@ class Money : Number, Comparable<Money>, Parcelable {
      * @param amount       Numerical value of the Money
      * @param currencyCode Currency code as specified by ISO 4217
      */
-    constructor(amount: String?, currencyCode: String?) : this(
+    constructor(amount: String?, currencyCode: String) : this(
         BigDecimal(amount),
         currencyCode
     )
@@ -148,7 +148,7 @@ class Money : Number, Comparable<Money>, Parcelable {
      * @param currencyCode ISO 4217 currency code
      */
     private fun setCommodity(currencyCode: String) {
-        commodity = Commodity.getInstance(currencyCode)!!
+        commodity = Commodity.getInstance(currencyCode)
     }
 
     /**
@@ -530,7 +530,8 @@ class Money : Number, Comparable<Money>, Parcelable {
          * otherwise US dollars are used
          */
         @JvmField
-        var DEFAULT_CURRENCY_CODE = Commodity.USD.currencyCode
+        var DEFAULT_CURRENCY_CODE = Commodity.DEFAULT_COMMODITY.currencyCode
+        //TODO val DEFAULT_CURRENCY_CODE get() = Commodity.DEFAULT_COMMODITY.currencyCode
 
         /**
          * Returns a Money instance initialized to the local currency and value 0
@@ -567,7 +568,7 @@ class Money : Number, Comparable<Money>, Parcelable {
          */
         @JvmStatic
         fun createZeroInstance(currencyCode: String): Money {
-            val commodity = Commodity.getInstance(currencyCode) ?: Commodity.DEFAULT_COMMODITY
+            val commodity = Commodity.getInstance(currencyCode)
             return Money(BigDecimal.ZERO, commodity)
         }
 

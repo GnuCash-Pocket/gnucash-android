@@ -38,7 +38,6 @@ class Commodity(
      * The fraction is a power of 10. So commodities with 2 fraction digits, have fraction of 10^2 = 100.<br />
      * If the parameter is any other value, a default fraction of 100 will be set
      *
-     * @param smallestFraction Smallest fraction as power of ten
      * @throws IllegalArgumentException if the smallest fraction is not a power of 10
      */
     var smallestFraction: Int
@@ -126,16 +125,22 @@ class Commodity(
     companion object {
         @JvmField
         var USD = Commodity("", "USD", 100)
+
         @JvmField
         var EUR = Commodity("", "EUR", 100)
+
         @JvmField
         var GBP = Commodity("", "GBP", 100)
+
         @JvmField
         var CHF = Commodity("", "CHF", 100)
+
         @JvmField
         var CAD = Commodity("", "CAD", 100)
+
         @JvmField
         var JPY = Commodity("", "JPY", 1)
+
         @JvmField
         var AUD = Commodity("", "AUD", 100)
 
@@ -156,19 +161,25 @@ class Commodity(
          * Returns an instance of commodity for the specified currencyCode
          *
          * @param currencyCode ISO 4217 currency code (3-letter)
+         * @return the commodity, or default commodity.
          */
         @JvmStatic
-        fun getInstance(currencyCode: String?): Commodity? {
-            return when (currencyCode) {
-                "USD" -> USD
-                "EUR" -> EUR
-                "GBP" -> GBP
-                "CHF" -> CHF
-                "JPY" -> JPY
-                "AUD" -> AUD
-                "CAD" -> CAD
-                else -> CommoditiesDbAdapter.getInstance().getCommodity(currencyCode)
+        fun getInstance(currencyCode: String?): Commodity {
+            if (currencyCode.isNullOrEmpty()) {
+                return DEFAULT_COMMODITY
             }
+            when (currencyCode) {
+                "AUD" -> return AUD
+                "CAD" -> return CAD
+                "CHF" -> return CHF
+                "EUR" -> return EUR
+                "GBP" -> return GBP
+                "JPY" -> return JPY
+                "USD" -> return USD
+            }
+
+            val adapter = CommoditiesDbAdapter.getInstance()
+            return adapter?.getCommodity(currencyCode) ?: DEFAULT_COMMODITY
         }
     }
 }

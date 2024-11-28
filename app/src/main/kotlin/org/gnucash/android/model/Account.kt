@@ -106,24 +106,13 @@ class Account : BaseModel {
     private var _isHidden = false
 
     /**
-     * Constructor
-     * Creates a new account with the default currency and a generated unique ID
-     *
-     * @param name Name of the account
-     */
-    constructor(name: String) {
-        setName(name)
-        fullName = this.name
-        commodity = Commodity.DEFAULT_COMMODITY
-    }
-
-    /**
      * Overloaded constructor
      *
      * @param name      Name of the account
      * @param commodity [Commodity] to be used by transactions in this account
      */
-    constructor(name: String, commodity: Commodity) {
+    @JvmOverloads
+    constructor(name: String, commodity: Commodity = Commodity.DEFAULT_COMMODITY) {
         setName(name)
         fullName = this.name
         this.commodity = commodity
@@ -380,7 +369,7 @@ class Account : BaseModel {
         // TODO: get it from a theme value?
         @ColorInt
         @JvmField
-        val DEFAULT_COLOR = Color.rgb(237,236,235)
+        val DEFAULT_COLOR = Color.rgb(237, 236, 235)
 
         /**
          * An extra key for passing the currency code (according ISO 4217) in an intent
@@ -410,17 +399,21 @@ class Account : BaseModel {
             return when (accountType) {
                 AccountType.CREDIT,
                 AccountType.LIABILITY -> OfxAccountType.CREDITLINE
+
                 AccountType.CASH,
                 AccountType.INCOME,
                 AccountType.EXPENSE,
                 AccountType.PAYABLE,
                 AccountType.RECEIVABLE -> OfxAccountType.CHECKING
+
                 AccountType.BANK,
                 AccountType.ASSET -> OfxAccountType.SAVINGS
+
                 AccountType.MUTUAL,
                 AccountType.STOCK,
                 AccountType.EQUITY,
                 AccountType.CURRENCY -> OfxAccountType.MONEYMRKT
+
                 else -> OfxAccountType.CHECKING
             }
         }
