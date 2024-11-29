@@ -19,6 +19,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.inputmethodservice.KeyboardView;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -36,6 +37,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cursoradapter.widget.SimpleCursorAdapter;
@@ -85,8 +87,6 @@ public class SplitEditorFragment extends Fragment {
 
     private BigDecimal mBaseAmount = BigDecimal.ZERO;
 
-    private CalculatorKeyboard mCalculatorKeyboard;
-
     private final BalanceTextWatcher mImbalanceWatcher = new BalanceTextWatcher();
 
     /**
@@ -124,15 +124,14 @@ public class SplitEditorFragment extends Fragment {
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
         ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
         assert actionBar != null;
         actionBar.setTitle(R.string.title_split_editor);
         setHasOptionsMenu(true);
 
-        mCalculatorKeyboard = new CalculatorKeyboard(requireActivity(), mBinding.calculatorKeyboard, R.xml.calculator_keyboard);
         mSplitItemViewList = new ArrayList<>();
 
         //we are editing splits for a new transaction.
@@ -152,9 +151,9 @@ public class SplitEditorFragment extends Fragment {
             AccountType accountType = mAccountsDbAdapter.getAccountType(mAccountUID);
             TransactionType transactionType = Transaction.getTypeForBalance(accountType, mBaseAmount.signum() < 0);
             split.setType(transactionType);
-            View view = addSplitView(split);
-            view.findViewById(R.id.input_accounts_spinner).setEnabled(false);
-            view.findViewById(R.id.btn_remove_split).setVisibility(View.GONE);
+            View splitView = addSplitView(split);
+            splitView.findViewById(R.id.input_accounts_spinner).setEnabled(false);
+            splitView.findViewById(R.id.btn_remove_split).setVisibility(View.GONE);
             TransactionsActivity.displayBalance(mBinding.imbalanceTextview, new Money(mBaseAmount.negate(), mCommodity));
         }
 
@@ -163,7 +162,15 @@ public class SplitEditorFragment extends Fragment {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        mCalculatorKeyboard = new CalculatorKeyboard(requireActivity(), mBinding.calculatorKeyboard, R.xml.calculator_keyboard);
+        View view = getView();
+        if (view instanceof ViewGroup parent) {
+            KeyboardView keyboardView = mBinding.calculatorKeyboard.calculatorKeyboard;
+            keyboardView = CalculatorKeyboard.rebind(parent, keyboardView, null);
+            for (View splitView : mSplitItemViewList) {
+                SplitViewHolder viewHolder = (SplitViewHolder) splitView.getTag();
+                viewHolder.splitAmountEditText.bindKeyboard(keyboardView);
+            }
+        }
     }
 
     private void loadSplitViews(List<Split> splitList) {
@@ -260,7 +267,7 @@ public class SplitEditorFragment extends Fragment {
             this.splitUidTextView = binding.splitUid;
             this.splitTypeSwitch = binding.btnSplitType;
 
-            splitAmountEditText.bindListeners(mCalculatorKeyboard);
+            splitAmountEditText.bindKeyboard(mBinding.calculatorKeyboard.calculatorKeyboard);
 
             removeSplitButton.setOnClickListener(new View.OnClickListener() {
                 @Override
