@@ -73,6 +73,7 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
         super.onCreate(savedInstanceState);
 
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        assert actionBar != null;
         actionBar.setTitle(R.string.title_account_preferences);
 
         Cursor cursor = CommoditiesDbAdapter.getInstance().fetchAllRecords(DatabaseSchema.CommodityEntry.COLUMN_MNEMONIC + " ASC");

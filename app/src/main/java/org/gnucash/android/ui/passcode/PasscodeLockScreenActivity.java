@@ -18,69 +18,47 @@ package org.gnucash.android.ui.passcode;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.ui.common.UxArgument;
-
-import timber.log.Timber;
 
 /**
  * Activity for displaying and managing the passcode lock screen.
  *
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
-public class PasscodeLockScreenActivity extends AppCompatActivity
-        implements KeyboardFragment.OnPasscodeEnteredListener {
+public class PasscodeLockScreenActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.passcode_lockscreen);
-    }
 
-    @Override
-    public void onPasscodeEntered(String pass) {
-        String passcode = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-                .getString(UxArgument.PASSCODE, "");
-        Timber.d("Passcode: %s", passcode);
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
 
-        if (pass.equals(passcode)) {
-            if (UxArgument.DISABLE_PASSCODE.equals(getIntent().getStringExtra(UxArgument.DISABLE_PASSCODE))) {
-                setResult(RESULT_OK);
-                finish();
-                return;
-            }
-            GnuCashApplication.PASSCODE_SESSION_INIT_TIME = System.currentTimeMillis();
-            startActivity(new Intent()
-                    .setClassName(this, getIntent().getStringExtra(UxArgument.PASSCODE_CLASS_CALLER))
-                    .setAction(getIntent().getAction())
-                    .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    .putExtras(getIntent().getExtras())
-            );
-        } else {
-            Toast.makeText(this, R.string.toast_wrong_passcode, Toast.LENGTH_SHORT).show();
-        }
+        Bundle args = new Bundle();
+        args.putAll((extras != null) ? extras : new Bundle());
+        args.putString(PasscodeFragment.EXTRA_ACTION, intent.getAction());
+        PasscodeFragment fragment = new PasscodeFragment();
+        fragment.setArguments(args);
+
+        getSupportFragmentManager()
+            .beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit();
     }
 
     @Override
     public void onBackPressed() {
-        setResult(RESULT_CANCELED);
+        PasscodeHelper.PASSCODE_SESSION_INIT_TIME = System.currentTimeMillis() - PasscodeHelper.SESSION_TIMEOUT;
 
-        if (UxArgument.DISABLE_PASSCODE.equals(getIntent().getStringExtra(UxArgument.DISABLE_PASSCODE))) {
-            finish();
-            return;
-        }
-
-        GnuCashApplication.PASSCODE_SESSION_INIT_TIME = System.currentTimeMillis() - GnuCashApplication.SESSION_TIMEOUT;
-        startActivity(new Intent(Intent.ACTION_MAIN)
-                .addCategory(Intent.CATEGORY_HOME)
-                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        );
+        Intent intent = new Intent(Intent.ACTION_MAIN)
+            .addCategory(Intent.CATEGORY_HOME)
+            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
     }
 
 }

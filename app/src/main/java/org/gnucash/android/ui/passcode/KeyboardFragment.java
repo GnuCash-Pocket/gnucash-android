@@ -16,14 +16,15 @@
 
 package org.gnucash.android.ui.passcode;
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.os.Handler;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import org.gnucash.android.R;
@@ -43,12 +44,6 @@ public class KeyboardFragment extends Fragment {
     private TextView pass4;
 
     private int length = 0;
-
-    public interface OnPasscodeEnteredListener {
-        void onPasscodeEntered(String pass);
-    }
-
-    private OnPasscodeEnteredListener listener;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -146,47 +141,39 @@ public class KeyboardFragment extends Fragment {
         return rootView;
     }
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            listener = (OnPasscodeEnteredListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement "
-                    + KeyboardFragment.OnPasscodeEnteredListener.class);
-        }
-    }
-
     private void add(String num) {
-        switch (length + 1) {
+        length++;
+        switch (length) {
             case 1:
                 pass1.setText(num);
-                length++;
                 break;
             case 2:
                 pass2.setText(num);
-                length++;
                 break;
             case 3:
                 pass3.setText(num);
-                length++;
                 break;
             case 4:
                 pass4.setText(num);
-                length++;
+                final String code = TextUtils.concat(pass1.getText(), pass2.getText(), pass3.getText(), pass4.getText()).toString();
+                length = 0;
 
-                new Handler().postDelayed(new Runnable() {
+                pass4.postDelayed(new Runnable() {
                     public void run() {
-                        listener.onPasscodeEntered(pass1.getText().toString() + pass2.getText()
-                                + pass3.getText() + pass4.getText());
+                        onPasscodeEntered(code);
                         pass1.setText(null);
                         pass2.setText(null);
                         pass3.setText(null);
                         pass4.setText(null);
-                        length = 0;
                     }
                 }, DELAY);
         }
     }
 
+    protected void onPasscodeEntered(@NonNull String code) {
+    }
+
+    protected void showWrongPassword() {
+        Toast.makeText(requireContext(), R.string.toast_wrong_passcode, Toast.LENGTH_SHORT).show();
+    }
 }

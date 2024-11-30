@@ -1,6 +1,6 @@
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <androidx.preference.PreferenceCategory android:title="@string/title_passcode_preferences">
-        <androidx.preference.CheckBoxPreference
+        <androidx.preference.SwitchPreference
             android:key="@string/key_enable_passcode"
             android:title="@string/title_enable_passcode" />
         <androidx.preference.Preference
@@ -10,7 +10,7 @@
     </androidx.preference.PreferenceCategory>
 
     <androidx.preference.PreferenceCategory android:title="@string/title_report_prefs">
-        <androidx.preference.CheckBoxPreference
+        <androidx.preference.SwitchPreference
             android:key="@string/key_use_account_color"
             android:summary="@string/summary_use_account_color"
             android:title="@string/title_use_account_color" />

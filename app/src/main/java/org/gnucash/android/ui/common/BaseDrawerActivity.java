@@ -20,13 +20,11 @@ import static org.gnucash.android.app.IntentExtKt.takePersistableUriPermission;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -40,7 +38,6 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.viewbinding.ViewBinding;
 
 import com.google.android.material.navigation.NavigationView;
 import com.uservoice.uservoicesdk.UserVoice;
@@ -50,6 +47,7 @@ import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.ui.account.AccountsActivity;
+import org.gnucash.android.ui.passcode.PasscodeHelper;
 import org.gnucash.android.ui.passcode.PasscodeLockActivity;
 import org.gnucash.android.ui.report.ReportsActivity;
 import org.gnucash.android.ui.settings.PreferenceActivity;
@@ -281,8 +279,7 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
                 break;
 
             case R.id.nav_item_help:
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-                prefs.edit().putBoolean(UxArgument.SKIP_PASSCODE_SCREEN, true).apply();
+                PasscodeHelper.skipPasscodeScreen(this);
                 UserVoice.launchUserVoice(this);
                 break;
         }

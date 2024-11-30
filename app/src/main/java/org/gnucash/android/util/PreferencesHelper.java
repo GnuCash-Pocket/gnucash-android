@@ -18,7 +18,6 @@ package org.gnucash.android.util;
 import android.content.Context;
 
 import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.ui.settings.PreferenceActivity;
 
 import java.sql.Timestamp;
