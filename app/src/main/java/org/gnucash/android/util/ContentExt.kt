@@ -10,6 +10,9 @@ private val PROJECTION_DOCUMENT_NAME = arrayOf(DocumentsContract.Document.COLUMN
 private const val INDEX_DOCUMENT_NAME = 0
 
 fun Uri.getDocumentName(context: Context?): String {
+    if (ContentResolver.SCHEME_ANDROID_RESOURCE == scheme) {
+        return ""
+    }
     var name: String = this.authority ?: this.host ?: ""
     val lastPath = this.lastPathSegment
     if (!lastPath.isNullOrEmpty()) {
