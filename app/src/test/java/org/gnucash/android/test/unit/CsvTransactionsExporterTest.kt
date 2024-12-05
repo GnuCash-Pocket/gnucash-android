@@ -5,20 +5,13 @@ import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.export.ExportFormat
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.csv.CsvTransactionsExporter
-import org.gnucash.android.test.unit.testutil.ShadowCrashlytics
-import org.gnucash.android.test.unit.testutil.ShadowUserVoice
 import org.gnucash.android.util.TimestampHelper
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import java.io.File
 import java.util.Locale
 
-@RunWith(RobolectricTestRunner::class)
-@Config(sdk = [21], shadows = [ShadowCrashlytics::class, ShadowUserVoice::class])
 class CsvTransactionsExporterTest : BookHelperTest() {
     private lateinit var originalDefaultLocale: Locale
 

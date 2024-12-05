@@ -27,13 +27,9 @@ import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.Exporter;
 import org.gnucash.android.export.xml.GncXmlExporter;
 import org.gnucash.android.importer.GncXmlImporter;
-import org.gnucash.android.test.unit.testutil.ShadowCrashlytics;
-import org.gnucash.android.test.unit.testutil.ShadowUserVoice;
+import org.gnucash.android.test.unit.GnuCashTest;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -45,9 +41,7 @@ import javax.xml.parsers.ParserConfigurationException;
 /**
  * Test backup and restore functionality
  */
-@RunWith(RobolectricTestRunner.class)
-@Config(sdk = 21, shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
-public class BackupTest {
+public class BackupTest extends GnuCashTest {
 
     @Before
     public void setUp() {

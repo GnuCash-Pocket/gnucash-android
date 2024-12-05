@@ -24,22 +24,17 @@ import static org.junit.Assert.assertNotSame;
 
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
-import org.gnucash.android.test.unit.testutil.ShadowCrashlytics;
-import org.gnucash.android.test.unit.testutil.ShadowUserVoice;
+import org.gnucash.android.test.unit.GnuCashTest;
 import org.gnucash.android.util.AmountParser;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.Locale;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(sdk = 21, shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
-public class MoneyTest {
+public class MoneyTest extends GnuCashTest {
 
     private static final String CURRENCY_CODE = "EUR";
     private Money mMoneyInEur;

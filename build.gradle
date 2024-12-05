@@ -6,16 +6,15 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:8.2.2'
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.21'
-        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.9'
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.2'
         classpath 'com.stanfy.spoon:spoon-gradle-plugin:1.2.2'
-        classpath 'com.google.gms:google-services:4.4.1'
+        classpath 'com.google.gms:google-services:4.4.2'
     }
 }
 
 allprojects {
     repositories {
         maven { url "https://jitpack.io" }
-        jcenter()
         google()
         mavenCentral()
     }

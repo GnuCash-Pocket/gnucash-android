@@ -18,42 +18,27 @@ package org.gnucash.android.test.unit.export;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 
 import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.export.ExportFormat;
 import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.ofx.OfxExporter;
 import org.gnucash.android.export.ofx.OfxHelper;
 import org.gnucash.android.model.Account;
-import org.gnucash.android.model.Book;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
-import org.gnucash.android.test.unit.BookHelperTest;
-import org.gnucash.android.test.unit.testutil.ShadowCrashlytics;
-import org.gnucash.android.test.unit.testutil.ShadowUserVoice;
+import org.gnucash.android.test.unit.GnuCashTest;
 import org.gnucash.android.util.TimestampHelper;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.io.File;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
 
-
-@RunWith(RobolectricTestRunner.class)
-//package is required so that resources can be found in dev mode
-@Config(sdk = 21, shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
-public class OfxExporterTest {
+public class OfxExporterTest extends GnuCashTest {
 
     /**
      * When there aren't new or modified transactions, the OFX exporter

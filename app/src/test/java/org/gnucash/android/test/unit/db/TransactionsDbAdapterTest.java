@@ -26,23 +26,15 @@ import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
-import org.gnucash.android.test.unit.testutil.ShadowCrashlytics;
-import org.gnucash.android.test.unit.testutil.ShadowUserVoice;
+import org.gnucash.android.test.unit.GnuCashTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-
-@RunWith(RobolectricTestRunner.class)
-//package is required so that resources can be found in dev mode
-@Config(sdk = 21, shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
-public class TransactionsDbAdapterTest {
+public class TransactionsDbAdapterTest extends GnuCashTest {
     private static final String ALPHA_ACCOUNT_NAME = "Alpha";
     private static final String BRAVO_ACCOUNT_NAME = "Bravo";
     private static final Commodity DEFAULT_CURRENCY = Commodity.getInstance(Money.DEFAULT_CURRENCY_CODE);

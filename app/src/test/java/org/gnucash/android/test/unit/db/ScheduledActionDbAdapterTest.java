@@ -11,23 +11,16 @@ import org.gnucash.android.model.BaseModel;
 import org.gnucash.android.model.PeriodType;
 import org.gnucash.android.model.Recurrence;
 import org.gnucash.android.model.ScheduledAction;
-import org.gnucash.android.test.unit.testutil.ShadowCrashlytics;
-import org.gnucash.android.test.unit.testutil.ShadowUserVoice;
+import org.gnucash.android.test.unit.GnuCashTest;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.util.List;
 
 /**
  * Test the scheduled actions database adapter
  */
-@RunWith(RobolectricTestRunner.class)
-//package is required so that resources can be found in dev mode
-@Config(sdk = 21, shadows = {ShadowCrashlytics.class, ShadowUserVoice.class})
-public class ScheduledActionDbAdapterTest {
+public class ScheduledActionDbAdapterTest extends GnuCashTest {
 
     ScheduledActionDbAdapter mScheduledActionDbAdapter;
 
