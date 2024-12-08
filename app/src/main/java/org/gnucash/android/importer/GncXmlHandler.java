@@ -762,7 +762,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                     }
 
                     if (mIsLastRun && mScheduledAction != null) {
-                        mScheduledAction.setLastRun(date);
+                        mScheduledAction.setLastRunTime(date);
                         mIsLastRun = false;
                     }
 
@@ -1143,7 +1143,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 }
             }
         }
-        scheduledAction.setLastRun(lastRuntime);
+        scheduledAction.setLastRunTime(lastRuntime);
         return generatedTransactionCount;
     }
 

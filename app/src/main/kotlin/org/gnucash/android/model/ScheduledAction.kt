@@ -67,7 +67,6 @@ class ScheduledAction    //all actions are enabled by default
      * Next scheduled run of Event
      */
     var lastRunTime: Long = 0
-        private set
 
     /**
      * Unique ID of the template from which the recurring event will be executed.
@@ -226,15 +225,6 @@ class ScheduledAction    //all actions are enabled by default
         val cal = Calendar.getInstance()
         cal[Calendar.DAY_OF_WEEK] = calendarDayOfWeek
         return LocalDateTime.fromCalendarFields(cal).dayOfWeek
-    }
-
-    /**
-     * Set time of last execution of the scheduled action
-     *
-     * @param nextRun Timestamp in milliseconds since Epoch
-     */
-    fun setLastRun(nextRun: Long) {
-        lastRunTime = nextRun
     }
 
     /**

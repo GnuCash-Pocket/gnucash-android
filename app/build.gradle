@@ -26,7 +26,7 @@ android {
     defaultConfig {
         applicationId "org.gnucash.pocket"
         minSdkVersion 21
-        targetSdkVersion 33
+        targetSdkVersion 34
         versionCode versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         resValue "string", "app_version_name", "${versionName}"
@@ -182,6 +182,8 @@ dependencies {
             'androidx.preference:preference:1.2.0',
             'androidx.recyclerview:recyclerview:1.3.0'
     )
+    implementation("androidx.work:work-runtime:2.9.0")
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     implementation 'net.objecthunter:exp4j:0.4.7'
     implementation 'com.ezylang:EvalEx:3.2.0'
