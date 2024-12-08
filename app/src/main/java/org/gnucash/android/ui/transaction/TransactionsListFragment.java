@@ -118,15 +118,15 @@ public class TransactionsListFragment extends Fragment implements
         mBinding = FragmentTransactionsListBinding.inflate(inflater, container, false);
         View view = mBinding.getRoot();
 
-        mBinding.transactionRecyclerView.setHasFixedSize(true);
+        mBinding.list.setHasFixedSize(true);
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
-            mBinding.transactionRecyclerView.setLayoutManager(gridLayoutManager);
+            mBinding.list.setLayoutManager(gridLayoutManager);
         } else {
             LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-            mBinding.transactionRecyclerView.setLayoutManager(mLayoutManager);
+            mBinding.list.setLayoutManager(mLayoutManager);
         }
-        mBinding.transactionRecyclerView.setEmptyView(view.findViewById(R.id.empty_view));
+        mBinding.list.setEmptyView(view.findViewById(R.id.empty_view));
 
         return view;
     }
@@ -140,7 +140,7 @@ public class TransactionsListFragment extends Fragment implements
         aBar.setDisplayHomeAsUpEnabled(true);
 
         mTransactionRecyclerAdapter = new TransactionRecyclerAdapter(null);
-        mBinding.transactionRecyclerView.setAdapter(mTransactionRecyclerAdapter);
+        mBinding.list.setAdapter(mTransactionRecyclerAdapter);
 
         setHasOptionsMenu(true);
     }
@@ -206,21 +206,22 @@ public class TransactionsListFragment extends Fragment implements
         }
     }
 
+    @NonNull
     @Override
-    public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Timber.d("Creating transactions loader");
         return new TransactionsCursorLoader(getActivity(), mAccountUID);
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor cursor) {
         Timber.d("Transactions loader finished. Swapping in cursor");
         mTransactionRecyclerAdapter.swapCursor(cursor);
         mTransactionRecyclerAdapter.notifyDataSetChanged();
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         Timber.d("Resetting transactions loader");
         mTransactionRecyclerAdapter.swapCursor(null);
     }
@@ -267,13 +268,13 @@ public class TransactionsListFragment extends Fragment implements
 
         @Override
         public TransactionViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            LayoutInflater inflater = LayoutInflater.from(parent.getContext());
             if (viewType == ITEM_TYPE_COMPACT) {
-                CardviewCompactTransactionBinding binding = CardviewCompactTransactionBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
-                return new TransactionViewHolder(binding);
-            } else {
-                CardviewTransactionBinding binding = CardviewTransactionBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+                CardviewCompactTransactionBinding binding = CardviewCompactTransactionBinding.inflate(inflater, parent, false);
                 return new TransactionViewHolder(binding);
             }
+            CardviewTransactionBinding binding = CardviewTransactionBinding.inflate(inflater, parent, false);
+            return new TransactionViewHolder(binding);
         }
 
         @Override

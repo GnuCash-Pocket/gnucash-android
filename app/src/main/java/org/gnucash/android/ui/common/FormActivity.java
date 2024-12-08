@@ -18,7 +18,6 @@ package org.gnucash.android.ui.common;
 
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 
@@ -27,12 +26,10 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.ui.account.AccountFormFragment;
 import org.gnucash.android.ui.budget.BudgetAmountEditorFragment;
 import org.gnucash.android.ui.budget.BudgetFormFragment;
@@ -56,20 +53,29 @@ public class FormActivity extends PasscodeLockActivity {
 
     private CalculatorKeyboard mOnBackListener;
 
-    public enum FormType {ACCOUNT, TRANSACTION, EXPORT, SPLIT_EDITOR, BUDGET, BUDGET_AMOUNT_EDITOR}
+    public enum FormType {
+        ACCOUNT,
+        TRANSACTION,
+        EXPORT,
+        SPLIT_EDITOR,
+        BUDGET,
+        BUDGET_AMOUNT_EDITOR
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_form);
 
+        final Intent intent = getIntent();
+
         //if a parameter was passed to open an account within a specific book, then switch
-        String bookUID = getIntent().getStringExtra(UxArgument.BOOK_UID);
+        String bookUID = intent.getStringExtra(UxArgument.BOOK_UID);
         if (bookUID != null && !bookUID.equals(GnuCashApplication.getActiveBookUID())) {
             BookUtils.activateBook(this, bookUID);
         }
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         ActionBar actionBar = getSupportActionBar();
@@ -78,11 +84,12 @@ public class FormActivity extends PasscodeLockActivity {
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeAsUpIndicator(R.drawable.ic_close_white);
 
-        final Intent intent = getIntent();
+        Bundle args = intent.getExtras();
+        if (args == null) args = new Bundle();
 
-        mAccountUID = intent.getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
+        mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID);
         if (mAccountUID == null) {
-            mAccountUID = intent.getStringExtra(UxArgument.PARENT_ACCOUNT_UID);
+            mAccountUID = args.getString(UxArgument.PARENT_ACCOUNT_UID);
         }
         if (mAccountUID != null) {
             int colorCode = AccountsDbAdapter.getActiveAccountColorResource(mAccountUID);
@@ -90,8 +97,6 @@ public class FormActivity extends PasscodeLockActivity {
             getWindow().setStatusBarColor(GnuCashApplication.darken(colorCode));
         }
 
-        Bundle args = intent.getExtras();
-        if (args == null) args = new Bundle();
         String formtypeString = args.getString(UxArgument.FORM_TYPE);
         FormType formType = FormType.valueOf(formtypeString);
         switch (formType) {

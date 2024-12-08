@@ -41,7 +41,7 @@ import timber.log.Timber;
  */
 public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
 
-    private RecurrenceDbAdapter mRecurrenceDbAdapter;
+    private final RecurrenceDbAdapter mRecurrenceDbAdapter;
 
     public ScheduledActionDbAdapter(SQLiteDatabase db, RecurrenceDbAdapter recurrenceDbAdapter) {
         super(db, ScheduledActionEntry.TABLE_NAME, new String[]{
@@ -104,15 +104,14 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
      * @param scheduledAction Scheduled action
      * @return Database record ID of the edited scheduled action
      */
-    public long updateRecurrenceAttributes(ScheduledAction scheduledAction) {
+    public long updateRecurrenceAttributes(@NonNull ScheduledAction scheduledAction) {
         //since we are updating, first fetch the existing recurrence UID and set it to the object
         //so that it will be updated and not a new one created
-        RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(mDb);
-        String recurrenceUID = recurrenceDbAdapter.getAttribute(scheduledAction.getUID(), ScheduledActionEntry.COLUMN_RECURRENCE_UID);
+        String recurrenceUID = getAttribute(scheduledAction, ScheduledActionEntry.COLUMN_RECURRENCE_UID);
 
         Recurrence recurrence = scheduledAction.getRecurrence();
         recurrence.setUID(recurrenceUID);
-        recurrenceDbAdapter.addRecord(recurrence, UpdateMethod.update);
+        mRecurrenceDbAdapter.addRecord(recurrence, UpdateMethod.update);
 
         ContentValues contentValues = new ContentValues();
         extractBaseModelAttributes(contentValues, scheduledAction);

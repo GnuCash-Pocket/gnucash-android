@@ -31,6 +31,7 @@ import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.Exporter;
 import org.gnucash.android.model.Commodity;
+import org.gnucash.android.model.TransactionType;
 import org.gnucash.android.util.FileUtils;
 import org.gnucash.android.util.PreferencesHelper;
 import org.gnucash.android.util.TimestampHelper;
@@ -226,7 +227,7 @@ public class QifExporter extends Exporter {
                     }
                     final Locale noLocale = null;
                     writer.append(QifHelper.SPLIT_AMOUNT_PREFIX)
-                            .append(splitType.equals("DEBIT") ? "-" : "")
+                            .append(splitType.equals(TransactionType.DEBIT.value) ? "-" : "")
                             .append(String.format(noLocale, "%." + precision + "f", quantity))
                             .append(newLine);
                 }

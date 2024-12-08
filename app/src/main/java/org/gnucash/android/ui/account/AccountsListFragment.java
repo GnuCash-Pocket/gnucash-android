@@ -26,6 +26,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -148,8 +149,8 @@ public class AccountsListFragment extends Fragment implements
                              Bundle savedInstanceState) {
         mBinding = FragmentAccountsListBinding.inflate(inflater, container, false);
 
-        mBinding.accountRecyclerView.setHasFixedSize(true);
-        mBinding.accountRecyclerView.setEmptyView(mBinding.emptyView);
+        mBinding.list.setHasFixedSize(true);
+        mBinding.list.setEmptyView(mBinding.emptyView);
 
         switch (mDisplayMode) {
 
@@ -166,10 +167,10 @@ public class AccountsListFragment extends Fragment implements
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
-            mBinding.accountRecyclerView.setLayoutManager(gridLayoutManager);
+            mBinding.list.setLayoutManager(gridLayoutManager);
         } else {
             LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-            mBinding.accountRecyclerView.setLayoutManager(mLayoutManager);
+            mBinding.list.setLayoutManager(mLayoutManager);
         }
         return mBinding.getRoot();
     }
@@ -182,8 +183,13 @@ public class AccountsListFragment extends Fragment implements
         if (args != null)
             mParentAccountUID = args.getString(UxArgument.PARENT_ACCOUNT_UID);
 
-        if (savedInstanceState != null)
-            mDisplayMode = (DisplayMode) savedInstanceState.getSerializable(STATE_DISPLAY_MODE);
+        if (savedInstanceState != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                mDisplayMode = savedInstanceState.getSerializable(STATE_DISPLAY_MODE, DisplayMode.class);
+            } else {
+                mDisplayMode = (DisplayMode) savedInstanceState.getSerializable(STATE_DISPLAY_MODE);
+            }
+        }
     }
 
     @Override
@@ -197,7 +203,7 @@ public class AccountsListFragment extends Fragment implements
 
         // specify an adapter (see also next example)
         mAccountRecyclerAdapter = new AccountRecyclerAdapter(null);
-        mBinding.accountRecyclerView.setAdapter(mAccountRecyclerAdapter);
+        mBinding.list.setAdapter(mAccountRecyclerAdapter);
     }
 
     @Override
@@ -209,7 +215,7 @@ public class AccountsListFragment extends Fragment implements
     @Override
     public void onStop() {
         super.onStop();
-        mBinding.accountRecyclerView.setAdapter(null);
+        mBinding.list.setAdapter(null);
     }
 
     @Override
@@ -366,8 +372,8 @@ public class AccountsListFragment extends Fragment implements
         mAccountRecyclerAdapter.swapCursor(cursor);
         mAccountRecyclerAdapter.notifyDataSetChanged();
         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
-            if (mBinding.accountRecyclerView.getAdapter() == null) {
-                mBinding.accountRecyclerView.setAdapter(mAccountRecyclerAdapter);
+            if (mBinding.list.getAdapter() == null) {
+                mBinding.list.setAdapter(mAccountRecyclerAdapter);
             }
         }
     }

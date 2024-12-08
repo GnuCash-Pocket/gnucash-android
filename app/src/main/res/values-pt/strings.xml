@@ -96,10 +96,6 @@
     <string name="title_account_preferences">Preferências de Contas</string>
     <string name="title_default_transaction_type">Tipo de Transação padrão</string>
     <string name="summary_default_transaction_type">Tipo de transação a ser usada por defeito, CRÉDITO ou DÉBITO</string>
-    <string-array name="transaction_types">
-        <item>CRÉDITO</item>
-        <item>DÉBITO</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">Tem a certeza que pretende apagar todas as transações?</string>
     <string name="msg_delete_transaction_confirmation">Tem a certeza que pretende apagar esta transação?</string>
     <string name="title_export_preference_category">Exportar</string>
@@ -407,7 +403,7 @@ Neste processo não serão recolhidas informações do utilizador!</string>
     <string name="menu_title_enable_sync">Permitir a sincronização</string>
     <string name="menu_title_new_book">Novo Livro</string>
     <string name="toast_transaction_has_no_splits_and_cannot_open">A transação selecionadas não tem divisões e não pode ser aberta</string>
-    <string name="label_split_count">Servidor OC não encontrado</string>
+    <string name="label_split_count">%1$d divisões</string>
     <string name="label_inside_account_with_name">em %1$s</string>
     <plurals name="book_account_stats">
         <item quantity="one">%d conta</item>

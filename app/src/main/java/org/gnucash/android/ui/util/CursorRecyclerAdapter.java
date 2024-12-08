@@ -32,6 +32,7 @@ import android.widget.Filter;
 import android.widget.FilterQueryProvider;
 import android.widget.Filterable;
 
+import androidx.annotation.Nullable;
 import androidx.cursoradapter.widget.CursorAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -63,7 +64,7 @@ public abstract class CursorRecyclerAdapter<VH
     private CursorFilter mCursorFilter;
     private FilterQueryProvider mFilterQueryProvider;
 
-    public CursorRecyclerAdapter(Cursor cursor) {
+    public CursorRecyclerAdapter(@Nullable Cursor cursor) {
         init(cursor);
     }
 

@@ -26,15 +26,17 @@ import androidx.fragment.app.FragmentManager;
 import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment;
 import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment.OnRecurrenceSetListener;
 
+import java.util.Calendar;
+
 /**
  * Shows the recurrence dialog when the recurrence view is clicked
  */
 public class RecurrenceViewClickListener implements View.OnClickListener {
     private static final String FRAGMENT_TAG_RECURRENCE_PICKER = "recurrence_picker";
 
-    AppCompatActivity mActivity;
-    String mRecurrenceRule;
-    OnRecurrenceSetListener mRecurrenceSetListener;
+    private final AppCompatActivity mActivity;
+    private String mRecurrenceRule;
+    private final OnRecurrenceSetListener mRecurrenceSetListener;
 
     public RecurrenceViewClickListener(AppCompatActivity activity, String recurrenceRule,
                                        OnRecurrenceSetListener recurrenceSetListener) {
@@ -47,10 +49,9 @@ public class RecurrenceViewClickListener implements View.OnClickListener {
     public void onClick(View v) {
         FragmentManager fm = mActivity.getSupportFragmentManager();
         Bundle b = new Bundle();
-        Time t = new Time();
-        t.setToNow();
-        b.putLong(RecurrencePickerDialogFragment.BUNDLE_START_TIME_MILLIS, t.toMillis(false));
-        b.putString(RecurrencePickerDialogFragment.BUNDLE_TIME_ZONE, t.timezone);
+        Calendar now = Calendar.getInstance();
+        b.putLong(RecurrencePickerDialogFragment.BUNDLE_START_TIME_MILLIS, now.getTimeInMillis());
+        b.putString(RecurrencePickerDialogFragment.BUNDLE_TIME_ZONE, now.getTimeZone().getID());
 
         // may be more efficient to serialize and pass in EventRecurrence
         b.putString(RecurrencePickerDialogFragment.BUNDLE_RRULE, mRecurrenceRule);
@@ -64,5 +65,9 @@ public class RecurrenceViewClickListener implements View.OnClickListener {
         rpd.setArguments(b);
         rpd.setOnRecurrenceSetListener(mRecurrenceSetListener);
         rpd.show(fm, FRAGMENT_TAG_RECURRENCE_PICKER);
+    }
+
+    public void setRecurrence(String rule) {
+        mRecurrenceRule = rule;
     }
 }
