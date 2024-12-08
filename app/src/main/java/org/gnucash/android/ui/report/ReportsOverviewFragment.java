@@ -17,6 +17,8 @@ package org.gnucash.android.ui.report;
 
 import static com.github.mikephil.charting.components.Legend.LegendPosition;
 
+import static org.gnucash.android.ui.util.TextViewExtKt.displayBalance;
+
 import android.content.res.ColorStateList;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
@@ -72,6 +75,8 @@ public class ReportsOverviewFragment extends BaseReportFragment {
     private boolean mChartHasData = false;
 
     private FragmentReportSummaryBinding mBinding;
+    @ColorInt
+    private int colorBalanceZero;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -86,6 +91,7 @@ public class ReportsOverviewFragment extends BaseReportFragment {
         mBinding.btnPieChart.setOnClickListener(this::onClickChartTypeButton);
         mBinding.btnLineChart.setOnClickListener(this::onClickChartTypeButton);
         mBinding.btnBalanceSheet.setOnClickListener(this::onClickChartTypeButton);
+        colorBalanceZero = mBinding.totalAssets.getCurrentTextColor();
         return mBinding.getRoot();
     }
 
@@ -207,9 +213,9 @@ public class ReportsOverviewFragment extends BaseReportFragment {
         mBinding.pieChart.highlightValues(null);
         mBinding.pieChart.invalidate();
 
-        TransactionsActivity.displayBalance(mBinding.totalAssets, mAssetsBalance);
-        TransactionsActivity.displayBalance(mBinding.totalLiabilities, mLiabilitiesBalance);
-        TransactionsActivity.displayBalance(mBinding.netWorth, mAssetsBalance.minus(mLiabilitiesBalance));
+        displayBalance(mBinding.totalAssets, mAssetsBalance, colorBalanceZero);
+        displayBalance(mBinding.totalLiabilities, mLiabilitiesBalance, colorBalanceZero);
+        displayBalance(mBinding.netWorth, mAssetsBalance.minus(mLiabilitiesBalance), colorBalanceZero);
     }
 
     /**

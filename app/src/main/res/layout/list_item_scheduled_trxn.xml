@@ -26,7 +26,7 @@
         android:layout_height="wrap_content"
         android:focusable="false" />
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <RelativeLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
@@ -36,7 +36,7 @@
 
         <TextView
             android:id="@+id/primary_text"
-            style="@style/ListItemText"
+            style="@style/ListItemPrimaryText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ellipsize="end"
@@ -46,14 +46,13 @@
 
         <TextView
             android:id="@+id/secondary_text"
+            style="@style/ListItemSecondaryText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/primary_text"
             android:ellipsize="end"
             android:maxLines="2"
-            android:singleLine="false"
-            android:text="@string/label_transaction_name"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:text="@string/label_transaction_name" />
 
         <TextView
             android:id="@+id/right_text"
@@ -69,6 +68,6 @@
             android:singleLine="true"
             android:text="Amount"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@android:color/black" />
+            android:textColor="?android:textColorPrimary" />
     </RelativeLayout>
 </org.gnucash.android.ui.util.widget.CheckableLinearLayout>

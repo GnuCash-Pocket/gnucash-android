@@ -48,7 +48,7 @@
                 android:layout_weight="2"
                 android:gravity="left|start"
                 android:singleLine="true"
-                android:textColor="@android:color/black"
+                android:textColor="?android:textColorPrimary"
                 android:textSize="16sp"
                 tools:text="Expenses:Phone:Android" />
 
@@ -59,7 +59,7 @@
                 android:layout_weight="1"
                 android:gravity="right|end"
                 android:singleLine="true"
-                android:textColor="@android:color/black"
+                android:textColor="?android:textColorPrimary"
                 android:textSize="16sp"
                 tools:text="$ 3000" />
         </LinearLayout>
@@ -87,7 +87,7 @@
                 android:layout_weight="1"
                 android:gravity="right|end"
                 android:singleLine="true"
-                android:text="Left"
+                android:text="Remaining"
                 android:textSize="14sp" />
         </LinearLayout>
 
@@ -99,7 +99,7 @@
             android:layout_alignParentLeft="true"
             android:gravity="left|start"
             android:singleLine="true"
-            android:textColor="@android:color/black"
+            android:textColor="?android:textColorPrimary"
             android:textSize="15sp"
             tools:text="$500" />
 
@@ -112,7 +112,7 @@
             android:layout_toRightOf="@id/budget_spent"
             android:gravity="right|end"
             android:singleLine="true"
-            android:textColor="@android:color/black"
+            android:textColor="?android:textColorPrimary"
             android:textSize="15sp"
             tools:text="$2,500" />
 

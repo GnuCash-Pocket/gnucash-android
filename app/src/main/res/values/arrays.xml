@@ -44,4 +44,12 @@
         <item>#6041FA</item> <!-- violet blue -->
         <item>#FEC42E</item> <!-- yellow orange -->
     </array>
+    <string-array name="transaction_type_values" translatable="false">
+        <item>CREDIT</item>
+        <item>DEBIT</item>
+    </string-array>
+    <string-array name="transaction_types" translatable="false">
+        <item>@string/label_credit</item>
+        <item>@string/label_debit</item>
+    </string-array>
 </resources>

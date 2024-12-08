@@ -32,7 +32,7 @@
         <Key
             android:codes="-5"
             android:isRepeatable="true"
-            android:keyIcon="@drawable/ic_backspace_white" />
+            android:keyIcon="@drawable/ic_backspace" />
         <Key
             android:codes="1003"
             android:keyEdgeFlags="right"
@@ -91,6 +91,6 @@
         <Key
             android:codes="1002"
             android:keyEdgeFlags="right"
-            android:keyIcon="@drawable/ic_keyboard_arrow_right_white" />
+            android:keyIcon="@drawable/ic_keyboard_arrow_right" />
     </Row>
 </Keyboard>

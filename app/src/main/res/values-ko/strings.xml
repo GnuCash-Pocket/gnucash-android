@@ -96,10 +96,6 @@
     <string name="title_account_preferences">계정 설정</string>
     <string name="title_default_transaction_type">기본 거래 유형</string>
     <string name="summary_default_transaction_type">기본적으로 사용할 거래의 종류, 신용거래 또는 직불거래</string>
-    <string-array name="transaction_types">
-        <item>신용거래</item>
-        <item>직불거래</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">정말로 모든 거래내역을 삭제할까요?</string>
     <string name="msg_delete_transaction_confirmation">이 거래내역을 정말로 삭제할까요?</string>
     <string name="title_export_preference_category">내보내기</string>

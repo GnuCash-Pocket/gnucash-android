@@ -32,15 +32,13 @@
 
             <EditText
                 android:id="@+id/input_account_name"
-                style="@style/ListItemText"
+                style="@style/ListItemPrimaryText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/form_row_bottom_margin"
-                android:ellipsize="start"
                 android:ems="15"
                 android:hint="@string/label_account_name"
-                android:inputType="textCapWords"
-                android:singleLine="true"></EditText>
+                android:inputType="textCapWords" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <LinearLayout

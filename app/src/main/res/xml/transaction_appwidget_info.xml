@@ -15,10 +15,15 @@
 -->
 
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:configure="org.gnucash.android.ui.homescreen.WidgetConfigurationActivity"
     android:initialLayout="@layout/widget_4x1"
-    android:minWidth="270dp"
-    android:minHeight="56dp"
+    android:minWidth="276dp"
+    android:minHeight="51dp"
     android:previewImage="@drawable/widget_preview"
     android:resizeMode="horizontal"
-    android:updatePeriodMillis="86400000"></appwidget-provider>
+    android:targetCellWidth="4"
+    android:targetCellHeight="1"
+    android:updatePeriodMillis="86400000"
+    android:widgetFeatures="reconfigurable"
+    tools:ignore="UnusedAttribute" />

@@ -21,6 +21,7 @@
     android:weightSum="2">
 
     <LinearLayout
+        android:id="@+id/passcode_header"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_weight="1.4"
@@ -57,7 +58,6 @@
 
         </LinearLayout>
 
-
         <TextView
             android:id="@+id/passcode_label"
             android:layout_width="wrap_content"
@@ -69,6 +69,7 @@
     </LinearLayout>
 
     <TableLayout
+        android:id="@+id/passcode_keypad"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_weight="0.6"
@@ -345,10 +346,10 @@
                 android:layout_width="@dimen/passcode_btn"
                 android:layout_height="@dimen/passcode_btn"
                 android:layout_margin="@dimen/passcode_btn_margin"
-                android:background="@color/transparent"
+                android:background="@drawable/numeric_button"
                 android:contentDescription="\u232B"
                 android:hapticFeedbackEnabled="true"
-                android:src="@drawable/ic_backspace_black" />
+                android:src="@drawable/ic_backspace" />
         </TableRow>
 
     </TableLayout>

@@ -96,12 +96,6 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
         return fragment;
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setStyle(DialogFragment.STYLE_NORMAL, R.style.CustomDialog);
-    }
-
     @NonNull
     private View createView(@NonNull LayoutInflater inflater) {
         View view = inflater.inflate(R.layout.dialog_account_delete, null, false);
@@ -132,7 +126,7 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         return getDialogBuilder()
             .setTitle(R.string.alert_dialog_ok_delete)
-            .setIcon(R.drawable.ic_warning_black)
+            .setIcon(R.drawable.ic_warning)
             .setView(createView(getLayoutInflater()))
             .setPositiveButton(R.string.alert_dialog_ok_delete, new DialogInterface.OnClickListener() {
                 @Override

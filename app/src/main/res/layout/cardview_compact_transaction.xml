@@ -59,7 +59,7 @@
             android:paddingLeft="24dp"
             android:paddingTop="20dp"
             android:scaleType="centerInside"
-            android:src="@drawable/ic_more_vert_black"
+            android:src="@drawable/ic_more_vert"
             tools:ignore="ContentDescription" />
     </LinearLayout>
 </androidx.cardview.widget.CardView>

@@ -96,4 +96,8 @@ class Book : BaseModel {
         rootTemplateUID = generateUID()
         lastSync = Timestamp(System.currentTimeMillis())
     }
+
+    override fun toString(): String {
+        return displayName ?: super.toString()
+    }
 }

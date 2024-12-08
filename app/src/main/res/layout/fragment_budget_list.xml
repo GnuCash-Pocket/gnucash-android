@@ -15,6 +15,7 @@
 -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/fragment_budget_list"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -36,7 +37,8 @@
         android:layout_gravity="center"
         android:gravity="center"
         android:text="Propose Budgets"
-        android:textColor="@android:color/white"
-        android:visibility="gone" />
+        android:textColor="?colorPrimary"
+        android:visibility="gone"
+        tools:visibility="visible" />
 
 </LinearLayout>

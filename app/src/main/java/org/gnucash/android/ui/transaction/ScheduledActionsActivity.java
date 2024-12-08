@@ -26,6 +26,7 @@ import androidx.viewpager.widget.ViewPager;
 import com.google.android.material.tabs.TabLayout;
 
 import org.gnucash.android.R;
+import org.gnucash.android.databinding.ActivityScheduledEventsBinding;
 import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.ui.common.BaseDrawerActivity;
 
@@ -39,11 +40,16 @@ public class ScheduledActionsActivity extends BaseDrawerActivity {
     public static final int INDEX_SCHEDULED_TRANSACTIONS = 0;
     public static final int INDEX_SCHEDULED_EXPORTS = 1;
 
-    ViewPager mViewPager;
+    private ActivityScheduledEventsBinding binding;
 
     @Override
     public void inflateView() {
-        setContentView(R.layout.activity_scheduled_events);
+        binding = ActivityScheduledEventsBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        mDrawerLayout = binding.drawerLayout;
+        mNavigationView = binding.navView;
+        mToolbar = binding.toolbarLayout.toolbar;
+        mToolbarProgress = binding.toolbarLayout.toolbarProgress.progress;
     }
 
     @Override
@@ -55,22 +61,22 @@ public class ScheduledActionsActivity extends BaseDrawerActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
+        TabLayout tabLayout = binding.tabLayout;
         tabLayout.addTab(tabLayout.newTab().setText(R.string.title_scheduled_transactions));
         tabLayout.addTab(tabLayout.newTab().setText(R.string.title_scheduled_exports));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
-        mViewPager = (ViewPager) findViewById(R.id.pager);
+        ViewPager viewPager = binding.pager;
 
         //show the simple accounts list
         PagerAdapter mPagerAdapter = new ScheduledActionsViewPager(getSupportFragmentManager());
-        mViewPager.setAdapter(mPagerAdapter);
+        viewPager.setAdapter(mPagerAdapter);
 
-        mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                mViewPager.setCurrentItem(tab.getPosition());
+                viewPager.setCurrentItem(tab.getPosition());
             }
 
             @Override

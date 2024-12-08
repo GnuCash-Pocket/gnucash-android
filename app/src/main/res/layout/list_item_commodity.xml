@@ -23,4 +23,4 @@
     android:gravity="center_vertical"
     android:textAppearance="?android:attr/textAppearanceMedium"
     android:textColor="@android:color/black"
-    tools:text="USD - United States Dollars" />
+    tools:text="USD (United States Dollars)" />

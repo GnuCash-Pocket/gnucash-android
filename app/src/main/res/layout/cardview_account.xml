@@ -62,7 +62,7 @@
             android:paddingTop="20dp"
             android:paddingBottom="4dp"
             android:scaleType="centerInside"
-            android:src="@drawable/ic_more_vert_black"
+            android:src="@drawable/ic_more_vert"
             tools:ignore="ContentDescription" />
 
         <ImageView
@@ -76,7 +76,7 @@
             android:paddingTop="20dp"
             android:paddingBottom="4dp"
             android:scaleType="centerInside"
-            android:src="@drawable/ic_add_black"
+            android:src="@drawable/ic_add"
             tools:ignore="ContentDescription" />
 
         <ImageView
@@ -89,7 +89,7 @@
             android:paddingTop="6dp"
             android:paddingRight="6dp"
             android:paddingBottom="22dp"
-            android:src="@drawable/ic_favorite_border_black"
+            android:src="@drawable/ic_favorite_border"
             tools:ignore="ContentDescription" />
 
         <TextView
@@ -116,7 +116,7 @@
             android:layout_marginStart="@dimen/strip_width"
             android:layout_marginLeft="@dimen/strip_width"
             android:layout_marginRight="@dimen/edge_padding"
-            android:background="@android:color/transparent"
+            android:background="@null"
             android:indeterminate="false"
             android:max="100"
             android:paddingBottom="4dp"

@@ -96,10 +96,6 @@
     <string name="title_account_preferences">Свойства счёта</string>
     <string name="title_default_transaction_type">Тип проводки по умолчанию</string>
     <string name="summary_default_transaction_type">Тип проводки по умолчанию: ДЕБЕТ или КРЕДИТ</string>
-    <string-array name="transaction_types">
-        <item>КРЕДИТ</item>
-        <item>ДЕБЕТ</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">Вы действительно хотите удалить ВСЕ проводки?</string>
     <string name="msg_delete_transaction_confirmation">Вы действительно хотите удалить эту проводку?</string>
     <string name="title_export_preference_category">Экспорт</string>

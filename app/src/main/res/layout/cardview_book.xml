@@ -58,7 +58,7 @@
             android:paddingTop="20dp"
             android:paddingBottom="4dp"
             android:scaleType="centerInside"
-            android:src="@drawable/ic_more_vert_black"
+            android:src="@drawable/ic_more_vert"
             tools:ignore="ContentDescription" />
 
         <TextView
@@ -71,7 +71,7 @@
             android:layout_marginBottom="4dp"
             android:gravity="left|bottom|start"
             android:maxLines="1"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="?android:textColorTertiary"
             android:textSize="14sp"
             tools:text="Last export:" />
 
@@ -87,7 +87,7 @@
             android:layout_toRightOf="@id/label_last_sync"
             android:gravity="left|bottom|start"
             android:maxLines="1"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="?android:textColorTertiary"
             android:textSize="14sp"
             tools:text="Sat, 04 July" />
     </RelativeLayout>

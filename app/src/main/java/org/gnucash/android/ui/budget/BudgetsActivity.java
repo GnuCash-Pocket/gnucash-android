@@ -20,10 +20,10 @@ import android.os.Bundle;
 import android.view.View;
 
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.databinding.ActivityBudgetsBinding;
 import org.gnucash.android.ui.common.BaseDrawerActivity;
 import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.ui.common.UxArgument;
@@ -35,9 +35,16 @@ public class BudgetsActivity extends BaseDrawerActivity {
 
     public static final int REQUEST_CREATE_BUDGET = 0xA;
 
+    private ActivityBudgetsBinding binding;
+
     @Override
     public void inflateView() {
-        setContentView(R.layout.activity_budgets);
+        binding = ActivityBudgetsBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        mDrawerLayout = binding.drawerLayout;
+        mNavigationView = binding.navView;
+        mToolbar = binding.toolbarLayout.toolbar;
+        mToolbarProgress = binding.toolbarLayout.toolbarProgress.progress;
     }
 
     @Override

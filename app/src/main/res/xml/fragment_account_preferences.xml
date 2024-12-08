@@ -18,6 +18,7 @@
         android:dialogTitle="@string/title_choose_currency"
         android:entries="@array/key_currency_codes"
         android:entryValues="@array/key_currency_codes"
+        android:icon="@drawable/ic_money"
         android:key="@string/key_default_currency"
         android:summary="@string/summary_default_currency"
         android:title="@string/title_default_currency" />
@@ -26,14 +27,17 @@
         android:summary="@string/summary_create_default_accounts"
         android:title="@string/title_create_default_accounts" />
     <androidx.preference.Preference
+        android:icon="@drawable/ic_folder_open"
         android:key="@string/key_import_accounts"
         android:summary="@string/summary_import_accounts"
         android:title="@string/title_import_accounts" />
     <androidx.preference.Preference
+        android:icon="@drawable/ic_backup"
         android:key="@string/key_export_accounts_csv"
         android:summary="@string/summary_export_accounts_csv"
         android:title="@string/title_export_accounts_csv" />
     <androidx.preference.Preference
+        android:icon="@drawable/ic_delete"
         android:key="@string/key_delete_all_accounts"
         android:summary="@string/summary_delete_all_accounts"
         android:title="@string/title_delete_all_accounts" />

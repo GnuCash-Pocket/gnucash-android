@@ -274,7 +274,7 @@ public class BudgetAmountEditorFragment extends Fragment {
 
         public void bindViews(BudgetAmount budgetAmount) {
             amountEditText.setValue(budgetAmount.getAmount().asBigDecimal());
-            budgetAccountSpinner.setSelection(mAccountCursorAdapter.getPosition(budgetAmount.getAccountUID()));
+            budgetAccountSpinner.setSelection(mAccountCursorAdapter.getItemPosition(budgetAmount.getAccountUID()));
         }
     }
 }

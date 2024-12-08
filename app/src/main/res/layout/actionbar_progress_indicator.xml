@@ -20,11 +20,12 @@ See toolbar.xml layout for example of how to include it
 <ProgressBar xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/toolbar_progress"
+    android:id="@android:id/progress"
     style="?android:attr/progressBarStyleHorizontal"
     android:layout_width="match_parent"
     android:layout_height="@dimen/toolbar_progress_height"
     android:indeterminate="true"
     android:visibility="gone"
     app:elevation="@dimen/elevation_default"
-    tools:showIn="@layout/toolbar_with_spinner" />
+    tools:showIn="@layout/toolbar_with_spinner"
+    tools:visibility="visible" />

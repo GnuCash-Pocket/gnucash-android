@@ -5,16 +5,16 @@
             android:title="@string/title_enable_passcode" />
         <androidx.preference.Preference
             android:dependency="@string/key_enable_passcode"
+            android:icon="@drawable/ic_password"
             android:key="@string/key_change_passcode"
             android:title="@string/title_change_passcode" />
     </androidx.preference.PreferenceCategory>
 
     <androidx.preference.PreferenceCategory android:title="@string/title_report_prefs">
         <androidx.preference.CheckBoxPreference
+            android:icon="@drawable/ic_palette"
             android:key="@string/key_use_account_color"
             android:summary="@string/summary_use_account_color"
             android:title="@string/title_use_account_color" />
     </androidx.preference.PreferenceCategory>
-
-
 </androidx.preference.PreferenceScreen>

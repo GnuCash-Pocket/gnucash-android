@@ -19,6 +19,11 @@
         android:key="@string/key_about_gnucash"
         android:summary="@string/app_version_name"
         android:title="@string/title_about_gnucash" />
+    <androidx.preference.Preference android:title="@string/label_recommend_app">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="@string/app_playstore_url" />
+    </androidx.preference.Preference>
     <androidx.preference.Preference
         android:summary="@string/summary_google_plus"
         android:title="@string/title_google_plus_community">

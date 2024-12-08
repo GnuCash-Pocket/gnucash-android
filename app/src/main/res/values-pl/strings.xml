@@ -97,10 +97,6 @@ Konto docelowe używa innej waluty niż konto wyjściowe</string>
     <string name="title_account_preferences">Ustawienia konta</string>
     <string name="title_default_transaction_type">Domyślny typ transakcji</string>
     <string name="summary_default_transaction_type">Typ transakcji używany domyślnie, KREDYT lub DEBET</string>
-    <string-array name="transaction_types">
-        <item>KREDYT</item>
-        <item>DEBET</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">Czy na pewno chcesz usunąć WSZYSTKIE transakcje?</string>
     <string name="msg_delete_transaction_confirmation">Czy na pewno chcesz usunąć tę transakcję?</string>
     <string name="title_export_preference_category">Eksport</string>

@@ -31,6 +31,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.databinding.ActivityFormBinding;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.ui.account.AccountFormFragment;
@@ -54,6 +55,7 @@ public class FormActivity extends PasscodeLockActivity {
 
     private String mAccountUID;
 
+    private ActivityFormBinding binding;
     private CalculatorKeyboard mOnBackListener;
 
     public enum FormType {ACCOUNT, TRANSACTION, EXPORT, SPLIT_EDITOR, BUDGET, BUDGET_AMOUNT_EDITOR}
@@ -61,7 +63,8 @@ public class FormActivity extends PasscodeLockActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_form);
+        binding = ActivityFormBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         //if a parameter was passed to open an account within a specific book, then switch
         String bookUID = getIntent().getStringExtra(UxArgument.BOOK_UID);
@@ -69,14 +72,13 @@ public class FormActivity extends PasscodeLockActivity {
             BookUtils.activateBook(this, bookUID);
         }
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setSupportActionBar(binding.toolbarLayout.toolbar);
 
         ActionBar actionBar = getSupportActionBar();
         assert (actionBar != null);
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setHomeAsUpIndicator(R.drawable.ic_close_white);
+        actionBar.setHomeAsUpIndicator(R.drawable.ic_close);
 
         final Intent intent = getIntent();
 

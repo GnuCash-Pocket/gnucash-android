@@ -96,10 +96,6 @@
     <string name="title_account_preferences">Preferências de Contas</string>
     <string name="title_default_transaction_type">Tipo de Transação padrão</string>
     <string name="summary_default_transaction_type">Tipo de transação a ser usada por defeito, CRÉDITO ou DÉBITO</string>
-    <string-array name="transaction_types">
-        <item>CRÉDITO</item>
-        <item>DÉBITO</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">Tem a certeza que pretende apagar todas as transações?</string>
     <string name="msg_delete_transaction_confirmation">Tem a certeza que pretende apagar esta transação?</string>
     <string name="title_export_preference_category">Exportar</string>

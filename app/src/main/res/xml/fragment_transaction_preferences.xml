@@ -13,13 +13,16 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <androidx.preference.ListPreference
+        android:defaultValue="DEBIT"
         android:entries="@array/transaction_types"
-        android:entryValues="@array/key_transaction_type_values"
+        android:entryValues="@array/transaction_type_values"
         android:key="@string/key_default_transaction_type"
         android:summary="@string/summary_default_transaction_type"
-        android:title="@string/title_default_transaction_type" />
+        android:title="@string/title_default_transaction_type"
+        app:useSimpleSummaryProvider="true" />
 
     <androidx.preference.SwitchPreferenceCompat
         android:defaultValue="true"
@@ -39,6 +42,7 @@
         android:summary="@string/summary_save_opening_balances"
         android:title="@string/title_save_opening_balances" />
     <androidx.preference.Preference
+        android:icon="@drawable/ic_delete"
         android:key="@string/key_delete_all_transactions"
         android:summary="@string/summary_delete_all_transactions"
         android:title="@string/title_delete_all_transactions" />

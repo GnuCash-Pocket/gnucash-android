@@ -19,7 +19,7 @@
 
     <item
         android:id="@+id/menu_save"
-        android:icon="@drawable/ic_check_white"
+        android:icon="@drawable/ic_check"
         android:title="@string/btn_save"
         app:showAsAction="always|withText" />
 

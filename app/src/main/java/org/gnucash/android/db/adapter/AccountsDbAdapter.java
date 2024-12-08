@@ -32,7 +32,7 @@ import android.text.TextUtils;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.res.ResourcesCompat;
+import androidx.core.content.ContextCompat;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -862,9 +862,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
         Timber.d("all account list : %d", accountsList.size());
         SplitsDbAdapter splitsDbAdapter = mTransactionsAdapter.getSplitDbAdapter();
-        return (startTimestamp == -1 && endTimestamp == -1)
-                ? splitsDbAdapter.computeSplitBalance(accountsList, currencyCode, hasDebitNormalBalance)
-                : splitsDbAdapter.computeSplitBalance(accountsList, currencyCode, hasDebitNormalBalance, startTimestamp, endTimestamp);
+        return splitsDbAdapter.computeSplitBalance(accountsList, currencyCode, hasDebitNormalBalance, startTimestamp, endTimestamp);
 
     }
 
@@ -1274,7 +1272,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         }
 
         Context context = GnuCashApplication.getAppContext();
-        return ResourcesCompat.getColor(context.getResources(), R.color.theme_primary, null);
+        return ContextCompat.getColor(context, R.color.theme_primary);
     }
 
     /**

@@ -96,10 +96,6 @@
     <string name="title_account_preferences">Account voorkeuren</string>
     <string name="title_default_transaction_type">Standaard Transactietype</string>
     <string name="summary_default_transaction_type">Het standaard transactietype, CREDIT or DEBET</string>
-    <string-array name="transaction_types">
-        <item>CREDIT</item>
-        <item>DEBET</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">Weet u zeker dat u alle transacties wil verwijderen?</string>
     <string name="msg_delete_transaction_confirmation">Weet u zeker dat u deze transactie wil verwijderen?</string>
     <string name="title_export_preference_category">Exporteer</string>

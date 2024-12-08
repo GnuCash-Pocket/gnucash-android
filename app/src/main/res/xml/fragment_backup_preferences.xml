@@ -17,17 +17,17 @@
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <androidx.preference.PreferenceCategory android:title="@string/title_backup_preference_category">
         <androidx.preference.Preference
-            android:icon="@drawable/ic_folder_open_black"
+            android:icon="@drawable/ic_folder_open"
             android:key="@string/key_backup_location"
             android:summary="@string/summary_select_backup_file"
             android:title="@string/title_select_backup_file" />
         <androidx.preference.Preference
-            android:icon="@drawable/ic_backup_black"
+            android:icon="@drawable/ic_backup"
             android:key="@string/key_create_backup"
             android:summary="@string/summary_create_backup_pref"
             android:title="@string/title_create_backup_pref" />
         <androidx.preference.Preference
-            android:icon="@drawable/ic_restore_black"
+            android:icon="@drawable/ic_restore"
             android:key="@string/key_restore_backup"
             android:summary="@string/summary_restore_backup_pref"
             android:title="@string/title_restore_backup" />

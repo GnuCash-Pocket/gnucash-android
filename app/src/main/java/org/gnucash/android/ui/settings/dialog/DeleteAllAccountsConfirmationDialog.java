@@ -42,7 +42,7 @@ public class DeleteAllAccountsConfirmationDialog extends DoubleConfirmationDialo
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         return getDialogBuilder()
-            .setIcon(R.drawable.ic_warning_black)
+            .setIcon(R.drawable.ic_warning)
             .setTitle(R.string.title_confirm_delete)
             .setMessage(R.string.confirm_delete_all_accounts)
             .setPositiveButton(R.string.alert_dialog_ok_delete, new DialogInterface.OnClickListener() {

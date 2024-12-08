@@ -32,19 +32,15 @@
             android:orientation="vertical">
 
             <include
-                android:id="@+id/toolbar_with_spinner"
+                android:id="@+id/toolbar_layout"
                 layout="@layout/toolbar_with_spinner" />
 
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tab_layout"
+                style="@style/GnuCash.TabLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/colorPrimary"
-                android:minHeight="?attr/actionBarSize"
-                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-                app:elevation="10dp"
-                app:tabGravity="fill"
-                app:tabIndicatorColor="@android:color/white" />
+                android:theme="@style/Theme.GnuCash.TabLayout" />
 
         </com.google.android.material.appbar.AppBarLayout>
 
@@ -61,7 +57,8 @@
             android:layout_alignParentEnd="true"
             android:layout_gravity="end|bottom"
             android:layout_margin="20dp"
-            android:src="@drawable/ic_add_white"
+            android:contentDescription="@string/title_add_transaction"
+            android:src="@drawable/ic_add"
             app:elevation="6dp"
             app:layout_behavior="org.gnucash.android.ui.util.ScrollingFABBehavior" />
 

@@ -278,7 +278,7 @@ public abstract class BaseReportFragment extends Fragment implements
 
             @Override
             protected void onPreExecute() {
-                mReportsActivity.getProgressBar().setVisibility(View.VISIBLE);
+                mReportsActivity.showProgressBar(true);
             }
 
             @Override
@@ -290,7 +290,7 @@ public abstract class BaseReportFragment extends Fragment implements
             @Override
             protected void onPostExecute(Void aVoid) {
                 displayReport();
-                mReportsActivity.getProgressBar().setVisibility(View.GONE);
+                mReportsActivity.showProgressBar(false);
             }
         };
         mReportGenerator.execute();

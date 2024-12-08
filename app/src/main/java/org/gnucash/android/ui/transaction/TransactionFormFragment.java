@@ -629,7 +629,7 @@ public class TransactionFormFragment extends Fragment implements
      * @param accountId Database ID of the transfer account
      */
     private void setSelectedTransferAccount(long accountId) {
-        int position = mAccountCursorAdapter.getPosition(mAccountsDbAdapter.getUID(accountId));
+        int position = mAccountCursorAdapter.getItemPosition(mAccountsDbAdapter.getUID(accountId));
         if (position >= 0)
             mBinding.inputTransferAccountSpinner.setSelection(position);
     }

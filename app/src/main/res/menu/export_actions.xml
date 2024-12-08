@@ -19,7 +19,7 @@
 
     <item
         android:id="@+id/menu_save"
-        android:icon="@drawable/ic_upload_file_white"
+        android:icon="@drawable/ic_upload_file"
         android:title="@string/btn_export"
         app:showAsAction="always|withText" />
 

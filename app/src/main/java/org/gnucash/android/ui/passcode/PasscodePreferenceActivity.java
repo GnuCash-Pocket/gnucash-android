@@ -48,7 +48,7 @@ public class PasscodePreferenceActivity extends AppCompatActivity
 
         mPassTextView = (TextView) findViewById(R.id.passcode_label);
 
-        mIsPassEnabled = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+        mIsPassEnabled = PreferenceManager.getDefaultSharedPreferences(this)
                 .getBoolean(UxArgument.ENABLED_PASSCODE, false);
 
         if (mIsPassEnabled) {
@@ -58,7 +58,7 @@ public class PasscodePreferenceActivity extends AppCompatActivity
 
     @Override
     public void onPasscodeEntered(String pass) {
-        String passCode = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+        String passCode = PreferenceManager.getDefaultSharedPreferences(this)
                 .getString(UxArgument.PASSCODE, "");
 
         if (mIsPassEnabled) {
