@@ -39,7 +39,6 @@ import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.model.Book;
 import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Transaction;
-import org.gnucash.android.util.BookUtils;
 import org.joda.time.format.DateTimeFormat;
 
 import java.sql.Timestamp;
@@ -65,7 +64,6 @@ public class ScheduledActionService extends JobIntentService {
 
     private static final int JOB_ID = 1001;
 
-
     public static void enqueueWork(Context context) {
         Intent intent = new Intent(context, ScheduledActionService.class);
         enqueueWork(context, ScheduledActionService.class, JOB_ID, intent);
@@ -74,26 +72,36 @@ public class ScheduledActionService extends JobIntentService {
     @Override
     protected void onHandleWork(@NonNull Intent intent) {
         Timber.i("Starting scheduled action service");
+        try {
+            processScheduledBooks();
+            Timber.i("Completed service @ %s", DateTimeFormat.longDateTime().print(System.currentTimeMillis()));
+        } catch (Throwable e) {
+            Timber.e(e, "Scheduled service error: %s", e.getMessage());
+        }
+    }
 
+    private void processScheduledBooks() {
         BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
         List<Book> books = booksDbAdapter.getAllRecords();
         for (Book book : books) { //// TODO: 20.04.2017 Retrieve only the book UIDs with new method
-            DatabaseHelper dbHelper = new DatabaseHelper(GnuCashApplication.getAppContext(), book.getUID());
-            SQLiteDatabase db = dbHelper.getWritableDatabase();
-            RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(db);
-            ScheduledActionDbAdapter scheduledActionDbAdapter = new ScheduledActionDbAdapter(db, recurrenceDbAdapter);
-
-            List<ScheduledAction> scheduledActions = scheduledActionDbAdapter.getAllEnabledScheduledActions();
-            Timber.i("Processing %d total scheduled actions for Book: %s",
-                scheduledActions.size(), book.getDisplayName());
-            processScheduledActions(scheduledActions, db);
-
-            //close all databases except the currently active database
-            if (!db.getPath().equals(GnuCashApplication.getActiveDb().getPath()))
-                db.close();
+            processScheduledBook(book);
         }
+    }
 
-        Timber.i("Completed service @ %s", DateTimeFormat.longDateTime().print(System.currentTimeMillis()));
+    private void processScheduledBook(@NonNull Book book) {
+        DatabaseHelper dbHelper = new DatabaseHelper(GnuCashApplication.getAppContext(), book.getUID());
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(db);
+        ScheduledActionDbAdapter scheduledActionDbAdapter = new ScheduledActionDbAdapter(db, recurrenceDbAdapter);
+
+        List<ScheduledAction> scheduledActions = scheduledActionDbAdapter.getAllEnabledScheduledActions();
+        Timber.i("Processing %d total scheduled actions for Book: %s",
+            scheduledActions.size(), book.getDisplayName());
+        processScheduledActions(scheduledActions, db);
+
+        //close all databases except the currently active database
+        if (!db.getPath().equals(GnuCashApplication.getActiveDb().getPath()))
+            db.close();
     }
 
     /**
@@ -105,7 +113,6 @@ public class ScheduledActionService extends JobIntentService {
     @VisibleForTesting
     public static void processScheduledActions(List<ScheduledAction> scheduledActions, SQLiteDatabase db) {
         for (ScheduledAction scheduledAction : scheduledActions) {
-
             long now = System.currentTimeMillis();
             int totalPlannedExecutions = scheduledAction.getTotalPlannedExecutionCount();
             int executionCount = scheduledAction.getExecutionCount();
