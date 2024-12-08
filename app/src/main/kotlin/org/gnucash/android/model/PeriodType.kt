@@ -16,7 +16,6 @@
 package org.gnucash.android.model
 
 import java.util.Locale
-import org.joda.time.format.DateTimeFormat
 
 /**
  * Represents a type of period which can be associated with a recurring event
@@ -24,43 +23,27 @@ import org.joda.time.format.DateTimeFormat
  * @author Ngewi Fet <ngewif@gmail.com>
  * @see org.gnucash.android.model.ScheduledAction
  */
-enum class PeriodType {
-    HOUR, DAY, WEEK, MONTH, YEAR;
-
-    /**
-     * Returns the frequency description of this period type.
-     * This is used mostly for generating the recurrence rule.
-     *
-     * @return Frequency description
-     */
-    val frequencyDescription: String
-        get() = when (this) {
-            HOUR -> "HOURLY"
-            DAY -> "DAILY"
-            WEEK -> "WEEKLY"
-            MONTH -> "MONTHLY"
-            YEAR -> "YEARLY"
-        }
-
-    /**
-     * Returns the parts of the recurrence rule which describe the day or month on which to run the
-     * scheduled transaction. These parts are the BYxxx
-     *
-     * @param startTime Start time of transaction used to determine the start day of execution
-     * @return String describing the BYxxx parts of the recurrence rule
-     */
-    fun getByParts(startTime: Long): String {
-        var partString = ""
-        if (this == WEEK) {
-            val dayOfWeek = dayOfWeekFormatter.print(startTime)
-            //our parser only supports two-letter day names
-            partString = "BYDAY=" + dayOfWeek.substring(0, dayOfWeek.length - 1)
-                .uppercase(Locale.getDefault())
-        }
-        return partString
-    }
+enum class PeriodType(@JvmField val value: String) {
+    /* Not a true period at all, but convenient here. */
+    ONCE("once"),
+    HOUR("hour"),
+    DAY("day"),
+    /* Also a phase.
+     * The last day in date's month with date's day-of-week is used. */
+    LAST_WEEKDAY("last weekday"),
+    /* Also a phase, e.g. Second Tuesday. */
+    NTH_WEEKDAY("nth weekday"),
+    WEEK("week"),
+    MONTH("month"),
+    /* This is actually a period plus a phase. */
+    END_OF_MONTH("end of month"),
+    YEAR("year");
 
     companion object {
-        private val dayOfWeekFormatter = DateTimeFormat.forPattern("E")
+        @JvmStatic
+        fun of(value: String): PeriodType {
+            val valueLower = value.lowercase(Locale.ROOT)
+            return values().firstOrNull { it.value == valueLower } ?: ONCE
+        }
     }
 }
