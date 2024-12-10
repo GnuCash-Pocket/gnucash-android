@@ -59,10 +59,10 @@
                 android:id="@+id/nav_item_settings"
                 android:icon="@drawable/ic_settings_black"
                 android:title="@string/nav_menu_settings" />
-            <item
-                android:id="@+id/nav_item_help"
-                android:icon="@drawable/ic_help_black"
-                android:title="@string/nav_menu_help" />
+<!--            <item-->
+<!--                android:id="@+id/nav_item_help"-->
+<!--                android:icon="@drawable/ic_help_black"-->
+<!--                android:title="@string/nav_menu_help" />-->
         </menu>
     </item>
 </menu>
