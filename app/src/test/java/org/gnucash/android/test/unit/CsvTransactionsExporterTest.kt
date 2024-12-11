@@ -14,6 +14,7 @@ import java.util.Locale
 
 class CsvTransactionsExporterTest : BookHelperTest() {
     private lateinit var originalDefaultLocale: Locale
+    private val lineSeparator = System.lineSeparator()
 
     @Before
     fun `save original default locale`() {
@@ -42,13 +43,13 @@ class CsvTransactionsExporterTest : BookHelperTest() {
 
         assertThat(exportedFiles).hasSize(1)
         val file = File(exportedFiles[0])
-        assertThat(file.readText()).isEqualTo("""
-            Date,Transaction ID,Number,Description,Notes,Commodity/Currency,Void Reason,Action,Memo,Full Account Name,Account Name,Amount With Sym.,Amount Num,Reconcile,Reconcile Date,Rate/Price,
-            2016-08-23,b33c8a6160494417558fd143731fc26a,,Kahuna Burger,,CURRENCY::USD,,,,Expenses:Dining,Dining,${'$'}10.00,10.00,n,,1.00
-            ,,,,,,,,,Assets:Cash in Wallet,Cash in Wallet,-${'$'}10.00,-10.00,n,,1.00
-            2016-08-24,64bbc3a03816427f9f82b2a2aa858f91,,"Kahuna Comma Vendors (,)",,CURRENCY::USD,,,,Expenses:Dining,Dining,${'$'}23.45,23.45,n,,1.00
-            ,,,,,,,,,Assets:Cash in Wallet,Cash in Wallet,-${'$'}23.45,-23.45,n,,1.00${"\n"}
-        """.trimIndent())
+        assertThat(file.readText()).isEqualTo(
+            "Date,Transaction ID,Number,Description,Notes,Commodity/Currency,Void Reason,Action,Memo,Full Account Name,Account Name,Amount With Sym.,Amount Num,Reconcile,Reconcile Date,Rate/Price,${lineSeparator}"
+            + "2016-08-23,b33c8a6160494417558fd143731fc26a,,Kahuna Burger,,CURRENCY::USD,,,,Expenses:Dining,Dining,\$10.00,10.00,n,,1.00${lineSeparator}"
+            + ",,,,,,,,,Assets:Cash in Wallet,Cash in Wallet,-\$10.00,-10.00,n,,1.00${lineSeparator}"
+            + "2016-08-24,64bbc3a03816427f9f82b2a2aa858f91,,\"Kahuna Comma Vendors (,)\",,CURRENCY::USD,,,,Expenses:Dining,Dining,\$23.45,23.45,n,,1.00${lineSeparator}"
+            + ",,,,,,,,,Assets:Cash in Wallet,Cash in Wallet,-\$23.45,-23.45,n,,1.00${lineSeparator}"
+        )
     }
 
     @Test
@@ -68,12 +69,12 @@ class CsvTransactionsExporterTest : BookHelperTest() {
 
         assertThat(exportedFiles).hasSize(1)
         val file = File(exportedFiles[0])
-        assertThat(file.readText()).isEqualTo("""
-            Date,Transaction ID,Number,Description,Notes,Commodity/Currency,Void Reason,Action,Memo,Full Account Name,Account Name,Amount With Sym.,Amount Num,Reconcile,Reconcile Date,Rate/Price,
-            2016-08-23,b33c8a6160494417558fd143731fc26a,,Kahuna Burger,,CURRENCY::USD,,,,Expenses:Dining,Dining,"10,00${"\u00a0"}US${'$'}","10,00",n,,"1,00"
-            ,,,,,,,,,Assets:Cash in Wallet,Cash in Wallet,"-10,00${"\u00a0"}US${'$'}","-10,00",n,,"1,00"
-            2016-08-24,64bbc3a03816427f9f82b2a2aa858f91,,"Kahuna Comma Vendors (,)",,CURRENCY::USD,,,,Expenses:Dining,Dining,"23,45${"\u00a0"}US${'$'}","23,45",n,,"1,00"
-            ,,,,,,,,,Assets:Cash in Wallet,Cash in Wallet,"-23,45${"\u00a0"}US${'$'}","-23,45",n,,"1,00"${"\n"}
-        """.trimIndent())
+        assertThat(file.readText()).isEqualTo(
+            "Date,Transaction ID,Number,Description,Notes,Commodity/Currency,Void Reason,Action,Memo,Full Account Name,Account Name,Amount With Sym.,Amount Num,Reconcile,Reconcile Date,Rate/Price,${lineSeparator}"
+            + "2016-08-23,b33c8a6160494417558fd143731fc26a,,Kahuna Burger,,CURRENCY::USD,,,,Expenses:Dining,Dining,\"10,00\u00a0US\$\",\"10,00\",n,,\"1,00\"${lineSeparator}"
+            + ",,,,,,,,,Assets:Cash in Wallet,Cash in Wallet,\"-10,00\u00a0US\$\",\"-10,00\",n,,\"1,00\"${lineSeparator}"
+            + "2016-08-24,64bbc3a03816427f9f82b2a2aa858f91,,\"Kahuna Comma Vendors (,)\",,CURRENCY::USD,,,,Expenses:Dining,Dining,\"23,45\u00a0US\$\",\"23,45\",n,,\"1,00\"${lineSeparator}"
+            + ",,,,,,,,,Assets:Cash in Wallet,Cash in Wallet,\"-23,45\u00a0US\$\",\"-23,45\",n,,\"1,00\"${lineSeparator}"
+        )
     }
 }
