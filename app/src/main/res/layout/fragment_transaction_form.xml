@@ -124,7 +124,7 @@
 
             <ImageView
                 style="@style/FormIcon"
-                android:src="@drawable/ic_time" />
+                android:src="@drawable/ic_day" />
 
             <TextView
                 android:id="@+id/input_date"
