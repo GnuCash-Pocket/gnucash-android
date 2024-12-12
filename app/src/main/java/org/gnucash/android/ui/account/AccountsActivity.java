@@ -20,6 +20,7 @@ package org.gnucash.android.ui.account;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -64,6 +65,7 @@ import org.gnucash.android.ui.transaction.TransactionsActivity;
 import org.gnucash.android.ui.util.TaskDelegate;
 import org.gnucash.android.ui.wizard.FirstRunWizardActivity;
 import org.gnucash.android.util.BackupManager;
+import org.gnucash.android.util.ContentExtKt;
 
 import timber.log.Timber;
 
@@ -438,7 +440,11 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
             };
         }
 
-        Uri uri = Uri.parse("android.resource://" + BuildConfig.APPLICATION_ID + "/" + R.raw.default_accounts);
+        Uri uri = new Uri.Builder()
+            .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+            .authority(BuildConfig.APPLICATION_ID)
+            .path(String.valueOf(R.raw.default_accounts))
+            .build();
         new ImportAsyncTask(activity, delegate).execute(uri);
     }
 
