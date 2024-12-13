@@ -32,6 +32,7 @@ import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.model.Commodity;
+import org.gnucash.android.model.TransactionType;
 import org.gnucash.android.ui.settings.dialog.DeleteAllTransactionsConfirmationDialog;
 
 import java.util.List;
@@ -64,12 +65,11 @@ public class TransactionsPreferenceFragment extends PreferenceFragmentCompat imp
     public void onResume() {
         super.onResume();
 
+        Context context = requireContext();
         SharedPreferences sharedPreferences = getPreferenceManager().getSharedPreferences();
-        String defaultTransactionType = sharedPreferences.getString(
-                getString(R.string.key_default_transaction_type),
-                getString(R.string.label_debit));
+        TransactionType defaultTransactionType = GnuCashApplication.getDefaultTransactionType(context);
         Preference pref = findPreference(getString(R.string.key_default_transaction_type));
-        setLocalizedSummary(pref, defaultTransactionType);
+        setLocalizedSummary(pref, defaultTransactionType.value);
         pref.setOnPreferenceChangeListener(this);
 
         pref = findPreference(getString(R.string.key_use_double_entry));
@@ -147,7 +147,8 @@ public class TransactionsPreferenceFragment extends PreferenceFragmentCompat imp
      * @param value      New value for the preference summary
      */
     private void setLocalizedSummary(Preference preference, String value) {
-        String localizedLabel = value.equals("DEBIT") ? getString(R.string.label_debit) : getActivity().getString(R.string.label_credit);
+        TransactionType type = TransactionType.of(value);
+        String localizedLabel = (type == TransactionType.DEBIT) ? getString(R.string.label_debit) : getString(R.string.label_credit);
         preference.setSummary(localizedLabel);
     }
 

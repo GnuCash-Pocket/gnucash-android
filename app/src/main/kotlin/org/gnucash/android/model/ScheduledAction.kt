@@ -27,7 +27,7 @@ import org.gnucash.android.export.xml.GncXmlHelper
 import org.joda.time.format.DateTimeFormat
 
 /**
- * Represents a scheduled event which is stored in the database and run at regular mPeriod
+ * Represents a scheduled event which is stored in the database and run at regular period
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
@@ -60,6 +60,7 @@ class ScheduledAction    //all actions are enabled by default
      */
     enum class ActionType(@JvmField @StringRes val labelId: Int) {
         TRANSACTION(R.string.action_transaction),
+        // TODO rename `BACKUP` to `EXPORT`
         BACKUP(R.string.action_backup)
     }
 
@@ -362,13 +363,12 @@ class ScheduledAction    //all actions are enabled by default
      */
     val ruleString: String
         get() {
-            val separator = ";"
             val ruleBuilder = StringBuilder(recurrence!!.ruleString)
             if (_endDate > 0) {
                 val df = DateTimeFormat.forPattern("yyyyMMdd'T'HHmmss'Z'").withZoneUTC()
-                ruleBuilder.append("UNTIL=").append(df.print(_endDate)).append(separator)
+                ruleBuilder.append(";UNTIL=").append(df.print(_endDate))
             } else if (totalPlannedExecutionCount > 0) {
-                ruleBuilder.append("COUNT=").append(totalPlannedExecutionCount).append(separator)
+                ruleBuilder.append(";COUNT=").append(totalPlannedExecutionCount)
             }
             return ruleBuilder.toString()
         }
@@ -398,8 +398,9 @@ class ScheduledAction    //all actions are enabled by default
      *
      * @param recurrence [Recurrence] object
      */
-    fun setRecurrence(recurrence: Recurrence) {
+    fun setRecurrence(recurrence: Recurrence?) {
         this.recurrence = recurrence
+        if (recurrence == null) return
         //if we were parsing XML and parsed the start and end date from the scheduled action first,
         //then use those over the values which might be gotten from the recurrence
         if (_startDate > 0) {

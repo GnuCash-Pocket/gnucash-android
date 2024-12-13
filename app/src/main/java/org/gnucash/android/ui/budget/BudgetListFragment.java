@@ -85,15 +85,15 @@ public class BudgetListFragment extends Fragment implements Refreshable,
         mBinding = FragmentBudgetListBinding.inflate(inflater, container, false);
         View view = mBinding.getRoot();
 
-        mBinding.budgetRecyclerView.setHasFixedSize(true);
-        mBinding.budgetRecyclerView.setEmptyView(mBinding.emptyView);
+        mBinding.list.setHasFixedSize(true);
+        mBinding.list.setEmptyView(mBinding.emptyView);
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
-            mBinding.budgetRecyclerView.setLayoutManager(gridLayoutManager);
+            mBinding.list.setLayoutManager(gridLayoutManager);
         } else {
             LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-            mBinding.budgetRecyclerView.setLayoutManager(mLayoutManager);
+            mBinding.list.setLayoutManager(mLayoutManager);
         }
         return view;
     }
@@ -105,11 +105,12 @@ public class BudgetListFragment extends Fragment implements Refreshable,
         mBudgetsDbAdapter = BudgetsDbAdapter.getInstance();
         mBudgetRecyclerAdapter = new BudgetRecyclerAdapter(null);
 
-        mBinding.budgetRecyclerView.setAdapter(mBudgetRecyclerAdapter);
+        mBinding.list.setAdapter(mBudgetRecyclerAdapter);
 
         getLoaderManager().initLoader(0, null, this);
     }
 
+    @NonNull
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Timber.d("Creating the accounts loader");
@@ -117,14 +118,14 @@ public class BudgetListFragment extends Fragment implements Refreshable,
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loaderCursor, Cursor cursor) {
+    public void onLoadFinished(@NonNull Loader<Cursor> loaderCursor, Cursor cursor) {
         Timber.d("Budget loader finished. Swapping in cursor");
         mBudgetRecyclerAdapter.swapCursor(cursor);
         mBudgetRecyclerAdapter.notifyDataSetChanged();
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> arg0) {
+    public void onLoaderReset(@NonNull Loader<Cursor> arg0) {
         Timber.d("Resetting the accounts loader");
         mBudgetRecyclerAdapter.swapCursor(null);
     }

@@ -96,10 +96,6 @@
     <string name="title_account_preferences">Рахунки</string>
     <string name="title_default_transaction_type">Початковий тип транзакції</string>
     <string name="summary_default_transaction_type">Початковий тип транзакції: КРЕДИТ або ДЕБЕТ</string>
-    <string-array name="transaction_types">
-        <item>КРЕДИТ</item>
-        <item>ДЕБЕТ</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">Бажаєте видалити ВСІ транзакції?</string>
     <string name="msg_delete_transaction_confirmation">Бажаєте видалити цю транзакцію?</string>
     <string name="title_export_preference_category">Експорт</string>
@@ -312,7 +308,7 @@
     <string name="label_no_recent_accounts">Немає нещодавніх рахунків</string>
     <string name="label_no_favorite_accounts">Немає закладок рахунків</string>
     <string name="nav_menu_scheduled_actions">Планування</string>
-    <string name="label_scheduled_action_ended">"Закінчений, останнє виконання "</string>
+    <string name="label_scheduled_action_ended">"Закінчений, останнє виконання %1$s"</string>
     <string name="btn_wizard_next">Далі</string>
     <string name="btn_wizard_finish">Готово</string>
     <string name="wizard_title_default_currency">Ваша звичайна валюта</string>

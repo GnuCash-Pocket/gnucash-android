@@ -123,7 +123,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + ");" + createUpdatedAtTrigger(SplitEntry.TABLE_NAME);
 
 
-    public static final String SCHEDULED_ACTIONS_TABLE_CREATE = "CREATE TABLE " + ScheduledActionEntry.TABLE_NAME + " ("
+    private static final String SCHEDULED_ACTIONS_TABLE_CREATE = "CREATE TABLE " + ScheduledActionEntry.TABLE_NAME + " ("
             + ScheduledActionEntry._ID + " integer primary key autoincrement, "
             + ScheduledActionEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
             + ScheduledActionEntry.COLUMN_ACTION_UID + " varchar(255) not null, "
@@ -146,7 +146,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + "FOREIGN KEY (" + ScheduledActionEntry.COLUMN_RECURRENCE_UID + ") REFERENCES " + RecurrenceEntry.TABLE_NAME + " (" + RecurrenceEntry.COLUMN_UID + ") "
             + ");" + createUpdatedAtTrigger(ScheduledActionEntry.TABLE_NAME);
 
-    public static final String COMMODITIES_TABLE_CREATE = "CREATE TABLE " + DatabaseSchema.CommodityEntry.TABLE_NAME + " ("
+    private static final String COMMODITIES_TABLE_CREATE = "CREATE TABLE " + DatabaseSchema.CommodityEntry.TABLE_NAME + " ("
             + CommodityEntry._ID + " integer primary key autoincrement, "
             + CommodityEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
             + CommodityEntry.COLUMN_NAMESPACE + " varchar(255) not null default '" + Commodity.COMMODITY_CURRENCY + "', "

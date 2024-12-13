@@ -96,10 +96,6 @@
     <string name="title_account_preferences">勘定科目の設定</string>
     <string name="title_default_transaction_type">デフォルトの取引形態</string>
     <string name="summary_default_transaction_type">デフォルトで使用する取引の形態（掛けまたは現金）</string>
-    <string-array name="transaction_types">
-        <item>掛け（後払い）</item>
-        <item>現金（即時払い）</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">本当にすべての取引を削除してもよろしいですか？</string>
     <string name="msg_delete_transaction_confirmation">この取引を本当に削除してもよろしいですか？</string>
     <string name="title_export_preference_category">エクスポート</string>

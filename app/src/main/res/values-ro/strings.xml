@@ -96,10 +96,6 @@
     <string name="title_account_preferences">Account Preferences</string>
     <string name="title_default_transaction_type">Default Transaction Type</string>
     <string name="summary_default_transaction_type">The type of transaction to use by default, CREDIT or DEBIT</string>
-    <string-array name="transaction_types">
-        <item>CREDIT</item>
-        <item>DEBIT</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">Are you sure you want to delete ALL transactions?</string>
     <string name="msg_delete_transaction_confirmation">Are you sure you want to delete this transaction?</string>
     <string name="title_export_preference_category">Export</string>

@@ -96,10 +96,6 @@
     <string name="title_account_preferences">Account voorkeuren</string>
     <string name="title_default_transaction_type">Standaard Transactietype</string>
     <string name="summary_default_transaction_type">Het standaard transactietype, CREDIT or DEBET</string>
-    <string-array name="transaction_types">
-        <item>CREDIT</item>
-        <item>DEBET</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">Weet u zeker dat u alle transacties wil verwijderen?</string>
     <string name="msg_delete_transaction_confirmation">Weet u zeker dat u deze transactie wil verwijderen?</string>
     <string name="title_export_preference_category">Exporteer</string>
@@ -311,7 +307,7 @@ No user-identifiable information will be collected as part of this process!
     <string name="label_no_recent_accounts">Geen recente rekeningen</string>
     <string name="label_no_favorite_accounts">Geen favoriete rekeningen</string>
     <string name="nav_menu_scheduled_actions">Geplande acties</string>
-    <string name="label_scheduled_action_ended">"Ended, last executed on "</string>
+    <string name="label_scheduled_action_ended">"Ended, last executed on %1$s"</string>
     <string name="btn_wizard_next">Volgende</string>
     <string name="btn_wizard_finish">Klaar</string>
     <string name="wizard_title_default_currency">Standaard munteenheid</string>

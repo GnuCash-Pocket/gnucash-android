@@ -97,10 +97,6 @@
     <string name="title_account_preferences">Προτιμήσεις Λογαριασμών</string>
     <string name="title_default_transaction_type">Προεπιλογή Τύπου Κίνησης</string>
     <string name="summary_default_transaction_type">Ο προεπιλεγμένος τύπος κίνησης, ΠΙΣΤΩΣΗ ή ΧΡΕΩΣΗ</string>
-    <string-array name="transaction_types">
-        <item>ΠΙΣΤΩΣΗ</item>
-        <item>ΧΡΕΩΣΗ</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">Σίγουρα θέλετε να διαγράψετε ΌΛΕΣ τις κινήσεις;</string>
     <string name="msg_delete_transaction_confirmation">Σίγουρα θέλετε να διαγράψετε αυτή τη κίνηση;</string>
     <string name="title_export_preference_category">Εξαγωγή</string>
@@ -321,7 +317,7 @@ No user-identifiable information will be collected as part of this process!
     <string name="label_no_recent_accounts">No recent accounts</string>
     <string name="label_no_favorite_accounts">No favorite accounts</string>
     <string name="nav_menu_scheduled_actions">Scheduled Actions</string>
-    <string name="label_scheduled_action_ended">"Ended, last executed on "</string>
+    <string name="label_scheduled_action_ended">"Ended, last executed on %1$s"</string>
     <string name="btn_wizard_next">Next</string>
     <string name="btn_wizard_finish">Done</string>
     <string name="wizard_title_default_currency">Default Currency</string>

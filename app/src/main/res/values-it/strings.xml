@@ -96,10 +96,6 @@
     <string name="title_account_preferences">Preferenze conto</string>
     <string name="title_default_transaction_type">Tipo di transazione predefinita</string>
     <string name="summary_default_transaction_type">Il tipo di transazione da usare come predefinita, CREDITO o DEBITO</string>
-    <string-array name="transaction_types">
-        <item>CREDITO</item>
-        <item>DEBITO</item>
-    </string-array>
     <string name="msg_delete_all_transactions_confirmation">Eliminare TUTTE le transazioni?</string>
     <string name="msg_delete_transaction_confirmation">Eliminare davvero questa transazione?</string>
     <string name="title_export_preference_category">Esporta</string>
