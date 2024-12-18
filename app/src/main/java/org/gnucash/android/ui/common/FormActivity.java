@@ -18,21 +18,19 @@ package org.gnucash.android.ui.common;
 
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.ui.account.AccountFormFragment;
 import org.gnucash.android.ui.budget.BudgetAmountEditorFragment;
 import org.gnucash.android.ui.budget.BudgetFormFragment;
@@ -54,6 +52,7 @@ public class FormActivity extends PasscodeLockActivity {
 
     private String mAccountUID;
 
+    @Nullable
     private CalculatorKeyboard mOnBackListener;
 
     public enum FormType {ACCOUNT, TRANSACTION, EXPORT, SPLIT_EDITOR, BUDGET, BUDGET_AMOUNT_EDITOR}
@@ -225,19 +224,17 @@ public class FormActivity extends PasscodeLockActivity {
     }
 
 
-    public void setOnBackListener(CalculatorKeyboard keyboard) {
+    public void setOnBackListener(@Nullable CalculatorKeyboard keyboard) {
         mOnBackListener = keyboard;
     }
 
     @Override
     public void onBackPressed() {
-        boolean eventProcessed = false;
+        if (mOnBackListener != null && mOnBackListener.onBackPressed()) {
+            return;
+        }
 
-        if (mOnBackListener != null)
-            eventProcessed = mOnBackListener.onBackPressed();
-
-        if (!eventProcessed)
-            super.onBackPressed();
+        super.onBackPressed();
     }
 
 }

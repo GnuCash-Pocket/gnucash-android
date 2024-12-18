@@ -24,6 +24,8 @@
 
 package org.gnucash.android.ui.util.widget;
 
+import static org.gnucash.android.app.ContextExtKt.getActivity;
+
 import android.app.Activity;
 import android.content.Context;
 import android.inputmethodservice.Keyboard;
@@ -31,146 +33,64 @@ import android.inputmethodservice.KeyboardView;
 import android.inputmethodservice.KeyboardView.OnKeyboardActionListener;
 import android.provider.Settings;
 import android.text.Editable;
+import android.text.InputFilter;
+import android.text.Selection;
+import android.text.TextUtils;
+import android.text.method.DigitsKeyListener;
 import android.view.HapticFeedbackConstants;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
-import androidx.annotation.XmlRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import org.gnucash.android.R;
 
 import java.text.DecimalFormatSymbols;
 
 
 /**
  * When an activity hosts a keyboardView, this class allows several EditText's to register for it.
- *
+ * <p>
  * Known issues:
- *  - It's not possible to select text.
- *  - When in landscape, the EditText is covered by the keyboard.
- *  - No i18n.
+ * - It's not possible to select text.
+ * - When in landscape, the EditText is covered by the keyboard.
+ * - No i18n.
  *
  * @author Maarten Pennings, extended by SimplicityApks
- * @date 2012 December 23
- *
  * @author Àlex Magaz Graça <rivaldi8@gmail.com>
  * @author Ngewi Fet <ngewif@gmail.com>
- *
  */
 public class CalculatorKeyboard {
 
-    public static final int KEY_CODE_DECIMAL_SEPARATOR = 46;
-    /** A link to the KeyboardView that is used to render this CalculatorKeyboard. */
-    private KeyboardView mKeyboardView;
+    private static final String ACCEPTED = "0123456789+*/()";
+    private static final int KEY_CODE_CLEAR = -3;
+    private static final int KEY_CODE_DELETE = -5;
+    private static final int KEY_CODE_EVALUATE = '=';
+    private static final String KEY_LABEL_DECIMAL = ".";
+    private static final String KEY_LABEL_EVALUATE = "=";
+    private static final String KEY_LABEL_MINUS = "-";
 
-    private Context mContext;
-    private boolean hapticFeedback;
-
-    public static final String LOCALE_DECIMAL_SEPARATOR = Character.toString(DecimalFormatSymbols.getInstance().getDecimalSeparator());
-
-    private OnKeyboardActionListener mOnKeyboardActionListener = new OnKeyboardActionListener() {
-        @Override
-        public void onKey(int primaryCode, int[] keyCodes) {
-            View focusCurrent = ((Activity) mContext).getWindow().getCurrentFocus();
-            if (focusCurrent == null) return;
-
-            /*
-            if (focusCurrent == null || focusCurrent.getClass() != EditText.class)
-                return;
-            */
-
-            if (!(focusCurrent instanceof CalculatorEditText)) {
-                return;
-            }
-
-            CalculatorEditText calculatorEditText = (CalculatorEditText) focusCurrent;
-            Editable editable = calculatorEditText.getText();
-            int start = calculatorEditText.getSelectionStart();
-            int end = calculatorEditText.getSelectionEnd();
-
-            // FIXME: use replace() down
-            // delete the selection, if chars are selected:
-            if (end > start)
-                editable.delete(start, end);
-
-            switch (primaryCode) {
-                case KEY_CODE_DECIMAL_SEPARATOR:
-                    editable.insert(start, LOCALE_DECIMAL_SEPARATOR);
-                    break;
-                case 42:
-                case 43:
-                case 45:
-                case 47:
-                case 48:
-                case 49:
-                case 50:
-                case 51:
-                case 52:
-                case 53:
-                case 54:
-                case 55:
-                case 56:
-                case 57:
-                    //editable.replace(start, end, Character.toString((char) primaryCode));
-                    // XXX: could be android:keyOutputText attribute used instead of this?
-                    editable.insert(start, Character.toString((char) primaryCode));
-                    break;
-                case -5:
-                    int deleteStart = start > 0 ? start - 1 : 0;
-                    editable.delete(deleteStart, end);
-                    break;
-                case 1003: // C[lear]
-                    editable.clear();
-                    break;
-                case 1001:
-                    calculatorEditText.evaluate();
-                    break;
-                case 1002:
-                    calculatorEditText.focusSearch(View.FOCUS_DOWN).requestFocus();
-                    hideCustomKeyboard();
-                    break;
-            }
-        }
-
-        @Override
-        public void onPress(int primaryCode) {
-            if (isHapticFeedbackEnabled() && primaryCode != 0)
-                mKeyboardView.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
-        }
-
-        @Override
-        public void onRelease(int primaryCode) {
-        }
-
-        @Override
-        public void onText(CharSequence text) {
-        }
-
-        @Override
-        public void swipeLeft() {
-        }
-
-        @Override
-        public void swipeRight() {
-        }
-
-        @Override
-        public void swipeDown() {
-        }
-
-        @Override
-        public void swipeUp() {
-        }
-    };
+    /**
+     * A link to the KeyboardView that is used to render this CalculatorKeyboard.
+     */
+    private final KeyboardView keyboardView;
+    private final Window window;
+    private final InputMethodManager inputMethodManager;
+    private final boolean isHapticFeedback;
 
     /**
      * Returns true if the haptic feedback is enabled.
      *
      * @return true if the haptic feedback is enabled in the system settings.
      */
-    private boolean isHapticFeedbackEnabled() {
-        int value = Settings.System.getInt(mKeyboardView.getContext().getContentResolver(),
-                Settings.System.HAPTIC_FEEDBACK_ENABLED, 0);
-        return value != 0;
+    private boolean isHapticFeedbackEnabled(@NonNull Context context) {
+        return Settings.System.getInt(context.getContentResolver(), Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) != 0;
     }
 
     /**
@@ -179,60 +99,184 @@ public class CalculatorKeyboard {
      * Note that the <var>host</var> activity must have a <var>KeyboardView</var> in its layout (typically aligned with the bottom of the activity).
      * Note that the keyboard layout xml file may include key codes for navigation; see the constants in this class for their values.
      *
-     * @param context Context within with the calculator is created
      * @param keyboardView KeyboardView in the layout
-     * @param keyboardLayoutResId The id of the xml file containing the keyboard layout.
      */
-    public CalculatorKeyboard(Context context, KeyboardView keyboardView, @XmlRes int keyboardLayoutResId) {
-        mContext = context;
-        mKeyboardView = keyboardView;
-        Keyboard keyboard = new Keyboard(mContext, keyboardLayoutResId);
+    public CalculatorKeyboard(@NonNull KeyboardView keyboardView) {
+        this.keyboardView = keyboardView;
+        Context context = keyboardView.getContext();
+        inputMethodManager = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        isHapticFeedback = isHapticFeedbackEnabled(context);
+        // Hide the standard keyboard initially
+        window = getActivity(keyboardView).getWindow();
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+
+        final DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance();
+        final String decimalSeparator = Character.toString(symbols.getDecimalSeparator());
+        final String minusSign = Character.toString(symbols.getMinusSign());
+        Keyboard keyboard = new Keyboard(context, R.xml.calculator_keyboard);
         for (Keyboard.Key key : keyboard.getKeys()) {
-            if (key.codes[0] == KEY_CODE_DECIMAL_SEPARATOR) {
-                key.label = LOCALE_DECIMAL_SEPARATOR;
-                break;
+            if (TextUtils.equals(KEY_LABEL_DECIMAL, key.label)) {
+                key.label = decimalSeparator;
+                key.text = decimalSeparator;
+            } else if (TextUtils.equals(KEY_LABEL_MINUS, key.label)) {
+                key.label = minusSign;
+                key.text = minusSign;
             }
         }
-        mKeyboardView.setKeyboard(keyboard);
-        mKeyboardView.setPreviewEnabled(false); // NOTE Do not show the preview balloons
-        mKeyboardView.setOnKeyboardActionListener(mOnKeyboardActionListener);
-        // Hide the standard keyboard initially
-        ((Activity) mContext).getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        keyboardView.setKeyboard(keyboard);
+        keyboardView.setPreviewEnabled(false); // NOTE Do not show the preview balloons
+
+        OnKeyboardActionListener keyboardActionListener = new OnKeyboardActionListener() {
+
+            @Override
+            public void onKey(int primaryCode, int[] keyCodes) {
+                View focusCurrent = window.getCurrentFocus();
+                if (focusCurrent == null) {
+                    return;
+                }
+                if (!(focusCurrent instanceof CalculatorEditText calculatorEditText)) {
+                    return;
+                }
+                Editable editable = calculatorEditText.getText();
+                if (editable == null) {
+                    return;
+                }
+
+                switch (primaryCode) {
+                    case KEY_CODE_DELETE:
+                        int start = Selection.getSelectionStart(editable);
+                        int end = Selection.getSelectionEnd(editable);
+                        editable.delete(Math.max(start - 1, 0), end);
+                        break;
+                    case KEY_CODE_CLEAR:
+                        editable.clear();
+                        break;
+                    case KEY_CODE_EVALUATE:
+                        calculatorEditText.evaluate();
+                        break;
+                }
+            }
+
+            @Override
+            public void onPress(int primaryCode) {
+                if (primaryCode != 0 && isHapticFeedback) {
+                    keyboardView.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+                }
+            }
+
+            @Override
+            public void onRelease(int primaryCode) {
+            }
+
+            @Override
+            public void onText(@Nullable CharSequence text) {
+                if (TextUtils.isEmpty(text)) {
+                    return;
+                }
+                View focusCurrent = window.getCurrentFocus();
+                if (focusCurrent == null) {
+                    return;
+                }
+                if (!(focusCurrent instanceof CalculatorEditText calculatorEditText)) {
+                    return;
+                }
+                Editable editable = calculatorEditText.getText();
+                if (editable == null) {
+                    return;
+                }
+
+                if (KEY_LABEL_EVALUATE.equals(text)) {
+                    calculatorEditText.evaluate();
+                    return;
+                }
+
+                int start = Selection.getSelectionStart(editable);
+                int end = Selection.getSelectionEnd(editable);
+                // delete the selection, if chars are selected:
+                if (end > start) {
+                    editable.delete(start, end);
+                }
+                editable.insert(start, text);
+            }
+
+            @Override
+            public void swipeLeft() {
+            }
+
+            @Override
+            public void swipeRight() {
+            }
+
+            @Override
+            public void swipeDown() {
+            }
+
+            @Override
+            public void swipeUp() {
+            }
+        };
+        keyboardView.setOnKeyboardActionListener(keyboardActionListener);
     }
 
-    /** Returns whether the CalculatorKeyboard is visible. */
+    /**
+     * Returns whether the CalculatorKeyboard is visible.
+     */
     public boolean isCustomKeyboardVisible() {
-        return mKeyboardView.getVisibility() == View.VISIBLE;
+        return keyboardView.getVisibility() == View.VISIBLE;
     }
 
-    /** Make the CalculatorKeyboard visible, and hide the system keyboard for view v. */
-    public void showCustomKeyboard(View v) {
-        if (v != null)
-            ((InputMethodManager) mContext.getSystemService(Activity.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(v.getWindowToken(), 0);
+    /**
+     * Make the CalculatorKeyboard visible, and hide the system keyboard for view v.
+     */
+    public void showCustomKeyboard(@Nullable View v) {
+        if (v != null) {
+            inputMethodManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
+        }
 
-        mKeyboardView.setVisibility(View.VISIBLE);
-        mKeyboardView.setEnabled(true);
+        keyboardView.setVisibility(View.VISIBLE);
+        keyboardView.setEnabled(true);
     }
 
-    /** Make the CalculatorKeyboard invisible. */
+    /**
+     * Make the CalculatorKeyboard invisible.
+     */
     public void hideCustomKeyboard() {
-        mKeyboardView.setVisibility(View.GONE);
-        mKeyboardView.setEnabled(false);
+        keyboardView.setVisibility(View.GONE);
+        keyboardView.setEnabled(false);
     }
 
     public boolean onBackPressed() {
         if (isCustomKeyboardVisible()) {
             hideCustomKeyboard();
             return true;
-        } else
-            return false;
+        }
+        return false;
     }
 
-    /**
-     * Returns the context of this keyboard
-     * @return Context
-     */
-    public Context getContext() {
-        return mContext;
+    @NonNull
+    public static InputFilter getFilter() {
+        final DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance();
+        final char decimalSeparator = symbols.getDecimalSeparator();
+        final char minusSign = symbols.getMinusSign();
+        final String accepted = ACCEPTED + decimalSeparator + minusSign;
+        return DigitsKeyListener.getInstance(accepted);
+    }
+
+    public static boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_ENTER) {
+            return true;
+        }
+        int primaryCode = event.getUnicodeChar();
+        return primaryCode == KEY_CODE_EVALUATE;
+    }
+
+    public static KeyboardView rebind(@NonNull ViewGroup parent, @NonNull KeyboardView keyboardView, @Nullable CalculatorEditText calculatorEditText) {
+        parent.removeView(keyboardView);
+        keyboardView = (KeyboardView) LayoutInflater.from(parent.getContext()).inflate(R.layout.kbd_calculator, parent, false);
+        parent.addView(keyboardView);
+        if (calculatorEditText != null) {
+            calculatorEditText.bindKeyboard(keyboardView);
+        }
+        return keyboardView;
     }
 }
