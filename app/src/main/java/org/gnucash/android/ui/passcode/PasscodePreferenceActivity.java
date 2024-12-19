@@ -18,71 +18,36 @@ package org.gnucash.android.ui.passcode;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.gnucash.android.R;
-import org.gnucash.android.ui.common.UxArgument;
 
 /**
  * Activity for entering and confirming passcode
  *
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
-public class PasscodePreferenceActivity extends AppCompatActivity
-        implements KeyboardFragment.OnPasscodeEnteredListener {
+public class PasscodePreferenceActivity extends AppCompatActivity {
 
-    private boolean mIsPassEnabled;
-    private boolean mReenter = false;
-    private String mPasscode;
-
-    private TextView mPassTextView;
+    public static final String DISABLE_PASSCODE = PasscodeModifyFragment.DISABLE_PASSCODE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.passcode_lockscreen);
 
-        mPassTextView = (TextView) findViewById(R.id.passcode_label);
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
 
-        mIsPassEnabled = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-                .getBoolean(UxArgument.ENABLED_PASSCODE, false);
+        Bundle args = new Bundle();
+        args.putAll((extras != null) ? extras : new Bundle());
+        PasscodeModifyFragment fragment = new PasscodeModifyFragment();
+        fragment.setArguments(args);
 
-        if (mIsPassEnabled) {
-            mPassTextView.setText(R.string.label_old_passcode);
-        }
+        getSupportFragmentManager()
+            .beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit();
     }
-
-    @Override
-    public void onPasscodeEntered(String pass) {
-        String passCode = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-                .getString(UxArgument.PASSCODE, "");
-
-        if (mIsPassEnabled) {
-            if (pass.equals(passCode)) {
-                mIsPassEnabled = false;
-                mPassTextView.setText(R.string.label_new_passcode);
-            } else {
-                Toast.makeText(this, R.string.toast_wrong_passcode, Toast.LENGTH_SHORT).show();
-            }
-            return;
-        }
-
-        if (mReenter) {
-            if (mPasscode.equals(pass)) {
-                setResult(RESULT_OK, new Intent().putExtra(UxArgument.PASSCODE, pass));
-                finish();
-            } else {
-                Toast.makeText(this, R.string.toast_invalid_passcode_confirmation, Toast.LENGTH_LONG).show();
-            }
-        } else {
-            mPasscode = pass;
-            mReenter = true;
-            mPassTextView.setText(R.string.label_confirm_passcode);
-        }
-    }
-
 }

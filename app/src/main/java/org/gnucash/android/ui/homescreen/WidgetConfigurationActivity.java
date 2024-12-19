@@ -34,7 +34,6 @@ import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 import androidx.cursoradapter.widget.SimpleCursorAdapter;
-import androidx.preference.PreferenceManager;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -51,6 +50,7 @@ import org.gnucash.android.receivers.TransactionAppWidgetProvider;
 import org.gnucash.android.ui.account.AccountsActivity;
 import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.ui.common.UxArgument;
+import org.gnucash.android.ui.passcode.PasscodeHelper;
 import org.gnucash.android.ui.settings.PreferenceActivity;
 import org.gnucash.android.ui.transaction.TransactionsActivity;
 import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
@@ -116,8 +116,7 @@ public class WidgetConfigurationActivity extends Activity {
         mAccountsCursorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mBinding.inputAccountsSpinner.setAdapter(mAccountsCursorAdapter);
 
-        boolean passcodeEnabled = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-                .getBoolean(UxArgument.ENABLED_PASSCODE, false);
+        boolean passcodeEnabled = PasscodeHelper.isPasscodeEnabled(this);
         mBinding.inputHideAccountBalance.setChecked(passcodeEnabled);
 
         bindListeners();

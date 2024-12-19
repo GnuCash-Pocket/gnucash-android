@@ -72,6 +72,7 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
         super.onCreate(savedInstanceState);
 
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        assert actionBar != null;
         actionBar.setTitle(R.string.title_account_preferences);
 
         List<Commodity> commodities = CommoditiesDbAdapter.getInstance().getAllRecords();

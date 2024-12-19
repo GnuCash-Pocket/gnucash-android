@@ -50,8 +50,7 @@ public class TransactionsPreferenceFragment extends PreferenceFragmentCompat imp
         getPreferenceManager().setSharedPreferencesName(GnuCashApplication.getActiveBookUID());
 
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        actionBar.setHomeButtonEnabled(true);
-        actionBar.setDisplayHomeAsUpEnabled(true);
+        assert actionBar != null;
         actionBar.setTitle(R.string.title_transaction_preferences);
     }
 

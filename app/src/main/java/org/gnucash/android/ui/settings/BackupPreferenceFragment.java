@@ -101,12 +101,10 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
         super.onCreate(savedInstanceState);
 
         ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-        actionBar.setHomeButtonEnabled(true);
-        actionBar.setDisplayHomeAsUpEnabled(true);
+        assert actionBar != null;
         actionBar.setTitle(R.string.title_backup_prefs);
 
         mGoogleApiClient = getGoogleApiClient(getActivity());
-
     }
 
     @Override
