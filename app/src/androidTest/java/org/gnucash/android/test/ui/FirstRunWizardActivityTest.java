@@ -90,7 +90,7 @@ public class FirstRunWizardActivityTest {
 
         onView(withId(R.id.btn_save)).perform(click());
 
-        onView(withText("EUR")).perform(click());
+        onView(withText("EUR (Euro)")).perform(click());
         onView(withText(R.string.btn_wizard_next)).perform(click());
         onView(withText(R.string.wizard_title_account_setup)).check(matches(isDisplayed()));
 
@@ -127,7 +127,7 @@ public class FirstRunWizardActivityTest {
 
 //        onData(allOf(is(instanceOf(String.class)), is("CHF")))
 //                .inAdapterView(withTagValue(is((Object)"currency_list_view"))).perform(click());
-        onView(withText("AFA - Afghani")).perform(click());
+        onView(withText("AFA (Afghani)")).perform(click());
         onView(withId(R.id.btn_save)).perform(click());
 
         onView(withText(R.string.wizard_option_let_me_handle_it)).perform(click());
