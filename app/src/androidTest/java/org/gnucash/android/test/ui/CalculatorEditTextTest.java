@@ -28,8 +28,6 @@ import static org.hamcrest.Matchers.is;
 
 import android.Manifest;
 import android.content.Intent;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
 import android.text.InputType;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -40,7 +38,6 @@ import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
@@ -58,8 +55,6 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import timber.log.Timber;
 
 // TODO: Find out how to press the keys in the KeyboardView.
 @RunWith(AndroidJUnit4.class)
