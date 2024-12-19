@@ -19,6 +19,7 @@ package org.gnucash.android.test.ui;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -140,7 +141,7 @@ public class PieChartReportTest {
         mTransactionsDbAdapter.deleteAllRecords();
         mReportsActivity = mActivityRule.getActivity();
         assertThat(mAccountsDbAdapter.getRecordsCount()).isGreaterThan(20); //lots of accounts in the default
-        onView(withId(R.id.btn_pie_chart)).perform(click());
+        onView(withId(R.id.btn_pie_chart)).check(matches(isDisplayed())).perform(click());
     }
 
     /**
