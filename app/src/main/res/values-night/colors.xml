@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="kbd_bg">#EE1F1F23</color>
+    <color name="kbd_key_action">#98B858</color>
+    <color name="kbd_key_clear">#67734E</color>
+    <color name="kbd_key_delete">#67734E</color>
+    <color name="kbd_key_digit">#343538</color>
+    <color name="kbd_key_op">#A5D6A7</color>
+</resources>
