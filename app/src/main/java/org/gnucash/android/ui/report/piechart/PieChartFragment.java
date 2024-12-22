@@ -19,17 +19,18 @@ package org.gnucash.android.ui.report.piechart;
 
 import static com.github.mikephil.charting.components.Legend.LegendForm;
 import static com.github.mikephil.charting.components.Legend.LegendPosition;
+import static org.gnucash.android.util.ColorExtKt.getTextColorPrimary;
 
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -40,16 +41,13 @@ import com.github.mikephil.charting.highlight.Highlight;
 
 import org.gnucash.android.R;
 import org.gnucash.android.databinding.FragmentPieChartBinding;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.ui.report.BaseReportFragment;
 import org.gnucash.android.ui.report.ReportType;
-import org.gnucash.android.ui.report.ReportsActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 
 /**
  * Activity used for drawing a pie chart
@@ -71,11 +69,7 @@ public class PieChartFragment extends BaseReportFragment {
      */
     private static final double GROUPING_SMALLER_SLICES_THRESHOLD = 5;
 
-    private AccountsDbAdapter mAccountsDbAdapter;
-
     private boolean mChartDataPresent = true;
-
-    private boolean mUseAccountColor = true;
 
     private boolean mGroupSmallerSlices = true;
 
@@ -85,11 +79,7 @@ public class PieChartFragment extends BaseReportFragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mUseAccountColor = PreferenceManager.getDefaultSharedPreferences(getActivity())
-                .getBoolean(getString(R.string.key_use_account_color), false);
-
-        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-
+        @ColorInt int textColorPrimary = getTextColor();
 
         mBinding.pieChart.setCenterTextSize(CENTER_TEXT_SIZE);
         mBinding.pieChart.setDescription("");
@@ -97,7 +87,9 @@ public class PieChartFragment extends BaseReportFragment {
         mBinding.pieChart.getLegend().setForm(LegendForm.CIRCLE);
         mBinding.pieChart.getLegend().setWordWrapEnabled(true);
         mBinding.pieChart.getLegend().setPosition(LegendPosition.RIGHT_OF_CHART_INSIDE);
-
+        mBinding.pieChart.getLegend().setTextColor(textColorPrimary);
+        mBinding.pieChart.setHoleColor(Color.TRANSPARENT);
+        mBinding.pieChart.setCenterTextColor(textColorPrimary);
     }
 
     @Override
@@ -162,9 +154,9 @@ public class PieChartFragment extends BaseReportFragment {
                     if (mUseAccountColor) {
                         color = (account.getColor() != Account.DEFAULT_COLOR)
                                 ? account.getColor()
-                                : ReportsActivity.COLORS[(dataSet.getEntryCount() - 1) % ReportsActivity.COLORS.length];
+                                : COLORS[(dataSet.getEntryCount() - 1) % COLORS.length];
                     } else {
-                        color = ReportsActivity.COLORS[(dataSet.getEntryCount() - 1) % ReportsActivity.COLORS.length];
+                        color = COLORS[(dataSet.getEntryCount() - 1) % COLORS.length];
                     }
                     colors.add(color);
                     labels.add(account.getName());
@@ -200,19 +192,21 @@ public class PieChartFragment extends BaseReportFragment {
         float tmp1;
         String tmp2;
         Integer tmp3;
-        for (int i = 0; i < values.size() - 1; i++) {
-            for (int j = 1; j < values.size() - i; j++) {
-                if (values.get(j - 1).getVal() > values.get(j).getVal()) {
-                    tmp1 = values.get(j - 1).getVal();
-                    values.get(j - 1).setVal(values.get(j).getVal());
+        final int size = values.size();
+        for (int i = 0; i < size - 1; i++) {
+            for (int j = 1; j < size - i; j++) {
+                int j1 = j - 1;
+                if (values.get(j1).getVal() > values.get(j).getVal()) {
+                    tmp1 = values.get(j1).getVal();
+                    values.get(j1).setVal(values.get(j).getVal());
                     values.get(j).setVal(tmp1);
 
-                    tmp2 = labels.get(j - 1);
-                    labels.set(j - 1, labels.get(j));
+                    tmp2 = labels.get(j1);
+                    labels.set(j1, labels.get(j));
                     labels.set(j, tmp2);
 
-                    tmp3 = colors.get(j - 1);
-                    colors.set(j - 1, colors.get(j));
+                    tmp3 = colors.get(j1);
+                    colors.set(j1, colors.get(j));
                     colors.set(j, tmp3);
                 }
             }
@@ -273,7 +267,8 @@ public class PieChartFragment extends BaseReportFragment {
      * @param context Context for retrieving resources
      * @return a {@code PieData} instance with combined smaller slices
      */
-    public static PieData groupSmallerSlices(PieData data, Context context) {
+    @NonNull
+    public static PieData groupSmallerSlices(@NonNull PieData data, Context context) {
         float otherSlice = 0f;
         List<Entry> newEntries = new ArrayList<>();
         List<String> newLabels = new ArrayList<>();
@@ -281,7 +276,7 @@ public class PieChartFragment extends BaseReportFragment {
         List<Entry> entries = getYVals(data.getDataSet());
         for (int i = 0; i < entries.size(); i++) {
             float val = entries.get(i).getVal();
-            if (val / data.getYValueSum() * 100 > GROUPING_SMALLER_SLICES_THRESHOLD) {
+            if ((val * 100) / data.getYValueSum() > GROUPING_SMALLER_SLICES_THRESHOLD) {
                 newEntries.add(new Entry(val, newEntries.size()));
                 newLabels.add(data.getXVals().get(i));
                 newColors.add(data.getDataSet().getColors().get(i));
@@ -292,14 +287,17 @@ public class PieChartFragment extends BaseReportFragment {
 
         if (otherSlice > 0) {
             newEntries.add(new Entry(otherSlice, newEntries.size()));
-            newLabels.add(context.getResources().getString(R.string.label_other_slice));
+            newLabels.add(context.getString(R.string.label_other_slice));
             newColors.add(Color.LTGRAY);
         }
 
         PieDataSet dataSet = new PieDataSet(newEntries, "");
         dataSet.setSliceSpace(SPACE_BETWEEN_SLICES);
         dataSet.setColors(newColors);
-        return new PieData(newLabels, dataSet);
+
+        PieData dataSmaller = new PieData(newLabels, dataSet);
+        dataSmaller.setValueTextColor(getTextColorPrimary(context));
+        return dataSmaller;
     }
 
     @Override

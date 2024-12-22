@@ -40,7 +40,6 @@ import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.report.BaseReportFragment;
 import org.gnucash.android.ui.report.ReportType;
-import org.gnucash.android.ui.transaction.TransactionsActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +51,6 @@ import java.util.List;
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class BalanceSheetFragment extends BaseReportFragment {
-    AccountsDbAdapter mAccountsDbAdapter = AccountsDbAdapter.getInstance();
 
     private Money mAssetsBalance;
     private Money mLiabilitiesBalance;

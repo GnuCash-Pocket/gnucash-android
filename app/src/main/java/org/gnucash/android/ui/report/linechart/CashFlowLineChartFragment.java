@@ -19,6 +19,7 @@ package org.gnucash.android.ui.report.linechart;
 
 import static org.gnucash.android.util.ColorExtKt.parseColor;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -26,6 +27,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 
 import com.github.mikephil.charting.components.Legend;
@@ -70,7 +72,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     private static final String X_AXIS_PATTERN = "MMM YY";
     private static final int ANIMATION_DURATION = 3000;
     private static final int NO_DATA_BAR_COUNTS = 5;
-    private static final int[] COLORS = {
+    private static final int[] LINE_COLORS = {
             parseColor("#68F1AF"), parseColor("#cc1f09"), parseColor("#EE8600"),
             parseColor("#1469EB"), parseColor("#B304AD"),
     };
@@ -79,7 +81,6 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
             parseColor("#0065FF"), parseColor("#8F038A"),
     };
 
-    private AccountsDbAdapter mAccountsDbAdapter = AccountsDbAdapter.getInstance();
     private Map<AccountType, Long> mEarliestTimestampsMap = new HashMap<>();
     private Map<AccountType, Long> mLatestTimestampsMap = new HashMap<>();
     private long mEarliestTransactionTimestamp;
@@ -97,19 +98,22 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        @ColorInt int textColorPrimary = getTextColor();
 
         mBinding.lineChart.setOnChartValueSelectedListener(this);
         mBinding.lineChart.setDescription("");
         mBinding.lineChart.getXAxis().setDrawGridLines(false);
+        mBinding.lineChart.getXAxis().setTextColor(textColorPrimary);
         mBinding.lineChart.getAxisRight().setEnabled(false);
         mBinding.lineChart.getAxisLeft().enableGridDashedLine(4.0f, 4.0f, 0);
         mBinding.lineChart.getAxisLeft().setValueFormatter(new LargeValueFormatter(mCommodity.getSymbol()));
+        mBinding.lineChart.getAxisLeft().setTextColor(textColorPrimary);
 
         Legend legend = mBinding.lineChart.getLegend();
         legend.setPosition(Legend.LegendPosition.BELOW_CHART_CENTER);
         legend.setTextSize(16);
         legend.setForm(Legend.LegendForm.CIRCLE);
-
+        legend.setTextColor(textColorPrimary);
     }
 
     @Override
@@ -167,7 +171,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
             LineDataSet set = new LineDataSet(getEntryList(accountType), accountType.toString());
             set.setDrawFilled(true);
             set.setLineWidth(2);
-            set.setColor(COLORS[dataSets.size()]);
+            set.setColor(LINE_COLORS[dataSets.size()]);
             set.setFillColor(FILL_COLORS[dataSets.size()]);
 
             dataSets.add(set);
@@ -178,6 +182,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
             mChartDataPresent = false;
             return getEmptyData();
         }
+        lineData.setValueTextColor(getTextColor());
         return lineData;
     }
 
@@ -189,9 +194,11 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     private LineData getEmptyData() {
         List<String> xValues = new ArrayList<>();
         List<Entry> yValues = new ArrayList<>();
+        boolean isEven = true;
         for (int i = 0; i < NO_DATA_BAR_COUNTS; i++) {
             xValues.add("");
-            yValues.add(new Entry(i % 2 == 0 ? 5f : 4.5f, i));
+            yValues.add(new Entry(isEven ? 5f : 4.5f, i));
+            isEven = !isEven;
         }
         LineDataSet set = new LineDataSet(yValues, getResources().getString(R.string.label_chart_no_data));
         set.setDrawFilled(true);

@@ -1,9 +1,12 @@
 package org.gnucash.android.util
 
 import android.annotation.TargetApi
+import android.content.Context
 import android.graphics.Color
 import android.os.Build
+import android.util.TypedValue
 import androidx.annotation.ColorInt
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import kotlin.math.max
 import kotlin.math.min
@@ -263,3 +266,13 @@ fun Color.formatHexRGB(): String = String.format(
     (green() * 255.0f + 0.5f).toInt(),
     (blue() * 255.0f + 0.5f).toInt()
 )
+
+@get:ColorInt
+val Context.textColorPrimary: Int get() {
+    val typedValue  = TypedValue()
+    theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
+    // resourceId is used if it's a ColorStateList, and data if it's a color reference or a hex color
+    val colorRes = if (typedValue.resourceId != 0) typedValue.resourceId else typedValue.data
+    return ContextCompat.getColor(this, colorRes)
+}
+

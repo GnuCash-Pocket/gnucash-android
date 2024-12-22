@@ -17,10 +17,7 @@
 
 package org.gnucash.android.ui.report.barchart;
 
-import static org.gnucash.android.ui.report.ReportsActivity.COLORS;
-
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -42,7 +40,6 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 
 import org.gnucash.android.R;
 import org.gnucash.android.databinding.FragmentBarChartBinding;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
@@ -75,9 +72,6 @@ public class StackedBarChartFragment extends BaseReportFragment {
     private static final int ANIMATION_DURATION = 2000;
     private static final int NO_DATA_BAR_COUNTS = 3;
 
-    private AccountsDbAdapter mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-
-    private boolean mUseAccountColor = true;
     private boolean mTotalPercentageMode = true;
     private boolean mChartDataPresent = true;
 
@@ -98,22 +92,23 @@ public class StackedBarChartFragment extends BaseReportFragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mUseAccountColor = PreferenceManager.getDefaultSharedPreferences(getActivity())
-                .getBoolean(getString(R.string.key_use_account_color), false);
+        @ColorInt int textColorPrimary = getTextColor();
 
         mBinding.barChart.setOnChartValueSelectedListener(this);
         mBinding.barChart.setDescription("");
 //        mChart.setDrawValuesForWholeStack(false);
         mBinding.barChart.getXAxis().setDrawGridLines(false);
+        mBinding.barChart.getXAxis().setTextColor(textColorPrimary);
         mBinding.barChart.getAxisRight().setEnabled(false);
         mBinding.barChart.getAxisLeft().setStartAtZero(false);
         mBinding.barChart.getAxisLeft().enableGridDashedLine(4.0f, 4.0f, 0);
         mBinding.barChart.getAxisLeft().setValueFormatter(new LargeValueFormatter(mCommodity.getSymbol()));
+        mBinding.barChart.getAxisLeft().setTextColor(textColorPrimary);
         Legend chartLegend = mBinding.barChart.getLegend();
         chartLegend.setForm(Legend.LegendForm.CIRCLE);
         chartLegend.setPosition(Legend.LegendPosition.BELOW_CHART_CENTER);
         chartLegend.setWordWrapEnabled(true);
-
+        chartLegend.setTextColor(textColorPrimary);
     }
 
 
@@ -184,7 +179,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
                         labels.add(accountName);
 
                         if (!accountToColorMap.containsKey(account.getUID())) {
-                            Integer color;
+                            @ColorInt int color;
                             if (mUseAccountColor) {
                                 color = (account.getColor() != Account.DEFAULT_COLOR)
                                         ? account.getColor()
@@ -284,13 +279,13 @@ public class StackedBarChartFragment extends BaseReportFragment {
      * @return a float array
      */
     private float[] floatListToArray(List<Float> list) {
-        float array[] = new float[list.size()];
-        for (int i = 0; i < list.size(); i++) {
+        final int size = list.size();
+        float[] array = new float[size];
+        for (int i = 0; i < size; i++) {
             array[i] = list.get(i);
         }
         return array;
     }
-
 
     @Override
     public void generateReport() {
@@ -389,6 +384,6 @@ public class StackedBarChartFragment extends BaseReportFragment {
         } else {
             sum = entry.getNegativeSum() + entry.getPositiveSum();
         }
-        mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label.trim(), value, value / sum * 100));
+        mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label.trim(), value, (value * 100) / sum));
     }
 }

@@ -127,7 +127,7 @@ public class ColorPickerPalette extends TableLayout {
      * to the beginning of a row for odd-numbered rows.
      */
     private void addSwatchToRow(TableRow row, View swatch, int rowNumber) {
-        if (rowNumber % 2 == 0) {
+        if ((rowNumber & 1) == 0) {
             row.addView(swatch);
         } else {
             row.addView(swatch, 0);
@@ -143,7 +143,7 @@ public class ColorPickerPalette extends TableLayout {
     private void setSwatchDescription(int rowNumber, int index, int rowElements, boolean selected,
                                       View swatch) {
         int accessibilityIndex;
-        if (rowNumber % 2 == 0) {
+        if ((rowNumber & 1) == 0) {
             // We're in a regular-ordered row
             accessibilityIndex = index;
         } else {

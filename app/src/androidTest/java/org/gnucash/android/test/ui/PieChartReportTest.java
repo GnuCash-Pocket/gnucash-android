@@ -194,7 +194,7 @@ public class PieChartReportTest {
         refreshReport();
 
         onView(withId(R.id.pie_chart)).perform(clickXY(Position.BEGIN, Position.MIDDLE));
-        float percent = (float) (TRANSACTION_AMOUNT / (TRANSACTION_AMOUNT + TRANSACTION2_AMOUNT) * 100);
+        float percent = (float) ((TRANSACTION_AMOUNT * 100) / (TRANSACTION_AMOUNT + TRANSACTION2_AMOUNT));
         String selectedText = String.format(Locale.US, BaseReportFragment.SELECTED_VALUE_PATTERN, DINING_EXPENSE_ACCOUNT_NAME, TRANSACTION_AMOUNT, percent);
         onView(withId(R.id.selected_chart_slice)).check(matches(withText(selectedText)));
     }

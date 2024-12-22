@@ -17,7 +17,6 @@
 
 package org.gnucash.android.ui.report;
 
-import static org.gnucash.android.util.ColorExtKt.parseColor;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
@@ -66,15 +65,6 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
     DatePickerDialog.OnDateSetListener, DateRangePickerDialogFragment.OnDateRangeSetListener,
     Refreshable {
 
-    public static final int[] COLORS = {
-        parseColor("#17ee4e"), parseColor("#cc1f09"), parseColor("#3940f7"),
-        parseColor("#f9cd04"), parseColor("#5f33a8"), parseColor("#e005b6"),
-        parseColor("#17d6ed"), parseColor("#e4a9a2"), parseColor("#8fe6cd"),
-        parseColor("#8b48fb"), parseColor("#343a36"), parseColor("#6decb1"),
-        parseColor("#f0f8ff"), parseColor("#5c3378"), parseColor("#a6dcfd"),
-        parseColor("#ba037c"), parseColor("#708809"), parseColor("#32072c"),
-        parseColor("#fddef8"), parseColor("#fa0e6e"), parseColor("#d9e7b5")
-    };
     private static final String STATE_REPORT_TYPE = "STATE_REPORT_TYPE";
 
     private TransactionsDbAdapter mTransactionsDbAdapter;
