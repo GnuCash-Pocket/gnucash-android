@@ -162,7 +162,7 @@
             android:layout_width="wrap_content"
             android:layout_height="@dimen/kbd_key_height"
             android:contentDescription="@string/number_delete"
-            android:src="@drawable/ic_backspace_black" />
+            android:src="@drawable/ic_backspace" />
 
         <Button
             android:id="@+id/key_equals"
