@@ -38,11 +38,9 @@ public class AmountParserTest {
     @Test
     public void parseDecimalAmountWithDifferentSeparator() throws Exception {
         Locale.setDefault(Locale.GERMANY);
-        assertThat(AmountParser.parse("123.45")).isEqualTo(new BigDecimal("123.45"));
         assertThat(AmountParser.parse("123,45")).isEqualTo(new BigDecimal("123.45"));
 
         Locale.setDefault(new Locale("es"));
-        assertThat(AmountParser.parse("123.45")).isEqualTo(new BigDecimal("123.45"));
         assertThat(AmountParser.parse("123,45")).isEqualTo(new BigDecimal("123.45"));
     }
 

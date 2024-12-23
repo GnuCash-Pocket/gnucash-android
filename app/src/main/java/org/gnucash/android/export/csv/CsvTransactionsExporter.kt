@@ -70,7 +70,7 @@ class CsvTransactionsExporter(
     @Throws(IOException::class)
     private fun writeSplitsToCsv(splits: List<Split>, fields: Array<String?>, writer: ICSVWriter) {
         for (split in splits) {
-            fields[8] = split.memo
+            fields[8] = maybeNull(split.memo)
             val accountUID = split.accountUID!!
             val account = accountCache.getOrPut(accountUID) {
                 mAccountsDbAdapter.getSimpleRecord(accountUID)
@@ -120,7 +120,7 @@ class CsvTransactionsExporter(
                 fields[1] = transaction.uID
                 fields[2] = null  // Transaction number
                 fields[3] = transaction.description
-                fields[4] = transaction.note
+                fields[4] = maybeNull(transaction.note)
                 fields[5] = "${commodity.namespace}::${commodity.currencyCode}"
                 fields[6] = null  // Void Reason
                 fields[7] = null  // Action
@@ -131,5 +131,10 @@ class CsvTransactionsExporter(
         } catch (e: Exception) {
             throw ExporterException(mExportParams, e)
         }
+    }
+
+    private fun maybeNull(s: String?): String? {
+        if (s.isNullOrEmpty()) return null
+        return s
     }
 }
