@@ -114,7 +114,9 @@ public class GnuCashApplication extends Application {
         final Context context = getApplicationContext();
         GnuCashApplication.context = context;
 
-        FirebaseApp.initializeApp(this);
+        if (BuildConfig.GOOGLE_GCM) {
+            FirebaseApp.initializeApp(this);
+        }
 
         // Logging
         Timber.Tree tree = (Timber.Tree) (isCrashlyticsEnabled() ? new CrashlyticsTree(BuildConfig.DEBUG) : new LogTree(BuildConfig.DEBUG));
@@ -331,7 +333,8 @@ public class GnuCashApplication extends Application {
      * @return {@code true} if crashlytics is enabled, {@code false} otherwise
      */
     public static boolean isCrashlyticsEnabled() {
-        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(context.getString(R.string.key_enable_crashlytics), false);
+        return BuildConfig.GOOGLE_GCM && PreferenceManager.getDefaultSharedPreferences(context)
+            .getBoolean(context.getString(R.string.key_enable_crashlytics), false);
     }
 
     /**

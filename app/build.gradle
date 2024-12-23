@@ -100,6 +100,7 @@ android {
             buildConfigField "String", "DROPBOX_APP_KEY", "\"dhjh8ke9wf05948\""
             manifestPlaceholders.dropbox_app_key = "db-dhjh8ke9wf05948"
 
+            buildConfigField "boolean", "GOOGLE_GCM", "false"
             ext.useGoogleGcm = false
         }
 
@@ -116,6 +117,7 @@ android {
                 manifestPlaceholders.dropbox_app_key = "db-dhjh8ke9wf05948"
             }
 
+            buildConfigField "boolean", "GOOGLE_GCM", "true"
             ext.useGoogleGcm = true
         }
 
@@ -131,6 +133,7 @@ android {
                 manifestPlaceholders.dropbox_app_key = "db-dhjh8ke9wf05948"
             }
 
+            buildConfigField "boolean", "GOOGLE_GCM", "true"
             ext.useGoogleGcm = true
         }
     }
