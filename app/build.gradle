@@ -20,7 +20,6 @@ static def gitSha() {
     return 'git rev-parse --short HEAD'.execute().text.trim()
 }
 
-
 android {
     compileSdk = 34
     defaultConfig {
@@ -92,13 +91,16 @@ android {
 
     productFlavors {
         development {
+            isDefault = true
             applicationIdSuffix '.devel'
             versionName "${versionMajor}.${versionMinor}.${versionPatch}-dev${versionBuild}_r${gitSha()}"
-            resValue "string", "app_name", "GnuCash-devel"
+            resValue "string", "app_name", "GnuCash - devel"
             resValue "string", "app_version_name", "${versionName}"
 
             buildConfigField "String", "DROPBOX_APP_KEY", "\"dhjh8ke9wf05948\""
             manifestPlaceholders.dropbox_app_key = "db-dhjh8ke9wf05948"
+
+            ext.useGoogleGcm = false
         }
 
         beta {
@@ -113,6 +115,8 @@ android {
                 buildConfigField "String", "DROPBOX_APP_KEY", "\"dhjh8ke9wf05948\""
                 manifestPlaceholders.dropbox_app_key = "db-dhjh8ke9wf05948"
             }
+
+            ext.useGoogleGcm = true
         }
 
         production {
@@ -126,6 +130,8 @@ android {
                 buildConfigField "String", "DROPBOX_APP_KEY", "\"dhjh8ke9wf05948\""
                 manifestPlaceholders.dropbox_app_key = "db-dhjh8ke9wf05948"
             }
+
+            ext.useGoogleGcm = true
         }
     }
 
@@ -189,7 +195,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-drive:17.0.0'
 
     // Logging
-    implementation 'com.google.firebase:firebase-crashlytics:19.2.1'
+    implementation 'com.google.firebase:firebase-crashlytics:19.3.0'
     implementation "com.jakewharton.timber:timber:5.0.1"
 
     implementation 'com.github.nextcloud:android-library:1.0.31'
@@ -229,4 +235,16 @@ dependencies {
     androidTestImplementation 'org.assertj:assertj-core:3.26.3'
 
     androidTestImplementation 'com.squareup.spoon:spoon-client:1.7.1'
+}
+
+// Disable Google Services plugin for some flavors.
+afterEvaluate {
+    android.productFlavors.each { flavor ->
+        def flavorName = flavor.name.capitalize()
+        tasks.matching { task ->
+            task.name.contains("GoogleServices") && task.name.contains(flavorName)
+        }.forEach { task ->
+            task.enabled = flavor.ext.useGoogleGcm
+        }
+    }
 }
