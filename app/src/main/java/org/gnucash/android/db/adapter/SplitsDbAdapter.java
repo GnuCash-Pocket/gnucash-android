@@ -109,9 +109,9 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
         stmt.bindLong(4, split.getValue().getDenominator());
         stmt.bindLong(5, split.getQuantity().getNumerator());
         stmt.bindLong(6, split.getQuantity().getDenominator());
-        stmt.bindString(7, split.getCreatedTimestamp().toString());
+        stmt.bindString(7, TimestampHelper.getUtcStringFromTimestamp(split.getCreatedTimestamp()));
         stmt.bindString(8, String.valueOf(split.getReconcileState()));
-        stmt.bindString(9, split.getReconcileDate().toString());
+        stmt.bindString(9, TimestampHelper.getUtcStringFromTimestamp(split.getReconcileDate()));
         stmt.bindString(10, split.getAccountUID());
         stmt.bindString(11, split.getTransactionUID());
         stmt.bindString(12, split.getUID());

@@ -28,6 +28,7 @@ import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.model.Recurrence;
 import org.gnucash.android.model.ScheduledAction;
+import org.gnucash.android.util.TimestampHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -135,20 +136,19 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
         stmt.bindLong(4, schedxAction.getEndTime());
         stmt.bindLong(5, schedxAction.getLastRunTime());
         stmt.bindLong(6, schedxAction.isEnabled() ? 1 : 0);
-        stmt.bindString(7, schedxAction.getCreatedTimestamp().toString());
+        stmt.bindString(7, TimestampHelper.getUtcStringFromTimestamp(schedxAction.getCreatedTimestamp()));
         if (schedxAction.getTag() == null)
             stmt.bindNull(8);
         else
             stmt.bindString(8, schedxAction.getTag());
-        stmt.bindString(9, Integer.toString(schedxAction.getTotalPlannedExecutionCount()));
+        stmt.bindLong(9, schedxAction.getTotalPlannedExecutionCount());
         stmt.bindString(10, schedxAction.getRecurrence().getUID());
         stmt.bindLong(11, schedxAction.shouldAutoCreate() ? 1 : 0);
         stmt.bindLong(12, schedxAction.shouldAutoNotify() ? 1 : 0);
         stmt.bindLong(13, schedxAction.getAdvanceCreateDays());
         stmt.bindLong(14, schedxAction.getAdvanceNotifyDays());
         stmt.bindString(15, schedxAction.getTemplateAccountUID());
-
-        stmt.bindString(16, Integer.toString(schedxAction.getExecutionCount()));
+        stmt.bindLong(16, schedxAction.getExecutionCount());
         stmt.bindString(17, schedxAction.getUID());
         return stmt;
     }
