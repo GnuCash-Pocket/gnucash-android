@@ -156,9 +156,14 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
     private void createAccountsAndFinish(@NonNull String accountOption, String currencyCode) {
         if (accountOption.equals(mWizardModel.optionAccountDefault)) {
             //save the UID of the active book, and then delete it after successful import
-            String bookUID = GnuCashApplication.getActiveBookUID();
-            AccountsActivity.createDefaultAccounts(currencyCode, FirstRunWizardActivity.this);
-            BooksDbAdapter.getInstance().deleteBook(bookUID); //a default book is usually created
+            final String bookUID = GnuCashApplication.getActiveBookUID();
+            TaskDelegate callbackAfterImport = (bookUID != null) ? new TaskDelegate() {
+                @Override
+                public void onTaskComplete() {
+                    BooksDbAdapter.getInstance().deleteBook(bookUID);
+                }
+            } : null;
+            AccountsActivity.createDefaultAccounts(currencyCode, FirstRunWizardActivity.this, callbackAfterImport);
             finish();
         } else if (accountOption.equals(mWizardModel.optionAccountImport)) {
             AccountsActivity.startXmlFileChooser(this);

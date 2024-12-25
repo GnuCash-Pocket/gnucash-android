@@ -31,6 +31,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -39,6 +40,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.collection.LongSparseArray;
 import androidx.fragment.app.Fragment;
@@ -459,14 +461,29 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
      * @param currencyCode Currency code to assign to the imported accounts
      * @param activity     Activity for providing context and displaying dialogs
      */
-    public static void createDefaultAccounts(final String currencyCode, final Activity activity) {
-        TaskDelegate delegate = null;
-        if (currencyCode != null) {
+    public static void createDefaultAccounts(@NonNull final String currencyCode, @NonNull final Activity activity) {
+        createDefaultAccounts(currencyCode, activity, null);
+    }
+
+    /**
+     * Creates default accounts with the specified currency code.
+     * If the currency parameter is null, then locale currency will be used if available
+     *
+     * @param currencyCode Currency code to assign to the imported accounts
+     * @param activity     Activity for providing context and displaying dialogs
+     * @param callback     The callback to call when the book has been imported.
+     */
+    public static void createDefaultAccounts(@NonNull final String currencyCode, @NonNull final Activity activity, @Nullable final TaskDelegate callback) {
+        TaskDelegate delegate = callback;
+        if (!TextUtils.isEmpty(currencyCode)) {
             delegate = new TaskDelegate() {
                 @Override
                 public void onTaskComplete() {
                     AccountsDbAdapter.getInstance().updateAllAccounts(DatabaseSchema.AccountEntry.COLUMN_CURRENCY, currencyCode);
                     GnuCashApplication.setDefaultCurrencyCode(activity, currencyCode);
+                    if (callback != null) {
+                        callback.onTaskComplete();
+                    }
                 }
             };
         }
