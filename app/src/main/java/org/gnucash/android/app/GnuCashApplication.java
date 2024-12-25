@@ -15,6 +15,7 @@
  */
 package org.gnucash.android.app;
 
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -67,6 +68,7 @@ public class GnuCashApplication extends Application {
      */
     public static final String FILE_PROVIDER_AUTHORITY = BuildConfig.APPLICATION_ID + ".fileprovider";
 
+    @SuppressLint("StaticFieldLeak")
     private static Context context;
     @Nullable
     private static AccountsDbAdapter mAccountsDbAdapter;
@@ -134,21 +136,24 @@ public class GnuCashApplication extends Application {
      *
      * @param context the context.
      */
-    public static void initializeDatabaseAdapters(Context context) {
+    public static void initializeDatabaseAdapters(@NonNull Context context) {
         BookDbHelper bookDbHelper = new BookDbHelper(context);
-        mBooksDbAdapter = new BooksDbAdapter(bookDbHelper.getWritableDatabase());
+        SQLiteDatabase db = bookDbHelper.getWritableDatabase();
+        mBooksDbAdapter = new BooksDbAdapter(db);
 
         if (mDbHelper != null) { //close if open
             mDbHelper.getReadableDatabase().close();
         }
 
-        String bookUID = null;
+        String bookUID;
         try {
             bookUID = mBooksDbAdapter.getActiveBookUID();
         } catch (BooksDbAdapter.NoActiveBookFoundException e) {
-            mBooksDbAdapter.fixBooksDatabase();
+            bookUID = mBooksDbAdapter.fixBooksDatabase();
         }
-        if (TextUtils.isEmpty(bookUID)) return;
+        if (TextUtils.isEmpty(bookUID)) {
+            bookUID = bookDbHelper.insertBlankBook(db).getUID();
+        }
         mDbHelper = new DatabaseHelper(context, bookUID);
         SQLiteDatabase mainDb;
         try {

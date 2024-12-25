@@ -25,6 +25,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.gnucash.android.R;
@@ -203,14 +204,19 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
 
     /**
      * Tries to fix the books database.
+     * @return the active book UID.
      */
-    public void fixBooksDatabase() {
+    @Nullable
+    public String fixBooksDatabase() {
         Timber.v("Looking for books to set as active...");
         if (getRecordsCount() <= 0) {
             Timber.w("No books found in the database. Recovering books records...");
             recoverBookRecords();
+            if (getRecordsCount() <= 0) {
+                return null;
+            }
         }
-        setFirstBookAsActive();
+        return setFirstBookAsActive();
     }
 
     /**
@@ -244,17 +250,21 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
 
     /**
      * Sets the first book in the database as active.
+     *
+     * @return the book UID.
      */
-    private void setFirstBookAsActive() {
+    @Nullable
+    private String setFirstBookAsActive() {
         List<Book> books = getAllRecords();
         if (books.isEmpty()) {
             Timber.w("No books.");
-            return;
+            return null;
         }
         Book firstBook = books.get(0);
         firstBook.setActive(true);
         addRecord(firstBook);
         Timber.i("Book " + firstBook.getUID() + " set as active.");
+        return firstBook.getUID();
     }
 
     /**

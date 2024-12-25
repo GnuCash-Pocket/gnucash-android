@@ -70,7 +70,6 @@ import org.gnucash.android.ui.transaction.TransactionsActivity;
 import org.gnucash.android.ui.util.TaskDelegate;
 import org.gnucash.android.ui.wizard.FirstRunWizardActivity;
 import org.gnucash.android.util.BackupManager;
-import org.gnucash.android.util.ContentExtKt;
 
 import timber.log.Timber;
 
@@ -352,25 +351,26 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
      * <p>Also handles displaying the What's New dialog</p>
      */
     private void init() {
-        PreferenceManager.setDefaultValues(this, GnuCashApplication.getActiveBookUID(),
+        final Context context = this;
+        PreferenceManager.setDefaultValues(context, GnuCashApplication.getActiveBookUID(),
             Context.MODE_PRIVATE, R.xml.fragment_transaction_preferences, true);
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean firstRun = prefs.getBoolean(getString(R.string.key_first_run), true);
 
         if (firstRun) {
             //default to using double entry and save the preference explicitly
             prefs.edit().putBoolean(getString(R.string.key_use_double_entry), true).apply();
 
-            startActivity(new Intent(GnuCashApplication.getAppContext(), FirstRunWizardActivity.class));
+            startActivity(new Intent(context, FirstRunWizardActivity.class));
             finish();
             return;
         }
 
         if (hasNewFeatures()) {
-            showWhatsNewDialog(this);
+            showWhatsNewDialog(context);
         }
-        ScheduledActionService.schedulePeriodic(this);
+        ScheduledActionService.schedulePeriodic(context);
     }
 
     @Override
