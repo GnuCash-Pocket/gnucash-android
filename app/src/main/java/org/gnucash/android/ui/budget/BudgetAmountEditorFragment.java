@@ -263,7 +263,7 @@ public class BudgetAmountEditorFragment extends Fragment {
             itemView = binding.getRoot();
             itemView.setTag(this);
 
-            amountEditText.bindKeyboard(mBinding.calculatorKeyboard.calculatorKeyboard);
+            amountEditText.bindKeyboard(mBinding.calculatorKeyboard);
             budgetAccountSpinner.setAdapter(mAccountCursorAdapter);
 
             budgetAccountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {

@@ -105,7 +105,6 @@ public class CalculatorKeyboard {
         isHapticFeedback = isHapticFeedbackEnabled(context);
         // Hide the standard keyboard initially
         window = getActivity(keyboardView).getWindow();
-        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         OnKeyboardActionListener keyboardActionListener = new OnKeyboardActionListener() {
 
@@ -202,11 +201,14 @@ public class CalculatorKeyboard {
     }
 
     /**
-     * Make the CalculatorKeyboard visible, and hide the system keyboard for view v.
+     * Make the CalculatorKeyboard visible, and hide the system keyboard for view.
+     *
+     * @param view The view that wants to show the keyboard.
      */
-    public void showCustomKeyboard(@Nullable View v) {
-        if (v != null) {
-            inputMethodManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
+    public void showCustomKeyboard(@Nullable View view) {
+        if (view != null) {
+            inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         }
 
         keyboardView.setVisibility(View.VISIBLE);

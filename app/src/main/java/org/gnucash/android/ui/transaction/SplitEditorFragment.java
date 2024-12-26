@@ -273,7 +273,7 @@ public class SplitEditorFragment extends Fragment {
             this.splitUidTextView = binding.splitUid;
             this.splitTypeSwitch = binding.btnSplitType;
 
-            splitAmountEditText.bindKeyboard(mBinding.calculatorKeyboard.calculatorKeyboard);
+            splitAmountEditText.bindKeyboard(mBinding.calculatorKeyboard);
 
             removeSplitButton.setOnClickListener(new View.OnClickListener() {
                 @Override

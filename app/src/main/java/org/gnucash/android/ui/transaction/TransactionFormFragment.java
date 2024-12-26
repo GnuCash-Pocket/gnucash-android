@@ -76,7 +76,6 @@ import org.gnucash.android.model.TransactionType;
 import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity;
-import org.gnucash.android.ui.settings.PreferenceActivity;
 import org.gnucash.android.ui.transaction.dialog.TransferFundsDialogFragment;
 import org.gnucash.android.ui.util.RecurrenceParser;
 import org.gnucash.android.ui.util.RecurrenceViewClickListener;
@@ -235,7 +234,7 @@ public class TransactionFormFragment extends Fragment implements
         Money amount = new Money(enteredAmount, fromCommodity).abs();
 
         //if both accounts have same currency
-        Cursor cursor = (Cursor)mBinding.inputTransferAccountSpinner.getSelectedItem();
+        Cursor cursor = (Cursor) mBinding.inputTransferAccountSpinner.getSelectedItem();
         String targetCurrencyCode = cursor.getString(cursor.getColumnIndex(DatabaseSchema.AccountEntry.COLUMN_CURRENCY));
         if (fromCurrencyCode.equals(targetCurrencyCode)) {
             transferComplete(amount, amount);
@@ -506,7 +505,7 @@ public class TransactionFormFragment extends Fragment implements
         Commodity commodity = Commodity.getInstance(code);
         mBinding.currencySymbol.setText(commodity.getSymbol());
         mBinding.inputTransactionAmount.setCommodity(commodity);
-        mBinding.inputTransactionAmount.bindKeyboard(mBinding.calculatorKeyboard.calculatorKeyboard);
+        mBinding.inputTransactionAmount.bindKeyboard(mBinding.calculatorKeyboard);
 
         if (mUseDoubleEntry) {
             String currentAccountUID = mAccountUID;
@@ -958,7 +957,7 @@ public class TransactionFormFragment extends Fragment implements
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         //hide the keyboard if it is visible
         InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(mBinding.inputTransactionName.getApplicationWindowToken(), 0);
+        imm.hideSoftInputFromWindow(mBinding.inputTransactionName.getWindowToken(), 0);
 
         switch (item.getItemId()) {
             case android.R.id.home:

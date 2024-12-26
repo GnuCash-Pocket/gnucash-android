@@ -199,8 +199,6 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
                 fragment = createFragment(position);
                 holder.bind(fragment, fragmentManager);
                 fragments.put(itemId, fragment);
-            } else {
-                System.out.println("~!@ fragment=" + fragment);
             }
         }
 

@@ -37,6 +37,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatEditText;
 
 import org.gnucash.android.R;
+import org.gnucash.android.databinding.KbdCalculatorBinding;
 import org.gnucash.android.inputmethodservice.CalculatorKeyboardView;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
@@ -184,9 +185,20 @@ public class CalculatorEditText extends AppCompatEditText {
 
     /**
      * Initializes listeners on the EditText
+     *
+     * @param keyboardView the calculator keyboard view.
      */
     public void bindKeyboard(@NonNull CalculatorKeyboardView keyboardView) {
         bindKeyboard(new CalculatorKeyboard(keyboardView));
+    }
+
+    /**
+     * Initializes listeners on the EditText
+     *
+     * @param keyboardBinding the calculator keyboard binding.
+     */
+    public void bindKeyboard(@NonNull KbdCalculatorBinding keyboardBinding) {
+        bindKeyboard(keyboardBinding.calculatorKeyboard);
     }
 
     @Override
@@ -319,5 +331,16 @@ public class CalculatorEditText extends AppCompatEditText {
         }
 
         setTextToEnd(this, resultString);
+    }
+
+    @Override
+    protected void onVisibilityChanged(View changedView, int visibility) {
+        super.onVisibilityChanged(changedView, visibility);
+        if (visibility == VISIBLE && isFocused()) {
+            CalculatorKeyboard keyboard = mCalculatorKeyboard;
+            if (keyboard != null) {
+                keyboard.showCustomKeyboard(this);
+            }
+        }
     }
 }

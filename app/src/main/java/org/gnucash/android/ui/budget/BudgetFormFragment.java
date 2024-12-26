@@ -97,7 +97,7 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
         View view = mBinding.getRoot();
 
         view.findViewById(R.id.btn_remove_item).setVisibility(View.GONE);
-        mBinding.budgetAmountLayout.inputBudgetAmount.bindKeyboard(mBinding.calculatorKeyboard.calculatorKeyboard);
+        mBinding.budgetAmountLayout.inputBudgetAmount.bindKeyboard(mBinding.calculatorKeyboard);
         mBinding.inputStartDate.setText(TransactionFormFragment.DATE_FORMATTER.print(mStartDate.getTimeInMillis()));
         mBinding.inputStartDate.setOnClickListener(this::onClickBudgetStartDate);
         mBinding.btnAddBudgetAmount.setOnClickListener(this::onOpenBudgetAmountEditor);
@@ -122,7 +122,7 @@ public class BudgetFormFragment extends Fragment implements RecurrencePickerDial
         setHasOptionsMenu(true);
 
         mBinding.budgetAmountLayout.btnRemoveItem.setVisibility(View.GONE);
-        mBinding.budgetAmountLayout.inputBudgetAmount.bindKeyboard(mBinding.calculatorKeyboard.calculatorKeyboard);
+        mBinding.budgetAmountLayout.inputBudgetAmount.bindKeyboard(mBinding.calculatorKeyboard);
         mBinding.inputStartDate.setText(TransactionFormFragment.DATE_FORMATTER.print(mStartDate.getTimeInMillis()));
 
         mBinding.budgetAmountLayout.inputBudgetAccountSpinner.setAdapter(mAccountsCursorAdapter);
