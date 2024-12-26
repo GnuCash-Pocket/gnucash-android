@@ -257,7 +257,6 @@
     <string name="username">Nom d\'utilisateur</string>
     <string name="password">Mot de passe</string>
     <string name="owncloud_pref">ownCloud</string>
-    <string name="owncloud_server">https://</string>
     <string name="owncloud_server_invalid">Serveur OC inaccessible</string>
     <string name="owncloud_user_invalid">Nom d’utilisateur/mot de passe OC non valide</string>
     <string name="owncloud_dir_invalid">Caractères non valides: \\ &lt; &gt; : \&quot; | * ? </string>

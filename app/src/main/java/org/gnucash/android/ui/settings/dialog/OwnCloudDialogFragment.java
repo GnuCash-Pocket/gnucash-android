@@ -1,17 +1,20 @@
 package org.gnucash.android.ui.settings.dialog;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.LayoutInflater;
+import android.text.TextUtils;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.preference.Preference;
@@ -28,6 +31,7 @@ import com.owncloud.android.lib.resources.status.GetRemoteStatusOperation;
 import com.owncloud.android.lib.resources.users.GetRemoteUserInfoOperation;
 
 import org.gnucash.android.R;
+import org.gnucash.android.databinding.DialogOwncloudAccountBinding;
 
 import timber.log.Timber;
 
@@ -35,16 +39,6 @@ import timber.log.Timber;
  * A fragment for adding an ownCloud account.
  */
 public class OwnCloudDialogFragment extends DialogFragment {
-
-    /**
-     * Dialog positive button. Ok to save and validate the data
-     */
-    private Button mOkButton;
-
-    /**
-     * Cancel button
-     */
-    private Button mCancelButton;
 
     /**
      * ownCloud vars
@@ -64,9 +58,9 @@ public class OwnCloudDialogFragment extends DialogFragment {
     private TextView mDirError;
 
     private SharedPreferences mPrefs;
-    private Context mContext;
 
-    private static TwoStatePreference ocCheckBox;
+    private TwoStatePreference ocCheckBox;
+    private final Handler handler = new Handler();
 
     /**
      * Use this factory method to create a new instance of
@@ -74,9 +68,9 @@ public class OwnCloudDialogFragment extends DialogFragment {
      *
      * @return A new instance of fragment OwnCloudDialogFragment.
      */
-    public static OwnCloudDialogFragment newInstance(Preference pref) {
+    public static OwnCloudDialogFragment newInstance(@Nullable Preference pref) {
         OwnCloudDialogFragment fragment = new OwnCloudDialogFragment();
-        ocCheckBox = pref == null ? null : (TwoStatePreference) pref;
+        fragment.ocCheckBox = (TwoStatePreference) pref;
         return fragment;
     }
 
@@ -87,79 +81,98 @@ public class OwnCloudDialogFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setStyle(DialogFragment.STYLE_NO_TITLE, 0);
 
-        mContext = getActivity();
-        mPrefs = mContext.getSharedPreferences(getString(R.string.owncloud_pref), Context.MODE_PRIVATE);
+        final Context context = requireContext();
+        mPrefs = context.getSharedPreferences(context.getString(R.string.owncloud_pref), Context.MODE_PRIVATE);
 
-        mOC_server = mPrefs.getString(getString(R.string.key_owncloud_server), getString(R.string.owncloud_server));
-        mOC_username = mPrefs.getString(getString(R.string.key_owncloud_username), null);
-        mOC_password = mPrefs.getString(getString(R.string.key_owncloud_password), null);
-        mOC_dir = mPrefs.getString(getString(R.string.key_owncloud_dir), getString(R.string.app_name));
+        mOC_server = mPrefs.getString(context.getString(R.string.key_owncloud_server), context.getString(R.string.owncloud_server));
+        mOC_username = mPrefs.getString(context.getString(R.string.key_owncloud_username), null);
+        mOC_password = mPrefs.getString(context.getString(R.string.key_owncloud_password), null);
+        mOC_dir = mPrefs.getString(context.getString(R.string.key_owncloud_dir), context.getString(R.string.app_name));
     }
 
+    @NonNull
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.dialog_owncloud_account, container, false);
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+        DialogOwncloudAccountBinding binding = DialogOwncloudAccountBinding.inflate(getLayoutInflater());
+        Context context = binding.getRoot().getContext();
 
-        mServer = (EditText) view.findViewById(R.id.owncloud_hostname);
-        mUsername = (EditText) view.findViewById(R.id.owncloud_username);
-        mPassword = (EditText) view.findViewById(R.id.owncloud_password);
-        mDir = (EditText) view.findViewById(R.id.owncloud_dir);
+        mServer = binding.owncloudHostname;
+        mUsername = binding.owncloudUsername;
+        mPassword = binding.owncloudPassword;
+        mDir = binding.owncloudDir;
 
         mServer.setText(mOC_server);
         mDir.setText(mOC_dir);
         mPassword.setText(mOC_password); // TODO: Remove - debugging only
         mUsername.setText(mOC_username);
 
-        mServerError = (TextView) view.findViewById(R.id.owncloud_hostname_invalid);
-        mUsernameError = (TextView) view.findViewById(R.id.owncloud_username_invalid);
-        mDirError = (TextView) view.findViewById(R.id.owncloud_dir_invalid);
+        mServerError = binding.owncloudHostnameInvalid;
+        mUsernameError = binding.owncloudUsernameInvalid;
+        mDirError = binding.owncloudDirInvalid;
         mServerError.setVisibility(View.GONE);
         mUsernameError.setVisibility(View.GONE);
         mDirError.setVisibility(View.GONE);
 
-        mCancelButton = (Button) view.findViewById(R.id.btn_cancel);
-        mOkButton = (Button) view.findViewById(R.id.btn_save);
-        mOkButton.setText(R.string.btn_test);
+        final AlertDialog dialog = new AlertDialog.Builder(context, getTheme())
+            .setTitle("ownCloud")
+            .setView(binding.getRoot())
+            .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    // Dismisses itself.
+                }
+            })
+            .setNeutralButton(R.string.btn_test, null)
+            .setPositiveButton(R.string.btn_save, null)
+            .create();
 
-        return view;
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+                dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        checkData();
+                    }
+                });
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (TextUtils.equals(mOC_server, mServer.getText()) &&
+                            TextUtils.equals(mOC_username, mUsername.getText()) &&
+                            TextUtils.equals(mOC_password, mPassword.getText()) &&
+                            TextUtils.equals(mOC_dir, mDir.getText()) &&
+                            TextUtils.equals(mDirError.getText(), context.getString(R.string.owncloud_dir_ok)) &&
+                            TextUtils.equals(mUsernameError.getText(), context.getString(R.string.owncloud_user_ok)) &&
+                            TextUtils.equals(mServerError.getText(), context.getString(R.string.owncloud_server_ok))
+                        ) {
+                            save(context);
+                            dismiss();
+                        }
+                    }
+                });
+            }
+        });
+
+        return dialog;
     }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        setListeners();
-    }
-
-    private void saveButton() {
-        if (mDirError.getText().toString().equals(getString(R.string.owncloud_dir_ok)) &&
-                mUsernameError.getText().toString().equals(getString(R.string.owncloud_user_ok)) &&
-                mServerError.getText().toString().equals(getString(R.string.owncloud_server_ok)))
-            mOkButton.setText(R.string.btn_save);
-        else
-            mOkButton.setText(R.string.btn_test);
-    }
-
-    private void save() {
+    private void save(@NonNull Context context) {
         mPrefs.edit()
             .clear()
-            .putString(getString(R.string.key_owncloud_server), mOC_server)
-            .putString(getString(R.string.key_owncloud_username), mOC_username)
-            .putString(getString(R.string.key_owncloud_password), mOC_password)
-            .putString(getString(R.string.key_owncloud_dir), mOC_dir)
-            .putBoolean(getString(R.string.owncloud_sync), true)
+            .putString(context.getString(R.string.key_owncloud_server), mOC_server)
+            .putString(context.getString(R.string.key_owncloud_username), mOC_username)
+            .putString(context.getString(R.string.key_owncloud_password), mOC_password)
+            .putString(context.getString(R.string.key_owncloud_dir), mOC_dir)
+            .putBoolean(context.getString(R.string.owncloud_sync), true)
             .apply();
 
         if (ocCheckBox != null) ocCheckBox.setChecked(true);
-
-        dismiss();
     }
 
     private void checkData() {
+        final Context context = mServer.getContext();
         mServerError.setVisibility(View.GONE);
         mUsernameError.setVisibility(View.GONE);
         mDirError.setVisibility(View.GONE);
@@ -169,93 +182,55 @@ public class OwnCloudDialogFragment extends DialogFragment {
         mOC_password = mPassword.getText().toString().trim();
         mOC_dir = mDir.getText().toString().trim();
 
-        Uri serverUri = Uri.parse(mOC_server);
-        OwnCloudClient mClient = OwnCloudClientFactory.createOwnCloudClient(serverUri, mContext, true);
-        mClient.setCredentials(
-                OwnCloudCredentialsFactory.newBasicCredentials(mOC_username, mOC_password)
-        );
+        if (FileUtils.isValidPath(mOC_dir, false)) {
+            mDirError.setTextColor(ContextCompat.getColor(context, R.color.account_green));
+            mDirError.setText(R.string.owncloud_dir_ok);
+            mDirError.setVisibility(View.VISIBLE);
+        } else {
+            mDirError.setTextColor(ContextCompat.getColor(context, R.color.design_default_color_error));
+            mDirError.setText(R.string.owncloud_dir_invalid);
+            mDirError.setVisibility(View.VISIBLE);
+        }
 
-        final Context context = mServer.getContext();
-        final Handler handler = new Handler();
+        Uri serverUri = Uri.parse(mOC_server);
+        OwnCloudClient client = OwnCloudClientFactory.createOwnCloudClient(serverUri, context, true);
+        client.setCredentials(
+            OwnCloudCredentialsFactory.newBasicCredentials(mOC_username, mOC_password)
+        );
 
         OnRemoteOperationListener listener = new OnRemoteOperationListener() {
             @Override
             public void onRemoteOperationFinish(RemoteOperation caller, RemoteOperationResult result) {
-                if (!result.isSuccess()) {
-                    Timber.e(result.getException(), result.getLogMessage());
-
+                if (result.isSuccess()) {
                     if (caller instanceof GetRemoteStatusOperation) {
-                        mServerError.setTextColor(ContextCompat.getColor(context, R.color.debit_red));
-                        mServerError.setText(getString(R.string.owncloud_server_invalid));
+                        mServerError.setTextColor(ContextCompat.getColor(context, R.color.account_green));
+                        mServerError.setText(R.string.owncloud_server_ok);
                         mServerError.setVisibility(View.VISIBLE);
-
-                    } else if (caller instanceof GetRemoteUserInfoOperation &&
-                            mServerError.getText().toString().equals(getString(R.string.owncloud_server_ok))) {
-                        mUsernameError.setTextColor(ContextCompat.getColor(context, R.color.debit_red));
-                        mUsernameError.setText(getString(R.string.owncloud_user_invalid));
+                    } else if (caller instanceof GetRemoteUserInfoOperation) {
+                        mUsernameError.setTextColor(ContextCompat.getColor(context, R.color.account_green));
+                        mUsernameError.setText(R.string.owncloud_user_ok);
                         mUsernameError.setVisibility(View.VISIBLE);
                     }
                 } else {
+                    Timber.e(result.getException(), result.getLogMessage());
+
                     if (caller instanceof GetRemoteStatusOperation) {
-                        mServerError.setTextColor(ContextCompat.getColor(context, R.color.theme_primary));
-                        mServerError.setText(getString(R.string.owncloud_server_ok));
+                        mServerError.setTextColor(ContextCompat.getColor(context, R.color.design_default_color_error));
+                        mServerError.setText(R.string.owncloud_server_invalid);
                         mServerError.setVisibility(View.VISIBLE);
                     } else if (caller instanceof GetRemoteUserInfoOperation) {
-                        mUsernameError.setTextColor(ContextCompat.getColor(context, R.color.theme_primary));
-                        mUsernameError.setText(getString(R.string.owncloud_user_ok));
+                        mUsernameError.setTextColor(ContextCompat.getColor(context, R.color.design_default_color_error));
+                        mUsernameError.setText(R.string.owncloud_user_invalid);
                         mUsernameError.setVisibility(View.VISIBLE);
                     }
                 }
-                saveButton();
             }
         };
 
-        GetRemoteStatusOperation g = new GetRemoteStatusOperation(mContext);
-        g.execute(mClient, listener, handler);
+        GetRemoteStatusOperation statusOperation = new GetRemoteStatusOperation(context);
+        statusOperation.execute(client, listener, handler);
 
-        GetRemoteUserInfoOperation gu = new GetRemoteUserInfoOperation();
-        gu.execute(mClient, listener, handler);
-
-        if (FileUtils.isValidPath(mOC_dir, false)) {
-            mDirError.setTextColor(ContextCompat.getColor(context, R.color.theme_primary));
-            mDirError.setText(getString(R.string.owncloud_dir_ok));
-            mDirError.setVisibility(View.VISIBLE);
-        } else {
-            mDirError.setTextColor(ContextCompat.getColor(context, R.color.debit_red));
-            mDirError.setText(getString(R.string.owncloud_dir_invalid));
-            mDirError.setVisibility(View.VISIBLE);
-        }
-        saveButton();
-    }
-
-    /**
-     * Binds click listeners for the dialog buttons
-     */
-    private void setListeners() {
-
-        mCancelButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                dismiss();
-            }
-        });
-
-        mOkButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                // If data didn't change
-                if (mOkButton.getText().toString().equals(getString(R.string.btn_save)) &&
-                        mOC_server.equals(mServer.getText().toString().trim()) &&
-                        mOC_username.equals(mUsername.getText().toString().trim()) &&
-                        mOC_password.equals(mPassword.getText().toString().trim()) &&
-                        mOC_dir.equals(mDir.getText().toString().trim())
-                )
-                    save();
-                else
-                    checkData();
-            }
-        });
+        GetRemoteUserInfoOperation userInfoOperation = new GetRemoteUserInfoOperation();
+        userInfoOperation.execute(client, listener, handler);
     }
 }

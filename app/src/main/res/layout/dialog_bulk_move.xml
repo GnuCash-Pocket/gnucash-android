@@ -24,20 +24,12 @@
         style="@style/TextAppearance.EditTransaction_LabelSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/dialog_padding"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="-8dp"
         android:text="@string/label_move_destination" />
 
     <Spinner
         android:id="@+id/accounts_list_spinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/dialog_padding"
-        android:layout_marginRight="@dimen/dialog_padding"
-        android:layout_marginBottom="@dimen/dialog_padding"
         android:minHeight="?android:attr/listPreferredItemHeight" />
-
-    <include layout="@layout/default_buttons" />
 
 </LinearLayout>

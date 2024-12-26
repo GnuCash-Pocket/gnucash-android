@@ -428,11 +428,11 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 if (mPrice != null) {
                     Commodity commodity = getCommodity(mCommoditySpace, mCommodityId);
                     if (mPriceCommodity) {
-                        mPrice.setCommodityUID(commodity.getUID());
+                        mPrice.setCommodity(commodity);
                         mPriceCommodity = false;
                     }
                     if (mPriceCurrency) {
-                        mPrice.setCurrencyUID(commodity.getUID());
+                        mPrice.setCurrency(commodity);
                         mPriceCurrency = false;
                     }
                 }

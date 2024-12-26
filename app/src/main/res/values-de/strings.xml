@@ -262,7 +262,6 @@
     <string name="username">Benutzername</string>
     <string name="password">Passwort</string>
     <string name="owncloud_pref">owncloud</string>
-    <string name="owncloud_server">https://</string>
     <string name="owncloud_server_invalid">OC-Server nicht gefunden</string>
     <string name="owncloud_user_invalid">OC Benutzername/Kennwort ungültig</string>
     <string name="owncloud_dir_invalid">Ungültige Zeichen: \\ &lt; &gt; : \&quot; | * ? </string>

@@ -261,7 +261,6 @@
     <string name="username">Uživatelské jméno</string>
     <string name="password">Heslo</string>
     <string name="owncloud_pref">owncloud</string>
-    <string name="owncloud_server">https://</string>
     <string name="owncloud_server_invalid">OC server nebyl nalezen</string>
     <string name="owncloud_user_invalid">OC uživatelské jméno/heslo je neplatné</string>
     <string name="owncloud_dir_invalid">Neplatné znaky: \\ &lt; &gt;: \&quot;| * ? </string>

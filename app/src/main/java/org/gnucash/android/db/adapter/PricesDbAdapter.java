@@ -67,7 +67,8 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
         long valueNum = cursor.getLong(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_VALUE_NUM));
         long valueDenom = cursor.getLong(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_VALUE_DENOM));
 
-        Price price = new Price(commodityUID, currencyUID);
+        CommoditiesDbAdapter commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
+        Price price = new Price(commoditiesDbAdapter.getCommodity(commodityUID), commoditiesDbAdapter.getCommodity(currencyUID));
         price.setDate(TimestampHelper.getTimestampFromUtcString(dateString));
         price.setSource(source);
         price.setType(type);
@@ -92,7 +93,7 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
     public Pair<Long, Long> getPrice(@NonNull String commodityUID, @NonNull String currencyUID) {
         Pair<Long, Long> pairZero = new Pair<>(0L, 0L);
         if (commodityUID.equals(currencyUID)) {
-            return new Pair<Long, Long>(1L, 1L);
+            return new Pair<>(1L, 1L);
         }
         Cursor cursor = mDb.query(PriceEntry.TABLE_NAME, null,
                 // the commodity and currency can be swapped
@@ -116,7 +117,7 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
                     valueNum = valueDenom;
                     valueDenom = t;
                 }
-                return new Pair<Long, Long>(valueNum, valueDenom);
+                return new Pair<>(valueNum, valueDenom);
             } else {
                 return pairZero;
             }

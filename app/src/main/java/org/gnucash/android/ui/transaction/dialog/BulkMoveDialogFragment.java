@@ -16,21 +16,22 @@
 
 package org.gnucash.android.ui.transaction.dialog;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager.LayoutParams;
-import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.cursoradapter.widget.SimpleCursorAdapter;
 import androidx.fragment.app.DialogFragment;
 
 import org.gnucash.android.R;
+import org.gnucash.android.databinding.DialogBulkMoveBinding;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
@@ -51,27 +52,17 @@ public class BulkMoveDialogFragment extends DialogFragment {
     /**
      * Spinner for selecting the account to move the transactions to
      */
-    Spinner mDestinationAccountSpinner;
-
-    /**
-     * Dialog positive button. Ok to moving the transactions
-     */
-    Button mOkButton;
-
-    /**
-     * Cancel button
-     */
-    Button mCancelButton;
+    private Spinner mDestinationAccountSpinner;
 
     /**
      * Record IDs of the transactions to be moved
      */
-    long[] mTransactionIds = null;
+    private long[] mTransactionIds = null;
 
     /**
      * GUID of account from which to move the transactions
      */
-    String mOriginAccountUID = null;
+    private String mOriginAccountUID = null;
 
     /**
      * Create new instance of the bulk move dialog
@@ -84,39 +75,45 @@ public class BulkMoveDialogFragment extends DialogFragment {
         Bundle args = new Bundle();
         args.putLongArray(UxArgument.SELECTED_TRANSACTION_IDS, transactionIds);
         args.putString(UxArgument.ORIGIN_ACCOUNT_UID, originAccountUID);
-        BulkMoveDialogFragment bulkMoveDialogFragment = new BulkMoveDialogFragment();
-        bulkMoveDialogFragment.setArguments(args);
-        return bulkMoveDialogFragment;
+        BulkMoveDialogFragment fragment = new BulkMoveDialogFragment();
+        fragment.setArguments(args);
+        return fragment;
     }
 
-    /**
-     * Creates the view and retrieves references to the dialog elements
-     */
+    @NonNull
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.dialog_bulk_move, container, false);
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+        DialogBulkMoveBinding binding = DialogBulkMoveBinding.inflate(getLayoutInflater());
+        Context context = binding.getRoot().getContext();
+        mDestinationAccountSpinner = binding.accountsListSpinner;
 
-        mDestinationAccountSpinner = (Spinner) v.findViewById(R.id.accounts_list_spinner);
-        mOkButton = (Button) v.findViewById(R.id.btn_save);
-        mOkButton.setText(R.string.btn_move);
+        String title = context.getString(R.string.title_move_transactions, mTransactionIds.length);
 
-        mCancelButton = (Button) v.findViewById(R.id.btn_cancel);
-        return v;
+        return new AlertDialog.Builder(context, getTheme())
+            .setTitle(title)
+            .setView(binding.getRoot())
+            .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dismiss();
+                }
+            })
+            .setPositiveButton(R.string.btn_move, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    moveTransaction();
+                }
+            })
+            .create();
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        getDialog().getWindow().setLayout(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
 
         Bundle args = getArguments();
         mTransactionIds = args.getLongArray(UxArgument.SELECTED_TRANSACTION_IDS);
         mOriginAccountUID = args.getString(UxArgument.ORIGIN_ACCOUNT_UID);
-
-        String title = getActivity().getString(R.string.title_move_transactions,
-                mTransactionIds.length);
-        getDialog().setTitle(title);
 
         AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
         String conditions = "(" + DatabaseSchema.AccountEntry.COLUMN_UID + " != ? AND "
@@ -127,53 +124,35 @@ public class BulkMoveDialogFragment extends DialogFragment {
         Cursor cursor = accountsDbAdapter.fetchAccountsOrderedByFullName(conditions,
                 new String[]{mOriginAccountUID, accountsDbAdapter.getCurrencyCode(mOriginAccountUID)});
 
-        SimpleCursorAdapter mCursorAdapter = new QualifiedAccountNameCursorAdapter(getActivity(), cursor);
-        mDestinationAccountSpinner.setAdapter(mCursorAdapter);
-        setListeners();
+        SimpleCursorAdapter adapter = new QualifiedAccountNameCursorAdapter(getActivity(), cursor);
+        mDestinationAccountSpinner.setAdapter(adapter);
     }
 
-    /**
-     * Binds click listeners for the dialog buttons
-     */
-    protected void setListeners() {
-        mCancelButton.setOnClickListener(new View.OnClickListener() {
+    private void moveTransaction() {
+        if (mTransactionIds == null) {
+            dismiss();
+        }
+        Context context = requireContext();
 
-            @Override
-            public void onClick(View v) {
-                dismiss();
-            }
-        });
+        String srcAccountUID = mOriginAccountUID;
+        long dstAccountId = mDestinationAccountSpinner.getSelectedItemId();
+        String dstAccountUID = AccountsDbAdapter.getInstance().getUID(dstAccountId);
+        TransactionsDbAdapter trxnAdapter = TransactionsDbAdapter.getInstance();
+        if (!trxnAdapter.getAccountCurrencyCode(dstAccountUID).equals(trxnAdapter.getAccountCurrencyCode(srcAccountUID))) {
+            Toast.makeText(context, R.string.toast_incompatible_currency, Toast.LENGTH_LONG).show();
+            return;
+        }
 
-        mOkButton.setOnClickListener(new View.OnClickListener() {
+        for (long trxnId : mTransactionIds) {
+            trxnAdapter.moveTransaction(trxnAdapter.getUID(trxnId), srcAccountUID, dstAccountUID);
+        }
 
-            @Override
-            public void onClick(View v) {
-                if (mTransactionIds == null) {
-                    dismiss();
-                }
-                Context context = v.getContext();
+        WidgetConfigurationActivity.updateAllWidgets(context);
+        Bundle result = new Bundle();
+        result.putBoolean(Refreshable.EXTRA_REFRESH, true);
+        result.putString(UxArgument.SELECTED_ACCOUNT_UID, dstAccountUID);
+        getParentFragmentManager().setFragmentResult(TAG, result);
 
-                String srcAccountUID = mOriginAccountUID;
-                long dstAccountId = mDestinationAccountSpinner.getSelectedItemId();
-                String dstAccountUID = AccountsDbAdapter.getInstance().getUID(dstAccountId);
-                TransactionsDbAdapter trxnAdapter = TransactionsDbAdapter.getInstance();
-                if (!trxnAdapter.getAccountCurrencyCode(dstAccountUID).equals(trxnAdapter.getAccountCurrencyCode(srcAccountUID))) {
-                    Toast.makeText(context, R.string.toast_incompatible_currency, Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                for (long trxnId : mTransactionIds) {
-                    trxnAdapter.moveTransaction(trxnAdapter.getUID(trxnId), srcAccountUID, dstAccountUID);
-                }
-
-                WidgetConfigurationActivity.updateAllWidgets(context);
-                Bundle result = new Bundle();
-                result.putBoolean(Refreshable.EXTRA_REFRESH, true);
-                result.putString(UxArgument.SELECTED_ACCOUNT_UID, dstAccountUID);
-                getParentFragmentManager().setFragmentResult(TAG, result);
-
-                dismiss();
-            }
-        });
+        dismiss();
     }
 }

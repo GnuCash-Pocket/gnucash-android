@@ -263,7 +263,6 @@
     <string name="username">Имя пользователя</string>
     <string name="password">Пароль</string>
     <string name="owncloud_pref">owncloud</string>
-    <string name="owncloud_server">https://</string>
     <string name="owncloud_server_invalid">OC сервер не найден</string>
     <string name="owncloud_user_invalid">OC неверное имя/пароль</string>
     <string name="owncloud_dir_invalid">Недопустимые символы: \\ &lt; &gt; : \&quot; | * ? </string>

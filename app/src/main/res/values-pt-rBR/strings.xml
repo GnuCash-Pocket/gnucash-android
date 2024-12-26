@@ -260,7 +260,6 @@
     <string name="username">Nome do usuário</string>
     <string name="password">Senha</string>
     <string name="owncloud_pref">ownCloud</string>
-    <string name="owncloud_server">https://</string>
     <string name="owncloud_server_invalid">Servidor OC não encontrado</string>
     <string name="owncloud_user_invalid">Usuário/senha do OC inválido</string>
     <string name="owncloud_dir_invalid">Caracteres inválidos: \\ &lt; &gt; : \&quot; | * ? </string>

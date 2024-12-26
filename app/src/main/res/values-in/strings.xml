@@ -256,7 +256,6 @@
     <string name="username">Nama Pengguna</string>
     <string name="password">Kata Sandi</string>
     <string name="owncloud_pref">owncloud</string>
-    <string name="owncloud_server">https://</string>
     <string name="owncloud_server_invalid">Server OC tidak ditemukan</string>
     <string name="owncloud_user_invalid">Username / kata kunci OC tidak valid</string>
     <string name="owncloud_dir_invalid">Karakter tidak valid: \\ &lt; &gt; : \&quot; | * ? </string>

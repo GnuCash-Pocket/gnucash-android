@@ -246,4 +246,5 @@
         <item>PLN</item>
     </string-array>
     <string name="schedule_export_description" translatable="false">"%1$s %2$s %3$s"</string>
+    <string name="owncloud_server" translatable="false">https://owncloud.com</string>
 </resources>

@@ -263,7 +263,6 @@
     <string name="username">Nom d\'usuari</string>
     <string name="password">Contrasenya</string>
     <string name="owncloud_pref">ownCloud</string>
-    <string name="owncloud_server">https://</string>
     <string name="owncloud_server_invalid">No s\'ha trobat el servidor d\'OC</string>
     <string name="owncloud_user_invalid">El nom d\'usuari/contrasenya d\'OC no és correcte</string>
     <string name="owncloud_dir_invalid">Caràcters invalids: \\ &lt; &gt; : \&quot; | * ? </string>

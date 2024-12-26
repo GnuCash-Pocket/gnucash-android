@@ -19,6 +19,7 @@ package org.gnucash.android.test.unit.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
+import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Price;
 import org.junit.Test;
 
@@ -30,26 +31,30 @@ public class PriceTest {
     @Test
     public void creatingFromExchangeRate_ShouldGetPrecisionRight() {
         Locale.setDefault(Locale.US);
+        Commodity commodity1 = Commodity.USD;
+        Commodity commodity2 = Commodity.EUR;
 
         String exchangeRateString = "0.123456";
         BigDecimal exchangeRate = new BigDecimal(exchangeRateString);
-        Price price = new Price("commodity1UID", "commodity2UID", exchangeRate);
+        Price price = new Price(commodity1, commodity2, exchangeRate);
         assertThat(price.toString()).isEqualTo(exchangeRateString);
 
         // ensure we don't get more decimal places than needed (0.123000)
         exchangeRateString = "0.123";
         exchangeRate = new BigDecimal(exchangeRateString);
-        price = new Price("commodity1UID", "commodity2UID", exchangeRate);
+        price = new Price(commodity1, commodity2, exchangeRate);
         assertThat(price.toString()).isEqualTo(exchangeRateString);
     }
 
     @Test
     public void toString_shouldUseDefaultLocale() {
         Locale.setDefault(Locale.GERMANY);
+        Commodity commodity1 = Commodity.EUR;
+        Commodity commodity2 = Commodity.USD;
 
         String exchangeRateString = "1.234";
         BigDecimal exchangeRate = new BigDecimal(exchangeRateString);
-        Price price = new Price("commodity1UID", "commodity2UID", exchangeRate);
+        Price price = new Price(commodity1, commodity2, exchangeRate);
         assertThat(price.toString()).isEqualTo("1,234");
     }
 

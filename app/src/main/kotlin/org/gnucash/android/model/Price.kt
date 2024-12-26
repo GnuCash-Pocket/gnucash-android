@@ -11,37 +11,35 @@ import java.text.NumberFormat
  * Model for commodity prices
  */
 class Price : BaseModel {
-    var commodityUID: String? = null
-    var currencyUID: String? = null
+    var commodity: Commodity? = null
+    var currency: Commodity? = null
     var date: Timestamp
     var source: String? = null
     var type: String? = null
 
-    constructor(): this(null, null)
+    constructor() : this(null, null)
 
     /**
      * Create new instance with the GUIDs of the commodities
      *
-     * @param commodityUID GUID of the origin commodity
-     * @param currencyUID  GUID of the target commodity
+     * @param commodity the origin commodity
+     * @param currency  the target commodity
      */
-    constructor(commodityUID: String?, currencyUID: String?) {
-        this.commodityUID = commodityUID
-        this.currencyUID = currencyUID
+    constructor(commodity: Commodity?, currency: Commodity?) {
+        this.commodity = commodity
+        this.currency = currency
         date = TimestampHelper.getTimestampFromNow()
     }
 
     /**
      * Create new instance with the GUIDs of the commodities and the specified exchange rate.
      *
-     * @param commodity1UID GUID of the origin commodity
-     * @param commodity2UID GUID of the target commodity
+     * @param commodity1 the origin commodity
+     * @param commodity2 the target commodity
      * @param exchangeRate  exchange rate between the commodities
      */
-    constructor(commodity1UID: String?, commodity2UID: String?, exchangeRate: BigDecimal) : this(
-        commodity1UID,
-        commodity2UID
-    ) {
+    constructor(commodity1: Commodity?, commodity2: Commodity?, exchangeRate: BigDecimal) :
+            this(commodity1, commodity2) {
         // Store 0.1234 as 1234/10000
         valueNum = exchangeRate.unscaledValue().toLong()
         valueDenom = BigDecimal.ONE.scaleByPowerOfTen(exchangeRate.scale()).toLong()
@@ -116,6 +114,20 @@ class Price : BaseModel {
         formatter.maximumFractionDigits = 6
         return formatter.format(numerator.divide(denominator, MathContext.DECIMAL32))
     }
+
+    fun toBigDecimal(): BigDecimal {
+        val numerator = BigDecimal(valueNum)
+        val denominator = BigDecimal(valueDenom)
+
+        return numerator.divide(
+            denominator,
+            currency?.smallestFractionDigits ?: 100,
+            BigDecimal.ROUND_HALF_EVEN
+        )
+    }
+
+    val commodityUID: String? get() = commodity?.uID
+    val currencyUID: String? get() = currency?.uID
 
     companion object {
         /**

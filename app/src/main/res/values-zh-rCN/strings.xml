@@ -260,7 +260,6 @@
     <string name="username">用户名</string>
     <string name="password">密码</string>
     <string name="owncloud_pref">ownCloud</string>
-    <string name="owncloud_server">https://</string>
     <string name="owncloud_server_invalid">找不到 OC 服务器</string>
     <string name="owncloud_user_invalid">OC 用户名/密码无效</string>
     <string name="owncloud_dir_invalid">无效字符： \\ &lt; &gt; : \&quot; | * ? </string>
