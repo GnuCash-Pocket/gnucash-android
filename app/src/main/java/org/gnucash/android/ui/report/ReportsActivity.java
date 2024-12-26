@@ -48,8 +48,8 @@ import org.gnucash.android.ui.common.BaseDrawerActivity;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.util.dialog.DateRangePickerDialogFragment;
 import org.joda.time.LocalDate;
-import org.joda.time.LocalDateTime;
 
+import java.util.Date;
 import java.util.List;
 
 import timber.log.Timber;
@@ -67,7 +67,9 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
     DatePickerDialog.OnDateSetListener, DateRangePickerDialogFragment.OnDateRangeSetListener,
     Refreshable {
 
-    private static final String STATE_REPORT_TYPE = "STATE_REPORT_TYPE";
+    private static final String STATE_REPORT_TYPE = "report_type";
+    private static final String STATE_REPORT_START = "report_start";
+    private static final String STATE_REPORT_END = "report_end";
 
     private TransactionsDbAdapter mTransactionsDbAdapter;
     private AccountType mAccountType = AccountType.EXPENSE;
@@ -168,6 +170,8 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
             } else {
                 mReportType = (ReportType) savedInstanceState.getSerializable(STATE_REPORT_TYPE);
             }
+            mReportPeriodStart = LocalDate.fromDateFields(new Date(savedInstanceState.getLong(STATE_REPORT_START)));
+            mReportPeriodEnd = LocalDate.fromDateFields(new Date(savedInstanceState.getLong(STATE_REPORT_END)));
         }
     }
 
@@ -338,17 +342,17 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
             case 1: // last 3 months. x-2, x-1, x
                 mReportPeriodStart = now.minusMonths(2).dayOfMonth().withMinimumValue();
                 break;
-            case 2:
+            case 2: // last 6 months
                 mReportPeriodStart = now.minusMonths(5).dayOfMonth().withMinimumValue();
                 break;
-            case 3:
+            case 3: // last year
                 mReportPeriodStart = now.minusMonths(11).dayOfMonth().withMinimumValue();
                 break;
             case 4: //ALL TIME
                 mReportPeriodStart = new LocalDate(-1L);
                 mReportPeriodEnd = new LocalDate(-1L);
                 break;
-            case 5:
+            case 5: // custom range
                 String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
                 long earliest = mTransactionsDbAdapter.getTimestampOfEarliestTransaction(mAccountType, currencyCode);
                 long latest = mTransactionsDbAdapter.getTimestampOfLatestTransaction(mAccountType, currencyCode);
@@ -429,5 +433,7 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
         super.onSaveInstanceState(outState);
 
         outState.putSerializable(STATE_REPORT_TYPE, mReportType);
+        outState.putLong(STATE_REPORT_START, mReportPeriodStart.toDate().getTime());
+        outState.putLong(STATE_REPORT_END, mReportPeriodEnd.toDate().getTime());
     }
 }

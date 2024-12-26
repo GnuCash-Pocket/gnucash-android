@@ -49,7 +49,6 @@ import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.report.piechart.PieChartFragment;
-import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 
 import java.util.ArrayList;
@@ -120,7 +119,7 @@ public class ReportsOverviewFragment extends BaseReportFragment {
         legend.setTextSize(LEGEND_TEXT_SIZE);
         legend.setTextColor(textColorPrimary);
 
-        final Context context = requireContext();
+        final Context context = mBinding.btnPieChart.getContext();
         ColorStateList csl = new ColorStateList(new int[][]{StateSet.WILD_CARD}, new int[]{ContextCompat.getColor(context, R.color.account_green)});
         setButtonTint(mBinding.btnPieChart, csl);
         csl = new ColorStateList(new int[][]{StateSet.WILD_CARD}, new int[]{ContextCompat.getColor(context, R.color.account_red)});
@@ -138,7 +137,8 @@ public class ReportsOverviewFragment extends BaseReportFragment {
 
     @Override
     protected void generateReport() {
-        PieData pieData = PieChartFragment.groupSmallerSlices(getData(), requireContext());
+        final Context context = mBinding.pieChart.getContext();
+        PieData pieData = PieChartFragment.groupSmallerSlices(getData(), context);
         if (pieData.getYValCount() != 0) {
             mBinding.pieChart.setData(pieData);
             float sum = mBinding.pieChart.getData().getYValueSum();

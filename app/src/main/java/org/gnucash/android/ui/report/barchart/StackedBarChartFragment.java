@@ -239,11 +239,11 @@ public class StackedBarChartFragment extends BaseReportFragment {
      * @return the start data
      */
     private LocalDate getStartDate(AccountType accountType) {
-        TransactionsDbAdapter adapter = TransactionsDbAdapter.getInstance();
-        String code = mCommodity.getCurrencyCode();
         LocalDate startDate;
         if (mReportPeriodStart == -1) {
-            startDate = new LocalDate(adapter.getTimestampOfEarliestTransaction(accountType, code));
+            TransactionsDbAdapter adapter = TransactionsDbAdapter.getInstance();
+            String currencyCode = mCommodity.getCurrencyCode();
+            startDate = new LocalDate(adapter.getTimestampOfEarliestTransaction(accountType, currencyCode));
         } else {
             startDate = new LocalDate(mReportPeriodStart);
         }
@@ -259,11 +259,11 @@ public class StackedBarChartFragment extends BaseReportFragment {
      * @return the end data
      */
     private LocalDate getEndDate(AccountType accountType) {
-        TransactionsDbAdapter adapter = TransactionsDbAdapter.getInstance();
-        String code = mCommodity.getCurrencyCode();
         LocalDate endDate;
         if (mReportPeriodEnd == -1) {
-            endDate = new LocalDate(adapter.getTimestampOfLatestTransaction(accountType, code));
+            TransactionsDbAdapter adapter = TransactionsDbAdapter.getInstance();
+            String currencyCode = mCommodity.getCurrencyCode();
+            endDate = new LocalDate(adapter.getTimestampOfLatestTransaction(accountType, currencyCode));
         } else {
             endDate = new LocalDate(mReportPeriodEnd);
         }
