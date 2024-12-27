@@ -64,10 +64,6 @@ public class ColorPickerDialog extends DialogFragment implements OnColorSelected
 
     protected OnColorSelectedListener mListener;
 
-    public ColorPickerDialog() {
-        // Empty constructor required for dialog fragments.
-    }
-
     public static ColorPickerDialog newInstance(int titleResId, int[] colors, int selectedColor,
                                                 int columns, int size) {
         ColorPickerDialog ret = new ColorPickerDialog();

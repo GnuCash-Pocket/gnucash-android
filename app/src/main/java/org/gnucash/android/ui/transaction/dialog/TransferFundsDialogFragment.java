@@ -32,7 +32,6 @@ import android.widget.CompoundButton;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.DialogFragment;
 
 import org.gnucash.android.R;
 import org.gnucash.android.databinding.DialogTransferFundsBinding;
@@ -42,6 +41,7 @@ import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.Price;
 import org.gnucash.android.ui.transaction.OnTransferFundsListener;
+import org.gnucash.android.ui.util.dialog.VolatileDialogFragment;
 import org.gnucash.android.util.AmountParser;
 
 import java.math.BigDecimal;
@@ -53,7 +53,7 @@ import java.text.ParseException;
  * Dialog fragment for handling currency conversions when inputting transactions.
  * <p>This is used whenever a multi-currency transaction is being created.</p>
  */
-public class TransferFundsDialogFragment extends DialogFragment {
+public class TransferFundsDialogFragment extends VolatileDialogFragment {
     private Money mOriginAmount;
     private Commodity mTargetCommodity;
 

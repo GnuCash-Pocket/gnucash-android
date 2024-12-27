@@ -21,8 +21,6 @@ import android.app.DatePickerDialog.OnDateSetListener;
 import android.app.Dialog;
 import android.os.Bundle;
 
-import androidx.fragment.app.DialogFragment;
-
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -31,7 +29,7 @@ import java.util.GregorianCalendar;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class DatePickerDialogFragment extends DialogFragment {
+public class DatePickerDialogFragment extends VolatileDialogFragment {
 
     /**
      * Listener to notify of events in the dialog
@@ -42,15 +40,6 @@ public class DatePickerDialogFragment extends DialogFragment {
      * Date selected in the dialog or to which the dialog is initialized
      */
     private Calendar mDate;
-
-    /**
-     * Default Constructor
-     * Is required for when the device is rotated while the dialog is open.
-     * If this constructor is not present, the app will crash
-     */
-    public DatePickerDialogFragment() {
-        //nothing to see here, move along
-    }
 
     /**
      * Overloaded constructor

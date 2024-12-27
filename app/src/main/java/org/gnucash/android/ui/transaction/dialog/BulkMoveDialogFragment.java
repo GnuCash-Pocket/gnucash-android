@@ -95,7 +95,7 @@ public class BulkMoveDialogFragment extends DialogFragment {
             .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    dismiss();
+                    // Dismisses itself.
                 }
             })
             .setPositiveButton(R.string.btn_move, new DialogInterface.OnClickListener() {

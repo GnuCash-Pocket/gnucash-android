@@ -27,7 +27,6 @@ import android.text.format.DateUtils;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.DialogFragment;
 
 import com.squareup.timessquare.CalendarPickerView;
 
@@ -44,7 +43,7 @@ import java.util.List;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class DateRangePickerDialogFragment extends DialogFragment {
+public class DateRangePickerDialogFragment extends VolatileDialogFragment {
     private LocalDate mStartRange = LocalDate.now().minusMonths(1);
     private LocalDate mEndRange = LocalDate.now();
     private OnDateRangeSetListener mDateRangeSetListener;

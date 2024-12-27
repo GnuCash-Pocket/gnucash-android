@@ -22,9 +22,9 @@ import android.widget.CompoundButton;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.DialogFragment;
 
 import org.gnucash.android.R;
+import org.gnucash.android.ui.util.dialog.VolatileDialogFragment;
 
 /**
  * Confirmation dialog with additional checkbox to confirm the action.
@@ -38,7 +38,7 @@ import org.gnucash.android.R;
  *
  * @author Àlex Magaz <alexandre.magaz@gmail.com>
  */
-public abstract class DoubleConfirmationDialog extends DialogFragment {
+public abstract class DoubleConfirmationDialog extends VolatileDialogFragment {
     /**
      * Returns the dialog builder with the defaults for a double confirmation
      * dialog already set up.

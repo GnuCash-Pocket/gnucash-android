@@ -16,7 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.DialogFragment;
 import androidx.preference.Preference;
 import androidx.preference.TwoStatePreference;
 
@@ -32,13 +31,14 @@ import com.owncloud.android.lib.resources.users.GetRemoteUserInfoOperation;
 
 import org.gnucash.android.R;
 import org.gnucash.android.databinding.DialogOwncloudAccountBinding;
+import org.gnucash.android.ui.util.dialog.VolatileDialogFragment;
 
 import timber.log.Timber;
 
 /**
  * A fragment for adding an ownCloud account.
  */
-public class OwnCloudDialogFragment extends DialogFragment {
+public class OwnCloudDialogFragment extends VolatileDialogFragment {
 
     /**
      * ownCloud vars
