@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.gnucash.android.ui.util.dialog;
 
 import android.app.DatePickerDialog;
@@ -21,8 +20,10 @@ import android.app.DatePickerDialog.OnDateSetListener;
 import android.app.Dialog;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 
 /**
  * Fragment for displaying a date picker dialog
@@ -32,29 +33,30 @@ import java.util.GregorianCalendar;
 public class DatePickerDialogFragment extends VolatileDialogFragment {
 
     /**
-     * Listener to notify of events in the dialog
+     * Listener to notify when the date is set.
      */
-    private OnDateSetListener mDateSetListener;
+    @Nullable
+    private OnDateSetListener listener;
 
     /**
      * Date selected in the dialog or to which the dialog is initialized
      */
-    private Calendar mDate;
+    @NonNull
+    private final Calendar date = Calendar.getInstance();
 
     /**
-     * Overloaded constructor
+     * Create a new instance.
      *
-     * @param callback   Listener to notify when the date is set and the dialog is closed
-     * @param dateMillis Time in milliseconds to which to initialize the dialog
+     * @param listener   Listener to notify when the date is set and the dialog is closed
+     * @param dateMillis Date in milliseconds to which to initialize the dialog
      */
-    public static DatePickerDialogFragment newInstance(OnDateSetListener callback, long dateMillis) {
-        DatePickerDialogFragment datePickerDialogFragment = new DatePickerDialogFragment();
-        datePickerDialogFragment.mDateSetListener = callback;
+    public static DatePickerDialogFragment newInstance(@Nullable OnDateSetListener listener, long dateMillis) {
+        DatePickerDialogFragment fragment = new DatePickerDialogFragment();
+        fragment.listener = listener;
         if (dateMillis > 0) {
-            datePickerDialogFragment.mDate = new GregorianCalendar();
-            datePickerDialogFragment.mDate.setTimeInMillis(dateMillis);
+            fragment.date.setTimeInMillis(dateMillis);
         }
-        return datePickerDialogFragment;
+        return fragment;
     }
 
     /**
@@ -62,11 +64,12 @@ public class DatePickerDialogFragment extends VolatileDialogFragment {
      */
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Calendar cal = mDate == null ? Calendar.getInstance() : mDate;
-
-        return new DatePickerDialog(getActivity(),
-                mDateSetListener, cal.get(Calendar.YEAR),
-                cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+        return new DatePickerDialog(requireContext(),
+            listener,
+            date.get(Calendar.YEAR),
+            date.get(Calendar.MONTH),
+            date.get(Calendar.DAY_OF_MONTH)
+        );
     }
 
 }

@@ -43,4 +43,7 @@
     <color name="kbd_key_op">#E5F5D5</color>
 
     <color name="item_checked">#CCCCCC</color>
+
+    <!-- Recurrence -->
+    <color name="recurrence_bubble_text_normal">?android:textColorPrimary</color>
 </resources>

@@ -20,6 +20,8 @@ import static org.gnucash.android.app.IntentExtKt.takePersistableUriPermission;
 import static org.gnucash.android.util.ContentExtKt.getDocumentName;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -39,7 +41,9 @@ import android.view.animation.Transformation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
+import android.widget.DatePicker;
 import android.widget.RadioButton;
+import android.widget.TimePicker;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -48,8 +52,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.codetroopers.betterpickers.calendardatepicker.CalendarDatePickerDialogFragment;
-import com.codetroopers.betterpickers.radialtimepicker.RadialTimePickerDialogFragment;
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence;
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrenceFormatter;
 import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment;
@@ -74,6 +76,8 @@ import org.gnucash.android.ui.settings.dialog.OwnCloudDialogFragment;
 import org.gnucash.android.ui.transaction.TransactionFormFragment;
 import org.gnucash.android.ui.util.RecurrenceParser;
 import org.gnucash.android.ui.util.RecurrenceViewClickListener;
+import org.gnucash.android.ui.util.dialog.DatePickerDialogFragment;
+import org.gnucash.android.ui.util.dialog.TimePickerDialogFragment;
 import org.gnucash.android.util.PreferencesHelper;
 import org.gnucash.android.util.TimestampHelper;
 
@@ -92,8 +96,8 @@ import timber.log.Timber;
  */
 public class ExportFormFragment extends Fragment implements
     RecurrencePickerDialogFragment.OnRecurrenceSetListener,
-    CalendarDatePickerDialogFragment.OnDateSetListener,
-    RadialTimePickerDialogFragment.OnTimeSetListener {
+    DatePickerDialog.OnDateSetListener,
+    TimePickerDialog.OnTimeSetListener {
 
     /**
      * Request code for intent to pick export file destination
@@ -458,22 +462,9 @@ public class ExportFormFragment extends Fragment implements
 
             @Override
             public void onClick(View v) {
-                long dateMillis = 0;
-                try {
-                    dateMillis = TransactionFormFragment.DATE_FORMATTER.parseMillis(mBinding.exportStartDate.getText().toString());
-                } catch (IllegalArgumentException e) {
-                    Timber.e(e, "Error converting input time to Date object");
-                }
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(dateMillis);
-
-                int year = calendar.get(Calendar.YEAR);
-                int monthOfYear = calendar.get(Calendar.MONTH);
-                int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
-                CalendarDatePickerDialogFragment datePickerDialog = new CalendarDatePickerDialogFragment();
-                datePickerDialog.setOnDateSetListener(ExportFormFragment.this);
-                datePickerDialog.setPreselectedDate(year, monthOfYear, dayOfMonth);
-                datePickerDialog.show(getFragmentManager(), "date_picker_fragment");
+                long dateMillis = mExportStartCalendar.getTimeInMillis();
+                DatePickerDialogFragment.newInstance(ExportFormFragment.this, dateMillis)
+                    .show(getParentFragmentManager(), "date_picker_fragment");
             }
         });
 
@@ -481,20 +472,9 @@ public class ExportFormFragment extends Fragment implements
 
             @Override
             public void onClick(View v) {
-                long timeMillis = 0;
-                try {
-                    timeMillis = TransactionFormFragment.TIME_FORMATTER.parseMillis(mBinding.exportStartDate.getText().toString());
-                } catch (IllegalArgumentException e) {
-                    Timber.e(e, "Error converting input time to Date object");
-                }
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(timeMillis);
-
-                RadialTimePickerDialogFragment timePickerDialog = new RadialTimePickerDialogFragment();
-                timePickerDialog.setOnTimeSetListener(ExportFormFragment.this);
-                timePickerDialog.setStartTime(calendar.get(Calendar.HOUR_OF_DAY),
-                    calendar.get(Calendar.MINUTE));
-                timePickerDialog.show(getFragmentManager(), "time_picker_dialog_fragment");
+                long timeMillis = mExportStartCalendar.getTimeInMillis();
+                TimePickerDialogFragment.newInstance(ExportFormFragment.this, timeMillis)
+                    .show(getParentFragmentManager(), "time_picker_dialog_fragment");
             }
         });
 
@@ -659,20 +639,18 @@ public class ExportFormFragment extends Fragment implements
     }
 
     @Override
-    public void onDateSet(CalendarDatePickerDialogFragment dialog, int year, int monthOfYear, int dayOfMonth) {
-        Calendar cal = new GregorianCalendar(year, monthOfYear, dayOfMonth);
-        mBinding.exportStartDate.setText(TransactionFormFragment.DATE_FORMATTER.print(cal.getTimeInMillis()));
+    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
         mExportStartCalendar.set(Calendar.YEAR, year);
-        mExportStartCalendar.set(Calendar.MONTH, monthOfYear);
+        mExportStartCalendar.set(Calendar.MONTH, month);
         mExportStartCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        mBinding.exportStartDate.setText(TransactionFormFragment.DATE_FORMATTER.print(mExportStartCalendar.getTimeInMillis()));
     }
 
     @Override
-    public void onTimeSet(RadialTimePickerDialogFragment dialog, int hourOfDay, int minute) {
-        Calendar cal = new GregorianCalendar(0, 0, 0, hourOfDay, minute);
-        mBinding.exportStartTime.setText(TransactionFormFragment.TIME_FORMATTER.print(cal.getTimeInMillis()));
+    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
         mExportStartCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
         mExportStartCalendar.set(Calendar.MINUTE, minute);
+        mBinding.exportStartTime.setText(TransactionFormFragment.TIME_FORMATTER.print(mExportStartCalendar.getTimeInMillis()));
     }
 }
 

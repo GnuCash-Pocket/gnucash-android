@@ -180,4 +180,9 @@
     <style name="CalculatorKeyboard.Key.Action">
         <item name="backgroundTint">@color/kbd_key_action</item>
     </style>
+
+    <!-- Recurrence -->
+    <style name="TextAppearance.RecurrencePickerStyle">
+        <item name="android:textSize">15sp</item>
+    </style>
 </resources>
