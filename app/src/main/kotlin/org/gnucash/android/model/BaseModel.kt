@@ -24,6 +24,10 @@ import java.util.UUID
  * All other models should extend this base model.
  */
 abstract class BaseModel {
+    /** Database record id. */
+    @JvmField
+    var id: Long = 0
+
     /**
      * Unique identifier of this model instance.
      *

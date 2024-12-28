@@ -69,13 +69,13 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
 
         CommoditiesDbAdapter commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
         Price price = new Price(commoditiesDbAdapter.getCommodity(commodityUID), commoditiesDbAdapter.getCommodity(currencyUID));
+        populateBaseModelAttributes(cursor, price);
         price.setDate(TimestampHelper.getTimestampFromUtcString(dateString));
         price.setSource(source);
         price.setType(type);
         price.setValueNum(valueNum);
         price.setValueDenom(valueDenom);
 
-        populateBaseModelAttributes(cursor, price);
         return price;
     }
 

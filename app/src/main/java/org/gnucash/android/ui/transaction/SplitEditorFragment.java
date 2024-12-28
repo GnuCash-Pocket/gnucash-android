@@ -244,7 +244,7 @@ public class SplitEditorFragment extends Fragment {
                 + DatabaseSchema.AccountEntry.COLUMN_HIDDEN + " = 0 AND "
                 + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0"
                 + ")";
-        mCursor = mAccountsDbAdapter.fetchAccountsOrderedByFullName(conditions, null);
+        mCursor = mAccountsDbAdapter.fetchAccountsOrderedByFavoriteAndFullName(conditions, null);
         mCommodity = CommoditiesDbAdapter.getInstance().getCommodity(mAccountsDbAdapter.getCurrencyCode(mAccountUID));
     }
 

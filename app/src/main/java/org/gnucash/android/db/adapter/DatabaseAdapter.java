@@ -440,8 +440,10 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
         List<Model> modelRecords = new ArrayList<>();
         Cursor c = fetchAllRecords();
         try {
-            while (c.moveToNext()) {
-                modelRecords.add(buildModelInstance(c));
+            if (c.moveToFirst()) {
+                do {
+                    modelRecords.add(buildModelInstance(c));
+                } while (c.moveToNext());
             }
         } finally {
             c.close();
@@ -474,10 +476,12 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @param model  Model instance to be initialized
      */
     protected void populateBaseModelAttributes(Cursor cursor, BaseModel model) {
+        long id = cursor.getLong(cursor.getColumnIndexOrThrow(CommonColumns.COLUMN_ID));
         String uid = cursor.getString(cursor.getColumnIndexOrThrow(CommonColumns.COLUMN_UID));
         String created = cursor.getString(cursor.getColumnIndexOrThrow(CommonColumns.COLUMN_CREATED_AT));
         String modified = cursor.getString(cursor.getColumnIndexOrThrow(CommonColumns.COLUMN_MODIFIED_AT));
 
+        model.id = id;
         model.setUID(uid);
         model.setCreatedTimestamp(TimestampHelper.getTimestampFromUtcString(created));
         model.setModifiedTimestamp(TimestampHelper.getTimestampFromUtcString(modified));

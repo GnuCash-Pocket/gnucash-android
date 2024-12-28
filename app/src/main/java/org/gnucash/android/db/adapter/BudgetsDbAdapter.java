@@ -116,10 +116,10 @@ public class BudgetsDbAdapter extends DatabaseAdapter<Budget> {
 
 
         Budget budget = new Budget(name);
+        populateBaseModelAttributes(cursor, budget);
         budget.setDescription(description);
         budget.setRecurrence(mRecurrenceDbAdapter.getRecord(recurrenceUID));
         budget.setNumberOfPeriods(numPeriods);
-        populateBaseModelAttributes(cursor, budget);
         budget.setBudgetAmounts(mBudgetAmountsDbAdapter.getBudgetAmountsForBudget(budget.getUID()));
 
         return budget;

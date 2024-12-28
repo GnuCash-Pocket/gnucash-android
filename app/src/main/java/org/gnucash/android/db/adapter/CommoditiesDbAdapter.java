@@ -97,7 +97,6 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
 
     @Override
     public Commodity buildModelInstance(@NonNull final Cursor cursor) {
-        String uid = cursor.getString(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_UID));
         String fullname = cursor.getString(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_FULLNAME));
         String mnemonic = cursor.getString(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_MNEMONIC));
         String namespace = cursor.getString(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_NAMESPACE));
@@ -109,20 +108,19 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
         String quoteTZ = cursor.getString(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_QUOTE_TZ));
 
         Commodity commodity = new Commodity(fullname, mnemonic, fraction);
-        commodity.setUID(uid);
+        populateBaseModelAttributes(cursor, commodity);
         commodity.setNamespace(namespace);
         commodity.setCusip(cusip);
         commodity.setQuoteSource(quoteSource);
         commodity.setQuoteTimeZone(quoteTZ);
         commodity.setLocalSymbol(localSymbol);
-        populateBaseModelAttributes(cursor, commodity);
 
         return commodity;
     }
 
     @Override
     public Cursor fetchAllRecords() {
-        return fetchAllRecords(CommodityEntry.COLUMN_FULLNAME + " ASC");
+        return fetchAllRecords(CommodityEntry.COLUMN_MNEMONIC + " ASC");
     }
 
     /**

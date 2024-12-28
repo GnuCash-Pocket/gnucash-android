@@ -69,13 +69,13 @@ public class RecurrenceDbAdapter extends DatabaseAdapter<Recurrence> {
 
         PeriodType periodType = PeriodType.of(type);
         Recurrence recurrence = new Recurrence(periodType);
+        populateBaseModelAttributes(cursor, recurrence);
         recurrence.setMultiplier(multiplier);
         recurrence.setPeriodStart(TimestampHelper.getTimestampFromUtcString(periodStart).getTime());
-        if (periodEnd != null)
+        if (periodEnd != null) {
             recurrence.setPeriodEnd(TimestampHelper.getTimestampFromUtcString(periodEnd));
+        }
         recurrence.setByDays(stringToByDays(byDays));
-
-        populateBaseModelAttributes(cursor, recurrence);
 
         return recurrence;
     }

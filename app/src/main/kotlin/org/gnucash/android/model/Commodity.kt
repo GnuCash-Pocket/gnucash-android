@@ -119,8 +119,8 @@ class Commodity(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || javaClass != other.javaClass) return false
-        val commodity = other as Commodity
-        return mnemonic == commodity.mnemonic
+        val that = other as Commodity
+        return (this.mnemonic == that.mnemonic) && (this.namespace == that.namespace)
     }
 
     override fun hashCode(): Int {

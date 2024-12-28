@@ -81,13 +81,13 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
         String lastSync = cursor.getString(cursor.getColumnIndexOrThrow(BookEntry.COLUMN_LAST_SYNC));
 
         Book book = new Book(rootAccountGUID);
+        populateBaseModelAttributes(cursor, book);
         book.setDisplayName(displayName);
         book.setRootTemplateUID(rootTemplateGUID);
         book.setSourceUri(uriString == null ? null : Uri.parse(uriString));
         book.setActive(active != 0);
         book.setLastSync(TimestampHelper.getTimestampFromUtcString(lastSync));
 
-        populateBaseModelAttributes(cursor, book);
         return book;
     }
 

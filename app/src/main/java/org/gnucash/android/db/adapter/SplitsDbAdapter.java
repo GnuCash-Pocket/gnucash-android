@@ -144,8 +144,8 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
         Money quantity = new Money(quantityNum, quantityDenom, currencyCode);
 
         Split split = new Split(value, accountUID);
-        split.setQuantity(quantity);
         populateBaseModelAttributes(cursor, split);
+        split.setQuantity(quantity);
         split.setTransactionUID(transxUID);
         split.setType(TransactionType.valueOf(typeName));
         split.setMemo(memo);

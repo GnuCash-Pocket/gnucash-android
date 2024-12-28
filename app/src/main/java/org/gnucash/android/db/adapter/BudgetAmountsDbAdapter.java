@@ -64,9 +64,9 @@ public class BudgetAmountsDbAdapter extends DatabaseAdapter<BudgetAmount> {
         long periodNum = cursor.getLong(cursor.getColumnIndexOrThrow(BudgetAmountEntry.COLUMN_PERIOD_NUM));
 
         BudgetAmount budgetAmount = new BudgetAmount(budgetUID, accountUID);
+        populateBaseModelAttributes(cursor, budgetAmount);
         budgetAmount.setAmount(new Money(amountNum, amountDenom, getAccountCurrencyCode(accountUID)));
         budgetAmount.setPeriodNum(periodNum);
-        populateBaseModelAttributes(cursor, budgetAmount);
 
         return budgetAmount;
     }
