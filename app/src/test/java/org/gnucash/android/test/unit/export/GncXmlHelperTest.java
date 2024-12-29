@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.export.xml.GncXmlHelper;
 import org.gnucash.android.model.Commodity;
+import org.gnucash.android.test.unit.GnuCashTest;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -39,7 +40,7 @@ import java.util.TimeZone;
 /**
  * Test the helper methods used for generating GnuCash XML
  */
-public class GncXmlHelperTest {
+public class GncXmlHelperTest extends GnuCashTest {
 
     private static final TimeZone TZ_UTC = DateTimeZone.UTC.toTimeZone();
 
