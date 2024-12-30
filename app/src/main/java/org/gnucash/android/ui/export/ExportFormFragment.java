@@ -456,7 +456,7 @@ public class ExportFormFragment extends Fragment implements
         final long date = timestamp.getTime() - DateUtils.WEEK_IN_MILLIS;
         mExportStartCalendar.setTimeInMillis(date);
         mBinding.exportStartDate.setText(TransactionFormFragment.DATE_FORMATTER.print(date));
-        mBinding.exportStartDate.setText(TransactionFormFragment.TIME_FORMATTER.print(date));
+        mBinding.exportStartTime.setText(TransactionFormFragment.TIME_FORMATTER.print(date));
 
         mBinding.exportStartDate.setOnClickListener(new View.OnClickListener() {
 
@@ -484,9 +484,6 @@ public class ExportFormFragment extends Fragment implements
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mBinding.exportStartDate.setEnabled(!isChecked);
                 mBinding.exportStartTime.setEnabled(!isChecked);
-                int color = isChecked ? android.R.color.darker_gray : android.R.color.black;
-                mBinding.exportStartDate.setTextColor(ContextCompat.getColor(getContext(), color));
-                mBinding.exportStartTime.setTextColor(ContextCompat.getColor(getContext(), color));
             }
         });
 
