@@ -134,11 +134,15 @@ public class BalanceSheetFragment extends BaseReportFragment {
                         + " IN ( '" + TextUtils.join("' , '", accountTypes) + "' ) AND "
                         + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0",
                 null, DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC");
+        final int columnIndexUID = cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_UID);
+        final int columnIndexName = cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_NAME);
 
         while (cursor.moveToNext()) {
-            String accountUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_UID));
-            String name = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_NAME));
+            String accountUID = cursor.getString(columnIndexUID);
+            String name = cursor.getString(columnIndexName);
             Money balance = mAccountsDbAdapter.getAccountBalance(accountUID);
+            if (balance.isAmountZero()) continue;
+            // TODO alternate light and dark rows
             View view = inflater.inflate(R.layout.row_balance_sheet, tableLayout, false);
             ((TextView) view.findViewById(R.id.account_name)).setText(name);
             TextView balanceTextView = (TextView) view.findViewById(R.id.account_balance);
