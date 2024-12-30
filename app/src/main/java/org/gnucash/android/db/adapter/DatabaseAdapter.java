@@ -18,6 +18,7 @@ package org.gnucash.android.db.adapter;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
@@ -814,9 +815,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @return Total number of records in the database
      */
     public long getRecordsCount() {
-        String sql = "SELECT COUNT(*) FROM " + mTableName;
-        SQLiteStatement statement = mDb.compileStatement(sql);
-        return statement.simpleQueryForLong();
+        return DatabaseUtils.queryNumEntries(mDb, mTableName);
     }
 
     /**

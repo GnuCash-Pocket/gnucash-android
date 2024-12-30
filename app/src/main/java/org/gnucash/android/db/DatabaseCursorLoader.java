@@ -19,6 +19,7 @@ package org.gnucash.android.db;
 import android.content.Context;
 import android.database.Cursor;
 
+import androidx.annotation.Nullable;
 import androidx.loader.content.AsyncTaskLoader;
 import androidx.loader.content.Loader;
 
@@ -34,7 +35,7 @@ import org.gnucash.android.db.adapter.DatabaseAdapter;
  * @author Ngewi Fet <ngewif@gmail.com>
  * @see DatabaseAdapter
  */
-public abstract class DatabaseCursorLoader extends AsyncTaskLoader<Cursor> {
+public abstract class DatabaseCursorLoader<DA extends DatabaseAdapter<?>> extends AsyncTaskLoader<Cursor> {
     /**
      * Cursor which will hold the loaded data set.
      * The cursor will be returned from the {@link #loadInBackground()} method
@@ -44,7 +45,7 @@ public abstract class DatabaseCursorLoader extends AsyncTaskLoader<Cursor> {
     /**
      * {@link DatabaseAdapter} which will be used to load the records from the database
      */
-    protected DatabaseAdapter mDatabaseAdapter = null;
+    protected DA databaseAdapter = null;
 
     /**
      * A content observer which monitors the cursor and provides notifications when
@@ -67,6 +68,7 @@ public abstract class DatabaseCursorLoader extends AsyncTaskLoader<Cursor> {
     /**
      * Asynchronously loads the results from the database.
      */
+    @Nullable
     public abstract Cursor loadInBackground();
 
     /**

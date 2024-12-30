@@ -1066,21 +1066,20 @@ public class TransactionFormFragment extends Fragment implements
     public void onRecurrenceSet(String rrule) {
         Timber.i("TX reoccurs: %s", rrule);
         Context context = mBinding.inputRecurrence.getContext();
-        mRecurrenceRule = rrule;
-        if (mRecurrenceViewClickListener != null) {
-            mRecurrenceViewClickListener.setRecurrence(rrule);
-        }
-
         String repeatString = null;
         if (!TextUtils.isEmpty(rrule)) {
-            mEventRecurrence.parse(rrule);
-            repeatString = EventRecurrenceFormatter.getRepeatString(context, context.getResources(), mEventRecurrence, true);
+            try {
+                mEventRecurrence.parse(rrule);
+                repeatString = EventRecurrenceFormatter.getRepeatString(context, context.getResources(), mEventRecurrence, true);
+            } catch (Exception e) {
+                Timber.e(e, "Bad recurrence for [%s]", rrule);
+                return;
+            }
 
             //when recurrence is set, we will definitely be saving a template
             mBinding.checkboxSaveTemplate.setChecked(true);
             mBinding.checkboxSaveTemplate.setEnabled(false);
         } else {
-            repeatString = getString(R.string.label_tap_to_create_schedule);
             mBinding.checkboxSaveTemplate.setEnabled(true);
             mBinding.checkboxSaveTemplate.setChecked(false);
         }
@@ -1089,6 +1088,10 @@ public class TransactionFormFragment extends Fragment implements
         }
 
         mBinding.inputRecurrence.setText(repeatString);
+        mRecurrenceRule = rrule;
+        if (mRecurrenceViewClickListener != null) {
+            mRecurrenceViewClickListener.setRecurrence(rrule);
+        }
     }
 
     @Override

@@ -241,7 +241,7 @@ public class TransactionsListFragment extends Fragment implements
      *
      * @author Ngewi Fet <ngewif@gmail.com>
      */
-    protected static class TransactionsCursorLoader extends DatabaseCursorLoader {
+    protected static class TransactionsCursorLoader extends DatabaseCursorLoader<TransactionsDbAdapter> {
         private final String accountUID;
 
         public TransactionsCursorLoader(Context context, String accountUID) {
@@ -251,8 +251,9 @@ public class TransactionsListFragment extends Fragment implements
 
         @Override
         public Cursor loadInBackground() {
-            mDatabaseAdapter = TransactionsDbAdapter.getInstance();
-            Cursor c = ((TransactionsDbAdapter) mDatabaseAdapter).fetchAllTransactionsForAccount(accountUID);
+            databaseAdapter = TransactionsDbAdapter.getInstance();
+            if (databaseAdapter == null) return null;
+            Cursor c = databaseAdapter.fetchAllTransactionsForAccount(accountUID);
             if (c != null)
                 registerContentObserver(c);
             return c;

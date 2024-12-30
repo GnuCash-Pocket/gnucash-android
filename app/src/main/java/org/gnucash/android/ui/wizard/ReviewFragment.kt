@@ -1,6 +1,5 @@
 package org.gnucash.android.ui.wizard
 
-import android.graphics.Color
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -21,12 +20,7 @@ class ReviewFragment : Fragment(), ModelCallbacks, AdapterView.OnItemClickListen
 
     private var callbacks: Callbacks? = null
     private var wizardModel: AbstractWizardModel? = null
-    private var reviewAdapter: ReviewAdapter? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        reviewAdapter = ReviewAdapter()
-    }
+    private val reviewAdapter: ReviewAdapter = ReviewAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -80,19 +74,23 @@ class ReviewFragment : Fragment(), ModelCallbacks, AdapterView.OnItemClickListen
 
     override fun onResume() {
         super.onResume()
-        reviewAdapter?.notifyDataSetChanged()
+        reviewAdapter.notifyDataSetChanged()
+        // Workaround for `notifyDataSetChanged` not working properly.
+        view?.let { rootView ->
+            val listView = rootView.findViewById<View>(android.R.id.list) as ListView
+            listView.adapter = reviewAdapter
+        }
     }
 
     override fun onPageDataChanged(page: Page?) {
         val model = wizardModel ?: return
-        val adapter = reviewAdapter ?: return
         val reviewItems = ArrayList<ReviewItem>()
         for (p in model.getCurrentPageSequence()) {
             p.getReviewItems(reviewItems)
         }
-        reviewItems.sortWith { a, b -> if (a.weight > b.weight) +1 else if (a.weight < b.weight) -1 else 0 }
+        reviewItems.sortWith { a, b -> a.weight.compareTo(b.weight) }
 
-        adapter.reviewItems = reviewItems
+        reviewAdapter.reviewItems = reviewItems
     }
 
     override fun onPageTreeChanged() {
@@ -125,12 +123,12 @@ class ReviewFragment : Fragment(), ModelCallbacks, AdapterView.OnItemClickListen
         }
 
         override fun hasStableIds(): Boolean {
-            return false
+            return true
         }
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             val inflater = LayoutInflater.from(parent.context)
-            val rootView: View = inflater.inflate(
+            val rootView: View = convertView ?: inflater.inflate(
                 com.tech.freak.wizardpager.R.layout.list_item_review,
                 parent,
                 false
@@ -148,7 +146,7 @@ class ReviewFragment : Fragment(), ModelCallbacks, AdapterView.OnItemClickListen
     }
 
     override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-        val item = reviewAdapter?.reviewItems?.get(position) ?: return
+        val item = reviewAdapter.reviewItems[position]
         callbacks?.onEditScreenAfterReview(item.pageKey)
     }
 }

@@ -36,19 +36,14 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.collection.LongSparseArray;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -68,6 +63,7 @@ import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.transaction.TransactionsActivity;
 import org.gnucash.android.ui.util.TaskDelegate;
+import org.gnucash.android.ui.util.widget.FragmentStateAdapter;
 import org.gnucash.android.ui.wizard.FirstRunWizardActivity;
 import org.gnucash.android.util.BackupManager;
 
@@ -138,36 +134,14 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
     /**
      * Adapter for managing the sub-account and transaction fragment pages in the accounts view
      */
-    private static class AccountViewPagerAdapter extends RecyclerView.Adapter<FragmentViewHolder> {
+    private static class AccountViewPagerAdapter extends FragmentStateAdapter {
         /**
          * Number of pages to show
          */
         private static final int DEFAULT_NUM_PAGES = 3;
 
-        private final FragmentManager fragmentManager;
-        private final LongSparseArray<Fragment> fragments = new LongSparseArray<>();
-
         public AccountViewPagerAdapter(FragmentActivity activity) {
-            super();
-            fragmentManager = activity.getSupportFragmentManager();
-            setHasStableIds(true);
-        }
-
-        @Override
-        public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
-            super.onDetachedFromRecyclerView(recyclerView);
-
-            FragmentTransaction tx = fragmentManager.beginTransaction();
-            final int count = getItemCount();
-            for (int i = 0; i < count; i++) {
-                long itemId = getItemId(i);
-                Fragment fragment = fragments.get(itemId);
-                if (fragment != null) {
-                    tx.remove(fragment);
-                }
-            }
-            tx.commitAllowingStateLoss();
-            fragments.clear();
+            super(activity);
         }
 
         @NonNull
@@ -185,31 +159,9 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
             }
         }
 
-        @NonNull
-        @Override
-        public FragmentViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return FragmentViewHolder.create(parent);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull FragmentViewHolder holder, int position) {
-            long itemId = getItemId(position);
-            Fragment fragment = holder.getFragment();
-            if (fragment == null) {
-                fragment = createFragment(position);
-                holder.bind(fragment, fragmentManager);
-                fragments.put(itemId, fragment);
-            }
-        }
-
         @Override
         public int getItemCount() {
             return DEFAULT_NUM_PAGES;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
         }
     }
 

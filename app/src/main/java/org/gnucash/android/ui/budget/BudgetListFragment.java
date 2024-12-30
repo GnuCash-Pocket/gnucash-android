@@ -311,7 +311,7 @@ public class BudgetListFragment extends Fragment implements Refreshable,
     /**
      * Loads Budgets asynchronously from the database
      */
-    private static class BudgetsCursorLoader extends DatabaseCursorLoader {
+    private static class BudgetsCursorLoader extends DatabaseCursorLoader<BudgetsDbAdapter> {
 
         /**
          * Constructor
@@ -325,8 +325,9 @@ public class BudgetListFragment extends Fragment implements Refreshable,
 
         @Override
         public Cursor loadInBackground() {
-            mDatabaseAdapter = BudgetsDbAdapter.getInstance();
-            return mDatabaseAdapter.fetchAllRecords(null, null, DatabaseSchema.BudgetEntry.COLUMN_NAME + " ASC");
+            databaseAdapter = BudgetsDbAdapter.getInstance();
+            if (databaseAdapter == null) return null;
+            return databaseAdapter.fetchAllRecords(null, null, DatabaseSchema.BudgetEntry.COLUMN_NAME + " ASC");
         }
     }
 }
