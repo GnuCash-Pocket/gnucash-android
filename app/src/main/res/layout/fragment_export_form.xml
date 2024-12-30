@@ -19,6 +19,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
+    android:fillViewport="true"
     tools:context=".ui.common.FormActivity">
 
     <LinearLayout
@@ -39,7 +40,7 @@
             <TextView
                 style="@style/TextAppearance.EditTransaction_Small"
                 android:layout_width="wrap_content"
-                android:layout_height="?android:attr/listPreferredItemHeight"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:gravity="center_vertical"
                 android:text="@string/label_export_destination" />
@@ -54,8 +55,9 @@
         <TextView
             android:id="@+id/target_uri"
             style="@style/TextAppearance.Hint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginStart="100dp"
-            android:layout_marginBottom="@dimen/dialog_padding"
             android:textColor="@color/title_green"
             tools:text="/path/to/export/file" />
 
@@ -70,7 +72,7 @@
                 android:id="@+id/label_export_format"
                 style="@style/TextAppearance.EditTransaction_Small"
                 android:layout_width="wrap_content"
-                android:layout_height="?android:attr/listPreferredItemHeight"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:gravity="center_vertical"
                 android:text="@string/label_export_format" />
@@ -111,6 +113,8 @@
         <TextView
             android:id="@+id/export_warning"
             style="@style/TextAppearance.Hint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginStart="100dp"
             android:textColor="@color/title_green"
             tools:text="Some format-based export warning" />
@@ -128,7 +132,7 @@
                 android:id="@+id/label_separator_format"
                 style="@style/TextAppearance.EditTransaction_Small"
                 android:layout_width="wrap_content"
-                android:layout_height="?android:attr/listPreferredItemHeight"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:gravity="center_vertical"
                 android:text="@string/label_csv_separator" />
@@ -167,9 +171,10 @@
         <LinearLayout
             android:id="@+id/export_date_layout"
             android:layout_width="match_parent"
-            android:layout_height="?android:attr/listPreferredItemHeight"
-            android:layout_marginTop="@dimen/dialog_padding"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:layout_marginBottom="@dimen/dialog_padding"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <TextView
@@ -183,26 +188,26 @@
 
             <TextView
                 android:id="@+id/export_start_date"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_weight="2"
-                android:clickable="true"
                 android:gravity="center"
+                android:padding="8dp"
                 android:textColor="?android:textColorPrimary"
                 android:textSize="15sp"
                 tools:text="@tools:sample/date/ddmmyy" />
 
             <TextView
                 android:id="@+id/export_start_time"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_weight="1.5"
-                android:clickable="true"
                 android:gravity="center"
+                android:padding="8dp"
                 android:textColor="?android:textColorPrimary"
                 android:textSize="15sp"
-                tools:text="@tools:sample/date/hhmm" />
+                tools:text="@tools:sample/date/hhmmss" />
 
             <Switch
                 android:id="@+id/switch_export_all"
@@ -220,7 +225,7 @@
             android:id="@+id/checkbox_post_export_delete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="12dp"
             android:text="@string/option_delete_after_export"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
