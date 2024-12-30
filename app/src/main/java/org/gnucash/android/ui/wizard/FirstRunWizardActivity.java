@@ -33,7 +33,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.tech.freak.wizardpager.model.AbstractWizardModel;
@@ -49,6 +48,7 @@ import org.gnucash.android.databinding.ActivityFirstRunWizardBinding;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.ui.account.AccountsActivity;
 import org.gnucash.android.ui.util.TaskDelegate;
+import org.gnucash.android.ui.util.widget.FragmentStateAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -175,7 +175,6 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
         AccountsActivity.removeFirstRunFlag(this);
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onPageTreeChanged() {
         mPagerAdapter.setPages(mWizardModel.getCurrentPageSequence());

@@ -25,6 +25,7 @@ import static org.gnucash.android.util.ColorExtKt.parseColor;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
@@ -1051,15 +1052,12 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return Number of sub accounts
      */
     public int getSubAccountCount(String accountUID) {
-        //TODO: at some point when API level 11 and above only is supported, use DatabaseUtils.queryNumEntries
-
-        String queryCount = "SELECT COUNT(*) FROM " + AccountEntry.TABLE_NAME + " WHERE "
-                + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " = ?";
-        Cursor cursor = mDb.rawQuery(queryCount, new String[]{accountUID});
-        cursor.moveToFirst();
-        int count = cursor.getInt(0);
-        cursor.close();
-        return count;
+        return (int) DatabaseUtils.queryNumEntries(
+            mDb,
+            AccountEntry.TABLE_NAME,
+            AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " = ?",
+            new String[]{accountUID}
+        );
     }
 
     /**

@@ -374,10 +374,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      * @return Number of transactions
      */
     public long getRecordsCount() {
-        String sql = "SELECT COUNT(*) FROM " + TransactionEntry.TABLE_NAME +
-            " WHERE " + TransactionEntry.COLUMN_TEMPLATE + " =0";
-        SQLiteStatement statement = mDb.compileStatement(sql);
-        return statement.simpleQueryForLong();
+        return DatabaseUtils.queryNumEntries(mDb, TransactionEntry.TABLE_NAME, TransactionEntry.COLUMN_TEMPLATE + "=0");
     }
 
     /**
@@ -493,10 +490,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      * @return Number of template transactions
      */
     public long getTemplateTransactionsCount() {
-        String sql = "SELECT COUNT(*) FROM " + TransactionEntry.TABLE_NAME
-                + " WHERE " + TransactionEntry.COLUMN_TEMPLATE + "=1";
-        SQLiteStatement statement = mDb.compileStatement(sql);
-        return statement.simpleQueryForLong();
+        return DatabaseUtils.queryNumEntries(mDb, TransactionEntry.TABLE_NAME, TransactionEntry.COLUMN_TEMPLATE + "=1");
     }
 
     /**
@@ -521,12 +515,14 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      * @return Number of splits belonging to the transaction
      */
     public long getSplitCount(@NonNull String transactionUID) {
-        if (transactionUID == null)
+        if (TextUtils.isEmpty(transactionUID))
             return 0;
-        String sql = "SELECT COUNT(*) FROM " + SplitEntry.TABLE_NAME
-                + " WHERE " + SplitEntry.COLUMN_TRANSACTION_UID + "= '" + transactionUID + "'";
-        SQLiteStatement statement = mDb.compileStatement(sql);
-        return statement.simpleQueryForLong();
+        return DatabaseUtils.queryNumEntries(
+            mDb,
+            SplitEntry.TABLE_NAME,
+            SplitEntry.COLUMN_TRANSACTION_UID + "=?",
+            new String[]{transactionUID}
+        );
     }
 
     /**

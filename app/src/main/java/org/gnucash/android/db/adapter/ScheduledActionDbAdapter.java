@@ -19,6 +19,7 @@ import static org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 
@@ -245,10 +246,11 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
      * @return Number of transactions created from scheduled action
      */
     public long getActionInstanceCount(String scheduledActionUID) {
-        String sql = "SELECT COUNT(*) FROM " + DatabaseSchema.TransactionEntry.TABLE_NAME
-                + " WHERE " + DatabaseSchema.TransactionEntry.COLUMN_SCHEDX_ACTION_UID + "=?";
-        SQLiteStatement statement = mDb.compileStatement(sql);
-        statement.bindString(1, scheduledActionUID);
-        return statement.simpleQueryForLong();
+        return DatabaseUtils.queryNumEntries(
+            mDb,
+            DatabaseSchema.TransactionEntry.TABLE_NAME,
+            DatabaseSchema.TransactionEntry.COLUMN_SCHEDX_ACTION_UID + "=?",
+            new String[]{scheduledActionUID}
+        );
     }
 }

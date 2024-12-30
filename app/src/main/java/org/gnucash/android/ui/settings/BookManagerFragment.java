@@ -343,15 +343,17 @@ public class BookManagerFragment extends ListFragment implements
      *
      * @author Ngewi Fet <ngewif@gmail.com>
      */
-    private static class BooksCursorLoader extends DatabaseCursorLoader {
+    private static class BooksCursorLoader extends DatabaseCursorLoader<BooksDbAdapter> {
         BooksCursorLoader(Context context) {
             super(context);
         }
 
         @Override
         public Cursor loadInBackground() {
-            BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
-            Cursor cursor = booksDbAdapter.fetchAllRecords();
+            BooksDbAdapter dbAdapter = BooksDbAdapter.getInstance();
+            if (dbAdapter == null) return null;
+            databaseAdapter = dbAdapter;
+            Cursor cursor = dbAdapter.fetchAllRecords();
             registerContentObserver(cursor);
             return cursor;
         }

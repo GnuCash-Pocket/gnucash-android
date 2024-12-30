@@ -48,13 +48,14 @@ class ScheduledExportsListFragment : ScheduledActionsListFragment() {
      *
      * @author Ngewi Fet <ngewif></ngewif>@gmail.com>
      */
-    private class ScheduledExportCursorLoader(context: Context) : DatabaseCursorLoader(context) {
+    private class ScheduledExportCursorLoader(context: Context) : DatabaseCursorLoader<ScheduledActionDbAdapter>(context) {
         init {
-            mDatabaseAdapter = ScheduledActionDbAdapter.getInstance()
+            databaseAdapter = ScheduledActionDbAdapter.getInstance()
         }
 
-        override fun loadInBackground(): Cursor {
-            val cursor = mDatabaseAdapter.fetchAllRecords(
+        override fun loadInBackground(): Cursor? {
+            if (databaseAdapter == null) return null
+            val cursor = databaseAdapter.fetchAllRecords(
                 DatabaseSchema.ScheduledActionEntry.COLUMN_TYPE + "=?",
                 arrayOf(ScheduledAction.ActionType.BACKUP.name), null
             )

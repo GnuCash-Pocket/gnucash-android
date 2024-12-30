@@ -332,17 +332,16 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
         while (true) {
             String name = context.getString(R.string.book_default_name, bookCount);
 
-            statement.clearBindings();
             statement.bindString(1, name);
             long nameCount = statement.simpleQueryForLong();
 
             if (nameCount == 0) {
+                statement.close();
                 return name;
             }
 
             bookCount++;
         }
-
     }
 
 

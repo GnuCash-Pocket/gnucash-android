@@ -68,7 +68,7 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
         long valueDenom = cursor.getLong(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_VALUE_DENOM));
 
         CommoditiesDbAdapter commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
-        Price price = new Price(commoditiesDbAdapter.getCommodity(commodityUID), commoditiesDbAdapter.getCommodity(currencyUID));
+        Price price = new Price(commoditiesDbAdapter.getRecord(commodityUID), commoditiesDbAdapter.getRecord(currencyUID));
         populateBaseModelAttributes(cursor, price);
         price.setDate(TimestampHelper.getTimestampFromUtcString(dateString));
         price.setSource(source);

@@ -18,7 +18,7 @@ class PasscodeFragment : KeyboardFragment() {
     }
 
     override fun onPasscodeEntered(code: String) {
-        val codeOld = passcodeOriginal!!
+        val codeOld = passcodeOriginal.orEmpty()
         Timber.d("Passcode: %s ~ %s", codeOld, code)
         val context: Context = requireContext()
 

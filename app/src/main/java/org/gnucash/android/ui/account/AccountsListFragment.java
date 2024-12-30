@@ -422,7 +422,7 @@ public class AccountsListFragment extends Fragment implements
      *
      * @author Ngewi Fet <ngewif@gmail.com>
      */
-    private static final class AccountsCursorLoader extends DatabaseCursorLoader {
+    private static final class AccountsCursorLoader extends DatabaseCursorLoader<AccountsDbAdapter> {
         private String mParentAccountUID = null;
         private String mFilter;
         private DisplayMode mDisplayMode = DisplayMode.TOP_LEVEL;
@@ -455,28 +455,29 @@ public class AccountsListFragment extends Fragment implements
 
         @Override
         public Cursor loadInBackground() {
-            final AccountsDbAdapter adapter = AccountsDbAdapter.getInstance();
-            mDatabaseAdapter = adapter;
-            Cursor cursor;
+            final AccountsDbAdapter dbAdapter = AccountsDbAdapter.getInstance();
+            if (dbAdapter == null) return null;
+            databaseAdapter = dbAdapter;
+            final Cursor cursor;
 
             if (mFilter != null) {
-                cursor = adapter
+                cursor = dbAdapter
                     .fetchAccounts(DatabaseSchema.AccountEntry.COLUMN_HIDDEN + "= 0 AND "
                             + DatabaseSchema.AccountEntry.COLUMN_NAME + " LIKE '%" + escapeForLike(mFilter) + "%'",
                         null, null);
             } else if (!TextUtils.isEmpty(mParentAccountUID))
-                cursor = adapter.fetchSubAccounts(mParentAccountUID);
+                cursor = dbAdapter.fetchSubAccounts(mParentAccountUID);
             else {
                 switch (mDisplayMode) {
                     case RECENT:
-                        cursor = adapter.fetchRecentAccounts(10);
+                        cursor = dbAdapter.fetchRecentAccounts(10);
                         break;
                     case FAVORITES:
-                        cursor = adapter.fetchFavoriteAccounts();
+                        cursor = dbAdapter.fetchFavoriteAccounts();
                         break;
                     case TOP_LEVEL:
                     default:
-                        cursor = adapter.fetchTopLevelAccounts();
+                        cursor = dbAdapter.fetchTopLevelAccounts();
                         break;
                 }
             }
