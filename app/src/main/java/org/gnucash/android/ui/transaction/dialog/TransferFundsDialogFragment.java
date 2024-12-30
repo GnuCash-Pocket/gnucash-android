@@ -92,8 +92,8 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
         colorBalanceZero = binding.amountToConvert.getCurrentTextColor();
 
         displayBalance(binding.amountToConvert, mOriginAmount, colorBalanceZero);
-        Commodity fromCommodity = mOriginAmount.getCommodity();
-        Commodity targetCommodity = mTargetCommodity;
+        final Commodity fromCommodity = mOriginAmount.getCommodity();
+        final Commodity targetCommodity = mTargetCommodity;
         String fromCurrencyCode = fromCommodity.getCurrencyCode();
         String targetCurrencyCode = targetCommodity.getCurrencyCode();
         binding.fromCurrency.setText(fromCurrencyCode);
@@ -180,7 +180,7 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
             .setPositiveButton(R.string.btn_save, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    transferFunds();
+                    transferFunds(mOriginAmount.getCommodity(), mTargetCommodity);
                 }
             })
             .create();
@@ -189,9 +189,7 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
     /**
      * Converts the currency amount with the given exchange rate and saves the price to the db
      */
-    private void transferFunds() {
-        Commodity originCommodity = mOriginAmount.getCommodity();
-        Commodity targetCommodity = mTargetCommodity;
+    private void transferFunds(Commodity originCommodity, Commodity targetCommodity) {
         Money convertedAmount = null;
 
         Price price = null;
@@ -214,7 +212,7 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
                 binding.convertedAmountTextInputLayout.setError(getString(R.string.error_invalid_amount));
                 return;
             }
-            convertedAmount = new Money(amount, mTargetCommodity);
+            convertedAmount = new Money(amount, targetCommodity);
 
             price = new Price(originCommodity, targetCommodity);
             // fractions cannot be exactly represented by BigDecimal.

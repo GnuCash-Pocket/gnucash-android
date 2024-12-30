@@ -50,21 +50,6 @@ public class BulkMoveDialogFragment extends DialogFragment {
     public static final String TAG = "bulk_move_transactions";
 
     /**
-     * Spinner for selecting the account to move the transactions to
-     */
-    private Spinner mDestinationAccountSpinner;
-
-    /**
-     * Record IDs of the transactions to be moved
-     */
-    private long[] mTransactionIds = null;
-
-    /**
-     * GUID of account from which to move the transactions
-     */
-    private String mOriginAccountUID = null;
-
-    /**
      * Create new instance of the bulk move dialog
      *
      * @param transactionIds   Array of transaction database record IDs
@@ -84,10 +69,27 @@ public class BulkMoveDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         DialogBulkMoveBinding binding = DialogBulkMoveBinding.inflate(getLayoutInflater());
-        Context context = binding.getRoot().getContext();
-        mDestinationAccountSpinner = binding.accountsListSpinner;
+        final Context context = binding.getRoot().getContext();
+        final Spinner accountSpinner = binding.accountsListSpinner;
 
-        String title = context.getString(R.string.title_move_transactions, mTransactionIds.length);
+        Bundle args = getArguments();
+        final long[] selectedTransactionIds = args.getLongArray(UxArgument.SELECTED_TRANSACTION_IDS);
+        final long[] transactionIds = (selectedTransactionIds != null) ? selectedTransactionIds : new long[0];
+        final String originAccountUID = args.getString(UxArgument.ORIGIN_ACCOUNT_UID);
+
+        AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
+        String conditions = "(" + DatabaseSchema.AccountEntry.COLUMN_UID + " != ? AND "
+            + DatabaseSchema.AccountEntry.COLUMN_CURRENCY + " = ? AND "
+            + DatabaseSchema.AccountEntry.COLUMN_HIDDEN + " = 0 AND "
+            + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0"
+            + ")";
+        Cursor cursor = accountsDbAdapter.fetchAccountsOrderedByFullName(conditions,
+            new String[]{originAccountUID, accountsDbAdapter.getCurrencyCode(originAccountUID)});
+
+        SimpleCursorAdapter adapter = new QualifiedAccountNameCursorAdapter(context, cursor);
+        accountSpinner.setAdapter(adapter);
+
+        String title = context.getString(R.string.title_move_transactions, transactionIds.length);
 
         return new AlertDialog.Builder(context, getTheme())
             .setTitle(title)
@@ -101,41 +103,17 @@ public class BulkMoveDialogFragment extends DialogFragment {
             .setPositiveButton(R.string.btn_move, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    moveTransaction();
+                    moveTransaction(context, transactionIds, originAccountUID, accountSpinner.getSelectedItemId());
                 }
             })
             .create();
     }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        Bundle args = getArguments();
-        mTransactionIds = args.getLongArray(UxArgument.SELECTED_TRANSACTION_IDS);
-        mOriginAccountUID = args.getString(UxArgument.ORIGIN_ACCOUNT_UID);
-
-        AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
-        String conditions = "(" + DatabaseSchema.AccountEntry.COLUMN_UID + " != ? AND "
-                + DatabaseSchema.AccountEntry.COLUMN_CURRENCY + " = ? AND "
-                + DatabaseSchema.AccountEntry.COLUMN_HIDDEN + " = 0 AND "
-                + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0"
-                + ")";
-        Cursor cursor = accountsDbAdapter.fetchAccountsOrderedByFullName(conditions,
-                new String[]{mOriginAccountUID, accountsDbAdapter.getCurrencyCode(mOriginAccountUID)});
-
-        SimpleCursorAdapter adapter = new QualifiedAccountNameCursorAdapter(getActivity(), cursor);
-        mDestinationAccountSpinner.setAdapter(adapter);
-    }
-
-    private void moveTransaction() {
-        if (mTransactionIds == null) {
-            dismiss();
+    private void moveTransaction(@NonNull Context context, @Nullable long[] transactionIds, String srcAccountUID, long dstAccountId) {
+        if (transactionIds == null) {
+            return;
         }
-        Context context = requireContext();
 
-        String srcAccountUID = mOriginAccountUID;
-        long dstAccountId = mDestinationAccountSpinner.getSelectedItemId();
         String dstAccountUID = AccountsDbAdapter.getInstance().getUID(dstAccountId);
         TransactionsDbAdapter trxnAdapter = TransactionsDbAdapter.getInstance();
         if (!trxnAdapter.getAccountCurrencyCode(dstAccountUID).equals(trxnAdapter.getAccountCurrencyCode(srcAccountUID))) {
@@ -143,7 +121,7 @@ public class BulkMoveDialogFragment extends DialogFragment {
             return;
         }
 
-        for (long trxnId : mTransactionIds) {
+        for (long trxnId : transactionIds) {
             trxnAdapter.moveTransaction(trxnAdapter.getUID(trxnId), srcAccountUID, dstAccountUID);
         }
 
@@ -152,7 +130,5 @@ public class BulkMoveDialogFragment extends DialogFragment {
         result.putBoolean(Refreshable.EXTRA_REFRESH, true);
         result.putString(UxArgument.SELECTED_ACCOUNT_UID, dstAccountUID);
         getParentFragmentManager().setFragmentResult(TAG, result);
-
-        dismiss();
     }
 }
