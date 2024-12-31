@@ -20,6 +20,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
@@ -77,8 +78,10 @@ public class BookDbHelper extends SQLiteOpenHelper {
         Book book = new Book();
         DatabaseHelper helper = new DatabaseHelper(context, book.getUID());
         SQLiteDatabase mainDb = helper.getWritableDatabase(); //actually create the db
-        AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(mainDb,
-            new TransactionsDbAdapter(mainDb, new SplitsDbAdapter(mainDb)));
+        AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(
+            mainDb,
+            new TransactionsDbAdapter(mainDb, new SplitsDbAdapter(mainDb))
+        );
 
         String rootAccountUID = accountsDbAdapter.getOrCreateGnuCashRootAccountUID();
         try {
@@ -121,11 +124,15 @@ public class BookDbHelper extends SQLiteOpenHelper {
      * @param book Book to insert
      */
     private void insertBook(SQLiteDatabase db, Book book) {
+        String name = book.getDisplayName();
+        if (TextUtils.isEmpty(name)) {
+            name = new BooksDbAdapter(db).generateDefaultBookName();
+        }
         ContentValues contentValues = new ContentValues();
         contentValues.put(BookEntry.COLUMN_UID, book.getUID());
         contentValues.put(BookEntry.COLUMN_ROOT_GUID, book.getRootAccountUID());
         contentValues.put(BookEntry.COLUMN_TEMPLATE_GUID, Book.generateUID());
-        contentValues.put(BookEntry.COLUMN_DISPLAY_NAME, new BooksDbAdapter(db).generateDefaultBookName());
+        contentValues.put(BookEntry.COLUMN_DISPLAY_NAME, name);
         contentValues.put(BookEntry.COLUMN_ACTIVE, book.isActive() ? 1 : 0);
 
         db.insert(BookEntry.TABLE_NAME, null, contentValues);

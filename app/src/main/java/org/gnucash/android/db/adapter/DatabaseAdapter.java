@@ -719,6 +719,10 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
         return mDb.update(mTableName, contentValues, CommonColumns.COLUMN_UID + "=?", new String[]{uid});
     }
 
+    public void updateRecord(Model model) {
+        addRecord(model, UpdateMethod.update);
+    }
+
     /**
      * Updates all records which match the {@code where} clause with the {@code newValue} for the column
      *
