@@ -23,7 +23,6 @@ import static org.gnucash.android.ui.util.widget.ViewExtKt.setTextToEnd;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.Cursor;
@@ -51,14 +50,13 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.cursoradapter.widget.SimpleCursorAdapter;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentResultListener;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.databinding.FragmentAccountFormBinding;
-import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
@@ -68,7 +66,6 @@ import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.ui.colorpicker.ColorPickerDialog;
 import org.gnucash.android.ui.common.UxArgument;
-import org.gnucash.android.ui.settings.PreferenceActivity;
 import org.gnucash.android.util.CommoditiesCursorAdapter;
 import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
 
@@ -86,7 +83,7 @@ import timber.log.Timber;
  * @author Ngewi Fet <ngewif@gmail.com>
  * @author Yongxin Wang <fefe.wyx@gmail.com>
  */
-public class AccountFormFragment extends Fragment implements FragmentResultListener {
+public class AccountFormFragment extends MenuFragment implements FragmentResultListener {
     /**
      * Accounts database adapter
      */
@@ -173,7 +170,6 @@ public class AccountFormFragment extends Fragment implements FragmentResultListe
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
         mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled();
     }

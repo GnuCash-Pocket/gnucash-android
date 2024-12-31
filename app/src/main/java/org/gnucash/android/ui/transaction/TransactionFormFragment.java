@@ -48,7 +48,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cursoradapter.widget.SimpleCursorAdapter;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence;
@@ -58,6 +57,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.databinding.FragmentTransactionFormBinding;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
@@ -101,7 +101,7 @@ import timber.log.Timber;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class TransactionFormFragment extends Fragment implements
+public class TransactionFormFragment extends MenuFragment implements
     DatePickerDialog.OnDateSetListener,
     TimePickerDialog.OnTimeSetListener,
     RecurrencePickerDialogFragment.OnRecurrenceSetListener, OnTransferFundsListener {
@@ -300,7 +300,6 @@ public class TransactionFormFragment extends Fragment implements
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        setHasOptionsMenu(true);
 
         ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
         assert actionBar != null;

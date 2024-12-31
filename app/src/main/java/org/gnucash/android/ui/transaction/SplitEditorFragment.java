@@ -43,11 +43,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cursoradapter.widget.SimpleCursorAdapter;
-import androidx.fragment.app.Fragment;
 
 import com.google.android.material.snackbar.Snackbar;
 
 import org.gnucash.android.R;
+import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.databinding.FragmentSplitEditorBinding;
 import org.gnucash.android.databinding.ItemSplitEntryBinding;
 import org.gnucash.android.db.DatabaseSchema;
@@ -80,7 +80,7 @@ import java.util.List;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class SplitEditorFragment extends Fragment {
+public class SplitEditorFragment extends MenuFragment {
     private AccountsDbAdapter mAccountsDbAdapter;
     private Cursor mCursor;
     private SimpleCursorAdapter mCursorAdapter;
@@ -136,7 +136,6 @@ public class SplitEditorFragment extends Fragment {
         ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
         assert actionBar != null;
         actionBar.setTitle(R.string.title_split_editor);
-        setHasOptionsMenu(true);
 
         mSplitItemViewList = new ArrayList<>();
 

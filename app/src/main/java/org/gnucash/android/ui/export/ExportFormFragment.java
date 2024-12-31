@@ -49,8 +49,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
 
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence;
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrenceFormatter;
@@ -58,6 +56,7 @@ import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFra
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.databinding.FragmentExportFormBinding;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
@@ -94,7 +93,7 @@ import timber.log.Timber;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class ExportFormFragment extends Fragment implements
+public class ExportFormFragment extends MenuFragment implements
     RecurrencePickerDialogFragment.OnRecurrenceSetListener,
     DatePickerDialog.OnDateSetListener,
     TimePickerDialog.OnTimeSetListener {
@@ -321,10 +320,9 @@ public class ExportFormFragment extends Fragment implements
         super.onActivityCreated(savedInstanceState);
 
         AppCompatActivity activity = (AppCompatActivity) requireActivity();
-        ActionBar supportActionBar = activity.getSupportActionBar();
-        assert supportActionBar != null;
-        supportActionBar.setTitle(R.string.title_export_dialog);
-        setHasOptionsMenu(true);
+        ActionBar actionBar = activity.getSupportActionBar();
+        assert actionBar != null;
+        actionBar.setTitle(R.string.title_export_dialog);
     }
 
     @Override

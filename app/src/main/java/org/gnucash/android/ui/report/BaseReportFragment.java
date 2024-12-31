@@ -37,7 +37,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
 
 import com.github.mikephil.charting.data.ChartData;
 import com.github.mikephil.charting.data.Entry;
@@ -46,6 +45,7 @@ import com.github.mikephil.charting.interfaces.datasets.IDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
 import org.gnucash.android.R;
+import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
@@ -69,7 +69,7 @@ import java.util.List;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public abstract class BaseReportFragment extends Fragment implements
+public abstract class BaseReportFragment extends MenuFragment implements
     OnChartValueSelectedListener, ReportOptionsListener, Refreshable {
 
     /**
@@ -200,8 +200,6 @@ public abstract class BaseReportFragment extends Fragment implements
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         assert actionBar != null;
         actionBar.setTitle(getTitle());
-
-        setHasOptionsMenu(true);
 
         ReportsActivity reportsActivity = (ReportsActivity) getActivity();
         mReportPeriodStart = reportsActivity.getReportPeriodStart();

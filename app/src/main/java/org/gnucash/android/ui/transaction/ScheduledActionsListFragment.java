@@ -33,7 +33,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
-import androidx.fragment.app.Fragment;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -41,6 +40,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.ActivityExtKt;
+import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.databinding.FragmentScheduledEventsListBinding;
 import org.gnucash.android.databinding.ListItemScheduledTrxnBinding;
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
@@ -60,7 +60,7 @@ import timber.log.Timber;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public abstract class ScheduledActionsListFragment extends Fragment implements
+public abstract class ScheduledActionsListFragment extends MenuFragment implements
     Refreshable,
     LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -94,7 +94,6 @@ public abstract class ScheduledActionsListFragment extends Fragment implements
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeButtonEnabled(true);
-        setHasOptionsMenu(true);
     }
 
     @Override
