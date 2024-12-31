@@ -47,6 +47,7 @@ import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 
 import org.gnucash.android.R;
+import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.databinding.CardviewBudgetAmountBinding;
 import org.gnucash.android.databinding.FragmentBudgetDetailBinding;
 import org.gnucash.android.db.DatabaseSchema;
@@ -69,7 +70,7 @@ import java.util.List;
 /**
  * Fragment for displaying budget details
  */
-public class BudgetDetailFragment extends Fragment implements Refreshable {
+public class BudgetDetailFragment extends MenuFragment implements Refreshable {
     private String mBudgetUID;
     private BudgetsDbAdapter mBudgetsDbAdapter;
 
@@ -110,8 +111,6 @@ public class BudgetDetailFragment extends Fragment implements Refreshable {
         mBudgetsDbAdapter = BudgetsDbAdapter.getInstance();
         mBudgetUID = getArguments().getString(UxArgument.BUDGET_UID);
         bindViews();
-
-        setHasOptionsMenu(true);
     }
 
     private void bindViews() {

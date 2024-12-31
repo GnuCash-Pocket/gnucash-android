@@ -45,8 +45,6 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
-import androidx.core.view.MenuItemCompat;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentResultListener;
 import androidx.lifecycle.Lifecycle;
@@ -57,7 +55,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.databinding.CardviewAccountBinding;
 import org.gnucash.android.databinding.FragmentAccountsListBinding;
 import org.gnucash.android.db.DatabaseCursorLoader;
@@ -83,7 +81,7 @@ import timber.log.Timber;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class AccountsListFragment extends Fragment implements
+public class AccountsListFragment extends MenuFragment implements
     Refreshable,
     LoaderManager.LoaderCallbacks<Cursor>,
     SearchView.OnQueryTextListener,
@@ -151,6 +149,7 @@ public class AccountsListFragment extends Fragment implements
 
         mBinding.list.setHasFixedSize(true);
         mBinding.list.setEmptyView(mBinding.emptyView);
+        mBinding.list.setAdapter(mAccountRecyclerAdapter);
 
         switch (mDisplayMode) {
 
@@ -190,20 +189,15 @@ public class AccountsListFragment extends Fragment implements
                 mDisplayMode = (DisplayMode) savedInstanceState.getSerializable(STATE_DISPLAY_MODE);
             }
         }
-    }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        ActionBar actionbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        AppCompatActivity activity = (AppCompatActivity) requireActivity();
+        ActionBar actionbar = activity.getSupportActionBar();
+        assert actionbar != null;
         actionbar.setTitle(R.string.title_accounts);
         actionbar.setDisplayHomeAsUpEnabled(true);
-        setHasOptionsMenu(true);
 
         // specify an adapter (see also next example)
         mAccountRecyclerAdapter = new AccountRecyclerAdapter(null);
-        mBinding.list.setAdapter(mAccountRecyclerAdapter);
     }
 
     @Override
@@ -281,21 +275,20 @@ public class AccountsListFragment extends Fragment implements
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        if (mParentAccountUID != null)
+        if (!TextUtils.isEmpty(mParentAccountUID))
             inflater.inflate(R.menu.sub_account_actions, menu);
         else {
             inflater.inflate(R.menu.account_actions, menu);
             // Associate searchable configuration with the SearchView
 
-            SearchManager searchManager =
-                (SearchManager) GnuCashApplication.getAppContext().getSystemService(Context.SEARCH_SERVICE);
-            mSearchView = (SearchView)
-                MenuItemCompat.getActionView(menu.findItem(R.id.menu_search));
+            mSearchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
             if (mSearchView == null)
                 return;
 
+            Activity context = requireActivity();
+            SearchManager searchManager = (SearchManager) context.getSystemService(Context.SEARCH_SERVICE);
             mSearchView.setSearchableInfo(
-                searchManager.getSearchableInfo(getActivity().getComponentName()));
+                searchManager.getSearchableInfo(context.getComponentName()));
             mSearchView.setOnQueryTextListener(this);
             mSearchView.setOnCloseListener(this);
         }

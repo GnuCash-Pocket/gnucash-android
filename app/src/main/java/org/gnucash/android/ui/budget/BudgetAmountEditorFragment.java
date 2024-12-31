@@ -36,9 +36,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
 
 import org.gnucash.android.R;
+import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.databinding.FragmentBudgetAmountEditorBinding;
 import org.gnucash.android.databinding.ItemBudgetAmountBinding;
 import org.gnucash.android.db.DatabaseSchema;
@@ -60,7 +60,7 @@ import java.util.List;
 /**
  * Fragment for editing budgeting amounts
  */
-public class BudgetAmountEditorFragment extends Fragment {
+public class BudgetAmountEditorFragment extends MenuFragment {
 
     private Cursor mAccountCursor;
     private QualifiedAccountNameCursorAdapter mAccountCursorAdapter;
@@ -98,7 +98,6 @@ public class BudgetAmountEditorFragment extends Fragment {
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         assert actionBar != null;
         actionBar.setTitle("Edit Budget Amounts");
-        setHasOptionsMenu(true);
 
         ArrayList<BudgetAmount> budgetAmounts = getArguments().getParcelableArrayList(UxArgument.BUDGET_AMOUNT_LIST);
         if (budgetAmounts != null) {

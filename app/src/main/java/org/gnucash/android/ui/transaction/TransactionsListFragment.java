@@ -40,7 +40,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentResultListener;
 import androidx.loader.app.LoaderManager;
@@ -51,6 +50,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.databinding.CardviewCompactTransactionBinding;
 import org.gnucash.android.databinding.CardviewTransactionBinding;
 import org.gnucash.android.databinding.FragmentTransactionsListBinding;
@@ -81,7 +81,7 @@ import timber.log.Timber;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class TransactionsListFragment extends Fragment implements
+public class TransactionsListFragment extends MenuFragment implements
     Refreshable, LoaderManager.LoaderCallbacks<Cursor>, FragmentResultListener {
 
     private TransactionsDbAdapter mTransactionsDbAdapter;
@@ -96,7 +96,6 @@ public class TransactionsListFragment extends Fragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
         Bundle args = getArguments();
         mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID);
 
@@ -144,8 +143,6 @@ public class TransactionsListFragment extends Fragment implements
 
         mTransactionRecyclerAdapter = new TransactionRecyclerAdapter(null);
         mBinding.list.setAdapter(mTransactionRecyclerAdapter);
-
-        setHasOptionsMenu(true);
     }
 
     /**
