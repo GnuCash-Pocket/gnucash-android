@@ -205,6 +205,14 @@ public class TransactionFormFragment extends MenuFragment implements
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
+        assert actionBar != null;
+        if (mEditMode) {
+            actionBar.setTitle(R.string.title_edit_transaction);
+        } else {
+            actionBar.setTitle(R.string.title_add_transaction);
+        }
+
         setListeners();
         //updateTransferAccountsList must only be called after initializing mAccountsDbAdapter
         updateTransferAccountsList();
@@ -296,16 +304,6 @@ public class TransactionFormFragment extends MenuFragment implements
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-        assert actionBar != null;
-//        actionBar.setSubtitle(mAccountsDbAdapter.getFullyQualifiedAccountName(mAccountUID));
-
-        if (mEditMode) {
-            actionBar.setTitle(R.string.title_edit_transaction);
-        } else {
-            actionBar.setTitle(R.string.title_add_transaction);
-        }
 
         requireActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
     }
@@ -583,6 +581,13 @@ public class TransactionFormFragment extends MenuFragment implements
      * Sets click listeners for the dialog buttons
      */
     private void setListeners() {
+        mBinding.btnSplitEditor.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openSplitEditor();
+            }
+        });
+
         mBinding.inputTransactionType.setAmountFormattingListener(mBinding.inputTransactionAmount, mBinding.currencySymbol);
 
         mBinding.inputDate.setOnClickListener(new View.OnClickListener() {

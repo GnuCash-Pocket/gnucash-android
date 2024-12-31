@@ -186,6 +186,14 @@ public abstract class BaseReportFragment extends MenuFragment implements
     }
 
     @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
+        assert actionBar != null;
+        actionBar.setTitle(getTitle());
+    }
+
+    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
@@ -197,11 +205,7 @@ public abstract class BaseReportFragment extends MenuFragment implements
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setTitle(getTitle());
-
-        ReportsActivity reportsActivity = (ReportsActivity) getActivity();
+        ReportsActivity reportsActivity = (ReportsActivity) requireActivity();
         mReportPeriodStart = reportsActivity.getReportPeriodStart();
         mReportPeriodEnd = reportsActivity.getReportPeriodEnd();
         mAccountType = reportsActivity.getAccountType();

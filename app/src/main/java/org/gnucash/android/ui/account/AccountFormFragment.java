@@ -46,6 +46,7 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -172,6 +173,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         super.onCreate(savedInstanceState);
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
         mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled();
+        mAccountUID = getArguments().getString(UxArgument.SELECTED_ACCOUNT_UID);
     }
 
     /**
@@ -181,6 +183,12 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mBinding = FragmentAccountFormBinding.inflate(inflater, container, false);
+        return mBinding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
         mBinding.inputAccountName.addTextChangedListener(new TextWatcher() {
             @Override
@@ -240,32 +248,19 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
             }
         });
 
-        return mBinding.getRoot();
-    }
-
-
-    /**
-     * Initializes the values of the views in the dialog
-     */
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
         CommoditiesCursorAdapter commoditiesAdapter = new CommoditiesCursorAdapter(
             getActivity(), android.R.layout.simple_spinner_item);
         commoditiesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         mBinding.inputCurrencySpinner.setAdapter(commoditiesAdapter);
 
-
-        mAccountUID = getArguments().getString(UxArgument.SELECTED_ACCOUNT_UID);
-
-        ActionBar supportActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
+        assert actionBar != null;
         if (mAccountUID != null) {
             mAccount = mAccountsDbAdapter.getSimpleRecord(mAccountUID);
-            supportActionBar.setTitle(R.string.title_edit_account);
+            actionBar.setTitle(R.string.title_edit_account);
         } else {
-            supportActionBar.setTitle(R.string.title_create_account);
+            actionBar.setTitle(R.string.title_create_account);
         }
 
         mRootAccountUID = mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID();
@@ -284,7 +279,6 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         } else {
             initializeViews();
         }
-
     }
 
     /**

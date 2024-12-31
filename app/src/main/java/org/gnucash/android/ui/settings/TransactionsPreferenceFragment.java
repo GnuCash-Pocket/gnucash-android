@@ -19,7 +19,10 @@ package org.gnucash.android.ui.settings;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.Preference;
@@ -47,8 +50,12 @@ public class TransactionsPreferenceFragment extends PreferenceFragmentCompat imp
         super.onCreate(savedInstanceState);
 
         getPreferenceManager().setSharedPreferencesName(GnuCashApplication.getActiveBookUID());
+    }
 
-        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
         assert actionBar != null;
         actionBar.setTitle(R.string.title_transaction_preferences);
     }

@@ -144,7 +144,7 @@ public class BudgetDetailFragment extends MenuFragment implements Refreshable {
     public void refresh() {
         bindViews();
         String budgetName = mBudgetsDbAdapter.getAttribute(mBudgetUID, DatabaseSchema.BudgetEntry.COLUMN_NAME);
-        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
         assert actionBar != null;
         actionBar.setTitle("Budget: " + budgetName);
     }

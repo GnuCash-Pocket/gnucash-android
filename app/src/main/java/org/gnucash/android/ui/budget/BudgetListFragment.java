@@ -33,6 +33,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
@@ -134,8 +135,9 @@ public class BudgetListFragment extends Fragment implements Refreshable,
     public void onResume() {
         super.onResume();
         refresh();
-        getActivity().findViewById(R.id.fab_create_budget).setVisibility(View.VISIBLE);
-        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Budgets");
+        requireActivity().findViewById(R.id.fab_create_budget).setVisibility(View.VISIBLE);
+        ActionBar actionbar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
+        actionbar.setTitle("Budgets");
     }
 
     @Override
