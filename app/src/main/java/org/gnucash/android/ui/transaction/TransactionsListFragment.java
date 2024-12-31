@@ -120,6 +120,18 @@ public class TransactionsListFragment extends MenuFragment implements
         mBinding = FragmentTransactionsListBinding.inflate(inflater, container, false);
         View view = mBinding.getRoot();
 
+
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
+        assert actionBar != null;
+        actionBar.setDisplayShowTitleEnabled(false);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+
         mBinding.list.setHasFixedSize(true);
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
@@ -128,18 +140,7 @@ public class TransactionsListFragment extends MenuFragment implements
             LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
             mBinding.list.setLayoutManager(mLayoutManager);
         }
-        mBinding.list.setEmptyView(view.findViewById(R.id.empty_view));
-
-        return view;
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        ActionBar aBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        aBar.setDisplayShowTitleEnabled(false);
-        aBar.setDisplayHomeAsUpEnabled(true);
+        mBinding.list.setEmptyView(mBinding.emptyView);
 
         mTransactionRecyclerAdapter = new TransactionRecyclerAdapter(null);
         mBinding.list.setAdapter(mTransactionRecyclerAdapter);

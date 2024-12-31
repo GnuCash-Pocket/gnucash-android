@@ -77,23 +77,17 @@ public abstract class ScheduledActionsListFragment extends MenuFragment implemen
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
+        assert actionBar != null;
+        actionBar.setDisplayShowTitleEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setHomeButtonEnabled(true);
 
         binding.list.setEmptyView(binding.empty);
         binding.list.setLayoutManager(new LinearLayoutManager(view.getContext()));
         binding.list.setAdapter(listAdapter);
 
         getLoaderManager().initLoader(0, null, this);
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        AppCompatActivity activity = (AppCompatActivity) requireActivity();
-        ActionBar actionBar = activity.getSupportActionBar();
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setHomeButtonEnabled(true);
     }
 
     @Override

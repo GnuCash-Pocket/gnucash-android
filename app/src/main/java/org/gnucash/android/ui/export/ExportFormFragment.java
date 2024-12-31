@@ -202,6 +202,10 @@ public class ExportFormFragment extends MenuFragment implements
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        AppCompatActivity activity = (AppCompatActivity) requireActivity();
+        ActionBar actionBar = activity.getSupportActionBar();
+        assert actionBar != null;
+        actionBar.setTitle(R.string.title_export_dialog);
 
         Bundle args = getArguments();
         if ((args == null) || args.isEmpty()) {
@@ -313,16 +317,6 @@ public class ExportFormFragment extends MenuFragment implements
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        AppCompatActivity activity = (AppCompatActivity) requireActivity();
-        ActionBar actionBar = activity.getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setTitle(R.string.title_export_dialog);
     }
 
     @Override

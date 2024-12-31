@@ -21,8 +21,11 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.ListPreference;
@@ -71,10 +74,6 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setTitle(R.string.title_account_preferences);
-
         List<Commodity> commodities = CommoditiesDbAdapter.getInstance().getAllRecords();
         for (Commodity commodity : commodities) {
             String code = commodity.getCurrencyCode();
@@ -82,6 +81,14 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
             mCurrencyEntries.add(commodity.formatListItem());
             mCurrencyEntryValues.add(code);
         }
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
+        assert actionBar != null;
+        actionBar.setTitle(R.string.title_account_preferences);
     }
 
     @Override

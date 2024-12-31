@@ -87,6 +87,7 @@ public class BookManagerFragment extends ListFragment implements
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
 
         mCursorAdapter = new BooksCursorAdapter(requireContext(), R.layout.cardview_book,
                 null, new String[]{BookEntry.COLUMN_DISPLAY_NAME, BookEntry.COLUMN_SOURCE_URI},
@@ -96,13 +97,11 @@ public class BookManagerFragment extends ListFragment implements
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
         assert actionBar != null;
         actionBar.setTitle(R.string.title_manage_books);
-        setHasOptionsMenu(true);
 
         getListView().setChoiceMode(ListView.CHOICE_MODE_NONE);
     }

@@ -41,6 +41,7 @@ import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
@@ -146,6 +147,17 @@ public class AccountsListFragment extends MenuFragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mBinding = FragmentAccountsListBinding.inflate(inflater, container, false);
+        return mBinding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        AppCompatActivity activity = (AppCompatActivity) requireActivity();
+        ActionBar actionbar = activity.getSupportActionBar();
+        assert actionbar != null;
+        actionbar.setTitle(R.string.title_accounts);
+        actionbar.setDisplayHomeAsUpEnabled(true);
 
         mBinding.list.setHasFixedSize(true);
         mBinding.list.setEmptyView(mBinding.emptyView);
@@ -171,7 +183,6 @@ public class AccountsListFragment extends MenuFragment implements
             LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
             mBinding.list.setLayoutManager(mLayoutManager);
         }
-        return mBinding.getRoot();
     }
 
     @Override
@@ -189,12 +200,6 @@ public class AccountsListFragment extends MenuFragment implements
                 mDisplayMode = (DisplayMode) savedInstanceState.getSerializable(STATE_DISPLAY_MODE);
             }
         }
-
-        AppCompatActivity activity = (AppCompatActivity) requireActivity();
-        ActionBar actionbar = activity.getSupportActionBar();
-        assert actionbar != null;
-        actionbar.setTitle(R.string.title_accounts);
-        actionbar.setDisplayHomeAsUpEnabled(true);
 
         // specify an adapter (see also next example)
         mAccountRecyclerAdapter = new AccountRecyclerAdapter(null);
@@ -219,12 +224,12 @@ public class AccountsListFragment extends MenuFragment implements
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
         try {
-            mAccountSelectedListener = (OnAccountClickedListener) activity;
+            mAccountSelectedListener = (OnAccountClickedListener) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement OnAccountSelectedListener");
+            throw new ClassCastException(context + " must implement OnAccountSelectedListener");
         }
     }
 

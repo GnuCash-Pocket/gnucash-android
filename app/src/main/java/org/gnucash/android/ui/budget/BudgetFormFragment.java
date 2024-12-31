@@ -128,7 +128,7 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
         if (budgetUID != null) { //if we are editing the budget
             initViews(mBudget = mBudgetsDbAdapter.getRecord(budgetUID));
         }
-        ActionBar actionbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        ActionBar actionbar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
         assert actionbar != null;
         if (mBudget == null)
             actionbar.setTitle("Create Budget");
