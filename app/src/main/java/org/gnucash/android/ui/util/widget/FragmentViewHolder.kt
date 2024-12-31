@@ -52,7 +52,7 @@ class FragmentViewHolder private constructor(container: FrameLayout) :
         fragmentManager.beginTransaction().apply {
             if (fragmentOld != null) remove(fragmentOld)
             add(fragment, "f$itemId")
-            commitNow()
+            commitNowAllowingStateLoss()
         }
         this.fragment = fragment
     }
