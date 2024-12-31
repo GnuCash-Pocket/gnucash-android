@@ -196,6 +196,10 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
         return info.toString();
     }
 
+    public Book getActiveBook() {
+        return getRecord(getActiveBookUID());
+    }
+
     public class NoActiveBookFoundException extends RuntimeException {
         public NoActiveBookFoundException(String message) {
             super(message);

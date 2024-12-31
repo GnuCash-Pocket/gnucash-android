@@ -47,6 +47,7 @@ import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.databinding.ActivityFirstRunWizardBinding;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
+import org.gnucash.android.model.Book;
 import org.gnucash.android.ui.account.AccountsActivity;
 import org.gnucash.android.ui.util.TaskDelegate;
 
@@ -156,11 +157,17 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
     private void createAccountsAndFinish(@NonNull String accountOption, String currencyCode) {
         if (accountOption.equals(mWizardModel.optionAccountDefault)) {
             //save the UID of the active book, and then delete it after successful import
-            final String bookUID = GnuCashApplication.getActiveBookUID();
-            TaskDelegate callbackAfterImport = (bookUID != null) ? new TaskDelegate() {
+            final BooksDbAdapter dbAdapter = BooksDbAdapter.getInstance();
+            final String bookUID = dbAdapter.getActiveBookUID();
+            Book bookOld = dbAdapter.getRecord(bookUID);
+            final String bookName = bookOld.getDisplayName();
+            TaskDelegate callbackAfterImport = (!TextUtils.isEmpty(bookUID)) ? new TaskDelegate() {
                 @Override
                 public void onTaskComplete() {
-                    BooksDbAdapter.getInstance().deleteBook(bookUID);
+                    dbAdapter.deleteBook(bookUID);
+                    Book book = dbAdapter.getActiveBook();
+                    book.setDisplayName(bookName);
+                    dbAdapter.updateRecord(book);
                 }
             } : null;
             AccountsActivity.createDefaultAccounts(currencyCode, FirstRunWizardActivity.this, callbackAfterImport);
