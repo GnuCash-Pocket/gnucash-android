@@ -269,10 +269,6 @@ public class TransactionFormFragment extends Fragment implements
         Bundle args = getArguments();
 
         mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled();
-        if (!mUseDoubleEntry) {
-            mBinding.layoutDoubleEntry.setVisibility(View.GONE);
-            mBinding.btnSplitEditor.setVisibility(View.GONE);
-        }
 
         mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID);
         assert (mAccountUID != null);
