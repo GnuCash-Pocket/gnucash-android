@@ -281,6 +281,8 @@ class Account : BaseModel {
         _defaultTransferAccountUID = defaultTransferAccountUID
     }
 
+    override fun toString(): String = fullName ?: name
+
     companion object {
         /**
          * The MIME type for accounts in GnucashMobile

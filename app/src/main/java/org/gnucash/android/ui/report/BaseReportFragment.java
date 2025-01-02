@@ -297,23 +297,22 @@ public abstract class BaseReportFragment extends MenuFragment implements
             mReportGenerator.cancel(true);
 
         mReportGenerator = new AsyncTask<Void, Void, Void>() {
-            private final ReportsActivity activity = mReportsActivity;
 
             @Override
             protected void onPreExecute() {
-                activity.showProgressBar(true);
+                mReportsActivity.showProgressBar(true);
             }
 
             @Override
             protected Void doInBackground(Void... params) {
-                generateReport(activity);
+                generateReport(mReportsActivity);
                 return null;
             }
 
             @Override
             protected void onPostExecute(Void aVoid) {
                 displayReport();
-                activity.showProgressBar(false);
+                mReportsActivity.showProgressBar(false);
             }
         };
         mReportGenerator.execute();

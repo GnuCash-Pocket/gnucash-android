@@ -15,7 +15,6 @@
  */
 package org.gnucash.android.ui.report;
 
-import static com.github.mikephil.charting.components.Legend.LegendPosition;
 import static org.gnucash.android.ui.util.TextViewExtKt.displayBalance;
 
 import android.content.Context;
@@ -36,7 +35,6 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 
 import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.components.Legend.LegendForm;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
@@ -59,8 +57,6 @@ import java.util.List;
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class ReportsOverviewFragment extends BaseReportFragment {
-
-    public static final int LEGEND_TEXT_SIZE = 14;
 
     private Money mAssetsBalance;
     private Money mLiabilitiesBalance;
@@ -111,11 +107,7 @@ public class ReportsOverviewFragment extends BaseReportFragment {
         mBinding.pieChart.setCenterTextColor(textColorPrimary);
         mBinding.pieChart.setHoleColor(Color.TRANSPARENT);
         Legend legend = mBinding.pieChart.getLegend();
-        legend.setEnabled(true);
         legend.setWordWrapEnabled(true);
-        legend.setForm(LegendForm.CIRCLE);
-        legend.setPosition(LegendPosition.RIGHT_OF_CHART_CENTER);
-        legend.setTextSize(LEGEND_TEXT_SIZE);
         legend.setTextColor(textColorPrimary);
 
         ColorStateList csl = new ColorStateList(new int[][]{StateSet.WILD_CARD}, new int[]{ContextCompat.getColor(context, R.color.account_green)});
@@ -171,18 +163,18 @@ public class ReportsOverviewFragment extends BaseReportFragment {
         PieDataSet dataSet = new PieDataSet(null, "");
         List<String> labels = new ArrayList<>();
         List<Integer> colors = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+        long start = now.minusMonths(2).dayOfMonth().withMinimumValue().toDateTime().getMillis();
+        long end = now.toDateTime().getMillis();
+
         for (Account account : mAccountsDbAdapter.getSimpleAccountList()) {
             if (account.getAccountType() == AccountType.EXPENSE
                     && !account.isPlaceholderAccount()
                     && account.getCommodity().equals(mCommodity)) {
 
-                LocalDateTime now = LocalDateTime.now();
-                long start = now.minusMonths(2).dayOfMonth().withMinimumValue().toDateTime().getMillis();
-                long end = now.plusDays(1).toDateTime().getMillis();
-                double balance = mAccountsDbAdapter.getAccountsBalance(
-                        Collections.singletonList(account.getUID()), start, end).toDouble();
+                float balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), start, end).toFloat();
                 if (balance > 0) {
-                    dataSet.addEntry(new Entry((float) balance, dataSet.getEntryCount()));
+                    dataSet.addEntry(new Entry(balance, dataSet.getEntryCount()));
                     colors.add(account.getColor() != Account.DEFAULT_COLOR
                             ? account.getColor()
                             : COLORS[(dataSet.getEntryCount() - 1) % COLORS.length]);

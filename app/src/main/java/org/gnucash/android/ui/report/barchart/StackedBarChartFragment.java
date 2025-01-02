@@ -51,7 +51,6 @@ import org.joda.time.LocalDateTime;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +97,6 @@ public class StackedBarChartFragment extends BaseReportFragment {
 
         mBinding.barChart.setOnChartValueSelectedListener(this);
         mBinding.barChart.setDescription("");
-//        mChart.setDrawValuesForWholeStack(false);
         mBinding.barChart.getXAxis().setDrawGridLines(false);
         mBinding.barChart.getXAxis().setTextColor(textColorPrimary);
         mBinding.barChart.getAxisRight().setEnabled(false);
@@ -106,11 +104,9 @@ public class StackedBarChartFragment extends BaseReportFragment {
         mBinding.barChart.getAxisLeft().enableGridDashedLine(4.0f, 4.0f, 0);
         mBinding.barChart.getAxisLeft().setValueFormatter(new LargeValueFormatter(mCommodity.getSymbol()));
         mBinding.barChart.getAxisLeft().setTextColor(textColorPrimary);
-        Legend chartLegend = mBinding.barChart.getLegend();
-        chartLegend.setForm(Legend.LegendForm.CIRCLE);
-        chartLegend.setPosition(Legend.LegendPosition.BELOW_CHART_CENTER);
-        chartLegend.setWordWrapEnabled(true);
-        chartLegend.setTextColor(textColorPrimary);
+        Legend legend = mBinding.barChart.getLegend();
+        legend.setTextColor(textColorPrimary);
+        legend.setWordWrapEnabled(true);
     }
 
 
@@ -161,10 +157,9 @@ public class StackedBarChartFragment extends BaseReportFragment {
                         && !account.isPlaceholderAccount()
                         && account.getCommodity().equals(mCommodity)) {
 
-                    double balance = mAccountsDbAdapter.getAccountsBalance(
-                            Collections.singletonList(account.getUID()), start, end).toDouble();
+                    float balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), start, end).toFloat();
                     if (balance != 0) {
-                        stack.add((float) balance);
+                        stack.add(balance);
 
                         String accountName = account.getName();
                         while (labels.contains(accountName)) {
