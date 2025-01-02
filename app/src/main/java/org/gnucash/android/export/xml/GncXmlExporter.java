@@ -647,16 +647,9 @@ public class GncXmlExporter extends Exporter {
         Timber.i("export prices");
         xmlSerializer.startTag(null, TAG_PRICEDB);
         xmlSerializer.attribute(null, ATTR_KEY_VERSION, "1");
-        Cursor cursor = mPricesDbAdapter.fetchAllRecords();
-        try {
-            while (cursor.moveToNext()) {
-                Price price = mPricesDbAdapter.buildModelInstance(cursor);
-                exportPrice(xmlSerializer, price);
-            }
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
+        List<Price> prices = mPricesDbAdapter.getAllRecords();
+        for (Price price : prices) {
+            exportPrice(xmlSerializer, price);
         }
         xmlSerializer.endTag(null, TAG_PRICEDB);
     }
@@ -669,8 +662,8 @@ public class GncXmlExporter extends Exporter {
         xmlSerializer.text(price.getUID());
         xmlSerializer.endTag(null, TAG_PRICE_ID);
         // commodity
-        String commodityId = price.getCommodityUID();
-        Commodity commodity = mCommoditiesDbAdapter.getRecord(commodityId);
+        String commodityUID = price.getCommodityUID();
+        Commodity commodity = mCommoditiesDbAdapter.getRecord(commodityUID);
         xmlSerializer.startTag(null, TAG_PRICE_COMMODITY);
         xmlSerializer.startTag(null, TAG_COMMODITY_SPACE);
         xmlSerializer.text(commodity.getNamespace());

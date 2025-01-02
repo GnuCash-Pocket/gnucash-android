@@ -129,8 +129,11 @@ public class BudgetsDbAdapter extends DatabaseAdapter<Budget> {
     protected @NonNull SQLiteStatement setBindings(@NonNull SQLiteStatement stmt, @NonNull final Budget budget) {
         stmt.clearBindings();
         stmt.bindString(1, budget.getName());
-        if (budget.getDescription() != null)
+        if (budget.getDescription() != null) {
             stmt.bindString(2, budget.getDescription());
+        } else {
+            stmt.bindNull(2);
+        }
         stmt.bindString(3, budget.getRecurrence().getUID());
         stmt.bindLong(4, budget.getNumberOfPeriods());
         stmt.bindString(5, budget.getUID());

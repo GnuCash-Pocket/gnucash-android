@@ -192,10 +192,11 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         stmt.bindString(6, transaction.getCommodity().getUID());
         stmt.bindString(7, TimestampHelper.getUtcStringFromTimestamp(transaction.getCreatedTimestamp()));
 
-        if (transaction.getScheduledActionUID() == null)
+        if (transaction.getScheduledActionUID() == null) {
             stmt.bindNull(8);
-        else
+        } else {
             stmt.bindString(8, transaction.getScheduledActionUID());
+        }
         stmt.bindLong(9, transaction.isTemplate() ? 1 : 0);
         stmt.bindString(10, transaction.getUID());
 

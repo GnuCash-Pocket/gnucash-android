@@ -40,7 +40,6 @@ import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -126,8 +125,8 @@ public abstract class Exporter {
         mSplitsDbAdapter = new SplitsDbAdapter(db);
         mTransactionsDbAdapter = new TransactionsDbAdapter(db, mSplitsDbAdapter);
         mAccountsDbAdapter = new AccountsDbAdapter(db, mTransactionsDbAdapter);
-        mPricesDbAdapter = new PricesDbAdapter(db);
         mCommoditiesDbAdapter = new CommoditiesDbAdapter(db);
+        mPricesDbAdapter = new PricesDbAdapter(db, mCommoditiesDbAdapter);
         RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(db);
         mBudgetsDbAdapter = new BudgetsDbAdapter(db, new BudgetAmountsDbAdapter(db), recurrenceDbAdapter);
         mScheduledActionDbAdapter = new ScheduledActionDbAdapter(db, recurrenceDbAdapter);
