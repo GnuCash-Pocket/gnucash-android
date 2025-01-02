@@ -11,24 +11,23 @@ import java.text.NumberFormat
  * Model for commodity prices
  */
 class Price : BaseModel {
-    var commodity: Commodity? = null
-    var currency: Commodity? = null
-    var date: Timestamp
+    var commodity: Commodity
+    var currency: Commodity
+    var date: Timestamp = TimestampHelper.getTimestampFromNow()
     var source: String? = null
     var type: String? = null
 
-    constructor() : this(null, null)
+    constructor() : this(Commodity.DEFAULT_COMMODITY, Commodity.DEFAULT_COMMODITY)
 
     /**
      * Create new instance with the GUIDs of the commodities
      *
-     * @param commodity the origin commodity
-     * @param currency  the target commodity
+     * @param commodity1 the origin commodity
+     * @param commodity2 the target commodity
      */
-    constructor(commodity: Commodity?, currency: Commodity?) {
-        this.commodity = commodity
-        this.currency = currency
-        date = TimestampHelper.getTimestampFromNow()
+    constructor(commodity1: Commodity, commodity2: Commodity) {
+        this.commodity = commodity1
+        this.currency = commodity2
     }
 
     /**
@@ -38,7 +37,7 @@ class Price : BaseModel {
      * @param commodity2 the target commodity
      * @param exchangeRate  exchange rate between the commodities
      */
-    constructor(commodity1: Commodity?, commodity2: Commodity?, exchangeRate: BigDecimal) :
+    constructor(commodity1: Commodity, commodity2: Commodity, exchangeRate: BigDecimal) :
             this(commodity1, commodity2) {
         setExchangeRate(exchangeRate)
     }
@@ -119,13 +118,13 @@ class Price : BaseModel {
 
         return numerator.divide(
             denominator,
-            currency?.smallestFractionDigits ?: 100,
+            currency.smallestFractionDigits,
             BigDecimal.ROUND_HALF_EVEN
         )
     }
 
-    val commodityUID: String? get() = commodity?.uID
-    val currencyUID: String? get() = currency?.uID
+    val commodityUID: String? get() = commodity.uID
+    val currencyUID: String? get() = currency.uID
 
     fun setExchangeRate(rate: BigDecimal) {
         // Store 0.1234 as 1234/10000

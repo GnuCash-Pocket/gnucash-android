@@ -10,6 +10,7 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Price;
 import org.gnucash.android.util.TimestampHelper;
 
@@ -17,12 +18,14 @@ import org.gnucash.android.util.TimestampHelper;
  * Database adapter for prices
  */
 public class PricesDbAdapter extends DatabaseAdapter<Price> {
+    private final CommoditiesDbAdapter commoditiesDbAdapter;
     /**
      * Opens the database adapter with an existing database
      *
      * @param db SQLiteDatabase object
+     * @param commoditiesDbAdapter the commodities database adapter.
      */
-    public PricesDbAdapter(SQLiteDatabase db) {
+    public PricesDbAdapter(@NonNull SQLiteDatabase db, @NonNull CommoditiesDbAdapter commoditiesDbAdapter) {
         super(db, PriceEntry.TABLE_NAME, new String[]{
                 PriceEntry.COLUMN_COMMODITY_UID,
                 PriceEntry.COLUMN_CURRENCY_UID,
@@ -32,6 +35,7 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
                 PriceEntry.COLUMN_VALUE_NUM,
                 PriceEntry.COLUMN_VALUE_DENOM
         });
+        this.commoditiesDbAdapter = commoditiesDbAdapter;
     }
 
     public static PricesDbAdapter getInstance() {
@@ -46,9 +50,13 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
         stmt.bindString(3, TimestampHelper.getUtcStringFromTimestamp(price.getDate()));
         if (price.getSource() != null) {
             stmt.bindString(4, price.getSource());
+        } else {
+            stmt.bindNull(4);
         }
         if (price.getType() != null) {
             stmt.bindString(5, price.getType());
+        } else {
+            stmt.bindNull(5);
         }
         stmt.bindLong(6, price.getValueNum());
         stmt.bindLong(7, price.getValueDenom());
@@ -67,8 +75,9 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
         long valueNum = cursor.getLong(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_VALUE_NUM));
         long valueDenom = cursor.getLong(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_VALUE_DENOM));
 
-        CommoditiesDbAdapter commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
-        Price price = new Price(commoditiesDbAdapter.getRecord(commodityUID), commoditiesDbAdapter.getRecord(currencyUID));
+        Commodity commodity1 = commoditiesDbAdapter.getRecord(commodityUID);
+        Commodity commodity2 = commoditiesDbAdapter.getRecord(currencyUID);
+        Price price = new Price(commodity1, commodity2);
         populateBaseModelAttributes(cursor, price);
         price.setDate(TimestampHelper.getTimestampFromUtcString(dateString));
         price.setSource(source);

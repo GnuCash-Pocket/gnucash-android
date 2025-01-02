@@ -202,6 +202,8 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         stmt.bindString(4, account.getCommodity().getCurrencyCode());
         if (account.getColor() != Account.DEFAULT_COLOR) {
             stmt.bindString(5, account.getColorHexString());
+        } else {
+            stmt.bindNull(5);
         }
         stmt.bindLong(6, account.isFavorite() ? 1 : 0);
         stmt.bindString(7, account.getFullName());
@@ -216,9 +218,13 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         }
         if (parentAccountUID != null) {
             stmt.bindString(12, parentAccountUID);
+        } else {
+            stmt.bindNull(12);
         }
         if (account.getDefaultTransferAccountUID() != null) {
             stmt.bindString(13, account.getDefaultTransferAccountUID());
+        } else {
+            stmt.bindNull(13);
         }
         stmt.bindString(14, account.getUID());
 

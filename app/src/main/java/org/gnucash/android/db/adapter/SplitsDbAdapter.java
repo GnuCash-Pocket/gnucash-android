@@ -103,6 +103,8 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
         stmt.clearBindings();
         if (split.getMemo() != null) {
             stmt.bindString(1, split.getMemo());
+        } else {
+            stmt.bindNull(1);
         }
         stmt.bindString(2, split.getType().name());
         stmt.bindLong(3, split.getValue().getNumerator());
@@ -241,7 +243,7 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
                     // there is a second currency involved
                     if (commoditiesDbAdapter == null) {
                         commoditiesDbAdapter = new CommoditiesDbAdapter(mDb);
-                        pricesDbAdapter = new PricesDbAdapter(mDb);
+                        pricesDbAdapter = new PricesDbAdapter(mDb, commoditiesDbAdapter);
                         commodity = commoditiesDbAdapter.getCommodity(currencyCode);
                         currencyUID = commoditiesDbAdapter.getCommodityUID(currencyCode);
                     }
