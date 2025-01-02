@@ -72,15 +72,14 @@
                     android:id="@+id/time_range_spinner"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_weight="2" />
+                    android:layout_marginStart="4dp"
+                    android:layout_weight="1" />
 
                 <Spinner
                     android:id="@+id/report_account_type_spinner"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="5dp"
-                    android:layout_weight="1.5" />
+                    android:layout_marginStart="4dp" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

@@ -17,15 +17,17 @@
 This is a progress indicator that should be displayed above the toolbar.
 See toolbar.xml layout for example of how to include it
 -->
-<ProgressBar xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.progressindicator.LinearProgressIndicator xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@android:id/progress"
-    style="?android:attr/progressBarStyleHorizontal"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/toolbar_progress_height"
+    android:layout_height="wrap_content"
     android:indeterminate="true"
     android:visibility="gone"
     app:elevation="@dimen/elevation_default"
+    app:indicatorColor="?colorPrimary"
+    app:trackColor="?colorAccent"
+    app:trackThickness="@dimen/toolbar_progress_height"
     tools:showIn="@layout/toolbar_with_spinner"
     tools:visibility="visible" />
