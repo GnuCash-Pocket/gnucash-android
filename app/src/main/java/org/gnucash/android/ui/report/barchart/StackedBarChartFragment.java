@@ -161,10 +161,9 @@ public class StackedBarChartFragment extends BaseReportFragment {
                         && !account.isPlaceholderAccount()
                         && account.getCommodity().equals(mCommodity)) {
 
-                    double balance = mAccountsDbAdapter.getAccountsBalance(
-                            Collections.singletonList(account.getUID()), start, end).toDouble();
+                    float balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), start, end).toFloat();
                     if (balance != 0) {
-                        stack.add((float) balance);
+                        stack.add(balance);
 
                         String accountName = account.getName();
                         while (labels.contains(accountName)) {

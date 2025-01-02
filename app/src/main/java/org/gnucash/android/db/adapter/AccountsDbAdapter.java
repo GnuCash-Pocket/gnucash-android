@@ -885,19 +885,15 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      */
     public Money getAccountsBalance(@NonNull List<String> accountUIDList, long startTimestamp, long endTimestamp) {
         String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
-        Money balance = Money.createZeroInstance(currencyCode);
 
         if (accountUIDList.isEmpty())
-            return balance;
+            return Money.createZeroInstance(currencyCode);
 
         boolean hasDebitNormalBalance = getAccountType(accountUIDList.get(0)).hasDebitNormalBalance();
 
         SplitsDbAdapter splitsDbAdapter = mTransactionsAdapter.getSplitDbAdapter();
-        Money splitSum = (startTimestamp == -1 && endTimestamp == -1)
-                ? splitsDbAdapter.computeSplitBalance(accountUIDList, currencyCode, hasDebitNormalBalance)
-                : splitsDbAdapter.computeSplitBalance(accountUIDList, currencyCode, hasDebitNormalBalance, startTimestamp, endTimestamp);
 
-        return balance.plus(splitSum);
+        return splitsDbAdapter.computeSplitBalance(accountUIDList, currencyCode, hasDebitNormalBalance, startTimestamp, endTimestamp);
     }
 
     /**

@@ -171,18 +171,18 @@ public class ReportsOverviewFragment extends BaseReportFragment {
         PieDataSet dataSet = new PieDataSet(null, "");
         List<String> labels = new ArrayList<>();
         List<Integer> colors = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+        long start = now.minusMonths(2).dayOfMonth().withMinimumValue().toDateTime().getMillis();
+        long end = now.toDateTime().getMillis();
+
         for (Account account : mAccountsDbAdapter.getSimpleAccountList()) {
             if (account.getAccountType() == AccountType.EXPENSE
                     && !account.isPlaceholderAccount()
                     && account.getCommodity().equals(mCommodity)) {
 
-                LocalDateTime now = LocalDateTime.now();
-                long start = now.minusMonths(2).dayOfMonth().withMinimumValue().toDateTime().getMillis();
-                long end = now.plusDays(1).toDateTime().getMillis();
-                double balance = mAccountsDbAdapter.getAccountsBalance(
-                        Collections.singletonList(account.getUID()), start, end).toDouble();
+                float balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), start, end).toFloat();
                 if (balance > 0) {
-                    dataSet.addEntry(new Entry((float) balance, dataSet.getEntryCount()));
+                    dataSet.addEntry(new Entry(balance, dataSet.getEntryCount()));
                     colors.add(account.getColor() != Account.DEFAULT_COLOR
                             ? account.getColor()
                             : COLORS[(dataSet.getEntryCount() - 1) % COLORS.length]);
