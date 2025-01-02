@@ -20,24 +20,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="@dimen/dialog_padding"
-    android:weightSum="3">
+    android:padding="@dimen/dialog_padding">
 
     <TextView
         android:id="@+id/selected_chart_slice"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="0.2"
+        android:layout_height="wrap_content"
         android:gravity="center"
-        android:padding="5dp"
         android:textSize="16sp"
         tools:text="Nothing selected" />
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginBottom="@dimen/edge_padding"
-        android:layout_weight="2.5"
+        android:layout_weight="1"
         android:padding="@dimen/dialog_padding">
 
         <com.github.mikephil.charting.charts.BarChart

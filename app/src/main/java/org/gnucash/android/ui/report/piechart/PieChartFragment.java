@@ -17,8 +17,6 @@
 
 package org.gnucash.android.ui.report.piechart;
 
-import static com.github.mikephil.charting.components.Legend.LegendForm;
-import static com.github.mikephil.charting.components.Legend.LegendPosition;
 import static org.gnucash.android.util.ColorExtKt.getTextColorPrimary;
 
 import android.content.Context;
@@ -34,6 +32,7 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
@@ -84,12 +83,11 @@ public class PieChartFragment extends BaseReportFragment {
         mBinding.pieChart.setCenterTextSize(CENTER_TEXT_SIZE);
         mBinding.pieChart.setDescription("");
         mBinding.pieChart.setOnChartValueSelectedListener(this);
-        mBinding.pieChart.getLegend().setForm(LegendForm.CIRCLE);
-        mBinding.pieChart.getLegend().setWordWrapEnabled(true);
-        mBinding.pieChart.getLegend().setPosition(LegendPosition.RIGHT_OF_CHART_INSIDE);
-        mBinding.pieChart.getLegend().setTextColor(textColorPrimary);
         mBinding.pieChart.setHoleColor(Color.TRANSPARENT);
         mBinding.pieChart.setCenterTextColor(textColorPrimary);
+        Legend legend = mBinding.pieChart.getLegend();
+        legend.setTextColor(textColorPrimary);
+        legend.setWordWrapEnabled(true);
     }
 
     @Override

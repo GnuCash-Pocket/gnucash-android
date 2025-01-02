@@ -15,7 +15,6 @@
  */
 package org.gnucash.android.ui.report;
 
-import static com.github.mikephil.charting.components.Legend.LegendPosition;
 import static org.gnucash.android.ui.util.TextViewExtKt.displayBalance;
 
 import android.content.Context;
@@ -36,7 +35,6 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 
 import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.components.Legend.LegendForm;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
@@ -59,8 +57,6 @@ import java.util.List;
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class ReportsOverviewFragment extends BaseReportFragment {
-
-    public static final int LEGEND_TEXT_SIZE = 14;
 
     private Money mAssetsBalance;
     private Money mLiabilitiesBalance;
@@ -111,11 +107,7 @@ public class ReportsOverviewFragment extends BaseReportFragment {
         mBinding.pieChart.setCenterTextColor(textColorPrimary);
         mBinding.pieChart.setHoleColor(Color.TRANSPARENT);
         Legend legend = mBinding.pieChart.getLegend();
-        legend.setEnabled(true);
         legend.setWordWrapEnabled(true);
-        legend.setForm(LegendForm.CIRCLE);
-        legend.setPosition(LegendPosition.RIGHT_OF_CHART_CENTER);
-        legend.setTextSize(LEGEND_TEXT_SIZE);
         legend.setTextColor(textColorPrimary);
 
         ColorStateList csl = new ColorStateList(new int[][]{StateSet.WILD_CARD}, new int[]{ContextCompat.getColor(context, R.color.account_green)});
