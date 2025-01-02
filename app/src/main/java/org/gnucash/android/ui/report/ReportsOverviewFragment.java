@@ -21,7 +21,6 @@ import static org.gnucash.android.ui.util.TextViewExtKt.displayBalance;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.StateSet;
 import android.view.LayoutInflater;
@@ -33,7 +32,6 @@ import android.widget.Button;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 
@@ -102,10 +100,11 @@ public class ReportsOverviewFragment extends BaseReportFragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        final Context context = mBinding.btnPieChart.getContext();
 
         setHasOptionsMenu(false);
 
-        @ColorInt int textColorPrimary = getTextColor();
+        @ColorInt int textColorPrimary = getTextColor(context);
         mBinding.pieChart.setCenterTextSize(PieChartFragment.CENTER_TEXT_SIZE);
         mBinding.pieChart.setDescription("");
         mBinding.pieChart.setDrawSliceText(false);
@@ -119,7 +118,6 @@ public class ReportsOverviewFragment extends BaseReportFragment {
         legend.setTextSize(LEGEND_TEXT_SIZE);
         legend.setTextColor(textColorPrimary);
 
-        final Context context = mBinding.btnPieChart.getContext();
         ColorStateList csl = new ColorStateList(new int[][]{StateSet.WILD_CARD}, new int[]{ContextCompat.getColor(context, R.color.account_green)});
         setButtonTint(mBinding.btnPieChart, csl);
         csl = new ColorStateList(new int[][]{StateSet.WILD_CARD}, new int[]{ContextCompat.getColor(context, R.color.account_red)});
@@ -136,19 +134,18 @@ public class ReportsOverviewFragment extends BaseReportFragment {
     }
 
     @Override
-    protected void generateReport() {
-        final Context context = mBinding.pieChart.getContext();
+    protected void generateReport(@NonNull Context context) {
         PieData pieData = PieChartFragment.groupSmallerSlices(getData(), context);
         if (pieData.getYValCount() != 0) {
             mBinding.pieChart.setData(pieData);
             float sum = mBinding.pieChart.getData().getYValueSum();
-            String total = getResources().getString(R.string.label_chart_total);
+            String total = context.getString(R.string.label_chart_total);
             String currencySymbol = mCommodity.getSymbol();
             mBinding.pieChart.setCenterText(String.format(PieChartFragment.TOTAL_VALUE_LABEL_PATTERN, total, sum, currencySymbol));
             mChartHasData = true;
         } else {
-            mBinding.pieChart.setData(getEmptyData());
-            mBinding.pieChart.setCenterText(getResources().getString(R.string.label_chart_no_data));
+            mBinding.pieChart.setData(getEmptyData(context));
+            mBinding.pieChart.setCenterText(context.getString(R.string.label_chart_no_data));
             mBinding.pieChart.getLegend().setEnabled(false);
             mChartHasData = false;
         }
@@ -219,8 +216,8 @@ public class ReportsOverviewFragment extends BaseReportFragment {
      *
      * @return a {@code PieData} instance for situation when no user data available
      */
-    private PieData getEmptyData() {
-        PieDataSet dataSet = new PieDataSet(null, getResources().getString(R.string.label_chart_no_data));
+    private PieData getEmptyData(@NonNull Context context) {
+        PieDataSet dataSet = new PieDataSet(null, context.getString(R.string.label_chart_no_data));
         dataSet.addEntry(new Entry(1, 0));
         dataSet.setColor(PieChartFragment.NO_DATA_COLOR);
         dataSet.setDrawValues(false);
@@ -251,12 +248,8 @@ public class ReportsOverviewFragment extends BaseReportFragment {
     }
 
     public void setButtonTint(Button button, ColorStateList tint) {
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP && button instanceof AppCompatButton) {
-            ((AppCompatButton) button).setSupportBackgroundTintList(tint);
-        } else {
-            ViewCompat.setBackgroundTintList(button, tint);
-        }
-        button.setTextColor(ContextCompat.getColor(button.getContext(), android.R.color.white));
+        ViewCompat.setBackgroundTintList(button, tint);
+        button.setTextColor(Color.WHITE);
     }
 
 }

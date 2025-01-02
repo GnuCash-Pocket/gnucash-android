@@ -78,8 +78,8 @@ public class PieChartFragment extends BaseReportFragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        @ColorInt int textColorPrimary = getTextColor();
+        final Context context = mBinding.pieChart.getContext();
+        @ColorInt int textColorPrimary = getTextColor(context);
 
         mBinding.pieChart.setCenterTextSize(CENTER_TEXT_SIZE);
         mBinding.pieChart.setDescription("");
@@ -104,19 +104,19 @@ public class PieChartFragment extends BaseReportFragment {
     }
 
     @Override
-    protected void generateReport() {
+    protected void generateReport(@NonNull Context context) {
         PieData pieData = getData();
         if (pieData != null && pieData.getYValCount() != 0) {
             mChartDataPresent = true;
             mBinding.pieChart.setData(mGroupSmallerSlices ? groupSmallerSlices(pieData, getActivity()) : pieData);
             float sum = mBinding.pieChart.getData().getYValueSum();
-            String total = getResources().getString(R.string.label_chart_total);
+            String total = context.getString(R.string.label_chart_total);
             String currencySymbol = mCommodity.getSymbol();
             mBinding.pieChart.setCenterText(String.format(TOTAL_VALUE_LABEL_PATTERN, total, sum, currencySymbol));
         } else {
             mChartDataPresent = false;
-            mBinding.pieChart.setCenterText(getResources().getString(R.string.label_chart_no_data));
-            mBinding.pieChart.setData(getEmptyData());
+            mBinding.pieChart.setCenterText(context.getString(R.string.label_chart_no_data));
+            mBinding.pieChart.setData(getEmptyData(context));
         }
     }
 
@@ -174,8 +174,8 @@ public class PieChartFragment extends BaseReportFragment {
      *
      * @return a {@code PieData} instance for situation when no user data available
      */
-    private PieData getEmptyData() {
-        PieDataSet dataSet = new PieDataSet(null, getResources().getString(R.string.label_chart_no_data));
+    private PieData getEmptyData(@NonNull Context context) {
+        PieDataSet dataSet = new PieDataSet(null, context.getString(R.string.label_chart_no_data));
         dataSet.addEntry(new Entry(1, 0));
         dataSet.setColor(NO_DATA_COLOR);
         dataSet.setDrawValues(false);

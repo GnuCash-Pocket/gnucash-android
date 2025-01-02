@@ -17,6 +17,7 @@
 
 package org.gnucash.android.ui.report.barchart;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -91,8 +92,9 @@ public class StackedBarChartFragment extends BaseReportFragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        final Context context = mBinding.barChart.getContext();
 
-        @ColorInt int textColorPrimary = getTextColor();
+        @ColorInt int textColorPrimary = getTextColor(context);
 
         mBinding.barChart.setOnChartValueSelectedListener(this);
         mBinding.barChart.setDescription("");
@@ -117,7 +119,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
      *
      * @return a {@code BarData} instance that represents a user data
      */
-    protected BarData getData() {
+    protected BarData getData(@NonNull Context context) {
         List<BarEntry> values = new ArrayList<>();
         List<String> labels = new ArrayList<>();
         List<Integer> colors = new ArrayList<>();
@@ -207,7 +209,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
 
         if (getYValueSum(set) == 0) {
             mChartDataPresent = false;
-            return getEmptyData();
+            return getEmptyData(context);
         }
         mChartDataPresent = true;
         return new BarData(xValues, set);
@@ -218,14 +220,14 @@ public class StackedBarChartFragment extends BaseReportFragment {
      *
      * @return a {@code BarData} instance for situation when no user data available
      */
-    private BarData getEmptyData() {
+    private BarData getEmptyData(@NonNull Context context) {
         List<String> xValues = new ArrayList<>();
         List<BarEntry> yValues = new ArrayList<>();
         for (int i = 0; i < NO_DATA_BAR_COUNTS; i++) {
             xValues.add("");
             yValues.add(new BarEntry(i + 1, i));
         }
-        BarDataSet set = new BarDataSet(yValues, getResources().getString(R.string.label_chart_no_data));
+        BarDataSet set = new BarDataSet(yValues, context.getString(R.string.label_chart_no_data));
         set.setDrawValues(false);
         set.setColor(NO_DATA_COLOR);
 
@@ -288,8 +290,8 @@ public class StackedBarChartFragment extends BaseReportFragment {
     }
 
     @Override
-    public void generateReport() {
-        mBinding.barChart.setData(getData());
+    public void generateReport(@NonNull Context context) {
+        mBinding.barChart.setData(getData(context));
         setCustomLegend();
 
         mBinding.barChart.getAxisLeft().setDrawLabels(mChartDataPresent);

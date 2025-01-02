@@ -60,7 +60,7 @@ import java.util.List;
 /**
  * Base class for report fragments.
  * <p>All report fragments should extend this class. At the minimum, reports must implement
- * {@link #getReportType()}, {@link #generateReport()}, {@link #displayReport()} and {@link #getTitle()}</p>
+ * {@link #getReportType()}, {@link #generateReport(Context)}, {@link #displayReport()} and {@link #getTitle()}</p>
  * <p>Implementing classes should create their own XML layouts and inflate it in {@link #inflateView(LayoutInflater, ViewGroup)}.
  * </p>
  * <p>Any custom information to be initialized for the report should be done in {@link #onActivityCreated(Bundle)} in implementing classes.
@@ -167,7 +167,7 @@ public abstract class BaseReportFragment extends Fragment implements
      * <br>Put any code to update the UI in {@link #displayReport()}
      * </p>
      */
-    protected abstract void generateReport();
+    protected abstract void generateReport(@NonNull Context context);
 
     /**
      * Update the view after the report chart has been generated <br/>
@@ -295,22 +295,23 @@ public abstract class BaseReportFragment extends Fragment implements
             mReportGenerator.cancel(true);
 
         mReportGenerator = new AsyncTask<Void, Void, Void>() {
+            private final ReportsActivity activity = mReportsActivity;
 
             @Override
             protected void onPreExecute() {
-                mReportsActivity.showProgressBar(true);
+                activity.showProgressBar(true);
             }
 
             @Override
             protected Void doInBackground(Void... params) {
-                generateReport();
+                generateReport(activity);
                 return null;
             }
 
             @Override
             protected void onPostExecute(Void aVoid) {
                 displayReport();
-                mReportsActivity.showProgressBar(false);
+                activity.showProgressBar(false);
             }
         };
         mReportGenerator.execute();
@@ -390,7 +391,7 @@ public abstract class BaseReportFragment extends Fragment implements
     }
 
     @ColorInt
-    protected int getTextColor() {
-        return getTextColorPrimary(requireContext());
+    protected int getTextColor(@NonNull Context context) {
+        return getTextColorPrimary(context);
     }
 }

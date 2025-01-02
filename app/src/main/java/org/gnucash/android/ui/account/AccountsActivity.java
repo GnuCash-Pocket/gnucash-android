@@ -385,7 +385,7 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
      * @return <code>true</code> if the minor version has been increased, <code>false</code> otherwise.
      */
     private boolean hasNewFeatures() {
-        String minorVersion = getResources().getString(R.string.app_minor_version);
+        String minorVersion = getString(R.string.app_minor_version);
         int currentMinor = Integer.parseInt(minorVersion);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);

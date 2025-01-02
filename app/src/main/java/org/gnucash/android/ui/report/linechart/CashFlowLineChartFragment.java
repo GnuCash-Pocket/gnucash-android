@@ -19,6 +19,7 @@ package org.gnucash.android.ui.report.linechart;
 
 import static org.gnucash.android.util.ColorExtKt.parseColor;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -100,7 +101,9 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        @ColorInt int textColorPrimary = getTextColor();
+        final Context context = mBinding.lineChart.getContext();
+
+        @ColorInt int textColorPrimary = getTextColor(context);
 
         mBinding.lineChart.setOnChartValueSelectedListener(this);
         mBinding.lineChart.setDescription("");
@@ -130,7 +133,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
      * @return a {@code LineData} instance that represents a user data
      */
     @NonNull
-    private LineData getData(List<AccountType> accountTypeList) {
+    private LineData getData(@NonNull Context context, List<AccountType> accountTypeList) {
         Timber.i("getData for %s", accountTypeList);
         calculateEarliestAndLatestTimestamps(accountTypeList);
         // LocalDateTime?
@@ -182,9 +185,9 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
         LineData lineData = new LineData(xValues, dataSets);
         if (getYValueSum(lineData) == 0) {
             mChartDataPresent = false;
-            return getEmptyData();
+            return getEmptyData(context);
         }
-        lineData.setValueTextColor(getTextColor());
+        lineData.setValueTextColor(getTextColor(context));
         return lineData;
     }
 
@@ -193,7 +196,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
      *
      * @return a {@code LineData} instance for situation when no user data available
      */
-    private LineData getEmptyData() {
+    private LineData getEmptyData(@NonNull Context context) {
         List<String> xValues = new ArrayList<>();
         List<Entry> yValues = new ArrayList<>();
         boolean isEven = true;
@@ -202,7 +205,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
             yValues.add(new Entry(isEven ? 5f : 4.5f, i));
             isEven = !isEven;
         }
-        LineDataSet set = new LineDataSet(yValues, getResources().getString(R.string.label_chart_no_data));
+        LineDataSet set = new LineDataSet(yValues, context.getString(R.string.label_chart_no_data));
         set.setDrawFilled(true);
         set.setDrawValues(false);
         set.setColor(NO_DATA_COLOR);
@@ -316,8 +319,8 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     }
 
     @Override
-    protected void generateReport() {
-        LineData lineData = getData(accountTypes);
+    protected void generateReport(@NonNull Context context) {
+        LineData lineData = getData(context, accountTypes);
         mBinding.lineChart.setData(lineData);
         mChartDataPresent = true;
     }
@@ -325,11 +328,12 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     @Override
     protected void displayReport() {
         if (!mChartDataPresent) {
+            final Context context = mBinding.lineChart.getContext();
             mBinding.lineChart.getAxisLeft().setAxisMaxValue(10);
             mBinding.lineChart.getAxisLeft().setDrawLabels(false);
             mBinding.lineChart.getXAxis().setDrawLabels(false);
             mBinding.lineChart.setTouchEnabled(false);
-            mSelectedValueTextView.setText(getResources().getString(R.string.label_chart_no_data));
+            mSelectedValueTextView.setText(context.getString(R.string.label_chart_no_data));
         } else {
             mBinding.lineChart.animateX(ANIMATION_DURATION);
         }
@@ -341,7 +345,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
         if (mReportPeriodStart != start || mReportPeriodEnd != end) {
             mReportPeriodStart = start;
             mReportPeriodEnd = end;
-            mBinding.lineChart.setData(getData(accountTypes));
+            mBinding.lineChart.setData(getData(mBinding.lineChart.getContext(), accountTypes));
             mBinding.lineChart.invalidate();
         }
     }
@@ -350,7 +354,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     public void onGroupingUpdated(GroupInterval groupInterval) {
         if (mGroupInterval != groupInterval) {
             mGroupInterval = groupInterval;
-            mBinding.lineChart.setData(getData(accountTypes));
+            mBinding.lineChart.setData(getData(mBinding.lineChart.getContext(), accountTypes));
             mBinding.lineChart.invalidate();
         }
     }

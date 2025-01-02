@@ -17,6 +17,7 @@ package org.gnucash.android.ui.report.sheet;
 
 import static org.gnucash.android.ui.util.TextViewExtKt.displayBalance;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -35,7 +36,6 @@ import androidx.annotation.Nullable;
 import org.gnucash.android.R;
 import org.gnucash.android.databinding.FragmentTextReportBinding;
 import org.gnucash.android.db.DatabaseSchema;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.report.BaseReportFragment;
@@ -101,7 +101,7 @@ public class BalanceSheetFragment extends BaseReportFragment {
     }
 
     @Override
-    protected void generateReport() {
+    protected void generateReport(@NonNull Context context) {
         mAssetsBalance = mAccountsDbAdapter.getAccountBalance(mAssetAccountTypes, -1, System.currentTimeMillis());
         mLiabilitiesBalance = mAccountsDbAdapter.getAccountBalance(mLiabilityAccountTypes, -1, System.currentTimeMillis());
     }
