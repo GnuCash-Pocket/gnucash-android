@@ -122,12 +122,13 @@ public class ReportsOverviewFragment extends BaseReportFragment {
 
     @Override
     public void onPrepareOptionsMenu(@NonNull Menu menu) {
+        super.onPrepareOptionsMenu(menu);
         menu.findItem(R.id.menu_group_reports_by).setVisible(false);
     }
 
     @Override
     protected void generateReport(@NonNull Context context) {
-        PieData pieData = PieChartFragment.groupSmallerSlices(getData(), context);
+        PieData pieData = PieChartFragment.groupSmallerSlices(context, getData());
         if (pieData.getYValCount() != 0) {
             mBinding.pieChart.setData(pieData);
             float sum = mBinding.pieChart.getData().getYValueSum();

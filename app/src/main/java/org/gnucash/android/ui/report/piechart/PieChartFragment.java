@@ -106,7 +106,7 @@ public class PieChartFragment extends BaseReportFragment {
         PieData pieData = getData();
         if (pieData != null && pieData.getYValCount() != 0) {
             mChartDataPresent = true;
-            mBinding.pieChart.setData(mGroupSmallerSlices ? groupSmallerSlices(pieData, getActivity()) : pieData);
+            mBinding.pieChart.setData(mGroupSmallerSlices ? groupSmallerSlices(context, pieData) : pieData);
             float sum = mBinding.pieChart.getData().getYValueSum();
             String total = context.getString(R.string.label_chart_total);
             String currencySymbol = mCommodity.getSymbol();
@@ -216,6 +216,7 @@ public class PieChartFragment extends BaseReportFragment {
 
     @Override
     public void onPrepareOptionsMenu(@NonNull Menu menu) {
+        super.onPrepareOptionsMenu(menu);
         menu.findItem(R.id.menu_order_by_size).setVisible(mChartDataPresent);
         menu.findItem(R.id.menu_toggle_labels).setVisible(mChartDataPresent);
         menu.findItem(R.id.menu_group_other_slice).setVisible(mChartDataPresent);
@@ -260,12 +261,12 @@ public class PieChartFragment extends BaseReportFragment {
     /**
      * Groups smaller slices. All smaller slices will be combined and displayed as a single "Other".
      *
-     * @param data    the pie data which smaller slices will be grouped
      * @param context Context for retrieving resources
+     * @param data    the pie data which smaller slices will be grouped
      * @return a {@code PieData} instance with combined smaller slices
      */
     @NonNull
-    public static PieData groupSmallerSlices(@NonNull PieData data, Context context) {
+    public static PieData groupSmallerSlices(@NonNull Context context, @NonNull PieData data) {
         float otherSlice = 0f;
         List<Entry> newEntries = new ArrayList<>();
         List<String> newLabels = new ArrayList<>();

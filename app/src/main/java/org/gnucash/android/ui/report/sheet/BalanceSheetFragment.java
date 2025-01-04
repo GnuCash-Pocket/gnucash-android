@@ -130,6 +130,7 @@ public class BalanceSheetFragment extends BaseReportFragment {
     private void loadAccountViews(List<AccountType> accountTypes, TableLayout tableLayout) {
         LayoutInflater inflater = LayoutInflater.from(getActivity());
 
+        // FIXME move this to generateReport
         Cursor cursor = mAccountsDbAdapter.fetchAccounts(DatabaseSchema.AccountEntry.COLUMN_TYPE
                         + " IN ( '" + TextUtils.join("' , '", accountTypes) + "' ) AND "
                         + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0",

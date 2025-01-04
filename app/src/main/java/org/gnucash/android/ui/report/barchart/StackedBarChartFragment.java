@@ -29,6 +29,7 @@ import android.widget.Toast;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.data.BarData;
@@ -327,6 +328,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
 
     @Override
     public void onPrepareOptionsMenu(@NonNull Menu menu) {
+        super.onPrepareOptionsMenu(menu);
         menu.findItem(R.id.menu_percentage_mode).setVisible(mChartDataPresent);
         // hide pie/line chart specific menu items
         menu.findItem(R.id.menu_order_by_size).setVisible(false);
@@ -337,13 +339,15 @@ public class StackedBarChartFragment extends BaseReportFragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.isCheckable())
+        if (item.isCheckable()) {
             item.setChecked(!item.isChecked());
+        }
+        final Context context = mBinding.barChart.getContext();
         switch (item.getItemId()) {
             case R.id.menu_toggle_legend:
                 Legend legend = mBinding.barChart.getLegend();
                 if (!legend.isLegendCustom()) {
-                    Toast.makeText(getActivity(), R.string.toast_legend_too_long, Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, R.string.toast_legend_too_long, Toast.LENGTH_LONG).show();
                     item.setChecked(false);
                 } else {
                     item.setChecked(!mBinding.barChart.getLegend().isEnabled());
@@ -354,9 +358,9 @@ public class StackedBarChartFragment extends BaseReportFragment {
 
             case R.id.menu_percentage_mode:
                 mTotalPercentageMode = !mTotalPercentageMode;
-                int msgId = mTotalPercentageMode ? R.string.toast_chart_percentage_mode_total
+                @StringRes int msgId = mTotalPercentageMode ? R.string.toast_chart_percentage_mode_total
                         : R.string.toast_chart_percentage_mode_current_bar;
-                Toast.makeText(getActivity(), msgId, Toast.LENGTH_LONG).show();
+                Toast.makeText(context, msgId, Toast.LENGTH_LONG).show();
                 return true;
 
             default:

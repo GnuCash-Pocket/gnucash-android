@@ -49,6 +49,7 @@ import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
+import org.gnucash.android.ui.common.BaseDrawerActivity;
 import org.gnucash.android.ui.common.Refreshable;
 import org.joda.time.LocalDateTime;
 import org.joda.time.Months;
@@ -212,27 +213,18 @@ public abstract class BaseReportFragment extends MenuFragment implements
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        refresh();
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
-        mReportsActivity.onFragmentResumed(this);
-        toggleBaseReportingOptionsVisibility();
-    }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
         Activity activity = getActivity();
         if (activity instanceof ReportsActivity) {
             mReportsActivity = (ReportsActivity) activity;
         } else {
             throw new RuntimeException("Report fragments can only be used with the ReportsActivity");
         }
+        mReportsActivity.onFragmentResumed(this);
+        toggleBaseReportingOptionsVisibility(mReportsActivity);
+        refresh();
     }
 
     @Override
@@ -242,9 +234,9 @@ public abstract class BaseReportFragment extends MenuFragment implements
             mReportGenerator.cancel(true);
     }
 
-    private void toggleBaseReportingOptionsVisibility() {
-        View timeRangeLayout = mReportsActivity.findViewById(R.id.time_range_layout);
-        View dateRangeDivider = mReportsActivity.findViewById(R.id.date_range_divider);
+    private void toggleBaseReportingOptionsVisibility(ReportsActivity activity) {
+        View timeRangeLayout = activity.findViewById(R.id.time_range_layout);
+        View dateRangeDivider = activity.findViewById(R.id.date_range_divider);
         if (timeRangeLayout != null && dateRangeDivider != null) {
             int visibility = requiresTimeRangeOptions() ? View.VISIBLE : View.GONE;
             timeRangeLayout.setVisibility(visibility);
@@ -300,22 +292,31 @@ public abstract class BaseReportFragment extends MenuFragment implements
 
             @Override
             protected void onPreExecute() {
-                mReportsActivity.showProgressBar(true);
+                BaseDrawerActivity activity = mReportsActivity;
+                assert activity != null;
+                activity.showProgressBar(true);
             }
 
             @Override
             protected Void doInBackground(Void... params) {
-                generateReport(mReportsActivity);
+                BaseDrawerActivity activity = mReportsActivity;
+                if (activity != null) {
+                    // FIXME return data to be displayed.
+                    generateReport(activity);
+                }
                 return null;
             }
 
             @Override
-            protected void onPostExecute(Void aVoid) {
-                displayReport();
-                mReportsActivity.showProgressBar(false);
+            protected void onPostExecute(Void result) {
+                BaseDrawerActivity activity = mReportsActivity;
+                if (activity != null) {
+                    // FIXME display the result data that was generated.
+                    displayReport();
+                    activity.showProgressBar(false);
+                }
             }
-        };
-        mReportGenerator.execute();
+        }.execute();
     }
 
     /**

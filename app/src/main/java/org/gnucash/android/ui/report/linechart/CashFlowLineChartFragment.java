@@ -357,6 +357,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
 
     @Override
     public void onPrepareOptionsMenu(@NonNull Menu menu) {
+        super.onPrepareOptionsMenu(menu);
         menu.findItem(R.id.menu_toggle_average_lines).setVisible(mChartDataPresent);
         // hide pie/bar chart specific menu items
         menu.findItem(R.id.menu_order_by_size).setVisible(false);
