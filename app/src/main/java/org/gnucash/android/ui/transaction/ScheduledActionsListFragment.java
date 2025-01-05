@@ -50,7 +50,7 @@ import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.util.CursorRecyclerAdapter;
 import org.gnucash.android.util.BackupManager;
-import org.joda.time.format.DateTimeFormat;
+import org.gnucash.android.util.DateExtKt;
 
 import timber.log.Timber;
 
@@ -232,7 +232,7 @@ public abstract class ScheduledActionsListFragment extends MenuFragment implemen
                 }
                 return context.getString(R.string.label_scheduled_action,
                     period,
-                    DateTimeFormat.shortDateTime().print(lastTime));
+                    DateExtKt.formatMediumDateTime(lastTime));
             }
             return scheduledAction.getRepeatString(context);
         }

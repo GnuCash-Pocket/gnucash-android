@@ -66,9 +66,8 @@ import org.gnucash.android.ui.common.GnucashProgressDialog;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.settings.BackupPreferenceFragment;
 import org.gnucash.android.util.BackupManager;
+import org.gnucash.android.util.DateExtKt;
 import org.gnucash.android.util.FileUtils;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -490,9 +489,8 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
         if (defaultEmail != null && defaultEmail.trim().length() > 0)
             shareIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{defaultEmail});
 
-        DateTimeFormatter formatter = DateTimeFormat.fullDateTime();
         String extraText = mContext.getString(R.string.description_export_email)
-            + " " + formatter.print(System.currentTimeMillis());
+            + " " + DateExtKt.formatFullDateTime(System.currentTimeMillis());
         shareIntent.putExtra(Intent.EXTRA_TEXT, extraText);
 
         if (mContext instanceof Activity) {

@@ -39,7 +39,7 @@ import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity;
 import org.gnucash.android.ui.passcode.PasscodeLockActivity;
 import org.gnucash.android.ui.transaction.dialog.BulkMoveDialogFragment;
 import org.gnucash.android.util.BackupManager;
-import org.joda.time.format.DateTimeFormat;
+import org.gnucash.android.util.DateExtKt;
 
 import java.util.MissingFormatArgumentException;
 
@@ -153,8 +153,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
             mBinding.fragmentTransactionDetails.addView(viewHolder.itemView, index++);
         }
 
-
-        String timeAndDate = DateTimeFormat.fullDate().print(transaction.getTimeMillis());
+        String timeAndDate = DateExtKt.formatFullDate(transaction.getTimeMillis());
         mBinding.trnTimeAndDate.setText(timeAndDate);
 
         if (transaction.getScheduledActionUID() != null) {

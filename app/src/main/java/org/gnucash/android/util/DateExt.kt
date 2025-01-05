@@ -3,6 +3,9 @@ package org.gnucash.android.util
 import org.joda.time.DateTime
 import org.joda.time.LocalDateTime
 import org.joda.time.Weeks
+import org.joda.time.format.DateTimeFormat
+import java.text.DateFormat
+import java.util.Date
 
 /**
  * Get the last weekday of the month.
@@ -88,4 +91,68 @@ fun LocalDateTime.dayOfWeek(date: LocalDateTime): LocalDateTime {
     val firstDayOfMonth = dayOfMonth().withMinimumValue()
     val firstDayOfWeek = firstDayOfMonth.dayOfWeek().setCopy(dayOfWeekOriginal)
     return firstDayOfWeek.plusWeeks(weekOfMonth - 1)
+}
+
+fun formatFullDate(millis: Long): String {
+    return try {
+        DateTimeFormat.fullDate().print(millis)
+    } catch (e: IllegalArgumentException) {
+        DateFormat.getDateInstance(DateFormat.FULL).format(Date(millis))
+    }
+}
+
+fun formatFullDateTime(millis: Long): String {
+    return try {
+        DateTimeFormat.fullDateTime().print(millis)
+    } catch (e: IllegalArgumentException) {
+        DateFormat.getDateInstance(DateFormat.FULL).format(Date(millis))
+    }
+}
+
+fun formatLongDate(millis: Long): String {
+    return try {
+        DateTimeFormat.longDate().print(millis)
+    } catch (e: IllegalArgumentException) {
+        DateFormat.getDateInstance(DateFormat.LONG).format(Date(millis))
+    }
+}
+
+fun formatLongDateTime(millis: Long): String {
+    return try {
+        DateTimeFormat.longDateTime().print(millis)
+    } catch (e: IllegalArgumentException) {
+        DateFormat.getDateInstance(DateFormat.LONG).format(Date(millis))
+    }
+}
+
+fun formatMediumDate(millis: Long): String {
+    return try {
+        DateTimeFormat.mediumDate().print(millis)
+    } catch (e: IllegalArgumentException) {
+        DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(millis))
+    }
+}
+
+fun formatMediumDateTime(millis: Long): String {
+    return try {
+        DateTimeFormat.mediumDateTime().print(millis)
+    } catch (e: IllegalArgumentException) {
+        DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(millis))
+    }
+}
+
+fun formatShortDate(millis: Long): String {
+    return try {
+        DateTimeFormat.shortDate().print(millis)
+    } catch (e: IllegalArgumentException) {
+        DateFormat.getDateInstance(DateFormat.SHORT).format(Date(millis))
+    }
+}
+
+fun formatShortDateTime(millis: Long): String {
+    return try {
+        DateTimeFormat.shortDateTime().print(millis)
+    } catch (e: IllegalArgumentException) {
+        DateFormat.getDateInstance(DateFormat.SHORT).format(Date(millis))
+    }
 }

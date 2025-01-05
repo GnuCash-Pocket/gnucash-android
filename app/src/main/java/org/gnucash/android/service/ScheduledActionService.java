@@ -41,8 +41,8 @@ import org.gnucash.android.model.Book;
 import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.util.BackupManager;
+import org.gnucash.android.util.DateExtKt;
 import org.gnucash.android.work.ActionWorker;
-import org.joda.time.format.DateTimeFormat;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -91,7 +91,7 @@ public class ScheduledActionService {
         Timber.i("Starting scheduled action service");
         try {
             processScheduledBooks(context);
-            Timber.i("Completed service @ %s", DateTimeFormat.longDateTime().print(System.currentTimeMillis()));
+            Timber.i("Completed service @ %s", DateExtKt.formatLongDateTime(System.currentTimeMillis()));
         } catch (Throwable e) {
             Timber.e(e, "Scheduled service error: %s", e.getMessage());
         }

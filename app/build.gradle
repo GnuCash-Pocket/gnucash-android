@@ -206,7 +206,7 @@ dependencies {
     implementation 'com.squareup:android-times-square:1.6.5@aar'
     implementation 'com.github.PhilJay:MPAndroidChart:2.2.4'
 
-    implementation 'joda-time:joda-time:2.12.7'
+    implementation 'joda-time:joda-time:2.13.0'
     implementation 'org.apache.jackrabbit:jackrabbit-webdav:2.13.3'
     implementation 'com.code-troopers.betterpickers:library:3.1.0'
     implementation 'com.github.techfreak:wizardpager:1.0.3'

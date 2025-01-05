@@ -19,9 +19,6 @@ import android.content.Context
 import android.text.format.Time
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrenceFormatter
-import java.sql.Timestamp
-import java.util.Calendar
-import kotlin.math.max
 import org.gnucash.android.R
 import org.gnucash.android.ui.util.RecurrenceParser
 import org.gnucash.android.util.dayOfWeek
@@ -37,7 +34,11 @@ import org.joda.time.ReadablePeriod
 import org.joda.time.Seconds
 import org.joda.time.Weeks
 import org.joda.time.Years
-import org.joda.time.format.DateTimeFormat
+import java.sql.Timestamp
+import java.text.DateFormat
+import java.util.Calendar
+import java.util.Date
+import kotlin.math.max
 
 /**
  * Model for recurrences in the database
@@ -121,7 +122,7 @@ class Recurrence(periodType: PeriodType) : BaseModel() {
     fun getRepeatString(context: Context): String {
         val repeatBuilder = StringBuilder(frequencyRepeatString(context))
         periodEnd?.let { periodEnd ->
-            val endDateString = DateTimeFormat.mediumDate().print(periodEnd)
+            val endDateString = DateFormat.getDateInstance().format(Date(periodEnd))
             repeatBuilder.append(", ")
                 .append(context.getString(R.string.repeat_until_date, endDateString))
         }
