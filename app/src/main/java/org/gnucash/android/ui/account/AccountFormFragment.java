@@ -643,16 +643,20 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      * Depends on how the fragment was loaded, it might have a backstack or not
      */
     private void finishFragment() {
-        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
-            Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(mBinding.inputAccountName.getWindowToken(), 0);
+        AppCompatActivity activity = (AppCompatActivity) getActivity();
+        if (activity == null) {
+            Timber.w("Activity required");
+            return;
+        }
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(mBinding.getRoot().getWindowToken(), 0);
 
-        final String action = getActivity().getIntent().getAction();
+        final String action = activity.getIntent().getAction();
         if (action != null && action.equals(Intent.ACTION_INSERT_OR_EDIT)) {
-            getActivity().setResult(Activity.RESULT_OK);
-            getActivity().finish();
+            activity.setResult(Activity.RESULT_OK);
+            activity.finish();
         } else {
-            getActivity().getSupportFragmentManager().popBackStack();
+            activity.getSupportFragmentManager().popBackStack();
         }
     }
 

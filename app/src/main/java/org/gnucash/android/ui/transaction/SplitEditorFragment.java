@@ -75,6 +75,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import timber.log.Timber;
+
 /**
  * Dialog for editing the splits in a transaction
  *
@@ -194,10 +196,16 @@ public class SplitEditorFragment extends MenuFragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         switch (item.getItemId()) {
-            case android.R.id.home:
-                requireActivity().setResult(Activity.RESULT_CANCELED);
-                requireActivity().finish();
+            case android.R.id.home: {
+                Activity activity = getActivity();
+                if (activity == null) {
+                    Timber.w("Activity required");
+                    return false;
+                }
+                activity.setResult(Activity.RESULT_CANCELED);
+                activity.finish();
                 return true;
+            }
 
             case R.id.menu_save:
                 saveSplits();
@@ -401,10 +409,15 @@ public class SplitEditorFragment extends MenuFragment {
             }
         }
 
-        Intent data = new Intent();
-        data.putParcelableArrayListExtra(UxArgument.SPLIT_LIST, extractSplitsFromView());
-        requireActivity().setResult(Activity.RESULT_OK, data);
-        requireActivity().finish();
+        Activity activity = getActivity();
+        if (activity == null) {
+            Timber.w("Activity required");
+            return;
+        }
+        Intent data = new Intent()
+            .putParcelableArrayListExtra(UxArgument.SPLIT_LIST, extractSplitsFromView());
+        activity.setResult(Activity.RESULT_OK, data);
+        activity.finish();
     }
 
     /**

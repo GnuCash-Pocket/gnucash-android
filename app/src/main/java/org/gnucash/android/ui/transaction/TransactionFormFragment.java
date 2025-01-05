@@ -190,6 +190,7 @@ public class TransactionFormFragment extends MenuFragment implements
      */
     private Money mSplitQuantity;
 
+    @Nullable
     private FragmentTransactionFormBinding mBinding;
 
     /**
@@ -935,8 +936,10 @@ public class TransactionFormFragment extends MenuFragment implements
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         //hide the keyboard if it is visible
+        if (mBinding == null) return super.onOptionsItemSelected(item);
+        View view = mBinding.getRoot();
         InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(mBinding.inputTransactionName.getWindowToken(), 0);
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 
         switch (item.getItemId()) {
             case android.R.id.home:
@@ -948,16 +951,14 @@ public class TransactionFormFragment extends MenuFragment implements
                     saveNewTransaction();
                 } else {
                     if (mBinding.inputTransactionAmount.getValue() == null) {
-                        Snackbar.make(getView(), R.string.toast_transanction_amount_required, Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(view, R.string.toast_transanction_amount_required, Snackbar.LENGTH_LONG).show();
                         mBinding.inputTransactionAmount.requestFocus();
                         mBinding.inputTransactionAmount.setError(getString(R.string.toast_transanction_amount_required));
                     } else {
                         mBinding.inputTransactionAmount.setError(null);
                     }
                     if (mUseDoubleEntry && mBinding.inputTransferAccountSpinner.getCount() == 0) {
-                        Snackbar.make(getView(),
-                            R.string.toast_disable_double_entry_to_save_transaction,
-                            Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(view, R.string.toast_disable_double_entry_to_save_transaction, Snackbar.LENGTH_LONG).show();
                     }
                 }
                 return true;

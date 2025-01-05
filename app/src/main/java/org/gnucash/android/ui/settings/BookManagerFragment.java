@@ -121,9 +121,15 @@ public class BookManagerFragment extends ListFragment implements
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_create:
-                AccountsActivity.createDefaultAccounts(GnuCashApplication.getDefaultCurrencyCode(), requireActivity());
+            case R.id.menu_create: {
+                Activity activity = getActivity();
+                if (activity == null) {
+                    Timber.w("Activity expected");
+                    return false;
+                }
+                AccountsActivity.createDefaultAccounts(GnuCashApplication.getDefaultCurrencyCode(), activity);
                 return true;
+            }
 
             case R.id.menu_open:
                 String[] mimeTypes = {"text/*", "application/*"};

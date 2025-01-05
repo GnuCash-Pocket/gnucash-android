@@ -323,12 +323,9 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
                 return true;
 
             case android.R.id.home:
-                super.onOptionsItemSelected(item);
-
             default:
-                return false;
+                return super.onOptionsItemSelected(item);
         }
-
     }
 
     @Override

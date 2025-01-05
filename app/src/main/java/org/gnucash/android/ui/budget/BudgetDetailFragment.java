@@ -164,13 +164,16 @@ public class BudgetDetailFragment extends MenuFragment implements Refreshable {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_edit:
-                Intent addAccountIntent = new Intent(getActivity(), FormActivity.class);
-                addAccountIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
-                addAccountIntent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.BUDGET.name());
-                addAccountIntent.putExtra(UxArgument.BUDGET_UID, mBudgetUID);
-                startActivityForResult(addAccountIntent, 0x11);
+            case R.id.menu_edit: {
+                Context context = getContext();
+                if (context == null) return false;
+                Intent intent = new Intent(context, FormActivity.class)
+                    .setAction(Intent.ACTION_INSERT_OR_EDIT)
+                    .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.BUDGET.name())
+                    .putExtra(UxArgument.BUDGET_UID, mBudgetUID);
+                startActivityForResult(intent, 0x11);
                 return true;
+            }
 
             default:
                 return false;

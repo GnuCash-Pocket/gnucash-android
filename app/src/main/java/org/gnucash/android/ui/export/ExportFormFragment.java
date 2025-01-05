@@ -310,9 +310,15 @@ public class ExportFormFragment extends MenuFragment implements
                 startExport();
                 return true;
 
-            case android.R.id.home:
-                requireActivity().finish();
+            case android.R.id.home: {
+                Activity activity = getActivity();
+                if (activity == null) {
+                    Timber.w("Activity expected");
+                    return false;
+                }
+                activity.finish();
                 return true;
+            }
 
             default:
                 return super.onOptionsItemSelected(item);

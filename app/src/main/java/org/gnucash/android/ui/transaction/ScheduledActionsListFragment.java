@@ -115,11 +115,17 @@ public abstract class ScheduledActionsListFragment extends MenuFragment implemen
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_create:
-                Intent intent = new Intent(getActivity(), FormActivity.class);
-                intent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.EXPORT.name());
+            case R.id.menu_create: {
+                Context context = getContext();
+                if (context == null) {
+                    Timber.w("Context expected");
+                    return false;
+                }
+                Intent intent = new Intent(context, FormActivity.class)
+                    .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.EXPORT.name());
                 startActivityForResult(intent, 0x1);
                 return true;
+            }
             default:
                 return super.onOptionsItemSelected(item);
         }

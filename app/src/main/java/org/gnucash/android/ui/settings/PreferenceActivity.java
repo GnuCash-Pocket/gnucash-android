@@ -121,7 +121,7 @@ public class PreferenceActivity extends PasscodeLockActivity implements
                 return true;
 
             default:
-                return false;
+                return super.onOptionsItemSelected(item);
         }
     }
 
