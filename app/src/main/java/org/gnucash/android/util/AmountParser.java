@@ -50,10 +50,10 @@ public class AmountParser {
         if (TextUtils.isEmpty(expressionString)) {
             return null;
         }
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            return evaluate16(expressionString);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return evaluate26(expressionString);
         }
-        return evaluate26(expressionString);
+        return evaluate16(expressionString);
     }
 
     @Nullable
@@ -66,7 +66,7 @@ public class AmountParser {
                 return new BigDecimal(expression.evaluate());
             }
         } catch (Exception e) {
-            Timber.w(e, "Invalid amount: %s", expressionString);
+            Timber.w(e, "Invalid expression: %s", expressionString);
         }
         return null;
     }
@@ -81,7 +81,7 @@ public class AmountParser {
                 return value.getNumberValue();
             }
         } catch (Exception e) {
-            Timber.w(e, "Invalid amount: %s", expressionString);
+            Timber.w(e, "Invalid expression: %s", expressionString);
         }
         return null;
     }

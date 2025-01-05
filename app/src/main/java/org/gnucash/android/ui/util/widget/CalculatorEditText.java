@@ -248,13 +248,13 @@ public class CalculatorEditText extends AppCompatEditText {
                 money.getNumerator();
             } catch (ArithmeticException e) {
                 setError(getContext().getString(R.string.label_error_invalid_expression));
-                Timber.w(e, "Invalid expression: %s", amountString);
+                Timber.w(e, "Invalid amount: %s", amountString);
                 return "";
             }
             setValue(amount);
         } else {
             setError(getContext().getString(R.string.label_error_invalid_expression));
-            Timber.w("Invalid expression: %s", amountString);
+            Timber.w("Invalid amount: %s", amountString);
         }
         return getText().toString();
     }
