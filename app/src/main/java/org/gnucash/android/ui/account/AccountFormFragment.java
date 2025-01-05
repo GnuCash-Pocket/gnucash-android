@@ -88,7 +88,8 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
     /**
      * Accounts database adapter
      */
-    private AccountsDbAdapter mAccountsDbAdapter;
+    private final AccountsDbAdapter mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+    private final CommoditiesDbAdapter commodityDbAdapter = CommoditiesDbAdapter.getInstance();
 
     /**
      * GUID of the parent account
@@ -163,15 +164,12 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      * @return New instance of the dialog fragment
      */
     static public AccountFormFragment newInstance() {
-        AccountFormFragment f = new AccountFormFragment();
-        f.mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-        return f;
+        return new AccountFormFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
         mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled();
         mAccountUID = getArguments().getString(UxArgument.SELECTED_ACCOUNT_UID);
     }
@@ -305,7 +303,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         String currencyCode = account.getCommodity().getCurrencyCode();
         setSelectedCurrency(currencyCode);
 
-        if (mAccountsDbAdapter.getTransactionMaxSplitNum(mAccount.getUID()) > 1) {
+        if (mAccountsDbAdapter.getTransactionMaxSplitNum(account.getUID()) > 1) {
             //TODO: Allow changing the currency and effecting the change for all transactions without any currency exchange (purely cosmetic change)
             mBinding.inputCurrencySpinner.setEnabled(false);
         }
@@ -384,8 +382,6 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      * @param currencyCode ISO 4217 currency code to be selected
      */
     private void setSelectedCurrency(String currencyCode) {
-        CommoditiesDbAdapter commodityDbAdapter = CommoditiesDbAdapter.getInstance();
-        if (commodityDbAdapter == null) return;
         long commodityId = commodityDbAdapter.getID(commodityDbAdapter.getCommodityUID(currencyCode));
         int position = 0;
         for (int i = 0; i < mBinding.inputCurrencySpinner.getCount(); i++) {
@@ -671,28 +667,27 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      */
     private void saveAccount() {
         Timber.i("Saving account");
-        if (mAccountsDbAdapter == null)
-            mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+
         // accounts to update, in case we're updating full names of a sub account tree
-        ArrayList<Account> accountsToUpdate = new ArrayList<>();
         boolean nameChanged = false;
         String newName = getEnteredName();
+        if (TextUtils.isEmpty(newName)) {
+            mBinding.nameTextInputLayout.setErrorEnabled(true);
+            mBinding.nameTextInputLayout.setError(getString(R.string.toast_no_account_name_entered));
+            return;
+        } else {
+            mBinding.nameTextInputLayout.setError(null);
+        }
+        long commodityId = mBinding.inputCurrencySpinner.getSelectedItemId();
+        Commodity commodity = commodityDbAdapter.getRecord(commodityId);
         if (mAccount == null) {
-            if (TextUtils.isEmpty(newName)) {
-                mBinding.nameTextInputLayout.setErrorEnabled(true);
-                mBinding.nameTextInputLayout.setError(getString(R.string.toast_no_account_name_entered));
-                return;
-            }
-            mAccount = new Account(newName);
+            mAccount = new Account(newName, commodity);
             mAccountsDbAdapter.addRecord(mAccount, DatabaseAdapter.UpdateMethod.insert); //new account, insert it
         } else {
             nameChanged = !mAccount.getName().equals(newName);
             mAccount.setName(newName);
+            mAccount.setCommodity(commodity);
         }
-
-        long commodityId = mBinding.inputCurrencySpinner.getSelectedItemId();
-        Commodity commodity = CommoditiesDbAdapter.getInstance().getRecord(commodityId);
-        mAccount.setCommodity(commodity);
 
         AccountType selectedAccountType = getSelectedAccountType();
         mAccount.setAccountType(selectedAccountType);
@@ -706,7 +701,6 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         if (mBinding.checkboxParentAccount.isChecked()) {
             newParentAccountId = mBinding.inputParentAccount.getSelectedItemId();
             newParentAccountUID = mAccountsDbAdapter.getUID(newParentAccountId);
-            mAccount.setParentUID(newParentAccountUID);
         } else {
             //need to do this explicitly in case user removes parent account
             newParentAccountUID = mRootAccountUID;
@@ -725,6 +719,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
 
         long parentAccountId = mParentAccountUID == null ? -1 : mAccountsDbAdapter.getID(mParentAccountUID);
         // update full names
+        List<Account> accountsToUpdate = new ArrayList<>();
         if (nameChanged || mDescendantAccountUIDs == null || newParentAccountId != parentAccountId) {
             // current account name changed or new Account or parent account changed
             String newAccountFullName;
