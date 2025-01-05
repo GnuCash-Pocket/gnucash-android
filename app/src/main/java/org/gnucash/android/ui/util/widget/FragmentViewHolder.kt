@@ -49,11 +49,15 @@ class FragmentViewHolder private constructor(container: FrameLayout) :
         )
 
         fragment.setMenuVisibility(false)
-        fragmentManager.beginTransaction().apply {
-            if (fragmentOld != null) remove(fragmentOld)
-            add(fragment, "f$itemId")
-            commitNowAllowingStateLoss()
+        if (fragmentOld != null) {
+            fragmentManager.beginTransaction()
+                .remove(fragmentOld)
+                .commitNowAllowingStateLoss()
         }
+        fragmentManager.beginTransaction()
+            .remove(fragment)
+            .add(fragment, "f$itemId")
+            .commitNowAllowingStateLoss()
         this.fragment = fragment
     }
 
