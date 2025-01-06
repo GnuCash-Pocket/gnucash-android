@@ -478,11 +478,9 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                             + "' currency code not found in the database for account " + mAccount.getUID());
                     }
                     String currencyId = commodity.getCurrencyCode();
-                    if (mCurrencyCount.containsKey(currencyId)) {
-                        mCurrencyCount.put(currencyId, mCurrencyCount.get(currencyId) + 1);
-                    } else {
-                        mCurrencyCount.put(currencyId, 1);
-                    }
+                    Integer currencyCount = mCurrencyCount.get(currencyId);
+                    if (currencyCount == null) currencyCount = 0;
+                    mCurrencyCount.put(currencyId, currencyCount + 1);
                 }
                 break;
             case TAG_ACCT_PARENT:
@@ -907,7 +905,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
             String currencyCode = split.getAccountUID();
             Account imbAccount = mapImbalanceAccount.get(currencyCode);
             if (imbAccount == null) {
-                imbAccount = new Account(imbalancePrefix + currencyCode, mCommoditiesDbAdapter.getCommodity(currencyCode));
+                imbAccount = new Account(imbalancePrefix + currencyCode, getCommodity(Commodity.COMMODITY_CURRENCY, currencyCode));
                 imbAccount.setParentUID(mRootAccount.getUID());
                 imbAccount.setAccountType(AccountType.BANK);
                 mapImbalanceAccount.put(currencyCode, imbAccount);
@@ -916,7 +914,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
             split.setAccountUID(imbAccount.getUID());
         }
 
-        java.util.Stack<Account> stack = new Stack<>();
+        Stack<Account> stack = new Stack<>();
         for (Account account : mAccountList) {
             if (mapFullName.get(account.getUID()) != null) {
                 continue;
@@ -1169,8 +1167,11 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 commoditiesById = mCommodities.get(Commodity.COMMODITY_CURRENCY);
             }
         }
-        if (commoditiesById == null) return null;
-        return commoditiesById.get(id);
+        if (commoditiesById != null) {
+            Commodity commodity = commoditiesById.get(id);
+            if (commodity != null) return commodity;
+        }
+        return mCommoditiesDbAdapter.getCommodity(id);
     }
 
     @Nullable
@@ -1181,6 +1182,9 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
         String id = commodity.getMnemonic();
         if (TextUtils.isEmpty(id)) return null;
         if (TEMPLATE.equals(id)) return null;
+
+        // Already a database record?
+        if (commodity.id != 0L) return null;
 
         Map<String, Commodity> commoditiesById = mCommodities.get(space);
         if (commoditiesById == null) {
