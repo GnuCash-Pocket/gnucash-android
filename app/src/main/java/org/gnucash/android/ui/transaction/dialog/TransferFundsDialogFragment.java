@@ -31,11 +31,13 @@ import android.widget.CompoundButton;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
 import org.gnucash.android.R;
 import org.gnucash.android.databinding.DialogTransferFundsBinding;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
+import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.db.adapter.PricesDbAdapter;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
@@ -62,10 +64,13 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
     private DialogTransferFundsBinding binding;
     @ColorInt
     private int colorBalanceZero;
+    private final PricesDbAdapter pricesDbAdapter = PricesDbAdapter.getInstance();
 
-    public static TransferFundsDialogFragment getInstance(Money transactionAmount,
-                                                          String targetCurrencyCode,
-                                                          OnTransferFundsListener transferFundsListener) {
+    public static TransferFundsDialogFragment getInstance(
+        @NonNull Money transactionAmount,
+        @NonNull String targetCurrencyCode,
+        @Nullable OnTransferFundsListener transferFundsListener
+    ) {
         return getInstance(
             transactionAmount,
             CommoditiesDbAdapter.getInstance().getCommodity(targetCurrencyCode),
@@ -73,9 +78,11 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
         );
     }
 
-    public static TransferFundsDialogFragment getInstance(Money transactionAmount,
-                                                          Commodity targetCurrency,
-                                                          OnTransferFundsListener transferFundsListener) {
+    public static TransferFundsDialogFragment getInstance(
+        @NonNull Money transactionAmount,
+        @NonNull Commodity targetCurrency,
+        @Nullable OnTransferFundsListener transferFundsListener
+    ) {
         TransferFundsDialogFragment fragment = new TransferFundsDialogFragment();
         // FIXME these fields must be persisted for when dialog is changed, e.g. rotated.
         fragment.mOriginAmount = transactionAmount;
@@ -107,7 +114,6 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
 
         String commodityUID = fromCommodity.getUID();
         String currencyUID = targetCommodity.getUID();
-        PricesDbAdapter pricesDbAdapter = PricesDbAdapter.getInstance();
         Pair<Long, Long> pricePair = pricesDbAdapter.getPrice(commodityUID, currencyUID);
 
         if (pricePair.first > 0 && pricePair.second > 0) {
@@ -192,7 +198,7 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
     private void transferFunds(Commodity originCommodity, Commodity targetCommodity) {
         Money convertedAmount = null;
 
-        Price price = null;
+        final Price price = new Price(originCommodity, targetCommodity);
         if (binding.radioExchangeRate.isChecked()) {
             BigDecimal rate;
             try {
@@ -203,7 +209,7 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
             }
             convertedAmount = mOriginAmount.times(rate).withCurrency(targetCommodity);
 
-            price = new Price(originCommodity, targetCommodity, rate);
+            price.setExchangeRate(rate);
         } else if (binding.radioConvertedAmount.isChecked()) {
             BigDecimal amount;
             try {
@@ -214,15 +220,12 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
             }
             convertedAmount = new Money(amount, targetCommodity);
 
-            price = new Price(originCommodity, targetCommodity);
             // fractions cannot be exactly represented by BigDecimal.
             price.setValueNum(convertedAmount.getNumerator() * mOriginAmount.getDenominator());
             price.setValueDenom(mOriginAmount.getNumerator() * convertedAmount.getDenominator());
         }
-        if (price != null) {
-            price.setSource(Price.SOURCE_USER);
-            PricesDbAdapter.getInstance().addRecord(price);
-        }
+        price.setSource(Price.SOURCE_USER);
+        pricesDbAdapter.addRecord(price, DatabaseAdapter.UpdateMethod.insert);
 
         if (mOnTransferFundsListener != null && convertedAmount != null) {
             mOnTransferFundsListener.transferComplete(mOriginAmount, convertedAmount);

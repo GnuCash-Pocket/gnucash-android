@@ -40,9 +40,7 @@ class Price : BaseModel {
      */
     constructor(commodity1: Commodity?, commodity2: Commodity?, exchangeRate: BigDecimal) :
             this(commodity1, commodity2) {
-        // Store 0.1234 as 1234/10000
-        valueNum = exchangeRate.unscaledValue().toLong()
-        valueDenom = BigDecimal.ONE.scaleByPowerOfTen(exchangeRate.scale()).toLong()
+        setExchangeRate(exchangeRate)
     }
 
     private var _valueNum = 0L
@@ -128,6 +126,12 @@ class Price : BaseModel {
 
     val commodityUID: String? get() = commodity?.uID
     val currencyUID: String? get() = currency?.uID
+
+    fun setExchangeRate(rate: BigDecimal) {
+        // Store 0.1234 as 1234/10000
+        valueNum = rate.unscaledValue().toLong()
+        valueDenom = BigDecimal.ONE.scaleByPowerOfTen(rate.scale()).toLong()
+    }
 
     companion object {
         /**
