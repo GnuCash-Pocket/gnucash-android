@@ -498,7 +498,8 @@ public class ExportFormFragment extends MenuFragment implements
         mBinding.inputRecurrence.setOnClickListener(new RecurrenceViewClickListener(activity, mRecurrenceRule, this));
 
         //this part (setting the export format) must come after the recurrence view bindings above
-        String defaultExportFormat = sharedPrefs.getString(getString(R.string.key_default_export_format), ExportFormat.CSVT.value);
+        String keyDefaultExportFormat = getString(R.string.key_default_export_format);
+        String defaultExportFormat = sharedPrefs.getString(keyDefaultExportFormat, ExportFormat.XML.value);
         mExportParams.setExportFormat(ExportFormat.of(defaultExportFormat));
 
         RadioButton.OnCheckedChangeListener radioClickListener = new RadioButton.OnCheckedChangeListener() {
@@ -520,6 +521,19 @@ public class ExportFormFragment extends MenuFragment implements
         mBinding.radioSeparatorSemicolonFormat.setOnCheckedChangeListener(radioClickListener);
 
         ExportFormat defaultFormat = ExportFormat.of(defaultExportFormat.toUpperCase());
+
+        if (GnuCashApplication.isDoubleEntryEnabled()) {
+            mBinding.radioOfxFormat.setVisibility(View.GONE);
+            if (defaultFormat == ExportFormat.OFX) {
+                defaultFormat = ExportFormat.XML;
+            }
+        } else {
+            mBinding.radioXmlFormat.setVisibility(View.GONE);
+            if (defaultFormat == ExportFormat.XML) {
+                defaultFormat = ExportFormat.OFX;
+            }
+        }
+
         switch (defaultFormat) {
             case QIF:
                 mBinding.radioQifFormat.performClick();
@@ -534,12 +548,6 @@ public class ExportFormFragment extends MenuFragment implements
             case CSVT:
                 mBinding.radioCsvTransactionsFormat.performClick();
                 break;
-        }
-
-        if (GnuCashApplication.isDoubleEntryEnabled()) {
-            mBinding.radioOfxFormat.setVisibility(View.GONE);
-        } else {
-            mBinding.radioXmlFormat.setVisibility(View.GONE);
         }
 
     }
