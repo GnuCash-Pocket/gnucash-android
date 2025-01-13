@@ -280,9 +280,9 @@ public class TransactionFormFragment extends MenuFragment implements
 
         mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled();
 
-        mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID);
-        assert (mAccountUID != null);
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+        mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID, mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID());
+        assert (mAccountUID != null);
         mAccountType = mAccountsDbAdapter.getAccountType(mAccountUID);
 
         mEditMode = false;
@@ -518,7 +518,7 @@ public class TransactionFormFragment extends MenuFragment implements
                     break; //we found a parent with default transfer setting
                 }
                 currentAccountUID = mAccountsDbAdapter.getParentAccountUID(currentAccountUID);
-            } while (!currentAccountUID.equals(rootAccountUID));
+            } while (currentAccountUID != null && !currentAccountUID.equals(rootAccountUID));
         } else {
             binding.layoutDoubleEntry.setVisibility(View.GONE);
             binding.btnSplitEditor.setVisibility(View.GONE);
@@ -573,11 +573,11 @@ public class TransactionFormFragment extends MenuFragment implements
         }
 
         Context context = binding.getRoot().getContext();
-        Intent intent = new Intent(context, FormActivity.class);
-        intent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.SPLIT_EDITOR.name());
-        intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
-        intent.putExtra(UxArgument.AMOUNT_STRING, baseAmountString);
-        intent.putParcelableArrayListExtra(UxArgument.SPLIT_LIST, (ArrayList<Split>) extractSplitsFromView(binding));
+        Intent intent = new Intent(context, FormActivity.class)
+            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.SPLIT_EDITOR.name())
+            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID)
+            .putExtra(UxArgument.AMOUNT_STRING, baseAmountString)
+            .putParcelableArrayListExtra(UxArgument.SPLIT_LIST, (ArrayList<Split>) extractSplitsFromView(binding));
 
         startActivityForResult(intent, REQUEST_SPLIT_EDITOR);
     }

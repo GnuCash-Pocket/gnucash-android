@@ -5,8 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuInflater
 import android.view.View
 import androidx.loader.content.Loader
 import org.gnucash.android.R
@@ -32,15 +30,19 @@ class ScheduledExportsListFragment : ScheduledActionsListFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.empty.setText(R.string.label_no_scheduled_exports_to_display)
+        binding.fabCreateTransaction.setOnClickListener {
+            addExport(it.context)
+        }
     }
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor> {
         return ScheduledExportCursorLoader(requireContext())
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.scheduled_export_actions, menu)
+    private fun addExport(context: Context) {
+        val intent = Intent(context, FormActivity::class.java)
+            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.EXPORT.name)
+        startActivityForResult(intent, 0x1)
     }
 
     /**

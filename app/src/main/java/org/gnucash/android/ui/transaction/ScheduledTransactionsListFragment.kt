@@ -15,6 +15,7 @@ import org.gnucash.android.db.DatabaseSchema
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.model.ScheduledAction
+import org.gnucash.android.model.Transaction
 import org.gnucash.android.ui.common.FormActivity
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.common.UxArgument
@@ -30,6 +31,7 @@ class ScheduledTransactionsListFragment : ScheduledActionsListFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.empty.setText(R.string.label_no_recurring_transactions)
+        binding.fabCreateTransaction.visibility = View.GONE
     }
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor> {
@@ -86,15 +88,24 @@ class ScheduledTransactionsListFragment : ScheduledActionsListFragment() {
             primaryTextView.text = scheduledAction.toString()
 
             val transactionUID = scheduledAction.actionUID!!
-            val transaction = transactionsDbAdapter.getRecord(transactionUID)
+            val transaction = try {
+                transactionsDbAdapter.getRecord(transactionUID)
+            } catch (e: IllegalArgumentException) {
+                //if the record could not be found, abort
+                Timber.e(
+                    e,
+                    "Scheduled transaction with UID $transactionUID could not be found in the db"
+                )
+                Transaction(null)
+            }
             val splits = transaction.splits
-            val accountUID = splits[0].accountUID!!
 
             primaryTextView.text = transaction.description
             descriptionTextView.text = formatSchedule(scheduledAction)
 
             var text = ""
-            if (splits.size == 2) {
+            val slitsSize = splits.size
+            if (slitsSize == 2) {
                 val first = splits[0]
                 for (split in splits) {
                     if ((first !== split) && first.isPairOf(split)) {
@@ -103,11 +114,16 @@ class ScheduledTransactionsListFragment : ScheduledActionsListFragment() {
                     }
                 }
             } else {
-                text = context.getString(R.string.label_split_count, splits.size)
+                text = context.getString(R.string.label_split_count, slitsSize)
             }
             amountTextView.text = text
 
-            itemView.setOnClickListener { editTransaction(scheduledAction, accountUID) }
+            itemView.setOnClickListener {
+                val accountUID = if (slitsSize > 0) splits[0].accountUID else null
+                if (accountUID != null) {
+                    editTransaction(scheduledAction, accountUID)
+                }
+            }
         }
 
         private fun editTransaction(scheduledAction: ScheduledAction, accountUID: String) {
