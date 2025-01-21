@@ -19,6 +19,7 @@ package org.gnucash.android.db.adapter;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
@@ -211,7 +212,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      *
      * @param model Model to be saved to the database
      */
-    public void addRecord(@NonNull final Model model) {
+    public void addRecord(@NonNull final Model model) throws SQLException {
         addRecord(model, UpdateMethod.replace);
     }
 
@@ -222,14 +223,14 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @param model        Subclass of {@link BaseModel} to be added
      * @param updateMethod Method to use for adding the record
      */
-    public void addRecord(@NonNull final Model model, UpdateMethod updateMethod) {
+    public void addRecord(@NonNull final Model model, UpdateMethod updateMethod) throws SQLException {
         Timber.d("Adding %s record to database: ", model.getClass().getSimpleName());
         final SQLiteStatement statement;
         switch (updateMethod) {
             case insert:
                 statement = getInsertStatement();
                 synchronized (statement) {
-                    setBindings(statement, model).execute();
+                    model.id = setBindings(statement, model).executeInsert();
                 }
                 break;
             case update:
@@ -241,7 +242,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
             default:
                 statement = getReplaceStatement();
                 synchronized (statement) {
-                    setBindings(statement, model).execute();
+                    model.id = setBindings(statement, model).executeInsert();
                 }
                 break;
         }
@@ -254,29 +255,33 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @param updateMethod Method to use when persisting them
      * @return Number of rows affected in the database
      */
-    private long doAddModels(@NonNull final List<Model> modelList, UpdateMethod updateMethod) {
+    private long doAddModels(@NonNull final List<Model> modelList, UpdateMethod updateMethod) throws SQLException {
         long nRow = 0;
+        final SQLiteStatement statement;
         switch (updateMethod) {
             case update:
-                synchronized (getUpdateStatement()) {
+                statement = getUpdateStatement();
+                synchronized (statement) {
                     for (Model model : modelList) {
-                        setBindings(getUpdateStatement(), model).execute();
+                        setBindings(statement, model).execute();
                         nRow++;
                     }
                 }
                 break;
             case insert:
-                synchronized (getInsertStatement()) {
+                statement = getInsertStatement();
+                synchronized (statement) {
                     for (Model model : modelList) {
-                        setBindings(getInsertStatement(), model).execute();
+                        setBindings(statement, model).execute();
                         nRow++;
                     }
                 }
                 break;
             default:
-                synchronized (getReplaceStatement()) {
+                statement = getReplaceStatement();
+                synchronized (statement) {
                     for (Model model : modelList) {
-                        setBindings(getReplaceStatement(), model).execute();
+                        setBindings(statement, model).execute();
                         nRow++;
                     }
                 }
@@ -296,14 +301,14 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
         return bulkAddRecords(modelList, UpdateMethod.replace);
     }
 
-    public long bulkAddRecords(@NonNull List<Model> modelList, UpdateMethod updateMethod) {
+    public long bulkAddRecords(@NonNull List<Model> modelList, UpdateMethod updateMethod) throws SQLException {
         if (modelList.isEmpty()) {
             Timber.w("Empty model list. Cannot bulk add records, returning 0");
             return 0;
         }
 
         Timber.i("Bulk adding %d %s records to the database", modelList.size(),
-                modelList.isEmpty() ? "null" : modelList.get(0).getClass().getSimpleName());
+                modelList.get(0).getClass().getSimpleName());
         long nRow;
         try {
             beginTransaction();
@@ -719,7 +724,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
         return mDb.update(mTableName, contentValues, CommonColumns.COLUMN_UID + "=?", new String[]{uid});
     }
 
-    public void updateRecord(Model model) {
+    public void updateRecord(Model model) throws SQLException {
         addRecord(model, UpdateMethod.update);
     }
 

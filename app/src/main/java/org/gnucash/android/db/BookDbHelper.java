@@ -28,7 +28,6 @@ import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema.BookEntry;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Book;
 
@@ -80,7 +79,7 @@ public class BookDbHelper extends SQLiteOpenHelper {
         SQLiteDatabase mainDb = helper.getWritableDatabase(); //actually create the db
         AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(
             mainDb,
-            new TransactionsDbAdapter(mainDb, new SplitsDbAdapter(mainDb))
+            new TransactionsDbAdapter(mainDb)
         );
 
         String rootAccountUID = accountsDbAdapter.getOrCreateGnuCashRootAccountUID();

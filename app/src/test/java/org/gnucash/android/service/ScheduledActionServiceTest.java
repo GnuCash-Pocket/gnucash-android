@@ -18,21 +18,17 @@ package org.gnucash.android.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
-import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.export.ExportFormat;
 import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.Exporter;
-import org.gnucash.android.importer.GncXmlImporter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
@@ -42,9 +38,7 @@ import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.model.TransactionType;
-import org.gnucash.android.service.ScheduledActionService;
 import org.gnucash.android.test.unit.GnuCashTest;
-import org.gnucash.android.util.BookUtils;
 import org.gnucash.android.util.TimestampHelper;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
@@ -52,74 +46,54 @@ import org.joda.time.LocalDateTime;
 import org.joda.time.Weeks;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.List;
 
-import javax.xml.parsers.ParserConfigurationException;
+import timber.log.Timber;
 
 /**
  * Test the the scheduled actions service runs as expected
  */
 public class ScheduledActionServiceTest extends GnuCashTest {
 
-    private static String mActionUID;
+    private String mActionUID;
     private SQLiteDatabase mDb;
 
-    private static Account mBaseAccount = new Account("Base Account");
-    private static Account mTransferAccount = new Account("Transfer Account");
+    private final Account mBaseAccount = new Account("Base Account");
+    private final Account mTransferAccount = new Account("Transfer Account");
 
-    private static Transaction mTemplateTransaction;
     private TransactionsDbAdapter mTransactionsDbAdapter;
-
-    public void createAccounts() {
-        try {
-            Context context = GnuCashApplication.getAppContext();
-            String bookUID = GncXmlImporter.parse(context.getResources().openRawResource(R.raw.default_accounts));
-            BookUtils.loadBook(context, bookUID);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Could not create default accounts");
-        }
-    }
-
-    @BeforeClass
-    public static void makeAccounts() {
-        mTemplateTransaction = new Transaction("Recurring Transaction");
-        mTemplateTransaction.setTemplate(true);
-
-        mActionUID = mTemplateTransaction.getUID();
-    }
 
     @Before
     public void setUp() {
         mDb = GnuCashApplication.getActiveDb();
-        new CommoditiesDbAdapter(mDb); //initializes commodity static values
         mBaseAccount.setCommodity(Commodity.DEFAULT_COMMODITY);
         mTransferAccount.setCommodity(Commodity.DEFAULT_COMMODITY);
-        mTemplateTransaction.setCommodity(Commodity.DEFAULT_COMMODITY);
+
+        Transaction templateTransaction = new Transaction("Recurring Transaction");
+        templateTransaction.setCommodity(Commodity.DEFAULT_COMMODITY);
+        templateTransaction.setTemplate(true);
 
         Split split1 = new Split(new Money(BigDecimal.TEN, Commodity.DEFAULT_COMMODITY), mBaseAccount.getUID());
         Split split2 = split1.createPair(mTransferAccount.getUID());
 
-        mTemplateTransaction.addSplit(split1);
-        mTemplateTransaction.addSplit(split2);
+        templateTransaction.addSplit(split1);
+        templateTransaction.addSplit(split2);
+
+        mActionUID = templateTransaction.getUID();
+        Timber.v("action ID: " + mActionUID);
 
         AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
         accountsDbAdapter.addRecord(mBaseAccount);
         accountsDbAdapter.addRecord(mTransferAccount);
 
         mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
-        mTransactionsDbAdapter.addRecord(mTemplateTransaction, DatabaseAdapter.UpdateMethod.insert);
+        mTransactionsDbAdapter.addRecord(templateTransaction, DatabaseAdapter.UpdateMethod.insert);
     }
 
     @Test

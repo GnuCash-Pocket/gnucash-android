@@ -54,7 +54,6 @@ import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
-import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.export.csv.CsvAccountExporter;
 import org.gnucash.android.export.csv.CsvTransactionsExporter;
@@ -458,7 +457,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
         boolean preserveOpeningBalances = GnuCashApplication.shouldSaveOpeningBalances(false);
 
         SQLiteDatabase db = GnuCashApplication.getActiveDb();
-        TransactionsDbAdapter transactionsDbAdapter = new TransactionsDbAdapter(db, new SplitsDbAdapter(db));
+        TransactionsDbAdapter transactionsDbAdapter = new TransactionsDbAdapter(db);
         if (preserveOpeningBalances) {
             openingBalances = new AccountsDbAdapter(db, transactionsDbAdapter).getAllOpeningBalanceTransactions();
         }

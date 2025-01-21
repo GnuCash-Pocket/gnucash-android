@@ -15,6 +15,8 @@ import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import timber.log.Timber;
+
 public class BackupManagerTest extends GnuCashTest {
     private BooksDbAdapter mBooksDbAdapter;
 
@@ -69,7 +71,7 @@ public class BackupManagerTest extends GnuCashTest {
         try {
             return GncXmlImporter.parse(GnuCashApplication.getAppContext().getResources().openRawResource(R.raw.default_accounts));
         } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();
+            Timber.e(e);
             throw new RuntimeException("Could not create default accounts");
         }
     }

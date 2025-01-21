@@ -60,6 +60,8 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import timber.log.Timber;
+
 public class AccountsDbAdapterTest extends GnuCashTest {
 
     private static final String BRAVO_ACCOUNT_NAME = "Bravo";
@@ -158,8 +160,14 @@ public class AccountsDbAdapterTest extends GnuCashTest {
         account1.addTransaction(transaction);
         account2.addTransaction(transaction);
 
+        // Disable foreign key validation because the second split,
+        // which is added during 1st account,
+        // references the second account which has not been added yet.
+        mAccountsDbAdapter.enableForeignKey(false);
         mAccountsDbAdapter.addRecord(account1);
         mAccountsDbAdapter.addRecord(account2);
+        mAccountsDbAdapter.enableForeignKey(true);
+        assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(3);//root+account1+account2
 
         Account firstAccount = mAccountsDbAdapter.getRecord(account1.getUID());
         assertThat(firstAccount).isNotNull();
@@ -223,6 +231,7 @@ public class AccountsDbAdapterTest extends GnuCashTest {
 
         mAccountsDbAdapter.addRecord(parent);
         mAccountsDbAdapter.addRecord(child);
+        assertThat(child.getFullName()).isEqualTo("Child");
 
         child.setParentUID(parent.getUID());
         mAccountsDbAdapter.addRecord(child);
@@ -528,7 +537,7 @@ public class AccountsDbAdapterTest extends GnuCashTest {
             String bookUID = GncXmlImporter.parse(GnuCashApplication.getAppContext().getResources().openRawResource(R.raw.default_accounts));
             initAdapters(bookUID);
         } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();
+            Timber.e(e);
             throw new RuntimeException("Could not create default accounts");
         }
     }

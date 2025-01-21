@@ -5,6 +5,7 @@ import static org.gnucash.android.ui.util.TextViewExtKt.displayBalance;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.database.SQLException;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -42,6 +43,8 @@ import org.gnucash.android.util.BackupManager;
 import org.gnucash.android.util.DateExtKt;
 
 import java.util.MissingFormatArgumentException;
+
+import timber.log.Timber;
 
 /**
  * Activity for displaying transaction information
@@ -275,7 +278,13 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
         Transaction transaction = dbAdapter.getRecord(transactionUID);
         Transaction duplicate = new Transaction(transaction, true);
         duplicate.setTime(System.currentTimeMillis());
-        dbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.insert);
+        try {
+            dbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.insert);
+            if (duplicate.id <= 0) return;
+        } catch (SQLException e) {
+            Timber.e(e);
+            return;
+        }
 
         // Show the new transaction
         Intent intent = new Intent(getIntent())

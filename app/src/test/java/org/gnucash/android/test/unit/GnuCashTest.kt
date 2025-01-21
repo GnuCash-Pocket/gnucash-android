@@ -1,6 +1,7 @@
 package org.gnucash.android.test.unit
 
 import org.gnucash.android.test.unit.testutil.ShadowCrashlytics
+import org.junit.BeforeClass
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -11,7 +12,11 @@ import timber.log.Timber
 //package is required so that resources can be found in dev mode
 @Config(sdk = [21], shadows = [ShadowCrashlytics::class])
 abstract class GnuCashTest {
-    init {
-        Timber.plant(ConsoleTree())
+    companion object {
+        @JvmStatic
+        @BeforeClass
+        fun before(): Unit {
+            Timber.plant(ConsoleTree())
+        }
     }
 }

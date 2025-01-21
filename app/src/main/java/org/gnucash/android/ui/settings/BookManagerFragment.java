@@ -57,7 +57,6 @@ import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.DatabaseSchema.BookEntry;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.ui.account.AccountsActivity;
 import org.gnucash.android.ui.common.Refreshable;
@@ -330,7 +329,7 @@ public class BookManagerFragment extends ListFragment implements
             final Context context = view.getContext();
             DatabaseHelper dbHelper = new DatabaseHelper(context, bookUID);
             SQLiteDatabase db = dbHelper.getReadableDatabase();
-            TransactionsDbAdapter trnAdapter = new TransactionsDbAdapter(db, new SplitsDbAdapter(db));
+            TransactionsDbAdapter trnAdapter = new TransactionsDbAdapter(db);
             int transactionCount = (int) trnAdapter.getRecordsCount();
             String transactionStats = getResources().getQuantityString(R.plurals.book_transaction_stats, transactionCount, transactionCount);
 

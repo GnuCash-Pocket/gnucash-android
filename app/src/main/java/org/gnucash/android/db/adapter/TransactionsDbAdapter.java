@@ -68,6 +68,15 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      *
      * @param db SQlite db instance
      */
+    public TransactionsDbAdapter(SQLiteDatabase db) {
+        this(db, new SplitsDbAdapter(db));
+    }
+
+    /**
+     * Overloaded constructor. Creates adapter for already open db
+     *
+     * @param db SQlite db instance
+     */
     public TransactionsDbAdapter(SQLiteDatabase db, SplitsDbAdapter splitsDbAdapter) {
         super(db, TransactionEntry.TABLE_NAME, new String[]{
                 TransactionEntry.COLUMN_DESCRIPTION,
@@ -105,7 +114,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      * @param transaction {@link Transaction} to be inserted to database
      */
     @Override
-    public void addRecord(@NonNull Transaction transaction, UpdateMethod updateMethod) {
+    public void addRecord(@NonNull Transaction transaction, UpdateMethod updateMethod) throws SQLException {
         Timber.d("Adding transaction to the db via %s", updateMethod.name());
         try {
             beginTransaction();
@@ -118,7 +127,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
             super.addRecord(transaction, updateMethod);
 
             Timber.d("Adding splits for transaction");
-            ArrayList<String> splitUIDs = new ArrayList<>(transaction.getSplits().size());
+            List<String> splitUIDs = new ArrayList<>(transaction.getSplits().size());
             for (Split split : transaction.getSplits()) {
                 Timber.d("Replace transaction split in db");
                 if (imbalanceSplit == split) {
@@ -137,8 +146,6 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
             Timber.d("%d splits deleted", deleted);
 
             setTransactionSuccessful();
-        } catch (SQLException e) {
-            Timber.e(e);
         } finally {
             endTransaction();
         }
@@ -155,7 +162,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      * @return Number of transactions inserted
      */
     @Override
-    public long bulkAddRecords(@NonNull List<Transaction> transactionList, UpdateMethod updateMethod) {
+    public long bulkAddRecords(@NonNull List<Transaction> transactionList, UpdateMethod updateMethod) throws SQLException {
         long start = System.nanoTime();
         long rowInserted = super.bulkAddRecords(transactionList, updateMethod);
         long end = System.nanoTime();

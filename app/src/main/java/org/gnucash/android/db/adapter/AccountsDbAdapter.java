@@ -123,7 +123,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @param db Database to create an adapter for
      */
     public AccountsDbAdapter(SQLiteDatabase db) {
-        this(db, new TransactionsDbAdapter(db, new SplitsDbAdapter(db)));
+        this(db, new TransactionsDbAdapter(db));
     }
 
     /**
@@ -145,18 +145,15 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     public void addRecord(@NonNull Account account, UpdateMethod updateMethod) {
         Timber.d("Replace account to db");
         //in-case the account already existed, we want to update the templates based on it as well
-        List<Transaction> templateTransactions = mTransactionsAdapter.getScheduledTransactionsForAccount(account.getUID());
         super.addRecord(account, updateMethod);
-        String accountUID = account.getUID();
         //now add transactions if there are any
         if (account.getAccountType() != AccountType.ROOT) {
-            //update the fully qualified account name
-            updateRecord(accountUID, AccountEntry.COLUMN_FULL_NAME, getFullyQualifiedAccountName(accountUID));
             for (Transaction t : account.getTransactions()) {
                 t.setCommodity(account.getCommodity());
                 mTransactionsAdapter.addRecord(t, updateMethod);
             }
-            for (Transaction transaction : templateTransactions) {
+            List<Transaction> scheduledTransactions = mTransactionsAdapter.getScheduledTransactionsForAccount(account.getUID());
+            for (Transaction transaction : scheduledTransactions) {
                 mTransactionsAdapter.addRecord(transaction, UpdateMethod.update);
             }
         }
@@ -195,6 +192,16 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     @Override
     protected @NonNull SQLiteStatement setBindings(@NonNull SQLiteStatement stmt, @NonNull final Account account) {
+        String parentAccountUID = account.getParentUID();
+        if (account.getAccountType() != AccountType.ROOT) {
+            if (TextUtils.isEmpty(parentAccountUID)) {
+                parentAccountUID = getOrCreateGnuCashRootAccountUID();
+                account.setParentUID(parentAccountUID);
+            }
+            //update the fully qualified account name
+            account.setFullName(getFullyQualifiedAccountName(account));
+        }
+
         stmt.clearBindings();
         stmt.bindString(1, account.getName());
         stmt.bindString(2, account.getDescription());
@@ -212,10 +219,6 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         stmt.bindLong(10, account.isHidden() ? 1 : 0);
         stmt.bindString(11, account.getCommodity().getUID());
 
-        String parentAccountUID = account.getParentUID();
-        if (parentAccountUID == null && account.getAccountType() != AccountType.ROOT) {
-            parentAccountUID = getOrCreateGnuCashRootAccountUID();
-        }
         if (parentAccountUID != null) {
             stmt.bindString(12, parentAccountUID);
         } else {
@@ -1122,6 +1125,25 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         String parentAccountUID = getParentAccountUID(accountUID);
 
         if (parentAccountUID == null || parentAccountUID.equalsIgnoreCase(getOrCreateGnuCashRootAccountUID())) {
+            return accountName;
+        }
+
+        String parentAccountName = getFullyQualifiedAccountName(parentAccountUID);
+
+        return parentAccountName + ACCOUNT_NAME_SEPARATOR + accountName;
+    }
+
+    /**
+     * Returns the full account name including the account hierarchy (parent accounts)
+     *
+     * @param account The account
+     * @return Fully qualified (with parent hierarchy) account name
+     */
+    public String getFullyQualifiedAccountName(@NonNull Account account) {
+        String accountName = account.getName();
+        String parentAccountUID = account.getParentUID();
+
+        if (TextUtils.isEmpty(parentAccountUID) || parentAccountUID.equalsIgnoreCase(getOrCreateGnuCashRootAccountUID())) {
             return accountName;
         }
 

@@ -38,6 +38,8 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import timber.log.Timber;
+
 /**
  * Test backup and restore functionality
  */
@@ -71,7 +73,7 @@ public class BackupTest extends GnuCashTest {
             assertThat(BooksDbAdapter.getInstance().getActiveBookUID()).isEqualTo(bookUID);
             assertThat(GnuCashApplication.getActiveBookUID()).isEqualTo(bookUID);
         } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();
+            Timber.e(e);
             throw new RuntimeException("Could not create default accounts");
         }
     }

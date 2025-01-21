@@ -78,7 +78,6 @@ import org.gnucash.android.model.Transaction;
 import org.gnucash.android.receivers.AccountCreator;
 import org.gnucash.android.test.ui.util.DisableAnimationsRule;
 import org.gnucash.android.ui.account.AccountsActivity;
-import org.gnucash.android.ui.common.Refreshable;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -147,7 +146,7 @@ public class AccountsActivityTest {
         mSplitsDbAdapter = SplitsDbAdapter.getInstance();
         mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-        CommoditiesDbAdapter commoditiesDbAdapter = new CommoditiesDbAdapter(mDb); //initialize commodity constants
+        CommoditiesDbAdapter commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
         assertThat(commoditiesDbAdapter.isOpen()).isTrue();
     }
 

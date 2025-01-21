@@ -26,7 +26,6 @@ import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.export.ExportFormat;
 import org.gnucash.android.export.ExportParams;
@@ -308,8 +307,7 @@ public class QifExporterTest extends BookHelperTest {
         account2.setAccountType(AccountType.CASH);
         accountsDbAdapter.addRecord(account2);
 
-        SplitsDbAdapter splitsDbAdapter = new SplitsDbAdapter(mDb);
-        TransactionsDbAdapter transactionsDbAdapter = new TransactionsDbAdapter(mDb, splitsDbAdapter);
+        TransactionsDbAdapter transactionsDbAdapter = new TransactionsDbAdapter(mDb);
         Transaction transaction = new Transaction("One transaction");
         Split split1 = new Split(new Money(123.45, Commodity.EUR), account1.getUID());
         Split split2 = split1.createPair(account2.getUID());

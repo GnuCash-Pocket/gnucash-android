@@ -33,7 +33,6 @@ import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.db.adapter.RecurrenceDbAdapter;
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
-import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.export.ExportAsyncTask;
 import org.gnucash.android.export.ExportParams;
@@ -277,7 +276,7 @@ public class ScheduledActionService {
     private static int executeTransactions(@NonNull Context context, ScheduledAction scheduledAction, SQLiteDatabase db) {
         int executionCount = 0;
         String actionUID = scheduledAction.getActionUID();
-        TransactionsDbAdapter transactionsDbAdapter = new TransactionsDbAdapter(db, new SplitsDbAdapter(db));
+        TransactionsDbAdapter transactionsDbAdapter = new TransactionsDbAdapter(db);
         Transaction trxnTemplate;
         try {
             trxnTemplate = transactionsDbAdapter.getRecord(actionUID);

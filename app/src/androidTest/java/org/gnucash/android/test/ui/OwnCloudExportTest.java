@@ -77,7 +77,7 @@ import timber.log.Timber;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class OwnCloudExportTest {
 
-    private AccountsActivity mAccountsActivity;
+    private Context context;
     private SharedPreferences mPrefs;
 
     private String OC_SERVER = "https://demo.owncloud.org";
@@ -109,25 +109,14 @@ public class OwnCloudExportTest {
 
     @Before
     public void setUp() throws Exception {
-        mAccountsActivity = mActivityRule.getActivity();
-        mPrefs = mAccountsActivity.getSharedPreferences(
-            mAccountsActivity.getString(R.string.owncloud_pref), Context.MODE_PRIVATE);
+        context = mActivityRule.getActivity();
+        mPrefs = context.getSharedPreferences(
+            context.getString(R.string.owncloud_pref), Context.MODE_PRIVATE);
 
         preventFirstRunDialogs(getInstrumentation().getTargetContext());
 
-        // creates Account and transaction
-        String activeBookUID = GnuCashApplication.getActiveBookUID();
-        DatabaseHelper mDbHelper = new DatabaseHelper(mAccountsActivity, activeBookUID);
-        SQLiteDatabase mDb;
-        try {
-            mDb = mDbHelper.getWritableDatabase();
-        } catch (SQLException e) {
-            Timber.e(e, "Error getting database: " + e.getMessage());
-            mDb = mDbHelper.getReadableDatabase();
-        }
+        GnuCashApplication.initializeDatabaseAdapters(context);
 
-        @SuppressWarnings("unused") //this call initializes constants in Commodity
-        CommoditiesDbAdapter commoditiesDbAdapter = new CommoditiesDbAdapter(mDb);
         AccountsDbAdapter mAccountsDbAdapter = AccountsDbAdapter.getInstance();
         mAccountsDbAdapter.deleteAllRecords();
 
@@ -146,8 +135,8 @@ public class OwnCloudExportTest {
         mAccountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert);
 
         mPrefs.edit()
-            .putBoolean(mAccountsActivity.getString(R.string.key_owncloud_sync), false)
-            .putInt(mAccountsActivity.getString(R.string.key_last_export_destination), 0)
+            .putBoolean(context.getString(R.string.key_owncloud_sync), false)
+            .putInt(context.getString(R.string.key_last_export_destination), 0)
             .apply();
     }
 
@@ -186,28 +175,28 @@ public class OwnCloudExportTest {
         sleep(5000);
         onView(withId(R.id.btn_save)).perform(click());
 
-        assertEquals(mPrefs.getString(mAccountsActivity.getString(R.string.key_owncloud_server), null), OC_SERVER);
-        assertEquals(mPrefs.getString(mAccountsActivity.getString(R.string.key_owncloud_username), null), OC_USERNAME);
-        assertEquals(mPrefs.getString(mAccountsActivity.getString(R.string.key_owncloud_password), null), OC_PASSWORD);
-        assertEquals(mPrefs.getString(mAccountsActivity.getString(R.string.key_owncloud_dir), null), OC_DIR);
+        assertEquals(mPrefs.getString(context.getString(R.string.key_owncloud_server), null), OC_SERVER);
+        assertEquals(mPrefs.getString(context.getString(R.string.key_owncloud_username), null), OC_USERNAME);
+        assertEquals(mPrefs.getString(context.getString(R.string.key_owncloud_password), null), OC_PASSWORD);
+        assertEquals(mPrefs.getString(context.getString(R.string.key_owncloud_dir), null), OC_DIR);
 
-        assertTrue(mPrefs.getBoolean(mAccountsActivity.getString(R.string.key_owncloud_sync), false));
+        assertTrue(mPrefs.getBoolean(context.getString(R.string.key_owncloud_sync), false));
     }
 
     //// FIXME: 20.04.2017 This test now fails since introduction of SAF.
     public void OwnCloudExport() {
         Assume.assumeTrue(hasActiveInternetConnection());
-        mPrefs.edit().putBoolean(mAccountsActivity.getString(R.string.key_owncloud_sync), true).commit();
+        mPrefs.edit().putBoolean(context.getString(R.string.key_owncloud_sync), true).commit();
 
         onView(withId(R.id.drawer_layout)).perform(DrawerActions.open());
         onView(withText(R.string.nav_menu_export)).perform(click());
         Espresso.closeSoftKeyboard();
         Espresso.pressBack(); //close the SAF file picker window
         onView(withId(R.id.spinner_export_destination)).perform(click());
-        String[] destinations = mAccountsActivity.getResources().getStringArray(R.array.export_destinations);
+        String[] destinations = context.getResources().getStringArray(R.array.export_destinations);
         onView(withText(destinations[3])).perform(click());
         onView(withId(R.id.menu_save)).perform(click());
-        assertToastDisplayed(String.format(mAccountsActivity.getString(R.string.toast_exported_to), "ownCloud -> " + OC_DIR));
+        assertToastDisplayed(String.format(context.getString(R.string.toast_exported_to), "ownCloud -> " + OC_DIR));
     }
 
     /**

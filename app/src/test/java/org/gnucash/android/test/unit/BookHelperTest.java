@@ -13,14 +13,11 @@ import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.RecurrenceDbAdapter;
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
-import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.importer.GncXmlHandler;
 import org.gnucash.android.util.ConsoleTree;
-import org.gnucash.android.util.LogTree;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -70,7 +67,7 @@ public abstract class BookHelperTest extends GnuCashTest {
     private void setUpDbAdapters(String bookUID) {
         DatabaseHelper databaseHelper = new DatabaseHelper(GnuCashApplication.getAppContext(), bookUID);
         SQLiteDatabase mainDb = databaseHelper.getReadableDatabase();
-        mTransactionsDbAdapter = new TransactionsDbAdapter(mainDb, new SplitsDbAdapter(mainDb));
+        mTransactionsDbAdapter = new TransactionsDbAdapter(mainDb);
         mAccountsDbAdapter = new AccountsDbAdapter(mainDb, mTransactionsDbAdapter);
         RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(mainDb);
         mScheduledActionDbAdapter = new ScheduledActionDbAdapter(mainDb, recurrenceDbAdapter);

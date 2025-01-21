@@ -114,7 +114,6 @@ import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.db.adapter.PricesDbAdapter;
 import org.gnucash.android.db.adapter.RecurrenceDbAdapter;
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
-import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
@@ -345,7 +344,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
         DatabaseHelper databaseHelper = new DatabaseHelper(GnuCashApplication.getAppContext(), mBook.getUID());
         mDatabaseHelper = databaseHelper;
         mDB = databaseHelper.getWritableDatabase();
-        mTransactionsDbAdapter = new TransactionsDbAdapter(mDB, new SplitsDbAdapter(mDB));
+        mTransactionsDbAdapter = new TransactionsDbAdapter(mDB);
         mAccountsDbAdapter = new AccountsDbAdapter(mDB, mTransactionsDbAdapter);
         RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(mDB);
         mScheduledActionsDbAdapter = new ScheduledActionDbAdapter(mDB, recurrenceDbAdapter);

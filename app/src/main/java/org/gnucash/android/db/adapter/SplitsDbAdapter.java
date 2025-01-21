@@ -243,12 +243,14 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
                     // there is a second currency involved
                     if (commoditiesDbAdapter == null) {
                         commoditiesDbAdapter = new CommoditiesDbAdapter(mDb);
-                        pricesDbAdapter = new PricesDbAdapter(mDb, commoditiesDbAdapter);
                         commodity = commoditiesDbAdapter.getCommodity(currencyCode);
                         currencyUID = commoditiesDbAdapter.getCommodityUID(currencyCode);
                     }
-                    // get price
                     String commodityUID = commoditiesDbAdapter.getCommodityUID(commodityCode);
+                    // get price
+                    if (pricesDbAdapter == null) {
+                        pricesDbAdapter = new PricesDbAdapter(mDb, commoditiesDbAdapter);
+                    }
                     Pair<Long, Long> price = pricesDbAdapter.getPrice(commodityUID, currencyUID);
                     if (price.first <= 0 || price.second <= 0) {
                         // no price exists, just ignore it

@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -440,11 +441,15 @@ public class TransactionsListFragment extends MenuFragment implements
     }
 
     private void duplicateTransaction(long transactionId) {
-        Transaction transaction = mTransactionsDbAdapter.getRecord(transactionId);
-        Transaction duplicate = new Transaction(transaction, true);
-        duplicate.setTime(System.currentTimeMillis());
-        mTransactionsDbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.insert);
-        refresh();
+        try {
+            Transaction transaction = mTransactionsDbAdapter.getRecord(transactionId);
+            Transaction duplicate = new Transaction(transaction, true);
+            duplicate.setTime(System.currentTimeMillis());
+            mTransactionsDbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.insert);
+            refresh();
+        } catch (SQLException e) {
+            Timber.e(e);
+        }
     }
 
     private void moveTransaction(long transactionId) {

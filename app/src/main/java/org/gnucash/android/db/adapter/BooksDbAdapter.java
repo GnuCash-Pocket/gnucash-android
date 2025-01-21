@@ -249,7 +249,7 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
         DatabaseHelper databaseHelper = new DatabaseHelper(context, dbName);
         SQLiteDatabase db = databaseHelper.getReadableDatabase();
         AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(db,
-                new TransactionsDbAdapter(db, new SplitsDbAdapter(db)));
+                new TransactionsDbAdapter(db));
         String uid = accountsDbAdapter.getOrCreateGnuCashRootAccountUID();
         db.close();
         return uid;
