@@ -178,4 +178,18 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
             cursor.close();
         }
     }
+
+    @Nullable
+    public Commodity loadCommodity(@NonNull Commodity commodity) {
+        if (commodity.id != 0) {
+            return commodity;
+        }
+        try {
+            commodity = getRecord(commodity.getUID());
+        } catch (Exception e) {
+            // Commodity not found.
+            commodity = getCommodity(commodity.getCurrencyCode());
+        }
+        return commodity;
+    }
 }

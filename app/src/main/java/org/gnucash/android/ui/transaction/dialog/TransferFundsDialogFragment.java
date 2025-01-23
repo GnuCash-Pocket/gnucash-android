@@ -21,6 +21,7 @@ import static org.gnucash.android.ui.util.TextViewExtKt.displayBalance;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.database.SQLException;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -50,21 +51,26 @@ import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
+import timber.log.Timber;
 
 /**
  * Dialog fragment for handling currency conversions when inputting transactions.
  * <p>This is used whenever a multi-currency transaction is being created.</p>
  */
 public class TransferFundsDialogFragment extends VolatileDialogFragment {
+    // FIXME these fields must be persisted for when dialog is changed, e.g. rotated.
     private Money mOriginAmount;
+    // FIXME these fields must be persisted for when dialog is changed, e.g. rotated.
     private Commodity mTargetCommodity;
 
+    // FIXME these fields must be persisted for when dialog is changed, e.g. rotated.
     private OnTransferFundsListener mOnTransferFundsListener;
 
     private DialogTransferFundsBinding binding;
     @ColorInt
     private int colorBalanceZero;
     private final PricesDbAdapter pricesDbAdapter = PricesDbAdapter.getInstance();
+    private final CommoditiesDbAdapter commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
 
     public static TransferFundsDialogFragment getInstance(
         @NonNull Money transactionAmount,
@@ -84,7 +90,6 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
         @Nullable OnTransferFundsListener transferFundsListener
     ) {
         TransferFundsDialogFragment fragment = new TransferFundsDialogFragment();
-        // FIXME these fields must be persisted for when dialog is changed, e.g. rotated.
         fragment.mOriginAmount = transactionAmount;
         fragment.mTargetCommodity = targetCurrency;
         fragment.mOnTransferFundsListener = transferFundsListener;
@@ -198,9 +203,19 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
     private void transferFunds(Commodity originCommodity, Commodity targetCommodity) {
         Money convertedAmount = null;
 
-        final Price price = new Price(originCommodity, targetCommodity);
+        Commodity commodityFrom = commoditiesDbAdapter.loadCommodity(originCommodity);
+        if (commodityFrom == null) {
+            Timber.e("Origin commodity not found in db!");
+            return;
+        }
+        Commodity commodityTo = commoditiesDbAdapter.loadCommodity(targetCommodity);
+        if (commodityTo == null) {
+            Timber.e("Target commodity not found in db!");
+            return;
+        }
+        final Price price = new Price(commodityFrom, commodityTo);
         if (binding.radioExchangeRate.isChecked()) {
-            BigDecimal rate;
+            final BigDecimal rate;
             try {
                 rate = AmountParser.parse(binding.inputExchangeRate.getText().toString());
             } catch (ParseException e) {
@@ -211,7 +226,7 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
 
             price.setExchangeRate(rate);
         } else if (binding.radioConvertedAmount.isChecked()) {
-            BigDecimal amount;
+            final BigDecimal amount;
             try {
                 amount = AmountParser.parse(binding.inputConvertedAmount.getText().toString());
             } catch (ParseException e) {
@@ -225,10 +240,14 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
             price.setValueDenom(mOriginAmount.getNumerator() * convertedAmount.getDenominator());
         }
         price.setSource(Price.SOURCE_USER);
-        pricesDbAdapter.addRecord(price, DatabaseAdapter.UpdateMethod.insert);
+        try {
+            pricesDbAdapter.addRecord(price, DatabaseAdapter.UpdateMethod.insert);
 
-        if (mOnTransferFundsListener != null && convertedAmount != null) {
-            mOnTransferFundsListener.transferComplete(mOriginAmount, convertedAmount);
+            if (mOnTransferFundsListener != null && convertedAmount != null) {
+                mOnTransferFundsListener.transferComplete(mOriginAmount, convertedAmount);
+            }
+        } catch (SQLException e) {
+            Timber.e(e);
         }
     }
 
