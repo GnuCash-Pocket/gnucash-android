@@ -316,6 +316,7 @@ public class AccountsListFragment extends MenuFragment implements
      */
     @Override
     public void refresh() {
+        if (isDetached() || getFragmentManager() == null) return;
         getLoaderManager().restartLoader(0, null, this);
     }
 
@@ -399,7 +400,7 @@ public class AccountsListFragment extends MenuFragment implements
             return true;
         }
         mCurrentFilter = newFilter;
-        getLoaderManager().restartLoader(0, null, this);
+        refresh();
         return true;
     }
 

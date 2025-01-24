@@ -90,6 +90,7 @@ public abstract class ScheduledActionsListFragment extends MenuFragment implemen
 
     @Override
     public void refresh() {
+        if (isDetached() || getFragmentManager() == null) return;
         getLoaderManager().restartLoader(0, null, this);
     }
 
