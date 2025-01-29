@@ -599,11 +599,15 @@ public class ExportFormFragment extends MenuFragment implements
     public void onRecurrenceSet(String rrule) {
         Timber.i("Export reoccurs: %s", rrule);
         Context context = mBinding.inputRecurrence.getContext();
-        mRecurrenceRule = rrule;
         String repeatString = null;
         if (!TextUtils.isEmpty(rrule)) {
-            mEventRecurrence.parse(rrule);
-            repeatString = EventRecurrenceFormatter.getRepeatString(context, context.getResources(), mEventRecurrence, true);
+            try {
+                mEventRecurrence.parse(rrule);
+                mRecurrenceRule = rrule;
+                repeatString = EventRecurrenceFormatter.getRepeatString(context, context.getResources(), mEventRecurrence, true);
+            } catch (Exception e) {
+                Timber.e(e, "Bad recurrence for [%s]", rrule);
+            }
         }
         if (TextUtils.isEmpty(repeatString)) {
             repeatString = context.getString(R.string.label_tap_to_create_schedule);
