@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.gnucash.android.model.Budget;
 import org.gnucash.android.model.BudgetAmount;
 import org.gnucash.android.model.Money;
+import org.gnucash.android.test.unit.GnuCashTest;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ import java.util.List;
 /**
  * Tests for budgets
  */
-public class BudgetTest {
+public class BudgetTest extends GnuCashTest {
 
     @Test
     public void addingBudgetAmount_shouldSetBudgetUID() {

@@ -21,13 +21,14 @@ import static org.junit.Assert.fail;
 
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Price;
+import org.gnucash.android.test.unit.GnuCashTest;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.Locale;
 
 
-public class PriceTest {
+public class PriceTest extends GnuCashTest {
     @Test
     public void creatingFromExchangeRate_ShouldGetPrecisionRight() {
         Locale.setDefault(Locale.US);
