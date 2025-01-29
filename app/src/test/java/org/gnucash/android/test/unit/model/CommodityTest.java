@@ -18,12 +18,13 @@ package org.gnucash.android.test.unit.model;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.gnucash.android.model.Commodity;
+import org.gnucash.android.test.unit.GnuCashTest;
 import org.junit.Test;
 
 /**
  * Test commodities
  */
-public class CommodityTest {
+public class CommodityTest extends GnuCashTest {
 
     @Test
     public void setSmallestFraction_shouldNotUseDigits() {

@@ -1,15 +1,13 @@
 package org.gnucash.android.test.unit.util
 
 import android.graphics.Color
+import org.gnucash.android.test.unit.GnuCashTest
 import org.gnucash.android.util.parseColor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
-class ColorTest {
+class ColorTest : GnuCashTest() {
     @Test
     fun color_name() {
         assertNull(parseColor(null))

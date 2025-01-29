@@ -16,13 +16,11 @@
 package org.gnucash.android.test.unit.model
 
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence
-import java.sql.Timestamp
-import java.util.Calendar
-import java.util.Locale
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.model.PeriodType
 import org.gnucash.android.model.Recurrence
+import org.gnucash.android.test.unit.GnuCashTest
 import org.gnucash.android.util.dayOfWeek
 import org.gnucash.android.util.weekOfMonth
 import org.joda.time.DateTime
@@ -31,14 +29,14 @@ import org.joda.time.LocalDateTime
 import org.joda.time.Weeks
 import org.joda.time.format.DateTimeFormat
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
+import java.sql.Timestamp
+import java.util.Calendar
+import java.util.Locale
 
 /**
  * Test [Recurrence]s
  */
-@RunWith(RobolectricTestRunner::class)
-class RecurrenceTest {
+class RecurrenceTest : GnuCashTest() {
     @Test
     fun settingCount_shouldComputeCorrectEndTime() {
         val recurrence = Recurrence(PeriodType.MONTH)
