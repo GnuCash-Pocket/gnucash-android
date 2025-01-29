@@ -54,6 +54,8 @@ import org.gnucash.android.ui.util.widget.FragmentStateAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
+import timber.log.Timber;
+
 /**
  * Activity for managing the wizard displayed upon first run of the application
  */
@@ -143,7 +145,17 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
         if (savedInstanceState != null) {
             Bundle savedValues = savedInstanceState.getBundle(STATE_MODEL);
             if (savedValues != null) {
-                model.load(savedValues);
+                boolean hasAllPages = true;
+                for (String key : savedValues.keySet()) {
+                    if (model.findByKey(key) == null) {
+                        hasAllPages = false;
+                        Timber.w("Saved model page not found: %s", key);
+                        break;
+                    }
+                }
+                if (hasAllPages) {
+                    model.load(savedValues);
+                }
             }
         }
         model.registerListener(this);
