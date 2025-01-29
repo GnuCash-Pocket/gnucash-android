@@ -111,7 +111,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
                 AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID
         });
         mTransactionsAdapter = transactionsDbAdapter;
-        mCommoditiesDbAdapter = new CommoditiesDbAdapter(db);
+        mCommoditiesDbAdapter = transactionsDbAdapter.commoditiesDbAdapter;
     }
 
     /**
@@ -1032,7 +1032,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             cursor.close();
         }
         // No ROOT exits, create a new one
-        Account rootAccount = new Account("ROOT Account", new CommoditiesDbAdapter(mDb).getCommodity("USD"));
+        Account rootAccount = new Account("ROOT Account");
         rootAccount.setAccountType(AccountType.ROOT);
         rootAccount.setFullName(ROOT_ACCOUNT_FULL_NAME);
         rootAccount.setHidden(true);

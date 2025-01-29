@@ -614,6 +614,17 @@ class Money : Number, Comparable<Money>, Parcelable {
         @JvmStatic
         fun createZeroInstance(currencyCode: String): Money {
             val commodity = Commodity.getInstance(currencyCode)
+            return createZeroInstance(commodity)
+        }
+
+        /**
+         * Creates a new Money instance with 0 amount and the `currencyCode`
+         *
+         * @param commodity Commodity to use for this money instance
+         * @return Money object with value 0 and commodity
+         */
+        @JvmStatic
+        fun createZeroInstance(commodity: Commodity): Money {
             return Money(BigDecimal.ZERO, commodity)
         }
 

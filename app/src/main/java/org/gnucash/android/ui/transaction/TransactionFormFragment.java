@@ -492,9 +492,11 @@ public class TransactionFormFragment extends MenuFragment implements
         TransactionType txType = GnuCashApplication.getDefaultTransactionType(context);
         binding.inputTransactionType.setChecked(txType);
 
-        String code = GnuCashApplication.getDefaultCurrencyCode();
+        final String code;
         if (mAccountUID != null) {
             code = mTransactionsDbAdapter.getAccountCurrencyCode(mAccountUID);
+        } else {
+            code = GnuCashApplication.getDefaultCurrencyCode();
         }
 
         Commodity commodity = Commodity.getInstance(code);

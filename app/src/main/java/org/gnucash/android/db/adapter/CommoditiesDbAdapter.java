@@ -14,6 +14,8 @@ import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.model.Commodity;
 
+import java.util.Objects;
+
 import timber.log.Timber;
 
 /**
@@ -55,15 +57,15 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
      * initialize commonly used commodities
      */
     public void initCommon() {
-        Commodity.USD = getCommodity("USD");
-        Commodity.EUR = getCommodity("EUR");
-        Commodity.GBP = getCommodity("GBP");
-        Commodity.CHF = getCommodity("CHF");
-        Commodity.CAD = getCommodity("CAD");
-        Commodity.JPY = getCommodity("JPY");
-        Commodity.AUD = getCommodity("AUD");
+        Commodity.AUD = Objects.requireNonNull(getCommodity("AUD"));
+        Commodity.CAD = Objects.requireNonNull(getCommodity("CAD"));
+        Commodity.CHF = Objects.requireNonNull(getCommodity("CHF"));
+        Commodity.EUR = Objects.requireNonNull(getCommodity("EUR"));
+        Commodity.GBP = Objects.requireNonNull(getCommodity("GBP"));
+        Commodity.JPY = Objects.requireNonNull(getCommodity("JPY"));
+        Commodity.USD = Objects.requireNonNull(getCommodity("USD"));
 
-        Commodity.DEFAULT_COMMODITY = getCommodity(GnuCashApplication.getDefaultCurrencyCode());
+        Commodity.DEFAULT_COMMODITY = getDefaultCommodity();
     }
 
     @Nullable
@@ -191,5 +193,12 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
             commodity = getCommodity(commodity.getCurrencyCode());
         }
         return commodity;
+    }
+
+    @NonNull
+    public Commodity getDefaultCommodity() {
+        String commodityCode = GnuCashApplication.getDefaultCurrencyCode();
+        Commodity commodity = getCommodity(commodityCode);
+        return (commodity != null) ? commodity : Commodity.DEFAULT_COMMODITY;
     }
 }
