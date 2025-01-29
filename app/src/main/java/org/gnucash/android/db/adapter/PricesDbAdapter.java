@@ -14,6 +14,8 @@ import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Price;
 import org.gnucash.android.util.TimestampHelper;
 
+import java.io.IOException;
+
 /**
  * Database adapter for prices
  */
@@ -40,6 +42,14 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
 
     public static PricesDbAdapter getInstance() {
         return GnuCashApplication.getPricesDbAdapter();
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (commoditiesDbAdapter != null) {
+            commoditiesDbAdapter.close();
+        }
+        super.close();
     }
 
     @Override

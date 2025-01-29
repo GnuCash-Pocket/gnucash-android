@@ -163,12 +163,12 @@ public class GnuCashApplication extends Application {
             mainDb = mDbHelper.getReadableDatabase();
         }
 
-        mSplitsDbAdapter = new SplitsDbAdapter(mainDb);
+        mCommoditiesDbAdapter = new CommoditiesDbAdapter(mainDb);
+        mSplitsDbAdapter = new SplitsDbAdapter(mainDb, mCommoditiesDbAdapter);
         mTransactionsDbAdapter = new TransactionsDbAdapter(mainDb, mSplitsDbAdapter);
         mAccountsDbAdapter = new AccountsDbAdapter(mainDb, mTransactionsDbAdapter);
         mRecurrenceDbAdapter = new RecurrenceDbAdapter(mainDb);
         mScheduledActionDbAdapter = new ScheduledActionDbAdapter(mainDb, mRecurrenceDbAdapter);
-        mCommoditiesDbAdapter = new CommoditiesDbAdapter(mainDb);
         mPricesDbAdapter = new PricesDbAdapter(mainDb, mCommoditiesDbAdapter);
         mBudgetAmountsDbAdapter = new BudgetAmountsDbAdapter(mainDb);
         mBudgetsDbAdapter = new BudgetsDbAdapter(mainDb, mBudgetAmountsDbAdapter, mRecurrenceDbAdapter);
@@ -370,18 +370,28 @@ public class GnuCashApplication extends Application {
      *
      * @return Default currency code string for the application
      */
+    @NonNull
     public static String getDefaultCurrencyCode() {
-        Locale locale = getDefaultLocale();
-
-        String currencyCode = Commodity.DEFAULT_COMMODITY.getCurrencyCode();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        try { //there are some strange locales out there
+        String currencyCode = prefs.getString(context.getString(R.string.key_default_currency), null);
+        if (!TextUtils.isEmpty(currencyCode)) return currencyCode;
+
+        try {
+            Locale locale = getDefaultLocale();
             currencyCode = Currency.getInstance(locale).getCurrencyCode();
+            if (!TextUtils.isEmpty(currencyCode)) return currencyCode;
         } catch (Throwable e) {
             Timber.e(e);
-        } finally {
-            currencyCode = prefs.getString(context.getString(R.string.key_default_currency), currencyCode);
         }
+
+        // Maybe use the cached commodity.
+        Commodity commodity = Commodity.DEFAULT_COMMODITY;
+        currencyCode = (commodity != null) ? commodity.getCurrencyCode() : null;
+        if (!TextUtils.isEmpty(currencyCode)) return currencyCode;
+
+        // Last chance!
+        commodity = Commodity.USD;
+        currencyCode = commodity.getCurrencyCode();
         return currencyCode;
     }
 
@@ -437,6 +447,7 @@ public class GnuCashApplication extends Application {
             locale = new Locale(locale.getLanguage(), "ES");
         }
 
+        //there are some strange locales out there
         if (locale.getCountry().equals("en")) {
             locale = Locale.US;
         }

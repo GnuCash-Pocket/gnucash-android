@@ -122,10 +122,10 @@ public abstract class Exporter {
         DatabaseHelper dbHelper = new DatabaseHelper(context, bookUID);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         mDb = db;
-        mSplitsDbAdapter = new SplitsDbAdapter(db);
+        mCommoditiesDbAdapter = new CommoditiesDbAdapter(db);
+        mSplitsDbAdapter = new SplitsDbAdapter(db, mCommoditiesDbAdapter);
         mTransactionsDbAdapter = new TransactionsDbAdapter(db, mSplitsDbAdapter);
         mAccountsDbAdapter = new AccountsDbAdapter(db, mTransactionsDbAdapter);
-        mCommoditiesDbAdapter = new CommoditiesDbAdapter(db);
         mPricesDbAdapter = new PricesDbAdapter(db, mCommoditiesDbAdapter);
         RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(db);
         mBudgetsDbAdapter = new BudgetsDbAdapter(db, new BudgetAmountsDbAdapter(db), recurrenceDbAdapter);

@@ -61,7 +61,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
 
     private final SplitsDbAdapter mSplitsDbAdapter;
 
-    private final CommoditiesDbAdapter mCommoditiesDbAdapter;
+    final CommoditiesDbAdapter commoditiesDbAdapter;
 
     /**
      * Overloaded constructor. Creates adapter for already open db
@@ -90,7 +90,11 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
                 TransactionEntry.COLUMN_TEMPLATE
         });
         mSplitsDbAdapter = splitsDbAdapter;
-        mCommoditiesDbAdapter = new CommoditiesDbAdapter(db);
+        commoditiesDbAdapter = splitsDbAdapter.commoditiesDbAdapter;
+    }
+
+    public TransactionsDbAdapter(SQLiteDatabase db, CommoditiesDbAdapter commoditiesDbAdapter) {
+        this(db, new SplitsDbAdapter(db, commoditiesDbAdapter));
     }
 
     /**
@@ -431,7 +435,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         transaction.setExported(c.getInt(c.getColumnIndexOrThrow(TransactionEntry.COLUMN_EXPORTED)) != 0);
         transaction.setTemplate(c.getInt(c.getColumnIndexOrThrow(TransactionEntry.COLUMN_TEMPLATE)) != 0);
         String currencyCode = c.getString(c.getColumnIndexOrThrow(TransactionEntry.COLUMN_CURRENCY));
-        transaction.setCommodity(mCommoditiesDbAdapter.getCommodity(currencyCode));
+        transaction.setCommodity(commoditiesDbAdapter.getCommodity(currencyCode));
         transaction.setScheduledActionUID(c.getString(c.getColumnIndexOrThrow(TransactionEntry.COLUMN_SCHEDX_ACTION_UID)));
         long transactionID = c.getLong(c.getColumnIndexOrThrow(TransactionEntry._ID));
         transaction.setSplits(mSplitsDbAdapter.getSplitsForTransaction(transactionID));
@@ -713,11 +717,11 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
 
     @Override
     public void close() throws IOException {
+        if (commoditiesDbAdapter != null) {
+            commoditiesDbAdapter.close();
+        }
         if (mSplitsDbAdapter != null) {
             mSplitsDbAdapter.close();
-        }
-        if (mCommoditiesDbAdapter != null) {
-            mCommoditiesDbAdapter.close();
         }
         super.close();
     }

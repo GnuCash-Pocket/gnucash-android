@@ -21,6 +21,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Toast;
 
@@ -41,7 +42,6 @@ import org.gnucash.android.export.ExportFormat;
 import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.Exporter;
 import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.account.AccountsActivity;
 import org.gnucash.android.ui.settings.dialog.DeleteAllAccountsConfirmationDialog;
 
@@ -62,8 +62,9 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
 
     private static final int REQUEST_EXPORT_FILE = 0xC5;
 
-    List<CharSequence> mCurrencyEntries = new ArrayList<>();
-    List<CharSequence> mCurrencyEntryValues = new ArrayList<>();
+    private final CommoditiesDbAdapter commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
+    private final List<CharSequence> currencyEntries = new ArrayList<>();
+    private final List<CharSequence> currencyEntryValues = new ArrayList<>();
 
     @Override
     public void onCreatePreferences(Bundle bundle, String s) {
@@ -74,12 +75,12 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        List<Commodity> commodities = CommoditiesDbAdapter.getInstance().getAllRecords();
+        currencyEntries.clear();
+        currencyEntryValues.clear();
+        List<Commodity> commodities = commoditiesDbAdapter.getAllRecords();
         for (Commodity commodity : commodities) {
-            String code = commodity.getCurrencyCode();
-            String name = commodity.getFullname();
-            mCurrencyEntries.add(commodity.formatListItem());
-            mCurrencyEntryValues.add(code);
+            currencyEntries.add(commodity.formatListItem());
+            currencyEntryValues.add(commodity.getCurrencyCode());
         }
     }
 
@@ -95,16 +96,20 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
     public void onResume() {
         super.onResume();
 
-        String defaultCurrency = GnuCashApplication.getDefaultCurrencyCode();
-        Preference pref = findPreference(getString(R.string.key_default_currency));
-        String currencyName = CommoditiesDbAdapter.getInstance().getCommodity(defaultCurrency).getFullname();
-        pref.setSummary(currencyName);
-        pref.setOnPreferenceChangeListener(this);
-
-        CharSequence[] entries = new CharSequence[mCurrencyEntries.size()];
-        CharSequence[] entryValues = new CharSequence[mCurrencyEntryValues.size()];
-        ((ListPreference) pref).setEntries(mCurrencyEntries.toArray(entries));
-        ((ListPreference) pref).setEntryValues(mCurrencyEntryValues.toArray(entryValues));
+        ListPreference listPreference = findPreference(getString(R.string.key_default_currency));
+        String currencyCode = listPreference.getValue();
+        if (TextUtils.isEmpty(currencyCode)) {
+            currencyCode = GnuCashApplication.getDefaultCurrencyCode();
+        }
+        Commodity commodity = commoditiesDbAdapter.getCommodity(currencyCode);
+        if (commodity == null) {
+            commodity = Commodity.DEFAULT_COMMODITY;
+        }
+        String currencyName = commodity.formatListItem();
+        listPreference.setSummary(currencyName);
+        listPreference.setOnPreferenceChangeListener(this);
+        listPreference.setEntries(currencyEntries.toArray(new CharSequence[0]));
+        listPreference.setEntryValues(currencyEntryValues.toArray(new CharSequence[0]));
 
         Preference preference = findPreference(getString(R.string.key_import_accounts));
         preference.setOnPreferenceClickListener(this);
@@ -183,9 +188,10 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         if (preference.getKey().equals(getString(R.string.key_default_currency))) {
-            GnuCashApplication.setDefaultCurrencyCode(preference.getContext(), newValue.toString());
-            String fullname = CommoditiesDbAdapter.getInstance().getCommodity(newValue.toString()).getFullname();
-            preference.setSummary(fullname);
+            String currencyCode = newValue.toString();
+            GnuCashApplication.setDefaultCurrencyCode(preference.getContext(), currencyCode);
+            String summary = commoditiesDbAdapter.getCommodity(currencyCode).formatListItem();
+            preference.setSummary(summary);
             return true;
         }
         return false;

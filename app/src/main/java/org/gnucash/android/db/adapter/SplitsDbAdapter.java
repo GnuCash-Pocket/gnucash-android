@@ -38,6 +38,7 @@ import org.gnucash.android.model.Split;
 import org.gnucash.android.model.TransactionType;
 import org.gnucash.android.util.TimestampHelper;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,13 @@ import timber.log.Timber;
  */
 public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
+    final CommoditiesDbAdapter commoditiesDbAdapter;
+
     public SplitsDbAdapter(SQLiteDatabase db) {
+        this(db, new CommoditiesDbAdapter(db));
+    }
+
+    public SplitsDbAdapter(SQLiteDatabase db, CommoditiesDbAdapter commoditiesDbAdapter) {
         super(db, SplitEntry.TABLE_NAME, new String[]{
                 SplitEntry.COLUMN_MEMO,
                 SplitEntry.COLUMN_TYPE,
@@ -67,6 +74,7 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
                 SplitEntry.COLUMN_ACCOUNT_UID,
                 SplitEntry.COLUMN_TRANSACTION_UID
         });
+        this.commoditiesDbAdapter = commoditiesDbAdapter;
     }
 
     /**
@@ -76,6 +84,14 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
      */
     public static SplitsDbAdapter getInstance() {
         return GnuCashApplication.getSplitsDbAdapter();
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (commoditiesDbAdapter != null) {
+            commoditiesDbAdapter.close();
+        }
+        super.close();
     }
 
     /**
@@ -221,7 +237,6 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
         try {
             Money total = Money.createZeroInstance(currencyCode);
-            CommoditiesDbAdapter commoditiesDbAdapter = null;
             PricesDbAdapter pricesDbAdapter = null;
             Commodity commodity = null;
             String currencyUID = null;
@@ -241,11 +256,8 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
                     total = total.plus(new Money(amount_num, amount_denom, currencyCode));
                 } else {
                     // there is a second currency involved
-                    if (commoditiesDbAdapter == null) {
-                        commoditiesDbAdapter = new CommoditiesDbAdapter(mDb);
-                        commodity = commoditiesDbAdapter.getCommodity(currencyCode);
-                        currencyUID = commoditiesDbAdapter.getCommodityUID(currencyCode);
-                    }
+                    commodity = commoditiesDbAdapter.getCommodity(currencyCode);
+                    currencyUID = commoditiesDbAdapter.getCommodityUID(currencyCode);
                     String commodityUID = commoditiesDbAdapter.getCommodityUID(commodityCode);
                     // get price
                     if (pricesDbAdapter == null) {

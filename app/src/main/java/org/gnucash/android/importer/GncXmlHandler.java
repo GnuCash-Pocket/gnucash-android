@@ -344,11 +344,11 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
         DatabaseHelper databaseHelper = new DatabaseHelper(GnuCashApplication.getAppContext(), mBook.getUID());
         mDatabaseHelper = databaseHelper;
         mDB = databaseHelper.getWritableDatabase();
-        mTransactionsDbAdapter = new TransactionsDbAdapter(mDB);
+        mCommoditiesDbAdapter = new CommoditiesDbAdapter(mDB);
+        mTransactionsDbAdapter = new TransactionsDbAdapter(mDB, mCommoditiesDbAdapter);
         mAccountsDbAdapter = new AccountsDbAdapter(mDB, mTransactionsDbAdapter);
         RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(mDB);
         mScheduledActionsDbAdapter = new ScheduledActionDbAdapter(mDB, recurrenceDbAdapter);
-        mCommoditiesDbAdapter = new CommoditiesDbAdapter(mDB);
         mPricesDbAdapter = new PricesDbAdapter(mDB, mCommoditiesDbAdapter);
         mBudgetsDbAdapter = new BudgetsDbAdapter(mDB, new BudgetAmountsDbAdapter(mDB), recurrenceDbAdapter);
 
@@ -1005,7 +1005,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 }
                 String parentUID = acc.getParentUID();
                 Account parentAccount = mAccountMap.get(parentUID);
-                // ROOT account will be added if not exist, so now anly ROOT
+                // ROOT account will be added if not exist, so now only ROOT
                 // has an empty parent
                 if (parentAccount.getAccountType() == AccountType.ROOT) {
                     // top level account, full name is the same as its name
