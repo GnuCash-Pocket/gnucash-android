@@ -191,7 +191,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     }
 
     @Override
-    protected @NonNull SQLiteStatement setBindings(@NonNull SQLiteStatement stmt, @NonNull final Account account) {
+    protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final Account account) {
         String parentAccountUID = account.getParentUID();
         if (account.getAccountType() != AccountType.ROOT) {
             if (TextUtils.isEmpty(parentAccountUID)) {
@@ -541,17 +541,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return List of {@link Account}s in the database
      */
     public List<Account> getSimpleAccountList() {
-        LinkedList<Account> accounts = new LinkedList<>();
-        Cursor c = fetchAccounts(null, null, AccountEntry.COLUMN_FULL_NAME + " ASC");
-
-        try {
-            while (c.moveToNext()) {
-                accounts.add(buildSimpleAccountInstance(c));
-            }
-        } finally {
-            c.close();
-        }
-        return accounts;
+        return getSimpleAccountList(null, null, AccountEntry.COLUMN_FULL_NAME + " ASC");
     }
 
     /**
@@ -561,7 +551,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return List of {@link Account}s in the database
      */
     public List<Account> getSimpleAccountList(String where, String[] whereArgs, String orderBy) {
-        LinkedList<Account> accounts = new LinkedList<>();
+        List<Account> accounts = new ArrayList<>();
         Cursor c = fetchAccounts(where, whereArgs, orderBy);
         try {
             while (c.moveToNext()) {
@@ -807,7 +797,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return Account Balance of an account including sub-accounts
      */
     public Money getAccountBalance(String accountUID) {
-        return computeBalance(accountUID, -1, -1);
+        return computeBalance(accountUID, -1, -1, true);
     }
 
     /**
@@ -819,7 +809,20 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return the balance of an account within the specified range including sub-accounts
      */
     public Money getAccountBalance(String accountUID, long startTimestamp, long endTimestamp) {
-        return computeBalance(accountUID, startTimestamp, endTimestamp);
+        return getAccountBalance(accountUID, startTimestamp, endTimestamp, true);
+    }
+
+    /**
+     * Returns the balance of an account within the specified time range while taking sub-accounts into consideration
+     *
+     * @param accountUID     the account's UUID
+     * @param startTimestamp the start timestamp of the time range
+     * @param endTimestamp   the end timestamp of the time range
+     * @param includeSubAccounts include the sub-accounts' balances?
+     * @return the balance of an account within the specified range including sub-accounts
+     */
+    public Money getAccountBalance(String accountUID, long startTimestamp, long endTimestamp, boolean includeSubAccounts) {
+        return computeBalance(accountUID, startTimestamp, endTimestamp, includeSubAccounts);
     }
 
     /**
@@ -867,13 +870,12 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         return balance;
     }
 
-    private Money computeBalance(String accountUID, long startTimestamp, long endTimestamp) {
+    private Money computeBalance(String accountUID, long startTimestamp, long endTimestamp, boolean includeSubAccounts) {
         Timber.d("Computing account balance for account ID %s", accountUID);
         String currencyCode = mTransactionsAdapter.getAccountCurrencyCode(accountUID);
         boolean hasDebitNormalBalance = getAccountType(accountUID).hasDebitNormalBalance();
 
-        List<String> accountsList = getDescendantAccountUIDs(accountUID,
-                null, null);
+        List<String> accountsList = includeSubAccounts ? getDescendantAccountUIDs(accountUID, null, null) : new ArrayList<>();
 
         accountsList.add(0, accountUID);
 

@@ -129,7 +129,7 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
     }
 
     @Override
-    protected @NonNull SQLiteStatement setBindings(@NonNull SQLiteStatement stmt, @NonNull final ScheduledAction schedxAction) {
+    protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final ScheduledAction schedxAction) {
         stmt.clearBindings();
         stmt.bindString(1, schedxAction.getActionUID());
         stmt.bindString(2, schedxAction.getActionType().name());

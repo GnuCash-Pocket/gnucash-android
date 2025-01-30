@@ -99,7 +99,7 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
     }
 
     @Override
-    protected @NonNull SQLiteStatement setBindings(@NonNull SQLiteStatement stmt, @NonNull final Split split) {
+    protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final Split split) {
         stmt.clearBindings();
         if (split.getMemo() != null) {
             stmt.bindString(1, split.getMemo());

@@ -189,7 +189,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
     }
 
     @Override
-    protected @NonNull SQLiteStatement setBindings(@NonNull SQLiteStatement stmt, @NonNull Transaction transaction) {
+    protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull Transaction transaction) {
         stmt.clearBindings();
         stmt.bindString(1, transaction.getDescription());
         stmt.bindString(2, transaction.getNote());

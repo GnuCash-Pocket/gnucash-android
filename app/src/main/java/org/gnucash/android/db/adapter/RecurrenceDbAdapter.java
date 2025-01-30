@@ -81,7 +81,7 @@ public class RecurrenceDbAdapter extends DatabaseAdapter<Recurrence> {
     }
 
     @Override
-    protected @NonNull SQLiteStatement setBindings(@NonNull SQLiteStatement stmt, @NonNull final Recurrence recurrence) {
+    protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final Recurrence recurrence) {
         stmt.clearBindings();
         stmt.bindLong(1, recurrence.getMultiplier());
         stmt.bindString(2, recurrence.getPeriodType().name());

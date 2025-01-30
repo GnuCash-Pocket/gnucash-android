@@ -230,19 +230,19 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
             case insert:
                 statement = getInsertStatement();
                 synchronized (statement) {
-                    model.id = setBindings(statement, model).executeInsert();
+                    model.id = bind(statement, model).executeInsert();
                 }
                 break;
             case update:
                 statement = getUpdateStatement();
                 synchronized (statement) {
-                    setBindings(statement, model).execute();
+                    bind(statement, model).execute();
                 }
                 break;
             default:
                 statement = getReplaceStatement();
                 synchronized (statement) {
-                    model.id = setBindings(statement, model).executeInsert();
+                    model.id = bind(statement, model).executeInsert();
                 }
                 break;
         }
@@ -263,7 +263,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
                 statement = getUpdateStatement();
                 synchronized (statement) {
                     for (Model model : modelList) {
-                        setBindings(statement, model).execute();
+                        bind(statement, model).execute();
                         nRow++;
                     }
                 }
@@ -272,7 +272,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
                 statement = getInsertStatement();
                 synchronized (statement) {
                     for (Model model : modelList) {
-                        setBindings(statement, model).execute();
+                        bind(statement, model).execute();
                         nRow++;
                     }
                 }
@@ -281,7 +281,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
                 statement = getReplaceStatement();
                 synchronized (statement) {
                     for (Model model : modelList) {
-                        setBindings(statement, model).execute();
+                        bind(statement, model).execute();
                         nRow++;
                     }
                 }
@@ -400,7 +400,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @param model Model from which to read bind attributes
      * @return SQL statement ready for execution
      */
-    protected abstract @NonNull SQLiteStatement setBindings(@NonNull SQLiteStatement stmt, @NonNull final Model model);
+    protected abstract @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final Model model);
 
     /**
      * Returns a model instance populated with data from the record with GUID {@code uid}

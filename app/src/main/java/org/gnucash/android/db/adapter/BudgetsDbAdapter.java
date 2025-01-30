@@ -126,7 +126,7 @@ public class BudgetsDbAdapter extends DatabaseAdapter<Budget> {
     }
 
     @Override
-    protected @NonNull SQLiteStatement setBindings(@NonNull SQLiteStatement stmt, @NonNull final Budget budget) {
+    protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final Budget budget) {
         stmt.clearBindings();
         stmt.bindString(1, budget.getName());
         if (budget.getDescription() != null) {

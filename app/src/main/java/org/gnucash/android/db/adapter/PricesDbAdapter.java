@@ -43,7 +43,7 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
     }
 
     @Override
-    protected @NonNull SQLiteStatement setBindings(@NonNull SQLiteStatement stmt, @NonNull final Price price) {
+    protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final Price price) {
         stmt.clearBindings();
         stmt.bindString(1, price.getCommodityUID());
         stmt.bindString(2, price.getCurrencyUID());

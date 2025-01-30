@@ -100,7 +100,7 @@ public abstract class BaseReportFragment extends MenuFragment implements
     /**
      * Account type for which to display reports
      */
-    protected AccountType mAccountType;
+    protected AccountType mAccountType = AccountType.EXPENSE;
     protected AccountsDbAdapter mAccountsDbAdapter;
     protected boolean mUseAccountColor = true;
 

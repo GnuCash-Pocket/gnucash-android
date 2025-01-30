@@ -92,7 +92,7 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
     }
 
     @Override
-    protected @NonNull SQLiteStatement setBindings(@NonNull SQLiteStatement stmt, @NonNull final Book book) {
+    protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final Book book) {
         stmt.clearBindings();
         String displayName = TextUtils.isEmpty(book.getDisplayName()) ? generateDefaultBookName() : book.getDisplayName();
         stmt.bindString(1, displayName);

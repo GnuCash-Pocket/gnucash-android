@@ -72,7 +72,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
     }
 
     @Override
-    protected @NonNull SQLiteStatement setBindings(@NonNull SQLiteStatement stmt, @NonNull final Commodity commodity) {
+    protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final Commodity commodity) {
         stmt.clearBindings();
         stmt.bindString(1, commodity.getFullname());
         stmt.bindString(2, commodity.getNamespace());

@@ -40,6 +40,7 @@ import com.github.mikephil.charting.highlight.Highlight;
 
 import org.gnucash.android.R;
 import org.gnucash.android.databinding.FragmentPieChartBinding;
+import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.ui.report.BaseReportFragment;
 import org.gnucash.android.ui.report.ReportType;
@@ -139,25 +140,25 @@ public class PieChartFragment extends BaseReportFragment {
         PieDataSet dataSet = new PieDataSet(null, "");
         List<String> labels = new ArrayList<>();
         List<Integer> colors = new ArrayList<>();
-        for (Account account : mAccountsDbAdapter.getSimpleAccountList()) {
-            if (account.getAccountType() == mAccountType
-                    && !account.isPlaceholderAccount()
-                    && account.getCommodity().equals(mCommodity)) {
-
-                float balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), mReportPeriodStart, mReportPeriodEnd).toFloat();
-                if (balance > 0) {
-                    dataSet.addEntry(new Entry(balance, dataSet.getEntryCount()));
-                    @ColorInt int color;
-                    if (mUseAccountColor) {
-                        color = (account.getColor() != Account.DEFAULT_COLOR)
-                                ? account.getColor()
-                                : COLORS[(dataSet.getEntryCount() - 1) % COLORS.length];
-                    } else {
-                        color = COLORS[(dataSet.getEntryCount() - 1) % COLORS.length];
-                    }
-                    colors.add(color);
-                    labels.add(account.getName());
+        List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(
+                DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND " + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + "=? AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?",
+                new String[]{mCommodity.getUID(), mAccountType.name()},
+                DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC"
+        );
+        for (Account account : accounts) {
+            float balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), mReportPeriodStart, mReportPeriodEnd, false).toFloat();
+            if (balance > 0) {
+                dataSet.addEntry(new Entry(balance, dataSet.getEntryCount()));
+                @ColorInt int color;
+                if (mUseAccountColor) {
+                    color = (account.getColor() != Account.DEFAULT_COLOR)
+                            ? account.getColor()
+                            : COLORS[(dataSet.getEntryCount() - 1) % COLORS.length];
+                } else {
+                    color = COLORS[(dataSet.getEntryCount() - 1) % COLORS.length];
                 }
+                colors.add(color);
+                labels.add(account.getName());
             }
         }
         dataSet.setColors(colors);

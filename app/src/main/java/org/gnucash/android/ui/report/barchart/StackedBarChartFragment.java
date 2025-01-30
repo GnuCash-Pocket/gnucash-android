@@ -42,6 +42,7 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 
 import org.gnucash.android.R;
 import org.gnucash.android.databinding.FragmentBarChartBinding;
+import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
@@ -153,44 +154,44 @@ public class StackedBarChartFragment extends BaseReportFragment {
                     break;
             }
             List<Float> stack = new ArrayList<>();
-            for (Account account : mAccountsDbAdapter.getSimpleAccountList()) {
-                if (account.getAccountType() == mAccountType
-                        && !account.isPlaceholderAccount()
-                        && account.getCommodity().equals(mCommodity)) {
+            List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(
+                    DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND " + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + "=? AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?",
+                    new String[]{mCommodity.getUID(), mAccountType.name()},
+                    DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC"
+            );
+            for (Account account : accounts) {
+                float balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), start, end, false).toFloat();
+                if (balance != 0) {
+                    stack.add(balance);
 
-                    float balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), start, end).toFloat();
-                    if (balance != 0) {
-                        stack.add(balance);
-
-                        String accountName = account.getName();
-                        while (labels.contains(accountName)) {
-                            if (!accountToColorMap.containsKey(account.getUID())) {
-                                for (String label : labels) {
-                                    if (label.equals(accountName)) {
-                                        accountName += " ";
-                                    }
-                                }
-                            } else {
-                                break;
-                            }
-                        }
-                        labels.add(accountName);
-
+                    String accountName = account.getName();
+                    while (labels.contains(accountName)) {
                         if (!accountToColorMap.containsKey(account.getUID())) {
-                            @ColorInt int color;
-                            if (mUseAccountColor) {
-                                color = (account.getColor() != Account.DEFAULT_COLOR)
-                                        ? account.getColor()
-                                        : COLORS[accountToColorMap.size() % COLORS.length];
-                            } else {
-                                color = COLORS[accountToColorMap.size() % COLORS.length];
+                            for (String label : labels) {
+                                if (label.equals(accountName)) {
+                                    accountName += " ";
+                                }
                             }
-                            accountToColorMap.put(account.getUID(), color);
+                        } else {
+                            break;
                         }
-                        colors.add(accountToColorMap.get(account.getUID()));
-
-                        Timber.d(mAccountType + tmpDate.toString(" MMMM yyyy ") + account.getName() + " = " + stack.get(stack.size() - 1));
                     }
+                    labels.add(accountName);
+
+                    if (!accountToColorMap.containsKey(account.getUID())) {
+                        @ColorInt int color;
+                        if (mUseAccountColor) {
+                            color = (account.getColor() != Account.DEFAULT_COLOR)
+                                    ? account.getColor()
+                                    : COLORS[accountToColorMap.size() % COLORS.length];
+                        } else {
+                            color = COLORS[accountToColorMap.size() % COLORS.length];
+                        }
+                        accountToColorMap.put(account.getUID(), color);
+                    }
+                    colors.add(accountToColorMap.get(account.getUID()));
+
+                    Timber.d(mAccountType + tmpDate.toString(" MMMM yyyy ") + account.getName() + " = " + stack.get(stack.size() - 1));
                 }
             }
 
