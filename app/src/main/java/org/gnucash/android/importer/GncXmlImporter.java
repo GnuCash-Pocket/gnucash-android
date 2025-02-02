@@ -16,6 +16,10 @@
  */
 package org.gnucash.android.importer;
 
+import static java.util.zip.GZIPInputStream.GZIP_MAGIC;
+
+import androidx.annotation.NonNull;
+
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Book;
 import org.gnucash.android.util.PreferencesHelper;
@@ -24,10 +28,12 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import java.io.BufferedInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PushbackInputStream;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -41,6 +47,10 @@ import timber.log.Timber;
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class GncXmlImporter {
+
+    private static final int ZIP_MAGIC = 0x504B0304;
+    private static final int ZIP_MAGIC_EMPTY = 0x504B0506;
+    private static final int ZIP_MAGIC_SPANNED = 0x504B0708;
 
     /**
      * Parse GnuCash XML input and populates the database
@@ -58,37 +68,65 @@ public class GncXmlImporter {
      * @param gncXmlInputStream InputStream source of the GnuCash XML file
      * @return the book into which the XML was imported
      */
-    public static Book parseBook(InputStream gncXmlInputStream) throws ParserConfigurationException, SAXException, IOException {
-        SAXParserFactory spf = SAXParserFactory.newInstance();
-        SAXParser sp = spf.newSAXParser();
-        XMLReader xr = sp.getXMLReader();
-
-        BufferedInputStream bos;
-        PushbackInputStream pb = new PushbackInputStream(gncXmlInputStream, 2); //we need a pushbackstream to look ahead
-        byte[] signature = new byte[2];
-        pb.read(signature); //read the signature
-        pb.unread(signature); //push back the signature to the stream
-        if (signature[0] == (byte) 0x1f && signature[1] == (byte) 0x8b) //check if matches standard gzip magic number
-            bos = new BufferedInputStream(new GZIPInputStream(pb));
-        else
-            bos = new BufferedInputStream(pb);
-
+    public static Book parseBook(@NonNull InputStream gncXmlInputStream) throws ParserConfigurationException, SAXException, IOException {
         //TODO: Set an error handler which can log errors
         Timber.d("Start import");
+        InputStream input = getInputStream(gncXmlInputStream);
         GncXmlHandler handler = new GncXmlHandler();
-        xr.setContentHandler(handler);
+        XMLReader reader = createXMLReader(handler);
+
         long startTime = System.nanoTime();
-        xr.parse(new InputSource(bos));
+        reader.parse(new InputSource(input));
         long endTime = System.nanoTime();
         Timber.d("%d ns spent on importing the file", endTime - startTime);
 
         Book book = handler.getImportedBook();
         String bookUID = book.getUID();
         PreferencesHelper.setLastExportTime(
-                TransactionsDbAdapter.getInstance().getTimestampOfLastModification(),
-                bookUID
+            TransactionsDbAdapter.getInstance().getTimestampOfLastModification(),
+            bookUID
         );
 
         return book;
+    }
+
+    @NonNull
+    private static InputStream getInputStream(InputStream inputStream) throws IOException {
+        BufferedInputStream bis = new BufferedInputStream(inputStream);
+        bis.mark(4);
+        int byte0 = bis.read();
+        if (byte0 == -1) throw new EOFException("file too small");
+        int byte1 = bis.read();
+        if (byte1 == -1) throw new EOFException("file too small");
+        int byte2 = bis.read();
+        if (byte2 == -1) throw new EOFException("file too small");
+        int byte3 = bis.read();
+        if (byte3 == -1) throw new EOFException("file too small");
+        bis.reset(); //push back the signature to the stream
+
+        int signature2 = ((byte1 & 0xFF) << 8) | (byte0 & 0xFF);
+        //check if matches standard gzip magic number
+        if (signature2 == GZIP_MAGIC) {
+            return new GZIPInputStream(bis);
+        }
+
+        int signature4 = ((byte3 & 0xFF) << 24) | ((byte2 & 0xFF) << 16) | signature2;
+        if ((signature4 == ZIP_MAGIC) || (signature4 == ZIP_MAGIC_EMPTY) || (signature4 == ZIP_MAGIC_SPANNED)) {
+            ZipInputStream zis = new ZipInputStream(bis);
+            ZipEntry entry = zis.getNextEntry();
+            if (entry != null) {
+                return zis;
+            }
+        }
+
+        return bis;
+    }
+
+    private static XMLReader createXMLReader(GncXmlHandler handler) throws ParserConfigurationException, SAXException {
+        SAXParserFactory spf = SAXParserFactory.newInstance();
+        SAXParser sp = spf.newSAXParser();
+        XMLReader xr = sp.getXMLReader();
+        xr.setContentHandler(handler);
+        return xr;
     }
 }

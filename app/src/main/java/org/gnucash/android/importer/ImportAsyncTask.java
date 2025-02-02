@@ -81,12 +81,15 @@ public class ImportAsyncTask extends AsyncTask<Uri, Void, String> {
         if (mBackup) {
             BackupManager.backupActiveBook();
         }
+        if (isCancelled()) {
+            return null;
+        }
 
         Uri uri = uris[0];
-        ContentResolver contentResolver = mContext.getContentResolver();
         Book book;
         String bookUID;
         try {
+            ContentResolver contentResolver = mContext.getContentResolver();
             InputStream accountInputStream = contentResolver.openInputStream(uri);
             book = GncXmlImporter.parseBook(accountInputStream);
             book.setSourceUri(uri);
