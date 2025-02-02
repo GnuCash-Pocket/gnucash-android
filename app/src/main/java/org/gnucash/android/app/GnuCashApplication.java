@@ -456,6 +456,18 @@ public class GnuCashApplication extends Application {
     }
 
     /**
+     * Returns <code>true</code> if setting is enabled to backup the book before importing a book,
+     * <code>false</code> otherwise.
+     *
+     * @param context The context.
+     * @return <code>true</code> if the book should be backed-up.
+     */
+    public static boolean shouldBackupForImport(Context context) {
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return sharedPrefs.getBoolean(context.getString(R.string.key_import_book_backup), true);
+    }
+
+    /**
      * Get the default transaction type.
      *
      * @param context The context.

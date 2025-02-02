@@ -498,7 +498,8 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
      * @param onFinishTask Task to be executed when import is complete
      */
     public static void importXmlFileFromIntent(Activity context, Intent data, TaskDelegate onFinishTask) {
-        new ImportAsyncTask(context, onFinishTask, true).execute(data.getData());
+        boolean backup = GnuCashApplication.shouldBackupForImport(context);
+        new ImportAsyncTask(context, onFinishTask, backup).execute(data.getData());
     }
 
     /**

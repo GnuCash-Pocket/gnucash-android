@@ -50,6 +50,12 @@
             android:key="@string/key_delete_transaction_backup"
             android:summary="@string/summary_delete_transaction_backup"
             android:title="@string/title_delete_transaction_backup" />
+
+        <androidx.preference.SwitchPreference
+            android:defaultValue="true"
+            android:key="@string/key_import_book_backup"
+            android:summary="@string/summary_import_book_backup"
+            android:title="@string/title_import_book_backup" />
     </androidx.preference.PreferenceCategory>
     <androidx.preference.PreferenceCategory android:title="@string/title_export_preference_category">
 
