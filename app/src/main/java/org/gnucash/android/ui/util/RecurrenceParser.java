@@ -61,7 +61,7 @@ public class RecurrenceParser {
         if (eventRecurrence == null)
             return null;
 
-        PeriodType periodType;
+        final PeriodType periodType;
         switch (eventRecurrence.freq) {
             case EventRecurrence.HOURLY:
                 periodType = PeriodType.HOUR;
@@ -75,14 +75,11 @@ public class RecurrenceParser {
                 periodType = PeriodType.WEEK;
                 break;
 
-            case EventRecurrence.MONTHLY:
-                periodType = PeriodType.MONTH;
-                break;
-
             case EventRecurrence.YEARLY:
                 periodType = PeriodType.YEAR;
                 break;
 
+            case EventRecurrence.MONTHLY:
             default:
                 periodType = PeriodType.MONTH;
                 break;

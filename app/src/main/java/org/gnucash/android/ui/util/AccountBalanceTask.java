@@ -24,6 +24,7 @@ import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.model.Money;
@@ -44,9 +45,10 @@ public class AccountBalanceTask extends AsyncTask<String, Void, Money> {
     @ColorInt
     private final int colorBalanceZero;
 
-    public AccountBalanceTask(TextView balanceTextView, @ColorInt int colorZero) {
+    public AccountBalanceTask(AccountsDbAdapter accountsDbAdapter, TextView balanceTextView, @ColorInt int colorZero) {
+        super();
+        this.accountsDbAdapter = accountsDbAdapter;
         accountBalanceTextViewReference = new WeakReference<>(balanceTextView);
-        accountsDbAdapter = AccountsDbAdapter.getInstance();
         colorBalanceZero = colorZero;
     }
 
@@ -69,11 +71,9 @@ public class AccountBalanceTask extends AsyncTask<String, Void, Money> {
 
     @Override
     protected void onPostExecute(@Nullable Money balance) {
-        if (accountBalanceTextViewReference.get() != null) {
-            final TextView balanceTextView = accountBalanceTextViewReference.get();
-            if (balanceTextView != null) {
-                displayBalance(balanceTextView, balance, colorBalanceZero);
-            }
+        final TextView balanceTextView = accountBalanceTextViewReference.get();
+        if (balanceTextView != null) {
+            displayBalance(balanceTextView, balance, colorBalanceZero);
         }
     }
 }

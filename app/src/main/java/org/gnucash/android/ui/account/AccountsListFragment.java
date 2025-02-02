@@ -62,10 +62,7 @@ import org.gnucash.android.databinding.FragmentAccountsListBinding;
 import org.gnucash.android.db.DatabaseCursorLoader;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.BudgetsDbAdapter;
 import org.gnucash.android.model.Account;
-import org.gnucash.android.model.Budget;
-import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
@@ -73,6 +70,7 @@ import org.gnucash.android.ui.util.AccountBalanceTask;
 import org.gnucash.android.ui.util.CursorRecyclerAdapter;
 import org.gnucash.android.util.BackupManager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import timber.log.Timber;
@@ -130,6 +128,7 @@ public class AccountsListFragment extends MenuFragment implements
     private String mCurrentFilter;
 
     private FragmentAccountsListBinding mBinding;
+    private final List<AccountBalanceTask> accountBalanceTasks = new ArrayList<>();
 
     public static AccountsListFragment newInstance(DisplayMode displayMode) {
         AccountsListFragment fragment = new AccountsListFragment();
@@ -329,13 +328,16 @@ public class AccountsListFragment extends MenuFragment implements
         outState.putSerializable(STATE_DISPLAY_MODE, mDisplayMode);
     }
 
-    /**
-     * Closes any open database adapters used by the list
-     */
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mAccountRecyclerAdapter.changeCursor(null);
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (mAccountRecyclerAdapter != null) {
+            mAccountRecyclerAdapter.changeCursor(null);
+        }
+        for (AccountBalanceTask task : accountBalanceTasks) {
+            task.cancel(true);
+        }
+        accountBalanceTasks.clear();
     }
 
     /**
@@ -541,7 +543,9 @@ public class AccountsListFragment extends MenuFragment implements
                 // add a summary of transactions to the account view
 
                 // Make sure the balance task is truly multi-thread
-                new AccountBalanceTask(accountBalance, description.getCurrentTextColor()).execute(accountUID);
+                AccountBalanceTask task = new AccountBalanceTask(mAccountsDbAdapter, accountBalance, description.getCurrentTextColor());
+                accountBalanceTasks.add(task);
+                task.execute(accountUID);
 
                 String accountColor = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_COLOR_CODE));
                 Integer colorValue = parseColor(accountColor);
