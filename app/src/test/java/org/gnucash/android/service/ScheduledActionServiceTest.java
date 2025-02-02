@@ -355,7 +355,7 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         mTransactionsDbAdapter.addRecord(transaction);
         // We set the date directly in the database as the corresponding field
         // is ignored when the object is stored. It's set through a trigger instead.
-        setTransactionInDbModifiedTimestamp(transaction.getUID(),
+        setTransactionInDbTimestamp(transaction.getUID(),
                 new Timestamp(LocalDateTime.now().minusDays(9).toDate().getTime()));
 
         File backupFolder = new File(
@@ -367,20 +367,21 @@ public class ScheduledActionServiceTest extends GnuCashTest {
 
         assertThat(scheduledBackup.getExecutionCount()).isEqualTo(1);
         assertThat(scheduledBackup.getLastRunTime()).isEqualTo(previousLastRun);
-        assertThat(backupFolder.listFiles()).hasSize(0);
+        File[] files = backupFolder.listFiles();
+        assertThat(files).isNotNull();
+        assertThat(files).hasSize(0);
     }
 
     /**
-     * Sets the transaction modified timestamp directly in the database.
+     * Sets the transaction timestamp directly in the database.
      *
-     * @param transactionUID UID of the transaction to set the modified timestamp.
-     * @param timestamp      new modified timestamp.
+     * @param transactionUID UID of the transaction to set the timestamp.
+     * @param timestamp      the new timestamp.
      */
-    private void setTransactionInDbModifiedTimestamp(String transactionUID, Timestamp timestamp) {
+    private void setTransactionInDbTimestamp(String transactionUID, Timestamp timestamp) {
         ContentValues values = new ContentValues();
-        values.put(DatabaseSchema.TransactionEntry.COLUMN_MODIFIED_AT,
-                TimestampHelper.getUtcStringFromTimestamp(timestamp));
-        mTransactionsDbAdapter.updateTransaction(values, "uid = ?",
+        values.put(DatabaseSchema.TransactionEntry.COLUMN_TIMESTAMP, timestamp.getTime());
+        mTransactionsDbAdapter.updateTransaction(values, DatabaseSchema.TransactionEntry.COLUMN_UID + "=?",
                 new String[]{transactionUID});
     }
 
@@ -421,8 +422,11 @@ public class ScheduledActionServiceTest extends GnuCashTest {
 
         assertThat(scheduledBackup.getExecutionCount()).isEqualTo(2);
         assertThat(scheduledBackup.getLastRunTime()).isGreaterThan(previousLastRun);
-        assertThat(backupFolder.listFiles()).hasSize(1);
-        assertThat(backupFolder.listFiles()[0].getName()).endsWith(".qif");
+        File[] files = backupFolder.listFiles();
+        assertThat(files).isNotNull();
+        assertThat(files).hasSize(1);
+        assertThat(files[0]).isNotNull();
+        assertThat(files[0].getName()).endsWith(".qif");
     }
 
     @After

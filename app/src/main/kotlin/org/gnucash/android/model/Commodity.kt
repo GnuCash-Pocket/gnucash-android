@@ -106,7 +106,7 @@ class Commodity(
      * @return String representation of the commodity
      */
     override fun toString(): String {
-        return if (fullname == null || fullname!!.isEmpty()) mnemonic else fullname!!
+        return "${namespace}::${mnemonic}"
     }
 
     /**

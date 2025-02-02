@@ -19,6 +19,7 @@ package org.gnucash.android.service;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
@@ -276,12 +277,16 @@ public class ScheduledActionService {
     private static int executeTransactions(@NonNull ScheduledAction scheduledAction, @NonNull SQLiteDatabase db) {
         int executionCount = 0;
         String actionUID = scheduledAction.getActionUID();
+        if (TextUtils.isEmpty(actionUID)) {
+            Timber.w("Scheduled transaction without action");
+            return executionCount;
+        }
         TransactionsDbAdapter transactionsDbAdapter = new TransactionsDbAdapter(db);
         Transaction trxnTemplate;
         try {
             trxnTemplate = transactionsDbAdapter.getRecord(actionUID);
         } catch (IllegalArgumentException ex) { //if the record could not be found, abort
-            Timber.e(ex, "Scheduled transaction with UID " + actionUID + " could not be found in the db with path " + db.getPath());
+            Timber.e(ex, "Scheduled transaction with action " + actionUID + " could not be found in the db with path " + db.getPath());
             return executionCount;
         }
 
