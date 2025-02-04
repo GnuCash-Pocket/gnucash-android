@@ -21,10 +21,10 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
@@ -96,7 +96,7 @@ public class FormActivity extends PasscodeLockActivity {
             mAccountUID = args.getString(UxArgument.PARENT_ACCOUNT_UID);
         }
         if (mAccountUID != null) {
-            int colorCode = AccountsDbAdapter.getActiveAccountColorResource(mAccountUID);
+            @ColorInt int colorCode = AccountsDbAdapter.getActiveAccountColorResource(mAccountUID);
             actionBar.setBackgroundDrawable(new ColorDrawable(colorCode));
             getWindow().setStatusBarColor(GnuCashApplication.darken(colorCode));
         }

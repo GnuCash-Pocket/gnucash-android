@@ -61,6 +61,9 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
     private ActivityTransactionDetailBinding mBinding;
     @ColorInt
     private int colorBalanceZero;
+    private final TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
+
+    private final AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +80,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
             throw new MissingFormatArgumentException("You must specify both the transaction and account GUID");
         }
 
-        int themeColor = AccountsDbAdapter.getActiveAccountColorResource(mAccountUID);
+        int themeColor = accountsDbAdapter.getActiveAccountColor(mAccountUID);
         mBinding.toolbar.setBackgroundColor(themeColor);
 
         setSupportActionBar(mBinding.toolbar);
@@ -115,7 +118,6 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
         public SplitAmountViewHolder(ItemSplitAmountInfoBinding binding, Split split) {
             itemView = binding.getRoot();
 
-            AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
             binding.splitAccountName.setText(accountsDbAdapter.getAccountFullName(split.getAccountUID()));
             Money quantity = split.getFormattedQuantity();
             TextView balanceView = quantity.isNegative() ? binding.splitDebit : binding.splitCredit;
@@ -128,13 +130,10 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
      * Reads the transaction information from the database and binds it to the views
      */
     private void bindViews() {
-        TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
         Transaction transaction = transactionsDbAdapter.getRecord(mTransactionUID);
 
         mBinding.trnDescription.setText(transaction.getDescription());
-        mBinding.transactionAccount.setText(getString(R.string.label_inside_account_with_name, AccountsDbAdapter.getInstance().getAccountFullName(mAccountUID)));
-
-        AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
+        mBinding.transactionAccount.setText(getString(R.string.label_inside_account_with_name, accountsDbAdapter.getAccountFullName(mAccountUID)));
 
         Money accountBalance = accountsDbAdapter.getAccountBalance(mAccountUID, -1, transaction.getTimeMillis());
         TextView balanceTextView = accountBalance.isNegative() ? mBinding.balanceDebit : mBinding.balanceCredit;
@@ -198,12 +197,12 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
     }
 
     private void editTransaction() {
-        Intent createTransactionIntent = new Intent(this, FormActivity.class);
-        createTransactionIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
-        createTransactionIntent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
-        createTransactionIntent.putExtra(UxArgument.SELECTED_TRANSACTION_UID, mTransactionUID);
-        createTransactionIntent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name());
-        startActivityForResult(createTransactionIntent, REQUEST_EDIT_TRANSACTION);
+        Intent intent = new Intent(this, FormActivity.class)
+            .setAction(Intent.ACTION_INSERT_OR_EDIT)
+            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID)
+            .putExtra(UxArgument.SELECTED_TRANSACTION_UID, mTransactionUID)
+            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name());
+        startActivityForResult(intent, REQUEST_EDIT_TRANSACTION);
     }
 
     @Override
@@ -243,7 +242,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
 
     private void moveTransaction(@Nullable String transactionUID) {
         if (TextUtils.isEmpty(transactionUID)) return;
-        long transactionId = TransactionsDbAdapter.getInstance().getID(transactionUID);
+        long transactionId = transactionsDbAdapter.getID(transactionUID);
         if (transactionId < 0) return;
         long[] ids = new long[]{transactionId};
         BulkMoveDialogFragment fragment = BulkMoveDialogFragment.newInstance(ids, mAccountUID);
@@ -252,20 +251,19 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
         fragment.show(fm, BulkMoveDialogFragment.TAG);
     }
 
-    private void deleteTransaction(@Nullable String transactionUID) {
+    private void deleteTransaction(@Nullable final String transactionUID) {
         if (TextUtils.isEmpty(transactionUID)) return;
 
         final Activity activity = this;
-        final TransactionsDbAdapter dbAdapter = TransactionsDbAdapter.getInstance();
         if (GnuCashApplication.shouldBackupTransactions(activity)) {
             BackupManager.backupActiveBookAsync(activity, result -> {
-                dbAdapter.deleteRecord(transactionUID);
+                transactionsDbAdapter.deleteRecord(transactionUID);
                 WidgetConfigurationActivity.updateAllWidgets(activity);
                 finish();
                 return null;
             });
         } else {
-            dbAdapter.deleteRecord(transactionUID);
+            transactionsDbAdapter.deleteRecord(transactionUID);
             WidgetConfigurationActivity.updateAllWidgets(activity);
             finish();
         }
@@ -274,12 +272,11 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
     private void duplicateTransaction(@Nullable String transactionUID) {
         if (TextUtils.isEmpty(transactionUID)) return;
 
-        TransactionsDbAdapter dbAdapter = TransactionsDbAdapter.getInstance();
-        Transaction transaction = dbAdapter.getRecord(transactionUID);
+        Transaction transaction = transactionsDbAdapter.getRecord(transactionUID);
         Transaction duplicate = new Transaction(transaction, true);
         duplicate.setTime(System.currentTimeMillis());
         try {
-            dbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.insert);
+            transactionsDbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.insert);
             if (duplicate.id <= 0) return;
         } catch (SQLException e) {
             Timber.e(e);

@@ -413,10 +413,10 @@ public class TransactionsListFragment extends MenuFragment implements
                     editTransaction.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Intent intent = new Intent(getActivity(), FormActivity.class);
-                            intent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name());
-                            intent.putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID);
-                            intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
+                            Intent intent = new Intent(getActivity(), FormActivity.class)
+                                .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name())
+                                .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
+                                .putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
                             startActivity(intent);
                         }
                     });

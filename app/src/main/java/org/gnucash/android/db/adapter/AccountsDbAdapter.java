@@ -1286,18 +1286,31 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      */
     @ColorInt
     public static int getActiveAccountColorResource(@NonNull String accountUID) {
-        AccountsDbAdapter accountsDbAdapter = getInstance();
+        return AccountsDbAdapter.getInstance().getActiveAccountColor(accountUID);
+    }
 
+    /**
+     * Returns the account color for the account as an Android resource ID.
+     * <p>
+     * Basically, if we are in a top level account, use the default title color.
+     * but propagate a parent account's title color to children who don't have own color
+     * </p>
+     *
+     * @param accountUID GUID of the account
+     * @return Android resource ID representing the color which can be directly set to a view
+     */
+    @ColorInt
+    public int getActiveAccountColor(@Nullable String accountUID) {
         String parentAccountUID = accountUID;
         while (parentAccountUID != null) {
-            String colorCode = accountsDbAdapter.getAccountColorCode(parentAccountUID);
+            String colorCode = getAccountColorCode(parentAccountUID);
             if (!TextUtils.isEmpty(colorCode)) {
                 Integer color = parseColor(colorCode);
                 if (color != null) {
                     return color;
                 }
             }
-            parentAccountUID = accountsDbAdapter.getParentAccountUID(parentAccountUID);
+            parentAccountUID = getParentAccountUID(parentAccountUID);
         }
 
         Context context = GnuCashApplication.getAppContext();
