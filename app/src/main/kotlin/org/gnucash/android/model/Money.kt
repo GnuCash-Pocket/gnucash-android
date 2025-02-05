@@ -19,12 +19,12 @@ import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
 import java.math.BigDecimal
-import java.math.BigInteger
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.util.Locale
 import timber.log.Timber
+import java.math.BigInteger
 
 /**
  * Money represents a money amount and a corresponding currency.
@@ -277,19 +277,19 @@ class Money : Number, Comparable<Money>, Parcelable {
      */
     @JvmOverloads
     fun formattedString(locale: Locale = Locale.getDefault()): String {
-        val currencyFormat = NumberFormat.getCurrencyInstance(locale)
         //if we want to show US Dollars for locales which also use Dollars, for example, Canada
         val symbol = if (commodity == Commodity.USD && locale != Locale.US) {
             "US$"
         } else {
             if (commodity.isCurrency) commodity.symbol else commodity.symbol + " "
         }
-        val decimalFormatSymbols = (currencyFormat as DecimalFormat).decimalFormatSymbols
-        decimalFormatSymbols.currencySymbol = symbol
-        currencyFormat.decimalFormatSymbols = decimalFormatSymbols
-        currencyFormat.setMinimumFractionDigits(commodity.smallestFractionDigits)
-        currencyFormat.setMaximumFractionDigits(commodity.smallestFractionDigits)
-        return currencyFormat.format(_amount)
+        val precision = commodity.smallestFractionDigits
+        val formatter = (NumberFormat.getCurrencyInstance(locale) as DecimalFormat).apply {
+            decimalFormatSymbols = decimalFormatSymbols.apply { currencySymbol = symbol }
+            minimumFractionDigits = precision
+            maximumFractionDigits = precision
+        }
+        return formatter.format(_amount)
     }
 
     /**
@@ -601,11 +601,7 @@ class Money : Number, Comparable<Money>, Parcelable {
          */
         @JvmStatic
         fun getBigDecimal(numerator: Long, denominator: Long): BigDecimal {
-            var denominator = denominator
-            if (numerator == 0L && denominator == 0L) {
-                denominator = 1
-            }
-            val scale: Int = Integer.numberOfTrailingZeros(denominator.toInt())
+            val scale = Commodity.numberOfTrailingZeros(denominator)
             return BigDecimal(BigInteger.valueOf(numerator), scale)
         }
 

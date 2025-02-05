@@ -273,7 +273,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
             return;
         }
 
-        if (exportedFiles.size() > 0) {
+        if (!exportedFiles.isEmpty()) {
             try {
                 OutputStream outputStream = mContext.getContentResolver().openOutputStream(exportUri);
                 // Now we always get just one file exported (multi-currency QIFs are zipped)

@@ -23,8 +23,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.database.SQLException;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -44,6 +42,7 @@ import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.Price;
 import org.gnucash.android.ui.transaction.OnTransferFundsListener;
+import org.gnucash.android.ui.util.TextInputResetError;
 import org.gnucash.android.ui.util.dialog.VolatileDialogFragment;
 import org.gnucash.android.util.AmountParser;
 
@@ -115,26 +114,10 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
         binding.labelExchangeRateExample.setText(String.format(getString(R.string.sample_exchange_rate),
             fromCurrencyCode,
             targetCurrencyCode));
-        final InputLayoutErrorClearer textChangeListener = new InputLayoutErrorClearer();
-
-        String commodityUID = fromCommodity.getUID();
-        String currencyUID = targetCommodity.getUID();
-        Pair<Long, Long> pricePair = pricesDbAdapter.getPrice(commodityUID, currencyUID);
-
-        if (pricePair.first > 0 && pricePair.second > 0) {
-            // a valid price exists
-            Price price = new Price(fromCommodity, targetCommodity);
-            price.setValueNum(pricePair.first);
-            price.setValueDenom(pricePair.second);
-            BigDecimal priceDecimal = price.toBigDecimal();
-            NumberFormat formatter = NumberFormat.getNumberInstance();
-
-            binding.inputExchangeRate.setText(formatter.format(priceDecimal));
-
-            // convertedAmount = mOriginAmount * numerator / denominator
-            BigDecimal convertedAmount = mOriginAmount.toBigDecimal().multiply(priceDecimal);
-            binding.inputConvertedAmount.setText(formatter.format(convertedAmount));
-        }
+        final TextInputResetError textChangeListener = new TextInputResetError(
+                binding.convertedAmountTextInputLayout,
+                binding.exchangeRateTextInputLayout
+        );
 
         binding.inputExchangeRate.addTextChangedListener(textChangeListener);
         binding.inputConvertedAmount.addTextChangedListener(textChangeListener);
@@ -171,14 +154,34 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
             }
         });
 
+        String fromCommodityUID = fromCommodity.getUID();
+        String targetCommodityUID = targetCommodity.getUID();
+        Pair<Long, Long> pricePair = pricesDbAdapter.getPrice(fromCommodityUID, targetCommodityUID);
+        if (pricePair.first > 0 && pricePair.second > 0) {
+            // a valid price exists
+            Price price = new Price(fromCommodity, targetCommodity);
+            price.setValueNum(pricePair.first);
+            price.setValueDenom(pricePair.second);
+            BigDecimal priceDecimal = price.toBigDecimal();
+            NumberFormat formatter = NumberFormat.getNumberInstance();
+
+            binding.radioExchangeRate.setChecked(true);
+            binding.inputExchangeRate.setText(formatter.format(priceDecimal));
+
+            // convertedAmount = mOriginAmount * numerator / denominator
+            BigDecimal convertedAmount = mOriginAmount.toBigDecimal().multiply(priceDecimal);
+            formatter.setMaximumFractionDigits(targetCommodity.getSmallestFractionDigits());
+            binding.inputConvertedAmount.setText(formatter.format(convertedAmount));
+        }
+
         return binding;
     }
 
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        DialogTransferFundsBinding binding = onCreateBinding(getLayoutInflater());
-        Context context = binding.getRoot().getContext();
+        final DialogTransferFundsBinding binding = onCreateBinding(getLayoutInflater());
+        final Context context = binding.getRoot().getContext();
         return new AlertDialog.Builder(context, getTheme())
             .setTitle(R.string.title_transfer_funds)
             .setView(binding.getRoot())
@@ -191,18 +194,26 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
             .setPositiveButton(R.string.btn_save, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    transferFunds(mOriginAmount.getCommodity(), mTargetCommodity);
+                    transferFunds(mOriginAmount.getCommodity(), mTargetCommodity, binding);
                 }
             })
             .create();
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
+
     /**
      * Converts the currency amount with the given exchange rate and saves the price to the db
      */
-    private void transferFunds(Commodity originCommodity, Commodity targetCommodity) {
-        Money convertedAmount = null;
-
+    private void transferFunds(
+            @NonNull Commodity originCommodity,
+            @NonNull Commodity targetCommodity,
+            @NonNull DialogTransferFundsBinding binding
+    ) {
         Commodity commodityFrom = commoditiesDbAdapter.loadCommodity(originCommodity);
         if (commodityFrom == null) {
             Timber.e("Origin commodity not found in db!");
@@ -214,6 +225,8 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
             return;
         }
         final Price price = new Price(commodityFrom, commodityTo);
+        price.setSource(Price.SOURCE_USER);
+        final Money convertedAmount;
         if (binding.radioExchangeRate.isChecked()) {
             final BigDecimal rate;
             try {
@@ -222,14 +235,22 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
                 binding.exchangeRateTextInputLayout.setError(getString(R.string.error_invalid_exchange_rate));
                 return;
             }
+            if (rate.compareTo(BigDecimal.ZERO) <= 0) {
+                binding.exchangeRateTextInputLayout.setError(getString(R.string.error_invalid_exchange_rate));
+                return;
+            }
             convertedAmount = mOriginAmount.times(rate).withCurrency(targetCommodity);
 
             price.setExchangeRate(rate);
-        } else if (binding.radioConvertedAmount.isChecked()) {
+        } else {
             final BigDecimal amount;
             try {
                 amount = AmountParser.parse(binding.inputConvertedAmount.getText().toString());
             } catch (ParseException e) {
+                binding.convertedAmountTextInputLayout.setError(getString(R.string.error_invalid_amount));
+                return;
+            }
+            if (amount.compareTo(BigDecimal.ZERO) < 0) {
                 binding.convertedAmountTextInputLayout.setError(getString(R.string.error_invalid_amount));
                 return;
             }
@@ -239,35 +260,14 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
             price.setValueNum(convertedAmount.getNumerator() * mOriginAmount.getDenominator());
             price.setValueDenom(mOriginAmount.getNumerator() * convertedAmount.getDenominator());
         }
-        price.setSource(Price.SOURCE_USER);
         try {
             pricesDbAdapter.addRecord(price, DatabaseAdapter.UpdateMethod.insert);
 
-            if (mOnTransferFundsListener != null && convertedAmount != null) {
+            if (mOnTransferFundsListener != null) {
                 mOnTransferFundsListener.transferComplete(mOriginAmount, convertedAmount);
             }
         } catch (SQLException e) {
             Timber.e(e);
-        }
-    }
-
-    /**
-     * Hides the error message from mBinding.convertedAmountTextInputLayout and mBinding.exchangeRateTextInputLayout
-     * when the user edits their content.
-     */
-    private class InputLayoutErrorClearer implements TextWatcher {
-        @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-        }
-
-        @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {
-        }
-
-        @Override
-        public void afterTextChanged(Editable s) {
-            binding.convertedAmountTextInputLayout.setErrorEnabled(false);
-            binding.exchangeRateTextInputLayout.setErrorEnabled(false);
         }
     }
 }

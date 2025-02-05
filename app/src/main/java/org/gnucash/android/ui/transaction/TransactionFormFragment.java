@@ -193,6 +193,8 @@ public class TransactionFormFragment extends MenuFragment implements
     @Nullable
     private FragmentTransactionFormBinding mBinding;
 
+    private final CommoditiesDbAdapter commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
+
     /**
      * Create the view and retrieve references to the UI elements
      */
@@ -684,16 +686,15 @@ public class TransactionFormFragment extends MenuFragment implements
         BigDecimal enteredAmount = binding.inputTransactionAmount.getValue();
         if (enteredAmount == null) enteredAmount = BigDecimal.ZERO;
         String baseCurrencyCode = mTransactionsDbAdapter.getAccountCurrencyCode(mAccountUID);
-        Money value = new Money(enteredAmount, Commodity.getInstance(baseCurrencyCode));
+        Money value = new Money(enteredAmount, commoditiesDbAdapter.getCommodity(baseCurrencyCode));
         Money quantity = new Money(value);
 
         String transferAcctUID = getTransferAccountUID(binding);
-        CommoditiesDbAdapter cmdtyDbAdapter = CommoditiesDbAdapter.getInstance();
 
         if (isMultiCurrencyTransaction(binding)) { //if multi-currency transaction
             String transferCurrencyCode = mAccountsDbAdapter.getCurrencyCode(transferAcctUID);
-            String commodityUID = cmdtyDbAdapter.getCommodityUID(baseCurrencyCode);
-            String targetCmdtyUID = cmdtyDbAdapter.getCommodityUID(transferCurrencyCode);
+            String commodityUID = commoditiesDbAdapter.getCommodityUID(baseCurrencyCode);
+            String targetCmdtyUID = commoditiesDbAdapter.getCommodityUID(transferCurrencyCode);
 
             if ((value.equals(mSplitValue)) && mSplitQuantity != null) {
                 quantity = mSplitQuantity;
@@ -704,7 +705,7 @@ public class TransactionFormFragment extends MenuFragment implements
                 if (pricePair.first > 0 && pricePair.second > 0) {
                     quantity = quantity.times(pricePair.first.intValue())
                         .div(pricePair.second.intValue())
-                        .withCurrency(cmdtyDbAdapter.getRecord(targetCmdtyUID));
+                        .withCurrency(commoditiesDbAdapter.getRecord(targetCmdtyUID));
                 }
             }
         }
@@ -772,7 +773,7 @@ public class TransactionFormFragment extends MenuFragment implements
         String description = binding.inputTransactionName.getText().toString();
         String notes = binding.inputDescription.getText().toString();
         String currencyCode = mAccountsDbAdapter.getAccountCurrencyCode(mAccountUID);
-        Commodity commodity = CommoditiesDbAdapter.getInstance().getCommodity(currencyCode);
+        Commodity commodity = commoditiesDbAdapter.getCommodity(currencyCode);
 
         List<Split> splits = extractSplitsFromView(binding);
 

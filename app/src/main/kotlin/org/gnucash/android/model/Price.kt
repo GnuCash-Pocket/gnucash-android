@@ -49,7 +49,7 @@ class Price : BaseModel {
             _valueNum = value
             reduce(value, valueDenom)
         }
-    private var _valueDenom = 0L
+    private var _valueDenom = 1L
     var valueDenom: Long
         get() = _valueDenom
         set(value) {
@@ -107,8 +107,10 @@ class Price : BaseModel {
     override fun toString(): String {
         val numerator = BigDecimal(valueNum)
         val denominator = BigDecimal(valueDenom)
-        val formatter = NumberFormat.getNumberInstance() as DecimalFormat
-        formatter.maximumFractionDigits = 6
+        val precision = currency.smallestFractionDigits
+        val formatter = (NumberFormat.getNumberInstance() as DecimalFormat).apply {
+            maximumFractionDigits = precision
+        }
         return formatter.format(numerator.divide(denominator, MathContext.DECIMAL32))
     }
 

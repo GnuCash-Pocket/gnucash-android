@@ -59,6 +59,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -295,7 +296,7 @@ public class GncXmlExporter extends Exporter {
         while (cursor.moveToNext()) {
             String curTrxUID = cursor.getString(cursor.getColumnIndexOrThrow("trans_uid"));
             if (!lastTrxUID.equals(curTrxUID)) { // new transaction starts
-                if (!lastTrxUID.equals("")) { // there's an old transaction, close it
+                if (!TextUtils.isEmpty(lastTrxUID)) { // there's an old transaction, close it
                     xmlSerializer.endTag(null, TAG_TRN_SPLITS);
                     xmlSerializer.endTag(null, TAG_TRANSACTION);
                 }
@@ -854,7 +855,7 @@ public class GncXmlExporter extends Exporter {
                 // Feature not supported. No problem
             }
             xmlSerializer.setOutput(writer);
-            xmlSerializer.startDocument("utf-8", true);
+            xmlSerializer.startDocument(StandardCharsets.UTF_8.name(), true);
             // root tag
             xmlSerializer.startTag(null, TAG_ROOT);
             for (String ns : namespaces) {

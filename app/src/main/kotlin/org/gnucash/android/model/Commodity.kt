@@ -17,6 +17,7 @@ package org.gnucash.android.model
 
 import java.util.TimeZone
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
+import kotlin.math.log10
 
 /**
  * Commodities are the currencies used in the application.
@@ -97,7 +98,7 @@ class Commodity(
         get() = if (smallestFraction == 0) {
             0
         } else {
-            Integer.numberOfTrailingZeros(smallestFraction)
+            numberOfTrailingZeros(smallestFraction)
         }
 
     /**
@@ -212,6 +213,13 @@ class Commodity(
                 return currencyCode
             }
             return "$currencyCode ($name)"
+        }
+
+        @JvmStatic
+        fun numberOfTrailingZeros(value: Number): Int {
+            val v = value.toDouble()
+            if (v <= 1) return 0
+            return log10(v).toInt()
         }
     }
 

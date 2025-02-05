@@ -305,7 +305,7 @@ public class WidgetConfigurationActivity extends Activity {
         } else {
             Money accountBalance = accountsDbAdapter.getAccountBalance(accountUID, -1, System.currentTimeMillis());
             views.setTextViewText(R.id.transactions_summary,
-                accountBalance.formattedString(Locale.getDefault()));
+                accountBalance.formattedString());
             int color = accountBalance.isNegative() ? R.color.debit_red : R.color.credit_green;
             views.setTextColor(R.id.transactions_summary, ContextCompat.getColor(context, color));
         }

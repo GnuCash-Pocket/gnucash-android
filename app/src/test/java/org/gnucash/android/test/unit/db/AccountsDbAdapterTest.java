@@ -16,7 +16,6 @@
 package org.gnucash.android.test.unit.db;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 
 import android.database.sqlite.SQLiteDatabase;
 
@@ -119,7 +118,7 @@ public class AccountsDbAdapterTest extends GnuCashTest {
         mAccountsDbAdapter.addRecord(first);
 
         List<Account> accountsList = mAccountsDbAdapter.getAllRecords();
-        assertEquals(2, accountsList.size());
+        assertThat(accountsList.size()).isEqualTo(2);
         //bravo was saved first, but alpha should be first alphabetically
         assertThat(accountsList).contains(first, Index.atIndex(0));
         assertThat(accountsList).contains(second, Index.atIndex(1));

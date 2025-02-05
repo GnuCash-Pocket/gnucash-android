@@ -664,8 +664,8 @@ public class TransactionsActivityTest {
 
         for (Transaction transaction : transactions) {
             if (transaction.getDescription().equals("Power intents")) {
-                assertThat("Intents for sale").isEqualTo(transaction.getNote());
-                assertThat(4.99).isEqualTo(transaction.getBalance(TRANSACTIONS_ACCOUNT_UID).toDouble());
+                assertThat(transaction.getNote()).isEqualTo("Intents for sale");
+                assertThat(transaction.getBalance(TRANSACTIONS_ACCOUNT_UID).toDouble()).isEqualTo(4.99);
             }
         }
     }

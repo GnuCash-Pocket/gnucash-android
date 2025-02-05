@@ -45,6 +45,7 @@ import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import timber.log.Timber
+import java.nio.charset.StandardCharsets
 
 /**
  * Exports the data in the database in OFX format.
@@ -138,7 +139,7 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
         var writer: BufferedWriter? = null
         try {
             val file = File(exportCacheFilePath)
-            writer = BufferedWriter(OutputStreamWriter(FileOutputStream(file), "UTF-8"))
+            writer = BufferedWriter(OutputStreamWriter(FileOutputStream(file), StandardCharsets.UTF_8))
             writer.write(generateOfxExport(accounts))
             close()
         } catch (e: IOException) {
