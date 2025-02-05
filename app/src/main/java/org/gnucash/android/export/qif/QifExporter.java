@@ -60,14 +60,11 @@ import org.gnucash.android.util.TimestampHelper;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -100,6 +97,30 @@ public class QifExporter extends Exporter {
 
     @Override
     public List<String> generateExport() throws ExporterException {
+        final ExportParams exportParams = mExportParams;
+        final boolean isCompressed = exportParams.isCompressed;
+        // Disable compression in case of multiple files that will be zipped afterwards.
+        exportParams.isCompressed = false;
+        List<String> paths = super.generateExport();
+        if (paths.isEmpty()) {
+            return paths;
+        }
+
+        List<String> exportedFiles;
+        try {
+            exportedFiles = splitQIF(paths.get(0));
+            if ((exportedFiles.size() > 1) || isCompressed) {
+                return zipQifs(exportedFiles);
+            }
+        } catch (IOException e) {
+            throw new ExporterException(exportParams, e);
+        }
+        return exportedFiles;
+    }
+
+    @Override
+    // TODO write each commodity to separate file here, instead of splitting the file afterwards.
+    protected void writeExport(@NonNull ExportParams exportParams, @NonNull Writer writer) throws ExporterException, IOException {
         String lastExportTimeStamp = Long.toString(mExportParams.getExportStartTime().getTime());
         TransactionsDbAdapter transactionsDbAdapter = mTransactionsDbAdapter;
 
@@ -147,9 +168,9 @@ public class QifExporter extends Exporter {
                 orderBy
             );
 
-            // TODO write each commodity to separate file here, instead of splitting the file afterwards.
-            File file = new File(getExportCacheFilePath());
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8));
+            DecimalFormat quantityFormatter = (DecimalFormat) NumberFormat.getNumberInstance(Locale.ROOT);
+            quantityFormatter.setGroupingUsed(false);
+            Map<String, Commodity> commodities = new HashMap<>();
 
             String currentCommodityUID = "";
             String currentAccountUID = "";
@@ -299,15 +320,6 @@ public class QifExporter extends Exporter {
 
             /// export successful
             PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow(), getBookUID());
-            close();
-
-            List<String> exportedFiles = splitQIF(file);
-            if (exportedFiles.isEmpty())
-                return Collections.emptyList();
-            else if (exportedFiles.size() > 1)
-                return zipQifs(exportedFiles);
-            else
-                return exportedFiles;
         } catch (IOException e) {
             throw new ExporterException(mExportParams, e);
         } finally {
@@ -325,16 +337,16 @@ public class QifExporter extends Exporter {
     /**
      * Splits a Qif file into several ones for each currency.
      *
-     * @param file File object of the Qif file to split.
+     * @param path File path of the Qif file to split.
      * @return a list of paths of the newly created Qif files.
      * @throws IOException if something went wrong while splitting the file.
      */
-    private List<String> splitQIF(File file) throws IOException {
+    private List<String> splitQIF(String path) throws IOException {
         // split only at the last dot
-        String[] pathParts = file.getPath().split("(?=\\.[^\\.]+$)");
+        String[] pathParts = path.split("(?=\\.[^\\.]+$)");
         List<String> splitFiles = new ArrayList<>();
         String line;
-        BufferedReader in = new BufferedReader(new FileReader(file));
+        BufferedReader in = new BufferedReader(new FileReader(path));
         BufferedWriter out = null;
         try {
             while ((line = in.readLine()) != null) {
@@ -348,7 +360,7 @@ public class QifExporter extends Exporter {
                     out = new BufferedWriter(new FileWriter(newFileName));
                 } else {
                     if (out == null) {
-                        throw new IllegalArgumentException(file.getPath() + " format is not correct");
+                        throw new IllegalArgumentException(path + " format is not correct");
                     }
                     out.append(line).append(NEW_LINE);
                 }

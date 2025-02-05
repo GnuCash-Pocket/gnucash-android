@@ -18,8 +18,8 @@ package org.gnucash.android.export.csv
 import android.content.Context
 import com.opencsv.CSVWriterBuilder
 import com.opencsv.ICSVWriter
-import java.io.FileWriter
 import java.io.IOException
+import java.io.Writer
 import org.gnucash.android.R
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
@@ -41,30 +41,15 @@ class CsvTransactionsExporter(
     params: ExportParams,
     bookUID: String
 ) : Exporter(context, params, bookUID) {
-    private val mCsvSeparator = params.csvSeparator
     private val dateFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
     private val accountCache = mutableMapOf<String, Account>()
 
-    @Throws(ExporterException::class)
-    override fun generateExport(): List<String> {
-        val outputFile = getExportCacheFilePath()
-
-        try {
-            FileWriter(outputFile).use { writer ->
-                val csvWriter = CSVWriterBuilder(writer).withSeparator(mCsvSeparator).build()
-                generateExport(csvWriter)
-                csvWriter.close()
-            }
-            return listOf(outputFile)
-        } catch (e: Exception) {
-            Timber.e(e, "Error exporting CSV")
-            throw ExporterException(mExportParams, e)
-        } finally {
-            try {
-                close()
-            } catch (ignore: java.lang.Exception) {
-            }
-        }
+    override fun writeExport(exportParams: ExportParams, writer: Writer) {
+        val csvWriter = CSVWriterBuilder(writer)
+            .withSeparator(exportParams.csvSeparator)
+            .build()
+        writeExport(csvWriter)
+        csvWriter.close()
     }
 
     @Throws(IOException::class)
@@ -104,33 +89,29 @@ class CsvTransactionsExporter(
     }
 
     @Throws(ExporterException::class)
-    private fun generateExport(writer: ICSVWriter) {
-        try {
-            val headers = mContext.resources.getStringArray(R.array.csv_transaction_headers)
-            writer.writeNext(headers)
+    private fun writeExport(writer: ICSVWriter) {
+        val headers = mContext.resources.getStringArray(R.array.csv_transaction_headers)
+        writer.writeNext(headers)
 
-            val cursor =
-                mTransactionsDbAdapter.fetchTransactionsModifiedSince(mExportParams.exportStartTime)
-            Timber.d("Exporting %d transactions to CSV", cursor.count)
-            while (cursor.moveToNext()) {
-                val transaction = mTransactionsDbAdapter.buildModelInstance(cursor)
-                val commodity = transaction.commodity
-                val fields = Array<String?>(headers.size) { null }
-                fields[0] = dateFormat.print(transaction.timeMillis)
-                fields[1] = transaction.uid
-                fields[2] = null  // Transaction number
-                fields[3] = transaction.description
-                fields[4] = maybeNull(transaction.note)
-                fields[5] = "${commodity.namespace}::${commodity.currencyCode}"
-                fields[6] = null  // Void Reason
-                fields[7] = null  // Action
-                writeSplitsToCsv(transaction.splits, fields, writer)
-            }
-            cursor.close()
-            PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow(), bookUID)
-        } catch (e: Exception) {
-            throw ExporterException(mExportParams, e)
+        val cursor =
+            mTransactionsDbAdapter.fetchTransactionsModifiedSince(mExportParams.exportStartTime)
+        Timber.d("Exporting %d transactions to CSV", cursor.count)
+        while (cursor.moveToNext()) {
+            val transaction = mTransactionsDbAdapter.buildModelInstance(cursor)
+            val commodity = transaction.commodity
+            val fields = Array<String?>(headers.size) { null }
+            fields[0] = dateFormat.print(transaction.timeMillis)
+            fields[1] = transaction.uid
+            fields[2] = null  // Transaction number
+            fields[3] = transaction.description
+            fields[4] = maybeNull(transaction.note)
+            fields[5] = "${commodity.namespace}::${commodity.currencyCode}"
+            fields[6] = null  // Void Reason
+            fields[7] = null  // Action
+            writeSplitsToCsv(transaction.splits, fields, writer)
         }
+        cursor.close()
+        PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow(), bookUID)
     }
 
     private fun maybeNull(s: String?): String? {

@@ -16,6 +16,7 @@
 package org.gnucash.android.test.unit.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import android.content.Context;
 
@@ -23,6 +24,7 @@ import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.export.ExportFormat;
 import org.gnucash.android.export.ExportParams;
+import org.gnucash.android.export.Exporter;
 import org.gnucash.android.export.ofx.OfxExporter;
 import org.gnucash.android.export.ofx.OfxHelper;
 import org.gnucash.android.model.Account;
@@ -52,7 +54,7 @@ public class OfxExporterTest extends GnuCashTest {
         exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
         exportParameters.setDeleteTransactionsAfterExport(false);
         OfxExporter exporter = new OfxExporter(context, exportParameters, GnuCashApplication.getActiveBookUID());
-        assertThat(exporter.generateExport()).isEmpty();
+        assertThrows(Exporter.ExporterException.class, () -> exporter.generateExport());
     }
 
     /**

@@ -54,10 +54,7 @@ import org.gnucash.android.util.TimestampHelper;
 import org.xmlpull.v1.XmlPullParserFactory;
 import org.xmlpull.v1.XmlSerializer;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -787,43 +784,13 @@ public class GncXmlExporter extends Exporter {
         xmlSerializer.endTag(null, TAG_BUDGET);
     }
 
-    @Override
-    public List<String> generateExport() throws ExporterException {
-        OutputStreamWriter writer = null;
-        String outputFile = getExportCacheFilePath();
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
-            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
-            writer = new OutputStreamWriter(bufferedOutputStream);
-
-            generateExport(writer);
-            close();
-        } catch (IOException ex) {
-            Timber.e(ex, "Error exporting XML");
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    throw new ExporterException(mExportParams, e);
-                }
-            }
-        }
-
-        List<String> exportedFiles = new ArrayList<>();
-        exportedFiles.add(outputFile);
-
-        return exportedFiles;
-    }
-
     /**
      * Generates an XML export of the database and writes it to the {@code writer} output stream
      *
      * @param writer Output stream
-     * @throws ExporterException
      */
-    public void generateExport(Writer writer) throws ExporterException {
-        Timber.i("generate export");
+    @Override
+    protected void writeExport(@NonNull ExportParams exportParams, @NonNull Writer writer) throws ExporterException {
         final long timeStart = SystemClock.elapsedRealtime();
         try {
             String[] namespaces = new String[]{"gnc", "act", "book", "cd", "cmdty", "price", "slot",

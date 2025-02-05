@@ -127,7 +127,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
     protected Integer doInBackground(ExportParams... params) {
         final ExportParams exportParams = params[0];
         mExportParams = exportParams;
-        Exporter exporter = getExporter(exportParams);
+        Exporter exporter = createExporter(mContext, exportParams, mBookUID);
         List<String> exportedFiles;
 
         try {
@@ -208,7 +208,11 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
      *
      * @return Object of one of {@link QifExporter}, {@link OfxExporter} or {@link GncXmlExporter}, {@Link CsvAccountExporter} or {@Link CsvTransactionsExporter}
      */
-    private Exporter getExporter(ExportParams exportParams) {
+    private Exporter createExporter(
+        @NonNull Context context,
+        @NonNull ExportParams exportParams,
+        @NonNull String bookUID
+    ) {
         switch (exportParams.getExportFormat()) {
             case QIF:
                 return new QifExporter(mContext, exportParams, mBookUID);

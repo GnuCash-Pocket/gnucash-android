@@ -28,10 +28,8 @@ import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.Exporter;
 import org.gnucash.android.model.Account;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -40,7 +38,6 @@ import java.util.List;
  * @author Semyannikov Gleb <nightdevgame@gmail.com>
  */
 public class CsvAccountExporter extends Exporter {
-    private final char mCsvSeparator;
 
     /**
      * Overloaded constructor.
@@ -54,25 +51,15 @@ public class CsvAccountExporter extends Exporter {
                               @NonNull ExportParams params,
                               @NonNull String bookUID) {
         super(context, params, bookUID);
-        mCsvSeparator = params.getCsvSeparator();
     }
 
     @Override
-    public List<String> generateExport() throws ExporterException {
-        String outputFile = getExportCacheFilePath();
-        try (Writer writer = new FileWriter(outputFile)) {
-            ICSVWriter csvWriter = new CSVWriterBuilder(writer).withSeparator(mCsvSeparator).build();
-            generateExport(csvWriter);
-            csvWriter.close();
-            return Collections.singletonList(outputFile);
-        } catch (Exception ex) {
-            throw new ExporterException(mExportParams, ex);
-        } finally {
-            try {
-                close();
-            } catch (Exception ignore) {
-            }
-        }
+    protected void writeExport(@NonNull ExportParams exportParams, @NonNull Writer writer) throws ExporterException, IOException {
+        ICSVWriter csvWriter = new CSVWriterBuilder(writer)
+            .withSeparator(exportParams.getCsvSeparator())
+            .build();
+        writeExport(csvWriter);
+        csvWriter.close();
     }
 
     /**
@@ -81,7 +68,7 @@ public class CsvAccountExporter extends Exporter {
      * @param csvWriter Destination for the CSV export
      * @throws IOException if an error occurred while writing to the stream
      */
-    public void generateExport(final ICSVWriter csvWriter) throws IOException {
+    public void writeExport(final ICSVWriter csvWriter) throws IOException {
         String[] names = mContext.getResources().getStringArray(R.array.csv_account_headers);
         List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList();
 

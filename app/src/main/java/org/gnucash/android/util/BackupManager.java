@@ -43,16 +43,11 @@ import org.gnucash.android.ui.common.GnucashProgressDialog;
 import org.gnucash.android.ui.settings.PreferenceActivity;
 import org.gnucash.android.work.BackupWorker;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.GZIPOutputStream;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
@@ -125,23 +120,11 @@ public class BackupManager {
     @WorkerThread
     public static boolean backupBook(Context context, String bookUID) {
         ExportParams params = new ExportParams(ExportFormat.XML);
-        OutputStream outputStream;
+        params.isCompressed = true;
         try {
             Uri backupUri = getBookBackupFileUri(bookUID);
-            if (backupUri != null) {
-                outputStream = context.getContentResolver().openOutputStream(backupUri);
-            } else { //no Uri set by user, use default location on SD card
-                File backupFile = getBackupFile(bookUID, params);
-                outputStream = new FileOutputStream(backupFile);
-            }
             params.setExportLocation(backupUri);
-
-            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
-            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(bufferedOutputStream);
-            OutputStreamWriter writer = new OutputStreamWriter(gzipOutputStream);
-
-            new GncXmlExporter(context, params, bookUID).generateExport(writer);
-            writer.close();
+            new GncXmlExporter(context, params, bookUID).generateExport();
             return true;
         } catch (Throwable e) {
             Timber.e(e, "Error creating backup");

@@ -39,9 +39,16 @@ import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
 import timber.log.Timber;
 
@@ -195,7 +202,26 @@ public abstract class Exporter {
      *
      * @throws ExporterException if an error occurs during export
      */
-    public abstract List<String> generateExport() throws ExporterException;
+    public List<String> generateExport() throws ExporterException {
+        Timber.i("generate export");
+        final ExportParams exportParams = mExportParams;
+        String outputFile = getExportCacheFilePath();
+        try (Writer writer = createWriter(exportParams)) {
+            writeExport(exportParams, writer);
+            return List.of(outputFile);
+        } catch (ExporterException ee) {
+            throw ee;
+        } catch (Exception e) {
+            throw new ExporterException(exportParams, e);
+        } finally {
+            try {
+                close();
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
+    protected abstract void writeExport(@NonNull ExportParams exportParams, @NonNull Writer writer) throws ExporterException, IOException;
 
     /**
      * Recursively delete all files in a directory
@@ -267,6 +293,21 @@ public abstract class Exporter {
         mSplitsDbAdapter.close();
         mTransactionsDbAdapter.close();
         mDb.close();
+    }
+
+    protected Writer createWriter(@NonNull ExportParams exportParams) throws IOException {
+        String path = getExportCacheFilePath();
+        OutputStream stream = new FileOutputStream(path);
+        //            if (backupUri != null) {
+//                outputStream = context.getContentResolver().openOutputStream(backupUri);
+//            } else { //no Uri set by user, use default location on SD card
+//                File backupFile = getBackupFile(bookUID, params);
+//                outputStream = new FileOutputStream(backupFile);
+//            }
+        if (mExportParams.isCompressed) {
+            stream = new GZIPOutputStream(stream);
+        }
+        return new BufferedWriter(new OutputStreamWriter(stream, StandardCharsets.UTF_8));
     }
 
     public static class ExporterException extends RuntimeException {
