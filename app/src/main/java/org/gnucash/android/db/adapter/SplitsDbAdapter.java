@@ -472,4 +472,12 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
         }
     }
 
+    public void reassignAccount(@NonNull String accountUID, @NonNull String newParentAccountUID) {
+        updateRecords(
+            SplitEntry.COLUMN_ACCOUNT_UID + " = ?",
+            new String[]{accountUID},
+            SplitEntry.COLUMN_ACCOUNT_UID,
+            newParentAccountUID
+        );
+    }
 }
