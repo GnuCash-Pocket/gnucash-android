@@ -26,6 +26,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
@@ -1349,7 +1350,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     }
 
     @Override
-    public boolean deleteRecord(@NonNull String uid) {
+    public boolean deleteRecord(@NonNull String uid) throws SQLException {
         boolean result = super.deleteRecord(uid);
         if (result) {
             ContentValues contentValues = new ContentValues();

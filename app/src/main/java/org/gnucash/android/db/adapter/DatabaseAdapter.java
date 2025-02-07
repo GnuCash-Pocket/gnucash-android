@@ -542,7 +542,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @param rowId ID of record to be deleted
      * @return <code>true</code> if deletion was successful, <code>false</code> otherwise
      */
-    public boolean deleteRecord(long rowId) {
+    public boolean deleteRecord(long rowId) throws SQLException {
         Timber.d("Deleting record with id " + rowId + " from " + mTableName);
         return mDb.delete(mTableName, DatabaseSchema.CommonColumns._ID + "=" + rowId, null) > 0;
     }
@@ -755,7 +755,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @return <code>true</code> if deletion was successful, <code>false</code> otherwise
      * @see #deleteRecord(long)
      */
-    public boolean deleteRecord(@NonNull String uid) {
+    public boolean deleteRecord(@NonNull String uid) throws SQLException {
         return deleteRecord(getID(uid));
     }
 

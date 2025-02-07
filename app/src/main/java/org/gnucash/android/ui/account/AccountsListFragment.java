@@ -249,16 +249,23 @@ public class AccountsListFragment extends MenuFragment implements
      * It shows the delete confirmation dialog if the account has transactions,
      * else deletes the account immediately
      *
+     * @param activity The activity context.
      * @param accountUID The UID of the account
      */
-    private void tryDeleteAccount(String accountUID) {
+    private void tryDeleteAccount(final Activity activity, final String accountUID) {
         if (mAccountsDbAdapter.getTransactionCount(accountUID) > 0 || mAccountsDbAdapter.getSubAccountCount(accountUID) > 0) {
             showConfirmationDialog(accountUID);
         } else {
-            BackupManager.backupActiveBookAsync(requireActivity(), result -> {
-                // Avoid calling AccountsDbAdapter.deleteRecord(long). See #654
-                mAccountsDbAdapter.deleteRecord(accountUID);
-                refresh();
+            BackupManager.backupActiveBookAsync(activity, result -> {
+                if (result) {
+                    try {
+                        // Avoid calling AccountsDbAdapter.deleteRecord(long). See #654
+                        mAccountsDbAdapter.deleteRecord(accountUID);
+                        refresh();
+                    } catch (Exception e) {
+                        Timber.e(e);
+                    }
+                }
                 return null;
             });
         }
@@ -342,12 +349,12 @@ public class AccountsListFragment extends MenuFragment implements
      *
      * @param accountUID Unique ID of account to be edited. Pass 0 to create a new account.
      */
-    public void openCreateOrEditActivity(String accountUID) {
-        Intent editAccountIntent = new Intent(AccountsListFragment.this.getActivity(), FormActivity.class);
-        editAccountIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
-        editAccountIntent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
-        editAccountIntent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name());
-        startActivity(editAccountIntent);
+    public void openCreateOrEditActivity(Context context, String accountUID) {
+        Intent intent = new Intent(context, FormActivity.class)
+            .setAction(Intent.ACTION_INSERT_OR_EDIT)
+            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name());
+        context.startActivity(intent);
     }
 
     @NonNull
@@ -581,10 +588,10 @@ public class AccountsListFragment extends MenuFragment implements
                         @Override
                         public void onClick(View v) {
                             Context context = v.getContext();
-                            Intent intent = new Intent(context, FormActivity.class);
-                            intent.setAction(Intent.ACTION_INSERT_OR_EDIT);
-                            intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
-                            intent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name());
+                            Intent intent = new Intent(context, FormActivity.class)
+                                .setAction(Intent.ACTION_INSERT_OR_EDIT)
+                                .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+                                .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name());
                             context.startActivity(intent);
                         }
                     });
@@ -637,13 +644,16 @@ public class AccountsListFragment extends MenuFragment implements
 
             @Override
             public boolean onMenuItemClick(@NonNull MenuItem item) {
+                final Activity activity = getActivity();
+                if (activity == null) return false;
+
                 switch (item.getItemId()) {
                     case R.id.menu_edit:
-                        openCreateOrEditActivity(accountUID);
+                        openCreateOrEditActivity(activity, accountUID);
                         return true;
 
                     case R.id.menu_delete:
-                        tryDeleteAccount(accountUID);
+                        tryDeleteAccount(activity, accountUID);
                         return true;
 
                     default:
