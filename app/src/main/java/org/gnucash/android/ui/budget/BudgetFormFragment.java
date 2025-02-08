@@ -21,7 +21,6 @@ import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -45,16 +44,17 @@ import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFra
 import org.gnucash.android.R;
 import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.databinding.FragmentBudgetFormBinding;
-import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BudgetsDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.inputmethodservice.CalculatorKeyboardView;
+import org.gnucash.android.model.Account;
 import org.gnucash.android.model.Budget;
 import org.gnucash.android.model.BudgetAmount;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.Recurrence;
+import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter;
 import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.transaction.TransactionFormFragment;
@@ -62,7 +62,6 @@ import org.gnucash.android.ui.util.RecurrenceParser;
 import org.gnucash.android.ui.util.RecurrenceViewClickListener;
 import org.gnucash.android.ui.util.dialog.DatePickerDialogFragment;
 import org.gnucash.android.ui.util.widget.CalculatorKeyboard;
-import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -86,7 +85,7 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
     private final Calendar mStartDate = Calendar.getInstance();
     private ArrayList<BudgetAmount> mBudgetAmounts = new ArrayList<>();
     private AccountsDbAdapter mAccountsDbAdapter;
-    private QualifiedAccountNameCursorAdapter mAccountsCursorAdapter;
+    private QualifiedAccountNameAdapter accountNameAdapter;
 
     private FragmentBudgetFormBinding mBinding;
 
@@ -109,10 +108,7 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
         super.onCreate(savedInstanceState);
         mBudgetsDbAdapter = BudgetsDbAdapter.getInstance();
         mBudgetAmounts.clear();
-        String conditions = "(" + DatabaseSchema.AccountEntry.COLUMN_HIDDEN + " = 0 )";
-        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-        Cursor accountCursor = mAccountsDbAdapter.fetchAccountsOrderedByFavoriteAndFullName(conditions, null);
-        mAccountsCursorAdapter = new QualifiedAccountNameCursorAdapter(getActivity(), accountCursor);
+        accountNameAdapter = new QualifiedAccountNameAdapter(requireContext());
     }
 
     @Override
@@ -123,7 +119,7 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
         mBinding.budgetAmountLayout.inputBudgetAmount.bindKeyboard(mBinding.calculatorKeyboard);
         mBinding.inputStartDate.setText(TransactionFormFragment.DATE_FORMATTER.print(mStartDate.getTimeInMillis()));
 
-        mBinding.budgetAmountLayout.inputBudgetAccountSpinner.setAdapter(mAccountsCursorAdapter);
+        mBinding.budgetAmountLayout.inputBudgetAccountSpinner.setAdapter(accountNameAdapter);
         String budgetUID = getArguments().getString(UxArgument.BUDGET_UID);
         if (budgetUID != null) { //if we are editing the budget
             initViews(mBudget = mBudgetsDbAdapter.getRecord(budgetUID));
@@ -172,10 +168,10 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
 
         if (mBudgetAmounts.isEmpty()) { //has not been set in budget amounts editor
             ArrayList<BudgetAmount> budgetAmounts = new ArrayList<>();
-            String accountUID = mAccountsDbAdapter.getUID(mBinding.budgetAmountLayout.inputBudgetAccountSpinner.getSelectedItemId());
-            Commodity commodity = mAccountsDbAdapter.getCommodity(accountUID);
-            Money amount = new Money(value, commodity);
-            BudgetAmount budgetAmount = new BudgetAmount(amount, accountUID);
+            int accountPosition = mBinding.budgetAmountLayout.inputBudgetAccountSpinner.getSelectedItemPosition();
+            Account account = accountNameAdapter.getAccount(accountPosition);
+            Money amount = new Money(value, account.getCommodity());
+            BudgetAmount budgetAmount = new BudgetAmount(amount, account.getUID());
             budgetAmounts.add(budgetAmount);
             return budgetAmounts;
         } else {
@@ -343,7 +339,7 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
             if (!mBudgetAmounts.isEmpty()) {
                 BudgetAmount budgetAmount = mBudgetAmounts.get(0);
                 mBinding.budgetAmountLayout.inputBudgetAmount.setValue(budgetAmount.getAmount().asBigDecimal());
-                mBinding.budgetAmountLayout.inputBudgetAccountSpinner.setSelection(mAccountsCursorAdapter.getItemPosition(budgetAmount.getAccountUID()));
+                mBinding.budgetAmountLayout.inputBudgetAccountSpinner.setSelection(accountNameAdapter.getPosition(budgetAmount.getAccountUID()));
             }
         }
     }

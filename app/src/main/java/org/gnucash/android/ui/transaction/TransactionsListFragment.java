@@ -176,10 +176,10 @@ public class TransactionsListFragment extends MenuFragment implements
         refresh();
     }
 
-    public void onListItemClick(long id) {
-        Intent intent = new Intent(getActivity(), TransactionDetailActivity.class);
-        intent.putExtra(UxArgument.SELECTED_TRANSACTION_UID, mTransactionsDbAdapter.getUID(id));
-        intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
+    public void onListItemClick(String transactionUID) {
+        Intent intent = new Intent(getActivity(), TransactionDetailActivity.class)
+            .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
+            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
         startActivity(intent);
     }
 
@@ -289,7 +289,6 @@ public class TransactionsListFragment extends MenuFragment implements
             private final TextView transactionDate;
             private final ImageView editTransaction;
 
-            private long transactionId;
             private String transactionUID;
             @ColorInt
             private final int colorBalanceZero;
@@ -320,7 +319,7 @@ public class TransactionsListFragment extends MenuFragment implements
                 itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        onListItemClick(transactionId);
+                        onListItemClick(transactionUID);
                     }
                 });
             }
@@ -329,15 +328,15 @@ public class TransactionsListFragment extends MenuFragment implements
             public boolean onMenuItemClick(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.menu_delete:
-                        deleteTransaction(transactionId);
+                        deleteTransaction(transactionUID);
                         return true;
 
                     case R.id.menu_duplicate:
-                        duplicateTransaction(transactionId);
+                        duplicateTransaction(transactionUID);
                         return true;
 
                     case R.id.menu_move:
-                        moveTransaction(transactionId);
+                        moveTransaction(transactionUID);
                         return true;
 
                     case R.id.menu_edit:
@@ -350,7 +349,7 @@ public class TransactionsListFragment extends MenuFragment implements
             }
 
             public void bind(@NonNull Cursor cursor) {
-                transactionId = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry._ID));
+                transactionUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_UID));
                 transactionUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_UID));
 
                 String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_DESCRIPTION));
@@ -405,25 +404,25 @@ public class TransactionsListFragment extends MenuFragment implements
         }
     }
 
-    private void deleteTransaction(long transactionId) {
+    private void deleteTransaction(String transactionUID) {
         final Activity activity = requireActivity();
         if (GnuCashApplication.shouldBackupTransactions(activity)) {
             BackupManager.backupActiveBookAsync(activity, result -> {
-                mTransactionsDbAdapter.deleteRecord(transactionId);
+                mTransactionsDbAdapter.deleteRecord(transactionUID);
                 WidgetConfigurationActivity.updateAllWidgets(activity);
                 refresh();
                 return null;
             });
         } else {
-            mTransactionsDbAdapter.deleteRecord(transactionId);
+            mTransactionsDbAdapter.deleteRecord(transactionUID);
             WidgetConfigurationActivity.updateAllWidgets(activity);
             refresh();
         }
     }
 
-    private void duplicateTransaction(long transactionId) {
+    private void duplicateTransaction(String transactionUID) {
         try {
-            Transaction transaction = mTransactionsDbAdapter.getRecord(transactionId);
+            Transaction transaction = mTransactionsDbAdapter.getRecord(transactionUID);
             Transaction duplicate = new Transaction(transaction, true);
             duplicate.setTime(System.currentTimeMillis());
             mTransactionsDbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.insert);
@@ -433,11 +432,11 @@ public class TransactionsListFragment extends MenuFragment implements
         }
     }
 
-    private void moveTransaction(long transactionId) {
-        long[] ids = new long[]{transactionId};
+    private void moveTransaction(String transactionUID) {
+        String[] uids = new String[]{transactionUID};
         FragmentManager fm = getParentFragmentManager();
         fm.setFragmentResultListener(BulkMoveDialogFragment.TAG, TransactionsListFragment.this, TransactionsListFragment.this);
-        BulkMoveDialogFragment fragment = BulkMoveDialogFragment.newInstance(ids, mAccountUID);
+        BulkMoveDialogFragment fragment = BulkMoveDialogFragment.newInstance(uids, mAccountUID);
         fragment.show(fm, BulkMoveDialogFragment.TAG);
     }
 

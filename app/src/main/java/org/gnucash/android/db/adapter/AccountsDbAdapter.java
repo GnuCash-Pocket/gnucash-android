@@ -1054,11 +1054,15 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         if (rootUID != null) {
             return rootUID;
         }
-        Cursor cursor = fetchAccounts(AccountEntry.COLUMN_TYPE + "= ?",
-            new String[]{AccountType.ROOT.name()}, null);
+        String where = AccountEntry.COLUMN_TYPE + "=?"
+            + " AND " + AccountEntry.COLUMN_CURRENCY + "!=?";
+        String[] whereArgs = new String[]{AccountType.ROOT.name(), Commodity.TEMPLATE};
+        Cursor cursor = fetchAccounts(where, whereArgs, null);
         try {
             if (cursor.moveToFirst()) {
-                return cursor.getString(cursor.getColumnIndexOrThrow(AccountEntry.COLUMN_UID));
+                String uid = cursor.getString(cursor.getColumnIndexOrThrow(AccountEntry.COLUMN_UID));
+                rootUID = uid;
+                return uid;
             }
         } finally {
             cursor.close();

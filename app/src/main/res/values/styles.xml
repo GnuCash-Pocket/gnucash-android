@@ -57,10 +57,14 @@
     <style name="TextAppearance.EditTransaction_LabelSmall" parent="TextAppearance.EditTransaction_Small">
         <item name="android:minHeight">24dp</item>
         <item name="android:layout_width">144dp</item>
-        <item name="android:layout_marginRight">16dp</item>
-        <item name="android:paddingLeft">8dp</item>
-        <item name="android:paddingRight">8dp</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
         <item name="android:layout_marginBottom">-12dp</item>
+    </style>
+
+    <style name="TextAppearance.EditAccount.Label" parent="TextAppearance.EditTransaction_Small">
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
     </style>
 
     <style name="TextAppearance.Hint">

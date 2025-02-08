@@ -66,6 +66,7 @@ import org.gnucash.android.db.adapter.PricesDbAdapter;
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.inputmethodservice.CalculatorKeyboardView;
+import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
@@ -75,6 +76,7 @@ import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.model.TransactionType;
+import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter;
 import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity;
@@ -84,7 +86,6 @@ import org.gnucash.android.ui.util.RecurrenceViewClickListener;
 import org.gnucash.android.ui.util.dialog.DatePickerDialogFragment;
 import org.gnucash.android.ui.util.dialog.TimePickerDialogFragment;
 import org.gnucash.android.ui.util.widget.CalculatorKeyboard;
-import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -121,12 +122,7 @@ public class TransactionFormFragment extends MenuFragment implements
     /**
      * Adapter for transfer account spinner
      */
-    private QualifiedAccountNameCursorAdapter mAccountCursorAdapter;
-
-    /**
-     * Cursor for transfer account spinner
-     */
-    private Cursor mCursor;
+    private QualifiedAccountNameAdapter accountNameAdapter;
 
     /**
      * Transaction to be created/updated
@@ -159,10 +155,10 @@ public class TransactionFormFragment extends MenuFragment implements
     private Calendar mTime;
 
     /**
-     * The AccountType of the account to which this transaction belongs.
+     * The Account of the account to which this transaction belongs.
      * Used for determining the accounting rules for credits and debits
      */
-    AccountType mAccountType;
+    private Account account;
 
     private RecurrenceViewClickListener mRecurrenceViewClickListener;
     private String mRecurrenceRule;
@@ -233,18 +229,19 @@ public class TransactionFormFragment extends MenuFragment implements
      * Starts the transfer of funds from one currency to another
      */
     private void startTransferFunds(FragmentTransactionFormBinding binding) {
+        Account accountFrom = this.account;
+        Commodity fromCommodity = accountFrom.getCommodity();
+        int position = binding.inputTransferAccountSpinner.getSelectedItemPosition();
+        Account accountTarget = accountNameAdapter.getAccount(position);
+        Commodity targetCommodity = accountTarget.getCommodity();
+
         BigDecimal enteredAmount = binding.inputTransactionAmount.getValue();
         if ((enteredAmount == null) || enteredAmount.equals(BigDecimal.ZERO)) {
             return;
         }
-        Commodity fromCommodity = mAccountsDbAdapter.getCommodity(mAccountUID);
-        String fromCurrencyCode = fromCommodity.getCurrencyCode();
         Money amount = new Money(enteredAmount, fromCommodity).abs();
 
         //if both accounts have same currency
-        Cursor cursor = (Cursor) binding.inputTransferAccountSpinner.getSelectedItem();
-        String targetCommodityUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID));
-        Commodity targetCommodity = commoditiesDbAdapter.getRecord(targetCommodityUID);
         if (fromCommodity.equals(targetCommodity)) {
             transferComplete(amount, amount);
             return;
@@ -262,7 +259,7 @@ public class TransactionFormFragment extends MenuFragment implements
 
         TransferFundsDialogFragment fragment
             = TransferFundsDialogFragment.getInstance(amount, targetCommodity, this);
-        fragment.show(getParentFragmentManager(), "transfer_funds_editor;" + fromCurrencyCode + ";" + targetCommodity + ";" + amount.toPlainString());
+        fragment.show(getParentFragmentManager(), "transfer_funds_editor;" + fromCommodity + ";" + targetCommodity + ";" + amount.toPlainString());
     }
 
     @Override
@@ -284,8 +281,8 @@ public class TransactionFormFragment extends MenuFragment implements
 
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
         mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID, mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID());
-        assert (mAccountUID != null);
-        mAccountType = mAccountsDbAdapter.getAccountType(mAccountUID);
+        assert !TextUtils.isEmpty(mAccountUID);
+        account = mAccountsDbAdapter.getSimpleRecord(mAccountUID);
 
         mEditMode = false;
 
@@ -401,7 +398,7 @@ public class TransactionFormFragment extends MenuFragment implements
     private void initializeViewsWithTransaction(@NonNull final FragmentTransactionFormBinding binding, @NonNull Transaction transaction) {
         setTextToEnd(binding.inputTransactionName, transaction.getDescription());
 
-        binding.inputTransactionType.setAccountType(mAccountType);
+        binding.inputTransactionType.setAccountType(account.getAccountType());
         binding.inputTransactionType.setChecked(transaction.getBalance(mAccountUID).isNegative());
 
         //when autocompleting, only change the amount if the user has not manually changed it already
@@ -435,7 +432,7 @@ public class TransactionFormFragment extends MenuFragment implements
             for (Split split : transaction.getSplits()) {
                 //two splits, one belongs to this account and the other to another account
                 if (mUseDoubleEntry && !split.getAccountUID().equals(mAccountUID)) {
-                    setSelectedTransferAccount(binding, mAccountsDbAdapter.getID(split.getAccountUID()));
+                    setSelectedTransferAccount(binding, split.getAccountUID());
                 }
             }
         } else {
@@ -485,17 +482,18 @@ public class TransactionFormFragment extends MenuFragment implements
         binding.inputTime.setText(TIME_FORMATTER.print(now));
         mTime = mDate = Calendar.getInstance();
 
-        binding.inputTransactionType.setAccountType(mAccountType);
+        binding.inputTransactionType.setAccountType(account.getAccountType());
         TransactionType txType = GnuCashApplication.getDefaultTransactionType(context);
         binding.inputTransactionType.setChecked(txType);
 
+        Account account = this.account;
         final Commodity commodity;
-        if (mAccountUID != null) {
-            commodity = mAccountsDbAdapter.getCommodity(mAccountUID);
+        if (account != null) {
+            commodity = account.getCommodity();
         } else {
-            commodity = Commodity.getInstance(GnuCashApplication.getDefaultCurrencyCode());
+            String code = GnuCashApplication.getDefaultCurrencyCode();
+            commodity = Commodity.getInstance(code);
         }
-
         binding.currencySymbol.setText(commodity.getSymbol());
         binding.inputTransactionAmount.setCommodity(commodity);
         binding.inputTransactionAmount.bindKeyboard(binding.calculatorKeyboard);
@@ -508,17 +506,15 @@ public class TransactionFormFragment extends MenuFragment implements
         });
 
         if (mUseDoubleEntry) {
-            String currentAccountUID = mAccountUID;
-            long defaultTransferAccountID;
+            String parentUID = account.getParentUID();
             String rootAccountUID = mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID();
             do {
-                defaultTransferAccountID = mAccountsDbAdapter.getDefaultTransferAccountID(mAccountsDbAdapter.getID(currentAccountUID));
-                if (defaultTransferAccountID > 0) {
-                    setSelectedTransferAccount(binding, defaultTransferAccountID);
+                if (!TextUtils.isEmpty(parentUID)) {
+                    setSelectedTransferAccount(binding, parentUID);
                     break; //we found a parent with default transfer setting
                 }
-                currentAccountUID = mAccountsDbAdapter.getParentAccountUID(currentAccountUID);
-            } while (currentAccountUID != null && !currentAccountUID.equals(rootAccountUID));
+                parentUID = mAccountsDbAdapter.getParentAccountUID(parentUID);
+            } while (!parentUID.equals(rootAccountUID));
         } else {
             binding.layoutDoubleEntry.setVisibility(View.GONE);
             binding.btnSplitEditor.setVisibility(View.GONE);
@@ -535,14 +531,12 @@ public class TransactionFormFragment extends MenuFragment implements
             + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0"
             + ")";
 
-        if (mCursor != null) {
-            mCursor.close();
-        }
-        mCursor = mAccountsDbAdapter.fetchAccountsOrderedByFavoriteAndFullName(conditions, new String[]{mAccountUID, AccountType.ROOT.name()});
-
-        Context context = binding.getRoot().getContext();
-        mAccountCursorAdapter = new QualifiedAccountNameCursorAdapter(context, mCursor);
-        binding.inputTransferAccountSpinner.setAdapter(mAccountCursorAdapter);
+        accountNameAdapter = QualifiedAccountNameAdapter.where(
+            binding.getRoot().getContext(),
+            conditions,
+            new String[]{mAccountUID, AccountType.ROOT.name()}
+        );
+        binding.inputTransferAccountSpinner.setAdapter(accountNameAdapter);
     }
 
     /**
@@ -661,12 +655,11 @@ public class TransactionFormFragment extends MenuFragment implements
     /**
      * Updates the spinner to the selected transfer account
      *
-     * @param accountId Database ID of the transfer account
+     * @param accountUID UID of the transfer account
      */
-    private void setSelectedTransferAccount(FragmentTransactionFormBinding binding, long accountId) {
-        int position = mAccountCursorAdapter.getItemPosition(mAccountsDbAdapter.getUID(accountId));
-        if (position >= 0)
-            binding.inputTransferAccountSpinner.setSelection(position);
+    private void setSelectedTransferAccount(FragmentTransactionFormBinding binding, @Nullable String accountUID) {
+        int position = accountNameAdapter.getPosition(accountUID);
+        binding.inputTransferAccountSpinner.setSelection(position);
     }
 
     /**
@@ -921,9 +914,6 @@ public class TransactionFormFragment extends MenuFragment implements
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (mCursor != null) {
-            mCursor.close();
-        }
         mBinding = null;
     }
 

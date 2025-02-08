@@ -242,10 +242,8 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
 
     private void moveTransaction(@Nullable String transactionUID) {
         if (TextUtils.isEmpty(transactionUID)) return;
-        long transactionId = transactionsDbAdapter.getID(transactionUID);
-        if (transactionId < 0) return;
-        long[] ids = new long[]{transactionId};
-        BulkMoveDialogFragment fragment = BulkMoveDialogFragment.newInstance(ids, mAccountUID);
+        String[] uids = new String[]{transactionUID};
+        BulkMoveDialogFragment fragment = BulkMoveDialogFragment.newInstance(uids, mAccountUID);
         FragmentManager fm = getSupportFragmentManager();
         fm.setFragmentResultListener(BulkMoveDialogFragment.TAG, this, this);
         fragment.show(fm, BulkMoveDialogFragment.TAG);

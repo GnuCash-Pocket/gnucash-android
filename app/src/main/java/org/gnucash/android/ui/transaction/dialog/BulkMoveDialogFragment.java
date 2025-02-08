@@ -19,7 +19,6 @@ package org.gnucash.android.ui.transaction.dialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -27,7 +26,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.cursoradapter.widget.SimpleCursorAdapter;
 import androidx.fragment.app.DialogFragment;
 
 import org.gnucash.android.R;
@@ -35,11 +33,12 @@ import org.gnucash.android.databinding.DialogBulkMoveBinding;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
+import org.gnucash.android.model.Account;
 import org.gnucash.android.model.Commodity;
+import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity;
-import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
 
 /**
  * Dialog fragment for moving transactions from one account to another
@@ -53,13 +52,13 @@ public class BulkMoveDialogFragment extends DialogFragment {
     /**
      * Create new instance of the bulk move dialog
      *
-     * @param transactionIds   Array of transaction database record IDs
+     * @param transactionUIDs   Array of transaction database record IDs
      * @param originAccountUID Account from which to move the transactions
      * @return BulkMoveDialogFragment instance with arguments set
      */
-    public static BulkMoveDialogFragment newInstance(long[] transactionIds, String originAccountUID) {
+    public static BulkMoveDialogFragment newInstance(String[] transactionUIDs, String originAccountUID) {
         Bundle args = new Bundle();
-        args.putLongArray(UxArgument.SELECTED_TRANSACTION_IDS, transactionIds);
+        args.putStringArray(UxArgument.SELECTED_TRANSACTION_UIDS, transactionUIDs);
         args.putString(UxArgument.ORIGIN_ACCOUNT_UID, originAccountUID);
         BulkMoveDialogFragment fragment = new BulkMoveDialogFragment();
         fragment.setArguments(args);
@@ -75,23 +74,21 @@ public class BulkMoveDialogFragment extends DialogFragment {
         AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
 
         Bundle args = getArguments();
-        final long[] selectedTransactionIds = args.getLongArray(UxArgument.SELECTED_TRANSACTION_IDS);
-        final long[] transactionIds = (selectedTransactionIds != null) ? selectedTransactionIds : new long[0];
+        final String[] selectedTransactionUIDs = args.getStringArray(UxArgument.SELECTED_TRANSACTION_UIDS);
+        final String[] transactionUIDs = (selectedTransactionUIDs != null) ? selectedTransactionUIDs : new String[0];
         final String originAccountUID = args.getString(UxArgument.ORIGIN_ACCOUNT_UID);
         final Commodity originCommodity = accountsDbAdapter.getCommodity(originAccountUID);
 
-        String conditions = "(" + DatabaseSchema.AccountEntry.COLUMN_UID + " != ? AND "
+        String where = DatabaseSchema.AccountEntry.COLUMN_UID + " != ? AND "
             + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + " = ? AND "
             + DatabaseSchema.AccountEntry.COLUMN_HIDDEN + " = 0 AND "
-            + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0"
-            + ")";
+            + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0";
         String[] whereArgs = new String[]{originAccountUID, originCommodity.getUID()};
-        Cursor cursor = accountsDbAdapter.fetchAccountsOrderedByFullName(conditions, whereArgs);
 
-        SimpleCursorAdapter adapter = new QualifiedAccountNameCursorAdapter(context, cursor);
-        accountSpinner.setAdapter(adapter);
+        final QualifiedAccountNameAdapter accountNameAdapter = QualifiedAccountNameAdapter.where(context, where, whereArgs);
+        accountSpinner.setAdapter(accountNameAdapter);
 
-        String title = context.getString(R.string.title_move_transactions, transactionIds.length);
+        String title = context.getString(R.string.title_move_transactions, transactionUIDs.length);
 
         return new AlertDialog.Builder(context, getTheme())
             .setTitle(title)
@@ -105,20 +102,28 @@ public class BulkMoveDialogFragment extends DialogFragment {
             .setPositiveButton(R.string.btn_move, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    moveTransaction(context, transactionIds, originAccountUID, accountSpinner.getSelectedItemId());
+                    int position = accountSpinner.getSelectedItemPosition();
+                    if (position < 0) {
+                        return;
+                    }
+                    Account account = accountNameAdapter.getAccount(position);
+                    if (account == null) {
+                        return;
+                    }
+                    String targetAccountUID = account.getUID();
+                    moveTransaction(context, transactionUIDs, originAccountUID, targetAccountUID);
                 }
             })
             .create();
     }
 
-    private void moveTransaction(@NonNull Context context, @Nullable long[] transactionIds, String srcAccountUID, long dstAccountId) {
-        if (transactionIds == null) {
+    private void moveTransaction(@NonNull Context context, @Nullable String[] transactionUIDs, String srcAccountUID, String dstAccountUID) {
+        if ((transactionUIDs == null) || (transactionUIDs.length == 0)) {
             return;
         }
 
         TransactionsDbAdapter trxnAdapter = TransactionsDbAdapter.getInstance();
         AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
-        String dstAccountUID = accountsDbAdapter.getUID(dstAccountId);
         Commodity currencySrc = accountsDbAdapter.getCommodity(srcAccountUID);
         Commodity currencyDst = accountsDbAdapter.getCommodity(dstAccountUID);
         if (!currencySrc.equals(currencyDst)) {
@@ -126,8 +131,8 @@ public class BulkMoveDialogFragment extends DialogFragment {
             return;
         }
 
-        for (long trxnId : transactionIds) {
-            trxnAdapter.moveTransaction(trxnAdapter.getUID(trxnId), srcAccountUID, dstAccountUID);
+        for (String transactionUID : transactionUIDs) {
+            trxnAdapter.moveTransaction(transactionUID, srcAccountUID, dstAccountUID);
         }
 
         WidgetConfigurationActivity.updateAllWidgets(context);

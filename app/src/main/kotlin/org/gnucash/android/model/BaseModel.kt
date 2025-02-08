@@ -70,7 +70,7 @@ abstract class BaseModel {
     fun getUID(): String = uid
 
     open fun setUID(uid: String?) {
-        _uid = uid ?: generateUID()
+        _uid = uid
     }
 
     /**

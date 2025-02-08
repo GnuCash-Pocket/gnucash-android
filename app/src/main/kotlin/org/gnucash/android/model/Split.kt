@@ -180,6 +180,10 @@ class Split : BaseModel, Parcelable {
     val formattedValue: Money
         get() = getFormattedAmount(value, accountUID, type)
 
+    fun getFormattedValue(account: Account): Money {
+        return getFormattedAmount(value, account, type)
+    }
+
     /**
      * Returns the formatted amount (with or without negation sign) for the quantity
      *
@@ -188,6 +192,10 @@ class Split : BaseModel, Parcelable {
      */
     val formattedQuantity: Money
         get() = getFormattedAmount(quantity, accountUID, type)
+
+    fun getFormattedQuantity(account: Account): Money {
+        return getFormattedAmount(quantity, account, type)
+    }
 
     /**
      * Check if this split is reconciled
@@ -365,12 +373,31 @@ class Split : BaseModel, Parcelable {
          */
         private fun getFormattedAmount(
             amount: Money,
-            accountUID: String?,
+            accountGUID: String?,
             splitType: TransactionType
         ): Money {
-            val accountUID = accountUID ?: return Money.createZeroInstance(amount.commodity)
-            val isDebitAccount =
-                AccountsDbAdapter.getInstance().getAccountType(accountUID).hasDebitNormalBalance
+            val accountUID = accountGUID ?: return Money.createZeroInstance(amount.commodity)
+            val account = AccountsDbAdapter.getInstance().getSimpleRecord(accountUID) ?: return Money.createZeroInstance(amount.commodity)
+            return getFormattedAmount(amount, account, splitType)
+        }
+
+        /**
+         * Splits are saved as absolute values to the database, with no negative numbers.
+         * The type of movement the split causes to the balance of an account determines
+         * its sign, and that depends on the split type and the account type
+         *
+         * @param amount     Money amount to format
+         * @param account    the account
+         * @param splitType  Transaction type of the split
+         * @return -`amount` if the amount would reduce the balance of
+         * `account`, otherwise +`amount`
+         */
+        private fun getFormattedAmount(
+            amount: Money,
+            account: Account,
+            splitType: TransactionType
+        ): Money {
+            val isDebitAccount = account.accountType.hasDebitNormalBalance
             val absAmount = amount.abs()
             val isDebitSplit = splitType === TransactionType.DEBIT
             return if ((isDebitAccount && isDebitSplit) || (!isDebitAccount && !isDebitSplit)) {

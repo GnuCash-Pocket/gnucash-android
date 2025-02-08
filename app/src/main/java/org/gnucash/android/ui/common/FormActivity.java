@@ -19,6 +19,7 @@ package org.gnucash.android.ui.common;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.MenuItem;
 
 import androidx.annotation.ColorInt;
@@ -87,10 +88,10 @@ public class FormActivity extends PasscodeLockActivity {
         if (args == null) args = new Bundle();
 
         mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID);
-        if (mAccountUID == null) {
+        if (TextUtils.isEmpty(mAccountUID)) {
             mAccountUID = args.getString(UxArgument.PARENT_ACCOUNT_UID);
         }
-        if (mAccountUID != null) {
+        if (!TextUtils.isEmpty(mAccountUID)) {
             @ColorInt int colorCode = AccountsDbAdapter.getActiveAccountColorResource(this, mAccountUID);
             actionBar.setBackgroundDrawable(new ColorDrawable(colorCode));
             getWindow().setStatusBarColor(GnuCashApplication.darken(colorCode));

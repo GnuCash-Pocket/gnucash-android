@@ -48,12 +48,9 @@ import androidx.cursoradapter.widget.SimpleCursorAdapter;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentResultListener;
 import androidx.fragment.app.ListFragment;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.content.Loader;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseCursorLoader;
 import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.DatabaseSchema.BookEntry;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
@@ -74,11 +71,11 @@ import timber.log.Timber;
  * Fragment for managing the books in the database
  */
 public class BookManagerFragment extends ListFragment implements
-        LoaderManager.LoaderCallbacks<Cursor>, Refreshable, FragmentResultListener {
+        Refreshable, FragmentResultListener {
 
     private static final int REQUEST_OPEN_DOCUMENT = 0x20;
 
-    private SimpleCursorAdapter mCursorAdapter;
+    private BooksAdapter booksAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -90,11 +87,8 @@ public class BookManagerFragment extends ListFragment implements
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        mCursorAdapter = new BooksCursorAdapter(requireContext(), R.layout.cardview_book,
-                null, new String[]{BookEntry.COLUMN_DISPLAY_NAME, BookEntry.COLUMN_SOURCE_URI},
-                new int[]{R.id.primary_text, R.id.secondary_text});
-
-        setListAdapter(mCursorAdapter);
+        booksAdapter = new BooksAdapter(requireContext());
+        setListAdapter(booksAdapter);
     }
 
     @Override
@@ -145,32 +139,14 @@ public class BookManagerFragment extends ListFragment implements
     @Override
     public void refresh() {
         if (isDetached() || getFragmentManager() == null) return;
-        getLoaderManager().restartLoader(0, null, this);
+        BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
+        Cursor cursor = booksDbAdapter.fetchAllRecords();
+        booksAdapter.swapCursor(cursor);
     }
 
     @Override
     public void refresh(String uid) {
         refresh();
-    }
-
-    @NonNull
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Timber.d("Creating loader for books");
-        return new BooksCursorLoader(requireContext());
-    }
-
-    @Override
-    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
-        Timber.d("Finished loading books from database");
-        mCursorAdapter.changeCursor(data);
-        mCursorAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
-        Timber.d("Resetting books list loader");
-        mCursorAdapter.changeCursor(null);
     }
 
     @Override
@@ -192,12 +168,19 @@ public class BookManagerFragment extends ListFragment implements
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    private class BooksCursorAdapter extends SimpleCursorAdapter {
+    private class BooksAdapter extends SimpleCursorAdapter {
 
         private final String activeBookUID = GnuCashApplication.getActiveBookUID();
 
-        BooksCursorAdapter(Context context, int layout, Cursor c, String[] from, int[] to) {
-            super(context, layout, c, from, to, 0);
+        BooksAdapter(Context context) {
+            super(
+                context,
+                R.layout.cardview_book,
+                null,
+                new String[]{BookEntry.COLUMN_DISPLAY_NAME, BookEntry.COLUMN_SOURCE_URI},
+                new int[]{R.id.primary_text, R.id.secondary_text},
+                0
+            );
         }
 
         @Override
@@ -334,27 +317,6 @@ public class BookManagerFragment extends ListFragment implements
             String stats = accountStats + ", " + transactionStats;
             TextView statsText = (TextView) view.findViewById(R.id.secondary_text);
             statsText.setText(stats);
-        }
-    }
-
-    /**
-     * {@link DatabaseCursorLoader} for loading the book list from the database
-     *
-     * @author Ngewi Fet <ngewif@gmail.com>
-     */
-    private static class BooksCursorLoader extends DatabaseCursorLoader<BooksDbAdapter> {
-        BooksCursorLoader(Context context) {
-            super(context);
-        }
-
-        @Override
-        public Cursor loadInBackground() {
-            BooksDbAdapter dbAdapter = BooksDbAdapter.getInstance();
-            if (dbAdapter == null) return null;
-            databaseAdapter = dbAdapter;
-            Cursor cursor = dbAdapter.fetchAllRecords();
-            registerContentObserver(cursor);
-            return cursor;
         }
     }
 }

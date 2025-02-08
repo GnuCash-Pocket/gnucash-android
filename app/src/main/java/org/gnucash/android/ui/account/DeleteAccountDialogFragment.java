@@ -19,7 +19,6 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -27,7 +26,7 @@ import android.view.View;
 import android.widget.CompoundButton;
 
 import androidx.annotation.NonNull;
-import androidx.cursoradapter.widget.SimpleCursorAdapter;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentManager;
 
 import org.gnucash.android.R;
@@ -40,13 +39,12 @@ import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
+import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity;
 import org.gnucash.android.ui.settings.dialog.DoubleConfirmationDialog;
 import org.gnucash.android.util.BackupManager;
-import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -74,6 +72,8 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
     private final AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
     private final TransactionsDbAdapter transactionsDbAdapter = accountsDbAdapter.transactionsDbAdapter;
     private final SplitsDbAdapter splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter;
+    private QualifiedAccountNameAdapter accountNameAdapterTransactionsDestination;
+    private QualifiedAccountNameAdapter accountNameAdapterAccountsDestination;
 
     /**
      * Creates new instance of the delete confirmation dialog and provides parameters for it
@@ -150,11 +150,11 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
                     final DialogAccountDeleteBinding binding = DeleteAccountDialogFragment.this.binding;
                     final RadioGroupDeleteOrMoveBinding transactionOptions = binding.transactionsOptions;
                     final RadioGroupDeleteOrMoveBinding accountOptions = binding.accountsOptions;
-                    final Long moveTransactionsId = transactionOptions.radioMove.isChecked() ? transactionOptions.targetAccountsSpinner.getSelectedItemId() : null;
-                    final Long moveAccountsId = accountOptions.radioMove.isChecked() ? accountOptions.targetAccountsSpinner.getSelectedItemId() : null;
+                    final Integer moveTransactionsIndex = transactionOptions.radioMove.isChecked() ? transactionOptions.targetAccountsSpinner.getSelectedItemPosition() : null;
+                    final Integer moveAccountsIndex = accountOptions.radioMove.isChecked() ? accountOptions.targetAccountsSpinner.getSelectedItemPosition() : null;
 
                     BackupManager.backupActiveBookAsync(activity, result -> {
-                        deleteAccount(activity, fm, accountUID, moveTransactionsId, moveAccountsId);
+                        deleteAccount(activity, fm, accountUID, moveTransactionsIndex, moveAccountsIndex);
                         return null;
                     });
                 }
@@ -167,6 +167,7 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
         super.onActivityCreated(savedInstanceState);
         DialogAccountDeleteBinding binding = DeleteAccountDialogFragment.this.binding;
         if (binding == null) return;
+        final Context context = binding.getRoot().getContext();
         final RadioGroupDeleteOrMoveBinding transactionOptions = binding.transactionsOptions;
         final RadioGroupDeleteOrMoveBinding accountOptions = binding.accountsOptions;
 
@@ -177,31 +178,26 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
         Commodity commodity = accountsDbAdapter.getCommodity(mOriginAccountUID);
         AccountType accountType = accountsDbAdapter.getAccountType(mOriginAccountUID);
 
-        String transactionDeleteConditions = "(" + DatabaseSchema.AccountEntry.COLUMN_UID + " != ? AND "
+        String joinedUIDs = "('" + TextUtils.join("','", descendantAccountUIDs) + "')";
+        String transactionDeleteConditions = DatabaseSchema.AccountEntry.COLUMN_UID + " != ? AND "
             + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + " = ? AND "
             + DatabaseSchema.AccountEntry.COLUMN_TYPE + " = ? AND "
             + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0 AND "
-            + DatabaseSchema.AccountEntry.COLUMN_UID + " NOT IN ('" + TextUtils.join("','", descendantAccountUIDs) + "')"
-            + ")";
-        String[] transactionDeleteArgs = new String[]{mOriginAccountUID, commodity.getUID(), accountType.name()};
-        Cursor cursor = accountsDbAdapter.fetchAccountsOrderedByFullName(transactionDeleteConditions, transactionDeleteArgs);
+            + DatabaseSchema.AccountEntry.COLUMN_UID + " NOT IN " + joinedUIDs;
 
-        SimpleCursorAdapter adapter = new QualifiedAccountNameCursorAdapter(getActivity(), cursor);
-        transactionOptions.targetAccountsSpinner.setAdapter(adapter);
+        accountNameAdapterTransactionsDestination = QualifiedAccountNameAdapter.where(context, transactionDeleteConditions, new String[]{mOriginAccountUID, commodity.getUID(), accountType.name()});
+        transactionOptions.targetAccountsSpinner.setAdapter(accountNameAdapterTransactionsDestination);
 
         //target accounts for transactions and accounts have different conditions
-        String accountMoveConditions = "(" + DatabaseSchema.AccountEntry.COLUMN_UID + " != ? AND "
+        String accountMoveConditions = DatabaseSchema.AccountEntry.COLUMN_UID + " != ? AND "
             + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + " = ? AND "
             + DatabaseSchema.AccountEntry.COLUMN_TYPE + " = ? AND "
-            + DatabaseSchema.AccountEntry.COLUMN_UID + " NOT IN ('" + TextUtils.join("','", descendantAccountUIDs) + "')"
-            + ")";
-        String[] accountMoveArgs = new String[]{mOriginAccountUID, commodity.getUID(), accountType.name()};
-        cursor = accountsDbAdapter.fetchAccountsOrderedByFullName(accountMoveConditions, accountMoveArgs);
-        adapter = new QualifiedAccountNameCursorAdapter(getActivity(), cursor);
-        accountOptions.targetAccountsSpinner.setAdapter(adapter);
+            + DatabaseSchema.AccountEntry.COLUMN_UID + " NOT IN " + joinedUIDs;
+        accountNameAdapterAccountsDestination = QualifiedAccountNameAdapter.where(context, accountMoveConditions, new String[]{mOriginAccountUID, commodity.getUID(), accountType.name()});
+        accountOptions.targetAccountsSpinner.setAdapter(accountNameAdapterAccountsDestination);
 
         //this comes after the listeners because of some useful bindings done there
-        if (cursor.getCount() == 0) {
+        if (accountNameAdapterAccountsDestination.getCount() == 0) {
             accountOptions.radioMove.setEnabled(false);
             accountOptions.radioMove.setChecked(false);
             accountOptions.radioDelete.setChecked(true);
@@ -223,17 +219,17 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
         @NonNull Context context,
         @NonNull FragmentManager fm,
         @NonNull String accountUID,
-        @Nullable Long moveTransactionsAccountId,
-        @Nullable Long moveAccountsAccountId
+        @Nullable Integer moveTransactionsAccountIndex,
+        @Nullable Integer moveAccountsAccountIndex
     ) {
-        if ((mTransactionCount > 0) && (moveTransactionsAccountId != null)) {
-            String targetAccountUID = accountsDbAdapter.getUID(moveTransactionsAccountId);
+        if ((mTransactionCount > 0) && (moveTransactionsAccountIndex != null)) {
+            String targetAccountUID = accountNameAdapterTransactionsDestination.getUID(moveTransactionsAccountIndex);
             //move all the splits
             splitsDbAdapter.reassignAccount(accountUID, targetAccountUID);
         }
 
-        if ((mSubAccountCount > 0) && (moveAccountsAccountId != null)) {
-            String targetAccountUID = accountsDbAdapter.getUID(moveAccountsAccountId);
+        if ((mSubAccountCount > 0) && (moveAccountsAccountIndex != null)) {
+            String targetAccountUID = accountNameAdapterAccountsDestination.getUID(moveAccountsAccountIndex);
             accountsDbAdapter.reassignDescendantAccounts(accountUID, targetAccountUID);
         }
 
