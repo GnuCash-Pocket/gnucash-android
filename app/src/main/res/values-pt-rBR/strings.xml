@@ -328,9 +328,9 @@ Neste processo não serão recolhidas informações do utilizador!</string>
     <string name="menu_group_by_year">Ano</string>
     <string name="title_balance_sheet_report">Balanço</string>
     <string name="label_balance_sheet_total">Total:</string>
-    <string name="title_google_plus_community">Comunidade Google+</string>
+    <string name="title_discuss">GitHub Discussions</string>
     <string name="title_translate_gnucash">Traduzir GnuCash</string>
-    <string name="summary_google_plus">Compartilhe ideias, discuta alterações ou reporte problemas</string>
+    <string name="summary_discuss">Compartilhe ideias, discuta alterações ou reporte problemas</string>
     <string name="summary_translate_gnucash">Traduza ou corrija as traduções no Crowdln</string>
     <string name="toast_no_compatible_apps_to_receive_export">Não existem apps compatíveis para receber as transações exportadas!</string>
     <string name="menu_move_transaction">Mover&#8230;</string>

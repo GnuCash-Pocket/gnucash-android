@@ -333,9 +333,9 @@ No user-identifiable information will be collected as part of this process!
     <string name="menu_group_by_year">Jaar</string>
     <string name="title_balance_sheet_report">Balans</string>
     <string name="label_balance_sheet_total">Totaal:</string>
-    <string name="title_google_plus_community">Google+-community</string>
+    <string name="title_discuss">GitHub Discussions</string>
     <string name="title_translate_gnucash">GnuCash Vertalen</string>
-    <string name="summary_google_plus">Ideeën uitwisselen, bespreken van wijzigingen of problemen melden</string>
+    <string name="summary_discuss">Ideeën uitwisselen, bespreken van wijzigingen of problemen melden</string>
     <string name="summary_translate_gnucash">Vertalen of nalezen op CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">No compatible apps to receive the exported transactions!</string>
     <string name="menu_move_transaction">Move&#8230;</string>

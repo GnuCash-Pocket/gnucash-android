@@ -325,9 +325,9 @@
     <string name="menu_group_by_year">年</string>
     <string name="title_balance_sheet_report">貸借対照表</string>
     <string name="label_balance_sheet_total">合計:</string>
-    <string name="title_google_plus_community">Google+ コミュニティ</string>
+    <string name="title_discuss">GitHub Discussions</string>
     <string name="title_translate_gnucash">GnuCash を翻訳</string>
-    <string name="summary_google_plus">アイデアを共有、変更を議論、または問題を報告</string>
+    <string name="summary_discuss">アイデアを共有、変更を議論、または問題を報告</string>
     <string name="summary_translate_gnucash">CrowdIn で翻訳または検証します</string>
     <string name="toast_no_compatible_apps_to_receive_export">エクスポートされた取引を受け取る、互換性のあるアプリがありません!</string>
     <string name="menu_move_transaction">移動&#8230;</string>

@@ -57,13 +57,10 @@ public class AboutPreferenceFragment extends PreferenceFragmentCompat {
     public void onResume() {
         super.onResume();
         Preference pref = findPreference(getString(R.string.key_about_gnucash));
-        if (BuildConfig.FLAVOR.equals("development")) {
-            pref.setSummary(pref.getSummary() + " - Built: " + BuildConfig.BUILD_TIME);
-        }
         pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
-            public boolean onPreferenceClick(Preference preference) {
-                AccountsActivity.showWhatsNewDialog(getActivity());
+            public boolean onPreferenceClick(@NonNull Preference preference) {
+                AccountsActivity.showWhatsNewDialog(preference.getContext());
                 return true;
             }
         });

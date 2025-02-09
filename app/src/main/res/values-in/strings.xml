@@ -323,9 +323,9 @@
     <string name="menu_group_by_year">Tahun</string>
     <string name="title_balance_sheet_report">Neraca keuangan</string>
     <string name="label_balance_sheet_total">Jumlah:</string>
-    <string name="title_google_plus_community">Komunitas Google+</string>
+    <string name="title_discuss">GitHub Discussions</string>
     <string name="title_translate_gnucash">Menerjemahkan GnuCash</string>
-    <string name="summary_google_plus">Berbagi ide-ide, mendiskusikan perubahan atau melaporkan masalah</string>
+    <string name="summary_discuss">Berbagi ide-ide, mendiskusikan perubahan atau melaporkan masalah</string>
     <string name="summary_translate_gnucash">Menerjemahkan atau bukti dibaca pada CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">Tidak ada aplikasi yang kompatibel untuk menerima transaksi diekspor!</string>
     <string name="menu_move_transaction">Bergerak&#8230;</string>

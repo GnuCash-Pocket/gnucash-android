@@ -330,9 +330,9 @@ No user-identifiable information will be collected as part of this process!</str
     <string name="menu_group_by_year">Jahr</string>
     <string name="title_balance_sheet_report">Bilanz</string>
     <string name="label_balance_sheet_total">Summe:</string>
-    <string name="title_google_plus_community">Google+ community</string>
+    <string name="title_discuss">GitHub Discussions</string>
     <string name="title_translate_gnucash">GnuCash übersetzen</string>
-    <string name="summary_google_plus">Teile deine Ideen und Verbesserungsvorschläge mit oder berichte über Probleme mit GnuCash</string>
+    <string name="summary_discuss">Teile deine Ideen und Verbesserungsvorschläge mit oder berichte über Probleme</string>
     <string name="summary_translate_gnucash">Übersetze oder korrigiere Übersetzungen auf CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">Es gibt keine kompatible App, welche die exportierten Buchungen empfangen kann!</string>
     <string name="menu_move_transaction">Bewegen&#8230;</string>
