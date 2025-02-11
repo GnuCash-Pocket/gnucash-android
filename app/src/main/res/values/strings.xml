@@ -13,8 +13,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2" tools:locale="en">
     <string name="title_create_account">Create Account</string>
     <string name="title_edit_account">Edit Account</string>
     <string name="title_edit_budget">Edit Budget</string>
@@ -22,7 +21,6 @@
     <string name="description_view_account_icon">View account details</string>
     <string name="label_no_accounts">No accounts to display</string>
     <string name="label_account_name">Account name</string>
-    <string name="btn_cancel">@android:string/cancel</string>
     <string name="btn_save">Save</string>
     <string name="btn_test">Test</string>
     <string name="label_passcode">Enter Passcode</string>
@@ -57,10 +55,10 @@
     <string name="hint_delete_after_export">All exported transactions will be deleted when exporting is completed</string>
     <string name="title_settings">Settings</string>
     <string-array name="export_destinations">
-        <item>Save As&#8230;</item>
+        <item>Save As…</item>
         <item>Dropbox</item>
         <item>ownCloud</item>
-        <item>Send to&#8230;</item>
+        <item>Send to…</item>
     </string-array>
     <string name="btn_move">Move</string>
     <string name="title_move_transactions">Move %1$d transaction(s)</string>
@@ -168,15 +166,15 @@
     <string name="file_format_ofx">Open Financial eXchange</string>
     <string name="file_format_xml">GnuCash XML</string>
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
-    <string name="color_picker_default_title">Select a Color</string>
+    <string name="color_picker_default_title">Select a Colour</string>
     <!-- Content description for a color square. -->
-    <string name="color_swatch_description" translatable="false">Color <xliff:g example="14" id="color_index">%1$d</xliff:g></string>
+    <string name="color_swatch_description">Colour <xliff:g example="14" id="color_index">%1$d</xliff:g></string>
     <!-- Content description for a selected color square. -->
-    <string name="color_swatch_description_selected" translatable="false">Color <xliff:g example="14" id="color_index">%1$d</xliff:g> selected</string>
-    <string name="label_account_color_and_type">Account Color &amp; Type</string>
+    <string name="color_swatch_description_selected">Colour <xliff:g example="14" id="color_index">%1$d</xliff:g> selected</string>
+    <string name="label_account_color_and_type">Account Colour &amp; Type</string>
     <string name="label_delete_sub_accounts">Delete sub-accounts</string>
     <string name="title_recent_accounts">Recent</string>
-    <string name="title_favorite_accounts">Favorites</string>
+    <string name="title_favorite_accounts">Favourites</string>
     <string name="title_all_accounts">All</string>
     <string name="summary_create_default_accounts">Creates default GnuCash commonly-used account structure</string>
     <string name="title_create_default_accounts">Create default accounts</string>
@@ -208,7 +206,7 @@
     <string name="export_warning_qif">Generates separate QIF files per currency</string>
     <string name="label_imbalance">Imbalance:</string>
     <string name="btn_add_split">Add split</string>
-    <string name="menu_title_favorite">Favorite</string>
+    <string name="menu_title_favorite">Favourite</string>
     <string name="drawer_open">Navigation drawer opened</string>
     <string name="drawer_close">Navigation drawer closed</string>
     <string name="title_reports">Reports</string>
@@ -216,8 +214,8 @@
     <string name="title_line_chart">Line Chart</string>
     <string name="title_bar_chart">Bar Chart</string>
     <string name="title_report_prefs">Report Preferences</string>
-    <string name="title_use_account_color">Account color in reports</string>
-    <string name="summary_use_account_color">Use account color in the bar/pie chart</string>
+    <string name="title_use_account_color">Account colour in reports</string>
+    <string name="summary_use_account_color">Use account colour in the bar/pie chart</string>
     <string name="menu_order_by_size">Order by size</string>
     <string name="menu_toggle_legend">Show legend</string>
     <string name="menu_toggle_labels">Show labels</string>
@@ -251,7 +249,7 @@
     <string name="export_warning_xml">Exports all accounts and transactions</string>
     <string name="toast_install_file_manager">Install a file manager to select files</string>
     <string name="title_select_backup_to_restore">Select backup to restore</string>
-    <string name="nav_menu_favorites">Favorites</string>
+    <string name="nav_menu_favorites">Favourites</string>
     <string name="nav_menu_open">Open…</string>
     <string name="nav_menu_reports">Reports</string>
     <string name="nav_menu_export">Export…</string>
@@ -278,7 +276,7 @@
     <string name="toast_legend_too_long">The legend is too long</string>
     <string name="hint_account_description">Account description</string>
     <string name="label_no_recent_accounts">No recent accounts</string>
-    <string name="label_no_favorite_accounts">No favorite accounts</string>
+    <string name="label_no_favorite_accounts">No favourite accounts</string>
     <string name="nav_menu_scheduled_actions">Scheduled Actions</string>
     <string name="label_scheduled_action">"%1$s, last executed on %2$s"</string>
     <string name="label_scheduled_action_ended">"Ended"</string>
@@ -350,11 +348,10 @@
         <item>Custom range…</item>
     </string-array>
     <string name="report_time_range_picker_title">"Pick time range"</string>
-
     <!-- Passcode lock -->
     <string name="digit_one">1</string>
     <!-- In the English locale, digit 1 has no text on it. This is simply empty space. If your locale has text on digit 1, then translate-->
-    <string name="digit_one_text">&#8203;</string>
+    <string name="digit_one_text" />
     <string name="digit_two">2</string>
     <string name="digit_two_text">ABC</string>
     <string name="digit_three">3</string>
@@ -373,7 +370,6 @@
     <string name="digit_nine_text">WXYZ</string>
     <string name="digit_zero">0</string>
     <string name="digit_zero_text">+</string>
-
     <string name="title_manage_books">Manage Books</string>
     <string name="menu_manage_books">Manage Books…</string>
     <string name="select_chart_to_view_details">Select any part of the chart to view details</string>
@@ -386,22 +382,18 @@
     <string name="toast_transaction_has_no_splits_and_cannot_open">The selected transaction has no splits and cannot be opened</string>
     <string name="label_split_count">%1$d splits</string>
     <string name="label_inside_account_with_name">in %1$s</string>
-
     <plurals name="book_account_stats">
         <item quantity="one">%d account</item>
         <item quantity="other">%d accounts</item>
     </plurals>
-
     <plurals name="book_transaction_stats">
         <item quantity="one">%d transaction</item>
         <item quantity="other">%d transactions</item>
     </plurals>
-
     <string-array name="report_account_types">
         <item>EXPENSE</item>
         <item>INCOME</item>
     </string-array>
-
     <string name="toast_connected_to_google_drive">Connected to Google Drive</string>
     <string name="toast_unable_to_connect_to_google_drive">Unable to connect to Google Drive</string>
     <string name="toast_enter_amount_to_split">Please enter an amount to split</string>
@@ -461,7 +453,7 @@
         <item>Name</item>
         <item>Code</item>
         <item>Description</item>
-        <item>Color</item>
+        <item>Colour</item>
         <item>Notes</item>
         <item>Commoditym</item>
         <item>Commodityn</item>
