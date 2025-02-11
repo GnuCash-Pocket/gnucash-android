@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="btn_cancel" translatable="false">@android:string/cancel</string>
+    <string name="alert_dialog_cancel" translatable="false">@android:string/cancel</string>
     <string name="key_default_currency" translatable="false">default_currency</string>
     <string name="key_first_run" translatable="false">key_first_run</string>
     <string name="key_license" translatable="false">app_license</string>

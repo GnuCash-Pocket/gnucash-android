@@ -21,7 +21,6 @@
     <string name="description_view_account_icon">查看帐户详细信息</string>
     <string name="label_no_accounts">没有可以显示的科目</string>
     <string name="label_account_name">科目名称</string>
-    <string name="btn_cancel">取消</string>
     <string name="btn_save">保存</string>
     <string name="btn_test">测试</string>
     <string name="label_passcode">输入密码</string>
@@ -39,7 +38,6 @@
     <string name="title_transactions">交易</string>
     <string name="menu_delete">删除</string>
     <string name="alert_dialog_ok_delete">删除</string>
-    <string name="alert_dialog_cancel">取消</string>
     <string name="title_delete_account">删除科目</string>
     <string name="toast_account_deleted">科目已删除</string>
     <string name="title_confirm_delete">确认删除</string>

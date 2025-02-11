@@ -21,7 +21,6 @@
     <string name="description_view_account_icon">View account details</string>
     <string name="label_no_accounts">No hi ha comptes per mostrar</string>
     <string name="label_account_name">Nom del compte</string>
-    <string name="btn_cancel">Cancel·la</string>
     <string name="btn_save">Desa</string>
     <string name="btn_test">Prova</string>
     <string name="label_passcode">Introdueix la contrasenya</string>
@@ -39,7 +38,6 @@
     <string name="title_transactions">Assentaments</string>
     <string name="menu_delete">Suprimeix</string>
     <string name="alert_dialog_ok_delete">Suprimeix</string>
-    <string name="alert_dialog_cancel">Cancel·la</string>
     <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">S\'ha eliminat el compte</string>
     <string name="title_confirm_delete">Confirma la supressió</string>

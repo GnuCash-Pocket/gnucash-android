@@ -21,7 +21,6 @@
     <string name="description_view_account_icon">عرض تفاصيل الحساب</string>
     <string name="label_no_accounts">لا توجد حسابات للعرض</string>
     <string name="label_account_name">اسم الحساب</string>
-    <string name="btn_cancel">إلغاء</string>
     <string name="btn_save">حفظ</string>
     <string name="btn_test">اختبار</string>
     <string name="label_passcode">أدخل رمز المرور</string>
@@ -39,7 +38,6 @@
     <string name="title_transactions">المعاملات</string>
     <string name="menu_delete">حذف</string>
     <string name="alert_dialog_ok_delete">حذف</string>
-    <string name="alert_dialog_cancel">إلغاء</string>
     <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">تم حذف الحساب</string>
     <string name="title_confirm_delete">تأكيد الحذف</string>
