@@ -21,7 +21,6 @@
     <string name="description_view_account_icon">Докладно про рахунок</string>
     <string name="label_no_accounts">Немає рахунків</string>
     <string name="label_account_name">Назва рахунку</string>
-    <string name="btn_cancel">Скасувати</string>
     <string name="btn_save">Зберегти</string>
     <string name="btn_test">Тест</string>
     <string name="label_passcode">Введіть PIN</string>
@@ -39,7 +38,6 @@
     <string name="title_transactions">Транзакції</string>
     <string name="menu_delete">Видалити</string>
     <string name="alert_dialog_ok_delete">Видалити</string>
-    <string name="alert_dialog_cancel">Скасувати</string>
     <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">Рахунок видалено</string>
     <string name="title_confirm_delete">Підтвердіть видалення</string>

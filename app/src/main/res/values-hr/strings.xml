@@ -20,7 +20,6 @@
     <string name="description_view_account_icon">View account details</string>
     <string name="label_no_accounts">No accounts to display</string>
     <string name="label_account_name">Account name</string>
-    <string name="btn_cancel">Cancel</string>
     <string name="btn_save">Save</string>
     <string name="btn_test">Test</string>
     <string name="label_passcode">Enter Passcode</string>
@@ -38,7 +37,6 @@
     <string name="title_transactions">Transactions</string>
     <string name="menu_delete">Delete</string>
     <string name="alert_dialog_ok_delete">Delete</string>
-    <string name="alert_dialog_cancel">Cancel</string>
     <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">Account deleted</string>
     <string name="title_confirm_delete">Confirm delete</string>

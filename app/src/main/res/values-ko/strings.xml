@@ -21,7 +21,6 @@
     <string name="description_view_account_icon">계정 정보 보기</string>
     <string name="label_no_accounts">계정 없음</string>
     <string name="label_account_name">계정 이름</string>
-    <string name="btn_cancel">취소</string>
     <string name="btn_save">저장</string>
     <string name="btn_test">테스트</string>
     <string name="label_passcode">암호 입력</string>
@@ -39,7 +38,6 @@
     <string name="title_transactions">거래</string>
     <string name="menu_delete">삭제</string>
     <string name="alert_dialog_ok_delete">삭제</string>
-    <string name="alert_dialog_cancel">취소</string>
     <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">계정이 삭제되었습니다.</string>
     <string name="title_confirm_delete">삭제 확인</string>

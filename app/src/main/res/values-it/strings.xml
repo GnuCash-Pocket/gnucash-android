@@ -21,7 +21,6 @@
     <string name="description_view_account_icon">Visualizza i dettagli dell\'account</string>
     <string name="label_no_accounts">Nessun conto da visualizzare</string>
     <string name="label_account_name">Nome conto</string>
-    <string name="btn_cancel">Annulla</string>
     <string name="btn_save">Salva</string>
     <string name="btn_test">Prova</string>
     <string name="label_passcode">Inserisci codice di accesso</string>
@@ -39,7 +38,6 @@
     <string name="title_transactions">Transazioni</string>
     <string name="menu_delete">Elimina</string>
     <string name="alert_dialog_ok_delete">Elimina</string>
-    <string name="alert_dialog_cancel">Annulla</string>
     <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">Conto eliminato</string>
     <string name="title_confirm_delete">Conferma eliminazione</string>

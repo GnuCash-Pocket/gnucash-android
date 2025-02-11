@@ -21,7 +21,6 @@
     <string name="description_view_account_icon">Ver detalhes da conta</string>
     <string name="label_no_accounts">Sem contas para mostrar</string>
     <string name="label_account_name">Nome da conta</string>
-    <string name="btn_cancel">Cancelar</string>
     <string name="btn_save">Gravar</string>
     <string name="btn_test">Testar</string>
     <string name="label_passcode">Introduza a palavra passe</string>
@@ -39,7 +38,6 @@
     <string name="title_transactions">Transações</string>
     <string name="menu_delete">APAGAR</string>
     <string name="alert_dialog_ok_delete">Apagar</string>
-    <string name="alert_dialog_cancel">Cancelar</string>
     <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">Conta apagada</string>
     <string name="title_confirm_delete">Confirma apagar</string>
