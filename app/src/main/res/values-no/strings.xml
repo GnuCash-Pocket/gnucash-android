@@ -56,10 +56,10 @@
     <string name="hint_delete_after_export">Alle eksporterte transaksjoner slettes når eksport er fullført</string>
     <string name="title_settings">Innstillinger</string>
     <string-array name="export_destinations">
-        <item>Lagre som&#8230;</item>
+        <item>Lagre som…</item>
         <item>Dropbox</item>
         <item>ownCloud</item>
-        <item>Send til&#8230;</item>
+        <item>Send til…</item>
     </string-array>
     <string name="btn_move">Flytt</string>
     <string name="title_move_transactions">Flytt %1$d transaksjon(er)</string>
@@ -89,8 +89,8 @@
     <string name="title_enable_passcode">Aktiver passord</string>
     <string name="title_change_passcode">Endre passord</string>
     <string name="title_about_gnucash">Om GnuCash</string>
-    <string name="title_export_email">GnuCash Android %1$s eksport</string>
-    <string name="description_export_email">GnuCash Android eksport fra </string>
+    <string name="title_export_email">GnuCash Pocket %1$s eksport</string>
+    <string name="description_export_email">GnuCash Pocket eksport fra</string>
     <string name="header_transaction_settings">Transaksjoner</string>
     <string name="title_transaction_preferences">Transaksjonsinnstillinger</string>
     <string name="title_account_preferences">Kontoinnstillinger</string>
@@ -111,16 +111,16 @@
     <string name="label_parent_account">Overordnet konto</string>
     <string name="title_xml_ofx_header">Bruk XML OFX topptekst</string>
     <string name="summary_xml_ofx_header">Aktiver dette alternativet når du eksporterer til tredjeparts programvare, borsett fra GnuCash for PC</string>
-    <string name="toast_transanction_amount_required">Angi et beløp for å lagre transaksjonen</string>
+    <string name="toast_transaction_amount_required">Angi et beløp for å lagre transaksjonen</string>
     <string name="toast_error_importing_accounts">Det oppstod en feil under import av GnuCash kontoene</string>
     <string name="toast_success_importing_accounts">GnuCash kontoer importert</string>
     <string name="summary_import_accounts">Importere kontostrukturen eksportert fra GnuCash desktop</string>
     <string name="title_import_accounts">Importere GnuCash XML</string>
-    <string name="summary_delete_all_accounts">Slett alle kontoer i databasen. Alle transaksjoner vil også bli slettet.    </string>
+    <string name="summary_delete_all_accounts">Slett alle kontoer i databasen. Alle transaksjoner vil også bli slettet.</string>
     <string name="title_delete_all_accounts">Slette alle kontoer</string>
     <string name="header_account_settings">Kontoer</string>
     <string name="toast_all_accounts_deleted">Alle kontoer ble slettet</string>
-    <string name="confirm_delete_all_accounts">Er du sikker på at du vil slette alle kontoer og transaksjoner? \n\nDenne operasjonen kan ikke angres!    </string>
+    <string name="confirm_delete_all_accounts">Er du sikker på at du vil slette alle kontoer og transaksjoner? \n\nDenne operasjonen kan ikke angres!</string>
     <string name="summary_delete_all_transactions">Alle transaksjoner i alle kontoer vil bli slettet!</string>
     <string name="title_delete_all_transactions">Slett alle transaksjoner</string>
     <string name="toast_all_transactions_deleted">Alle transaksjoner slettet!</string>
@@ -165,7 +165,9 @@
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
     <string name="color_picker_default_title">Velg en farge</string>
     <!-- Content description for a color square. -->
+    <string name="color_swatch_description">Color <xliff:g example="14" id="color_index">%1$d</xliff:g></string>
     <!-- Content description for a selected color square. -->
+    <string name="color_swatch_description_selected">Color <xliff:g example="14" id="color_index">%1$d</xliff:g> selected</string>
     <string name="label_account_color_and_type">Konto farge &amp; Type</string>
     <string name="label_delete_sub_accounts">Slett underkontoer</string>
     <string name="title_recent_accounts">Siste</string>
@@ -194,7 +196,7 @@
     <string name="label_sell">Selg</string>
     <string name="account_name_opening_balances">Åpningssaldoer</string>
     <string name="account_name_equity">Egenkapital</string>
-    <string name="summary_save_opening_balances">Aktiver lagring av den gjeldende saldoen (før sletting av transaksjoner) som ny startsaldo etter sletting av transaksjoner    </string>
+    <string name="summary_save_opening_balances">Aktiver lagring av den gjeldende saldoen (før sletting av transaksjoner) som ny startsaldo etter sletting av transaksjoner</string>
     <string name="title_save_opening_balances">Lagre konto startsaldoer</string>
     <string name="export_warning_ofx">OFX støtter ikke dobbeltoppføringstransaksjoner</string>
     <string name="export_warning_qif">Genererer separate QIF filer per valuta</string>
@@ -227,10 +229,10 @@
     <string name="label_delete_transactions">Slett transaksjoner</string>
     <string name="toast_disable_double_entry_to_save_transaction">Opprette og angi en konto for overføring eller deaktivere dobbel bokføring for å lagre transaksjonen</string>
     <string name="label_tap_to_create_schedule">Trykk for å opprette plan</string>
-    <string name="title_restore_backup">Gjenopprette sikkerhetskopi&#8230;</string>
+    <string name="title_restore_backup">Gjenopprette sikkerhetskopi…</string>
     <string name="header_backup_and_export_settings">Backup &amp; eksport</string>
     <string name="title_dropbox_sync_preference">Aktiver DropBox</string>
-    <string name="title_owncloud_sync_preference">Aktiver ownCloud </string>
+    <string name="title_owncloud_sync_preference">Aktiver ownCloud</string>
     <string name="title_backup_preference_category">Sikkerhetskopiering</string>
     <string name="summary_dropbox_sync">Aktiver eksportering til DropBox</string>
     <string name="summary_owncloud_sync">Aktiver eksport til ownCloud</string>
@@ -244,16 +246,16 @@
     <string name="toast_install_file_manager">Installer en filbehandler for å velge filer</string>
     <string name="title_select_backup_to_restore">Velg sikkerhetskopien som skal gjenopprettes</string>
     <string name="nav_menu_favorites">Favoritter</string>
-    <string name="nav_menu_open">Åpne&#8230;</string>
+    <string name="nav_menu_open">Åpne…</string>
     <string name="nav_menu_reports">Rapporter</string>
-    <string name="nav_menu_export">Eksport&#8230;</string>
+    <string name="nav_menu_export">Eksport…</string>
     <string name="menu_settings" msgid="3524924670246877187">"Innstillinger"</string>
     <string name="username">Brukernavn</string>
     <string name="password">Passord</string>
     <string name="owncloud_pref">ownCloud</string>
     <string name="owncloud_server_invalid">Finner ikke OC-server</string>
     <string name="owncloud_user_invalid">OC brukernavn/passord ugyldig</string>
-    <string name="owncloud_dir_invalid">Ugyldige tegn: \\ &lt; &gt;: \ \"| * ? </string>
+    <string name="owncloud_dir_invalid">Ugyldige tegn: \\ &lt; &gt;: \ \"| * ?</string>
     <string name="owncloud_server_ok">OC serveren OK</string>
     <string name="owncloud_user_ok">OC brukernavn/passord OK</string>
     <string name="owncloud_dir_ok">Mappenavn OK</string>
@@ -282,7 +284,7 @@
     <string name="wizard_option_create_default_accounts">Opprette standardkontoer</string>
     <string name="wizard_option_import_my_accounts">Import kontoene mine</string>
     <string name="wizard_option_let_me_handle_it">La meg håndtere det</string>
-    <string name="wizard_option_currency_other">Andre&#8230;</string>
+    <string name="wizard_option_currency_other">Andre…</string>
     <string name="wizard_option_auto_send_crash_reports">Send feilrapporter automatisk</string>
     <string name="wizard_option_disable_crash_reports">Deaktivere programstopprapporter</string>
     <string name="wizard_btn_back">Tilbake</string>
@@ -323,7 +325,7 @@
     <string name="summary_discuss">Dele ideer, diskutere endringer eller rapportere problemer</string>
     <string name="summary_translate_gnucash">Oversette eller korrekturles på CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">Ingen kompatible apper til å motta de eksporterte transaksjonene!</string>
-    <string name="menu_move_transaction">Flytt&#8230;</string>
+    <string name="menu_move_transaction">Flytt…</string>
     <string name="menu_duplicate_transaction">Dupliser</string>
     <string name="title_cash_flow_report">Kontantstrøm</string>
     <string name="title_budgets">Budsjetter</string>
@@ -338,13 +340,13 @@
         <item>Siste 6 måneder</item>
         <item>Siste 12 måneder</item>
         <item>Tidsrom</item>
-        <item>Tilpasset tidsrom&#8230;</item>
+        <item>Tilpasset tidsrom…</item>
     </string-array>
     <string name="report_time_range_picker_title">"Pick time range"</string>
     <!-- Passcode lock -->
     <string name="digit_one">1</string>
     <!-- In the English locale, digit 1 has no text on it. This is simply empty space. If your locale has text on digit 1, then translate-->
-    <string name="digit_one_text">​</string>
+    <string name="digit_one_text" />
     <string name="digit_two">2</string>
     <string name="digit_two_text">ABC</string>
     <string name="digit_three">3</string>
@@ -411,11 +413,59 @@
     <string name="title_no_backups_found">Finner ingen sikkerhetskopier</string>
     <string name="msg_no_backups_to_restore_from">Finner ingen sikkerhetskopier å gjenopprette fra</string>
     <string name="label_select_destination_after_export">Select the destination after export is complete</string>
-    <string name="label_dropbox_export_destination">Export to \'/Apps/GnuCash Android/\' folder on Dropbox</string>
-    <string name="title_section_preferences">Innstillinger</string>
     <string name="category_name_appearance" msgid="8287486771764166805">"Utseende"</string>
     <string name="settings_screen_theme">Tema</string>
     <string name="default_theme" msgid="4815428567082263639">"Standard"</string>
     <string name="light_ui_title">"Lys modus"</string>
     <string name="dark_ui_title" msgid="3373976268671557416">"Mørk modus"</string>
+    <string name="label_dropbox_export_destination">Export to \'/Apps/GnuCash Pocket/\' folder on Dropbox</string>
+    <string name="title_section_preferences">Innstillinger</string>
+    <string name="yes_sure">Yes, I\'m sure</string>
+    <string name="summary_export_accounts_csv">Export all accounts (without transactions) to CSV</string>
+    <string name="title_export_accounts_csv">Export as CSV</string>
+    <string name="label_csv_separator">Separator</string>
+    <string name="export_notice_csv">Exports transactions as CSV</string>
+    <string name="no_books">No books in the database</string>
+    <!-- Copied from "csv-transactions-export.cpp" -->
+    <string-array name="csv_transaction_headers">
+        <item>Date</item>
+        <item>Transaction ID</item>
+        <item>Number</item>
+        <item>Description</item>
+        <item>Notes</item>
+        <item>Commodity/Currency</item>
+        <item>Void Reason</item>
+        <item>Action</item>
+        <item>Memo</item>
+        <item>Full Account Name</item>
+        <item>Account Name</item>
+        <item>Amount With Sym</item>
+        <item>Amount Num.</item>
+        <item>Value With Sym</item>
+        <item>Value Num.</item>
+        <item>Reconcile</item>
+        <item>Reconcile Date</item>
+        <item>Rate/Price</item>
+    </string-array>
+    <string-array name="csv_account_headers">
+        <item>Type</item>
+        <item>Full Name</item>
+        <item>Name</item>
+        <item>Code</item>
+        <item>Description</item>
+        <item>Color</item>
+        <item>Notes</item>
+        <item>Commoditym</item>
+        <item>Commodityn</item>
+        <item>Hidden</item>
+        <item>Tax</item>
+        <item>Placeholder</item>
+    </string-array>
+    <string name="title_edit_budget">Edit Budget</string>
+    <string name="title_delete_transaction_backup">When delete transaction?</string>
+    <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>
+    <string name="action_transaction">transaction to</string>
+    <string name="action_backup">backup to</string>
+    <string name="title_import_book_backup">When importing a book?</string>
+    <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
 </resources>

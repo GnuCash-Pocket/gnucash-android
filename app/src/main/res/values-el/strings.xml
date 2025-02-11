@@ -56,10 +56,10 @@
     <string name="hint_delete_after_export">Όλες οι συναλλαγές που εξάγονται, θα διαγραφούν με την ολοκλήρωση της εξαγωγής</string>
     <string name="title_settings">Ρυθμίσεις</string>
     <string-array name="export_destinations">
-        <item>Save As&#8230;</item>
+        <item>Save As…</item>
         <item>Dropbox</item>
         <item>ownCloud</item>
-        <item>Send to&#8230;</item>
+        <item>Send to…</item>
     </string-array>
     <string name="btn_move">Μετακίνηση</string>
     <string name="title_move_transactions">Μετακίνησε %1$d συναλλαγή(ες)</string>
@@ -79,8 +79,7 @@
     <string name="label_display_account">Εμφάνιση λογαριασμού</string>
     <string name="label_hide_account_balance">Hide account balance in widget</string>
     <string name="btn_create_accounts">Δημιουργία Λογαριασμών</string>
-    <string name="error_no_accounts">Δεν υπάρχουν λογαριασμοί στο
-	GnuCash.\nΔημιουργήστε ενα λογαριασμό πριν προσθέσετε ένα γραφικό στοιχείο</string>
+    <string name="error_no_accounts">Δεν υπάρχουν λογαριασμοί στο GnuCash.\nΔημιουργήστε ενα λογαριασμό πριν προσθέσετε ένα γραφικό στοιχείο</string>
     <string name="title_license">Άδεια χρήσης</string>
     <string name="summary_licence_details">Άδεια χρήσης Apache v2.0. Επιλέξτε για λεπτομέρειες</string>
     <string name="title_general_prefs">Γενικά</string>
@@ -90,8 +89,8 @@
     <string name="title_enable_passcode">Enable passcode</string>
     <string name="title_change_passcode">Αλλαγή Κωδικού</string>
     <string name="title_about_gnucash">Πληροφορίες για GnuCash</string>
-    <string name="title_export_email">Εξαγωγή GnuCash Android %1$s</string>
-    <string name="description_export_email">Εξαγωγή GnuCash Android προς </string>
+    <string name="title_export_email">Εξαγωγή GnuCash Pocket %1$s</string>
+    <string name="description_export_email">Εξαγωγή GnuCash Pocket προς</string>
     <string name="header_transaction_settings">Κινήσεις</string>
     <string name="title_transaction_preferences">Προτιμήσεις Κινήσεων</string>
     <string name="title_account_preferences">Προτιμήσεις Λογαριασμών</string>
@@ -107,36 +106,24 @@
     <string name="summary_use_double_entry">Όλες οι κινήσεις θα μεταφερθούν από τον ένα λογαριασμό στον άλλο.</string>
     <string name="title_use_double_entry">Ενεργοποίηση Διπλών Λογιστικών Εγγραφών</string>
     <string name="account_balance">Υπόλοιπο</string>
-    <string name="toast_no_account_name_entered">Εισαγωγή ονόματος λογαριασμού
-	για τη δημιουργία του</string>
+    <string name="toast_no_account_name_entered">Εισαγωγή ονόματος λογαριασμού για τη δημιουργία του</string>
     <string name="label_account_currency">Νόμισμα</string>
     <string name="label_parent_account">Γονικός λογαριασμός</string>
     <string name="title_xml_ofx_header">Χρήση κεφαλίδας XML OFX</string>
     <string name="summary_xml_ofx_header">Ενεργοποίηση αυτής της επιλογής για εξαγωγή σε εφαρμογές τρίτων, εκτός του GnuCash για επιτραπέζιο υπολογιστή.</string>
-    <string name="toast_transanction_amount_required">Εισαγωγή ποσού για
-	αποθήκευση κίνησης</string>
-    <string name="toast_error_importing_accounts">Προέκυψε σφάλμα κατά την
-	εισαγωγή λογαριασμών GnuCash</string>
-    <string name="toast_success_importing_accounts">Λογαριασμοί GnuCash
-	εισήχθησαν με επιτυχία</string>
-    <string name="summary_import_accounts">Το εισαγόμενο λογιστικό σχέδιο
-	εξήχθει από το GnuCash για επιτραπέζιους υπολογιστές</string>
+    <string name="toast_transaction_amount_required">Εισαγωγή ποσού για αποθήκευση κίνησης</string>
+    <string name="toast_error_importing_accounts">Προέκυψε σφάλμα κατά την εισαγωγή λογαριασμών GnuCash</string>
+    <string name="toast_success_importing_accounts">Λογαριασμοί GnuCash εισήχθησαν με επιτυχία</string>
+    <string name="summary_import_accounts">Το εισαγόμενο λογιστικό σχέδιο εξήχθει από το GnuCash για επιτραπέζιους υπολογιστές</string>
     <string name="title_import_accounts">Εισαγωγή λογαριασμών GnuCash</string>
-    <string name="summary_delete_all_accounts">Διαγραφή όλων των λογαριασμών
-	στη βάση δεδομένων. Όλες οι κινήσεις θα διαγραφούν επίσης.
-    </string>
+    <string name="summary_delete_all_accounts">Διαγραφή όλων των λογαριασμών στη βάση δεδομένων. Όλες οι κινήσεις θα διαγραφούν επίσης.</string>
     <string name="title_delete_all_accounts">Διαγραφή όλων των λογαριασμών</string>
     <string name="header_account_settings">Λογαριασμοί</string>
-    <string name="toast_all_accounts_deleted">Όλοι οι λογαριασμοί διαγράφηκαν
-	με επιτυχία</string>
-    <string name="confirm_delete_all_accounts">Σίγουρα θέλετε να διαγράψετε
-	όλους του λογαριασμούς και τις κινήσεις; \nΑυτή η ενέργεια δε μπορεί να αναιρεθεί!
-    </string>
-    <string name="summary_delete_all_transactions">Όλες οι κινήσεις σε όλους
-	τους λογαριασμούς θα διαγραφούν!</string>
+    <string name="toast_all_accounts_deleted">Όλοι οι λογαριασμοί διαγράφηκαν με επιτυχία</string>
+    <string name="confirm_delete_all_accounts">Σίγουρα θέλετε να διαγράψετε όλους του λογαριασμούς και τις κινήσεις; \nΑυτή η ενέργεια δε μπορεί να αναιρεθεί!</string>
+    <string name="summary_delete_all_transactions">Όλες οι κινήσεις σε όλους τους λογαριασμούς θα διαγραφούν!</string>
     <string name="title_delete_all_transactions">Διαγραφή όλων των κινήσεων</string>
-    <string name="toast_all_transactions_deleted">Όλες οι κινήσεις διαγράφηκαν
-	με επιτυχία!</string>
+    <string name="toast_all_transactions_deleted">Όλες οι κινήσεις διαγράφηκαν με επιτυχία!</string>
     <string name="title_progress_importing_accounts">Εισαγωγή λογαριασμών</string>
     <string name="section_header_transactions">Κινήσεις</string>
     <string name="section_header_subaccounts">Υπο-Λογαριασμοί</string>
@@ -178,7 +165,9 @@
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
     <string name="color_picker_default_title">Επιλογή χρώματος</string>
     <!-- Content description for a color square. -->
+    <string name="color_swatch_description">Color <xliff:g example="14" id="color_index">%1$d</xliff:g></string>
     <!-- Content description for a selected color square. -->
+    <string name="color_swatch_description_selected">Color <xliff:g example="14" id="color_index">%1$d</xliff:g> selected</string>
     <string name="label_account_color_and_type">Χρώμα Λογαριασμού &amp; Τύπος</string>
     <string name="label_delete_sub_accounts">Διαγραφή υπο-λογαριασμών</string>
     <string name="title_recent_accounts">Πρόσφατοι</string>
@@ -207,8 +196,7 @@
     <string name="label_sell">Πώληση</string>
     <string name="account_name_opening_balances">Αρχικά υπόλοιπα</string>
     <string name="account_name_equity">Καθαρή Θέση</string>
-    <string name="summary_save_opening_balances">Enable to save the current account balance (before deleting transactions) as new opening balance after deleting transactions
-    </string>
+    <string name="summary_save_opening_balances">Enable to save the current account balance (before deleting transactions) as new opening balance after deleting transactions</string>
     <string name="title_save_opening_balances">Save account opening balances</string>
     <string name="export_warning_ofx">OFX does not support double-entry transactions</string>
     <string name="export_warning_qif">Generates separate QIF files per currency</string>
@@ -236,15 +224,15 @@
     <string name="toast_chart_percentage_mode_total">The percentage of selected value calculated from the total amount</string>
     <string name="toast_chart_percentage_mode_current_bar">The percentage of selected value calculated from the current stacked bar amount</string>
     <string name="label_save_template">Save as template</string>
-    <string name="label_delete_account_transactions_description">This account contains transactions. \nWhat would you like to do with these transactions</string>
-    <string name="label_delete_account_subaccounts_description">This account contains sub-accounts. \nWhat would you like to do with these sub-accounts</string>
+    <string name="label_delete_account_transactions_description">This account contains transactions.\nWhat would you like to do with these transactions?</string>
+    <string name="label_delete_account_subaccounts_description">This account contains sub-accounts.\nWhat would you like to do with these sub-accounts?</string>
     <string name="label_delete_transactions">Delete transactions</string>
     <string name="toast_disable_double_entry_to_save_transaction">Create and specify a transfer account OR disable double-entry in settings to save the transaction</string>
     <string name="label_tap_to_create_schedule">Tap to create schedule</string>
-    <string name="title_restore_backup">Restore Backup&#8230;</string>
+    <string name="title_restore_backup">Restore Backup…</string>
     <string name="header_backup_and_export_settings">Backup &amp; export</string>
     <string name="title_dropbox_sync_preference">Enable DropBox</string>
-    <string name="title_owncloud_sync_preference">Enable ownCloud </string>
+    <string name="title_owncloud_sync_preference">Enable ownCloud</string>
     <string name="title_backup_preference_category">Backup</string>
     <string name="summary_dropbox_sync">Enable exporting to DropBox</string>
     <string name="summary_owncloud_sync">Enable exporting to ownCloud</string>
@@ -258,27 +246,25 @@
     <string name="toast_install_file_manager">Install a file manager to select files</string>
     <string name="title_select_backup_to_restore">Select backup to restore</string>
     <string name="nav_menu_favorites">Favorites</string>
-    <string name="nav_menu_open">Open...</string>
+    <string name="nav_menu_open">Open…</string>
     <string name="nav_menu_reports">Reports</string>
-    <string name="nav_menu_export">Export...</string>
+    <string name="nav_menu_export">Export…</string>
     <string name="menu_settings" msgid="3524924670246877187">"Ρυθμίσεις"</string>
     <string name="username">User Name</string>
     <string name="password">Password</string>
     <string name="owncloud_pref">owncloud</string>
     <string name="owncloud_server_invalid">OC server not found</string>
     <string name="owncloud_user_invalid">OC username/password invalid</string>
-    <string name="owncloud_dir_invalid">Invalid chars: \\ &lt; &gt; : \&quot; | * ? </string>
+    <string name="owncloud_dir_invalid">Invalid chars: \\ &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">OC server OK</string>
     <string name="owncloud_user_ok">OC username/password OK</string>
     <string name="owncloud_dir_ok">Dir name OK</string>
     <string name="title_enable_crashlytics">Enable Crash Logging</string>
-    <string name="msg_enable_crashlytics">Enable to send information about malfunctions to the developers for improvement (recommended).
-No user-identifiable information will be collected as part of this process!
-    </string>
+    <string name="msg_enable_crashlytics">Automatically send information about app malfunction to the developers.</string>
     <string name="label_export_format"> Format</string>
     <string name="label_old_passcode">Enter your old passcode</string>
     <string name="label_new_passcode">Enter your new passcode</string>
-    <string name="title_scheduled_exports">Scheduled Exports</string>
+    <string name="title_scheduled_exports">Exports</string>
     <string name="label_no_scheduled_exports_to_display">No scheduled exports to display</string>
     <string name="title_create_export_schedule">Create export schedule</string>
     <string name="toast_exported_to">Exported to: %1$s</string>
@@ -298,7 +284,7 @@ No user-identifiable information will be collected as part of this process!
     <string name="wizard_option_create_default_accounts">Create default accounts</string>
     <string name="wizard_option_import_my_accounts">Import my accounts</string>
     <string name="wizard_option_let_me_handle_it">Let me handle it</string>
-    <string name="wizard_option_currency_other">Other...</string>
+    <string name="wizard_option_currency_other">Other…</string>
     <string name="wizard_option_auto_send_crash_reports">Automatically send crash reports</string>
     <string name="wizard_option_disable_crash_reports">Disable crash reports</string>
     <string name="wizard_btn_back">Back</string>
@@ -339,7 +325,7 @@ No user-identifiable information will be collected as part of this process!
     <string name="summary_discuss">Share ideas, discuss changes or report problems</string>
     <string name="summary_translate_gnucash">Translate or proof-read on CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">No compatible apps to receive the exported transactions!</string>
-    <string name="menu_move_transaction">Move&#8230;</string>
+    <string name="menu_move_transaction">Move…</string>
     <string name="menu_duplicate_transaction">Duplicate</string>
     <string name="title_cash_flow_report">Cash Flow</string>
     <string name="title_budgets">Budgets</string>
@@ -354,13 +340,13 @@ No user-identifiable information will be collected as part of this process!
         <item>Last 6 months</item>
         <item>Last 12 months</item>
         <item>All time</item>
-        <item>Custom range&#8230;</item>
+        <item>Custom range…</item>
     </string-array>
     <string name="report_time_range_picker_title">"Pick time range"</string>
     <!-- Passcode lock -->
     <string name="digit_one">1</string>
     <!-- In the English locale, digit 1 has no text on it. This is simply empty space. If your locale has text on digit 1, then translate-->
-    <string name="digit_one_text">​</string>
+    <string name="digit_one_text" />
     <string name="digit_two">2</string>
     <string name="digit_two_text">ABC</string>
     <string name="digit_three">3</string>
@@ -380,7 +366,7 @@ No user-identifiable information will be collected as part of this process!
     <string name="digit_zero">0</string>
     <string name="digit_zero_text">+</string>
     <string name="title_manage_books">Manage Books</string>
-    <string name="menu_manage_books">Manage Books&#8230;</string>
+    <string name="menu_manage_books">Manage Books…</string>
     <string name="select_chart_to_view_details">Select any part of the chart to view details</string>
     <string name="title_confirm_delete_book">Confirm delete Book</string>
     <string name="msg_all_book_data_will_be_deleted">All accounts and transactions in this book will be deleted!</string>
@@ -427,11 +413,59 @@ No user-identifiable information will be collected as part of this process!
     <string name="title_no_backups_found">No backups found</string>
     <string name="msg_no_backups_to_restore_from">There are no existing backup files to restore from</string>
     <string name="label_select_destination_after_export">Select the destination after export is complete</string>
-    <string name="label_dropbox_export_destination">Export to \'/Apps/GnuCash Android/\' folder on Dropbox</string>
+    <string name="label_dropbox_export_destination">Export to \'/Apps/GnuCash Pocket/\' folder on Dropbox</string>
     <string name="title_section_preferences">Preferences</string>
     <string name="category_name_appearance" msgid="8287486771764166805">"Εμφάνιση"</string>
     <string name="settings_screen_theme">Θέμα</string>
     <string name="default_theme" msgid="4815428567082263639">"Προεπιλογή"</string>
     <string name="light_ui_title">"Φωτεινή Λειτουργία"</string>
     <string name="dark_ui_title" msgid="3373976268671557416">"Σκοτεινή Λειτουργία"</string>
+    <string name="yes_sure">Yes, I\'m sure</string>
+    <string name="summary_export_accounts_csv">Export all accounts (without transactions) to CSV</string>
+    <string name="title_export_accounts_csv">Export as CSV</string>
+    <string name="label_csv_separator">Separator</string>
+    <string name="export_notice_csv">Exports transactions as CSV</string>
+    <string name="no_books">No books in the database</string>
+    <!-- Copied from "csv-transactions-export.cpp" -->
+    <string-array name="csv_transaction_headers">
+        <item>Date</item>
+        <item>Transaction ID</item>
+        <item>Number</item>
+        <item>Description</item>
+        <item>Notes</item>
+        <item>Commodity/Currency</item>
+        <item>Void Reason</item>
+        <item>Action</item>
+        <item>Memo</item>
+        <item>Full Account Name</item>
+        <item>Account Name</item>
+        <item>Amount With Sym</item>
+        <item>Amount Num.</item>
+        <item>Value With Sym</item>
+        <item>Value Num.</item>
+        <item>Reconcile</item>
+        <item>Reconcile Date</item>
+        <item>Rate/Price</item>
+    </string-array>
+    <string-array name="csv_account_headers">
+        <item>Type</item>
+        <item>Full Name</item>
+        <item>Name</item>
+        <item>Code</item>
+        <item>Description</item>
+        <item>Color</item>
+        <item>Notes</item>
+        <item>Commoditym</item>
+        <item>Commodityn</item>
+        <item>Hidden</item>
+        <item>Tax</item>
+        <item>Placeholder</item>
+    </string-array>
+    <string name="title_edit_budget">Edit Budget</string>
+    <string name="title_delete_transaction_backup">When delete transaction?</string>
+    <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>
+    <string name="action_transaction">transaction to</string>
+    <string name="action_backup">backup to</string>
+    <string name="title_import_book_backup">When importing a book?</string>
+    <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
 </resources>

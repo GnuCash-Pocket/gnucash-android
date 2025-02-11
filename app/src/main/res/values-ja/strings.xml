@@ -56,10 +56,10 @@
     <string name="hint_delete_after_export">エクスポート完了時に、エクスポートしたすべての取引が削除されます</string>
     <string name="title_settings">設定</string>
     <string-array name="export_destinations">
-        <item>名前を付けて保存&#8230;</item>
+        <item>名前を付けて保存…</item>
         <item>Dropbox</item>
         <item>ownCloud</item>
-        <item>&#8230;に送信</item>
+        <item>…に送信</item>
     </string-array>
     <string name="btn_move">移動</string>
     <string name="title_move_transactions">%1$d件の取引を移動</string>
@@ -89,8 +89,8 @@
     <string name="title_enable_passcode">パスワードを有効にする</string>
     <string name="title_change_passcode">パスコードを変更する</string>
     <string name="title_about_gnucash">GnuCashについて</string>
-    <string name="title_export_email">GnuCash Android %1$s エクスポート</string>
-    <string name="description_export_email">GnuCash Android のエクスポート </string>
+    <string name="title_export_email">GnuCash Pocket %1$s エクスポート</string>
+    <string name="description_export_email">GnuCash Pocket のエクスポート</string>
     <string name="header_transaction_settings">取引</string>
     <string name="title_transaction_preferences">取引の設定</string>
     <string name="title_account_preferences">勘定科目の設定</string>
@@ -111,16 +111,16 @@
     <string name="label_parent_account">主となる勘定科目</string>
     <string name="title_xml_ofx_header">OFXファイルのヘッダーにXMLを使う</string>
     <string name="summary_xml_ofx_header">GnuCash for desktopではなく他のサードパーティ製ソフトウェアにエクスポートする場合は、このオプションを有効にします</string>
-    <string name="toast_transanction_amount_required">取引を保存するには金額の入力が必要です</string>
+    <string name="toast_transaction_amount_required">取引を保存するには金額の入力が必要です</string>
     <string name="toast_error_importing_accounts">GnuCashの勘定科目をインポート中にエラーが発生しました。</string>
     <string name="toast_success_importing_accounts">GnuCashの費目のインポートが成功しました。</string>
     <string name="summary_import_accounts">デスクトップ版のGnuCashからエクスポートされた勘定科目の構成をインポートする</string>
     <string name="title_import_accounts">GnuCachからXML形式でインポートする</string>
-    <string name="summary_delete_all_accounts">データベースからすべての勘定科目を削除します。取引の記録も全て削除されます。    </string>
+    <string name="summary_delete_all_accounts">データベースからすべての勘定科目を削除します。取引の記録も全て削除されます。</string>
     <string name="title_delete_all_accounts">全ての費目を削除する</string>
     <string name="header_account_settings">費目</string>
     <string name="toast_all_accounts_deleted">すべての費目が削除されました</string>
-    <string name="confirm_delete_all_accounts">本当にすべての費目と取引を削除しますか？\n\nこの処理は取り消せません！    </string>
+    <string name="confirm_delete_all_accounts">本当にすべての費目と取引を削除しますか？\n\nこの処理は取り消せません！</string>
     <string name="summary_delete_all_transactions">すべての取引と費目が削除されます！</string>
     <string name="title_delete_all_transactions">すべての取引を削除する</string>
     <string name="toast_all_transactions_deleted">すべての取引が完全に削除されました</string>
@@ -164,7 +164,9 @@
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
     <string name="color_picker_default_title">色を選択</string>
     <!-- Content description for a color square. -->
+    <string name="color_swatch_description">Color <xliff:g example="14" id="color_index">%1$d</xliff:g></string>
     <!-- Content description for a selected color square. -->
+    <string name="color_swatch_description_selected">Color <xliff:g example="14" id="color_index">%1$d</xliff:g> selected</string>
     <string name="label_account_color_and_type">勘定科目の色と種類</string>
     <string name="label_delete_sub_accounts">補助科目を削除する</string>
     <string name="title_recent_accounts">履歴</string>
@@ -193,7 +195,7 @@
     <string name="label_sell">販売</string>
     <string name="account_name_opening_balances">期首残高</string>
     <string name="account_name_equity">資本</string>
-    <string name="summary_save_opening_balances">取引を削除した後、新しい期首残高として (取引を削除する前の) 現在の帳簿残高を保存するようにします    </string>
+    <string name="summary_save_opening_balances">取引を削除した後、新しい期首残高として (取引を削除する前の) 現在の帳簿残高を保存するようにします</string>
     <string name="title_save_opening_balances">勘定の期首残高を保存</string>
     <string name="export_warning_ofx">OFX は複式簿記の取引をサポートしていません</string>
     <string name="export_warning_qif">通貨ごとに個別の QIF ファイルを生成します</string>
@@ -226,7 +228,7 @@
     <string name="label_delete_transactions">取引を削除</string>
     <string name="toast_disable_double_entry_to_save_transaction">振込先を作成および指定するか、設定で複式簿記を無効にして、取引を保存します</string>
     <string name="label_tap_to_create_schedule">タップすると予定を作成します</string>
-    <string name="title_restore_backup">バックアップの復元&#8230;</string>
+    <string name="title_restore_backup">バックアップの復元…</string>
     <string name="header_backup_and_export_settings">バックアップとエクスポート</string>
     <string name="title_dropbox_sync_preference">DropBox を有効にする</string>
     <string name="title_owncloud_sync_preference">ownCloud を有効にする</string>
@@ -243,16 +245,16 @@
     <string name="toast_install_file_manager">ファイルを選択するために、ファイル マネージャーをインストールします</string>
     <string name="title_select_backup_to_restore">復元するバックアップを選択</string>
     <string name="nav_menu_favorites">お気に入り</string>
-    <string name="nav_menu_open">開く&#8230;</string>
+    <string name="nav_menu_open">開く…</string>
     <string name="nav_menu_reports">レポート</string>
-    <string name="nav_menu_export">エクスポート&#8230;</string>
+    <string name="nav_menu_export">エクスポート…</string>
     <string name="menu_settings" msgid="3524924670246877187">"設定"</string>
     <string name="username">ユーザー名</string>
     <string name="password">パスワード</string>
     <string name="owncloud_pref">owncloud</string>
     <string name="owncloud_server_invalid">OC サーバーが見つかりません</string>
     <string name="owncloud_user_invalid">OC のユーザー名/パスワードが正しくありません</string>
-    <string name="owncloud_dir_invalid">無効な文字: \\ &lt; &gt; : \&quot; | * ? </string>
+    <string name="owncloud_dir_invalid">無効な文字: \\ &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">OC サーバー OK</string>
     <string name="owncloud_user_ok">OC ユーザー名/パスワード OK</string>
     <string name="owncloud_dir_ok">ディレクトリ名 OK</string>
@@ -281,7 +283,7 @@
     <string name="wizard_option_create_default_accounts">デフォルトの勘定科目を作成</string>
     <string name="wizard_option_import_my_accounts">マイ勘定科目をインポート</string>
     <string name="wizard_option_let_me_handle_it">自分でやります</string>
-    <string name="wizard_option_currency_other">その他&#8230;</string>
+    <string name="wizard_option_currency_other">その他…</string>
     <string name="wizard_option_auto_send_crash_reports">クラッシュ レポートを自動的に送信する</string>
     <string name="wizard_option_disable_crash_reports">クラッシュ レポートを無効にする</string>
     <string name="wizard_btn_back">戻る</string>
@@ -322,7 +324,7 @@
     <string name="summary_discuss">アイデアを共有、変更を議論、または問題を報告</string>
     <string name="summary_translate_gnucash">CrowdIn で翻訳または検証します</string>
     <string name="toast_no_compatible_apps_to_receive_export">エクスポートされた取引を受け取る、互換性のあるアプリがありません!</string>
-    <string name="menu_move_transaction">移動&#8230;</string>
+    <string name="menu_move_transaction">移動…</string>
     <string name="menu_duplicate_transaction">複製</string>
     <string name="title_cash_flow_report">キャッシュフロー</string>
     <string name="title_budgets">予算</string>
@@ -337,13 +339,13 @@
         <item>過去 6 ヶ月</item>
         <item>過去 12 ヶ月</item>
         <item>全期間</item>
-        <item>カスタムの範囲&#8230;</item>
+        <item>カスタムの範囲…</item>
     </string-array>
     <string name="report_time_range_picker_title">"Pick time range"</string>
     <!-- Passcode lock -->
     <string name="digit_one">1</string>
     <!-- In the English locale, digit 1 has no text on it. This is simply empty space. If your locale has text on digit 1, then translate-->
-    <string name="digit_one_text">​1</string>
+    <string name="digit_one_text" />
     <string name="digit_two">2</string>
     <string name="digit_two_text">ABC</string>
     <string name="digit_three">3</string>
@@ -363,7 +365,7 @@
     <string name="digit_zero">0</string>
     <string name="digit_zero_text">+</string>
     <string name="title_manage_books">帳簿の管理</string>
-    <string name="menu_manage_books">帳簿の管理&#8230;</string>
+    <string name="menu_manage_books">帳簿の管理…</string>
     <string name="select_chart_to_view_details">グラフの詳細を表示する部分を選択してください</string>
     <string name="title_confirm_delete_book">帳簿の削除の確認</string>
     <string name="msg_all_book_data_will_be_deleted">この帳簿のすべての勘定科目と取引が削除されます!</string>
@@ -408,11 +410,59 @@
     <string name="title_no_backups_found">バックアップが見つかりません</string>
     <string name="msg_no_backups_to_restore_from">復元する既存のバックアップファイルはありません</string>
     <string name="label_select_destination_after_export">エクスポートが完了した後、移動先を選択します</string>
-    <string name="label_dropbox_export_destination">Dropbox の \'/Apps/GnuCash Android/\' フォルダーにエクスポート</string>
+    <string name="label_dropbox_export_destination">Dropbox の \'/Apps/GnuCash Pocket/\' フォルダーにエクスポート</string>
     <string name="title_section_preferences">環境設定</string>
     <string name="category_name_appearance" msgid="8287486771764166805">"デザイン"</string>
     <string name="settings_screen_theme">"テーマ"</string>
     <string name="default_theme" msgid="4815428567082263639">"デフォルト"</string>
     <string name="light_ui_title">"ブライトモード"</string>
     <string name="dark_ui_title" msgid="3373976268671557416">"ダークモード"</string>
+    <string name="yes_sure">Yes, I\'m sure</string>
+    <string name="summary_export_accounts_csv">Export all accounts (without transactions) to CSV</string>
+    <string name="title_export_accounts_csv">Export as CSV</string>
+    <string name="label_csv_separator">Separator</string>
+    <string name="export_notice_csv">Exports transactions as CSV</string>
+    <string name="no_books">No books in the database</string>
+    <!-- Copied from "csv-transactions-export.cpp" -->
+    <string-array name="csv_transaction_headers">
+        <item>Date</item>
+        <item>Transaction ID</item>
+        <item>Number</item>
+        <item>Description</item>
+        <item>Notes</item>
+        <item>Commodity/Currency</item>
+        <item>Void Reason</item>
+        <item>Action</item>
+        <item>Memo</item>
+        <item>Full Account Name</item>
+        <item>Account Name</item>
+        <item>Amount With Sym</item>
+        <item>Amount Num.</item>
+        <item>Value With Sym</item>
+        <item>Value Num.</item>
+        <item>Reconcile</item>
+        <item>Reconcile Date</item>
+        <item>Rate/Price</item>
+    </string-array>
+    <string-array name="csv_account_headers">
+        <item>Type</item>
+        <item>Full Name</item>
+        <item>Name</item>
+        <item>Code</item>
+        <item>Description</item>
+        <item>Color</item>
+        <item>Notes</item>
+        <item>Commoditym</item>
+        <item>Commodityn</item>
+        <item>Hidden</item>
+        <item>Tax</item>
+        <item>Placeholder</item>
+    </string-array>
+    <string name="title_edit_budget">Edit Budget</string>
+    <string name="title_delete_transaction_backup">When delete transaction?</string>
+    <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>
+    <string name="action_transaction">transaction to</string>
+    <string name="action_backup">backup to</string>
+    <string name="title_import_book_backup">When importing a book?</string>
+    <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
 </resources>

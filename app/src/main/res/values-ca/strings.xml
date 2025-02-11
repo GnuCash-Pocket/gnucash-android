@@ -56,10 +56,10 @@
     <string name="hint_delete_after_export">S\'eliminaran totes les transaccions exportades en finalitzar l\'exportació</string>
     <string name="title_settings">Preferències</string>
     <string-array name="export_destinations">
-        <item>Save As&#8230;</item>
+        <item>Save As…</item>
         <item>Dropbox</item>
         <item>ownCloud</item>
-        <item>Send to&#8230;</item>
+        <item>Send to…</item>
     </string-array>
     <string name="btn_move">Mou</string>
     <string name="title_move_transactions">Mou %1$d transaccions</string>
@@ -89,8 +89,8 @@
     <string name="title_enable_passcode">Enable passcode</string>
     <string name="title_change_passcode">Canvia la contrasenya</string>
     <string name="title_about_gnucash">Quant a GnuCash</string>
-    <string name="title_export_email">GnuCash Android %1$s export</string>
-    <string name="description_export_email">Exportació de GnuCash Android de </string>
+    <string name="title_export_email">GnuCash %1$s export</string>
+    <string name="description_export_email">Exportació de GnuCash Pocket de</string>
     <string name="header_transaction_settings">Assentaments</string>
     <string name="title_transaction_preferences">Preferències d\'assentaments</string>
     <string name="title_account_preferences">Preferències de comptes</string>
@@ -111,18 +111,16 @@
     <string name="label_parent_account">Compte pare</string>
     <string name="title_xml_ofx_header">Utilitzar capçalera XML d\'OFX</string>
     <string name="summary_xml_ofx_header">Habiliteu aquesta opció quan exporteu a aplicacions de tercers diferents de GnuCash per escriptori</string>
-    <string name="toast_transanction_amount_required">Introduïu una quantitat per desar l\'assentament</string>
+    <string name="toast_transaction_amount_required">Introduïu una quantitat per desar l\'assentament</string>
     <string name="toast_error_importing_accounts">S\'ha produït un error en importar els comptes de GnuCash</string>
     <string name="toast_success_importing_accounts">S\'han importat els comptes de GnuCash correctament</string>
     <string name="summary_import_accounts">Importa l\'estructura de comptes exportada des de GnuCash per escriptori</string>
     <string name="title_import_accounts">Importa XML de GnuCash</string>
-    <string name="summary_delete_all_accounts">Delete all accounts in the database. All transactions will be deleted as
-        well.
-    </string>
+    <string name="summary_delete_all_accounts">Delete all accounts in the database. All transactions will be deleted as well.</string>
     <string name="title_delete_all_accounts">Suprimeix tots els comptes</string>
     <string name="header_account_settings">Comptes</string>
     <string name="toast_all_accounts_deleted">S\'han suprimit tots els comptes</string>
-    <string name="confirm_delete_all_accounts">Esteu segur que voleu suprimir tots els comptes i transaccions?\n\nAquesta operació no es pot desfer!    </string>
+    <string name="confirm_delete_all_accounts">Esteu segur que voleu suprimir tots els comptes i transaccions?\n\nAquesta operació no es pot desfer!</string>
     <string name="summary_delete_all_transactions">Es suprimiran totes les transaccions de tots els comptes!</string>
     <string name="title_delete_all_transactions">Suprimeix tots els assentaments</string>
     <string name="toast_all_transactions_deleted">S\'han suprimit totes les transaccions!</string>
@@ -142,6 +140,7 @@
     <string name="label_default_transfer_account">Compte d\'origen per defecte</string>
     <plurals name="label_sub_accounts">
         <item quantity="one">%d Subcompte</item>
+        <item quantity="many">%d Subcomptes</item>
         <item quantity="other">%d Subcomptes</item>
     </plurals>
     <string-array name="account_type_entry_values">
@@ -167,7 +166,9 @@
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
     <string name="color_picker_default_title">Seleccioneu un color</string>
     <!-- Content description for a color square. -->
+    <string name="color_swatch_description">Colour <xliff:g example="14" id="color_index">%1$d</xliff:g></string>
     <!-- Content description for a selected color square. -->
+    <string name="color_swatch_description_selected">Colour <xliff:g example="14" id="color_index">%1$d</xliff:g> selected</string>
     <string name="label_account_color_and_type">Color del compte i tipus</string>
     <string name="label_delete_sub_accounts">Suprimeix els subcomptes</string>
     <string name="title_recent_accounts">Recents</string>
@@ -196,8 +197,7 @@
     <string name="label_sell">Sell</string>
     <string name="account_name_opening_balances">Opening Balances</string>
     <string name="account_name_equity">Equity</string>
-    <string name="summary_save_opening_balances">Enable to save the current account balance (before deleting transactions) as new opening balance after deleting transactions
-    </string>
+    <string name="summary_save_opening_balances">Enable to save the current account balance (before deleting transactions) as new opening balance after deleting transactions</string>
     <string name="title_save_opening_balances">Save account opening balances</string>
     <string name="export_warning_ofx">OFX no soporta transaccions de doble entrada</string>
     <string name="export_warning_qif">Genera fitxers QIF separats per moneda</string>
@@ -230,7 +230,7 @@
     <string name="label_delete_transactions">Suprimir els assentaments</string>
     <string name="toast_disable_double_entry_to_save_transaction">Create and specify a transfer account OR disable double-entry in settings to save the transaction</string>
     <string name="label_tap_to_create_schedule">Toca per planificar</string>
-    <string name="title_restore_backup">Restaura la còpia de seguretat&#8230;</string>
+    <string name="title_restore_backup">Restaura la còpia de seguretat…</string>
     <string name="header_backup_and_export_settings">Còpia de seguretat i exportació</string>
     <string name="title_dropbox_sync_preference">Habilita el DropBox</string>
     <string name="title_owncloud_sync_preference">Habilita l\'ownCloud</string>
@@ -247,16 +247,16 @@
     <string name="toast_install_file_manager">Instal•leu un gestor de fitxers per seleccionar fitxers</string>
     <string name="title_select_backup_to_restore">Seleccioneu una còpia de seguretat per restaurar</string>
     <string name="nav_menu_favorites">Preferits</string>
-    <string name="nav_menu_open">Obre&#8230;</string>
+    <string name="nav_menu_open">Obre…</string>
     <string name="nav_menu_reports">Informes</string>
-    <string name="nav_menu_export">Exporta&#8230;</string>
+    <string name="nav_menu_export">Exporta…</string>
     <string name="menu_settings" msgid="3524924670246877187">"Configuració"</string>
     <string name="username">Nom d\'usuari</string>
     <string name="password">Contrasenya</string>
     <string name="owncloud_pref">ownCloud</string>
     <string name="owncloud_server_invalid">No s\'ha trobat el servidor d\'OC</string>
     <string name="owncloud_user_invalid">El nom d\'usuari/contrasenya d\'OC no és correcte</string>
-    <string name="owncloud_dir_invalid">Caràcters invalids: \\ &lt; &gt; : \&quot; | * ? </string>
+    <string name="owncloud_dir_invalid">Caràcters invalids: \\ &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">Servidor d\'OC correcte</string>
     <string name="owncloud_user_ok">Nom d\'usuari/contrasenya d\'OC correcte</string>
     <string name="owncloud_dir_ok">Nom de carpeta correcte</string>
@@ -285,7 +285,7 @@
     <string name="wizard_option_create_default_accounts">Crea els comptes per defecte</string>
     <string name="wizard_option_import_my_accounts">Importa els meus comptes</string>
     <string name="wizard_option_let_me_handle_it">Let me handle it</string>
-    <string name="wizard_option_currency_other">Altra&#8230;</string>
+    <string name="wizard_option_currency_other">Altra…</string>
     <string name="wizard_option_auto_send_crash_reports">Automatically send crash reports</string>
     <string name="wizard_option_disable_crash_reports">Disable crash reports</string>
     <string name="wizard_btn_back">Enrere</string>
@@ -326,7 +326,7 @@
     <string name="summary_discuss">Share ideas, discuss changes or report problems</string>
     <string name="summary_translate_gnucash">Translate or proof-read on CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">No compatible apps to receive the exported transactions!</string>
-    <string name="menu_move_transaction">Move&#8230;</string>
+    <string name="menu_move_transaction">Move…</string>
     <string name="menu_duplicate_transaction">Duplicate</string>
     <string name="title_cash_flow_report">Cash Flow</string>
     <string name="title_budgets">Budgets</string>
@@ -341,13 +341,13 @@
         <item>Últims 6 mesos</item>
         <item>Últims 12 mesos</item>
         <item>All time</item>
-        <item>Custom range&#8230;</item>
+        <item>Custom range…</item>
     </string-array>
     <string name="report_time_range_picker_title">"Pick time range"</string>
     <!-- Passcode lock -->
     <string name="digit_one">1</string>
     <!-- In the English locale, digit 1 has no text on it. This is simply empty space. If your locale has text on digit 1, then translate-->
-    <string name="digit_one_text">​</string>
+    <string name="digit_one_text" />
     <string name="digit_two">2</string>
     <string name="digit_two_text">ABC</string>
     <string name="digit_three">3</string>
@@ -367,7 +367,7 @@
     <string name="digit_zero">0</string>
     <string name="digit_zero_text">+</string>
     <string name="title_manage_books">Gestiona els llibres</string>
-    <string name="menu_manage_books">Gestiona els llibres&#8230;</string>
+    <string name="menu_manage_books">Gestiona els llibres…</string>
     <string name="select_chart_to_view_details">Seleccioneu qualsevol part de la gràfica per veure els detalls</string>
     <string name="title_confirm_delete_book">Confirmeu la supressió del llibre</string>
     <string name="msg_all_book_data_will_be_deleted">S\'eliminaran tots els comptes i transaccions d\'aquest llibre!</string>
@@ -380,10 +380,12 @@
     <string name="label_inside_account_with_name">in %1$s</string>
     <plurals name="book_account_stats">
         <item quantity="one">%d account</item>
+        <item quantity="many">%d accounts</item>
         <item quantity="other">%d accounts</item>
     </plurals>
     <plurals name="book_transaction_stats">
         <item quantity="one">%d transaction</item>
+        <item quantity="many">%d transactions</item>
         <item quantity="other">%d transactions</item>
     </plurals>
     <string-array name="report_account_types">
@@ -414,11 +416,59 @@
     <string name="title_no_backups_found">No backups found</string>
     <string name="msg_no_backups_to_restore_from">There are no existing backup files to restore from</string>
     <string name="label_select_destination_after_export">Select the destination after export is complete</string>
-    <string name="label_dropbox_export_destination">Export to \'/Apps/GnuCash Android/\' folder on Dropbox</string>
+    <string name="label_dropbox_export_destination">Export to \'/Apps/GnuCash Pocket/\' folder on Dropbox</string>
     <string name="title_section_preferences">Preferències</string>
     <string name="category_name_appearance" msgid="8287486771764166805">"Aparença"</string>
     <string name="settings_screen_theme" msgid="2137262503543943871">"Theme"</string>
     <string name="default_theme" msgid="4815428567082263639">"Predeterminat"</string>
     <string name="light_ui_title">"Mode de llum"</string>
     <string name="dark_ui_title" msgid="3373976268671557416">"Mode fosc"</string>
+    <string name="yes_sure">Yes, I\'m sure</string>
+    <string name="summary_export_accounts_csv">Export all accounts (without transactions) to CSV</string>
+    <string name="title_export_accounts_csv">Export as CSV</string>
+    <string name="label_csv_separator">Separator</string>
+    <string name="export_notice_csv">Exports transactions as CSV</string>
+    <string name="no_books">No books in the database</string>
+    <!-- Copied from "csv-transactions-export.cpp" -->
+    <string-array name="csv_transaction_headers">
+        <item>Date</item>
+        <item>Transaction ID</item>
+        <item>Number</item>
+        <item>Description</item>
+        <item>Notes</item>
+        <item>Commodity/Currency</item>
+        <item>Void Reason</item>
+        <item>Action</item>
+        <item>Memo</item>
+        <item>Full Account Name</item>
+        <item>Account Name</item>
+        <item>Amount With Sym</item>
+        <item>Amount Num.</item>
+        <item>Value With Sym</item>
+        <item>Value Num.</item>
+        <item>Reconcile</item>
+        <item>Reconcile Date</item>
+        <item>Rate/Price</item>
+    </string-array>
+    <string-array name="csv_account_headers">
+        <item>Type</item>
+        <item>Full Name</item>
+        <item>Name</item>
+        <item>Code</item>
+        <item>Description</item>
+        <item>Colour</item>
+        <item>Notes</item>
+        <item>Commoditym</item>
+        <item>Commodityn</item>
+        <item>Hidden</item>
+        <item>Tax</item>
+        <item>Placeholder</item>
+    </string-array>
+    <string name="title_edit_budget">Edit Budget</string>
+    <string name="title_delete_transaction_backup">When delete transaction?</string>
+    <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>
+    <string name="action_transaction">transaction to</string>
+    <string name="action_backup">backup to</string>
+    <string name="title_import_book_backup">When importing a book?</string>
+    <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
 </resources>

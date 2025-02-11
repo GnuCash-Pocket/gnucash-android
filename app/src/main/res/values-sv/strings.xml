@@ -56,10 +56,10 @@
     <string name="hint_delete_after_export">Alla exporterade transaktioner raderas när exporten har slutförs</string>
     <string name="title_settings">Inställningar</string>
     <string-array name="export_destinations">
-        <item>Spara som&#8230;</item>
+        <item>Spara som…</item>
         <item>Dropbox</item>
         <item>ownCloud</item>
-        <item>Skicka till&#8230;</item>
+        <item>Skicka till…</item>
     </string-array>
     <string name="btn_move">Flytta</string>
     <string name="title_move_transactions">Flytta %1$d transaktion(er)</string>
@@ -89,8 +89,8 @@
     <string name="title_enable_passcode">Aktivera lösenkod</string>
     <string name="title_change_passcode">Ändra lösenkod</string>
     <string name="title_about_gnucash">Om GnuCash</string>
-    <string name="title_export_email">GnuCash Android %1$s exportering</string>
-    <string name="description_export_email">GnuCash Android exportering från </string>
+    <string name="title_export_email">GnuCash Pocket %1$s exportering</string>
+    <string name="description_export_email">GnuCash Pocket exportering från</string>
     <string name="header_transaction_settings">Transaktioner</string>
     <string name="title_transaction_preferences">Transaktion inställningar</string>
     <string name="title_account_preferences">Kontoinställningar</string>
@@ -111,16 +111,16 @@
     <string name="label_parent_account">Överordnat konto</string>
     <string name="title_xml_ofx_header">Använd XML OFX sidhuvud</string>
     <string name="summary_xml_ofx_header">Aktivera detta alternativ när du exporterar till andra tredje parts program än GnuCash för skrivbord</string>
-    <string name="toast_transanction_amount_required">Ange ett belopp för att spara transaktionen</string>
+    <string name="toast_transaction_amount_required">Ange ett belopp för att spara transaktionen</string>
     <string name="toast_error_importing_accounts">Ett fel uppstod vid import av GnuCash-konton</string>
     <string name="toast_success_importing_accounts">GnuCash-konton har importerats</string>
     <string name="summary_import_accounts">Importera kontostruktur som exporterad från GnuCash-skrivbord</string>
     <string name="title_import_accounts">Importera GnuCash-XML</string>
-    <string name="summary_delete_all_accounts">Radera alla konton i databasen. Alla transaktioner raderas också.    </string>
+    <string name="summary_delete_all_accounts">Radera alla konton i databasen. Alla transaktioner raderas också.</string>
     <string name="title_delete_all_accounts">Radera alla konton</string>
     <string name="header_account_settings">Konton</string>
     <string name="toast_all_accounts_deleted">Alla konton har raderats</string>
-    <string name="confirm_delete_all_accounts">Är du säker du vill radera alla konton och transaktioner? \n\nDenna åtgärd kan inte ångras!    </string>
+    <string name="confirm_delete_all_accounts">Är du säker du vill radera alla konton och transaktioner? \n\nDenna åtgärd kan inte ångras!</string>
     <string name="summary_delete_all_transactions">Alla transaktioner i alla konton raderas!</string>
     <string name="title_delete_all_transactions">Radera alla transaktioner</string>
     <string name="toast_all_transactions_deleted">Alla transaktioner har raderats!</string>
@@ -165,7 +165,9 @@
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
     <string name="color_picker_default_title">Välj en färg</string>
     <!-- Content description for a color square. -->
+    <string name="color_swatch_description">Color <xliff:g example="14" id="color_index">%1$d</xliff:g></string>
     <!-- Content description for a selected color square. -->
+    <string name="color_swatch_description_selected">Color <xliff:g example="14" id="color_index">%1$d</xliff:g> selected</string>
     <string name="label_account_color_and_type">Konto färg &amp; typ</string>
     <string name="label_delete_sub_accounts">Radera underkonton</string>
     <string name="title_recent_accounts">Senaste</string>
@@ -194,7 +196,7 @@
     <string name="label_sell">Sälj</string>
     <string name="account_name_opening_balances">Öppningssaldo</string>
     <string name="account_name_equity">Eget kapital</string>
-    <string name="summary_save_opening_balances">Aktivera för att spara befintligt kontosaldo (innan du raderar transaktioner) som ny öppningsbalans efter att du raderat transaktioner    </string>
+    <string name="summary_save_opening_balances">Aktivera för att spara befintligt kontosaldo (innan du raderar transaktioner) som ny öppningsbalans efter att du raderat transaktioner</string>
     <string name="title_save_opening_balances">Spara kontoöppningssaldo</string>
     <string name="export_warning_ofx">OFX stöder inte dubbla post transaktioner</string>
     <string name="export_warning_qif">Genererar separata QIF-filer per valuta</string>
@@ -227,10 +229,10 @@
     <string name="label_delete_transactions">Radera transaktioner</string>
     <string name="toast_disable_double_entry_to_save_transaction">Skapa och ange ett överföringskonto eller avaktivera dubbel bokföring i inställningar för att spara transaktionen</string>
     <string name="label_tap_to_create_schedule">Tryck för att skapa schema</string>
-    <string name="title_restore_backup">Återställ säkerhetskopia&#8230;</string>
+    <string name="title_restore_backup">Återställ säkerhetskopia…</string>
     <string name="header_backup_and_export_settings">Säkerhetskopiera &amp; export</string>
     <string name="title_dropbox_sync_preference">Aktivera Dropbox</string>
-    <string name="title_owncloud_sync_preference">Aktivera ownCloud </string>
+    <string name="title_owncloud_sync_preference">Aktivera ownCloud</string>
     <string name="title_backup_preference_category">Säkerhetskopiera</string>
     <string name="summary_dropbox_sync">Aktivera export till Dropbox</string>
     <string name="summary_owncloud_sync">Aktivera export till ownCloud</string>
@@ -244,16 +246,16 @@
     <string name="toast_install_file_manager">Installera en filhanterare för att välja filer</string>
     <string name="title_select_backup_to_restore">Välj säkerhetskopia att återställa</string>
     <string name="nav_menu_favorites">Favoriter</string>
-    <string name="nav_menu_open">Öppna&#8230;</string>
+    <string name="nav_menu_open">Öppna…</string>
     <string name="nav_menu_reports">Rapporter</string>
-    <string name="nav_menu_export">Exportera&#8230;</string>
+    <string name="nav_menu_export">Exportera…</string>
     <string name="menu_settings" msgid="3524924670246877187">"Inställningar"</string>
     <string name="username">Användarnamn</string>
     <string name="password">Lösenord</string>
     <string name="owncloud_pref">ownCloud</string>
     <string name="owncloud_server_invalid">OC server hittades inte</string>
     <string name="owncloud_user_invalid">OC användarnamn/lösenord ogiltigt</string>
-    <string name="owncloud_dir_invalid">Ogiltiga tecken: \\ &lt; &gt; : \&quot; | * ? </string>
+    <string name="owncloud_dir_invalid">Ogiltiga tecken: \\ &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">OC server OK</string>
     <string name="owncloud_user_ok">OC användarnamn/lösenord OK</string>
     <string name="owncloud_dir_ok">Dir namn OK</string>
@@ -282,7 +284,7 @@
     <string name="wizard_option_create_default_accounts">Skapa standardkonton</string>
     <string name="wizard_option_import_my_accounts">Importera mina konton</string>
     <string name="wizard_option_let_me_handle_it">Låt mig hantera det</string>
-    <string name="wizard_option_currency_other">Andra&#8230;</string>
+    <string name="wizard_option_currency_other">Andra…</string>
     <string name="wizard_option_auto_send_crash_reports">Automatiskt skicka kraschrapporter</string>
     <string name="wizard_option_disable_crash_reports">Avaktivera kraschrapporter</string>
     <string name="wizard_btn_back">Tillbaka</string>
@@ -323,7 +325,7 @@
     <string name="summary_discuss">Dela idéer, diskutera förändringar eller rapportera problem</string>
     <string name="summary_translate_gnucash">Översätta eller korrekturläsa på CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">Inga kompatibla appar kan ta emot exporterade transaktionerna!</string>
-    <string name="menu_move_transaction">Flytta&#8230;</string>
+    <string name="menu_move_transaction">Flytta…</string>
     <string name="menu_duplicate_transaction">Dublett</string>
     <string name="title_cash_flow_report">Kassaflöde</string>
     <string name="title_budgets">Budgetar</string>
@@ -338,13 +340,13 @@
         <item>Senaste 6 månader</item>
         <item>Senaste 12 månader</item>
         <item>All tid</item>
-        <item>Eget intervall&#8230;</item>
+        <item>Eget intervall…</item>
     </string-array>
     <string name="report_time_range_picker_title">"Pick time range"</string>
     <!-- Passcode lock -->
     <string name="digit_one">1</string>
     <!-- In the English locale, digit 1 has no text on it. This is simply empty space. If your locale has text on digit 1, then translate-->
-    <string name="digit_one_text">​</string>
+    <string name="digit_one_text" />
     <string name="digit_two">2</string>
     <string name="digit_two_text">ABC</string>
     <string name="digit_three">3</string>
@@ -364,7 +366,7 @@
     <string name="digit_zero">0</string>
     <string name="digit_zero_text">+</string>
     <string name="title_manage_books">Hantera bokföringar</string>
-    <string name="menu_manage_books">Hantera bokföringar&#8230;</string>
+    <string name="menu_manage_books">Hantera bokföringar…</string>
     <string name="select_chart_to_view_details">Välj någon del av diagrammet för att visa detaljer</string>
     <string name="title_confirm_delete_book">Bekräfta radera bokföring</string>
     <string name="msg_all_book_data_will_be_deleted">Alla konton och transaktioner i denna bokföring kommer att raderas!</string>
@@ -411,11 +413,59 @@
     <string name="title_no_backups_found">Inga säkerhetskopior hittade</string>
     <string name="msg_no_backups_to_restore_from">Det finns inga befintliga säkerhetskopieringsfiler att återställa från</string>
     <string name="label_select_destination_after_export">Välj destination efter att exportering är klar</string>
-    <string name="label_dropbox_export_destination">Exportera till \'/Apps/GnuCash Android/\' mapp på Dropbox</string>
+    <string name="label_dropbox_export_destination">Exportera till \'/Apps/GnuCash Pocket/\' mapp på Dropbox</string>
     <string name="title_section_preferences">Inställningar</string>
     <string name="category_name_appearance" msgid="8287486771764166805">"Utseende"</string>
     <string name="settings_screen_theme">Tema</string>
     <string name="default_theme" msgid="4815428567082263639">"Standard"</string>
     <string name="light_ui_title">"Ljust läge"</string>
     <string name="dark_ui_title" msgid="3373976268671557416">"Mörkt läge"</string>
+    <string name="yes_sure">Yes, I\'m sure</string>
+    <string name="summary_export_accounts_csv">Export all accounts (without transactions) to CSV</string>
+    <string name="title_export_accounts_csv">Export as CSV</string>
+    <string name="label_csv_separator">Separator</string>
+    <string name="export_notice_csv">Exports transactions as CSV</string>
+    <string name="no_books">No books in the database</string>
+    <!-- Copied from "csv-transactions-export.cpp" -->
+    <string-array name="csv_transaction_headers">
+        <item>Date</item>
+        <item>Transaction ID</item>
+        <item>Number</item>
+        <item>Description</item>
+        <item>Notes</item>
+        <item>Commodity/Currency</item>
+        <item>Void Reason</item>
+        <item>Action</item>
+        <item>Memo</item>
+        <item>Full Account Name</item>
+        <item>Account Name</item>
+        <item>Amount With Sym</item>
+        <item>Amount Num.</item>
+        <item>Value With Sym</item>
+        <item>Value Num.</item>
+        <item>Reconcile</item>
+        <item>Reconcile Date</item>
+        <item>Rate/Price</item>
+    </string-array>
+    <string-array name="csv_account_headers">
+        <item>Type</item>
+        <item>Full Name</item>
+        <item>Name</item>
+        <item>Code</item>
+        <item>Description</item>
+        <item>Color</item>
+        <item>Notes</item>
+        <item>Commoditym</item>
+        <item>Commodityn</item>
+        <item>Hidden</item>
+        <item>Tax</item>
+        <item>Placeholder</item>
+    </string-array>
+    <string name="title_edit_budget">Edit Budget</string>
+    <string name="title_delete_transaction_backup">When delete transaction?</string>
+    <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>
+    <string name="action_transaction">transaction to</string>
+    <string name="action_backup">backup to</string>
+    <string name="title_import_book_backup">When importing a book?</string>
+    <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
 </resources>

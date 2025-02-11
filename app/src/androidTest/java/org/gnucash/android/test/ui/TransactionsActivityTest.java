@@ -197,7 +197,7 @@ public class TransactionsActivityTest extends GnuAndroidTest {
             .perform(click());
         onView(withText(R.string.title_add_transaction)).check(matches(isDisplayed()));
 
-        assertToastDisplayed(R.string.toast_transanction_amount_required);
+        assertToastDisplayed(R.string.toast_transaction_amount_required);
 
         int afterCount = mTransactionsDbAdapter.getTransactionsCount(TRANSACTIONS_ACCOUNT_UID);
         assertThat(afterCount).isEqualTo(beforeCount);

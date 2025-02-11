@@ -56,10 +56,10 @@
     <string name="hint_delete_after_export">Semua transaksi yang diekspor akan dihapus saat proses ekspor selesai</string>
     <string name="title_settings">Pengaturan</string>
     <string-array name="export_destinations">
-        <item>Simpan sbg&#8230;</item>
+        <item>Simpan sbg…</item>
         <item>Dropbox</item>
         <item>ownCloud</item>
-        <item>Kirim ke&#8230;</item>
+        <item>Kirim ke…</item>
     </string-array>
     <string name="btn_move">Pindahkan</string>
     <string name="title_move_transactions">Memindah transaksi %1$d</string>
@@ -89,8 +89,8 @@
     <string name="title_enable_passcode">Aktifkan kode akses</string>
     <string name="title_change_passcode">Ganti Kode Akses</string>
     <string name="title_about_gnucash">Tentang GnuCash</string>
-    <string name="title_export_email">GnuCash Android %1$s ekspor</string>
-    <string name="description_export_email">GnuCash Android Ekspor dari </string>
+    <string name="title_export_email">GnuCash Pocket %1$s ekspor</string>
+    <string name="description_export_email">GnuCash Pocket Ekspor dari</string>
     <string name="header_transaction_settings">Transaksi</string>
     <string name="title_transaction_preferences">Preferensi Transaksi</string>
     <string name="title_account_preferences">Preferensi Akun</string>
@@ -111,18 +111,16 @@
     <string name="label_parent_account">Akun induk</string>
     <string name="title_xml_ofx_header">Gunakan header XML OFX</string>
     <string name="summary_xml_ofx_header">Aktifkan opsi ini ketika mengekspor ke aplikasi pihak ketiga selain GnuCash versi desktop</string>
-    <string name="toast_transanction_amount_required">Tuliskan jumlah untuk menyimpan transaksi</string>
+    <string name="toast_transaction_amount_required">Tuliskan jumlah untuk menyimpan transaksi</string>
     <string name="toast_error_importing_accounts">Terjadi error saat mengimpor akun GnuCash</string>
     <string name="toast_success_importing_accounts">Akun GnuCash berhasil diimpor</string>
     <string name="summary_import_accounts">Mengimpor struktur akun yang telah diekspor dari GnuCash desktop</string>
     <string name="title_import_accounts">Impor XML GnuCash</string>
-    <string name="summary_delete_all_accounts">Hapus seluruh akun dalam database. Seluruh transaksi akan dihapus
-        juga.
-    </string>
+    <string name="summary_delete_all_accounts">Hapus seluruh akun dalam database. Seluruh transaksi akan dihapus juga.</string>
     <string name="title_delete_all_accounts">Hapus seluruh akun</string>
     <string name="header_account_settings">Akun</string>
     <string name="toast_all_accounts_deleted">Semua akun telah berhasil dihapus</string>
-    <string name="confirm_delete_all_accounts">Apakah Anda yakin Anda ingin menghapus seluruh akun dan transaksi? \n\nOperasi ini tidak dapat dibatalkan!    </string>
+    <string name="confirm_delete_all_accounts">Apakah Anda yakin Anda ingin menghapus seluruh akun dan transaksi? \n\nOperasi ini tidak dapat dibatalkan!</string>
     <string name="summary_delete_all_transactions">Seluruh transaksi di semua akun akan dihapus!</string>
     <string name="title_delete_all_transactions">Hapus seluruh transaksi</string>
     <string name="toast_all_transactions_deleted">Seluruh transaksi berhasil dihapus!</string>
@@ -166,7 +164,9 @@
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
     <string name="color_picker_default_title">Pilih Warna</string>
     <!-- Content description for a color square. -->
+    <string name="color_swatch_description">Color <xliff:g example="14" id="color_index">%1$d</xliff:g></string>
     <!-- Content description for a selected color square. -->
+    <string name="color_swatch_description_selected">Color <xliff:g example="14" id="color_index">%1$d</xliff:g> selected</string>
     <string name="label_account_color_and_type">Warna &amp; Jenis Akun</string>
     <string name="label_delete_sub_accounts">Hapus sub-akun</string>
     <string name="title_recent_accounts">Terbaru</string>
@@ -195,7 +195,7 @@
     <string name="label_sell">Jual</string>
     <string name="account_name_opening_balances">Saldo Awal</string>
     <string name="account_name_equity">Ekuitas</string>
-    <string name="summary_save_opening_balances">Aktifkan untuk menyimpan saldo akun (sebelum menghapus transaksi) sebagai saldo pembukaan setelah menghapus traksaksi    </string>
+    <string name="summary_save_opening_balances">Aktifkan untuk menyimpan saldo akun (sebelum menghapus transaksi) sebagai saldo pembukaan setelah menghapus traksaksi</string>
     <string name="title_save_opening_balances">Simpan saldo pembukaan akun</string>
     <string name="export_warning_ofx">OFX tidak mendukung transaksi double-entry</string>
     <string name="export_warning_qif">Menghasilkan file QIF terpisah per mata uang</string>
@@ -228,10 +228,10 @@
     <string name="label_delete_transactions">Hapus transaksi</string>
     <string name="toast_disable_double_entry_to_save_transaction">Membuat dan menetapkan sebuah akun transfer ATAU nonaktifkan double-entry pada pengaturan untuk menyimpan transaksi</string>
     <string name="label_tap_to_create_schedule">Ketuk untuk membuat jadwal</string>
-    <string name="title_restore_backup">Mengembalikan Cadangan&#8230;</string>
+    <string name="title_restore_backup">Mengembalikan Cadangan…</string>
     <string name="header_backup_and_export_settings">Cadangan &amp; ekspor</string>
     <string name="title_dropbox_sync_preference">Aktifkan DropBox</string>
-    <string name="title_owncloud_sync_preference">Aktifkan ownCloud </string>
+    <string name="title_owncloud_sync_preference">Aktifkan ownCloud</string>
     <string name="title_backup_preference_category">Cadangan</string>
     <string name="summary_dropbox_sync">Aktifkan mengekspor ke DropBox</string>
     <string name="summary_owncloud_sync">Aktifkan mengekspor ke ownCloud</string>
@@ -245,16 +245,16 @@
     <string name="toast_install_file_manager">Install sebuah file manager untuk memilih file</string>
     <string name="title_select_backup_to_restore">Pilih backup untuk di-restore</string>
     <string name="nav_menu_favorites">Favorit</string>
-    <string name="nav_menu_open">Buka&#8230;</string>
+    <string name="nav_menu_open">Buka…</string>
     <string name="nav_menu_reports">Laporan</string>
-    <string name="nav_menu_export">Ekspor&#8230;</string>
+    <string name="nav_menu_export">Ekspor…</string>
     <string name="menu_settings" msgid="3524924670246877187">"Setelan"</string>
     <string name="username">Nama Pengguna</string>
     <string name="password">Kata Sandi</string>
     <string name="owncloud_pref">owncloud</string>
     <string name="owncloud_server_invalid">Server OC tidak ditemukan</string>
     <string name="owncloud_user_invalid">Username / kata kunci OC tidak valid</string>
-    <string name="owncloud_dir_invalid">Karakter tidak valid: \\ &lt; &gt; : \&quot; | * ? </string>
+    <string name="owncloud_dir_invalid">Karakter tidak valid: \\ &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">Server OC OK</string>
     <string name="owncloud_user_ok">OC username / password OK</string>
     <string name="owncloud_dir_ok">Nama Dir OK</string>
@@ -283,14 +283,14 @@
     <string name="wizard_option_create_default_accounts">Buat akun default</string>
     <string name="wizard_option_import_my_accounts">Impor akun-akun saya</string>
     <string name="wizard_option_let_me_handle_it">Biar saya yang tangani</string>
-    <string name="wizard_option_currency_other">Lainnya&#8230;</string>
+    <string name="wizard_option_currency_other">Lainnya…</string>
     <string name="wizard_option_auto_send_crash_reports">Kirim laporan kerusakan secara otomatis</string>
     <string name="wizard_option_disable_crash_reports">Nonaktifkan laporan kerusakan</string>
     <string name="wizard_btn_back">Kembali</string>
     <string name="title_setup_gnucash">Pengaturan GnuCash</string>
     <string name="wizard_title_welcome_to_gnucash">Selamat datang di GnuCash</string>
     <string name="msg_wizard_welcome_page">Sebelum Anda menyelam, \nlmari kita siapkan beberapa hal yang pertama \n\n Untuk melanjutkan, tekan Next</string>
-    <string name="title_split_editor">Editor split</string>
+    <string name="title_split_editor">Split Editor</string>
     <string name="toast_error_check_split_amounts">Periksa apakah semua split memiliki jumlah yang valid sebelum menyimpannya!</string>
     <string name="label_error_invalid_expression">Ekspresi yang tidak valid!</string>
     <string name="toast_scheduled_recurring_transaction">Transaksi berulang yang dijadwalkan</string>
@@ -324,7 +324,7 @@
     <string name="summary_discuss">Berbagi ide-ide, mendiskusikan perubahan atau melaporkan masalah</string>
     <string name="summary_translate_gnucash">Menerjemahkan atau bukti dibaca pada CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">Tidak ada aplikasi yang kompatibel untuk menerima transaksi diekspor!</string>
-    <string name="menu_move_transaction">Bergerak&#8230;</string>
+    <string name="menu_move_transaction">Bergerak…</string>
     <string name="menu_duplicate_transaction">Duplikat</string>
     <string name="title_cash_flow_report">Arus Tunai</string>
     <string name="title_budgets">Anggaran</string>
@@ -339,13 +339,13 @@
         <item>6 bulan terakhir</item>
         <item>12 bulan terakhir</item>
         <item>Sepanjang waktu</item>
-        <item>Rentang ubahsuai&#8230;</item>
+        <item>Rentang ubahsuai…</item>
     </string-array>
     <string name="report_time_range_picker_title">"Pick time range"</string>
     <!-- Passcode lock -->
     <string name="digit_one">1</string>
     <!-- In the English locale, digit 1 has no text on it. This is simply empty space. If your locale has text on digit 1, then translate-->
-    <string name="digit_one_text">​</string>
+    <string name="digit_one_text" />
     <string name="digit_two">2</string>
     <string name="digit_two_text">ABC</string>
     <string name="digit_three">3</string>
@@ -365,7 +365,7 @@
     <string name="digit_zero">0</string>
     <string name="digit_zero_text">+</string>
     <string name="title_manage_books">Mengelola buku</string>
-    <string name="menu_manage_books">Mengelola buku&#8230;</string>
+    <string name="menu_manage_books">Mengelola buku…</string>
     <string name="select_chart_to_view_details">Memilih bagian dari tabel untuk melihat rincian</string>
     <string name="title_confirm_delete_book">Konfirmasi penghapusan</string>
     <string name="msg_all_book_data_will_be_deleted">Semua account dan transaksi dalam buku ini akan dihapus!</string>
@@ -410,11 +410,59 @@
     <string name="title_no_backups_found">Backup tidak ditemukan</string>
     <string name="msg_no_backups_to_restore_from">Tidak ada file cadangan yang ada untuk dipulihkan</string>
     <string name="label_select_destination_after_export">Pilih tujuan setelah ekspor selesai</string>
-    <string name="label_dropbox_export_destination">Ekspor ke folder \'/ Apps / GnuCash Android /\' di Dropbox</string>
+    <string name="label_dropbox_export_destination">Ekspor ke folder \'/ Apps / GnuCash Pocket /\' di Dropbox</string>
     <string name="title_section_preferences">Preferensi</string>
     <string name="category_name_appearance" msgid="8287486771764166805">"Tampilan"</string>
     <string name="settings_screen_theme">"Tema"</string>
     <string name="default_theme" msgid="4815428567082263639">"Default"</string>
     <string name="light_ui_title">"Mode terang"</string>
     <string name="dark_ui_title" msgid="3373976268671557416">"Mode Gelap"</string>
+    <string name="yes_sure">Yes, I\'m sure</string>
+    <string name="summary_export_accounts_csv">Export all accounts (without transactions) to CSV</string>
+    <string name="title_export_accounts_csv">Export as CSV</string>
+    <string name="label_csv_separator">Separator</string>
+    <string name="export_notice_csv">Exports transactions as CSV</string>
+    <string name="no_books">No books in the database</string>
+    <!-- Copied from "csv-transactions-export.cpp" -->
+    <string-array name="csv_transaction_headers">
+        <item>Date</item>
+        <item>Transaction ID</item>
+        <item>Number</item>
+        <item>Description</item>
+        <item>Notes</item>
+        <item>Commodity/Currency</item>
+        <item>Void Reason</item>
+        <item>Action</item>
+        <item>Memo</item>
+        <item>Full Account Name</item>
+        <item>Account Name</item>
+        <item>Amount With Sym</item>
+        <item>Amount Num.</item>
+        <item>Value With Sym</item>
+        <item>Value Num.</item>
+        <item>Reconcile</item>
+        <item>Reconcile Date</item>
+        <item>Rate/Price</item>
+    </string-array>
+    <string-array name="csv_account_headers">
+        <item>Type</item>
+        <item>Full Name</item>
+        <item>Name</item>
+        <item>Code</item>
+        <item>Description</item>
+        <item>Color</item>
+        <item>Notes</item>
+        <item>Commoditym</item>
+        <item>Commodityn</item>
+        <item>Hidden</item>
+        <item>Tax</item>
+        <item>Placeholder</item>
+    </string-array>
+    <string name="title_edit_budget">Edit Budget</string>
+    <string name="title_delete_transaction_backup">When delete transaction?</string>
+    <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>
+    <string name="action_transaction">transaction to</string>
+    <string name="action_backup">backup to</string>
+    <string name="title_import_book_backup">When importing a book?</string>
+    <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
 </resources>

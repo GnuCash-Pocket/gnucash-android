@@ -56,10 +56,10 @@
     <string name="hint_delete_after_export">Всі експортовані транзакції будуть видалені по завершенні.</string>
     <string name="title_settings">Налаштування</string>
     <string-array name="export_destinations">
-        <item>Зберегти як...</item>
+        <item>Зберегти як…</item>
         <item>Dropbox</item>
         <item>ownCloud</item>
-        <item>Надіслати до...</item>
+        <item>Надіслати до…</item>
     </string-array>
     <string name="btn_move">Перенести</string>
     <string name="title_move_transactions">Перенести %1$d транзакц(ію,ії,ій)</string>
@@ -90,7 +90,7 @@
     <string name="title_change_passcode">Змінити PIN-код</string>
     <string name="title_about_gnucash">Про Gnucash</string>
     <string name="title_export_email">Експорт %1$s-файлу із Gnucash Android</string>
-    <string name="description_export_email">Экспорт даних GnuCash Android від </string>
+    <string name="description_export_email">Экспорт даних GnuCash Pocket від</string>
     <string name="header_transaction_settings">Транзакції</string>
     <string name="title_transaction_preferences">Транзакції</string>
     <string name="title_account_preferences">Рахунки</string>
@@ -111,7 +111,7 @@
     <string name="label_parent_account">Головний рахунок</string>
     <string name="title_xml_ofx_header">Використовувати XML-заголовок OFX</string>
     <string name="summary_xml_ofx_header">Ввімкніть цю опцію, якщо експортуєте в програми відмінні від GnuCash для ПК</string>
-    <string name="toast_transanction_amount_required">Введіть суму, щоб зберегти транзакцію</string>
+    <string name="toast_transaction_amount_required">Введіть суму, щоб зберегти транзакцію</string>
     <string name="toast_error_importing_accounts">Сталася помилка при імпорті рахунків із GnuCash</string>
     <string name="toast_success_importing_accounts">Рахунки із GnuCash успішно імпортовані</string>
     <string name="summary_import_accounts"> Імпорт структури рахунків із GnuCash для ПК</string>
@@ -120,7 +120,7 @@
     <string name="title_delete_all_accounts">Видалити всі рахунки</string>
     <string name="header_account_settings">Рахунки</string>
     <string name="toast_all_accounts_deleted">Всі рахунки видалено</string>
-    <string name="confirm_delete_all_accounts">Ви дійсно хочете видалити всі рахунки та транзакції?\n\nЦе не можна буде скасувати!    </string>
+    <string name="confirm_delete_all_accounts">Ви дійсно хочете видалити всі рахунки та транзакції?\n\nЦе не можна буде скасувати!</string>
     <string name="summary_delete_all_transactions">Усі транзакції в усіх рахунках будуть видалені!</string>
     <string name="title_delete_all_transactions">Видалити всі транзакції</string>
     <string name="toast_all_transactions_deleted">Всі транзакції видалені</string>
@@ -141,6 +141,7 @@
     <plurals name="label_sub_accounts">
         <item quantity="one">%d дочірній рахунок</item>
         <item quantity="few">%d шт. дочірніх рахунків</item>
+        <item quantity="many">%d шт. дочірніх рахунків</item>
         <item quantity="other">%d шт. дочірніх рахунків</item>
     </plurals>
     <string-array name="account_type_entry_values">
@@ -166,7 +167,9 @@
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
     <string name="color_picker_default_title">Оберіть колір</string>
     <!-- Content description for a color square. -->
+    <string name="color_swatch_description">Color <xliff:g example="14" id="color_index">%1$d</xliff:g></string>
     <!-- Content description for a selected color square. -->
+    <string name="color_swatch_description_selected">Color <xliff:g example="14" id="color_index">%1$d</xliff:g> selected</string>
     <string name="label_account_color_and_type">Колір і тип рахунку</string>
     <string name="label_delete_sub_accounts">Видалити субрахунки</string>
     <string name="title_recent_accounts">Нещодавні</string>
@@ -195,8 +198,7 @@
     <string name="label_sell">Продаж</string>
     <string name="account_name_opening_balances">Початкове сальдо</string>
     <string name="account_name_equity">Власні кошти</string>
-    <string name="summary_save_opening_balances">Увімкніть щоб зберегти поточний баланс (перед видаленням транзакцій) як нове початкове сальдо після їх видалення
-    </string>
+    <string name="summary_save_opening_balances">Увімкніть щоб зберегти поточний баланс (перед видаленням транзакцій) як нове початкове сальдо після їх видалення</string>
     <string name="title_save_opening_balances">Зберігати початкове сальдо рахунків</string>
     <string name="export_warning_ofx">OFX ​​не підтримує транзакції подвійного запису</string>
     <string name="export_warning_qif">Створює на кожну валюту окремий QIF файл</string>
@@ -229,10 +231,10 @@
     <string name="label_delete_transactions">Видалити транзакції</string>
     <string name="toast_disable_double_entry_to_save_transaction">Створіть і вкажіть трансферний рахунок або вимкніть подвійний запис в налаштуваннях.</string>
     <string name="label_tap_to_create_schedule">Торкніться, щоб створити розклад</string>
-    <string name="title_restore_backup">Відновити з резервної копії&#8230;</string>
+    <string name="title_restore_backup">Відновити з резервної копії…</string>
     <string name="header_backup_and_export_settings">Резервне копіювання й експорт</string>
     <string name="title_dropbox_sync_preference">Під’єднати Dropbox</string>
-    <string name="title_owncloud_sync_preference">Під’єднати до ownCloud </string>
+    <string name="title_owncloud_sync_preference">Під’єднати до ownCloud</string>
     <string name="title_backup_preference_category">Резервне копіюванняе</string>
     <string name="summary_dropbox_sync">Увімкнути експорт до Dropbox</string>
     <string name="summary_owncloud_sync">Увімкнути експорт у ownCloud</string>
@@ -246,9 +248,9 @@
     <string name="toast_install_file_manager">Встановіть програму для перегляду файлової системи</string>
     <string name="title_select_backup_to_restore">Оберіть резервну копію для відновлення</string>
     <string name="nav_menu_favorites">Закладки</string>
-    <string name="nav_menu_open">Відкрити&#8230;</string>
+    <string name="nav_menu_open">Відкрити…</string>
     <string name="nav_menu_reports">Звіти</string>
-    <string name="nav_menu_export">Експорт&#8230;</string>
+    <string name="nav_menu_export">Експорт…</string>
     <string name="menu_settings" msgid="3524924670246877187">"Налаштування"</string>
     <string name="username">Ім’я користувача</string>
     <string name="password">Пароль</string>
@@ -261,7 +263,7 @@
     <string name="owncloud_dir_ok">Ім’я папки підходить</string>
     <string name="title_enable_crashlytics">Вести журнал відмов програми</string>
     <string name="msg_enable_crashlytics">Вести журнал відмов програми (рекомендуємо). Обіцяємо не збирати приватну інформацію.</string>
-    <string name="label_export_format">Формат </string>
+    <string name="label_export_format">Формат</string>
     <string name="label_old_passcode">Введіть старий пароль</string>
     <string name="label_new_passcode">Введіть новий пароль</string>
     <string name="title_scheduled_exports">Запланований експорт</string>
@@ -284,7 +286,7 @@
     <string name="wizard_option_create_default_accounts">Створити типові рахунки</string>
     <string name="wizard_option_import_my_accounts">Імпортувати рахунки</string>
     <string name="wizard_option_let_me_handle_it">Я вирішу пізніше</string>
-    <string name="wizard_option_currency_other">Інше&#8230;</string>
+    <string name="wizard_option_currency_other">Інше…</string>
     <string name="wizard_option_auto_send_crash_reports">Автоматично звітувати про помилки</string>
     <string name="wizard_option_disable_crash_reports">Не звітувати про помилки</string>
     <string name="wizard_btn_back">Назад</string>
@@ -325,7 +327,7 @@
     <string name="summary_discuss">Поділитися ідеями, обговорити зміни або повідомити про проблеми</string>
     <string name="summary_translate_gnucash">Перекласти або вичитати на CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">Нема сумісних застосунків для експортування!</string>
-    <string name="menu_move_transaction">Перемістити&#8230;</string>
+    <string name="menu_move_transaction">Перемістити…</string>
     <string name="menu_duplicate_transaction">Дублювати</string>
     <string name="title_cash_flow_report">Грошовий потік</string>
     <string name="title_budgets">Бюджети</string>
@@ -340,13 +342,13 @@
         <item>Останнє півріччя</item>
         <item>Останній рік</item>
         <item>Весь час</item>
-        <item>Інший інтервал&#8230;</item>
+        <item>Інший інтервал…</item>
     </string-array>
     <string name="report_time_range_picker_title">"Pick time range"</string>
     <!-- Passcode lock -->
     <string name="digit_one">1</string>
     <!-- In the English locale, digit 1 has no text on it. This is simply empty space. If your locale has text on digit 1, then translate-->
-    <string name="digit_one_text">​</string>
+    <string name="digit_one_text" />
     <string name="digit_two">2</string>
     <string name="digit_two_text">ABC</string>
     <string name="digit_three">3</string>
@@ -380,11 +382,13 @@
     <plurals name="book_account_stats">
         <item quantity="one">%d рахунок</item>
         <item quantity="few">%d рахунки</item>
+        <item quantity="many">%d рахунки</item>
         <item quantity="other">%d рахунків</item>
     </plurals>
     <plurals name="book_transaction_stats">
         <item quantity="one">%d транзакція</item>
         <item quantity="few">%d транзакції</item>
+        <item quantity="many">%d транзакції</item>
         <item quantity="other">%d транзакцій</item>
     </plurals>
     <string-array name="report_account_types">
@@ -415,11 +419,59 @@
     <string name="title_no_backups_found">Резервних копій не знайдено</string>
     <string name="msg_no_backups_to_restore_from">Немає резервних копій для відновлення</string>
     <string name="label_select_destination_after_export">Обрати місце після завершення експорту</string>
-    <string name="label_dropbox_export_destination">Експортувати до папки /Apps/GnuCash Android/ у Dropbox</string>
+    <string name="label_dropbox_export_destination">Експортувати до папки /Apps/GnuCash Pocket/ у Dropbox</string>
     <string name="title_section_preferences">Параметри</string>
     <string name="category_name_appearance" msgid="8287486771764166805">"Вигляд"</string>
     <string name="settings_screen_theme">Тема</string>
     <string name="default_theme" msgid="4815428567082263639">"За умовчанням"</string>
     <string name="light_ui_title">"Яскравий режим"</string>
     <string name="dark_ui_title" msgid="3373976268671557416">"Темний режим"</string>
+    <string name="yes_sure">Yes, I\'m sure</string>
+    <string name="summary_export_accounts_csv">Export all accounts (without transactions) to CSV</string>
+    <string name="title_export_accounts_csv">Export as CSV</string>
+    <string name="label_csv_separator">Separator</string>
+    <string name="export_notice_csv">Exports transactions as CSV</string>
+    <string name="no_books">No books in the database</string>
+    <!-- Copied from "csv-transactions-export.cpp" -->
+    <string-array name="csv_transaction_headers">
+        <item>Date</item>
+        <item>Transaction ID</item>
+        <item>Number</item>
+        <item>Description</item>
+        <item>Notes</item>
+        <item>Commodity/Currency</item>
+        <item>Void Reason</item>
+        <item>Action</item>
+        <item>Memo</item>
+        <item>Full Account Name</item>
+        <item>Account Name</item>
+        <item>Amount With Sym</item>
+        <item>Amount Num.</item>
+        <item>Value With Sym</item>
+        <item>Value Num.</item>
+        <item>Reconcile</item>
+        <item>Reconcile Date</item>
+        <item>Rate/Price</item>
+    </string-array>
+    <string-array name="csv_account_headers">
+        <item>Type</item>
+        <item>Full Name</item>
+        <item>Name</item>
+        <item>Code</item>
+        <item>Description</item>
+        <item>Color</item>
+        <item>Notes</item>
+        <item>Commoditym</item>
+        <item>Commodityn</item>
+        <item>Hidden</item>
+        <item>Tax</item>
+        <item>Placeholder</item>
+    </string-array>
+    <string name="title_edit_budget">Edit Budget</string>
+    <string name="title_delete_transaction_backup">When delete transaction?</string>
+    <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>
+    <string name="action_transaction">transaction to</string>
+    <string name="action_backup">backup to</string>
+    <string name="title_import_book_backup">When importing a book?</string>
+    <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
 </resources>

@@ -56,10 +56,10 @@
     <string name="hint_delete_after_export">Все экспортированные проводки будут удалены по завершении.</string>
     <string name="title_settings">Настройки</string>
     <string-array name="export_destinations">
-        <item>Сохранить как&#8230;</item>
+        <item>Сохранить как…</item>
         <item>Dropbox</item>
         <item>ownCloud</item>
-        <item>Отправить&#8230;</item>
+        <item>Отправить…</item>
     </string-array>
     <string name="btn_move">Перенести</string>
     <string name="title_move_transactions">Перенести %1$d проводку (и)</string>
@@ -90,7 +90,7 @@
     <string name="title_change_passcode">Сменить пароль</string>
     <string name="title_about_gnucash">О Gnucash</string>
     <string name="title_export_email">Экспорт %1$s-файла из Gnucash Android</string>
-    <string name="description_export_email">Экспорт из GnuCash Android </string>
+    <string name="description_export_email">Экспорт из GnuCash Pocket</string>
     <string name="header_transaction_settings">Проводки</string>
     <string name="title_transaction_preferences">Свойства проводки</string>
     <string name="title_account_preferences">Свойства счёта</string>
@@ -111,7 +111,7 @@
     <string name="label_parent_account">Родительский счёт</string>
     <string name="title_xml_ofx_header">Использовать XML-заголовок OFX</string>
     <string name="summary_xml_ofx_header">Включите эту опцию, если экспортируете в программы отличные от GnuCash для ПК</string>
-    <string name="toast_transanction_amount_required">Введите сумму, чтобы сохранить проводку</string>
+    <string name="toast_transaction_amount_required">Введите сумму, чтобы сохранить проводку</string>
     <string name="toast_error_importing_accounts">Ошибка импорта счетов из GnuCash</string>
     <string name="toast_success_importing_accounts">Счета из GnuCash успешно импортированы</string>
     <string name="summary_import_accounts">Импорт структуры счетов из GnuCash для ПК</string>
@@ -167,7 +167,9 @@
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
     <string name="color_picker_default_title">Выберите цвет</string>
     <!-- Content description for a color square. -->
+    <string name="color_swatch_description">Color <xliff:g example="14" id="color_index">%1$d</xliff:g></string>
     <!-- Content description for a selected color square. -->
+    <string name="color_swatch_description_selected">Color <xliff:g example="14" id="color_index">%1$d</xliff:g> selected</string>
     <string name="label_account_color_and_type">Цвет &amp; Тип счёта</string>
     <string name="label_delete_sub_accounts">Удалить дочерние счета</string>
     <string name="title_recent_accounts">Последние</string>
@@ -196,8 +198,7 @@
     <string name="label_sell">Продажа</string>
     <string name="account_name_opening_balances">Начальное сальдо</string>
     <string name="account_name_equity">Собственные средства</string>
-    <string name="summary_save_opening_balances">Сохранить текущий баланс (перед удалением проводок) как новое начальное сальдо после их удаления
-    </string>
+    <string name="summary_save_opening_balances">Сохранить текущий баланс (перед удалением проводок) как новое начальное сальдо после их удаления</string>
     <string name="title_save_opening_balances">Сохранить начальное сальдо счетов</string>
     <string name="export_warning_ofx">OFX не поддерживает двойную запись</string>
     <string name="export_warning_qif">Создаёт на каждую валюту отдельный QIF-файл</string>
@@ -230,10 +231,10 @@
     <string name="label_delete_transactions">Удалить проводки</string>
     <string name="toast_disable_double_entry_to_save_transaction">Создайте и укажите трансфертный счёт или отключите двойную запись в настройках</string>
     <string name="label_tap_to_create_schedule">Создать расписание</string>
-    <string name="title_restore_backup">Восстановить из резервной копии&#8230;</string>
+    <string name="title_restore_backup">Восстановить из резервной копии…</string>
     <string name="header_backup_and_export_settings">Резервное копирование &amp; экспорт</string>
     <string name="title_dropbox_sync_preference">Включить DropBox</string>
-    <string name="title_owncloud_sync_preference">Включить ownCloud </string>
+    <string name="title_owncloud_sync_preference">Включить ownCloud</string>
     <string name="title_backup_preference_category">Резервное копирование</string>
     <string name="summary_dropbox_sync">Включить экспорт на DropBox</string>
     <string name="summary_owncloud_sync">Включить экспорт на ownCloud</string>
@@ -247,22 +248,22 @@
     <string name="toast_install_file_manager">Установите программу для просмотра файловой системы</string>
     <string name="title_select_backup_to_restore">Выберите резервную копию для восстановления</string>
     <string name="nav_menu_favorites">Закладки</string>
-    <string name="nav_menu_open">Открыть...</string>
+    <string name="nav_menu_open">Открыть…</string>
     <string name="nav_menu_reports">Отчёты</string>
-    <string name="nav_menu_export">Экспорт...</string>
+    <string name="nav_menu_export">Экспорт…</string>
     <string name="menu_settings" msgid="3524924670246877187">"Настройки"</string>
     <string name="username">Имя пользователя</string>
     <string name="password">Пароль</string>
     <string name="owncloud_pref">owncloud</string>
     <string name="owncloud_server_invalid">OC сервер не найден</string>
     <string name="owncloud_user_invalid">OC неверное имя/пароль</string>
-    <string name="owncloud_dir_invalid">Недопустимые символы: \\ &lt; &gt; : \&quot; | * ? </string>
+    <string name="owncloud_dir_invalid">Недопустимые символы: \\ &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">OC сервер ОК</string>
     <string name="owncloud_user_ok">OC имя/пароль ОК</string>
     <string name="owncloud_dir_ok">Имя папки ОК</string>
     <string name="title_enable_crashlytics">Записывать отказы программы</string>
     <string name="msg_enable_crashlytics">Включить запись отказов программы (рекомендуем). Обещаем не собирать приватную информацию.</string>
-    <string name="label_export_format">Формат </string>
+    <string name="label_export_format">Формат</string>
     <string name="label_old_passcode">Введите старый пароль</string>
     <string name="label_new_passcode">Введите новый пароль</string>
     <string name="title_scheduled_exports">Запланированный экспорт</string>
@@ -285,7 +286,7 @@
     <string name="wizard_option_create_default_accounts">Создать счета по умолчанию</string>
     <string name="wizard_option_import_my_accounts">Импортировать мои счета</string>
     <string name="wizard_option_let_me_handle_it">Сам сделаю</string>
-    <string name="wizard_option_currency_other">Другая&#8230;</string>
+    <string name="wizard_option_currency_other">Другая…</string>
     <string name="wizard_option_auto_send_crash_reports">Автоматически посылать отчёты о падениях</string>
     <string name="wizard_option_disable_crash_reports">Отключить отчёты о падениях</string>
     <string name="wizard_btn_back">Назад</string>
@@ -326,7 +327,7 @@
     <string name="summary_discuss">Поделиться идеями, обсудить изменения или сообщить о проблемах</string>
     <string name="summary_translate_gnucash">Перевести или вычитать на CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">Не совместимых приложений, чтобы получить экспортированные транзакции!</string>
-    <string name="menu_move_transaction">Перемещение&#8230;</string>
+    <string name="menu_move_transaction">Перемещение…</string>
     <string name="menu_duplicate_transaction">Повтор</string>
     <string name="title_cash_flow_report">Денежный поток</string>
     <string name="title_budgets">Бюджеты</string>
@@ -341,13 +342,13 @@
         <item>Последнее полугодие</item>
         <item>Последний год</item>
         <item>За всё время</item>
-        <item>Другой интервал&#8230;</item>
+        <item>Другой интервал…</item>
     </string-array>
     <string name="report_time_range_picker_title">"Pick time range"</string>
     <!-- Passcode lock -->
     <string name="digit_one">1</string>
     <!-- In the English locale, digit 1 has no text on it. This is simply empty space. If your locale has text on digit 1, then translate-->
-    <string name="digit_one_text">​</string>
+    <string name="digit_one_text" />
     <string name="digit_two">2</string>
     <string name="digit_two_text">АБВГ</string>
     <string name="digit_three">3</string>
@@ -367,7 +368,7 @@
     <string name="digit_zero">0</string>
     <string name="digit_zero_text">+</string>
     <string name="title_manage_books">Управление книгами</string>
-    <string name="menu_manage_books">Управление книгами&#8230;</string>
+    <string name="menu_manage_books">Управление книгами…</string>
     <string name="select_chart_to_view_details">Выберите любую часть диаграммы для просмотра деталей</string>
     <string name="title_confirm_delete_book">Подтвердить удаление книги</string>
     <string name="msg_all_book_data_will_be_deleted">Все аккаунты и транзакции в книге будут удалены!</string>
@@ -418,11 +419,59 @@
     <string name="title_no_backups_found">Резервные копии не найдены</string>
     <string name="msg_no_backups_to_restore_from">Нет существующих файлов резервных копий для восстановления</string>
     <string name="label_select_destination_after_export">Выберите пункт назначения после завершения экспорта</string>
-    <string name="label_dropbox_export_destination">Экспорт в \' / Apps/GnuCash Android /\' папку на Dropbox</string>
+    <string name="label_dropbox_export_destination">Экспорт в \' / Apps/GnuCash Pocket/\' папку на Dropbox</string>
     <string name="title_section_preferences">Настройки</string>
     <string name="category_name_appearance" msgid="8287486771764166805">"Оформление"</string>
     <string name="settings_screen_theme">Тема</string>
     <string name="default_theme" msgid="4815428567082263639">"По умолчанию"</string>
     <string name="light_ui_title">"Яркий тема"</string>
     <string name="dark_ui_title" msgid="3373976268671557416">"Тёмная тема"</string>
+    <string name="yes_sure">Yes, I\'m sure</string>
+    <string name="summary_export_accounts_csv">Export all accounts (without transactions) to CSV</string>
+    <string name="title_export_accounts_csv">Export as CSV</string>
+    <string name="label_csv_separator">Separator</string>
+    <string name="export_notice_csv">Exports transactions as CSV</string>
+    <string name="no_books">No books in the database</string>
+    <!-- Copied from "csv-transactions-export.cpp" -->
+    <string-array name="csv_transaction_headers">
+        <item>Date</item>
+        <item>Transaction ID</item>
+        <item>Number</item>
+        <item>Description</item>
+        <item>Notes</item>
+        <item>Commodity/Currency</item>
+        <item>Void Reason</item>
+        <item>Action</item>
+        <item>Memo</item>
+        <item>Full Account Name</item>
+        <item>Account Name</item>
+        <item>Amount With Sym</item>
+        <item>Amount Num.</item>
+        <item>Value With Sym</item>
+        <item>Value Num.</item>
+        <item>Reconcile</item>
+        <item>Reconcile Date</item>
+        <item>Rate/Price</item>
+    </string-array>
+    <string-array name="csv_account_headers">
+        <item>Type</item>
+        <item>Full Name</item>
+        <item>Name</item>
+        <item>Code</item>
+        <item>Description</item>
+        <item>Color</item>
+        <item>Notes</item>
+        <item>Commoditym</item>
+        <item>Commodityn</item>
+        <item>Hidden</item>
+        <item>Tax</item>
+        <item>Placeholder</item>
+    </string-array>
+    <string name="title_edit_budget">Edit Budget</string>
+    <string name="title_delete_transaction_backup">When delete transaction?</string>
+    <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>
+    <string name="action_transaction">transaction to</string>
+    <string name="action_backup">backup to</string>
+    <string name="title_import_book_backup">When importing a book?</string>
+    <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
 </resources>

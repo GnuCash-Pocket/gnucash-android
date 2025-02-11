@@ -56,10 +56,10 @@
     <string name="hint_delete_after_export">Alle geëxporteerde boekingen zullen verwijderd worden na de export</string>
     <string name="title_settings">Instellingen</string>
     <string-array name="export_destinations">
-        <item>Save As&#8230;</item>
+        <item>Save As…</item>
         <item>Dropbox</item>
         <item>ownCloud</item>
-        <item>Send to&#8230;</item>
+        <item>Send to…</item>
     </string-array>
     <string name="btn_move">Verplaatsen</string>
     <string name="title_move_transactions">%1$d boeking(en) verplaatsen</string>
@@ -89,8 +89,8 @@
     <string name="title_enable_passcode">Enable passcode</string>
     <string name="title_change_passcode">Wachtwoord wijzigen</string>
     <string name="title_about_gnucash">Over GnuCash</string>
-    <string name="title_export_email">Export %1$s vanuit GnuCash Android</string>
-    <string name="description_export_email">GnuCash Android Export van </string>
+    <string name="title_export_email">Export %1$s vanuit GnuCash Pocket</string>
+    <string name="description_export_email">GnuCash Pocket Export van</string>
     <string name="header_transaction_settings">Transacties</string>
     <string name="title_transaction_preferences">Transactie voorkeuren</string>
     <string name="title_account_preferences">Account voorkeuren</string>
@@ -111,20 +111,16 @@
     <string name="label_parent_account">Hoofdrekening</string>
     <string name="title_xml_ofx_header">Gebruik XML OFX hoofding</string>
     <string name="summary_xml_ofx_header">Schakel deze optie in als u naar een applicatie anders dan GnuCash wil exporteren</string>
-    <string name="toast_transanction_amount_required">Vul een bedrag in om de transactie op te slaan.</string>
+    <string name="toast_transaction_amount_required">Vul een bedrag in om de transactie op te slaan.</string>
     <string name="toast_error_importing_accounts">Fout bij het importeren van de GnuCash rekeningen</string>
     <string name="toast_success_importing_accounts">GnuCash rekeningen met succes geïmporteerd</string>
     <string name="summary_import_accounts">Rekeningstructuur uit desktop-GnuCash importeren</string>
     <string name="title_import_accounts">GnuCash rekeningen importeren</string>
-    <string name="summary_delete_all_accounts">Alle rekeningen uit de database verwijderen. Alle transacties zullen ook
-        verwijderd worden.
-    </string>
+    <string name="summary_delete_all_accounts">Alle rekeningen uit de database verwijderen. Alle transacties zullen ook verwijderd worden.</string>
     <string name="title_delete_all_accounts">Alle rekeningen verwijderen</string>
     <string name="header_account_settings">Rekeningen</string>
     <string name="toast_all_accounts_deleted">Alle rekeningen werden met succes verwijderd</string>
-    <string name="confirm_delete_all_accounts">Weet je zeker dat je alle rekeningen en transacties wil verwijderen? \nDeze
-        verrichting kan niet ongedaan gemaakt worden!
-    </string>
+    <string name="confirm_delete_all_accounts">Weet je zeker dat je alle rekeningen en transacties wil verwijderen? \nDeze verrichting kan niet ongedaan gemaakt worden!</string>
     <string name="summary_delete_all_transactions">Alle transacties in alle rekeningen zullen verwijderd worden!</string>
     <string name="title_delete_all_transactions">Alle transacties verwijderen</string>
     <string name="toast_all_transactions_deleted">Alle transacties werden met succes verwijderd!</string>
@@ -169,7 +165,9 @@
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
     <string name="color_picker_default_title">Kies een kleur</string>
     <!-- Content description for a color square. -->
+    <string name="color_swatch_description">Color <xliff:g example="14" id="color_index">%1$d</xliff:g></string>
     <!-- Content description for a selected color square. -->
+    <string name="color_swatch_description_selected">Color <xliff:g example="14" id="color_index">%1$d</xliff:g> selected</string>
     <string name="label_account_color_and_type">Rekening kleur &amp; type</string>
     <string name="label_delete_sub_accounts">Subrekeningen verwijderen</string>
     <string name="title_recent_accounts">Recente</string>
@@ -198,7 +196,7 @@
     <string name="label_sell">Verkopen</string>
     <string name="account_name_opening_balances">Openingsbalans</string>
     <string name="account_name_equity">Eigen Vermogen</string>
-    <string name="summary_save_opening_balances">Inschakelen om het huidige rekeningsaldo (alvorens boekingen te verwijderen) als nieuw beginsaldo te gebruiken nadat de boekingen verwijderd zijn    </string>
+    <string name="summary_save_opening_balances">Inschakelen om het huidige rekeningsaldo (alvorens boekingen te verwijderen) als nieuw beginsaldo te gebruiken nadat de boekingen verwijderd zijn</string>
     <string name="title_save_opening_balances">Beginsaldi rekeningen opslaan</string>
     <string name="export_warning_ofx">OFX biedt geen ondersteuning voor dubbel-boekhouden boekingen</string>
     <string name="export_warning_qif">Genereert afzonderlijke QIF bestanden per valuta</string>
@@ -231,10 +229,10 @@
     <string name="label_delete_transactions">Verrichtingen verwijderen</string>
     <string name="toast_disable_double_entry_to_save_transaction">Maak en geef een overdracht rekening op OF schakel dubbel-boekhouden uit in instellingen om deze boeking te bewaren</string>
     <string name="label_tap_to_create_schedule">Tik op om schema te maken</string>
-    <string name="title_restore_backup">Back-up terugzetten&#8230;</string>
+    <string name="title_restore_backup">Back-up terugzetten…</string>
     <string name="header_backup_and_export_settings">Back-up &amp; export</string>
     <string name="title_dropbox_sync_preference">Enable DropBox</string>
-    <string name="title_owncloud_sync_preference">Enable ownCloud </string>
+    <string name="title_owncloud_sync_preference">Enable ownCloud</string>
     <string name="title_backup_preference_category">Back-up</string>
     <string name="summary_dropbox_sync">Enable exporting to DropBox</string>
     <string name="summary_owncloud_sync">Enable exporting to ownCloud</string>
@@ -248,27 +246,25 @@
     <string name="toast_install_file_manager">Installeer een bestandsbeheerder om bestanden te selecteren</string>
     <string name="title_select_backup_to_restore">Selecteer back-up om te herstellen</string>
     <string name="nav_menu_favorites">Favorieten</string>
-    <string name="nav_menu_open">Open...</string>
+    <string name="nav_menu_open">Open…</string>
     <string name="nav_menu_reports">Rapporten</string>
-    <string name="nav_menu_export">Export...</string>
+    <string name="nav_menu_export">Export…</string>
     <string name="menu_settings" msgid="3524924670246877187">"Instellingen"</string>
     <string name="username">User Name</string>
     <string name="password">Password</string>
     <string name="owncloud_pref">owncloud</string>
     <string name="owncloud_server_invalid">OC server not found</string>
     <string name="owncloud_user_invalid">OC username/password invalid</string>
-    <string name="owncloud_dir_invalid">Invalid chars: \\ &lt; &gt; : \&quot; | * ? </string>
+    <string name="owncloud_dir_invalid">Invalid chars: \\ &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">OC server OK</string>
     <string name="owncloud_user_ok">OC username/password OK</string>
     <string name="owncloud_dir_ok">Dir name OK</string>
     <string name="title_enable_crashlytics">Crash logboekregistratie inschakelen</string>
-    <string name="msg_enable_crashlytics">Enable to send information about malfunctions to the developers for improvement (recommended).
-No user-identifiable information will be collected as part of this process!
-    </string>
+    <string name="msg_enable_crashlytics">Enable to send information about malfunctions to the developers for improvement (recommended). No user-identifiable information will be collected as part of this process!</string>
     <string name="label_export_format">Format</string>
     <string name="label_old_passcode">Voer uw oude wachtwoord in</string>
     <string name="label_new_passcode">Voer uw nieuwe wachtwoord in</string>
-    <string name="title_scheduled_exports">Scheduled Exports</string>
+    <string name="title_scheduled_exports">Exports</string>
     <string name="label_no_scheduled_exports_to_display">Geen geplande exports om weer te geven</string>
     <string name="title_create_export_schedule">Export schema maken</string>
     <string name="toast_exported_to">Geëxporteerd naar: %1$s</string>
@@ -288,7 +284,7 @@ No user-identifiable information will be collected as part of this process!
     <string name="wizard_option_create_default_accounts">Standaard rekeningen creëren</string>
     <string name="wizard_option_import_my_accounts">Mijn rekeningen importeren</string>
     <string name="wizard_option_let_me_handle_it">Laat mij het zelf doen</string>
-    <string name="wizard_option_currency_other">Other...</string>
+    <string name="wizard_option_currency_other">Other…</string>
     <string name="wizard_option_auto_send_crash_reports">Automatisch verzenden crashrapporten</string>
     <string name="wizard_option_disable_crash_reports">Crashrapporten uitschakelen</string>
     <string name="wizard_btn_back">Terug</string>
@@ -329,7 +325,7 @@ No user-identifiable information will be collected as part of this process!
     <string name="summary_discuss">Ideeën uitwisselen, bespreken van wijzigingen of problemen melden</string>
     <string name="summary_translate_gnucash">Vertalen of nalezen op CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">No compatible apps to receive the exported transactions!</string>
-    <string name="menu_move_transaction">Move&#8230;</string>
+    <string name="menu_move_transaction">Move…</string>
     <string name="menu_duplicate_transaction">Duplicate</string>
     <string name="title_cash_flow_report">Cash Flow</string>
     <string name="title_budgets">Budgets</string>
@@ -344,13 +340,13 @@ No user-identifiable information will be collected as part of this process!
         <item>Afgelopen 6 maanden</item>
         <item>Afgelopen 12 maanden</item>
         <item>Alle boekingen</item>
-        <item>Aangepast bereik&#8230;</item>
+        <item>Aangepast bereik…</item>
     </string-array>
     <string name="report_time_range_picker_title">"Pick time range"</string>
     <!-- Passcode lock -->
     <string name="digit_one">1</string>
     <!-- In the English locale, digit 1 has no text on it. This is simply empty space. If your locale has text on digit 1, then translate-->
-    <string name="digit_one_text">​</string>
+    <string name="digit_one_text" />
     <string name="digit_two">2</string>
     <string name="digit_two_text">ABC</string>
     <string name="digit_three">3</string>
@@ -370,7 +366,7 @@ No user-identifiable information will be collected as part of this process!
     <string name="digit_zero">0</string>
     <string name="digit_zero_text">+</string>
     <string name="title_manage_books">Manage Books</string>
-    <string name="menu_manage_books">Manage Books&#8230;</string>
+    <string name="menu_manage_books">Manage Books…</string>
     <string name="select_chart_to_view_details">Select any part of the chart to view details</string>
     <string name="title_confirm_delete_book">Confirm delete Book</string>
     <string name="msg_all_book_data_will_be_deleted">All accounts and transactions in this book will be deleted!</string>
@@ -417,11 +413,59 @@ No user-identifiable information will be collected as part of this process!
     <string name="title_no_backups_found">No backups found</string>
     <string name="msg_no_backups_to_restore_from">There are no existing backup files to restore from</string>
     <string name="label_select_destination_after_export">Select the destination after export is complete</string>
-    <string name="label_dropbox_export_destination">Export to \'/Apps/GnuCash Android/\' folder on Dropbox</string>
+    <string name="label_dropbox_export_destination">Export to \'/Apps/GnuCash Pocket/\' folder on Dropbox</string>
     <string name="title_section_preferences">Preferences</string>
     <string name="category_name_appearance" msgid="8287486771764166805">"Weergave"</string>
     <string name="settings_screen_theme">Thema</string>
     <string name="default_theme" msgid="4815428567082263639">"Standaard"</string>
     <string name="light_ui_title">"Heldere modus"</string>
     <string name="dark_ui_title" msgid="3373976268671557416">"Donkere modus"</string>
+    <string name="yes_sure">Yes, I\'m sure</string>
+    <string name="summary_export_accounts_csv">Export all accounts (without transactions) to CSV</string>
+    <string name="title_export_accounts_csv">Export as CSV</string>
+    <string name="label_csv_separator">Separator</string>
+    <string name="export_notice_csv">Exports transactions as CSV</string>
+    <string name="no_books">No books in the database</string>
+    <!-- Copied from "csv-transactions-export.cpp" -->
+    <string-array name="csv_transaction_headers">
+        <item>Date</item>
+        <item>Transaction ID</item>
+        <item>Number</item>
+        <item>Description</item>
+        <item>Notes</item>
+        <item>Commodity/Currency</item>
+        <item>Void Reason</item>
+        <item>Action</item>
+        <item>Memo</item>
+        <item>Full Account Name</item>
+        <item>Account Name</item>
+        <item>Amount With Sym</item>
+        <item>Amount Num.</item>
+        <item>Value With Sym</item>
+        <item>Value Num.</item>
+        <item>Reconcile</item>
+        <item>Reconcile Date</item>
+        <item>Rate/Price</item>
+    </string-array>
+    <string-array name="csv_account_headers">
+        <item>Type</item>
+        <item>Full Name</item>
+        <item>Name</item>
+        <item>Code</item>
+        <item>Description</item>
+        <item>Color</item>
+        <item>Notes</item>
+        <item>Commoditym</item>
+        <item>Commodityn</item>
+        <item>Hidden</item>
+        <item>Tax</item>
+        <item>Placeholder</item>
+    </string-array>
+    <string name="title_edit_budget">Edit Budget</string>
+    <string name="title_delete_transaction_backup">When delete transaction?</string>
+    <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>
+    <string name="action_transaction">transaction to</string>
+    <string name="action_backup">backup to</string>
+    <string name="title_import_book_backup">When importing a book?</string>
+    <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
 </resources>

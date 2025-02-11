@@ -56,10 +56,10 @@
     <string name="hint_delete_after_export">All exported transactions will be deleted when exporting is completed</string>
     <string name="title_settings">Settings</string>
     <string-array name="export_destinations">
-        <item>Save As&#8230;</item>
+        <item>Save As…</item>
         <item>Dropbox</item>
         <item>ownCloud</item>
-        <item>Send to&#8230;</item>
+        <item>Send to…</item>
     </string-array>
     <string name="btn_move">Move</string>
     <string name="title_move_transactions">Move %1$d transaction(s)</string>
@@ -89,8 +89,8 @@
     <string name="title_enable_passcode">Enable passcode</string>
     <string name="title_change_passcode">Change Passcode</string>
     <string name="title_about_gnucash">About GnuCash</string>
-    <string name="title_export_email">GnuCash Android %1$s export</string>
-    <string name="description_export_email">GnuCash Android Export from </string>
+    <string name="title_export_email">GnuCash %1$s export</string>
+    <string name="description_export_email">GnuCash Pocket Export from</string>
     <string name="header_transaction_settings">Transactions</string>
     <string name="title_transaction_preferences">Transaction Preferences</string>
     <string name="title_account_preferences">Account Preferences</string>
@@ -111,20 +111,16 @@
     <string name="label_parent_account">Parent account</string>
     <string name="title_xml_ofx_header">Use XML OFX header</string>
     <string name="summary_xml_ofx_header">Enable this option when exporting to third-party application other than GnuCash for desktop</string>
-    <string name="toast_transanction_amount_required">Enter an amount to save the transaction</string>
+    <string name="toast_transaction_amount_required">Enter an amount to save the transaction</string>
     <string name="toast_error_importing_accounts">An error occurred while importing the GnuCash accounts</string>
     <string name="toast_success_importing_accounts">GnuCash Accounts successfully imported</string>
-    <string name="summary_import_accounts">Import account structure exported from GnuCash desktop</string>
+    <string name="summary_import_accounts">Import account structure from GnuCash XML</string>
     <string name="title_import_accounts">Import GnuCash XML</string>
-    <string name="summary_delete_all_accounts">Delete all accounts in the database. All transactions will be deleted as
-        well.
-    </string>
+    <string name="summary_delete_all_accounts">Delete all accounts in the database. All transactions will be deleted as well.</string>
     <string name="title_delete_all_accounts">Delete all accounts</string>
     <string name="header_account_settings">Accounts</string>
     <string name="toast_all_accounts_deleted">All accounts have been successfully deleted</string>
-    <string name="confirm_delete_all_accounts">Are you sure you want to delete all accounts and transactions?\n\nThis
-        operation cannot be undone!
-    </string>
+    <string name="confirm_delete_all_accounts">Are you sure you want to delete all accounts and transactions?\n\nThis operation cannot be undone!</string>
     <string name="summary_delete_all_transactions">All transactions in all accounts will be deleted!</string>
     <string name="title_delete_all_transactions">Delete all transactions</string>
     <string name="toast_all_transactions_deleted">All transactions successfully deleted!</string>
@@ -169,7 +165,9 @@
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
     <string name="color_picker_default_title">Select a Color</string>
     <!-- Content description for a color square. -->
+    <string name="color_swatch_description">Color <xliff:g example="14" id="color_index">%1$d</xliff:g></string>
     <!-- Content description for a selected color square. -->
+    <string name="color_swatch_description_selected">Color <xliff:g example="14" id="color_index">%1$d</xliff:g> selected</string>
     <string name="label_account_color_and_type">Account Color &amp; Type</string>
     <string name="label_delete_sub_accounts">Delete sub-accounts</string>
     <string name="title_recent_accounts">Recent</string>
@@ -198,8 +196,7 @@
     <string name="label_sell">Sell</string>
     <string name="account_name_opening_balances">Opening Balances</string>
     <string name="account_name_equity">Equity</string>
-    <string name="summary_save_opening_balances">Enable to save the current account balance (before deleting transactions) as new opening balance after deleting transactions
-    </string>
+    <string name="summary_save_opening_balances">Enable to save the current account balance (before deleting transactions) as new opening balance after deleting transactions</string>
     <string name="title_save_opening_balances">Save account opening balances</string>
     <string name="export_warning_ofx">OFX does not support double-entry transactions</string>
     <string name="export_warning_qif">Generates separate QIF files per currency</string>
@@ -227,15 +224,15 @@
     <string name="toast_chart_percentage_mode_total">The percentage of selected value calculated from the total amount</string>
     <string name="toast_chart_percentage_mode_current_bar">The percentage of selected value calculated from the current stacked bar amount</string>
     <string name="label_save_template">Save as template</string>
-    <string name="label_delete_account_transactions_description">This account contains transactions. \nWhat would you like to do with these transactions</string>
-    <string name="label_delete_account_subaccounts_description">This account contains sub-accounts. \nWhat would you like to do with these sub-accounts</string>
+    <string name="label_delete_account_transactions_description">This account contains transactions.\nWhat would you like to do with these transactions?</string>
+    <string name="label_delete_account_subaccounts_description">This account contains sub-accounts.\nWhat would you like to do with these sub-accounts?</string>
     <string name="label_delete_transactions">Delete transactions</string>
     <string name="toast_disable_double_entry_to_save_transaction">Create and specify a transfer account OR disable double-entry in settings to save the transaction</string>
     <string name="label_tap_to_create_schedule">Tap to create schedule</string>
-    <string name="title_restore_backup">Restore Backup&#8230;</string>
+    <string name="title_restore_backup">Restore Backup…</string>
     <string name="header_backup_and_export_settings">Backup &amp; export</string>
     <string name="title_dropbox_sync_preference">Enable DropBox</string>
-    <string name="title_owncloud_sync_preference">Enable ownCloud </string>
+    <string name="title_owncloud_sync_preference">Enable ownCloud</string>
     <string name="title_backup_preference_category">Backup</string>
     <string name="summary_dropbox_sync">Enable exporting to DropBox</string>
     <string name="summary_owncloud_sync">Enable exporting to ownCloud</string>
@@ -249,16 +246,16 @@
     <string name="toast_install_file_manager">Install a file manager to select files</string>
     <string name="title_select_backup_to_restore">Select backup to restore</string>
     <string name="nav_menu_favorites">Favorites</string>
-    <string name="nav_menu_open">Open&#8230;</string>
+    <string name="nav_menu_open">Open…</string>
     <string name="nav_menu_reports">Reports</string>
-    <string name="nav_menu_export">Export&#8230;</string>
+    <string name="nav_menu_export">Export…</string>
     <string name="menu_settings" msgid="3524924670246877187">"Asetukset"</string>
     <string name="username">User Name</string>
     <string name="password">Password</string>
     <string name="owncloud_pref">owncloud</string>
     <string name="owncloud_server_invalid">OC server not found</string>
     <string name="owncloud_user_invalid">OC username/password invalid</string>
-    <string name="owncloud_dir_invalid">Invalid chars: \\ &lt; &gt; : \&quot; | * ? </string>
+    <string name="owncloud_dir_invalid">Invalid chars: \\ &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">OC server OK</string>
     <string name="owncloud_user_ok">OC username/password OK</string>
     <string name="owncloud_dir_ok">Dir name OK</string>
@@ -287,7 +284,7 @@
     <string name="wizard_option_create_default_accounts">Create default accounts</string>
     <string name="wizard_option_import_my_accounts">Import my accounts</string>
     <string name="wizard_option_let_me_handle_it">Let me handle it</string>
-    <string name="wizard_option_currency_other">Other&#8230;</string>
+    <string name="wizard_option_currency_other">Other…</string>
     <string name="wizard_option_auto_send_crash_reports">Automatically send crash reports</string>
     <string name="wizard_option_disable_crash_reports">Disable crash reports</string>
     <string name="wizard_btn_back">Back</string>
@@ -328,7 +325,7 @@
     <string name="summary_discuss">Share ideas, discuss changes or report problems</string>
     <string name="summary_translate_gnucash">Translate or proof-read on CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">No compatible apps to receive the exported transactions!</string>
-    <string name="menu_move_transaction">Move&#8230;</string>
+    <string name="menu_move_transaction">Move…</string>
     <string name="menu_duplicate_transaction">Duplicate</string>
     <string name="title_cash_flow_report">Cash Flow</string>
     <string name="title_budgets">Budgets</string>
@@ -343,13 +340,13 @@
         <item>Last 6 months</item>
         <item>Last 12 months</item>
         <item>All time</item>
-        <item>Custom range&#8230;</item>
+        <item>Custom range…</item>
     </string-array>
     <string name="report_time_range_picker_title">"Pick time range"</string>
     <!-- Passcode lock -->
     <string name="digit_one">1</string>
     <!-- In the English locale, digit 1 has no text on it. This is simply empty space. If your locale has text on digit 1, then translate-->
-    <string name="digit_one_text">​</string>
+    <string name="digit_one_text" />
     <string name="digit_two">2</string>
     <string name="digit_two_text">ABC</string>
     <string name="digit_three">3</string>
@@ -369,7 +366,7 @@
     <string name="digit_zero">0</string>
     <string name="digit_zero_text">+</string>
     <string name="title_manage_books">Manage Books</string>
-    <string name="menu_manage_books">Manage Books&#8230;</string>
+    <string name="menu_manage_books">Manage Books…</string>
     <string name="select_chart_to_view_details">Select any part of the chart to view details</string>
     <string name="title_confirm_delete_book">Confirm delete Book</string>
     <string name="msg_all_book_data_will_be_deleted">All accounts and transactions in this book will be deleted!</string>
@@ -416,11 +413,59 @@
     <string name="title_no_backups_found">No backups found</string>
     <string name="msg_no_backups_to_restore_from">There are no existing backup files to restore from</string>
     <string name="label_select_destination_after_export">Select the destination after export is complete</string>
-    <string name="label_dropbox_export_destination">Export to \'/Apps/GnuCash Android/\' folder on Dropbox</string>
+    <string name="label_dropbox_export_destination">Export to \'/Apps/GnuCash Pocket/\' folder on Dropbox</string>
     <string name="title_section_preferences">Preferences</string>
     <string name="category_name_appearance" msgid="8287486771764166805">"Ulkoasu"</string>
     <string name="settings_screen_theme">Teema</string>
     <string name="default_theme" msgid="4815428567082263639">"Oletus"</string>
     <string name="light_ui_title">"Kirkas tila"</string>
     <string name="dark_ui_title" msgid="3373976268671557416">"Tumma tila"</string>
+    <string name="yes_sure">Yes, I\'m sure</string>
+    <string name="summary_export_accounts_csv">Export all accounts (without transactions) to CSV</string>
+    <string name="title_export_accounts_csv">Export as CSV</string>
+    <string name="label_csv_separator">Separator</string>
+    <string name="export_notice_csv">Exports transactions as CSV</string>
+    <string name="no_books">No books in the database</string>
+    <!-- Copied from "csv-transactions-export.cpp" -->
+    <string-array name="csv_transaction_headers">
+        <item>Date</item>
+        <item>Transaction ID</item>
+        <item>Number</item>
+        <item>Description</item>
+        <item>Notes</item>
+        <item>Commodity/Currency</item>
+        <item>Void Reason</item>
+        <item>Action</item>
+        <item>Memo</item>
+        <item>Full Account Name</item>
+        <item>Account Name</item>
+        <item>Amount With Sym</item>
+        <item>Amount Num.</item>
+        <item>Value With Sym</item>
+        <item>Value Num.</item>
+        <item>Reconcile</item>
+        <item>Reconcile Date</item>
+        <item>Rate/Price</item>
+    </string-array>
+    <string-array name="csv_account_headers">
+        <item>Type</item>
+        <item>Full Name</item>
+        <item>Name</item>
+        <item>Code</item>
+        <item>Description</item>
+        <item>Color</item>
+        <item>Notes</item>
+        <item>Commoditym</item>
+        <item>Commodityn</item>
+        <item>Hidden</item>
+        <item>Tax</item>
+        <item>Placeholder</item>
+    </string-array>
+    <string name="title_edit_budget">Edit Budget</string>
+    <string name="title_delete_transaction_backup">When delete transaction?</string>
+    <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>
+    <string name="action_transaction">transaction to</string>
+    <string name="action_backup">backup to</string>
+    <string name="title_import_book_backup">When importing a book?</string>
+    <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
 </resources>

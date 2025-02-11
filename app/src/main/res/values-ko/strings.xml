@@ -56,10 +56,10 @@
     <string name="hint_delete_after_export">내보낸 모든 거래내역은 작업 완료후 삭제됩니다.</string>
     <string name="title_settings">설정</string>
     <string-array name="export_destinations">
-        <item>다른 이름으로 저장...</item>
+        <item>다른 이름으로 저장…</item>
         <item>Dropbox</item>
         <item>ownCloud</item>
-        <item>보내기...</item>
+        <item>보내기…</item>
     </string-array>
     <string name="btn_move">이동</string>
     <string name="title_move_transactions">%1$d개 거래내역 이동</string>
@@ -90,7 +90,7 @@
     <string name="title_change_passcode">암호 변경</string>
     <string name="title_about_gnucash">GnuCash 정보</string>
     <string name="title_export_email">안드로이드용 GnuCash %1$s 내보내기</string>
-    <string name="description_export_email">안드로이드용 GnuCash에서 내보냄. 날짜: </string>
+    <string name="description_export_email">안드로이드용 GnuCash에서 내보냄. 날짜:</string>
     <string name="header_transaction_settings">거래</string>
     <string name="title_transaction_preferences">거래 설정</string>
     <string name="title_account_preferences">계정 설정</string>
@@ -111,18 +111,16 @@
     <string name="label_parent_account">상위 계정</string>
     <string name="title_xml_ofx_header">XML OFX 헤더 사용</string>
     <string name="summary_xml_ofx_header">데스크탑용 GnuCash 이외의 타 응용 프로그램에 내보낼 때에 사용하세요</string>
-    <string name="toast_transanction_amount_required">거래기록에 저장할 금액을 입력해 주세요</string>
+    <string name="toast_transaction_amount_required">거래기록에 저장할 금액을 입력해 주세요</string>
     <string name="toast_error_importing_accounts">GnuCash 계정을 가져오는 동안 오류가 발생했습니다.</string>
     <string name="toast_success_importing_accounts">GnuCash 계정을 가져왔습니다</string>
     <string name="summary_import_accounts">데스크톱용 GnuCash프로그램에서 내보낸 계정 구조를 가져옵니다.</string>
     <string name="title_import_accounts">GnuCash XML파일 가져오기</string>
-    <string name="summary_delete_all_accounts">데이터베이스의 모든 계정과 거래내역을 삭제합니다.    </string>
+    <string name="summary_delete_all_accounts">데이터베이스의 모든 계정과 거래내역을 삭제합니다.</string>
     <string name="title_delete_all_accounts">모든 계정 삭제</string>
     <string name="header_account_settings">계정</string>
     <string name="toast_all_accounts_deleted">모든 계정을 삭제했습니다</string>
-    <string name="confirm_delete_all_accounts">정말로 모든 거래내역을 삭제할까요?\n\n삭제후에는
-        되돌릴 수 없습니다!
-    </string>
+    <string name="confirm_delete_all_accounts">정말로 모든 거래내역을 삭제할까요?\n\n삭제후에는 되돌릴 수 없습니다!</string>
     <string name="summary_delete_all_transactions">모든 계정의 모든 거래내역이 삭제됩니다!</string>
     <string name="title_delete_all_transactions">모든 거래내역 삭제</string>
     <string name="toast_all_transactions_deleted">모든 거래내역을 삭제하였습니다!</string>
@@ -166,7 +164,9 @@
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
     <string name="color_picker_default_title">색상 선택</string>
     <!-- Content description for a color square. -->
+    <string name="color_swatch_description">Color <xliff:g example="14" id="color_index">%1$d</xliff:g></string>
     <!-- Content description for a selected color square. -->
+    <string name="color_swatch_description_selected">Color <xliff:g example="14" id="color_index">%1$d</xliff:g> selected</string>
     <string name="label_account_color_and_type">계정의 색상과 종류</string>
     <string name="label_delete_sub_accounts">하위 계정 삭제</string>
     <string name="title_recent_accounts">최근 계정</string>
@@ -195,7 +195,7 @@
     <string name="label_sell">판매</string>
     <string name="account_name_opening_balances">최초 잔고</string>
     <string name="account_name_equity">자본</string>
-    <string name="summary_save_opening_balances">거래내역을 지우기 전의 잔고를 새로운 초기잔고로 사용합니다.    </string>
+    <string name="summary_save_opening_balances">거래내역을 지우기 전의 잔고를 새로운 초기잔고로 사용합니다.</string>
     <string name="title_save_opening_balances">계정 초기잔고를 저장합니다</string>
     <string name="export_warning_ofx">OFX 형식으로는 복식부기 거래내역을 저장할 수 없습니다</string>
     <string name="export_warning_qif">통화마다 각각 QIF 파일 생성</string>
@@ -231,7 +231,7 @@
     <string name="title_restore_backup">백업된 파일 복원</string>
     <string name="header_backup_and_export_settings">백업과 내보내기</string>
     <string name="title_dropbox_sync_preference">DropBox 사용</string>
-    <string name="title_owncloud_sync_preference">ownCloud 사용 </string>
+    <string name="title_owncloud_sync_preference">ownCloud 사용</string>
     <string name="title_backup_preference_category">백업</string>
     <string name="summary_dropbox_sync">DropBox에 내보내기 사용</string>
     <string name="summary_owncloud_sync">ownCloud에 내보내기 사용</string>
@@ -245,16 +245,16 @@
     <string name="toast_install_file_manager">파일을 선택할수 있게 파일 관리자를 설치합니다</string>
     <string name="title_select_backup_to_restore">복원할 백업파일을 선택해 주세요</string>
     <string name="nav_menu_favorites">즐겨찾기</string>
-    <string name="nav_menu_open">열기...</string>
+    <string name="nav_menu_open">열기…</string>
     <string name="nav_menu_reports">보고서</string>
-    <string name="nav_menu_export">내보내기...</string>
+    <string name="nav_menu_export">내보내기…</string>
     <string name="menu_settings" msgid="3524924670246877187">"설정"</string>
     <string name="username">사용자 이름</string>
     <string name="password">비밀번호</string>
     <string name="owncloud_pref">owncloud</string>
     <string name="owncloud_server_invalid">Owncloud 서버를 찾을 수 없습니다</string>
     <string name="owncloud_user_invalid">Owncloud의 사용자 이름 또는 비밀번호가 맞지 않습니다</string>
-    <string name="owncloud_dir_invalid">사용할 수 없는 문자: \\ &lt; &gt; : \&quot; | * ? </string>
+    <string name="owncloud_dir_invalid">사용할 수 없는 문자: \\ &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">Owncloud서버 정상</string>
     <string name="owncloud_user_ok">아이디와 비밀번호 확인</string>
     <string name="owncloud_dir_ok">폴더 확인</string>
@@ -283,7 +283,7 @@
     <string name="wizard_option_create_default_accounts">내장된 기본 계정 생성</string>
     <string name="wizard_option_import_my_accounts">계정정보 불러오기</string>
     <string name="wizard_option_let_me_handle_it">수동으로 설정</string>
-    <string name="wizard_option_currency_other">기타...</string>
+    <string name="wizard_option_currency_other">기타…</string>
     <string name="wizard_option_auto_send_crash_reports">비정상 종료시 자동으로 보고서 보내기</string>
     <string name="wizard_option_disable_crash_reports">보고서를 보내지 않음</string>
     <string name="wizard_btn_back">이전</string>
@@ -324,7 +324,7 @@
     <string name="summary_discuss">아이디어를 공유하거나 바뀐 점을 의논하고, 문제점를 알립니다.</string>
     <string name="summary_translate_gnucash">CrowdIn에서 번역하거나, 번역을 검토합니다</string>
     <string name="toast_no_compatible_apps_to_receive_export">내보낸 거래내역을 받을 앱이 없습니다</string>
-    <string name="menu_move_transaction">이동...</string>
+    <string name="menu_move_transaction">이동…</string>
     <string name="menu_duplicate_transaction">중복</string>
     <string name="title_cash_flow_report">현금흐름</string>
     <string name="title_budgets">예산</string>
@@ -365,7 +365,7 @@
     <string name="digit_zero">0</string>
     <string name="digit_zero_text">ㅇㅁ</string>
     <string name="title_manage_books">장부 관리</string>
-    <string name="menu_manage_books">장부 관리...</string>
+    <string name="menu_manage_books">장부 관리…</string>
     <string name="select_chart_to_view_details">세부정보를 확인할 부분을 선택하세요</string>
     <string name="title_confirm_delete_book">장부 삭제 확인</string>
     <string name="msg_all_book_data_will_be_deleted">이 장부의 모든 계정과 거래내역이 삭제됩니다!</string>
@@ -410,11 +410,59 @@
     <string name="title_no_backups_found">No backups found</string>
     <string name="msg_no_backups_to_restore_from">There are no existing backup files to restore from</string>
     <string name="label_select_destination_after_export">Select the destination after export is complete</string>
-    <string name="label_dropbox_export_destination">Export to \'/Apps/GnuCash Android/\' folder on Dropbox</string>
+    <string name="label_dropbox_export_destination">Export to \'/Apps/GnuCash Pocket/\' folder on Dropbox</string>
     <string name="title_section_preferences">Preferences</string>
     <string name="category_name_appearance" msgid="8287486771764166805">"디자인"</string>
     <string name="settings_screen_theme">"주제"</string>
     <string name="default_theme" msgid="4815428567082263639">"기본값"</string>
     <string name="light_ui_title">"밝은 모드"</string>
     <string name="dark_ui_title" msgid="3373976268671557416">"어두운 모드"</string>
+    <string name="yes_sure">Yes, I\'m sure</string>
+    <string name="summary_export_accounts_csv">Export all accounts (without transactions) to CSV</string>
+    <string name="title_export_accounts_csv">Export as CSV</string>
+    <string name="label_csv_separator">Separator</string>
+    <string name="export_notice_csv">Exports transactions as CSV</string>
+    <string name="no_books">No books in the database</string>
+    <!-- Copied from "csv-transactions-export.cpp" -->
+    <string-array name="csv_transaction_headers">
+        <item>Date</item>
+        <item>Transaction ID</item>
+        <item>Number</item>
+        <item>Description</item>
+        <item>Notes</item>
+        <item>Commodity/Currency</item>
+        <item>Void Reason</item>
+        <item>Action</item>
+        <item>Memo</item>
+        <item>Full Account Name</item>
+        <item>Account Name</item>
+        <item>Amount With Sym</item>
+        <item>Amount Num.</item>
+        <item>Value With Sym</item>
+        <item>Value Num.</item>
+        <item>Reconcile</item>
+        <item>Reconcile Date</item>
+        <item>Rate/Price</item>
+    </string-array>
+    <string-array name="csv_account_headers">
+        <item>Type</item>
+        <item>Full Name</item>
+        <item>Name</item>
+        <item>Code</item>
+        <item>Description</item>
+        <item>Color</item>
+        <item>Notes</item>
+        <item>Commoditym</item>
+        <item>Commodityn</item>
+        <item>Hidden</item>
+        <item>Tax</item>
+        <item>Placeholder</item>
+    </string-array>
+    <string name="title_edit_budget">Edit Budget</string>
+    <string name="title_delete_transaction_backup">When delete transaction?</string>
+    <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>
+    <string name="action_transaction">transaction to</string>
+    <string name="action_backup">backup to</string>
+    <string name="title_import_book_backup">When importing a book?</string>
+    <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
 </resources>
