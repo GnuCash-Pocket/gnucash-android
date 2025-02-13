@@ -511,6 +511,9 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @return {@link Cursor} to record retrieved
      */
     public Cursor fetchRecord(@NonNull String uid) {
+        if (TextUtils.isEmpty(uid)) {
+            throw new IllegalArgumentException("UID required");
+        }
         return mDb.query(mTableName, null, CommonColumns.COLUMN_UID + "=?",
                 new String[]{uid}, null, null, null);
     }
