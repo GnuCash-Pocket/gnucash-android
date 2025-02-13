@@ -43,7 +43,7 @@
         <include
             android:id="@+id/list_item"
             layout="@layout/list_item_2_lines"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/edge_padding"
             android:layout_marginTop="@dimen/edge_padding"
