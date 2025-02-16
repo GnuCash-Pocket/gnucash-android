@@ -623,7 +623,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 } else if (mInColorSlot) {
                     //Timber.d("Parsing color code: " + characterString);
                     String color = characterString.trim();
-                    //Gnucash exports the account color in format #rrrgggbbb, but we need only #rrggbb.
+                    //GnuCash exports the account color in format #rrrgggbbb, but we need only #rrggbb.
                     //so we trim the last digit in each block, doesn't affect the color much
                     if (mAccount != null) {
                         try {

@@ -369,7 +369,7 @@ class Transaction : BaseModel {
 
     companion object {
         /**
-         * Mime type for transactions in Gnucash.
+         * Mime type for transactions in GnuCash.
          * Used for recording transactions through intents
          */
         const val MIME_TYPE =

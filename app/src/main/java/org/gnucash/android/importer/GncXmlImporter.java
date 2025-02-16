@@ -42,7 +42,7 @@ import javax.xml.parsers.SAXParserFactory;
 import timber.log.Timber;
 
 /**
- * Importer for Gnucash XML files and GNCA (GnuCash Android) XML files
+ * Importer for GnuCash XML files and GNCA (GnuCash Android) XML files
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
