@@ -55,7 +55,7 @@ public class BudgetsDbAdapterTest extends GnuCashTest {
     public void setUp() {
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
         mBudgetsDbAdapter = BudgetsDbAdapter.getInstance();
-        mBudgetAmountsDbAdapter = BudgetAmountsDbAdapter.getInstance();
+        mBudgetAmountsDbAdapter = mBudgetsDbAdapter.getAmountsDbAdapter();
         mRecurrenceDbAdapter = RecurrenceDbAdapter.getInstance();
 
         mAccount = new Account("Budgeted account");
@@ -76,11 +76,11 @@ public class BudgetsDbAdapterTest extends GnuCashTest {
         assertThat(mBudgetsDbAdapter.getRecordsCount()).isZero();
         assertThat(mBudgetAmountsDbAdapter.getRecordsCount()).isZero();
         assertThat(mRecurrenceDbAdapter.getRecordsCount()).isZero();
-        String defaucltCurrencyCode = Commodity.DEFAULT_COMMODITY.getCurrencyCode();
+        Commodity defaultCurrency = Commodity.DEFAULT_COMMODITY;
 
         Budget budget = new Budget("Test");
-        budget.addBudgetAmount(new BudgetAmount(Money.getZeroInstance(), mAccount.getUID()));
-        budget.addBudgetAmount(new BudgetAmount(new Money("10", defaucltCurrencyCode), mSecondAccount.getUID()));
+        budget.addAmount(new BudgetAmount(Money.getZeroInstance(), mAccount.getUID()));
+        budget.addAmount(new BudgetAmount(new Money("10", defaultCurrency), mSecondAccount.getUID()));
         Recurrence recurrence = new Recurrence(PeriodType.MONTH);
         budget.setRecurrence(recurrence);
 
@@ -89,9 +89,9 @@ public class BudgetsDbAdapterTest extends GnuCashTest {
         assertThat(mBudgetAmountsDbAdapter.getRecordsCount()).isEqualTo(2);
         assertThat(mRecurrenceDbAdapter.getRecordsCount()).isEqualTo(1);
 
-        budget.getBudgetAmounts().clear();
-        BudgetAmount budgetAmount = new BudgetAmount(new Money("5", defaucltCurrencyCode), mAccount.getUID());
-        budget.addBudgetAmount(budgetAmount);
+        budget.clearBudgetAmounts();
+        BudgetAmount budgetAmount = new BudgetAmount(new Money("5", defaultCurrency), mAccount.getUID());
+        budget.addAmount(budgetAmount);
         mBudgetsDbAdapter.addRecord(budget);
 
         assertThat(mBudgetAmountsDbAdapter.getRecordsCount()).isEqualTo(1);
@@ -131,13 +131,13 @@ public class BudgetsDbAdapterTest extends GnuCashTest {
     private List<Budget> bulkCreateBudgets() {
         List<Budget> budgets = new ArrayList<>();
         Budget budget = new Budget("", new Recurrence(PeriodType.MONTH));
-        budget.addBudgetAmount(new BudgetAmount(Money.getZeroInstance(), mAccount.getUID()));
+        budget.addAmount(new BudgetAmount(Money.getZeroInstance(), mAccount.getUID()));
         budgets.add(budget);
 
         String defaultCurrencyCode = Commodity.DEFAULT_COMMODITY.getCurrencyCode();
         budget = new Budget("Random", new Recurrence(PeriodType.WEEK));
-        budget.addBudgetAmount(new BudgetAmount(new Money("10.50", defaultCurrencyCode), mAccount.getUID()));
-        budget.addBudgetAmount(new BudgetAmount(new Money("32.35", defaultCurrencyCode), mSecondAccount.getUID()));
+        budget.addAmount(new BudgetAmount(new Money("10.50", defaultCurrencyCode), mAccount.getUID()));
+        budget.addAmount(new BudgetAmount(new Money("32.35", defaultCurrencyCode), mSecondAccount.getUID()));
 
         budgets.add(budget);
         return budgets;
@@ -146,7 +146,7 @@ public class BudgetsDbAdapterTest extends GnuCashTest {
     @Test(expected = NullPointerException.class)
     public void savingBudget_shouldRequireExistingAccount() {
         Budget budget = new Budget("");
-        budget.addBudgetAmount(new BudgetAmount(Money.getZeroInstance(), "unknown-account"));
+        budget.addAmount(new BudgetAmount(Money.getZeroInstance(), "unknown-account"));
 
         mBudgetsDbAdapter.addRecord(budget);
     }
@@ -154,7 +154,7 @@ public class BudgetsDbAdapterTest extends GnuCashTest {
     @Test(expected = NullPointerException.class)
     public void savingBudget_shouldRequireRecurrence() {
         Budget budget = new Budget("");
-        budget.addBudgetAmount(new BudgetAmount(Money.getZeroInstance(), mAccount.getUID()));
+        budget.addAmount(new BudgetAmount(Money.getZeroInstance(), mAccount.getUID()));
 
         mBudgetsDbAdapter.addRecord(budget);
     }

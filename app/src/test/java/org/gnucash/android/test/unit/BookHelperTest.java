@@ -10,6 +10,7 @@ import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
+import org.gnucash.android.db.adapter.BudgetsDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.RecurrenceDbAdapter;
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
@@ -39,6 +40,7 @@ public abstract class BookHelperTest extends GnuCashTest {
     protected AccountsDbAdapter mAccountsDbAdapter;
     protected ScheduledActionDbAdapter mScheduledActionDbAdapter;
     protected CommoditiesDbAdapter mCommoditiesDbAdapter;
+    protected BudgetsDbAdapter mBudgetsDbAdapter;
 
     static {
         Timber.plant((Timber.Tree) new ConsoleTree(BuildConfig.DEBUG));
@@ -72,6 +74,7 @@ public abstract class BookHelperTest extends GnuCashTest {
         mAccountsDbAdapter = new AccountsDbAdapter(mainDb, mTransactionsDbAdapter);
         RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(mainDb);
         mScheduledActionDbAdapter = new ScheduledActionDbAdapter(mainDb, recurrenceDbAdapter);
+        mBudgetsDbAdapter = new BudgetsDbAdapter(mainDb, recurrenceDbAdapter);
         mImportedDb = mainDb;
     }
 

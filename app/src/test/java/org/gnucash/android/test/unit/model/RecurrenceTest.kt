@@ -99,7 +99,7 @@ class RecurrenceTest : GnuCashTest() {
         Locale.setDefault(Locale.ITALY)
         val recurrence = Recurrence(PeriodType.WEEK)
         val start = DateTime(2024, 1, 1, 0, 0)
-        val days: MutableList<Int> = ArrayList()
+        val days = mutableListOf<Int>()
         days.add(Calendar.MONDAY)
         recurrence.periodStart = start.millis
         recurrence.byDays = days

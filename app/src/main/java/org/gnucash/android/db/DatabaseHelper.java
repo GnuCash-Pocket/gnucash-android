@@ -201,6 +201,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + BudgetAmountEntry.COLUMN_AMOUNT_NUM + " integer not null, "
             + BudgetAmountEntry.COLUMN_AMOUNT_DENOM + " integer not null, "
             + BudgetAmountEntry.COLUMN_PERIOD_NUM + " integer not null, "
+            + BudgetAmountEntry.COLUMN_NOTES + " text, "
             + BudgetAmountEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
             + BudgetAmountEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
             + "FOREIGN KEY (" + BudgetAmountEntry.COLUMN_ACCOUNT_UID + ") REFERENCES " + AccountEntry.TABLE_NAME + " (" + AccountEntry.COLUMN_UID + ") ON DELETE CASCADE, "
