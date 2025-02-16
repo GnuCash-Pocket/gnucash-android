@@ -43,7 +43,7 @@ class CsvTransactionsExporter(
 ) : Exporter(context, params, bookUID) {
     private val mCsvSeparator = params.csvSeparator
     private val dateFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
-    private val accountCache: MutableMap<String, Account> = HashMap()
+    private val accountCache = mutableMapOf<String, Account>()
 
     @Throws(ExporterException::class)
     override fun generateExport(): List<String> {

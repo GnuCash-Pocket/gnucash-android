@@ -775,34 +775,12 @@ public class GncXmlExporter extends Exporter {
         xmlSerializer.endTag(null, TAG_BUDGET_RECURRENCE);
 
         //export budget slots
-        List<String> slotKey = new ArrayList<>();
-        List<String> slotType = new ArrayList<>();
-        List<String> slotValue = new ArrayList<>();
-
         xmlSerializer.startTag(null, TAG_BUDGET_SLOTS);
-        for (BudgetAmount budgetAmount : budget.getExpandedBudgetAmounts()) {
-            xmlSerializer.startTag(null, TAG_SLOT);
-            xmlSerializer.startTag(null, TAG_SLOT_KEY);
-            xmlSerializer.text(budgetAmount.getAccountUID());
-            xmlSerializer.endTag(null, TAG_SLOT_KEY);
 
-            Money amount = budgetAmount.getAmount();
-            slotKey.clear();
-            slotType.clear();
-            slotValue.clear();
-            for (int period = 0; period < budget.getNumberOfPeriods(); period++) {
-                slotKey.add(String.valueOf(period));
-                slotType.add(ATTR_VALUE_NUMERIC);
-                slotValue.add(amount.getNumerator() + "/" + amount.getDenominator());
-            }
-            //budget slots
+        exportBudgetAmounts(xmlSerializer, budget);
 
-            xmlSerializer.startTag(null, TAG_SLOT_VALUE);
-            xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_FRAME);
-            exportSlots(xmlSerializer, slotKey, slotType, slotValue);
-            xmlSerializer.endTag(null, TAG_SLOT_VALUE);
-            xmlSerializer.endTag(null, TAG_SLOT);
-        }
+        // Notes are grouped together.
+        exportBudgetNotes(xmlSerializer, budget);
 
         xmlSerializer.endTag(null, TAG_BUDGET_SLOTS);
         xmlSerializer.endTag(null, TAG_BUDGET);
@@ -949,4 +927,81 @@ public class GncXmlExporter extends Exporter {
         return "text/xml";
     }
 
+    private void exportBudgetAmounts(XmlSerializer xmlSerializer, Budget budget) throws IOException {
+        List<String> slotKey = new ArrayList<>();
+        List<String> slotType = new ArrayList<>();
+        List<String> slotValue = new ArrayList<>();
+
+        for (String accountID : budget.getAccounts()) {
+            slotKey.clear();
+            slotType.clear();
+            slotValue.clear();
+
+            final long periodCount = budget.getNumberOfPeriods();
+            for (long period = 0; period < periodCount; period++) {
+                BudgetAmount budgetAmount = budget.getBudgetAmount(accountID, period);
+                if (budgetAmount == null) continue;
+                Money amount = budgetAmount.getAmount();
+                slotKey.add(String.valueOf(period));
+                slotType.add(ATTR_VALUE_NUMERIC);
+                slotValue.add(amount.getNumerator() + "/" + amount.getDenominator());
+            }
+
+            if (slotKey.isEmpty()) continue;
+
+            xmlSerializer.startTag(null, TAG_SLOT);
+            xmlSerializer.startTag(null, TAG_SLOT_KEY);
+            xmlSerializer.text(accountID);
+            xmlSerializer.endTag(null, TAG_SLOT_KEY);
+            xmlSerializer.startTag(null, TAG_SLOT_VALUE);
+            xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_FRAME);
+            exportSlots(xmlSerializer, slotKey, slotType, slotValue);
+            xmlSerializer.endTag(null, TAG_SLOT_VALUE);
+            xmlSerializer.endTag(null, TAG_SLOT);
+        }
+    }
+
+    private void exportBudgetNotes(XmlSerializer xmlSerializer, Budget budget) throws IOException {
+        List<String> slotKey = new ArrayList<>();
+        List<String> slotType = new ArrayList<>();
+        List<String> slotValue = new ArrayList<>();
+
+        xmlSerializer.startTag(null, TAG_SLOT);
+        xmlSerializer.startTag(null, TAG_SLOT_KEY);
+        xmlSerializer.text(KEY_NOTES);
+        xmlSerializer.endTag(null, TAG_SLOT_KEY);
+        xmlSerializer.startTag(null, TAG_SLOT_VALUE);
+        xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_FRAME);
+
+        for (String accountID : budget.getAccounts()) {
+            slotKey.clear();
+            slotType.clear();
+            slotValue.clear();
+
+            final long periodCount = budget.getNumberOfPeriods();
+            for (long period = 0; period < periodCount; period++) {
+                BudgetAmount budgetAmount = budget.getBudgetAmount(accountID, period);
+                if (budgetAmount == null) continue;
+                String notes = budgetAmount.getNotes();
+                if (TextUtils.isEmpty(notes)) continue;
+                slotKey.add(String.valueOf(period));
+                slotType.add(ATTR_VALUE_STRING);
+                slotValue.add(notes);
+            }
+
+            if (slotKey.isEmpty()) continue;
+            xmlSerializer.startTag(null, TAG_SLOT);
+            xmlSerializer.startTag(null, TAG_SLOT_KEY);
+            xmlSerializer.text(accountID);
+            xmlSerializer.endTag(null, TAG_SLOT_KEY);
+            xmlSerializer.startTag(null, TAG_SLOT_VALUE);
+            xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_FRAME);
+            exportSlots(xmlSerializer, slotKey, slotType, slotValue);
+            xmlSerializer.endTag(null, TAG_SLOT_VALUE);
+            xmlSerializer.endTag(null, TAG_SLOT);
+        }
+
+        xmlSerializer.endTag(null, TAG_SLOT_VALUE);
+        xmlSerializer.endTag(null, TAG_SLOT);
+    }
 }

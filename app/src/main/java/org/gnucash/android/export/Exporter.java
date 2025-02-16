@@ -29,7 +29,6 @@ import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.db.adapter.BudgetAmountsDbAdapter;
 import org.gnucash.android.db.adapter.BudgetsDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.PricesDbAdapter;
@@ -128,7 +127,7 @@ public abstract class Exporter {
         mAccountsDbAdapter = new AccountsDbAdapter(db, mTransactionsDbAdapter);
         mPricesDbAdapter = new PricesDbAdapter(db, mCommoditiesDbAdapter);
         RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(db);
-        mBudgetsDbAdapter = new BudgetsDbAdapter(db, new BudgetAmountsDbAdapter(db), recurrenceDbAdapter);
+        mBudgetsDbAdapter = new BudgetsDbAdapter(db, recurrenceDbAdapter);
         mScheduledActionDbAdapter = new ScheduledActionDbAdapter(db, recurrenceDbAdapter);
 
         mExportCacheFilePath = null;
