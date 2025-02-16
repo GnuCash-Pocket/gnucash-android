@@ -72,7 +72,7 @@ class Account : BaseModel {
     /**
      * List of transactions in this account
      */
-    private var _transactionsList: MutableList<Transaction> = ArrayList()
+    private var _transactionsList = mutableListOf<Transaction>()
 
     /**
      * Account UID of the parent account. Can be null

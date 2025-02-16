@@ -48,8 +48,10 @@ public class BudgetsDbAdapter extends DatabaseAdapter<Budget> {
      *
      * @param db SQLiteDatabase object
      */
-    public BudgetsDbAdapter(SQLiteDatabase db, BudgetAmountsDbAdapter budgetAmountsDbAdapter,
-                            RecurrenceDbAdapter recurrenceDbAdapter) {
+    public BudgetsDbAdapter(SQLiteDatabase db,
+                            BudgetAmountsDbAdapter budgetAmountsDbAdapter,
+                            RecurrenceDbAdapter recurrenceDbAdapter
+    ) {
         super(db, BudgetEntry.TABLE_NAME, new String[]{
                 BudgetEntry.COLUMN_NAME,
                 BudgetEntry.COLUMN_DESCRIPTION,
@@ -61,6 +63,15 @@ public class BudgetsDbAdapter extends DatabaseAdapter<Budget> {
     }
 
     /**
+     * Opens the database adapter with an existing database
+     *
+     * @param db SQLiteDatabase object
+     */
+    public BudgetsDbAdapter(SQLiteDatabase db, RecurrenceDbAdapter recurrenceDbAdapter) {
+        this(db, new BudgetAmountsDbAdapter(db), recurrenceDbAdapter);
+    }
+
+    /**
      * Returns an instance of the budget database adapter
      *
      * @return BudgetsDbAdapter instance
@@ -69,9 +80,13 @@ public class BudgetsDbAdapter extends DatabaseAdapter<Budget> {
         return GnuCashApplication.getBudgetDbAdapter();
     }
 
+    public BudgetAmountsDbAdapter getAmountsDbAdapter() {
+        return mBudgetAmountsDbAdapter;
+    }
+
     @Override
     public void addRecord(@NonNull Budget budget, UpdateMethod updateMethod) {
-        if (budget.getBudgetAmounts().size() == 0)
+        if (budget.getBudgetAmounts().isEmpty())
             throw new IllegalArgumentException("Budgets must have budget amounts");
 
         mRecurrenceDbAdapter.addRecord(budget.getRecurrence(), updateMethod);
@@ -113,7 +128,6 @@ public class BudgetsDbAdapter extends DatabaseAdapter<Budget> {
         String description = cursor.getString(cursor.getColumnIndexOrThrow(BudgetEntry.COLUMN_DESCRIPTION));
         String recurrenceUID = cursor.getString(cursor.getColumnIndexOrThrow(BudgetEntry.COLUMN_RECURRENCE_UID));
         long numPeriods = cursor.getLong(cursor.getColumnIndexOrThrow(BudgetEntry.COLUMN_NUM_PERIODS));
-
 
         Budget budget = new Budget(name);
         populateBaseModelAttributes(cursor, budget);

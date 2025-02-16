@@ -29,45 +29,17 @@ import timber.log.Timber
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-class Budget : BaseModel {
-    /**
-     * Default constructor
-     */
-    constructor() {
-        //nothing to see here, move along
-    }
-
-    /**
-     * Overloaded constructor.
-     * Initializes the name and amount of this budget
-     *
-     * @param name String name of the budget
-     */
-    constructor(name: String) {
-        this.name = name
-    }
-
-    constructor(name: String, recurrence: Recurrence) {
-        this.name = name
-        this.recurrence = recurrence
-    }
+class Budget @JvmOverloads constructor(
+    name: String = "",
+    recurrence: Recurrence? = null
+) : BaseModel() {
 
     /**
      * Returns the name of the budget
      *
      * @return name of the budget
      */
-    var name: String? = null
-        private set
-
-    /**
-     * Sets the name of the budget
-     *
-     * @param name String name of budget
-     */
-    fun setName(name: String) {
-        this.name = name
-    }
+    var name: String = ""
 
     /**
      * A description of the budget
@@ -78,18 +50,8 @@ class Budget : BaseModel {
      * The recurrence for this budget
      */
     var recurrence: Recurrence? = null
-        private set
 
-    /**
-     * Set the recurrence pattern for this budget
-     *
-     * @param recurrence Recurrence object
-     */
-    fun setRecurrence(recurrence: Recurrence) {
-        this.recurrence = recurrence
-    }
-
-    private var _budgetAmounts: MutableList<BudgetAmount> = ArrayList()
+    private val amountsByAccount = mutableMapOf<String, MutableList<BudgetAmount>>()
 
     /**
      * Return list of budget amounts associated with this budget
@@ -97,18 +59,27 @@ class Budget : BaseModel {
      * @return List of budget amounts
      */
     val budgetAmounts: List<BudgetAmount>
-        get() = _budgetAmounts
+        get() = amountsByAccount.values.flatten()
+
+    init {
+        this.name = name
+        this.recurrence = recurrence
+    }
 
     /**
      * Set the list of budget amounts
      *
      * @param budgetAmounts List of budget amounts
      */
-    fun setBudgetAmounts(budgetAmounts: MutableList<BudgetAmount>) {
-        _budgetAmounts = budgetAmounts
-        for (budgetAmount in _budgetAmounts) {
-            budgetAmount.budgetUID = uid
+    fun setBudgetAmounts(budgetAmounts: List<BudgetAmount>) {
+        clearBudgetAmounts()
+        for (budgetAmount in budgetAmounts) {
+            addAmount(budgetAmount)
         }
+    }
+
+    fun clearBudgetAmounts() {
+        amountsByAccount.clear()
     }
 
     /**
@@ -116,9 +87,26 @@ class Budget : BaseModel {
      *
      * @param budgetAmount Budget amount
      */
-    fun addBudgetAmount(budgetAmount: BudgetAmount) {
+    fun addAmount(budgetAmount: BudgetAmount): BudgetAmount {
         budgetAmount.budgetUID = uid
-        _budgetAmounts.add(budgetAmount)
+        val list = amountsByAccount.getOrPut(budgetAmount.accountUID!!) { mutableListOf() }
+        list.add(budgetAmount)
+        return budgetAmount
+    }
+
+    /**
+     * Adds a BudgetAmount to this budget
+     *
+     * @param account The budget account.
+     * @param period The budget period.
+     * @param amount The budget amount.
+     */
+    fun addAmount(account: Account, period: Long, amount: BigDecimal): BudgetAmount {
+        val budgetAmount = BudgetAmount(budgetUID = uid, accountUID = account.uid).apply {
+            this.periodNum = period
+            this.amount = Money(amount, account.commodity)
+        }
+        return addAmount(budgetAmount)
     }
 
     /**
@@ -128,10 +116,14 @@ class Budget : BaseModel {
      * @return Money amount of the budget or null if the budget has no amount for the account
      */
     fun getAmount(accountUID: String): Money? {
-        for (budgetAmount in _budgetAmounts) {
-            if (budgetAmount.accountUID == accountUID) return budgetAmount.amount
+        val budgetAmounts = amountsByAccount[accountUID] ?: return null
+        var result = zeroInstance
+        for (budgetAmount in budgetAmounts) {
+            if (budgetAmount.accountUID == accountUID) {
+                result += budgetAmount.amount
+            }
         }
-        return null
+        return result
     }
 
     /**
@@ -141,13 +133,8 @@ class Budget : BaseModel {
      * @param periodNum  Budgeting period, zero-based index
      * @return Money amount or zero if no matching [BudgetAmount] is found for the period
      */
-    fun getAmount(accountUID: String, periodNum: Int): Money? {
-        for (budgetAmount in _budgetAmounts) {
-            if (budgetAmount.accountUID == accountUID && (budgetAmount.periodNum == periodNum.toLong() || budgetAmount.periodNum == -1L)) {
-                return budgetAmount.amount
-            }
-        }
-        return zeroInstance
+    fun getAmount(accountUID: String, periodNum: Long): Money {
+        return getBudgetAmount(accountUID, periodNum)?.amount ?: zeroInstance
     }
 
     /**
@@ -157,20 +144,14 @@ class Budget : BaseModel {
      *
      * @return Money sum of all amounts
      */
-    val amountSum: Money?
+    val amountSum: Money
         get() {
-            var sum: Money? =
-                null //we explicitly allow this null instead of a money instance,
-            // because this method should never return null for a budget
-            for (budgetAmount in _budgetAmounts) {
-                if (sum == null) {
-                    sum = budgetAmount.amount
-                } else {
-                    try {
-                        sum += budgetAmount.amount.abs()
-                    } catch (ex: CurrencyMismatchException) {
-                        Timber.w("Skip some budget amounts with different currency")
-                    }
+            var sum: Money = zeroInstance
+            for (budgetAmount in amountsByAccount.values.flatten()) {
+                try {
+                    sum += budgetAmount.amount.abs()
+                } catch (ex: CurrencyMismatchException) {
+                    Timber.w("Skip some budget amounts with different currency")
                 }
             }
             return sum
@@ -202,7 +183,9 @@ class Budget : BaseModel {
                         .dayOfMonth().withMinimumValue()
 
                     PeriodType.YEAR -> localDate.minusYears(interval).dayOfYear().withMinimumValue()
-                    PeriodType.LAST_WEEKDAY -> localDate.minusMonths(interval).lastDayOfWeek(localDate)
+                    PeriodType.LAST_WEEKDAY -> localDate.minusMonths(interval)
+                        .lastDayOfWeek(localDate)
+
                     PeriodType.NTH_WEEKDAY -> localDate.minusMonths(interval).dayOfWeek(localDate)
                     PeriodType.END_OF_MONTH -> localDate.minusMonths(interval)
                         .dayOfMonth().withMaximumValue()
@@ -232,7 +215,9 @@ class Budget : BaseModel {
                         .dayOfMonth().withMaximumValue()
 
                     PeriodType.YEAR -> localDate.plusYears(interval).dayOfYear().withMaximumValue()
-                    PeriodType.LAST_WEEKDAY -> localDate.plusMonths(interval).lastDayOfWeek(localDate)
+                    PeriodType.LAST_WEEKDAY -> localDate.plusMonths(interval)
+                        .lastDayOfWeek(localDate)
+
                     PeriodType.NTH_WEEKDAY -> localDate.plusMonths(interval).dayOfWeek(localDate)
                     PeriodType.END_OF_MONTH -> localDate.plusMonths(interval).lastDayOfMonth()
                 }
@@ -285,19 +270,34 @@ class Budget : BaseModel {
         return localDate.toDateTime().millis
     }
 
+    fun getBudgetAmount(account: Account, period: Long): BudgetAmount? {
+        return getBudgetAmount(account.uid!!, period)
+    }
+
+    fun getBudgetAmount(accountUID: String, period: Long): BudgetAmount? {
+        val budgetAmounts = amountsByAccount[accountUID] ?: return null
+        val budgetUID = uid
+
+        return budgetAmounts.firstOrNull {
+            it.budgetUID == budgetUID
+                    && it.accountUID == accountUID
+                    && (it.periodNum == period || it.periodNum == PERIOD_ALL)
+        }
+    }
+
     /**
      * Returns the number of accounts in this budget
      *
      * @return Number of budgeted accounts
      */
-    val numberOfAccounts: Int
-        get() {
-            val accountSet: MutableSet<String?> = HashSet()
-            for (budgetAmount in _budgetAmounts) {
-                accountSet.add(budgetAmount.accountUID)
-            }
-            return accountSet.size
-        }//if not all amounts are the same, then just add them as we read them
+    val numberOfAccounts: Int get() = accounts.size
+
+    /**
+     * Returns the list of accounts in this budget
+     *
+     * @return The accounts UIDs
+     */
+    val accounts: Set<String> get() = amountsByAccount.keys
 
     /**
      * Returns the list of budget amounts where only one BudgetAmount is present if the amount of
@@ -316,54 +316,35 @@ class Budget : BaseModel {
      */
     val compactedBudgetAmounts: List<BudgetAmount>
         get() {
-            val accountAmountMap: MutableMap<String?, MutableList<BigDecimal>> = HashMap()
+            val amountsPerAccount = mutableMapOf<String, List<BigDecimal>>()
 
-            for (budgetAmount in _budgetAmounts) {
-                val accountUID = budgetAmount.accountUID
-                val amount = budgetAmount.amount.asBigDecimal()
-
-                if (accountAmountMap.containsKey(accountUID)) {
-                    accountAmountMap[accountUID]!!.add(amount)
-
-                } else {
-                    val amounts: MutableList<BigDecimal> = ArrayList()
-                    amounts.add(amount)
-                    accountAmountMap[accountUID] = amounts
-                }
+            for (accountUID in amountsByAccount.keys) {
+                amountsPerAccount[accountUID] =
+                    amountsByAccount[accountUID]!!.map { it.amount.toBigDecimal() }
             }
 
-            val compactBudgetAmounts: MutableList<BudgetAmount> = ArrayList()
+            val compactBudgetAmounts = mutableListOf<BudgetAmount>()
 
-            for ((key, amounts) in accountAmountMap) {
+            for ((accountUID, amounts) in amountsPerAccount) {
                 val first = amounts[0]
                 var allSame = true
-                for (bigDecimal in amounts) {
-                    allSame = allSame and (bigDecimal == first)
+                for (amount in amounts) {
+                    allSame = allSame && (amount == first)
                 }
 
                 if (allSame) {
                     if (amounts.size == 1) {
-                        for (bgtAmount in _budgetAmounts) {
-                            if (bgtAmount.accountUID == key) {
-                                compactBudgetAmounts.add(bgtAmount)
-                                break
-                            }
-                        }
-
+                        compactBudgetAmounts.addAll(amountsByAccount[accountUID]!!)
                     } else {
-                        val bgtAmount = BudgetAmount(uid, key)
-                        bgtAmount.setAmount(Money(first, Commodity.DEFAULT_COMMODITY))
-                        bgtAmount.periodNum = -1
-                        compactBudgetAmounts.add(bgtAmount)
+                        val budgetAmount = BudgetAmount(uid, accountUID).apply {
+                            amount = Money(first, Commodity.DEFAULT_COMMODITY)
+                            periodNum = PERIOD_ALL
+                        }
+                        compactBudgetAmounts.add(budgetAmount)
                     }
-
                 } else {
                     //if not all amounts are the same, then just add them as we read them
-                    for (bgtAmount in _budgetAmounts) {
-                        if (bgtAmount.accountUID == key) {
-                            compactBudgetAmounts.add(bgtAmount)
-                        }
-                    }
+                    compactBudgetAmounts.addAll(amountsByAccount[accountUID]!!)
                 }
             }
             return compactBudgetAmounts
@@ -381,32 +362,28 @@ class Budget : BaseModel {
      */
     val expandedBudgetAmounts: List<BudgetAmount>
         get() {
-            val amountsToAdd: MutableList<BudgetAmount> = ArrayList()
-            val amountsToRemove: MutableList<BudgetAmount> = ArrayList()
+            val amounts = mutableListOf<BudgetAmount>()
 
-            for (budgetAmount in _budgetAmounts) {
-                if (budgetAmount.periodNum == -1L) {
-                    amountsToRemove.add(budgetAmount)
+            for (budgetAmount in amountsByAccount.values.flatten()) {
+                if (budgetAmount.periodNum == PERIOD_ALL) {
                     val accountUID = budgetAmount.accountUID
 
                     for (period in 0 until numberOfPeriods) {
-                        val bgtAmount = BudgetAmount(uid, accountUID)
-                        bgtAmount.setAmount(budgetAmount.amount)
-                        bgtAmount.periodNum = period
-                        amountsToAdd.add(bgtAmount)
+                        val bgtAmount = BudgetAmount(uid, accountUID).apply {
+                            amount = budgetAmount.amount
+                            periodNum = period
+                        }
+                        amounts.add(bgtAmount)
                     }
+                } else {
+                    amounts.add(budgetAmount)
                 }
             }
 
-            val expandedBudgetAmounts: MutableList<BudgetAmount> = ArrayList(_budgetAmounts)
-            for (bgtAmount in amountsToRemove) {
-                expandedBudgetAmounts.remove(bgtAmount)
-            }
-
-            for (bgtAmount in amountsToAdd) {
-                expandedBudgetAmounts.add(bgtAmount)
-            }
-
-            return expandedBudgetAmounts
+            return amounts
         }
+
+    companion object {
+        const val PERIOD_ALL = -1L
+    }
 }

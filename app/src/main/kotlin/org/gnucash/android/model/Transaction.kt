@@ -41,7 +41,7 @@ class Transaction : BaseModel {
     /**
      * The splits making up this transaction
      */
-    private var _splitList: MutableList<Split> = ArrayList()
+    private var _splitList = mutableListOf<Split>()
 
     /**
      * An extra note giving details about the transaction
@@ -165,7 +165,7 @@ class Transaction : BaseModel {
      * @return List of [org.gnucash.android.model.Split]s
      */
     fun getSplits(accountUID: String): List<Split> {
-        val splits: MutableList<Split> = ArrayList()
+        val splits = mutableListOf<Split>()
         for (split in _splitList) {
             if (split.accountUID == accountUID) {
                 splits.add(split)

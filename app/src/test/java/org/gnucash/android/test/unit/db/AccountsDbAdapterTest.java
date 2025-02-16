@@ -285,7 +285,7 @@ public class AccountsDbAdapterTest extends GnuCashTest {
 
         Budget budget = new Budget("Test");
         BudgetAmount budgetAmount = new BudgetAmount(Money.getZeroInstance(), account.getUID());
-        budget.addBudgetAmount(budgetAmount);
+        budget.addAmount(budgetAmount);
         budget.setRecurrence(new Recurrence(PeriodType.MONTH));
         BudgetsDbAdapter.getInstance().addRecord(budget);
 

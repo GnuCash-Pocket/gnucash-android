@@ -20,6 +20,7 @@ package org.gnucash.android.importer;
 import static org.gnucash.android.export.xml.GncXmlHelper.ATTR_KEY_TYPE;
 import static org.gnucash.android.export.xml.GncXmlHelper.ATTR_VALUE_FRAME;
 import static org.gnucash.android.export.xml.GncXmlHelper.ATTR_VALUE_NUMERIC;
+import static org.gnucash.android.export.xml.GncXmlHelper.ATTR_VALUE_STRING;
 import static org.gnucash.android.export.xml.GncXmlHelper.COMMODITY_CURRENCY;
 import static org.gnucash.android.export.xml.GncXmlHelper.COMMODITY_ISO4217;
 import static org.gnucash.android.export.xml.GncXmlHelper.KEY_COLOR;
@@ -40,6 +41,7 @@ import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ACCT_PARENT;
 import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ACCT_TYPE;
 import static org.gnucash.android.export.xml.GncXmlHelper.TAG_BUDGET;
 import static org.gnucash.android.export.xml.GncXmlHelper.TAG_BUDGET_DESCRIPTION;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_BUDGET_ID;
 import static org.gnucash.android.export.xml.GncXmlHelper.TAG_BUDGET_NAME;
 import static org.gnucash.android.export.xml.GncXmlHelper.TAG_BUDGET_NUM_PERIODS;
 import static org.gnucash.android.export.xml.GncXmlHelper.TAG_BUDGET_RECURRENCE;
@@ -107,7 +109,6 @@ import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.db.adapter.BudgetAmountsDbAdapter;
 import org.gnucash.android.db.adapter.BudgetsDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
@@ -270,7 +271,6 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     private final List<Budget> mBudgetList;
     private Budget mBudget;
     private Recurrence mRecurrence;
-    private BudgetAmount mBudgetAmount;
     private Commodity mCommodity;
     private final Map<String, Map<String, Commodity>> mCommodities;
     private String mCommoditySpace;
@@ -298,9 +298,10 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
      * Saves the attribute of the slot tag
      * Used for determining where we are in the budget amounts
      */
-    private String mSlotTagAttribute = null;
+    private final Stack<String> slotTypes = new Stack<>();
 
-    private String mBudgetAmountAccountUID = null;
+    private Account budgetAccount = null;
+    private Long budgetPeriod = null;
 
     /**
      * Flag which says to ignore template transactions until we successfully parse a split amount
@@ -350,7 +351,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
         RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(mDB);
         mScheduledActionsDbAdapter = new ScheduledActionDbAdapter(mDB, recurrenceDbAdapter);
         mPricesDbAdapter = new PricesDbAdapter(mDB, mCommoditiesDbAdapter);
-        mBudgetsDbAdapter = new BudgetsDbAdapter(mDB, new BudgetAmountsDbAdapter(mDB), recurrenceDbAdapter);
+        mBudgetsDbAdapter = new BudgetsDbAdapter(mDB, recurrenceDbAdapter);
 
         mContent = new StringBuilder();
 
@@ -421,11 +422,9 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 mPriceCurrency = false;
                 mPriceCommodity = true;
                 break;
-
             case TAG_BUDGET:
                 mBudget = new Budget();
                 break;
-
             case TAG_GNC_RECURRENCE:
             case TAG_BUDGET_RECURRENCE:
                 mRecurrence = new Recurrence(PeriodType.MONTH);
@@ -434,12 +433,10 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 mInBudgetSlot = true;
                 break;
             case TAG_SLOT:
-                if (mInBudgetSlot) {
-                    mBudgetAmount = new BudgetAmount(mBudget.getUID(), mBudgetAmountAccountUID);
-                }
+            case TAG_SLOT_KEY:
                 break;
             case TAG_SLOT_VALUE:
-                mSlotTagAttribute = attributes.getValue(ATTR_KEY_TYPE);
+                slotTypes.push(attributes.getValue(ATTR_KEY_TYPE));
                 break;
             case TAG_COMMODITY:
                 mCommodity = new Commodity("", "", 100);
@@ -449,7 +446,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
 
     @Override
     public void endElement(String uri, String localName, String qualifiedName) throws SAXException {
-        // FIXME: 22.10.2015 First parse the number of accounts/transactions and use the numer to init the array lists
+        // FIXME: 22.10.2015 First parse the number of accounts/transactions and use the number to init the array lists
         String characterString = mContent.toString().trim();
 
         if (mIgnoreElement != null) {
@@ -577,6 +574,9 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 }
                 break;
             case TAG_SLOT:
+                if (mInBudgetSlot) {
+                    budgetPeriod = null;
+                }
                 break;
             case TAG_SLOT_KEY:
                 switch (characterString) {
@@ -591,6 +591,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                         break;
                     case KEY_NOTES:
                         mIsNote = true;
+                        budgetAccount = null;
                         break;
                     case KEY_DEFAULT_TRANSFER_ACCOUNT:
                         mInDefaultTransferAccount = true;
@@ -607,15 +608,27 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                     case KEY_DEBIT_NUMERIC:
                         mInDebitNumericSlot = true;
                         break;
-                }
-                if (mInBudgetSlot && mBudgetAmountAccountUID == null) {
-                    mBudgetAmountAccountUID = characterString;
-                    mBudgetAmount.setAccountUID(characterString);
-                } else if (mInBudgetSlot) {
-                    mBudgetAmount.setPeriodNum(Long.parseLong(characterString));
+                    default:
+                        if (mInBudgetSlot) {
+                            if (budgetAccount == null) {
+                                String accountUID = characterString;
+                                Account account = mAccountMap.get(accountUID);
+                                if (account != null) {
+                                    budgetAccount = account;
+                                }
+                            } else {
+                                try {
+                                    budgetPeriod = Long.parseLong(characterString);
+                                } catch (NumberFormatException e) {
+                                    Timber.e(e, "Bad budget period: %s", characterString);
+                                }
+                            }
+                        }
+                        break;
                 }
                 break;
             case TAG_SLOT_VALUE:
+                String slotType = slotTypes.pop();
                 if (mInPlaceHolderSlot) {
                     //Timber.v("Setting account placeholder flag");
                     mAccount.setPlaceHolderFlag(Boolean.parseBoolean(characterString));
@@ -637,11 +650,6 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 } else if (mInFavoriteSlot) {
                     mAccount.setFavorite(Boolean.parseBoolean(characterString));
                     mInFavoriteSlot = false;
-                } else if (mIsNote) {
-                    if (mTransaction != null) {
-                        mTransaction.setNote(characterString);
-                    }
-                    mIsNote = false;
                 } else if (mInDefaultTransferAccount) {
                     mAccount.setDefaultTransferAccountUID(characterString);
                     mInDefaultTransferAccount = false;
@@ -658,26 +666,44 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 } else if (mInTemplates && mInDebitNumericSlot) {
                     handleEndOfTemplateNumericSlot(characterString, TransactionType.DEBIT);
                 } else if (mInBudgetSlot) {
-                    if (mSlotTagAttribute.equals(ATTR_VALUE_NUMERIC)) {
-                        try {
-                            BigDecimal bigDecimal = parseSplitAmount(characterString);
-                            //currency doesn't matter since we don't persist it in the budgets table
-                            mBudgetAmount.setAmount(new Money(bigDecimal, Commodity.DEFAULT_COMMODITY));
-                        } catch (ParseException e) {
-                            mBudgetAmount.setAmount(Money.getZeroInstance()); //just put zero, in case it was a formula we couldnt parse
-                            Timber.e(e);
-                        } finally {
-                            mBudget.addBudgetAmount(mBudgetAmount);
-                        }
-                        mSlotTagAttribute = ATTR_VALUE_FRAME;
-                    } else {
-                        mBudgetAmountAccountUID = null;
+                    switch (slotType) {
+                        case ATTR_VALUE_FRAME:
+                            budgetAccount = null;
+                            budgetPeriod = null;
+                            break;
+                        case ATTR_VALUE_NUMERIC:
+                            if (!mIsNote && (budgetAccount != null) && (budgetPeriod != null)) {
+                                try {
+                                    BigDecimal amount = parseSplitAmount(characterString);
+                                    mBudget.addAmount(budgetAccount, budgetPeriod, amount);
+                                } catch (ParseException e) {
+                                    Timber.e(e, "Bad budget amount: %s", characterString);
+                                }
+                            }
+                            budgetPeriod = null;
+                            break;
+                        case ATTR_VALUE_STRING:
+                            if (mIsNote && (budgetAccount != null) && (budgetPeriod != null)) {
+                                BudgetAmount budgetAmount = mBudget.getBudgetAmount(budgetAccount, budgetPeriod);
+                                if (budgetAmount != null) {
+                                    budgetAmount.setNotes(characterString);
+                                }
+                            }
+                            budgetPeriod = null;
+                            break;
                     }
+                } else if (mIsNote) {
+                    if (mTransaction != null) {
+                        mTransaction.setNote(characterString);
+                    }
+                    mIsNote = false;
                 }
                 break;
 
             case TAG_BUDGET_SLOTS:
                 mInBudgetSlot = false;
+                mIsNote = false;
+                slotTypes.clear();
                 break;
 
             //================  PROCESSING OF TRANSACTION TAGS =====================================
@@ -888,7 +914,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                         mPrice.setValueNum(Long.valueOf(parts[0]));
                         mPrice.setValueDenom(Long.valueOf(parts[1]));
                         Timber.d("price " + characterString +
-                                " .. " + mPrice.getValueNum() + "/" + mPrice.getValueDenom());
+                            " .. " + mPrice.getValueNum() + "/" + mPrice.getValueDenom());
                     }
                 }
                 break;
@@ -903,28 +929,25 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                     mPrice = null;
                 }
                 break;
-
             case TAG_BUDGET:
-                if (mBudget.getBudgetAmounts().size() > 0) //ignore if no budget amounts exist for the budget
+                if (!mBudget.getBudgetAmounts().isEmpty()) //ignore if no budget amounts exist for the budget
                     mBudgetList.add(mBudget);
                 break;
-
+            case TAG_BUDGET_ID:
+                mBudget.setUID(characterString);
+                break;
             case TAG_BUDGET_NAME:
                 mBudget.setName(characterString);
                 break;
-
             case TAG_BUDGET_DESCRIPTION:
                 mBudget.setDescription(characterString);
                 break;
-
             case TAG_BUDGET_NUM_PERIODS:
                 mBudget.setNumberOfPeriods(Long.parseLong(characterString));
                 break;
-
             case TAG_BUDGET_RECURRENCE:
                 mBudget.setRecurrence(mRecurrence);
                 break;
-
             case TAG_COMMODITY:
                 if (mCommodity != null) {
                     putCommodity(mCommodity);
@@ -1020,7 +1043,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                     continue;
                 }
                 mapFullName.put(acc.getUID(), parentAccountFullName +
-                        AccountsDbAdapter.ACCOUNT_NAME_SEPARATOR + acc.getName());
+                    AccountsDbAdapter.ACCOUNT_NAME_SEPARATOR + acc.getName());
                 stack.pop();
             }
         }
@@ -1089,7 +1112,8 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
             Timber.d("%d prices inserted", nPrices);
 
             //// TODO: 01.06.2016 Re-enable import of Budget stuff when the UI is complete
-//            long nBudgets = mBudgetsDbAdapter.bulkAddRecords(mBudgetList, DatabaseAdapter.UpdateMethod.insert);
+            long nBudgets = mBudgetsDbAdapter.bulkAddRecords(mBudgetList, DatabaseAdapter.UpdateMethod.insert);
+            Timber.d("%d budgets inserted", nBudgets);
 
             long endTime = System.nanoTime();
             Timber.d("bulk insert time: %d", endTime - startTime);
@@ -1153,9 +1177,9 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
         try {
             // HACK: Check for bug #562. If a value has already been set, ignore the one just read
             if (mSplit.getValue().equals(
-                    new Money(BigDecimal.ZERO, mSplit.getValue().getCommodity()))) {
-                BigDecimal amountBigD = parseSplitAmount(characterString);
-                Money amount = new Money(amountBigD, getCommodityForAccount(mSplit.getAccountUID()));
+                new Money(BigDecimal.ZERO, mSplit.getValue().getCommodity()))) {
+                BigDecimal splitAmount = parseSplitAmount(characterString);
+                Money amount = new Money(splitAmount, getCommodityForAccount(mSplit.getAccountUID()));
 
                 mSplit.setValue(amount);
                 mSplit.setType(splitType);
@@ -1181,9 +1205,9 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     private int generateMissedScheduledTransactions(ScheduledAction scheduledAction) {
         //if this scheduled action should not be run for any reason, return immediately
         if (scheduledAction.getActionType() != ScheduledAction.ActionType.TRANSACTION
-                || !scheduledAction.isEnabled() || !scheduledAction.shouldAutoCreate()
-                || (scheduledAction.getEndTime() > 0 && scheduledAction.getEndTime() > System.currentTimeMillis())
-                || (scheduledAction.getTotalPlannedExecutionCount() > 0 && scheduledAction.getExecutionCount() >= scheduledAction.getTotalPlannedExecutionCount())) {
+            || !scheduledAction.isEnabled() || !scheduledAction.shouldAutoCreate()
+            || (scheduledAction.getEndTime() > 0 && scheduledAction.getEndTime() > System.currentTimeMillis())
+            || (scheduledAction.getTotalPlannedExecutionCount() > 0 && scheduledAction.getExecutionCount() >= scheduledAction.getTotalPlannedExecutionCount())) {
             return 0;
         }
 
@@ -1226,7 +1250,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(mScheduledAction.getStartTime());
         mScheduledAction.getRecurrence().setByDays(
-                Collections.singletonList(calendar.get(Calendar.DAY_OF_WEEK)));
+            Collections.singletonList(calendar.get(Calendar.DAY_OF_WEEK)));
     }
 
     @Nullable

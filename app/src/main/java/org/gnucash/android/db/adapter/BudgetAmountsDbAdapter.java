@@ -25,6 +25,7 @@ import androidx.annotation.NonNull;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.model.BudgetAmount;
+import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 
 import java.util.ArrayList;
@@ -47,7 +48,8 @@ public class BudgetAmountsDbAdapter extends DatabaseAdapter<BudgetAmount> {
                 BudgetAmountEntry.COLUMN_ACCOUNT_UID,
                 BudgetAmountEntry.COLUMN_AMOUNT_NUM,
                 BudgetAmountEntry.COLUMN_AMOUNT_DENOM,
-                BudgetAmountEntry.COLUMN_PERIOD_NUM
+                BudgetAmountEntry.COLUMN_PERIOD_NUM,
+                BudgetAmountEntry.COLUMN_NOTES
         });
     }
 
@@ -62,11 +64,13 @@ public class BudgetAmountsDbAdapter extends DatabaseAdapter<BudgetAmount> {
         long amountNum = cursor.getLong(cursor.getColumnIndexOrThrow(BudgetAmountEntry.COLUMN_AMOUNT_NUM));
         long amountDenom = cursor.getLong(cursor.getColumnIndexOrThrow(BudgetAmountEntry.COLUMN_AMOUNT_DENOM));
         long periodNum = cursor.getLong(cursor.getColumnIndexOrThrow(BudgetAmountEntry.COLUMN_PERIOD_NUM));
+        String notes = cursor.getString(cursor.getColumnIndexOrThrow(BudgetAmountEntry.COLUMN_NOTES));
 
         BudgetAmount budgetAmount = new BudgetAmount(budgetUID, accountUID);
         populateBaseModelAttributes(cursor, budgetAmount);
-        budgetAmount.setAmount(new Money(amountNum, amountDenom, getAccountCurrencyCode(accountUID)));
+        budgetAmount.setAmount(new Money(amountNum, amountDenom, Commodity.DEFAULT_COMMODITY));
         budgetAmount.setPeriodNum(periodNum);
+        budgetAmount.setNotes(notes);
 
         return budgetAmount;
     }
@@ -79,7 +83,12 @@ public class BudgetAmountsDbAdapter extends DatabaseAdapter<BudgetAmount> {
         stmt.bindLong(3, budgetAmount.getAmount().getNumerator());
         stmt.bindLong(4, budgetAmount.getAmount().getDenominator());
         stmt.bindLong(5, budgetAmount.getPeriodNum());
-        stmt.bindString(6, budgetAmount.getUID());
+        if (budgetAmount.getNotes() == null) {
+            stmt.bindNull(6);
+        } else {
+            stmt.bindString(6, budgetAmount.getNotes());
+        }
+        stmt.bindString(7, budgetAmount.getUID());
 
         return stmt;
     }

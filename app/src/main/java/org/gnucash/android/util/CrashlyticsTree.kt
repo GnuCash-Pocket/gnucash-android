@@ -17,7 +17,6 @@ package org.gnucash.android.util
 
 import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import java.util.*
 
 /**
  * Crashlytics logger tree for Timber.
@@ -40,7 +39,7 @@ class CrashlyticsTree(debug: Boolean) : LogTree(debug) {
     }
 
     companion object {
-        private val priorityChar: MutableMap<Int, String> = HashMap()
+        private val priorityChar = mutableMapOf<Int, String>()
 
         init {
             priorityChar[Log.ASSERT] = "A"

@@ -276,14 +276,14 @@ public abstract class GncXmlHelper {
      * @throws ParseException if the amount could not be parsed
      */
     public static BigDecimal parseSplitAmount(String amountString) throws ParseException {
-        int pos = amountString.indexOf("/");
-        if (pos < 0) {
+        int index = amountString.indexOf("/");
+        if (index < 0) {
             throw new ParseException("Cannot parse money string : " + amountString, 0);
         }
 
-        int scale = amountString.length() - pos - 2; //do this before, because we could modify the string
+        int scale = amountString.length() - index - 2; //do this before, because we could modify the string
         //String numerator = TransactionFormFragment.stripCurrencyFormatting(amountString.substring(0, pos));
-        String numerator = amountString.substring(0, pos);
+        String numerator = amountString.substring(0, index);
         numerator = TransactionFormFragment.stripCurrencyFormatting(numerator);
         BigInteger numeratorInt = new BigInteger(numerator);
         return new BigDecimal(numeratorInt, scale);
