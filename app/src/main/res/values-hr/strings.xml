@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
  Copyright (c) 2012 - 2014 Ngewi Fet <ngewif@gmail.com>
  
@@ -14,334 +15,331 @@
  limitations under the License.
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="title_create_account">Create Account</string>
-    <string name="title_edit_account">Edit Account</string>
-    <string name="description_add_transaction_icon">Add a new transaction to an account</string>
-    <string name="description_view_account_icon">View account details</string>
-    <string name="label_no_accounts">No accounts to display</string>
-    <string name="label_account_name">Account name</string>
-    <string name="btn_save">Save</string>
-    <string name="btn_test">Test</string>
-    <string name="label_passcode">Enter Passcode</string>
-    <string name="toast_wrong_passcode">Wrong passcode, please try again</string>
-    <string name="toast_passcode_set">Passcode set</string>
-    <string name="label_confirm_passcode">Please confirm your passcode</string>
-    <string name="toast_invalid_passcode_confirmation">Invalid passcode confirmation. Please try again</string>
-    <string name="label_transaction_name">Description</string>
-    <string name="label_transaction_amount">Amount</string>
-    <string name="title_add_transaction">New transaction</string>
-    <string name="label_no_transactions">No transactions to display</string>
-    <string name="label_debit">DEBIT</string>
-    <string name="label_credit">CREDIT</string>
-    <string name="title_accounts">Accounts</string>
-    <string name="title_transactions">Transactions</string>
-    <string name="menu_delete">Delete</string>
-    <string name="alert_dialog_ok_delete">Delete</string>
+    <string name="title_create_account">Stvori konto</string>
+    <string name="title_edit_account">Uredi konto</string>
+    <string name="description_add_transaction_icon">Dodaj novu transakciju jednom kontu</string>
+    <string name="description_view_account_icon">Prikaži detalje konta</string>
+    <string name="label_no_accounts">Nema konta</string>
+    <string name="label_account_name">Ime konta</string>
+    <string name="btn_save">Spremi</string>
+    <string name="btn_test">Ispitaj</string>
+    <string name="label_passcode">Unesi lozinku</string>
+    <string name="toast_wrong_passcode">Kriva lozinka, pokušaj ponovo</string>
+    <string name="toast_passcode_set">Lozinka je postavljena</string>
+    <string name="label_confirm_passcode">Potvrdi lozinku</string>
+    <string name="toast_invalid_passcode_confirmation">Nevaljana potvrda lozinke. Pokušaj ponovo</string>
+    <string name="label_transaction_name">Opis</string>
+    <string name="label_transaction_amount">Iznos</string>
+    <string name="title_add_transaction">Nova transakcija</string>
+    <string name="label_no_transactions">Nema transakcija</string>
+    <string name="label_debit">DUGUJE</string>
+    <string name="label_credit">POTRAŽUJE</string>
+    <string name="title_accounts">Konti</string>
+    <string name="title_transactions">Transakcije</string>
+    <string name="menu_delete">Izbriši</string>
+    <string name="alert_dialog_ok_delete">Izbriši</string>
     <string name="title_delete_account">Delete Account</string>
-    <string name="toast_account_deleted">Account deleted</string>
-    <string name="title_confirm_delete">Confirm delete</string>
-    <string name="title_edit_transaction">Edit Transaction</string>
-    <string name="label_transaction_description">Add note</string>
-    <string name="title_selected">%1$d selected</string>
-    <string name="label_account_balance">Balance:</string>
-    <string name="label_export_destination">Export To:</string>
-    <string name="title_export_dialog">Export Transactions</string>
-    <string name="hint_export_choice">By default, only new transactions since last export will be exported. Check this option to export all transactions</string>
-    <string name="toast_export_error">Error exporting %1$s file</string>
-    <string name="btn_export">Export</string>
-    <string name="option_delete_after_export">Delete transactions after export</string>
-    <string name="hint_delete_after_export">All exported transactions will be deleted when exporting is completed</string>
-    <string name="title_settings">Settings</string>
+    <string name="toast_account_deleted">Konto je izbrisan</string>
+    <string name="title_confirm_delete">Potvrdi brisanje</string>
+    <string name="title_edit_transaction">Uredi transakciju</string>
+    <string name="label_transaction_description">Dodaj napomenu</string>
+    <string name="title_selected">Odabrano: %1$d</string>
+    <string name="label_account_balance">Saldo:</string>
+    <string name="label_export_destination">Izvezi u:</string>
+    <string name="title_export_dialog">Izvezi transakcije</string>
+    <string name="hint_export_choice">Standardno se izvoze samo nove transakcije, učinjene nakon zadnjeg izvoza. Uključi ovu opciju za izvoz svih transakcija</string>
+    <string name="toast_export_error">Greška prilikom izvoza datoteke %1$s</string>
+    <string name="btn_export">Izvezi</string>
+    <string name="option_delete_after_export">Izbriši transakcije nakon izvoza</string>
+    <string name="hint_delete_after_export">Sve izvezene transakcije će biti izbrisane nakon završetka izvoza</string>
+    <string name="title_settings">Postavke</string>
     <string-array name="export_destinations">
-        <item>Save As…</item>
+        <item>Spremi pod…</item>
         <item>Dropbox</item>
         <item>ownCloud</item>
-        <item>Send to…</item>
+        <item>Pošalji na…</item>
     </string-array>
-    <string name="btn_move">Move</string>
-    <string name="title_move_transactions">Move %1$d transaction(s)</string>
-    <string name="label_move_destination">Destination Account</string>
-    <string name="toast_incompatible_currency">Cannot move transactions.\nThe destination account uses a different currency from origin account</string>
-    <string name="header_general_settings">General</string>
-    <string name="header_about_gnucash">About</string>
-    <string name="title_choose_currency">Choose default currency</string>
-    <string name="title_default_currency">Default currency</string>
-    <string name="summary_default_currency">Default currency to assign to new accounts</string>
-    <string name="label_permission_record_transactions">Enables recording transactions in GnuCash for Android</string>
-    <string name="label_permission_create_accounts">Enables creation of accounts in GnuCash for Android</string>
-    <string name="label_permission_group">Your GnuCash data</string>
-    <string name="description_permission_group">Read and modify GnuCash data</string>
-    <string name="label_permission_record_transaction">Record transactions in GnuCash</string>
-    <string name="label_permission_create_account">Create accounts in GnuCash</string>
-    <string name="label_display_account">Display account</string>
-    <string name="label_hide_account_balance">Hide account balance in widget</string>
-    <string name="btn_create_accounts">Create Accounts</string>
-    <string name="error_no_accounts">No accounts exist in GnuCash.\nCreate an account before adding a widget</string>
-    <string name="title_license">License</string>
-    <string name="summary_licence_details">Apache License v2.0. Click for details</string>
-    <string name="title_general_prefs">General Preferences</string>
-    <string name="label_widget_configuration">Select Account</string>
-    <string name="toast_no_transactions_to_export">There are no transactions available to export</string>
-    <string name="title_passcode_preferences">Passcode Preferences</string>
-    <string name="title_enable_passcode">Enable passcode</string>
-    <string name="title_change_passcode">Change Passcode</string>
-    <string name="title_about_gnucash">About GnuCash</string>
-    <string name="title_export_email">GnuCash %1$s export</string>
-    <string name="description_export_email">GnuCash Pocket Export from</string>
-    <string name="header_transaction_settings">Transactions</string>
-    <string name="title_transaction_preferences">Transaction Preferences</string>
-    <string name="title_account_preferences">Account Preferences</string>
-    <string name="title_default_transaction_type">Default Transaction Type</string>
-    <string name="summary_default_transaction_type">The type of transaction to use by default, CREDIT or DEBIT</string>
-    <string name="msg_delete_all_transactions_confirmation">Are you sure you want to delete ALL transactions?</string>
-    <string name="msg_delete_transaction_confirmation">Are you sure you want to delete this transaction?</string>
-    <string name="title_export_preference_category">Export</string>
-    <string name="title_export_all_transactions">Export all transactions</string>
-    <string name="title_always_delete_exported_transactions">Delete exported transactions</string>
-    <string name="title_default_export_email">Default export email</string>
-    <string name="summary_default_export_email">The default email address to send exports to. You can still change this when you export.</string>
-    <string name="summary_use_double_entry">All transactions will be a transfer from one account to another</string>
-    <string name="title_use_double_entry">Activate Double Entry</string>
-    <string name="account_balance">Balance</string>
-    <string name="toast_no_account_name_entered">Enter an account name to create an account</string>
-    <string name="label_account_currency">Currency</string>
-    <string name="label_parent_account">Parent account</string>
-    <string name="title_xml_ofx_header">Use XML OFX header</string>
-    <string name="summary_xml_ofx_header">Enable this option when exporting to third-party application other than GnuCash for desktop</string>
-    <string name="title_whats_new">What\'s New</string>
-    <string name="whats_new"></string>
-    <string name="label_dismiss">Dismiss</string>
-    <string name="toast_transaction_amount_required">Enter an amount to save the transaction</string>
-    <string name="toast_error_importing_accounts">An error occurred while importing the GnuCash accounts</string>
-    <string name="toast_success_importing_accounts">GnuCash Accounts successfully imported</string>
-    <string name="summary_import_accounts">Import account structure from GnuCash XML</string>
-    <string name="title_import_accounts">Import GnuCash XML</string>
-    <string name="summary_delete_all_accounts">Delete all accounts in the database. All transactions will be deleted as well.</string>
-    <string name="title_delete_all_accounts">Delete all accounts</string>
-    <string name="header_account_settings">Accounts</string>
-    <string name="toast_all_accounts_deleted">All accounts have been successfully deleted</string>
-    <string name="confirm_delete_all_accounts">Are you sure you want to delete all accounts and transactions?\n\nThis operation cannot be undone!</string>
-    <string name="summary_delete_all_transactions">All transactions in all accounts will be deleted!</string>
-    <string name="title_delete_all_transactions">Delete all transactions</string>
-    <string name="toast_all_transactions_deleted">All transactions successfully deleted!</string>
-    <string name="title_progress_importing_accounts">Importing accounts</string>
-    <string name="section_header_transactions">Transactions</string>
-    <string name="section_header_subaccounts">Sub-Accounts</string>
-    <string name="menu_search_accounts">Search</string>
-    <string name="title_default_export_format">Default Export Format</string>
-    <string name="summary_default_export_format">File format to use by default when exporting transactions</string>
-    <string name="label_recurring_transaction">Recurrence</string>
+    <string name="btn_move">Premjesti</string>
+    <string name="title_move_transactions">Premjesti %1$d transakcije(a)</string>
+    <string name="label_move_destination">Odredišni konto</string>
+    <string name="toast_incompatible_currency">Prijenos transakcije nije moguć.\nOdredišni konto koristi drugačiju valutu od izvornog konta</string>
+    <string name="header_general_settings">Općenito</string>
+    <string name="header_about_gnucash">O programu</string>
+    <string name="title_choose_currency">Odaberi standardnu valutu</string>
+    <string name="title_default_currency">Standardna valuta</string>
+    <string name="summary_default_currency">Standardna valuta za nova konta</string>
+    <string name="label_permission_record_transactions">Omogućava spremanje transakcija u GnuCash za Android</string>
+    <string name="label_permission_create_accounts">Omogućava stvaranje konta u GnuCashu za Android</string>
+    <string name="label_permission_group">Tvoji GnuCash podaci</string>
+    <string name="description_permission_group">Čitaj i promijeni GnuCash podatke</string>
+    <string name="label_permission_record_transaction">Spremi transakcije u GnuCashu</string>
+    <string name="label_permission_create_account">Stvori transakcije u GnuCashu</string>
+    <string name="label_display_account">Prikaži konto</string>
+    <string name="label_hide_account_balance">Sakrij saldo konta u alatnom bloku</string>
+    <string name="btn_create_accounts">Stvori konta</string>
+    <string name="error_no_accounts">U GnuCashu nema konta.\nStvori konto prije dodavanja alatnog bloka</string>
+    <string name="title_license">Licenca</string>
+    <string name="summary_licence_details">Apache License v2.0. Za detalje, klikni</string>
+    <string name="title_general_prefs">Opće postavke</string>
+    <string name="label_widget_configuration">Odaberi konto</string>
+    <string name="toast_no_transactions_to_export">Nema transakcija za izvoz</string>
+    <string name="title_passcode_preferences">Postavke za lozinku</string>
+    <string name="title_enable_passcode">Aktiviraj lozinku</string>
+    <string name="title_change_passcode">Promijeni lozinku</string>
+    <string name="title_about_gnucash">O programu GnuCash</string>
+    <string name="title_export_email">GnuCash Pocket %1$s izvoz</string>
+    <string name="description_export_email">GnuCash Pocket izvoz iz</string>
+    <string name="header_transaction_settings">Transakcije</string>
+    <string name="title_transaction_preferences">Postavke za transakcije</string>
+    <string name="title_account_preferences">Postavke za konta</string>
+    <string name="title_default_transaction_type">Standardna vrsta transakcije</string>
+    <string name="summary_default_transaction_type">Standardno korištena vrsta transakcije, POTRAŽUJE ili DUGUJE</string>
+    <string name="msg_delete_all_transactions_confirmation">Zaista želiš izbrisati SVE transakcije?</string>
+    <string name="msg_delete_transaction_confirmation">Zaista želiš izbrisati ovu transakciju?</string>
+    <string name="title_export_preference_category">Izvoz</string>
+    <string name="title_export_all_transactions">Izvezi sve transakcije</string>
+    <string name="title_always_delete_exported_transactions">Izbriši izvezene transakcije</string>
+    <string name="title_default_export_email">Standardna e-pošta za izvoz</string>
+    <string name="summary_default_export_email">Standardna adresa e-pošte, na koju se šalju datoteke izvoza. Adresu možeš promijeniti i prilikom izvoza.</string>
+    <string name="summary_use_double_entry">Sve transakcije će se prenijeti s jednog konta na drugi konto</string>
+    <string name="title_use_double_entry">Aktiviraj dvojno knjigovodstvo</string>
+    <string name="account_balance">Saldo</string>
+    <string name="toast_no_account_name_entered">Za stvaranje konta, unesi ime konta</string>
+    <string name="label_account_currency">Valuta</string>
+    <string name="label_parent_account">Matični konto</string>
+    <string name="title_xml_ofx_header">Koristi XML OFX zaglavlje</string>
+    <string name="summary_xml_ofx_header">Aktiviraj ovu opciju za izvoz u neki drugi program, koji nije desktop verzija GnuCasha</string>
+    <string name="toast_transaction_amount_required">Za spremanje transakcije, unesi iznos</string>
+    <string name="toast_error_importing_accounts">Došlo je do greške prilikom uvoza GnuCash konta</string>
+    <string name="toast_success_importing_accounts">GnuCash konti su uspješno uvezeni</string>
+    <string name="summary_import_accounts">Uvezi kontni plan iz GnuCash XML-a</string>
+    <string name="title_import_accounts">Uvezi GnuCash XML</string>
+    <string name="summary_delete_all_accounts">Izbriši sva konta iz baze podataka. Istovremeno se brišu sve transakcije.</string>
+    <string name="title_delete_all_accounts">Izbriši sva konta</string>
+    <string name="header_account_settings">Konti</string>
+    <string name="toast_all_accounts_deleted">Svi konti su uspješno izbrisani</string>
+    <string name="confirm_delete_all_accounts">Zaista želiš izbrisati sva konta i sve transakcije?\n\nOvo je nepovratna operacija!</string>
+    <string name="summary_delete_all_transactions">Izbrisat će se sve transakcije svih konta!</string>
+    <string name="title_delete_all_transactions">Izbriši sve transakcije</string>
+    <string name="toast_all_transactions_deleted">Sve transakcije su uspješno izbrisane!</string>
+    <string name="title_progress_importing_accounts">Uvoz konta</string>
+    <string name="section_header_transactions">Transakcije</string>
+    <string name="section_header_subaccounts">Podkonta</string>
+    <string name="menu_search_accounts">Traži</string>
+    <string name="title_default_export_format">Standardni format za izvoz</string>
+    <string name="summary_default_export_format">Format koji će se standardno koristiti za izvoz transakcija</string>
+    <string name="label_recurring_transaction">Ponavljanje</string>
     <!-- This should be the same name used by GnuCash desktop for imbalance accounts -->
-    <string name="imbalance_account_name">Imbalance</string>
-    <string name="title_progress_exporting_transactions">Exporting transactions</string>
-    <string name="label_no_recurring_transactions">No recurring transactions to display.</string>
-    <string name="toast_recurring_transaction_deleted">Successfully deleted recurring transaction</string>
-    <string name="label_placeholder_account">Placeholder account</string>
-    <string name="label_default_transfer_account">Default Transfer Account</string>
+    <string name="imbalance_account_name">Debalans</string>
+    <string name="title_progress_exporting_transactions">Izvoz transakcija</string>
+    <string name="label_no_recurring_transactions">Nema ponavljajućih transakcija.</string>
+    <string name="toast_recurring_transaction_deleted">Ponavljajuće transakcije su uspješno izbrisane</string>
+    <string name="label_placeholder_account">Rezervirani konto</string>
+    <string name="label_default_transfer_account">Standardni konto za prijenos</string>
     <plurals name="label_sub_accounts">
-        <item quantity="one">%d sub-account</item>
-        <item quantity="few">%d sub-account</item>
-        <item quantity="other">%d sub-accounts</item>
+        <item quantity="one">%d podkonto</item>
+        <item quantity="few">%d podkonta</item>
+        <item quantity="other">%d podkonta</item>
     </plurals>
     <string-array name="account_type_entry_values">
-        <item>CASH</item>
-        <item>BANK</item>
-        <item>CREDIT CARD</item>
-        <item>ASSET</item>
-        <item>LIABILITY</item>
-        <item>INCOME</item>
-        <item>EXPENSE</item>
-        <item>PAYABLE</item>
-        <item>RECEIVABLE</item>
-        <item>EQUITY</item>
-        <item>CURRENCY</item>
-        <item>STOCK</item>
-        <item>MUTUAL FUND</item>
-        <item>TRADING</item>
+        <item>GOTOVINA</item>
+        <item>BANKA</item>
+        <item>KREDITNA KARTICA</item>
+        <item>IMOVINA</item>
+        <item>OBVEZE</item>
+        <item>PRIHOD</item>
+        <item>RASHOD</item>
+        <item>DUGOVANJA</item>
+        <item>POTRAŽIVANJA</item>
+        <item>KAPITAL</item>
+        <item>VALUTA</item>
+        <item>DIONICE</item>
+        <item>INVESTICIJSKI FOND</item>
+        <item>TRGOVANJE</item>
     </string-array>
     <string name="file_format_csv">Comma-separated values</string>
     <string name="file_format_qif">Quicken Interchange Format</string>
     <string name="file_format_ofx">Open Financial eXchange</string>
     <string name="file_format_xml">GnuCash XML</string>
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
-    <string name="color_picker_default_title">Select a Color</string>
+    <string name="color_picker_default_title">Odaberi boju</string>
     <!-- Content description for a color square. -->
     <string name="color_swatch_description">Color <xliff:g example="14" id="color_index">%1$d</xliff:g></string>
     <!-- Content description for a selected color square. -->
     <string name="color_swatch_description_selected">Color <xliff:g example="14" id="color_index">%1$d</xliff:g> selected</string>
-    <string name="label_account_color_and_type">Account Color &amp; Type</string>
-    <string name="label_delete_sub_accounts">Delete sub-accounts</string>
-    <string name="title_recent_accounts">Recent</string>
-    <string name="title_favorite_accounts">Favorites</string>
-    <string name="title_all_accounts">All</string>
-    <string name="summary_create_default_accounts">Creates default GnuCash commonly-used account structure</string>
-    <string name="title_create_default_accounts">Create default accounts</string>
-    <string name="msg_confirm_create_default_accounts_setting">A new book will be opened with the default accounts\n\nYour current accounts and transactions will not be modified!</string>
-    <string name="title_scheduled_transactions">Transactions</string>
-    <string name="title_select_export_destination">Select destination for export</string>
-    <string name="hint_split_memo">Memo</string>
-    <string name="label_spend">Spend</string>
-    <string name="label_receive">Receive</string>
-    <string name="label_withdrawal">Withdrawal</string>
-    <string name="label_deposit">Deposit</string>
-    <string name="label_payment">Payment</string>
-    <string name="label_charge">Charge</string>
-    <string name="label_decrease">Decrease</string>
-    <string name="label_increase">Increase</string>
-    <string name="label_income">Income</string>
-    <string name="label_rebate">Rebate</string>
-    <string name="label_expense">Expense</string>
-    <string name="label_bill">Bill</string>
-    <string name="label_invoice">Invoice</string>
-    <string name="label_buy">Buy</string>
-    <string name="label_sell">Sell</string>
-    <string name="account_name_opening_balances">Opening Balances</string>
-    <string name="account_name_equity">Equity</string>
-    <string name="summary_save_opening_balances">Enable to save the current account balance (before deleting transactions) as new opening balance after deleting transactions</string>
-    <string name="title_save_opening_balances">Save account opening balances</string>
-    <string name="export_warning_ofx">OFX does not support double-entry transactions</string>
-    <string name="export_warning_qif">Generates separate QIF files per currency</string>
-    <string name="label_imbalance">Imbalance:</string>
-    <string name="btn_add_split">Add split</string>
-    <string name="menu_title_favorite">Favorite</string>
-    <string name="drawer_open">Navigation drawer opened</string>
-    <string name="drawer_close">Navigation drawer closed</string>
-    <string name="title_reports">Reports</string>
-    <string name="title_pie_chart">Pie Chart</string>
-    <string name="title_line_chart">Line Chart</string>
-    <string name="title_bar_chart">Bar Chart</string>
-    <string name="title_report_prefs">Report Preferences</string>
-    <string name="title_use_account_color">Account color in reports</string>
-    <string name="summary_use_account_color">Use account color in the bar/pie chart</string>
-    <string name="menu_order_by_size">Order by size</string>
-    <string name="menu_toggle_legend">Show legend</string>
-    <string name="menu_toggle_labels">Show labels</string>
-    <string name="menu_toggle_percentage_mode">Show percentage</string>
-    <string name="menu_toggle_average_lines">Show average lines</string>
-    <string name="menu_group_smaller_slices">Group Smaller Slices</string>
-    <string name="label_chart_no_data">No chart data available</string>
-    <string name="label_chart_total">Total</string>
-    <string name="label_other_slice">Other</string>
-    <string name="toast_chart_percentage_mode_total">The percentage of selected value calculated from the total amount</string>
-    <string name="toast_chart_percentage_mode_current_bar">The percentage of selected value calculated from the current stacked bar amount</string>
-    <string name="label_save_template">Save as template</string>
-    <string name="label_delete_account_transactions_description">This account contains transactions.\nWhat would you like to do with these transactions?</string>
-    <string name="label_delete_account_subaccounts_description">This account contains sub-accounts.\nWhat would you like to do with these sub-accounts?</string>
-    <string name="label_delete_transactions">Delete transactions</string>
-    <string name="toast_disable_double_entry_to_save_transaction">Create and specify a transfer account OR disable double-entry in settings to save the transaction</string>
-    <string name="label_tap_to_create_schedule">Tap to create schedule</string>
-    <string name="title_restore_backup">Restore Backup…</string>
-    <string name="header_backup_and_export_settings">Backup &amp; export</string>
-    <string name="title_dropbox_sync_preference">Enable DropBox</string>
-    <string name="title_owncloud_sync_preference">Enable ownCloud</string>
-    <string name="title_backup_preference_category">Backup</string>
-    <string name="summary_dropbox_sync">Enable exporting to DropBox</string>
-    <string name="summary_owncloud_sync">Enable exporting to ownCloud</string>
-    <string name="title_backup_prefs">Backup Preferences</string>
-    <string name="title_create_backup_pref">Create Backup</string>
-    <string name="summary_create_backup_pref">Create a backup of the active book</string>
-    <string name="summary_restore_backup_pref">Restore most recent backup of active book</string>
-    <string name="toast_backup_successful">Backup successful</string>
-    <string name="toast_backup_failed">Backup failed</string>
-    <string name="export_warning_xml">Exports all accounts and transactions</string>
-    <string name="toast_install_file_manager">Install a file manager to select files</string>
-    <string name="title_select_backup_to_restore">Select backup to restore</string>
-    <string name="nav_menu_favorites">Favorites</string>
-    <string name="nav_menu_open">Open…</string>
-    <string name="nav_menu_reports">Reports</string>
-    <string name="nav_menu_export">Export…</string>
-    <string name="nav_menu_settings">Settings</string>
-    <string name="username">User Name</string>
-    <string name="password">Password</string>
+    <string name="label_account_color_and_type">Boja i vrsta konta</string>
+    <string name="label_delete_sub_accounts">Izbriši podkonta</string>
+    <string name="title_recent_accounts">Nedavna</string>
+    <string name="title_favorite_accounts">Favoriti</string>
+    <string name="title_all_accounts">Sva</string>
+    <string name="summary_create_default_accounts">Stvara standardnu, u GnuCashu često korištenu strukturu konta</string>
+    <string name="title_create_default_accounts">Stvori standardna konta</string>
+    <string name="msg_confirm_create_default_accounts_setting">Otvorit će se nova knjiga sa standardnim kontima\n\nTvoji postojeći konti i transakcije se neće dirati!</string>
+    <string name="title_scheduled_transactions">Transakcije</string>
+    <string name="title_select_export_destination">Odaberi odredište za izvoz</string>
+    <string name="hint_split_memo">Zabilješka</string>
+    <string name="label_spend">Izdatak</string>
+    <string name="label_receive">Primitak</string>
+    <string name="label_withdrawal">Isplata</string>
+    <string name="label_deposit">Uplata</string>
+    <string name="label_payment">Plaćanje</string>
+    <string name="label_charge">Terećenje</string>
+    <string name="label_decrease">Smanjenje</string>
+    <string name="label_increase">Povećanje</string>
+    <string name="label_income">Prihod</string>
+    <string name="label_rebate">Popust</string>
+    <string name="label_expense">Rashod</string>
+    <string name="label_bill">Ulazni račun</string>
+    <string name="label_invoice">izlazni račun</string>
+    <string name="label_buy">Kupovina</string>
+    <string name="label_sell">Prodaja</string>
+    <string name="account_name_opening_balances">Početni saldo</string>
+    <string name="account_name_equity">Kapital</string>
+    <string name="summary_save_opening_balances">Aktiviraj, kako bi se trenutačni saldo konta preuzeo kao novi početni saldo nakon brisanja transakcija</string>
+    <string name="title_save_opening_balances">Spremi početni saldo konta</string>
+    <string name="export_warning_ofx">OFX ne pordžava dvojno knjigovodstvo</string>
+    <string name="export_warning_qif">Za svaku valutu stvara pojedinačnu QIF datoteku</string>
+    <string name="label_imbalance">Debalans:</string>
+    <string name="btn_add_split">Dodaj podjelu</string>
+    <string name="menu_title_favorite">Favorit</string>
+    <string name="drawer_open">Navigacijska traka je otvorena</string>
+    <string name="drawer_close">Navigacijska traka je zatvorena</string>
+    <string name="title_reports">Izvještaji</string>
+    <string name="title_pie_chart">Kružni dijagram</string>
+    <string name="title_line_chart">Linijski dijagram</string>
+    <string name="title_bar_chart">Stupčani dijagram</string>
+    <string name="title_report_prefs">Postavke za izvještaje</string>
+    <string name="title_use_account_color">Boja konta u izvještajima</string>
+    <string name="summary_use_account_color">Koristi boje konta u stupčanom/kružnom dijagramu</string>
+    <string name="menu_order_by_size">Razvrstaj prema veličini</string>
+    <string name="menu_toggle_legend">Prikaži legendu</string>
+    <string name="menu_toggle_labels">Prikaži oznake</string>
+    <string name="menu_toggle_percentage_mode">Prikaži postotke</string>
+    <string name="menu_toggle_average_lines">Prikaži linije prosjeka</string>
+    <string name="menu_group_smaller_slices">Grupiraj manje odsječke</string>
+    <string name="label_chart_no_data">Nema podataka za izradu dijagrama</string>
+    <string name="label_chart_total">Ukupno</string>
+    <string name="label_other_slice">Ostali</string>
+    <string name="toast_chart_percentage_mode_total">Postotak za odabranu vrijednost u odnosu na ukupni iznos</string>
+    <string name="toast_chart_percentage_mode_current_bar">Postotak za odabranu vrijednost u odnosu na iznos trenutačnog složenog stupca</string>
+    <string name="label_save_template">Spremi kao predložak</string>
+    <string name="label_delete_account_transactions_description">Ovaj konto sadržava transakcije.\nŠto želiš uraditi s tim transakcijama?</string>
+    <string name="label_delete_account_subaccounts_description">Ovaj konto sadržava podkonta.\nŠto želiš uraditi s tim podkontima?</string>
+    <string name="label_delete_transactions">Izbriši transakcije</string>
+    <string name="toast_disable_double_entry_to_save_transaction">Za spremanje transakcije, stvori i odredi konto za prijenos ILI deaktiviraj dvojno knjigovodstvo u postavkama</string>
+    <string name="label_tap_to_create_schedule">Stvori termine</string>
+    <string name="title_restore_backup">Učitaj sigurnosnu kopiju…</string>
+    <string name="header_backup_and_export_settings">Stvori sigurnosnu kopiju i izvezi</string>
+    <string name="title_dropbox_sync_preference">Aktiviraj DropBox</string>
+    <string name="title_owncloud_sync_preference">Aktiviraj ownCloud</string>
+    <string name="title_backup_preference_category">Sigurnosna kopija</string>
+    <string name="summary_dropbox_sync">Aktiviraj izvoz u DropBox</string>
+    <string name="summary_owncloud_sync">Aktiviraj izvoz u ownCloud</string>
+    <string name="title_backup_prefs">Postavke za sigurnosnu kopiju</string>
+    <string name="title_create_backup_pref">Stvori sigurnosnu kopiju</string>
+    <string name="summary_create_backup_pref">Stvori sigurnosnu kopiju aktivne knjige</string>
+    <string name="summary_restore_backup_pref">Učitaj najnoviju sigurnosnu kopiju aktivne knjige</string>
+    <string name="toast_backup_successful">Sigurnosna kopija je uspješno stvorena</string>
+    <string name="toast_backup_failed">Sigurnosna kopija nije stvorena</string>
+    <string name="export_warning_xml">Izvozi sva konta i sve transakcije</string>
+    <string name="toast_install_file_manager">Instaliraj upravitelja datotekama za odabir datoteka</string>
+    <string name="title_select_backup_to_restore">Odaberi sigurnosnu kopiju, koju želiš ponovo učitati</string>
+    <string name="nav_menu_favorites">Favoriti</string>
+    <string name="nav_menu_open">Otvori…</string>
+    <string name="nav_menu_reports">Izvještaji</string>
+    <string name="nav_menu_export">Izvezi…</string>
+    <string name="nav_menu_settings">Postavke</string>
+    <string name="username">Korisničko ime</string>
+    <string name="password">Lozinka</string>
     <string name="owncloud_pref">owncloud</string>
-    <string name="owncloud_server_invalid">OC server not found</string>
-    <string name="owncloud_user_invalid">OC username/password invalid</string>
-    <string name="owncloud_dir_invalid">Invalid chars: \\ &lt; &gt; : \&quot; | * ?</string>
-    <string name="owncloud_server_ok">OC server OK</string>
-    <string name="owncloud_user_ok">OC username/password OK</string>
-    <string name="owncloud_dir_ok">Dir name OK</string>
-    <string name="title_enable_crashlytics">Enable Crash Logging</string>
-    <string name="msg_enable_crashlytics">Automatically send information about app malfunction to the developers.</string>
+    <string name="owncloud_server_invalid">OC server nije nađen</string>
+    <string name="owncloud_user_invalid">OC korisničko ime/lozinka ne valja</string>
+    <string name="owncloud_dir_invalid">Nevaljani slovni znakovi: \\ &lt; &gt; : \&quot; | * ?</string>
+    <string name="owncloud_server_ok">OC server je u redu</string>
+    <string name="owncloud_user_ok">OC korisničko ime/lozinka je u redu</string>
+    <string name="owncloud_dir_ok">Dir ime je u redu</string>
+    <string name="title_enable_crashlytics">Aktiviraj dnevnik urušavanja programa</string>
+    <string name="msg_enable_crashlytics">Automatski šalji informacije o aplikacijskim greškama razvijateljima.</string>
     <string name="label_export_format"> Format</string>
-    <string name="label_old_passcode">Enter your old passcode</string>
-    <string name="label_new_passcode">Enter your new passcode</string>
-    <string name="title_scheduled_exports">Exports</string>
-    <string name="label_no_scheduled_exports_to_display">No scheduled exports to display</string>
-    <string name="title_create_export_schedule">Create export schedule</string>
-    <string name="toast_exported_to">Exported to: %1$s</string>
-    <string name="toast_legend_too_long">The legend is too long</string>
-    <string name="hint_account_description">Account description</string>
-    <string name="label_no_recent_accounts">No recent accounts</string>
-    <string name="label_no_favorite_accounts">No favorite accounts</string>
-    <string name="nav_menu_scheduled_actions">Scheduled Actions</string>
-    <string name="label_scheduled_action">"%1$s, last executed on %2$s"</string>
-    <string name="label_scheduled_action_ended">"Ended"</string>
-    <string name="btn_wizard_next">Next</string>
-    <string name="btn_wizard_finish">Done</string>
-    <string name="wizard_title_default_currency">Default Currency</string>
-    <string name="wizard_title_account_setup">Account Setup</string>
-    <string name="wizard_title_select_currency">Select Currency</string>
-    <string name="wizard_title_feedback_options">Feedback Options</string>
-    <string name="wizard_option_create_default_accounts">Create default accounts</string>
-    <string name="wizard_option_import_my_accounts">Import my accounts</string>
-    <string name="wizard_option_let_me_handle_it">Let me handle it</string>
-    <string name="wizard_option_currency_other">Other…</string>
-    <string name="wizard_option_auto_send_crash_reports">Automatically send crash reports</string>
-    <string name="wizard_option_disable_crash_reports">Disable crash reports</string>
-    <string name="wizard_btn_back">Back</string>
-    <string name="title_setup_gnucash">Setup GnuCash</string>
-    <string name="wizard_title_welcome_to_gnucash">Welcome to GnuCash</string>
-    <string name="msg_wizard_welcome_page">Before you dive in, \nlet\'s setup a few things first\n\nTo continue, press Next</string>
-    <string name="title_split_editor">Split Editor</string>
-    <string name="toast_error_check_split_amounts">Check that all splits have valid amounts before saving!</string>
-    <string name="label_error_invalid_expression">Invalid expression!</string>
-    <string name="toast_scheduled_recurring_transaction">Scheduled recurring transaction</string>
-    <string name="title_transfer_funds">Transfer Funds</string>
-    <string name="nav_menu_help"><![CDATA[Help & Feedback]]></string>
-    <string name="label_select_pie_slice_to_see_details">Select a slice to see details</string>
-    <string name="label_report_period">Period:</string>
-    <string name="label_convert_from">From:</string>
-    <string name="label_convert_to">To:</string>
-    <string name="msg_provide_exchange_rate">Provide either the converted amount or exchange rate in order to transfer funds</string>
-    <string name="hint_exchange_rate">Exchange rate</string>
-    <string name="btn_fetch_quote">Fetch quote</string>
-    <string name="hint_converted_amount">Converted Amount</string>
-    <string name="title_report_sheet">Sheet</string>
-    <string name="label_last_3_months_expenses">Expenses for last 3 months</string>
-    <string name="label_total_assets">Total Assets</string>
-    <string name="label_total_liabilities">Total Liabilities</string>
-    <string name="label_net_worth">Net Worth</string>
-    <string name="label_assets">Assets</string>
-    <string name="label_liabilities">Liabilities</string>
-    <string name="label_equity">Equity</string>
-    <string name="label_move_to">Move to:</string>
-    <string name="menu_group_by">Group By</string>
-    <string name="menu_group_by_month">Month</string>
-    <string name="menu_group_by_quarter">Quarter</string>
-    <string name="menu_group_by_year">Year</string>
-    <string name="title_balance_sheet_report">Balance Sheet</string>
-    <string name="label_balance_sheet_total">Total:</string>
-    <string name="title_google_plus_community">Google+ Community</string>
-    <string name="title_translate_gnucash">Translate GnuCash</string>
-    <string name="summary_google_plus">Share ideas, discuss changes or report problems</string>
-    <string name="summary_translate_gnucash">Translate or proof-read on CrowdIn</string>
-    <string name="toast_no_compatible_apps_to_receive_export">No compatible apps to receive the exported transactions!</string>
-    <string name="menu_move_transaction">Move…</string>
-    <string name="menu_duplicate_transaction">Duplicate</string>
-    <string name="title_cash_flow_report">Cash Flow</string>
-    <string name="title_budgets">Budgets</string>
-    <string name="title_use_compact_list">Enable compact view</string>
-    <string name="summary_use_compact_list">Enable to always use compact view for transactions list</string>
-    <string name="error_invalid_exchange_rate">Invalid exchange rate</string>
-    <string name="sample_exchange_rate">e.g. 1 %1$s = x.xx %2$s</string>
-    <string name="error_invalid_amount">Invalid amount</string>
+    <string name="label_old_passcode">Unesi staru lozinku</string>
+    <string name="label_new_passcode">Unesi novu lozinku</string>
+    <string name="title_scheduled_exports">Izvozi</string>
+    <string name="label_no_scheduled_exports_to_display">Nema terminiranih izvoza</string>
+    <string name="title_create_export_schedule">Stvori terminirane izvoze</string>
+    <string name="toast_exported_to">Izvezeno u: %1$s</string>
+    <string name="toast_legend_too_long">Legenda je pre dugačka</string>
+    <string name="hint_account_description">Opis konta</string>
+    <string name="label_no_recent_accounts">Nema nedavno korištenih konta</string>
+    <string name="label_no_favorite_accounts">Nema favoriziranih konta</string>
+    <string name="nav_menu_scheduled_actions">Terminirane radnje</string>
+    <string name="label_scheduled_action">"%1$s, posljednji put izvršeno %2$s"</string>
+    <string name="label_scheduled_action_ended">"Završeno"</string>
+    <string name="btn_wizard_next">Sljedeće</string>
+    <string name="btn_wizard_finish">Gotovo</string>
+    <string name="wizard_title_default_currency">Standardna valuta</string>
+    <string name="wizard_title_account_setup">Postavke konta</string>
+    <string name="wizard_title_select_currency">Odaberi valutu</string>
+    <string name="wizard_title_feedback_options">Opcije za feedback</string>
+    <string name="wizard_option_create_default_accounts">Stvori standardna konta</string>
+    <string name="wizard_option_import_my_accounts">Uvezi moja konta</string>
+    <string name="wizard_option_let_me_handle_it">Dozvoli da ja to obavim</string>
+    <string name="wizard_option_currency_other">Ostalo…</string>
+    <string name="wizard_option_auto_send_crash_reports">Automatski pošalji izvještaj o urušavanju programa</string>
+    <string name="wizard_option_disable_crash_reports">Deaktiviraj izvještavanje o urušavanju programa</string>
+    <string name="wizard_btn_back">Natrag</string>
+    <string name="title_setup_gnucash">Postavi GnuCash</string>
+    <string name="wizard_title_welcome_to_gnucash">Dobro došla, dobro došao u GnuCash</string>
+    <string name="msg_wizard_welcome_page">Prije nego što kreneš s radom,\nnajprije namjesti par stvari\n\nZa nastavak, pritisni Sljedeće</string>
+    <string name="title_split_editor">Uređivač podjela</string>
+    <string name="toast_error_check_split_amounts">Prije spremanja, provjeri da sve stavke podjele imaju valjani iznos!</string>
+    <string name="label_error_invalid_expression">Nevaljani izraz!</string>
+    <string name="toast_scheduled_recurring_transaction">Terminirana ponavljajuća transakcija</string>
+    <string name="title_transfer_funds">Prenesi sredstva</string>
+    <string name="nav_menu_help"><![CDATA[Pomoć i feedback]]></string>
+    <string name="label_select_pie_slice_to_see_details">Za prikaz detalja, odaberi jedan odsječak</string>
+    <string name="label_report_period">Razdoblje:</string>
+    <string name="label_convert_from">Iz:</string>
+    <string name="label_convert_to">U:</string>
+    <string name="msg_provide_exchange_rate">Za prijenos sredstava, zadaj konvertiranu vrijednost ili tečaj</string>
+    <string name="hint_exchange_rate">Tečaj</string>
+    <string name="btn_fetch_quote">Dohvati tečaj</string>
+    <string name="hint_converted_amount">Konvertirani iznos</string>
+    <string name="title_report_sheet">Bilanca</string>
+    <string name="label_last_3_months_expenses">Rashod zadnjih tri mjeseca</string>
+    <string name="label_total_assets">Ukupno imovina</string>
+    <string name="label_total_liabilities">Ukupno obveze</string>
+    <string name="label_net_worth">Neto vrijednost</string>
+    <string name="label_assets">Imovina</string>
+    <string name="label_liabilities">Obveze</string>
+    <string name="label_equity">Kapital</string>
+    <string name="label_move_to">Premjesti u:</string>
+    <string name="menu_group_by">Grupiraj po</string>
+    <string name="menu_group_by_month">Mjesecu</string>
+    <string name="menu_group_by_quarter">Kvartalu</string>
+    <string name="menu_group_by_year">Godini</string>
+    <string name="title_balance_sheet_report">Bilanca</string>
+    <string name="label_balance_sheet_total">Ukupno:</string>
+    <string name="title_google_plus_community">Google+ zajednica</string>
+    <string name="title_translate_gnucash">Prevedi GnuCash</string>
+    <string name="summary_google_plus">Izmijeni ideje, diskutiraj o promjenama ili prijavi greške</string>
+    <string name="summary_translate_gnucash">Prevodi ili ispravljaj prijevode na CrowdIn</string>
+    <string name="toast_no_compatible_apps_to_receive_export">Nema kompatibilne aplikacije za prihvaćanje izvezenih transakcija!</string>
+    <string name="menu_move_transaction">Premjesti…</string>
+    <string name="menu_duplicate_transaction">Dupliciraj</string>
+    <string name="title_cash_flow_report">Novčani tijek</string>
+    <string name="title_budgets">Proračuni</string>
+    <string name="title_use_compact_list">Aktiviraj kompaktni prikaz</string>
+    <string name="summary_use_compact_list">Aktiviraj stalni prikaz kompaktnog popisa transakcija</string>
+    <string name="error_invalid_exchange_rate">Nevaljani tečaj</string>
+    <string name="sample_exchange_rate">npr. 1 %1$s = x.xx %2$s</string>
+    <string name="error_invalid_amount">Nevaljani iznos</string>
     <string-array name="report_time_range">
-        <item>Current month</item>
-        <item>Last 3 months</item>
-        <item>Last 6 months</item>
-        <item>Last 12 months</item>
-        <item>All time</item>
-        <item>Custom range…</item>
+        <item>Tekući mjesec</item>
+        <item>Zadnja 3 mjeseca</item>
+        <item>Zadnjih 6 mjeseci</item>
+        <item>Zadnjih 12 mjeseci</item>
+        <item>Svo vrijeme</item>
+        <item>Proizvoljno razdoblje…</item>
     </string-array>
     <string name="report_time_range_picker_title">"Pick time range"</string>
     <!-- Passcode lock -->
@@ -366,98 +364,98 @@
     <string name="digit_nine_text">WXYZ</string>
     <string name="digit_zero">0</string>
     <string name="digit_zero_text">+</string>
-    <string name="title_manage_books">Manage Books</string>
-    <string name="menu_manage_books">Manage Books…</string>
-    <string name="select_chart_to_view_details">Select any part of the chart to view details</string>
-    <string name="title_confirm_delete_book">Confirm delete Book</string>
-    <string name="msg_all_book_data_will_be_deleted">All accounts and transactions in this book will be deleted!</string>
-    <string name="btn_delete_book">Delete Book</string>
-    <string name="label_last_export_time">Last Exported:</string>
-    <string name="menu_title_enable_sync">Enable Sync</string>
-    <string name="menu_title_new_book">New Book</string>
-    <string name="toast_transaction_has_no_splits_and_cannot_open">The selected transaction has no splits and cannot be opened</string>
-    <string name="label_split_count">%1$d splits</string>
-    <string name="label_inside_account_with_name">in %1$s</string>
+    <string name="title_manage_books">Upravljaj knjigama</string>
+    <string name="menu_manage_books">Upravljaj knjigama…</string>
+    <string name="select_chart_to_view_details">Za prikaz detalja, odaberi bilo koji dio dijagrama</string>
+    <string name="title_confirm_delete_book">Potvrdi brisanje knjige</string>
+    <string name="msg_all_book_data_will_be_deleted">Svi konti i sve transakcije ove knjige će biti izbrisane!</string>
+    <string name="btn_delete_book">Izbriši knjigu</string>
+    <string name="label_last_export_time">Zadnji izvoz:</string>
+    <string name="menu_title_enable_sync">Aktiviraj sinkronizaciju</string>
+    <string name="menu_title_new_book">Nova knjiga</string>
+    <string name="toast_transaction_has_no_splits_and_cannot_open">Odabrana transakcija nije podijeljena i ne može se otvoriti</string>
+    <string name="label_split_count">Broj podjela: %1$d</string>
+    <string name="label_inside_account_with_name">u %1$s</string>
     <plurals name="book_account_stats">
-        <item quantity="one">%d account</item>
-        <item quantity="few">%d accounts</item>
-        <item quantity="other">%d accounts</item>
+        <item quantity="one">%d konto</item>
+        <item quantity="few">%d konta</item>
+        <item quantity="other">%d konti</item>
     </plurals>
     <plurals name="book_transaction_stats">
-        <item quantity="one">%d transaction</item>
-        <item quantity="few">%d transactions</item>
-        <item quantity="other">%d transactions</item>
+        <item quantity="one">%d transakcija</item>
+        <item quantity="few">%d transakcije</item>
+        <item quantity="other">%d transakcija</item>
     </plurals>
     <string-array name="report_account_types">
-        <item>EXPENSE</item>
-        <item>INCOME</item>
+        <item>RASHOD</item>
+        <item>PRIHOD</item>
     </string-array>
-    <string name="toast_connected_to_google_drive">Connected to Google Drive</string>
-    <string name="toast_unable_to_connect_to_google_drive">Unable to connect to Google Drive</string>
-    <string name="toast_enter_amount_to_split">Please enter an amount to split</string>
-    <string name="label_export_target_external_service">external service</string>
-    <string name="toast_updated_transaction_recurring_schedule">Updated transaction recurring schedule</string>
-    <string name="label_export_transactions_since_date">Since</string>
-    <string name="switch_export_transactions_from_all_time">All time</string>
-    <string name="label_recommend_app">Recommend in Play Store</string>
-    <string name="repeat_until_date">until %1$s</string>
-    <string name="repeat_x_times">for %1$d times</string>
-    <string name="menu_show_compact_view">Compact View</string>
-    <string name="book_default_name">Book %1$d</string>
-    <string name="last_export_time_never">never</string>
-    <string name="title_rename_book">Rename Book</string>
-    <string name="btn_rename">Rename</string>
-    <string name="menu_rename">Rename</string>
-    <string name="title_select_backup_file">Select backup file</string>
-    <string name="summary_select_backup_file">Select a file for automatic backups</string>
-    <string name="title_confirm_restore_backup">Confirm restore from backup</string>
-    <string name="msg_confirm_restore_backup_into_new_book">A new book will be opened with the contents of this backup. Do you wish to proceed?</string>
-    <string name="btn_restore">Restore</string>
-    <string name="title_no_backups_found">No backups found</string>
-    <string name="msg_no_backups_to_restore_from">There are no existing backup files to restore from</string>
-    <string name="label_select_destination_after_export">Select the destination after export is complete</string>
-    <string name="label_dropbox_export_destination">Export to \'/Apps/GnuCash Pocket/\' folder on Dropbox</string>
-    <string name="title_section_preferences">Preferences</string>
-    <string name="yes_sure">Yes, I\'m sure</string>
-    <string name="summary_export_accounts_csv">Export all accounts (without transactions) to CSV</string>
-    <string name="title_export_accounts_csv">Export as CSV</string>
-    <string name="label_csv_separator">Separator</string>
-    <string name="export_notice_csv">Exports transactions as CSV</string>
+    <string name="toast_connected_to_google_drive">Spoji se s Google Drive</string>
+    <string name="toast_unable_to_connect_to_google_drive">Spajanje s Google Drive nije moguće</string>
+    <string name="toast_enter_amount_to_split">Unesi iznos u podjelu</string>
+    <string name="label_export_target_external_service">vanjska usluga</string>
+    <string name="toast_updated_transaction_recurring_schedule">Aktualiziraj ponavljanja terminiranih transakcija</string>
+    <string name="label_export_transactions_since_date">Od</string>
+    <string name="switch_export_transactions_from_all_time">Svo vrijeme</string>
+    <string name="label_recommend_app">Preporuči na Play Store stranici</string>
+    <string name="repeat_until_date">do %1$s</string>
+    <string name="repeat_x_times">%1$d puta</string>
+    <string name="menu_show_compact_view">Kompaktni prikaz</string>
+    <string name="book_default_name">Knjiga %1$d</string>
+    <string name="last_export_time_never">nikad</string>
+    <string name="title_rename_book">Preimenuj knjigu</string>
+    <string name="btn_rename">Preimenuj</string>
+    <string name="menu_rename">Preimenuj</string>
+    <string name="title_select_backup_file">Odaberi sigurnosnu kopiju</string>
+    <string name="summary_select_backup_file">Odaberi datoteku za spremanje sigurnosne kopije</string>
+    <string name="title_confirm_restore_backup">Potvrdi ponovo učitavanje sigurnosne kopije</string>
+    <string name="msg_confirm_restore_backup_into_new_book">Otvorit će se nova knjiga sa sadržajem ove sigurnosne kopije. Želiš li nastaviti?</string>
+    <string name="btn_restore">Učitaj sigurnosnu kopiju</string>
+    <string name="title_no_backups_found">Nema sigurnosnih kopija</string>
+    <string name="msg_no_backups_to_restore_from">Ne postoje sigurnosne kopije, koje bi se mogle učitati.</string>
+    <string name="label_select_destination_after_export">Odaberi odredište nakon što izvoz završi.</string>
+    <string name="label_dropbox_export_destination">Izvezi u Dropbox mapu pod „/Apps/GnuCash Pocket/„</string>
+    <string name="title_section_preferences">Postavke</string>
+    <string name="yes_sure">Da, želim</string>
+    <string name="summary_export_accounts_csv">Izvezi sva konta (bez transakcija) u CSV</string>
+    <string name="title_export_accounts_csv">Izvezi kao CSV</string>
+    <string name="label_csv_separator">Znak razdvajanja</string>
+    <string name="export_notice_csv">Izvozi transakcije kao CSV</string>
     <string name="no_books">No books in the database</string>
     <!-- Copied from "csv-transactions-export.cpp" -->
     <string-array name="csv_transaction_headers">
-        <item>Date</item>
-        <item>Transaction ID</item>
-        <item>Number</item>
-        <item>Description</item>
-        <item>Notes</item>
-        <item>Commodity/Currency</item>
-        <item>Void Reason</item>
-        <item>Action</item>
-        <item>Memo</item>
-        <item>Full Account Name</item>
-        <item>Account Name</item>
-        <item>Amount With Sym</item>
-        <item>Amount Num.</item>
-        <item>Value With Sym</item>
-        <item>Value Num.</item>
-        <item>Reconcile</item>
-        <item>Reconcile Date</item>
-        <item>Rate/Price</item>
+        <item>Datum</item>
+        <item>ID transakcije</item>
+        <item>Broj</item>
+        <item>Opis</item>
+        <item>Napomene</item>
+        <item>Roba/Valuta</item>
+        <item>Razlog storniranja</item>
+        <item>Radnja</item>
+        <item>Zabilješka</item>
+        <item>Cjelokupno ime konta</item>
+        <item>Ime konta</item>
+        <item>Iznos s oznakom</item>
+        <item>Numerički iznos</item>
+        <item>Vrijednost s oznakom</item>
+        <item>Numerički vrijednost</item>
+        <item>Uskladi</item>
+        <item>Datum usklađivanja</item>
+        <item>Tečaj/cijena</item>
     </string-array>
     <string-array name="csv_account_headers">
-        <item>Type</item>
-        <item>Full Name</item>
-        <item>Name</item>
-        <item>Code</item>
-        <item>Description</item>
-        <item>Color</item>
-        <item>Notes</item>
-        <item>Commoditym</item>
-        <item>Commodityn</item>
-        <item>Hidden</item>
-        <item>Tax</item>
-        <item>Placeholder</item>
+        <item>Vrsta</item>
+        <item>Cjelokupno ime</item>
+        <item>Ime</item>
+        <item>Šifra</item>
+        <item>Opis</item>
+        <item>Boja</item>
+        <item>Napomene</item>
+        <item>Robam</item>
+        <item>Roban</item>
+        <item>Skriveno</item>
+        <item>Porez</item>
+        <item>Rezervirano mjesto</item>
     </string-array>
     <string name="title_edit_budget">Edit Budget</string>
     <string name="title_delete_transaction_backup">When delete transaction?</string>

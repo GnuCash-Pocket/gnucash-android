@@ -1,0 +1,29 @@
+GnuCash est un gestionnaire de finances mobile pour Android.
+
+Il s’agit d’une application complémentaire pour GnuCash sur le bureau et permet un suivi flexible des dépenses en mouvement.
+Les transactions enregistrées peuvent être exportées vers le bureau GnuCash via plusieurs formats (CSV / QIF / OFX).
+
+Quelques fonctionnalités inclues:
+
+<b>&bull; Une interface facile à utiliser.</b>
+
+<b>&bull; Comptable</b> : un compte principal peut avoir une hiérarchie de comptes détaillés sous lui.
+Cela permet à des types de comptes semblables (p. ex. argent, Banque, Stock) d'être groupés dans un compte principal (par exemple les actifs).
+Vous pouvez également importer une hiérarchie existante de compte de GnuCash Desktop.
+
+<b>&bull; Transactions séparées</b> : une seule transaction peut être divisée en plusieurs morceaux pour enregistrements taxes, frais et autres entrées composées.
+
+<b>&bull; Double entrée</b> : chaque transaction doit débiter un compte et en créditer un autre d'un montant égal. Ceci assure un solde exact : ainsi la différence entre le revenu et les dépenses est exactement égale à la somme de tous les actifs, qu'ils soient bancaires, espèces, titres ou autres.
+
+<b>&bull; Types de comptes de revenu/dépense (catégories)</b> : Ceux-ci servent non seulement à mieux classer vos flux de trésorerie, mais lorsqu’ils sont utilisés correctement avec la fonctionnalité de double-entrée, ils fournissent un énoncé exact des pertes & profits.
+
+<b>&bull; Transactions programmées</b> : GnuCash a la capacité de créer et saisir des opérations automatiquement.
+
+<b>&bull; Exporter vers XML GnuCash, QIF ou OFX</b> : GnuCash peut exporter vos comptes/transactions dans différents formats pour une utilisation dans d’autres programmes. Aussi, des exportations programmées vers des services tiers de synchronisation comme DropBox et Google Drive peuvent être activéees.
+
+<b>&bull; Rapports</b> : afficher le résumé des transactions (revenus et dépenses) sous forme d'histogrammes
+
+<b>&bull; Widget d'écran d'accueil</b> pour un accès rapide à vos comptes et l’enregistrement des transactions
+
+<br/> <b><u>Remarque</u></b> : L'application n’offre pas une compatibilité totale avec GnuCash pour le bureau. Vous ne pouvez pas synchroniser entre l’application de bureau et celle-ci. Mais vous pouvez importer vos comptes et opérations de fichiers XML de GnuCash.
+

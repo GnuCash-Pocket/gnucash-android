@@ -1,0 +1,29 @@
+GnuCash adalah manajer keuangan mobile untuk Android.
+
+Ini adalah aplikasi pendamping untuk aplikasi GnuCash desktop, dan memungkinkan pelacakan pengeluaran yang fleksibel secara 'on-the-go'.
+Transaksi yang telah direkam dapat diekspor kembali ke GnuCash desktop melalui beberapa format (CSV / QIF / OFX).
+
+Beberapa fitur unggulan meliputi:
+
+<b>&bull; Antarmuka yang mudah digunakan.</b>
+
+<b>&bull; Bagan Akun</b>: Sebuah akun master dapat memiliki sebuah hierarki dari rincian akun di bawahnya.
+Hal ini memungkinkan jenis-jenis akun serupa (misalnya: Kas, Bank, Saham) untuk dikelompokkan ke dalam satu akun master (misalnya: Aset).
+Anda juga dapat mengimpor sebuah hierarki akun yang sudah ada dari GnuCash desktop.
+
+<b>&bull; Memisahkan Transaksi</b>: Sebuah transaksi dapat dipisahkan menjadi beberapa bagian sehingga dapat mencatat pajak, biaya, dan entri lainnya.
+
+<b>&bull; Double Entry (Pencatatan Berganda)</b>: Setiap transaksi harus mendebet sebuah akun dan mengkredit akun lainnya dengan jumlah yang sama. Hal ini memastikan bahwa "balance pembukuan": bahwa selisih antara pendapatan dan aliran ke luar benar-benar sama persis dengan jumlah semua aset, baik itu bank, kas, saham, atau lainnya.
+
+<b>&bull; Tipe akun Pendapatan/Pengeluaran (Kategori)</b>: Hal ini tidak hanya untuk mengkategorikan arus kas (cash flow), tapi ketika digunakan dengan baik dengan fitur double-entry, mereka dapat menyediakan laporan Laba-Rugi.
+
+<b>&bull; Transaksi Terjadwal</b>: GnuCash memiliki kemampuan untuk membuat dan mencatat transaksi secara otomatis.
+
+<b>&bull; Ekspor ke GnuCash XML, QIF, atau OFX</b>: GnuCash dapat mengekspor akun/transaksi Anda ke dalam format yang berbeda untuk digunakan dalam program lain. Selain itu, ekspor terjadwal dapat diaktifkan ke layanan sinkron pihak ketiga seperti DropBox dan Google Drive.
+
+<b>&bull; Laporan</b>: Melihat ringkasan transaksi (pendapatan dan pengeluaran) dalam bentuk grafik pie/bar/garis
+
+<b>&bull; Widget layar depan</b> untuk akses cepat ke akun dan catatan transaksi
+
+<br/><b><u>CATATAN</u></b>: bahwa aplikasi tidak menawarkan kompatibilitas penuh dengan GnuCash versi desktop. Anda tidak dapat mensingkronisasikan antara aplikasi versi desktop dengan aplikasi ini. Tapi Anda dapat mengimpor akun dan transaksi Anda dari file XML GnuCash.
+

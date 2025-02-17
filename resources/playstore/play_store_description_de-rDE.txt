@@ -1,0 +1,29 @@
+GnuCash ist ein Finanzmanager für mobile Endgeräte mit Android.
+
+Es ist eine Ergänzung zur Desktop-Anwendung von GnuCash und ermöglicht eine flexible Verfolgung von Ausgaben von unterwegs.
+Erfasste Buchungen können in mehreren Formaten (CSV / QIF / OFX) exportiert, und in die Desktop-Anwendung eingelesen werden.
+
+Merkmale und Features:
+
+<b>&bull; Einfache Benutzeroberfläche</b>
+
+<b>&bull; Konten und Unterkonten</b>: Ein Konto kann eine ganze Hierarchie von Unterkonten unter sich haben.
+So gruppieren Sie ähnliche Konten (z.B. Bargeld, Bankkonto, Sparkonto, ...) in einem Masterkonto (z.B. Vermögen).
+Importieren Sie Ihre gesamte Kontenstruktur aus GnuCash (für den Desktop).
+
+<b>&bull; Split Buchungen</b>: Teilen Sie einzelne Buchungen, um Steuern, Gebühren oder andere Mischeinträge zu verwalten.
+
+<b>&bull; Doppelte Buchführung</b>: Jede Buchung wird von einem Konto abgebucht und einem anderen in gleicher Höhe zugebucht. Dadurch wird sicher gestellt, dass die Differenz zwischen Erträgen und Aufwendungen exakt der Summe aller Vermögenswerte (Bargeld, Bank, Lager, ...) entspricht.
+
+<b>&bull; Ertrags-/Aufwands-Konten (Kategorien)</b>: Diese Konten helfen den Cash Flow zu ordnen und ermöglichen bei doppelter Buchführung eine exakte Gewinn- und Verlustrechnung.
+
+<b>&bull; Geplante Buchungen</b>: GnuCash kann wiederkehrende Buchungen automatisch erstellen.
+
+<b>&bull; Export über GnuCash XML, QIF oder OFX</b>: Exportieren Sie Buchungen oder Konten in andere Programme. Zusätzlich können Sie einen zeitgesteuerten Export für die Synchronisierung Ihrer Daten über Drittanbieter wie DropBox oder Google Drive aktivieren.
+
+<b>&bull;Berichte</b>: Behalten Sie den Überblick über Ihre Einnahmen und Ausgabe mit Hilfe von übersichtlichen Torten-, Balken-, und Liniendiagrammen.
+
+<b>&bull; Homescreen Widget</b> für schnellen Zugriff auf Ihre Konten und rasche Aufzeichnung Ihrer Ausgaben
+
+<br/><b><u>Hinweis</u></b>: GnuCash für Android bietet nicht vollständige Kompatibilität zu GnuCash (Dektop-Version). Eine Synchronisierung zwischen Desktop und dieser App ist nicht in beide Richtungen möglich. Sie können aber Ihre Konten und Buchungen als XML-Datei importieren.
+

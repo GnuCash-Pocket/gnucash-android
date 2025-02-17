@@ -1,0 +1,29 @@
+GnuCash 는 안드로이드용 모바일 금융 관리앱 입니다.
+
+It is a companion application for GnuCash on the desktop, and enables flexible tracking of expenses on-the-go.
+Recorded transactions can be exported back to the desktop GnuCash via several formats (CSV / QIF / OFX).
+
+Some of feature highlights include:
+
+<b>&bull; 편리한 인터페이스.</b>
+
+<b>&bull; 계층적 계정관리</b>: 상위 계정 아래에 하위 세부 계정을 만들 수 있습니다.
+이를 이용해 하나의 상위 계정(자산 등) 아래에 여러개의 비슷한 계정들(현금, 은행, 주식 등)을 묶어서 관리할 수 있습니다.
+데스크톱용 GnuCash에서 계정 구조를 불러올 수도 있습니다.
+
+<b>&bull; 거래내역 분할</b>: 하나의 복잡한 거래를 세금, 수수료 등으로 세부적으로 나누어 기록할 수 있습니다.
+
+<b>&bull; 복식부기</b>: 모든 거래는 차변계정과 대변계정에 같은 액수로 기록됩니다. 이를 통해 장부잔고 (수입과 지출의 차이, 즉 은행, 현금, 주식등의 자산의 합계) 를 확인할 수 있습니다.
+
+<b>&bull; 수입/지출 계정의 카테고리화</b>: 단순히 현금흐름을 카테고리화할 뿐만 아니라, 복식부기 기능을 적절히 같이 사용해 정확한 손익계산서를 만들 수 있습니다.
+
+<b>&bull; 예정된 거래 기능</b>: GnuCash에서 자동으로 거래내역을 작성하고 등록할 수 있습니다.
+
+<b>&bull; GnuCash XML, QIF, OFX 파일로 내보내기</b>: 계정과 거래내역을 다른 프로그램에서 사용 가능한 형식으로 내보낼 수 있습니다. Dropbox나 Google Drive같은 별도의 서비스에 내보내기 예약도 가능합니다.
+
+<b>&bull; 보고서</b>: 거래내역(수입과 지출)을 원형 그래프, 막대 그래프, 꺾은선 그래프로 요약해 보여줍니다.
+
+<b>&bull; 홈화면 위젯</b>을 통해 빠르게 계정을 확인하고, 거래를 입력할 수 있습니다.
+
+<br/><b><u>참고</u></b>: 데스크톱용 GnuCash 프로그램과 완벽하게는 호환 되지 않습니다. 데스크톱 프로그램과 이 앱은 동기화되지 않습니다. 하지만 GnuCash XML파일을 통해 계정과 거래내역을 불러올 수는 있습니다.
+

@@ -1,0 +1,29 @@
+GnuCash is a mobile finance manager for Android.
+
+Masaüstünde GnuCash için yardımcı bir uygulamadır ve hareket halindeyken harcamaların esnek bir şekilde izlenmesini sağlar.
+Kaydedilen işlemler masaüstüne GnuCash'e çeşitli biçimlerde (CSV / QIF / OFX) geri aktarılabilir.
+
+Özelliklerden bazıları şunlardır:
+
+<b>&bull; Kullanımı kolay arayüz.</b>
+
+<b>&bull; Hesap Tablosu</b>: Ana hesap içerisinde detaylı bir hesap hiyerarşisi içerebilir.
+Bu benzer hesap türlerinin (Nakit, Banka, Sermaye vs.) bir ana hesap altında (Varlıklar vs.) gruplanmasına izin verir.
+Ayrıca masaüstü için GnuCash uygulamasından mevcut hesap hiyerarşisini içe aktarabilirsiniz.
+
+<b>&bull; Bölünmüş İşlemler</b>: Tek bir işlemi vergiler, ücretler ve diğer bileşik işlemler olarak farklı sayıda parçalara bölebilirsiniz.
+
+<b>&bull; Çift Giriş</b>: Her işlem bir hesaba borç ve diğer hesaba kredi olarak eşit tutarda olmalı. Bu "Kitap dengesini" sağlar: Gelir ve çıkış arasındaki farkın, banka, nakit, sermaye veya diğer varlıkların toplamı ile tam olarak aynı olduğuna dikkat edin.
+
+<b>&bull; Gelir/Gider Hesap Türleri (Kategoriler)</b>: Bunlar sadece nakit akışını kategorize etmeye hizmet etmez, ama çift-giriş özelliği ile beraber kullanıldığında bunlar doğru bir Kâr&Zarar raporu sağlayabilir.
+
+<b>&bull; Zamanlanmış İşlemler</b>: GnuCash otomatik işlem girişi yeteneğine sahiptir.
+
+<b>&bull; GnuCash XML, QIF veya OFX olarak dışa aktarma</b>: GnuCash hesapları/işlemlerı farklı yazılımlarda kullanılabilmesi için farklı biçimlerde dışa aktarabilir. Ayrıca, zamanlanmış dışa aktarma ile Dropbox ve Google Drive gibi eşitleme hizmetleri etkinleştirilebilir.
+
+<b>&bull; Raporlar</b>: İşlemlerin (gelir ve giderler) özetlerini pasta/çubukçizgi grafiği olarak gösterebilir
+
+<b>&bull; Ana ekran Widget'i</b> hesaplarınıza hızlı erişimi ve işlem kaydını sağlar
+
+<br/><b><u>NOT</u></b>: Bu uygulama masaüstü için GnuCash'e tam uyum sağlamayabilir. Masaüstü uygulama ile bu uygulama arasında eşitleme yapamazsınız. Ama GnuCash XML dosyaları ile hesaplarınızı ve işlemlerinizi içe aktarabilirsiniz.
+

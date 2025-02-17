@@ -1,0 +1,29 @@
+GnuCash är en mobil finanshanterare för Android.
+
+Det är en applikationsföljeslagare till GnuCash på skrivbordet, och möjliggör flexibel spårning av utgifterna on-the-go.
+Registrerade transaktioner kan exporteras tillbaka till skrivbordet GnuCash via flera format (CSV / QIF / OFX).
+
+Några av funktionshöjdpunkterna är:
+
+<b>&bull; Ett lättanvänt gränssnitt.</b>
+
+<b>&bull; Kontoplan</b>: Ett huvudkonto kan ha en hierarki med detaljkonton under sig.
+Detta gör det möjligt att gruppera liknande kontotyper (t.ex. Kontant, Bank, Aktie) i ett huvudkonto (t.ex. Tillgångar).
+Du kan även importera en befintlig kontohierarki från GnuCash-skrivbord.
+
+<b>&bull; Dela transaktioner</b>: En enda transaktion kan delas upp i flera stycken för att registrera skatter, avgifter och andra sammansatta bokföringar.
+
+<b>&bull; Dubbel bokföring</b>: Varje transaktion måste debitera ett konto och kreditera ett annat med samma belopp. Detta säkerställer att "bokföringsbalansen": att skillnaden mellan inkomst och utflöde exakt motsvarar summan av alla tillgångar, vare sig de är bank, kontant, aktie eller annat.
+
+<b>&bull; Inkomst/kostnad kontotyper (kategorier)</b>: dessa tjänar inte bara för att kategorisera ditt kassaflöde, men när de används korrekt med funktionen dubbel bokföring, kan dessa ge en korrekt Vinst&Förlust balansräkning.
+
+<b>&bull; Schemalagda transaktioner</b>: GnuCash har förmågan att automatiskt skapa och ange transaktioner.
+
+<b>&bull; Exportera till GnuCash XML, QIF eller OFX</b>: GnuCash kan exportera dina konton och transaktioner i olika format för användning i andra program. Dessutom kan schemalagd export till synkroniseringstjänster från tredje part som Dropbox och Google Drive aktiveras.
+
+<b>&bull; Rapporter</b>: Visa sammanfattning över transaktioner (intäkter och kostnader) som cirkel-/stapel-/linjediagram
+
+<b>&bull; Hemskärmgränssnittskomponent</b> för snabb tillgång till dina konton och registrering av transaktioner
+
+<br/> <b><u>OBS</u></b>: att appen inte erbjuder full kompatibilitet med GnuCash för skrivbordet. Du kan inte synkronisera mellan skrivbordsapplikationen och den här. Men du kan importera dina konton och transaktioner från GnuCash XML-filer.
+

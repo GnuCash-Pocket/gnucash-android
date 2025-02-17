@@ -1,0 +1,29 @@
+GnuCash es un gestor de finanzas móviles para Android.
+
+Es una aplicación complementaria para GnuCash en el escritorio, y permite un seguimiento flexible de los gastos en marcha.
+Las transacciones grabadas se pueden exportar de vuelta a GnuCash de escritorio a través de varios formatos (CSV / QIF / OFX).
+
+Algunas características destacadas son:
+
+<b>&bull; Una interfaz intuitiva y fácil de usar.</b>
+
+<b>&bull; Jerarquía de cuentas</b>: Una cuenta maestra puede tener una jerarquía de cuentas por debajo.
+Esto permite agrupar cuentas similares (efectivo, banco, acciones) en una cuenta maestra (por ejemplo, activos).
+También puede importas una jerarquía de cuentas existentes en GnuCash para el ordenador.
+
+<b>&bull; Desglose de transacciones </b>: Una transacción única se puede dividir en varias partes para registrar impuestos, tasas, y otras entradas compuestas.
+
+<b>&bull; Doble entrada</b>: cada transacción debe una cuenta de débito y otra de crédito por la misma cantidad. Esto asegura que las cuentas estén equilibradas: la diferencia entre ingresos y gastos es exactamente la suma de todo el pasivo, ya sea en cuentas bancarias, efectivo u otro.
+
+<b>&bull; Tipos de cuentas de ingresos y gastos (Categorías)</b>: No sólo sirven para categorizar el flujo de caja, cuando se usa la doble entrada correctamente proporcionan una cuenta de perdidas y ganancias exacta.
+
+<b>&bull; Transacciones programadas</b>: GnuCash puede crear transacciones automáticamente.
+
+<b>&bull; Exportar a GnuCash XML, QIF o OFX</b>: GnuCash puede exportar sus cuentas y transacciones en formatos diferentes para poder usarlos en otros programas. También se pueden programar exportaciones a servicios de terceros como DropBox y Google Drive.
+
+<b>&bull; Informes</b>: Ver un resumen de transacciones (ingresos y gastos) en gráficos de barras y tartas
+
+<b>&bull; Widget en la pantalla de inicio</b> para un acceso rápido a sus cuentas e introducir transacciones
+
+<br/><b><u>NOTA</u></b>: esta aplicación no ofrece una compatibilidad total con GnuCash para el escritorio. No se puede sincronizar esta aplicación con la aplicación para el escritorio. Pero es posible importas las cuentas y transacciones desde ficheros XML de GnuCash.
+

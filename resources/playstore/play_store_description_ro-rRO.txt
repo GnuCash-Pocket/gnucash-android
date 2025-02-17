@@ -1,0 +1,29 @@
+GnuCash este un program de management financiar mobil.
+
+Este o aplicație mobilă pentru versiunea desktop a programului GnuCash și permite verificarea activă a cheltuielilor.
+Tranzacțiile memorate pot fi exportate înapoi în varianta desktop a GnuCash prin intermediul diferitelor tipuri de formate (CSV, QIF or OFX).
+
+Unele dintre aspectele evidențiate includ:
+
+<b>&bull; O interfață ușor de utilizat.</b>
+
+<b>&bull; Grafic de Conturi</b>: Un cont principal poate avea o ierarhie de conturi de detalii sub el.
+Aceasta permite conturilor similare (ex. Lichidități, Bancă, Stocuri, Rezerva) să fie grupate sub un cont principal (ex. Active).
+De asemenea, puteți importa o ierarhie de cont existentă de pe GnuCash desktop.
+
+<b>&bull; Tranzacții împărțite</b>: O singură tranzacție poate fi împărțită în mai multe bucăți pentru a înregistra impozite, taxe și alte intrări combinate.
+
+<b>&bull; Intrare dublă</b>: Fiecare tranzacție trebuie să debiteze un cont și să îl crediteze pe altul cu o sumă egală. Aceasta garantează că „soldul contabil”: diferența dintre venituri și ieșiri este exact egală cu suma tuturor activelor; fie ele bancare, numerar, acțiuni sau altele.
+
+<b>&bull; Tipuri de Conturi Venituri/Cheltuieli (Categories)</b>: Acestea nu servesc doar pentru a clasifica fluxul de numerar, dar atunci când este folosit în mod corespunzător cu funcția de dublă intrare, acestea pot oferi o declarație precisă de Profit&Pierdere
+
+<b>&bull; Tranzacții programate</b>: GnuCash are capacitatea de a crea automat și de a introduce tranzacții.
+
+<b>&bull; Export în GnuCash XML, QIF sau OFX</b>: GnuCash vă poate exporta conturile/tranzacțiile în diferite formate pentru a fi utilizate în alte programe. De asemenea, exporturile programate către servicii de sincronizare terțe cum ar fi DropBox și Google Drive pot fi activate.
+
+<b>&bull; Rapoarte</b>: Vezi rezumatul tranzacțiilor (venituri și cheltuieli) ca plăci/bar/linie grafice
+
+<b>&bull; Widget Homescreen</b> pentru acces rapid la conturile tale și înregistrare a tranzacțiilor
+
+<br/><b><u>NOTĂ</u></b>: că aplicația nu oferă o compatibilitate deplină cu GnuCash pentru desktop. Nu se poate sincroniza între aplicația desktop și aceasta. Dar puteți importa conturile și tranzacțiile din fișierele GnuCash XML.
+
