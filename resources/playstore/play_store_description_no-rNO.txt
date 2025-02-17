@@ -1,0 +1,29 @@
+GnuCash is a mobile finance manager for Android.
+
+It is a companion application for GnuCash on the desktop, and enables flexible tracking of expenses on-the-go.
+Recorded transactions can be exported back to the desktop GnuCash via several formats (CSV / QIF / OFX).
+
+Some of feature highlights include:
+
+<b>&bull; Et lett-å-bruke grensesnitt.</b>
+
+<b>&bull; Av</b>: en hovedkonto kan ha et hierarki av underkontoer.
+Dette gjør at lignende kontotyper (f.eks kontanter, Bank, Aksjer) skal grupperes i én hovedkonto (f.eks Eiendeler).
+Du kan også importere et eksisterende konto hierarki fra GnuCash programmet.
+
+<b>&bull; Delte transaksjoner</b>: én transaksjon kan deles inn i flere for å registrere avgifter, avgifter og andre sammensatte oppføringer.
+
+<b>&bull; Dobbel bokføring</b>: hver transaksjon må en motkonto. Dette sikrer "balanse": at forskjellen mellom inntekter og utgifter er nøyaktig lik summen av alle eiendeler, være de bank, kontanter, aksjer eller andre.
+
+<b>&bull; Inntekt/kostnad kontotyper (kategorier)</b>.
+
+<b>&bull; Planlagt transaksjoner</b>: GnuCash har muligheten til å automatisk opprette og angi transaksjoner.
+
+<b>&bull; Eksportere til GnuCash XML, QIF eller OFX</b>: GnuCash kan eksportere kontoer/transaksjonene i forskjellige formater for bruk i andre programmer. Også planlagt eksport til 3dje-parts Synkroniseringstjenester som DropBox og Google Drive kan aktiveres.
+
+<b>&bull; Rapporter</b>: Vis sammendrag av transaksjoner (inntekter og kostnader) som pai/bar/linjediagrammer
+
+<b>&bull; Startskjerm modul</b> for rask tilgang til kontoer og registering av transaksjoner
+
+<br/> <b><u>Merk</u></b>: at programmet ikke tilbyr full kompatibilitet med GnuCash programmet for PC. Du kan ikke synkronisere mellom desktop appen og denne. Men du kan importere dine kontoer og transaksjoner fra GnuCash XML-filer.
+

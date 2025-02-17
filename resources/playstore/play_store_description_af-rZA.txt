@@ -1,0 +1,29 @@
+GnuCash is 'n mobiele finansiële bestuurder vir Android.
+
+Dit is 'n metgesel-toepassing vir GnuCash op die rekenaar en maak dit moontlik om uitgawes te volg soos jy gaan.
+Aangetekende transaksies kan via verskeie formate na die rekenaar GnuCash teruggevoer word via verskeie formate (CSV / QIF / OFX).
+
+Sommige kenmerke se hoogtepunte sluit in:
+
+&bull; 'n Maklik om te gebruik koppelvlak.</b>
+
+&bull; Rekeningkaart</b>: 'n Meesterrekening kan 'n hiërargie van detailrekeninge daaronder hê.
+Dit laat toe dat soortgelyke rekeningtipes (bv. Kontant, Bank, Voorraad) in een hoofrekening gegroepeer word (bv. Bates).
+Jy kan ook 'n bestaande rekeninghiërargie vanaf GnuCash-lessenaar invoer.
+
+<b>&bull; Verdeel transaksies</b>: 'n Enkele transaksie kan in verskeie stukke verdeel word om belasting, fooie en ander saamgestelde inskrywings aan te teken.<0>
+
+<b>&bull; Dubbelinskrywing</b>: Elke transaksie moet een rekening debiteer en 'n ander met 'n gelyke bedrag krediteer. Dit verseker dat die "boeke balanseer": dat die verskil tussen inkomste en uitvloei presies gelyk is aan die som van alle bates, of dit nou bank, kontant, voorraad of ander is.
+
+<b>&bull; Inkomste-/uitgawerekeningtipes (kategorieë)</b>: Dit dien nie net om jou kontantvloei te kategoriseer nie, maar wanneer dit behoorlik gebruik word met die dubbelinskrywing-kenmerk, kan dit 'n akkurate Wins&Verliesstaat verskaf.
+
+<b>&bull; Geskeduleerde transaksies</b>: GnuCash het die vermoë om outomaties transaksies te skep en in te voer.
+
+<b>&bull; Voeruit na GnuCash XML, QIF of OFX</b>: GnuCash kan jou rekeninge/transaksies in verskillende formate uitvoer vir gebruik in ander programme. Geskeduleerde uitvoere na derdeparty-sinkroniseringdienste soos DropBox en Google Drive kan ook geaktiveer word.
+
+<b>&bul; Verslae</b>: Bekyk opsomming van transaksies (inkomste en uitgawes) as sirkel-/staaf-/lyndiagramme
+
+<b>&bull; Tuisskerm-"widget"</b> vir vinnige toegang tot jou rekeninge en aantekening van transaksies
+
+<br/><b><u>LET WEL</u></b>: dat die toepassing nie volle versoenbaarheid met GnuCash vir die rekenaar bied nie. Jy kan nie tussen die rekenaarprogram en hierdie een sinkroniseer nie. Maar jy kan jou rekeninge en transaksies vanaf GnuCash XML-lêers invoer.
+
