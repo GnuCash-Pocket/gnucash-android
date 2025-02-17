@@ -8,6 +8,7 @@ import android.widget.ImageButton
 import android.widget.TableLayout
 import java.text.DecimalFormatSymbols
 import org.gnucash.android.R
+import java.text.NumberFormat
 
 class CalculatorKeyboardView @JvmOverloads constructor(
     context: Context,
@@ -19,13 +20,32 @@ class CalculatorKeyboardView @JvmOverloads constructor(
     private val decimalSeparator: String
     private val minusSign: String
     private val zeroDigit: String
+    private val oneDigit: String
+    private val twoDigit: String
+    private val threeDigit: String
+    private val fourDigit: String
+    private val fiveDigit: String
+    private val sixDigit: String
+    private val sevenDigit: String
+    private val eightDigit: String
+    private val nineDigit: String
     private val keyCodes = IntArray(0)
 
     init {
         val symbols = DecimalFormatSymbols.getInstance()
+        var numbers = NumberFormat.getInstance()
         decimalSeparator = symbols.monetaryDecimalSeparator.toString()
         minusSign = symbols.minusSign.toString()
-        zeroDigit = symbols.zeroDigit.toString()
+        zeroDigit = numbers.format(0)
+        oneDigit = numbers.format(1)
+        twoDigit = numbers.format(2)
+        threeDigit = numbers.format(3)
+        fourDigit = numbers.format(4)
+        fiveDigit = numbers.format(5)
+        sixDigit = numbers.format(6)
+        sevenDigit = numbers.format(7)
+        eightDigit = numbers.format(8)
+        nineDigit = numbers.format(9)
     }
 
     override fun onFinishInflate() {
@@ -38,31 +58,40 @@ class CalculatorKeyboardView @JvmOverloads constructor(
             setOnClickListener { onKeyboardActionListener?.onText(zeroDigit) }
         }
         findViewById<Button>(R.id.key_1).apply {
-            setOnClickListener { onKeyboardActionListener?.onText("1") }
+            text = oneDigit
+            setOnClickListener { onKeyboardActionListener?.onText(oneDigit) }
         }
         findViewById<Button>(R.id.key_2).apply {
-            setOnClickListener { onKeyboardActionListener?.onText("2") }
+            text = twoDigit
+            setOnClickListener { onKeyboardActionListener?.onText(twoDigit) }
         }
         findViewById<Button>(R.id.key_3).apply {
-            setOnClickListener { onKeyboardActionListener?.onText("3") }
+            text = threeDigit
+            setOnClickListener { onKeyboardActionListener?.onText(threeDigit) }
         }
         findViewById<Button>(R.id.key_4).apply {
-            setOnClickListener { onKeyboardActionListener?.onText("4") }
+            text = fourDigit
+            setOnClickListener { onKeyboardActionListener?.onText(fourDigit) }
         }
         findViewById<Button>(R.id.key_5).apply {
-            setOnClickListener { onKeyboardActionListener?.onText("5") }
+            text = fiveDigit
+            setOnClickListener { onKeyboardActionListener?.onText(fiveDigit) }
         }
         findViewById<Button>(R.id.key_6).apply {
-            setOnClickListener { onKeyboardActionListener?.onText("6") }
+            text = sixDigit
+            setOnClickListener { onKeyboardActionListener?.onText(sixDigit) }
         }
         findViewById<Button>(R.id.key_7).apply {
-            setOnClickListener { onKeyboardActionListener?.onText("7") }
+            text = sevenDigit
+            setOnClickListener { onKeyboardActionListener?.onText(sevenDigit) }
         }
         findViewById<Button>(R.id.key_8).apply {
-            setOnClickListener { onKeyboardActionListener?.onText("8") }
+            text = eightDigit
+            setOnClickListener { onKeyboardActionListener?.onText(eightDigit) }
         }
         findViewById<Button>(R.id.key_9).apply {
-            setOnClickListener { onKeyboardActionListener?.onText("9") }
+            text = nineDigit
+            setOnClickListener { onKeyboardActionListener?.onText(nineDigit) }
         }
         findViewById<Button>(R.id.key_decimal).apply {
             text = decimalSeparator

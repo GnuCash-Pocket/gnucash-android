@@ -335,7 +335,7 @@ public class CalculatorEditText extends AppCompatEditText {
         }
 
         setTextToEnd(this, resultString);
-    }
+     }
 
     @Override
     protected void onVisibilityChanged(View changedView, int visibility) {
