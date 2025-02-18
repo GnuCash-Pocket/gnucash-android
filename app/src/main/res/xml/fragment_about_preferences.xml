@@ -25,11 +25,11 @@
             android:data="@string/app_playstore_url" />
     </androidx.preference.Preference>
     <androidx.preference.Preference
-        android:summary="@string/summary_google_plus"
-        android:title="@string/title_google_plus_community">
+        android:summary="@string/summary_discuss"
+        android:title="@string/title_discuss">
         <intent
             android:action="android.intent.action.VIEW"
-            android:data="https://plus.google.com/communities/104728406764752407046" />
+            android:data="https://github.com/GnuCash-Pocket/gnucash-android/discussions" />
     </androidx.preference.Preference>
     <androidx.preference.Preference
         android:summary="@string/summary_translate_gnucash"

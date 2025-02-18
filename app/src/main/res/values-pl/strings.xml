@@ -330,9 +330,9 @@ Konto docelowe używa innej waluty niż konto wyjściowe</string>
     <string name="menu_group_by_year">Roku</string>
     <string name="title_balance_sheet_report">Bilans</string>
     <string name="label_balance_sheet_total">Suma:</string>
-    <string name="title_google_plus_community">Społeczność Google+</string>
+    <string name="title_discuss">GitHub Discussions</string>
     <string name="title_translate_gnucash">Tłumacz GnuCash</string>
-    <string name="summary_google_plus">Udostępnij pomysły, przedyskutuj zmiany lub zgłoś problem</string>
+    <string name="summary_discuss">Udostępnij pomysły, przedyskutuj zmiany lub zgłoś problem</string>
     <string name="summary_translate_gnucash">Tłumacz lub sprawdzaj na Crowdin</string>
     <string name="toast_no_compatible_apps_to_receive_export">Brak kompatybilnych aplikacji do otrzymania eksportowanych transakcji!</string>
     <string name="menu_move_transaction">Move&#8230;</string>

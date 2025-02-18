@@ -330,9 +330,9 @@
     <string name="menu_group_by_year">Год</string>
     <string name="title_balance_sheet_report">Сводный баланс</string>
     <string name="label_balance_sheet_total">Итого:</string>
-    <string name="title_google_plus_community">Сообщество Google+</string>
+    <string name="title_discuss">GitHub Discussions</string>
     <string name="title_translate_gnucash">Перевести GnuCash</string>
-    <string name="summary_google_plus">Поделиться идеями, обсудить изменения или сообщить о проблемах</string>
+    <string name="summary_discuss">Поделиться идеями, обсудить изменения или сообщить о проблемах</string>
     <string name="summary_translate_gnucash">Перевести или вычитать на CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">Не совместимых приложений, чтобы получить экспортированные транзакции!</string>
     <string name="menu_move_transaction">Перемещение&#8230;</string>

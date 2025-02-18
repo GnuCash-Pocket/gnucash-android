@@ -327,9 +327,9 @@
     <string name="menu_group_by_year">年</string>
     <string name="title_balance_sheet_report">资产负债表</string>
     <string name="label_balance_sheet_total">合计：</string>
-    <string name="title_google_plus_community">Google+</string>
+    <string name="title_discuss">GitHub Discussions</string>
     <string name="title_translate_gnucash">翻译GnuCash</string>
-    <string name="summary_google_plus">在Google+上提交问题和建议</string>
+    <string name="summary_discuss">在Google+上提交问题和建议</string>
     <string name="summary_translate_gnucash">可以在CrowdIn网站上帮助改进翻译</string>
     <string name="toast_no_compatible_apps_to_receive_export">没有合适的应用接受导出的文件</string>
     <string name="menu_move_transaction">移动...</string>
