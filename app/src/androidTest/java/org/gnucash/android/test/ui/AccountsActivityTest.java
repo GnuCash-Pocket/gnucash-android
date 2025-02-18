@@ -172,19 +172,12 @@ public class AccountsActivityTest {
      */
     public static void preventFirstRunDialogs(Context context) {
         AccountsActivity.rateAppConfig = new RateThisApp.Config(10000, 10000);
-        Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
-
-        //do not show first run dialog
-        editor.putBoolean(context.getString(R.string.key_first_run), false);
-        editor.putInt(AccountsActivity.LAST_OPEN_TAB_INDEX, AccountsActivity.INDEX_TOP_LEVEL_ACCOUNTS_FRAGMENT);
-
-        //do not show "What's new" dialog
-        String minorVersion = context.getString(R.string.app_minor_version);
-        int currentMinor = Integer.parseInt(minorVersion);
-        editor.putInt(context.getString(R.string.key_previous_minor_version), currentMinor);
-        editor.commit();
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+            //do not show first run dialog
+            .putBoolean(context.getString(R.string.key_first_run), false)
+            .putInt(AccountsActivity.LAST_OPEN_TAB_INDEX, AccountsActivity.INDEX_TOP_LEVEL_ACCOUNTS_FRAGMENT)
+            .apply();
     }
-
 
     public void testDisplayAccountsList() {
         AccountsActivity.createDefaultAccounts("EUR", mAccountsActivity);
