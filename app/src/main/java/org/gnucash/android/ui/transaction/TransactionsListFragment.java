@@ -52,7 +52,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.app.MenuFragment;
-import org.gnucash.android.databinding.CardviewCompactTransactionBinding;
 import org.gnucash.android.databinding.CardviewTransactionBinding;
 import org.gnucash.android.databinding.FragmentTransactionsListBinding;
 import org.gnucash.android.db.DatabaseCursorLoader;
@@ -104,8 +103,9 @@ public class TransactionsListFragment extends MenuFragment implements
         mUseCompactView = PreferenceActivity.getActiveBookSharedPreferences()
                 .getBoolean(getString(R.string.key_use_compact_list), false) || isDoubleEntryDisabled;
         //if there was a local override of the global setting, respect it
-        if (savedInstanceState != null)
+        if (savedInstanceState != null) {
             mUseCompactView = savedInstanceState.getBoolean(getString(R.string.key_use_compact_list), mUseCompactView);
+        }
 
         mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
     }
@@ -263,9 +263,6 @@ public class TransactionsListFragment extends MenuFragment implements
 
     public class TransactionRecyclerAdapter extends CursorRecyclerAdapter<TransactionRecyclerAdapter.TransactionViewHolder> {
 
-        public static final int ITEM_TYPE_COMPACT = 0x111;
-        public static final int ITEM_TYPE_FULL = 0x100;
-
         public TransactionRecyclerAdapter(Cursor cursor) {
             super(cursor);
         }
@@ -273,17 +270,8 @@ public class TransactionsListFragment extends MenuFragment implements
         @Override
         public TransactionViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-            if (viewType == ITEM_TYPE_COMPACT) {
-                CardviewCompactTransactionBinding binding = CardviewCompactTransactionBinding.inflate(inflater, parent, false);
-                return new TransactionViewHolder(binding);
-            }
             CardviewTransactionBinding binding = CardviewTransactionBinding.inflate(inflater, parent, false);
             return new TransactionViewHolder(binding);
-        }
-
-        @Override
-        public int getItemViewType(int position) {
-            return mUseCompactView ? ITEM_TYPE_COMPACT : ITEM_TYPE_FULL;
         }
 
         @Override
@@ -298,26 +286,12 @@ public class TransactionsListFragment extends MenuFragment implements
             private final ImageView optionsMenu;
 
             //these views are not used in the compact view, hence the nullability
-            @Nullable
-            public final TextView transactionDate;
-            @Nullable
-            public final ImageView editTransaction;
+            private final TextView transactionDate;
+            private final ImageView editTransaction;
 
             private long transactionId;
             @ColorInt
             private final int colorBalanceZero;
-
-            public TransactionViewHolder(CardviewCompactTransactionBinding binding) {
-                super(binding.getRoot());
-                primaryText = binding.listItem2Lines.primaryText;
-                secondaryText = binding.listItem2Lines.secondaryText;
-                transactionAmount = binding.transactionAmount;
-                optionsMenu = binding.optionsMenu;
-                transactionDate = null;
-                editTransaction = null;
-                colorBalanceZero = transactionAmount.getCurrentTextColor();
-                setup();
-            }
 
             public TransactionViewHolder(CardviewTransactionBinding binding) {
                 super(binding.getRoot());
@@ -381,10 +355,15 @@ public class TransactionsListFragment extends MenuFragment implements
 
                 long dateMillis = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_TIMESTAMP));
                 String dateText = TransactionsActivity.getPrettyDateFormat(getActivity(), dateMillis);
+                transactionDate.setText(dateText);
 
                 if (mUseCompactView) {
-                    secondaryText.setText(dateText);
+                    secondaryText.setVisibility(View.GONE);
+                    editTransaction.setVisibility(View.GONE);
                 } else {
+                    secondaryText.setVisibility(View.VISIBLE);
+                    editTransaction.setVisibility(View.VISIBLE);
+
                     List<Split> splits = SplitsDbAdapter.getInstance().getSplitsForTransaction(transactionUID);
                     String text = "";
                     String error = null;
@@ -408,7 +387,6 @@ public class TransactionsListFragment extends MenuFragment implements
                     }
                     secondaryText.setText(text);
                     secondaryText.setError(error);
-                    transactionDate.setText(dateText);
 
                     editTransaction.setOnClickListener(new View.OnClickListener() {
                         @Override
