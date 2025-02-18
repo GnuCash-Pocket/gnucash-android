@@ -184,7 +184,7 @@ public class ScheduledActionService {
 
         switch (scheduledAction.getActionType()) {
             case TRANSACTION:
-                executionCount += executeTransactions(context, scheduledAction, db);
+                executionCount += executeTransactions(scheduledAction, db);
                 break;
 
             case BACKUP:
@@ -273,7 +273,7 @@ public class ScheduledActionService {
      * @param db              SQLiteDatabase where the transactions are to be executed
      * @return Number of transactions created as a result of this action
      */
-    private static int executeTransactions(@NonNull Context context, ScheduledAction scheduledAction, SQLiteDatabase db) {
+    private static int executeTransactions(@NonNull ScheduledAction scheduledAction, @NonNull SQLiteDatabase db) {
         int executionCount = 0;
         String actionUID = scheduledAction.getActionUID();
         TransactionsDbAdapter transactionsDbAdapter = new TransactionsDbAdapter(db);
@@ -284,7 +284,6 @@ public class ScheduledActionService {
             Timber.e(ex, "Scheduled transaction with UID " + actionUID + " could not be found in the db with path " + db.getPath());
             return executionCount;
         }
-
 
         long now = System.currentTimeMillis();
         //if there is an end time in the past, we execute all schedules up to the end time.
