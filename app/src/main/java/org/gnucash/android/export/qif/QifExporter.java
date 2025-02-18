@@ -82,7 +82,7 @@ public class QifExporter extends Exporter {
         final String newLine = QifHelper.NEW_LINE;
         TransactionsDbAdapter transactionsDbAdapter = mTransactionsDbAdapter;
         try {
-            String lastExportTimeStamp = TimestampHelper.getUtcStringFromTimestamp(mExportParams.getExportStartTime());
+            String startTimeString = Long.toString(mExportParams.getExportStartTime().getTime());
             Cursor cursor = transactionsDbAdapter.fetchTransactionsWithSplitsWithTransactionAccount(
                     new String[]{
                             TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID + " AS trans_uid",
@@ -108,9 +108,9 @@ public class QifExporter extends Exporter {
                             // or if the transaction has only one split (the whole transaction would be lost if it is not selected)
                             "trans_split_count == 1 )" +
                             (
-                                    " AND " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_MODIFIED_AT + " > \"" + lastExportTimeStamp + "\""
+                                    " AND " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " >= ?"
                             ),
-                    null,
+                    new String[]{startTimeString},
                     // trans_time ASC : put transactions in time order
                     // trans_uid ASC  : put splits from the same transaction together
                     "acct1_currency ASC, trans_uid ASC, trans_time ASC"
