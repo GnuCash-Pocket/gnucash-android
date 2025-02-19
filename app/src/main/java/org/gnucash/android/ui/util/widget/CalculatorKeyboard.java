@@ -68,7 +68,7 @@ import java.text.DecimalFormatSymbols;
  */
 public class CalculatorKeyboard {
 
-    private static final String ACCEPTED = "0123456789+*/()";
+    private static final String ACCEPTED = "0123456789١٢٣٤٥٦٧٨٩+*/()";
     private static final int KEY_CODE_CLEAR = CalculatorKeyboardView.KEY_CODE_CLEAR;
     private static final int KEY_CODE_DELETE = CalculatorKeyboardView.KEY_CODE_DELETE;
     private static final int KEY_CODE_EVALUATE = CalculatorKeyboardView.KEY_CODE_EVALUATE;
