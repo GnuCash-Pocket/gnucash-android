@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="btn_cancel" translatable="false">@android:string/cancel</string>
+    <string name="alert_dialog_cancel" translatable="false">@android:string/cancel</string>
     <string name="key_default_currency" translatable="false">default_currency</string>
     <string name="key_first_run" translatable="false">key_first_run</string>
     <string name="key_license" translatable="false">app_license</string>
@@ -22,6 +24,7 @@
     <string name="key_restore_backup" translatable="false">restore_backup</string>
     <string name="key_dropbox_sync" translatable="false">dropbox_sync</string>
     <string name="key_owncloud_sync" translatable="false">owncloud_sync</string>
+    <string name="owncloud_pref" translatable="false">owncloud</string>
     <string name="owncloud_sync" translatable="false">owncloud_sync</string>
     <string name="key_owncloud_server" translatable="false">owncloud_server_address</string>
     <string name="key_owncloud_dir" translatable="false">owncloud_upload_dir</string>
