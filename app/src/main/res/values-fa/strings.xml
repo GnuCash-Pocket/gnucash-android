@@ -250,7 +250,6 @@
     <string name="menu_settings" msgid="3524924670246877187">"تنظیمات"</string>
     <string name="username">User Name</string>
     <string name="password">Password</string>
-    <string name="owncloud_pref">owncloud</string>
     <string name="owncloud_server_invalid">OC server not found</string>
     <string name="owncloud_user_invalid">OC username/password invalid</string>
     <string name="owncloud_dir_invalid">Invalid chars: \\ &lt; &gt; : \&quot; | * ?</string>
@@ -259,7 +258,7 @@
     <string name="owncloud_dir_ok">Dir name OK</string>
     <string name="title_enable_crashlytics">Enable Crash Logging</string>
     <string name="msg_enable_crashlytics">Automatically send information about app malfunction to the developers.</string>
-    <string name="label_export_format"> Format</string>
+    <string name="label_export_format">Format</string>
     <string name="label_old_passcode">Enter your old passcode</string>
     <string name="label_new_passcode">Enter your new passcode</string>
     <string name="title_scheduled_exports">Exports</string>

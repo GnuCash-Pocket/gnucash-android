@@ -233,10 +233,10 @@
     <string name="label_tap_to_create_schedule">Tap to create schedule</string>
     <string name="title_restore_backup">Restore Backup…</string>
     <string name="header_backup_and_export_settings">Backup &amp; export</string>
-    <string name="title_dropbox_sync_preference">تمكين DropBox</string>
+    <string name="title_dropbox_sync_preference">تمكين Dropbox</string>
     <string name="title_owncloud_sync_preference">تمكين ownCloud</string>
     <string name="title_backup_preference_category">Backup</string>
-    <string name="summary_dropbox_sync">Enable exporting to DropBox</string>
+    <string name="summary_dropbox_sync">Enable exporting to Dropbox</string>
     <string name="summary_owncloud_sync">Enable exporting to ownCloud</string>
     <string name="title_backup_prefs">Backup Preferences</string>
     <string name="title_create_backup_pref">إنشاء نسخة احتياطية</string>
@@ -254,7 +254,6 @@
     <string name="menu_settings" msgid="3524924670246877187">"الإعدادات"</string>
     <string name="username">إسم المستخدم</string>
     <string name="password">كلمة المرور</string>
-    <string name="owncloud_pref">ownCloud</string>
     <string name="owncloud_server_invalid">لم يتم العثور على خادم OC</string>
     <string name="owncloud_user_invalid">اسم المستخدم/كلمة المرور لـ OC غير صالحة</string>
     <string name="owncloud_dir_invalid">أحرف غير صالحة: \\ &lt; &gt; : \&quot; &lt;unk&gt; * ?</string>

@@ -230,10 +230,10 @@
     <string name="label_tap_to_create_schedule">Stvori termine</string>
     <string name="title_restore_backup">Učitaj sigurnosnu kopiju…</string>
     <string name="header_backup_and_export_settings">Stvori sigurnosnu kopiju i izvezi</string>
-    <string name="title_dropbox_sync_preference">Aktiviraj DropBox</string>
+    <string name="title_dropbox_sync_preference">Aktiviraj Dropbox</string>
     <string name="title_owncloud_sync_preference">Aktiviraj ownCloud</string>
     <string name="title_backup_preference_category">Sigurnosna kopija</string>
-    <string name="summary_dropbox_sync">Aktiviraj izvoz u DropBox</string>
+    <string name="summary_dropbox_sync">Aktiviraj izvoz u Dropbox</string>
     <string name="summary_owncloud_sync">Aktiviraj izvoz u ownCloud</string>
     <string name="title_backup_prefs">Postavke za sigurnosnu kopiju</string>
     <string name="title_create_backup_pref">Stvori sigurnosnu kopiju</string>
@@ -251,7 +251,6 @@
     <string name="nav_menu_settings">Postavke</string>
     <string name="username">Korisničko ime</string>
     <string name="password">Lozinka</string>
-    <string name="owncloud_pref">owncloud</string>
     <string name="owncloud_server_invalid">OC server nije nađen</string>
     <string name="owncloud_user_invalid">OC korisničko ime/lozinka ne valja</string>
     <string name="owncloud_dir_invalid">Nevaljani slovni znakovi: \\ &lt; &gt; : \&quot; | * ?</string>
@@ -260,7 +259,7 @@
     <string name="owncloud_dir_ok">Dir ime je u redu</string>
     <string name="title_enable_crashlytics">Aktiviraj dnevnik urušavanja programa</string>
     <string name="msg_enable_crashlytics">Automatski šalji informacije o aplikacijskim greškama razvijateljima.</string>
-    <string name="label_export_format"> Format</string>
+    <string name="label_export_format">Format</string>
     <string name="label_old_passcode">Unesi staru lozinku</string>
     <string name="label_new_passcode">Unesi novu lozinku</string>
     <string name="title_scheduled_exports">Izvozi</string>

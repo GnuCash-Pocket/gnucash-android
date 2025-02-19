@@ -229,7 +229,7 @@
     <string name="label_tap_to_create_schedule">Wiederholung erstellen</string>
     <string name="title_restore_backup">Sicherung wiederherstellen…</string>
     <string name="header_backup_and_export_settings">Backup &amp; Exporte</string>
-    <string name="title_dropbox_sync_preference">DropBox aktivieren</string>
+    <string name="title_dropbox_sync_preference">Dropbox aktivieren</string>
     <string name="title_owncloud_sync_preference">OwnCloud aktivieren</string>
     <string name="title_backup_preference_category">Backup</string>
     <string name="summary_dropbox_sync">Dropbox-Export aktivieren</string>
@@ -250,7 +250,6 @@
     <string name="menu_settings" msgid="3524924670246877187">"Einstellungen"</string>
     <string name="username">Benutzername</string>
     <string name="password">Passwort</string>
-    <string name="owncloud_pref">owncloud</string>
     <string name="owncloud_server_invalid">OC-Server nicht gefunden</string>
     <string name="owncloud_user_invalid">OC Benutzername/Kennwort ungültig</string>
     <string name="owncloud_dir_invalid">Ungültige Zeichen: \\ &lt; &gt; : \&quot; | * ?</string>
@@ -259,7 +258,7 @@
     <string name="owncloud_dir_ok">Dir-Name OK</string>
     <string name="title_enable_crashlytics">Absturzprotokollierung aktivieren</string>
     <string name="msg_enable_crashlytics">Enable to send information about malfunctions to the developers for improvement (recommended). No user-identifiable information will be collected as part of this process!</string>
-    <string name="label_export_format"> Format</string>
+    <string name="label_export_format">Format</string>
     <string name="label_old_passcode">Alten PIN eingeben</string>
     <string name="label_new_passcode">Neuen PIN eingeben</string>
     <string name="title_scheduled_exports">Exports</string>

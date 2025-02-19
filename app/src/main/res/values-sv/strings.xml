@@ -250,7 +250,6 @@
     <string name="menu_settings" msgid="3524924670246877187">"Inställningar"</string>
     <string name="username">Användarnamn</string>
     <string name="password">Lösenord</string>
-    <string name="owncloud_pref">ownCloud</string>
     <string name="owncloud_server_invalid">OC server hittades inte</string>
     <string name="owncloud_user_invalid">OC användarnamn/lösenord ogiltigt</string>
     <string name="owncloud_dir_invalid">Ogiltiga tecken: \\ &lt; &gt; : \&quot; | * ?</string>
@@ -259,7 +258,7 @@
     <string name="owncloud_dir_ok">Dir namn OK</string>
     <string name="title_enable_crashlytics">Aktivera kraschloggning</string>
     <string name="msg_enable_crashlytics">Skicka automatiskt information om app-fel till utvecklarna.</string>
-    <string name="label_export_format"> Format</string>
+    <string name="label_export_format">Format</string>
     <string name="label_old_passcode">Ange din gamla lösenkod</string>
     <string name="label_new_passcode">Ange din nya lösenkod</string>
     <string name="title_scheduled_exports">Exporter</string>

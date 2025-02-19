@@ -229,11 +229,11 @@
     <string name="label_tap_to_create_schedule">Appuyez sur pour créer le calendrier</string>
     <string name="title_restore_backup">Restaurer Sauvegarde…</string>
     <string name="header_backup_and_export_settings">Sauvegarde &amp; export</string>
-    <string name="title_dropbox_sync_preference">Activer DropBox</string>
+    <string name="title_dropbox_sync_preference">Activer Dropbox</string>
     <string name="title_owncloud_sync_preference">Activer ownCloud</string>
     <string name="title_backup_preference_category">Sauvegarde</string>
-    <string name="summary_dropbox_sync">Activer export vers DropBox</string>
-    <string name="summary_owncloud_sync">Activer export vers owncloud</string>
+    <string name="summary_dropbox_sync">Activer export vers Dropbox</string>
+    <string name="summary_owncloud_sync">Activer export vers ownCloud</string>
     <string name="title_backup_prefs">Sauvergarde Préférences</string>
     <string name="title_create_backup_pref">Créer Sauvegarde</string>
     <string name="summary_create_backup_pref">Creer une sauvegarde pour le livre actif</string>
@@ -250,7 +250,6 @@
     <string name="menu_settings" msgid="3524924670246877187">"Paramètres"</string>
     <string name="username">Nom d\'utilisateur</string>
     <string name="password">Mot de passe</string>
-    <string name="owncloud_pref">ownCloud</string>
     <string name="owncloud_server_invalid">Serveur OC inaccessible</string>
     <string name="owncloud_user_invalid">Nom d’utilisateur/mot de passe OC non valide</string>
     <string name="owncloud_dir_invalid">Caractères non valides: \\ &lt; &gt; : \&quot; | * ?</string>

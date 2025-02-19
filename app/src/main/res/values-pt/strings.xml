@@ -229,10 +229,10 @@
     <string name="label_tap_to_create_schedule">Toque para criar um agendamento</string>
     <string name="title_restore_backup">Restaurar Cópia de Segurança…</string>
     <string name="header_backup_and_export_settings">Cópia de Segurança e exportação</string>
-    <string name="title_dropbox_sync_preference">Permitir o DropBox</string>
+    <string name="title_dropbox_sync_preference">Permitir o Dropbox</string>
     <string name="title_owncloud_sync_preference">Permitir o ownCloud</string>
     <string name="title_backup_preference_category">Cópia de Segurança</string>
-    <string name="summary_dropbox_sync">Permitir a exportação para o DropBox</string>
+    <string name="summary_dropbox_sync">Permitir a exportação para o Dropbox</string>
     <string name="summary_owncloud_sync">Permitir a exportação para o ownCloud</string>
     <string name="title_backup_prefs">Preferências de Cópia de Segurança</string>
     <string name="title_create_backup_pref">Criar Cópia de Segurança</string>
@@ -250,7 +250,6 @@
     <string name="menu_settings" msgid="3524924670246877187">"Definições"</string>
     <string name="username">Nome de Utilizador</string>
     <string name="password">Palavra-passe</string>
-    <string name="owncloud_pref">ownCloud</string>
     <string name="owncloud_server_invalid">Servidor OC não encontrado</string>
     <string name="owncloud_user_invalid">Utilizador/palavra-passe OC inválido</string>
     <string name="owncloud_dir_invalid">Carateres inválidos: \\ &lt; &gt; : \&quot; | * ?</string>

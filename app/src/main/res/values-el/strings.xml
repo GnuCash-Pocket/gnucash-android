@@ -250,7 +250,6 @@
     <string name="menu_settings" msgid="3524924670246877187">"Ρυθμίσεις"</string>
     <string name="username">Όνομα χρήστη</string>
     <string name="password">Συνθηματικό</string>
-    <string name="owncloud_pref">ownCloud</string>
     <string name="owncloud_server_invalid">Ο διακομιστής ownCloud δεν βρέθηκε</string>
     <string name="owncloud_user_invalid">Λανθασμένο όνομα χρήστη/κωδικός ownCloud</string>
     <string name="owncloud_dir_invalid">Μη έγκυροι χαρακτήρες: \\ &lt; &gt; : \&quot; | * ?</string>
@@ -259,7 +258,7 @@
     <string name="owncloud_dir_ok">Όνομα φακέλου OK</string>
     <string name="title_enable_crashlytics">Ενεργοποίηση καταγραφής σφαλμάτων</string>
     <string name="msg_enable_crashlytics">Enable to send information about malfunctions to the developers for improvement (recommended). No user-identifiable information will be collected as part of this process!</string>
-    <string name="label_export_format"> Μορφή αρχείου</string>
+    <string name="label_export_format">Μορφή αρχείου</string>
     <string name="label_old_passcode">Εισάγετε τον παλιό σας κωδικό</string>
     <string name="label_new_passcode">Εισάγετε τον νέο σας κωδικό</string>
     <string name="title_scheduled_exports">Exports</string>
