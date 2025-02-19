@@ -278,10 +278,21 @@ public class CalculatorEditText extends AppCompatEditText {
     @NonNull
     public String getCleanString() {
         //convert "ARABIC DECIMAL SEPARATOR" U+066B into period
-        //convert "ARABIC-INDIC DIGIT ZERO" U+0660 into western zero
+        //convert "ARABIC-INDIC DIGIT ZERO" U+0660 into western zero and do the same for all digits
         return getText().toString()
                 .replaceAll("[,\u066B]", ".")
-                .replaceAll("\u0660","0").trim();
+                .replaceAll("\u0660","0")
+                .replaceAll("\u0661","1")
+                .replaceAll("\u0662","2")
+                .replaceAll("\u0662","2")
+                .replaceAll("\u0663","3")
+                .replaceAll("\u0664","4")
+                .replaceAll("\u0665","5")
+                .replaceAll("\u0666","6")
+                .replaceAll("\u0667","7")
+                .replaceAll("\u0668","8")
+                .replaceAll("\u0669","9")
+                .trim();
     }
 
     /**
