@@ -280,8 +280,8 @@ public class CalculatorEditText extends AppCompatEditText {
         //convert "ARABIC DECIMAL SEPARATOR" U+066B into period
         //convert "ARABIC-INDIC DIGIT ZERO" U+0660 into western zero
         return getText().toString()
-                .replaceAll("[,\\x{066B}]", ".")
-                .replaceAll("\\x{0660}","0").trim();
+                .replaceAll("[,\u066B]", ".")
+                .replaceAll("\u0660","0").trim();
     }
 
     /**
@@ -335,7 +335,7 @@ public class CalculatorEditText extends AppCompatEditText {
         }
 
         setTextToEnd(this, resultString);
-     }
+    }
 
     @Override
     protected void onVisibilityChanged(View changedView, int visibility) {
