@@ -234,7 +234,7 @@
     <string name="label_tap_to_create_schedule">לחץ כדי ליצור תזמון</string>
     <string name="title_restore_backup">שחזר גיבוי…</string>
     <string name="header_backup_and_export_settings">גיבוי ושחזור</string>
-    <string name="title_dropbox_sync_preference">אפשר DropBox</string>
+    <string name="title_dropbox_sync_preference">אפשר Dropbox</string>
     <string name="title_owncloud_sync_preference">אפשר ownCloud</string>
     <string name="title_backup_preference_category">גיבוי</string>
     <string name="summary_dropbox_sync">אפשר ייצוא לDropBox</string>
@@ -255,7 +255,6 @@
     <string name="nav_menu_settings">הגדרות</string>
     <string name="username">שם משתמש</string>
     <string name="password">סיסמא</string>
-    <string name="owncloud_pref">owncloud</string>
     <string name="owncloud_server_invalid">שרת OC לא נמצא</string>
     <string name="owncloud_user_invalid">שם משתמש וסיסמא עבור OC לא תקינים</string>
     <string name="owncloud_dir_invalid">תווים לא תקינים: \\ &lt; &gt; : \&quot; | * ?</string>
@@ -436,7 +435,7 @@
         <item>תיאור</item>
         <item>הערות</item>
         <item>מטבע/סחורה</item>
-        <item>Void Reason</item>
+        <item>Void Reason</item>‎
         <item>פעולה</item>
         <item>תזכיר</item>
         <item>שם חשבון מלא</item>

@@ -232,7 +232,7 @@
     <string name="label_tap_to_create_schedule">点击然后创建计划任务</string>
     <string name="title_restore_backup">从备份恢复…</string>
     <string name="header_backup_and_export_settings">备份和导出</string>
-    <string name="title_dropbox_sync_preference">启用 DropBox</string>
+    <string name="title_dropbox_sync_preference">启用 Dropbox</string>
     <string name="title_owncloud_sync_preference">启用 ownCloud</string>
     <string name="title_backup_preference_category">备份</string>
     <string name="summary_dropbox_sync">启用导出到DropBox</string>
@@ -253,7 +253,6 @@
     <string name="nav_menu_settings">设置</string>
     <string name="username">用户名</string>
     <string name="password">密码</string>
-    <string name="owncloud_pref">ownCloud</string>
     <string name="owncloud_server_invalid">找不到 OC 服务器</string>
     <string name="owncloud_user_invalid">OC 用户名/密码无效</string>
     <string name="owncloud_dir_invalid">无效字符： \\ &lt; &gt; : \&quot; | * ?</string>
