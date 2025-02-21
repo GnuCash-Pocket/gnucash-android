@@ -329,9 +329,9 @@ No user-identifiable information will be collected as part of this process!
     <string name="menu_group_by_year">年</string>
     <string name="title_balance_sheet_report">資產負債表</string>
     <string name="label_balance_sheet_total">總計</string>
-    <string name="title_google_plus_community">Google+ 社群</string>
+    <string name="title_discuss">GitHub Discussions</string>
     <string name="title_translate_gnucash">翻譯GnuCash</string>
-    <string name="summary_google_plus">在Google+上提交问题和建议</string>
+    <string name="summary_discuss">在Google+上提交问题和建议</string>
     <string name="summary_translate_gnucash">在CrowdIn上協助翻譯或校對GnuCash</string>
     <string name="toast_no_compatible_apps_to_receive_export">没有合适的应用接收汇出的文档</string>
     <string name="menu_move_transaction">移動...</string>

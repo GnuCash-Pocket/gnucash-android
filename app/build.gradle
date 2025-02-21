@@ -10,12 +10,6 @@ def versionMinor = 4
 def versionPatch = 0
 def versionBuild = 3
 
-static def buildTime() {
-    def df = new SimpleDateFormat("yyyyMMdd HH:mm 'UTC'")
-    df.setTimeZone(TimeZone.getTimeZone("UTC"))
-    return df.format(new Date())
-}
-
 static def gitSha() {
     return 'git rev-parse --short HEAD'.execute().text.trim()
 }
@@ -32,7 +26,6 @@ android {
         resValue "string", "app_minor_version", "${versionMinor}"
         resValue "string", "app_playstore_url", "market://details?id=${applicationId}"
         buildConfigField "boolean", "CAN_REQUEST_RATING", "false"
-        buildConfigField "String", "BUILD_TIME", "\"${buildTime()}\""
         buildConfigField "boolean", "GOOGLE_GCM", "false"
 
         testInstrumentationRunner "org.gnucash.android.test.ui.util.GnucashAndroidTestRunner"
@@ -40,7 +33,14 @@ android {
 
     packagingOptions {
         resources {
-            excludes += ['META-INF/DEPENDENCIES', 'META-INF/NOTICE', 'META-INF/LICENSE', 'META-INF/LICENSE.txt', 'LICENSE.txt', 'META-INF/NOTICE.txt']
+            excludes += [
+                    'META-INF/DEPENDENCIES',
+                    'META-INF/NOTICE',
+                    'META-INF/LICENSE',
+                    'META-INF/LICENSE.txt',
+                    'LICENSE.txt',
+                    'META-INF/NOTICE.txt'
+            ]
         }
     }
 
@@ -94,7 +94,7 @@ android {
         development {
             isDefault = true
             applicationIdSuffix '.devel'
-            versionName "${versionMajor}.${versionMinor}.${versionPatch}-dev${versionBuild}_r${gitSha()}"
+            versionName "${versionMajor}.${versionMinor}.${versionPatch}-dev${versionBuild}-r${gitSha()}"
             resValue "string", "app_name", "GnuCash dev"
             resValue "string", "app_version_name", "${versionName}"
 

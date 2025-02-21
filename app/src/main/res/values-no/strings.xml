@@ -327,9 +327,9 @@
     <string name="menu_group_by_year">År</string>
     <string name="title_balance_sheet_report">Balanseskjema</string>
     <string name="label_balance_sheet_total">Totalt:</string>
-    <string name="title_google_plus_community">Google + Community</string>
+    <string name="title_discuss">GitHub Discussions</string>
     <string name="title_translate_gnucash">Oversette GnuCash</string>
-    <string name="summary_google_plus">Dele ideer, diskutere endringer eller rapportere problemer</string>
+    <string name="summary_discuss">Dele ideer, diskutere endringer eller rapportere problemer</string>
     <string name="summary_translate_gnucash">Oversette eller korrekturles på CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">Ingen kompatible apper til å motta de eksporterte transaksjonene!</string>
     <string name="menu_move_transaction">Flytt&#8230;</string>

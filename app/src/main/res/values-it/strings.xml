@@ -329,9 +329,9 @@
     <string name="menu_group_by_year">Anno</string>
     <string name="title_balance_sheet_report">Bilancio</string>
     <string name="label_balance_sheet_total">Totale:</string>
-    <string name="title_google_plus_community">Community Google+</string>
+    <string name="title_discuss">GitHub Discussions</string>
     <string name="title_translate_gnucash">Traduzione di GnuCash</string>
-    <string name="summary_google_plus">Condivi idee, discuti dei cambiamenti o segnala dei problemi</string>
+    <string name="summary_discuss">Condivi idee, discuti dei cambiamenti o segnala dei problemi</string>
     <string name="summary_translate_gnucash">Traduci o revisiona su Crowdin</string>
     <string name="toast_no_compatible_apps_to_receive_export">Nessuna app compatibile con la ricezione delle transazioni esportate!</string>
     <string name="menu_move_transaction">Sposta&#8230;</string>
