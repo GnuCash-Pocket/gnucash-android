@@ -25,15 +25,16 @@ limitations under the License.
     <TextView
         android:id="@+id/primary_text"
         style="@style/ListItemPrimaryText"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:text="Primary text" />
 
     <TextView
         android:id="@+id/secondary_text"
         style="@style/ListItemSecondaryText"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         android:ellipsize="middle"
         tools:text="Secondary text" />
 </LinearLayout>

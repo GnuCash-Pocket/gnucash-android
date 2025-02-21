@@ -19,81 +19,79 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginLeft="5dp"
-    android:layout_marginRight="5dp"
+    android:layout_marginStart="4dp"
+    android:layout_marginEnd="4dp"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?selectableItemBackground"
     cardview:cardPreventCornerOverlap="false"
     cardview:cardUseCompatPadding="true">
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="@dimen/card_min_height">
+        android:padding="8dp">
 
         <include
             android:id="@+id/list_item_2_lines"
             layout="@layout/list_item_2_lines"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/dialog_padding"
-            android:layout_marginTop="6dp"
-            android:layout_marginRight="52dp"
-            android:layout_marginBottom="@dimen/dialog_padding"
-            android:layout_toRightOf="@id/account_color_strip"
-            android:paddingTop="6dp" />
+            android:layout_marginEnd="8dp"
+            cardview:layout_constraintEnd_toStartOf="@id/options_menu"
+            cardview:layout_constraintStart_toStartOf="parent"
+            cardview:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
             android:id="@+id/options_menu"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginBottom="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:paddingLeft="24dp"
-            android:paddingTop="20dp"
-            android:scaleType="centerInside"
+            android:paddingStart="8dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="0dp"
             android:src="@drawable/ic_more_vert"
+            cardview:layout_constraintBottom_toBottomOf="parent"
+            cardview:layout_constraintEnd_toEndOf="parent"
             tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/edit_transaction"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_alignParentRight="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:paddingLeft="22dp"
-            android:paddingTop="6dp"
-            android:paddingRight="6dp"
-            android:paddingBottom="22dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="0dp"
+            android:paddingBottom="8dp"
             android:src="@drawable/ic_edit"
+            cardview:layout_constraintBottom_toTopOf="@id/options_menu"
+            cardview:layout_constraintEnd_toEndOf="parent"
             tools:ignore="ContentDescription" />
 
         <TextView
             android:id="@+id/transaction_amount"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@id/options_menu"
-            android:layout_alignParentBottom="true"
-            android:layout_marginRight="@dimen/dialog_padding"
-            android:layout_toLeftOf="@id/options_menu"
+            android:layout_marginEnd="8dp"
+            android:gravity="right"
             android:singleLine="true"
             android:textSize="18sp"
-            tools:text="$ 45" />
+            cardview:layout_constraintEnd_toStartOf="@id/options_menu"
+            cardview:layout_constraintStart_toEndOf="@id/transaction_date"
+            cardview:layout_constraintTop_toTopOf="@id/transaction_date"
+            tools:text="$450.000.000" />
 
         <TextView
             android:id="@+id/transaction_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/list_item_2_lines"
-            android:layout_alignLeft="@id/list_item_2_lines"
-            android:layout_marginBottom="4dp"
-            android:gravity="left|bottom|start"
+            android:layout_marginTop="4dp"
+            android:gravity="bottom|start"
             android:singleLine="true"
             android:textColor="?android:textColorTertiary"
             android:textSize="14sp"
-            tools:text="Sat, 04 July" />
-    </RelativeLayout>
+            cardview:layout_constraintStart_toStartOf="@id/list_item_2_lines"
+            cardview:layout_constraintTop_toBottomOf="@id/list_item_2_lines"
+            tools:text="@tools:sample/date/ddmmyy" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>
