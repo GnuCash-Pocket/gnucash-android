@@ -19,6 +19,7 @@ package org.gnucash.android.service;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
@@ -184,7 +185,7 @@ public class ScheduledActionService {
 
         switch (scheduledAction.getActionType()) {
             case TRANSACTION:
-                executionCount += executeTransactions(context, scheduledAction, db);
+                executionCount += executeTransactions(scheduledAction, db);
                 break;
 
             case BACKUP:
@@ -273,15 +274,19 @@ public class ScheduledActionService {
      * @param db              SQLiteDatabase where the transactions are to be executed
      * @return Number of transactions created as a result of this action
      */
-    private static int executeTransactions(@NonNull Context context, ScheduledAction scheduledAction, SQLiteDatabase db) {
+    private static int executeTransactions(@NonNull ScheduledAction scheduledAction, @NonNull SQLiteDatabase db) {
         int executionCount = 0;
         String actionUID = scheduledAction.getActionUID();
+        if (TextUtils.isEmpty(actionUID)) {
+            Timber.w("Scheduled transaction without action");
+            return executionCount;
+        }
         TransactionsDbAdapter transactionsDbAdapter = new TransactionsDbAdapter(db);
         Transaction trxnTemplate;
         try {
             trxnTemplate = transactionsDbAdapter.getRecord(actionUID);
         } catch (IllegalArgumentException ex) { //if the record could not be found, abort
-            Timber.e(ex, "Scheduled transaction with UID " + actionUID + " could not be found in the db with path " + db.getPath());
+            Timber.e(ex, "Scheduled transaction with action " + actionUID + " could not be found in the db with path " + db.getPath());
             return executionCount;
         }
 
