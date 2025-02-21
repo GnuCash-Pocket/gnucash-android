@@ -113,7 +113,7 @@ class Split : BaseModel, Parcelable {
         if (generateUID) {
             generateUID()
         } else {
-            uID = sourceSplit.uID
+            setUID(sourceSplit.uid)
         }
     }
 
@@ -218,7 +218,7 @@ class Split : BaseModel, Parcelable {
     fun toCsv(): String {
         //TODO: add reconciled state and date
         val splitString = StringBuilder()
-            .append(uID)
+            .append(uid)
             .append(SEPARATOR_CSV).append(value!!.numerator)
             .append(SEPARATOR_CSV).append(value!!.denominator)
             .append(SEPARATOR_CSV).append(value!!.commodity.currencyCode)
@@ -301,7 +301,7 @@ class Split : BaseModel, Parcelable {
     }
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
-        dest.writeString(uID)
+        dest.writeString(uid)
         dest.writeString(accountUID)
         dest.writeString(transactionUID)
         dest.writeString(type!!.name)
@@ -321,7 +321,7 @@ class Split : BaseModel, Parcelable {
      * @see .CREATOR
      */
     private constructor(source: Parcel) {
-        uID = source.readString()
+        setUID(source.readString())
         accountUID = source.readString()
         transactionUID = source.readString()
         type = TransactionType.valueOf(source.readString()!!)
@@ -423,7 +423,7 @@ class Split : BaseModel, Parcelable {
                 val value = Money(valueNum, valueDenom, valueCurrencyCode)
                 val quantity = Money(quantityNum, quantityDenom, qtyCurrencyCode)
                 val split = Split(value, tokens[8])
-                split.uID = tokens[0]
+                split.setUID(tokens[0])
                 split.quantity = quantity
                 split.transactionUID = tokens[7]
                 split.type = TransactionType.valueOf(tokens[9])

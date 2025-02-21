@@ -191,6 +191,7 @@ dependencies {
     implementation('androidx.preference:preference-ktx:1.2.1')
     implementation('androidx.recyclerview:recyclerview:1.4.0')
     implementation("androidx.work:work-runtime-ktx:2.10.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
 
     implementation 'net.objecthunter:exp4j:0.4.7'
     implementation 'com.ezylang:EvalEx:3.2.0'

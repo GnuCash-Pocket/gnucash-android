@@ -25,6 +25,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.DatabaseSchema.AccountEntry;
@@ -443,18 +444,24 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      */
     @NonNull
     public List<Model> getAllRecords() {
-        List<Model> modelRecords = new ArrayList<>();
-        Cursor c = fetchAllRecords();
+        return getRecords(fetchAllRecords());
+    }
+
+    @NonNull
+    protected List<Model> getRecords(@Nullable Cursor cursor) {
+        List<Model> records = new ArrayList<>();
+        if (cursor == null) return records;
+
         try {
-            if (c.moveToFirst()) {
+            if (cursor.moveToFirst()) {
                 do {
-                    modelRecords.add(buildModelInstance(c));
-                } while (c.moveToNext());
+                    records.add(buildModelInstance(cursor));
+                } while (cursor.moveToNext());
             }
         } finally {
-            c.close();
+            cursor.close();
         }
-        return modelRecords;
+        return records;
     }
 
     /**

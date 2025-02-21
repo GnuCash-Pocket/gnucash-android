@@ -37,7 +37,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 
 import androidx.test.espresso.Espresso;
 import androidx.test.platform.app.InstrumentationRegistry;

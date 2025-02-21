@@ -170,12 +170,7 @@ public class BudgetsDbAdapter extends DatabaseAdapter<Budget> {
      */
     public List<Budget> getAccountBudgets(String accountUID) {
         Cursor cursor = fetchBudgetsForAccount(accountUID);
-        List<Budget> budgets = new ArrayList<>();
-        while (cursor.moveToNext()) {
-            budgets.add(buildModelInstance(cursor));
-        }
-        cursor.close();
-        return budgets;
+        return getRecords(cursor);
     }
 
     /**

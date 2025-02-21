@@ -30,6 +30,7 @@ import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.model.Recurrence;
 import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.util.TimestampHelper;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -211,16 +212,7 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
         Cursor cursor = mDb.query(ScheduledActionEntry.TABLE_NAME, null,
                 ScheduledActionEntry.COLUMN_ACTION_UID + "= ?",
                 new String[]{actionUID}, null, null, null);
-
-        List<ScheduledAction> scheduledActions = new ArrayList<>();
-        try {
-            while (cursor.moveToNext()) {
-                scheduledActions.add(buildModelInstance(cursor));
-            }
-        } finally {
-            cursor.close();
-        }
-        return scheduledActions;
+        return getRecords(cursor);
     }
 
     /**
@@ -231,12 +223,7 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
     public List<ScheduledAction> getAllEnabledScheduledActions() {
         Cursor cursor = mDb.query(mTableName,
                 null, ScheduledActionEntry.COLUMN_ENABLED + "=1", null, null, null, null);
-        List<ScheduledAction> scheduledActions = new ArrayList<>();
-        while (cursor.moveToNext()) {
-            scheduledActions.add(buildModelInstance(cursor));
-        }
-        cursor.close();
-        return scheduledActions;
+        return getRecords(cursor);
     }
 
     /**
@@ -252,5 +239,14 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
             DatabaseSchema.TransactionEntry.COLUMN_SCHEDX_ACTION_UID + "=?",
             new String[]{scheduledActionUID}
         );
+    }
+
+    @NotNull
+    public List<ScheduledAction> getRecords(@NotNull ScheduledAction.ActionType type) {
+        Cursor cursor = fetchAllRecords(
+            DatabaseSchema.ScheduledActionEntry.COLUMN_TYPE + "=?",
+            new String[]{type.name()}, null
+        );
+        return getRecords(cursor);
     }
 }

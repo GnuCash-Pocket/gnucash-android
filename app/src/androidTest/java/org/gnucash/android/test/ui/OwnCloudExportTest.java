@@ -37,8 +37,6 @@ import static org.hamcrest.Matchers.not;
 import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
@@ -50,7 +48,6 @@ import androidx.test.rule.GrantPermissionRule;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
@@ -69,8 +66,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
-
-import timber.log.Timber;
 
 
 @RunWith(AndroidJUnit4.class)
