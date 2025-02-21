@@ -73,7 +73,7 @@ class CsvTransactionsExporter(
             fields[8] = maybeNull(split.memo)
             val accountUID = split.accountUID!!
             val account = accountCache.getOrPut(accountUID) {
-                mAccountsDbAdapter.getSimpleRecord(accountUID)
+                mAccountsDbAdapter.getSimpleRecord(accountUID)!!
             }
             fields[9] = account.fullName
             fields[10] = account.name

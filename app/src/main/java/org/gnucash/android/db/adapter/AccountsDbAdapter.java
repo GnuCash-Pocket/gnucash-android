@@ -1398,8 +1398,10 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         }
     }
 
+    @Nullable
     public Account getSimpleRecord(@NonNull String uid) {
         Timber.v("Fetching simple record with GUID %s", uid);
+        if (TextUtils.isEmpty(uid)) return null;
 
         Cursor cursor = fetchRecord(uid);
         try {

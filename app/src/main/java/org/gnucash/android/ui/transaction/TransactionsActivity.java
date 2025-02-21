@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.SparseArray;
 import android.view.Menu;
@@ -288,6 +289,11 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         final String accountUID = getIntent().getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
+        if (TextUtils.isEmpty(accountUID)) {
+            Timber.e("Account UID expected");
+            finish();
+            return;
+        }
         account = mAccountsDbAdapter.getSimpleRecord(accountUID);
 
         mBinding.tabLayout.addTab(mBinding.tabLayout.newTab().setText(R.string.section_header_subaccounts));
