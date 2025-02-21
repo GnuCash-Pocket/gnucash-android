@@ -131,7 +131,7 @@ class ScheduledTransactionsListFragment : ScheduledActionsListFragment() {
             val intent = Intent(context, FormActivity::class.java)
                 .setAction(Intent.ACTION_INSERT_OR_EDIT)
                 .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
-                .putExtra(UxArgument.SCHEDULED_ACTION_UID, scheduledAction.uID)
+                .putExtra(UxArgument.SCHEDULED_ACTION_UID, scheduledAction.uid)
                 .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
                 .putExtra(UxArgument.SELECTED_TRANSACTION_UID, scheduledAction.actionUID)
             context.startActivity(intent)
@@ -141,7 +141,7 @@ class ScheduledTransactionsListFragment : ScheduledActionsListFragment() {
         override fun deleteSchedule(scheduledAction: ScheduledAction) {
             Timber.i("Removing scheduled transaction")
             val transactionUID = scheduledAction.actionUID!!
-            scheduledActionDbAdapter.deleteRecord(scheduledAction.uID!!);
+            scheduledActionDbAdapter.deleteRecord(scheduledAction.uid);
             if (transactionsDbAdapter.deleteRecord(transactionUID)) {
                 val context = itemView.context
                 Toast.makeText(

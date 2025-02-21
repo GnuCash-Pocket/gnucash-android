@@ -382,7 +382,7 @@ class ScheduledAction    //all actions are enabled by default
      *
      * @param periodType Periodicity of the scheduled action
      * @param ordinal    Ordinal of the periodicity. If unsure, specify 1
-     * @see .setRecurrence
+     * @see recurrence
      */
     fun setRecurrence(periodType: PeriodType?, ordinal: Int) {
         val recurrence = Recurrence(
@@ -435,7 +435,7 @@ class ScheduledAction    //all actions are enabled by default
         @Deprecated("Used for parsing legacy backup files. Use [Recurrence] instead")
         fun parseScheduledAction(transaction: Transaction, period: Long): ScheduledAction {
             val scheduledAction = ScheduledAction(ActionType.TRANSACTION)
-            scheduledAction.actionUID = transaction.uID
+            scheduledAction.actionUID = transaction.uid
             val recurrence = Recurrence.fromLegacyPeriod(period)
             scheduledAction.setRecurrence(recurrence)
             return scheduledAction
