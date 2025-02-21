@@ -125,6 +125,19 @@ class Money : Number, Comparable<Money>, Parcelable {
     )
 
     /**
+     * Constructs a new money amount given the numerator and denominator of the amount.
+     * The rounding mode used for the division is [BigDecimal.ROUND_HALF_EVEN]
+     *
+     * @param numerator    Numerator as integer
+     * @param denominator  Denominator as integer
+     * @param commodity Commodity of the money
+     */
+    constructor(numerator: Long, denominator: Long, commodity: Commodity) : this(
+        getBigDecimal(numerator, denominator),
+        commodity
+    )
+
+    /**
      * Copy constructor.
      * Creates a new Money object which is a clone of `money`
      *

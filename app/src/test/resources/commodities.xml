@@ -116,7 +116,7 @@
                     </slot>
                     <slot>
                         <slot:key>Use a dedicated opening balance account identified by an 'equity-type' slot</slot:key>
-                        <slot:value type="string">Use a dedicated opening balance account identified by an 'equity-type' slot (requires at least Gnucash 4.3)</slot:value>
+                        <slot:value type="string">Use a dedicated opening balance account identified by an 'equity-type' slot (requires at least GnuCash 4.3)</slot:value>
                     </slot>
                 </slot:value>
             </slot>
