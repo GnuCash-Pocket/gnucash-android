@@ -672,31 +672,6 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
     }
 
     /**
-     * Returns the {@link org.gnucash.android.model.AccountType} of the account with unique ID <code>uid</code>
-     *
-     * @param accountUID Unique ID of the account
-     * @return {@link org.gnucash.android.model.AccountType} of the account.
-     * @throws java.lang.IllegalArgumentException if accountUID does not exist in DB,
-     */
-    public AccountType getAccountType(@NonNull String accountUID) {
-        String type = "";
-        Cursor c = mDb.query(DatabaseSchema.AccountEntry.TABLE_NAME,
-            new String[]{DatabaseSchema.AccountEntry.COLUMN_TYPE},
-            DatabaseSchema.AccountEntry.COLUMN_UID + "=?",
-            new String[]{accountUID}, null, null, null);
-        try {
-            if (c.moveToFirst()) {
-                type = c.getString(c.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_TYPE));
-            } else {
-                throw new IllegalArgumentException("account " + accountUID + " does not exist in DB");
-            }
-        } finally {
-            c.close();
-        }
-        return AccountType.valueOf(type);
-    }
-
-    /**
      * Updates a record in the table
      *
      * @param recordId  Database ID of the record to be updated

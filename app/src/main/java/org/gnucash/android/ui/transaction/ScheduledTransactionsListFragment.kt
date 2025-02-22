@@ -109,7 +109,7 @@ class ScheduledTransactionsListFragment : ScheduledActionsListFragment() {
                 val first = splits[0]
                 for (split in splits) {
                     if ((first !== split) && first.isPairOf(split)) {
-                        text = first.value!!.formattedString()
+                        text = first.value.formattedString()
                         break
                     }
                 }

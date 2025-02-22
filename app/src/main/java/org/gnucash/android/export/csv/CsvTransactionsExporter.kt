@@ -79,10 +79,10 @@ class CsvTransactionsExporter(
             fields[10] = account.name
 
             val sign = if (split.type == TransactionType.CREDIT) "-" else ""
-            val quantity = split.quantity!!
+            val quantity = split.quantity
             fields[11] = sign + quantity.formattedString()
             fields[12] = sign + quantity.formattedStringWithoutSymbol()
-            val value = split.value!!
+            val value = split.value
             fields[13] = sign + value.formattedString()
             fields[14] = sign + value.formattedStringWithoutSymbol()
 
