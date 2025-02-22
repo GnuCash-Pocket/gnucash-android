@@ -47,8 +47,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
 import android.preference.PreferenceManager;
 import android.view.View;
 
@@ -61,7 +59,6 @@ import com.kobakei.ratethisapp.RateThisApp;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
@@ -89,8 +86,6 @@ import org.junit.Test;
 import java.math.BigDecimal;
 import java.util.List;
 
-import timber.log.Timber;
-
 public class AccountsActivityTest extends GnuAndroidTest {
     private static final String ACCOUNTS_CURRENCY_CODE = "USD";
     // Don't add static here, otherwise it gets set to null by super.tearDown()
@@ -105,17 +100,10 @@ public class AccountsActivityTest extends GnuAndroidTest {
     private static final String CHILD_ACCOUNT_NAME = "Child account";
     public static final String TEST_DB_NAME = "test_gnucash_db.sqlite";
 
-    private static DatabaseHelper mDbHelper;
-    private static SQLiteDatabase mDb;
     private static AccountsDbAdapter mAccountsDbAdapter;
     private static TransactionsDbAdapter mTransactionsDbAdapter;
     private static SplitsDbAdapter mSplitsDbAdapter;
     private AccountsActivity mAccountsActivity;
-
-    public AccountsActivityTest() {
-//        super(AccountsActivity.class);
-    }
-
 
     @Rule
     public GrantPermissionRule animationPermissionsRule = GrantPermissionRule.grant(Manifest.permission.SET_ANIMATION_SCALE);
@@ -130,14 +118,6 @@ public class AccountsActivityTest extends GnuAndroidTest {
     public static void prepTest() {
         preventFirstRunDialogs(GnuCashApplication.getAppContext());
 
-        String activeBookUID = GnuCashApplication.getActiveBookUID();
-        mDbHelper = new DatabaseHelper(GnuCashApplication.getAppContext(), activeBookUID);
-        try {
-            mDb = mDbHelper.getWritableDatabase();
-        } catch (SQLException e) {
-            Timber.e(e, "Error getting database: " + e.getMessage());
-            mDb = mDbHelper.getReadableDatabase();
-        }
         mSplitsDbAdapter = SplitsDbAdapter.getInstance();
         mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
@@ -230,7 +210,7 @@ public class AccountsActivityTest extends GnuAndroidTest {
         Account newestAccount = accounts.get(0); //because of alphabetical sorting
 
         assertThat(newestAccount.getName()).isEqualTo(NEW_ACCOUNT_NAME);
-        assertThat(newestAccount.getCommodity().getCurrencyCode()).isEqualTo(Commodity.DEFAULT_COMMODITY.getCurrencyCode());
+        assertThat(newestAccount.getCommodity()).isEqualTo(Commodity.DEFAULT_COMMODITY);
         assertThat(newestAccount.isPlaceholder()).isTrue();
     }
 

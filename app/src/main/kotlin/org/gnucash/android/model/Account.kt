@@ -281,6 +281,17 @@ class Account : BaseModel {
         _defaultTransferAccountUID = defaultTransferAccountUID
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Account) return false
+        return super.equals(other)
+                && (this.name == other.name)
+                && (this.isFavorite == other.isFavorite)
+                && (this._isHidden == other._isHidden)
+                && (this._isPlaceholder == other._isPlaceholder)
+                && (this.commodity == other.commodity)
+    }
+
     override fun toString(): String = fullName ?: name
 
     companion object {

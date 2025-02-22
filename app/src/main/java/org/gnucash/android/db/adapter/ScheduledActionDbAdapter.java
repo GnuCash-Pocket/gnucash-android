@@ -132,7 +132,7 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
 
     @Override
     protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final ScheduledAction schedxAction) {
-        stmt.clearBindings();
+        bindBaseModel(stmt, schedxAction);
         stmt.bindString(1, schedxAction.getActionUID());
         stmt.bindString(2, schedxAction.getActionType().name());
         stmt.bindLong(3, schedxAction.getStartTime());
@@ -140,10 +140,9 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
         stmt.bindLong(5, schedxAction.getLastRunTime());
         stmt.bindLong(6, schedxAction.isEnabled() ? 1 : 0);
         stmt.bindString(7, TimestampHelper.getUtcStringFromTimestamp(schedxAction.getCreatedTimestamp()));
-        if (schedxAction.getTag() == null)
-            stmt.bindNull(8);
-        else
+        if (schedxAction.getTag() != null) {
             stmt.bindString(8, schedxAction.getTag());
+        }
         stmt.bindLong(9, schedxAction.getTotalPlannedExecutionCount());
         stmt.bindString(10, schedxAction.getRecurrence().getUID());
         stmt.bindLong(11, schedxAction.shouldAutoCreate() ? 1 : 0);
@@ -152,7 +151,7 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
         stmt.bindLong(14, schedxAction.getAdvanceNotifyDays());
         stmt.bindString(15, schedxAction.getTemplateAccountUID());
         stmt.bindLong(16, schedxAction.getExecutionCount());
-        stmt.bindString(17, schedxAction.getUID());
+
         return stmt;
     }
 

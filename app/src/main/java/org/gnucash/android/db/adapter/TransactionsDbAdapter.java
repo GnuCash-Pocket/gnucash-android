@@ -194,7 +194,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
 
     @Override
     protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull Transaction transaction) {
-        stmt.clearBindings();
+        bindBaseModel(stmt, transaction);
         stmt.bindString(1, transaction.getDescription());
         stmt.bindString(2, transaction.getNote());
         stmt.bindLong(3, transaction.getTimeMillis());
@@ -202,14 +202,10 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         stmt.bindString(5, transaction.getCurrencyCode());
         stmt.bindString(6, transaction.getCommodity().getUID());
         stmt.bindString(7, TimestampHelper.getUtcStringFromTimestamp(transaction.getCreatedTimestamp()));
-
-        if (transaction.getScheduledActionUID() == null) {
-            stmt.bindNull(8);
-        } else {
+        if (transaction.getScheduledActionUID() != null) {
             stmt.bindString(8, transaction.getScheduledActionUID());
         }
         stmt.bindLong(9, transaction.isTemplate() ? 1 : 0);
-        stmt.bindString(10, transaction.getUID());
 
         return stmt;
     }

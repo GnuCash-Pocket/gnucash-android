@@ -212,15 +212,13 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             account.setFullName(getFullyQualifiedAccountName(account));
         }
 
-        stmt.clearBindings();
+        bindBaseModel(stmt, account);
         stmt.bindString(1, account.getName());
         stmt.bindString(2, account.getDescription());
         stmt.bindString(3, account.getAccountType().name());
         stmt.bindString(4, account.getCommodity().getCurrencyCode());
         if (account.getColor() != Account.DEFAULT_COLOR) {
             stmt.bindString(5, account.getColorHexString());
-        } else {
-            stmt.bindNull(5);
         }
         stmt.bindLong(6, account.isFavorite() ? 1 : 0);
         stmt.bindString(7, account.getFullName());
@@ -228,18 +226,12 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         stmt.bindString(9, TimestampHelper.getUtcStringFromTimestamp(account.getCreatedTimestamp()));
         stmt.bindLong(10, account.isHidden() ? 1 : 0);
         stmt.bindString(11, account.getCommodity().getUID());
-
         if (parentAccountUID != null) {
             stmt.bindString(12, parentAccountUID);
-        } else {
-            stmt.bindNull(12);
         }
         if (account.getDefaultTransferAccountUID() != null) {
             stmt.bindString(13, account.getDefaultTransferAccountUID());
-        } else {
-            stmt.bindNull(13);
         }
-        stmt.bindString(14, account.getUID());
 
         return stmt;
     }

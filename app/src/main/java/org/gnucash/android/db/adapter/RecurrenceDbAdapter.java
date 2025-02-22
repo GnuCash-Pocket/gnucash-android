@@ -82,23 +82,17 @@ public class RecurrenceDbAdapter extends DatabaseAdapter<Recurrence> {
 
     @Override
     protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final Recurrence recurrence) {
-        stmt.clearBindings();
+        bindBaseModel(stmt, recurrence);
         stmt.bindLong(1, recurrence.getMultiplier());
         stmt.bindString(2, recurrence.getPeriodType().name());
         if (!recurrence.getByDays().isEmpty()) {
             stmt.bindString(3, byDaysToString(recurrence.getByDays()));
-        } else {
-            stmt.bindNull(3);
         }
         //recurrence should always have a start date
         stmt.bindString(4, TimestampHelper.getUtcStringFromTimestamp(recurrence.getPeriodStart()));
-
         if (recurrence.getPeriodEnd() != null) {
             stmt.bindString(5, TimestampHelper.getUtcStringFromTimestamp(recurrence.getPeriodEnd()));
-        } else {
-            stmt.bindNull(5);
         }
-        stmt.bindString(6, recurrence.getUID());
 
         return stmt;
     }

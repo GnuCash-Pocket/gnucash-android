@@ -93,19 +93,17 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
 
     @Override
     protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final Book book) {
-        stmt.clearBindings();
+        bindBaseModel(stmt, book);
         String displayName = TextUtils.isEmpty(book.getDisplayName()) ? generateDefaultBookName() : book.getDisplayName();
         stmt.bindString(1, displayName);
         stmt.bindString(2, book.getRootAccountUID());
         stmt.bindString(3, book.getRootTemplateUID());
         if (book.getSourceUri() != null) {
             stmt.bindString(4, book.getSourceUri().toString());
-        } else {
-            stmt.bindNull(4);
         }
-        stmt.bindLong(5, book.isActive() ? 1L : 0L);
+        stmt.bindLong(5, book.isActive() ? 1 : 0);
         stmt.bindString(6, TimestampHelper.getUtcStringFromTimestamp(book.getLastSync()));
-        stmt.bindString(7, book.getUID());
+
         return stmt;
     }
 

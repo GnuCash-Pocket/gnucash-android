@@ -117,11 +117,9 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
     @Override
     protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final Split split) {
-        stmt.clearBindings();
+        bindBaseModel(stmt, split);
         if (split.getMemo() != null) {
             stmt.bindString(1, split.getMemo());
-        } else {
-            stmt.bindNull(1);
         }
         stmt.bindString(2, split.getType().name());
         stmt.bindLong(3, split.getValue().getNumerator());
@@ -133,7 +131,6 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
         stmt.bindString(9, TimestampHelper.getUtcStringFromTimestamp(split.getReconcileDate()));
         stmt.bindString(10, split.getAccountUID());
         stmt.bindString(11, split.getTransactionUID());
-        stmt.bindString(12, split.getUID());
 
         return stmt;
     }
@@ -262,7 +259,7 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
                     String commodityUID = commoditiesDbAdapter.getCommodityUID(commodityCode);
                     // get price
                     if (pricesDbAdapter == null) {
-                        pricesDbAdapter = new PricesDbAdapter(mDb, commoditiesDbAdapter);
+                        pricesDbAdapter = new PricesDbAdapter(commoditiesDbAdapter);
                     }
                     Pair<Long, Long> price = pricesDbAdapter.getPrice(commodityUID, currencyUID);
                     if (price.first <= 0 || price.second <= 0) {
