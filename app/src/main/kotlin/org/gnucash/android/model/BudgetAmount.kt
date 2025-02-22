@@ -17,7 +17,6 @@ package org.gnucash.android.model
 
 import android.os.Parcel
 import android.os.Parcelable
-import java.math.BigDecimal
 
 /**
  * Budget amounts for the different accounts.
@@ -80,7 +79,7 @@ class BudgetAmount : BaseModel, Parcelable {
     }
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
-        dest.writeString(uID)
+        dest.writeString(uid)
         dest.writeString(budgetUID)
         dest.writeString(accountUID)
         dest.writeMoney(amount, flags)
@@ -93,7 +92,7 @@ class BudgetAmount : BaseModel, Parcelable {
      * @param source Parcel
      */
     private constructor(source: Parcel) {
-        uID = source.readString()
+        setUID(source.readString())
         budgetUID = source.readString()
         accountUID = source.readString()
         amount = source.readMoney()!!

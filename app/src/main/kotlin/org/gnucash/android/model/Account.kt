@@ -170,7 +170,7 @@ class Account : BaseModel {
         get() {
             var balance = Money.createZeroInstance(commodity.currencyCode)
             for (transaction in _transactionsList) {
-                balance += transaction.getBalance(uID!!)
+                balance += transaction.getBalance(uid)
             }
             return balance
         }

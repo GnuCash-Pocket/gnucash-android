@@ -103,7 +103,7 @@ class Transaction : BaseModel {
             addSplit(Split(split, generateNewUID))
         }
         if (!generateNewUID) {
-            uID = transaction.uID
+            setUID(transaction.uid)
         }
     }
 
@@ -143,14 +143,12 @@ class Transaction : BaseModel {
      * The GUID of the transaction
      * If the transaction has Splits, their transactionGUID will be updated as well
      */
-    override var uID: String?
-        get() = super.uID
-        set(uid) {
-            super.uID = uid
-            for (split in _splitList) {
-                split.transactionUID = uid
-            }
+    override fun setUID(uid: String?) {
+        super.setUID(uid)
+        for (split in _splitList) {
+            split.transactionUID = uid
         }
+    }
 
     /**
      * Returns list of splits for this transaction
@@ -186,7 +184,7 @@ class Transaction : BaseModel {
     fun setSplits(splitList: MutableList<Split>) {
         _splitList = splitList
         for (split in splitList) {
-            split.transactionUID = uID
+            split.transactionUID = uid
         }
     }
 
@@ -199,7 +197,7 @@ class Transaction : BaseModel {
      */
     fun addSplit(split: Split) {
         //sets the currency of the split to the currency of the transaction
-        split.transactionUID = uID
+        split.transactionUID = uid
         _splitList.add(split)
     }
 
@@ -210,7 +208,7 @@ class Transaction : BaseModel {
      *
      * @param accountUID Unique Identifier of the account
      * @return Money balance of the transaction for the specified account
-     * @see .computeBalance
+     * @see computeBalance
      */
     fun getBalance(accountUID: String): Money {
         return computeBalance(accountUID, _splitList)
@@ -325,7 +323,7 @@ class Transaction : BaseModel {
         transactionNode.appendChild(amount)
 
         val transID = doc.createElement(OfxHelper.TAG_TRANSACTION_FITID)
-        transID.appendChild(doc.createTextNode(uID))
+        transID.appendChild(doc.createTextNode(uid))
         transactionNode.appendChild(transID)
 
         val name = doc.createElement(OfxHelper.TAG_NAME)
@@ -479,7 +477,7 @@ class Transaction : BaseModel {
          * Returns true if the transaction type represents a decrease for the account balance for the `accountType`, false otherwise
          *
          * @return true if the amount represents a decrease in the account balance, false otherwise
-         * @see .getTypeForBalance
+         * @see getTypeForBalance
          */
         @JvmStatic
         fun shouldDecreaseBalance(

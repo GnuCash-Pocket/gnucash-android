@@ -34,8 +34,8 @@ abstract class BaseModel {
      * It is declared private because it is generated only on-demand.
      * Sub-classes should use the accessor methods to read and write this value
      *
-     * @see .getUID
-     * @see .setUID
+     * @see getUID()
+     * @see setUID(String)
      */
     private var _uid: String? = null
 
@@ -57,29 +57,21 @@ abstract class BaseModel {
     /**
      * A unique string identifier for this model instance.
      */
-    open var uID: String?
-        /**
-         * Returns the unique string identifier for this model instance.
-         *
-         * A new GUID can be generated with a call to [generateUID] (and it will if the field was not
-         * previously initialized).
-         *
-         * @return [UID] String unique ID
-         */
+    val uid: String
         get() {
-            if (_uid == null) {
-                _uid = generateUID()
+            var value = _uid
+            if (value == null) {
+                value = generateUID()
+                _uid = value
             }
-            return _uid!!
+            return value
         }
-        /**
-         * Sets the unique string identifier for this model instance.
-         *
-         * @param uid String unique ID
-         */
-        set(uid) {
-            _uid = uid
-        }
+
+    fun getUID(): String = uid
+
+    open fun setUID(uid: String?) {
+        _uid = uid ?: generateUID()
+    }
 
     /**
      * Two instances are considered equal if their GUID's are the same
@@ -90,15 +82,16 @@ abstract class BaseModel {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is BaseModel) return false
-        return uID == other.uID
+        return uid == other.uid
     }
 
     override fun hashCode(): Int {
-        return uID.hashCode()
+        return uid.hashCode()
     }
 
     companion object {
         private val regexDash = "-".toRegex()
+
         /**
          * Method for generating the Global Unique ID for the model object
          *

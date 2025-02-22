@@ -107,7 +107,7 @@ class Budget : BaseModel {
     fun setBudgetAmounts(budgetAmounts: MutableList<BudgetAmount>) {
         _budgetAmounts = budgetAmounts
         for (budgetAmount in _budgetAmounts) {
-            budgetAmount.budgetUID = uID
+            budgetAmount.budgetUID = uid
         }
     }
 
@@ -117,7 +117,7 @@ class Budget : BaseModel {
      * @param budgetAmount Budget amount
      */
     fun addBudgetAmount(budgetAmount: BudgetAmount) {
-        budgetAmount.budgetUID = uID
+        budgetAmount.budgetUID = uid
         _budgetAmounts.add(budgetAmount)
     }
 
@@ -351,7 +351,7 @@ class Budget : BaseModel {
                         }
 
                     } else {
-                        val bgtAmount = BudgetAmount(uID, key)
+                        val bgtAmount = BudgetAmount(uid, key)
                         bgtAmount.setAmount(Money(first, Commodity.DEFAULT_COMMODITY))
                         bgtAmount.periodNum = -1
                         compactBudgetAmounts.add(bgtAmount)
@@ -390,7 +390,7 @@ class Budget : BaseModel {
                     val accountUID = budgetAmount.accountUID
 
                     for (period in 0 until numberOfPeriods) {
-                        val bgtAmount = BudgetAmount(uID, accountUID)
+                        val bgtAmount = BudgetAmount(uid, accountUID)
                         bgtAmount.setAmount(budgetAmount.amount)
                         bgtAmount.periodNum = period
                         amountsToAdd.add(bgtAmount)
