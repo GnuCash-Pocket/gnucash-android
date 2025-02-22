@@ -80,7 +80,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
             throw new MissingFormatArgumentException("You must specify both the transaction and account GUID");
         }
 
-        int themeColor = accountsDbAdapter.getActiveAccountColor(mAccountUID);
+        int themeColor = accountsDbAdapter.getActiveAccountColor(this, mAccountUID);
         mBinding.toolbar.setBackgroundColor(themeColor);
 
         setSupportActionBar(mBinding.toolbar);
@@ -146,7 +146,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
         int index = 0;
         for (Split split : transaction.getSplits()) {
             if (!useDoubleEntry && split.getAccountUID().equals(
-                accountsDbAdapter.getImbalanceAccountUID(split.getValue().getCommodity()))) {
+                accountsDbAdapter.getImbalanceAccountUID(context, split.getValue().getCommodity()))) {
                 //do now show imbalance accounts for single entry use case
                 continue;
             }

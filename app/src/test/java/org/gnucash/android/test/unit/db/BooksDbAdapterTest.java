@@ -203,7 +203,8 @@ public class BooksDbAdapterTest extends GnuCashTest {
      */
     private String createNewBookWithDefaultAccounts() {
         try {
-            return GncXmlImporter.parse(GnuCashApplication.getAppContext().getResources().openRawResource(R.raw.default_accounts));
+            Context context = GnuCashApplication.getAppContext();
+            return GncXmlImporter.parse(context, context.getResources().openRawResource(R.raw.default_accounts));
         } catch (ParserConfigurationException | SAXException | IOException e) {
             Timber.e(e);
             throw new RuntimeException("Could not create default accounts");

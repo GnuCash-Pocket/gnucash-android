@@ -361,11 +361,12 @@ public class TransactionsActivityTest extends GnuAndroidTest {
      */
     //TODO: move this to the unit tests
     public void testAutoBalanceTransactions() {
+        Context context = GnuCashApplication.getAppContext();
         setDoubleEntryEnabled(false);
         mTransactionsDbAdapter.deleteAllRecords();
 
         assertThat(mTransactionsDbAdapter.getRecordsCount()).isEqualTo(0);
-        String imbalanceAcctUID = mAccountsDbAdapter.getImbalanceAccountUID(COMMODITY);
+        String imbalanceAcctUID = mAccountsDbAdapter.getImbalanceAccountUID(context, COMMODITY);
         assertThat(imbalanceAcctUID).isNull();
 
         validateTransactionListDisplayed();
@@ -382,7 +383,7 @@ public class TransactionsActivityTest extends GnuAndroidTest {
         assertThat(mTransactionsDbAdapter.getRecordsCount()).isEqualTo(1);
         Transaction transaction = mTransactionsDbAdapter.getAllTransactions().get(0);
         assertThat(transaction.getSplits()).hasSize(2);
-        imbalanceAcctUID = mAccountsDbAdapter.getImbalanceAccountUID(COMMODITY);
+        imbalanceAcctUID = mAccountsDbAdapter.getImbalanceAccountUID(context, COMMODITY);
         assertThat(imbalanceAcctUID).isNotNull();
         assertThat(imbalanceAcctUID).isNotEmpty();
         assertThat(mAccountsDbAdapter.isHiddenAccount(imbalanceAcctUID)).isTrue(); //imbalance account should be hidden in single entry mode
@@ -398,11 +399,12 @@ public class TransactionsActivityTest extends GnuAndroidTest {
      */
     @Test
     public void testSplitEditor() {
+        Context context = GnuCashApplication.getAppContext();
         setDefaultTransactionType(TransactionType.DEBIT);
         mTransactionsDbAdapter.deleteAllRecords();
 
         //when we start there should be no imbalance account in the system
-        String imbalanceAcctUID = mAccountsDbAdapter.getImbalanceAccountUID(COMMODITY);
+        String imbalanceAcctUID = mAccountsDbAdapter.getImbalanceAccountUID(context, COMMODITY);
         assertThat(imbalanceAcctUID).isNull();
 
         validateTransactionListDisplayed();
@@ -430,7 +432,7 @@ public class TransactionsActivityTest extends GnuAndroidTest {
         Transaction transaction = transactions.get(0);
 
         assertThat(transaction.getSplits()).hasSize(3); //auto-balanced
-        imbalanceAcctUID = mAccountsDbAdapter.getImbalanceAccountUID(COMMODITY);
+        imbalanceAcctUID = mAccountsDbAdapter.getImbalanceAccountUID(context, COMMODITY);
         assertThat(imbalanceAcctUID).isNotNull();
         assertThat(imbalanceAcctUID).isNotEmpty();
         assertThat(mAccountsDbAdapter.isHiddenAccount(imbalanceAcctUID)).isFalse();

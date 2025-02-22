@@ -752,8 +752,9 @@ public class TransactionFormFragment extends MenuFragment implements
             long transferAcctId = binding.inputTransferAccountSpinner.getSelectedItemId();
             transferAcctUID = mAccountsDbAdapter.getUID(transferAcctId);
         } else {
+            Context context = binding.getRoot().getContext();
             Commodity baseCommodity = mAccountsDbAdapter.getSimpleRecord(mAccountUID).getCommodity();
-            transferAcctUID = mAccountsDbAdapter.getOrCreateImbalanceAccountUID(baseCommodity);
+            transferAcctUID = mAccountsDbAdapter.getOrCreateImbalanceAccountUID(context, baseCommodity);
         }
         return transferAcctUID;
     }

@@ -21,21 +21,22 @@ import java.io.IOException;
  */
 public class PricesDbAdapter extends DatabaseAdapter<Price> {
     private final CommoditiesDbAdapter commoditiesDbAdapter;
+
     /**
      * Opens the database adapter with an existing database
      *
-     * @param db SQLiteDatabase object
+     * @param db                   SQLiteDatabase object
      * @param commoditiesDbAdapter the commodities database adapter.
      */
     public PricesDbAdapter(@NonNull SQLiteDatabase db, @NonNull CommoditiesDbAdapter commoditiesDbAdapter) {
         super(db, PriceEntry.TABLE_NAME, new String[]{
-                PriceEntry.COLUMN_COMMODITY_UID,
-                PriceEntry.COLUMN_CURRENCY_UID,
-                PriceEntry.COLUMN_DATE,
-                PriceEntry.COLUMN_SOURCE,
-                PriceEntry.COLUMN_TYPE,
-                PriceEntry.COLUMN_VALUE_NUM,
-                PriceEntry.COLUMN_VALUE_DENOM
+            PriceEntry.COLUMN_COMMODITY_UID,
+            PriceEntry.COLUMN_CURRENCY_UID,
+            PriceEntry.COLUMN_DATE,
+            PriceEntry.COLUMN_SOURCE,
+            PriceEntry.COLUMN_TYPE,
+            PriceEntry.COLUMN_VALUE_NUM,
+            PriceEntry.COLUMN_VALUE_DENOM
         });
         this.commoditiesDbAdapter = commoditiesDbAdapter;
     }
@@ -115,12 +116,12 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
             return new Pair<>(1L, 1L);
         }
         Cursor cursor = mDb.query(PriceEntry.TABLE_NAME, null,
-                // the commodity and currency can be swapped
-                "( " + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " + PriceEntry.COLUMN_CURRENCY_UID + " = ? ) OR ( "
-                        + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " + PriceEntry.COLUMN_CURRENCY_UID + " = ? )",
-                new String[]{commodityUID, currencyUID, currencyUID, commodityUID}, null, null,
-                // only get the latest price
-                PriceEntry.COLUMN_DATE + " DESC", "1");
+            // the commodity and currency can be swapped
+            "( " + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " + PriceEntry.COLUMN_CURRENCY_UID + " = ? ) OR ( "
+                + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " + PriceEntry.COLUMN_CURRENCY_UID + " = ? )",
+            new String[]{commodityUID, currencyUID, currencyUID, commodityUID}, null, null,
+            // only get the latest price
+            PriceEntry.COLUMN_DATE + " DESC", "1");
         try {
             if (cursor.moveToNext()) {
                 String commodityUIDdb = cursor.getString(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_COMMODITY_UID));

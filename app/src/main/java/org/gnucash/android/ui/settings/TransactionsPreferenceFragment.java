@@ -100,7 +100,7 @@ public class TransactionsPreferenceFragment extends PreferenceFragmentCompat imp
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         if (preference.getKey().equals(getString(R.string.key_use_double_entry))) {
             boolean useDoubleEntry = (Boolean) newValue;
-            setImbalanceAccountsHidden(useDoubleEntry);
+            setImbalanceAccountsHidden(preference.getContext(), useDoubleEntry);
         }
         return true;
     }
@@ -125,12 +125,12 @@ public class TransactionsPreferenceFragment extends PreferenceFragmentCompat imp
      *
      * @param useDoubleEntry flag if double entry is enabled or not
      */
-    private void setImbalanceAccountsHidden(boolean useDoubleEntry) {
+    private void setImbalanceAccountsHidden(@NonNull Context context, boolean useDoubleEntry) {
         String isHidden = useDoubleEntry ? "0" : "1";
         AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
         List<Commodity> commodities = accountsDbAdapter.getCommoditiesInUse();
         for (Commodity commodity : commodities) {
-            String uid = accountsDbAdapter.getImbalanceAccountUID(commodity);
+            String uid = accountsDbAdapter.getImbalanceAccountUID(context, commodity);
             if (uid != null) {
                 accountsDbAdapter.updateRecord(uid, DatabaseSchema.AccountEntry.COLUMN_HIDDEN, isHidden);
             }

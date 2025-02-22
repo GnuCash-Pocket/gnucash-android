@@ -17,6 +17,7 @@ package org.gnucash.android.test.unit.db;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
 import org.assertj.core.data.Index;
@@ -429,14 +430,15 @@ public class AccountsDbAdapterTest extends GnuCashTest {
 
     @Test
     public void shouldCreateImbalanceAccountOnDemand() {
+        Context context = GnuCashApplication.getAppContext();
         assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(1L);
 
         Commodity usd = mCommoditiesDbAdapter.getCommodity("USD");
-        String imbalanceUID = mAccountsDbAdapter.getImbalanceAccountUID(usd);
+        String imbalanceUID = mAccountsDbAdapter.getImbalanceAccountUID(context, usd);
         assertThat(imbalanceUID).isNull();
         assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(1L);
 
-        imbalanceUID = mAccountsDbAdapter.getOrCreateImbalanceAccountUID(usd);
+        imbalanceUID = mAccountsDbAdapter.getOrCreateImbalanceAccountUID(context, usd);
         assertThat(imbalanceUID).isNotNull().isNotEmpty();
         assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(2);
     }
@@ -531,7 +533,8 @@ public class AccountsDbAdapterTest extends GnuCashTest {
      */
     private void loadDefaultAccounts() {
         try {
-            String bookUID = GncXmlImporter.parse(GnuCashApplication.getAppContext().getResources().openRawResource(R.raw.default_accounts));
+            Context context = GnuCashApplication.getAppContext();
+            String bookUID = GncXmlImporter.parse(context, context.getResources().openRawResource(R.raw.default_accounts));
             initAdapters(bookUID);
         } catch (ParserConfigurationException | SAXException | IOException e) {
             Timber.e(e);

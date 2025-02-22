@@ -89,7 +89,7 @@ class Account : BaseModel {
      * Flag for placeholder accounts.
      * These accounts cannot have transactions
      */
-    private var _isPlaceholderAccount = false
+    private var _isPlaceholder = false
 
     /**
      * `true` if this account is flagged as a favorite account, `false` if not
@@ -227,8 +227,8 @@ class Account : BaseModel {
      *
      * @return `true` if this account is a placeholder account, `false` otherwise
      */
-    fun isPlaceholderAccount(): Boolean {
-        return _isPlaceholderAccount
+    fun isPlaceholder(): Boolean {
+        return _isPlaceholder
     }
 
     /**
@@ -260,7 +260,7 @@ class Account : BaseModel {
      * @param isPlaceholder Boolean flag indicating if the account is a placeholder account or not
      */
     fun setPlaceHolderFlag(isPlaceholder: Boolean) {
-        _isPlaceholderAccount = isPlaceholder
+        _isPlaceholder = isPlaceholder
     }
 
     /**

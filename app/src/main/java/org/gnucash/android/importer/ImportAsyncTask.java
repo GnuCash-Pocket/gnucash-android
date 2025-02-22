@@ -91,7 +91,7 @@ public class ImportAsyncTask extends AsyncTask<Uri, Void, String> {
         try {
             ContentResolver contentResolver = mContext.getContentResolver();
             InputStream accountInputStream = contentResolver.openInputStream(uri);
-            book = GncXmlImporter.parseBook(accountInputStream);
+            book = GncXmlImporter.parseBook(mContext, accountInputStream);
             book.setSourceUri(uri);
             bookUID = book.getUID();
         } catch (final Throwable e) {

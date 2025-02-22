@@ -25,6 +25,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.DatabaseSchema.AccountEntry;
@@ -100,60 +101,60 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
 
         //todo: would it be useful to add the split reconciled_state and reconciled_date to this view?
         mDb.execSQL("CREATE TEMP VIEW IF NOT EXISTS trans_split_acct AS SELECT "
-                + TransactionEntry.TABLE_NAME + "." + CommonColumns.COLUMN_MODIFIED_AT + " AS "
-                + TransactionEntry.TABLE_NAME + "_" + CommonColumns.COLUMN_MODIFIED_AT + " , "
-                + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " AS "
-                + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID + " , "
-                + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_DESCRIPTION + " AS "
-                + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_DESCRIPTION + " , "
-                + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_NOTES + " AS "
-                + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_NOTES + " , "
-                + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_CURRENCY + " AS "
-                + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_CURRENCY + " , "
-                + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " AS "
-                + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " , "
-                + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_EXPORTED + " AS "
-                + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_EXPORTED + " , "
-                + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + " AS "
-                + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TEMPLATE + " , "
-                + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_UID + " AS "
-                + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_UID + " , "
-                + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TYPE + " AS "
-                + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_TYPE + " , "
-                + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_VALUE_NUM + " AS "
-                + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_VALUE_NUM + " , "
-                + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_VALUE_DENOM + " AS "
-                + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_VALUE_DENOM + " , "
-                + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_QUANTITY_NUM + " AS "
-                + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_NUM + " , "
-                + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_QUANTITY_DENOM + " AS "
-                + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_DENOM + " , "
-                + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_MEMO + " AS "
-                + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_MEMO + " , "
-                + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_UID + " AS "
-                + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID + " , "
-                + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_NAME + " AS "
-                + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_NAME + " , "
-                + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_CURRENCY + " AS "
-                + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_CURRENCY + " , "
-                + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " AS "
-                + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " , "
-                + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_PLACEHOLDER + " AS "
-                + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_PLACEHOLDER + " , "
-                + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_COLOR_CODE + " AS "
-                + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_COLOR_CODE + " , "
-                + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_FAVORITE + " AS "
-                + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_FAVORITE + " , "
-                + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_FULL_NAME + " AS "
-                + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_FULL_NAME + " , "
-                + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_TYPE + " AS "
-                + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_TYPE + " , "
-                + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID + " AS "
-                + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID
-                + " FROM " + TransactionEntry.TABLE_NAME + " , " + SplitEntry.TABLE_NAME + " ON "
-                + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + "=" + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID
-                + " , " + AccountEntry.TABLE_NAME + " ON "
-                + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID + "=" + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_UID
+            + TransactionEntry.TABLE_NAME + "." + CommonColumns.COLUMN_MODIFIED_AT + " AS "
+            + TransactionEntry.TABLE_NAME + "_" + CommonColumns.COLUMN_MODIFIED_AT + " , "
+            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " AS "
+            + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID + " , "
+            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_DESCRIPTION + " AS "
+            + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_DESCRIPTION + " , "
+            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_NOTES + " AS "
+            + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_NOTES + " , "
+            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_CURRENCY + " AS "
+            + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_CURRENCY + " , "
+            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " AS "
+            + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " , "
+            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_EXPORTED + " AS "
+            + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_EXPORTED + " , "
+            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + " AS "
+            + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TEMPLATE + " , "
+            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_UID + " AS "
+            + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_UID + " , "
+            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TYPE + " AS "
+            + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_TYPE + " , "
+            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_VALUE_NUM + " AS "
+            + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_VALUE_NUM + " , "
+            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_VALUE_DENOM + " AS "
+            + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_VALUE_DENOM + " , "
+            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_QUANTITY_NUM + " AS "
+            + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_NUM + " , "
+            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_QUANTITY_DENOM + " AS "
+            + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_DENOM + " , "
+            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_MEMO + " AS "
+            + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_MEMO + " , "
+            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_UID + " AS "
+            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID + " , "
+            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_NAME + " AS "
+            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_NAME + " , "
+            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_CURRENCY + " AS "
+            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_CURRENCY + " , "
+            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " AS "
+            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " , "
+            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_PLACEHOLDER + " AS "
+            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_PLACEHOLDER + " , "
+            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_COLOR_CODE + " AS "
+            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_COLOR_CODE + " , "
+            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_FAVORITE + " AS "
+            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_FAVORITE + " , "
+            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_FULL_NAME + " AS "
+            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_FULL_NAME + " , "
+            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_TYPE + " AS "
+            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_TYPE + " , "
+            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID + " AS "
+            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID
+            + " FROM " + TransactionEntry.TABLE_NAME + " , " + SplitEntry.TABLE_NAME + " ON "
+            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + "=" + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID
+            + " , " + AccountEntry.TABLE_NAME + " ON "
+            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID + "=" + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_UID
         );
 
         // SELECT transactions_uid AS trans_acct_t_uid ,
@@ -182,17 +183,17 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
         //   use substr to get account uid
 
         mDb.execSQL("CREATE TEMP VIEW IF NOT EXISTS trans_extra_info AS SELECT " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID +
-                " AS trans_acct_t_uid , SUBSTR ( MIN ( ( CASE WHEN IFNULL ( " + SplitEntry.TABLE_NAME + "_" +
-                SplitEntry.COLUMN_MEMO + " , '' ) == '' THEN 'a' ELSE 'b' END ) || " +
-                AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID +
-                " ) , 2 ) AS trans_acct_a_uid , TOTAL ( CASE WHEN " + SplitEntry.TABLE_NAME + "_" +
-                SplitEntry.COLUMN_TYPE + " = 'DEBIT' THEN " + SplitEntry.TABLE_NAME + "_" +
-                SplitEntry.COLUMN_VALUE_NUM + " ELSE - " + SplitEntry.TABLE_NAME + "_" +
-                SplitEntry.COLUMN_VALUE_NUM + " END ) * 1.0 / " + SplitEntry.TABLE_NAME + "_" +
-                SplitEntry.COLUMN_VALUE_DENOM + " AS trans_acct_balance , COUNT ( DISTINCT " +
-                AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_CURRENCY +
-                " ) AS trans_currency_count , COUNT (*) AS trans_split_count FROM trans_split_acct " +
-                " GROUP BY " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID
+            " AS trans_acct_t_uid , SUBSTR ( MIN ( ( CASE WHEN IFNULL ( " + SplitEntry.TABLE_NAME + "_" +
+            SplitEntry.COLUMN_MEMO + " , '' ) == '' THEN 'a' ELSE 'b' END ) || " +
+            AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID +
+            " ) , 2 ) AS trans_acct_a_uid , TOTAL ( CASE WHEN " + SplitEntry.TABLE_NAME + "_" +
+            SplitEntry.COLUMN_TYPE + " = 'DEBIT' THEN " + SplitEntry.TABLE_NAME + "_" +
+            SplitEntry.COLUMN_VALUE_NUM + " ELSE - " + SplitEntry.TABLE_NAME + "_" +
+            SplitEntry.COLUMN_VALUE_NUM + " END ) * 1.0 / " + SplitEntry.TABLE_NAME + "_" +
+            SplitEntry.COLUMN_VALUE_DENOM + " AS trans_acct_balance , COUNT ( DISTINCT " +
+            AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_CURRENCY +
+            " ) AS trans_currency_count , COUNT (*) AS trans_split_count FROM trans_split_acct " +
+            " GROUP BY " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID
         );
     }
 
@@ -308,7 +309,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
         }
 
         Timber.i("Bulk adding %d %s records to the database", modelList.size(),
-                modelList.get(0).getClass().getSimpleName());
+            modelList.get(0).getClass().getSimpleName());
         long nRow;
         try {
             beginTransaction();
@@ -345,12 +346,12 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
                 stmt = mReplaceStatement;
                 if (stmt == null) {
                     mReplaceStatement = stmt
-                            = mDb.compileStatement("REPLACE INTO " + mTableName + " ( "
-                            + TextUtils.join(" , ", mColumns) + " , "
-                            + CommonColumns.COLUMN_UID
-                            + " ) VALUES ( "
-                            + (new String(new char[mColumns.length]).replace("\0", "? , "))
-                            + "?)");
+                        = mDb.compileStatement("REPLACE INTO " + mTableName + " ( "
+                        + TextUtils.join(" , ", mColumns) + " , "
+                        + CommonColumns.COLUMN_UID
+                        + " ) VALUES ( "
+                        + (new String(new char[mColumns.length]).replace("\0", "? , "))
+                        + "?)");
                 }
             }
         }
@@ -364,10 +365,10 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
                 stmt = mUpdateStatement;
                 if (stmt == null) {
                     mUpdateStatement = stmt
-                            = mDb.compileStatement("UPDATE " + mTableName + " SET "
-                            + TextUtils.join(" = ? , ", mColumns) + " = ? WHERE "
-                            + CommonColumns.COLUMN_UID
-                            + " = ?");
+                        = mDb.compileStatement("UPDATE " + mTableName + " SET "
+                        + TextUtils.join(" = ? , ", mColumns) + " = ? WHERE "
+                        + CommonColumns.COLUMN_UID
+                        + " = ?");
                 }
             }
         }
@@ -381,12 +382,12 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
                 stmt = mInsertStatement;
                 if (stmt == null) {
                     mInsertStatement = stmt
-                            = mDb.compileStatement("INSERT INTO " + mTableName + " ( "
-                            + TextUtils.join(" , ", mColumns) + " , "
-                            + CommonColumns.COLUMN_UID
-                            + " ) VALUES ( "
-                            + (new String(new char[mColumns.length]).replace("\0", "? , "))
-                            + "?)");
+                        = mDb.compileStatement("INSERT INTO " + mTableName + " ( "
+                        + TextUtils.join(" , ", mColumns) + " , "
+                        + CommonColumns.COLUMN_UID
+                        + " ) VALUES ( "
+                        + (new String(new char[mColumns.length]).replace("\0", "? , "))
+                        + "?)");
                 }
             }
         }
@@ -443,18 +444,24 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      */
     @NonNull
     public List<Model> getAllRecords() {
-        List<Model> modelRecords = new ArrayList<>();
-        Cursor c = fetchAllRecords();
+        return getRecords(fetchAllRecords());
+    }
+
+    @NonNull
+    protected List<Model> getRecords(@Nullable Cursor cursor) {
+        List<Model> records = new ArrayList<>();
+        if (cursor == null) return records;
+
         try {
-            if (c.moveToFirst()) {
+            if (cursor.moveToFirst()) {
                 do {
-                    modelRecords.add(buildModelInstance(c));
-                } while (c.moveToNext());
+                    records.add(buildModelInstance(cursor));
+                } while (cursor.moveToNext());
             }
         } finally {
-            c.close();
+            cursor.close();
         }
-        return modelRecords;
+        return records;
     }
 
     /**
@@ -501,7 +508,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      */
     public Cursor fetchRecord(long rowId) {
         return mDb.query(mTableName, null, DatabaseSchema.CommonColumns._ID + "=" + rowId,
-                null, null, null, null);
+            null, null, null, null);
     }
 
     /**
@@ -515,7 +522,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
             throw new IllegalArgumentException("UID required");
         }
         return mDb.query(mTableName, null, CommonColumns.COLUMN_UID + "=?",
-                new String[]{uid}, null, null, null);
+            new String[]{uid}, null, null, null);
     }
 
     /**
@@ -568,10 +575,10 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      */
     public long getID(@NonNull String uid) {
         Cursor cursor = mDb.query(mTableName,
-                new String[]{DatabaseSchema.CommonColumns._ID},
-                DatabaseSchema.CommonColumns.COLUMN_UID + " = ?",
-                new String[]{uid},
-                null, null, null);
+            new String[]{DatabaseSchema.CommonColumns._ID},
+            DatabaseSchema.CommonColumns.COLUMN_UID + " = ?",
+            new String[]{uid},
+            null, null, null);
         long result = -1;
         try {
             if (cursor.moveToFirst()) {
@@ -594,9 +601,9 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      */
     public String getUID(long id) {
         Cursor cursor = mDb.query(mTableName,
-                new String[]{DatabaseSchema.CommonColumns.COLUMN_UID},
-                DatabaseSchema.CommonColumns._ID + " = " + id,
-                null, null, null, null);
+            new String[]{DatabaseSchema.CommonColumns.COLUMN_UID},
+            DatabaseSchema.CommonColumns._ID + " = " + id,
+            null, null, null, null);
 
         String uid = null;
         try {
@@ -621,9 +628,9 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      */
     public String getAccountCurrencyCode(@NonNull String accountUID) {
         Cursor cursor = mDb.query(DatabaseSchema.AccountEntry.TABLE_NAME,
-                new String[]{DatabaseSchema.AccountEntry.COLUMN_CURRENCY},
-                DatabaseSchema.AccountEntry.COLUMN_UID + "= ?",
-                new String[]{accountUID}, null, null, null);
+            new String[]{DatabaseSchema.AccountEntry.COLUMN_CURRENCY},
+            DatabaseSchema.AccountEntry.COLUMN_UID + "= ?",
+            new String[]{accountUID}, null, null, null);
         try {
             if (cursor.moveToFirst()) {
                 return cursor.getString(0);
@@ -647,8 +654,8 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
         String[] whereArgs = new String[]{currencyCode};
 
         Cursor cursor = mDb.query(DatabaseSchema.CommodityEntry.TABLE_NAME,
-                new String[]{DatabaseSchema.CommodityEntry.COLUMN_UID},
-                where, whereArgs, null, null, null);
+            new String[]{DatabaseSchema.CommodityEntry.COLUMN_UID},
+            where, whereArgs, null, null, null);
         try {
             if (cursor.moveToNext()) {
                 return cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.CommodityEntry.COLUMN_UID));
@@ -670,9 +677,9 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
     public AccountType getAccountType(@NonNull String accountUID) {
         String type = "";
         Cursor c = mDb.query(DatabaseSchema.AccountEntry.TABLE_NAME,
-                new String[]{DatabaseSchema.AccountEntry.COLUMN_TYPE},
-                DatabaseSchema.AccountEntry.COLUMN_UID + "=?",
-                new String[]{accountUID}, null, null, null);
+            new String[]{DatabaseSchema.AccountEntry.COLUMN_TYPE},
+            DatabaseSchema.AccountEntry.COLUMN_UID + "=?",
+            new String[]{accountUID}, null, null, null);
         try {
             if (c.moveToFirst()) {
                 type = c.getString(c.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_TYPE));
@@ -701,7 +708,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
             contentValues.put(columnKey, newValue);
         }
         return mDb.update(tableName, contentValues,
-                DatabaseSchema.CommonColumns._ID + "=" + recordId, null);
+            DatabaseSchema.CommonColumns._ID + "=" + recordId, null);
     }
 
     /**
@@ -781,7 +788,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * <p>The attribute is returned as a string which can then be converted to another type if
      * the caller was expecting something other type </p>
      *
-     * @param model the record with a GUID.
+     * @param model      the record with a GUID.
      * @param columnName Name of the column to be retrieved
      * @return String value of the column entry
      * @throws IllegalArgumentException if either the {@code recordUID} or {@code columnName} do not exist in the database
@@ -806,9 +813,9 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      */
     protected String getAttribute(@NonNull String tableName, @NonNull String recordUID, @NonNull String columnName) {
         Cursor cursor = mDb.query(tableName,
-                new String[]{columnName},
-                AccountEntry.COLUMN_UID + " = ?",
-                new String[]{recordUID}, null, null, null);
+            new String[]{columnName},
+            AccountEntry.COLUMN_UID + " = ?",
+            new String[]{recordUID}, null, null, null);
 
         try {
             if (cursor.moveToFirst())

@@ -231,7 +231,7 @@ public class AccountsActivityTest extends GnuAndroidTest {
 
         assertThat(newestAccount.getName()).isEqualTo(NEW_ACCOUNT_NAME);
         assertThat(newestAccount.getCommodity().getCurrencyCode()).isEqualTo(Commodity.DEFAULT_COMMODITY.getCurrencyCode());
-        assertThat(newestAccount.isPlaceholderAccount()).isTrue();
+        assertThat(newestAccount.isPlaceholder()).isTrue();
     }
 
     @Test

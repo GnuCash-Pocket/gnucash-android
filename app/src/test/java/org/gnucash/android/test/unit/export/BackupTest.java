@@ -68,7 +68,8 @@ public class BackupTest extends GnuCashTest {
      */
     private void loadDefaultAccounts() {
         try {
-            String bookUID = GncXmlImporter.parse(GnuCashApplication.getAppContext().getResources().openRawResource(R.raw.default_accounts));
+            Context context = GnuCashApplication.getAppContext();
+            String bookUID = GncXmlImporter.parse(context, context.getResources().openRawResource(R.raw.default_accounts));
             BooksDbAdapter.getInstance().setActive(bookUID);
             assertThat(BooksDbAdapter.getInstance().getActiveBookUID()).isEqualTo(bookUID);
             assertThat(GnuCashApplication.getActiveBookUID()).isEqualTo(bookUID);

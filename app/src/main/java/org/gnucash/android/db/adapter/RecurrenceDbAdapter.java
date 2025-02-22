@@ -47,11 +47,11 @@ public class RecurrenceDbAdapter extends DatabaseAdapter<Recurrence> {
      */
     public RecurrenceDbAdapter(SQLiteDatabase db) {
         super(db, RecurrenceEntry.TABLE_NAME, new String[]{
-                RecurrenceEntry.COLUMN_MULTIPLIER,
-                RecurrenceEntry.COLUMN_PERIOD_TYPE,
-                RecurrenceEntry.COLUMN_BYDAY,
-                RecurrenceEntry.COLUMN_PERIOD_START,
-                RecurrenceEntry.COLUMN_PERIOD_END
+            RecurrenceEntry.COLUMN_MULTIPLIER,
+            RecurrenceEntry.COLUMN_PERIOD_TYPE,
+            RecurrenceEntry.COLUMN_BYDAY,
+            RecurrenceEntry.COLUMN_PERIOD_START,
+            RecurrenceEntry.COLUMN_PERIOD_END
         });
     }
 

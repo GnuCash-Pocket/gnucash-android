@@ -92,7 +92,7 @@ public class FormActivity extends PasscodeLockActivity {
             mAccountUID = args.getString(UxArgument.PARENT_ACCOUNT_UID);
         }
         if (mAccountUID != null) {
-            @ColorInt int colorCode = AccountsDbAdapter.getActiveAccountColorResource(mAccountUID);
+            @ColorInt int colorCode = AccountsDbAdapter.getActiveAccountColorResource(this, mAccountUID);
             actionBar.setBackgroundDrawable(new ColorDrawable(colorCode));
             getWindow().setStatusBarColor(GnuCashApplication.darken(colorCode));
         }

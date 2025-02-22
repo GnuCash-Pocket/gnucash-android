@@ -103,7 +103,7 @@ public class CsvAccountExporter extends Exporter {
             fields[9] = format(account.isHidden());
 
             fields[10] = format(false); //Tax
-            fields[11] = format(account.isPlaceholderAccount());
+            fields[11] = format(account.isPlaceholder());
 
             csvWriter.writeNext(fields);
         }
