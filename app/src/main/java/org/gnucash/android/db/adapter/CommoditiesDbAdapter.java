@@ -27,7 +27,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
      *
      * @param db SQLiteDatabase object
      */
-    public CommoditiesDbAdapter(SQLiteDatabase db) {
+    public CommoditiesDbAdapter(@NonNull SQLiteDatabase db) {
         this(db, true);
     }
 
@@ -37,7 +37,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
      * @param db         SQLiteDatabase object
      * @param initCommon initialize commonly used commodities?
      */
-    public CommoditiesDbAdapter(SQLiteDatabase db, boolean initCommon) {
+    public CommoditiesDbAdapter(@NonNull SQLiteDatabase db, boolean initCommon) {
         super(db, CommodityEntry.TABLE_NAME, new String[]{
             CommodityEntry.COLUMN_FULLNAME,
             CommodityEntry.COLUMN_NAMESPACE,

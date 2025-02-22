@@ -51,7 +51,7 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
      *
      * @param db SQLiteDatabase object
      */
-    public BooksDbAdapter(SQLiteDatabase db) {
+    public BooksDbAdapter(@NonNull SQLiteDatabase db) {
         super(db, BookEntry.TABLE_NAME, new String[]{
             BookEntry.COLUMN_DISPLAY_NAME,
             BookEntry.COLUMN_ROOT_GUID,

@@ -40,7 +40,7 @@ public class BudgetAmountsDbAdapter extends DatabaseAdapter<BudgetAmount> {
      *
      * @param db SQLiteDatabase object
      */
-    public BudgetAmountsDbAdapter(SQLiteDatabase db) {
+    public BudgetAmountsDbAdapter(@NonNull SQLiteDatabase db) {
         super(db, BudgetAmountEntry.TABLE_NAME, new String[]{
             BudgetAmountEntry.COLUMN_BUDGET_UID,
             BudgetAmountEntry.COLUMN_ACCOUNT_UID,

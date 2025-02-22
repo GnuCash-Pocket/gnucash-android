@@ -60,8 +60,10 @@ import timber.log.Timber;
  */
 public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
 
-    private final SplitsDbAdapter mSplitsDbAdapter;
+    @NonNull
+    final SplitsDbAdapter splitsDbAdapter;
 
+    @NonNull
     final CommoditiesDbAdapter commoditiesDbAdapter;
 
     /**
@@ -69,7 +71,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      *
      * @param db SQlite db instance
      */
-    public TransactionsDbAdapter(SQLiteDatabase db) {
+    public TransactionsDbAdapter(@NonNull SQLiteDatabase db) {
         this(db, new SplitsDbAdapter(db));
     }
 
@@ -78,7 +80,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      *
      * @param db SQlite db instance
      */
-    public TransactionsDbAdapter(SQLiteDatabase db, SplitsDbAdapter splitsDbAdapter) {
+    public TransactionsDbAdapter(@NonNull SQLiteDatabase db, @NonNull SplitsDbAdapter splitsDbAdapter) {
         super(db, TransactionEntry.TABLE_NAME, new String[]{
             TransactionEntry.COLUMN_DESCRIPTION,
             TransactionEntry.COLUMN_NOTES,
@@ -90,7 +92,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
             TransactionEntry.COLUMN_SCHEDX_ACTION_UID,
             TransactionEntry.COLUMN_TEMPLATE
         });
-        mSplitsDbAdapter = splitsDbAdapter;
+        this.splitsDbAdapter = splitsDbAdapter;
         commoditiesDbAdapter = splitsDbAdapter.commoditiesDbAdapter;
     }
 
@@ -105,10 +107,6 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      */
     public static TransactionsDbAdapter getInstance() {
         return GnuCashApplication.getTransactionDbAdapter();
-    }
-
-    public SplitsDbAdapter getSplitDbAdapter() {
-        return mSplitsDbAdapter;
     }
 
     /**
@@ -137,9 +135,9 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
             for (Split split : transaction.getSplits()) {
                 Timber.d("Replace transaction split in db");
                 if (imbalanceSplit == split) {
-                    mSplitsDbAdapter.addRecord(split, UpdateMethod.insert);
+                    splitsDbAdapter.addRecord(split, UpdateMethod.insert);
                 } else {
-                    mSplitsDbAdapter.addRecord(split, updateMethod);
+                    splitsDbAdapter.addRecord(split, updateMethod);
                 }
                 splitUIDs.add(split.getUID());
             }
@@ -180,7 +178,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         if (rowInserted != 0 && !splitList.isEmpty()) {
             try {
                 start = System.nanoTime();
-                long nSplits = mSplitsDbAdapter.bulkAddRecords(splitList, updateMethod);
+                long nSplits = splitsDbAdapter.bulkAddRecords(splitList, updateMethod);
                 Timber.d("%d splits inserted in %d ns", nSplits, System.nanoTime() - start);
             } finally {
                 SQLiteStatement deleteEmptyTransaction = mDb.compileStatement("DELETE FROM " +
@@ -432,7 +430,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         transaction.setCommodity(commoditiesDbAdapter.getCommodity(currencyCode));
         transaction.setScheduledActionUID(c.getString(c.getColumnIndexOrThrow(TransactionEntry.COLUMN_SCHEDX_ACTION_UID)));
         long transactionID = c.getLong(c.getColumnIndexOrThrow(TransactionEntry._ID));
-        transaction.setSplits(mSplitsDbAdapter.getSplitsForTransaction(transactionID));
+        transaction.setSplits(splitsDbAdapter.getSplitsForTransaction(transactionID));
 
         return transaction;
     }
@@ -446,7 +444,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      * @return {@link org.gnucash.android.model.Money} balance of the transaction for that account
      */
     public Money getBalance(String transactionUID, String accountUID) {
-        List<Split> splitList = mSplitsDbAdapter.getSplitsForTransactionInAccount(
+        List<Split> splitList = splitsDbAdapter.getSplitsForTransactionInAccount(
             transactionUID, accountUID);
 
         return Transaction.computeBalance(accountUID, splitList);
@@ -464,11 +462,11 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         Timber.i("Moving transaction ID " + transactionUID
             + " splits from " + srcAccountUID + " to account " + dstAccountUID);
 
-        List<Split> splits = mSplitsDbAdapter.getSplitsForTransactionInAccount(transactionUID, srcAccountUID);
+        List<Split> splits = splitsDbAdapter.getSplitsForTransactionInAccount(transactionUID, srcAccountUID);
         for (Split split : splits) {
             split.setAccountUID(dstAccountUID);
         }
-        mSplitsDbAdapter.bulkAddRecords(splits, UpdateMethod.update);
+        splitsDbAdapter.bulkAddRecords(splits, UpdateMethod.update);
         return splits.size();
     }
 
@@ -685,8 +683,8 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         if (commoditiesDbAdapter != null) {
             commoditiesDbAdapter.close();
         }
-        if (mSplitsDbAdapter != null) {
-            mSplitsDbAdapter.close();
+        if (splitsDbAdapter != null) {
+            splitsDbAdapter.close();
         }
         super.close();
     }

@@ -44,9 +44,10 @@ import timber.log.Timber;
  */
 public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
 
-    private final RecurrenceDbAdapter mRecurrenceDbAdapter;
+    @NonNull
+    final RecurrenceDbAdapter recurrenceDbAdapter;
 
-    public ScheduledActionDbAdapter(SQLiteDatabase db, RecurrenceDbAdapter recurrenceDbAdapter) {
+    public ScheduledActionDbAdapter(@NonNull SQLiteDatabase db, @NonNull RecurrenceDbAdapter recurrenceDbAdapter) {
         super(db, ScheduledActionEntry.TABLE_NAME, new String[]{
             ScheduledActionEntry.COLUMN_ACTION_UID,
             ScheduledActionEntry.COLUMN_TYPE,
@@ -65,7 +66,7 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
             ScheduledActionEntry.COLUMN_TEMPLATE_ACCT_UID,
             ScheduledActionEntry.COLUMN_EXECUTION_COUNT
         });
-        mRecurrenceDbAdapter = recurrenceDbAdapter;
+        this.recurrenceDbAdapter = recurrenceDbAdapter;
     }
 
     /**
@@ -79,7 +80,7 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
 
     @Override
     public void addRecord(@NonNull ScheduledAction scheduledAction, UpdateMethod updateMethod) {
-        mRecurrenceDbAdapter.addRecord(scheduledAction.getRecurrence(), updateMethod);
+        recurrenceDbAdapter.addRecord(scheduledAction.getRecurrence(), updateMethod);
         super.addRecord(scheduledAction, updateMethod);
     }
 
@@ -91,7 +92,7 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
         }
 
         //first add the recurrences, they have no dependencies (foreign key constraints)
-        long nRecurrences = mRecurrenceDbAdapter.bulkAddRecords(recurrenceList, updateMethod);
+        long nRecurrences = recurrenceDbAdapter.bulkAddRecords(recurrenceList, updateMethod);
         Timber.d("Added %d recurrences for scheduled actions", nRecurrences);
 
         return super.bulkAddRecords(scheduledActions, updateMethod);
@@ -114,7 +115,7 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
 
         Recurrence recurrence = scheduledAction.getRecurrence();
         recurrence.setUID(recurrenceUID);
-        mRecurrenceDbAdapter.addRecord(recurrence, UpdateMethod.update);
+        recurrenceDbAdapter.addRecord(recurrence, UpdateMethod.update);
 
         ContentValues contentValues = new ContentValues();
         extractBaseModelAttributes(contentValues, scheduledAction);
@@ -195,7 +196,7 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
         event.setAdvanceCreateDays(advanceCreate);
         event.setAdvanceNotifyDays(advanceNotify);
         //TODO: optimize by doing overriding fetchRecord(String) and join the two tables
-        event.setRecurrence(mRecurrenceDbAdapter.getRecord(recurrenceUID));
+        event.setRecurrence(recurrenceDbAdapter.getRecord(recurrenceUID));
         event.setTemplateAccountUID(templateActUID);
 
         return event;

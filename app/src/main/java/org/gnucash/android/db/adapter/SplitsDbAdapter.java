@@ -54,13 +54,14 @@ import timber.log.Timber;
  */
 public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
+    @NonNull
     final CommoditiesDbAdapter commoditiesDbAdapter;
 
-    public SplitsDbAdapter(SQLiteDatabase db) {
+    public SplitsDbAdapter(@NonNull SQLiteDatabase db) {
         this(db, new CommoditiesDbAdapter(db));
     }
 
-    public SplitsDbAdapter(SQLiteDatabase db, CommoditiesDbAdapter commoditiesDbAdapter) {
+    public SplitsDbAdapter(@NonNull SQLiteDatabase db, @NonNull CommoditiesDbAdapter commoditiesDbAdapter) {
         super(db, SplitEntry.TABLE_NAME, new String[]{
             SplitEntry.COLUMN_MEMO,
             SplitEntry.COLUMN_TYPE,

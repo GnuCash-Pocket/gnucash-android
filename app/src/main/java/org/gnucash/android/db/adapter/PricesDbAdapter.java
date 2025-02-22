@@ -3,7 +3,6 @@ package org.gnucash.android.db.adapter;
 import static org.gnucash.android.db.DatabaseSchema.PriceEntry;
 
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Pair;
 
@@ -20,16 +19,16 @@ import java.io.IOException;
  * Database adapter for prices
  */
 public class PricesDbAdapter extends DatabaseAdapter<Price> {
-    private final CommoditiesDbAdapter commoditiesDbAdapter;
+    @NonNull
+    final CommoditiesDbAdapter commoditiesDbAdapter;
 
     /**
      * Opens the database adapter with an existing database
      *
-     * @param db                   SQLiteDatabase object
      * @param commoditiesDbAdapter the commodities database adapter.
      */
-    public PricesDbAdapter(@NonNull SQLiteDatabase db, @NonNull CommoditiesDbAdapter commoditiesDbAdapter) {
-        super(db, PriceEntry.TABLE_NAME, new String[]{
+    public PricesDbAdapter(@NonNull CommoditiesDbAdapter commoditiesDbAdapter) {
+        super(commoditiesDbAdapter.mDb, PriceEntry.TABLE_NAME, new String[]{
             PriceEntry.COLUMN_COMMODITY_UID,
             PriceEntry.COLUMN_CURRENCY_UID,
             PriceEntry.COLUMN_DATE,
@@ -47,9 +46,7 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
 
     @Override
     public void close() throws IOException {
-        if (commoditiesDbAdapter != null) {
-            commoditiesDbAdapter.close();
-        }
+        commoditiesDbAdapter.close();
         super.close();
     }
 

@@ -45,7 +45,7 @@ public class RecurrenceDbAdapter extends DatabaseAdapter<Recurrence> {
      *
      * @param db SQLiteDatabase object
      */
-    public RecurrenceDbAdapter(SQLiteDatabase db) {
+    public RecurrenceDbAdapter(@NonNull SQLiteDatabase db) {
         super(db, RecurrenceEntry.TABLE_NAME, new String[]{
             RecurrenceEntry.COLUMN_MULTIPLIER,
             RecurrenceEntry.COLUMN_PERIOD_TYPE,

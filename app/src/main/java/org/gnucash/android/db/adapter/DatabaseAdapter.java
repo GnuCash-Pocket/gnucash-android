@@ -76,14 +76,18 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      *
      * @param db SQLiteDatabase object
      */
-    public DatabaseAdapter(SQLiteDatabase db, @NonNull String tableName, @NonNull String[] columns) {
+    public DatabaseAdapter(@NonNull SQLiteDatabase db, @NonNull String tableName, @NonNull String[] columns) {
         this.mTableName = tableName;
         this.mDb = db;
         this.mColumns = columns;
-        if (!db.isOpen() || db.isReadOnly())
-            throw new IllegalArgumentException("Database not open or is read-only. Require writeable database");
+        if (!db.isOpen()) {
+            throw new IllegalArgumentException("Database not open.");
+        }
+        if (db.isReadOnly()) {
+            throw new IllegalArgumentException("Database read-only. Writeable database required!");
+        }
 
-        if (mDb.getVersion() >= 9) {
+        if (db.getVersion() >= 9) {
             createTempView();
         }
     }

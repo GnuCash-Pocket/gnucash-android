@@ -83,13 +83,13 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * Transactions database adapter for manipulating transactions associated with accounts
      */
     @NonNull
-    private final TransactionsDbAdapter mTransactionsAdapter;
+    final TransactionsDbAdapter transactionsDbAdapter;
 
     /**
      * Commodities database adapter for commodity manipulation
      */
     @NonNull
-    private final CommoditiesDbAdapter mCommoditiesDbAdapter;
+    final CommoditiesDbAdapter commoditiesDbAdapter;
 
     @Nullable
     private String rootUID = null;
@@ -115,8 +115,8 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             AccountEntry.COLUMN_PARENT_ACCOUNT_UID,
             AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID
         });
-        mTransactionsAdapter = transactionsDbAdapter;
-        mCommoditiesDbAdapter = transactionsDbAdapter.commoditiesDbAdapter;
+        this.transactionsDbAdapter = transactionsDbAdapter;
+        commoditiesDbAdapter = transactionsDbAdapter.commoditiesDbAdapter;
     }
 
     /**
@@ -127,7 +127,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      *
      * @param db Database to create an adapter for
      */
-    public AccountsDbAdapter(SQLiteDatabase db) {
+    public AccountsDbAdapter(@NonNull SQLiteDatabase db) {
         this(db, new TransactionsDbAdapter(db));
     }
 
@@ -160,11 +160,11 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         if (account.getAccountType() != AccountType.ROOT) {
             for (Transaction t : account.getTransactions()) {
                 t.setCommodity(account.getCommodity());
-                mTransactionsAdapter.addRecord(t, updateMethod);
+                transactionsDbAdapter.addRecord(t, updateMethod);
             }
-            List<Transaction> scheduledTransactions = mTransactionsAdapter.getScheduledTransactionsForAccount(account.getUID());
+            List<Transaction> scheduledTransactions = transactionsDbAdapter.getScheduledTransactionsForAccount(account.getUID());
             for (Transaction transaction : scheduledTransactions) {
-                mTransactionsAdapter.addRecord(transaction, UpdateMethod.update);
+                transactionsDbAdapter.addRecord(transaction, UpdateMethod.update);
             }
         }
     }
@@ -190,12 +190,12 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         List<Transaction> transactionList = new ArrayList<>(accountList.size() * 2);
         for (Account account : accountList) {
             transactionList.addAll(account.getTransactions());
-            transactionList.addAll(mTransactionsAdapter.getScheduledTransactionsForAccount(account.getUID()));
+            transactionList.addAll(transactionsDbAdapter.getScheduledTransactionsForAccount(account.getUID()));
         }
         long nRow = super.bulkAddRecords(accountList, updateMethod);
 
         if (nRow > 0 && !transactionList.isEmpty()) {
-            mTransactionsAdapter.bulkAddRecords(transactionList, updateMethod);
+            transactionsDbAdapter.bulkAddRecords(transactionList, updateMethod);
         }
         return nRow;
     }
@@ -383,7 +383,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             beginTransaction();
             descendantAccountUIDs.add(accountUID); //add account to descendants list just for convenience
             for (String descendantAccountUID : descendantAccountUIDs) {
-                mTransactionsAdapter.deleteTransactionsForAccount(descendantAccountUID);
+                transactionsDbAdapter.deleteTransactionsForAccount(descendantAccountUID);
             }
 
             String accountUIDList = "'" + TextUtils.join("','", descendantAccountUIDs) + "'";
@@ -421,7 +421,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     @Override
     public Account buildModelInstance(@NonNull final Cursor c) {
         Account account = buildSimpleAccountInstance(c);
-        account.setTransactions(mTransactionsAdapter.getAllTransactionsForAccount(account.getUID()));
+        account.setTransactions(transactionsDbAdapter.getAllTransactionsForAccount(account.getUID()));
 
         return account;
     }
@@ -443,7 +443,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         account.setParentUID(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_PARENT_ACCOUNT_UID)));
         account.setAccountType(AccountType.valueOf(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_TYPE))));
         String currencyCode = c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_CURRENCY));
-        account.setCommodity(mCommoditiesDbAdapter.getCommodity(currencyCode));
+        account.setCommodity(commoditiesDbAdapter.getCommodity(currencyCode));
         account.setPlaceHolderFlag(c.getInt(c.getColumnIndexOrThrow(AccountEntry.COLUMN_PLACEHOLDER)) != 0);
         account.setDefaultTransferAccountUID(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID)));
         String color = c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_COLOR_CODE));
@@ -838,7 +838,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
 
         Timber.d("all account list : %d", accountUidList.size());
-        SplitsDbAdapter splitsDbAdapter = mTransactionsAdapter.getSplitDbAdapter();
+        SplitsDbAdapter splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter;
 
         return (startTimestamp == -1 && endTimestamp == -1)
             ? splitsDbAdapter.computeSplitBalance(accountUidList, currencyCode, hasDebitNormalBalance)
@@ -863,7 +863,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     private Money computeBalance(String accountUID, long startTimestamp, long endTimestamp, boolean includeSubAccounts) {
         Timber.d("Computing account balance for account ID %s", accountUID);
-        String currencyCode = getAccountCurrencyCode(accountUID);
+        String currencyCode = transactionsDbAdapter.getAccountCurrencyCode(accountUID);
         boolean hasDebitNormalBalance = getAccountType(accountUID).hasDebitNormalBalance();
 
         List<String> accountsList = includeSubAccounts ? getDescendantAccountUIDs(accountUID,
@@ -872,7 +872,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         accountsList.add(0, accountUID);
 
         Timber.d("all account list : %d", accountsList.size());
-        SplitsDbAdapter splitsDbAdapter = mTransactionsAdapter.getSplitDbAdapter();
+        SplitsDbAdapter splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter;
         return splitsDbAdapter.computeSplitBalance(accountsList, currencyCode, hasDebitNormalBalance, startTimestamp, endTimestamp);
     }
 
@@ -893,7 +893,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
         boolean hasDebitNormalBalance = getAccountType(accountUIDList.get(0)).hasDebitNormalBalance();
 
-        SplitsDbAdapter splitsDbAdapter = mTransactionsAdapter.getSplitDbAdapter();
+        SplitsDbAdapter splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter;
 
         return splitsDbAdapter.computeSplitBalance(accountUIDList, currencyCode, hasDebitNormalBalance, startTimestamp, endTimestamp);
     }
@@ -1223,7 +1223,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         Cursor cursor = fetchAccounts(null, null, null);
         List<Transaction> openingTransactions = new ArrayList<>();
         try {
-            SplitsDbAdapter splitsDbAdapter = mTransactionsAdapter.getSplitDbAdapter();
+            SplitsDbAdapter splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter;
             while (cursor.moveToNext()) {
                 long id = cursor.getLong(cursor.getColumnIndexOrThrow(AccountEntry._ID));
                 String accountUID = getUID(id);
@@ -1342,7 +1342,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             while (cursor.moveToNext()) {
                 String currencyCode =
                     cursor.getString(cursor.getColumnIndexOrThrow(AccountEntry.COLUMN_CURRENCY));
-                commodityList.add(mCommoditiesDbAdapter.getCommodity(currencyCode));
+                commodityList.add(commoditiesDbAdapter.getCommodity(currencyCode));
             }
         } finally {
             cursor.close();
@@ -1426,6 +1426,6 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     }
 
     public long getTransactionCount(@NonNull String uid) {
-        return mTransactionsAdapter.getTransactionsCountForAccount(uid);
+        return transactionsDbAdapter.getTransactionsCountForAccount(uid);
     }
 }
