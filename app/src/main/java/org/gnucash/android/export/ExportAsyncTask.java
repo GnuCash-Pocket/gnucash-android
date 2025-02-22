@@ -459,7 +459,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Integer> {
         SQLiteDatabase db = GnuCashApplication.getActiveDb();
         TransactionsDbAdapter transactionsDbAdapter = new TransactionsDbAdapter(db);
         if (preserveOpeningBalances) {
-            openingBalances = new AccountsDbAdapter(db, transactionsDbAdapter).getAllOpeningBalanceTransactions();
+            openingBalances = new AccountsDbAdapter(transactionsDbAdapter).getAllOpeningBalanceTransactions();
         }
         transactionsDbAdapter.deleteAllNonTemplateTransactions();
 

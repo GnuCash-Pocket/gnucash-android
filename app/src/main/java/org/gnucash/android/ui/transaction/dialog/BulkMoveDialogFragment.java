@@ -114,9 +114,12 @@ public class BulkMoveDialogFragment extends DialogFragment {
             return;
         }
 
-        String dstAccountUID = AccountsDbAdapter.getInstance().getUID(dstAccountId);
         TransactionsDbAdapter trxnAdapter = TransactionsDbAdapter.getInstance();
-        if (!trxnAdapter.getAccountCurrencyCode(dstAccountUID).equals(trxnAdapter.getAccountCurrencyCode(srcAccountUID))) {
+        AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
+        String dstAccountUID = accountsDbAdapter.getUID(dstAccountId);
+        String currencySrc = accountsDbAdapter.getAccountCurrencyCode(dstAccountUID);
+        String currencyDst = accountsDbAdapter.getAccountCurrencyCode(srcAccountUID);
+        if (!currencySrc.equals(currencyDst)) {
             Toast.makeText(context, R.string.toast_incompatible_currency, Toast.LENGTH_LONG).show();
             return;
         }

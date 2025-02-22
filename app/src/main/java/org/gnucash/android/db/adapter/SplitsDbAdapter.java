@@ -56,13 +56,19 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
     @NonNull
     final CommoditiesDbAdapter commoditiesDbAdapter;
+    @NonNull
+    final PricesDbAdapter pricesDbAdapter;
 
     public SplitsDbAdapter(@NonNull SQLiteDatabase db) {
-        this(db, new CommoditiesDbAdapter(db));
+        this(new CommoditiesDbAdapter(db));
     }
 
-    public SplitsDbAdapter(@NonNull SQLiteDatabase db, @NonNull CommoditiesDbAdapter commoditiesDbAdapter) {
-        super(db, SplitEntry.TABLE_NAME, new String[]{
+    public SplitsDbAdapter(@NonNull CommoditiesDbAdapter commoditiesDbAdapter) {
+        this(new PricesDbAdapter(commoditiesDbAdapter));
+    }
+
+    public SplitsDbAdapter(@NonNull PricesDbAdapter pricesDbAdapter) {
+        super(pricesDbAdapter.mDb, SplitEntry.TABLE_NAME, new String[]{
             SplitEntry.COLUMN_MEMO,
             SplitEntry.COLUMN_TYPE,
             SplitEntry.COLUMN_VALUE_NUM,
@@ -75,7 +81,8 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
             SplitEntry.COLUMN_ACCOUNT_UID,
             SplitEntry.COLUMN_TRANSACTION_UID
         });
-        this.commoditiesDbAdapter = commoditiesDbAdapter;
+        this.pricesDbAdapter = pricesDbAdapter;
+        this.commoditiesDbAdapter = pricesDbAdapter.commoditiesDbAdapter;
     }
 
     /**
@@ -89,9 +96,8 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
     @Override
     public void close() throws IOException {
-        if (commoditiesDbAdapter != null) {
-            commoditiesDbAdapter.close();
-        }
+        commoditiesDbAdapter.close();
+        pricesDbAdapter.close();
         super.close();
     }
 
@@ -235,7 +241,6 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
         try {
             Money total = Money.createZeroInstance(currencyCode);
-            PricesDbAdapter pricesDbAdapter = null;
             Commodity commodity = null;
             String currencyUID = null;
             while (cursor.moveToNext()) {
@@ -258,9 +263,6 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
                     currencyUID = commoditiesDbAdapter.getCommodityUID(currencyCode);
                     String commodityUID = commoditiesDbAdapter.getCommodityUID(commodityCode);
                     // get price
-                    if (pricesDbAdapter == null) {
-                        pricesDbAdapter = new PricesDbAdapter(commoditiesDbAdapter);
-                    }
                     Pair<Long, Long> price = pricesDbAdapter.getPrice(commodityUID, currencyUID);
                     if (price.first <= 0 || price.second <= 0) {
                         // no price exists, just ignore it
@@ -462,5 +464,29 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
             SplitEntry.COLUMN_ACCOUNT_UID,
             newParentAccountUID
         );
+    }
+
+    /**
+     * Returns the currency code (according to the ISO 4217 standard) of the account
+     * with unique Identifier <code>accountUID</code>
+     *
+     * @param accountUID Unique Identifier of the account
+     * @return Currency code of the account.
+     */
+    // FIXME use a SQL JOIN to read the account currency code per record.
+    private String getAccountCurrencyCode(@NonNull String accountUID) {
+        Cursor cursor = mDb.query(DatabaseSchema.AccountEntry.TABLE_NAME,
+            new String[]{DatabaseSchema.AccountEntry.COLUMN_CURRENCY},
+            DatabaseSchema.AccountEntry.COLUMN_UID + "= ?",
+            new String[]{accountUID}, null, null, null);
+        try {
+            if (cursor.moveToFirst()) {
+                return cursor.getString(0);
+            } else {
+                throw new IllegalArgumentException("Account " + accountUID + " does not exist");
+            }
+        } finally {
+            cursor.close();
+        }
     }
 }

@@ -26,9 +26,11 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withParent;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.gnucash.android.test.ui.AccountsActivityTest.preventFirstRunDialogs;
 import static org.hamcrest.Matchers.allOf;
 
 import android.Manifest;
+import android.content.Context;
 
 import androidx.test.espresso.contrib.DrawerActions;
 import androidx.test.espresso.intent.Intents;
@@ -65,6 +67,8 @@ public class MultiBookTest extends GnuAndroidTest {
 
     @BeforeClass
     public static void prepTestCase() {
+        Context context = GnuCashApplication.getAppContext();
+        preventFirstRunDialogs(context);
         mBooksDbAdapter = BooksDbAdapter.getInstance();
     }
 
@@ -146,13 +150,5 @@ public class MultiBookTest extends GnuAndroidTest {
         onView(withText(R.string.btn_delete_book)).perform(click());
 
         assertThat(mBooksDbAdapter.getRecordsCount()).isEqualTo(bookCount);
-    }
-
-    private static void sleep(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 }

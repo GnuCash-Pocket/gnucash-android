@@ -239,7 +239,7 @@ public class QifExporter extends Exporter {
                     if (!isZero(decimalImbalance)) {
                         writer.append(SPLIT_CATEGORY_PREFIX)
                             .append('[')
-                            .append(AccountsDbAdapter.getImbalanceAccountName(commodity))
+                            .append(AccountsDbAdapter.getImbalanceAccountName(mContext, commodity))
                             .append(']')
                             .append(NEW_LINE)
                             .append(SPLIT_AMOUNT_PREFIX)

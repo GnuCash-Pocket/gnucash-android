@@ -61,10 +61,10 @@ import timber.log.Timber;
 public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
 
     @NonNull
-    final SplitsDbAdapter splitsDbAdapter;
+    public final SplitsDbAdapter splitsDbAdapter;
 
     @NonNull
-    final CommoditiesDbAdapter commoditiesDbAdapter;
+    public final CommoditiesDbAdapter commoditiesDbAdapter;
 
     /**
      * Overloaded constructor. Creates adapter for already open db
@@ -72,16 +72,14 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      * @param db SQlite db instance
      */
     public TransactionsDbAdapter(@NonNull SQLiteDatabase db) {
-        this(db, new SplitsDbAdapter(db));
+        this(new SplitsDbAdapter(db));
     }
 
     /**
      * Overloaded constructor. Creates adapter for already open db
-     *
-     * @param db SQlite db instance
      */
-    public TransactionsDbAdapter(@NonNull SQLiteDatabase db, @NonNull SplitsDbAdapter splitsDbAdapter) {
-        super(db, TransactionEntry.TABLE_NAME, new String[]{
+    public TransactionsDbAdapter(@NonNull SplitsDbAdapter splitsDbAdapter) {
+        super(splitsDbAdapter.mDb, TransactionEntry.TABLE_NAME, new String[]{
             TransactionEntry.COLUMN_DESCRIPTION,
             TransactionEntry.COLUMN_NOTES,
             TransactionEntry.COLUMN_TIMESTAMP,
@@ -93,11 +91,15 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
             TransactionEntry.COLUMN_TEMPLATE
         });
         this.splitsDbAdapter = splitsDbAdapter;
-        commoditiesDbAdapter = splitsDbAdapter.commoditiesDbAdapter;
+        this.commoditiesDbAdapter = splitsDbAdapter.commoditiesDbAdapter;
     }
 
-    public TransactionsDbAdapter(SQLiteDatabase db, CommoditiesDbAdapter commoditiesDbAdapter) {
-        this(db, new SplitsDbAdapter(db, commoditiesDbAdapter));
+    public TransactionsDbAdapter(@NonNull CommoditiesDbAdapter commoditiesDbAdapter) {
+        this(new PricesDbAdapter(commoditiesDbAdapter));
+    }
+
+    public TransactionsDbAdapter(@NonNull PricesDbAdapter pricesDbAdapter) {
+        this(new SplitsDbAdapter(pricesDbAdapter));
     }
 
     /**
@@ -124,7 +126,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
             Split imbalanceSplit = transaction.createAutoBalanceSplit();
             if (imbalanceSplit != null) {
                 Context context = GnuCashApplication.getAppContext();
-                String imbalanceAccountUID = new AccountsDbAdapter(mDb, this)
+                String imbalanceAccountUID = new AccountsDbAdapter(this)
                     .getOrCreateImbalanceAccountUID(context, transaction.getCommodity());
                 imbalanceSplit.setAccountUID(imbalanceAccountUID);
             }
@@ -676,12 +678,8 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
 
     @Override
     public void close() throws IOException {
-        if (commoditiesDbAdapter != null) {
-            commoditiesDbAdapter.close();
-        }
-        if (splitsDbAdapter != null) {
-            splitsDbAdapter.close();
-        }
+        commoditiesDbAdapter.close();
+        splitsDbAdapter.close();
         super.close();
     }
 }

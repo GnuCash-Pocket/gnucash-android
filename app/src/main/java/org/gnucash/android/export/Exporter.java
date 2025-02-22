@@ -122,13 +122,13 @@ public abstract class Exporter {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         mDb = db;
         mCommoditiesDbAdapter = new CommoditiesDbAdapter(db);
-        mSplitsDbAdapter = new SplitsDbAdapter(db, mCommoditiesDbAdapter);
-        mTransactionsDbAdapter = new TransactionsDbAdapter(db, mSplitsDbAdapter);
-        mAccountsDbAdapter = new AccountsDbAdapter(db, mTransactionsDbAdapter);
         mPricesDbAdapter = new PricesDbAdapter(mCommoditiesDbAdapter);
+        mSplitsDbAdapter = new SplitsDbAdapter(mPricesDbAdapter);
+        mTransactionsDbAdapter = new TransactionsDbAdapter(mSplitsDbAdapter);
+        mAccountsDbAdapter = new AccountsDbAdapter(mTransactionsDbAdapter);
         RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(db);
-        mBudgetsDbAdapter = new BudgetsDbAdapter(db, recurrenceDbAdapter);
-        mScheduledActionDbAdapter = new ScheduledActionDbAdapter(db, recurrenceDbAdapter);
+        mBudgetsDbAdapter = new BudgetsDbAdapter(recurrenceDbAdapter);
+        mScheduledActionDbAdapter = new ScheduledActionDbAdapter(recurrenceDbAdapter);
 
         mExportCacheFilePath = null;
         mCacheDir = new File(context.getCacheDir(), params.getExportFormat().name());

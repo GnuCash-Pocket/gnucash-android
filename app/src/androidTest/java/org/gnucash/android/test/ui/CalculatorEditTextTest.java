@@ -24,11 +24,13 @@ import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withInputType;
+import static org.gnucash.android.test.ui.AccountsActivityTest.preventFirstRunDialogs;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.text.InputType;
 
@@ -37,11 +39,8 @@ import androidx.test.rule.GrantPermissionRule;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
-import org.gnucash.android.db.adapter.SplitsDbAdapter;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.test.ui.util.DisableAnimationsRule;
@@ -49,7 +48,6 @@ import org.gnucash.android.test.ui.util.SoftwareKeyboard;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.transaction.TransactionsActivity;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -65,10 +63,7 @@ public class CalculatorEditTextTest extends GnuAndroidTest {
     private static final String TRANSFER_ACCOUNT_UID = "transfer_account";
     public static final String CURRENCY_CODE = "USD";
 
-    private static DatabaseHelper mDbHelper;
     private static AccountsDbAdapter mAccountsDbAdapter;
-    private static TransactionsDbAdapter mTransactionsDbAdapter;
-    private static SplitsDbAdapter mSplitsDbAdapter;
     private TransactionsActivity mTransactionsActivity;
 
     @Rule
@@ -84,18 +79,13 @@ public class CalculatorEditTextTest extends GnuAndroidTest {
 
     @BeforeClass
     public static void prepTestCase() {
-        String activeBookUID = GnuCashApplication.getActiveBookUID();
-        mDbHelper = new DatabaseHelper(GnuCashApplication.getAppContext(), activeBookUID);
-
-        mSplitsDbAdapter = SplitsDbAdapter.getInstance();
-        mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
-        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-
-        AccountsActivityTest.preventFirstRunDialogs(GnuCashApplication.getAppContext());
+        Context context = GnuCashApplication.getAppContext();
+        preventFirstRunDialogs(context);
     }
 
     @Before
     public void setUp() throws Exception {
+        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
         mAccountsDbAdapter.deleteAllRecords();
 
         CommoditiesDbAdapter commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
@@ -160,11 +150,5 @@ public class CalculatorEditTextTest extends GnuAndroidTest {
     public void tearDown() throws Exception {
         if (mTransactionsActivity != null)
             mTransactionsActivity.finish();
-    }
-
-    @AfterClass
-    public static void cleanup() {
-        if (mDbHelper != null)
-            mDbHelper.close();
     }
 }

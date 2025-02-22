@@ -46,8 +46,8 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
 
     @Override
     public void close() throws IOException {
-        commoditiesDbAdapter.close();
         super.close();
+        commoditiesDbAdapter.close();
     }
 
     @Override

@@ -28,10 +28,9 @@ import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema.BookEntry;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
+import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.model.Book;
-
-import java.io.IOException;
+import org.gnucash.android.model.Commodity;
 
 /**
  * Database helper for managing database which stores information about the books in the application
@@ -77,16 +76,15 @@ public class BookDbHelper extends SQLiteOpenHelper {
         Book book = new Book();
         DatabaseHelper helper = new DatabaseHelper(context, book.getUID());
         SQLiteDatabase mainDb = helper.getWritableDatabase(); //actually create the db
-        AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(
-            mainDb,
-            new TransactionsDbAdapter(mainDb)
-        );
+        CommoditiesDbAdapter commoditiesDbAdapter = new CommoditiesDbAdapter(mainDb);
+        Commodity.DEFAULT_COMMODITY = commoditiesDbAdapter.getDefaultCommodity();
+        AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(mainDb);
 
         String rootAccountUID = accountsDbAdapter.getOrCreateGnuCashRootAccountUID();
         try {
             accountsDbAdapter.close();
             helper.close();
-        } catch (IOException ignore) {
+        } catch (Exception ignore) {
         }
         book.setRootAccountUID(rootAccountUID);
         book.setActive(true);

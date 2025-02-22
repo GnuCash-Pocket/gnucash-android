@@ -273,6 +273,7 @@ public class PieChartReportTest extends GnuAndroidTest {
                     mReportsActivity.refresh();
                 }
             });
+            sleep(1000);
         } catch (Throwable t) {
             System.err.println("Failed to refresh reports");
         }

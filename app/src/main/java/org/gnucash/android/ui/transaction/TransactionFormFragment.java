@@ -233,7 +233,7 @@ public class TransactionFormFragment extends MenuFragment implements
      * Starts the transfer of funds from one currency to another
      */
     private void startTransferFunds(FragmentTransactionFormBinding binding) {
-        String fromCurrencyCode = mTransactionsDbAdapter.getAccountCurrencyCode(mAccountUID);
+        String fromCurrencyCode = mAccountsDbAdapter.getAccountCurrencyCode(mAccountUID);
 
         BigDecimal enteredAmount = binding.inputTransactionAmount.getValue();
         if ((enteredAmount == null) || enteredAmount.equals(BigDecimal.ZERO)) {
@@ -442,7 +442,7 @@ public class TransactionFormFragment extends MenuFragment implements
             setDoubleEntryViewsVisibility(binding, View.GONE);
         }
 
-        String currencyCode = mTransactionsDbAdapter.getAccountCurrencyCode(mAccountUID);
+        String currencyCode = mAccountsDbAdapter.getAccountCurrencyCode(mAccountUID);
         Commodity accountCommodity = Commodity.getInstance(currencyCode);
         binding.currencySymbol.setText(accountCommodity.getSymbol());
 
@@ -494,7 +494,7 @@ public class TransactionFormFragment extends MenuFragment implements
 
         final String code;
         if (mAccountUID != null) {
-            code = mTransactionsDbAdapter.getAccountCurrencyCode(mAccountUID);
+            code = mAccountsDbAdapter.getAccountCurrencyCode(mAccountUID);
         } else {
             code = GnuCashApplication.getDefaultCurrencyCode();
         }
@@ -687,14 +687,14 @@ public class TransactionFormFragment extends MenuFragment implements
 
         BigDecimal enteredAmount = binding.inputTransactionAmount.getValue();
         if (enteredAmount == null) enteredAmount = BigDecimal.ZERO;
-        String baseCurrencyCode = mTransactionsDbAdapter.getAccountCurrencyCode(mAccountUID);
+        String baseCurrencyCode = mAccountsDbAdapter.getAccountCurrencyCode(mAccountUID);
         Money value = new Money(enteredAmount, commoditiesDbAdapter.getCommodity(baseCurrencyCode));
         Money quantity = new Money(value);
 
         String transferAcctUID = getTransferAccountUID(binding);
 
         if (isMultiCurrencyTransaction(binding)) { //if multi-currency transaction
-            String transferCurrencyCode = mAccountsDbAdapter.getCurrencyCode(transferAcctUID);
+            String transferCurrencyCode = mAccountsDbAdapter.getAccountCurrencyCode(transferAcctUID);
             String commodityUID = commoditiesDbAdapter.getCommodityUID(baseCurrencyCode);
             String targetCmdtyUID = commoditiesDbAdapter.getCommodityUID(transferCurrencyCode);
 

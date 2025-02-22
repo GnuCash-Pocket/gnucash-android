@@ -110,7 +110,7 @@ public class ScheduledActionService {
         DatabaseHelper dbHelper = new DatabaseHelper(context, book.getUID());
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(db);
-        ScheduledActionDbAdapter scheduledActionDbAdapter = new ScheduledActionDbAdapter(db, recurrenceDbAdapter);
+        ScheduledActionDbAdapter scheduledActionDbAdapter = new ScheduledActionDbAdapter(recurrenceDbAdapter);
 
         List<ScheduledAction> scheduledActions = scheduledActionDbAdapter.getAllEnabledScheduledActions();
         Timber.i("Processing %d total scheduled actions for Book: %s",

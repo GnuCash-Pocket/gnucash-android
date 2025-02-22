@@ -101,9 +101,9 @@ public class AccountsDbAdapterTest extends GnuCashTest {
             DatabaseHelper databaseHelper = new DatabaseHelper(GnuCashApplication.getAppContext(), bookUID);
             SQLiteDatabase db = databaseHelper.getWritableDatabase();
             mCommoditiesDbAdapter = new CommoditiesDbAdapter(db);
-            mSplitsDbAdapter = new SplitsDbAdapter(db, mCommoditiesDbAdapter);
-            mTransactionsDbAdapter = new TransactionsDbAdapter(db, mSplitsDbAdapter);
-            mAccountsDbAdapter = new AccountsDbAdapter(db, mTransactionsDbAdapter);
+            mSplitsDbAdapter = new SplitsDbAdapter(mCommoditiesDbAdapter);
+            mTransactionsDbAdapter = new TransactionsDbAdapter(mSplitsDbAdapter);
+            mAccountsDbAdapter = new AccountsDbAdapter(mTransactionsDbAdapter);
             BooksDbAdapter.getInstance().setActive(bookUID);
         }
     }

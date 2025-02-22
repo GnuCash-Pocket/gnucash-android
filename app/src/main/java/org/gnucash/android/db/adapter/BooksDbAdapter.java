@@ -246,8 +246,7 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
         Context context = GnuCashApplication.getAppContext();
         DatabaseHelper databaseHelper = new DatabaseHelper(context, dbName);
         SQLiteDatabase db = databaseHelper.getReadableDatabase();
-        AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(db,
-            new TransactionsDbAdapter(db));
+        AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(db);
         String uid = accountsDbAdapter.getOrCreateGnuCashRootAccountUID();
         db.close();
         return uid;

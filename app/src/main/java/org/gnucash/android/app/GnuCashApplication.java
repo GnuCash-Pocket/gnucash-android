@@ -166,14 +166,14 @@ public class GnuCashApplication extends Application {
         }
 
         mCommoditiesDbAdapter = new CommoditiesDbAdapter(mainDb);
-        mSplitsDbAdapter = new SplitsDbAdapter(mainDb, mCommoditiesDbAdapter);
-        mTransactionsDbAdapter = new TransactionsDbAdapter(mainDb, mSplitsDbAdapter);
-        mAccountsDbAdapter = new AccountsDbAdapter(mainDb, mTransactionsDbAdapter);
-        mRecurrenceDbAdapter = new RecurrenceDbAdapter(mainDb);
-        mScheduledActionDbAdapter = new ScheduledActionDbAdapter(mainDb, mRecurrenceDbAdapter);
         mPricesDbAdapter = new PricesDbAdapter(mCommoditiesDbAdapter);
+        mSplitsDbAdapter = new SplitsDbAdapter(mPricesDbAdapter);
+        mTransactionsDbAdapter = new TransactionsDbAdapter(mSplitsDbAdapter);
+        mAccountsDbAdapter = new AccountsDbAdapter(mTransactionsDbAdapter);
+        mRecurrenceDbAdapter = new RecurrenceDbAdapter(mainDb);
+        mScheduledActionDbAdapter = new ScheduledActionDbAdapter(mRecurrenceDbAdapter);
         mBudgetAmountsDbAdapter = new BudgetAmountsDbAdapter(mainDb);
-        mBudgetsDbAdapter = new BudgetsDbAdapter(mainDb, mBudgetAmountsDbAdapter, mRecurrenceDbAdapter);
+        mBudgetsDbAdapter = new BudgetsDbAdapter(mBudgetAmountsDbAdapter, mRecurrenceDbAdapter);
     }
 
     private static void destroyDatabaseAdapters() {

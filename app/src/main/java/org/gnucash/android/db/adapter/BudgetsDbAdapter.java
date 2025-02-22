@@ -42,36 +42,37 @@ import java.util.List;
 public class BudgetsDbAdapter extends DatabaseAdapter<Budget> {
 
     @NonNull
-    final RecurrenceDbAdapter recurrenceDbAdapter;
+    public final RecurrenceDbAdapter recurrenceDbAdapter;
     @NonNull
-    final BudgetAmountsDbAdapter budgetAmountsDbAdapter;
+    public final BudgetAmountsDbAdapter budgetAmountsDbAdapter;
 
     /**
      * Opens the database adapter with an existing database
-     *
-     * @param db SQLiteDatabase object
      */
-    public BudgetsDbAdapter(@NonNull SQLiteDatabase db,
-                            @NonNull BudgetAmountsDbAdapter budgetAmountsDbAdapter,
-                            @NonNull RecurrenceDbAdapter recurrenceDbAdapter
-    ) {
-        super(db, BudgetEntry.TABLE_NAME, new String[]{
+    public BudgetsDbAdapter(@NonNull BudgetAmountsDbAdapter budgetAmountsDbAdapter,
+                            @NonNull RecurrenceDbAdapter recurrenceDbAdapter) {
+        super(budgetAmountsDbAdapter.mDb, BudgetEntry.TABLE_NAME, new String[]{
             BudgetEntry.COLUMN_NAME,
             BudgetEntry.COLUMN_DESCRIPTION,
             BudgetEntry.COLUMN_RECURRENCE_UID,
             BudgetEntry.COLUMN_NUM_PERIODS
         });
-        this.recurrenceDbAdapter = recurrenceDbAdapter;
         this.budgetAmountsDbAdapter = budgetAmountsDbAdapter;
+        this.recurrenceDbAdapter = recurrenceDbAdapter;
     }
 
     /**
      * Opens the database adapter with an existing database
-     *
-     * @param db SQLiteDatabase object
      */
-    public BudgetsDbAdapter(SQLiteDatabase db, RecurrenceDbAdapter recurrenceDbAdapter) {
-        this(db, new BudgetAmountsDbAdapter(db), recurrenceDbAdapter);
+    public BudgetsDbAdapter(@NonNull RecurrenceDbAdapter recurrenceDbAdapter) {
+        this(new BudgetAmountsDbAdapter(recurrenceDbAdapter.mDb), recurrenceDbAdapter);
+    }
+
+    /**
+     * Opens the database adapter with an existing database
+     */
+    public BudgetsDbAdapter(@NonNull SQLiteDatabase db) {
+        this(new RecurrenceDbAdapter(db));
     }
 
     /**
@@ -81,10 +82,6 @@ public class BudgetsDbAdapter extends DatabaseAdapter<Budget> {
      */
     public static BudgetsDbAdapter getInstance() {
         return GnuCashApplication.getBudgetDbAdapter();
-    }
-
-    public BudgetAmountsDbAdapter getAmountsDbAdapter() {
-        return mBudgetAmountsDbAdapter;
     }
 
     @Override

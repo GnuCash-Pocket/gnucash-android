@@ -116,7 +116,8 @@ public class AccountsActivityTest extends GnuAndroidTest {
 
     @BeforeClass
     public static void prepTest() {
-        preventFirstRunDialogs(GnuCashApplication.getAppContext());
+        Context context = GnuCashApplication.getAppContext();
+        preventFirstRunDialogs(context);
 
         mSplitsDbAdapter = SplitsDbAdapter.getInstance();
         mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
@@ -340,18 +341,6 @@ public class AccountsActivityTest extends GnuAndroidTest {
         assertThat(mSplitsDbAdapter.fetchSplitsForAccount(SIMPLE_ACCOUNT_UID).getCount()).isEqualTo(1);
         assertThat(mSplitsDbAdapter.getSplitsForTransaction(transaction.getUID())).hasSize(2);
 
-    }
-
-    /**
-     * Sleep the thread for a specified period
-     *
-     * @param millis Duration to sleep in milliseconds
-     */
-    private void sleep(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException ignore) {
-        }
     }
 
     public void testDeleteSimpleAccount() {

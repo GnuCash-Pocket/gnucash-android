@@ -32,6 +32,7 @@ import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.util.TimestampHelper;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,8 +48,8 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
     @NonNull
     final RecurrenceDbAdapter recurrenceDbAdapter;
 
-    public ScheduledActionDbAdapter(@NonNull SQLiteDatabase db, @NonNull RecurrenceDbAdapter recurrenceDbAdapter) {
-        super(db, ScheduledActionEntry.TABLE_NAME, new String[]{
+    public ScheduledActionDbAdapter(@NonNull RecurrenceDbAdapter recurrenceDbAdapter) {
+        super(recurrenceDbAdapter.mDb, ScheduledActionEntry.TABLE_NAME, new String[]{
             ScheduledActionEntry.COLUMN_ACTION_UID,
             ScheduledActionEntry.COLUMN_TYPE,
             ScheduledActionEntry.COLUMN_START_TIME,
@@ -76,6 +77,12 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
      */
     public static ScheduledActionDbAdapter getInstance() {
         return GnuCashApplication.getScheduledEventDbAdapter();
+    }
+
+    @Override
+    public void close() throws IOException {
+        super.close();
+        recurrenceDbAdapter.close();
     }
 
     @Override

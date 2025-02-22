@@ -22,6 +22,7 @@ import timber.log.Timber;
  * Database adapter for {@link org.gnucash.android.model.Commodity}
  */
 public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
+    private Commodity defaultCommodity;
     /**
      * Opens the database adapter with an existing database
      *
@@ -50,6 +51,8 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
         });
         if (initCommon) {
             initCommon();
+        } else {
+            defaultCommodity = getDefaultCommodity();
         }
     }
 
@@ -65,7 +68,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
         Commodity.JPY = Objects.requireNonNull(getCommodity("JPY"));
         Commodity.USD = Objects.requireNonNull(getCommodity("USD"));
 
-        Commodity.DEFAULT_COMMODITY = getDefaultCommodity();
+        defaultCommodity = Commodity.DEFAULT_COMMODITY = getDefaultCommodity();
     }
 
     @Nullable
@@ -188,8 +191,12 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
 
     @NonNull
     public Commodity getDefaultCommodity() {
+        Commodity commodity = defaultCommodity;
+        if (commodity != null) {
+            return commodity;
+        }
         String commodityCode = GnuCashApplication.getDefaultCurrencyCode();
-        Commodity commodity = getCommodity(commodityCode);
+        defaultCommodity = commodity = getCommodity(commodityCode);
         return (commodity != null) ? commodity : Commodity.DEFAULT_COMMODITY;
     }
 }

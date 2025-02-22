@@ -71,8 +71,8 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
     private int mTransactionCount;
     private int mSubAccountCount;
     private final AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
-    private final TransactionsDbAdapter transactionsDbAdapter = accountsDbAdapter.getTransactionsDbAdapter();
-    private final SplitsDbAdapter splitsDbAdapter = transactionsDbAdapter.getSplitDbAdapter();
+    private final TransactionsDbAdapter transactionsDbAdapter = accountsDbAdapter.transactionsDbAdapter;
+    private final SplitsDbAdapter splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter;
 
     /**
      * Creates new instance of the delete confirmation dialog and provides parameters for it

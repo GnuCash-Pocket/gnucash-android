@@ -75,8 +75,8 @@ public class FirstRunWizardActivityTest extends GnuAndroidTest {
             mDb = mDbHelper.getReadableDatabase();
         }
         mSplitsDbAdapter = new SplitsDbAdapter(mDb);
-        mTransactionsDbAdapter = new TransactionsDbAdapter(mDb, mSplitsDbAdapter);
-        mAccountsDbAdapter = new AccountsDbAdapter(mDb, mTransactionsDbAdapter);
+        mTransactionsDbAdapter = new TransactionsDbAdapter(mSplitsDbAdapter);
+        mAccountsDbAdapter = new AccountsDbAdapter(mTransactionsDbAdapter);
         mAccountsDbAdapter.deleteAllRecords();
     }
 

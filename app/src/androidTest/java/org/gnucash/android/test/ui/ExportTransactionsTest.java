@@ -16,7 +16,6 @@
 
 package org.gnucash.android.test.ui;
 
-import static androidx.test.InstrumentationRegistry.getInstrumentation;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.scrollTo;
@@ -25,47 +24,37 @@ import static androidx.test.espresso.matcher.RootMatchers.withDecorView;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.gnucash.android.test.ui.AccountsActivityTest.preventFirstRunDialogs;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 import android.Manifest;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
+import android.content.Context;
 
+import androidx.annotation.StringRes;
 import androidx.test.espresso.contrib.DrawerActions;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
-import org.gnucash.android.db.adapter.SplitsDbAdapter;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.ui.account.AccountsActivity;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 
-import timber.log.Timber;
-
 public class ExportTransactionsTest extends GnuAndroidTest {
 
-    private DatabaseHelper mDbHelper;
-    private SQLiteDatabase mDb;
     private AccountsDbAdapter mAccountsDbAdapter;
-    private TransactionsDbAdapter mTransactionsDbAdapter;
-    private SplitsDbAdapter mSplitsDbAdapter;
-
-    private AccountsActivity mAcccountsActivity;
 
     @Rule
     public GrantPermissionRule animationPermissionsRule = GrantPermissionRule.grant(Manifest.permission.SET_ANIMATION_SCALE);
@@ -73,30 +62,23 @@ public class ExportTransactionsTest extends GnuAndroidTest {
     @Rule
     public ActivityTestRule<AccountsActivity> rule = new ActivityTestRule<>(AccountsActivity.class);
 
+    @BeforeClass
+    public static void prepTest() {
+        Context context = GnuCashApplication.getAppContext();
+        preventFirstRunDialogs(context);
+    }
+
     @Before
     public void setUp() throws Exception {
-        AccountsActivityTest.preventFirstRunDialogs(getInstrumentation().getTargetContext());
-        mAcccountsActivity = rule.getActivity();
+        Context context = GnuCashApplication.getAppContext();
 
-        String activeBookUID = GnuCashApplication.getActiveBookUID();
-        mDbHelper = new DatabaseHelper(rule.getActivity(), activeBookUID);
-        try {
-            mDb = mDbHelper.getWritableDatabase();
-        } catch (SQLException e) {
-            Timber.e(e, "Error getting database: " + e.getMessage());
-            mDb = mDbHelper.getReadableDatabase();
-        }
-
-        mSplitsDbAdapter = SplitsDbAdapter.getInstance();
-        mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+        mAccountsDbAdapter.deleteAllRecords();
 
         //this call initializes the static variables like DEFAULT_COMMODITY which are used implicitly by accounts/transactions
         @SuppressWarnings("unused")
         String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
         Commodity.DEFAULT_COMMODITY = CommoditiesDbAdapter.getInstance().getCommodity(currencyCode);
-
-        mAccountsDbAdapter.deleteAllRecords();
 
         Account account = new Account("Exportable");
         Transaction transaction = new Transaction("Pizza");
@@ -106,15 +88,15 @@ public class ExportTransactionsTest extends GnuAndroidTest {
         split.setMemo("Hawaii is the best!");
         transaction.addSplit(split);
         transaction.addSplit(split.createPair(
-                mAccountsDbAdapter.getOrCreateImbalanceAccountUID(Commodity.DEFAULT_COMMODITY)));
+            mAccountsDbAdapter.getOrCreateImbalanceAccountUID(context, Commodity.DEFAULT_COMMODITY)));
         account.addTransaction(transaction);
 
         mAccountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert);
-
     }
 
     @Test
     public void testCreateBackup() {
+        rule.getActivity();
         onView(withId(R.id.drawer_layout)).perform(DrawerActions.open());
         onView(withText(R.string.title_settings)).perform(scrollTo());
         onView(withText(R.string.title_settings)).perform(click());
@@ -129,17 +111,9 @@ public class ExportTransactionsTest extends GnuAndroidTest {
      *
      * @param toastString String that should be displayed
      */
-    private void assertToastDisplayed(int toastString) {
+    private void assertToastDisplayed(@StringRes int toastString) {
         onView(withText(toastString))
-                .inRoot(withDecorView(not(is(rule.getActivity().getWindow().getDecorView()))))
-                .check(matches(isDisplayed()));
-    }
-
-    //todo: add testing of export flag to unit test
-    //todo: add test of ignore exported transactions to unit tests
-    @After
-    public void tearDown() throws Exception {
-        mDbHelper.close();
-        mDb.close();
+            .inRoot(withDecorView(not(is(rule.getActivity().getWindow().getDecorView()))))
+            .check(matches(isDisplayed()));
     }
 }

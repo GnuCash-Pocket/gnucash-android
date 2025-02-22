@@ -65,6 +65,7 @@ import org.gnucash.android.ui.settings.dialog.DeleteBookConfirmationDialog;
 import org.gnucash.android.util.BookUtils;
 import org.gnucash.android.util.PreferencesHelper;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 
 import timber.log.Timber;
@@ -323,10 +324,11 @@ public class BookManagerFragment extends ListFragment implements
             SQLiteDatabase db = dbHelper.getReadableDatabase();
             TransactionsDbAdapter trnAdapter = new TransactionsDbAdapter(db);
             int transactionCount = (int) trnAdapter.getRecordsCount();
-            String transactionStats = getResources().getQuantityString(R.plurals.book_transaction_stats, transactionCount, transactionCount);
-
-            AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(db, trnAdapter);
+            AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(trnAdapter);
             int accountsCount = (int) accountsDbAdapter.getRecordsCount();
+            dbHelper.close();
+
+            String transactionStats = getResources().getQuantityString(R.plurals.book_transaction_stats, transactionCount, transactionCount);
             String accountStats = getResources().getQuantityString(R.plurals.book_account_stats, accountsCount, accountsCount);
             String stats = accountStats + ", " + transactionStats;
             TextView statsText = (TextView) view.findViewById(R.id.secondary_text);

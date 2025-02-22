@@ -24,6 +24,7 @@ import android.database.sqlite.SQLiteStatement;
 import androidx.annotation.NonNull;
 
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.model.BudgetAmount;
 import org.gnucash.android.model.Money;
 
@@ -33,7 +34,6 @@ import java.util.List;
  * Database adapter for {@link BudgetAmount}s
  */
 public class BudgetAmountsDbAdapter extends DatabaseAdapter<BudgetAmount> {
-
 
     /**
      * Opens the database adapter with an existing database
@@ -135,5 +135,29 @@ public class BudgetAmountsDbAdapter extends DatabaseAdapter<BudgetAmount> {
             sum = sum.plus(budgetAmount.getAmount());
         }
         return sum;
+    }
+
+    /**
+     * Returns the currency code (according to the ISO 4217 standard) of the account
+     * with unique Identifier <code>accountUID</code>
+     *
+     * @param accountUID Unique Identifier of the account
+     * @return Currency code of the account.
+     */
+    // FIXME use a SQL JOIN to read the account currency code per record.
+    private String getAccountCurrencyCode(@NonNull String accountUID) {
+        Cursor cursor = mDb.query(DatabaseSchema.AccountEntry.TABLE_NAME,
+            new String[]{DatabaseSchema.AccountEntry.COLUMN_CURRENCY},
+            DatabaseSchema.AccountEntry.COLUMN_UID + "= ?",
+            new String[]{accountUID}, null, null, null);
+        try {
+            if (cursor.moveToFirst()) {
+                return cursor.getString(0);
+            } else {
+                throw new IllegalArgumentException("Account " + accountUID + " does not exist");
+            }
+        } finally {
+            cursor.close();
+        }
     }
 }
