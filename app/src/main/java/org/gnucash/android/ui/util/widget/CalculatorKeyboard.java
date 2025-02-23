@@ -194,18 +194,11 @@ public class CalculatorKeyboard {
     }
 
     /**
-     * Returns whether the CalculatorKeyboard is visible.
-     */
-    public boolean isCustomKeyboardVisible() {
-        return keyboardView.getVisibility() == View.VISIBLE;
-    }
-
-    /**
-     * Make the CalculatorKeyboard visible, and hide the system keyboard for view.
+     * Make the keyboard visible, and hide the system keyboard for view.
      *
      * @param view The view that wants to show the keyboard.
      */
-    public void showCustomKeyboard(@Nullable View view) {
+    public void show(@Nullable View view) {
         if (view != null) {
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
             window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
@@ -216,19 +209,19 @@ public class CalculatorKeyboard {
     }
 
     /**
-     * Make the CalculatorKeyboard invisible.
+     * Make the keyboard invisible.
      */
-    public void hideCustomKeyboard() {
+    public void hide() {
         keyboardView.setVisibility(View.GONE);
         keyboardView.setEnabled(false);
     }
 
-    public boolean onBackPressed() {
-        if (isCustomKeyboardVisible()) {
-            hideCustomKeyboard();
-            return true;
-        }
-        return false;
+    /**
+     * Is the keyboard visible?
+     * @return `true` when visible.
+     */
+    public boolean isVisible() {
+        return keyboardView.getVisibility() == View.VISIBLE;
     }
 
     @NonNull

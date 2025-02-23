@@ -21,10 +21,12 @@ import static androidx.test.espresso.Espresso.pressBack;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withInputType;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 import android.Manifest;
 import android.content.Intent;
@@ -125,23 +127,27 @@ public class CalculatorEditTextTest {
         clickOnView(R.id.fab_create_transaction);
 
         // Verify the input type is correct
-        onView(withId(R.id.input_transaction_amount)).check(matches(allOf(withInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_CLASS_NUMBER))));
+        onView(withId(R.id.input_transaction_amount)).check(matches(allOf(withInputType(InputType.TYPE_CLASS_NUMBER))));
 
         // Giving the focus to the amount field shows the keyboard
         onView(withId(R.id.input_transaction_amount)).perform(click());
-        assertThat(SoftwareKeyboard.isKeyboardOpen(), is(true));
+        assertThat(SoftwareKeyboard.isKeyboardOpen(), is(false));
+        onView(withId(R.id.calculator_keyboard)).check(matches(isDisplayed()));
 
         // Pressing back hides the keyboard (still with focus)
         pressBack();
         assertThat(SoftwareKeyboard.isKeyboardOpen(), is(false));
+        onView(withId(R.id.calculator_keyboard)).check(matches(not(isDisplayed())));
 
         // Clicking the amount field already focused shows the keyboard again
         clickOnView(R.id.input_transaction_amount);
-        assertThat(SoftwareKeyboard.isKeyboardOpen(), is(true));
+        assertThat(SoftwareKeyboard.isKeyboardOpen(), is(false));
+        onView(withId(R.id.calculator_keyboard)).check(matches(isDisplayed()));
 
         // Changing the focus to another field keeps the software keyboard open
         clickOnView(R.id.input_transaction_name);
         assertThat(SoftwareKeyboard.isKeyboardOpen(), is(true));
+        onView(withId(R.id.calculator_keyboard)).check(matches(not(isDisplayed())));
     }
 
     /**
