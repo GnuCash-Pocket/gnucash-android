@@ -23,7 +23,6 @@ import android.view.MenuItem;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -39,7 +38,6 @@ import org.gnucash.android.ui.export.ExportFormFragment;
 import org.gnucash.android.ui.passcode.PasscodeLockActivity;
 import org.gnucash.android.ui.transaction.SplitEditorFragment;
 import org.gnucash.android.ui.transaction.TransactionFormFragment;
-import org.gnucash.android.ui.util.widget.CalculatorKeyboard;
 import org.gnucash.android.util.BookUtils;
 
 /**
@@ -54,8 +52,6 @@ public class FormActivity extends PasscodeLockActivity {
     private String mAccountUID;
 
     private ActivityFormBinding binding;
-    @Nullable
-    private CalculatorKeyboard mOnBackListener;
 
     public enum FormType {
         ACCOUNT,
@@ -231,20 +227,6 @@ public class FormActivity extends PasscodeLockActivity {
         fragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
             .commit();
-    }
-
-
-    public void setOnBackListener(@Nullable CalculatorKeyboard keyboard) {
-        mOnBackListener = keyboard;
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (mOnBackListener != null && mOnBackListener.onBackPressed()) {
-            return;
-        }
-
-        super.onBackPressed();
     }
 
 }

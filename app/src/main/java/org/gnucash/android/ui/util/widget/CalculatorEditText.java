@@ -32,6 +32,8 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 
+import androidx.activity.ComponentActivity;
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatEditText;
@@ -41,7 +43,6 @@ import org.gnucash.android.databinding.KbdCalculatorBinding;
 import org.gnucash.android.inputmethodservice.CalculatorKeyboardView;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
-import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.util.AmountParser;
 
 import java.math.BigDecimal;
@@ -73,6 +74,7 @@ public class CalculatorEditText extends AppCompatEditText {
     private String originalText = "";
 
     private final DecimalFormat formatter = (DecimalFormat) NumberFormat.getInstance(Locale.getDefault());
+    private OnBackPressedCallback onBackPressedCallback = null;
 
     public CalculatorEditText(Context context) {
         super(context, null);
@@ -135,16 +137,11 @@ public class CalculatorEditText extends AppCompatEditText {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (v != CalculatorEditText.this) return;
-                CalculatorKeyboard calculatorKeyboard = mCalculatorKeyboard;
                 if (hasFocus) {
                     setSelection(getText().length());
-                    if (calculatorKeyboard != null) {
-                        calculatorKeyboard.showCustomKeyboard(v);
-                    }
+                    showKeyboard();
                 } else {
-                    if (calculatorKeyboard != null) {
-                        calculatorKeyboard.hideCustomKeyboard();
-                    }
+                    hideKeyboard();
                     evaluate();
                 }
             }
@@ -155,12 +152,12 @@ public class CalculatorEditText extends AppCompatEditText {
             // by tapping on an edit box that already had focus (but that had the keyboard hidden).
             @Override
             public void onClick(View v) {
-                CalculatorKeyboard calculatorKeyboard = mCalculatorKeyboard;
-                if (calculatorKeyboard != null) {
-                    calculatorKeyboard.showCustomKeyboard(v);
-                }
+                if (v != CalculatorEditText.this) return;
+                showKeyboard();
             }
         });
+
+        registerBackPressed();
     }
 
     private void bindKeyboard(@Nullable final CalculatorKeyboard calculatorKeyboard) {
@@ -176,11 +173,6 @@ public class CalculatorEditText extends AppCompatEditText {
                 return false;
             }
         });
-
-        Activity activity = getActivity(this);
-        if (activity instanceof FormActivity) {
-            ((FormActivity) activity).setOnBackListener(calculatorKeyboard);
-        }
     }
 
     /**
@@ -280,19 +272,19 @@ public class CalculatorEditText extends AppCompatEditText {
         //convert "ARABIC DECIMAL SEPARATOR" U+066B into period
         //convert "ARABIC-INDIC DIGIT ZERO" U+0660 into western zero and do the same for all digits
         return getText().toString()
-                .replaceAll("[,\u066B]", ".")
-                .replaceAll("\u0660","0")
-                .replaceAll("\u0661","1")
-                .replaceAll("\u0662","2")
-                .replaceAll("\u0662","2")
-                .replaceAll("\u0663","3")
-                .replaceAll("\u0664","4")
-                .replaceAll("\u0665","5")
-                .replaceAll("\u0666","6")
-                .replaceAll("\u0667","7")
-                .replaceAll("\u0668","8")
-                .replaceAll("\u0669","9")
-                .trim();
+            .replaceAll("[,\u066B]", ".")
+            .replaceAll("\u0660", "0")
+            .replaceAll("\u0661", "1")
+            .replaceAll("\u0662", "2")
+            .replaceAll("\u0662", "2")
+            .replaceAll("\u0663", "3")
+            .replaceAll("\u0664", "4")
+            .replaceAll("\u0665", "5")
+            .replaceAll("\u0666", "6")
+            .replaceAll("\u0667", "7")
+            .replaceAll("\u0668", "8")
+            .replaceAll("\u0669", "9")
+            .trim();
     }
 
     /**
@@ -352,10 +344,45 @@ public class CalculatorEditText extends AppCompatEditText {
     protected void onVisibilityChanged(View changedView, int visibility) {
         super.onVisibilityChanged(changedView, visibility);
         if (visibility == VISIBLE && isFocused()) {
-            CalculatorKeyboard keyboard = mCalculatorKeyboard;
-            if (keyboard != null) {
-                keyboard.showCustomKeyboard(this);
-            }
+            showKeyboard();
         }
+    }
+
+    private void registerBackPressed() {
+        OnBackPressedCallback callback = onBackPressedCallback;
+        if (callback == null) {
+            Activity activity = getActivity(this);
+            if (!(activity instanceof ComponentActivity owner)) {
+                return;
+            }
+            onBackPressedCallback = callback = new OnBackPressedCallback(true) {
+                @Override
+                public void handleOnBackPressed() {
+                    if (!hideKeyboard()) {
+                        setEnabled(false);
+                        activity.onBackPressed();
+                    }
+                }
+            };
+            owner.getOnBackPressedDispatcher().addCallback(callback);
+        }
+    }
+
+    public boolean showKeyboard() {
+        CalculatorKeyboard calculatorKeyboard = mCalculatorKeyboard;
+        if (calculatorKeyboard != null && !calculatorKeyboard.isVisible()) {
+            calculatorKeyboard.show(this);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean hideKeyboard() {
+        CalculatorKeyboard calculatorKeyboard = mCalculatorKeyboard;
+        if (calculatorKeyboard != null && calculatorKeyboard.isVisible()) {
+            calculatorKeyboard.hide();
+            return true;
+        }
+        return false;
     }
 }
