@@ -54,13 +54,14 @@ public class DeleteAllTransactionsConfirmationDialog extends DoubleConfirmationD
     @Override
     @NonNull
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        final Activity activity = requireActivity();
+
         return getDialogBuilder()
             .setIcon(R.drawable.ic_warning)
             .setTitle(R.string.title_confirm_delete)
             .setMessage(R.string.msg_delete_all_transactions_confirmation)
             .setPositiveButton(R.string.alert_dialog_ok_delete, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        final Activity activity = requireActivity();
                         BackupManager.backupActiveBookAsync(activity, result -> {
                             deleteAll(activity);
                             return null;
