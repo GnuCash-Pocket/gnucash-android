@@ -1,7 +1,7 @@
 package org.gnucash.android.ui.util.widget
 
+import android.util.SparseArray
 import android.view.ViewGroup
-import androidx.collection.LongSparseArray
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
@@ -12,7 +12,7 @@ abstract class FragmentStateAdapter(activity: FragmentActivity) :
     RecyclerView.Adapter<FragmentViewHolder>() {
 
     private val fragmentManager: FragmentManager = activity.supportFragmentManager
-    private val fragments = LongSparseArray<Fragment>()
+    private val fragments = SparseArray<Fragment?>()
 
     init {
         setHasStableIds(true)
@@ -38,34 +38,41 @@ abstract class FragmentStateAdapter(activity: FragmentActivity) :
     }
 
     override fun onBindViewHolder(holder: FragmentViewHolder, position: Int) {
-        val itemId = getItemId(position)
-        var fragment = fragments.get(itemId)
+        var fragment = fragments[position]
         if (fragment == null) {
             fragment = createFragment(position)
-            holder.bind(fragment, fragmentManager)
-            fragments.put(itemId, fragment)
-        } else {
-            holder.bind(fragment, fragmentManager)
+            fragments[position] = fragment
         }
+        holder.bind(fragment, fragmentManager)
     }
 
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
         super.onDetachedFromRecyclerView(recyclerView)
+        removeFragments()
+    }
 
+    private fun removeFragments(now: Boolean = false) {
         val tx = fragmentManager.beginTransaction()
         val count = itemCount
         for (i in 0 until count) {
-            val itemId = getItemId(i)
-            val fragment = fragments[itemId]
+            val fragment = fragments[i]
             if (fragment != null) {
                 tx.remove(fragment)
             }
         }
-        tx.commitAllowingStateLoss()
+        if (now) {
+            tx.commitNowAllowingStateLoss()
+        } else {
+            tx.commitAllowingStateLoss()
+        }
         fragments.clear()
     }
 
     override fun getItemId(position: Int): Long {
         return position.toLong()
+    }
+
+    fun getFragment(position: Int): Fragment? {
+        return fragments[position]
     }
 }

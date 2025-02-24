@@ -20,7 +20,6 @@ import static org.gnucash.android.db.DatabaseHelper.escapeForLike;
 import static org.gnucash.android.util.ColorExtKt.parseColor;
 
 import android.app.Activity;
-import android.app.SearchManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -69,6 +68,7 @@ import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
+import org.gnucash.android.ui.report.BaseReportFragment;
 import org.gnucash.android.ui.util.AccountBalanceTask;
 import org.gnucash.android.ui.util.CursorRecyclerAdapter;
 import org.gnucash.android.util.BackupManager;
@@ -86,7 +86,6 @@ public class AccountsListFragment extends MenuFragment implements
     Refreshable,
     LoaderManager.LoaderCallbacks<Cursor>,
     SearchView.OnQueryTextListener,
-    SearchView.OnCloseListener,
     FragmentResultListener {
 
     private AccountRecyclerAdapter mAccountRecyclerAdapter;
@@ -130,11 +129,6 @@ public class AccountsListFragment extends MenuFragment implements
      */
     private String mCurrentFilter;
 
-    /**
-     * Search view for searching accounts
-     */
-    private SearchView mSearchView;
-
     private FragmentAccountsListBinding mBinding;
 
     public static AccountsListFragment newInstance(DisplayMode displayMode) {
@@ -164,7 +158,6 @@ public class AccountsListFragment extends MenuFragment implements
         mBinding.list.setAdapter(mAccountRecyclerAdapter);
 
         switch (mDisplayMode) {
-
             case TOP_LEVEL:
                 mBinding.emptyView.setText(R.string.label_no_accounts);
                 break;
@@ -287,25 +280,10 @@ public class AccountsListFragment extends MenuFragment implements
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        if (!TextUtils.isEmpty(mParentAccountUID))
+        if (!TextUtils.isEmpty(mParentAccountUID)) {
             inflater.inflate(R.menu.sub_account_actions, menu);
-        else {
-            inflater.inflate(R.menu.account_actions, menu);
-            // Associate searchable configuration with the SearchView
-
-            SearchView searchView = mSearchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
-            if (searchView == null)
-                return;
-
-            Activity activity = requireActivity();
-            SearchManager searchManager = (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
-            searchView.setSearchableInfo(
-                searchManager.getSearchableInfo(activity.getComponentName()));
-            searchView.setOnQueryTextListener(this);
-            searchView.setOnCloseListener(this);
         }
     }
-
 
     @Override
     /**
@@ -365,11 +343,7 @@ public class AccountsListFragment extends MenuFragment implements
         String parentAccountUID = arguments == null ? null : arguments.getString(UxArgument.PARENT_ACCOUNT_UID);
 
         Context context = requireContext();
-        if (TextUtils.isEmpty(mCurrentFilter)) {
-            return new AccountsCursorLoader(context, parentAccountUID, mDisplayMode);
-        } else {
-            return new AccountsCursorLoader(context, mCurrentFilter);
-        }
+        return new AccountsCursorLoader(context, parentAccountUID, mDisplayMode, mCurrentFilter);
     }
 
     @Override
@@ -397,7 +371,6 @@ public class AccountsListFragment extends MenuFragment implements
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        System.out.println("±!@ onQueryTextChange [" + newText + "]");
         String newFilter = !TextUtils.isEmpty(newText) ? newText : null;
         String oldFilter = mCurrentFilter;
         if (oldFilter == null && newFilter == null) {
@@ -411,14 +384,6 @@ public class AccountsListFragment extends MenuFragment implements
         return true;
     }
 
-    @Override
-    public boolean onClose() {
-        if (!TextUtils.isEmpty(mSearchView.getQuery())) {
-            mSearchView.setQuery(null, true);
-        }
-        return true;
-    }
-
     /**
      * Extends {@link DatabaseCursorLoader} for loading of {@link Account} from the
      * database asynchronously.
@@ -429,9 +394,9 @@ public class AccountsListFragment extends MenuFragment implements
      * @author Ngewi Fet <ngewif@gmail.com>
      */
     private static final class AccountsCursorLoader extends DatabaseCursorLoader<AccountsDbAdapter> {
-        private String mParentAccountUID = null;
-        private String mFilter;
-        private DisplayMode mDisplayMode = DisplayMode.TOP_LEVEL;
+        private final String mParentAccountUID;
+        private final String mFilter;
+        private final DisplayMode mDisplayMode;
 
         /**
          * Initializes the loader to load accounts from the database.
@@ -440,23 +405,14 @@ public class AccountsListFragment extends MenuFragment implements
          *
          * @param context          Application context
          * @param parentAccountUID GUID of the parent account
+         * @param displayMode      the mode.
+         * @param filter           Account name filter string
          */
-        public AccountsCursorLoader(Context context, String parentAccountUID, DisplayMode displayMode) {
+        public AccountsCursorLoader(Context context, String parentAccountUID, DisplayMode displayMode, @Nullable String filter) {
             super(context);
             this.mParentAccountUID = parentAccountUID;
             this.mDisplayMode = displayMode;
-        }
-
-        /**
-         * Initializes the loader with a filter for account names.
-         * Only accounts whose name match the filter will be loaded.
-         *
-         * @param context Application context
-         * @param filter  Account name filter string
-         */
-        public AccountsCursorLoader(Context context, String filter) {
-            super(context);
-            mFilter = filter;
+            this.mFilter = filter;
         }
 
         @Override
@@ -466,24 +422,19 @@ public class AccountsListFragment extends MenuFragment implements
             databaseAdapter = dbAdapter;
             final Cursor cursor;
 
-            if (mFilter != null) {
-                cursor = dbAdapter
-                    .fetchAccounts(DatabaseSchema.AccountEntry.COLUMN_HIDDEN + "= 0 AND "
-                            + DatabaseSchema.AccountEntry.COLUMN_NAME + " LIKE '%" + escapeForLike(mFilter) + "%'",
-                        null, null);
-            } else if (!TextUtils.isEmpty(mParentAccountUID))
+            if (!TextUtils.isEmpty(mParentAccountUID)) {
                 cursor = dbAdapter.fetchSubAccounts(mParentAccountUID);
-            else {
+            } else {
                 switch (mDisplayMode) {
                     case RECENT:
-                        cursor = dbAdapter.fetchRecentAccounts(10);
+                        cursor = dbAdapter.fetchRecentAccounts(10, mFilter);
                         break;
                     case FAVORITES:
-                        cursor = dbAdapter.fetchFavoriteAccounts();
+                        cursor = dbAdapter.fetchFavoriteAccounts(mFilter);
                         break;
                     case TOP_LEVEL:
                     default:
-                        cursor = dbAdapter.fetchTopLevelAccounts();
+                        cursor = dbAdapter.fetchTopLevelAccounts(mFilter);
                         break;
                 }
             }

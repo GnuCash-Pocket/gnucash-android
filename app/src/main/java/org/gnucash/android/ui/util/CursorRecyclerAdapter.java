@@ -24,6 +24,9 @@
 
 package org.gnucash.android.ui.util;
 
+import static android.provider.BaseColumns._ID;
+
+import android.annotation.SuppressLint;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.DataSetObserver;
@@ -72,7 +75,7 @@ public abstract class CursorRecyclerAdapter<VH
         boolean cursorPresent = c != null;
         mCursor = c;
         mDataValid = cursorPresent;
-        mRowIDColumn = cursorPresent ? c.getColumnIndexOrThrow("_id") : -1;
+        mRowIDColumn = cursorPresent ? c.getColumnIndexOrThrow(_ID) : -1;
 
         mChangeObserver = new ChangeObserver();
         mDataSetObserver = new MyDataSetObserver();
@@ -165,6 +168,7 @@ public abstract class CursorRecyclerAdapter<VH
      * If the given new Cursor is the same instance is the previously set
      * Cursor, null is also returned.
      */
+    @SuppressLint("NotifyDataSetChanged")
     public Cursor swapCursor(Cursor newCursor) {
         if (newCursor == mCursor) {
             return null;
@@ -178,7 +182,7 @@ public abstract class CursorRecyclerAdapter<VH
         if (newCursor != null) {
             if (mChangeObserver != null) newCursor.registerContentObserver(mChangeObserver);
             if (mDataSetObserver != null) newCursor.registerDataSetObserver(mDataSetObserver);
-            mRowIDColumn = newCursor.getColumnIndexOrThrow("_id");
+            mRowIDColumn = newCursor.getColumnIndexOrThrow(_ID);
             mDataValid = true;
             // notify the observers about the new cursor
             notifyDataSetChanged();

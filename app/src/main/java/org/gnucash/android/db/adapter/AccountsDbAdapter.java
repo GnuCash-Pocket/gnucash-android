@@ -17,6 +17,7 @@
 
 package org.gnucash.android.db.adapter;
 
+import static org.gnucash.android.db.DatabaseHelper.escapeForLike;
 import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
 import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
@@ -89,6 +90,9 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      */
     @NonNull
     private final CommoditiesDbAdapter mCommoditiesDbAdapter;
+
+    @Nullable
+    private String rootUID = null;
 
     /**
      * Overloaded constructor. Creates an adapter for an already open database
@@ -751,7 +755,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return Cursor set of accounts which fulfill <code>where</code>
      */
     public Cursor fetchAccounts(@Nullable String where, @Nullable String[] whereArgs, @Nullable String orderBy) {
-        if (orderBy == null) {
+        if (TextUtils.isEmpty(orderBy)) {
             orderBy = AccountEntry.COLUMN_NAME + " ASC";
         }
         Timber.v("Fetching all accounts from db where " + where + " order by " + orderBy);
@@ -959,10 +963,8 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         Timber.v("Fetching sub accounts for account id %s", accountUID);
         String selection = AccountEntry.COLUMN_HIDDEN + " = 0 AND "
                 + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " = ?";
-        return mDb.query(AccountEntry.TABLE_NAME,
-                null,
-                selection,
-                new String[]{accountUID}, null, null, AccountEntry.COLUMN_NAME + " ASC");
+        final String[] selectionArgs = new String[]{accountUID};
+        return fetchAccounts(selection, selectionArgs, null);
     }
 
     /**
@@ -970,14 +972,20 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      *
      * @return Cursor to the top level accounts
      */
-    public Cursor fetchTopLevelAccounts() {
+    public Cursor fetchTopLevelAccounts(@Nullable String filterName) {
         //condition which selects accounts with no parent, whose UID is not ROOT and whose type is not ROOT
-        return fetchAccounts("(" + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " IS NULL OR "
-                        + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " = ?) AND "
-                        + AccountEntry.COLUMN_HIDDEN + " = 0 AND "
-                        + AccountEntry.COLUMN_TYPE + " != ?",
-                new String[]{getOrCreateGnuCashRootAccountUID(), AccountType.ROOT.name()},
-                AccountEntry.COLUMN_NAME + " ASC");
+        final String[] selectionArgs;
+        String selection = AccountEntry.COLUMN_HIDDEN + " = 0 AND "
+            + AccountEntry.COLUMN_TYPE + " != ?";
+        if (TextUtils.isEmpty(filterName)) {
+            selection += " AND (" + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " IS NULL OR "
+                + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " = ?)";
+            selectionArgs = new String[]{AccountType.ROOT.name(), getOrCreateGnuCashRootAccountUID()};
+        } else {
+            selection += " AND (" + AccountEntry.COLUMN_NAME + " LIKE '%" + escapeForLike(filterName) + "%')";
+            selectionArgs = new String[]{AccountType.ROOT.name()};
+        }
+        return fetchAccounts(selection, selectionArgs, null);
     }
 
     /**
@@ -985,7 +993,11 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      *
      * @return Cursor to recently used accounts
      */
-    public Cursor fetchRecentAccounts(int numberOfRecent) {
+    public Cursor fetchRecentAccounts(int numberOfRecent, @Nullable String filterName) {
+        String selection = AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_HIDDEN + " = 0";
+        if (!TextUtils.isEmpty(filterName)) {
+            selection += " AND (" + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_NAME + " LIKE '%" + escapeForLike(filterName) + "%')";
+        }
         return mDb.query(TransactionEntry.TABLE_NAME
                         + " LEFT OUTER JOIN " + SplitEntry.TABLE_NAME + " ON "
                         + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " = "
@@ -993,10 +1005,10 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
                         + " , " + AccountEntry.TABLE_NAME + " ON " + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID
                         + " = " + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_UID,
                 new String[]{AccountEntry.TABLE_NAME + ".*"},
-                AccountEntry.COLUMN_HIDDEN + " = 0",
+                selection,
                 null,
                 SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID, //groupby
-                null, //haveing
+                null, //having
                 "MAX ( " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " ) DESC", // order
                 Integer.toString(numberOfRecent) // limit;
         );
@@ -1007,12 +1019,14 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      *
      * @return Cursor holding set of favorite accounts
      */
-    public Cursor fetchFavoriteAccounts() {
+    public Cursor fetchFavoriteAccounts(@Nullable String filterName) {
         Timber.v("Fetching favorite accounts from db");
-        String condition = AccountEntry.COLUMN_FAVORITE + " = 1";
-        return mDb.query(AccountEntry.TABLE_NAME,
-                null, condition, null, null, null,
-                AccountEntry.COLUMN_NAME + " ASC");
+        String selection = AccountEntry.COLUMN_HIDDEN + " = 0 AND "
+            + AccountEntry.COLUMN_FAVORITE + "=1";
+        if (!TextUtils.isEmpty(filterName)) {
+            selection += " AND (" + AccountEntry.COLUMN_NAME + " LIKE '%" + escapeForLike(filterName) + "%')";
+        }
+        return fetchAccounts(selection, null, null);
     }
 
     /**
@@ -1023,6 +1037,9 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return Unique ID of the GnuCash root account.
      */
     public String getOrCreateGnuCashRootAccountUID() {
+        if (rootUID != null) {
+            return rootUID;
+        }
         Cursor cursor = fetchAccounts(AccountEntry.COLUMN_TYPE + "= ?",
                 new String[]{AccountType.ROOT.name()}, null);
         try {
@@ -1049,7 +1066,8 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         contentValues.put(AccountEntry.COLUMN_COMMODITY_UID, getCommodityUID(defaultCurrencyCode));
         Timber.i("Creating ROOT account");
         mDb.insert(AccountEntry.TABLE_NAME, null, contentValues);
-        return rootAccount.getUID();
+        rootUID = rootAccount.getUID();
+        return rootUID;
     }
 
     /**

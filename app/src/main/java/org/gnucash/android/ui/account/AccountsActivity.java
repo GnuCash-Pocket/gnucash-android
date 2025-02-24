@@ -19,6 +19,7 @@ package org.gnucash.android.ui.account;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -41,6 +42,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.preference.PreferenceManager;
@@ -76,17 +78,16 @@ import timber.log.Timber;
  * @author Ngewi Fet <ngewif@gmail.com>
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
-public class AccountsActivity extends BaseDrawerActivity implements OnAccountClickedListener, Refreshable {
+public class AccountsActivity extends BaseDrawerActivity implements
+    OnAccountClickedListener,
+    Refreshable,
+    SearchView.OnQueryTextListener,
+    SearchView.OnCloseListener {
 
     /**
      * Request code for GnuCash account structure file to import
      */
     public static final int REQUEST_PICK_ACCOUNTS_FILE = 0x1;
-
-    /**
-     * Request code for opening the account to edit
-     */
-    public static final int REQUEST_EDIT_ACCOUNT = 0x10;
 
     /**
      * Index for the recent accounts tab
@@ -120,6 +121,15 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
     private AccountViewPagerAdapter mPagerAdapter;
 
     private ActivityAccountsBinding mBinding;
+
+    /**
+     * Search view for searching accounts
+     */
+    private SearchView mSearchView;
+    /**
+     * Filter for which accounts should be displayed. Used by search interface
+     */
+    private String mCurrentFilter;
 
     @Override
     public void refresh() {
@@ -190,31 +200,15 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
         init();
 
         TabLayout tabLayout = mBinding.tabLayout;
-        tabLayout.addTab(tabLayout.newTab());
-        tabLayout.addTab(tabLayout.newTab());
-        tabLayout.addTab(tabLayout.newTab());
+        for (int i = 0; i < AccountViewPagerAdapter.DEFAULT_NUM_PAGES; i++) {
+            tabLayout.addTab(tabLayout.newTab());
+        }
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
         //show the simple accounts list
         mPagerAdapter = new AccountViewPagerAdapter(this);
+
         mBinding.pager.setAdapter(mPagerAdapter);
-
-        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                mBinding.pager.setCurrentItem(tab.getPosition());
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-                //nothing to see here, move along
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-                //nothing to see here, move along
-            }
-        });
 
         TabLayoutMediator tabLayoutMediator = new TabLayoutMediator(tabLayout, mBinding.pager, new TabLayoutMediator.TabConfigurationStrategy() {
 
@@ -389,7 +383,17 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.global_actions, menu);
+        menu.clear();
+        inflater.inflate(R.menu.account_actions, menu);
+        // Associate searchable configuration with the SearchView
+        SearchView searchView = mSearchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
+        if (searchView != null) {
+            Activity activity = this;
+            SearchManager searchManager = (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(activity.getComponentName()));
+            searchView.setOnQueryTextListener(this);
+            searchView.setOnCloseListener(this);
+        }
         return true;
     }
 
@@ -545,6 +549,46 @@ public class AccountsActivity extends BaseDrawerActivity implements OnAccountCli
             .edit()
             .putBoolean(context.getString(R.string.key_first_run), false)
             .apply();
+    }
+
+    @Override
+    public boolean onClose() {
+        if (!TextUtils.isEmpty(mSearchView.getQuery())) {
+            mSearchView.setQuery(null, true);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        String newFilter = !TextUtils.isEmpty(newText) ? newText : null;
+        String oldFilter = mCurrentFilter;
+        if (oldFilter == null && newFilter == null) {
+            return true;
+        }
+        if (oldFilter != null && oldFilter.equals(newFilter)) {
+            return true;
+        }
+        setSearchFilter(newFilter);
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        //nothing to see here, move along
+        return true;
+    }
+
+    private void setSearchFilter(String filter) {
+        mCurrentFilter = filter;
+        // apply to each page
+        final int count = mPagerAdapter.getItemCount();
+        for (int i = 0; i < count; i++) {
+            AccountsListFragment fragment = (AccountsListFragment) mPagerAdapter.getFragment(i);
+            if (fragment != null) {
+                fragment.onQueryTextChange(filter);
+            }
+        }
     }
 
 }

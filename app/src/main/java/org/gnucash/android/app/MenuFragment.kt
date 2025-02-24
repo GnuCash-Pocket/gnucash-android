@@ -14,7 +14,6 @@ open class MenuFragment : Fragment() {
         val activity = requireActivity()
         activity.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menu.clear()
                 onCreateOptionsMenu(menu, menuInflater)
             }
 
