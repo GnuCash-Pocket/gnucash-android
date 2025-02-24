@@ -111,10 +111,6 @@
     <string name="label_parent_account">Överordnat konto</string>
     <string name="title_xml_ofx_header">Använd XML OFX sidhuvud</string>
     <string name="summary_xml_ofx_header">Aktivera detta alternativ när du exporterar till andra tredje parts program än GnuCash för skrivbord</string>
-    <string name="title_whats_new">Vad är nytt</string>
-    <string name="whats_new">
-         - Lade till förmåga att exportera till någon tjänst som stöder Storage Access Framework \n         - Lade till möjlighet att ställa in platsen för regelbundna automatiska säkerhetskopior (Se säkerhetskopieringsinställningar)\n         - Lade till Bitcoin valutasupport\n         - Lade till stöd för att byta namn på bokföringar\n         - Flera felkorrigeringar och förbättringar\n 	</string>
-    <string name="label_dismiss">Avfärda</string>
     <string name="toast_transanction_amount_required">Ange ett belopp för att spara transaktionen</string>
     <string name="toast_error_importing_accounts">Ett fel uppstod vid import av GnuCash-konton</string>
     <string name="toast_success_importing_accounts">GnuCash-konton har importerats</string>

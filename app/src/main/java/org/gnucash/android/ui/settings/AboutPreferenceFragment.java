@@ -23,13 +23,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
-import org.gnucash.android.BuildConfig;
 import org.gnucash.android.R;
-import org.gnucash.android.ui.account.AccountsActivity;
-
 
 /**
  * Fragment for displaying information about the application
@@ -51,18 +47,5 @@ public class AboutPreferenceFragment extends PreferenceFragmentCompat {
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setTitle(R.string.title_about_gnucash);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        Preference pref = findPreference(getString(R.string.key_about_gnucash));
-        pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(@NonNull Preference preference) {
-                AccountsActivity.showWhatsNewDialog(preference.getContext());
-                return true;
-            }
-        });
     }
 }

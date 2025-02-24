@@ -18,18 +18,12 @@
 package org.gnucash.android.ui.account;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -207,7 +201,6 @@ public class AccountsActivity extends BaseDrawerActivity implements
 
         //show the simple accounts list
         mPagerAdapter = new AccountViewPagerAdapter(this);
-
         mBinding.pager.setAdapter(mPagerAdapter);
 
         TabLayoutMediator tabLayoutMediator = new TabLayoutMediator(tabLayout, mBinding.pager, new TabLayoutMediator.TabConfigurationStrategy() {
@@ -311,9 +304,6 @@ public class AccountsActivity extends BaseDrawerActivity implements
             return;
         }
 
-        if (hasNewFeatures()) {
-            showWhatsNewDialog(context);
-        }
         ScheduledActionService.schedulePeriodic(context);
     }
 
@@ -322,53 +312,6 @@ public class AccountsActivity extends BaseDrawerActivity implements
         super.onDestroy();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         preferences.edit().putInt(LAST_OPEN_TAB_INDEX, mBinding.pager.getCurrentItem()).apply();
-    }
-
-    /**
-     * Checks if the minor version has been increased and displays the What's New dialog box.
-     * This is the minor version as per semantic versioning.
-     *
-     * @return <code>true</code> if the minor version has been increased, <code>false</code> otherwise.
-     */
-    private boolean hasNewFeatures() {
-        String minorVersion = getString(R.string.app_minor_version);
-        int currentMinor = Integer.parseInt(minorVersion);
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        int previousMinor = prefs.getInt(getString(R.string.key_previous_minor_version), 0);
-        if (currentMinor > previousMinor) {
-            Editor editor = prefs.edit();
-            editor.putInt(getString(R.string.key_previous_minor_version), currentMinor);
-            editor.apply();
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Show dialog with new features for this version
-     */
-    public static AlertDialog showWhatsNewDialog(Context context) {
-        Resources resources = context.getResources();
-        StringBuilder releaseTitle = new StringBuilder(resources.getString(R.string.title_whats_new));
-        PackageInfo packageInfo;
-        try {
-            packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
-            releaseTitle.append(" - v").append(packageInfo.versionName);
-        } catch (NameNotFoundException e) {
-            Timber.e(e, "Error displaying 'Whats new' dialog");
-        }
-
-        return new AlertDialog.Builder(context)
-            .setTitle(releaseTitle.toString())
-            .setMessage(R.string.whats_new)
-            .setPositiveButton(R.string.label_dismiss, new DialogInterface.OnClickListener() {
-
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            }).show();
     }
 
     /**

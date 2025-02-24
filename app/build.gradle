@@ -23,7 +23,6 @@ android {
         versionCode versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         resValue "string", "app_version_name", "${versionName}"
-        resValue "string", "app_minor_version", "${versionMinor}"
         resValue "string", "app_playstore_url", "market://details?id=${applicationId}"
         buildConfigField "boolean", "CAN_REQUEST_RATING", "false"
         buildConfigField "boolean", "GOOGLE_GCM", "false"

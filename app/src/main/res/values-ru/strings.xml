@@ -111,15 +111,6 @@
     <string name="label_parent_account">Родительский счёт</string>
     <string name="title_xml_ofx_header">Использовать XML-заголовок OFX</string>
     <string name="summary_xml_ofx_header">Включите эту опцию, если экспортируете в программы отличные от GnuCash для ПК</string>
-    <string name="title_whats_new">Новости</string>
-    <string name="whats_new">
-        - Добавлена возможность экспорта с любым сервисом с поддержкой Storage Access Framework \n
-        - Добавлена опция выбора пути сохранения резервных копий (см. настройки)\n
-        - Добавлена поддержка валюты Bitcoin\n
-        - Добавлена поддержка переименования книги\n
-        - Множество мелких правок и улучшений\n
-	</string>
-    <string name="label_dismiss">Отмена</string>
     <string name="toast_transanction_amount_required">Введите сумму, чтобы сохранить проводку</string>
     <string name="toast_error_importing_accounts">Ошибка импорта счетов из GnuCash</string>
     <string name="toast_success_importing_accounts">Счета из GnuCash успешно импортированы</string>

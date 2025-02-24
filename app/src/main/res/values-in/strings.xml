@@ -111,10 +111,6 @@
     <string name="label_parent_account">Akun induk</string>
     <string name="title_xml_ofx_header">Gunakan header XML OFX</string>
     <string name="summary_xml_ofx_header">Aktifkan opsi ini ketika mengekspor ke aplikasi pihak ketiga selain GnuCash versi desktop</string>
-    <string name="title_whats_new">Yang Terbaru</string>
-    <string name="whats_new">
-</string>
-    <string name="label_dismiss">Abaikan</string>
     <string name="toast_transanction_amount_required">Tuliskan jumlah untuk menyimpan transaksi</string>
     <string name="toast_error_importing_accounts">Terjadi error saat mengimpor akun GnuCash</string>
     <string name="toast_success_importing_accounts">Akun GnuCash berhasil diimpor</string>

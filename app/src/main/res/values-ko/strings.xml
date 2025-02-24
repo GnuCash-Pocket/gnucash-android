@@ -111,14 +111,6 @@
     <string name="label_parent_account">상위 계정</string>
     <string name="title_xml_ofx_header">XML OFX 헤더 사용</string>
     <string name="summary_xml_ofx_header">데스크탑용 GnuCash 이외의 타 응용 프로그램에 내보낼 때에 사용하세요</string>
-    <string name="title_whats_new">새로운 기능</string>
-    <string name="whats_new">
-- 저장소 접근 프레임워크(SAF, Storage Access Framework)를 지원하는 어떤 서비스로도 내보내기 가능\n
-- 주기적 자동백업 위치 지정 옵션 추가 (백업 설정 참조)\n
-- 비트코인 통화 지원 추가\n
-- 장부 이름변경 가능\n
-- 여러 버그 수정 및 개선사항\n</string>
-    <string name="label_dismiss">닫기</string>
     <string name="toast_transanction_amount_required">거래기록에 저장할 금액을 입력해 주세요</string>
     <string name="toast_error_importing_accounts">GnuCash 계정을 가져오는 동안 오류가 발생했습니다.</string>
     <string name="toast_success_importing_accounts">GnuCash 계정을 가져왔습니다</string>

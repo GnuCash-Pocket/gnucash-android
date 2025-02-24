@@ -112,15 +112,6 @@ Konto docelowe używa innej waluty niż konto wyjściowe</string>
     <string name="label_parent_account">Konto nadrzędne</string>
     <string name="title_xml_ofx_header">Używaj nagłówka XML OFX</string>
     <string name="summary_xml_ofx_header">Włącz tę opcję gdy eksportujesz do aplikacji innej ni GnuCash dla desktopa</string>
-    <string name="title_whats_new">Co nowego</string>
-    <string name="whats_new">
-        - Added ability to export to any service which supports the Storage Access Framework \n
-        - Added option to set the location for regular automatic backups (See backup settings)\n
-        - Added Bitcoin currency support\n
-        - Added support for renaming books\n
-        - Multiple bug fixes and improvements\n
-	</string>
-    <string name="label_dismiss">Spocznij</string>
     <string name="toast_transanction_amount_required">Wprowadź kwotę by zapisać transakcję</string>
     <string name="toast_error_importing_accounts">Wystąpił błąd podczas importowania kont GnuCash</string>
     <string name="toast_success_importing_accounts">Import kont GnuCash zakończony pomyślnie</string>

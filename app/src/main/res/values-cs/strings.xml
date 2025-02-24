@@ -111,15 +111,6 @@
     <string name="label_parent_account">Parent account</string>
     <string name="title_xml_ofx_header">Použit XML OFX hlavičku</string>
     <string name="summary_xml_ofx_header">Použijte tuto možnost při exportu do aplikace jiného výrobce než GnuCash pro stolní počítače</string>
-    <string name="title_whats_new">Co je nového</string>
-    <string name="whats_new">
-        - Added ability to export to any service which supports the Storage Access Framework \n
-        - Added option to set the location for regular automatic backups (See backup settings)\n
-        - Added Bitcoin currency support\n
-        - Added support for renaming books\n
-        - Multiple bug fixes and improvements\n
-	</string>
-    <string name="label_dismiss">Zrušit</string>
     <string name="toast_transanction_amount_required">Zadejte částku k uložení transakce</string>
     <string name="toast_error_importing_accounts">Při importu GnuCash účtů došlo k chybě</string>
     <string name="toast_success_importing_accounts">GnuCash účty úspěšně importovány</string>

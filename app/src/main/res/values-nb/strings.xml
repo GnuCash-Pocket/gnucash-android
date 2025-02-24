@@ -111,10 +111,6 @@
     <string name="label_parent_account">Overordnet konto</string>
     <string name="title_xml_ofx_header">Bruk XML OFX topptekst</string>
     <string name="summary_xml_ofx_header">Aktiver dette alternativet når du eksporterer til tredjeparts programvare, borsett fra GnuCash for PC</string>
-    <string name="title_whats_new">Hva er nytt</string>
-    <string name="whats_new">
--Lagt til muligheten til å eksportere til en tjeneste som støtter rammeverket for lagring \n - lagt til muligheten til å angi plasseringen for regelmessige automatiske sikkerhetskopier (se sikkerhetskopieringsinnstillinger) \n - lagt til Bitcoin som valuta\n - lagt til støtte for å endre navn på regnskap\n - flere feilrettinger og forbedringer\n</string>
-    <string name="label_dismiss">Avvis</string>
     <string name="toast_transanction_amount_required">Angi et beløp for å lagre transaksjonen</string>
     <string name="toast_error_importing_accounts">Det oppstod en feil under import av GnuCash kontoene</string>
     <string name="toast_success_importing_accounts">GnuCash kontoer importert</string>

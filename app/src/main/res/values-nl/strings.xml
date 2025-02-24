@@ -111,15 +111,6 @@
     <string name="label_parent_account">Hoofdrekening</string>
     <string name="title_xml_ofx_header">Gebruik XML OFX hoofding</string>
     <string name="summary_xml_ofx_header">Schakel deze optie in als u naar een applicatie anders dan GnuCash wil exporteren</string>
-    <string name="title_whats_new">Nieuw sinds de vorige versie</string>
-    <string name="whats_new">
-        - Added ability to export to any service which supports the Storage Access Framework \n
-        - Added option to set the location for regular automatic backups (See backup settings)\n
-        - Added Bitcoin currency support\n
-        - Added support for renaming books\n
-        - Multiple bug fixes and improvements\n
-	</string>
-    <string name="label_dismiss">Wijs af</string>
     <string name="toast_transanction_amount_required">Vul een bedrag in om de transactie op te slaan.</string>
     <string name="toast_error_importing_accounts">Fout bij het importeren van de GnuCash rekeningen</string>
     <string name="toast_success_importing_accounts">GnuCash rekeningen met succes geïmporteerd</string>

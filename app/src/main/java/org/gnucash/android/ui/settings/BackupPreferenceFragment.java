@@ -409,7 +409,7 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
                     .setTitle(R.string.title_no_backups_found)
                     .setMessage(R.string.msg_no_backups_to_restore_from)
-                    .setNegativeButton(R.string.label_dismiss, new DialogInterface.OnClickListener() {
+                    .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
