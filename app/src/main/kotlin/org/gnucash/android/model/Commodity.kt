@@ -92,7 +92,7 @@ class Commodity(
      * Supported values for the smallest fraction are powers of 10 i.e. 1, 10, 100 etc
      *
      * @return Number of digits in fraction
-     * @see .getSmallestFraction
+     * @see smallestFraction
      */
     val smallestFractionDigits: Int
         get() = if (smallestFraction == 0) {

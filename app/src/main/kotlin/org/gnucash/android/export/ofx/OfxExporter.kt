@@ -86,7 +86,7 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
                 // Add account details (transactions) to the XML document.
                 writeAccount(account, doc, statementTransactionResponse, mExportParams.exportStartTime)
                 // Mark as exported.
-                mAccountsDbAdapter.markAsExported(account.uID)
+                mAccountsDbAdapter.markAsExported(account.uid)
             }
     }
 
@@ -211,7 +211,7 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
         val bankId = doc.createElement(OfxHelper.TAG_BANK_ID)
         bankId.appendChild(doc.createTextNode(OfxHelper.APP_ID))
         val acctId = doc.createElement(OfxHelper.TAG_ACCOUNT_ID)
-        acctId.appendChild(doc.createTextNode(account.uID))
+        acctId.appendChild(doc.createTextNode(account.uid))
         val accttype = doc.createElement(OfxHelper.TAG_ACCOUNT_TYPE)
         val ofxAccountType = convertToOfxAccountType(account.accountType).toString()
         accttype.appendChild(doc.createTextNode(ofxAccountType))
@@ -252,7 +252,7 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
         bankTransactionsList.appendChild(dtend)
         for (transaction in account.transactions) {
             if (transaction.modifiedTimestamp.before(exportStartTime)) continue
-            bankTransactionsList.appendChild(transaction.toOFX(doc, account.uID!!))
+            bankTransactionsList.appendChild(transaction.toOFX(doc, account.uid))
         }
         //================= END TRANSACTIONS LIST =================================
         val statementTransactions = doc.createElement(OfxHelper.TAG_STATEMENT_TRANSACTIONS)
