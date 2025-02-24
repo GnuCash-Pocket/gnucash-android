@@ -66,6 +66,9 @@ public class MigrationHelper {
         if (oldVersion < 16) {
             migrateTo16(db);
         }
+        if (oldVersion < 17) {
+            migrateTo17(db);
+        }
     }
 
     /**
@@ -85,6 +88,26 @@ public class MigrationHelper {
             db.beginTransaction();
             db.execSQL(sqlAddQuoteSource);
             db.execSQL(sqlAddQuoteTZ);
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    /**
+     * Upgrade the database to version 17.
+     *
+     * @param db the database.
+     */
+    private static void migrateTo17(SQLiteDatabase db) {
+        Timber.i("Upgrading database to version 17");
+
+        String sqlAddBudgetNotes = "ALTER TABLE " + DatabaseSchema.BudgetAmountEntry.TABLE_NAME +
+            " ADD COLUMN " + DatabaseSchema.BudgetAmountEntry.COLUMN_NOTES + " text";
+
+        try {
+            db.beginTransaction();
+            db.execSQL(sqlAddBudgetNotes);
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
