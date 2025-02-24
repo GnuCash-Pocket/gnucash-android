@@ -1,0 +1,29 @@
+GnuCash je mobilna aplikacija za praćenje financija za Android.
+
+Radi se o pomoćnoj aplikaciji za desktop verziju GnuCasha, koja omogućava fleksibilno praćenje troškova.
+Spremljene transakcije možeš izvesti u desktop verziju GnuCasha putem raznih formata (CSV / QIF / OFX).
+
+Istaknute karakteristike:
+
+<b>&bull; Jednostavno korisničko sučelje.</b>
+
+<b>&bull; Kontni plan</b>: Matični konto može sadržavati hijerarhiju podkonta.
+Time se omogućava grupiranje sličnih konta (npr. Gotovina, Banka, Dionice) u jedan matični konto (npr. Imovina).
+Također je moguće uvesti postojeće kontne planove desktop verzije GnuCasha.
+
+<b>&bull; Podijeljene transakcije</b>: Svaka transakcija se može podijeliti u nekoliko dijelova – za upis poreza, naknada i drugih složenih unosa.
+
+<b>&bull; Dvojno knjigovodstvo</b>: Za svaku se transakciju knjiži isti iznos na dugovnu stranu jednog konta, te na potražnu stranu drugog konta. Time se osiguravaju bilancirane knjige: razlika između prihoda i rashoda jednaka je zbroju imovine (banka, gotovina, dionice …).
+
+<b>&bull; Vrste konta prihoda/rashoda (kategorije)</b>: Ne služe samo za kategorizaciju novčanog toka. Pravilnom upotrebom dvojnog knjigovostva omogućava se točan prikaz stanja dobiti i gubitka.
+
+<b>&bull; Terminirane transakcije</b>: GnuCash je u stanju automatski stvoriti i unijeti transakcije.
+
+<b>&bull; Izvoz u GnuCash XML, QIF ili OFX</b>: GnuCash je u stanju izvesti konta/transakcije u razne formate koji se koriste za druge programe. Moguće je i aktiviranje sinkronizacije s uslugama trećih strana, kao što su DropBox i Google Drive.
+
+<b>&bull; Izvještaji</b>: Prikaz sažetka transakcija (prihoda i rashoda) u obliku kružnog/stupčanog/linijskog dijagrama
+
+<b>&bull; Widget početnog ekrana</b> za brz pristup kontima i upisivanje transakcija
+
+<br/><b><u>NAPOMENA</u></b>: aplikacija nije u potpunosti kompatibilna s desktop verzijom GnuCasha. Ne možeš sinkronizirati desktop aplikaciju s ovom aplikacijom. Međutim možeš uvezti tvoja konta i transakcije iz GnuCash XML datoteka.
+
