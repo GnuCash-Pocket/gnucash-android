@@ -22,6 +22,6 @@ open class MenuFragment : Fragment() {
                 if (context == null) return false
                 return onOptionsItemSelected(menuItem)
             }
-        })
+        }, this)
     }
 }

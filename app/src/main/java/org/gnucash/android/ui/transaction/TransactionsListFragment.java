@@ -219,14 +219,13 @@ public class TransactionsListFragment extends MenuFragment implements
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor cursor) {
         Timber.d("Transactions loader finished. Swapping in cursor");
-        mTransactionRecyclerAdapter.swapCursor(cursor);
-        mTransactionRecyclerAdapter.notifyDataSetChanged();
+        mTransactionRecyclerAdapter.changeCursor(cursor);
     }
 
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         Timber.d("Resetting transactions loader");
-        mTransactionRecyclerAdapter.swapCursor(null);
+        mTransactionRecyclerAdapter.changeCursor(null);
     }
 
     @Override

@@ -121,14 +121,13 @@ public class BudgetListFragment extends Fragment implements Refreshable,
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loaderCursor, Cursor cursor) {
         Timber.d("Budget loader finished. Swapping in cursor");
-        mBudgetRecyclerAdapter.swapCursor(cursor);
-        mBudgetRecyclerAdapter.notifyDataSetChanged();
+        mBudgetRecyclerAdapter.changeCursor(cursor);
     }
 
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> arg0) {
         Timber.d("Resetting the accounts loader");
-        mBudgetRecyclerAdapter.swapCursor(null);
+        mBudgetRecyclerAdapter.changeCursor(null);
     }
 
     @Override

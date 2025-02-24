@@ -89,7 +89,7 @@ public class AccountsListFragment extends MenuFragment implements
     SearchView.OnCloseListener,
     FragmentResultListener {
 
-    AccountRecyclerAdapter mAccountRecyclerAdapter;
+    private AccountRecyclerAdapter mAccountRecyclerAdapter;
 
     /**
      * Describes the kinds of accounts that should be loaded in the accounts list.
@@ -293,16 +293,16 @@ public class AccountsListFragment extends MenuFragment implements
             inflater.inflate(R.menu.account_actions, menu);
             // Associate searchable configuration with the SearchView
 
-            mSearchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
-            if (mSearchView == null)
+            SearchView searchView = mSearchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
+            if (searchView == null)
                 return;
 
-            Activity context = requireActivity();
-            SearchManager searchManager = (SearchManager) context.getSystemService(Context.SEARCH_SERVICE);
-            mSearchView.setSearchableInfo(
-                searchManager.getSearchableInfo(context.getComponentName()));
-            mSearchView.setOnQueryTextListener(this);
-            mSearchView.setOnCloseListener(this);
+            Activity activity = requireActivity();
+            SearchManager searchManager = (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
+            searchView.setSearchableInfo(
+                searchManager.getSearchableInfo(activity.getComponentName()));
+            searchView.setOnQueryTextListener(this);
+            searchView.setOnCloseListener(this);
         }
     }
 
@@ -340,7 +340,7 @@ public class AccountsListFragment extends MenuFragment implements
     public void onDestroy() {
         super.onDestroy();
         if (mAccountRecyclerAdapter != null)
-            mAccountRecyclerAdapter.swapCursor(null);
+            mAccountRecyclerAdapter.changeCursor(null);
     }
 
     /**
@@ -375,8 +375,7 @@ public class AccountsListFragment extends MenuFragment implements
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor cursor) {
         Timber.d("Accounts loader finished. Swapping in cursor");
-        mAccountRecyclerAdapter.swapCursor(cursor);
-        mAccountRecyclerAdapter.notifyDataSetChanged();
+        mAccountRecyclerAdapter.changeCursor(cursor);
         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
             if (mBinding.list.getAdapter() == null) {
                 mBinding.list.setAdapter(mAccountRecyclerAdapter);
@@ -387,7 +386,7 @@ public class AccountsListFragment extends MenuFragment implements
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         Timber.d("Resetting the accounts loader");
-        mAccountRecyclerAdapter.swapCursor(null);
+        mAccountRecyclerAdapter.changeCursor(null);
     }
 
     @Override
@@ -398,12 +397,13 @@ public class AccountsListFragment extends MenuFragment implements
 
     @Override
     public boolean onQueryTextChange(String newText) {
+        System.out.println("±!@ onQueryTextChange [" + newText + "]");
         String newFilter = !TextUtils.isEmpty(newText) ? newText : null;
-
-        if (mCurrentFilter == null && newFilter == null) {
+        String oldFilter = mCurrentFilter;
+        if (oldFilter == null && newFilter == null) {
             return true;
         }
-        if (mCurrentFilter != null && mCurrentFilter.equals(newFilter)) {
+        if (oldFilter != null && oldFilter.equals(newFilter)) {
             return true;
         }
         mCurrentFilter = newFilter;

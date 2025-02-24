@@ -114,13 +114,13 @@ public abstract class ScheduledActionsListFragment extends MenuFragment implemen
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor cursor) {
         Timber.d("Transactions loader finished. Swapping in cursor");
-        listAdapter.swapCursor(cursor);
+        listAdapter.changeCursor(cursor);
     }
 
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         Timber.d("Resetting transactions loader");
-        listAdapter.swapCursor(null);
+        listAdapter.changeCursor(null);
     }
 
     @Override
