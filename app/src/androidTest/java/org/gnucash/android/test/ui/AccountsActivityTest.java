@@ -205,13 +205,17 @@ public class AccountsActivityTest {
         account.setParentUID(SIMPLE_ACCOUNT_UID);
         mAccountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert);
 
+        onView(withText(SIMPLE_ACCOUNT_NAME)).check(matches(isDisplayed()));
+        onView(withText(SEARCH_ACCOUNT_NAME)).check(doesNotExist());
+
         //enter search query
-//        ActionBarUtils.clickSherlockActionBarItem(mSolo, R.id.menu_search);
         onView(withId(R.id.menu_search)).perform(click());
         onView(withId(R.id.search_src_text)).perform(typeText("Se"));
+        onView(withText(SIMPLE_ACCOUNT_NAME)).check(doesNotExist());
         onView(withText(SEARCH_ACCOUNT_NAME)).check(matches(isDisplayed()));
 
         onView(withId(R.id.search_src_text)).perform(clearText());
+        onView(withText(SIMPLE_ACCOUNT_NAME)).check(matches(isDisplayed()));
         onView(withText(SEARCH_ACCOUNT_NAME)).check(doesNotExist());
     }
 
@@ -379,8 +383,7 @@ public class AccountsActivityTest {
     private void sleep(long millis) {
         try {
             Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (InterruptedException ignore) {
         }
     }
 

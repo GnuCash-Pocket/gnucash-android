@@ -1377,6 +1377,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         mDb.delete(DatabaseSchema.BudgetAmountEntry.TABLE_NAME, null, null);
         mDb.delete(DatabaseSchema.BudgetEntry.TABLE_NAME, null, null);
         mDb.delete(DatabaseSchema.RecurrenceEntry.TABLE_NAME, null, null);
+        rootUID = null;
 
         return mDb.delete(AccountEntry.TABLE_NAME, null, null);
     }
@@ -1385,6 +1386,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     public boolean deleteRecord(@NonNull String uid) throws SQLException {
         boolean result = super.deleteRecord(uid);
         if (result) {
+            if (uid.equals(rootUID)) rootUID = null;
             ContentValues contentValues = new ContentValues();
             contentValues.putNull(AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID);
             mDb.update(mTableName, contentValues,
