@@ -8,13 +8,16 @@ import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.widget.ViewPager2
 
 /**
  * [ViewHolder] implementation for handling [Fragment]s. Used in
  * [FragmentStateAdapter].
  */
-class FragmentViewHolder private constructor(container: FrameLayout) :
-    RecyclerView.ViewHolder(container) {
+class FragmentViewHolder private constructor(
+    container: FrameLayout,
+    private val pager: ViewPager2
+) : RecyclerView.ViewHolder(container) {
 
     private val container: FrameLayout
         get() = itemView as FrameLayout
@@ -43,6 +46,7 @@ class FragmentViewHolder private constructor(container: FrameLayout) :
                         if (v.parent === container) return
                         container.removeAllViews()
                         container.addView(v)
+                        fragment.setMenuVisibility(layoutPosition == pager.currentItem)
                     }
                 }
             }, false
@@ -63,7 +67,7 @@ class FragmentViewHolder private constructor(container: FrameLayout) :
 
     companion object {
         @JvmStatic
-        fun create(parent: ViewGroup): FragmentViewHolder {
+        fun create(parent: ViewGroup, pager: ViewPager2): FragmentViewHolder {
             val container = FrameLayout(parent.context).apply {
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -72,7 +76,7 @@ class FragmentViewHolder private constructor(container: FrameLayout) :
                 id = ViewCompat.generateViewId()
                 isSaveEnabled = false
             }
-            return FragmentViewHolder(container)
+            return FragmentViewHolder(container, pager)
         }
     }
 }

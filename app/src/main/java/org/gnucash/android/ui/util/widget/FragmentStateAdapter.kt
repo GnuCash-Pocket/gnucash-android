@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
+import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 
 abstract class FragmentStateAdapter(activity: FragmentActivity) :
     RecyclerView.Adapter<FragmentViewHolder>() {
@@ -15,6 +16,16 @@ abstract class FragmentStateAdapter(activity: FragmentActivity) :
     private val fragmentManager: FragmentManager = activity.supportFragmentManager
     private val fragmentsById = LongSparseArray<Fragment>()
     private val fragments = SparseArray<Fragment?>()
+
+    private var pager: ViewPager2? = null
+    var selectedPosition: Int = RecyclerView.NO_POSITION
+
+    // signal 1 of 3: current item has changed
+    private val pageChangeCallback = object : OnPageChangeCallback() {
+        override fun onPageSelected(position: Int) {
+            handlePageSelected(position)
+        }
+    }
 
     init {
         setHasStableIds(true)
@@ -36,7 +47,7 @@ abstract class FragmentStateAdapter(activity: FragmentActivity) :
     abstract fun createFragment(position: Int): Fragment
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FragmentViewHolder {
-        return FragmentViewHolder.create(parent)
+        return FragmentViewHolder.create(parent, pager!!)
     }
 
     override fun onBindViewHolder(holder: FragmentViewHolder, position: Int) {
@@ -50,8 +61,15 @@ abstract class FragmentStateAdapter(activity: FragmentActivity) :
         holder.bind(fragment, fragmentManager)
     }
 
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
+        pager = inferViewPager(recyclerView)
+        pager?.registerOnPageChangeCallback(pageChangeCallback)
+    }
+
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
         super.onDetachedFromRecyclerView(recyclerView)
+        pager?.unregisterOnPageChangeCallback(pageChangeCallback)
         removeFragments()
     }
 
@@ -79,5 +97,22 @@ abstract class FragmentStateAdapter(activity: FragmentActivity) :
 
     fun getFragment(position: Int): Fragment? {
         return fragments[position]
+    }
+
+    private fun inferViewPager(recyclerView: RecyclerView): ViewPager2 {
+        val parent = recyclerView.parent
+        if (parent is ViewPager2) {
+            return parent
+        }
+        throw IllegalStateException("Expected ViewPager2 instance. Got: $parent")
+    }
+
+    private fun handlePageSelected(position: Int) {
+        selectedPosition = position
+        val count = getItemCount()
+        for (i in 0 until count) {
+            val fragment = getFragment(i)
+            fragment?.setMenuVisibility(i == position)
+        }
     }
 }

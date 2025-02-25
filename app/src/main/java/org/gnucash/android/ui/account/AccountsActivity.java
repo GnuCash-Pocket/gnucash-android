@@ -133,6 +133,13 @@ public class AccountsActivity extends BaseDrawerActivity implements
 
     @Override
     public void refresh() {
+        final int count = mPagerAdapter.getItemCount();
+        for (int i = 0; i < count; i++) {
+            Fragment fragment = mPagerAdapter.getFragment(i);
+            if (fragment instanceof Refreshable) {
+                ((Refreshable) fragment).refresh();
+            }
+        }
         mPagerAdapter.notifyDataSetChanged();
     }
 
