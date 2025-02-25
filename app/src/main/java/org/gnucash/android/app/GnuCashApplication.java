@@ -115,7 +115,7 @@ public class GnuCashApplication extends Application {
         }
 
         // Logging
-        Timber.Tree tree = (Timber.Tree) (isCrashlyticsEnabled() ? new CrashlyticsTree(BuildConfig.DEBUG) : new LogTree(BuildConfig.DEBUG));
+        Timber.Tree tree = (Timber.Tree) (BuildConfig.GOOGLE_GCM && isCrashlyticsEnabled() ? new CrashlyticsTree(BuildConfig.DEBUG) : new LogTree(BuildConfig.DEBUG));
         Timber.plant(tree);
 
         initializeDatabaseAdapters(context);
@@ -333,7 +333,7 @@ public class GnuCashApplication extends Application {
      * @return {@code true} if crashlytics is enabled, {@code false} otherwise
      */
     public static boolean isCrashlyticsEnabled() {
-        return BuildConfig.GOOGLE_GCM && PreferenceManager.getDefaultSharedPreferences(context)
+        return PreferenceManager.getDefaultSharedPreferences(context)
             .getBoolean(context.getString(R.string.key_enable_crashlytics), false);
     }
 
