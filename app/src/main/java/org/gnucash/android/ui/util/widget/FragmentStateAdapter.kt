@@ -2,6 +2,7 @@ package org.gnucash.android.ui.util.widget
 
 import android.util.SparseArray
 import android.view.ViewGroup
+import androidx.collection.LongSparseArray
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
@@ -12,6 +13,7 @@ abstract class FragmentStateAdapter(activity: FragmentActivity) :
     RecyclerView.Adapter<FragmentViewHolder>() {
 
     private val fragmentManager: FragmentManager = activity.supportFragmentManager
+    private val fragmentsById = LongSparseArray<Fragment>()
     private val fragments = SparseArray<Fragment?>()
 
     init {
@@ -38,9 +40,11 @@ abstract class FragmentStateAdapter(activity: FragmentActivity) :
     }
 
     override fun onBindViewHolder(holder: FragmentViewHolder, position: Int) {
-        var fragment = fragments[position]
+        val itemId = getItemId(position)
+        var fragment = fragmentsById.get(itemId)
         if (fragment == null) {
             fragment = createFragment(position)
+            fragmentsById.put(itemId, fragment)
             fragments[position] = fragment
         }
         holder.bind(fragment, fragmentManager)
@@ -65,6 +69,7 @@ abstract class FragmentStateAdapter(activity: FragmentActivity) :
         } else {
             tx.commitAllowingStateLoss()
         }
+        fragmentsById.clear()
         fragments.clear()
     }
 
