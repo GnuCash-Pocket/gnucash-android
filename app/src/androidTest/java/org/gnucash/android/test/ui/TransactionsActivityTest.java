@@ -27,9 +27,11 @@ import static androidx.test.espresso.matcher.ViewMatchers.isChecked;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withParent;
+import static androidx.test.espresso.matcher.ViewMatchers.withTagValue;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 import android.Manifest;
@@ -37,13 +39,11 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 
 import androidx.test.espresso.Espresso;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.uiautomator.UiDevice;
 
 import org.gnucash.android.R;
@@ -72,15 +72,13 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
-@RunWith(AndroidJUnit4.class)
-public class TransactionsActivityTest {
+public class TransactionsActivityTest extends GnuAndroidTest {
     private static final String TRANSACTION_AMOUNT = "9.99";
     private static final String TRANSACTION_NAME = "Pizza";
     private static final String TRANSACTIONS_ACCOUNT_UID = "transactions-account";
@@ -88,8 +86,8 @@ public class TransactionsActivityTest {
 
     private static final String TRANSFER_ACCOUNT_NAME = "Transfer account";
     private static final String TRANSFER_ACCOUNT_UID = "transfer_account";
-    public static final String CURRENCY_CODE = "USD";
-    public static Commodity COMMODITY = Commodity.DEFAULT_COMMODITY;
+    private static final String CURRENCY_CODE = "USD";
+    private static Commodity COMMODITY = Commodity.DEFAULT_COMMODITY;
 
     private Transaction mTransaction;
     private long mTransactionTimeMillis;
@@ -107,7 +105,7 @@ public class TransactionsActivityTest {
 
     @Rule
     public ActivityTestRule<TransactionsActivity> mActivityRule =
-            new ActivityTestRule<>(TransactionsActivity.class, true, false);
+        new ActivityTestRule<>(TransactionsActivity.class, true, false);
 
     private Account mBaseAccount;
     private Account mTransferAccount;
@@ -129,8 +127,6 @@ public class TransactionsActivityTest {
 
         mTransaction.addSplit(split);
         mTransaction.addSplit(split.createPair(TRANSFER_ACCOUNT_UID));
-
-        mBaseAccount.addTransaction(mTransaction);
     }
 
     @BeforeClass
@@ -142,10 +138,6 @@ public class TransactionsActivityTest {
         mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
         COMMODITY = CommoditiesDbAdapter.getInstance().getCommodity(CURRENCY_CODE);
-
-//		PreferenceActivity.getActiveBookSharedPreferences(context)
-//				.edit().putBoolean(context.getString(R.string.key_use_compact_list), false)
-//				.apply();
     }
 
     @Before
@@ -171,7 +163,8 @@ public class TransactionsActivityTest {
 
 
     private void validateTransactionListDisplayed() {
-        onView(withId(android.R.id.list)).check(matches(isDisplayed()));
+        onView(allOf(withId(android.R.id.list), withTagValue(is("transactions"))))
+            .check(matches(isDisplayed()));
     }
 
     private int getTransactionCount() {
@@ -194,14 +187,14 @@ public class TransactionsActivityTest {
         onView(withId(R.id.fab_create_transaction)).perform(click());
 
         onView(withId(R.id.input_transaction_name))
-                .check(matches(isDisplayed()))
-                .perform(typeText("Lunch"));
+            .check(matches(isDisplayed()))
+            .perform(typeText("Lunch"));
 
         Espresso.closeSoftKeyboard();
 
         onView(withId(R.id.menu_save))
-                .check(matches(isDisplayed()))
-                .perform(click());
+            .check(matches(isDisplayed()))
+            .perform(click());
         onView(withText(R.string.title_add_transaction)).check(matches(isDisplayed()));
 
         assertToastDisplayed(R.string.toast_transanction_amount_required);
@@ -232,8 +225,8 @@ public class TransactionsActivityTest {
     private void assertToastDisplayed(int toastString) {
         UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).waitForIdle();
         onView(withText(toastString))
-                .inRoot(withDecorView(not(mTransactionsActivity.getWindow().getDecorView())))
-                .check(matches(isDisplayed()));
+            .inRoot(withDecorView(not(mTransactionsActivity.getWindow().getDecorView())))
+            .check(matches(isDisplayed()));
     }
 
 
@@ -266,9 +259,9 @@ public class TransactionsActivityTest {
         onView(withId(R.id.input_transaction_amount)).perform(typeText("899"));
         Espresso.closeSoftKeyboard();
         onView(withId(R.id.input_transaction_type))
-                .check(matches(allOf(isDisplayed(), withText(R.string.label_receive))))
-                .perform(click())
-                .check(matches(withText(R.string.label_spend)));
+            .check(matches(allOf(isDisplayed(), withText(R.string.label_receive))))
+            .perform(click())
+            .check(matches(withText(R.string.label_spend)));
 
         String expectedValue = NumberFormat.getInstance().format(-899);
         onView(withId(R.id.input_transaction_amount)).check(matches(withText(expectedValue)));
@@ -307,8 +300,8 @@ public class TransactionsActivityTest {
 
         onView(withId(R.id.input_transfer_account_spinner)).perform(click());
         onView(withText(euroAccount.getFullName()))
-                .check(matches(isDisplayed()))
-                .perform(click());
+            .check(matches(isDisplayed()))
+            .perform(click());
 
         onView(withId(R.id.menu_save)).perform(click());
 
@@ -316,15 +309,15 @@ public class TransactionsActivityTest {
         onView(withId(R.id.radio_converted_amount)).perform(click());
         onView(withId(R.id.input_converted_amount)).perform(typeText("5"));
         Espresso.closeSoftKeyboard();
-        onView(withId(R.id.btn_save)).perform(click());
+        onView(withId(BUTTON_POSITIVE)).perform(click());
 
         List<Transaction> allTransactions = mTransactionsDbAdapter.getAllTransactionsForAccount(TRANSACTIONS_ACCOUNT_UID);
         assertThat(allTransactions).hasSize(transactionCount + 1);
         Transaction multiTrans = allTransactions.get(0);
         assertThat(multiTrans.getSplits()).hasSize(2);
         assertThat(multiTrans.getSplits()).extracting("accountUID")
-                .contains(TRANSACTIONS_ACCOUNT_UID)
-                .contains(euroAccount.getUID());
+            .contains(TRANSACTIONS_ACCOUNT_UID)
+            .contains(euroAccount.getUID());
 
         Split euroSplit = multiTrans.getSplits(euroAccount.getUID()).get(0);
         Money expectedQty = new Money("5", euro.getCurrencyCode());
@@ -372,7 +365,7 @@ public class TransactionsActivityTest {
         mTransactionsDbAdapter.deleteAllRecords();
 
         assertThat(mTransactionsDbAdapter.getRecordsCount()).isEqualTo(0);
-        String imbalanceAcctUID = mAccountsDbAdapter.getImbalanceAccountUID(Commodity.getInstance(CURRENCY_CODE));
+        String imbalanceAcctUID = mAccountsDbAdapter.getImbalanceAccountUID(COMMODITY);
         assertThat(imbalanceAcctUID).isNull();
 
         validateTransactionListDisplayed();
@@ -389,7 +382,7 @@ public class TransactionsActivityTest {
         assertThat(mTransactionsDbAdapter.getRecordsCount()).isEqualTo(1);
         Transaction transaction = mTransactionsDbAdapter.getAllTransactions().get(0);
         assertThat(transaction.getSplits()).hasSize(2);
-        imbalanceAcctUID = mAccountsDbAdapter.getImbalanceAccountUID(Commodity.getInstance(CURRENCY_CODE));
+        imbalanceAcctUID = mAccountsDbAdapter.getImbalanceAccountUID(COMMODITY);
         assertThat(imbalanceAcctUID).isNotNull();
         assertThat(imbalanceAcctUID).isNotEmpty();
         assertThat(mAccountsDbAdapter.isHiddenAccount(imbalanceAcctUID)).isTrue(); //imbalance account should be hidden in single entry mode
@@ -409,7 +402,7 @@ public class TransactionsActivityTest {
         mTransactionsDbAdapter.deleteAllRecords();
 
         //when we start there should be no imbalance account in the system
-        String imbalanceAcctUID = mAccountsDbAdapter.getImbalanceAccountUID(Commodity.getInstance(CURRENCY_CODE));
+        String imbalanceAcctUID = mAccountsDbAdapter.getImbalanceAccountUID(COMMODITY);
         assertThat(imbalanceAcctUID).isNull();
 
         validateTransactionListDisplayed();
@@ -437,7 +430,7 @@ public class TransactionsActivityTest {
         Transaction transaction = transactions.get(0);
 
         assertThat(transaction.getSplits()).hasSize(3); //auto-balanced
-        imbalanceAcctUID = mAccountsDbAdapter.getImbalanceAccountUID(Commodity.getInstance(CURRENCY_CODE));
+        imbalanceAcctUID = mAccountsDbAdapter.getImbalanceAccountUID(COMMODITY);
         assertThat(imbalanceAcctUID).isNotNull();
         assertThat(imbalanceAcctUID).isNotEmpty();
         assertThat(mAccountsDbAdapter.isHiddenAccount(imbalanceAcctUID)).isFalse();
@@ -514,7 +507,7 @@ public class TransactionsActivityTest {
         validateEditTransactionFields(mTransaction);
 
         onView(withId(R.id.input_transaction_type)).check(matches(
-                allOf(isDisplayed(), withText(R.string.label_receive))
+            allOf(isDisplayed(), withText(R.string.label_receive))
         )).perform(click()).check(matches(withText(R.string.label_spend)));
 
         onView(withId(R.id.input_transaction_amount)).check(matches(withText("-9.99")));
@@ -545,9 +538,9 @@ public class TransactionsActivityTest {
         long expectedDate = mTransactionTimeMillis;
         long trxDate = transaction.getTimeMillis();
         assertThat(TransactionFormFragment.DATE_FORMATTER.print(expectedDate))
-                .isEqualTo(TransactionFormFragment.DATE_FORMATTER.print(trxDate));
+            .isEqualTo(TransactionFormFragment.DATE_FORMATTER.print(trxDate));
         assertThat(TransactionFormFragment.TIME_FORMATTER.print(expectedDate))
-                .isEqualTo(TransactionFormFragment.TIME_FORMATTER.print(trxDate));
+            .isEqualTo(TransactionFormFragment.TIME_FORMATTER.print(trxDate));
 
         Split baseSplit = transaction.getSplits(TRANSACTIONS_ACCOUNT_UID).get(0);
         Money expectedAmount = new Money(TRANSACTION_AMOUNT, CURRENCY_CODE);
@@ -573,7 +566,7 @@ public class TransactionsActivityTest {
     @Test
     public void testMoveTransaction() {
         Account account = new Account("Move account");
-        account.setCommodity(Commodity.getInstance(CURRENCY_CODE));
+        account.setCommodity(COMMODITY);
         mAccountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert);
 
         assertThat(mTransactionsDbAdapter.getAllTransactionsForAccount(account.getUID())).hasSize(0);
@@ -581,7 +574,7 @@ public class TransactionsActivityTest {
         onView(withId(R.id.options_menu)).perform(click());
         onView(withText(R.string.menu_move_transaction)).perform(click());
 
-        onView(withId(R.id.btn_save)).perform(click());
+        onView(withId(BUTTON_POSITIVE)).perform(click());
 
         assertThat(mTransactionsDbAdapter.getAllTransactionsForAccount(TRANSACTIONS_ACCOUNT_UID)).hasSize(0);
 
@@ -597,7 +590,7 @@ public class TransactionsActivityTest {
     public void editingSplit_shouldNotSetAmountToZero() {
         mTransactionsDbAdapter.deleteAllRecords();
 
-        Account account = new Account("Z Account", Commodity.getInstance(CURRENCY_CODE));
+        Account account = new Account("Z Account", COMMODITY);
         mAccountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert);
 
         //create new transaction "Transaction Acct" --> "Transfer Account"
@@ -624,7 +617,7 @@ public class TransactionsActivityTest {
         assertThat(mTransactionsDbAdapter.getTransactionsCount(TRANSACTIONS_ACCOUNT_UID)).isZero();
 
         assertThat(mAccountsDbAdapter.getAccountBalance(account.getUID()))
-                .isEqualTo(new Money("1024", CURRENCY_CODE));
+            .isEqualTo(new Money("1024", CURRENCY_CODE));
     }
 
     @Test
@@ -697,7 +690,7 @@ public class TransactionsActivityTest {
         onView(withId(R.id.input_converted_amount)).perform(typeText("5"));
 
         Espresso.closeSoftKeyboard();
-        onView(withId(R.id.btn_save)).perform(click()); //close currency exchange dialog
+        onView(withId(BUTTON_POSITIVE)).perform(click()); //close currency exchange dialog
         onView(withId(R.id.menu_save)).perform(click()); //save transaction
 
         List<Transaction> transactions = mTransactionsDbAdapter.getAllTransactionsForAccount(account.getUID());
@@ -705,11 +698,10 @@ public class TransactionsActivityTest {
         Transaction transaction = transactions.get(0);
         assertThat(transaction.getSplits()).hasSize(2);
         assertThat(transaction.getSplits()).extracting("accountUID")
-                .contains(account.getUID()).contains(mBaseAccount.getUID());
-
+            .contains(account.getUID()).contains(mBaseAccount.getUID());
 
         onView(allOf(withParent(hasDescendant(withText(trnDescription))),
-                withId(R.id.edit_transaction))).perform(click());
+            withId(R.id.edit_transaction))).perform(click());
 
         //do nothing to the transaction, just save it
         onView(withId(R.id.menu_save)).perform(click());
@@ -769,7 +761,7 @@ public class TransactionsActivityTest {
         refreshTransactionsList();
         onView(withText(trnDescription)).check(matches(isDisplayed())); //transaction was added
         onView(allOf(withParent(hasDescendant(withText(trnDescription))),
-                withId(R.id.edit_transaction))).perform(click());
+            withId(R.id.edit_transaction))).perform(click());
 
         //now change the transfer account to be no longer multi-currency
         onView(withId(R.id.input_transfer_account_spinner)).check(matches(isDisplayed()));
@@ -791,8 +783,8 @@ public class TransactionsActivityTest {
         //the crux of the test. All splits should now have value and quantity of USD $10
         List<Split> allSplits = singleCurrencyTrn.getSplits();
         assertThat(allSplits).extracting("accountUID")
-                .contains(mTransferAccount.getUID())
-                .doesNotContain(euroAccount.getUID());
+            .contains(mTransferAccount.getUID())
+            .doesNotContain(euroAccount.getUID());
         assertThat(allSplits).extracting("value").contains(expectedValue).doesNotContain(expectedQty);
         assertThat(allSplits).extracting("quantity").contains(expectedValue).doesNotContain(expectedQty);
     }
@@ -831,15 +823,15 @@ public class TransactionsActivityTest {
         assertThat(savedTransaction.getSplits()).extracting("value").contains(expectedValue);
 
         assertThat(savedTransaction.getSplits(TRANSACTIONS_ACCOUNT_UID).get(0)
-                .isEquivalentTo(multiTransaction.getSplits(TRANSACTIONS_ACCOUNT_UID).get(0)))
-                .isTrue();
+            .isEquivalentTo(multiTransaction.getSplits(TRANSACTIONS_ACCOUNT_UID).get(0)))
+            .isTrue();
 
         refreshTransactionsList();
 
         //open transaction for editing
         onView(withText(trnDescription)).check(matches(isDisplayed())); //transaction was added
         onView(allOf(withParent(hasDescendant(withText(trnDescription))),
-                withId(R.id.edit_transaction))).perform(click());
+            withId(R.id.edit_transaction))).perform(click());
 
         onView(withId(R.id.input_transfer_account_spinner)).perform(click());
         onView(withText(TRANSFER_ACCOUNT_NAME)).perform(click());
@@ -851,7 +843,7 @@ public class TransactionsActivityTest {
             .check(matches(isDisplayed()))
             .perform(typeText("5"));
         Espresso.closeSoftKeyboard();
-        onView(withId(R.id.btn_save)).perform(click());
+        onView(withId(BUTTON_POSITIVE)).perform(click());
 
         onView(withId(R.id.input_transfer_account_spinner)).perform(click());
         onView(withText(TRANSFER_ACCOUNT_NAME)).perform(click());
@@ -860,8 +852,8 @@ public class TransactionsActivityTest {
 
         Transaction editedTransaction = mTransactionsDbAdapter.getRecord(multiTransaction.getUID());
         assertThat(editedTransaction.getSplits(TRANSACTIONS_ACCOUNT_UID).get(0)
-                .isEquivalentTo(savedTransaction.getSplits(TRANSACTIONS_ACCOUNT_UID).get(0)))
-                .isTrue();
+            .isEquivalentTo(savedTransaction.getSplits(TRANSACTIONS_ACCOUNT_UID).get(0)))
+            .isTrue();
 
         Money firstAcctBalance = mAccountsDbAdapter.getAccountBalance(TRANSACTIONS_ACCOUNT_UID);
         assertThat(firstAcctBalance).isEqualTo(editedTransaction.getBalance(TRANSACTIONS_ACCOUNT_UID));
@@ -896,8 +888,9 @@ public class TransactionsActivityTest {
                     mTransactionsActivity.refresh();
                 }
             });
+            sleep(1000);
         } catch (Throwable throwable) {
-            System.err.println("Failed to refresh fragment");
+            System.err.println("Failed to refresh transactions");
         }
     }
 

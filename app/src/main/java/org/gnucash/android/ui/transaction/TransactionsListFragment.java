@@ -143,6 +143,7 @@ public class TransactionsListFragment extends MenuFragment implements
             mBinding.list.setLayoutManager(mLayoutManager);
         }
         mBinding.list.setEmptyView(mBinding.emptyView);
+        mBinding.list.setTag("transactions");
 
         mTransactionRecyclerAdapter = new TransactionRecyclerAdapter(null);
         mBinding.list.setAdapter(mTransactionRecyclerAdapter);

@@ -34,7 +34,6 @@ import androidx.test.espresso.contrib.DrawerActions;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.espresso.intent.rule.IntentsTestRule;
 import androidx.test.rule.GrantPermissionRule;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -47,13 +46,11 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Test support for multiple books in the application
  */
-@RunWith(AndroidJUnit4.class)
-public class MultiBookTest {
+public class MultiBookTest extends GnuAndroidTest {
 
     private static BooksDbAdapter mBooksDbAdapter;
 

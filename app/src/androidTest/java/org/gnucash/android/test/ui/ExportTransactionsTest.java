@@ -33,7 +33,6 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
 import androidx.test.espresso.contrib.DrawerActions;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
 
@@ -53,17 +52,12 @@ import org.gnucash.android.model.Transaction;
 import org.gnucash.android.ui.account.AccountsActivity;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
 
 import timber.log.Timber;
 
-@RunWith(AndroidJUnit4.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ExportTransactionsTest {
+public class ExportTransactionsTest extends GnuAndroidTest {
 
     private DatabaseHelper mDbHelper;
     private SQLiteDatabase mDb;

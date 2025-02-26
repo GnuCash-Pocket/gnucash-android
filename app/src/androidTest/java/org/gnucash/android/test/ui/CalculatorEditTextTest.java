@@ -32,7 +32,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.text.InputType;
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
 
@@ -56,11 +55,9 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 // TODO: Find out how to press the keys in the KeyboardView.
-@RunWith(AndroidJUnit4.class)
-public class CalculatorEditTextTest {
+public class CalculatorEditTextTest extends GnuAndroidTest {
     private static final String DUMMY_ACCOUNT_UID = "transactions-account";
     private static final String DUMMY_ACCOUNT_NAME = "Transactions Account";
 

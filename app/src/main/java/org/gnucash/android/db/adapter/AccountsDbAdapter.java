@@ -152,6 +152,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         //in-case the account already existed, we want to update the templates based on it as well
         super.addRecord(account, updateMethod);
         //now add transactions if there are any
+        // NB! Beware of transactions that reference accounts not yet in the db,
         if (account.getAccountType() != AccountType.ROOT) {
             for (Transaction t : account.getTransactions()) {
                 t.setCommodity(account.getCommodity());

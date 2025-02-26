@@ -16,7 +16,6 @@
 
 package org.gnucash.android.ui.account;
 
-import static org.gnucash.android.db.DatabaseHelper.escapeForLike;
 import static org.gnucash.android.util.ColorExtKt.parseColor;
 
 import android.app.Activity;
@@ -68,7 +67,6 @@ import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
-import org.gnucash.android.ui.report.BaseReportFragment;
 import org.gnucash.android.ui.util.AccountBalanceTask;
 import org.gnucash.android.ui.util.CursorRecyclerAdapter;
 import org.gnucash.android.util.BackupManager;
@@ -156,6 +154,7 @@ public class AccountsListFragment extends MenuFragment implements
         mBinding.list.setHasFixedSize(true);
         mBinding.list.setEmptyView(mBinding.emptyView);
         mBinding.list.setAdapter(mAccountRecyclerAdapter);
+        mBinding.list.setTag("accounts");
 
         switch (mDisplayMode) {
             case TOP_LEVEL:

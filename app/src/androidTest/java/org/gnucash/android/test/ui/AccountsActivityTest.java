@@ -52,12 +52,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.preference.PreferenceManager;
 import android.view.View;
 
-import androidx.fragment.app.Fragment;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.kobakei.ratethisapp.RateThisApp;
 
@@ -87,16 +85,13 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import timber.log.Timber;
 
-
-@RunWith(AndroidJUnit4.class)
-public class AccountsActivityTest {
+public class AccountsActivityTest extends GnuAndroidTest {
     private static final String ACCOUNTS_CURRENCY_CODE = "USD";
     // Don't add static here, otherwise it gets set to null by super.tearDown()
     private final Commodity ACCOUNTS_CURRENCY = Commodity.getInstance(ACCOUNTS_CURRENCY_CODE);
@@ -329,9 +324,8 @@ public class AccountsActivityTest {
         refreshAccountsList();
 
         onView(allOf(withParent(hasDescendant(withText(SIMPLE_ACCOUNT_NAME))),
-                withId(R.id.options_menu))).perform(click());
-//        onView(withId(R.id.options_menu)).perform(click()); //there should only be one account visible
-        sleep(1000);
+            withId(R.id.options_menu),
+            isDisplayed())).perform(click());
         onView(withText(R.string.title_edit_account)).check(matches(isDisplayed())).perform(click());
         onView(withId(R.id.fragment_account_form)).check(matches(isDisplayed()));
 
@@ -531,8 +525,9 @@ public class AccountsActivityTest {
                     mAccountsActivity.refresh();
                 }
             });
+            sleep(1000);
         } catch (Throwable throwable) {
-            System.err.println("Failed to refresh fragment");
+            System.err.println("Failed to refresh accounts");
         }
     }
 

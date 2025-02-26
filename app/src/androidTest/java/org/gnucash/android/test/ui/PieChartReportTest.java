@@ -35,7 +35,6 @@ import androidx.test.espresso.action.Press;
 import androidx.test.espresso.action.Tap;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -65,13 +64,11 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.math.BigDecimal;
 import java.util.Locale;
 
-@RunWith(AndroidJUnit4.class)
-public class PieChartReportTest {
+public class PieChartReportTest extends GnuAndroidTest {
 
     private static final String TRANSACTION_NAME = "Pizza";
     private static final double TRANSACTION_AMOUNT = 9.99;

@@ -37,20 +37,16 @@ import static org.hamcrest.Matchers.not;
 import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.contrib.DrawerActions;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
@@ -64,18 +60,10 @@ import org.gnucash.android.ui.account.AccountsActivity;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
 
-import timber.log.Timber;
-
-
-@RunWith(AndroidJUnit4.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class OwnCloudExportTest {
+public class OwnCloudExportTest extends GnuAndroidTest {
 
     private Context context;
     private SharedPreferences mPrefs;
@@ -156,7 +144,7 @@ public class OwnCloudExportTest {
      * It might fail if it takes too long to connect to the server or if there is no network
      */
     @Test
-    public void OwnCloudCredentials() {
+    public void ownCloudCredentials() {
         Assume.assumeTrue(hasActiveInternetConnection());
         onView(withId(R.id.drawer_layout)).perform(DrawerActions.open());
         onView(withText(R.string.title_settings)).perform(scrollTo());
@@ -171,9 +159,9 @@ public class OwnCloudExportTest {
         onView(withId(R.id.owncloud_dir)).perform(clearText()).perform(typeText(OC_DIR), closeSoftKeyboard());
         // owncloud demo server is offline, so fake check data succeeded.
         if (OC_DEMO_DISABLED) return;
-        onView(withId(R.id.btn_save)).perform(click());
+        onView(withId(BUTTON_POSITIVE)).perform(click());
         sleep(5000);
-        onView(withId(R.id.btn_save)).perform(click());
+        onView(withId(BUTTON_POSITIVE)).perform(click());
 
         assertEquals(mPrefs.getString(context.getString(R.string.key_owncloud_server), null), OC_SERVER);
         assertEquals(mPrefs.getString(context.getString(R.string.key_owncloud_username), null), OC_USERNAME);
@@ -184,7 +172,7 @@ public class OwnCloudExportTest {
     }
 
     //// FIXME: 20.04.2017 This test now fails since introduction of SAF.
-    public void OwnCloudExport() {
+    public void ownCloudExport() {
         Assume.assumeTrue(hasActiveInternetConnection());
         mPrefs.edit().putBoolean(context.getString(R.string.key_owncloud_sync), true).commit();
 
