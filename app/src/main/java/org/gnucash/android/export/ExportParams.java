@@ -43,7 +43,6 @@ public class ExportParams {
         SD_CARD("SD Card"),
         SHARING("External Service"),
         DROPBOX("Dropbox"),
-        GOOGLE_DRIVE("Google Drive"),
         OWNCLOUD("ownCloud"),
         URI("Sync Service");
 

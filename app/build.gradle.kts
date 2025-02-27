@@ -167,8 +167,6 @@ dependencies {
     implementation("com.ezylang:EvalEx:3.2.0")
     implementation("androidx.drawerlayout:drawerlayout:1.2.0")
 
-    implementation("com.google.android.gms:play-services-drive:17.0.0")
-
     // Logging
     implementation("com.google.firebase:firebase-crashlytics:19.4.1")
     implementation("com.jakewharton.timber:timber:5.0.1")

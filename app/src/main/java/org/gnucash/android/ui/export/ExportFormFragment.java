@@ -73,7 +73,6 @@ import org.gnucash.android.model.BaseModel;
 import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.passcode.PasscodeHelper;
-import org.gnucash.android.ui.settings.BackupPreferenceFragment;
 import org.gnucash.android.ui.settings.dialog.OwnCloudDialogFragment;
 import org.gnucash.android.ui.transaction.TransactionFormFragment;
 import org.gnucash.android.ui.util.RecurrenceParser;
@@ -239,7 +238,7 @@ public class ExportFormFragment extends MenuFragment implements
         Timestamp startTime = exportParams.getExportStartTime();
 
         switch (exportTarget) {
-            case DROPBOX, GOOGLE_DRIVE:
+            case DROPBOX:
                 mBinding.spinnerExportDestination.setSelection(TARGET_DROPBOX);
                 break;
             case OWNCLOUD:
@@ -641,14 +640,7 @@ public class ExportFormFragment extends MenuFragment implements
      */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
         switch (requestCode) {
-            case BackupPreferenceFragment.REQUEST_RESOLVE_CONNECTION:
-                if (resultCode == Activity.RESULT_OK) {
-                    BackupPreferenceFragment.mGoogleApiClient.connect();
-                }
-                break;
-
             case REQUEST_EXPORT_FILE:
                 if (resultCode == Activity.RESULT_OK) {
                     if (data != null) {
