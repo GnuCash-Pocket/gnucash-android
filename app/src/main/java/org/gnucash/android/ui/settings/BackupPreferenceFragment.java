@@ -16,6 +16,7 @@
 
 package org.gnucash.android.ui.settings;
 
+import static org.gnucash.android.app.ActivityExtKt.findActivity;
 import static org.gnucash.android.app.IntentExtKt.takePersistableUriPermission;
 import static org.gnucash.android.util.ContentExtKt.getDocumentName;
 
@@ -38,6 +39,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -70,7 +72,7 @@ import timber.log.Timber;
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class BackupPreferenceFragment extends PreferenceFragmentCompat implements
-        Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
+    Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
 
     /**
      * Collects references to the UI elements and binds click listeners
@@ -142,9 +144,9 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
 
         pref = findPreference(getString(R.string.key_backup_location));
         pref.setOnPreferenceClickListener(this);
-        Uri defaultBackupLocation = BackupManager.getBookBackupFileUri(GnuCashApplication.getActiveBookUID());
+        Uri defaultBackupLocation = BackupManager.getBookBackupFileUri(context, GnuCashApplication.getActiveBookUID());
         if (defaultBackupLocation != null) {
-            pref.setSummary(getDocumentName(defaultBackupLocation, pref.getContext()));
+            pref.setSummary(getDocumentName(defaultBackupLocation, context));
         }
 
         pref = findPreference(getString(R.string.key_dropbox_sync));
@@ -292,13 +294,14 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
      * Toggles synchronization with ownCloud on or off
      */
     private void toggleOwnCloudSync(Preference pref) {
-        SharedPreferences mPrefs = getActivity().getSharedPreferences(getString(R.string.owncloud_pref), Context.MODE_PRIVATE);
+        FragmentActivity activity = (FragmentActivity) findActivity(pref.getContext());
+        SharedPreferences mPrefs = activity.getSharedPreferences(getString(R.string.owncloud_pref), Context.MODE_PRIVATE);
 
         if (mPrefs.getBoolean(getString(R.string.owncloud_sync), false))
             mPrefs.edit().putBoolean(getString(R.string.owncloud_sync), false).apply();
         else {
             OwnCloudDialogFragment ocDialog = OwnCloudDialogFragment.newInstance(pref);
-            ocDialog.show(getActivity().getSupportFragmentManager(), "owncloud_dialog");
+            ocDialog.show(activity.getSupportFragmentManager(), "owncloud_dialog");
         }
     }
 
@@ -307,48 +310,48 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
      */
     private void restoreBackup() {
         Timber.i("Opening GnuCash XML backups for restore");
+        final Activity activity = requireActivity();
         final String bookUID = GnuCashApplication.getActiveBookUID();
 
-        final Uri defaultBackupFile = BackupManager.getBookBackupFileUri(bookUID);
+        final Uri defaultBackupFile = BackupManager.getBookBackupFileUri(activity, bookUID);
         if (defaultBackupFile != null) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
-                    .setTitle(R.string.title_confirm_restore_backup)
-                    .setMessage(R.string.msg_confirm_restore_backup_into_new_book)
-                    .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    })
-                    .setPositiveButton(R.string.btn_restore, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            new ImportAsyncTask(getActivity()).execute(defaultBackupFile);
-                        }
-                    });
+            AlertDialog.Builder builder = new AlertDialog.Builder(activity)
+                .setTitle(R.string.title_confirm_restore_backup)
+                .setMessage(R.string.msg_confirm_restore_backup_into_new_book)
+                .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .setPositiveButton(R.string.btn_restore, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        new ImportAsyncTask(activity).execute(defaultBackupFile);
+                    }
+                });
             builder.create().show();
             return; //stop here if the default backup file exists
         }
 
         //If no default location was set, look in the internal SD card location
-        if (BackupManager.getBackupList(bookUID).isEmpty()) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
-                    .setTitle(R.string.title_no_backups_found)
-                    .setMessage(R.string.msg_no_backups_to_restore_from)
-                    .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
+        if (BackupManager.getBackupList(activity, bookUID).isEmpty()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(activity)
+                .setTitle(R.string.title_no_backups_found)
+                .setMessage(R.string.msg_no_backups_to_restore_from)
+                .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
             builder.create().show();
             return;
         }
 
-
-        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.select_dialog_singlechoice);
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(activity, android.R.layout.select_dialog_singlechoice);
         final DateTimeFormatter dateFormatter = DateTimeFormat.longDateTime();
-        for (File backupFile : BackupManager.getBackupList(bookUID)) {
+        for (File backupFile : BackupManager.getBackupList(activity, bookUID)) {
             long time = Exporter.getExportTime(backupFile.getName());
             if (time > 0)
                 arrayAdapter.add(dateFormatter.print(time));
@@ -356,20 +359,20 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
                 arrayAdapter.add(backupFile.getName());
         }
 
-        AlertDialog.Builder restoreDialogBuilder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder restoreDialogBuilder = new AlertDialog.Builder(activity);
         restoreDialogBuilder.setTitle(R.string.title_select_backup_to_restore);
         restoreDialogBuilder.setNegativeButton(R.string.alert_dialog_cancel,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
+            new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
         restoreDialogBuilder.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                File backupFile = BackupManager.getBackupList(bookUID).get(which);
-                new ImportAsyncTask(getActivity()).execute(Uri.fromFile(backupFile));
+                File backupFile = BackupManager.getBackupList(activity, bookUID).get(which);
+                new ImportAsyncTask(activity).execute(Uri.fromFile(backupFile));
             }
         });
 
@@ -390,12 +393,13 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
             case REQUEST_BACKUP_FILE:
                 if (resultCode == Activity.RESULT_OK) {
                     Uri backupFileUri = data.getData();
-                    takePersistableUriPermission(requireContext(), data);
+                    Context context = requireContext();
+                    takePersistableUriPermission(context, data);
 
-                    PreferenceActivity.getActiveBookSharedPreferences()
-                            .edit()
-                            .putString(BackupManager.KEY_BACKUP_FILE, backupFileUri.toString())
-                            .apply();
+                    PreferenceActivity.getActiveBookSharedPreferences(context)
+                        .edit()
+                        .putString(BackupManager.KEY_BACKUP_FILE, backupFileUri.toString())
+                        .apply();
 
                     Preference pref = findPreference(getString(R.string.key_backup_location));
                     pref.setSummary(getDocumentName(backupFileUri, pref.getContext()));

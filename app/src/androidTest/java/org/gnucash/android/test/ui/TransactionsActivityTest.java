@@ -435,7 +435,7 @@ public class TransactionsActivityTest extends GnuAndroidTest {
 
     private void setDoubleEntryEnabled(boolean enabled) {
         Context context = GnuCashApplication.getAppContext();
-        SharedPreferences prefs = PreferenceActivity.getActiveBookSharedPreferences();
+        SharedPreferences prefs = PreferenceActivity.getActiveBookSharedPreferences(context);
         prefs.edit()
             .putBoolean(context.getString(R.string.key_use_double_entry), enabled)
             .apply();
@@ -451,7 +451,7 @@ public class TransactionsActivityTest extends GnuAndroidTest {
 
     private void setDefaultTransactionType(TransactionType type) {
         Context context = GnuCashApplication.getAppContext();
-        SharedPreferences prefs = PreferenceActivity.getActiveBookSharedPreferences();
+        SharedPreferences prefs = PreferenceActivity.getActiveBookSharedPreferences(context);
         prefs.edit()
             .putString(context.getString(R.string.key_default_transaction_type), type.value)
             .commit();

@@ -19,12 +19,11 @@ import timber.log.Timber;
  */
 public final class FileUtils {
 
-    public static void zipFiles(List<String> files, String zipFileName) throws IOException {
-        OutputStream outputStream = new FileOutputStream(zipFileName);
+    public static void zipFiles(List<File> files, File zipFile) throws IOException {
+        OutputStream outputStream = new FileOutputStream(zipFile);
         ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
         byte[] buffer = new byte[1024];
-        for (String fileName : files) {
-            File file = new File(fileName);
+        for (File file : files) {
             FileInputStream fileInputStream = new FileInputStream(file);
             zipOutputStream.putNextEntry(new ZipEntry(file.getName()));
 
@@ -48,13 +47,23 @@ public final class FileUtils {
     public static void moveFile(String src, String dst) throws IOException {
         File srcFile = new File(src);
         File dstFile = new File(dst);
+        moveFile(srcFile, dstFile);
+    }
+
+    /**
+     * Moves a file from <code>src</code> to <code>dst</code>
+     *
+     * @param srcFile the source file
+     * @param dstFile the destination file
+     * @throws IOException if the file could not be moved.
+     */
+    public static void moveFile(File srcFile, File dstFile) throws IOException {
         FileChannel inChannel = new FileInputStream(srcFile).getChannel();
         FileChannel outChannel = new FileOutputStream(dstFile).getChannel();
         try {
             inChannel.transferTo(0, inChannel.size(), outChannel);
         } finally {
-            if (inChannel != null)
-                inChannel.close();
+            inChannel.close();
             outChannel.close();
         }
         srcFile.delete();
@@ -68,8 +77,7 @@ public final class FileUtils {
      * @param outputStream Output stream to write to
      * @throws IOException if error occurred while moving the file
      */
-    public static void moveFile(@NonNull String src, @NonNull OutputStream outputStream)
-            throws IOException {
+    public static void moveFile(@NonNull File src, @NonNull OutputStream outputStream) throws IOException {
         byte[] buffer = new byte[1024];
         int read;
         try (FileInputStream inputStream = new FileInputStream(src)) {
@@ -81,6 +89,6 @@ public final class FileUtils {
             outputStream.close();
         }
         Timber.i("Deleting temp export file: %s", src);
-        new File(src).delete();
+        src.delete();
     }
 }

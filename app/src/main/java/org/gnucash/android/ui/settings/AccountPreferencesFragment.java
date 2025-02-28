@@ -182,10 +182,10 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
      */
     private void selectExportFile() {
         String bookName = BooksDbAdapter.getInstance().getActiveBookDisplayName();
-        String filename = Exporter.buildExportFilename(ExportFormat.CSVA, bookName);
+        String filename = Exporter.buildExportFilename(ExportFormat.CSVA, false, bookName);
 
         Intent createIntent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
-            .setType("*/*")
+            .setType(ExportFormat.CSVA.mimeType)
             .addCategory(Intent.CATEGORY_OPENABLE)
             .putExtra(Intent.EXTRA_TITLE, filename);
         try {

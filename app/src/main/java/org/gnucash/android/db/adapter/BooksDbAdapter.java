@@ -120,7 +120,7 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
         if (result) //delete the db entry only if the file deletion was successful
             result &= deleteRecord(bookUID);
 
-        PreferenceActivity.getBookSharedPreferences(bookUID).edit().clear().apply();
+        PreferenceActivity.getBookSharedPreferences(context, bookUID).edit().clear().apply();
 
         return result;
     }

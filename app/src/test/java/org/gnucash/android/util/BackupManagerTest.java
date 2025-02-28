@@ -31,6 +31,7 @@ public class BackupManagerTest extends GnuCashTest {
 
     @Test
     public void backupAllBooks() throws Exception {
+        Context context = GnuCashApplication.getAppContext();
         String activeBookUID = createNewBookWithDefaultAccounts();
         BookUtils.activateBook(activeBookUID);
         createNewBookWithDefaultAccounts();
@@ -39,28 +40,30 @@ public class BackupManagerTest extends GnuCashTest {
         BackupManager.backupAllBooks();
 
         for (String bookUID : mBooksDbAdapter.getAllBookUIDs()) {
-            assertThat(BackupManager.getBackupList(bookUID).size()).isEqualTo(1);
+            assertThat(BackupManager.getBackupList(context, bookUID).size()).isEqualTo(1);
         }
     }
 
     @Test
     public void getBackupList() throws Exception {
+        Context context = GnuCashApplication.getAppContext();
         String bookUID = createNewBookWithDefaultAccounts();
         BookUtils.activateBook(bookUID);
 
-        BackupManager.backupActiveBook();
+        assertThat(BackupManager.backupActiveBook()).isTrue();
         Thread.sleep(1000); // FIXME: Use Mockito to get a different date in Exporter.buildExportFilename
-        BackupManager.backupActiveBook();
+        assertThat(BackupManager.backupActiveBook()).isTrue();
 
-        assertThat(BackupManager.getBackupList(bookUID).size()).isEqualTo(2);
+        assertThat(BackupManager.getBackupList(context, bookUID).size()).isEqualTo(2);
     }
 
     @Test
     public void whenNoBackupsHaveBeenDone_shouldReturnEmptyBackupList() {
+        Context context = GnuCashApplication.getAppContext();
         String bookUID = createNewBookWithDefaultAccounts();
         BookUtils.activateBook(bookUID);
 
-        assertThat(BackupManager.getBackupList(bookUID)).isEmpty();
+        assertThat(BackupManager.getBackupList(context, bookUID)).isEmpty();
     }
 
     /**

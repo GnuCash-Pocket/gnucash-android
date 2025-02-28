@@ -127,7 +127,7 @@ public class PieChartReportTest extends GnuAndroidTest {
 
         commodity = CommoditiesDbAdapter.getInstance().getCommodity("USD");
 
-        PreferenceActivity.getActiveBookSharedPreferences().edit()
+        PreferenceActivity.getActiveBookSharedPreferences(context).edit()
                 .putString(context.getString(R.string.key_default_currency), commodity.getCurrencyCode())
                 .commit();
     }

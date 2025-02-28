@@ -23,6 +23,7 @@ import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.Account.Companion.convertToOfxAccountType
+import org.gnucash.android.model.Money
 import org.gnucash.android.util.PreferencesHelper
 import org.gnucash.android.util.TimestampHelper
 import org.w3c.dom.Document

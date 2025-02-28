@@ -292,7 +292,7 @@ public class WidgetConfigurationActivity extends Activity {
             views.setOnClickPendingIntent(R.id.btn_new_transaction, pendingIntent);
             appWidgetManager.updateAppWidget(appWidgetId, views);
 
-            PreferenceActivity.getActiveBookSharedPreferences().edit()
+            PreferenceActivity.getActiveBookSharedPreferences(context).edit()
                 .remove(UxArgument.SELECTED_ACCOUNT_UID + appWidgetId)
                 .apply();
             return;

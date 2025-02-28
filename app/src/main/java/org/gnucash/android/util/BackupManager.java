@@ -38,7 +38,6 @@ import org.gnucash.android.export.ExportFormat;
 import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.Exporter;
 import org.gnucash.android.export.xml.GncXmlExporter;
-import org.gnucash.android.model.Book;
 import org.gnucash.android.ui.common.GnucashProgressDialog;
 import org.gnucash.android.ui.settings.PreferenceActivity;
 import org.gnucash.android.work.BackupWorker;
@@ -74,6 +73,7 @@ public class BackupManager {
     /**
      * Perform an automatic backup of all books in the database.
      * This method is run every time the service is executed
+     *
      * @return `true` when all books were successfully backed-up.
      */
     @WorkerThread
@@ -91,7 +91,7 @@ public class BackupManager {
     }
 
     /**
-     * Backs up the active book to the directory {@link #getBackupFolder(String)}.
+     * Backs up the active book to the directory {@link #getBackupFolder(Context, String)}.
      *
      * @return {@code true} if backup was successful, {@code false} otherwise
      */
@@ -101,7 +101,7 @@ public class BackupManager {
     }
 
     /**
-     * Backs up the active book to the directory {@link #getBackupFolder(String)}.
+     * Backs up the active book to the directory {@link #getBackupFolder(Context, String)}.
      *
      * @return {@code true} if backup was successful, {@code false} otherwise
      */
@@ -112,7 +112,7 @@ public class BackupManager {
 
     /**
      * Backs up the book with UID {@code bookUID} to the directory
-     * {@link #getBackupFolder(String)}.
+     * {@link #getBackupFolder(Context, String)}.
      *
      * @param bookUID Unique ID of the book
      * @return {@code true} if backup was successful, {@code false} otherwise
@@ -120,12 +120,14 @@ public class BackupManager {
     @WorkerThread
     public static boolean backupBook(Context context, String bookUID) {
         ExportParams params = new ExportParams(ExportFormat.XML);
+        params.setExportTarget(ExportParams.ExportTarget.URI);
         params.isCompressed = true;
         try {
-            Uri backupUri = getBookBackupFileUri(bookUID);
+            Uri backupUri = getBookBackupFileUri(context, bookUID, params);
             params.setExportLocation(backupUri);
-            new GncXmlExporter(context, params, bookUID).generateExport();
-            return true;
+            Exporter exporter = new GncXmlExporter(context, params, bookUID);
+            Uri uri = exporter.generateExport();
+            return (uri != null);
         } catch (Throwable e) {
             Timber.e(e, "Error creating backup");
         }
@@ -136,16 +138,15 @@ public class BackupManager {
      * Returns the full path of a file to make database backup of the specified book.
      * Backups are done in XML format and are Gzipped (with ".gnucash" extension).
      *
-     * @param bookUID GUID of the book
-     * @param params the export parameters.
+     * @param context      the context
+     * @param bookUID      GUID of the book
+     * @param exportParams the export parameters.
      * @return the file for backups of the database.
-     * @see #getBackupFolder(String)
+     * @see #getBackupFolder(Context, String)
      */
-    private static File getBackupFile(@NonNull String bookUID, @Nullable ExportParams params) {
-        Book book = BooksDbAdapter.getInstance().getRecord(bookUID);
-        ExportFormat format = (params != null) ? params.getExportFormat() : ExportFormat.XML;
-        String name = Exporter.buildExportFilename(format, book.getDisplayName()) + ".gz";
-        return new File(getBackupFolder(book.getUID()), name);
+    private static File getBackupFile(Context context, @NonNull String bookUID, @Nullable ExportParams exportParams) {
+        String name = Exporter.buildExportFilename(exportParams, "backup");
+        return new File(getBackupFolder(context, bookUID), name);
     }
 
     /**
@@ -155,9 +156,9 @@ public class BackupManager {
      *
      * @return The backup folder for the book
      */
-    private static File getBackupFolder(String bookUID) {
-        File baseFolder = GnuCashApplication.getAppContext().getExternalFilesDir(null);
-        File folder = new File(baseFolder, bookUID + File.separator + "backups");
+    public static File getBackupFolder(Context context, String bookUID) {
+        File baseFolder = context.getExternalFilesDir(null);
+        File folder = new File(new File(baseFolder, bookUID), "backups");
         if (!folder.exists())
             folder.mkdirs();
         return folder;
@@ -170,17 +171,29 @@ public class BackupManager {
      * @return DocumentFile for book backups, or null if the user hasn't set any.
      */
     @Nullable
-    public static Uri getBookBackupFileUri(String bookUID) {
-        SharedPreferences sharedPreferences = PreferenceActivity.getBookSharedPreferences(bookUID);
+    public static Uri getBookBackupFileUri(@NonNull Context context, String bookUID) {
+        return getBookBackupFileUri(context, bookUID, null);
+    }
+
+    /**
+     * Return the user-set backup file URI for the book with UID {@code bookUID}.
+     *
+     * @param bookUID Unique ID of the book
+     * @return DocumentFile for book backups, or null if the user hasn't set any.
+     */
+    @Nullable
+    public static Uri getBookBackupFileUri(@NonNull Context context, String bookUID, @Nullable ExportParams exportParams) {
+        SharedPreferences sharedPreferences = PreferenceActivity.getBookSharedPreferences(context, bookUID);
         String path = sharedPreferences.getString(KEY_BACKUP_FILE, null);
         if (TextUtils.isEmpty(path)) {
-            return null;
+            File file = getBackupFile(context, bookUID, exportParams);
+            return Uri.fromFile(file);
         }
         return Uri.parse(path);
     }
 
-    public static List<File> getBackupList(String bookUID) {
-        File[] backupFiles = getBackupFolder(bookUID).listFiles();
+    public static List<File> getBackupList(Context context, String bookUID) {
+        File[] backupFiles = getBackupFolder(context, bookUID).listFiles();
         Arrays.sort(backupFiles);
         List<File> backupFilesList = Arrays.asList(backupFiles);
         Collections.reverse(backupFilesList);

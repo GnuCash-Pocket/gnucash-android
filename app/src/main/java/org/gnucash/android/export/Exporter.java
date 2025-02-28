@@ -17,13 +17,36 @@
 
 package org.gnucash.android.export;
 
+import static org.gnucash.android.util.BackupManager.getBackupFolder;
+
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.ResolveInfo;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Environment;
+import android.preference.PreferenceManager;
+import android.text.TextUtils;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
+
+import com.dropbox.core.DbxException;
+import com.dropbox.core.v2.DbxClientV2;
+import com.dropbox.core.v2.files.FileMetadata;
+import com.owncloud.android.lib.common.OwnCloudClient;
+import com.owncloud.android.lib.common.OwnCloudClientFactory;
+import com.owncloud.android.lib.common.OwnCloudCredentialsFactory;
+import com.owncloud.android.lib.common.operations.RemoteOperationResult;
+import com.owncloud.android.lib.resources.files.CreateRemoteFolderOperation;
+import com.owncloud.android.lib.resources.files.UploadRemoteFileOperation;
 
 import org.gnucash.android.BuildConfig;
+import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.DatabaseSchema;
@@ -31,22 +54,29 @@ import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.db.adapter.BudgetsDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
+import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.db.adapter.PricesDbAdapter;
 import org.gnucash.android.db.adapter.RecurrenceDbAdapter;
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
 import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
+import org.gnucash.android.model.Transaction;
+import org.gnucash.android.util.BackupManager;
+import org.gnucash.android.util.DateExtKt;
+import org.gnucash.android.util.FileUtils;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
@@ -62,16 +92,9 @@ public abstract class Exporter {
 
     /**
      * Application folder on external storage
-     *
-     * @deprecated Use {@link #BASE_FOLDER_PATH} instead
      */
     @Deprecated
     public static final String LEGACY_BASE_FOLDER_PATH = Environment.getExternalStorageDirectory() + File.separator + BuildConfig.APPLICATION_ID;
-
-    /**
-     * Application folder on external storage
-     */
-    public static final String BASE_FOLDER_PATH = GnuCashApplication.getAppContext().getExternalFilesDir(null).getAbsolutePath();
 
     /**
      * Export options
@@ -88,7 +111,7 @@ public abstract class Exporter {
      */
     private final File mCacheDir;
 
-    private static final String EXPORT_FILENAME_DATE_PATTERN = "yyyyMMdd_HHmmss";
+    private static final String EXPORT_FILENAME_DATE_PATTERN = "yyyyMMddHHmmss";
 
     protected final BooksDbAdapter mBooksDbADapter;
     /**
@@ -103,7 +126,7 @@ public abstract class Exporter {
     protected final CommoditiesDbAdapter mCommoditiesDbAdapter;
     protected final BudgetsDbAdapter mBudgetsDbAdapter;
     protected final Context mContext;
-    private String mExportCacheFilePath;
+    private File exportCacheFile;
 
     /**
      * Database being currently exported
@@ -137,7 +160,7 @@ public abstract class Exporter {
         mBudgetsDbAdapter = new BudgetsDbAdapter(recurrenceDbAdapter);
         mScheduledActionDbAdapter = new ScheduledActionDbAdapter(recurrenceDbAdapter);
 
-        mExportCacheFilePath = null;
+        exportCacheFile = null;
         mCacheDir = new File(context.getCacheDir(), params.getExportFormat().name());
         mCacheDir.mkdirs();
         purgeDirectory(mCacheDir);
@@ -162,24 +185,46 @@ public abstract class Exporter {
     /**
      * Builds a file name based on the current time stamp for the exported file
      *
-     * @param format   Format to use when exporting
-     * @param bookName Name of the book being exported. This name will be included in the generated file name
+     * @param exportParams Parameters to use when exporting
+     * @param bookName     Name of the book being exported. This name will be included in the generated file name
      * @return String containing the file name
      */
     @NonNull
-    public static String buildExportFilename(ExportFormat format, String bookName) {
+    public static String buildExportFilename(@Nullable ExportParams exportParams, String bookName) {
+        ExportFormat format = ExportFormat.XML;
+        boolean isCompressed = false;
+        if (exportParams != null) {
+            format = exportParams.getExportFormat();
+            isCompressed = exportParams.isCompressed;
+        }
+        return buildExportFilename(format, isCompressed, bookName);
+    }
+
+    /**
+     * Builds a file name based on the current time stamp for the exported file
+     *
+     * @param format       Format to use when exporting
+     * @param isCompressed is the file compressed?
+     * @param bookName     Name of the book being exported. This name will be included in the generated file name
+     * @return String containing the file name
+     */
+    @NonNull
+    public static String buildExportFilename(@NonNull ExportFormat format, boolean isCompressed, String bookName) {
         DateTimeFormatter formatter = DateTimeFormat.forPattern(EXPORT_FILENAME_DATE_PATTERN);
-        return formatter.print(System.currentTimeMillis())
-            + "_gnucash_export_" + sanitizeFilename(bookName) +
-            (format == ExportFormat.CSVA ? "_accounts" : "") +
-            (format == ExportFormat.CSVT ? "_transactions" : "") +
-            format.extension;
+        StringBuilder name = new StringBuilder(sanitizeFilename(bookName));
+        if (format == ExportFormat.CSVA) name.append(".accounts");
+        if (format == ExportFormat.CSVT) name.append(".transactions");
+        name.append(".")
+            .append(formatter.print(System.currentTimeMillis()))
+            .append(format.extension);
+        if (isCompressed && format != ExportFormat.XML) name.append(".gz");
+        return name.toString();
     }
 
     /**
      * Parses the name of an export file and returns the date of export
      *
-     * @param filename Export file name generated by {@link #buildExportFilename(ExportFormat, String)}
+     * @param filename Export file name generated by {@link #buildExportFilename(ExportFormat, boolean, String)}
      * @return Date in milliseconds
      */
     public static long getExportTime(String filename) {
@@ -200,25 +245,61 @@ public abstract class Exporter {
     /**
      * Generates the export output
      *
+     * @return the export location.
      * @throws ExporterException if an error occurs during export
      */
-    public List<String> generateExport() throws ExporterException {
+    @Nullable
+    public Uri generateExport() throws ExporterException {
         Timber.i("generate export");
         final ExportParams exportParams = mExportParams;
-        String outputFile = getExportCacheFilePath();
-        try (Writer writer = createWriter(exportParams)) {
+        final Uri result;
+        try {
+            File file = writeToFile(exportParams);
+            if (file == null) return null;
+            result = moveToTarget(exportParams, file);
+        } catch (ExporterException ee) {
+            throw ee;
+        } catch (Throwable e) {
+            throw new ExporterException(exportParams, e);
+        }
+
+        if (result != null && exportParams.shouldDeleteTransactionsAfterExport()) {
+            // Avoid recursion - Don't do a backup if just did a backup already!
+            Context context = mContext;
+            String bookUID = GnuCashApplication.getActiveBookUID();
+            File backupFolder = getBackupFolder(context, bookUID);
+            Uri backupUri = exportParams.getExportLocation();
+            File backupFile = new File(backupUri.getPath());
+            File backupFileParent = backupFile.getParentFile();
+            final boolean isBackupParams = exportParams.getExportFormat() == ExportFormat.XML
+                && exportParams.getExportTarget() == ExportParams.ExportTarget.URI
+                && exportParams.isCompressed
+                && backupFolder.equals(backupFileParent);
+
+            if (!isBackupParams) {
+                BackupManager.backupBook(context, bookUID); //create backup before deleting everything
+            }
+
+            deleteTransactions();
+        }
+        try {
+            close();
+        } catch (Exception ignore) {
+        }
+        return result;
+    }
+
+    @Nullable
+    protected File writeToFile(@NonNull ExportParams exportParams) throws ExporterException, IOException {
+        File cacheFile = getExportCacheFile(exportParams);
+        try (Writer writer = createWriter(cacheFile)) {
             writeExport(exportParams, writer);
-            return List.of(outputFile);
         } catch (ExporterException ee) {
             throw ee;
         } catch (Exception e) {
             throw new ExporterException(exportParams, e);
-        } finally {
-            try {
-                close();
-            } catch (Exception ignore) {
-            }
         }
+        return cacheFile;
     }
 
     protected abstract void writeExport(@NonNull ExportParams exportParams, @NonNull Writer writer) throws ExporterException, IOException;
@@ -244,18 +325,14 @@ public abstract class Exporter {
      *
      * @return Absolute path to file
      */
-    protected String getExportCacheFilePath() {
+    protected File getExportCacheFile(ExportParams exportParams) {
         // The file name contains a timestamp, so ensure it doesn't change with multiple calls to
         // avoid issues like #448
-        if (mExportCacheFilePath == null) {
-            String cachePath = mCacheDir.getAbsolutePath();
-            if (!cachePath.endsWith(File.separator))
-                cachePath += File.separator;
+        if (exportCacheFile == null) {
             String bookName = mBooksDbADapter.getAttribute(mBookUID, DatabaseSchema.BookEntry.COLUMN_DISPLAY_NAME);
-            mExportCacheFilePath = cachePath + buildExportFilename(mExportParams.getExportFormat(), bookName);
+            exportCacheFile = new File(mCacheDir, buildExportFilename(exportParams.getExportFormat(), exportParams.isCompressed, bookName));
         }
-
-        return mExportCacheFilePath;
+        return exportCacheFile;
     }
 
     /**
@@ -266,12 +343,13 @@ public abstract class Exporter {
      * @return Absolute path to export folder for active book
      */
     @NonNull
-    public static String getExportFolderPath(String bookUID) {
-        String path = BASE_FOLDER_PATH + File.separator + bookUID + File.separator + "exports" + File.separator;
-        File file = new File(path);
-        if (!file.exists())
+    public static String getExportFolderPath(Context context, String bookUID) {
+        File external = context.getExternalFilesDir(null);
+        File file = new File(new File(external, bookUID), "exports");
+        if (!file.exists()) {
             file.mkdirs();
-        return path;
+        }
+        return file.getAbsolutePath();
     }
 
     /**
@@ -281,10 +359,10 @@ public abstract class Exporter {
      */
     @NonNull
     public String getExportMimeType() {
-        return "text/plain";
+        return mExportParams.getExportFormat().mimeType;
     }
 
-    protected void close() throws IOException {
+    protected void close() throws IOException, SQLException {
         mAccountsDbAdapter.close();
         mBudgetsDbAdapter.close();
         mCommoditiesDbAdapter.close();
@@ -295,24 +373,240 @@ public abstract class Exporter {
         mDb.close();
     }
 
-    protected Writer createWriter(@NonNull ExportParams exportParams) throws IOException {
-        String path = getExportCacheFilePath();
-        OutputStream stream = new FileOutputStream(path);
-        //            if (backupUri != null) {
-//                outputStream = context.getContentResolver().openOutputStream(backupUri);
-//            } else { //no Uri set by user, use default location on SD card
-//                File backupFile = getBackupFile(bookUID, params);
-//                outputStream = new FileOutputStream(backupFile);
-//            }
+    protected Writer createWriter(@NonNull File file) throws IOException {
+        OutputStream output = new FileOutputStream(file);
         if (mExportParams.isCompressed) {
-            stream = new GZIPOutputStream(stream);
+            output = new GZIPOutputStream(output);
         }
-        return new BufferedWriter(new OutputStreamWriter(stream, StandardCharsets.UTF_8));
+        return new BufferedWriter(new OutputStreamWriter(output, StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Moves the generated export files to the target specified by the user
+     *
+     * @param cacheFile the cached file to read from.
+     * @throws Exporter.ExporterException if the move fails
+     */
+    private Uri moveToTarget(@NonNull ExportParams exportParams, @NonNull File cacheFile) throws Exporter.ExporterException {
+        switch (exportParams.getExportTarget()) {
+            case SHARING:
+                return shareFiles(exportParams, cacheFile);
+
+            case DROPBOX:
+                return moveExportToDropbox(exportParams, cacheFile);
+
+            case OWNCLOUD:
+                return moveExportToOwnCloud(exportParams, cacheFile);
+
+            case SD_CARD:
+                return moveExportToSDCard(exportParams, cacheFile);
+
+            case URI:
+                return moveExportToUri(exportParams, cacheFile);
+
+            default:
+                throw new Exporter.ExporterException(exportParams, "Invalid target");
+        }
+    }
+
+    /**
+     * Move the exported files to a specified URI.
+     * This URI could be a Storage Access Framework file
+     *
+     * @throws Exporter.ExporterException if something failed while moving the exported file
+     */
+    private Uri moveExportToUri(ExportParams exportParams, File exportedFile) throws Exporter.ExporterException {
+        Context context = mContext;
+        Uri exportUri = exportParams.getExportLocation();
+        if (exportUri == null) {
+            Timber.w("No URI found for export destination");
+            return null;
+        }
+
+        try {
+            OutputStream outputStream = context.getContentResolver().openOutputStream(exportUri);
+            // Now we always get just one file exported (multi-currency QIFs are zipped)
+            FileUtils.moveFile(exportedFile, outputStream);
+            return exportUri;
+        } catch (IOException e) {
+            throw new Exporter.ExporterException(exportParams, e);
+        }
+    }
+
+    /**
+     * Move the exported files (in the cache directory) to Dropbox
+     */
+    private Uri moveExportToDropbox(ExportParams exportParams, File exportedFile) {
+        Timber.i("Uploading exported files to DropBox");
+        Context context = mContext;
+        DbxClientV2 dbxClient = DropboxHelper.getClient(context);
+        if (dbxClient == null) {
+            throw new Exporter.ExporterException(exportParams, "Dropbox client required");
+        }
+
+        try {
+            FileInputStream inputStream = new FileInputStream(exportedFile);
+            FileMetadata metadata = dbxClient.files()
+                .uploadBuilder("/" + exportedFile.getName())
+                .uploadAndFinish(inputStream);
+            Timber.i("Successfully uploaded file " + metadata.getName() + " to DropBox");
+            inputStream.close();
+            exportedFile.delete(); //delete file to prevent cache accumulation
+
+            return new Uri.Builder()
+                .scheme("dropbox")
+                .authority(BuildConfig.APPLICATION_ID)
+                .appendPath("Apps")
+                .appendPath("GnuCash Pocket")
+                .appendPath(metadata.getName())
+                .build();
+        } catch (IOException | DbxException e) {
+            Timber.e(e);
+            throw new ExporterException(exportParams, e);
+        }
+    }
+
+    private Uri moveExportToOwnCloud(ExportParams exportParams, File exportedFile) throws Exporter.ExporterException {
+        Timber.i("Copying exported file to ownCloud");
+        final Context context = mContext;
+        SharedPreferences preferences = context.getSharedPreferences(context.getString(R.string.owncloud_pref), Context.MODE_PRIVATE);
+
+        boolean ocSync = preferences.getBoolean(context.getString(R.string.owncloud_sync), false);
+
+        if (!ocSync) {
+            throw new Exporter.ExporterException(exportParams, "ownCloud not enabled.");
+        }
+
+        String ocServer = preferences.getString(context.getString(R.string.key_owncloud_server), null);
+        String ocUsername = preferences.getString(context.getString(R.string.key_owncloud_username), null);
+        String ocPassword = preferences.getString(context.getString(R.string.key_owncloud_password), null);
+        String ocDir = preferences.getString(context.getString(R.string.key_owncloud_dir), null);
+
+        Uri serverUri = Uri.parse(ocServer);
+        OwnCloudClient client = OwnCloudClientFactory.createOwnCloudClient(serverUri, context, true);
+        client.setCredentials(
+            OwnCloudCredentialsFactory.newBasicCredentials(ocUsername, ocPassword)
+        );
+
+        if (!TextUtils.isEmpty(ocDir)) {
+            RemoteOperationResult dirResult = new CreateRemoteFolderOperation(
+                ocDir, true).execute(client);
+            if (!dirResult.isSuccess()) {
+                Timber.w("Error creating folder (it may happen if it already exists): %s", dirResult.getLogMessage());
+            }
+        }
+
+        String remotePath = ocDir + com.owncloud.android.lib.resources.files.FileUtils.PATH_SEPARATOR + exportedFile.getName();
+        String mimeType = getExportMimeType();
+
+        RemoteOperationResult result = new UploadRemoteFileOperation(
+            exportedFile.getAbsolutePath(),
+            remotePath,
+            mimeType,
+            getFileLastModifiedTimestamp(exportedFile)
+        ).execute(client);
+        if (!result.isSuccess()) {
+            throw new Exporter.ExporterException(exportParams, result.getLogMessage());
+        }
+
+        exportedFile.delete();
+
+        return serverUri.buildUpon()
+            .appendPath(ocDir)
+            .appendPath(exportedFile.getName())
+            .build();
+    }
+
+    private static String getFileLastModifiedTimestamp(File file) {
+        long timeStampLong = file.lastModified() / 1000;
+        return Long.toString(timeStampLong);
+    }
+
+    /**
+     * Moves the exported files from the internal storage where they are generated to
+     * external storage, which is accessible to the user.
+     *
+     * @return The list of files moved to the SD card.
+     * @deprecated Use the Storage Access Framework to save to SD card. See {@link #moveExportToUri(ExportParams, File)}
+     */
+    private Uri moveExportToSDCard(ExportParams exportParams, File exportedFile) throws Exporter.ExporterException {
+        Timber.i("Moving exported file to external storage");
+        Context context = mContext;
+        File dst = new File(Exporter.getExportFolderPath(context, getBookUID()), exportedFile.getName());
+        try {
+            FileUtils.moveFile(exportedFile, dst);
+            return Uri.fromFile(dst);
+        } catch (IOException e) {
+            throw new Exporter.ExporterException(exportParams, e);
+        }
+    }
+
+    // "/some/path/filename.ext" -> "filename.ext"
+    private String stripPathPart(String fullPathName) {
+        return (new File(fullPathName)).getName();
+    }
+
+    /**
+     * Starts an intent chooser to allow the user to select an activity to receive
+     * the exported files.
+     *
+     * @param exportedFile the file to share.
+     */
+    private Uri shareFiles(ExportParams exportParams, File exportedFile) {
+        Context context = mContext;
+        Uri exportFile = FileProvider.getUriForFile(context, GnuCashApplication.FILE_PROVIDER_AUTHORITY, exportedFile);
+        Intent shareIntent = new Intent(Intent.ACTION_SEND)
+            .setType(exportParams.getExportFormat().mimeType)
+            .putExtra(Intent.EXTRA_STREAM, exportFile)
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            .putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.title_export_email,
+                exportParams.getExportFormat().name()));
+
+        String defaultEmail = PreferenceManager.getDefaultSharedPreferences(context)
+            .getString(context.getString(R.string.key_default_export_email), null);
+        if (!TextUtils.isEmpty(defaultEmail))
+            shareIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{defaultEmail});
+
+        String extraText = context.getString(R.string.description_export_email)
+            + " " + DateExtKt.formatFullDateTime(System.currentTimeMillis());
+        shareIntent.putExtra(Intent.EXTRA_TEXT, extraText);
+
+        List<ResolveInfo> activities = context.getPackageManager().queryIntentActivities(shareIntent, 0);
+        if (activities != null && !activities.isEmpty()) {
+            context.startActivity(Intent.createChooser(shareIntent,
+                context.getString(R.string.title_select_export_destination)));
+            return exportFile;
+        } else {
+            Toast.makeText(context, R.string.toast_no_compatible_apps_to_receive_export,
+                Toast.LENGTH_LONG).show();
+        }
+
+        return null;
+    }
+
+    /**
+     * Saves opening balances (if necessary)
+     * and deletes all non-template transactions in the database.
+     */
+    private void deleteTransactions() {
+        Timber.i("Deleting transactions after export");
+        List<Transaction> openingBalances = new ArrayList<>();
+        boolean preserveOpeningBalances = GnuCashApplication.shouldSaveOpeningBalances(false);
+
+        TransactionsDbAdapter transactionsDbAdapter = mTransactionsDbAdapter;
+        if (preserveOpeningBalances) {
+            openingBalances = mAccountsDbAdapter.getAllOpeningBalanceTransactions();
+        }
+        transactionsDbAdapter.deleteAllNonTemplateTransactions();
+
+        if (preserveOpeningBalances && !openingBalances.isEmpty()) {
+            transactionsDbAdapter.bulkAddRecords(openingBalances, DatabaseAdapter.UpdateMethod.insert);
+        }
     }
 
     public static class ExporterException extends RuntimeException {
 
-        public ExporterException(ExportParams params) {
+        public ExporterException(@NonNull ExportParams params) {
             super("Failed to generate export with parameters: " + params);
         }
 
@@ -320,7 +614,7 @@ public abstract class Exporter {
             super("Failed to generate export with parameters: " + params + " - " + msg);
         }
 
-        public ExporterException(ExportParams params, Throwable throwable) {
+        public ExporterException(@NonNull ExportParams params, @NonNull Throwable throwable) {
             super("Failed to generate export " + params.getExportFormat() + " - " + throwable.getMessage(),
                 throwable);
         }

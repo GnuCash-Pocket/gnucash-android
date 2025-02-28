@@ -96,7 +96,7 @@ public class TransactionsDbAdapterTest extends GnuCashTest {
         assertThat(mSplitsDbAdapter.getSplitsForTransaction(transaction.getUID())).hasSize(1);
 
         mTransactionsDbAdapter.deleteRecord(transaction.getUID());
-        assertThat(mSplitsDbAdapter.getSplitsForTransaction(transaction.getUID())).hasSize(0);
+        assertThat(mSplitsDbAdapter.getSplitsForTransaction(transaction.getUID())).isEmpty();
     }
 
     @Test

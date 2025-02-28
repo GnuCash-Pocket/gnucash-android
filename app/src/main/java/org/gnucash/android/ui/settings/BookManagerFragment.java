@@ -307,10 +307,11 @@ public class BookManagerFragment extends ListFragment implements
         }
 
         private void setLastExportedText(View view, String bookUID) {
+            Context context = view.getContext();
             TextView labelLastSync = (TextView) view.findViewById(R.id.label_last_sync);
             labelLastSync.setText(R.string.label_last_export_time);
 
-            Timestamp lastSyncTime = PreferencesHelper.getLastExportTime(bookUID);
+            Timestamp lastSyncTime = PreferencesHelper.getLastExportTime(context, bookUID);
             TextView lastSyncText = (TextView) view.findViewById(R.id.last_sync_time);
             if (lastSyncTime.equals(new Timestamp(0)))
                 lastSyncText.setText(R.string.last_export_time_never);

@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
@@ -87,7 +88,8 @@ public class QifExporterTest extends BookHelperTest {
         exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
         exportParameters.setDeleteTransactionsAfterExport(false);
         QifExporter exporter = new QifExporter(context, exportParameters, mBookUID);
-        assertThat(exporter.generateExport()).isEmpty();
+        Uri exportedFile = exporter.generateExport();
+        assertThat(exportedFile).isNull();
     }
 
     /**
@@ -111,10 +113,10 @@ public class QifExporterTest extends BookHelperTest {
         exportParameters.setDeleteTransactionsAfterExport(false);
 
         QifExporter exporter = new QifExporter(context, exportParameters, mBookUID);
-        List<String> exportedFiles = exporter.generateExport();
+        Uri exportedFile = exporter.generateExport();
 
-        assertThat(exportedFiles).hasSize(1);
-        File file = new File(exportedFiles.get(0));
+        assertThat(exportedFile).isNotNull();
+        File file = new File(exportedFile.getPath());
         assertThat(file).exists().hasExtension("qif");
         assertThat(file.length()).isGreaterThan(0L);
         file.delete();
@@ -151,10 +153,10 @@ public class QifExporterTest extends BookHelperTest {
         exportParameters.setDeleteTransactionsAfterExport(false);
 
         QifExporter exporter = new QifExporter(context, exportParameters, mBookUID);
-        List<String> exportedFiles = exporter.generateExport();
+        Uri exportedFile = exporter.generateExport();
 
-        assertThat(exportedFiles).hasSize(1);
-        File file = new File(exportedFiles.get(0));
+        assertThat(exportedFile).isNotNull();
+        File file = new File(exportedFile.getPath());
         assertThat(file).exists().hasExtension("zip");
         assertThat(new ZipFile(file).size()).isEqualTo(2);
         file.delete();
@@ -187,10 +189,10 @@ public class QifExporterTest extends BookHelperTest {
         exportParameters.setDeleteTransactionsAfterExport(false);
 
         QifExporter exporter = new QifExporter(context, exportParameters, mBookUID);
-        List<String> exportedFiles = exporter.generateExport();
+        Uri exportedFile = exporter.generateExport();
 
-        assertThat(exportedFiles).hasSize(1);
-        File file = new File(exportedFiles.get(0));
+        assertThat(exportedFile).isNotNull();
+        File file = new File(exportedFile.getPath());
         assertThat(file).exists().hasExtension("qif");
         String fileContent = readFileContent(file);
         assertThat(fileContent).isNotEmpty();
@@ -231,11 +233,11 @@ public class QifExporterTest extends BookHelperTest {
         exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
         exportParameters.setDeleteTransactionsAfterExport(false);
 
-        QifExporter qifExporter = new QifExporter(context, exportParameters, bookUID);
-        List<String> exportedFiles = qifExporter.generateExport();
+        QifExporter exporter = new QifExporter(context, exportParameters, bookUID);
+        Uri exportedFile = exporter.generateExport();
 
-        assertThat(exportedFiles).hasSize(1);
-        File file = new File(exportedFiles.get(0));
+        assertThat(exportedFile).isNotNull();
+        File file = new File(exportedFile.getPath());
         assertThat(file).exists().hasExtension("qif");
         String fileContent = readFileContent(file);
         assertThat(fileContent).isNotEmpty();
@@ -281,11 +283,11 @@ public class QifExporterTest extends BookHelperTest {
         exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
         exportParameters.setDeleteTransactionsAfterExport(false);
 
-        QifExporter qifExporter = new QifExporter(context, exportParameters, bookUID);
-        List<String> exportedFiles = qifExporter.generateExport();
+        QifExporter exporter = new QifExporter(context, exportParameters, bookUID);
+        Uri exportedFile = exporter.generateExport();
 
-        assertThat(exportedFiles).hasSize(1);
-        File file = new File(exportedFiles.get(0));
+        assertThat(exportedFile).isNotNull();
+        File file = new File(exportedFile.getPath());
         assertThat(file).exists().hasExtension("qif");
         String fileContent = readFileContent(file);
         assertThat(fileContent).isNotEmpty();
@@ -347,11 +349,11 @@ public class QifExporterTest extends BookHelperTest {
         exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
         exportParameters.setDeleteTransactionsAfterExport(false);
 
-        QifExporter qifExporter = new QifExporter(context, exportParameters, mBookUID);
-        List<String> exportedFiles = qifExporter.generateExport();
+        QifExporter exporter = new QifExporter(context, exportParameters, mBookUID);
+        Uri exportedFile = exporter.generateExport();
 
-        assertThat(exportedFiles).hasSize(1);
-        File file = new File(exportedFiles.get(0));
+        assertThat(exportedFile).isNotNull();
+        File file = new File(exportedFile.getPath());
         assertThat(file).exists().hasExtension("qif");
         String fileContent = readFileContent(file);
         assertThat(fileContent).isNotEmpty();

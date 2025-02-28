@@ -56,7 +56,7 @@ public abstract class DoubleConfirmationDialog extends VolatileDialogFragment {
      */
     @NonNull
     protected AlertDialog.Builder getDialogBuilder() {
-        return new AlertDialog.Builder(getActivity())
+        return new AlertDialog.Builder(requireActivity())
             .setView(R.layout.dialog_double_confirm)
             .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
                 @Override

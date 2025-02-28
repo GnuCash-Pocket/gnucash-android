@@ -593,7 +593,7 @@ public class GncXmlExporter extends Exporter {
     private void serializeDate(XmlSerializer xmlSerializer, String tag, long timeMillis) throws IOException {
         xmlSerializer.startTag(null, tag);
         xmlSerializer.startTag(null, TAG_GDATE);
-        xmlSerializer.text(formatDateTime(timeMillis));
+        xmlSerializer.text(formatDate(timeMillis));
         xmlSerializer.endTag(null, TAG_GDATE);
         xmlSerializer.endTag(null, tag);
     }
@@ -823,11 +823,6 @@ public class GncXmlExporter extends Exporter {
             xmlSerializer.endTag(null, TAG_BOOK_ID);
             //commodity count
             List<Commodity> commodities = mAccountsDbAdapter.getCommoditiesInUse();
-            for (int i = 0; i < commodities.size(); i++) {
-                if (commodities.get(i).getCurrencyCode().equals(NO_CURRENCY_CODE)) {
-                    commodities.remove(i);
-                }
-            }
             xmlSerializer.startTag(null, TAG_COUNT_DATA);
             xmlSerializer.attribute(null, ATTR_KEY_CD_TYPE, "commodity");
             xmlSerializer.text(String.valueOf(commodities.size()));

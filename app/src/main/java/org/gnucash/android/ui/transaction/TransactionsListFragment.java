@@ -96,11 +96,12 @@ public class TransactionsListFragment extends MenuFragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Context context = requireContext();
         Bundle args = getArguments();
         mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID);
 
         boolean isDoubleEntryDisabled = !GnuCashApplication.isDoubleEntryEnabled();
-        mUseCompactView = PreferenceActivity.getActiveBookSharedPreferences()
+        mUseCompactView = PreferenceActivity.getActiveBookSharedPreferences(context)
                 .getBoolean(getString(R.string.key_use_compact_list), false) || isDoubleEntryDisabled;
         //if there was a local override of the global setting, respect it
         if (savedInstanceState != null) {

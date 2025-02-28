@@ -72,8 +72,8 @@ public final class PreferencesHelper {
      *
      * @return A {@link Timestamp} with the time.
      */
-    public static Timestamp getLastExportTime() {
-        final String utcString = PreferenceActivity.getActiveBookSharedPreferences()
+    public static Timestamp getLastExportTime(Context context) {
+        final String utcString = PreferenceActivity.getActiveBookSharedPreferences(context)
                 .getString(PREFERENCE_LAST_EXPORT_TIME_KEY,
                         TimestampHelper.getUtcStringFromTimestamp(TimestampHelper.getTimestampFromEpochZero()));
         Timber.d("Retrieving '" + utcString + "' as lastExportTime from Android Preferences.");
@@ -85,10 +85,8 @@ public final class PreferencesHelper {
      *
      * @return A {@link Timestamp} with the time.
      */
-    public static Timestamp getLastExportTime(String bookUID) {
-        final String utcString =
-                GnuCashApplication.getAppContext()
-                        .getSharedPreferences(bookUID, Context.MODE_PRIVATE)
+    public static Timestamp getLastExportTime(Context context, String bookUID) {
+        final String utcString = context.getSharedPreferences(bookUID, Context.MODE_PRIVATE)
                         .getString(PREFERENCE_LAST_EXPORT_TIME_KEY,
                                 TimestampHelper.getUtcStringFromTimestamp(
                                         TimestampHelper.getTimestampFromEpochZero()));

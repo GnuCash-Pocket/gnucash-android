@@ -1,5 +1,6 @@
 package org.gnucash.android.test.unit
 
+import androidx.core.net.toFile
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.export.ExportFormat
@@ -38,10 +39,10 @@ class CsvTransactionsExporterTest : BookHelperTest() {
             setDeleteTransactionsAfterExport(false)
         }
 
-        val exportedFiles = CsvTransactionsExporter(context, exportParameters, bookUID).generateExport()
+        val exportedFile = CsvTransactionsExporter(context, exportParameters, bookUID).generateExport()
 
-        assertThat(exportedFiles).hasSize(1)
-        val file = File(exportedFiles[0])
+        assertThat(exportedFile).isNotNull()
+        val file = exportedFile!!.toFile()
         assertThat(file.readText()).isEqualTo(
             "\"Date\",\"Transaction ID\",\"Number\",\"Description\",\"Notes\",\"Commodity/Currency\",\"Void Reason\",\"Action\",\"Memo\",\"Full Account Name\",\"Account Name\",\"Amount With Sym\",\"Amount Num.\",\"Value With Sym\",\"Value Num.\",\"Reconcile\",\"Reconcile Date\",\"Rate/Price\"$lineSeparator"
             + "\"2016-08-23\",\"b33c8a6160494417558fd143731fc26a\",,\"Kahuna Burger\",,\"CURRENCY::USD\",,,,\"Expenses:Dining\",\"Dining\",\"\$10.00\",\"10.00\",\"\$10.00\",\"10.00\",\"n\",,\"1.00\"$lineSeparator"
@@ -63,10 +64,10 @@ class CsvTransactionsExporterTest : BookHelperTest() {
             setDeleteTransactionsAfterExport(false)
         }
 
-        val exportedFiles = CsvTransactionsExporter(context, exportParameters, bookUID).generateExport()
+        val exportedFile = CsvTransactionsExporter(context, exportParameters, bookUID).generateExport()
 
-        assertThat(exportedFiles).hasSize(1)
-        val file = File(exportedFiles[0])
+        assertThat(exportedFile).isNotNull()
+        val file = exportedFile!!.toFile()
         assertThat(file.readText()).isEqualTo(
             "\"Date\",\"Transaction ID\",\"Number\",\"Description\",\"Notes\",\"Commodity/Currency\",\"Void Reason\",\"Action\",\"Memo\",\"Full Account Name\",\"Account Name\",\"Amount With Sym\",\"Amount Num.\",\"Value With Sym\",\"Value Num.\",\"Reconcile\",\"Reconcile Date\",\"Rate/Price\"$lineSeparator"
             + "\"2016-08-23\",\"b33c8a6160494417558fd143731fc26a\",,\"Kahuna Burger\",,\"CURRENCY::USD\",,,,\"Expenses:Dining\",\"Dining\",\"10,00\u00a0US\$\",\"10,00\",\"10,00\u00a0US\$\",\"10,00\",\"n\",,\"1,00\"$lineSeparator"

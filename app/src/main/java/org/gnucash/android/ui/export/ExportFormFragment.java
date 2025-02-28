@@ -230,7 +230,7 @@ public class ExportFormFragment extends MenuFragment implements
         if (TextUtils.isEmpty(tag)) {
             return;
         }
-        ExportParams exportParams = ExportParams.parseCsv(tag);
+        ExportParams exportParams = ExportParams.parseTag(tag);
         ExportFormat exportFormat = exportParams.getExportFormat();
         Uri uri = exportParams.getExportLocation();
         ExportParams.ExportTarget exportTarget = exportParams.getExportTarget();
@@ -373,7 +373,7 @@ public class ExportFormFragment extends MenuFragment implements
                 updateMethod = DatabaseAdapter.UpdateMethod.insert;
             }
             scheduledAction.setRecurrence(RecurrenceParser.parse(mEventRecurrence));
-            scheduledAction.setTag(exportParameters.toCsv());
+            scheduledAction.setTag(exportParameters.toTag());
             ScheduledActionDbAdapter.getInstance().addRecord(scheduledAction, updateMethod);
             mScheduledAction = scheduledAction;
         }
@@ -453,7 +453,7 @@ public class ExportFormFragment extends MenuFragment implements
         mBinding.spinnerExportDestination.setSelection(position);
 
         //**************** export start time bindings ******************
-        Timestamp timestamp = PreferencesHelper.getLastExportTime();
+        Timestamp timestamp = PreferencesHelper.getLastExportTime(context);
         final long date = timestamp.getTime() - DateUtils.WEEK_IN_MILLIS;
         mExportStartCalendar.setTimeInMillis(date);
 
@@ -595,7 +595,7 @@ public class ExportFormFragment extends MenuFragment implements
      */
     private void selectExportFile() {
         String bookName = BooksDbAdapter.getInstance().getActiveBookDisplayName();
-        String filename = Exporter.buildExportFilename(mExportParams.getExportFormat(), bookName);
+        String filename = Exporter.buildExportFilename(mExportParams.getExportFormat(), mExportParams.isCompressed, bookName);
 
         Intent createIntent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
             .setType("*/*")
