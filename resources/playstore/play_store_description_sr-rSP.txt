@@ -1,0 +1,29 @@
+GnuCash је мобилни финансијски менаџер за Андроид.
+
+То је пратећа апликација за GnuCash на десктопу, и омогућава флексибилно праћење трошкова у покрету.
+Забележене трансакције могу бити експортоване за GnuCash на десктопу у неколико формата (CSV / QIF / OFX).
+
+Неке од истакнутих карактеристика укључују:
+
+<b>&bull; Интерфејс лак за коришћење.</b>
+
+<b>&bull; Контни план</b>: Главни рачун може садржати  детаљну хијерархију рачуна.
+Ово омогућава сличним типовима рачуна (нпр. Готовина, Чековни) да се групишу под једним главним рачуном (нпр. Основна средства).
+Такође можете импортовати постојећу хијерархију рачуна из GnuCash за десктоп.
+
+<b>&bull; Подељене трансакције</b>: Појединачна трансакција може бити подељена на неколико делова да би се забележили порези, таксе, провизије и други сложени уноси.
+
+<b>&bull; Double Entry</b>: Every transaction must debit one account and credit another by an equal amount. This ensures that the "books balance": that the difference between income and outflow exactly equals the sum of all assets, be they bank, cash, stock or other.
+
+<b>&bull; Income/Expense Account Types (Categories)</b>: These serve not only to categorize your cash flow, but when used properly with the double-entry feature, these can provide an accurate Profit&Loss statement.
+
+<b>&bull; Scheduled Transactions</b>: GnuCash has the ability to automatically create and enter transactions.
+
+<b>&bull; Export to GnuCash XML, QIF or OFX</b>: GnuCash can export your accounts/transactions in different formats for use in other programs. Also, scheduled exports to 3rd-party sync services like DropBox and Google Drive can be enabled.
+
+<b>&bull; Reports</b>: View summary of transactions (income and expenses) as pie/bar/line charts
+
+<b>&bull; Homescreen widget</b> for quick access to your accounts and recording of transactions
+
+<br/><b><u>NOTE</u></b>: that the app does not offer full compatibility with GnuCash for the desktop. You cannot synchronize between the desktop app and this one. But you can import your accounts and transactions from GnuCash XML files.
+

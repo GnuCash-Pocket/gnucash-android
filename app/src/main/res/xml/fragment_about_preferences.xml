@@ -36,7 +36,7 @@
         android:title="@string/title_translate_gnucash">
         <intent
             android:action="android.intent.action.VIEW"
-            android:data="https://crowdin.com/project/gnucash-android" />
+            android:data="https://crowdin.com/project/gnucash-pocket" />
     </androidx.preference.Preference>
     <androidx.preference.Preference
         android:key="@string/key_license"

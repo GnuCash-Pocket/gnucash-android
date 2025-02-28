@@ -1,0 +1,29 @@
+GnuCash is een mobiele financiebeheerder voor Android.
+
+Het is een partnerapplicatie voor de desktopversie van GnuCash, en laat het flexibel bijhouden van uitgaven toe.
+Opgenomen transacties kunnen teruggestuurd worden naar de desktopversie van GnuCash via verschillende formaten (CSV / QIF / OFX).
+
+Een paar uitgelichte functies:
+
+<b>&bull; Een eenvoudig te gebruiken interface.</b>
+
+<b>&bull; Rekeningoverzicht</b>: Een hoofdrekening kan een hiërarchie van detailrekeningen onder zich hebben.
+Dit laat toe om gelijkaardige rekeningen (bv. Cash, Bank, Aandeel) te groeperen onder één hoofdrekening (bv. Activa).
+Je kan ook een bestaand rekeningschema importeren vanuit de desktop versie van GnuCash.
+
+<b>&bull; Meerdere Tegenrekeningen</b>: Eén boeking kan opgesplitst worden in meerdere regels om belastingen, kosten enz. in detail te registreren.
+
+<b>&bull; Dubbel boekhouden</b>: Elke boeking moet minstens één rekening debiteren en minstens één andere crediteren voor hetzelfde bedrag. Dit garandeert dat de boeken in balans blijven zodat het verschil tussen inkomsten en uitgaven precies overeenkomt met de som van alle activa (bank, cash, aandelen of andere).
+
+<b>&bull; Inkomsten/Uitgaven Rekening Types (Categorieën)</b>: Deze structureren niet enkel je cash flow, maar indien goed gebruikt via dubbele boekhouding geven ze ook een betrouwbare Proef- en Saldi balans.
+
+<b>&bull; Vaste Journaalposten</b>: GnuCash heeft de mogelijkheid om automatisch boekingen aan te maken.
+
+<b>&bull; GnuCash XML, QIF of OFX Exporteren</b>: GnuCash kan je rekeningen/boekingen in verschillende formaten exporteren om in andere toepassingen te gebruiken. Eveneens kunnen regelmatige exports naar 3rd-party synchronisatie diensten zoals DropBox en Google Drive ingesteld worden.
+
+<b>&bull; Rapporten</b>: Bekijk boekingsoverzichten (inkomsten en uitgaven) als cirkel/staaf/lijn diagrammen
+
+<b>&bull; Startscherm widget</b> voor snelle toegang tot je rekeningen en het registreren van boekingen
+
+<br/><b><u>MERK OP</u></b>: dat de app niet volledig compatibel is met de desktop versie van GnuCash. Je kan niet synchroniseren tussen de desktop versie en deze app. Maar je kan wel rekeningen en boekingen importeren uit GnuCash xml bestanden.
+
