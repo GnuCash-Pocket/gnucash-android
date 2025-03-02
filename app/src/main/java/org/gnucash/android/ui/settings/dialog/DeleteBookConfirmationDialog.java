@@ -16,6 +16,7 @@
 
 package org.gnucash.android.ui.settings.dialog;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -47,17 +48,23 @@ public class DeleteBookConfirmationDialog extends DoubleConfirmationDialog {
 
     @NonNull
     public static DeleteBookConfirmationDialog newInstance(String bookUID, @NonNull String requestKey) {
-        DeleteBookConfirmationDialog frag = new DeleteBookConfirmationDialog();
         Bundle args = new Bundle();
         args.putString(EXTRA_BOOK_ID, bookUID);
         args.putString(EXTRA_REQUEST_KEY, requestKey);
-        frag.setArguments(args);
-        return frag;
+        DeleteBookConfirmationDialog fragment = new DeleteBookConfirmationDialog();
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Bundle args = getArguments();
+        final String bookUID = args.getString(EXTRA_BOOK_ID);
+        final String requestKey = args.getString(EXTRA_REQUEST_KEY);
+        final FragmentManager fm = getParentFragmentManager();
+        final Activity activity = requireActivity();
+
         return getDialogBuilder()
                 .setTitle(R.string.title_confirm_delete_book)
                 .setIcon(R.drawable.ic_warning)
@@ -66,11 +73,7 @@ public class DeleteBookConfirmationDialog extends DoubleConfirmationDialog {
                     @SuppressWarnings("ConstantConditions")
                     @Override
                     public void onClick(DialogInterface dialogInterface, int which) {
-                        Bundle args = getArguments();
-                        final String bookUID = args.getString(EXTRA_BOOK_ID);
-                        final String requestKey = args.getString(EXTRA_REQUEST_KEY);
-                        final FragmentManager fm = getParentFragmentManager();
-                        BackupManager.backupBookAsync(requireActivity(), bookUID, backed -> {
+                        BackupManager.backupBookAsync(activity, bookUID, backed -> {
                             boolean deleted = BooksDbAdapter.getInstance().deleteBook(bookUID);
                             Bundle result = new Bundle();
                             result.putBoolean(Refreshable.EXTRA_REFRESH, deleted);
