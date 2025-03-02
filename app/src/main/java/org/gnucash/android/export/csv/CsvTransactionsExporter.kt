@@ -117,7 +117,7 @@ class CsvTransactionsExporter(
                 val commodity = transaction.commodity
                 val fields = Array<String?>(headers.size) { null }
                 fields[0] = dateFormat.print(transaction.timeMillis)
-                fields[1] = transaction.uID
+                fields[1] = transaction.uid
                 fields[2] = null  // Transaction number
                 fields[3] = transaction.description
                 fields[4] = maybeNull(transaction.note)

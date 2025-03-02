@@ -22,7 +22,6 @@ import android.graphics.Color;
 
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.test.unit.GnuCashTest;
 import org.junit.Test;

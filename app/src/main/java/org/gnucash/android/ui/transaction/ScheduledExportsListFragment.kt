@@ -114,14 +114,14 @@ class ScheduledExportsListFragment : ScheduledActionsListFragment() {
             val intent = Intent(context, FormActivity::class.java)
                 .setAction(Intent.ACTION_EDIT)
                 .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.EXPORT.name)
-                .putExtra(UxArgument.SCHEDULED_ACTION_UID, scheduledAction.uID)
+                .putExtra(UxArgument.SCHEDULED_ACTION_UID, scheduledAction.uid)
             context.startActivity(intent)
         }
 
         @SuppressLint("NotifyDataSetChanged")
         override fun deleteSchedule(scheduledAction: ScheduledAction) {
             Timber.i("Removing scheduled export")
-            scheduledActionDbAdapter.deleteRecord(scheduledAction.uID!!)
+            scheduledActionDbAdapter.deleteRecord(scheduledAction.uid)
         }
     }
 }
