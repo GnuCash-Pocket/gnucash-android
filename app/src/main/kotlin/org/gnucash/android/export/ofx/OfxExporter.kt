@@ -17,22 +17,6 @@ package org.gnucash.android.export.ofx
 
 import android.content.Context
 import android.preference.PreferenceManager
-import java.io.BufferedWriter
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.OutputStreamWriter
-import java.io.StringWriter
-import java.io.Writer
-import java.sql.Timestamp
-import javax.xml.parsers.DocumentBuilder
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.parsers.ParserConfigurationException
-import javax.xml.transform.OutputKeys
-import javax.xml.transform.TransformerException
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.stream.StreamResult
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.export.ExportParams
@@ -45,7 +29,16 @@ import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import timber.log.Timber
-import java.nio.charset.StandardCharsets
+import java.io.Writer
+import java.sql.Timestamp
+import javax.xml.parsers.DocumentBuilder
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.parsers.ParserConfigurationException
+import javax.xml.transform.OutputKeys
+import javax.xml.transform.TransformerException
+import javax.xml.transform.TransformerFactory
+import javax.xml.transform.dom.DOMSource
+import javax.xml.transform.stream.StreamResult
 
 /**
  * Exports the data in the database in OFX format.
@@ -78,13 +71,18 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
             .filter { it.transactionCount > 0 }
             .filter {
                 isDoubleEntryEnabled ||
-                    // TODO: investigate whether skipping the imbalance accounts makes sense.
-                    // Also, using locale-dependant names here is error-prone.
-                    it.name?.contains(nameImbalance) == false
+                        // TODO: investigate whether skipping the imbalance accounts makes sense.
+                        // Also, using locale-dependant names here is error-prone.
+                        it.name?.contains(nameImbalance) == false
             }
             .forEach { account ->
                 // Add account details (transactions) to the XML document.
-                writeAccount(account, doc, statementTransactionResponse, mExportParams.exportStartTime)
+                writeAccount(
+                    account,
+                    doc,
+                    statementTransactionResponse,
+                    mExportParams.exportStartTime
+                )
                 // Mark as exported.
                 mAccountsDbAdapter.markAsExported(account.uID)
             }
@@ -98,7 +96,7 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
      * @throws ExporterException if an XML builder could not be created.
      */
     @Throws(ExporterException::class)
-    private fun generateOfxExport(accounts: List<Account>): String {
+    private fun generateOfxExport(accounts: List<Account>, writer: Writer) {
         val document = makeDocBuilder().newDocument()
         val root = document.createElement("OFX")
         val pi = document.createProcessingInstruction("OFX", OfxHelper.OFX_HEADER)
@@ -108,15 +106,15 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
         val useXmlHeader = PreferenceManager.getDefaultSharedPreferences(mContext)
             .getBoolean(mContext.getString(R.string.key_xml_ofx_header), false)
         PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow())
-        val stringWriter = StringWriter()
         if (useXmlHeader) {
-            write(document, stringWriter, false)
-            return stringWriter.toString()
+            write(document, writer, false)
+        } else {
+            // If we want SGML OFX headers, write first to string and then prepend header.
+            val ofxNode = document.getElementsByTagName("OFX").item(0)
+            writer.write(OfxHelper.OFX_SGML_HEADER)
+            writer.write("\n")
+            write(ofxNode, writer, true)
         }
-        // If we want SGML OFX headers, write first to string and then prepend header.
-        val ofxNode = document.getElementsByTagName("OFX").item(0)
-        write(ofxNode, stringWriter, true)
-        return OfxHelper.OFX_SGML_HEADER + "\n" + stringWriter
     }
 
     @Throws(ExporterException::class)
@@ -129,31 +127,12 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
         }
     }
 
-    @Throws(ExporterException::class)
-    override fun generateExport(): List<String> {
-        val accounts = mAccountsDbAdapter.getExportableAccounts(mExportParams.exportStartTime)
-        if (accounts.isEmpty()) { // Nothing to export, so no files generated
-            close()
-            return listOf()
+    override fun writeExport(exportParams: ExportParams, writer: Writer) {
+        val accounts = mAccountsDbAdapter.getExportableAccounts(exportParams.exportStartTime)
+        if (accounts.isEmpty()) {
+            throw ExporterException(exportParams, "No accounts to export")
         }
-        var writer: BufferedWriter? = null
-        try {
-            val file = File(exportCacheFilePath)
-            writer = BufferedWriter(OutputStreamWriter(FileOutputStream(file), StandardCharsets.UTF_8))
-            writer.write(generateOfxExport(accounts))
-            close()
-        } catch (e: IOException) {
-            throw ExporterException(mExportParams, e)
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close()
-                } catch (e: IOException) {
-                    throw ExporterException(mExportParams, e)
-                }
-            }
-        }
-        return listOf(exportCacheFilePath)
+        generateOfxExport(accounts, writer)
     }
 
     /**

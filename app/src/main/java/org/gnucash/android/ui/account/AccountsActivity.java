@@ -419,22 +419,22 @@ public class AccountsActivity extends BaseDrawerActivity implements
      * Creates default accounts with the specified currency code.
      * If the currency parameter is null, then locale currency will be used if available
      *
-     * @param currencyCode Currency code to assign to the imported accounts
      * @param activity     Activity for providing context and displaying dialogs
+     * @param currencyCode Currency code to assign to the imported accounts
      */
-    public static void createDefaultAccounts(@NonNull final String currencyCode, @NonNull final Activity activity) {
-        createDefaultAccounts(currencyCode, activity, null);
+    public static void createDefaultAccounts(@NonNull final Activity activity, @NonNull final String currencyCode) {
+        createDefaultAccounts(activity, currencyCode, null);
     }
 
     /**
      * Creates default accounts with the specified currency code.
      * If the currency parameter is null, then locale currency will be used if available
      *
-     * @param currencyCode Currency code to assign to the imported accounts
      * @param activity     Activity for providing context and displaying dialogs
+     * @param currencyCode Currency code to assign to the imported accounts
      * @param callback     The callback to call when the book has been imported.
      */
-    public static void createDefaultAccounts(@NonNull final String currencyCode, @NonNull final Activity activity, @Nullable final TaskDelegate callback) {
+    public static void createDefaultAccounts(@NonNull final Activity activity, @NonNull final String currencyCode, @Nullable final TaskDelegate callback) {
         TaskDelegate delegate = callback;
         if (!TextUtils.isEmpty(currencyCode)) {
             delegate = new TaskDelegate() {

@@ -18,6 +18,8 @@ package org.gnucash.android.export;
 
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import org.gnucash.android.ui.export.ExportFormFragment;
 import org.gnucash.android.util.TimestampHelper;
 
@@ -34,14 +36,13 @@ import java.sql.Timestamp;
  */
 public class ExportParams {
     /**
-     * Options for the destination of the exported transctions file.
+     * Options for the destination of the exported transactions file.
      * It could be stored on the {@link #SD_CARD} or exported through another program via {@link #SHARING}
      */
     public enum ExportTarget {
         SD_CARD("SD Card"),
         SHARING("External Service"),
         DROPBOX("Dropbox"),
-        GOOGLE_DRIVE("Google Drive"),
         OWNCLOUD("ownCloud"),
         URI("Sync Service");
 
@@ -58,9 +59,10 @@ public class ExportParams {
 
     /**
      * Format to use for the exported transactions
-     * By default, the {@link ExportFormat#QIF} format is used
+     * By default, the {@link ExportFormat#XML} format is used
      */
-    private ExportFormat mExportFormat = ExportFormat.QIF;
+    @NonNull
+    private ExportFormat mExportFormat = ExportFormat.XML;
 
     /**
      * All transactions created after this date will be exported
@@ -76,7 +78,7 @@ public class ExportParams {
     /**
      * Destination for the exported transactions
      */
-    private ExportTarget mExportTarget = ExportTarget.SHARING;
+    private ExportTarget mExportTarget = ExportTarget.SD_CARD;
 
     /**
      * Location to save the file name being exported.
@@ -90,6 +92,11 @@ public class ExportParams {
     private char mCsvSeparator = ',';
 
     /**
+     * Compress the file using gzip?
+     */
+    public boolean isCompressed = false;
+
+    /**
      * Creates a new set of parameters.
      */
     public ExportParams() {
@@ -101,7 +108,7 @@ public class ExportParams {
      *
      * @param format Format to use when exporting the transactions
      */
-    public ExportParams(ExportFormat format) {
+    public ExportParams(@NonNull ExportFormat format) {
         this();
         setExportFormat(format);
     }
@@ -111,6 +118,7 @@ public class ExportParams {
      *
      * @return {@link ExportFormat}
      */
+    @NonNull
     public ExportFormat getExportFormat() {
         return mExportFormat;
     }
@@ -120,7 +128,7 @@ public class ExportParams {
      *
      * @param exportFormat {@link ExportFormat}
      */
-    public void setExportFormat(ExportFormat exportFormat) {
+    public void setExportFormat(@NonNull ExportFormat exportFormat) {
         this.mExportFormat = exportFormat;
     }
 

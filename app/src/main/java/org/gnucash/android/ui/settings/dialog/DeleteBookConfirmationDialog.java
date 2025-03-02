@@ -16,7 +16,9 @@
 
 package org.gnucash.android.ui.settings.dialog;
 
+import android.app.Activity;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
@@ -70,8 +72,9 @@ public class DeleteBookConfirmationDialog extends DoubleConfirmationDialog {
                         final String bookUID = args.getString(EXTRA_BOOK_ID);
                         final String requestKey = args.getString(EXTRA_REQUEST_KEY);
                         final FragmentManager fm = getParentFragmentManager();
-                        BackupManager.backupBookAsync(requireActivity(), bookUID, backed -> {
-                            boolean deleted = BooksDbAdapter.getInstance().deleteBook(bookUID);
+                        final Activity activity = requireActivity();
+                        BackupManager.backupBookAsync(activity, bookUID, backed -> {
+                            boolean deleted = BooksDbAdapter.getInstance().deleteBook(activity, bookUID);
                             Bundle result = new Bundle();
                             result.putBoolean(Refreshable.EXTRA_REFRESH, deleted);
                             fm.setFragmentResult(requestKey, result);

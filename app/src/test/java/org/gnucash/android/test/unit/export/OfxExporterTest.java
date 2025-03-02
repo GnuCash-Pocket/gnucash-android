@@ -16,13 +16,16 @@
 package org.gnucash.android.test.unit.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import android.content.Context;
+import android.net.Uri;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.export.ExportFormat;
 import org.gnucash.android.export.ExportParams;
+import org.gnucash.android.export.Exporter;
 import org.gnucash.android.export.ofx.OfxExporter;
 import org.gnucash.android.export.ofx.OfxHelper;
 import org.gnucash.android.model.Account;
@@ -35,7 +38,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.util.Calendar;
-import java.util.List;
 import java.util.TimeZone;
 
 public class OfxExporterTest extends GnuCashTest {
@@ -52,7 +54,7 @@ public class OfxExporterTest extends GnuCashTest {
         exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
         exportParameters.setDeleteTransactionsAfterExport(false);
         OfxExporter exporter = new OfxExporter(context, exportParameters, GnuCashApplication.getActiveBookUID());
-        assertThat(exporter.generateExport()).isEmpty();
+        assertThrows(Exporter.ExporterException.class, () -> exporter.generateExport());
     }
 
     /**
@@ -76,10 +78,10 @@ public class OfxExporterTest extends GnuCashTest {
         exportParameters.setDeleteTransactionsAfterExport(false);
 
         OfxExporter exporter = new OfxExporter(context, exportParameters, GnuCashApplication.getActiveBookUID());
-        List<String> exportedFiles = exporter.generateExport();
+        Uri exportedFile = exporter.generateExport();
 
-        assertThat(exportedFiles).hasSize(1);
-        File file = new File(exportedFiles.get(0));
+        assertThat(exportedFile).isNotNull();
+        File file = new File(exportedFile.getPath());
         assertThat(file).exists().hasExtension("ofx");
         assertThat(file.length()).isGreaterThan(0L);
         file.delete();

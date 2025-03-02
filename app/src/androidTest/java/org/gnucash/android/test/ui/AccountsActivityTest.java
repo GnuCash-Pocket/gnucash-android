@@ -182,7 +182,7 @@ public class AccountsActivityTest extends GnuAndroidTest {
 
 
     public void testDisplayAccountsList() {
-        AccountsActivity.createDefaultAccounts("EUR", mAccountsActivity);
+        AccountsActivity.createDefaultAccounts(mAccountsActivity, "EUR");
         mAccountsActivity.recreate();
 
         refreshAccountsList();

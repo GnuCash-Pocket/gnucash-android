@@ -130,14 +130,15 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
         preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                new AlertDialog.Builder(getActivity())
+                final Activity activity = requireActivity();
+                new AlertDialog.Builder(activity)
                         .setTitle(R.string.title_create_default_accounts)
                         .setMessage(R.string.msg_confirm_create_default_accounts_setting)
                         .setIcon(R.drawable.ic_warning)
                         .setPositiveButton(R.string.btn_create_accounts, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int which) {
-                                AccountsActivity.createDefaultAccounts(Commodity.DEFAULT_COMMODITY.getCurrencyCode(), getActivity());
+                                AccountsActivity.createDefaultAccounts(activity, Commodity.DEFAULT_COMMODITY.getCurrencyCode());
                             }
                         })
                         .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
@@ -176,10 +177,10 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
      */
     private void selectExportFile() {
         String bookName = BooksDbAdapter.getInstance().getActiveBookDisplayName();
-        String filename = Exporter.buildExportFilename(ExportFormat.CSVA, bookName);
+        String filename = Exporter.buildExportFilename(ExportFormat.CSVA, false, bookName);
 
         Intent createIntent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
-            .setType("*/*")
+            .setType(ExportFormat.CSVA.mimeType)
             .addCategory(Intent.CATEGORY_OPENABLE)
             .putExtra(Intent.EXTRA_TITLE, filename);
         startActivityForResult(createIntent, REQUEST_EXPORT_FILE);

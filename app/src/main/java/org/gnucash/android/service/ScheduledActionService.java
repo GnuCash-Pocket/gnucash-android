@@ -19,6 +19,7 @@ package org.gnucash.android.service;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
@@ -139,17 +140,6 @@ public class ScheduledActionService {
     /**
      * Process scheduled action and execute any pending actions
      *
-     * @param scheduledAction The scheduled action.
-     */
-    //made public static for testing. Do not call these methods directly
-    @VisibleForTesting
-    static void processScheduledAction(@NonNull ScheduledAction scheduledAction, SQLiteDatabase db) {
-        processScheduledAction(GnuCashApplication.getAppContext(), scheduledAction, db);
-    }
-
-    /**
-     * Process scheduled action and execute any pending actions
-     *
      * @param context         The application context.
      * @param scheduledAction The scheduled action.
      */
@@ -225,19 +215,15 @@ public class ScheduledActionService {
         ExportParams params = ExportParams.parseCsv(scheduledAction.getTag());
         // HACK: the tag isn't updated with the new date, so set the correct by hand
         params.setExportStartTime(new Timestamp(scheduledAction.getLastRunTime()));
-        Integer result = null;
+        Uri result = null;
         try {
             //wait for async task to finish before we proceed (we are holding a wake lock)
             result = new ExportAsyncTask(context, bookUID).execute(params).get();
         } catch (InterruptedException | ExecutionException e) {
             Timber.e(e);
         }
-        if (result == null || result < 0) {
-            Timber.w("Backup/export did not occur. There was a problem.");
-            return 0;
-        }
-        if (result == 0) {
-            Timber.i("Backup/export did not occur." +
+        if (result == null ) {
+            Timber.w("Backup/export did not occur." +
                 " There might have been no new transactions to export");
             return 0;
         }

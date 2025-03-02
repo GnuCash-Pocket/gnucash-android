@@ -17,6 +17,9 @@ package org.gnucash.android.test.unit.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import android.content.Context;
+
+import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.test.unit.GnuCashTest;
 import org.gnucash.android.util.PreferencesHelper;
 import org.gnucash.android.util.TimestampHelper;
@@ -28,16 +31,18 @@ public class PreferencesHelperTest extends GnuCashTest {
 
     @Test
     public void shouldGetLastExportTimeDefaultValue() {
-        final Timestamp lastExportTime = PreferencesHelper.getLastExportTime();
+        Context context = GnuCashApplication.getAppContext();
+        final Timestamp lastExportTime = PreferencesHelper.getLastExportTime(context);
         assertThat(lastExportTime).isEqualTo(TimestampHelper.getTimestampFromEpochZero());
     }
 
     @Test
     public void shouldGetLastExportTimeCurrentValue() {
+        Context context = GnuCashApplication.getAppContext();
         final long goldenBoyBirthday = 1190136000L * 1000;
         final Timestamp goldenBoyBirthdayTimestamp = new Timestamp(goldenBoyBirthday);
         PreferencesHelper.setLastExportTime(goldenBoyBirthdayTimestamp);
-        assertThat(PreferencesHelper.getLastExportTime())
+        assertThat(PreferencesHelper.getLastExportTime(context))
                 .isEqualTo(goldenBoyBirthdayTimestamp);
     }
 }
