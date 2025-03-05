@@ -27,7 +27,8 @@
     app:cardPreventCornerOverlap="false"
     app:cardUseCompatPadding="true">
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/relativeLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="@dimen/card_min_height">
@@ -35,94 +36,97 @@
         <View
             android:id="@+id/account_color_strip"
             android:layout_width="@dimen/strip_width"
-            android:layout_height="match_parent"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentLeft="true"
-            android:minHeight="@dimen/card_min_height" />
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:background="@color/account_blue" />
 
         <include
             android:id="@+id/list_item"
             layout="@layout/list_item_2_lines"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/edge_padding"
+            android:layout_marginStart="@dimen/edge_padding"
             android:layout_marginTop="@dimen/edge_padding"
-            android:layout_marginRight="@dimen/edge_padding"
-            android:layout_toRightOf="@id/account_color_strip"
-            android:paddingTop="6dp" />
+            android:layout_marginEnd="@dimen/edge_padding"
+            android:paddingTop="6dp"
+            app:layout_constraintEnd_toStartOf="@id/favorite_status"
+            app:layout_constraintStart_toEndOf="@id/account_color_strip"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
             android:id="@+id/options_menu"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentBottom="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:paddingLeft="24dp"
-            android:paddingTop="20dp"
-            android:paddingBottom="4dp"
+            android:paddingStart="16dp"
+            android:paddingTop="16dp"
+            android:paddingEnd="0dp"
             android:scaleType="centerInside"
             android:src="@drawable/ic_more_vert"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/create_transaction"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_alignParentBottom="true"
-            android:layout_toLeftOf="@id/options_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:paddingLeft="24dp"
-            android:paddingTop="20dp"
-            android:paddingBottom="4dp"
+            android:paddingStart="16dp"
+            android:paddingTop="16dp"
+            android:paddingEnd="0dp"
             android:scaleType="centerInside"
             android:src="@drawable/ic_add"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/options_menu"
             tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/favorite_status"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_alignParentRight="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:paddingLeft="22dp"
-            android:paddingTop="6dp"
-            android:paddingRight="6dp"
-            android:paddingBottom="22dp"
+            android:contentDescription="@string/menu_title_favorite"
+            android:paddingStart="16dp"
+            android:paddingEnd="0dp"
+            android:paddingBottom="16dp"
             android:src="@drawable/ic_favorite_border"
-            tools:ignore="ContentDescription" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/account_balance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@id/options_menu"
-            android:layout_alignParentBottom="true"
-            android:layout_marginRight="@dimen/edge_padding"
-            android:layout_toLeftOf="@id/create_transaction"
-            android:maxLines="1"
-            android:paddingBottom="4dp"
+            android:layout_marginEnd="@dimen/edge_padding"
+            android:gravity="right"
+            android:singleLine="true"
             android:textSize="18sp"
-            tools:text="$ 2000.00" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/create_transaction"
+            app:layout_constraintTop_toBottomOf="@id/list_item"
+            tools:text="$ 123,456,789.00" />
 
         <ProgressBar
             android:id="@+id/budget_indicator"
             style="@android:style/Widget.ProgressBar.Horizontal"
-            android:layout_width="100dp"
+            android:layout_width="0dp"
             android:layout_height="8dp"
-            android:layout_alignBottom="@id/options_menu"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentBottom="true"
             android:layout_marginStart="@dimen/strip_width"
-            android:layout_marginLeft="@dimen/strip_width"
-            android:layout_marginRight="@dimen/edge_padding"
+            android:layout_marginEnd="@dimen/edge_padding"
             android:background="@null"
             android:indeterminate="false"
-            android:max="100"
-            android:paddingBottom="4dp"
             android:progressDrawable="@drawable/budget_progress_indicator"
             android:visibility="gone"
-            tools:progress="50" />
-    </RelativeLayout>
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/account_balance"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toEndOf="@id/account_color_strip"
+            app:layout_constraintWidth_max="100dp"
+            tools:progress="50"
+            tools:visibility="visible" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.cardview.widget.CardView>

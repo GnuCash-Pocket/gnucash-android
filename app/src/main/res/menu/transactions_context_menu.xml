@@ -15,8 +15,17 @@
 -->
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
+    <item
+        android:id="@+id/menu_edit"
+        android:icon="@drawable/ic_edit"
+        android:orderInCategory="0"
+        android:title="@string/title_edit_transaction"
+        android:visible="false"
+        app:showAsAction="never"
+        tools:visible="true" />
     <item
         android:id="@+id/menu_move"
         android:icon="@drawable/ic_file_move"

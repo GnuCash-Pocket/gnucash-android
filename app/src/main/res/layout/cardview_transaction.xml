@@ -47,8 +47,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:paddingStart="8dp"
-            android:paddingTop="8dp"
+            android:paddingStart="16dp"
+            android:paddingTop="16dp"
             android:paddingEnd="0dp"
             android:src="@drawable/ic_more_vert"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -60,9 +60,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:paddingStart="8dp"
+            android:paddingStart="16dp"
             android:paddingEnd="0dp"
-            android:paddingBottom="8dp"
+            android:paddingBottom="16dp"
             android:src="@drawable/ic_edit"
             app:layout_constraintBottom_toTopOf="@id/options_menu"
             app:layout_constraintEnd_toEndOf="parent"
@@ -79,7 +79,7 @@
             app:layout_constraintEnd_toStartOf="@id/options_menu"
             app:layout_constraintStart_toEndOf="@id/transaction_date"
             app:layout_constraintTop_toTopOf="@id/transaction_date"
-            tools:text="$450.000.000" />
+            tools:text="$ 123,456,789.00" />
 
         <TextView
             android:id="@+id/transaction_date"

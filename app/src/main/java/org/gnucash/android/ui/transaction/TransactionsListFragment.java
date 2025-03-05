@@ -290,6 +290,7 @@ public class TransactionsListFragment extends MenuFragment implements
             private final ImageView editTransaction;
 
             private long transactionId;
+            private String transactionUID;
             @ColorInt
             private final int colorBalanceZero;
 
@@ -306,12 +307,13 @@ public class TransactionsListFragment extends MenuFragment implements
             }
 
             private void setup() {
-                primaryText.setTextSize(18);
                 optionsMenu.setOnClickListener(v -> {
-                    PopupMenu popup = new PopupMenu(getActivity(), v);
+                    PopupMenu popup = new PopupMenu(v.getContext(), v);
                     popup.setOnMenuItemClickListener(TransactionViewHolder.this);
                     MenuInflater inflater = popup.getMenuInflater();
-                    inflater.inflate(R.menu.transactions_context_menu, popup.getMenu());
+                    Menu menu = popup.getMenu();
+                    inflater.inflate(R.menu.transactions_context_menu, menu);
+                    menu.findItem(R.id.menu_edit).setVisible(mUseCompactView);
                     popup.show();
                 });
 
@@ -338,6 +340,10 @@ public class TransactionsListFragment extends MenuFragment implements
                         moveTransaction(transactionId);
                         return true;
 
+                    case R.id.menu_edit:
+                        editTransaction(transactionUID);
+                        return true;
+
                     default:
                         return false;
                 }
@@ -345,11 +351,11 @@ public class TransactionsListFragment extends MenuFragment implements
 
             public void bind(@NonNull Cursor cursor) {
                 transactionId = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry._ID));
+                transactionUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_UID));
 
                 String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_DESCRIPTION));
                 primaryText.setText(description);
 
-                final String transactionUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_UID));
                 Money amount = mTransactionsDbAdapter.getBalance(transactionUID, mAccountUID);
                 displayBalance(transactionAmount, amount, colorBalanceZero);
 
@@ -391,11 +397,7 @@ public class TransactionsListFragment extends MenuFragment implements
                     editTransaction.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Intent intent = new Intent(getActivity(), FormActivity.class)
-                                .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name())
-                                .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
-                                .putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
-                            startActivity(intent);
+                            editTransaction(transactionUID);
                         }
                     });
                 }
@@ -437,5 +439,13 @@ public class TransactionsListFragment extends MenuFragment implements
         fm.setFragmentResultListener(BulkMoveDialogFragment.TAG, TransactionsListFragment.this, TransactionsListFragment.this);
         BulkMoveDialogFragment fragment = BulkMoveDialogFragment.newInstance(ids, mAccountUID);
         fragment.show(fm, BulkMoveDialogFragment.TAG);
+    }
+
+    private void editTransaction(String transactionUID) {
+        Intent intent = new Intent(getActivity(), FormActivity.class)
+            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name())
+            .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
+            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
+        startActivity(intent);
     }
 }

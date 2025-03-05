@@ -531,7 +531,7 @@ public class AccountsListFragment extends MenuFragment implements
 
                 boolean isPlaceholderAccount = mAccountsDbAdapter.isPlaceholderAccount(accountUID);
                 if (isPlaceholderAccount) {
-                    createTransaction.setVisibility(View.GONE);
+                    createTransaction.setVisibility(View.INVISIBLE);
                 } else {
                     createTransaction.setOnClickListener(new View.OnClickListener() {
 
