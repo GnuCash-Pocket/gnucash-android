@@ -129,7 +129,7 @@ public class AccountsDbAdapterTest extends GnuCashTest {
         Account account1 = new Account("AlphaAccount");
         Account account2 = new Account("BetaAccount");
         Transaction transaction = new Transaction("MyTransaction");
-        Split split = new Split(Money.getZeroInstance(), account1.getUID());
+        Split split = new Split(Money.createZeroInstance(account1.getCommodity()), account1.getUID());
         transaction.addSplit(split);
         transaction.addSplit(split.createPair(account2.getUID()));
         account1.addTransaction(transaction);
@@ -153,7 +153,7 @@ public class AccountsDbAdapterTest extends GnuCashTest {
         Account account1 = new Account("AlphaAccount");
         Account account2 = new Account("BetaAccount");
         Transaction transaction = new Transaction("MyTransaction");
-        Split split = new Split(Money.getZeroInstance(), account1.getUID());
+        Split split = new Split(Money.createZeroInstance(account1.getCommodity()), account1.getUID());
         transaction.addSplit(split);
         transaction.addSplit(split.createPair(account2.getUID()));
         account1.addTransaction(transaction);
@@ -194,7 +194,7 @@ public class AccountsDbAdapterTest extends GnuCashTest {
         mAccountsDbAdapter.addRecord(first);
 
         Transaction transaction = new Transaction("TestTrn");
-        Split split = new Split(Money.getZeroInstance(), ALPHA_ACCOUNT_NAME);
+        Split split = new Split(Money.createZeroInstance(first.getCommodity()), ALPHA_ACCOUNT_NAME);
         transaction.addSplit(split);
         transaction.addSplit(split.createPair(BRAVO_ACCOUNT_NAME));
 
@@ -250,7 +250,7 @@ public class AccountsDbAdapterTest extends GnuCashTest {
         mAccountsDbAdapter.addRecord(account);
 
         Transaction transaction = new Transaction("Test description");
-        Split split = new Split(Money.getZeroInstance(), account.getUID());
+        Split split = new Split(Money.createZeroInstance(account.getCommodity()), account.getUID());
         transaction.addSplit(split);
         Account account1 = new Account("Transfer account");
         transaction.addSplit(split.createPair(account1.getUID()));
@@ -268,7 +268,7 @@ public class AccountsDbAdapterTest extends GnuCashTest {
     public void shouldClearAllTablesWhenDeletingAllAccounts() {
         Account account = new Account("Test");
         Transaction transaction = new Transaction("Test description");
-        Split split = new Split(Money.getZeroInstance(), account.getUID());
+        Split split = new Split(Money.createZeroInstance(account.getCommodity()), account.getUID());
         transaction.addSplit(split);
         Account account2 = new Account("Transfer account");
         transaction.addSplit(split.createPair(account2.getUID()));
@@ -284,7 +284,7 @@ public class AccountsDbAdapterTest extends GnuCashTest {
         scheduledActionDbAdapter.addRecord(scheduledAction);
 
         Budget budget = new Budget("Test");
-        BudgetAmount budgetAmount = new BudgetAmount(Money.getZeroInstance(), account.getUID());
+        BudgetAmount budgetAmount = new BudgetAmount(Money.createZeroInstance(account.getCommodity()), account.getUID());
         budget.addAmount(budgetAmount);
         budget.setRecurrence(new Recurrence(PeriodType.MONTH));
         BudgetsDbAdapter.getInstance().addRecord(budget);
@@ -305,7 +305,7 @@ public class AccountsDbAdapterTest extends GnuCashTest {
     public void simpleAccountListShouldNotContainTransactions() {
         Account account = new Account("Test");
         Transaction transaction = new Transaction("Test description");
-        Split split = new Split(Money.getZeroInstance(), account.getUID());
+        Split split = new Split(Money.createZeroInstance(account.getCommodity()), account.getUID());
         transaction.addSplit(split);
         Account account1 = new Account("Transfer");
         transaction.addSplit(split.createPair(account1.getUID()));
@@ -382,7 +382,7 @@ public class AccountsDbAdapterTest extends GnuCashTest {
         Transaction transaction = new Transaction("Random");
         account2.addTransaction(transaction);
 
-        Split split = new Split(Money.getZeroInstance(), account.getUID());
+        Split split = new Split(Money.createZeroInstance(account.getCommodity()), account.getUID());
         transaction.addSplit(split);
         transaction.addSplit(split.createPair(account2.getUID()));
 

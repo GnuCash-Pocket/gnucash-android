@@ -25,7 +25,6 @@ import androidx.annotation.NonNull;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.model.BudgetAmount;
-import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 
 import java.util.ArrayList;
@@ -68,7 +67,7 @@ public class BudgetAmountsDbAdapter extends DatabaseAdapter<BudgetAmount> {
 
         BudgetAmount budgetAmount = new BudgetAmount(budgetUID, accountUID);
         populateBaseModelAttributes(cursor, budgetAmount);
-        budgetAmount.setAmount(new Money(amountNum, amountDenom, Commodity.DEFAULT_COMMODITY));
+        budgetAmount.setAmount(new Money(amountNum, amountDenom, getAccountCurrencyCode(accountUID)));
         budgetAmount.setPeriodNum(periodNum);
         budgetAmount.setNotes(notes);
 

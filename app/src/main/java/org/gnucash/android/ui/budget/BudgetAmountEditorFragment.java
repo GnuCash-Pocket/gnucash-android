@@ -44,6 +44,7 @@ import org.gnucash.android.databinding.ItemBudgetAmountBinding;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.inputmethodservice.CalculatorKeyboardView;
+import org.gnucash.android.model.Account;
 import org.gnucash.android.model.BudgetAmount;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
@@ -222,8 +223,9 @@ public class BudgetAmountEditorFragment extends MenuFragment {
             BigDecimal amountValue = viewHolder.amountEditText.getValue();
             if (amountValue == null)
                 continue;
-            Money amount = new Money(amountValue, Commodity.DEFAULT_COMMODITY);
             String accountUID = mAccountsDbAdapter.getUID(viewHolder.budgetAccountSpinner.getSelectedItemId());
+            String currencyCode = mAccountsDbAdapter.getAccountCurrencyCode(accountUID);
+            Money amount = new Money(amountValue, currencyCode);
             BudgetAmount budgetAmount = new BudgetAmount(amount, accountUID);
             budgetAmounts.add(budgetAmount);
         }

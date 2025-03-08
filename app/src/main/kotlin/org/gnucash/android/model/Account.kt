@@ -168,9 +168,9 @@ class Account : BaseModel {
      */
     val balance: Money
         get() {
-            var balance = Money.createZeroInstance(commodity.currencyCode)
+            var balance = Money.createZeroInstance(commodity)
             for (transaction in _transactionsList) {
-                balance += transaction.getBalance(uid)
+                balance += transaction.getBalance(this)
             }
             return balance
         }

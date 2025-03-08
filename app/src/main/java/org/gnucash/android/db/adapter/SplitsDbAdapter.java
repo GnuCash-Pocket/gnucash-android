@@ -19,6 +19,7 @@ package org.gnucash.android.db.adapter;
 
 import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
 import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
+import static org.gnucash.android.math.MathExtKt.toBigDecimal;
 import static org.gnucash.android.model.Commodity.NO_CURRENCY_CODE;
 
 import android.database.Cursor;
@@ -268,7 +269,7 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
                         // no price exists, just ignore it
                         continue;
                     }
-                    BigDecimal amount = Money.getBigDecimal(amount_num, amount_denom);
+                    BigDecimal amount = toBigDecimal(amount_num, amount_denom);
                     BigDecimal amountConverted = amount.multiply(new BigDecimal(price.first))
                             .divide(new BigDecimal(price.second), commodity.getSmallestFractionDigits(), BigDecimal.ROUND_HALF_EVEN);
                     total = total.plus(new Money(amountConverted, commodity));

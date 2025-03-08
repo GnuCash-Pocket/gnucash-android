@@ -23,6 +23,7 @@ import android.os.AsyncTask;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.Nullable;
 
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.model.Money;
@@ -55,21 +56,20 @@ public class AccountBalanceTask extends AsyncTask<String, Void, Money> {
         //if the view for which we are doing this job is dead, kill the job as well
         if (accountBalanceTextViewReference.get() == null) {
             cancel(true);
-            return Money.getZeroInstance();
+            return null;
         }
 
-        Money balance = Money.getZeroInstance();
         try {
-            balance = accountsDbAdapter.getAccountBalance(accountUID, -1, -1);
+            return accountsDbAdapter.getAccountBalance(accountUID, -1, -1);
         } catch (Exception ex) {
             Timber.e(ex, "Error computing account balance");
         }
-        return balance;
+        return null;
     }
 
     @Override
-    protected void onPostExecute(Money balance) {
-        if (accountBalanceTextViewReference.get() != null && balance != null) {
+    protected void onPostExecute(@Nullable Money balance) {
+        if (accountBalanceTextViewReference.get() != null) {
             final TextView balanceTextView = accountBalanceTextViewReference.get();
             if (balanceTextView != null) {
                 displayBalance(balanceTextView, balance, colorBalanceZero);

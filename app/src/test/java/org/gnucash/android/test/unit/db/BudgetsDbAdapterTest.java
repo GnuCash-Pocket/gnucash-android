@@ -79,7 +79,7 @@ public class BudgetsDbAdapterTest extends GnuCashTest {
         Commodity defaultCurrency = Commodity.DEFAULT_COMMODITY;
 
         Budget budget = new Budget("Test");
-        budget.addAmount(new BudgetAmount(Money.getZeroInstance(), mAccount.getUID()));
+        budget.addAmount(new BudgetAmount(Money.createZeroInstance(mAccount.getCommodity()), mAccount.getUID()));
         budget.addAmount(new BudgetAmount(new Money("10", defaultCurrency), mSecondAccount.getUID()));
         Recurrence recurrence = new Recurrence(PeriodType.MONTH);
         budget.setRecurrence(recurrence);
@@ -131,7 +131,7 @@ public class BudgetsDbAdapterTest extends GnuCashTest {
     private List<Budget> bulkCreateBudgets() {
         List<Budget> budgets = new ArrayList<>();
         Budget budget = new Budget("", new Recurrence(PeriodType.MONTH));
-        budget.addAmount(new BudgetAmount(Money.getZeroInstance(), mAccount.getUID()));
+        budget.addAmount(new BudgetAmount(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), mAccount.getUID()));
         budgets.add(budget);
 
         String defaultCurrencyCode = Commodity.DEFAULT_COMMODITY.getCurrencyCode();
@@ -146,7 +146,7 @@ public class BudgetsDbAdapterTest extends GnuCashTest {
     @Test(expected = NullPointerException.class)
     public void savingBudget_shouldRequireExistingAccount() {
         Budget budget = new Budget("");
-        budget.addAmount(new BudgetAmount(Money.getZeroInstance(), "unknown-account"));
+        budget.addAmount(new BudgetAmount(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), "unknown-account"));
 
         mBudgetsDbAdapter.addRecord(budget);
     }
@@ -154,7 +154,7 @@ public class BudgetsDbAdapterTest extends GnuCashTest {
     @Test(expected = NullPointerException.class)
     public void savingBudget_shouldRequireRecurrence() {
         Budget budget = new Budget("");
-        budget.addAmount(new BudgetAmount(Money.getZeroInstance(), mAccount.getUID()));
+        budget.addAmount(new BudgetAmount(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), mAccount.getUID()));
 
         mBudgetsDbAdapter.addRecord(budget);
     }

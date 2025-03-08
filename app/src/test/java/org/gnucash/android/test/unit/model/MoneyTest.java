@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThrows;
 
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
@@ -202,5 +203,32 @@ public class MoneyTest extends GnuCashTest {
         assertNotNull(value);
         assertThat(value.doubleValue()).isCloseTo(123456789012345678.90, within(1e-2));
         assertThat(value.longValue()).isEqualTo(123456789012345678L);
+    }
+
+    @Test
+    public void add_different_currencies() {
+        Commodity.DEFAULT_COMMODITY = Commodity.USD;
+        Money money = Money.createZeroInstance(Commodity.DEFAULT_COMMODITY);
+        Money addend = new Money(0.0, Commodity.USD);
+        Money sum = money.plus(addend);
+        assertThat(sum.isAmountZero()).isTrue();
+        assertThat(sum.toDouble()).isEqualTo(0.0);
+        assertThat(sum.getCommodity()).isEqualTo(Commodity.USD);
+
+        addend = new Money(123.45, Commodity.USD);
+        sum = money.plus(addend);
+        assertThat(sum.isAmountZero()).isFalse();
+        assertThat(sum.toDouble()).isEqualTo(123.45);
+        assertThat(sum.getCommodity()).isEqualTo(Commodity.USD);
+
+        addend = new Money(0.0, Commodity.EUR);
+        sum = money.plus(addend);
+        assertThat(sum.isAmountZero()).isTrue();
+        assertThat(sum.toDouble()).isEqualTo(0.0);
+        assertThat(sum.getCommodity()).isEqualTo(Commodity.EUR);
+
+        final Money money1 = new Money(100.00, Commodity.USD);
+        final Money money2 = new Money(123.45, Commodity.EUR);
+        assertThrows(Money.CurrencyMismatchException.class, () -> money1.plus(money2));
     }
 }

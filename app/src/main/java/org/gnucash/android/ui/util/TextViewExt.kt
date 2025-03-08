@@ -5,6 +5,7 @@ import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
 import org.gnucash.android.model.Money
+import org.gnucash.android.model.isNullOrZero
 
 /**
  * Display the balance of a transaction in a text view and format the text color to match the sign of the amount
@@ -12,9 +13,9 @@ import org.gnucash.android.model.Money
  * @param balance {@link org.gnucash.android.model.Money} balance to display.
  * @param colorZero The color for zero balance.
  */
-fun TextView.displayBalance(balance: Money, @ColorInt colorZero: Int) {
+fun TextView.displayBalance(balance: Money?, @ColorInt colorZero: Int) {
     val context: Context = this.context
-    @ColorInt val fontColor = if (balance.isAmountZero) {
+    @ColorInt val fontColor = if (balance.isNullOrZero()) {
         colorZero
     } else if (balance.isNegative) {
         ContextCompat.getColor(context, org.gnucash.android.R.color.debit_red)
@@ -22,6 +23,6 @@ fun TextView.displayBalance(balance: Money, @ColorInt colorZero: Int) {
         ContextCompat.getColor(context, org.gnucash.android.R.color.credit_green)
     }
 
-    text = balance.formattedString()
+    text = balance?.formattedString()
     setTextColor(fontColor)
 }

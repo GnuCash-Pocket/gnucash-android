@@ -15,14 +15,13 @@
  */
 package org.gnucash.android.model
 
-import java.math.BigDecimal
-import org.gnucash.android.model.Money.Companion.zeroInstance
 import org.gnucash.android.model.Money.CurrencyMismatchException
 import org.gnucash.android.util.dayOfWeek
 import org.gnucash.android.util.lastDayOfMonth
 import org.gnucash.android.util.lastDayOfWeek
 import org.joda.time.LocalDateTime
 import timber.log.Timber
+import java.math.BigDecimal
 
 /**
  * Budgets model
@@ -102,10 +101,12 @@ class Budget @JvmOverloads constructor(
      * @param amount The budget amount.
      */
     fun addAmount(account: Account, period: Long, amount: BigDecimal): BudgetAmount {
-        val budgetAmount = BudgetAmount(budgetUID = uid, accountUID = account.uid).apply {
-            this.periodNum = period
-            this.amount = Money(amount, account.commodity)
-        }
+        val budgetAmount = BudgetAmount(
+            budgetUID = uid,
+            accountUID = account.uid,
+            amount = Money(amount, account.commodity),
+            periodNum = period
+        )
         return addAmount(budgetAmount)
     }
 
@@ -117,10 +118,10 @@ class Budget @JvmOverloads constructor(
      */
     fun getAmount(accountUID: String): Money? {
         val budgetAmounts = amountsByAccount[accountUID] ?: return null
-        var result = zeroInstance
+        var result: Money? = null
         for (budgetAmount in budgetAmounts) {
             if (budgetAmount.accountUID == accountUID) {
-                result += budgetAmount.amount
+                result = result?.plus(budgetAmount.amount) ?: budgetAmount.amount
             }
         }
         return result
@@ -133,8 +134,8 @@ class Budget @JvmOverloads constructor(
      * @param periodNum  Budgeting period, zero-based index
      * @return Money amount or zero if no matching [BudgetAmount] is found for the period
      */
-    fun getAmount(accountUID: String, periodNum: Long): Money {
-        return getBudgetAmount(accountUID, periodNum)?.amount ?: zeroInstance
+    fun getAmount(accountUID: String, periodNum: Long): Money? {
+        return getBudgetAmount(accountUID, periodNum)?.amount
     }
 
     /**
@@ -146,7 +147,7 @@ class Budget @JvmOverloads constructor(
      */
     val amountSum: Money
         get() {
-            var sum: Money = zeroInstance
+            var sum: Money = Money.createZeroInstance(Commodity.DEFAULT_COMMODITY)
             for (budgetAmount in amountsByAccount.values.flatten()) {
                 try {
                     sum += budgetAmount.amount.abs()
@@ -271,7 +272,7 @@ class Budget @JvmOverloads constructor(
     }
 
     fun getBudgetAmount(account: Account, period: Long): BudgetAmount? {
-        return getBudgetAmount(account.uid!!, period)
+        return getBudgetAmount(account.uid, period)
     }
 
     fun getBudgetAmount(accountUID: String, period: Long): BudgetAmount? {
@@ -369,10 +370,7 @@ class Budget @JvmOverloads constructor(
                     val accountUID = budgetAmount.accountUID
 
                     for (period in 0 until numberOfPeriods) {
-                        val bgtAmount = BudgetAmount(uid, accountUID).apply {
-                            amount = budgetAmount.amount
-                            periodNum = period
-                        }
+                        val bgtAmount = BudgetAmount(uid, accountUID, budgetAmount.amount, period)
                         amounts.add(bgtAmount)
                     }
                 } else {

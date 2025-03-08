@@ -16,6 +16,9 @@
 
 package org.gnucash.android.ui.budget;
 
+import static org.gnucash.android.math.MathExtKt.isZero;
+import static org.gnucash.android.math.MathExtKt.times;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -35,7 +38,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -251,7 +253,7 @@ public class BudgetDetailFragment extends MenuFragment implements Refreshable {
 
             barChart.setData(barData);
             barChart.getAxisLeft().addLimitLine(limitLine);
-            BigDecimal maxValue = budgetAmount.getAmount().plus(budgetAmount.getAmount().times(0.2)).asBigDecimal();
+            BigDecimal maxValue = times(budgetAmount.getAmount().toBigDecimal(), 1.2);
             barChart.getAxisLeft().setAxisMaxValue(maxValue.floatValue());
             barChart.animateX(1000);
             barChart.setAutoScaleMinMaxEnabled(true);
@@ -287,15 +289,16 @@ public class BudgetDetailFragment extends MenuFragment implements Refreshable {
                 AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
                 Money spentAmount = accountsDbAdapter.getAccountBalance(budgetAmount.getAccountUID(),
                     budget.getStartOfCurrentPeriod(), budget.getEndOfCurrentPeriod());
+                Money spentAmountAbs = spentAmount.abs();
 
                 budgetAccount.setText(accountsDbAdapter.getAccountFullName(budgetAmount.getAccountUID()));
                 this.budgetAmount.setText(projectedAmount.formattedString());
 
-                budgetSpent.setText(spentAmount.abs().formattedString());
-                budgetLeft.setText(projectedAmount.minus(spentAmount.abs()).formattedString());
+                budgetSpent.setText(spentAmountAbs.formattedString());
+                budgetLeft.setText(projectedAmount.minus(spentAmountAbs).formattedString());
 
                 double budgetProgress = 0;
-                if (projectedAmount.toDouble() != 0) {
+                if (!projectedAmount.isAmountZero()) {
                     budgetProgress = spentAmount.asBigDecimal().divide(projectedAmount.asBigDecimal(),
                         spentAmount.getCommodity().getSmallestFractionDigits(),
                         RoundingMode.HALF_EVEN).doubleValue();

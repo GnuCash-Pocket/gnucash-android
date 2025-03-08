@@ -26,7 +26,7 @@ class Split : BaseModel, Parcelable {
      * Money amount of the split with the currency of the transaction.
      * @see quantity
      */
-    var value: Money? = null
+    var value: Money = Money.createZeroInstance(Commodity.DEFAULT_COMMODITY)
         private set
 
     /**
@@ -42,7 +42,7 @@ class Split : BaseModel, Parcelable {
     /**
      * The [TransactionType] of this transaction, credit or debit
      */
-    var type: TransactionType? = TransactionType.CREDIT
+    var type: TransactionType = TransactionType.CREDIT
 
     /**
      * Memo associated with this split
@@ -135,9 +135,9 @@ class Split : BaseModel, Parcelable {
      * The quantity is in the currency of the account to which the split is associated
      * @see value
      */
-    var quantity: Money? = null
+    var quantity: Money = value
         set(value) {
-            field = value?.abs()
+            field = value.abs()
         }
 
     /**
@@ -150,8 +150,8 @@ class Split : BaseModel, Parcelable {
      * @see TransactionType.invert
      */
     fun createPair(accountUID: String?): Split {
-        val pair = Split(value!!, accountUID)
-        pair.type = type!!.invert()
+        val pair = Split(value, accountUID)
+        pair.type = type.invert()
         pair.memo = memo
         pair.transactionUID = transactionUID
         pair.quantity = quantity
@@ -168,7 +168,7 @@ class Split : BaseModel, Parcelable {
      * @return whether the two splits are a pair
      */
     fun isPairOf(other: Split): Boolean {
-        return value!!.equals(other.value) && type!!.invert() == other.type
+        return value == other.value && type.invert() == other.type
     }
 
     /**
@@ -198,7 +198,7 @@ class Split : BaseModel, Parcelable {
         get() = reconcileState == FLAG_RECONCILED
 
     override fun toString(): String {
-        return type!!.name + " of " + value.toString() + " in account: " + accountUID
+        return type.name + " of " + value.toString() + " in account: " + accountUID
     }
 
     /**
@@ -219,15 +219,15 @@ class Split : BaseModel, Parcelable {
         //TODO: add reconciled state and date
         val splitString = StringBuilder()
             .append(uid)
-            .append(SEPARATOR_CSV).append(value!!.numerator)
-            .append(SEPARATOR_CSV).append(value!!.denominator)
-            .append(SEPARATOR_CSV).append(value!!.commodity.currencyCode)
-            .append(SEPARATOR_CSV).append(quantity!!.numerator)
-            .append(SEPARATOR_CSV).append(quantity!!.denominator)
-            .append(SEPARATOR_CSV).append(quantity!!.commodity.currencyCode)
+            .append(SEPARATOR_CSV).append(value.numerator)
+            .append(SEPARATOR_CSV).append(value.denominator)
+            .append(SEPARATOR_CSV).append(value.commodity.currencyCode)
+            .append(SEPARATOR_CSV).append(quantity.numerator)
+            .append(SEPARATOR_CSV).append(quantity.denominator)
+            .append(SEPARATOR_CSV).append(quantity.commodity.currencyCode)
             .append(SEPARATOR_CSV).append(transactionUID)
             .append(SEPARATOR_CSV).append(accountUID)
-            .append(SEPARATOR_CSV).append(type!!.name)
+            .append(SEPARATOR_CSV).append(type.name)
         if (memo != null) {
             splitString.append(SEPARATOR_CSV).append(memo)
         }
@@ -255,8 +255,8 @@ class Split : BaseModel, Parcelable {
         if (this === split) return true
         if (super.equals(split)) return true
         if (reconcileState != split.reconcileState) return false
-        if (!value!!.equals(split.value)) return false
-        if (!quantity!!.equals(split.quantity)) return false
+        if (value != split.value) return false
+        if (quantity != split.quantity) return false
         if (transactionUID != split.transactionUID) return false
         if (accountUID != split.accountUID) return false
         if (type !== split.type) return false
@@ -276,8 +276,8 @@ class Split : BaseModel, Parcelable {
         if (!super.equals(other)) return false
         val split = other as Split
         if (reconcileState != split.reconcileState) return false
-        if (!value!!.equals(split.value)) return false
-        if (!quantity!!.equals(split.quantity)) return false
+        if (value != split.value) return false
+        if (quantity != split.quantity) return false
         if (transactionUID != split.transactionUID) return false
         if (accountUID != split.accountUID) return false
         if (type !== split.type) return false
@@ -304,7 +304,7 @@ class Split : BaseModel, Parcelable {
         dest.writeString(uid)
         dest.writeString(accountUID)
         dest.writeString(transactionUID)
-        dest.writeString(type!!.name)
+        dest.writeString(type.name)
 
         dest.writeMoney(value, flags)
         dest.writeMoney(quantity, flags)
@@ -326,8 +326,8 @@ class Split : BaseModel, Parcelable {
         transactionUID = source.readString()
         type = TransactionType.valueOf(source.readString()!!)
 
-        value = source.readMoney()
-        quantity = source.readMoney()
+        value = source.readMoney()!!
+        quantity = source.readMoney()!!
 
         memo = source.readString()
         reconcileState = source.readString()!![0]
@@ -364,26 +364,19 @@ class Split : BaseModel, Parcelable {
          * `account`, otherwise +`amount`
          */
         private fun getFormattedAmount(
-            amount: Money?,
+            amount: Money,
             accountUID: String?,
-            splitType: TransactionType?
+            splitType: TransactionType
         ): Money {
+            val accountUID = accountUID ?: return Money.createZeroInstance(amount.commodity)
             val isDebitAccount =
-                AccountsDbAdapter.getInstance().getAccountType(accountUID!!).hasDebitNormalBalance()
-            val absAmount = amount!!.abs()
+                AccountsDbAdapter.getInstance().getAccountType(accountUID).hasDebitNormalBalance()
+            val absAmount = amount.abs()
             val isDebitSplit = splitType === TransactionType.DEBIT
-            return if (isDebitAccount) {
-                if (isDebitSplit) {
-                    absAmount
-                } else {
-                    absAmount.unaryMinus()
-                }
+            return if ((isDebitAccount && isDebitSplit) || (!isDebitAccount && !isDebitSplit)) {
+                absAmount
             } else {
-                if (isDebitSplit) {
-                    absAmount.unaryMinus()
-                } else {
-                    absAmount
-                }
+                -absAmount
             }
         }
 
@@ -403,7 +396,8 @@ class Split : BaseModel, Parcelable {
         fun parseSplit(splitCsvString: String): Split {
             //TODO: parse reconciled state and date
             val tokens =
-                splitCsvString.split(SEPARATOR_CSV.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                splitCsvString.split(SEPARATOR_CSV.toRegex()).dropLastWhile { it.isEmpty() }
+                    .toTypedArray()
             return if (tokens.size < 8) { //old format splits
                 val amount = Money(tokens[0], tokens[1])
                 val split = Split(amount, tokens[2])

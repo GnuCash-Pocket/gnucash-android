@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.gnucash.android.model.Budget;
 import org.gnucash.android.model.BudgetAmount;
+import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.test.unit.GnuCashTest;
 import org.junit.Test;
@@ -37,7 +38,7 @@ public class BudgetTest extends GnuCashTest {
         Budget budget = new Budget("Test");
 
         assertThat(budget.getBudgetAmounts()).isNotNull();
-        BudgetAmount budgetAmount = new BudgetAmount(Money.getZeroInstance(), "test");
+        BudgetAmount budgetAmount = new BudgetAmount(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), "test");
         budget.addAmount(budgetAmount);
 
         assertThat(budget.getBudgetAmounts()).hasSize(1);
@@ -45,8 +46,8 @@ public class BudgetTest extends GnuCashTest {
 
         //setting a whole list should also set the budget UIDs
         List<BudgetAmount> budgetAmounts = new ArrayList<>();
-        budgetAmounts.add(new BudgetAmount(Money.getZeroInstance(), "test"));
-        budgetAmounts.add(new BudgetAmount(Money.getZeroInstance(), "second"));
+        budgetAmounts.add(new BudgetAmount(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), "test"));
+        budgetAmounts.add(new BudgetAmount(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), "second"));
 
         budget.setBudgetAmounts(budgetAmounts);
 
@@ -58,11 +59,11 @@ public class BudgetTest extends GnuCashTest {
     public void shouldComputeAbsoluteAmountSum() {
         Budget budget = new Budget("Test");
         Money accountAmount = new Money("-20", "USD");
-        BudgetAmount budgetAmount = new BudgetAmount(accountAmount, "account1");
-        BudgetAmount budgetAmount1 = new BudgetAmount(new Money("10", "USD"), "account2");
+        BudgetAmount budgetAmount1 = new BudgetAmount(accountAmount, "account1");
+        BudgetAmount budgetAmount2 = new BudgetAmount(new Money("10", "USD"), "account2");
 
-        budget.addAmount(budgetAmount);
         budget.addAmount(budgetAmount1);
+        budget.addAmount(budgetAmount2);
 
         assertThat(budget.getAmount("account1")).isEqualTo(accountAmount.abs());
         assertThat(budget.getAmountSum()).isEqualTo(new Money("30", "USD"));

@@ -42,7 +42,7 @@ public class TransactionTest extends GnuCashTest {
         Transaction transaction = new Transaction("");
         assertThat(transaction.getCurrencyCode()).isEqualTo(Commodity.DEFAULT_COMMODITY.getCurrencyCode());
 
-        Split split = new Split(Money.getZeroInstance(), "test-account");
+        Split split = new Split(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), "test-account");
         assertThat(split.getTransactionUID()).isEmpty();
 
         transaction.addSplit(split);
@@ -52,10 +52,10 @@ public class TransactionTest extends GnuCashTest {
     @Test
     public void settingUID_shouldSetTransactionUidOfSplits() {
         Transaction t1 = new Transaction("Test");
-        Split split1 = new Split(Money.getZeroInstance(), "random");
+        Split split1 = new Split(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), "random");
         split1.setTransactionUID("non-existent");
 
-        Split split2 = new Split(Money.getZeroInstance(), "account-something");
+        Split split2 = new Split(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), "account-something");
         split2.setTransactionUID("pre-existent");
 
         List<Split> splits = new ArrayList<>();

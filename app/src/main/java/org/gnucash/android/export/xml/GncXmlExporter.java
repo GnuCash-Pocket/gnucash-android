@@ -21,6 +21,7 @@ import static org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry;
 import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
 import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 import static org.gnucash.android.export.xml.GncXmlHelper.*;
+import static org.gnucash.android.math.MathExtKt.toBigDecimal;
 import static org.gnucash.android.model.Commodity.NO_CURRENCY_CODE;
 import static org.gnucash.android.model.Commodity.TEMPLATE;
 
@@ -389,7 +390,7 @@ public class GncXmlExporter extends Exporter {
             String trxType = cursor.getString(cursor.getColumnIndexOrThrow("split_type"));
             int splitValueNum = cursor.getInt(cursor.getColumnIndexOrThrow("split_value_num"));
             int splitValueDenom = cursor.getInt(cursor.getColumnIndexOrThrow("split_value_denom"));
-            BigDecimal splitAmount = Money.getBigDecimal(splitValueNum, splitValueDenom);
+            BigDecimal splitAmount = toBigDecimal(splitValueNum, splitValueDenom);
             String strValue = "0/100";
             if (!exportTemplates) { //when doing normal transaction export
                 strValue = (trxType.equals("CREDIT") ? "-" : "") + splitValueNum + "/" + splitValueDenom;

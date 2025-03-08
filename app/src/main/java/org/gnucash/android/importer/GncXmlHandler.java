@@ -384,7 +384,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 mTransaction.setExported(true);     // default to exported when import transactions
                 break;
             case TAG_TRN_SPLIT:
-                mSplit = new Split(Money.getZeroInstance(), "");
+                mSplit = new Split(Money.createZeroInstance(mRootAccount.getCommodity()), "");
                 break;
             case TAG_DATE_POSTED:
                 mIsDatePosted = true;

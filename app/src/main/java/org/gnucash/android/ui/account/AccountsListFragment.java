@@ -566,23 +566,24 @@ public class AccountsListFragment extends MenuFragment implements
                     });
                 }
 
-                List<Budget> budgets = BudgetsDbAdapter.getInstance().getAccountBudgets(accountUID);
-                //TODO: include fetch only active budgets
-                if (!budgets.isEmpty()) {
-                    Budget budget = budgets.get(0);
-                    Money balance = mAccountsDbAdapter.getAccountBalance(accountUID, budget.getStartOfCurrentPeriod(), budget.getEndOfCurrentPeriod());
-                    Money budgetAmount = budget.getAmount(accountUID);
-
-                    if (budgetAmount != null) {
-                        double budgetProgress = budgetAmount.isAmountZero() ? 0 : balance.div(budgetAmount).toDouble() * 100;
-                        budgetIndicator.setVisibility(View.VISIBLE);
-                        budgetIndicator.setProgress((int) budgetProgress);
-                    } else {
-                        budgetIndicator.setVisibility(View.GONE);
-                    }
-                } else {
-                    budgetIndicator.setVisibility(View.GONE);
-                }
+                // TODO budgets is not an official feature yet.
+//                List<Budget> budgets = BudgetsDbAdapter.getInstance().getAccountBudgets(accountUID);
+//                //TODO: include fetch only active budgets
+//                if (!budgets.isEmpty()) {
+//                    Budget budget = budgets.get(0);
+//                    Money balance = mAccountsDbAdapter.getAccountBalance(accountUID, budget.getStartOfCurrentPeriod(), budget.getEndOfCurrentPeriod());
+//                    Money budgetAmount = budget.getAmount(accountUID);
+//
+//                    if (budgetAmount != null) {
+//                        double budgetProgress = budgetAmount.isAmountZero() ? 0 : balance.div(budgetAmount).toDouble() * 100;
+//                        budgetIndicator.setVisibility(View.VISIBLE);
+//                        budgetIndicator.setProgress((int) budgetProgress);
+//                    } else {
+//                        budgetIndicator.setVisibility(View.GONE);
+//                    }
+//                } else {
+//                    budgetIndicator.setVisibility(View.GONE);
+//                }
 
                 boolean isFavoriteAccount = mAccountsDbAdapter.isFavoriteAccount(accountUID);
                 favoriteStatus.setOnCheckedChangeListener(null);

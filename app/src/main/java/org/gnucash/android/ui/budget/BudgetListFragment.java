@@ -16,6 +16,8 @@
 
 package org.gnucash.android.ui.budget;
 
+import static org.gnucash.android.math.MathExtKt.isZero;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -293,7 +295,7 @@ public class BudgetListFragment extends Fragment implements Refreshable,
                     + budgetTotal.formattedString();
                 budgetAmount.setText(usedAmount);
 
-                double budgetProgress = spentAmountValue.divide(budgetTotal.asBigDecimal(),
+                double budgetProgress = budgetTotal.isAmountZero() ? 0.0 : spentAmountValue.divide(budgetTotal.asBigDecimal(),
                         commodity.getSmallestFractionDigits(), RoundingMode.HALF_EVEN)
                     .doubleValue();
                 budgetIndicator.setProgress((int) (budgetProgress * 100));

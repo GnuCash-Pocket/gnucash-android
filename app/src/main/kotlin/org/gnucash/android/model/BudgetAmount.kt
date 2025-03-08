@@ -17,6 +17,8 @@ package org.gnucash.android.model
 
 import android.os.Parcel
 import android.os.Parcelable
+import org.gnucash.android.math.toBigDecimal
+import java.math.BigDecimal
 
 /**
  * Budget amounts for the different accounts.
@@ -25,31 +27,17 @@ import android.os.Parcelable
  * @see Budget
  */
 class BudgetAmount @JvmOverloads constructor(
-    budgetUID: String? = null,
-    accountUID: String? = null
-) : BaseModel(), Parcelable {
-    var budgetUID: String? = null
-    var accountUID: String? = null
-
+    var budgetUID: String? = null,
+    var accountUID: String? = null,
+    // FIXME should be the account commodity
+    var amount: Money = Money.createZeroInstance(Commodity.DEFAULT_COMMODITY),
     /**
      * Period number for this budget amount. The period is zero-based index, and a value of -1
      * indicates that this budget amount is applicable to all budgeting periods.
      */
-    var periodNum: Long = 0
-
-    /**
-     * Returns the Money amount of this budget amount
-     *
-     * @return Money amount
-     */
-    var amount: Money = Money.zeroInstance
-
+    var periodNum: Long = 0,
     var notes: String? = null
-
-    init {
-        this.budgetUID = budgetUID
-        this.accountUID = accountUID
-    }
+) : BaseModel(), Parcelable {
 
     /**
      * Creates a new budget amount with the absolute value of `amount`
@@ -86,6 +74,18 @@ class BudgetAmount @JvmOverloads constructor(
         periodNum = source.readLong()
         amount = source.readMoney()!!
         notes = source.readString()
+    }
+
+    val amountNumerator: Long = amount.numerator
+
+    val amountDenominator: Long = amount.denominator
+
+    fun setAmount(numerator: Long, denominator: Long) {
+        setAmount(toBigDecimal(numerator, denominator))
+    }
+
+    fun setAmount(value: BigDecimal) {
+        amount = Money(value, amount.commodity)
     }
 
     companion object {

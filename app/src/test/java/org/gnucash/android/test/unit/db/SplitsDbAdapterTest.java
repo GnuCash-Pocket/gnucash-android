@@ -24,6 +24,7 @@ import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
+import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
@@ -62,7 +63,7 @@ public class SplitsDbAdapterTest extends GnuCashTest {
         Transaction transaction = new Transaction("");
         mTransactionsDbAdapter.addRecord(transaction);
 
-        Split split = new Split(Money.getZeroInstance(), "non-existent");
+        Split split = new Split(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), "non-existent");
         split.setTransactionUID(transaction.getUID());
         mSplitsDbAdapter.addRecord(split);
     }
@@ -74,7 +75,7 @@ public class SplitsDbAdapterTest extends GnuCashTest {
     public void shouldHaveTransactionInDatabase() {
         Transaction transaction = new Transaction(""); //not added to the db
 
-        Split split = new Split(Money.getZeroInstance(), mAccount.getUID());
+        Split split = new Split(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), mAccount.getUID());
         split.setTransactionUID(transaction.getUID());
         mSplitsDbAdapter.addRecord(split);
     }
@@ -84,7 +85,7 @@ public class SplitsDbAdapterTest extends GnuCashTest {
         Transaction transaction = new Transaction("");
         mTransactionsDbAdapter.addRecord(transaction);
 
-        Split split = new Split(Money.getZeroInstance(), mAccount.getUID());
+        Split split = new Split(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), mAccount.getUID());
         split.setTransactionUID(transaction.getUID());
         mSplitsDbAdapter.addRecord(split);
 
@@ -104,7 +105,7 @@ public class SplitsDbAdapterTest extends GnuCashTest {
 
         assertThat(transaction.isExported()).isTrue();
 
-        Split split = new Split(Money.getZeroInstance(), mAccount.getUID());
+        Split split = new Split(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), mAccount.getUID());
         split.setTransactionUID(transaction.getUID());
         mSplitsDbAdapter.addRecord(split);
 

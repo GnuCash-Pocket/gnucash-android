@@ -32,7 +32,7 @@ public class SplitTest extends GnuCashTest {
 
     @Test
     public void testAddingSplitToTransaction() {
-        Split split = new Split(Money.getZeroInstance(), "Test");
+        Split split = new Split(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), "Test");
         assertThat(split.getTransactionUID()).isEmpty();
 
         Transaction transaction = new Transaction("Random");

@@ -127,7 +127,7 @@ class CsvTransactionsExporter(
                 writeSplitsToCsv(transaction.splits, fields, writer)
             }
             cursor.close()
-            PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow())
+            PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow(), bookUID)
         } catch (e: Exception) {
             throw ExporterException(mExportParams, e)
         }

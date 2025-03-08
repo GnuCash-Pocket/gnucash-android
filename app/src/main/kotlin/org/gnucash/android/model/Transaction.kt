@@ -20,7 +20,6 @@ import org.gnucash.android.BuildConfig
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.export.ofx.OfxHelper
 import org.gnucash.android.model.Account.Companion.convertToOfxAccountType
-import org.gnucash.android.model.Money.Companion.createZeroInstance
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import java.util.Date
@@ -215,6 +214,19 @@ class Transaction : BaseModel {
     }
 
     /**
+     * Returns the balance of this transaction for only those splits which relate to the account.
+     *
+     * Uses a call to [.getBalance] with the appropriate parameters
+     *
+     * @param account The account
+     * @return Money balance of the transaction for the specified account
+     * @see computeBalance
+     */
+    fun getBalance(account: Account): Money {
+        return computeBalance(account, _splitList)
+    }
+
+    /**
      * Computes the imbalance amount for the given transaction.
      * In double entry, all transactions should resolve to zero. But imbalance occurs when there are unresolved splits.
      *
@@ -225,17 +237,17 @@ class Transaction : BaseModel {
     private val imbalance: Money
         get() {
             val commodity = this.commodity
-            var imbalance = createZeroInstance(commodity.currencyCode)
+            var imbalance = Money.createZeroInstance(commodity)
             for (split in splits) {
                 if (split.quantity!!.commodity != commodity) {
                     // this may happen when importing XML exported from GNCA before 2.0.0
                     // these transactions should only be imported from XML exported from GNC desktop
                     // so imbalance split should not be generated for them
-                    return createZeroInstance(commodity.currencyCode)
+                    return Money.createZeroInstance(commodity)
                 }
                 val amount = split.value!!
                 if (amount.commodity != commodity) {
-                    return createZeroInstance(commodity.currencyCode)
+                    return Money.createZeroInstance(commodity)
                 }
                 imbalance = if (split.type === TransactionType.DEBIT) {
                     imbalance - amount
@@ -298,6 +310,7 @@ class Transaction : BaseModel {
      * @param accountUID Unique Identifier of the account which called the method.  @return Element in DOM corresponding to transaction
      */
     fun toOFX(doc: Document, accountUID: String): Element {
+        val acctDbAdapter = AccountsDbAdapter.getInstance()
         val balance = getBalance(accountUID)
         val transactionType = if (balance.isNegative) {
             TransactionType.DEBIT
@@ -351,7 +364,6 @@ class Transaction : BaseModel {
             acctId.appendChild(doc.createTextNode(transferAccountUID))
 
             val accttype = doc.createElement(OfxHelper.TAG_ACCOUNT_TYPE)
-            val acctDbAdapter = AccountsDbAdapter.getInstance()
             val ofxAccountType = convertToOfxAccountType(
                 acctDbAdapter.getAccountType(transferAccountUID)
             )
@@ -419,34 +431,46 @@ class Transaction : BaseModel {
          * zero is returned (for balanced transactions) or the imbalance amount will be returned.
          *
          * @param accountUID Unique Identifier of the account
-         * @param splitList  List of splits
+         * @param splits  List of splits
          * @return Money list of splits
          */
         @JvmStatic
-        fun computeBalance(accountUID: String, splitList: List<Split>): Money {
+        fun computeBalance(accountUID: String, splits: List<Split>): Money {
             val accountsDbAdapter = AccountsDbAdapter.getInstance()
-            val accountType = accountsDbAdapter.getAccountType(accountUID)
-            val accountCurrencyCode = accountsDbAdapter.getAccountCurrencyCode(accountUID)
+            val account = accountsDbAdapter.getSimpleRecord(accountUID)!!
+            return computeBalance(account, splits)
+        }
+
+        /**
+         * Computes the balance of the splits belonging to a particular account.
+         *
+         * Only those splits which belong to the account will be considered.
+         * If the `accountUID` is null, then the imbalance of the transaction is computed. This means that either
+         * zero is returned (for balanced transactions) or the imbalance amount will be returned.
+         *
+         * @param account The account
+         * @param splits  List of splits
+         * @return Money list of splits
+         */
+        @JvmStatic
+        fun computeBalance(account: Account, splits: List<Split>): Money {
+            val accountUID = account.uid
+            val accountType = account.accountType
+            val accountCommodity = account.commodity
             val isDebitAccount = accountType.hasDebitNormalBalance()
-            var balance = createZeroInstance(accountCurrencyCode)
-            for (split in splitList) {
+            var balance = Money.createZeroInstance(accountCommodity)
+            for (split in splits) {
                 if (split.accountUID != accountUID) continue
-                val amount: Money = if (split.value!!.commodity.currencyCode == accountCurrencyCode) {
+                val amount: Money = if (split.value?.commodity == accountCommodity) {
                     split.value!!
                 } else { //if this split belongs to the account, then either its value or quantity is in the account currency
                     split.quantity!!
                 }
                 val isDebitSplit = split.type === TransactionType.DEBIT
-                balance = if (isDebitAccount) {
-                    if (isDebitSplit) {
-                        balance + amount
-                    } else {
-                        balance - amount
-                    }
-                } else if (isDebitSplit) {
-                    balance - amount
-                } else {
+                balance = if ((isDebitAccount && isDebitSplit) || (!isDebitAccount && !isDebitSplit)) {
                     balance + amount
+                } else {
+                    balance - amount
                 }
             }
             return balance

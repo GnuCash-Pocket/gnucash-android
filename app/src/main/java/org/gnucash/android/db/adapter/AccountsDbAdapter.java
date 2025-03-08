@@ -874,7 +874,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     private Money computeBalance(String accountUID, long startTimestamp, long endTimestamp, boolean includeSubAccounts) {
         Timber.d("Computing account balance for account ID %s", accountUID);
-        String currencyCode = mTransactionsAdapter.getAccountCurrencyCode(accountUID);
+        String currencyCode = getAccountCurrencyCode(accountUID);
         boolean hasDebitNormalBalance = getAccountType(accountUID).hasDebitNormalBalance();
 
         List<String> accountsList = includeSubAccounts ?getDescendantAccountUIDs(accountUID,
