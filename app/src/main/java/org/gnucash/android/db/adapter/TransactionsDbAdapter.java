@@ -582,30 +582,6 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
     }
 
     /**
-     * Return the number of currencies used in the transaction.
-     * For example if there are different splits with different currencies
-     *
-     * @param transactionUID GUID of the transaction
-     * @return Number of currencies within the transaction
-     */
-    public int getNumCurrencies(String transactionUID) {
-        Cursor cursor = mDb.query("trans_extra_info",
-                new String[]{"trans_currency_count"},
-                "trans_acct_t_uid=?",
-                new String[]{transactionUID},
-                null, null, null);
-        int numCurrencies = 0;
-        try {
-            if (cursor.moveToFirst()) {
-                numCurrencies = cursor.getInt(0);
-            }
-        } finally {
-            cursor.close();
-        }
-        return numCurrencies;
-    }
-
-    /**
      * Deletes all transactions except those which are marked as templates.
      * <p>If you want to delete really all transaction records, use {@link #deleteAllRecords()}</p>
      *

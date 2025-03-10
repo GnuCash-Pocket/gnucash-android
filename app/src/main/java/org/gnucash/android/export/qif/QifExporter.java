@@ -19,6 +19,24 @@ package org.gnucash.android.export.qif;
 import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
 import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
+import static org.gnucash.android.export.qif.QifHelper.ACCOUNT_DESCRIPTION_PREFIX;
+import static org.gnucash.android.export.qif.QifHelper.ACCOUNT_SECTION;
+import static org.gnucash.android.export.qif.QifHelper.ACCOUNT_NAME_PREFIX;
+import static org.gnucash.android.export.qif.QifHelper.CATEGORY_PREFIX;
+import static org.gnucash.android.export.qif.QifHelper.TRANSACTION_TYPE_PREFIX;
+import static org.gnucash.android.export.qif.QifHelper.TOTAL_AMOUNT_PREFIX;
+import static org.gnucash.android.export.qif.QifHelper.DATE_PREFIX;
+import static org.gnucash.android.export.qif.QifHelper.ENTRY_TERMINATOR;
+import static org.gnucash.android.export.qif.QifHelper.INTERNAL_CURRENCY_PREFIX;
+import static org.gnucash.android.export.qif.QifHelper.MEMO_PREFIX;
+import static org.gnucash.android.export.qif.QifHelper.NEW_LINE;
+import static org.gnucash.android.export.qif.QifHelper.PAYEE_PREFIX;
+import static org.gnucash.android.export.qif.QifHelper.SPLIT_AMOUNT_PREFIX;
+import static org.gnucash.android.export.qif.QifHelper.SPLIT_CATEGORY_PREFIX;
+import static org.gnucash.android.export.qif.QifHelper.SPLIT_MEMO_PREFIX;
+import static org.gnucash.android.export.qif.QifHelper.TYPE_PREFIX;
+import static org.gnucash.android.export.qif.QifHelper.formatDate;
+import static org.gnucash.android.export.qif.QifHelper.getQifAccountType;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -31,6 +49,8 @@ import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.Exporter;
+import org.gnucash.android.model.Account;
+import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.TransactionType;
 import org.gnucash.android.util.FileUtils;
@@ -68,7 +88,7 @@ public class QifExporter extends Exporter {
      * Initialize the exporter
      *
      * @param context The context.
-     * @param params Parameters for the export
+     * @param params  Parameters for the export
      * @param bookUID The book UID.
      */
     public QifExporter(@NonNull Context context,
@@ -79,149 +99,198 @@ public class QifExporter extends Exporter {
 
     @Override
     public List<String> generateExport() throws ExporterException {
-        final String newLine = QifHelper.NEW_LINE;
+        String lastExportTimeStamp = Long.toString(mExportParams.getExportStartTime().getTime());
         TransactionsDbAdapter transactionsDbAdapter = mTransactionsDbAdapter;
+
+        final List<Account> accountsList = mAccountsDbAdapter.getSimpleAccountList();
+        final Map<String, Account> accounts = new HashMap<>();
+        for (Account account : accountsList) {
+            accounts.put(account.getUID(), account);
+        }
+
+        DecimalFormat quantityFormatter = (DecimalFormat) NumberFormat.getNumberInstance(Locale.ROOT);
+        quantityFormatter.setGroupingUsed(false);
+
+        final String[] projection = new String[]{
+            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID + " AS trans_uid",
+            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " AS trans_time",
+            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_DESCRIPTION + " AS trans_desc",
+            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_NOTES + " AS trans_notes",
+            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_NUM + " AS split_quantity_num",
+            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_DENOM + " AS split_quantity_denom",
+            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_TYPE + " AS split_type",
+            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_MEMO + " AS split_memo",
+            "trans_extra_info.trans_acct_balance AS trans_acct_balance",
+            "trans_extra_info.trans_split_count AS trans_split_count",
+            "account1." + AccountEntry.COLUMN_UID + " AS acct1_uid",
+            AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID + " AS acct2_uid"
+        };
+        // no recurrence transactions
+        final String where =
+            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TEMPLATE + " == 0 AND " +
+                // in qif, split from the one account entry is not recorded (will be auto balanced)
+                "( " + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID + " != account1." + AccountEntry.COLUMN_UID + " OR " +
+                // or if the transaction has only one split (the whole transaction would be lost if it is not selected)
+                "trans_split_count == 1 )" +
+                " AND " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " >= ?";
+        // trans_time ASC : put transactions in time order
+        // trans_uid ASC  : put splits from the same transaction together
+        final String orderBy = "acct1_uid ASC, trans_uid ASC, trans_time ASC";
+
+        Cursor cursor = null;
         try {
-            String startTimeString = Long.toString(mExportParams.getExportStartTime().getTime());
-            Cursor cursor = transactionsDbAdapter.fetchTransactionsWithSplitsWithTransactionAccount(
-                    new String[]{
-                            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID + " AS trans_uid",
-                            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " AS trans_time",
-                            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_DESCRIPTION + " AS trans_desc",
-                            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_NOTES + " AS trans_notes",
-                            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_NUM + " AS split_quantity_num",
-                            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_DENOM + " AS split_quantity_denom",
-                            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_TYPE + " AS split_type",
-                            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_MEMO + " AS split_memo",
-                            "trans_extra_info.trans_acct_balance AS trans_acct_balance",
-                            "trans_extra_info.trans_split_count AS trans_split_count",
-                            "account1." + AccountEntry.COLUMN_UID + " AS acct1_uid",
-                            "account1." + AccountEntry.COLUMN_FULL_NAME + " AS acct1_full_name",
-                            "account1." + AccountEntry.COLUMN_CURRENCY + " AS acct1_currency",
-                            "account1." + AccountEntry.COLUMN_TYPE + " AS acct1_type",
-                            AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_FULL_NAME + " AS acct2_full_name"
-                    },
-                    // no recurrence transactions
-                    TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TEMPLATE + " == 0 AND " +
-                            // in qif, split from the one account entry is not recorded (will be auto balanced)
-                            "( " + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID + " != account1." + AccountEntry.COLUMN_UID + " OR " +
-                            // or if the transaction has only one split (the whole transaction would be lost if it is not selected)
-                            "trans_split_count == 1 )" +
-                            (
-                                    " AND " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " >= ?"
-                            ),
-                    new String[]{startTimeString},
-                    // trans_time ASC : put transactions in time order
-                    // trans_uid ASC  : put splits from the same transaction together
-                    "acct1_currency ASC, trans_uid ASC, trans_time ASC"
+            cursor = transactionsDbAdapter.fetchTransactionsWithSplitsWithTransactionAccount(
+                projection,
+                where,
+                new String[]{lastExportTimeStamp},
+                orderBy
             );
 
             // TODO write each commodity to separate file here, instead of splitting the file afterwards.
             File file = new File(getExportCacheFilePath());
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8));
-            DecimalFormat quantityFormatter = (DecimalFormat) NumberFormat.getNumberInstance(Locale.ROOT);
-            quantityFormatter.setGroupingUsed(false);
-            Map<String, Commodity> commodities = new HashMap<>();
 
-            try {
-                String currentCurrencyCode = "";
-                String currentAccountUID = "";
-                String currentTransactionUID = "";
-                while (cursor.moveToNext()) {
-                    String currencyCode = cursor.getString(cursor.getColumnIndexOrThrow("acct1_currency"));
-                    String accountUID = cursor.getString(cursor.getColumnIndexOrThrow("acct1_uid"));
-                    String transactionUID = cursor.getString(cursor.getColumnIndexOrThrow("trans_uid"));
-                    Commodity commodity = commodities.get(currencyCode);
-                    if (commodity == null) {
-                        commodity = Commodity.getInstance(currencyCode);
-                        commodities.put(currencyCode, commodity);
-                    }
-                    quantityFormatter.setMaximumFractionDigits(commodity.getSmallestFractionDigits());
-                    quantityFormatter.setMinimumFractionDigits(commodity.getSmallestFractionDigits());
+            String currentCommodityUID = "";
+            String currentAccountUID = "";
+            String currentTransactionUID = "";
+            BigDecimal txTotal = BigDecimal.ZERO;
 
-                    if (!transactionUID.equals(currentTransactionUID)) {
-                        if (!TextUtils.isEmpty(currentTransactionUID)) {
-                            writer.append(QifHelper.ENTRY_TERMINATOR).append(newLine);
-                            // end last transaction
-                        }
-                        if (!accountUID.equals(currentAccountUID)) {
-                            if (!currencyCode.equals(currentCurrencyCode)) {
-                                currentCurrencyCode = currencyCode;
-                                writer.append(QifHelper.INTERNAL_CURRENCY_PREFIX)
-                                        .append(currencyCode)
-                                        .append(newLine);
-                            }
-                            // start new account
-                            currentAccountUID = accountUID;
-                            writer.append(QifHelper.ACCOUNT_HEADER).append(newLine);
-                            writer.append(QifHelper.ACCOUNT_NAME_PREFIX)
-                                    .append(cursor.getString(cursor.getColumnIndexOrThrow("acct1_full_name")))
-                                    .append(newLine);
-                            writer.append(QifHelper.ENTRY_TERMINATOR).append(newLine);
-                            writer.append(QifHelper.getQifHeader(cursor.getString(cursor.getColumnIndexOrThrow("acct1_type"))))
-                                    .append(newLine);
-                        }
-                        // start new transaction
-                        currentTransactionUID = transactionUID;
-                        writer.append(QifHelper.DATE_PREFIX)
-                                .append(QifHelper.formatDate(cursor.getLong(cursor.getColumnIndexOrThrow("trans_time"))))
-                                .append(newLine);
-                        // Payee / description
-                        writer.append(QifHelper.PAYEE_PREFIX)
-                                .append(cursor.getString(cursor.getColumnIndexOrThrow("trans_desc")))
-                                .append(newLine);
-                        // Notes, memo
-                        writer.append(QifHelper.MEMO_PREFIX)
-                                .append(cursor.getString(cursor.getColumnIndexOrThrow("trans_notes")))
-                                .append(newLine);
-                        // deal with imbalance first
-                        double imbalance = cursor.getDouble(cursor.getColumnIndexOrThrow("trans_acct_balance"));
-                        BigDecimal decimalImbalance = BigDecimal.valueOf(imbalance).setScale(2, BigDecimal.ROUND_HALF_UP);
-                        if (decimalImbalance.compareTo(BigDecimal.ZERO) != 0) {
-                            writer.append(QifHelper.SPLIT_CATEGORY_PREFIX)
-                                    .append(AccountsDbAdapter.getImbalanceAccountName(
-                                            Commodity.getInstance(cursor.getString(cursor.getColumnIndexOrThrow("acct1_currency")))
-                                    ))
-                                    .append(newLine);
-                            writer.append(QifHelper.SPLIT_AMOUNT_PREFIX)
-                                    .append(decimalImbalance.toPlainString())
-                                    .append(newLine);
-                        }
+            while (cursor.moveToNext()) {
+                String accountUID = cursor.getString(cursor.getColumnIndexOrThrow("acct1_uid"));
+                Account account1 = accounts.get(accountUID);
+                assert account1 != null;
+                String transactionUID = cursor.getString(cursor.getColumnIndexOrThrow("trans_uid"));
+                long time = cursor.getLong(cursor.getColumnIndexOrThrow("trans_time"));
+                String description = cursor.getString(cursor.getColumnIndexOrThrow("trans_desc"));
+                String notes = cursor.getString(cursor.getColumnIndexOrThrow("trans_notes"));
+                double imbalance = cursor.getDouble(cursor.getColumnIndexOrThrow("trans_acct_balance"));
+                int splitCount = cursor.getInt(cursor.getColumnIndexOrThrow("trans_split_count"));
+
+                String accountFullName = account1.getFullName();
+                String accountDescription = account1.getDescription();
+                AccountType accountType = account1.getAccountType();
+                Commodity commodity = account1.getCommodity();
+                String commodityUID = commodity.getUID();
+                quantityFormatter.setMaximumFractionDigits(commodity.getSmallestFractionDigits());
+                quantityFormatter.setMinimumFractionDigits(commodity.getSmallestFractionDigits());
+
+                // Starting new transaction - finished with splits from previous transaction.
+                if (!transactionUID.equals(currentTransactionUID)) {
+                    if (!TextUtils.isEmpty(currentTransactionUID)) {
+                        // end last transaction
+                        writer.append(TOTAL_AMOUNT_PREFIX)
+                            .append(quantityFormatter.format(txTotal))
+                            .append(NEW_LINE)
+                            .append(ENTRY_TERMINATOR)
+                            .append(NEW_LINE);
+                        txTotal = BigDecimal.ZERO;
                     }
-                    if (cursor.getInt(cursor.getColumnIndexOrThrow("trans_split_count")) == 1) {
-                        // No other splits should be recorded if this is the only split.
-                        continue;
+                    if (!accountUID.equals(currentAccountUID)) {
+                        if (!commodityUID.equals(currentCommodityUID)) {
+                            currentCommodityUID = commodityUID;
+                            writer.append(INTERNAL_CURRENCY_PREFIX)
+                                .append(commodity.getCurrencyCode())
+                                .append(NEW_LINE);
+                        }
+                        // start new account
+                        currentAccountUID = accountUID;
+                        writer.append(ACCOUNT_SECTION)
+                            .append(NEW_LINE)
+                            .append(ACCOUNT_NAME_PREFIX)
+                            .append(accountFullName)
+                            .append(NEW_LINE)
+                            .append(TYPE_PREFIX)
+                            .append(getQifAccountType(accountType))
+                            .append(NEW_LINE);
+                        if (!TextUtils.isEmpty(accountDescription)) {
+                            writer.append(ACCOUNT_DESCRIPTION_PREFIX)
+                                .append(accountDescription)
+                                .append(NEW_LINE);
+                        }
+                        writer.append(ENTRY_TERMINATOR)
+                            .append(NEW_LINE);
                     }
-                    // all splits
-                    // amount associated with the header account will not be exported.
-                    // It can be auto balanced when importing to GnuCash
-                    writer.append(QifHelper.SPLIT_CATEGORY_PREFIX)
-                            .append(cursor.getString(cursor.getColumnIndexOrThrow("acct2_full_name")))
-                            .append(newLine);
-                    String splitMemo = cursor.getString(cursor.getColumnIndexOrThrow("split_memo"));
-                    if (splitMemo != null && !splitMemo.isEmpty()) {
-                        writer.append(QifHelper.SPLIT_MEMO_PREFIX)
-                                .append(splitMemo)
-                                .append(newLine);
+                    // start new transaction
+                    currentTransactionUID = transactionUID;
+                    writer.append(TRANSACTION_TYPE_PREFIX)
+                        .append(getQifAccountType(accountType))
+                        .append(NEW_LINE)
+                        .append(DATE_PREFIX)
+                        .append(formatDate(time))
+                        .append(NEW_LINE)
+                        .append(CATEGORY_PREFIX)
+                        .append('[')
+                        .append(accountFullName)
+                        .append(']')
+                        .append(NEW_LINE);
+                    // Payee / description
+                    writer.append(PAYEE_PREFIX)
+                        .append(description.trim())
+                        .append(NEW_LINE);
+                    // Notes, memo
+                    if (!TextUtils.isEmpty(notes)) {
+                        writer.append(MEMO_PREFIX)
+                            .append(notes.replace('\n', ' ').trim())
+                            .append(NEW_LINE);
                     }
-                    String splitType = cursor.getString(cursor.getColumnIndexOrThrow("split_type"));
-                    double quantity_num = cursor.getDouble(cursor.getColumnIndexOrThrow("split_quantity_num"));
-                    double quantity_denom = cursor.getDouble(cursor.getColumnIndexOrThrow("split_quantity_denom"));
-                    double quantity = (quantity_denom != 0) ? (quantity_num / quantity_denom) : 0.0;
-                    writer.append(QifHelper.SPLIT_AMOUNT_PREFIX)
-                            .append(splitType.equals(TransactionType.DEBIT.value) ? "-" : "")
-                            .append(quantityFormatter.format(quantity))
-                            .append(newLine);
+                    // deal with imbalance first
+                    BigDecimal decimalImbalance = BigDecimal.valueOf(imbalance).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    if (decimalImbalance.compareTo(BigDecimal.ZERO) != 0) {
+                        writer.append(SPLIT_CATEGORY_PREFIX)
+                            .append('[')
+                            .append(AccountsDbAdapter.getImbalanceAccountName(commodity))
+                            .append(']')
+                            .append(NEW_LINE)
+                            .append(SPLIT_AMOUNT_PREFIX)
+                            .append(decimalImbalance.toPlainString())
+                            .append(NEW_LINE);
+                        txTotal = txTotal.add(decimalImbalance);
+                    }
                 }
-                if (!TextUtils.isEmpty(currentTransactionUID)) {
-                    // end last transaction
-                    writer.append(QifHelper.ENTRY_TERMINATOR).append(newLine);
+                if (splitCount == 1) {
+                    // No other splits should be recorded if this is the only split.
+                    continue;
                 }
-                writer.flush();
-            } finally {
-                cursor.close();
-                writer.close();
+                // all splits
+                String account2UID = cursor.getString(cursor.getColumnIndexOrThrow("acct2_uid"));
+                Account account2 = accounts.get(account2UID);
+                assert account2 != null;
+                String account2FullName = account2.getFullName();
+                String splitMemo = cursor.getString(cursor.getColumnIndexOrThrow("split_memo"));
+                String splitType = cursor.getString(cursor.getColumnIndexOrThrow("split_type"));
+                double quantity_num = cursor.getDouble(cursor.getColumnIndexOrThrow("split_quantity_num"));
+                double quantity_denom = cursor.getDouble(cursor.getColumnIndexOrThrow("split_quantity_denom"));
+                // amount associated with the header account will not be exported.
+                // It can be auto balanced when importing to GnuCash
+                writer.append(SPLIT_CATEGORY_PREFIX)
+                    .append('[')
+                    .append(account2FullName)
+                    .append(']')
+                    .append(NEW_LINE);
+                if (!TextUtils.isEmpty(splitMemo)) {
+                    writer.append(SPLIT_MEMO_PREFIX)
+                        .append(splitMemo.replace('\n', ' ').trim())
+                        .append(NEW_LINE);
+                }
+                BigDecimal quantity = (quantity_denom != 0) ? (BigDecimal.valueOf(quantity_num).divide(BigDecimal.valueOf(quantity_denom))) : BigDecimal.ZERO;
+                if (splitType.equals(TransactionType.DEBIT.value)) {
+                    quantity = quantity.negate();
+                }
+                writer.append(SPLIT_AMOUNT_PREFIX)
+                    .append(quantityFormatter.format(quantity))
+                    .append(NEW_LINE);
+                txTotal = txTotal.add(quantity);
             }
+            if (!TextUtils.isEmpty(currentTransactionUID)) {
+                // end last transaction
+                writer.append(TOTAL_AMOUNT_PREFIX)
+                    .append(quantityFormatter.format(txTotal))
+                    .append(NEW_LINE)
+                    .append(ENTRY_TERMINATOR)
+                    .append(NEW_LINE);
+            }
+            writer.flush();
+            writer.close();
 
             ContentValues contentValues = new ContentValues();
             contentValues.put(TransactionEntry.COLUMN_EXPORTED, 1);
@@ -240,6 +309,8 @@ public class QifExporter extends Exporter {
                 return exportedFiles;
         } catch (IOException e) {
             throw new ExporterException(mExportParams, e);
+        } finally {
+            if (cursor != null) cursor.close();
         }
     }
 
@@ -266,7 +337,7 @@ public class QifExporter extends Exporter {
         BufferedWriter out = null;
         try {
             while ((line = in.readLine()) != null) {
-                if (line.startsWith(QifHelper.INTERNAL_CURRENCY_PREFIX)) {
+                if (line.startsWith(INTERNAL_CURRENCY_PREFIX)) {
                     String currencyCode = line.substring(1);
                     if (out != null) {
                         out.close();
@@ -278,7 +349,7 @@ public class QifExporter extends Exporter {
                     if (out == null) {
                         throw new IllegalArgumentException(file.getPath() + " format is not correct");
                     }
-                    out.append(line).append(QifHelper.NEW_LINE);
+                    out.append(line).append(NEW_LINE);
                 }
             }
         } finally {

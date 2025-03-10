@@ -30,15 +30,50 @@ public class QifHelper {
      */
     public static final String PAYEE_PREFIX = "P";
     public static final String DATE_PREFIX = "D";
-    public static final String AMOUNT_PREFIX = "T";
+    public static final String TOTAL_AMOUNT_PREFIX = "T";
     public static final String MEMO_PREFIX = "M";
     public static final String CATEGORY_PREFIX = "L";
     public static final String SPLIT_MEMO_PREFIX = "E";
     public static final String SPLIT_AMOUNT_PREFIX = "$";
     public static final String SPLIT_CATEGORY_PREFIX = "S";
     public static final String SPLIT_PERCENTAGE_PREFIX = "%";
-    public static final String ACCOUNT_HEADER = "!Account";
+    public static final String TYPE_PREFIX = "T";
+
+    /**
+     * Cash Flow: Cash Account
+     */
+    public static final String TYPE_CASH = "Cash";
+    /**
+     * Cash Flow: Checking & Savings Account
+     */
+    public static final String TYPE_BANK = "Bank";
+    /**
+     * Cash Flow: Credit Card Account
+     */
+    public static final String TYPE_CCARD = "CCard";
+    /**
+     * Investing: Investment Account
+     */
+    public static final String TYPE_INVEST = "Invst";
+    /**
+     * Property & Debt: Asset
+     */
+    public static final String TYPE_ASSET = "Oth A";
+    /**
+     * Property & Debt: Liability
+     */
+    public static final String TYPE_LIABILITY = "Oth L";
+    public static final String TYPE_OTHER_S = "Oth S";
+    public static final String TYPE_401K = "401(k)/403(b)";
+    public static final String TYPE_PORT = "port";
+    /**
+     * Invoice (Quicken for Business only)
+     */
+    public static final String TYPE_INVOICE = "Invoice";
+    public static final String ACCOUNT_SECTION = "!Account";
+    public static final String TRANSACTION_TYPE_PREFIX = "!Type:";
     public static final String ACCOUNT_NAME_PREFIX = "N";
+    public static final String ACCOUNT_DESCRIPTION_PREFIX = "D";
     public static final String NEW_LINE = "\n";
     public static final String INTERNAL_CURRENCY_PREFIX = "*";
 
@@ -63,24 +98,33 @@ public class QifHelper {
      * @param accountType AccountType of account
      * @return QIF header for the transactions
      */
-    public static String getQifHeader(AccountType accountType) {
+    public static String getQifAccountType(AccountType accountType) {
         switch (accountType) {
             case CASH:
-                return "!Type:Cash";
-            case BANK:
-                return "!Type:Bank";
+            case INCOME:
+            case EXPENSE:
+            case PAYABLE:
+            case RECEIVABLE:
+                return TYPE_CASH;
             case CREDIT:
-                return "!Type:CCard";
+                return TYPE_CCARD;
             case ASSET:
-                return "!Type:Oth A";
+            case EQUITY:
+                return TYPE_ASSET;
             case LIABILITY:
-                return "!Type:Oth L";
+                return TYPE_LIABILITY;
+            case CURRENCY:
+            case STOCK:
+            case TRADING:
+                return TYPE_INVEST;
+            case BANK:
+            case MUTUAL:
             default:
-                return "!Type:Cash";
+                return TYPE_BANK;
         }
     }
 
-    public static String getQifHeader(String accountType) {
-        return getQifHeader(AccountType.valueOf(accountType));
+    public static String getQifAccountType(String accountType) {
+        return getQifAccountType(AccountType.valueOf(accountType));
     }
 }
