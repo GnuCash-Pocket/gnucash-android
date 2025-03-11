@@ -15,7 +15,7 @@
 -->
 
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:cardview="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -24,8 +24,8 @@
     android:clickable="true"
     android:focusable="true"
     android:foreground="?selectableItemBackground"
-    cardview:cardPreventCornerOverlap="false"
-    cardview:cardUseCompatPadding="true">
+    app:cardPreventCornerOverlap="false"
+    app:cardUseCompatPadding="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -38,9 +38,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            cardview:layout_constraintEnd_toStartOf="@id/options_menu"
-            cardview:layout_constraintStart_toStartOf="parent"
-            cardview:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintEnd_toStartOf="@id/options_menu"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
             android:id="@+id/options_menu"
@@ -51,8 +51,8 @@
             android:paddingTop="8dp"
             android:paddingEnd="0dp"
             android:src="@drawable/ic_more_vert"
-            cardview:layout_constraintBottom_toBottomOf="parent"
-            cardview:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             tools:ignore="ContentDescription" />
 
         <ImageView
@@ -64,8 +64,8 @@
             android:paddingEnd="0dp"
             android:paddingBottom="8dp"
             android:src="@drawable/ic_edit"
-            cardview:layout_constraintBottom_toTopOf="@id/options_menu"
-            cardview:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/options_menu"
+            app:layout_constraintEnd_toEndOf="parent"
             tools:ignore="ContentDescription" />
 
         <TextView
@@ -76,9 +76,9 @@
             android:gravity="right"
             android:singleLine="true"
             android:textSize="18sp"
-            cardview:layout_constraintEnd_toStartOf="@id/options_menu"
-            cardview:layout_constraintStart_toEndOf="@id/transaction_date"
-            cardview:layout_constraintTop_toTopOf="@id/transaction_date"
+            app:layout_constraintEnd_toStartOf="@id/options_menu"
+            app:layout_constraintStart_toEndOf="@id/transaction_date"
+            app:layout_constraintTop_toTopOf="@id/transaction_date"
             tools:text="$450.000.000" />
 
         <TextView
@@ -90,8 +90,8 @@
             android:singleLine="true"
             android:textColor="?android:textColorTertiary"
             android:textSize="14sp"
-            cardview:layout_constraintStart_toStartOf="@id/list_item_2_lines"
-            cardview:layout_constraintTop_toBottomOf="@id/list_item_2_lines"
+            app:layout_constraintStart_toStartOf="@id/list_item_2_lines"
+            app:layout_constraintTop_toBottomOf="@id/list_item_2_lines"
             tools:text="@tools:sample/date/ddmmyy" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

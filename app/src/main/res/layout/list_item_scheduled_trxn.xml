@@ -36,7 +36,7 @@
             android:ellipsize="end"
             android:singleLine="true"
             android:text="@string/label_transaction_name"
-            app:layout_constraintEnd_toStartOf="@id/right_text"
+            app:layout_constraintEnd_toEndOf="@id/secondary_text"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -48,11 +48,10 @@
             android:ellipsize="end"
             android:maxLines="2"
             android:singleLine="false"
-            android:text="@string/label_transaction_name"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintEnd_toStartOf="@id/options_menu"
             app:layout_constraintStart_toStartOf="@id/primary_text"
-            app:layout_constraintTop_toBottomOf="@id/primary_text" />
+            app:layout_constraintTop_toBottomOf="@id/primary_text"
+            tools:text="@tools:sample/lorem/random" />
 
         <TextView
             android:id="@+id/right_text"
@@ -63,23 +62,23 @@
             android:singleLine="true"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="?android:textColorPrimary"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="@tools:sample/us_zipcodes" />
+            app:layout_constraintEnd_toStartOf="@id/options_menu"
+            app:layout_constraintTop_toBottomOf="@id/secondary_text"
+            tools:text="$450.000.000" />
 
         <ImageView
             android:id="@+id/options_menu"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:paddingStart="24dp"
-            android:paddingTop="24dp"
-            android:paddingEnd="0dp"
+            android:paddingStart="22dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="6dp"
+            android:paddingBottom="6dp"
             android:scaleType="fitEnd"
             android:src="@drawable/ic_more_vert"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/right_text"
             tools:ignore="ContentDescription" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
