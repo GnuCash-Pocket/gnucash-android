@@ -190,17 +190,24 @@ public class QifExporterTest extends BookHelperTest {
 
         assertThat(exportedFiles).hasSize(1);
         File file = new File(exportedFiles.get(0));
-        String fileContent = readFileContent(file);
         assertThat(file).exists().hasExtension("qif");
+        String fileContent = readFileContent(file);
+        assertThat(fileContent).isNotEmpty();
         String[] lines = fileContent.split(QifHelper.NEW_LINE);
         assertThat(lines).isNotEmpty();
-        assertThat(lines[0]).isEqualTo(QifHelper.ACCOUNT_HEADER);
-        assertThat(lines).contains(QifHelper.ACCOUNT_NAME_PREFIX + expectedAccountName);
-        assertThat(lines).contains(QifHelper.PAYEE_PREFIX + expectedDescription);
-        assertThat(lines).contains(QifHelper.MEMO_PREFIX + expectedMemo);
-        assertThat(lines).contains(QifHelper.SPLIT_CATEGORY_PREFIX + "Imbalance-USD");
-        assertThat(lines).contains(QifHelper.SPLIT_AMOUNT_PREFIX + "-123.45");
-        assertThat(lines).contains(QifHelper.ENTRY_TERMINATOR);
+        assertThat(lines[0]).isEqualTo(QifHelper.ACCOUNT_SECTION);
+        assertThat(lines[1]).isEqualTo(QifHelper.ACCOUNT_NAME_PREFIX + expectedAccountName);
+        assertThat(lines[2]).isEqualTo(QifHelper.TYPE_PREFIX + "Cash");
+        assertThat(lines[3]).isEqualTo(QifHelper.ENTRY_TERMINATOR);
+        assertThat(lines[4]).isEqualTo(QifHelper.TRANSACTION_TYPE_PREFIX + "Cash");
+        assertThat(lines[5]).startsWith(QifHelper.DATE_PREFIX);
+        assertThat(lines[6]).isEqualTo(QifHelper.CATEGORY_PREFIX + "[" + expectedAccountName + "]");
+        assertThat(lines[7]).isEqualTo(QifHelper.PAYEE_PREFIX + expectedDescription);
+        assertThat(lines[8]).isEqualTo(QifHelper.MEMO_PREFIX + expectedMemo);
+        assertThat(lines[9]).isEqualTo(QifHelper.SPLIT_CATEGORY_PREFIX + "[Imbalance-USD]");
+        assertThat(lines[10]).isEqualTo(QifHelper.SPLIT_AMOUNT_PREFIX + "-123.45");
+        assertThat(lines[11]).isEqualTo(QifHelper.TOTAL_AMOUNT_PREFIX + "-123.45");
+        assertThat(lines[12]).isEqualTo(QifHelper.ENTRY_TERMINATOR);
         file.delete();
     }
 
@@ -228,17 +235,24 @@ public class QifExporterTest extends BookHelperTest {
 
         assertThat(exportedFiles).hasSize(1);
         File file = new File(exportedFiles.get(0));
-        String fileContent = readFileContent(file);
         assertThat(file).exists().hasExtension("qif");
+        String fileContent = readFileContent(file);
+        assertThat(fileContent).isNotEmpty();
         String[] lines = fileContent.split(QifHelper.NEW_LINE);
         assertThat(lines).isNotEmpty();
-        assertThat(lines[0]).isEqualTo(QifHelper.ACCOUNT_HEADER);
-        assertThat(lines).contains(QifHelper.ACCOUNT_NAME_PREFIX + "Expenses:Dining");
-        assertThat(lines).contains(QifHelper.PAYEE_PREFIX + "Kahuna Burger");
-        assertThat(lines).contains(QifHelper.SPLIT_CATEGORY_PREFIX + "Assets:Cash in Wallet");
-        assertThat(lines).contains(QifHelper.SPLIT_AMOUNT_PREFIX + "10.00");
-        assertThat(lines).contains(QifHelper.DATE_PREFIX + "2016/8/23");
-        assertThat(lines).contains(QifHelper.ENTRY_TERMINATOR);
+        assertThat(lines[0]).isEqualTo(QifHelper.ACCOUNT_SECTION);
+        assertThat(lines[1]).isEqualTo(QifHelper.ACCOUNT_NAME_PREFIX + "Expenses:Dining");
+        assertThat(lines[2]).isEqualTo(QifHelper.TYPE_PREFIX + "Cash");
+        assertThat(lines[3]).isEqualTo(QifHelper.ACCOUNT_DESCRIPTION_PREFIX + "Dining");
+        assertThat(lines[4]).isEqualTo(QifHelper.ENTRY_TERMINATOR);
+        assertThat(lines[5]).isEqualTo(QifHelper.TRANSACTION_TYPE_PREFIX + "Cash");
+        assertThat(lines[6]).isEqualTo(QifHelper.DATE_PREFIX + "2016/8/23");
+        assertThat(lines[7]).isEqualTo(QifHelper.CATEGORY_PREFIX + "[Expenses:Dining]");
+        assertThat(lines[8]).isEqualTo(QifHelper.PAYEE_PREFIX + "Kahuna Burger");
+        assertThat(lines[9]).isEqualTo(QifHelper.SPLIT_CATEGORY_PREFIX + "[Assets:Cash in Wallet]");
+        assertThat(lines[10]).isEqualTo(QifHelper.SPLIT_AMOUNT_PREFIX + "10.00");
+        assertThat(lines[11]).isEqualTo(QifHelper.TOTAL_AMOUNT_PREFIX + "10.00");
+        assertThat(lines[12]).isEqualTo(QifHelper.ENTRY_TERMINATOR);
         file.delete();
     }
 
@@ -271,20 +285,27 @@ public class QifExporterTest extends BookHelperTest {
 
         assertThat(exportedFiles).hasSize(1);
         File file = new File(exportedFiles.get(0));
-        String fileContent = readFileContent(file);
         assertThat(file).exists().hasExtension("qif");
+        String fileContent = readFileContent(file);
+        assertThat(fileContent).isNotEmpty();
         String[] lines = fileContent.split(QifHelper.NEW_LINE);
         assertThat(lines).isNotEmpty();
-        assertThat(lines[0]).isEqualTo(QifHelper.ACCOUNT_HEADER);
-        assertThat(lines).contains(QifHelper.ACCOUNT_NAME_PREFIX + "Expenses:Dining");
-        assertThat(lines).contains(QifHelper.PAYEE_PREFIX + "Tandoori Mahal");
-        assertThat(lines).contains(QifHelper.DATE_PREFIX + "2016/9/18");
-        assertThat(lines).contains(QifHelper.SPLIT_CATEGORY_PREFIX + "Assets:Bank");
-        assertThat(lines).contains(QifHelper.SPLIT_AMOUNT_PREFIX + "45.00");
-        assertThat(lines).contains(QifHelper.SPLIT_CATEGORY_PREFIX + "Assets:Cash in Wallet");
-        assertThat(lines).contains(QifHelper.SPLIT_AMOUNT_PREFIX + "5.00");
-        assertThat(lines).contains(QifHelper.SPLIT_MEMO_PREFIX + "tip");
-        assertThat(lines).contains(QifHelper.ENTRY_TERMINATOR);
+        assertThat(lines[0]).isEqualTo(QifHelper.ACCOUNT_SECTION);
+        assertThat(lines[1]).isEqualTo(QifHelper.ACCOUNT_NAME_PREFIX + "Expenses:Dining");
+        assertThat(lines[2]).isEqualTo(QifHelper.TYPE_PREFIX + "Cash");
+        assertThat(lines[3]).isEqualTo(QifHelper.ACCOUNT_DESCRIPTION_PREFIX + "Dining");
+        assertThat(lines[4]).isEqualTo(QifHelper.ENTRY_TERMINATOR);
+        assertThat(lines[5]).isEqualTo(QifHelper.TRANSACTION_TYPE_PREFIX + "Cash");
+        assertThat(lines[6]).isEqualTo(QifHelper.DATE_PREFIX + "2016/9/18");
+        assertThat(lines[7]).isEqualTo(QifHelper.CATEGORY_PREFIX + "[Expenses:Dining]");
+        assertThat(lines[8]).isEqualTo(QifHelper.PAYEE_PREFIX + "Tandoori Mahal");
+        assertThat(lines[9]).isEqualTo(QifHelper.SPLIT_CATEGORY_PREFIX + "[Assets:Bank]");
+        assertThat(lines[10]).isEqualTo(QifHelper.SPLIT_AMOUNT_PREFIX + "45.00");
+        assertThat(lines[11]).isEqualTo(QifHelper.SPLIT_CATEGORY_PREFIX + "[Assets:Cash in Wallet]");
+        assertThat(lines[12]).isEqualTo(QifHelper.SPLIT_MEMO_PREFIX + "tip");
+        assertThat(lines[13]).isEqualTo(QifHelper.SPLIT_AMOUNT_PREFIX + "5.00");
+        assertThat(lines[14]).isEqualTo(QifHelper.TOTAL_AMOUNT_PREFIX + "50.00");
+        assertThat(lines[15]).isEqualTo(QifHelper.ENTRY_TERMINATOR);
         file.delete();
     }
 
@@ -302,9 +323,11 @@ public class QifExporterTest extends BookHelperTest {
         AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(mDb);
         Account account1 = new Account(expectedAccountName1, Commodity.EUR);
         account1.setAccountType(AccountType.EXPENSE);
+        account1.setUID("account-001");
         accountsDbAdapter.addRecord(account1);
         Account account2 = new Account(expectedAccountName2, Commodity.EUR);
         account2.setAccountType(AccountType.CASH);
+        account2.setUID("account-002");
         accountsDbAdapter.addRecord(account2);
 
         TransactionsDbAdapter transactionsDbAdapter = new TransactionsDbAdapter(mDb);
@@ -328,23 +351,24 @@ public class QifExporterTest extends BookHelperTest {
 
         assertThat(exportedFiles).hasSize(1);
         File file = new File(exportedFiles.get(0));
-        String fileContent = readFileContent(file);
         assertThat(file).exists().hasExtension("qif");
+        String fileContent = readFileContent(file);
+        assertThat(fileContent).isNotEmpty();
         String[] lines = fileContent.split(QifHelper.NEW_LINE);
         assertThat(lines).isNotEmpty();
-        assertThat(lines[0]).isEqualTo(QifHelper.ACCOUNT_HEADER);
-        assertThat(lines).contains(QifHelper.PAYEE_PREFIX + expectedDescription);
-        assertThat(lines).contains(QifHelper.MEMO_PREFIX + expectedMemo);
-        if (lines[1].equals(QifHelper.ACCOUNT_NAME_PREFIX + expectedAccountName1)) {
-            assertThat(lines).contains(QifHelper.ACCOUNT_NAME_PREFIX + expectedAccountName1);
-            assertThat(lines).contains(QifHelper.SPLIT_CATEGORY_PREFIX + expectedAccountName2);
-            assertThat(lines).contains(QifHelper.SPLIT_AMOUNT_PREFIX + "-123.45");
-        } else {
-            assertThat(lines).contains(QifHelper.ACCOUNT_NAME_PREFIX + expectedAccountName2);
-            assertThat(lines).contains(QifHelper.SPLIT_CATEGORY_PREFIX + expectedAccountName1);
-            assertThat(lines).contains(QifHelper.SPLIT_AMOUNT_PREFIX + "123.45");
-        }
-        assertThat(lines).contains(QifHelper.ENTRY_TERMINATOR);
+        assertThat(lines[0]).isEqualTo(QifHelper.ACCOUNT_SECTION);
+        assertThat(lines[1]).isEqualTo(QifHelper.ACCOUNT_NAME_PREFIX + expectedAccountName1);
+        assertThat(lines[2]).isEqualTo(QifHelper.TYPE_PREFIX + "Cash");
+        assertThat(lines[3]).isEqualTo(QifHelper.ENTRY_TERMINATOR);
+        assertThat(lines[4]).isEqualTo(QifHelper.TRANSACTION_TYPE_PREFIX + "Cash");
+        assertThat(lines[5]).startsWith(QifHelper.DATE_PREFIX);
+        assertThat(lines[6]).isEqualTo(QifHelper.CATEGORY_PREFIX + "[" + expectedAccountName1 + "]");
+        assertThat(lines[7]).isEqualTo(QifHelper.PAYEE_PREFIX + expectedDescription);
+        assertThat(lines[8]).isEqualTo(QifHelper.MEMO_PREFIX + expectedMemo);
+        assertThat(lines[9]).isEqualTo(QifHelper.SPLIT_CATEGORY_PREFIX + "[" + expectedAccountName2 + "]");
+        assertThat(lines[10]).isEqualTo(QifHelper.SPLIT_AMOUNT_PREFIX + "-123.45");
+        assertThat(lines[11]).isEqualTo(QifHelper.TOTAL_AMOUNT_PREFIX + "-123.45");
+        assertThat(lines[12]).isEqualTo(QifHelper.ENTRY_TERMINATOR);
         file.delete();
     }
 
