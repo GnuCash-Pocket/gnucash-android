@@ -41,13 +41,14 @@ public class DeleteAllAccountsConfirmationDialog extends DoubleConfirmationDialo
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        final Activity activity = requireActivity();
+
         return getDialogBuilder()
             .setIcon(R.drawable.ic_warning)
             .setTitle(R.string.title_confirm_delete)
             .setMessage(R.string.confirm_delete_all_accounts)
             .setPositiveButton(R.string.alert_dialog_ok_delete, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        Activity activity = requireActivity();
                         BackupManager.backupActiveBookAsync(activity, result -> {
                             AccountsDbAdapter.getInstance().deleteAllRecords();
                             Toast.makeText(activity, R.string.toast_all_accounts_deleted, Toast.LENGTH_SHORT).show();

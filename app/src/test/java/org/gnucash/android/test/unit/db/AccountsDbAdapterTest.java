@@ -393,7 +393,7 @@ public class AccountsDbAdapterTest extends GnuCashTest {
         assertThat(mTransactionsDbAdapter.getRecordsCount()).isEqualTo(1);
         assertThat(mSplitsDbAdapter.getRecordsCount()).isEqualTo(2);
 
-        boolean result = mAccountsDbAdapter.recursiveDeleteAccount(mAccountsDbAdapter.getID(account.getUID()));
+        boolean result = mAccountsDbAdapter.recursiveDeleteAccount(account.getUID());
         assertThat(result).isTrue();
 
         assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(1); //the root account
@@ -416,15 +416,13 @@ public class AccountsDbAdapterTest extends GnuCashTest {
     public void shouldReassignDescendantAccounts() {
         loadDefaultAccounts();
 
-        String savingsAcctUID = mAccountsDbAdapter.findAccountUidByFullName("Assets:Current Assets:Savings Account");
-
-        String currentAssetsUID = mAccountsDbAdapter.findAccountUidByFullName("Assets:Current Assets");
         String assetsUID = mAccountsDbAdapter.findAccountUidByFullName("Assets");
+        String savingsAcctUID = mAccountsDbAdapter.findAccountUidByFullName("Assets:Current Assets:Savings Account");
+        String currentAssetsUID = mAccountsDbAdapter.findAccountUidByFullName("Assets:Current Assets");
 
         assertThat(mAccountsDbAdapter.getParentAccountUID(savingsAcctUID)).isEqualTo(currentAssetsUID);
         mAccountsDbAdapter.reassignDescendantAccounts(currentAssetsUID, assetsUID);
         assertThat(mAccountsDbAdapter.getParentAccountUID(savingsAcctUID)).isEqualTo(assetsUID);
-
         assertThat(mAccountsDbAdapter.getFullyQualifiedAccountName(savingsAcctUID)).isEqualTo("Assets:Savings Account");
 
     }
@@ -502,7 +500,7 @@ public class AccountsDbAdapterTest extends GnuCashTest {
         mAccountsDbAdapter.addRecord(account4);
         assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(4L);
 
-        mAccountsDbAdapter.recursiveDeleteAccount(mAccountsDbAdapter.getID(account1.getUID()));
+        mAccountsDbAdapter.recursiveDeleteAccount(account1.getUID());
         assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(2L);
         assertThat(mAccountsDbAdapter.getRecord(account4.getUID()).getDefaultTransferAccountUID()).isNull();
     }
