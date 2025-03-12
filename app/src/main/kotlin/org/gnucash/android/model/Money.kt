@@ -125,6 +125,19 @@ class Money : Number, Comparable<Money>, Parcelable {
     )
 
     /**
+     * Constructs a new money amount given the numerator and denominator of the amount.
+     * The rounding mode used for the division is [BigDecimal.ROUND_HALF_EVEN]
+     *
+     * @param numerator    Numerator as integer
+     * @param denominator  Denominator as integer
+     * @param commodity Commodity of the money
+     */
+    constructor(numerator: Long, denominator: Long, commodity: Commodity) : this(
+        getBigDecimal(numerator, denominator),
+        commodity
+    )
+
+    /**
      * Copy constructor.
      * Creates a new Money object which is a clone of `money`
      *
@@ -337,7 +350,7 @@ class Money : Number, Comparable<Money>, Parcelable {
      */
     @Throws(CurrencyMismatchException::class)
     operator fun plus(addend: Money): Money {
-        if (commodity != addend.commodity) throw CurrencyMismatchException()
+        if (commodity != addend.commodity) throw CurrencyMismatchException(commodity, addend.commodity)
         val amount = _amount.add(addend._amount)
         return Money(amount, commodity)
     }
@@ -369,7 +382,7 @@ class Money : Number, Comparable<Money>, Parcelable {
      */
     @Throws(CurrencyMismatchException::class)
     operator fun minus(subtrahend: Money): Money {
-        if (commodity != subtrahend.commodity) throw CurrencyMismatchException()
+        if (commodity != subtrahend.commodity) throw CurrencyMismatchException(commodity, subtrahend.commodity)
         val amount = _amount.subtract(subtrahend._amount)
         return Money(amount, commodity)
     }
@@ -403,7 +416,7 @@ class Money : Number, Comparable<Money>, Parcelable {
      */
     @Throws(CurrencyMismatchException::class)
     operator fun div(divisor: Money): Money {
-        if (commodity != divisor.commodity) throw CurrencyMismatchException()
+        if (commodity != divisor.commodity) throw CurrencyMismatchException(commodity, divisor.commodity)
         val amount =
             _amount.divide(divisor._amount, commodity.smallestFractionDigits, roundingMode)
         return Money(amount, commodity)
@@ -437,14 +450,14 @@ class Money : Number, Comparable<Money>, Parcelable {
      * Returns a new `Money` object whose value is the product of the values of
      * this object and `money`.
      *
-     * @param money Second operand in the multiplication.
+     * @param factor Second operand in the multiplication.
      * @return Money object whose value is the product of this object and `money`
      * @throws CurrencyMismatchException if the `Money` objects to be added have different Currencies
      */
     @Throws(CurrencyMismatchException::class)
-    operator fun times(money: Money): Money {
-        if (commodity != money.commodity) throw CurrencyMismatchException()
-        val amount = _amount.multiply(money._amount)
+    operator fun times(factor: Money): Money {
+        if (commodity != factor.commodity) throw CurrencyMismatchException(commodity, factor.commodity)
+        val amount = _amount.multiply(factor._amount)
         return Money(amount, commodity)
     }
 
@@ -452,11 +465,11 @@ class Money : Number, Comparable<Money>, Parcelable {
      * Returns a new `Money` object whose value is the product of this object
      * and the factor `multiplier`
      *
-     * @param multiplier Factor to multiply the amount by.
+     * @param factor Factor to multiply the amount by.
      * @return Money object whose value is the product of this objects values and `multiplier`
      */
-    operator fun times(multiplier: BigDecimal): Money {
-        return Money(_amount.multiply(multiplier), commodity)
+    operator fun times(factor: BigDecimal): Money {
+        return Money(_amount.multiply(factor), commodity)
     }
 
     /**
@@ -465,19 +478,19 @@ class Money : Number, Comparable<Money>, Parcelable {
      *
      * The currency of the returned object is the same as the current object
      *
-     * @param multiplier Factor to multiply the amount by.
+     * @param factor Factor to multiply the amount by.
      * @return Money object whose value is the product of this objects values and `multiplier`
      */
-    operator fun times(multiplier: Int): Money {
-        return times(BigDecimal(multiplier))
+    operator fun times(factor: Int): Money {
+        return times(BigDecimal(factor))
     }
 
-    operator fun times(multiplier: Long): Money {
-        return times(BigDecimal(multiplier))
+    operator fun times(factor: Long): Money {
+        return times(BigDecimal(factor))
     }
 
-    operator fun times(multiplier: Double): Money {
-        return times(BigDecimal(multiplier))
+    operator fun times(factor: Double): Money {
+        return times(BigDecimal(factor))
     }
 
     /**
@@ -535,7 +548,7 @@ class Money : Number, Comparable<Money>, Parcelable {
 
     @Throws(CurrencyMismatchException::class)
     override fun compareTo(other: Money): Int {
-        if (commodity != other.commodity) throw CurrencyMismatchException()
+        if (commodity != other.commodity) throw CurrencyMismatchException(commodity, other.commodity)
         return _amount.compareTo(other._amount)
     }
 
@@ -576,9 +589,13 @@ class Money : Number, Comparable<Money>, Parcelable {
         return 0
     }
 
-    inner class CurrencyMismatchException : IllegalArgumentException() {
-        override val message: String
-            get() = "Cannot perform operation on Money instances with different currencies"
+    inner class CurrencyMismatchException(s: String) : IllegalArgumentException(s) {
+        constructor() : this("Cannot perform operation on Money instances with different currencies")
+
+        constructor(
+            commodity1: Commodity,
+            commodity2: Commodity
+        ) : this("Cannot perform operation on Money instances with different currencies: $commodity1 ~ $commodity2")
     }
 
     companion object {

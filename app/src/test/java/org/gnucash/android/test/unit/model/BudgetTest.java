@@ -38,7 +38,7 @@ public class BudgetTest extends GnuCashTest {
 
         assertThat(budget.getBudgetAmounts()).isNotNull();
         BudgetAmount budgetAmount = new BudgetAmount(Money.getZeroInstance(), "test");
-        budget.addBudgetAmount(budgetAmount);
+        budget.addAmount(budgetAmount);
 
         assertThat(budget.getBudgetAmounts()).hasSize(1);
         assertThat(budgetAmount.getBudgetUID()).isEqualTo(budget.getUID());
@@ -61,8 +61,8 @@ public class BudgetTest extends GnuCashTest {
         BudgetAmount budgetAmount = new BudgetAmount(accountAmount, "account1");
         BudgetAmount budgetAmount1 = new BudgetAmount(new Money("10", "USD"), "account2");
 
-        budget.addBudgetAmount(budgetAmount);
-        budget.addBudgetAmount(budgetAmount1);
+        budget.addAmount(budgetAmount);
+        budget.addAmount(budgetAmount1);
 
         assertThat(budget.getAmount("account1")).isEqualTo(accountAmount.abs());
         assertThat(budget.getAmountSum()).isEqualTo(new Money("30", "USD"));
@@ -78,15 +78,15 @@ public class BudgetTest extends GnuCashTest {
         budget.setNumberOfPeriods(6);
         BudgetAmount budgetAmount = new BudgetAmount(new Money("10", "USD"), "test");
         budgetAmount.setPeriodNum(1);
-        budget.addBudgetAmount(budgetAmount);
+        budget.addAmount(budgetAmount);
 
         budgetAmount = new BudgetAmount(new Money("15", "USD"), "test");
         budgetAmount.setPeriodNum(2);
-        budget.addBudgetAmount(budgetAmount);
+        budget.addAmount(budgetAmount);
 
         budgetAmount = new BudgetAmount(new Money("5", "USD"), "secondAccount");
         budgetAmount.setPeriodNum(5);
-        budget.addBudgetAmount(budgetAmount);
+        budget.addAmount(budgetAmount);
 
         List<BudgetAmount> compactedBudgetAmounts = budget.getCompactedBudgetAmounts();
         assertThat(compactedBudgetAmounts).hasSize(3);
@@ -107,23 +107,23 @@ public class BudgetTest extends GnuCashTest {
         budget.setNumberOfPeriods(6);
         BudgetAmount budgetAmount = new BudgetAmount(new Money("10", "USD"), "first");
         budgetAmount.setPeriodNum(1);
-        budget.addBudgetAmount(budgetAmount);
+        budget.addAmount(budgetAmount);
 
         budgetAmount = new BudgetAmount(new Money("10", "USD"), "first");
         budgetAmount.setPeriodNum(2);
-        budget.addBudgetAmount(budgetAmount);
+        budget.addAmount(budgetAmount);
 
         budgetAmount = new BudgetAmount(new Money("10", "USD"), "first");
         budgetAmount.setPeriodNum(5);
-        budget.addBudgetAmount(budgetAmount);
+        budget.addAmount(budgetAmount);
 
         budgetAmount = new BudgetAmount(new Money("10", "EUR"), "second");
         budgetAmount.setPeriodNum(4);
-        budget.addBudgetAmount(budgetAmount);
+        budget.addAmount(budgetAmount);
 
         budgetAmount = new BudgetAmount(new Money("13", "EUR"), "third");
         budgetAmount.setPeriodNum(-1);
-        budget.addBudgetAmount(budgetAmount);
+        budget.addAmount(budgetAmount);
 
         List<BudgetAmount> compactedBudgetAmounts = budget.getCompactedBudgetAmounts();
 
@@ -146,7 +146,7 @@ public class BudgetTest extends GnuCashTest {
         budget.setNumberOfPeriods(6);
         BudgetAmount budgetAmount = new BudgetAmount(new Money("10", "USD"), "first");
         budgetAmount.setPeriodNum(-1);
-        budget.addBudgetAmount(budgetAmount);
+        budget.addAmount(budgetAmount);
 
         List<BudgetAmount> expandedBudgetAmount = budget.getExpandedBudgetAmounts();
 
@@ -164,23 +164,23 @@ public class BudgetTest extends GnuCashTest {
         budget.setNumberOfPeriods(6);
         BudgetAmount budgetAmount = new BudgetAmount(new Money("10", "USD"), "first");
         budgetAmount.setPeriodNum(1);
-        budget.addBudgetAmount(budgetAmount);
+        budget.addAmount(budgetAmount);
 
         budgetAmount = new BudgetAmount(new Money("10", "USD"), "first");
         budgetAmount.setPeriodNum(2);
-        budget.addBudgetAmount(budgetAmount);
+        budget.addAmount(budgetAmount);
 
         budgetAmount = new BudgetAmount(new Money("10", "USD"), "first");
         budgetAmount.setPeriodNum(5);
-        budget.addBudgetAmount(budgetAmount);
+        budget.addAmount(budgetAmount);
 
         budgetAmount = new BudgetAmount(new Money("10", "EUR"), "second");
         budgetAmount.setPeriodNum(4);
-        budget.addBudgetAmount(budgetAmount);
+        budget.addAmount(budgetAmount);
 
         budgetAmount = new BudgetAmount(new Money("13", "EUR"), "third");
         budgetAmount.setPeriodNum(-1);
-        budget.addBudgetAmount(budgetAmount);
+        budget.addAmount(budgetAmount);
 
         assertThat(budget.getNumberOfAccounts()).isEqualTo(3);
     }

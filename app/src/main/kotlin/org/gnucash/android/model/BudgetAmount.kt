@@ -24,9 +24,13 @@ import android.os.Parcelable
  *
  * @see Budget
  */
-class BudgetAmount : BaseModel, Parcelable {
+class BudgetAmount @JvmOverloads constructor(
+    budgetUID: String? = null,
+    accountUID: String? = null
+) : BaseModel(), Parcelable {
     var budgetUID: String? = null
-    var accountUID: String?
+    var accountUID: String? = null
+
     /**
      * Period number for this budget amount. The period is zero-based index, and a value of -1
      * indicates that this budget amount is applicable to all budgeting periods.
@@ -39,15 +43,10 @@ class BudgetAmount : BaseModel, Parcelable {
      * @return Money amount
      */
     var amount: Money = Money.zeroInstance
-        private set
 
-    /**
-     * Create a new budget amount
-     *
-     * @param budgetUID  GUID of the budget
-     * @param accountUID GUID of the account
-     */
-    constructor(budgetUID: String?, accountUID: String?) {
+    var notes: String? = null
+
+    init {
         this.budgetUID = budgetUID
         this.accountUID = accountUID
     }
@@ -58,19 +57,7 @@ class BudgetAmount : BaseModel, Parcelable {
      * @param amount     Money amount of the budget
      * @param accountUID GUID of the account
      */
-    constructor(amount: Money, accountUID: String?) {
-        this.amount = amount.abs()
-        this.accountUID = accountUID
-    }
-
-    /**
-     * Sets the amount for the budget
-     *
-     * The absolute value of the amount is used
-     *
-     * @param amount Money amount
-     */
-    fun setAmount(amount: Money) {
+    constructor(amount: Money, accountUID: String?) : this(accountUID = accountUID) {
         this.amount = amount.abs()
     }
 
@@ -82,8 +69,9 @@ class BudgetAmount : BaseModel, Parcelable {
         dest.writeString(uid)
         dest.writeString(budgetUID)
         dest.writeString(accountUID)
-        dest.writeMoney(amount, flags)
         dest.writeLong(periodNum)
+        dest.writeMoney(amount, flags)
+        dest.writeString(notes)
     }
 
     /**
@@ -91,12 +79,13 @@ class BudgetAmount : BaseModel, Parcelable {
      *
      * @param source Parcel
      */
-    private constructor(source: Parcel) {
+    private constructor(source: Parcel) : this() {
         setUID(source.readString())
         budgetUID = source.readString()
         accountUID = source.readString()
-        amount = source.readMoney()!!
         periodNum = source.readLong()
+        amount = source.readMoney()!!
+        notes = source.readString()
     }
 
     companion object {

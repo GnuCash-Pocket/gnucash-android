@@ -476,7 +476,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
                 null, null, null, null);
         try {
             if (cursor.moveToFirst()) {
-                Timber.d("Found parent account UID, returning value");
+                Timber.v("Found parent account UID, returning value");
                 return cursor.getString(cursor.getColumnIndexOrThrow(AccountEntry.COLUMN_PARENT_ACCOUNT_UID));
             } else {
                 return null;
