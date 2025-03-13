@@ -13,16 +13,13 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2" tools:locale="en">
     <string name="title_create_account">Create Account</string>
     <string name="title_edit_account">Edit Account</string>
-    <string name="title_edit_budget">Edit Budget</string>
     <string name="description_add_transaction_icon">Add a new transaction to an account</string>
     <string name="description_view_account_icon">View account details</string>
     <string name="label_no_accounts">No accounts to display</string>
     <string name="label_account_name">Account name</string>
-    <string name="btn_cancel">@android:string/cancel</string>
     <string name="btn_save">Save</string>
     <string name="btn_test">Test</string>
     <string name="label_passcode">Enter Passcode</string>
@@ -40,7 +37,6 @@
     <string name="title_transactions">Transactions</string>
     <string name="menu_delete">Delete</string>
     <string name="alert_dialog_ok_delete">Delete</string>
-    <string name="alert_dialog_cancel">Cancel</string>
     <string name="title_delete_account">Delete Account</string>
     <string name="toast_account_deleted">Account deleted</string>
     <string name="title_confirm_delete">Confirm delete</string>
@@ -57,10 +53,10 @@
     <string name="hint_delete_after_export">All exported transactions will be deleted when exporting is completed</string>
     <string name="title_settings">Settings</string>
     <string-array name="export_destinations">
-        <item>Save As&#8230;</item>
+        <item>Save As…</item>
         <item>Dropbox</item>
         <item>ownCloud</item>
-        <item>Send to&#8230;</item>
+        <item>Send to…</item>
     </string-array>
     <string name="btn_move">Move</string>
     <string name="title_move_transactions">Move %1$d transaction(s)</string>
@@ -90,8 +86,8 @@
     <string name="title_enable_passcode">Enable passcode</string>
     <string name="title_change_passcode">Change Passcode</string>
     <string name="title_about_gnucash">About GnuCash</string>
-    <string name="title_export_email">GnuCash Android %1$s export</string>
-    <string name="description_export_email">GnuCash Android Export from </string>
+    <string name="title_export_email">GnuCash %1$s export</string>
+    <string name="description_export_email">GnuCash Pocket Export from</string>
     <string name="header_transaction_settings">Transactions</string>
     <string name="title_transaction_preferences">Transaction Preferences</string>
     <string name="title_account_preferences">Account Preferences</string>
@@ -112,20 +108,16 @@
     <string name="label_parent_account">Parent account</string>
     <string name="title_xml_ofx_header">Use XML OFX header</string>
     <string name="summary_xml_ofx_header">Enable this option when exporting to third-party application other than GnuCash for desktop</string>
-    <string name="toast_transanction_amount_required">Enter an amount to save the transaction</string>
+    <string name="toast_transaction_amount_required">Enter an amount to save the transaction</string>
     <string name="toast_error_importing_accounts">An error occurred while importing the GnuCash accounts</string>
     <string name="toast_success_importing_accounts">GnuCash Accounts successfully imported</string>
     <string name="summary_import_accounts">Import account structure from GnuCash XML</string>
     <string name="title_import_accounts">Import GnuCash XML</string>
-    <string name="summary_delete_all_accounts">Delete all accounts in the database. All transactions will be deleted as
-        well.
-    </string>
+    <string name="summary_delete_all_accounts">Delete all accounts in the database. All transactions will be deleted as well.</string>
     <string name="title_delete_all_accounts">Delete all accounts</string>
     <string name="header_account_settings">Accounts</string>
     <string name="toast_all_accounts_deleted">All accounts have been successfully deleted</string>
-    <string name="confirm_delete_all_accounts">Are you sure you want to delete all accounts and transactions?\n\nThis
-        operation cannot be undone!
-    </string>
+    <string name="confirm_delete_all_accounts">Are you sure you want to delete all accounts and transactions?\n\nThis operation cannot be undone!</string>
     <string name="summary_delete_all_transactions">All transactions in all accounts will be deleted!</string>
     <string name="title_delete_all_transactions">Delete all transactions</string>
     <string name="toast_all_transactions_deleted">All transactions successfully deleted!</string>
@@ -168,15 +160,15 @@
     <string name="file_format_ofx">Open Financial eXchange</string>
     <string name="file_format_xml">GnuCash XML</string>
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
-    <string name="color_picker_default_title">Select a Color</string>
+    <string name="color_picker_default_title">Select a Colour</string>
     <!-- Content description for a color square. -->
-    <string name="color_swatch_description" translatable="false">Color <xliff:g example="14" id="color_index">%1$d</xliff:g></string>
+    <string name="color_swatch_description">Colour <xliff:g example="14" id="color_index">%1$d</xliff:g></string>
     <!-- Content description for a selected color square. -->
-    <string name="color_swatch_description_selected" translatable="false">Color <xliff:g example="14" id="color_index">%1$d</xliff:g> selected</string>
-    <string name="label_account_color_and_type">Account Color &amp; Type</string>
+    <string name="color_swatch_description_selected">Colour <xliff:g example="14" id="color_index">%1$d</xliff:g> selected</string>
+    <string name="label_account_color_and_type">Account Colour &amp; Type</string>
     <string name="label_delete_sub_accounts">Delete sub-accounts</string>
     <string name="title_recent_accounts">Recent</string>
-    <string name="title_favorite_accounts">Favorites</string>
+    <string name="title_favorite_accounts">Favourites</string>
     <string name="title_all_accounts">All</string>
     <string name="summary_create_default_accounts">Creates default GnuCash commonly-used account structure</string>
     <string name="title_create_default_accounts">Create default accounts</string>
@@ -201,14 +193,13 @@
     <string name="label_sell">Sell</string>
     <string name="account_name_opening_balances">Opening Balances</string>
     <string name="account_name_equity">Equity</string>
-    <string name="summary_save_opening_balances">Enable to save the current account balance (before deleting transactions) as new opening balance after deleting transactions
-    </string>
+    <string name="summary_save_opening_balances">Enable to save the current account balance (before deleting transactions) as new opening balance after deleting transactions</string>
     <string name="title_save_opening_balances">Save account opening balances</string>
     <string name="export_warning_ofx">OFX does not support double-entry transactions</string>
     <string name="export_warning_qif">Generates separate QIF files per currency</string>
     <string name="label_imbalance">Imbalance:</string>
     <string name="btn_add_split">Add split</string>
-    <string name="menu_title_favorite">Favorite</string>
+    <string name="menu_title_favorite">Favourite</string>
     <string name="drawer_open">Navigation drawer opened</string>
     <string name="drawer_close">Navigation drawer closed</string>
     <string name="title_reports">Reports</string>
@@ -216,8 +207,8 @@
     <string name="title_line_chart">Line Chart</string>
     <string name="title_bar_chart">Bar Chart</string>
     <string name="title_report_prefs">Report Preferences</string>
-    <string name="title_use_account_color">Account color in reports</string>
-    <string name="summary_use_account_color">Use account color in the bar/pie chart</string>
+    <string name="title_use_account_color">Account colour in reports</string>
+    <string name="summary_use_account_color">Use account colour in the bar/pie chart</string>
     <string name="menu_order_by_size">Order by size</string>
     <string name="menu_toggle_legend">Show legend</string>
     <string name="menu_toggle_labels">Show labels</string>
@@ -237,10 +228,10 @@
     <string name="label_tap_to_create_schedule">Tap to create schedule</string>
     <string name="title_restore_backup">Restore Backup…</string>
     <string name="header_backup_and_export_settings">Backup &amp; export</string>
-    <string name="title_dropbox_sync_preference">Enable DropBox</string>
-    <string name="title_owncloud_sync_preference">Enable ownCloud </string>
+    <string name="title_dropbox_sync_preference">Enable Dropbox</string>
+    <string name="title_owncloud_sync_preference">Enable ownCloud</string>
     <string name="title_backup_preference_category">Backup</string>
-    <string name="summary_dropbox_sync">Enable exporting to DropBox</string>
+    <string name="summary_dropbox_sync">Enable exporting to Dropbox</string>
     <string name="summary_owncloud_sync">Enable exporting to ownCloud</string>
     <string name="title_backup_prefs">Backup Preferences</string>
     <string name="title_create_backup_pref">Create Backup</string>
@@ -251,23 +242,22 @@
     <string name="export_warning_xml">Exports all accounts and transactions</string>
     <string name="toast_install_file_manager">Install a file manager to select files</string>
     <string name="title_select_backup_to_restore">Select backup to restore</string>
-    <string name="nav_menu_favorites">Favorites</string>
+    <string name="nav_menu_favorites">Favourites</string>
     <string name="nav_menu_open">Open…</string>
     <string name="nav_menu_reports">Reports</string>
     <string name="nav_menu_export">Export…</string>
     <string name="nav_menu_settings">Settings</string>
     <string name="username">User Name</string>
     <string name="password">Password</string>
-    <string name="owncloud_pref">owncloud</string>
     <string name="owncloud_server_invalid">OC server not found</string>
     <string name="owncloud_user_invalid">OC username/password invalid</string>
-    <string name="owncloud_dir_invalid">Invalid chars: \\ &lt; &gt; : \&quot; | * ? </string>
+    <string name="owncloud_dir_invalid">Invalid chars: \\ &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">OC server OK</string>
     <string name="owncloud_user_ok">OC username/password OK</string>
     <string name="owncloud_dir_ok">Dir name OK</string>
     <string name="title_enable_crashlytics">Enable Crash Logging</string>
     <string name="msg_enable_crashlytics">Automatically send information about app malfunction to the developers.</string>
-    <string name="label_export_format"> Format</string>
+    <string name="label_export_format">Format</string>
     <string name="label_old_passcode">Enter your old passcode</string>
     <string name="label_new_passcode">Enter your new passcode</string>
     <string name="title_scheduled_exports">Exports</string>
@@ -277,7 +267,7 @@
     <string name="toast_legend_too_long">The legend is too long</string>
     <string name="hint_account_description">Account description</string>
     <string name="label_no_recent_accounts">No recent accounts</string>
-    <string name="label_no_favorite_accounts">No favorite accounts</string>
+    <string name="label_no_favorite_accounts">No favourite accounts</string>
     <string name="nav_menu_scheduled_actions">Scheduled Actions</string>
     <string name="label_scheduled_action">"%1$s, last executed on %2$s"</string>
     <string name="label_scheduled_action_ended">"Ended"</string>
@@ -296,7 +286,7 @@
     <string name="wizard_btn_back">Back</string>
     <string name="title_setup_gnucash">Setup GnuCash</string>
     <string name="wizard_title_welcome_to_gnucash">Welcome to GnuCash</string>
-    <string name="msg_wizard_welcome_page">Before you dive in, \nlet\'s setup a few things first\n\nTo continue, press Next</string>
+    <string name="msg_wizard_welcome_page">Before you dive in,\nlet\'s setup a few things first\n\nTo continue, press Next</string>
     <string name="title_split_editor">Split Editor</string>
     <string name="toast_error_check_split_amounts">Check that all splits have valid amounts before saving!</string>
     <string name="label_error_invalid_expression">Invalid expression!</string>
@@ -349,11 +339,10 @@
         <item>Custom range…</item>
     </string-array>
     <string name="report_time_range_picker_title">"Pick time range"</string>
-
     <!-- Passcode lock -->
     <string name="digit_one">1</string>
     <!-- In the English locale, digit 1 has no text on it. This is simply empty space. If your locale has text on digit 1, then translate-->
-    <string name="digit_one_text">&#8203;</string>
+    <string name="digit_one_text" />
     <string name="digit_two">2</string>
     <string name="digit_two_text">ABC</string>
     <string name="digit_three">3</string>
@@ -372,7 +361,6 @@
     <string name="digit_nine_text">WXYZ</string>
     <string name="digit_zero">0</string>
     <string name="digit_zero_text">+</string>
-
     <string name="title_manage_books">Manage Books</string>
     <string name="menu_manage_books">Manage Books…</string>
     <string name="select_chart_to_view_details">Select any part of the chart to view details</string>
@@ -385,22 +373,18 @@
     <string name="toast_transaction_has_no_splits_and_cannot_open">The selected transaction has no splits and cannot be opened</string>
     <string name="label_split_count">%1$d splits</string>
     <string name="label_inside_account_with_name">in %1$s</string>
-
     <plurals name="book_account_stats">
         <item quantity="one">%d account</item>
         <item quantity="other">%d accounts</item>
     </plurals>
-
     <plurals name="book_transaction_stats">
         <item quantity="one">%d transaction</item>
         <item quantity="other">%d transactions</item>
     </plurals>
-
     <string-array name="report_account_types">
         <item>EXPENSE</item>
         <item>INCOME</item>
     </string-array>
-
     <string name="toast_connected_to_google_drive">Connected to Google Drive</string>
     <string name="toast_unable_to_connect_to_google_drive">Unable to connect to Google Drive</string>
     <string name="toast_enter_amount_to_split">Please enter an amount to split</string>
@@ -425,7 +409,7 @@
     <string name="title_no_backups_found">No backups found</string>
     <string name="msg_no_backups_to_restore_from">There are no existing backup files to restore from</string>
     <string name="label_select_destination_after_export">Select the destination after export is complete</string>
-    <string name="label_dropbox_export_destination">Export to \'/Apps/GnuCash Android/\' folder on Dropbox</string>
+    <string name="label_dropbox_export_destination">Export to \'/Apps/GnuCash Pocket/\' folder on Dropbox</string>
     <string name="title_section_preferences">Preferences</string>
     <string name="yes_sure">Yes, I\'m sure</string>
     <string name="summary_export_accounts_csv">Export all accounts (without transactions) to CSV</string>
@@ -460,7 +444,7 @@
         <item>Name</item>
         <item>Code</item>
         <item>Description</item>
-        <item>Color</item>
+        <item>Colour</item>
         <item>Notes</item>
         <item>Commoditym</item>
         <item>Commodityn</item>
@@ -468,10 +452,11 @@
         <item>Tax</item>
         <item>Placeholder</item>
     </string-array>
+    <string name="title_edit_budget">Edit Budget</string>
+    <string name="title_delete_transaction_backup">When delete transaction?</string>
+    <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>
     <string name="action_transaction">transaction to</string>
     <string name="action_backup">backup to</string>
-    <string name="title_delete_transaction_backup">When deleting a transaction?</string>
-    <string name="summary_delete_transaction_backup">Backup the active book before deleting a transaction?</string>
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
 </resources>

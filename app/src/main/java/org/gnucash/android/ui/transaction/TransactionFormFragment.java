@@ -964,9 +964,9 @@ public class TransactionFormFragment extends MenuFragment implements
                     saveNewTransaction(binding);
                 } else {
                     if (binding.inputTransactionAmount.getValue() == null) {
-                        Snackbar.make(view, R.string.toast_transanction_amount_required, Snackbar.LENGTH_LONG).show();
+                        Snackbar.make(view, R.string.toast_transaction_amount_required, Snackbar.LENGTH_LONG).show();
                         binding.inputTransactionAmount.requestFocus();
-                        binding.inputTransactionAmount.setError(getString(R.string.toast_transanction_amount_required));
+                        binding.inputTransactionAmount.setError(getString(R.string.toast_transaction_amount_required));
                     } else {
                         binding.inputTransactionAmount.setError(null);
                     }

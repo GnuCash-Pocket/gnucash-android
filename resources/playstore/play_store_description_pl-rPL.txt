@@ -1,0 +1,29 @@
+GnuCash jest mobilnym menedżerem finansów na Androida.
+
+Jest to aplikacja towarzysząca GnuCash na komputerze stacjonarnym i umożliwia elastyczne śledzenie wydatków w drodze.
+Zapisane transakcje mogą być eksportowane do komputerowej wersji GnuCash za pomocą wielu formatów (CSV / QIF / OFX).
+
+Kilka wyróżnionych funkcji to:
+
+<b>&bull; Prosty w użytkowaniu interfejs.</b>
+
+<b>&bull; Wykres kont</b>: Konto główne może posiadać hierarchię szczegółów kont podrzędnych.
+Pozwala to podobnym rodzajom konta (np. Cash, Bank, Stock) być grupowanym do jednego konta głównego (np. Aktywa).
+Możesz takżę zaimportować istniejącą hierarchię z komputerowej wersji GnuCash.
+
+<b>&bull; Podział transakcji</b>: Pojedyncze transakcjie można podzielić na kilka części, aby rejestrować podatki, opłat i inne złożone zapisy.
+
+<b>&bull; Podwójny zapis</b>: Każda transakcja musi obciążyć jedno konto i obciążyć inne konto o równą kwotę. Gwarantuje to, że "bilans książki": różnicę pomiędzy dochodem a odpływem jest dokładnie równa sumie wszystkich aktywów, czy to w banku, gotówki, towarze lub innych.
+
+<b>&bull; Typy kont przychodów/wydatków (Kategorie)</b>: Służą nie tylko do kategoryzowania przepływu gotówki, ale gdy stosowane właściwie, z funkcja podwójnego zapisu, mogą zapewnić dokładne zestawienie zysków i strat.
+
+<b>&bull; Zaplanowane transakcje</b>: GnuCash ma możliwość automatycznego tworzenia i wprowadzania transakcji.
+
+<b>&bull; Eksport do GnuCash XML, QIF lub OFX</b>: GnuCash może wyeksportować transakcje kont w różnych formatach do wykorzystania w innych programach. Ponadto można włączyć zaplanowanie synchronizacji eksportów do usług firm trzecich jak DropBox i Dysk Google.
+
+<b>&bull; Sprawozdania</b>: Wyświetl podsumowanie transakcji (dochody i wydatki) jako wykresy kołowe/paskowe/liniowe
+
+<b>&bull; Widgetu ekranu głównego </b> zapewnia szybki dostęp do swojego konta i rejestracji transakcji
+
+<br/> <b><u>Uwaga</u></b>: aplikacja nie oferuje pełnej kompatybilności z GnuCash na komputerach. Nie można zsynchronizować aplikacji komputerowej z tą. Ale możesz zaimportować swoje konta i transakcje z plików XML programu GnuCash.
+
