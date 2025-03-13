@@ -253,7 +253,11 @@ public abstract class GncXmlHelper {
      * @throws ParseException if the date string could not be parsed e.g. because of different format
      */
     public static long parseDate(String dateString) throws ParseException {
-        return DATE_FORMATTER.parseMillis(dateString);
+        try {
+            return DATE_FORMATTER.parseMillis(dateString);
+        } catch (IllegalArgumentException e) {
+            throw new ParseException(e.getMessage(), 0);
+        }
     }
 
     /**
@@ -264,7 +268,11 @@ public abstract class GncXmlHelper {
      * @throws ParseException if the date string could not be parsed e.g. because of different format
      */
     public static long parseDateTime(String dateString) throws ParseException {
-        return TIME_FORMATTER.parseMillis(dateString);
+        try {
+            return TIME_FORMATTER.parseMillis(dateString);
+        } catch (IllegalArgumentException e) {
+            throw new ParseException(e.getMessage(), 0);
+        }
     }
 
     /**

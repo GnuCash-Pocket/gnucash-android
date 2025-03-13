@@ -117,13 +117,12 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
      * @return <code>true</code> if deletion was successful, <code>false</code> otherwise
      * @see #deleteRecord(String)
      */
-    public boolean deleteBook(@NonNull String bookUID) {
-        Context context = GnuCashApplication.getAppContext();
+    public boolean deleteBook(@NonNull Context context, @NonNull String bookUID) {
         boolean result = context.deleteDatabase(bookUID);
         if (result) //delete the db entry only if the file deletion was successful
             result &= deleteRecord(bookUID);
 
-        PreferenceActivity.getBookSharedPreferences(bookUID).edit().clear().apply();
+        PreferenceActivity.getBookSharedPreferences(context, bookUID).edit().clear().apply();
 
         return result;
     }

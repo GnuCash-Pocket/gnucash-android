@@ -448,8 +448,8 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         account.setDescription(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_DESCRIPTION)));
         account.setParentUID(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_PARENT_ACCOUNT_UID)));
         account.setAccountType(AccountType.valueOf(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_TYPE))));
-        String currencyCode = c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_CURRENCY));
-        account.setCommodity(mCommoditiesDbAdapter.getCommodity(currencyCode));
+        String commodityUID = c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_COMMODITY_UID));
+        account.setCommodity(mCommoditiesDbAdapter.getRecord(commodityUID));
         account.setPlaceHolderFlag(c.getInt(c.getColumnIndexOrThrow(AccountEntry.COLUMN_PLACEHOLDER)) != 0);
         account.setDefaultTransferAccountUID(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID)));
         String color = c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_COLOR_CODE));
@@ -821,9 +821,9 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     /**
      * Returns the balance of an account within the specified time range while taking sub-accounts into consideration
      *
-     * @param accountUID     the account's UUID
-     * @param startTimestamp the start timestamp of the time range
-     * @param endTimestamp   the end timestamp of the time range
+     * @param accountUID         the account's UUID
+     * @param startTimestamp     the start timestamp of the time range
+     * @param endTimestamp       the end timestamp of the time range
      * @param includeSubAccounts include the sub-accounts' balances?
      * @return the balance of an account within the specified range including sub-accounts
      */
@@ -1346,19 +1346,18 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return List of commodities in use
      */
     public List<Commodity> getCommoditiesInUse() {
-        Cursor cursor = mDb.query(true, AccountEntry.TABLE_NAME, new String[]{AccountEntry.COLUMN_CURRENCY},
+        Cursor cursor = mDb.query(true, AccountEntry.TABLE_NAME, new String[]{AccountEntry.COLUMN_COMMODITY_UID},
                 null, null, null, null, null, null);
-        List<Commodity> commodityList = new ArrayList<>();
+        List<Commodity> commodities = new ArrayList<>();
         try {
             while (cursor.moveToNext()) {
-                String currencyCode =
-                        cursor.getString(cursor.getColumnIndexOrThrow(AccountEntry.COLUMN_CURRENCY));
-                commodityList.add(mCommoditiesDbAdapter.getCommodity(currencyCode));
+                String commodityUID = cursor.getString(0);
+                commodities.add(mCommoditiesDbAdapter.getRecord(commodityUID));
             }
         } finally {
             cursor.close();
         }
-        return commodityList;
+        return commodities;
     }
 
     /**

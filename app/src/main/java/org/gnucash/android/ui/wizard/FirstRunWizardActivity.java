@@ -168,21 +168,22 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
      */
     private void createAccountsAndFinish(@NonNull String accountOption, String currencyCode) {
         if (accountOption.equals(mWizardModel.optionAccountDefault)) {
+            final Activity activity = FirstRunWizardActivity.this;
             //save the UID of the active book, and then delete it after successful import
-            final BooksDbAdapter dbAdapter = BooksDbAdapter.getInstance();
-            final String bookUID = dbAdapter.getActiveBookUID();
-            Book bookOld = dbAdapter.getRecord(bookUID);
+            final BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
+            final String bookOldUID = booksDbAdapter.getActiveBookUID();
+            Book bookOld = booksDbAdapter.getRecord(bookOldUID);
             final String bookName = bookOld.getDisplayName();
-            TaskDelegate callbackAfterImport = (!TextUtils.isEmpty(bookUID)) ? new TaskDelegate() {
+            TaskDelegate callbackAfterImport = !TextUtils.isEmpty(bookOldUID) ? new TaskDelegate() {
                 @Override
                 public void onTaskComplete() {
-                    dbAdapter.deleteBook(bookUID);
-                    Book book = dbAdapter.getActiveBook();
+                    booksDbAdapter.deleteBook(activity, bookOldUID);
+                    Book book = booksDbAdapter.getActiveBook();
                     book.setDisplayName(bookName);
-                    dbAdapter.updateRecord(book);
+                    booksDbAdapter.updateRecord(book);
                 }
             } : null;
-            AccountsActivity.createDefaultAccounts(currencyCode, FirstRunWizardActivity.this, callbackAfterImport);
+            AccountsActivity.createDefaultAccounts(activity, currencyCode, callbackAfterImport);
             finish();
         } else if (accountOption.equals(mWizardModel.optionAccountImport)) {
             AccountsActivity.startXmlFileChooser(this);

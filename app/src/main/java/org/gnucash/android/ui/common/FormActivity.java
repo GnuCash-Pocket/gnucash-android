@@ -82,7 +82,6 @@ public class FormActivity extends PasscodeLockActivity {
         assert (actionBar != null);
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setHomeAsUpIndicator(R.drawable.ic_close);
 
         Bundle args = intent.getExtras();
         if (args == null) args = new Bundle();

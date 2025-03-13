@@ -51,7 +51,9 @@ import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.databinding.ActivityAccountsBinding;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
+import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.importer.ImportAsyncTask;
+import org.gnucash.android.model.Commodity;
 import org.gnucash.android.service.ScheduledActionService;
 import org.gnucash.android.ui.common.BaseDrawerActivity;
 import org.gnucash.android.ui.common.FormActivity;
@@ -362,29 +364,33 @@ public class AccountsActivity extends BaseDrawerActivity implements
      * Creates default accounts with the specified currency code.
      * If the currency parameter is null, then locale currency will be used if available
      *
-     * @param currencyCode Currency code to assign to the imported accounts
      * @param activity     Activity for providing context and displaying dialogs
+     * @param currencyCode Currency code to assign to the imported accounts
      */
-    public static void createDefaultAccounts(@NonNull final String currencyCode, @NonNull final Activity activity) {
-        createDefaultAccounts(currencyCode, activity, null);
+    public static void createDefaultAccounts(@NonNull final Activity activity, @NonNull final String currencyCode) {
+        createDefaultAccounts(activity, currencyCode, null);
     }
 
     /**
      * Creates default accounts with the specified currency code.
      * If the currency parameter is null, then locale currency will be used if available
      *
-     * @param currencyCode Currency code to assign to the imported accounts
      * @param activity     Activity for providing context and displaying dialogs
+     * @param currencyCode Currency code to assign to the imported accounts
      * @param callback     The callback to call when the book has been imported.
      */
-    public static void createDefaultAccounts(@NonNull final String currencyCode, @NonNull final Activity activity, @Nullable final TaskDelegate callback) {
+    public static void createDefaultAccounts(@NonNull final Activity activity, @NonNull final String currencyCode, @Nullable final TaskDelegate callback) {
         TaskDelegate delegate = callback;
         if (!TextUtils.isEmpty(currencyCode)) {
             delegate = new TaskDelegate() {
                 @Override
                 public void onTaskComplete() {
-                    AccountsDbAdapter.getInstance().updateAllAccounts(DatabaseSchema.AccountEntry.COLUMN_CURRENCY, currencyCode);
-                    GnuCashApplication.setDefaultCurrencyCode(activity, currencyCode);
+                    Commodity currency = CommoditiesDbAdapter.getInstance().getCommodity(currencyCode);
+                    if (currency != null) {
+                        AccountsDbAdapter.getInstance().updateAllAccounts(DatabaseSchema.AccountEntry.COLUMN_CURRENCY, currencyCode);
+                        AccountsDbAdapter.getInstance().updateAllAccounts(DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID, currency.getUID());
+                        GnuCashApplication.setDefaultCurrencyCode(activity, currencyCode);
+                    }
                     if (callback != null) {
                         callback.onTaskComplete();
                     }
