@@ -68,8 +68,8 @@
     <string name="title_choose_currency">Elegir divisa por defecto</string>
     <string name="title_default_currency">Divisa por defecto</string>
     <string name="summary_default_currency">Divisa por defecto para las nuevas cuentas</string>
-    <string name="label_permission_record_transactions">Permite almacenar transacciones en Gnucash para Android</string>
-    <string name="label_permission_create_accounts">Permite crear cuentas en Gnucash para Android</string>
+    <string name="label_permission_record_transactions">Permite almacenar transacciones en GnuCash para Android</string>
+    <string name="label_permission_create_accounts">Permite crear cuentas en GnuCash para Android</string>
     <string name="label_permission_group">Sus datos de GnuCash</string>
     <string name="description_permission_group">Leer y modificar datos de GnuCash</string>
     <string name="label_permission_record_transaction">Registrar transacciones en GnuCash</string>
@@ -77,7 +77,7 @@
     <string name="label_display_account">Mostrar cuenta</string>
     <string name="label_hide_account_balance">Ocultar el saldo de la cuenta en widget</string>
     <string name="btn_create_accounts">Crear Cuentas</string>
-    <string name="error_no_accounts">No hay cuentas en Gnucash.\nCree una cuenta antes de añadir un widget</string>
+    <string name="error_no_accounts">No hay cuentas en GnuCash.\nCree una cuenta antes de añadir un widget</string>
     <string name="title_license">Licencia</string>
     <string name="summary_licence_details">Apache License v2.0. Clic para más detalles</string>
     <string name="title_general_prefs">Preferencias generales</string>
@@ -86,7 +86,7 @@
     <string name="title_passcode_preferences">Ajustes de contraseña</string>
     <string name="title_enable_passcode">Habilitar clave</string>
     <string name="title_change_passcode">Cambiar Contraseña</string>
-    <string name="title_about_gnucash">Acerca de Gnucash</string>
+    <string name="title_about_gnucash">Acerca de GnuCash</string>
     <string name="title_export_email">Exportación %1$s de GnuCash Pocket</string>
     <string name="description_export_email">Exportación desde GnuCash Pocket</string>
     <string name="header_transaction_settings">Transacciones</string>

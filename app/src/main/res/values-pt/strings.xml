@@ -70,7 +70,7 @@
     <string name="summary_default_currency">Moeda predefinida para atribuir às novas contas</string>
     <string name="label_permission_record_transactions">Permite a gravação de transações no GnuCash para Android</string>
     <string name="label_permission_create_accounts">Permite a criação de contas no GnuCash para Android</string>
-    <string name="label_permission_group">Os seus dados do Gnucash</string>
+    <string name="label_permission_group">Os seus dados do GnuCash</string>
     <string name="description_permission_group">Ler e modificar dados do GnuCash</string>
     <string name="label_permission_record_transaction">Gravar transações no GnuCash</string>
     <string name="label_permission_create_account">Criar contas no GnuCash</string>
