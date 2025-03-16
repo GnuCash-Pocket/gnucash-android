@@ -65,12 +65,13 @@ public class DropboxHelper {
      * @return DropBox client for API v2
      */
     public static DbxClientV2 getClient(Context context) {
-        if (sDbxClient != null)
+        if (sDbxClient != null) {
             return sDbxClient;
+        }
 
         String accessToken = getAccessToken(context);
         if (TextUtils.isEmpty(accessToken)) {
-            DropboxHelper.authenticate(context);
+            authenticate(context);
             return null;
         }
 

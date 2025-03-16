@@ -18,7 +18,7 @@ val versionPatch = 0
 val versionBuild = 0
 
 val dropboxAppKey =
-    (project.properties["RELEASE_DROPBOX_APP_KEY"] as String?) ?: "db-dhjh8ke9wf05948"
+    (project.properties["RELEASE_DROPBOX_APP_KEY"] as String?) ?: "dhjh8ke9wf05948"
 
 fun gitSha(): String {
     return Command("git", "rev-parse", "--short", "HEAD").getOutputLines()[0].trim()
@@ -40,7 +40,7 @@ android {
         buildConfigField("boolean", "CAN_REQUEST_RATING", "false")
         buildConfigField("boolean", "GOOGLE_GCM", "false")
         buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxAppKey}\"")
-        manifestPlaceholders["dropbox_app_key"] = dropboxAppKey
+        manifestPlaceholders["dropbox_app_key"] = "db-${dropboxAppKey}"
 
         testInstrumentationRunner = "org.gnucash.android.test.ui.util.GnucashAndroidTestRunner"
     }
@@ -181,7 +181,7 @@ dependencies {
     implementation("org.apache.jackrabbit:jackrabbit-webdav:2.13.3")
     implementation("com.code-troopers.betterpickers:library:3.1.0")
     implementation("com.github.techfreak:wizardpager:1.0.3")
-    implementation("com.dropbox.core:dropbox-core-sdk:3.0.3")
+    implementation("com.dropbox.core:dropbox-android-sdk:7.0.0")
     implementation("com.kobakei:ratethisapp:0.0.7")
 
     // Export
