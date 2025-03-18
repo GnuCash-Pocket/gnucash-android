@@ -17,6 +17,10 @@
 
 package org.gnucash.android.ui.wizard;
 
+import static org.gnucash.android.ui.account.AccountsActivity.createDefaultAccounts;
+import static org.gnucash.android.ui.account.AccountsActivity.importXmlFileFromIntent;
+import static org.gnucash.android.ui.account.AccountsActivity.startXmlFileChooser;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -173,7 +177,7 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
             final String bookUID = dbAdapter.getActiveBookUID();
             Book bookOld = dbAdapter.getRecord(bookUID);
             final String bookName = bookOld.getDisplayName();
-            TaskDelegate callbackAfterImport = (!TextUtils.isEmpty(bookUID)) ? new TaskDelegate() {
+            TaskDelegate callbackAfterImport = !TextUtils.isEmpty(bookUID) ? new TaskDelegate() {
                 @Override
                 public void onTaskComplete() {
                     dbAdapter.deleteBook(bookUID);
@@ -182,10 +186,10 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
                     dbAdapter.updateRecord(book);
                 }
             } : null;
-            AccountsActivity.createDefaultAccounts(currencyCode, FirstRunWizardActivity.this, callbackAfterImport);
+            createDefaultAccounts(currencyCode, FirstRunWizardActivity.this, callbackAfterImport);
             finish();
         } else if (accountOption.equals(mWizardModel.optionAccountImport)) {
-            AccountsActivity.startXmlFileChooser(this);
+            startXmlFileChooser(this);
         } else { //user prefers to handle account creation themselves
             AccountsActivity.start(this);
             finish();
@@ -222,12 +226,7 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == AccountsActivity.REQUEST_PICK_ACCOUNTS_FILE) {
             if (resultCode == Activity.RESULT_OK && data != null) {
-                AccountsActivity.importXmlFileFromIntent(this, data, new TaskDelegate() {
-                    @Override
-                    public void onTaskComplete() {
-                        finish();
-                    }
-                });
+                importFileAndFinish(data);
             }
             return;
         }
@@ -358,6 +357,26 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
             .apply();
 
         createAccountsAndFinish(accountOption, currencyCode);
+    }
+
+    private void importFileAndFinish(Intent data) {
+        final BooksDbAdapter dbAdapter = BooksDbAdapter.getInstance();
+        final String bookUID = dbAdapter.getActiveBookUID();
+        Book bookOld = dbAdapter.getRecord(bookUID);
+        final String bookName = bookOld.getDisplayName();
+        TaskDelegate callbackAfterImport = new TaskDelegate() {
+            @Override
+            public void onTaskComplete() {
+                if (!TextUtils.isEmpty(bookUID)) {
+                    dbAdapter.deleteBook(bookUID);
+                    Book book = dbAdapter.getActiveBook();
+                    book.setDisplayName(bookName);
+                    dbAdapter.updateRecord(book);
+                }
+                finish();
+            }
+        };
+        importXmlFileFromIntent(this, data, callbackAfterImport);
     }
 
     public class WizardPagerAdapter extends FragmentStateAdapter {
