@@ -18,6 +18,7 @@ package org.gnucash.android.ui.settings;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -32,6 +33,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -182,7 +185,18 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
             .setType("*/*")
             .addCategory(Intent.CATEGORY_OPENABLE)
             .putExtra(Intent.EXTRA_TITLE, filename);
-        startActivityForResult(createIntent, REQUEST_EXPORT_FILE);
+        try {
+            startActivityForResult(createIntent, REQUEST_EXPORT_FILE);
+        } catch (ActivityNotFoundException e) {
+            Timber.e(e, "Cannot create document for export");
+            if (isVisible()) {
+                View view = getView();
+                assert view != null;
+                Snackbar.make(view, R.string.toast_install_file_manager, Snackbar.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(requireContext(), R.string.toast_install_file_manager, Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     @Override

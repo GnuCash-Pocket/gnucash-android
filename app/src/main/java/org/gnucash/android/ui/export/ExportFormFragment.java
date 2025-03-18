@@ -22,6 +22,7 @@ import static org.gnucash.android.util.ContentExtKt.getDocumentName;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -44,6 +45,7 @@ import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.RadioButton;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -54,6 +56,7 @@ import androidx.core.content.ContextCompat;
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence;
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrenceFormatter;
 import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -592,7 +595,18 @@ public class ExportFormFragment extends MenuFragment implements
             .setType("*/*")
             .addCategory(Intent.CATEGORY_OPENABLE)
             .putExtra(Intent.EXTRA_TITLE, filename);
-        startActivityForResult(createIntent, REQUEST_EXPORT_FILE);
+        try {
+            startActivityForResult(createIntent, REQUEST_EXPORT_FILE);
+        } catch (ActivityNotFoundException e) {
+            Timber.e(e, "Cannot create document for export");
+            if (isVisible()) {
+                View view = getView();
+                assert view != null;
+                Snackbar.make(view, R.string.toast_install_file_manager, Snackbar.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(requireContext(), R.string.toast_install_file_manager, Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     @Override

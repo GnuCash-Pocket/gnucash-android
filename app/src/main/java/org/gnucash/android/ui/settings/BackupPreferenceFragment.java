@@ -21,6 +21,7 @@ import static org.gnucash.android.util.ContentExtKt.getDocumentName;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -182,7 +183,18 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
                 .setType(BackupManager.MIME_TYPE)
                 .addCategory(Intent.CATEGORY_OPENABLE)
                 .putExtra(Intent.EXTRA_TITLE, fileName);
-            startActivityForResult(createIntent, REQUEST_BACKUP_FILE);
+            try {
+                startActivityForResult(createIntent, REQUEST_BACKUP_FILE);
+            } catch (ActivityNotFoundException e) {
+                Timber.e(e, "Cannot create document for backup");
+                if (isVisible()) {
+                    View view = getView();
+                    assert view != null;
+                    Snackbar.make(view, R.string.toast_install_file_manager, Snackbar.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(requireContext(), R.string.toast_install_file_manager, Toast.LENGTH_LONG).show();
+                }
+            }
         }
 
         if (key.equals(getString(R.string.key_dropbox_sync))) {
