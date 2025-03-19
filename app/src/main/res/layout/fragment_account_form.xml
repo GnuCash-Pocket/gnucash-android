@@ -116,22 +116,27 @@
             android:id="@+id/checkbox_placeholder_account"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/form_row_bottom_margin"
             android:text="@string/label_placeholder_account" />
+
+        <CheckBox
+            android:id="@+id/favorite_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/form_row_bottom_margin"
+            android:text="@string/menu_title_favorite" />
 
         <TextView
             android:id="@+id/label_parent_account"
             style="@style/TextAppearance.EditTransaction_LabelSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="-8dip"
+            android:layout_marginTop="@dimen/form_row_bottom_margin"
             android:text="@string/label_parent_account" />
 
         <LinearLayout
             android:id="@+id/layout_parent_account"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/form_row_bottom_margin"
             android:orientation="horizontal">
 
             <CheckBox
@@ -151,7 +156,7 @@
             style="@style/TextAppearance.EditTransaction_LabelSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="-8dip"
+            android:layout_marginTop="@dimen/form_row_bottom_margin"
             android:text="@string/label_default_transfer_account" />
 
         <LinearLayout

@@ -83,16 +83,16 @@
             app:layout_constraintEnd_toStartOf="@id/options_menu"
             tools:ignore="ContentDescription" />
 
-        <ImageView
+        <CheckBox
             android:id="@+id/favorite_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:button="@drawable/ic_favorite_check"
             android:contentDescription="@string/menu_title_favorite"
+            android:gravity="center_vertical|end"
             android:paddingStart="16dp"
             android:paddingEnd="0dp"
             android:paddingBottom="16dp"
-            android:src="@drawable/ic_favorite_border"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 

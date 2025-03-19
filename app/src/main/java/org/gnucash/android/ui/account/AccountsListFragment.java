@@ -18,6 +18,7 @@ package org.gnucash.android.ui.account;
 
 import static org.gnucash.android.util.ColorExtKt.parseColor;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
@@ -33,11 +34,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -253,7 +255,7 @@ public class AccountsListFragment extends MenuFragment implements
                     try {
                         // Avoid calling AccountsDbAdapter.deleteRecord(long). See #654
                         mAccountsDbAdapter.deleteRecord(accountUID);
-                        refresh();
+                        refreshActivity();
                     } catch (Exception e) {
                         Timber.e(e);
                     }
@@ -274,6 +276,13 @@ public class AccountsListFragment extends MenuFragment implements
             DeleteAccountDialogFragment.newInstance(accountUID);
         fm.setFragmentResultListener(DeleteAccountDialogFragment.TAG, this, this);
         alertFragment.show(fm, DeleteAccountDialogFragment.TAG);
+    }
+
+    private void toggleFavorite(@NonNull String accountUID, boolean isFavoriteAccount) {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DatabaseSchema.AccountEntry.COLUMN_FAVORITE, isFavoriteAccount);
+        mAccountsDbAdapter.updateRecord(accountUID, contentValues);
+        refreshActivity();
     }
 
     @Override
@@ -304,6 +313,16 @@ public class AccountsListFragment extends MenuFragment implements
         getLoaderManager().restartLoader(0, null, this);
     }
 
+    private void refreshActivity() {
+        // Tell the parent activity to refresh all the lists.
+        Activity activity = getActivity();
+        if (activity instanceof Refreshable) {
+            ((Refreshable) activity).refresh();
+        } else {
+            refresh();
+        }
+    }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -316,8 +335,7 @@ public class AccountsListFragment extends MenuFragment implements
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (mAccountRecyclerAdapter != null)
-            mAccountRecyclerAdapter.changeCursor(null);
+        mAccountRecyclerAdapter.changeCursor(null);
     }
 
     /**
@@ -345,6 +363,7 @@ public class AccountsListFragment extends MenuFragment implements
         return new AccountsCursorLoader(context, parentAccountUID, mDisplayMode, mCurrentFilter);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor cursor) {
         Timber.d("Accounts loader finished. Swapping in cursor");
@@ -353,6 +372,7 @@ public class AccountsListFragment extends MenuFragment implements
             if (mBinding.list.getAdapter() == null) {
                 mBinding.list.setAdapter(mAccountRecyclerAdapter);
             }
+            mAccountRecyclerAdapter.notifyDataSetChanged();
         }
     }
 
@@ -438,8 +458,6 @@ public class AccountsListFragment extends MenuFragment implements
                 }
             }
 
-            if (cursor != null)
-                registerContentObserver(cursor);
             return cursor;
         }
     }
@@ -448,14 +466,15 @@ public class AccountsListFragment extends MenuFragment implements
     public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
         if (DeleteAccountDialogFragment.TAG.equals(requestKey)) {
             boolean refresh = result.getBoolean(Refreshable.EXTRA_REFRESH);
-            if (refresh) refresh();
+            if (refresh) refreshActivity();
         }
     }
 
     class AccountRecyclerAdapter extends CursorRecyclerAdapter<AccountRecyclerAdapter.AccountViewHolder> {
 
-        public AccountRecyclerAdapter(Cursor cursor) {
+        public AccountRecyclerAdapter(@Nullable Cursor cursor) {
             super(cursor);
+            setHasStableIds(true);
         }
 
         @NonNull
@@ -475,7 +494,7 @@ public class AccountsListFragment extends MenuFragment implements
             private final TextView description;
             private final TextView accountBalance;
             private final ImageView createTransaction;
-            private final ImageView favoriteStatus;
+            private final CheckBox favoriteStatus;
             private final ImageView optionsMenu;
             private final View colorStripView;
             private final ProgressBar budgetIndicator;
@@ -560,27 +579,13 @@ public class AccountsListFragment extends MenuFragment implements
                     budgetIndicator.setVisibility(View.GONE);
                 }
 
-                if (mAccountsDbAdapter.isFavoriteAccount(accountUID)) {
-                    favoriteStatus.setImageResource(R.drawable.ic_favorite);
-                } else {
-                    favoriteStatus.setImageResource(R.drawable.ic_favorite_border);
-                }
-
-                favoriteStatus.setOnClickListener(new View.OnClickListener() {
+                boolean isFavoriteAccount = mAccountsDbAdapter.isFavoriteAccount(accountUID);
+                favoriteStatus.setOnCheckedChangeListener(null);
+                favoriteStatus.setChecked(isFavoriteAccount);
+                favoriteStatus.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
-                    public void onClick(View v) {
-                        boolean isFavoriteAccount = mAccountsDbAdapter.isFavoriteAccount(accountUID);
-
-                        ContentValues contentValues = new ContentValues();
-                        contentValues.put(DatabaseSchema.AccountEntry.COLUMN_FAVORITE, !isFavoriteAccount);
-                        mAccountsDbAdapter.updateRecord(accountUID, contentValues);
-
-                        @DrawableRes int drawableResource = isFavoriteAccount ?
-                            R.drawable.ic_favorite_border : R.drawable.ic_favorite;
-                        favoriteStatus.setImageResource(drawableResource);
-                        if (mDisplayMode == DisplayMode.FAVORITES) {
-                            refresh();
-                        }
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        toggleFavorite(accountUID, isChecked);
                     }
                 });
 

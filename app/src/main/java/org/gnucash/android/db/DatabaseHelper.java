@@ -333,14 +333,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * @hide
      */
     public static String escapeForLike(@NonNull String arg) {
-        // Shamelessly borrowed from com.android.providers.media.util.DatabaseUtils
+        // Shamelessly borrowed from android.database.DatabaseUtils
         final StringBuilder sb = new StringBuilder();
         for (int i = 0; i < arg.length(); i++) {
             final char c = arg.charAt(i);
             switch (c) {
-                case '%': sb.append('\\');
-                    break;
-                case '_': sb.append('\\');
+                case '%':
+                case '_':
+                    sb.append('\\');
                     break;
             }
             sb.append(c);

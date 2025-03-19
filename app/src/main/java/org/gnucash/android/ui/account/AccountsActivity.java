@@ -17,6 +17,7 @@
 
 package org.gnucash.android.ui.account;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
@@ -125,6 +126,7 @@ public class AccountsActivity extends BaseDrawerActivity implements
      */
     private String mCurrentFilter;
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void refresh() {
         final int count = mPagerAdapter.getItemCount();

@@ -330,6 +330,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         }
 
         mBinding.checkboxPlaceholderAccount.setChecked(account.isPlaceholderAccount());
+        mBinding.favoriteStatus.setChecked(account.isFavorite());
         mSelectedColor = account.getColor();
         mBinding.inputColorPicker.setBackgroundColor(account.getColor());
 
@@ -698,6 +699,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
 
         mAccount.setDescription(mBinding.inputAccountDescription.getText().toString());
         mAccount.setPlaceHolderFlag(mBinding.checkboxPlaceholderAccount.isChecked());
+        mAccount.setFavorite(mBinding.favoriteStatus.isChecked());
         mAccount.setColor(mSelectedColor);
 
         long newParentAccountId;

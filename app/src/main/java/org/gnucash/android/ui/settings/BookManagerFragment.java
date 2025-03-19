@@ -167,14 +167,14 @@ public class BookManagerFragment extends ListFragment implements
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
         Timber.d("Finished loading books from database");
-        mCursorAdapter.swapCursor(data);
+        mCursorAdapter.changeCursor(data);
         mCursorAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         Timber.d("Resetting books list loader");
-        mCursorAdapter.swapCursor(null);
+        mCursorAdapter.changeCursor(null);
     }
 
     @Override
