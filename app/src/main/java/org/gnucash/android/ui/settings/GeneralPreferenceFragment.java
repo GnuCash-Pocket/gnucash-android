@@ -16,6 +16,8 @@
 
 package org.gnucash.android.ui.settings;
 
+import static org.gnucash.android.app.ActivityExtKt.restart;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -72,6 +74,14 @@ public class GeneralPreferenceFragment extends PreferenceFragmentCompat {
     @Override
     public void onResume() {
         super.onResume();
+
+        findPreference(getString(R.string.key_theme)).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(@NonNull Preference preference, Object newValue) {
+                restart(requireActivity());
+                return true;
+            }
+        });
 
         preferencePasscode = findPreference(getString(R.string.key_enable_passcode));
         preferencePasscode.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {

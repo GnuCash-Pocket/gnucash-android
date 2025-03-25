@@ -52,6 +52,7 @@ import org.gnucash.android.databinding.ActivityFirstRunWizardBinding;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.model.Book;
 import org.gnucash.android.ui.account.AccountsActivity;
+import org.gnucash.android.ui.settings.ThemeHelper;
 import org.gnucash.android.ui.util.TaskDelegate;
 import org.gnucash.android.ui.util.widget.FragmentStateAdapter;
 
@@ -91,6 +92,7 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
         mWizardModel = createWizardModel(savedInstanceState);
 
         super.onCreate(savedInstanceState);
+        ThemeHelper.apply(this);
         mBinding = ActivityFirstRunWizardBinding.inflate(getLayoutInflater());
         setContentView(mBinding.getRoot());
 

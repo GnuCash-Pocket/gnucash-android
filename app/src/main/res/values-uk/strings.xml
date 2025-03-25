@@ -249,7 +249,7 @@
     <string name="nav_menu_open">Відкрити&#8230;</string>
     <string name="nav_menu_reports">Звіти</string>
     <string name="nav_menu_export">Експорт&#8230;</string>
-    <string name="nav_menu_settings">Налаштування</string>
+    <string name="menu_settings" msgid="3524924670246877187">"Налаштування"</string>
     <string name="username">Ім’я користувача</string>
     <string name="password">Пароль</string>
     <string name="owncloud_pref">owncloud</string>
@@ -417,4 +417,9 @@
     <string name="label_select_destination_after_export">Обрати місце після завершення експорту</string>
     <string name="label_dropbox_export_destination">Експортувати до папки /Apps/GnuCash Android/ у Dropbox</string>
     <string name="title_section_preferences">Параметри</string>
+    <string name="category_name_appearance" msgid="8287486771764166805">"Вигляд"</string>
+    <string name="settings_screen_theme">Тема</string>
+    <string name="default_theme" msgid="4815428567082263639">"За умовчанням"</string>
+    <string name="light_ui_title">"Яскравий режим"</string>
+    <string name="dark_ui_title" msgid="3373976268671557416">"Темний режим"</string>
 </resources>

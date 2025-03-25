@@ -173,7 +173,7 @@
     <string name="title_all_accounts">Alle</string>
     <string name="summary_create_default_accounts">Oppretter standard GnuCash kontostruktur</string>
     <string name="title_create_default_accounts">Opprette standardkontoer</string>
-    <string name="msg_confirm_create_default_accounts_setting">En ny bok åpnes med standard accounts\n\nYour gjeldende kontoer og transaksjoner vil ikke bli endret!</string>
+    <string name="msg_confirm_create_default_accounts_setting">En ny bok åpnes med standardkontoer\n\nDine gjeldende kontoer og transaksjoner vil ikke bli endret!</string>
     <string name="title_scheduled_transactions">Transaksjoner</string>
     <string name="title_select_export_destination">Velg sted for eksport</string>
     <string name="hint_split_memo">Notat</string>
@@ -247,7 +247,7 @@
     <string name="nav_menu_open">Åpne&#8230;</string>
     <string name="nav_menu_reports">Rapporter</string>
     <string name="nav_menu_export">Eksport&#8230;</string>
-    <string name="nav_menu_settings">Innstillinger</string>
+    <string name="menu_settings" msgid="3524924670246877187">"Innstillinger"</string>
     <string name="username">Brukernavn</string>
     <string name="password">Passord</string>
     <string name="owncloud_pref">ownCloud</string>
@@ -413,4 +413,9 @@
     <string name="label_select_destination_after_export">Select the destination after export is complete</string>
     <string name="label_dropbox_export_destination">Export to \'/Apps/GnuCash Android/\' folder on Dropbox</string>
     <string name="title_section_preferences">Innstillinger</string>
+    <string name="category_name_appearance" msgid="8287486771764166805">"Utseende"</string>
+    <string name="settings_screen_theme">Tema</string>
+    <string name="default_theme" msgid="4815428567082263639">"Standard"</string>
+    <string name="light_ui_title">"Lys modus"</string>
+    <string name="dark_ui_title" msgid="3373976268671557416">"Mørk modus"</string>
 </resources>

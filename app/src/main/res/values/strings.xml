@@ -255,7 +255,8 @@
     <string name="nav_menu_open">Open…</string>
     <string name="nav_menu_reports">Reports</string>
     <string name="nav_menu_export">Export…</string>
-    <string name="nav_menu_settings">Settings</string>
+    <!-- Menu item for the settings activity [CHAR LIMIT=64] -->
+    <string name="menu_settings" msgid="377929915873428211">Settings</string>
     <string name="username">User Name</string>
     <string name="password">Password</string>
     <string name="owncloud_pref">owncloud</string>
@@ -474,4 +475,12 @@
     <string name="summary_delete_transaction_backup">Backup the active book before deleting a transaction?</string>
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
+    <!-- Appearance category name in Display Settings [CHAR LIMIT=none] -->
+    <string name="category_name_appearance">Appearance</string>
+    <string name="settings_screen_theme" msgid="2137262503543943871">"Theme"</string>
+    <!-- Name of default device theme [CHAR LIMIT=60] -->
+    <string name="default_theme">Default</string>
+    <string name="light_ui_title">"Light Mode"</string>
+    <!-- Dark UI screen, setting option name to enable Dark UI [CHAR LIMIT=30] -->
+    <string name="dark_ui_title">Dark Mode</string>
 </resources>

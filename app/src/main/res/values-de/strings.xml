@@ -250,7 +250,7 @@
     <string name="nav_menu_open">Öffnen&#8230;</string>
     <string name="nav_menu_reports">Berichte</string>
     <string name="nav_menu_export">Exportieren&#8230;</string>
-    <string name="nav_menu_settings">Einstellungen</string>
+    <string name="menu_settings" msgid="3524924670246877187">"Einstellungen"</string>
     <string name="username">Benutzername</string>
     <string name="password">Passwort</string>
     <string name="owncloud_pref">owncloud</string>
@@ -417,4 +417,9 @@ No user-identifiable information will be collected as part of this process!</str
     <string name="label_select_destination_after_export">Wähle den Zielort, wenn der Export abgeschlossen wurde</string>
     <string name="label_dropbox_export_destination">Exportiere in Dropbox-Ordner: \'/Apps/GnuCash Android/\'</string>
     <string name="title_section_preferences">Voreinstellungen</string>
+    <string name="category_name_appearance" msgid="8287486771764166805">"Darstellung"</string>
+    <string name="settings_screen_theme">Design</string>
+    <string name="default_theme" msgid="4815428567082263639">"Standard"</string>
+    <string name="light_ui_title">"Heller Modus"</string>
+    <string name="dark_ui_title" msgid="3373976268671557416">"Dunkler Modus"</string>
 </resources>

@@ -22,6 +22,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.gnucash.android.R;
+import org.gnucash.android.ui.settings.ThemeHelper;
 
 /**
  * Activity for displaying and managing the passcode lock screen.
@@ -33,6 +34,7 @@ public class PasscodeLockScreenActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ThemeHelper.apply(this);
         setContentView(R.layout.passcode_lockscreen);
 
         Intent intent = getIntent();

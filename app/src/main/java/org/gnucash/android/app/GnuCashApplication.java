@@ -47,6 +47,7 @@ import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.TransactionType;
 import org.gnucash.android.ui.settings.PreferenceActivity;
+import org.gnucash.android.ui.settings.ThemeHelper;
 import org.gnucash.android.util.CrashlyticsTree;
 import org.gnucash.android.util.LogTree;
 
@@ -109,6 +110,7 @@ public class GnuCashApplication extends Application {
         super.onCreate();
         final Context context = getApplicationContext();
         GnuCashApplication.context = context;
+        ThemeHelper.apply(this);
 
         if (BuildConfig.GOOGLE_GCM) {
             FirebaseApp.initializeApp(this);

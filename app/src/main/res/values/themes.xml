@@ -25,13 +25,6 @@
         <item name="colorAccent">@color/theme_accent</item>
         <item name="colorButtonNormal">@color/theme_accent</item>
 
-        <!-- The rest of your attributes -->
-        <!--        <item name="actionModeBackground">@color/action_mode_background</item>-->
-        <!--        <item name="windowActionModeOverlay">true</item>-->
-        <!--        <item name="actionMenuTextAppearance">@style/ActionMenuText</item>-->
-        <item name="preferenceTheme">@style/Theme.GnuCash.Preference</item>
-        <!--         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>-->
-
         <item name="actionBarTheme">@style/Theme.GnuCash.Toolbar</item>
         <item name="toolbarStyle">@style/Widget.GnuCash.Toolbar</item>
     </style>
@@ -54,9 +47,9 @@
         <item name="android:windowNoTitle">false</item>
     </style>
 
-    <style name="Theme.GnuCash.Preference" parent="PreferenceThemeOverlay" />
-
     <style name="Theme.GnuCash.TabLayout" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="Theme.GnuCash.Toolbar" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.GnuCash.WidgetConfiguration" />
 </resources>

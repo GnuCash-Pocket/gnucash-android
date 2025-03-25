@@ -248,7 +248,7 @@
     <string name="nav_menu_open">열기...</string>
     <string name="nav_menu_reports">보고서</string>
     <string name="nav_menu_export">내보내기...</string>
-    <string name="nav_menu_settings">설정</string>
+    <string name="menu_settings" msgid="3524924670246877187">"설정"</string>
     <string name="username">사용자 이름</string>
     <string name="password">비밀번호</string>
     <string name="owncloud_pref">owncloud</string>
@@ -412,4 +412,9 @@
     <string name="label_select_destination_after_export">Select the destination after export is complete</string>
     <string name="label_dropbox_export_destination">Export to \'/Apps/GnuCash Android/\' folder on Dropbox</string>
     <string name="title_section_preferences">Preferences</string>
+    <string name="category_name_appearance" msgid="8287486771764166805">"디자인"</string>
+    <string name="settings_screen_theme">"주제"</string>
+    <string name="default_theme" msgid="4815428567082263639">"기본값"</string>
+    <string name="light_ui_title">"밝은 모드"</string>
+    <string name="dark_ui_title" msgid="3373976268671557416">"어두운 모드"</string>
 </resources>

@@ -247,7 +247,7 @@
     <string name="nav_menu_open">打開...</string>
     <string name="nav_menu_reports">報表</string>
     <string name="nav_menu_export">匯出...</string>
-    <string name="nav_menu_settings">設置</string>
+    <string name="menu_settings" msgid="3524924670246877187">"設定"</string>
     <string name="username">帳號</string>
     <string name="password">密碼</string>
     <string name="owncloud_pref">ownCloud</string>
@@ -415,4 +415,9 @@ No user-identifiable information will be collected as part of this process!
     <string name="label_select_destination_after_export">匯出後再選擇目的地</string>
     <string name="label_dropbox_export_destination">匯出到 Dropbox 上的 \'/Apps/GnuCash Android/\' 資料夾</string>
     <string name="title_section_preferences">偏好設定</string>
+    <string name="category_name_appearance" msgid="8287486771764166805">"外觀"</string>
+    <string name="settings_screen_theme">"主题"</string>
+    <string name="default_theme" msgid="4815428567082263639">"預設"</string>
+    <string name="light_ui_title">"明亮模式"</string>
+    <string name="dark_ui_title" msgid="3373976268671557416">"深色模式"</string>
 </resources>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Theme. -->
+    <string name="key_theme" translatable="false">theme</string>
+    <string name="theme_value_dark" translatable="false">dark</string>
+    <string name="theme_value_light" translatable="false">light</string>
+    <string name="theme_value_default" translatable="false">default</string>
+    <string name="theme_defaultValue" translatable="false">@string/theme_value_default</string>
+</resources>

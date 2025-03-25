@@ -13,9 +13,9 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <androidx.preference.ListPreference
+    <ListPreference
         android:defaultValue="DEBIT"
         android:entries="@array/transaction_types"
         android:entryValues="@array/transaction_type_values"
@@ -24,29 +24,29 @@
         android:title="@string/title_default_transaction_type"
         app:useSimpleSummaryProvider="true" />
 
-    <androidx.preference.SwitchPreference
+    <SwitchPreference
         android:defaultValue="true"
         android:icon="@drawable/ic_compare_arrows"
         android:key="@string/key_use_double_entry"
         android:summary="@string/summary_use_double_entry"
         android:title="@string/title_use_double_entry" />
 
-    <androidx.preference.SwitchPreference
+    <SwitchPreference
         android:dependency="@string/key_use_double_entry"
         android:icon="@drawable/ic_compress"
         android:key="@string/key_use_compact_list"
         android:summary="@string/summary_use_compact_list"
         android:title="@string/title_use_compact_list" />
 
-    <androidx.preference.SwitchPreference
+    <SwitchPreference
         android:defaultValue="false"
         android:icon="@drawable/ic_balance"
         android:key="@string/key_save_opening_balances"
         android:summary="@string/summary_save_opening_balances"
         android:title="@string/title_save_opening_balances" />
-    <androidx.preference.Preference
+    <Preference
         android:icon="@drawable/ic_delete"
         android:key="@string/key_delete_all_transactions"
         android:summary="@string/summary_delete_all_transactions"
         android:title="@string/title_delete_all_transactions" />
-</androidx.preference.PreferenceScreen>
+</PreferenceScreen>

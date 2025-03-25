@@ -247,7 +247,7 @@
     <string name="nav_menu_open">Öppna&#8230;</string>
     <string name="nav_menu_reports">Rapporter</string>
     <string name="nav_menu_export">Exportera&#8230;</string>
-    <string name="nav_menu_settings">Inställningar</string>
+    <string name="menu_settings" msgid="3524924670246877187">"Inställningar"</string>
     <string name="username">Användarnamn</string>
     <string name="password">Lösenord</string>
     <string name="owncloud_pref">ownCloud</string>
@@ -413,4 +413,9 @@
     <string name="label_select_destination_after_export">Välj destination efter att exportering är klar</string>
     <string name="label_dropbox_export_destination">Exportera till \'/Apps/GnuCash Android/\' mapp på Dropbox</string>
     <string name="title_section_preferences">Inställningar</string>
+    <string name="category_name_appearance" msgid="8287486771764166805">"Utseende"</string>
+    <string name="settings_screen_theme">Tema</string>
+    <string name="default_theme" msgid="4815428567082263639">"Standard"</string>
+    <string name="light_ui_title">"Ljust läge"</string>
+    <string name="dark_ui_title" msgid="3373976268671557416">"Mörkt läge"</string>
 </resources>

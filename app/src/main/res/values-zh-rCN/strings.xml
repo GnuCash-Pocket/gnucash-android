@@ -248,7 +248,7 @@
     <string name="nav_menu_open">打开...</string>
     <string name="nav_menu_reports">报表</string>
     <string name="nav_menu_export">导出...</string>
-    <string name="nav_menu_settings">设置</string>
+    <string name="menu_settings" msgid="3524924670246877187">"设置"</string>
     <string name="username">用户名</string>
     <string name="password">密码</string>
     <string name="owncloud_pref">ownCloud</string>
@@ -412,4 +412,9 @@
     <string name="label_select_destination_after_export">选择导出位置</string>
     <string name="label_dropbox_export_destination">导出到Dropbox的 \'/Apps/GnuCash Android/\' 文件夹</string>
     <string name="title_section_preferences">首选项</string>
+    <string name="category_name_appearance" msgid="8287486771764166805">"外观"</string>
+    <string name="settings_screen_theme">"主题"</string>
+    <string name="default_theme" msgid="4815428567082263639">"默认"</string>
+    <string name="light_ui_title">"明亮模式"</string>
+    <string name="dark_ui_title" msgid="3373976268671557416">"深色模式"</string>
 </resources>

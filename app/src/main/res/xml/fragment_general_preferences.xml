@@ -1,21 +1,35 @@
-<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <androidx.preference.PreferenceCategory android:title="@string/title_passcode_preferences">
-        <androidx.preference.SwitchPreference
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory android:title="@string/pref_appearance_title">
+        <ListPreference
+            android:defaultValue="@string/theme_defaultValue"
+            android:dialogIcon="@drawable/ic_palette"
+            android:entries="@array/list_theme_entries"
+            android:entryValues="@array/list_theme_values"
+            android:icon="@drawable/ic_palette"
+            android:key="@string/key_theme"
+            android:title="@string/theme_title"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/title_passcode_preferences">
+        <SwitchPreference
             android:icon="@drawable/ic_lock_open"
             android:key="@string/key_enable_passcode"
             android:title="@string/title_enable_passcode" />
-        <androidx.preference.Preference
+        <Preference
             android:dependency="@string/key_enable_passcode"
             android:icon="@drawable/ic_password"
             android:key="@string/key_change_passcode"
             android:title="@string/title_change_passcode" />
-    </androidx.preference.PreferenceCategory>
+    </PreferenceCategory>
 
-    <androidx.preference.PreferenceCategory android:title="@string/title_report_prefs">
-        <androidx.preference.SwitchPreference
+    <PreferenceCategory android:title="@string/title_report_prefs">
+        <SwitchPreference
             android:icon="@drawable/ic_palette"
             android:key="@string/key_use_account_color"
             android:summary="@string/summary_use_account_color"
             android:title="@string/title_use_account_color" />
-    </androidx.preference.PreferenceCategory>
-</androidx.preference.PreferenceScreen>
+    </PreferenceCategory>
+</PreferenceScreen>

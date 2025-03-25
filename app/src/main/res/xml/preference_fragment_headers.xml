@@ -13,32 +13,32 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:title="@string/title_settings">
-    <androidx.preference.Preference
+    <Preference
         android:icon="@drawable/ic_settings_applications"
         android:key="@string/key_prefs_header_general"
         android:title="@string/header_general_settings"
         app:fragment="org.gnucash.android.ui.settings.GeneralPreferenceFragment" />
-    <androidx.preference.Preference
+    <Preference
         android:icon="@drawable/ic_book"
         android:title="@string/title_manage_books"
         app:fragment="org.gnucash.android.ui.settings.BookManagerFragment" />
-    <androidx.preference.Preference
+    <Preference
         android:icon="@drawable/ic_account"
         android:title="@string/header_account_settings"
         app:fragment="org.gnucash.android.ui.settings.AccountPreferencesFragment" />
-    <androidx.preference.Preference
+    <Preference
         android:icon="@drawable/ic_payments"
         android:title="@string/header_transaction_settings"
         app:fragment="org.gnucash.android.ui.settings.TransactionsPreferenceFragment" />
-    <androidx.preference.Preference
+    <Preference
         android:icon="@drawable/ic_backup"
         android:title="@string/header_backup_and_export_settings"
         app:fragment="org.gnucash.android.ui.settings.BackupPreferenceFragment" />
-    <androidx.preference.Preference
+    <Preference
         android:icon="@drawable/ic_info"
         android:title="@string/header_about_gnucash"
         app:fragment="org.gnucash.android.ui.settings.AboutPreferenceFragment" />
-</androidx.preference.PreferenceScreen>
+</PreferenceScreen>

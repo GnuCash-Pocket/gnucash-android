@@ -252,7 +252,7 @@
     <string name="nav_menu_open">Aç&#8230;</string>
     <string name="nav_menu_reports">Raporlar</string>
     <string name="nav_menu_export">Dışa Aktar&#8230;</string>
-    <string name="nav_menu_settings">Ayarlar</string>
+    <string name="menu_settings" msgid="3524924670246877187">"Ayarlar"</string>
     <string name="username">Kullanıcı Adı</string>
     <string name="password">Parola</string>
     <string name="owncloud_pref">owncloud</string>
@@ -417,4 +417,9 @@
     <string name="label_select_destination_after_export">Dışa aktarma tamamlandığında hedef seçin</string>
     <string name="label_dropbox_export_destination">Dropbox\'ta \'/Apps/GnuCash Android/\' dizinine dışa aktar</string>
     <string name="title_section_preferences">Tercihler</string>
+    <string name="category_name_appearance" msgid="8287486771764166805">"Görünüm"</string>
+    <string name="settings_screen_theme">Tema</string>
+    <string name="default_theme" msgid="4815428567082263639">"Varsayılan"</string>
+    <string name="light_ui_title">"Parlak Mod"</string>
+    <string name="dark_ui_title" msgid="3373976268671557416">"Koyu Mod"</string>
 </resources>
