@@ -26,18 +26,21 @@
 
     <androidx.preference.SwitchPreference
         android:defaultValue="true"
+        android:icon="@drawable/ic_compare_arrows"
         android:key="@string/key_use_double_entry"
         android:summary="@string/summary_use_double_entry"
         android:title="@string/title_use_double_entry" />
 
     <androidx.preference.SwitchPreference
         android:dependency="@string/key_use_double_entry"
+        android:icon="@drawable/ic_compress"
         android:key="@string/key_use_compact_list"
         android:summary="@string/summary_use_compact_list"
         android:title="@string/title_use_compact_list" />
 
     <androidx.preference.SwitchPreference
         android:defaultValue="false"
+        android:icon="@drawable/ic_balance"
         android:key="@string/key_save_opening_balances"
         android:summary="@string/summary_save_opening_balances"
         android:title="@string/title_save_opening_balances" />

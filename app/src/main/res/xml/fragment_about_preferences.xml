@@ -16,15 +16,19 @@
 
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <androidx.preference.Preference
+        android:icon="@drawable/ic_info"
         android:key="@string/key_about_gnucash"
         android:summary="@string/app_version_name"
         android:title="@string/title_about_gnucash" />
-    <androidx.preference.Preference android:title="@string/label_recommend_app">
+    <androidx.preference.Preference
+        android:icon="@drawable/ic_how_to_vote"
+        android:title="@string/label_recommend_app">
         <intent
             android:action="android.intent.action.VIEW"
             android:data="@string/app_playstore_url" />
     </androidx.preference.Preference>
     <androidx.preference.Preference
+        android:icon="@drawable/ic_chat"
         android:summary="@string/summary_discuss"
         android:title="@string/title_discuss">
         <intent
@@ -32,6 +36,7 @@
             android:data="https://github.com/GnuCash-Pocket/gnucash-android/discussions" />
     </androidx.preference.Preference>
     <androidx.preference.Preference
+        android:icon="@drawable/ic_language"
         android:summary="@string/summary_translate_gnucash"
         android:title="@string/title_translate_gnucash">
         <intent
@@ -39,6 +44,7 @@
             android:data="https://crowdin.com/project/gnucash-android" />
     </androidx.preference.Preference>
     <androidx.preference.Preference
+        android:icon="@drawable/ic_approval"
         android:key="@string/key_license"
         android:summary="@string/summary_licence_details"
         android:title="@string/title_license">
@@ -47,6 +53,7 @@
             android:data="http://www.apache.org/licenses/LICENSE-2.0.html" />
     </androidx.preference.Preference>
     <androidx.preference.SwitchPreference
+        android:icon="@drawable/ic_bug_report"
         android:key="@string/key_enable_crashlytics"
         android:summary="@string/msg_enable_crashlytics"
         android:title="@string/title_enable_crashlytics" />
