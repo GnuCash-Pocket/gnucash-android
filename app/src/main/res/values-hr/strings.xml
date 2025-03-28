@@ -248,7 +248,7 @@
     <string name="nav_menu_open">Otvori…</string>
     <string name="nav_menu_reports">Izvještaji</string>
     <string name="nav_menu_export">Izvezi…</string>
-    <string name="nav_menu_settings">Postavke</string>
+    <string name="menu_settings" msgid="3524924670246877187">"Postavke"</string>
     <string name="username">Korisničko ime</string>
     <string name="password">Lozinka</string>
     <string name="owncloud_server_invalid">OC server nije nađen</string>
@@ -318,9 +318,9 @@
     <string name="menu_group_by_year">Godini</string>
     <string name="title_balance_sheet_report">Bilanca</string>
     <string name="label_balance_sheet_total">Ukupno:</string>
-    <string name="title_google_plus_community">Google+ zajednica</string>
+    <string name="title_discuss">GitHub Discussions</string>
     <string name="title_translate_gnucash">Prevedi GnuCash</string>
-    <string name="summary_google_plus">Izmijeni ideje, diskutiraj o promjenama ili prijavi greške</string>
+    <string name="summary_discuss">Share ideas, discuss changes or report problems</string>
     <string name="summary_translate_gnucash">Prevodi ili ispravljaj prijevode na CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">Nema kompatibilne aplikacije za prihvaćanje izvezenih transakcija!</string>
     <string name="menu_move_transaction">Premjesti…</string>
@@ -415,6 +415,11 @@
     <string name="label_select_destination_after_export">Odaberi odredište nakon što izvoz završi.</string>
     <string name="label_dropbox_export_destination">Izvezi u Dropbox mapu pod „/Apps/GnuCash Pocket/„</string>
     <string name="title_section_preferences">Postavke</string>
+    <string name="category_name_appearance" msgid="8287486771764166805">"Izgled"</string>
+    <string name="settings_screen_theme" msgid="2137262503543943871">"Theme"</string>
+    <string name="default_theme" msgid="4815428567082263639">"Zadano"</string>
+    <string name="light_ui_title">"Light Mode"</string>
+    <string name="dark_ui_title" msgid="3373976268671557416">"Tamni način rada"</string>
     <string name="yes_sure">Da, želim</string>
     <string name="summary_export_accounts_csv">Izvezi sva konta (bez transakcija) u CSV</string>
     <string name="title_export_accounts_csv">Izvezi kao CSV</string>
