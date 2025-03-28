@@ -18,6 +18,8 @@ package org.gnucash.android.test.unit.db;
 import static junit.framework.Assert.fail;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import android.content.Context;
+
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
@@ -119,6 +121,7 @@ public class BooksDbAdapterTest extends GnuCashTest {
      */
     @Test
     public void deletingBook_shouldDeleteDbFile() {
+        Context context = GnuCashApplication.getAppContext();
         String bookUID = createNewBookWithDefaultAccounts();
         File dbPath = GnuCashApplication.getAppContext().getDatabasePath(bookUID);
         assertThat(dbPath).exists();
@@ -126,7 +129,7 @@ public class BooksDbAdapterTest extends GnuCashTest {
         assertThat(booksDbAdapter.getRecord(bookUID)).isNotNull();
 
         long booksCount = booksDbAdapter.getRecordsCount();
-        booksDbAdapter.deleteBook(bookUID);
+        booksDbAdapter.deleteBook(context, bookUID);
         assertThat(dbPath).doesNotExist();
         assertThat(booksDbAdapter.getRecordsCount()).isEqualTo(booksCount - 1);
     }

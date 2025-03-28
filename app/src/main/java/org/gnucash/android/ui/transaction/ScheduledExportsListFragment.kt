@@ -90,7 +90,7 @@ class ScheduledExportsListFragment : ScheduledActionsListFragment() {
             super.bind(scheduledAction)
             val context = itemView.context
 
-            val params = ExportParams.parseCsv(scheduledAction.tag)
+            val params = ExportParams.parseTag(scheduledAction.tag)
             var exportDestination = params.exportTarget.description
             if (params.exportTarget == ExportParams.ExportTarget.URI) {
                 exportDestination =

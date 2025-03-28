@@ -11,6 +11,7 @@
     <string name="key_default_transaction_type" translatable="false">default_transaction_type</string>
     <string name="key_export_all_transactions" translatable="false">export_all_transactions</string>
     <string name="key_delete_transactions_after_export" translatable="false">delete_transactions_after_export</string>
+    <string name="key_compress_export" translatable="false">compress_export</string>
     <string name="key_default_export_email" translatable="false">export_email_target</string>
     <string name="key_use_double_entry" translatable="false">use_double_entry</string>
     <string name="key_xml_ofx_header" translatable="false">xml_ofx_header</string>

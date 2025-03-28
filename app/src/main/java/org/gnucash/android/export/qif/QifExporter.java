@@ -40,17 +40,14 @@ import org.gnucash.android.util.TimestampHelper;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -68,7 +65,7 @@ public class QifExporter extends Exporter {
      * Initialize the exporter
      *
      * @param context The context.
-     * @param params Parameters for the export
+     * @param params  Parameters for the export
      * @param bookUID The book UID.
      */
     public QifExporter(@NonNull Context context,
@@ -78,47 +75,64 @@ public class QifExporter extends Exporter {
     }
 
     @Override
-    public List<String> generateExport() throws ExporterException {
+    protected File writeToFile(@NonNull ExportParams exportParams) throws ExporterException, IOException {
+        final boolean isCompressed = exportParams.isCompressed;
+        // Disable compression for files that will be zipped afterwards.
+        exportParams.isCompressed = false;
+        File cacheFile = super.writeToFile(exportParams);
+        exportParams.isCompressed = isCompressed;
+
+        List<File> splitByCurrency = splitByCurrency(cacheFile);
+        if (splitByCurrency.isEmpty()) {
+            return null;
+        }
+        if (isCompressed || (splitByCurrency.size() > 1)) {
+            File zipFile = new File(cacheFile.getPath() + ".zip");
+            return zipQifs(splitByCurrency, zipFile);
+        }
+        return splitByCurrency.get(0);
+    }
+
+    @Override
+    // TODO write each commodity to separate file here, instead of splitting the file afterwards.
+    protected void writeExport(@NonNull ExportParams exportParams, @NonNull Writer writer) throws ExporterException, IOException {
         final String newLine = QifHelper.NEW_LINE;
         TransactionsDbAdapter transactionsDbAdapter = mTransactionsDbAdapter;
         try {
             String startTimeString = Long.toString(mExportParams.getExportStartTime().getTime());
             Cursor cursor = transactionsDbAdapter.fetchTransactionsWithSplitsWithTransactionAccount(
-                    new String[]{
-                            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID + " AS trans_uid",
-                            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " AS trans_time",
-                            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_DESCRIPTION + " AS trans_desc",
-                            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_NOTES + " AS trans_notes",
-                            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_NUM + " AS split_quantity_num",
-                            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_DENOM + " AS split_quantity_denom",
-                            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_TYPE + " AS split_type",
-                            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_MEMO + " AS split_memo",
-                            "trans_extra_info.trans_acct_balance AS trans_acct_balance",
-                            "trans_extra_info.trans_split_count AS trans_split_count",
-                            "account1." + AccountEntry.COLUMN_UID + " AS acct1_uid",
-                            "account1." + AccountEntry.COLUMN_FULL_NAME + " AS acct1_full_name",
-                            "account1." + AccountEntry.COLUMN_CURRENCY + " AS acct1_currency",
-                            "account1." + AccountEntry.COLUMN_TYPE + " AS acct1_type",
-                            AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_FULL_NAME + " AS acct2_full_name"
-                    },
-                    // no recurrence transactions
-                    TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TEMPLATE + " == 0 AND " +
-                            // in qif, split from the one account entry is not recorded (will be auto balanced)
-                            "( " + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID + " != account1." + AccountEntry.COLUMN_UID + " OR " +
-                            // or if the transaction has only one split (the whole transaction would be lost if it is not selected)
-                            "trans_split_count == 1 )" +
-                            (
-                                    " AND " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " >= ?"
-                            ),
-                    new String[]{startTimeString},
-                    // trans_time ASC : put transactions in time order
-                    // trans_uid ASC  : put splits from the same transaction together
-                    "acct1_currency ASC, trans_uid ASC, trans_time ASC"
+                new String[]{
+                    TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID + " AS trans_uid",
+                    TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " AS trans_time",
+                    TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_DESCRIPTION + " AS trans_desc",
+                    TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_NOTES + " AS trans_notes",
+                    SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_NUM + " AS split_quantity_num",
+                    SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_DENOM + " AS split_quantity_denom",
+                    SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_TYPE + " AS split_type",
+                    SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_MEMO + " AS split_memo",
+                    "trans_extra_info.trans_acct_balance AS trans_acct_balance",
+                    "trans_extra_info.trans_split_count AS trans_split_count",
+                    "account1." + AccountEntry.COLUMN_UID + " AS acct1_uid",
+                    "account1." + AccountEntry.COLUMN_FULL_NAME + " AS acct1_full_name",
+                    "account1." + AccountEntry.COLUMN_CURRENCY + " AS acct1_currency",
+                    "account1." + AccountEntry.COLUMN_TYPE + " AS acct1_type",
+                    AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_FULL_NAME + " AS acct2_full_name"
+                },
+                // no recurrence transactions
+                TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TEMPLATE + " == 0 AND " +
+                    // in qif, split from the one account entry is not recorded (will be auto balanced)
+                    "( " + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID + " != account1." + AccountEntry.COLUMN_UID + " OR " +
+                    // or if the transaction has only one split (the whole transaction would be lost if it is not selected)
+                    "trans_split_count == 1 )" +
+                    (
+                        " AND " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " >= ?"
+                    ),
+                new String[]{startTimeString},
+                // trans_time ASC : put transactions in time order
+                // trans_uid ASC  : put splits from the same transaction together
+                "acct1_currency ASC, trans_uid ASC, trans_time ASC"
             );
 
-            // TODO write each commodity to separate file here, instead of splitting the file afterwards.
-            File file = new File(getExportCacheFilePath());
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8));
             DecimalFormat quantityFormatter = (DecimalFormat) NumberFormat.getNumberInstance(Locale.ROOT);
             quantityFormatter.setGroupingUsed(false);
             Map<String, Commodity> commodities = new HashMap<>();
@@ -148,44 +162,44 @@ public class QifExporter extends Exporter {
                             if (!currencyCode.equals(currentCurrencyCode)) {
                                 currentCurrencyCode = currencyCode;
                                 writer.append(QifHelper.INTERNAL_CURRENCY_PREFIX)
-                                        .append(currencyCode)
-                                        .append(newLine);
+                                    .append(currencyCode)
+                                    .append(newLine);
                             }
                             // start new account
                             currentAccountUID = accountUID;
                             writer.append(QifHelper.ACCOUNT_HEADER).append(newLine);
                             writer.append(QifHelper.ACCOUNT_NAME_PREFIX)
-                                    .append(cursor.getString(cursor.getColumnIndexOrThrow("acct1_full_name")))
-                                    .append(newLine);
+                                .append(cursor.getString(cursor.getColumnIndexOrThrow("acct1_full_name")))
+                                .append(newLine);
                             writer.append(QifHelper.ENTRY_TERMINATOR).append(newLine);
                             writer.append(QifHelper.getQifHeader(cursor.getString(cursor.getColumnIndexOrThrow("acct1_type"))))
-                                    .append(newLine);
+                                .append(newLine);
                         }
                         // start new transaction
                         currentTransactionUID = transactionUID;
                         writer.append(QifHelper.DATE_PREFIX)
-                                .append(QifHelper.formatDate(cursor.getLong(cursor.getColumnIndexOrThrow("trans_time"))))
-                                .append(newLine);
+                            .append(QifHelper.formatDate(cursor.getLong(cursor.getColumnIndexOrThrow("trans_time"))))
+                            .append(newLine);
                         // Payee / description
                         writer.append(QifHelper.PAYEE_PREFIX)
-                                .append(cursor.getString(cursor.getColumnIndexOrThrow("trans_desc")))
-                                .append(newLine);
+                            .append(cursor.getString(cursor.getColumnIndexOrThrow("trans_desc")))
+                            .append(newLine);
                         // Notes, memo
                         writer.append(QifHelper.MEMO_PREFIX)
-                                .append(cursor.getString(cursor.getColumnIndexOrThrow("trans_notes")))
-                                .append(newLine);
+                            .append(cursor.getString(cursor.getColumnIndexOrThrow("trans_notes")))
+                            .append(newLine);
                         // deal with imbalance first
                         double imbalance = cursor.getDouble(cursor.getColumnIndexOrThrow("trans_acct_balance"));
                         BigDecimal decimalImbalance = BigDecimal.valueOf(imbalance).setScale(2, BigDecimal.ROUND_HALF_UP);
                         if (decimalImbalance.compareTo(BigDecimal.ZERO) != 0) {
                             writer.append(QifHelper.SPLIT_CATEGORY_PREFIX)
-                                    .append(AccountsDbAdapter.getImbalanceAccountName(
-                                            Commodity.getInstance(cursor.getString(cursor.getColumnIndexOrThrow("acct1_currency")))
-                                    ))
-                                    .append(newLine);
+                                .append(AccountsDbAdapter.getImbalanceAccountName(
+                                    Commodity.getInstance(cursor.getString(cursor.getColumnIndexOrThrow("acct1_currency")))
+                                ))
+                                .append(newLine);
                             writer.append(QifHelper.SPLIT_AMOUNT_PREFIX)
-                                    .append(decimalImbalance.toPlainString())
-                                    .append(newLine);
+                                .append(decimalImbalance.toPlainString())
+                                .append(newLine);
                         }
                     }
                     if (cursor.getInt(cursor.getColumnIndexOrThrow("trans_split_count")) == 1) {
@@ -196,22 +210,22 @@ public class QifExporter extends Exporter {
                     // amount associated with the header account will not be exported.
                     // It can be auto balanced when importing to GnuCash
                     writer.append(QifHelper.SPLIT_CATEGORY_PREFIX)
-                            .append(cursor.getString(cursor.getColumnIndexOrThrow("acct2_full_name")))
-                            .append(newLine);
+                        .append(cursor.getString(cursor.getColumnIndexOrThrow("acct2_full_name")))
+                        .append(newLine);
                     String splitMemo = cursor.getString(cursor.getColumnIndexOrThrow("split_memo"));
                     if (splitMemo != null && !splitMemo.isEmpty()) {
                         writer.append(QifHelper.SPLIT_MEMO_PREFIX)
-                                .append(splitMemo)
-                                .append(newLine);
+                            .append(splitMemo)
+                            .append(newLine);
                     }
                     String splitType = cursor.getString(cursor.getColumnIndexOrThrow("split_type"));
                     double quantity_num = cursor.getDouble(cursor.getColumnIndexOrThrow("split_quantity_num"));
                     double quantity_denom = cursor.getDouble(cursor.getColumnIndexOrThrow("split_quantity_denom"));
                     double quantity = (quantity_denom != 0) ? (quantity_num / quantity_denom) : 0.0;
                     writer.append(QifHelper.SPLIT_AMOUNT_PREFIX)
-                            .append(splitType.equals(TransactionType.DEBIT.value) ? "-" : "")
-                            .append(quantityFormatter.format(quantity))
-                            .append(newLine);
+                        .append(splitType.equals(TransactionType.DEBIT.value) ? "-" : "")
+                        .append(quantityFormatter.format(quantity))
+                        .append(newLine);
                 }
                 if (!TextUtils.isEmpty(currentTransactionUID)) {
                     // end last transaction
@@ -229,38 +243,29 @@ public class QifExporter extends Exporter {
 
             /// export successful
             PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow());
-            close();
-
-            List<String> exportedFiles = splitQIF(file);
-            if (exportedFiles.isEmpty())
-                return Collections.emptyList();
-            else if (exportedFiles.size() > 1)
-                return zipQifs(exportedFiles);
-            else
-                return exportedFiles;
         } catch (IOException e) {
-            throw new ExporterException(mExportParams, e);
+            throw new ExporterException(exportParams, e);
         }
     }
 
     @NonNull
-    private List<String> zipQifs(List<String> exportedFiles) throws IOException {
-        String zipFileName = getExportCacheFilePath() + ".zip";
-        FileUtils.zipFiles(exportedFiles, zipFileName);
-        return Collections.singletonList(zipFileName);
+    private File zipQifs(List<File> exportedFiles, File zipFile) throws IOException {
+        FileUtils.zipFiles(exportedFiles, zipFile);
+        return zipFile;
     }
 
     /**
-     * Splits a Qif file into several ones for each currency.
+     * Splits a QIF file into several ones for each currency.
      *
-     * @param file File object of the Qif file to split.
+     * @param file File of the QIF file to split.
      * @return a list of paths of the newly created Qif files.
      * @throws IOException if something went wrong while splitting the file.
      */
-    private List<String> splitQIF(File file) throws IOException {
+    private List<File> splitByCurrency(File file) throws IOException {
         // split only at the last dot
-        String[] pathParts = file.getPath().split("(?=\\.[^\\.]+$)");
-        List<String> splitFiles = new ArrayList<>();
+        String path = file.getPath();
+        String[] pathParts = path.split("(?=\\.[^\\.]+$)");
+        List<File> splitFiles = new ArrayList<>();
         String line;
         BufferedReader in = new BufferedReader(new FileReader(file));
         BufferedWriter out = null;
@@ -272,11 +277,12 @@ public class QifExporter extends Exporter {
                         out.close();
                     }
                     String newFileName = pathParts[0] + "_" + currencyCode + pathParts[1];
-                    splitFiles.add(newFileName);
-                    out = new BufferedWriter(new FileWriter(newFileName));
+                    File splitFile = new File(newFileName);
+                    splitFiles.add(splitFile);
+                    out = new BufferedWriter(new FileWriter(splitFile));
                 } else {
                     if (out == null) {
-                        throw new IllegalArgumentException(file.getPath() + " format is not correct");
+                        throw new IllegalArgumentException(path + " format is not correct");
                     }
                     out.append(line).append(QifHelper.NEW_LINE);
                 }
