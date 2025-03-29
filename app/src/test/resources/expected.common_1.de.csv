@@ -1,0 +1,7 @@
+"Datum","BuchungsID","Nummer","Beschreibung","Bemerkungen","Währung/Wertpapier","Stornierungsbegründung","Aktion","Buchungstext","Volle Kontobezeichnung","Kontobezeichnung","Wert mit Symbol","Wert numerisch.","Wert mit Symbol","Wert numerisch.","Abgleichen","Datum des Abgleichs","Kurs/Preis"
+"2025-03-27","ca215bd292094eae8267d4cba5e6a0f1","","Amazon","hardcover","CURRENCY::USD","","","","Assets:Current Assets:Cash in Wallet","Cash in Wallet","-123,45 $","-123,45","-123,45 $","-123,45","n","","1,0000"
+"2025-03-27","ca215bd292094eae8267d4cba5e6a0f1","","Amazon","hardcover","CURRENCY::USD","","","bible","Expenses:Books","Books","123,45 $","123,45","123,45 $","123,45","n","","1,0000"
+"2025-03-27","8cd6e083bef74250b0aa3049f7e81084","","Verizon","","CURRENCY::USD","","","","Assets:Current Assets:Euro Wallet","Euro Wallet","-930,00 €","-930,00","-1.000,00 $","-1000,00","n","","1 + 7/93"
+"2025-03-27","8cd6e083bef74250b0aa3049f7e81084","","Verizon","","CURRENCY::USD","","","Android smartphone","Expenses:Phone","Phone","1.000,00 $","1000,00","1.000,00 $","1000,00","n","","1,0000"
+"2025-03-31","46b64b7d40194fbb8270892c171d7c93","","mom","","CURRENCY::USD","","","","Assets:Current Assets:Japan Wallet","Japan Wallet","133.253 JP¥","133253","888,00 $","888,00","n","","888/133253"
+"2025-03-31","46b64b7d40194fbb8270892c171d7c93","","mom","","CURRENCY::USD","","","","Income:Gifts Received","Gifts Received","-888,00 $","-888,00","-888,00 $","-888,00","n","","1,0000"

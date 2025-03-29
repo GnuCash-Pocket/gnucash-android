@@ -44,9 +44,16 @@ public class DisableAnimationsRule implements TestRule {
                     fd;
                     is
             ) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // https://stackoverflow.com/a/75837274/2249464
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // https://stackoverflow.com/a/75837274/2249464
                     String commandOutput = new String(is.readAllBytes());
                     Timber.d(commandOutput);
+                } else {
+                    StringBuilder commandOutput = new StringBuilder();
+                    int i;
+                    while ((i = is.read()) != -1) {
+                        commandOutput.append(i);
+                    }
+                    Timber.d(commandOutput.toString());
                 }
             }
         }

@@ -20,7 +20,8 @@
     <string name="description_add_transaction_icon">新規の取引を入力</string>
     <string name="description_view_account_icon">勘定の詳細を表示</string>
     <string name="label_no_accounts">表示する勘定科目がありません</string>
-    <string name="label_account_name">勘定科目名</string>
+    <!-- msgid "Account Name" -->
+    <string name="account_name">勘定科目名</string>
     <string name="btn_save">上書き保存</string>
     <string name="btn_test">テスト</string>
     <string name="label_passcode">パスコードを入力</string>
@@ -28,7 +29,7 @@
     <string name="toast_passcode_set">パスコード設定</string>
     <string name="label_confirm_passcode">パスコードを設定してください</string>
     <string name="toast_invalid_passcode_confirmation">無効なパスコードです。もう一度やり直してください</string>
-    <string name="label_transaction_name">詳細</string>
+    <string name="description">説明</string>
     <string name="label_transaction_amount">合計</string>
     <string name="title_add_transaction">新規取引</string>
     <string name="label_no_transactions">表示する取引がありません</string>
@@ -134,7 +135,8 @@
     <string name="title_progress_exporting_transactions">取引のエクスポート</string>
     <string name="label_no_recurring_transactions">表示する繰り返し取引がありません</string>
     <string name="toast_recurring_transaction_deleted">繰り返し取引は削除されました</string>
-    <string name="label_placeholder_account">代替の勘定科目</string>
+    <!-- msgid "Placeholder" -->
+    <string name="placeholder">プレースホルダー</string>
     <string name="label_default_transfer_account">デフォルトの転送先</string>
     <plurals name="label_sub_accounts">
         <item quantity="other">%d件の補助科目</item>
@@ -420,41 +422,54 @@
     <string name="label_csv_separator">区切り</string>
     <string name="export_notice_csv">取引を CSV としてエクスポート</string>
     <string name="no_books">No books in the database</string>
-    <!-- Copied from "csv-transactions-export.cpp" -->
-    <string-array name="csv_transaction_headers">
-        <item>日付</item>
-        <item>取引ID</item>
-        <item>数</item>
-        <item>詳細</item>
-        <item>メモ</item>
-        <item>商品/通貨</item>
-        <item>無効理由</item>
-        <item>アクション</item>
-        <item>メモ</item>
-        <item>完全な勘定科目名</item>
-        <item>勘定科目名</item>
-        <item>記号付き金額</item>
-        <item>金額</item>
-        <item>Value With Sym</item>
-        <item>Value Num.</item>
-        <item>照合</item>
-        <item>照合日</item>
-        <item>レート/価格</item>
-    </string-array>
-    <string-array name="csv_account_headers">
-        <item>種類</item>
-        <item>詳細な名前</item>
-        <item>名前</item>
-        <item>コード</item>
-        <item>詳細</item>
-        <item>色</item>
-        <item>メモ</item>
-        <item>商品記号</item>
-        <item>商品名</item>
-        <item>非表示</item>
-        <item>税</item>
-        <item>プレースホルダー</item>
-    </string-array>
+    <!-- msgid "Date" -->
+    <string name="csv_transaction_header_date">日付</string>
+    <!-- msgid "Transaction ID" -->
+    <string name="csv_transaction_header_id">取引 ID</string>
+    <!-- msgid "Number" -->
+    <string name="csv_transaction_header_number">番号</string>
+    <!-- msgid "Notes" -->
+    <string name="csv_transaction_header_notes">備考</string>
+    <!-- msgid "Commodity/Currency" -->
+    <string name="csv_transaction_header_commodity">商品・通貨</string>
+    <!-- msgid "Void Reason" -->
+    <string name="csv_transaction_header_void">無効理由</string>
+    <!-- msgid "Action" -->
+    <string name="csv_transaction_header_action">アクション</string>
+    <!-- msgid "Memo" -->
+    <string name="csv_transaction_header_memo">摘要</string>
+    <!-- msgid "Amount With Sym" -->
+    <string name="csv_transaction_header_amount_sym">記号付き金額</string>
+    <!-- msgid "Amount Num." -->
+    <string name="csv_transaction_header_amount">金額数値</string>
+    <!-- msgid "Value With Sym" -->
+    <string name="csv_transaction_header_value_sym">記号付き金額</string>
+    <!-- msgid "Value Num." -->
+    <string name="csv_transaction_header_value">金額</string>
+    <!-- msgid "Reconcile" -->
+    <string name="csv_transaction_header_reconcile">照合</string>
+    <!-- msgid "Reconcile Date" -->
+    <string name="csv_transaction_header_reconcile_date">照合日</string>
+    <!-- msgid "Rate/Price" -->
+    <string name="csv_transaction_header_rate">レート/金額</string>
+    <!-- msgid "Type" -->
+    <string name="type">タイプ</string>
+    <!-- msgid "Full Account Name" -->
+    <string name="csv_account_header_account_full_name">フルアカウント名</string>
+    <!-- msgid "Account Code" -->
+    <string name="account_code">勘定科目コード</string>
+    <!-- msgid "Account Color" -->
+    <string name="account_color">勘定科目色</string>
+    <!-- msgid "Notes" -->
+    <string name="notes">備考</string>
+    <!-- msgid "Symbol" -->
+    <string name="csv_account_header_symbol">記号</string>
+    <!-- msgid "Namespace" -->
+    <string name="csv_account_header_namespace">名前空間</string>
+    <!-- msgid "Hidden" -->
+    <string name="hidden">隠れた</string>
+    <!-- msgid "Tax Info" -->
+    <string name="csv_account_header_tax">税金情報</string>
     <string name="title_edit_budget">Edit Budget</string>
     <string name="title_delete_transaction_backup">When delete transaction?</string>
     <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>

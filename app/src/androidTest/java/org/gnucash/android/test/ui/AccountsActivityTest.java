@@ -32,7 +32,6 @@ import static androidx.test.espresso.matcher.ViewMatchers.isChecked;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
 import static androidx.test.espresso.matcher.ViewMatchers.isNotChecked;
-import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withParent;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
@@ -51,16 +50,12 @@ import android.preference.PreferenceManager;
 import android.view.View;
 
 import androidx.test.espresso.Espresso;
-import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.rule.ActivityTestRule;
 import androidx.test.rule.GrantPermissionRule;
-
-import com.kobakei.ratethisapp.RateThisApp;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
@@ -73,6 +68,7 @@ import org.gnucash.android.model.Transaction;
 import org.gnucash.android.receivers.AccountCreator;
 import org.gnucash.android.test.ui.util.DisableAnimationsRule;
 import org.gnucash.android.ui.account.AccountsActivity;
+import org.gnucash.android.ui.adapter.AccountTypesAdapter;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -119,11 +115,10 @@ public class AccountsActivityTest extends GnuAndroidTest {
         Context context = GnuCashApplication.getAppContext();
         preventFirstRunDialogs(context);
 
-        mSplitsDbAdapter = SplitsDbAdapter.getInstance();
-        mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-        CommoditiesDbAdapter commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
-        assertThat(commoditiesDbAdapter.isOpen()).isTrue();
+        mTransactionsDbAdapter = mAccountsDbAdapter.transactionsDbAdapter;
+        mSplitsDbAdapter = mTransactionsDbAdapter.splitsDbAdapter;
+        assertThat(mAccountsDbAdapter.isOpen()).isTrue();
     }
 
     @Before
@@ -140,20 +135,6 @@ public class AccountsActivityTest extends GnuAndroidTest {
         refreshAccountsList();
     }
 
-
-    /**
-     * Prevents the first-run dialogs (Whats new, Create accounts etc) from being displayed when testing
-     *
-     * @param context Application context
-     */
-    public static void preventFirstRunDialogs(Context context) {
-        AccountsActivity.rateAppConfig = new RateThisApp.Config(10000, 10000);
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-            //do not show first run dialog
-            .putBoolean(context.getString(R.string.key_first_run), false)
-            .putInt(AccountsActivity.LAST_OPEN_TAB_INDEX, AccountsActivity.INDEX_TOP_LEVEL_ACCOUNTS_FRAGMENT)
-            .apply();
-    }
 
     public void testDisplayAccountsList() {
         AccountsActivity.createDefaultAccounts(mAccountsActivity, "EUR");
@@ -174,16 +155,20 @@ public class AccountsActivityTest extends GnuAndroidTest {
         account.setParentUID(SIMPLE_ACCOUNT_UID);
         mAccountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert);
 
+        // before search query
         onView(withText(SIMPLE_ACCOUNT_NAME)).check(matches(isDisplayed()));
         onView(withText(SEARCH_ACCOUNT_NAME)).check(doesNotExist());
 
         //enter search query
         onView(withId(R.id.menu_search)).perform(click());
-        onView(withId(R.id.search_src_text)).perform(typeText("Se"));
+        onView(withId(R.id.search_src_text)).perform(typeText(SEARCH_ACCOUNT_NAME.substring(0, 2)));
+        sleep(100); //give search filter time to finish
         onView(withText(SIMPLE_ACCOUNT_NAME)).check(doesNotExist());
         onView(withText(SEARCH_ACCOUNT_NAME)).check(matches(isDisplayed()));
 
+        // same as before search query
         onView(withId(R.id.search_src_text)).perform(clearText());
+        sleep(100); //give search filter time to finish
         onView(withText(SIMPLE_ACCOUNT_NAME)).check(matches(isDisplayed()));
         onView(withText(SEARCH_ACCOUNT_NAME)).check(doesNotExist());
     }
@@ -199,9 +184,9 @@ public class AccountsActivityTest extends GnuAndroidTest {
         String NEW_ACCOUNT_NAME = "A New Account";
         onView(withId(R.id.input_account_name)).perform(typeText(NEW_ACCOUNT_NAME), closeSoftKeyboard());
         sleep(1000);
-        onView(withId(R.id.checkbox_placeholder_account))
-                .check(matches(isNotChecked()))
-                .perform(click());
+        onView(withId(R.id.placeholder_status))
+            .check(matches(isNotChecked()))
+            .perform(click());
 
         onView(withId(R.id.menu_save)).perform(click());
 
@@ -225,8 +210,6 @@ public class AccountsActivityTest extends GnuAndroidTest {
 
         refreshAccountsList();
 
-        List<Transaction> trxns = mTransactionsDbAdapter.getAllTransactions();
-
         onView(first(withText(containsString("4.15")))).check(matches(isDisplayed()));
     }
 
@@ -244,8 +227,8 @@ public class AccountsActivityTest extends GnuAndroidTest {
         onView(withId(R.id.fragment_account_form)).check(matches(isDisplayed()));
         Espresso.closeSoftKeyboard();
         onView(withId(R.id.checkbox_parent_account)).perform(scrollTo())
-                .check(matches(isNotChecked()))
-                .perform(click());
+            .check(matches(isNotChecked()))
+            .perform(click());
         // FIXME: explicitly select the parent account
 
         onView(withId(R.id.input_parent_account)).check(matches(isEnabled())).perform(click());
@@ -268,6 +251,10 @@ public class AccountsActivityTest extends GnuAndroidTest {
      */
     @Test
     public void shouldHideParentAccountViewWhenNoParentsExist() {
+        Context context = GnuCashApplication.getAppContext();
+        String textTrading = context.getResources().getStringArray(R.array.account_type_entry_values)[AccountType.TRADING.labelIndex];
+        AccountTypesAdapter.Label labelTrading = new AccountTypesAdapter.Label(AccountType.TRADING, textTrading);
+
         onView(allOf(withText(SIMPLE_ACCOUNT_NAME), isDisplayed())).perform(click());
         onView(withId(R.id.fragment_transaction_list)).perform(swipeRight());
         onView(withId(R.id.fab_create_transaction)).check(matches(isDisplayed())).perform(click());
@@ -275,15 +262,15 @@ public class AccountsActivityTest extends GnuAndroidTest {
         onView(withId(R.id.checkbox_parent_account)).check(matches(allOf(isChecked())));
         onView(withId(R.id.input_account_name)).perform(typeText("Trading account"));
         Espresso.closeSoftKeyboard();
-        onView(withId(R.id.layout_parent_account)).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)));
+        onView(withId(R.id.input_parent_account)).check(matches(isDisplayed()));
+        onView(withId(R.id.checkbox_parent_account)).check(matches(isDisplayed()));
 
         onView(withId(R.id.input_account_type_spinner)).perform(click());
 
-        onData(allOf(is(instanceOf(String.class)), is(AccountType.TRADING.name()))).perform(click());
+        onData(allOf(is(instanceOf(AccountTypesAdapter.Label.class)), is(labelTrading))).perform(click());
 
-
-        onView(withId(R.id.layout_parent_account)).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.GONE)));
-        onView(withId(R.id.layout_parent_account)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.input_parent_account)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.checkbox_parent_account)).check(matches(not(isDisplayed())));
 
         onView(withId(R.id.menu_save)).perform(click());
         sleep(1000);
@@ -318,8 +305,8 @@ public class AccountsActivityTest extends GnuAndroidTest {
     @Test
     public void editingAccountShouldNotDeleteTransactions() {
         onView(allOf(withParent(hasDescendant(withText(SIMPLE_ACCOUNT_NAME))),
-                withId(R.id.options_menu),
-                isDisplayed())).perform(click());
+            withId(R.id.options_menu),
+            isDisplayed())).perform(click());
 
         Account account = new Account("Transfer Account");
         account.setCommodity(ACCOUNTS_CURRENCY);
@@ -331,13 +318,14 @@ public class AccountsActivityTest extends GnuAndroidTest {
         account.addTransaction(transaction);
         mAccountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert);
 
-        assertThat(mAccountsDbAdapter.getRecord(SIMPLE_ACCOUNT_UID).getTransactionCount()).isEqualTo(1);
+        assertThat(mAccountsDbAdapter.getTransactionCount(account.getUID())).isEqualTo(1);
+        assertThat(mAccountsDbAdapter.getTransactionCount(SIMPLE_ACCOUNT_UID)).isEqualTo(1);
         assertThat(mSplitsDbAdapter.getSplitsForTransaction(transaction.getUID())).hasSize(2);
 
         onView(withText(R.string.title_edit_account)).perform(click());
 
         onView(withId(R.id.menu_save)).perform(click());
-        assertThat(mAccountsDbAdapter.getRecord(SIMPLE_ACCOUNT_UID).getTransactionCount()).isEqualTo(1);
+        assertThat(mAccountsDbAdapter.getTransactionCount(SIMPLE_ACCOUNT_UID)).isEqualTo(1);
         assertThat(mSplitsDbAdapter.fetchSplitsForAccount(SIMPLE_ACCOUNT_UID).getCount()).isEqualTo(1);
         assertThat(mSplitsDbAdapter.getSplitsForTransaction(transaction.getUID())).hasSize(2);
 
@@ -347,7 +335,7 @@ public class AccountsActivityTest extends GnuAndroidTest {
         refreshAccountsList();
         assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(2);
         onView(allOf(withParent(hasDescendant(withText(SIMPLE_ACCOUNT_NAME))),
-                withId(R.id.options_menu))).perform(click());
+            withId(R.id.options_menu))).perform(click());
 
         onView(withText(R.string.title_delete_account)).perform(click());
 
@@ -368,11 +356,11 @@ public class AccountsActivityTest extends GnuAndroidTest {
         refreshAccountsList();
 
         onView(allOf(withParent(hasDescendant(withText(SIMPLE_ACCOUNT_NAME))),
-                withId(R.id.options_menu))).perform(click());
+            withId(R.id.options_menu))).perform(click());
         onView(withText(R.string.title_delete_account)).perform(click());
 
         onView(allOf(withParent(withId(R.id.accounts_options)),
-                withId(R.id.radio_delete))).perform(click());
+            withId(R.id.radio_delete))).perform(click());
         onView(withText(R.string.alert_dialog_ok_delete)).perform(click());
 
         assertThat(accountExists(SIMPLE_ACCOUNT_UID)).isFalse();
@@ -394,12 +382,12 @@ public class AccountsActivityTest extends GnuAndroidTest {
         refreshAccountsList();
 
         onView(allOf(withParent(hasDescendant(withText(SIMPLE_ACCOUNT_NAME))),
-                withId(R.id.options_menu))).perform(click());
+            withId(R.id.options_menu))).perform(click());
         onView(withText(R.string.title_delete_account)).perform(click());
 
         //// FIXME: 17.08.2016 This enabled check fails during some test runs - not reliable, investigate why
         onView(allOf(withParent(withId(R.id.accounts_options)),
-                withId(R.id.radio_move))).check(matches(isEnabled())).perform(click());
+            withId(R.id.radio_move))).check(matches(isEnabled())).perform(click());
 
         onView(withText(R.string.alert_dialog_ok_delete)).perform(click());
 
@@ -450,7 +438,7 @@ public class AccountsActivityTest extends GnuAndroidTest {
     @Test
     public void shouldShowWizardOnFirstRun() throws Throwable {
         Editor editor = PreferenceManager.getDefaultSharedPreferences(mAccountsActivity)
-                .edit();
+            .edit();
         //commit for immediate effect
         editor.remove(mAccountsActivity.getString(R.string.key_first_run)).commit();
 
@@ -464,7 +452,7 @@ public class AccountsActivityTest extends GnuAndroidTest {
 
         //check that wizard is shown
         onView(withText(mAccountsActivity.getString(R.string.title_setup_gnucash)))
-                .check(matches(isDisplayed()));
+            .check(matches(isDisplayed()));
 
         editor.putBoolean(mAccountsActivity.getString(R.string.key_first_run), false).apply();
     }

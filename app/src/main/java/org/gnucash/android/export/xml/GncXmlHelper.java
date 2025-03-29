@@ -168,6 +168,7 @@ public abstract class GncXmlHelper {
     public static final String KEY_PLACEHOLDER = "placeholder";
     public static final String KEY_COLOR = "color";
     public static final String KEY_FAVORITE = "favorite";
+    public static final String KEY_HIDDEN = "hidden";
     public static final String KEY_NOTES = "notes";
     public static final String KEY_EXPORTED = "exported";
     public static final String KEY_SCHED_XACTION = "sched-xaction";
@@ -253,11 +254,7 @@ public abstract class GncXmlHelper {
      * @throws ParseException if the date string could not be parsed e.g. because of different format
      */
     public static long parseDate(String dateString) throws ParseException {
-        try {
-            return DATE_FORMATTER.parseMillis(dateString);
-        } catch (IllegalArgumentException e) {
-            throw new ParseException(e.getMessage(), 0);
-        }
+        return DATE_FORMATTER.parseMillis(dateString);
     }
 
     /**
@@ -268,11 +265,7 @@ public abstract class GncXmlHelper {
      * @throws ParseException if the date string could not be parsed e.g. because of different format
      */
     public static long parseDateTime(String dateString) throws ParseException {
-        try {
-            return TIME_FORMATTER.parseMillis(dateString);
-        } catch (IllegalArgumentException e) {
-            throw new ParseException(e.getMessage(), 0);
-        }
+        return TIME_FORMATTER.parseMillis(dateString);
     }
 
     /**

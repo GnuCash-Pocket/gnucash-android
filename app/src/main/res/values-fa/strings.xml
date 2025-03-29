@@ -20,7 +20,8 @@
     <string name="description_add_transaction_icon">افزودن معامله جدید به یک حساب</string>
     <string name="description_view_account_icon">نمایش اطلاعات حساب</string>
     <string name="label_no_accounts">هیچ حسابی برای نمایش وجود ندارد</string>
-    <string name="label_account_name">نام حساب</string>
+    <!-- msgid "Account Name" -->
+    <string name="account_name">نام حساب</string>
     <string name="btn_save">ذخیره</string>
     <string name="btn_test">آزمایش</string>
     <string name="label_passcode">رمز عبور را وارد کنید</string>
@@ -28,7 +29,7 @@
     <string name="toast_passcode_set">زدن رمز عبور</string>
     <string name="label_confirm_passcode">لطفا رمز عبورخود را تایید کنید</string>
     <string name="toast_invalid_passcode_confirmation">تایید رمز عبور نامعتبر. لطفا دوباره امتحان کنید</string>
-    <string name="label_transaction_name">شرح</string>
+    <string name="description">شرح</string>
     <string name="label_transaction_amount">مبلغ</string>
     <string name="title_add_transaction">معامله جدید</string>
     <string name="label_no_transactions">هیچ معامله ای برای نشان دادن وجود ندارد</string>
@@ -134,7 +135,8 @@
     <string name="title_progress_exporting_transactions">در حال صدور معاملات</string>
     <string name="label_no_recurring_transactions">معامله برگشتی برای نمایش وجود ندارد.</string>
     <string name="toast_recurring_transaction_deleted">معامله برگشتی با موفقیت حذف شد</string>
-    <string name="label_placeholder_account">جا نگهدارنده حساب</string>
+    <!-- msgid "Placeholder" -->
+    <string name="placeholder">پذیرانه</string>
     <string name="label_default_transfer_account">حساب پیش فرض انتقال</string>
     <plurals name="label_sub_accounts">
         <item quantity="one">%d حساب فرعی</item>
@@ -423,41 +425,54 @@
     <string name="label_csv_separator">Separator</string>
     <string name="export_notice_csv">Exports transactions as CSV</string>
     <string name="no_books">No books in the database</string>
-    <!-- Copied from "csv-transactions-export.cpp" -->
-    <string-array name="csv_transaction_headers">
-        <item>Date</item>
-        <item>Transaction ID</item>
-        <item>Number</item>
-        <item>Description</item>
-        <item>Notes</item>
-        <item>Commodity/Currency</item>
-        <item>Void Reason</item>
-        <item>Action</item>
-        <item>Memo</item>
-        <item>Full Account Name</item>
-        <item>Account Name</item>
-        <item>Amount With Sym</item>
-        <item>Amount Num.</item>
-        <item>Value With Sym</item>
-        <item>Value Num.</item>
-        <item>Reconcile</item>
-        <item>Reconcile Date</item>
-        <item>Rate/Price</item>
-    </string-array>
-    <string-array name="csv_account_headers">
-        <item>Type</item>
-        <item>Full Name</item>
-        <item>Name</item>
-        <item>Code</item>
-        <item>Description</item>
-        <item>Color</item>
-        <item>Notes</item>
-        <item>Commoditym</item>
-        <item>Commodityn</item>
-        <item>Hidden</item>
-        <item>Tax</item>
-        <item>Placeholder</item>
-    </string-array>
+    <!-- msgid "Date" -->
+    <string name="csv_transaction_header_date">تاریخ</string>
+    <!-- msgid "Transaction ID" -->
+    <string name="csv_transaction_header_id">تراکنش</string>
+    <!-- msgid "Number" -->
+    <string name="csv_transaction_header_number">شماره</string>
+    <!-- msgid "Notes" -->
+    <string name="csv_transaction_header_notes">یادداشت‌ها</string>
+    <!-- msgid "Commodity/Currency" -->
+    <string name="csv_transaction_header_commodity">کارز رایج</string>
+    <!-- msgid "Void Reason" -->
+    <string name="csv_transaction_header_void">دلیل ابطال</string>
+    <!-- msgid "Action" -->
+    <string name="csv_transaction_header_action">عمل</string>
+    <!-- msgid "Memo" -->
+    <string name="csv_transaction_header_memo">تذکاریه</string>
+    <!-- msgid "Amount With Sym" -->
+    <!-- msgid "Amount Num." -->
+    <string name="csv_transaction_header_amount_sym">مبلغ با نماد</string>
+    <string name="csv_transaction_header_amount">مبلغ مورد انتظار</string>
+    <!-- msgid "Value With Sym" -->
+    <string name="csv_transaction_header_value_sym">مقدار با نماد</string>
+    <!-- msgid "Value Num." -->
+    <string name="csv_transaction_header_value">مقدار</string>
+    <!-- msgid "Reconcile" -->
+    <string name="csv_transaction_header_reconcile">مغایرت‌گیری</string>
+    <!-- msgid "Reconcile Date" -->
+    <string name="csv_transaction_header_reconcile_date">تاریخ تطبیق</string>
+    <!-- msgid "Rate/Price" -->
+    <string name="csv_transaction_header_rate">قیمت کل</string>
+    <!-- msgid "Type" -->
+    <string name="type">نوع</string>
+    <!-- msgid "Full Account Name" -->
+    <string name="csv_account_header_account_full_name">نام کامل حساب</string>
+    <!-- msgid "Account Code" -->
+    <string name="account_code">کد حساب</string>
+    <!-- msgid "Account Color" -->
+    <string name="account_color">رنگ حساب</string>
+    <!-- msgid "Notes" -->
+    <string name="notes">یادداشت‌ها</string>
+    <!-- msgid "Symbol" -->
+    <string name="csv_account_header_symbol">نماد</string>
+    <!-- msgid "Namespace" -->
+    <string name="csv_account_header_namespace">فضانام</string>
+    <!-- msgid "Hidden" -->
+    <string name="hidden">مخفی</string>
+    <!-- msgid "Tax Info" -->
+    <string name="csv_account_header_tax">اطلاعات مالیات</string>
     <string name="title_edit_budget">Edit Budget</string>
     <string name="title_delete_transaction_backup">When delete transaction?</string>
     <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>

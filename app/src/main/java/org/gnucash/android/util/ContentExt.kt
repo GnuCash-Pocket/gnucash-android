@@ -2,9 +2,11 @@ package org.gnucash.android.util
 
 import android.content.ContentResolver
 import android.content.Context
+import android.content.res.Resources
 import android.net.Uri
 import android.provider.DocumentsContract
 import timber.log.Timber
+import java.util.Locale
 
 private val PROJECTION_DOCUMENT_NAME = arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
 private const val INDEX_DOCUMENT_NAME = 0
@@ -38,4 +40,19 @@ fun Uri.getDocumentName(context: Context?): String {
         }
     }
     return name
+}
+
+/**
+ * Apply the default locale.
+ *
+ * @param locale  the locale to set.
+ * @return the context with the applied locale.
+ */
+fun Context.applyLocale(locale: Locale): Context {
+    Locale.setDefault(locale)
+    val res = resources ?: Resources.getSystem()!!
+    val config = res.configuration
+    config.setLocale(locale)
+    resources?.updateConfiguration(config, res.displayMetrics)
+    return createConfigurationContext(config)
 }

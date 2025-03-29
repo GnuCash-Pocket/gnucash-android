@@ -20,7 +20,8 @@
     <string name="description_add_transaction_icon">Legge til en ny transaksjon i en konto</string>
     <string name="description_view_account_icon">Vis kontoinformasjon</string>
     <string name="label_no_accounts">Ingen kontoer for å vise</string>
-    <string name="label_account_name">Kontonavn</string>
+    <!-- msgid "Account Name" -->
+    <string name="account_name">Kontonavn</string>
     <string name="btn_save">Lagre</string>
     <string name="btn_test">Test</string>
     <string name="label_passcode">Angi passord</string>
@@ -28,7 +29,7 @@
     <string name="toast_passcode_set">Passord satt</string>
     <string name="label_confirm_passcode">Bekreft passordet ditt</string>
     <string name="toast_invalid_passcode_confirmation">Ugyldig passord bekreftelse. Prøv på nytt</string>
-    <string name="label_transaction_name">Beskrivelse</string>
+    <string name="description">Beskrivelse</string>
     <string name="label_transaction_amount">Beløp</string>
     <string name="title_add_transaction">Ny transaksjon</string>
     <string name="label_no_transactions">Ingen transaksjoner å vise</string>
@@ -134,7 +135,8 @@
     <string name="title_progress_exporting_transactions">Eksportere transaksjoner</string>
     <string name="label_no_recurring_transactions">Ingen gjentakende transaksjoner å vise.</string>
     <string name="toast_recurring_transaction_deleted">Slettet gjentakende transaksjon</string>
-    <string name="label_placeholder_account">Plassholder-konto</string>
+    <!-- msgid "Placeholder" -->
+    <string name="placeholder">Plassholder</string>
     <string name="label_default_transfer_account">Standardkontoen for overføring</string>
     <plurals name="label_sub_accounts">
         <item quantity="one">%d under-konto</item>
@@ -423,41 +425,54 @@
     <string name="label_csv_separator">Separator</string>
     <string name="export_notice_csv">Exports transactions as CSV</string>
     <string name="no_books">No books in the database</string>
-    <!-- Copied from "csv-transactions-export.cpp" -->
-    <string-array name="csv_transaction_headers">
-        <item>Date</item>
-        <item>Transaction ID</item>
-        <item>Number</item>
-        <item>Description</item>
-        <item>Notes</item>
-        <item>Commodity/Currency</item>
-        <item>Void Reason</item>
-        <item>Action</item>
-        <item>Memo</item>
-        <item>Full Account Name</item>
-        <item>Account Name</item>
-        <item>Amount With Sym</item>
-        <item>Amount Num.</item>
-        <item>Value With Sym</item>
-        <item>Value Num.</item>
-        <item>Reconcile</item>
-        <item>Reconcile Date</item>
-        <item>Rate/Price</item>
-    </string-array>
-    <string-array name="csv_account_headers">
-        <item>Type</item>
-        <item>Full Name</item>
-        <item>Name</item>
-        <item>Code</item>
-        <item>Description</item>
-        <item>Color</item>
-        <item>Notes</item>
-        <item>Commoditym</item>
-        <item>Commodityn</item>
-        <item>Hidden</item>
-        <item>Tax</item>
-        <item>Placeholder</item>
-    </string-array>
+    <!-- msgid "Date" -->
+    <string name="csv_transaction_header_date">Dato</string>
+    <!-- msgid "Transaction ID" -->
+    <string name="csv_transaction_header_id">Transaksjon</string>
+    <!-- msgid "Number" -->
+    <string name="csv_transaction_header_number">Nummer</string>
+    <!-- msgid "Notes" -->
+    <string name="csv_transaction_header_notes">Merknader</string>
+    <!-- msgid "Commodity/Currency" -->
+    <string name="csv_transaction_header_commodity">Felles valuta</string>
+    <!-- msgid "Void Reason" -->
+    <string name="csv_transaction_header_void">Kun annullerte</string>
+    <!-- msgid "Action" -->
+    <string name="csv_transaction_header_action">Handling</string>
+    <!-- msgid "Memo" -->
+    <string name="csv_transaction_header_memo">Notat</string>
+    <!-- msgid "Amount With Sym" -->
+    <string name="csv_transaction_header_amount_sym">Beløp med sym</string>
+    <!-- msgid "Amount Num." -->
+    <string name="csv_transaction_header_amount">Beløp Num.</string>
+    <!-- msgid "Value With Sym" -->
+    <string name="csv_transaction_header_value_sym">Verdi med sym</string>
+    <!-- msgid "Value Num." -->
+    <string name="csv_transaction_header_value">Verdi Num.</string>
+    <!-- msgid "Reconcile" -->
+    <string name="csv_transaction_header_reconcile">Avstemme</string>
+    <!-- msgid "Reconcile Date" -->
+    <string name="csv_transaction_header_reconcile_date">Avstemt dato</string>
+    <!-- msgid "Rate/Price" -->
+    <string name="csv_transaction_header_rate">Totalt (periode)</string>
+    <!-- msgid "Type" -->
+    <string name="type">Type</string>
+    <!-- msgid "Full Account Name" -->
+    <string name="csv_account_header_account_full_name">Fullt kontonavn</string>
+    <!-- msgid "Account Code" -->
+    <string name="account_code">Kontokode</string>
+    <!-- msgid "Account Color" -->
+    <string name="account_color">Kontofarge</string>
+    <!-- msgid "Notes" -->
+    <string name="notes">Merknader</string>
+    <!-- msgid "Symbol" -->
+    <string name="csv_account_header_symbol">Symbol</string>
+    <!-- msgid "Namespace" -->
+    <string name="csv_account_header_namespace">Domene</string>
+    <!-- msgid "Hidden" -->
+    <string name="hidden">Skjult</string>
+    <!-- msgid "Tax Info" -->
+    <string name="csv_account_header_tax">Skatteinformasjon</string>
     <string name="title_edit_budget">Edit Budget</string>
     <string name="title_delete_transaction_backup">When delete transaction?</string>
     <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>

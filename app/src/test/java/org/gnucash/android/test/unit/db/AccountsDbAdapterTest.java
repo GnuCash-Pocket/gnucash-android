@@ -545,7 +545,7 @@ public class AccountsDbAdapterTest extends GnuCashTest {
         assertThat(account2.isFavorite()).isFalse();
         assertThat(account2.getColor()).isEqualTo(Account.DEFAULT_COLOR);
 
-        account2.setPlaceHolderFlag(true);
+        account2.setPlaceholder(true);
         account2.setFavorite(true);
         account2.setColor(Color.MAGENTA);
         mAccountsDbAdapter.addRecord(account2, DatabaseAdapter.UpdateMethod.replace);
@@ -555,7 +555,7 @@ public class AccountsDbAdapterTest extends GnuCashTest {
         assertThat(account3.isFavorite()).isTrue();
         assertThat(account3.getColor()).isEqualTo(Color.MAGENTA);
 
-        account3.setPlaceHolderFlag(true);
+        account3.setPlaceholder(true);
         account3.setFavorite(false);
         account3.setColor(Color.YELLOW);
         mAccountsDbAdapter.addRecord(account3, DatabaseAdapter.UpdateMethod.update);

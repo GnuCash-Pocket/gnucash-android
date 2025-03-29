@@ -404,7 +404,7 @@ public class TransactionFormFragment extends MenuFragment implements
         //when autocompleting, only change the amount if the user has not manually changed it already
         binding.inputTransactionAmount.setValue(transaction.getBalance(mAccountUID).asBigDecimal(), !binding.inputTransactionAmount.isInputModified());
         binding.currencySymbol.setText(transaction.getCommodity().getSymbol());
-        binding.inputDescription.setText(transaction.getNote());
+        binding.notes.setText(transaction.getNote());
         binding.inputDate.setText(DATE_FORMATTER.print(transaction.getTimeMillis()));
         binding.inputTime.setText(TIME_FORMATTER.print(transaction.getTimeMillis()));
         Calendar cal = GregorianCalendar.getInstance();
@@ -757,7 +757,7 @@ public class TransactionFormFragment extends MenuFragment implements
             mTime.get(Calendar.MINUTE),
             mTime.get(Calendar.SECOND));
         String description = binding.inputTransactionName.getText().toString();
-        String notes = binding.inputDescription.getText().toString();
+        String notes = binding.notes.getText().toString();
         Commodity commodity = mAccountsDbAdapter.getCommodity(mAccountUID);
 
         List<Split> splits = extractSplitsFromView(binding);

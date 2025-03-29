@@ -20,7 +20,8 @@
     <string name="description_add_transaction_icon">Bir hesaba yeni bir işlem ekle</string>
     <string name="description_view_account_icon">Hesap detaylarını görüntüle</string>
     <string name="label_no_accounts">Gösterilecek hesap yok</string>
-    <string name="label_account_name">Hesap adı</string>
+    <!-- msgid "Account Name" -->
+    <string name="account_name">Hesap Adı</string>
     <string name="btn_save">Kaydet</string>
     <string name="btn_test">Test</string>
     <string name="label_passcode">Giriş Kodu Girin</string>
@@ -28,7 +29,7 @@
     <string name="toast_passcode_set">Giriş kodu ayarla</string>
     <string name="label_confirm_passcode">Lütfen, giriş kodunu onaylayın</string>
     <string name="toast_invalid_passcode_confirmation">Geçersiz giriş kodu doğrulaması. Lütfen tekrar deneyiniz</string>
-    <string name="label_transaction_name">Açıklama</string>
+    <string name="description">Açıklama</string>
     <string name="label_transaction_amount">Tutar</string>
     <string name="title_add_transaction">Yeni işlem</string>
     <string name="label_no_transactions">Görüntülenecek işlem yok</string>
@@ -134,7 +135,8 @@
     <string name="title_progress_exporting_transactions">İşlemler dışa aktarılıyor</string>
     <string name="label_no_recurring_transactions">Gösterilecek yinelenen işlem yok.</string>
     <string name="toast_recurring_transaction_deleted">İşlem yineleme başarıyla silindi</string>
-    <string name="label_placeholder_account">Yer tutucu hesap</string>
+    <!-- msgid "Placeholder" -->
+    <string name="placeholder">Toplu Hesap</string>
     <string name="label_default_transfer_account">Öntanımlı Transfer Hesabı</string>
     <plurals name="label_sub_accounts">
         <item quantity="one">%d alt-hesap</item>
@@ -423,41 +425,54 @@
     <string name="label_csv_separator">Separator</string>
     <string name="export_notice_csv">Exports transactions as CSV</string>
     <string name="no_books">No books in the database</string>
-    <!-- Copied from "csv-transactions-export.cpp" -->
-    <string-array name="csv_transaction_headers">
-        <item>Date</item>
-        <item>Transaction ID</item>
-        <item>Number</item>
-        <item>Description</item>
-        <item>Notes</item>
-        <item>Commodity/Currency</item>
-        <item>Void Reason</item>
-        <item>Action</item>
-        <item>Memo</item>
-        <item>Full Account Name</item>
-        <item>Account Name</item>
-        <item>Amount With Sym</item>
-        <item>Amount Num.</item>
-        <item>Value With Sym</item>
-        <item>Value Num.</item>
-        <item>Reconcile</item>
-        <item>Reconcile Date</item>
-        <item>Rate/Price</item>
-    </string-array>
-    <string-array name="csv_account_headers">
-        <item>Type</item>
-        <item>Full Name</item>
-        <item>Name</item>
-        <item>Code</item>
-        <item>Description</item>
-        <item>Color</item>
-        <item>Notes</item>
-        <item>Commoditym</item>
-        <item>Commodityn</item>
-        <item>Hidden</item>
-        <item>Tax</item>
-        <item>Placeholder</item>
-    </string-array>
+    <!-- msgid "Date" -->
+    <string name="csv_transaction_header_date">Tarih</string>
+    <!-- msgid "Transaction ID" -->
+    <string name="csv_transaction_header_id">İşlem Kimliği</string>
+    <!-- msgid "Number" -->
+    <string name="csv_transaction_header_number">Numara</string>
+    <!-- msgid "Notes" -->
+    <string name="csv_transaction_header_notes">Notlar</string>
+    <!-- msgid "Commodity/Currency" -->
+    <string name="csv_transaction_header_commodity">Ortak Para Birimi</string>
+    <!-- msgid "Void Reason" -->
+    <string name="csv_transaction_header_void">İptal nedeni</string>
+    <!-- msgid "Action" -->
+    <string name="csv_transaction_header_action">İşlem</string>
+    <!-- msgid "Memo" -->
+    <string name="csv_transaction_header_memo">Bilgi Notu</string>
+    <!-- msgid "Amount With Sym" -->
+    <string name="csv_transaction_header_amount_sym">Sembollü miktar</string>
+    <!-- msgid "Amount Num." -->
+    <string name="csv_transaction_header_amount">Tutar</string>
+    <!-- msgid "Value With Sym" -->
+    <string name="csv_transaction_header_value_sym">Bir sembol ile değer</string>
+    <!-- msgid "Value Num." -->
+    <string name="csv_transaction_header_value">Değer</string>
+    <!-- msgid "Reconcile" -->
+    <string name="csv_transaction_header_reconcile">Mutabakat</string>
+    <!-- msgid "Reconcile Date" -->
+    <string name="csv_transaction_header_reconcile_date">Mutabakat tarihi</string>
+    <!-- msgid "Rate/Price" -->
+    <string name="csv_transaction_header_rate">Fiyatı Paylaş</string>
+    <!-- msgid "Type" -->
+    <string name="type">Türü</string>
+    <!-- msgid "Full Account Name" -->
+    <string name="csv_account_header_account_full_name">Tam Hesap Adı</string>
+    <!-- msgid "Account Code" -->
+    <string name="account_code">Hesap Kodu</string>
+    <!-- msgid "Account Color" -->
+    <string name="account_color">Hesap Rengi</string>
+    <!-- msgid "Notes" -->
+    <string name="notes">Notlar</string>
+    <!-- msgid "Symbol" -->
+    <string name="csv_account_header_symbol">Sembol</string>
+    <!-- msgid "Namespace" -->
+    <string name="csv_account_header_namespace">Ad uzayı</string>
+    <!-- msgid "Hidden" -->
+    <string name="hidden">Gizli</string>
+    <!-- msgid "Tax Info" -->
+    <string name="csv_account_header_tax">Vergi Bilgisi</string>
     <string name="title_edit_budget">Edit Budget</string>
     <string name="title_delete_transaction_backup">When delete transaction?</string>
     <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>

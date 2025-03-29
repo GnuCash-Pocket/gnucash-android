@@ -6,6 +6,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import timber.log.Timber
+import java.io.InputStream
 
 @RunWith(RobolectricTestRunner::class) //package is required so that resources can be found in dev mode
 @Config(sdk = [21], shadows = [ShadowCrashlytics::class])
@@ -16,5 +17,9 @@ abstract class GnuCashTest {
         fun before() {
             Timber.plant(ConsoleTree())
         }
+    }
+
+    protected fun openResourceStream(name: String): InputStream {
+        return javaClass.classLoader.getResourceAsStream(name)
     }
 }

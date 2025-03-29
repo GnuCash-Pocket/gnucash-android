@@ -17,13 +17,13 @@
 
 package org.gnucash.android.ui.account;
 
-import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
 import static org.gnucash.android.ui.colorpicker.ColorPickerDialog.COLOR_PICKER_DIALOG_TAG;
 import static org.gnucash.android.ui.util.widget.ViewExtKt.setTextToEnd;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Color;
@@ -326,6 +326,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
 
         setTextToEnd(binding.inputAccountName, account.getName());
         binding.inputAccountDescription.setText(account.getDescription());
+        mBinding.notes.setText(account.getNote());
 
         if (mUseDoubleEntry) {
             String defaultTransferAccountUID = account.getDefaultTransferAccountUID();
@@ -346,10 +347,11 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
             }
         }
 
-        binding.checkboxPlaceholderAccount.setChecked(account.isPlaceholder());
-        binding.favoriteStatus.setChecked(account.isFavorite());
+        mBinding.placeholderStatus.setChecked(account.isPlaceholder());
+        mBinding.favoriteStatus.setChecked(account.isFavorite());
+        mBinding.hiddenStatus.setChecked(account.isHidden());
         mSelectedColor = account.getColor();
-        binding.inputColorPicker.setBackgroundColor(mSelectedColor);
+        binding.inputColorPicker.setBackgroundTintList(ColorStateList.valueOf(mSelectedColor));
     }
 
     /**
@@ -359,7 +361,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         selectedName = "";
         descendantAccountUIDs.clear();
         setSelectedCurrency(binding, Commodity.DEFAULT_COMMODITY);
-        binding.inputColorPicker.setBackgroundColor(mSelectedColor);
+        binding.inputColorPicker.setBackgroundTintList(ColorStateList.valueOf(mSelectedColor));
 
         String parentUID = mParentAccountUID;
         if (!TextUtils.isEmpty(parentUID)) {
@@ -390,8 +392,8 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      */
     private void setDefaultTransferAccountInputsVisible(@NonNull FragmentAccountFormBinding binding, boolean visible) {
         final int visibility = visible ? View.VISIBLE : View.GONE;
-        binding.labelDefaultTransferAccount.setVisibility(visibility);
-        binding.labelDefaultTransferAccount.setVisibility(visibility);
+        binding.checkboxDefaultTransferAccount.setVisibility(visibility);
+        binding.inputDefaultTransferAccount.setVisibility(visibility);
     }
 
     /**
@@ -482,7 +484,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
             int color = result.getInt(ColorPickerDialog.EXTRA_COLOR);
             FragmentAccountFormBinding binding = mBinding;
             if (binding != null) {
-                binding.inputColorPicker.setBackgroundColor(color);
+                binding.inputColorPicker.setBackgroundTintList(ColorStateList.valueOf(color));
             }
             mSelectedColor = color;
         }
@@ -555,11 +557,11 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
 
         if (parentAccountNameAdapter.getCount() <= 0) {
             binding.checkboxParentAccount.setChecked(false); //disable before hiding, else we can still read it when saving
-            binding.layoutDefaultTransferAccount.setVisibility(View.GONE);
-            binding.labelDefaultTransferAccount.setVisibility(View.GONE);
+            binding.checkboxParentAccount.setVisibility(View.GONE);
+            binding.inputParentAccount.setVisibility(View.GONE);
         } else {
-            binding.layoutDefaultTransferAccount.setVisibility(View.VISIBLE);
-            binding.labelDefaultTransferAccount.setVisibility(View.VISIBLE);
+            binding.checkboxParentAccount.setVisibility(View.VISIBLE);
+            binding.inputParentAccount.setVisibility(View.VISIBLE);
         }
     }
 
@@ -675,8 +677,10 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         account.setCommodity(selectedCommodity);
         account.setAccountType(selectedAccountType);
         account.setDescription(binding.inputAccountDescription.getText().toString().trim());
-        account.setPlaceHolderFlag(binding.checkboxPlaceholderAccount.isChecked());
+        account.setNote(binding.notes.getText().toString().trim());
+        account.setPlaceholder(binding.placeholderStatus.isChecked());
         account.setFavorite(binding.favoriteStatus.isChecked());
+        account.setHidden(binding.hiddenStatus.isChecked());
         account.setColor(mSelectedColor);
 
         final String newParentAccountUID;

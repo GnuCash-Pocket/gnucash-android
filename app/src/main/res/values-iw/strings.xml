@@ -5,7 +5,8 @@
     <string name="description_add_transaction_icon">הוספת עסקה לחשבון</string>
     <string name="description_view_account_icon">צפה בפרטי חשבון</string>
     <string name="label_no_accounts">אין חשבונות להציג</string>
-    <string name="label_account_name">שם החשבון</string>
+    <!-- msgid "Account Name" -->
+    <string name="account_name">שם חשבון</string>
     <string name="btn_save">שמירה</string>
     <string name="btn_test">בדיקה</string>
     <string name="label_passcode">הזן סיסמה</string>
@@ -13,7 +14,7 @@
     <string name="toast_passcode_set">סיסמה נשמרה</string>
     <string name="label_confirm_passcode">אנא וודא את הסיסמה</string>
     <string name="toast_invalid_passcode_confirmation">ווידוא סיסמה שגוי. אנא נסה שוב</string>
-    <string name="label_transaction_name">תיאור</string>
+    <string name="description">תיאור</string>
     <string name="label_transaction_amount">סכום</string>
     <string name="title_add_transaction">עסקה חדשה</string>
     <string name="label_no_transactions">אין עסקאות להציג</string>
@@ -118,7 +119,8 @@
     <string name="title_progress_exporting_transactions">מייצא עסקאות</string>
     <string name="label_no_recurring_transactions">אין עסקאות חזרתיות להציג</string>
     <string name="toast_recurring_transaction_deleted">עסקה חוזרת נמחקה בהצלחה</string>
-    <string name="label_placeholder_account">חשבון שומר מקום</string>
+    <!-- msgid "Placeholder" -->
+    <string name="placeholder">שומר מקום</string>
     <string name="label_default_transfer_account">חשבון ברירת מחדל להעברות</string>
     <plurals name="label_sub_accounts" comment="label_sub_accounts [one] [other]">
         <item quantity="one">תת-חשבון d%</item>
@@ -408,40 +410,54 @@
     <string name="label_csv_separator">מפריד</string>
     <string name="export_notice_csv">מייצא עסקאות כ-CSV</string>
     <string name="no_books">אין ספרים במאגר</string>
-    <string-array name="csv_transaction_headers">
-        <item comment="csv_transaction_headers&#10;Copied from &quot;csv-transactions-export.cpp&quot;">תאריך</item>
-        <item comment="csv_transaction_headers&#10;Copied from &quot;csv-transactions-export.cpp&quot;">מזהה עסקה</item>
-        <item comment="csv_transaction_headers&#10;Copied from &quot;csv-transactions-export.cpp&quot;">מספר</item>
-        <item comment="csv_transaction_headers&#10;Copied from &quot;csv-transactions-export.cpp&quot;">תיאור</item>
-        <item comment="csv_transaction_headers&#10;Copied from &quot;csv-transactions-export.cpp&quot;">הערות</item>
-        <item comment="csv_transaction_headers&#10;Copied from &quot;csv-transactions-export.cpp&quot;">מטבע/סחורה</item>
-        <item comment="csv_transaction_headers&#10;Copied from &quot;csv-transactions-export.cpp&quot;">סיבה בטלה</item>
-        <item comment="csv_transaction_headers&#10;Copied from &quot;csv-transactions-export.cpp&quot;">פעולה</item>
-        <item comment="csv_transaction_headers&#10;Copied from &quot;csv-transactions-export.cpp&quot;">תזכיר</item>
-        <item comment="csv_transaction_headers&#10;Copied from &quot;csv-transactions-export.cpp&quot;">שם חשבון מלא</item>
-        <item comment="csv_transaction_headers&#10;Copied from &quot;csv-transactions-export.cpp&quot;">שם חשבון</item>
-        <item comment="csv_transaction_headers&#10;Copied from &quot;csv-transactions-export.cpp&quot;">סכום עם סימן</item>
-        <item comment="csv_transaction_headers&#10;Copied from &quot;csv-transactions-export.cpp&quot;">מספר סכום</item>
-        <item comment="csv_transaction_headers&#10;Copied from &quot;csv-transactions-export.cpp&quot;">ערך עם סימן</item>
-        <item comment="csv_transaction_headers&#10;Copied from &quot;csv-transactions-export.cpp&quot;">מספר ערך</item>
-        <item comment="csv_transaction_headers&#10;Copied from &quot;csv-transactions-export.cpp&quot;">יישוב הבדלים</item>
-        <item comment="csv_transaction_headers&#10;Copied from &quot;csv-transactions-export.cpp&quot;">תאריך יישוב הבדלים</item>
-        <item comment="csv_transaction_headers&#10;Copied from &quot;csv-transactions-export.cpp&quot;">שער/מחיר</item>
-    </string-array>
-    <string-array name="csv_account_headers">
-        <item>סוג</item>
-        <item>שם מלא</item>
-        <item>שם</item>
-        <item>קוד</item>
-        <item>תיאור</item>
-        <item>צבע</item>
-        <item>הערות</item>
-        <item>מצרך</item>
-        <item>סחורה</item>
-        <item>נסתר</item>
-        <item>מס</item>
-        <item>מחזיק מקום</item>
-    </string-array>
+    <!-- msgid "Date" -->
+    <string name="csv_transaction_header_date">תאריך</string>
+    <!-- msgid "Transaction ID" -->
+    <string name="csv_transaction_header_id">מזהה עסקה</string>
+    <!-- msgid "Number" -->
+    <string name="csv_transaction_header_number">מספר</string>
+    <!-- msgid "Notes" -->
+    <string name="csv_transaction_header_notes">הערות</string>
+    <!-- msgid "Commodity/Currency" -->
+    <string name="csv_transaction_header_commodity">סחורה/מטבע</string>
+    <!-- msgid "Void Reason" -->
+    <string name="csv_transaction_header_void">סיבת ביטול</string>
+    <!-- msgid "Action" -->
+    <string name="csv_transaction_header_action">פעולה</string>
+    <!-- msgid "Memo" -->
+    <string name="csv_transaction_header_memo">מזכר</string>
+    <!-- msgid "Amount With Sym" -->
+    <string name="csv_transaction_header_amount_sym">סכום עם סמל</string>
+    <!-- msgid "Amount Num." -->
+    <string name="csv_transaction_header_amount">סכום</string>
+    <!-- msgid "Value With Sym" -->
+    <string name="csv_transaction_header_value_sym">ערך עם סמל</string>
+    <!-- msgid "Value Num." -->
+    <string name="csv_transaction_header_value">מספר ערך</string>
+    <!-- msgid "Reconcile" -->
+    <string name="csv_transaction_header_reconcile">התאמה</string>
+    <!-- msgid "Reconcile Date" -->
+    <string name="csv_transaction_header_reconcile_date">תאריך התאמה</string>
+    <!-- msgid "Rate/Price" -->
+    <string name="csv_transaction_header_rate">שער/מחיר</string>
+    <!-- msgid "Type" -->
+    <string name="type">סוג</string>
+    <!-- msgid "Full Account Name" -->
+    <string name="csv_account_header_account_full_name">שם חשבון מלא</string>
+    <!-- msgid "Account Code" -->
+    <string name="account_code">מספר חשבון</string>
+    <!-- msgid "Account Color" -->
+    <string name="account_color">צבע חשבון</string>
+    <!-- msgid "Notes" -->
+    <string name="notes">הערות</string>
+    <!-- msgid "Symbol" -->
+    <string name="csv_account_header_symbol">סמל</string>
+    <!-- msgid "Namespace" -->
+    <string name="csv_account_header_namespace">מרחב שמות</string>
+    <!-- msgid "Hidden" -->
+    <string name="hidden">מוסתר</string>
+    <!-- msgid "Tax Info" -->
+    <string name="csv_account_header_tax">מידע מס</string>
     <string name="title_edit_budget">ערוך תקציב</string>
     <string name="title_delete_transaction_backup">כשנמחק עסקה?</string>
     <string name="summary_delete_transaction_backup">לגבות את הספר הפעיל בעת מחיקת העסקה?</string>

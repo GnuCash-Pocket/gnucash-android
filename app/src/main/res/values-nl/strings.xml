@@ -20,7 +20,8 @@
     <string name="description_add_transaction_icon">Nieuwe boeking op een rekening</string>
     <string name="description_view_account_icon">Accountgegevens bekijken</string>
     <string name="label_no_accounts">Geen rekeningen beschikbaar</string>
-    <string name="label_account_name">Rekeningnaam</string>
+    <!-- msgid "Account Name" -->
+    <string name="account_name">Rekeningnaam</string>
     <string name="btn_save">Bewaren</string>
     <string name="btn_test">Test</string>
     <string name="label_passcode">Vul wachtwoord in</string>
@@ -28,7 +29,7 @@
     <string name="toast_passcode_set">Toegangscode ingesteld</string>
     <string name="label_confirm_passcode">Bevestig uw wachtwoord</string>
     <string name="toast_invalid_passcode_confirmation">Ongeldige wachtwoord bevestiging. Probeer het a. u. b. opnieuw</string>
-    <string name="label_transaction_name">Beschrijving</string>
+    <string name="description">Beschrijving</string>
     <string name="label_transaction_amount">Bedrag</string>
     <string name="title_add_transaction">Nieuwe boeking</string>
     <string name="label_no_transactions">Geen boekingen beschikbaar</string>
@@ -134,7 +135,8 @@
     <string name="title_progress_exporting_transactions">Transactions exporteren</string>
     <string name="label_no_recurring_transactions">Geen repetitieve transacties gevonden.</string>
     <string name="toast_recurring_transaction_deleted">Repetitieve transactie met succes verwijderd</string>
-    <string name="label_placeholder_account">Aggregatie rekening</string>
+    <!-- msgid "Placeholder" -->
+    <string name="placeholder">Aggregatie</string>
     <string name="label_default_transfer_account">Standard tegenrekening</string>
     <plurals name="label_sub_accounts">
         <item quantity="one">%d subrekening</item>
@@ -423,41 +425,54 @@
     <string name="label_csv_separator">Separator</string>
     <string name="export_notice_csv">Exports transactions as CSV</string>
     <string name="no_books">No books in the database</string>
-    <!-- Copied from "csv-transactions-export.cpp" -->
-    <string-array name="csv_transaction_headers">
-        <item>Date</item>
-        <item>Transaction ID</item>
-        <item>Number</item>
-        <item>Description</item>
-        <item>Notes</item>
-        <item>Commodity/Currency</item>
-        <item>Void Reason</item>
-        <item>Action</item>
-        <item>Memo</item>
-        <item>Full Account Name</item>
-        <item>Account Name</item>
-        <item>Amount With Sym</item>
-        <item>Amount Num.</item>
-        <item>Value With Sym</item>
-        <item>Value Num.</item>
-        <item>Reconcile</item>
-        <item>Reconcile Date</item>
-        <item>Rate/Price</item>
-    </string-array>
-    <string-array name="csv_account_headers">
-        <item>Type</item>
-        <item>Full Name</item>
-        <item>Name</item>
-        <item>Code</item>
-        <item>Description</item>
-        <item>Color</item>
-        <item>Notes</item>
-        <item>Commoditym</item>
-        <item>Commodityn</item>
-        <item>Hidden</item>
-        <item>Tax</item>
-        <item>Placeholder</item>
-    </string-array>
+    <!-- msgid "Date" -->
+    <string name="csv_transaction_header_date">Datum</string>
+    <!-- msgid "Transaction ID" -->
+    <string name="csv_transaction_header_id">Boeking ID</string>
+    <!-- msgid "Number" -->
+    <string name="csv_transaction_header_number">Nummer</string>
+    <!-- msgid "Notes" -->
+    <string name="csv_transaction_header_notes">Toelichting</string>
+    <!-- msgid "Commodity/Currency" -->
+    <string name="csv_transaction_header_commodity">Effect/valuta/munt</string>
+    <!-- msgid "Void Reason" -->
+    <string name="csv_transaction_header_void">Reden voor storno</string>
+    <!-- msgid "Action" -->
+    <string name="csv_transaction_header_action">Actie</string>
+    <!-- msgid "Memo" -->
+    <string name="csv_transaction_header_memo">Notitie</string>
+    <!-- msgid "Amount With Sym" -->
+    <string name="csv_transaction_header_amount_sym">Bedrag met sym</string>
+    <!-- msgid "Amount Num." -->
+    <string name="csv_transaction_header_amount">Bedrag num.</string>
+    <!-- msgid "Value With Sym" -->
+    <string name="csv_transaction_header_value_sym">Waarde met sym</string>
+    <!-- msgid "Value Num." -->
+    <string name="csv_transaction_header_value">Waarde num.</string>
+    <!-- msgid "Reconcile" -->
+    <string name="csv_transaction_header_reconcile">Afstemmen</string>
+    <!-- msgid "Reconcile Date" -->
+    <string name="csv_transaction_header_reconcile_date">Datum van afstemming</string>
+    <!-- msgid "Rate/Price" -->
+    <string name="csv_transaction_header_rate">Koers/prijs</string>
+    <!-- msgid "Type" -->
+    <string name="type">Soort</string>
+    <!-- msgid "Full Account Name" -->
+    <string name="csv_account_header_account_full_name">Volledige rekeningnaam</string>
+    <!-- msgid "Account Code" -->
+    <string name="account_code">Rekeningnummer</string>
+    <!-- msgid "Account Color" -->
+    <string name="account_color">Rekeningkleur</string>
+    <!-- msgid "Notes" -->
+    <string name="notes">Toelichting</string>
+    <!-- msgid "Symbol" -->
+    <string name="csv_account_header_symbol">Symbool</string>
+    <!-- msgid "Namespace" -->
+    <string name="csv_account_header_namespace">Naamruimte</string>
+    <!-- msgid "Hidden" -->
+    <string name="hidden">Verborgen</string>
+    <!-- msgid "Tax Info" -->
+    <string name="csv_account_header_tax">Fiscale informatie</string>
     <string name="title_edit_budget">Edit Budget</string>
     <string name="title_delete_transaction_backup">When delete transaction?</string>
     <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>

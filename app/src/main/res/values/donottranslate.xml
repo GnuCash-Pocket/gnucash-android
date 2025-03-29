@@ -268,4 +268,23 @@
         <item>@string/theme_dark</item>
         <item>@string/theme_light</item>
     </string-array>
+    <string name="hint_description" translatable="false">@string/description</string>
+    <string name="hint_notes" translatable="false">@string/notes</string>
+    <string name="label_account_color" translatable="false">@string/account_color</string>
+    <string name="label_account_type" translatable="false">@string/type</string>
+    <string name="label_account_name" translatable="false">@string/account_name</string>
+    <string name="label_transaction_name" translatable="false">@string/description</string>
+    <string name="label_placeholder_account" translatable="false">@string/placeholder</string>
+    <string name="label_hidden" translatable="false">@string/hidden</string>
+    <string name="csv_transaction_header_account_full_name" translatable="false">@string/csv_account_header_account_full_name</string>
+    <string name="csv_transaction_header_account_name" translatable="false">@string/account_name</string>
+    <string name="csv_transaction_header_description" translatable="false">@string/description</string>
+    <string name="csv_account_header_description" translatable="false">@string/description</string>
+    <string name="csv_account_header_account_name" translatable="false">@string/account_name</string>
+    <string name="csv_account_header_account_code" translatable="false">@string/account_code</string>
+    <string name="csv_account_header_colour" translatable="false">@string/account_color</string>
+    <string name="csv_account_header_type" translatable="false">@string/type</string>
+    <string name="csv_account_header_notes" translatable="false">@string/notes</string>
+    <string name="csv_account_header_hidden" translatable="false">@string/hidden</string>
+    <string name="csv_account_header_placeholder" translatable="false">@string/placeholder</string>
 </resources>

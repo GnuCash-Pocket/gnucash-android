@@ -225,7 +225,7 @@ public class TransactionsActivityTest extends GnuAndroidTest {
         onView(withId(R.id.input_transaction_amount)).check(matches(withText(formatter.format(balance.toDouble()))));
         onView(withId(R.id.input_date)).check(matches(withText(TransactionFormFragment.DATE_FORMATTER.print(transaction.getTimeMillis()))));
         onView(withId(R.id.input_time)).check(matches(withText(TransactionFormFragment.TIME_FORMATTER.print(transaction.getTimeMillis()))));
-        onView(withId(R.id.input_description)).check(matches(withText(transaction.getNote())));
+        onView(withId(R.id.notes)).check(matches(withText(transaction.getNote())));
 
         validateTimeInput(transaction.getTimeMillis());
     }

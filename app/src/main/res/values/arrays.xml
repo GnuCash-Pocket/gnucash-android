@@ -52,4 +52,38 @@
         <item>@string/label_credit</item>
         <item>@string/label_debit</item>
     </string-array>
+    <string-array name="csv_account_headers" translatable="false">
+        <item>@string/csv_account_header_type</item>
+        <item>@string/csv_account_header_account_full_name</item>
+        <item>@string/csv_account_header_account_name</item>
+        <item>@string/csv_account_header_account_code</item>
+        <item>@string/csv_account_header_description</item>
+        <item>@string/csv_account_header_colour</item>
+        <item>@string/csv_account_header_notes</item>
+        <item>@string/csv_account_header_symbol</item>
+        <item>@string/csv_account_header_namespace</item>
+        <item>@string/csv_account_header_hidden</item>
+        <item>@string/csv_account_header_tax</item>
+        <item>@string/csv_account_header_placeholder</item>
+    </string-array>
+    <string-array name="csv_transaction_headers" translatable="false">
+        <item>@string/csv_transaction_header_date</item>
+        <item>@string/csv_transaction_header_id</item>
+        <item>@string/csv_transaction_header_number</item>
+        <item>@string/csv_transaction_header_description</item>
+        <item>@string/csv_transaction_header_notes</item>
+        <item>@string/csv_transaction_header_commodity</item>
+        <item>@string/csv_transaction_header_void</item>
+        <item>@string/csv_transaction_header_action</item>
+        <item>@string/csv_transaction_header_memo</item>
+        <item>@string/csv_transaction_header_account_full_name</item>
+        <item>@string/csv_transaction_header_account_name</item>
+        <item>@string/csv_transaction_header_amount_sym</item>
+        <item>@string/csv_transaction_header_amount</item>
+        <item>@string/csv_transaction_header_value_sym</item>
+        <item>@string/csv_transaction_header_value</item>
+        <item>@string/csv_transaction_header_reconcile</item>
+        <item>@string/csv_transaction_header_reconcile_date</item>
+        <item>@string/csv_transaction_header_rate</item>
+    </string-array>
 </resources>

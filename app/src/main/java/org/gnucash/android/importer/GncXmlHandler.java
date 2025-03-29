@@ -29,6 +29,7 @@ import static org.gnucash.android.export.xml.GncXmlHelper.KEY_DEBIT_NUMERIC;
 import static org.gnucash.android.export.xml.GncXmlHelper.KEY_DEFAULT_TRANSFER_ACCOUNT;
 import static org.gnucash.android.export.xml.GncXmlHelper.KEY_EXPORTED;
 import static org.gnucash.android.export.xml.GncXmlHelper.KEY_FAVORITE;
+import static org.gnucash.android.export.xml.GncXmlHelper.KEY_HIDDEN;
 import static org.gnucash.android.export.xml.GncXmlHelper.KEY_NOTES;
 import static org.gnucash.android.export.xml.GncXmlHelper.KEY_PLACEHOLDER;
 import static org.gnucash.android.export.xml.GncXmlHelper.KEY_SPLIT_ACCOUNT_SLOT;
@@ -280,6 +281,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     private boolean mInColorSlot = false;
     private boolean mInPlaceHolderSlot = false;
     private boolean mInFavoriteSlot = false;
+    private boolean mInHiddenSlot = false;
     private boolean mIsDatePosted = false;
     private boolean mIsDateEntered = false;
     private boolean mIsNote = false;
@@ -574,7 +576,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                     mAccountList.add(mAccount);
                     mAccountMap.put(mAccount.getUID(), mAccount);
                     // check ROOT account
-                    if (mAccount.getAccountType() == AccountType.ROOT) {
+                    if (mAccount.isRoot()) {
                         if (mRootAccount == null) {
                             mRootAccount = mAccount;
                         } else {
@@ -600,6 +602,9 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                         break;
                     case KEY_FAVORITE:
                         mInFavoriteSlot = true;
+                        break;
+                    case KEY_HIDDEN:
+                        mInHiddenSlot = true;
                         break;
                     case KEY_NOTES:
                         mIsNote = true;
@@ -643,7 +648,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 String slotType = slotTypes.pop();
                 if (mInPlaceHolderSlot) {
                     //Timber.v("Setting account placeholder flag");
-                    mAccount.setPlaceHolderFlag(Boolean.parseBoolean(characterString));
+                    mAccount.setPlaceholder(Boolean.parseBoolean(characterString));
                     mInPlaceHolderSlot = false;
                 } else if (mInColorSlot) {
                     //Timber.d("Parsing color code: " + characterString);
@@ -662,6 +667,9 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 } else if (mInFavoriteSlot) {
                     mAccount.setFavorite(Boolean.parseBoolean(characterString));
                     mInFavoriteSlot = false;
+                } else if (mInHiddenSlot) {
+                    mAccount.setHidden(Boolean.parseBoolean(characterString));
+                    mInHiddenSlot = false;
                 } else if (mInDefaultTransferAccount) {
                     mAccount.setDefaultTransferAccountUID(characterString);
                     mInDefaultTransferAccount = false;
@@ -704,9 +712,11 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                             budgetPeriod = null;
                             break;
                     }
-                } else if (mIsNote) {
+                } else if (mIsNote && ATTR_VALUE_STRING.equals(slotType)) {
                     if (mTransaction != null) {
                         mTransaction.setNote(characterString);
+                    } else if (mAccount != null) {
+                        mAccount.setNote(characterString);
                     }
                     mIsNote = false;
                 }
@@ -985,7 +995,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
 
         // The XML has no ROOT, create one
         if (mRootAccount == null) {
-            mRootAccount = new Account("ROOT");
+            mRootAccount = new Account(AccountsDbAdapter.ROOT_ACCOUNT_NAME);
             mRootAccount.setAccountType(AccountType.ROOT);
             mAccountList.add(mRootAccount);
             mAccountMap.put(mRootAccount.getUID(), mRootAccount);
@@ -1032,7 +1042,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
             String parentAccountFullName;
             while (!stack.isEmpty()) {
                 Account acc = stack.peek();
-                if (acc.getAccountType() == AccountType.ROOT) {
+                if (acc.isRoot()) {
                     // ROOT_ACCOUNT_FULL_NAME should ensure ROOT always sorts first
                     mapFullName.put(acc.getUID(), AccountsDbAdapter.ROOT_ACCOUNT_FULL_NAME);
                     stack.pop();
@@ -1042,7 +1052,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 Account parentAccount = mAccountMap.get(parentUID);
                 // ROOT account will be added if not exist, so now only ROOT
                 // has an empty parent
-                if (parentAccount.getAccountType() == AccountType.ROOT) {
+                if (parentAccount.isRoot()) {
                     // top level account, full name is the same as its name
                     mapFullName.put(acc.getUID(), acc.getName());
                     stack.pop();

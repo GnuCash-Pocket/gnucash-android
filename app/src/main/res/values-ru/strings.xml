@@ -20,7 +20,8 @@
     <string name="description_add_transaction_icon">Новая проводка</string>
     <string name="description_view_account_icon">Посмотреть дели счета</string>
     <string name="label_no_accounts">Нет счетов</string>
-    <string name="label_account_name">Имя счёта</string>
+    <!-- msgid "Account Name" -->
+    <string name="account_name">Название счёта</string>
     <string name="btn_save">Сохранить</string>
     <string name="btn_test">Тест</string>
     <string name="label_passcode">Введите пароль</string>
@@ -28,7 +29,7 @@
     <string name="toast_passcode_set">Пароль установлен</string>
     <string name="label_confirm_passcode">Подтвердите пароль</string>
     <string name="toast_invalid_passcode_confirmation">Пароли не совпали. Повторите заново.</string>
-    <string name="label_transaction_name">Описание</string>
+    <string name="description">Описание</string>
     <string name="label_transaction_amount">Сумма</string>
     <string name="title_add_transaction">Новая проводка</string>
     <string name="label_no_transactions">Нет проводок</string>
@@ -134,7 +135,8 @@
     <string name="title_progress_exporting_transactions">Проводки экспортируются</string>
     <string name="label_no_recurring_transactions">Нет периодических проводок.</string>
     <string name="toast_recurring_transaction_deleted">Периодическая проводка удалена</string>
-    <string name="label_placeholder_account">Виртуальный счёт</string>
+    <!-- msgid "Placeholder" -->
+    <string name="placeholder">Виртуальный</string>
     <string name="label_default_transfer_account">Счет-получатель по умолчанию</string>
     <plurals name="label_sub_accounts">
         <item quantity="one">%d дочерний счёт</item>
@@ -430,41 +432,54 @@
     <string name="label_csv_separator">Разделитель</string>
     <string name="export_notice_csv">Экспортировать проводки в CSV</string>
     <string name="no_books">No books in the database</string>
-    <!-- Copied from "csv-transactions-export.cpp" -->
-    <string-array name="csv_transaction_headers">
-        <item>Дата</item>
-        <item>Номер проводки</item>
-        <item>Номер</item>
-        <item>Описание</item>
-        <item>Примечания</item>
-        <item>Товар/Валюта</item>
-        <item>Причина отмены</item>
-        <item>Действие</item>
-        <item>Памятка</item>
-        <item>Полное название счета</item>
-        <item>Название счета</item>
-        <item>Amount With Sym.</item>
-        <item>Количество</item>
-        <item>Value With Sym</item>
-        <item>Value Num.</item>
-        <item>Сверка</item>
-        <item>Дата согласования</item>
-        <item>Цена/ставка</item>
-    </string-array>
-    <string-array name="csv_account_headers">
-        <item>Тип</item>
-        <item>ФИО</item>
-        <item>Имя</item>
-        <item>Код</item>
-        <item>Описание</item>
-        <item>Цвет</item>
-        <item>Примечания</item>
-        <item>Commoditym</item>
-        <item>Commodityn</item>
-        <item>Скрытый</item>
-        <item>Налог</item>
-        <item>Заполнитель</item>
-    </string-array>
+    <!-- msgid "Date" -->
+    <string name="csv_transaction_header_date">Дата</string>
+    <!-- msgid "Transaction ID" -->
+    <string name="csv_transaction_header_id">Проводка</string>
+    <!-- msgid "Number" -->
+    <string name="csv_transaction_header_number">Номер</string>
+    <!-- msgid "Notes" -->
+    <string name="csv_transaction_header_notes">Заметки</string>
+    <!-- msgid "Commodity/Currency" -->
+    <string name="csv_transaction_header_commodity">Общая валюта</string>
+    <!-- msgid "Void Reason" -->
+    <string name="csv_transaction_header_void">Причина аннулирования</string>
+    <!-- msgid "Action" -->
+    <string name="csv_transaction_header_action">Действие</string>
+    <!-- msgid "Memo" -->
+    <string name="csv_transaction_header_memo">Памятка</string>
+    <!-- msgid "Amount With Sym" -->
+    <string name="csv_transaction_header_amount_sym">Получено (с симв. валюты)</string>
+    <!-- msgid "Amount Num." -->
+    <string name="csv_transaction_header_amount">Сумма задолжности</string>
+    <!-- msgid "Value With Sym" -->
+    <string name="csv_transaction_header_value_sym">Получено (с симв. валюты)</string>
+    <!-- msgid "Value Num." -->
+    <string name="csv_transaction_header_value">Значение</string>
+    <!-- msgid "Reconcile" -->
+    <string name="csv_transaction_header_reconcile">Согласование</string>
+    <!-- msgid "Reconcile Date" -->
+    <string name="csv_transaction_header_reconcile_date">Дата согласования</string>
+    <!-- msgid "Rate/Price" -->
+    <string name="csv_transaction_header_rate">Коэффицент списания</string>
+    <!-- msgid "Type" -->
+    <string name="type">Тип</string>
+    <!-- msgid "Full Account Name" -->
+    <string name="csv_account_header_account_full_name">Полное имя учетной записи</string>
+    <!-- msgid "Account Code" -->
+    <string name="account_code">Код счёта</string>
+    <!-- msgid "Account Color" -->
+    <string name="account_color">Цвет счёта</string>
+    <!-- msgid "Notes" -->
+    <string name="notes">Заметки</string>
+    <!-- msgid "Symbol" -->
+    <string name="csv_account_header_symbol">Символ</string>
+    <!-- msgid "Namespace" -->
+    <string name="csv_account_header_namespace">Пространство имен</string>
+    <!-- msgid "Hidden" -->
+    <string name="hidden">Скрытый</string>
+    <!-- msgid "Tax Info" -->
+    <string name="csv_account_header_tax">Информация о налогах</string>
     <string name="title_edit_budget">Edit Budget</string>
     <string name="title_delete_transaction_backup">When delete transaction?</string>
     <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>

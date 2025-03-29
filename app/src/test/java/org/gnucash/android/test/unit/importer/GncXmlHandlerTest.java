@@ -113,8 +113,8 @@ public class GncXmlHandlerTest extends BookHelperTest {
 
         // Check splits
         assertThat(transaction.getSplits().size()).isEqualTo(2);
-        // FIXME: don't depend on the order
-        Split split1 = transaction.getSplits().get(0);
+
+        Split split1 = transaction.getSplits().get(1);
         assertThat(split1.getUID()).isEqualTo("ad2cbc774fc4e71885d17e6932448e8e");
         assertThat(split1.getAccountUID()).isEqualTo("6a7cf8267314992bdddcee56d71a3908");
         assertThat(split1.getTransactionUID()).isEqualTo("b33c8a6160494417558fd143731fc26a");
@@ -124,7 +124,7 @@ public class GncXmlHandlerTest extends BookHelperTest {
         assertThat(split1.getQuantity()).isEqualTo(new Money("10", "USD"));
         assertThat(split1.getReconcileState()).isEqualTo('n');
 
-        Split split2 = transaction.getSplits().get(1);
+        Split split2 = transaction.getSplits().get(0);
         assertThat(split2.getUID()).isEqualTo("61d4d604bc00a59cabff4e8875d00bee");
         assertThat(split2.getAccountUID()).isEqualTo("dae686a1636addc0dae1ae670701aa4a");
         assertThat(split2.getTransactionUID()).isEqualTo("b33c8a6160494417558fd143731fc26a");
@@ -155,35 +155,35 @@ public class GncXmlHandlerTest extends BookHelperTest {
 
         // Check splits
         assertThat(transaction.getSplits().size()).isEqualTo(3);
-        // FIXME: don't depend on the order
-        Split expenseSplit = transaction.getSplits().get(0);
-        assertThat(expenseSplit.getUID()).isEqualTo("c50cce06e2bf9085730821c82d0b36ca");
-        assertThat(expenseSplit.getAccountUID()).isEqualTo("6a7cf8267314992bdddcee56d71a3908");
-        assertThat(expenseSplit.getTransactionUID()).isEqualTo("042ff745a80e94e6237fb0549f6d32ae");
-        assertThat(expenseSplit.getType()).isEqualTo(TransactionType.DEBIT);
-        assertThat(expenseSplit.getMemo()).isNull();
-        assertThat(expenseSplit.getValue()).isEqualTo(new Money("50", "USD"));
-        assertThat(expenseSplit.getQuantity()).isEqualTo(new Money("50", "USD"));
 
-        Split assetSplit1 = transaction.getSplits().get(1);
-        assertThat(assetSplit1.getUID()).isEqualTo("4930f412665a705eedba39789b6c3a35");
-        assertThat(assetSplit1.getAccountUID()).isEqualTo("dae686a1636addc0dae1ae670701aa4a");
-        assertThat(assetSplit1.getTransactionUID()).isEqualTo("042ff745a80e94e6237fb0549f6d32ae");
-        assertThat(assetSplit1.getType()).isEqualTo(TransactionType.CREDIT);
-        assertThat(assetSplit1.getMemo()).isEqualTo("tip");
-        assertThat(assetSplit1.getValue()).isEqualTo(new Money("5", "USD"));
-        assertThat(assetSplit1.getQuantity()).isEqualTo(new Money("5", "USD"));
-        assertThat(assetSplit1.isPairOf(expenseSplit)).isFalse();
+        Split splitExpense = transaction.getSplits().get(2);
+        assertThat(splitExpense.getUID()).isEqualTo("c50cce06e2bf9085730821c82d0b36ca");
+        assertThat(splitExpense.getAccountUID()).isEqualTo("6a7cf8267314992bdddcee56d71a3908");
+        assertThat(splitExpense.getTransactionUID()).isEqualTo("042ff745a80e94e6237fb0549f6d32ae");
+        assertThat(splitExpense.getType()).isEqualTo(TransactionType.DEBIT);
+        assertThat(splitExpense.getMemo()).isNull();
+        assertThat(splitExpense.getValue()).isEqualTo(new Money("50", "USD"));
+        assertThat(splitExpense.getQuantity()).isEqualTo(new Money("50", "USD"));
 
-        Split assetSplit2 = transaction.getSplits().get(2);
-        assertThat(assetSplit2.getUID()).isEqualTo("b97cd9bbaa17f181d0a5b39b260dabda");
-        assertThat(assetSplit2.getAccountUID()).isEqualTo("ee139a5658a0d37507dc26284798e347");
-        assertThat(assetSplit2.getTransactionUID()).isEqualTo("042ff745a80e94e6237fb0549f6d32ae");
-        assertThat(assetSplit2.getType()).isEqualTo(TransactionType.CREDIT);
-        assertThat(assetSplit2.getMemo()).isNull();
-        assertThat(assetSplit2.getValue()).isEqualTo(new Money("45", "USD"));
-        assertThat(assetSplit2.getQuantity()).isEqualTo(new Money("45", "USD"));
-        assertThat(assetSplit2.isPairOf(expenseSplit)).isFalse();
+        Split splitAsset1 = transaction.getSplits().get(0);
+        assertThat(splitAsset1.getUID()).isEqualTo("4930f412665a705eedba39789b6c3a35");
+        assertThat(splitAsset1.getAccountUID()).isEqualTo("dae686a1636addc0dae1ae670701aa4a");
+        assertThat(splitAsset1.getTransactionUID()).isEqualTo("042ff745a80e94e6237fb0549f6d32ae");
+        assertThat(splitAsset1.getType()).isEqualTo(TransactionType.CREDIT);
+        assertThat(splitAsset1.getMemo()).isEqualTo("tip");
+        assertThat(splitAsset1.getValue()).isEqualTo(new Money("5", "USD"));
+        assertThat(splitAsset1.getQuantity()).isEqualTo(new Money("5", "USD"));
+        assertThat(splitAsset1.isPairOf(splitExpense)).isFalse();
+
+        Split splitAsset2 = transaction.getSplits().get(1);
+        assertThat(splitAsset2.getUID()).isEqualTo("b97cd9bbaa17f181d0a5b39b260dabda");
+        assertThat(splitAsset2.getAccountUID()).isEqualTo("ee139a5658a0d37507dc26284798e347");
+        assertThat(splitAsset2.getTransactionUID()).isEqualTo("042ff745a80e94e6237fb0549f6d32ae");
+        assertThat(splitAsset2.getType()).isEqualTo(TransactionType.CREDIT);
+        assertThat(splitAsset2.getMemo()).isNull();
+        assertThat(splitAsset2.getValue()).isEqualTo(new Money("45", "USD"));
+        assertThat(splitAsset2.getQuantity()).isEqualTo(new Money("45", "USD"));
+        assertThat(splitAsset2.isPairOf(splitExpense)).isFalse();
     }
 
     /**
@@ -207,31 +207,31 @@ public class GncXmlHandlerTest extends BookHelperTest {
 
         // Check splits
         assertThat(transaction.getSplits().size()).isEqualTo(2);
-        // FIXME: don't depend on the order
-        Split split1 = transaction.getSplits().get(0);
-        assertThat(split1.getUID()).isEqualTo("88bbbbac7689a8657b04427f8117a783");
-        assertThat(split1.getAccountUID()).isEqualTo("6a7cf8267314992bdddcee56d71a3908");
-        assertThat(split1.getTransactionUID()).isEqualTo("ded49386f8ea319ccaee043ba062b3e1");
-        assertThat(split1.getType()).isEqualTo(TransactionType.DEBIT);
-        assertThat(split1.getValue().getNumerator()).isEqualTo(2000);
-        assertThat(split1.getValue().getDenominator()).isEqualTo(100);
-        assertThat(split1.getValue()).isEqualTo(new Money("20", "USD"));
-        assertThat(split1.getQuantity().getNumerator()).isEqualTo(2000);
-        assertThat(split1.getQuantity().getDenominator()).isEqualTo(100);
-        assertThat(split1.getQuantity()).isEqualTo(new Money("20", "USD"));
 
-        Split split2 = transaction.getSplits().get(1);
-        assertThat(split2.getUID()).isEqualTo("e0dd885065bfe3c9ef63552fe84c6d23");
-        assertThat(split2.getAccountUID()).isEqualTo("0469e915a22ba7846aca0e69f9f9b683");
-        assertThat(split2.getTransactionUID()).isEqualTo("ded49386f8ea319ccaee043ba062b3e1");
-        assertThat(split2.getType()).isEqualTo(TransactionType.CREDIT);
-        assertThat(split2.getValue().getNumerator()).isEqualTo(2000);
-        assertThat(split2.getValue().getDenominator()).isEqualTo(100);
-        assertThat(split2.getValue()).isEqualTo(new Money("20", "USD"));
-        assertThat(split2.getQuantity().getNumerator()).isEqualTo(1793);
-        assertThat(split2.getQuantity().getDenominator()).isEqualTo(100);
-        assertThat(split2.getQuantity()).isEqualTo(new Money("17.93", "EUR"));
-        assertThat(split2.isPairOf(split1)).isTrue();
+        Split splitDebit = transaction.getSplits().get(1);
+        assertThat(splitDebit.getUID()).isEqualTo("88bbbbac7689a8657b04427f8117a783");
+        assertThat(splitDebit.getAccountUID()).isEqualTo("6a7cf8267314992bdddcee56d71a3908");
+        assertThat(splitDebit.getTransactionUID()).isEqualTo("ded49386f8ea319ccaee043ba062b3e1");
+        assertThat(splitDebit.getType()).isEqualTo(TransactionType.DEBIT);
+        assertThat(splitDebit.getValue().getNumerator()).isEqualTo(2000);
+        assertThat(splitDebit.getValue().getDenominator()).isEqualTo(100);
+        assertThat(splitDebit.getValue()).isEqualTo(new Money("20", "USD"));
+        assertThat(splitDebit.getQuantity().getNumerator()).isEqualTo(2000);
+        assertThat(splitDebit.getQuantity().getDenominator()).isEqualTo(100);
+        assertThat(splitDebit.getQuantity()).isEqualTo(new Money("20", "USD"));
+
+        Split splitCredit = transaction.getSplits().get(0);
+        assertThat(splitCredit.getUID()).isEqualTo("e0dd885065bfe3c9ef63552fe84c6d23");
+        assertThat(splitCredit.getAccountUID()).isEqualTo("0469e915a22ba7846aca0e69f9f9b683");
+        assertThat(splitCredit.getTransactionUID()).isEqualTo("ded49386f8ea319ccaee043ba062b3e1");
+        assertThat(splitCredit.getType()).isEqualTo(TransactionType.CREDIT);
+        assertThat(splitCredit.getValue().getNumerator()).isEqualTo(2000);
+        assertThat(splitCredit.getValue().getDenominator()).isEqualTo(100);
+        assertThat(splitCredit.getValue()).isEqualTo(new Money("20", "USD"));
+        assertThat(splitCredit.getQuantity().getNumerator()).isEqualTo(1793);
+        assertThat(splitCredit.getQuantity().getDenominator()).isEqualTo(100);
+        assertThat(splitCredit.getQuantity()).isEqualTo(new Money("17.93", "EUR"));
+        assertThat(splitCredit.isPairOf(splitDebit)).isTrue();
     }
 
     /**
@@ -264,28 +264,28 @@ public class GncXmlHandlerTest extends BookHelperTest {
         // Check splits
         assertThat(scheduledTransaction.getSplits().size()).isEqualTo(2);
 
-        Split split1 = scheduledTransaction.getSplits().get(0);
-        assertThat(split1.getUID()).isEqualTo("f66794ef262aac3ae085ecc3030f2769");
-        assertThat(split1.getAccountUID()).isEqualTo("6a7cf8267314992bdddcee56d71a3908");
-        assertThat(split1.getTransactionUID()).isEqualTo("b645bef06d0844aece6424ceeec03983");
-        assertThat(split1.getType()).isEqualTo(TransactionType.CREDIT);
-        assertThat(split1.getMemo()).isNull();
-        assertThat(split1.getValue()).isEqualTo(new Money("20", "USD"));
+        Split splitCredit = scheduledTransaction.getSplits().get(0);
+        assertThat(splitCredit.getUID()).isEqualTo("f66794ef262aac3ae085ecc3030f2769");
+        assertThat(splitCredit.getAccountUID()).isEqualTo("6a7cf8267314992bdddcee56d71a3908");
+        assertThat(splitCredit.getTransactionUID()).isEqualTo("b645bef06d0844aece6424ceeec03983");
+        assertThat(splitCredit.getType()).isEqualTo(TransactionType.CREDIT);
+        assertThat(splitCredit.getMemo()).isNull();
+        assertThat(splitCredit.getValue()).isEqualTo(new Money("20", "USD"));
         // FIXME: the quantity is always 0 as it's set from <split:quantity> instead
         // of from the slots
         //assertThat(split1.getQuantity()).isEqualTo(new Money("20", "USD"));
 
-        Split split2 = scheduledTransaction.getSplits().get(1);
-        assertThat(split2.getUID()).isEqualTo("57e2be6ca6b568f8f7c9b2e455e1e21f");
-        assertThat(split2.getAccountUID()).isEqualTo("dae686a1636addc0dae1ae670701aa4a");
-        assertThat(split2.getTransactionUID()).isEqualTo("b645bef06d0844aece6424ceeec03983");
-        assertThat(split2.getType()).isEqualTo(TransactionType.DEBIT);
-        assertThat(split2.getMemo()).isNull();
-        assertThat(split2.getValue()).isEqualTo(new Money("20", "USD"));
+        Split splitDebit = scheduledTransaction.getSplits().get(1);
+        assertThat(splitDebit.getUID()).isEqualTo("57e2be6ca6b568f8f7c9b2e455e1e21f");
+        assertThat(splitDebit.getAccountUID()).isEqualTo("dae686a1636addc0dae1ae670701aa4a");
+        assertThat(splitDebit.getTransactionUID()).isEqualTo("b645bef06d0844aece6424ceeec03983");
+        assertThat(splitDebit.getType()).isEqualTo(TransactionType.DEBIT);
+        assertThat(splitDebit.getMemo()).isNull();
+        assertThat(splitDebit.getValue()).isEqualTo(new Money("20", "USD"));
         // FIXME: the quantity is always 0 as it's set from <split:quantity> instead
         // of from the slots
         //assertThat(split2.getQuantity()).isEqualTo(new Money("20", "USD"));
-        assertThat(split2.isPairOf(split1)).isTrue();
+        assertThat(splitDebit.isPairOf(splitCredit)).isTrue();
     }
 
     /**
@@ -335,22 +335,22 @@ public class GncXmlHandlerTest extends BookHelperTest {
         // Check splits
         assertThat(scheduledTransaction.getSplits().size()).isEqualTo(2);
 
-        Split split1 = scheduledTransaction.getSplits().get(0);
-        assertThat(split1.getAccountUID()).isEqualTo("6a7cf8267314992bdddcee56d71a3908");
-        assertThat(split1.getType()).isEqualTo(TransactionType.CREDIT);
-        assertThat(split1.getValue()).isEqualTo(new Money("20", "USD"));
+        Split splitCredit = scheduledTransaction.getSplits().get(0);
+        assertThat(splitCredit.getAccountUID()).isEqualTo("6a7cf8267314992bdddcee56d71a3908");
+        assertThat(splitCredit.getType()).isEqualTo(TransactionType.CREDIT);
+        assertThat(splitCredit.getValue()).isEqualTo(new Money("20", "USD"));
         // FIXME: the quantity is always 0 as it's set from <split:quantity> instead
         // of from the slots
         //assertThat(split1.getQuantity()).isEqualTo(new Money("20", "USD"));
 
-        Split split2 = scheduledTransaction.getSplits().get(1);
-        assertThat(split2.getAccountUID()).isEqualTo("dae686a1636addc0dae1ae670701aa4a");
-        assertThat(split2.getType()).isEqualTo(TransactionType.DEBIT);
-        assertThat(split2.getValue()).isEqualTo(new Money("20", "USD"));
+        Split splitDebit = scheduledTransaction.getSplits().get(1);
+        assertThat(splitDebit.getAccountUID()).isEqualTo("dae686a1636addc0dae1ae670701aa4a");
+        assertThat(splitDebit.getType()).isEqualTo(TransactionType.DEBIT);
+        assertThat(splitDebit.getValue()).isEqualTo(new Money("20", "USD"));
         // FIXME: the quantity is always 0 as it's set from <split:quantity> instead
         // of from the slots
         //assertThat(split2.getQuantity()).isEqualTo(new Money("20", "USD"));
-        assertThat(split2.isPairOf(split1)).isTrue();
+        assertThat(splitDebit.isPairOf(splitCredit)).isTrue();
     }
 
     @Test

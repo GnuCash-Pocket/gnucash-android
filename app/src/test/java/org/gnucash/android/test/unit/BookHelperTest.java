@@ -54,7 +54,7 @@ public abstract class BookHelperTest extends GnuCashTest {
             XMLReader reader = parser.getXMLReader();
             handler = new GncXmlHandler();
             reader.setContentHandler(handler);
-            InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filename);
+            InputStream inputStream = openResourceStream(filename);
             InputSource inputSource = new InputSource(new BufferedInputStream(inputStream));
             reader.parse(inputSource);
         } catch (ParserConfigurationException | SAXException | IOException e) {

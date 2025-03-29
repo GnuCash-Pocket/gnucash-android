@@ -16,9 +16,14 @@
 
 package org.gnucash.android.export.csv;
 
-import android.content.Context;
+import static com.opencsv.ICSVWriter.RFC4180_LINE_END;
 
+import android.content.Context;
+import android.graphics.Color;
+
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.opencsv.CSVWriterBuilder;
 import com.opencsv.ICSVWriter;
@@ -57,6 +62,7 @@ public class CsvAccountExporter extends Exporter {
     protected void writeExport(@NonNull ExportParams exportParams, @NonNull Writer writer) throws ExporterException, IOException {
         ICSVWriter csvWriter = new CSVWriterBuilder(writer)
             .withSeparator(exportParams.getCsvSeparator())
+            .withLineEnd(RFC4180_LINE_END)
             .build();
         writeExport(csvWriter);
         csvWriter.close();
@@ -76,24 +82,41 @@ public class CsvAccountExporter extends Exporter {
 
         final String[] fields = new String[names.length];
         for (Account account : accounts) {
-            fields[0] = account.getAccountType().toString();
+            if (account.isRoot()) continue;
+            if (account.isTemplate()) continue;
+
+            fields[0] = account.getAccountType().name();
             fields[1] = account.getFullName();
             fields[2] = account.getName();
 
-            fields[3] = null; //Account code
+            fields[3] = ""; //Account code
             fields[4] = account.getDescription();
-            fields[5] = account.getColorHexString();
-            fields[6] = null; //Account notes
+            fields[5] = formatColor(account.getColor());
+            fields[6] = orEmpty(account.getNote());
 
             fields[7] = account.getCommodity().getCurrencyCode();
             fields[8] = account.getCommodity().getNamespace();
             fields[9] = format(account.isHidden());
-
             fields[10] = format(false); //Tax
             fields[11] = format(account.isPlaceholder());
 
             csvWriter.writeNext(fields);
         }
+    }
+
+    @NonNull
+    private String orEmpty(@Nullable String s) {
+        return (s != null) ? s : "";
+    }
+
+    private String formatColor(@ColorInt int color) {
+        if (color != Account.DEFAULT_COLOR) {
+            int r = Color.red(color);
+            int g = Color.green(color);
+            int b = Color.blue(color);
+            return "rgb(" + r + "," + g + "," + b + ")";
+        }
+        return "";
     }
 
     private String format(boolean value) {

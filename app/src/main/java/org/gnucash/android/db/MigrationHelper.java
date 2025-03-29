@@ -118,6 +118,9 @@ public class MigrationHelper {
     private static void migrateTo18(SQLiteDatabase db) {
         Timber.i("Upgrading database to version 18");
 
+
+        String sqlAddNotes = "ALTER TABLE " + AccountEntry.TABLE_NAME
+            + " ADD COLUMN " + AccountEntry.COLUMN_NOTES + " text";
         String sqlAddBalance = "ALTER TABLE " + AccountEntry.TABLE_NAME
             + " ADD COLUMN " + AccountEntry.COLUMN_BALANCE + " varchar(255)";
         String sqlAddClearedBalance = "ALTER TABLE " + AccountEntry.TABLE_NAME
@@ -127,6 +130,7 @@ public class MigrationHelper {
         String sqlAddReconciledBalance = "ALTER TABLE " + AccountEntry.TABLE_NAME
             + " ADD COLUMN " + AccountEntry.COLUMN_RECONCILED_BALANCE + " varchar(255)";
 
+        db.execSQL(sqlAddNotes);
         db.execSQL(sqlAddBalance);
         db.execSQL(sqlAddClearedBalance);
         db.execSQL(sqlAddNoClosingBalance);

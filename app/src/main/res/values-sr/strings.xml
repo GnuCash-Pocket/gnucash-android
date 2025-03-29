@@ -20,7 +20,8 @@
     <string name="description_add_transaction_icon">Додајте нову трансакцију на рачун</string>
     <string name="description_view_account_icon">Детаљи рачуна</string>
     <string name="label_no_accounts">Нема рачуна за приказ</string>
-    <string name="label_account_name">Назив рачуна</string>
+    <!-- msgid "Account Name" -->
+    <string name="account_name">Назив налога</string>
     <string name="btn_save">&amp;Сачувај</string>
     <string name="btn_test">Тест</string>
     <string name="label_passcode">Унесите лозинку</string>
@@ -28,7 +29,7 @@
     <string name="toast_passcode_set">Лозинка постављена</string>
     <string name="label_confirm_passcode">Молим, потврдите лозинку</string>
     <string name="toast_invalid_passcode_confirmation">Неважећа потврда лозинке. Покушајте поново</string>
-    <string name="label_transaction_name">Опис</string>
+    <string name="description">Опис</string>
     <string name="label_transaction_amount">Износ</string>
     <string name="title_add_transaction">Нова трансакција</string>
     <string name="label_no_transactions">Нема трансакција за приказ</string>
@@ -134,7 +135,8 @@
     <string name="title_progress_exporting_transactions">Извез трансакција</string>
     <string name="label_no_recurring_transactions">Не понављајућих трансакција за преглед.</string>
     <string name="toast_recurring_transaction_deleted">Успешно је обрисана понављајућа трансакција</string>
-    <string name="label_placeholder_account">Резервисани налог</string>
+    <!-- msgid "Placeholder" -->
+    <string name="placeholder">Местодржач</string>
     <string name="label_default_transfer_account">Подразумевани налог за пренос</string>
     <plurals name="label_sub_accounts">
         <item quantity="one">%d под-налог</item>
@@ -426,41 +428,54 @@
     <string name="label_csv_separator">Separator</string>
     <string name="export_notice_csv">Exports transactions as CSV</string>
     <string name="no_books">No books in the database</string>
-    <!-- Copied from "csv-transactions-export.cpp" -->
-    <string-array name="csv_transaction_headers">
-        <item>Date</item>
-        <item>Transaction ID</item>
-        <item>Number</item>
-        <item>Description</item>
-        <item>Notes</item>
-        <item>Commodity/Currency</item>
-        <item>Void Reason</item>
-        <item>Action</item>
-        <item>Memo</item>
-        <item>Full Account Name</item>
-        <item>Account Name</item>
-        <item>Amount With Sym</item>
-        <item>Amount Num.</item>
-        <item>Value With Sym</item>
-        <item>Value Num.</item>
-        <item>Reconcile</item>
-        <item>Reconcile Date</item>
-        <item>Rate/Price</item>
-    </string-array>
-    <string-array name="csv_account_headers">
-        <item>Type</item>
-        <item>Full Name</item>
-        <item>Name</item>
-        <item>Code</item>
-        <item>Description</item>
-        <item>Color</item>
-        <item>Notes</item>
-        <item>Commoditym</item>
-        <item>Commodityn</item>
-        <item>Hidden</item>
-        <item>Tax</item>
-        <item>Placeholder</item>
-    </string-array>
+    <!-- msgid "Date" -->
+    <string name="csv_transaction_header_date">Датум</string>
+    <!-- msgid "Transaction ID" -->
+    <string name="csv_transaction_header_id">Пренос</string>
+    <!-- msgid "Number" -->
+    <string name="csv_transaction_header_number">Број</string>
+    <!-- msgid "Notes" -->
+    <string name="csv_transaction_header_notes">Белешке</string>
+    <!-- msgid "Commodity/Currency" -->
+    <string name="csv_transaction_header_commodity">Општа валута</string>
+    <!-- msgid "Void Reason" -->
+    <string name="csv_transaction_header_void">Разлог поништавања</string>
+    <!-- msgid "Action" -->
+    <string name="csv_transaction_header_action">Радња</string>
+    <!-- msgid "Memo" -->
+    <string name="csv_transaction_header_memo">Белешка</string>
+    <!-- msgid "Amount With Sym" -->
+    <string name="csv_transaction_header_amount_sym">У „Са збиром“</string>
+    <!-- msgid "Amount Num." -->
+    <string name="csv_transaction_header_amount">Износ доспећа</string>
+    <!-- msgid "Value With Sym" -->
+    <string name="csv_transaction_header_value_sym">У „Са збиром“</string>
+    <!-- msgid "Value Num." -->
+    <string name="csv_transaction_header_value">Вредност</string>
+    <!-- msgid "Reconcile" -->
+    <string name="csv_transaction_header_reconcile">Измири</string>
+    <!-- msgid "Reconcile Date" -->
+    <string name="csv_transaction_header_reconcile_date">Датум измирења</string>
+    <!-- msgid "Rate/Price" -->
+    <string name="csv_transaction_header_rate">До стопе/цене</string>
+    <!-- msgid "Type" -->
+    <string name="type">Врста</string>
+    <!-- msgid "Full Account Name" -->
+    <string name="csv_account_header_account_full_name">Пуно име налога</string>
+    <!-- msgid "Account Code" -->
+    <string name="account_code">Код налога</string>
+    <!-- msgid "Account Color" -->
+    <string name="account_color">Боја налога</string>
+    <!-- msgid "Notes" -->
+    <string name="notes">Белешке</string>
+    <!-- msgid "Symbol" -->
+    <string name="csv_account_header_symbol">Симбол</string>
+    <!-- msgid "Namespace" -->
+    <string name="csv_account_header_namespace">Називни простор</string>
+    <!-- msgid "Hidden" -->
+    <string name="hidden">Скривено</string>
+    <!-- msgid "Tax Info" -->
+    <string name="csv_account_header_tax">Порески подаци</string>
     <string name="title_edit_budget">Edit Budget</string>
     <string name="title_delete_transaction_backup">When delete transaction?</string>
     <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>

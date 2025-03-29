@@ -193,9 +193,24 @@ public class GncXmlExporter extends Exporter {
             slotValue.add(defaultTransferAcctUID);
         }
 
-        slotKey.add(KEY_FAVORITE);
-        slotType.add(ATTR_VALUE_STRING);
-        slotValue.add(Boolean.toString(account.isFavorite()));
+        if (account.isFavorite()) {
+            slotKey.add(KEY_FAVORITE);
+            slotType.add(ATTR_VALUE_STRING);
+            slotValue.add("true");
+        }
+
+        if (account.isHidden()) {
+            slotKey.add(KEY_HIDDEN);
+            slotType.add(ATTR_VALUE_STRING);
+            slotValue.add("true");
+        }
+
+        String notes = account.getNote();
+        if (!TextUtils.isEmpty(notes)) {
+            slotKey.add(KEY_NOTES);
+            slotType.add(ATTR_VALUE_STRING);
+            slotValue.add(notes);
+        }
 
         xmlSerializer.startTag(null, TAG_ACCT_SLOTS);
         exportSlots(xmlSerializer, slotKey, slotType, slotValue);

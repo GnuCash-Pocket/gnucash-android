@@ -20,7 +20,8 @@
     <string name="description_add_transaction_icon">Añadir una nueva transacción a una cuenta</string>
     <string name="description_view_account_icon">Ver detalles de la cuenta</string>
     <string name="label_no_accounts">No hay cuentas que mostrar</string>
-    <string name="label_account_name">Nombre de la cuenta</string>
+    <!-- msgid "Account Name" -->
+    <string name="account_name">Nombre de Cuenta</string>
     <string name="btn_save">Guardar</string>
     <string name="btn_test">Probar</string>
     <string name="label_passcode">Introducir contraseña</string>
@@ -28,7 +29,7 @@
     <string name="toast_passcode_set">Contraseña establecida</string>
     <string name="label_confirm_passcode">Confirme su contraseña</string>
     <string name="toast_invalid_passcode_confirmation">Confirmación de contraseña incorrecta. Inténtelo de nuevo</string>
-    <string name="label_transaction_name">Descripción</string>
+    <string name="description">Descripción</string>
     <string name="label_transaction_amount">Importe</string>
     <string name="title_add_transaction">Nueva transacción</string>
     <string name="label_no_transactions">No hay transacciones que mostrar</string>
@@ -134,7 +135,8 @@
     <string name="title_progress_exporting_transactions">Exportando transacciones</string>
     <string name="label_no_recurring_transactions">No hay transacciones recurrentes que mostrar.</string>
     <string name="toast_recurring_transaction_deleted">Transación recurrente borrada con éxito</string>
-    <string name="label_placeholder_account">Cuenta de referencia</string>
+    <!-- msgid "Placeholder" -->
+    <string name="placeholder">Contenedor</string>
     <string name="label_default_transfer_account">Cuenta de transferencia por defecto</string>
     <plurals name="label_sub_accounts">
         <item quantity="one">%d sub-cuenta</item>
@@ -423,41 +425,54 @@
     <string name="label_csv_separator">Separador</string>
     <string name="export_notice_csv">Exportar transacciones como CSV</string>
     <string name="no_books">No books in the database</string>
-    <!-- Copied from "csv-transactions-export.cpp" -->
-    <string-array name="csv_transaction_headers">
-        <item>Fecha</item>
-        <item>ID de transacción</item>
-        <item>Número</item>
-        <item>Descripción</item>
-        <item>Notas</item>
-        <item>Moneda</item>
-        <item>Razón de Anulación</item>
-        <item>Acción</item>
-        <item>Memo</item>
-        <item>Nombre completo de cuenta</item>
-        <item>Nombre de cuenta</item>
-        <item>Cantidad con Sym</item>
-        <item>Núm de cantidad</item>
-        <item>Value With Sym</item>
-        <item>Value Num.</item>
-        <item>Reconciliar</item>
-        <item>Fecha de Conciliación</item>
-        <item>Tarifa/Precio</item>
-    </string-array>
-    <string-array name="csv_account_headers">
-        <item>Tipo</item>
-        <item>Nombre completo</item>
-        <item>Nombre</item>
-        <item>Código</item>
-        <item>Descripción</item>
-        <item>Color</item>
-        <item>Notas</item>
-        <item>Commodidad</item>
-        <item>Commodidad</item>
-        <item>Escondido</item>
-        <item>Impuesto</item>
-        <item>Texto en el campo</item>
-    </string-array>
+    <!-- msgid "Date" -->
+    <string name="csv_transaction_header_date">Fecha</string>
+    <!-- msgid "Transaction ID" -->
+    <string name="csv_transaction_header_id">ID Transacción</string>
+    <!-- msgid "Number" -->
+    <string name="csv_transaction_header_number">Número</string>
+    <!-- msgid "Notes" -->
+    <string name="csv_transaction_header_notes">Anotaciones</string>
+    <!-- msgid "Commodity/Currency" -->
+    <string name="csv_transaction_header_commodity">Acción/Moneda</string>
+    <!-- msgid "Void Reason" -->
+    <string name="csv_transaction_header_void">Razón vacío</string>
+    <!-- msgid "Action" -->
+    <string name="csv_transaction_header_action">Operación</string>
+    <!-- msgid "Memo" -->
+    <string name="csv_transaction_header_memo">Memorándum</string>
+    <!-- msgid "Amount With Sym" -->
+    <string name="csv_transaction_header_amount_sym">Cantidad con Sym</string>
+    <!-- msgid "Amount Num." -->
+    <string name="csv_transaction_header_amount">Num. Cantidad</string>
+    <!-- msgid "Value With Sym" -->
+    <string name="csv_transaction_header_value_sym">Valor con símbolo</string>
+    <!-- msgid "Value Num." -->
+    <string name="csv_transaction_header_value">Valor Núm.</string>
+    <!-- msgid "Reconcile" -->
+    <string name="csv_transaction_header_reconcile">Conciliar</string>
+    <!-- msgid "Reconcile Date" -->
+    <string name="csv_transaction_header_reconcile_date">Fecha Conciliada</string>
+    <!-- msgid "Rate/Price" -->
+    <string name="csv_transaction_header_rate">Tarifa/Precio</string>
+    <!-- msgid "Type" -->
+    <string name="type">Tipo</string>
+    <!-- msgid "Full Account Name" -->
+    <string name="csv_account_header_account_full_name">Nombre Completo de Cuenta</string>
+    <!-- msgid "Account Code" -->
+    <string name="account_code">Código de Cuenta</string>
+    <!-- msgid "Account Color" -->
+    <string name="account_color">Color de Cuenta</string>
+    <!-- msgid "Notes" -->
+    <string name="notes">Anotaciones</string>
+    <!-- msgid "Symbol" -->
+    <string name="csv_account_header_symbol">Símbolo</string>
+    <!-- msgid "Namespace" -->
+    <string name="csv_account_header_namespace">Espacio de nombres</string>
+    <!-- msgid "Hidden" -->
+    <string name="hidden">Oculto</string>
+    <!-- msgid "Tax Info" -->
+    <string name="csv_account_header_tax">Info. Imposición</string>
     <string name="title_edit_budget">Edit Budget</string>
     <string name="title_delete_transaction_backup">When delete transaction?</string>
     <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>

@@ -341,10 +341,10 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
      */
     public Cursor fetchSplitsForTransaction(String transactionUID) {
         Timber.v("Fetching all splits for transaction UID %s", transactionUID);
-        return mDb.query(SplitEntry.TABLE_NAME,
-            null, SplitEntry.COLUMN_TRANSACTION_UID + " = ?",
-            new String[]{transactionUID},
-            null, null, null);
+        String where = SplitEntry.COLUMN_TRANSACTION_UID + " = ?";
+        String[] whereArgs = new String[]{transactionUID};
+        String orderBy = SplitEntry.COLUMN_TYPE + " ASC";
+        return mDb.query(mTableName, null, where, whereArgs, null, null, orderBy);
     }
 
     /**

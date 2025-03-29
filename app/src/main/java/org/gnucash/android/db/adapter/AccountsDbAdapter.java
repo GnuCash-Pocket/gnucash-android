@@ -118,7 +118,8 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             AccountEntry.COLUMN_HIDDEN,
             AccountEntry.COLUMN_COMMODITY_UID,
             AccountEntry.COLUMN_PARENT_ACCOUNT_UID,
-            AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID
+            AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID,
+            AccountEntry.COLUMN_NOTES
         }, true);
         this.transactionsDbAdapter = transactionsDbAdapter;
         this.commoditiesDbAdapter = transactionsDbAdapter.commoditiesDbAdapter;
@@ -243,6 +244,9 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         if (account.getDefaultTransferAccountUID() != null) {
             stmt.bindString(13, account.getDefaultTransferAccountUID());
         }
+        if (account.getNote() != null) {
+            stmt.bindString(14, account.getNote());
+        }
 
         return stmt;
     }
@@ -348,8 +352,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             } else {
                 // indirect descendant
                 Account parentAccount = accountsByUID.get(account.getParentUID());
-                account.setFullName(parentAccount.getFullName() +
-                    ACCOUNT_NAME_SEPARATOR + account.getName());
+                account.setFullName(parentAccount.getFullName() + ACCOUNT_NAME_SEPARATOR + account.getName());
             }
             // update DB
             contentValues.put(AccountEntry.COLUMN_FULL_NAME, account.getFullName());
@@ -451,7 +454,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         account.setAccountType(AccountType.valueOf(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_TYPE))));
         String commodityUID = c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_COMMODITY_UID));
         account.setCommodity(commoditiesDbAdapter.getRecord(commodityUID));
-        account.setPlaceHolderFlag(c.getInt(c.getColumnIndexOrThrow(AccountEntry.COLUMN_PLACEHOLDER)) != 0);
+        account.setPlaceholder(c.getInt(c.getColumnIndexOrThrow(AccountEntry.COLUMN_PLACEHOLDER)) != 0);
         account.setDefaultTransferAccountUID(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID)));
         String color = c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_COLOR_CODE));
         if (!TextUtils.isEmpty(color))
@@ -459,6 +462,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         account.setFavorite(c.getInt(c.getColumnIndexOrThrow(AccountEntry.COLUMN_FAVORITE)) != 0);
         account.setFullName(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_FULL_NAME)));
         account.setHidden(c.getInt(c.getColumnIndexOrThrow(AccountEntry.COLUMN_HIDDEN)) != 0);
+        account.setNote(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_NOTES)));
         return account;
     }
 
@@ -510,8 +514,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return {@link AccountType} of the account
      */
     public AccountType getAccountType(long accountId) {
-        String uid = getUID(accountId);
-        return getAccountType(uid);
+        return getAccountType(getUID(accountId));
     }
 
     /**
@@ -993,7 +996,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             + AccountEntry.COLUMN_TYPE + " != ?";
         if (TextUtils.isEmpty(filterName)) {
             selection += " AND (" + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " IS NULL OR "
-                + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " = ?) ";
+                + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " = ?)";
             selectionArgs = new String[]{AccountType.ROOT.name(), getOrCreateGnuCashRootAccountUID()};
         } else {
             selection += " AND (" + AccountEntry.COLUMN_NAME + " LIKE '%" + escapeForLike(filterName) + "%')";
@@ -1073,7 +1076,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         rootAccount.setAccountType(AccountType.ROOT);
         rootAccount.setFullName(ROOT_ACCOUNT_FULL_NAME);
         rootAccount.setHidden(true);
-        rootAccount.setPlaceHolderFlag(true);
+        rootAccount.setPlaceholder(true);
         ContentValues contentValues = new ContentValues();
         contentValues.put(AccountEntry.COLUMN_UID, rootAccount.getUID());
         contentValues.put(AccountEntry.COLUMN_NAME, rootAccount.getName());

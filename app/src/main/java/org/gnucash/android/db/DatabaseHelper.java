@@ -69,6 +69,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         + AccountEntry.COLUMN_PLACEHOLDER + " tinyint default 0, "
         + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " varchar(255), "
         + AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID + " varchar(255), "
+        + AccountEntry.COLUMN_NOTES + " text, "
         + AccountEntry.COLUMN_BALANCE + " varchar(255), "
         + AccountEntry.COLUMN_CLEARED_BALANCE + " varchar(255), "
         + AccountEntry.COLUMN_NOCLOSING_BALANCE + " varchar(255), "

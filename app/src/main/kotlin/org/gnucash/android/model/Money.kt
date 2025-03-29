@@ -235,10 +235,11 @@ class Money : Number, Comparable<Money>, Parcelable {
      *
      * @return Scale of amount as integer
      */
-    private val scale: Int get() {
-        val s = if (commodity.isTemplate) amount.scale() else commodity.smallestFractionDigits
-        return max(0, s)
-    }
+    private val scale: Int
+        get() {
+            val s = if (commodity.isTemplate) amount.scale() else commodity.smallestFractionDigits
+            return max(0, s)
+        }
 
     /**
      * Returns the amount represented by this Money object
@@ -315,16 +316,8 @@ class Money : Number, Comparable<Money>, Parcelable {
                     currency = commodity.currency
                 } catch (ignore: IllegalArgumentException) {
                 }
-                //if we want to show US Dollars for locales which also use Dollars, for example, Canada
-                val symbol = if (commodity == Commodity.USD && locale != Locale.US) {
-                    "US$"
-                } else {
-                    commodity.symbol
-                }
-                decimalFormatSymbols = decimalFormatSymbols.apply { currencySymbol = symbol }
-            } else {
-                decimalFormatSymbols = decimalFormatSymbols.apply { currencySymbol = commodity.symbol }
             }
+            decimalFormatSymbols = decimalFormatSymbols.apply { currencySymbol = commodity.symbol }
             minimumFractionDigits = precision
             maximumFractionDigits = precision
         }

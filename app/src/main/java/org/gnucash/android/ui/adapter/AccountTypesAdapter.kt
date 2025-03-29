@@ -15,9 +15,11 @@ class AccountTypesAdapter @JvmOverloads constructor(
         setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         val records = AccountType.entries.filter { it != AccountType.ROOT }
         val labels = context.resources.getStringArray(R.array.account_type_entry_values)
+        val items = records.map { type -> Label(type, labels[type.labelIndex]) }
+            .sortedBy { it.label   }
 
         clear()
-        addAll(records.mapIndexed { index, type -> Label(type, labels[index]) })
+        addAll(items)
     }
 
     override fun hasStableIds(): Boolean {

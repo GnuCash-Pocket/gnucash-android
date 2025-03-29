@@ -167,7 +167,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
         }
 
         if (transaction.getNote() != null && !transaction.getNote().isEmpty()) {
-            mBinding.trnNotes.setText(transaction.getNote());
+            mBinding.notes.setText(transaction.getNote());
             mBinding.rowTrnNotes.setVisibility(View.VISIBLE);
         } else {
             mBinding.rowTrnNotes.setVisibility(View.GONE);

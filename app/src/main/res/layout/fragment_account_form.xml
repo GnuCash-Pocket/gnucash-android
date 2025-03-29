@@ -32,7 +32,6 @@
 
             <EditText
                 android:id="@+id/input_account_name"
-                style="@style/ListItemPrimaryText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="15"
@@ -40,51 +39,7 @@
                 android:inputType="textCapWords" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <TextView
-            style="@style/TextAppearance.EditAccount.Label"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginTop="@dimen/form_row_bottom_margin"
-            android:gravity="center_vertical"
-            android:text="@string/label_account_currency" />
-
-        <Spinner
-            android:id="@+id/input_currency_spinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="?android:attr/listPreferredItemHeight" />
-
-        <TextView
-            style="@style/TextAppearance.EditAccount.Label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/form_row_bottom_margin"
-            android:text="@string/label_account_color_and_type" />
-
-        <LinearLayout
-            android:id="@+id/layout_color_type"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <org.gnucash.android.ui.colorpicker.ColorSquare
-                android:id="@+id/input_color_picker"
-                style="?android:attr/quickContactBadgeStyleSmallWindowMedium"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="center"
-                android:layout_marginStart="@dimen/form_row_bottom_margin" />
-
-            <Spinner
-                android:id="@+id/input_account_type_spinner"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/form_row_bottom_margin"
-                android:layout_weight="1"
-                android:minHeight="?android:attr/listPreferredItemHeight" />
-        </LinearLayout>
-
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/description_input_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/form_row_bottom_margin">
@@ -94,78 +49,121 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="15"
-                android:hint="@string/hint_account_description"
+                android:hint="@string/hint_description"
                 android:inputType="textCapSentences" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <Switch
-            android:id="@+id/checkbox_placeholder_account"
+            android:id="@+id/checkbox_parent_account"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/form_row_bottom_margin"
+            android:text="@string/label_parent_account" />
+
+        <Spinner
+            android:id="@+id/input_parent_account"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/form_row_bottom_margin">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_account_type" />
+
+            <Spinner
+                android:id="@+id/input_account_type_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/dialog_padding" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/form_row_bottom_margin"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:text="@string/label_account_currency" />
+
+            <Spinner
+                android:id="@+id/input_currency_spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/dialog_padding" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/form_row_bottom_margin">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_account_color" />
+
+            <Button
+                android:id="@+id/input_color_picker"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/dialog_padding"
+                android:backgroundTint="@color/account_default" />
+        </LinearLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/form_row_bottom_margin">
+
+            <EditText
+                android:id="@+id/notes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/hint_notes"
+                android:inputType="textCapSentences" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <CheckBox
+            android:id="@+id/placeholder_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/form_row_bottom_margin"
             android:text="@string/label_placeholder_account" />
 
-        <Switch
+        <CheckBox
+            android:id="@+id/hidden_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/form_row_bottom_margin"
+            android:text="@string/label_hidden" />
+
+        <CheckBox
             android:id="@+id/favorite_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/form_row_bottom_margin"
             android:text="@string/menu_title_favorite" />
 
-        <TextView
-            android:id="@+id/label_parent_account"
-            style="@style/TextAppearance.EditAccount.Label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/form_row_bottom_margin"
-            android:text="@string/label_parent_account" />
-
-        <LinearLayout
-            android:id="@+id/layout_parent_account"
+        <Switch
+            android:id="@+id/checkbox_default_transfer_account"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Spinner
-                android:id="@+id/input_parent_account"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:minHeight="?android:attr/listPreferredItemHeight" />
-
-            <Switch
-                android:id="@+id/checkbox_parent_account"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:focusable="false" />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/label_default_transfer_account"
-            style="@style/TextAppearance.EditAccount.Label"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/form_row_bottom_margin"
             android:text="@string/label_default_transfer_account" />
 
-        <LinearLayout
-            android:id="@+id/layout_default_transfer_account"
+        <Spinner
+            android:id="@+id/input_default_transfer_account"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Spinner
-                android:id="@+id/input_default_transfer_account"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:minHeight="?android:attr/listPreferredItemHeight" />
-
-            <Switch
-                android:id="@+id/checkbox_default_transfer_account"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:focusable="false" />
-        </LinearLayout>
+            android:layout_height="wrap_content" />
     </LinearLayout>
 </ScrollView>

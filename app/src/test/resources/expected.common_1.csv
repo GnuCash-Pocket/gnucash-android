@@ -1,0 +1,5 @@
+"Date","Transaction ID","Number","Description","Notes","Commodity/Currency","Void Reason","Action","Memo","Full Account Name","Account Name","Amount With Sym","Amount Num.","Value With Sym","Value Num.","Reconcile","Reconcile Date","Rate/Price"
+"27/03/25","ca215bd292094eae8267d4cba5e6a0f1","","Amazon","hardcover","CURRENCY::USD","","","","Assets:Current Assets:Cash in Wallet","Cash in Wallet","-$ 123.45","-123.45","-$ 123.45","-123.45","n","","1.0000"
+"27/03/25","ca215bd292094eae8267d4cba5e6a0f1","","Amazon","hardcover","CURRENCY::USD","","","bible","Expenses:Books","Books","$ 123.45","123.45","$ 123.45","123.45","n","","1.0000"
+"27/03/25","8cd6e083bef74250b0aa3049f7e81084","","Verizon","","CURRENCY::USD","","","","Assets:Current Assets:Euro Wallet","Euro Wallet","-€ 930.00","-930.00","-$ 1,000.00","-1000.00","n","","1 + 7/93"
+"27/03/25","8cd6e083bef74250b0aa3049f7e81084","","Verizon","","CURRENCY::USD","","","Android smartphone","Expenses:Phone","Phone","$ 1,000.00","1000.00","$ 1,000.00","1000.00","n","","1.0000"

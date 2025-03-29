@@ -27,6 +27,7 @@
     <color name="account_gold">#EE8600</color>
     <color name="account_blue">#1469EB</color>
     <color name="account_purple">#B304AD</color>
+    <color name="account_default">#EDECEB</color>
     <color name="action_mode_background">#616161</color>
 
     <color name="theme_primary">#2E7D32</color> <!-- 800 -->
