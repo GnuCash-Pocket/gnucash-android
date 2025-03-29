@@ -19,7 +19,6 @@ import android.content.Intent
 import org.gnucash.android.BuildConfig
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.export.ofx.OfxHelper
-import org.gnucash.android.model.Account.Companion.convertToOfxAccountType
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import java.util.Date
@@ -299,84 +298,6 @@ class Transaction : BaseModel {
      */
     fun setTime(timeInMillis: Long) {
         timeMillis = timeInMillis
-    }
-
-    /**
-     * Converts transaction to XML DOM corresponding to OFX Statement transaction and
-     * returns the element node for the transaction.
-     * The Unique ID of the account is needed in order to properly export double entry transactions
-     *
-     * @param doc        XML document to which transaction should be added
-     * @param accountUID Unique Identifier of the account which called the method.  @return Element in DOM corresponding to transaction
-     */
-    fun toOFX(doc: Document, accountUID: String): Element {
-        val acctDbAdapter = AccountsDbAdapter.getInstance()
-        val balance = getBalance(accountUID)
-        val transactionType = if (balance.isNegative) {
-            TransactionType.DEBIT
-        } else {
-            TransactionType.CREDIT
-        }
-
-        val transactionNode = doc.createElement(OfxHelper.TAG_STATEMENT_TRANSACTION)
-        val typeNode = doc.createElement(OfxHelper.TAG_TRANSACTION_TYPE)
-        typeNode.appendChild(doc.createTextNode(transactionType.toString()))
-        transactionNode.appendChild(typeNode)
-
-        val datePosted = doc.createElement(OfxHelper.TAG_DATE_POSTED)
-        datePosted.appendChild(doc.createTextNode(OfxHelper.getOfxFormattedTime(timeMillis)))
-        transactionNode.appendChild(datePosted)
-
-        val dateUser = doc.createElement(OfxHelper.TAG_DATE_USER)
-        dateUser.appendChild(doc.createTextNode(OfxHelper.getOfxFormattedTime(timeMillis)))
-        transactionNode.appendChild(dateUser)
-
-        val amount = doc.createElement(OfxHelper.TAG_TRANSACTION_AMOUNT)
-        amount.appendChild(doc.createTextNode(balance.toPlainString()))
-        transactionNode.appendChild(amount)
-
-        val transID = doc.createElement(OfxHelper.TAG_TRANSACTION_FITID)
-        transID.appendChild(doc.createTextNode(uid))
-        transactionNode.appendChild(transID)
-
-        val name = doc.createElement(OfxHelper.TAG_NAME)
-        name.appendChild(doc.createTextNode(description))
-        transactionNode.appendChild(name)
-
-        if (note != null && note!!.isNotEmpty()) {
-            val memo = doc.createElement(OfxHelper.TAG_MEMO)
-            memo.appendChild(doc.createTextNode(note))
-            transactionNode.appendChild(memo)
-        }
-
-        if (_splitList.size == 2) { //if we have exactly one other split, then treat it like a transfer
-            var transferAccountUID = accountUID
-            for (split in _splitList) {
-                if (split.accountUID != accountUID) {
-                    transferAccountUID = split.accountUID!!
-                    break
-                }
-            }
-            val bankId = doc.createElement(OfxHelper.TAG_BANK_ID)
-            bankId.appendChild(doc.createTextNode(OfxHelper.APP_ID))
-
-            val acctId = doc.createElement(OfxHelper.TAG_ACCOUNT_ID)
-            acctId.appendChild(doc.createTextNode(transferAccountUID))
-
-            val accttype = doc.createElement(OfxHelper.TAG_ACCOUNT_TYPE)
-            val ofxAccountType = convertToOfxAccountType(
-                acctDbAdapter.getAccountType(transferAccountUID)
-            )
-            accttype.appendChild(doc.createTextNode(ofxAccountType.toString()))
-
-            val bankAccountTo = doc.createElement(OfxHelper.TAG_BANK_ACCOUNT_TO)
-            bankAccountTo.appendChild(bankId)
-            bankAccountTo.appendChild(acctId)
-            bankAccountTo.appendChild(accttype)
-
-            transactionNode.appendChild(bankAccountTo)
-        }
-        return transactionNode
     }
 
     companion object {

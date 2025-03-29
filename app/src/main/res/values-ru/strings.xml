@@ -459,8 +459,8 @@
         <item>Описание</item>
         <item>Цвет</item>
         <item>Примечания</item>
-        <item>Commoditym</item>
-        <item>Commodityn</item>
+        <item>Symbol</item>
+        <item>Namespace</item>
         <item>Скрытый</item>
         <item>Налог</item>
         <item>Заполнитель</item>

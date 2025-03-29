@@ -452,8 +452,8 @@
         <item>Descrizione</item>
         <item>Colore</item>
         <item>Note</item>
-        <item>Commoditym</item>
-        <item>Commodityn</item>
+        <item>Symbol</item>
+        <item>Namespace</item>
         <item>Nascosta</item>
         <item>Imposta</item>
         <item>Segnaposto</item>

@@ -69,7 +69,7 @@ public class GncXmlHandlerTest extends BookHelperTest {
         assertThat(assetsAccount.getParentUID()).isEqualTo(rootAccount.getUID());
         assertThat(assetsAccount.getName()).isEqualTo("Assets");
         assertThat(assetsAccount.isHidden()).isFalse();
-        assertThat(assetsAccount.isPlaceholderAccount()).isTrue();
+        assertThat(assetsAccount.isPlaceholder()).isTrue();
         assertThat(assetsAccount.getAccountType()).isEqualTo(AccountType.ASSET);
 
         Account diningAccount = mAccountsDbAdapter.getRecord("6a7cf8267314992bdddcee56d71a3908");
@@ -77,7 +77,7 @@ public class GncXmlHandlerTest extends BookHelperTest {
         assertThat(diningAccount.getName()).isEqualTo("Dining");
         assertThat(diningAccount.getDescription()).isEqualTo("Dining");
         assertThat(diningAccount.isHidden()).isFalse();
-        assertThat(diningAccount.isPlaceholderAccount()).isFalse();
+        assertThat(diningAccount.isPlaceholder()).isFalse();
         assertThat(diningAccount.isFavorite()).isFalse();
         assertThat(diningAccount.getAccountType()).isEqualTo(AccountType.EXPENSE);
         assertThat(diningAccount.getCommodity().getCurrencyCode()).isEqualTo("USD");

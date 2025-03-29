@@ -562,7 +562,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                     mAccountList.add(mAccount);
                     mAccountMap.put(mAccount.getUID(), mAccount);
                     // check ROOT account
-                    if (mAccount.getAccountType() == AccountType.ROOT) {
+                    if (mAccount.isRoot()) {
                         if (mRootAccount == null) {
                             mRootAccount = mAccount;
                         } else {
@@ -631,7 +631,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 String slotType = slotTypes.pop();
                 if (mInPlaceHolderSlot) {
                     //Timber.v("Setting account placeholder flag");
-                    mAccount.setPlaceHolderFlag(Boolean.parseBoolean(characterString));
+                    mAccount.setPlaceholder(Boolean.parseBoolean(characterString));
                     mInPlaceHolderSlot = false;
                 } else if (mInColorSlot) {
                     //Timber.d("Parsing color code: " + characterString);
@@ -1020,7 +1020,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
             String parentAccountFullName;
             while (!stack.isEmpty()) {
                 Account acc = stack.peek();
-                if (acc.getAccountType() == AccountType.ROOT) {
+                if (acc.isRoot()) {
                     // ROOT_ACCOUNT_FULL_NAME should ensure ROOT always sorts first
                     mapFullName.put(acc.getUID(), AccountsDbAdapter.ROOT_ACCOUNT_FULL_NAME);
                     stack.pop();
@@ -1030,7 +1030,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 Account parentAccount = mAccountMap.get(parentUID);
                 // ROOT account will be added if not exist, so now only ROOT
                 // has an empty parent
-                if (parentAccount.getAccountType() == AccountType.ROOT) {
+                if (parentAccount.isRoot()) {
                     // top level account, full name is the same as its name
                     mapFullName.put(acc.getUID(), acc.getName());
                     stack.pop();

@@ -180,7 +180,7 @@ public class GncXmlExporter extends Exporter {
         ArrayList<String> slotValue = new ArrayList<>();
         slotKey.add(KEY_PLACEHOLDER);
         slotType.add(ATTR_VALUE_STRING);
-        slotValue.add(Boolean.toString(account.isPlaceholderAccount()));
+        slotValue.add(Boolean.toString(account.isPlaceholder()));
 
         String color = account.getColorHexString();
         if (!TextUtils.isEmpty(color)) {

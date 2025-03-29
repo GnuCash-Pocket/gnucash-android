@@ -357,8 +357,10 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         queryBuilder.setTables(TransactionEntry.TABLE_NAME);
         String startTimeString = Long.toString(timestamp.getTime());
-        return queryBuilder.query(mDb, null, TransactionEntry.COLUMN_TIMESTAMP + " >= ?",
-                new String[]{startTimeString}, null, null, TransactionEntry.COLUMN_TIMESTAMP + " ASC", null);
+        String where = TransactionEntry.COLUMN_TEMPLATE + "=0 AND " + TransactionEntry.COLUMN_TIMESTAMP + " >= ?";
+        String[] whereArgs = new String[]{startTimeString};
+        String orderBy = TransactionEntry.COLUMN_TIMESTAMP + " ASC, " + TransactionEntry.COLUMN_ID + " ASC";
+        return queryBuilder.query(mDb, null, where, whereArgs, null, null, orderBy, null);
     }
 
     public Cursor fetchTransactionsWithSplitsWithTransactionAccount(String[] columns, String where, String[] whereArgs, String orderBy) {

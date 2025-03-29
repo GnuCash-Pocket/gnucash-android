@@ -42,7 +42,7 @@ class CsvTransactionsExporter(
     bookUID: String
 ) : Exporter(context, params, bookUID) {
     private val mCsvSeparator = params.csvSeparator
-    private val dateFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
+    private val dateFormat = DateTimeFormat.shortDate()
     private val accountCache = mutableMapOf<String, Account>()
 
     @Throws(ExporterException::class)
@@ -68,21 +68,21 @@ class CsvTransactionsExporter(
     }
 
     @Throws(IOException::class)
-    private fun writeSplitsToCsv(splits: List<Split>, fields: Array<String?>, writer: ICSVWriter) {
+    private fun writeSplitsToCsv(splits: List<Split>, fields: Array<String>, writer: ICSVWriter) {
         for (split in splits) {
-            fields[8] = maybeNull(split.memo)
+            fields[8] = split.memo.orEmpty()
             val accountUID = split.accountUID!!
             val account = accountCache.getOrPut(accountUID) {
                 mAccountsDbAdapter.getSimpleRecord(accountUID)!!
             }
-            fields[9] = account.fullName
+            fields[9] = account.fullName.orEmpty()
             fields[10] = account.name
 
             val sign = if (split.type == TransactionType.CREDIT) "-" else ""
-            val quantity = split.quantity!!
+            val quantity = split.quantity
             fields[11] = sign + quantity.formattedString()
             fields[12] = sign + quantity.formattedStringWithoutSymbol()
-            val value = split.value!!
+            val value = split.value
             fields[13] = sign + value.formattedString()
             fields[14] = sign + value.formattedStringWithoutSymbol()
 
@@ -91,7 +91,7 @@ class CsvTransactionsExporter(
                 val recDateString = dateFormat.print(split.reconcileDate.getTime())
                 fields[16] = recDateString
             } else {
-                fields[16] = null
+                fields[16] = ""
             }
             if (quantity.isAmountZero) {
                 fields[17] = "1"
@@ -115,15 +115,15 @@ class CsvTransactionsExporter(
             while (cursor.moveToNext()) {
                 val transaction = mTransactionsDbAdapter.buildModelInstance(cursor)
                 val commodity = transaction.commodity
-                val fields = Array<String?>(headers.size) { null }
+                val fields = Array<String>(headers.size) { "" }
                 fields[0] = dateFormat.print(transaction.timeMillis)
                 fields[1] = transaction.uid
-                fields[2] = null  // Transaction number
-                fields[3] = transaction.description
-                fields[4] = maybeNull(transaction.note)
+                fields[2] = ""  // Transaction number
+                fields[3] = transaction.description.orEmpty()
+                fields[4] = transaction.note.orEmpty()
                 fields[5] = "${commodity.namespace}::${commodity.currencyCode}"
-                fields[6] = null  // Void Reason
-                fields[7] = null  // Action
+                fields[6] = ""  // Void Reason
+                fields[7] = ""  // Action
                 writeSplitsToCsv(transaction.splits, fields, writer)
             }
             cursor.close()
@@ -131,10 +131,5 @@ class CsvTransactionsExporter(
         } catch (e: Exception) {
             throw ExporterException(mExportParams, e)
         }
-    }
-
-    private fun maybeNull(s: String?): String? {
-        if (s.isNullOrEmpty()) return null
-        return s
     }
 }

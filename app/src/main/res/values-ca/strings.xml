@@ -453,10 +453,10 @@
         <item>Nom</item>
         <item>Codi</item>
         <item>Descripció</item>
-        <item>Color</item>
+        <item>Account Color</item>
         <item>Notes</item>
-        <item>Commoditym</item>
-        <item>Commodityn</item>
+        <item>Symbol</item>
+        <item>Namespace</item>
         <item>Ocult</item>
         <item>Impost</item>
         <item>Text variable</item>
