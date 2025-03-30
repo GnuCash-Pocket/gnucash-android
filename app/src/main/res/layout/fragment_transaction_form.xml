@@ -74,7 +74,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:hint="@string/label_transaction_amount"
-                    android:nextFocusDown="@+id/input_description"
+                    android:nextFocusDown="@+id/notes"
                     android:textColor="@color/debit_red"
                     android:textSize="20sp" />
 
@@ -149,12 +149,12 @@
                     android:src="@drawable/ic_notes" />
 
                 <EditText
-                    android:id="@+id/input_description"
+                    android:id="@+id/notes"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="@null"
-                    android:hint="@string/label_transaction_description"
+                    android:hint="@string/hint_notes"
                     android:inputType="textMultiLine|textCapSentences"
                     android:singleLine="false" />
             </TableRow>

@@ -168,6 +168,7 @@ public abstract class GncXmlHelper {
     public static final String KEY_PLACEHOLDER = "placeholder";
     public static final String KEY_COLOR = "color";
     public static final String KEY_FAVORITE = "favorite";
+    public static final String KEY_HIDDEN = "hidden";
     public static final String KEY_NOTES = "notes";
     public static final String KEY_EXPORTED = "exported";
     public static final String KEY_SCHED_XACTION = "sched-xaction";

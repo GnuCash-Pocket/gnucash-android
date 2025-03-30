@@ -310,6 +310,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
 
         setTextToEnd(mBinding.inputAccountName, account.getName());
         mBinding.inputAccountDescription.setText(account.getDescription());
+        mBinding.notes.setText(account.getNote());
 
         if (mUseDoubleEntry) {
             if (account.getDefaultTransferAccountUID() != null) {
@@ -329,8 +330,9 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
             }
         }
 
-        mBinding.checkboxPlaceholderAccount.setChecked(account.isPlaceholder());
+        mBinding.placeholderStatus.setChecked(account.isPlaceholder());
         mBinding.favoriteStatus.setChecked(account.isFavorite());
+        mBinding.hiddenStatus.setChecked(account.isHidden());
         mSelectedColor = account.getColor();
         mBinding.inputColorPicker.setBackgroundColor(account.getColor());
 
@@ -698,8 +700,10 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         mAccount.setAccountType(selectedAccountType);
 
         mAccount.setDescription(mBinding.inputAccountDescription.getText().toString());
-        mAccount.setPlaceholder(mBinding.checkboxPlaceholderAccount.isChecked());
+        mAccount.setNote(mBinding.notes.getText().toString());
+        mAccount.setPlaceholder(mBinding.placeholderStatus.isChecked());
         mAccount.setFavorite(mBinding.favoriteStatus.isChecked());
+        mAccount.setHidden(mBinding.hiddenStatus.isChecked());
         mAccount.setColor(mSelectedColor);
 
         long newParentAccountId;

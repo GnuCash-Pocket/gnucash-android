@@ -218,7 +218,7 @@ public class AccountsActivityTest extends GnuAndroidTest {
         String NEW_ACCOUNT_NAME = "A New Account";
         onView(withId(R.id.input_account_name)).perform(typeText(NEW_ACCOUNT_NAME), closeSoftKeyboard());
         sleep(1000);
-        onView(withId(R.id.checkbox_placeholder_account))
+        onView(withId(R.id.placeholder_status))
                 .check(matches(isNotChecked()))
                 .perform(click());
 

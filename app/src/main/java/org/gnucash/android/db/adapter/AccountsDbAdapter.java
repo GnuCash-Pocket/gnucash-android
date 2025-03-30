@@ -79,6 +79,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * account's full name.
      */
     public static final String ROOT_ACCOUNT_FULL_NAME = " ";
+    public static final String ROOT_ACCOUNT_NAME = "Root Account";
 
     /**
      * Transactions database adapter for manipulating transactions associated with accounts
@@ -114,7 +115,8 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             AccountEntry.COLUMN_HIDDEN,
             AccountEntry.COLUMN_COMMODITY_UID,
             AccountEntry.COLUMN_PARENT_ACCOUNT_UID,
-            AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID
+            AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID,
+            AccountEntry.COLUMN_NOTES
         });
         mTransactionsAdapter = transactionsDbAdapter;
         mCommoditiesDbAdapter = transactionsDbAdapter.commoditiesDbAdapter;
@@ -240,7 +242,10 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         } else {
             stmt.bindNull(13);
         }
-        stmt.bindString(14, account.getUID());
+        if (account.getNote() != null) {
+            stmt.bindString(14, account.getNote());
+        }
+        stmt.bindString(15, account.getUID());
 
         return stmt;
     }
@@ -454,6 +459,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         account.setFavorite(c.getInt(c.getColumnIndexOrThrow(AccountEntry.COLUMN_FAVORITE)) != 0);
         account.setFullName(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_FULL_NAME)));
         account.setHidden(c.getInt(c.getColumnIndexOrThrow(AccountEntry.COLUMN_HIDDEN)) != 0);
+        account.setNote(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_NOTES)));
         return account;
     }
 

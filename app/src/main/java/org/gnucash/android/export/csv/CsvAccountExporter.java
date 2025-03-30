@@ -16,11 +16,14 @@
 
 package org.gnucash.android.export.csv;
 
+import static com.opencsv.ICSVWriter.RFC4180_LINE_END;
+
 import android.content.Context;
 import android.graphics.Color;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.opencsv.CSVWriterBuilder;
 import com.opencsv.ICSVWriter;
@@ -63,7 +66,10 @@ public class CsvAccountExporter extends Exporter {
         final char csvSeparator = exportParams.getCsvSeparator();
         String outputFile = getExportCacheFilePath();
         try (Writer writer = new FileWriter(outputFile)) {
-            ICSVWriter csvWriter = new CSVWriterBuilder(writer).withSeparator(csvSeparator).build();
+            ICSVWriter csvWriter = new CSVWriterBuilder(writer)
+                .withSeparator(csvSeparator)
+                .withLineEnd(RFC4180_LINE_END)
+                .build();
             generateExport(csvWriter);
             csvWriter.close();
             return Collections.singletonList(outputFile);
@@ -100,7 +106,7 @@ public class CsvAccountExporter extends Exporter {
             fields[3] = ""; //Account code
             fields[4] = account.getDescription();
             fields[5] = formatColor(account.getColor());
-            fields[6] = ""; //Account notes
+            fields[6] = orEmpty(account.getNote());
 
             fields[7] = account.getCommodity().getCurrencyCode();
             fields[8] = account.getCommodity().getNamespace();
@@ -110,6 +116,11 @@ public class CsvAccountExporter extends Exporter {
 
             csvWriter.writeNext(fields);
         }
+    }
+
+    @NonNull
+    private String orEmpty(@Nullable String s) {
+        return (s != null) ? s : "";
     }
 
     private String formatColor(@ColorInt int color) {

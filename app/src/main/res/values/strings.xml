@@ -468,4 +468,5 @@
     <string name="light_ui_title">"Light Mode"</string>
     <!-- Dark UI screen, setting option name to enable Dark UI [CHAR LIMIT=30] -->
     <string name="dark_ui_title">Dark Mode</string>
+    <string name="label_hidden">Hidden</string>
 </resources>

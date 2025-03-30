@@ -130,8 +130,8 @@ public class TransactionsActivity extends BaseDrawerActivity implements
                     mBinding.tabLayout.addTab(mBinding.tabLayout.newTab().setText(R.string.section_header_transactions));
                 }
             }
-                //refresh any fragments in the tab with the new account UID
-                refresh();
+            //refresh any fragments in the tab with the new account UID
+            refresh();
         }
 
         @Override
@@ -331,7 +331,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
 
         //if there are no transactions, and there are sub-accounts, show the sub-accounts
         if (TransactionsDbAdapter.getInstance().getTransactionsCount(accountUID) == 0
-                && mAccountsDbAdapter.getSubAccountCount(accountUID) > 0) {
+            && mAccountsDbAdapter.getSubAccountCount(accountUID) > 0) {
             mBinding.pager.setCurrentItem(INDEX_SUB_ACCOUNTS_FRAGMENT);
         } else {
             mBinding.pager.setCurrentItem(INDEX_TRANSACTIONS_FRAGMENT);

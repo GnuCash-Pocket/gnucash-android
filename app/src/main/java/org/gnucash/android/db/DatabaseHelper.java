@@ -31,18 +31,13 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.model.Commodity;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.sql.SQLDataException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -74,6 +69,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + AccountEntry.COLUMN_PLACEHOLDER + " tinyint default 0, "
             + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " varchar(255), "
             + AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID + " varchar(255), "
+            + AccountEntry.COLUMN_NOTES + " text, "
             + AccountEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
             + AccountEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
             + "FOREIGN KEY (" + AccountEntry.COLUMN_COMMODITY_UID + ") REFERENCES " + CommodityEntry.TABLE_NAME + " (" + CommodityEntry.COLUMN_UID + ") "

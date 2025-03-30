@@ -18,163 +18,182 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+  <LinearLayout
+      android:id="@+id/fragment_account_form"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:padding="@dimen/dialog_padding">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/name_text_input_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+      <EditText
+          android:id="@+id/input_account_name"
+          style="@style/ListItemPrimaryText"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginBottom="@dimen/form_row_bottom_margin"
+          android:ems="15"
+          android:hint="@string/label_account_name"
+          android:inputType="textCapWords" />
+    </com.google.android.material.textfield.TextInputLayout>
+
     <LinearLayout
-        android:id="@+id/fragment_account_form"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/dialog_padding">
+        android:layout_marginBottom="@dimen/form_row_bottom_margin"
+        android:orientation="horizontal">
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/name_text_input_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+      <TextView
+          style="@style/TextAppearance.EditTransaction_Small"
+          android:layout_width="wrap_content"
+          android:layout_height="match_parent"
+          android:layout_marginLeft="8dp"
+          android:layout_marginRight="@dimen/dialog_padding"
+          android:gravity="center_vertical"
+          android:text="@string/label_account_currency" />
 
-            <EditText
-                android:id="@+id/input_account_name"
-                style="@style/ListItemPrimaryText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/form_row_bottom_margin"
-                android:ems="15"
-                android:hint="@string/label_account_name"
-                android:inputType="textCapWords" />
-        </com.google.android.material.textfield.TextInputLayout>
+      <Spinner
+          android:id="@+id/input_currency_spinner"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content" />
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/form_row_bottom_margin"
-            android:orientation="horizontal">
-
-            <TextView
-                style="@style/TextAppearance.EditTransaction_Small"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="@dimen/dialog_padding"
-                android:gravity="center_vertical"
-                android:text="@string/label_account_currency" />
-
-            <Spinner
-                android:id="@+id/input_currency_spinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minHeight="?android:attr/listPreferredItemHeight" />
-
-        </LinearLayout>
-
-
-        <TextView
-            style="@style/TextAppearance.EditTransaction_LabelSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="-8dp"
-            android:text="@string/label_account_color_and_type" />
-
-        <LinearLayout
-            android:id="@+id/layout_color_type"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/form_row_bottom_margin">
-
-            <org.gnucash.android.ui.colorpicker.ColorSquare
-                android:id="@+id/input_color_picker"
-                style="?android:attr/quickContactBadgeStyleSmallWindowMedium"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="8dp" />
-
-            <Spinner
-                android:id="@+id/input_account_type_spinner"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/dialog_padding"
-                android:layout_weight="1"
-                android:minHeight="?android:attr/listPreferredItemHeight" />
-        </LinearLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/description_input_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="9dp"
-            android:layout_marginBottom="10dp">
-
-            <EditText
-                android:id="@+id/input_account_description"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/form_row_bottom_margin"
-                android:ems="15"
-                android:hint="@string/hint_account_description"
-                android:inputType="textCapSentences"></EditText>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <CheckBox
-            android:id="@+id/checkbox_placeholder_account"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/label_placeholder_account" />
-
-        <CheckBox
-            android:id="@+id/favorite_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/form_row_bottom_margin"
-            android:text="@string/menu_title_favorite" />
-
-        <TextView
-            android:id="@+id/label_parent_account"
-            style="@style/TextAppearance.EditTransaction_LabelSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/form_row_bottom_margin"
-            android:text="@string/label_parent_account" />
-
-        <LinearLayout
-            android:id="@+id/layout_parent_account"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <CheckBox
-                android:id="@+id/checkbox_parent_account"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:focusable="false" />
-
-            <Spinner
-                android:id="@+id/input_parent_account"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/label_default_transfer_account"
-            style="@style/TextAppearance.EditTransaction_LabelSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/form_row_bottom_margin"
-            android:text="@string/label_default_transfer_account" />
-
-        <LinearLayout
-            android:id="@+id/layout_default_transfer_account"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <CheckBox
-                android:id="@+id/checkbox_default_transfer_account"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:focusable="false" />
-
-            <Spinner
-                android:id="@+id/input_default_transfer_account"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
     </LinearLayout>
+
+
+    <TextView
+        style="@style/TextAppearance.EditTransaction_LabelSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="0dp"
+        android:text="@string/label_account_color_and_type" />
+
+    <LinearLayout
+        android:id="@+id/layout_color_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/form_row_bottom_margin">
+
+      <org.gnucash.android.ui.colorpicker.ColorSquare
+          android:id="@+id/input_color_picker"
+          style="?android:attr/quickContactBadgeStyleSmallWindowMedium"
+          android:layout_width="40dp"
+          android:layout_height="40dp"
+          android:layout_gravity="center_vertical"
+          android:layout_marginLeft="8dp" />
+
+      <Spinner
+          android:id="@+id/input_account_type_spinner"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_marginLeft="@dimen/dialog_padding"
+          android:layout_weight="1" />
+    </LinearLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp">
+
+      <EditText
+          android:id="@+id/input_account_description"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginBottom="@dimen/form_row_bottom_margin"
+          android:ems="15"
+          android:hint="@string/hint_account_description"
+          android:inputType="textCapSentences" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp">
+
+      <EditText
+          android:id="@+id/notes"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginBottom="@dimen/form_row_bottom_margin"
+          android:hint="@string/hint_notes"
+          android:inputType="textCapSentences" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <CheckBox
+        android:id="@+id/placeholder_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/label_placeholder_account" />
+
+    <CheckBox
+        android:id="@+id/favorite_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/form_row_bottom_margin"
+        android:text="@string/menu_title_favorite" />
+
+    <CheckBox
+        android:id="@+id/hidden_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/form_row_bottom_margin"
+        android:text="@string/label_hidden" />
+
+    <TextView
+        android:id="@+id/label_parent_account"
+        style="@style/TextAppearance.EditTransaction_LabelSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/form_row_bottom_margin"
+        android:layout_marginBottom="0dp"
+        android:text="@string/label_parent_account" />
+
+    <LinearLayout
+        android:id="@+id/layout_parent_account"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+      <CheckBox
+          android:id="@+id/checkbox_parent_account"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:focusable="false" />
+
+      <Spinner
+          android:id="@+id/input_parent_account"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/label_default_transfer_account"
+        style="@style/TextAppearance.EditTransaction_LabelSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/form_row_bottom_margin"
+        android:layout_marginBottom="0dp"
+        android:text="@string/label_default_transfer_account" />
+
+    <LinearLayout
+        android:id="@+id/layout_default_transfer_account"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+      <CheckBox
+          android:id="@+id/checkbox_default_transfer_account"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:focusable="false" />
+
+      <Spinner
+          android:id="@+id/input_default_transfer_account"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content" />
+    </LinearLayout>
+  </LinearLayout>
 </ScrollView>

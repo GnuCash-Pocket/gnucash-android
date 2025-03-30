@@ -69,6 +69,9 @@ public class MigrationHelper {
         if (oldVersion < 17) {
             migrateTo17(db);
         }
+        if (oldVersion < 18) {
+            migrateTo18(db);
+        }
     }
 
     /**
@@ -100,5 +103,19 @@ public class MigrationHelper {
             " ADD COLUMN " + DatabaseSchema.BudgetAmountEntry.COLUMN_NOTES + " text";
 
         db.execSQL(sqlAddBudgetNotes);
+    }
+
+    /**
+     * Upgrade the database to version 18.
+     *
+     * @param db the database.
+     */
+    private static void migrateTo18(SQLiteDatabase db) {
+        Timber.i("Upgrading database to version 18");
+
+        String sqlAddNotes = "ALTER TABLE " + DatabaseSchema.AccountEntry.TABLE_NAME +
+            " ADD COLUMN " + DatabaseSchema.AccountEntry.COLUMN_NOTES + " text";
+
+        db.execSQL(sqlAddNotes);
     }
 }

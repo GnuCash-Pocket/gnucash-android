@@ -139,7 +139,7 @@
                         android:src="@drawable/ic_notes" />
 
                     <TextView
-                        android:id="@+id/trn_notes"
+                        android:id="@+id/notes"
                         style="@style/TransactionInfo" />
                 </TableRow>
 
