@@ -16,7 +16,6 @@ import java.util.Locale
 
 class CsvTransactionsExporterTest : BookHelperTest() {
     private lateinit var originalDefaultLocale: Locale
-    private val lineSeparator = "\n"
 
     @Before
     fun `save original default locale`() {
@@ -46,16 +45,16 @@ class CsvTransactionsExporterTest : BookHelperTest() {
         assertThat(exportedFiles).hasSize(1)
         val file = File(exportedFiles[0])
         val lines = file.readLines()
-        assertThat("\"Date\",\"Transaction ID\",\"Number\",\"Description\",\"Notes\",\"Commodity/Currency\",\"Void Reason\",\"Action\",\"Memo\",\"Full Account Name\",\"Account Name\",\"Amount With Sym\",\"Amount Num.\",\"Value With Sym\",\"Value Num.\",\"Reconcile\",\"Reconcile Date\",\"Rate/Price\"")
-            .isEqualTo(lines[0])
-        assertThat("\"8/23/16\",\"b33c8a6160494417558fd143731fc26a\",,\"Kahuna Burger\",,\"CURRENCY::USD\",,,,\"Expenses:Dining\",\"Dining\",\"\$10.00\",\"10.00\",\"\$10.00\",\"10.00\",\"n\",,\"1.00\"")
-            .isEqualTo(lines[1])
-        assertThat("\"8/23/16\",\"b33c8a6160494417558fd143731fc26a\",,\"Kahuna Burger\",,\"CURRENCY::USD\",,,,\"Assets:Cash in Wallet\",\"Cash in Wallet\",\"-\$10.00\",\"-10.00\",\"-\$10.00\",\"-10.00\",\"n\",,\"1.00\"")
-            .isEqualTo(lines[2])
-        assertThat("\"8/24/16\",\"64bbc3a03816427f9f82b2a2aa858f91\",,\"Kahuna Comma Vendors (,)\",,\"CURRENCY::USD\",,,,\"Expenses:Dining\",\"Dining\",\"\$23.45\",\"23.45\",\"\$23.45\",\"23.45\",\"n\",,\"1.00\"")
-            .isEqualTo(lines[3])
-        assertThat("\"8/24/16\",\"64bbc3a03816427f9f82b2a2aa858f91\",,\"Kahuna Comma Vendors (,)\",,\"CURRENCY::USD\",,,,\"Assets:Cash in Wallet\",\"Cash in Wallet\",\"-\$23.45\",\"-23.45\",\"-\$23.45\",\"-23.45\",\"n\",,\"1.00\"")
-            .isEqualTo(lines[4])
+        assertThat(lines[0])
+            .isEqualTo("\"Date\",\"Transaction ID\",\"Number\",\"Description\",\"Notes\",\"Commodity/Currency\",\"Void Reason\",\"Action\",\"Memo\",\"Full Account Name\",\"Account Name\",\"Amount With Sym\",\"Amount Num.\",\"Value With Sym\",\"Value Num.\",\"Reconcile\",\"Reconcile Date\",\"Rate/Price\"")
+        assertThat(lines[1])
+            .isEqualTo("\"8/23/16\",\"b33c8a6160494417558fd143731fc26a\",\"\",\"Kahuna Burger\",\"\",\"CURRENCY::USD\",\"\",\"\",\"\",\"Assets:Cash in Wallet\",\"Cash in Wallet\",\"-\$10.00\",\"-10.00\",\"-\$10.00\",\"-10.00\",\"n\",\"\",\"1.0000\"")
+        assertThat(lines[2])
+            .isEqualTo("\"8/23/16\",\"b33c8a6160494417558fd143731fc26a\",\"\",\"Kahuna Burger\",\"\",\"CURRENCY::USD\",\"\",\"\",\"\",\"Expenses:Dining\",\"Dining\",\"\$10.00\",\"10.00\",\"\$10.00\",\"10.00\",\"n\",\"\",\"1.0000\"")
+        assertThat(lines[3])
+            .isEqualTo("\"8/24/16\",\"64bbc3a03816427f9f82b2a2aa858f91\",\"\",\"Kahuna Comma Vendors (,)\",\"\",\"CURRENCY::USD\",\"\",\"\",\"\",\"Assets:Cash in Wallet\",\"Cash in Wallet\",\"-\$23.45\",\"-23.45\",\"-\$23.45\",\"-23.45\",\"n\",\"\",\"1.0000\"")
+        assertThat(lines[4])
+            .isEqualTo("\"8/24/16\",\"64bbc3a03816427f9f82b2a2aa858f91\",\"\",\"Kahuna Comma Vendors (,)\",\"\",\"CURRENCY::USD\",\"\",\"\",\"\",\"Expenses:Dining\",\"Dining\",\"\$23.45\",\"23.45\",\"\$23.45\",\"23.45\",\"n\",\"\",\"1.0000\"")
     }
 
     @Test
@@ -76,16 +75,16 @@ class CsvTransactionsExporterTest : BookHelperTest() {
         assertThat(exportedFiles).hasSize(1)
         val file = File(exportedFiles[0])
         val lines = file.readLines()
-        assertThat("\"Date\",\"Transaction ID\",\"Number\",\"Description\",\"Notes\",\"Commodity/Currency\",\"Void Reason\",\"Action\",\"Memo\",\"Full Account Name\",\"Account Name\",\"Amount With Sym\",\"Amount Num.\",\"Value With Sym\",\"Value Num.\",\"Reconcile\",\"Reconcile Date\",\"Rate/Price\"")
-            .isEqualTo(lines[0])
-        assertThat("\"23.08.16\",\"b33c8a6160494417558fd143731fc26a\",,\"Kahuna Burger\",,\"CURRENCY::USD\",,,,\"Expenses:Dining\",\"Dining\",\"10,00\u00a0US\$\",\"10,00\",\"10,00\u00a0US\$\",\"10,00\",\"n\",,\"1,00\"")
-            .isEqualTo(lines[1])
-        assertThat("\"23.08.16\",\"b33c8a6160494417558fd143731fc26a\",,\"Kahuna Burger\",,\"CURRENCY::USD\",,,,\"Assets:Cash in Wallet\",\"Cash in Wallet\",\"-10,00\u00a0US\$\",\"-10,00\",\"-10,00\u00a0US\$\",\"-10,00\",\"n\",,\"1,00\"")
-            .isEqualTo(lines[2])
-        assertThat("\"24.08.16\",\"64bbc3a03816427f9f82b2a2aa858f91\",,\"Kahuna Comma Vendors (,)\",,\"CURRENCY::USD\",,,,\"Expenses:Dining\",\"Dining\",\"23,45\u00a0US\$\",\"23,45\",\"23,45\u00a0US\$\",\"23,45\",\"n\",,\"1,00\"")
-            .isEqualTo(lines[3])
-        assertThat("\"24.08.16\",\"64bbc3a03816427f9f82b2a2aa858f91\",,\"Kahuna Comma Vendors (,)\",,\"CURRENCY::USD\",,,,\"Assets:Cash in Wallet\",\"Cash in Wallet\",\"-23,45\u00a0US\$\",\"-23,45\",\"-23,45\u00a0US\$\",\"-23,45\",\"n\",,\"1,00\"")
-            .isEqualTo(lines[4])
+        assertThat(lines[0])
+            .isEqualTo("\"Date\",\"Transaction ID\",\"Number\",\"Description\",\"Notes\",\"Commodity/Currency\",\"Void Reason\",\"Action\",\"Memo\",\"Full Account Name\",\"Account Name\",\"Amount With Sym\",\"Amount Num.\",\"Value With Sym\",\"Value Num.\",\"Reconcile\",\"Reconcile Date\",\"Rate/Price\"")
+        assertThat(lines[1])
+            .isEqualTo("\"23.08.16\",\"b33c8a6160494417558fd143731fc26a\",\"\",\"Kahuna Burger\",\"\",\"CURRENCY::USD\",\"\",\"\",\"\",\"Assets:Cash in Wallet\",\"Cash in Wallet\",\"-10,00 \$\",\"-10,00\",\"-10,00 \$\",\"-10,00\",\"n\",\"\",\"1,0000\"")
+        assertThat(lines[2])
+            .isEqualTo("\"23.08.16\",\"b33c8a6160494417558fd143731fc26a\",\"\",\"Kahuna Burger\",\"\",\"CURRENCY::USD\",\"\",\"\",\"\",\"Expenses:Dining\",\"Dining\",\"10,00 \$\",\"10,00\",\"10,00 \$\",\"10,00\",\"n\",\"\",\"1,0000\"")
+        assertThat(lines[3])
+            .isEqualTo("\"24.08.16\",\"64bbc3a03816427f9f82b2a2aa858f91\",\"\",\"Kahuna Comma Vendors (,)\",\"\",\"CURRENCY::USD\",\"\",\"\",\"\",\"Assets:Cash in Wallet\",\"Cash in Wallet\",\"-23,45 \$\",\"-23,45\",\"-23,45 \$\",\"-23,45\",\"n\",\"\",\"1,0000\"")
+        assertThat(lines[4])
+            .isEqualTo("\"24.08.16\",\"64bbc3a03816427f9f82b2a2aa858f91\",\"\",\"Kahuna Comma Vendors (,)\",\"\",\"CURRENCY::USD\",\"\",\"\",\"\",\"Expenses:Dining\",\"Dining\",\"23,45 \$\",\"23,45\",\"23,45 \$\",\"23,45\",\"n\",\"\",\"1,0000\"")
     }
 
     @Test
@@ -106,7 +105,7 @@ class CsvTransactionsExporterTest : BookHelperTest() {
         val actual = file.readText()
 
         val expectedBytes =
-            javaClass.classLoader.getResourceAsStream("expected.common_1.csv").readAllBytes()
+            javaClass.classLoader.getResourceAsStream("expected.common_1.tx.csv").readAllBytes()
         val expected = String(expectedBytes, StandardCharsets.UTF_8)
         assertThat(actual).isEqualTo(expected)
     }

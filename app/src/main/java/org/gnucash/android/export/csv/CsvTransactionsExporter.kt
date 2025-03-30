@@ -18,18 +18,22 @@ package org.gnucash.android.export.csv
 import android.content.Context
 import com.opencsv.CSVWriterBuilder
 import com.opencsv.ICSVWriter
-import java.io.FileWriter
-import java.io.IOException
+import com.opencsv.ICSVWriter.RFC4180_LINE_END
 import org.gnucash.android.R
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
 import org.gnucash.android.model.Account
+import org.gnucash.android.model.Money
 import org.gnucash.android.model.Split
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.util.PreferencesHelper
 import org.gnucash.android.util.TimestampHelper
 import org.joda.time.format.DateTimeFormat
 import timber.log.Timber
+import java.io.FileWriter
+import java.io.IOException
+import java.text.DecimalFormat
+import kotlin.math.max
 
 /**
  * Creates a GnuCash CSV transactions representation of the accounts and transactions
@@ -41,17 +45,25 @@ class CsvTransactionsExporter(
     params: ExportParams,
     bookUID: String
 ) : Exporter(context, params, bookUID) {
-    private val mCsvSeparator = params.csvSeparator
     private val dateFormat = DateTimeFormat.shortDate()
     private val accountCache = mutableMapOf<String, Account>()
+    private val rateFormat = DecimalFormat.getNumberInstance().apply {
+        minimumFractionDigits = 4
+        maximumFractionDigits = 4
+    }
 
     @Throws(ExporterException::class)
     override fun generateExport(): List<String> {
+        val exportParams = mExportParams
+        val csvSeparator = exportParams.csvSeparator
         val outputFile = getExportCacheFilePath()
 
         try {
             FileWriter(outputFile).use { writer ->
-                val csvWriter = CSVWriterBuilder(writer).withSeparator(mCsvSeparator).build()
+                val csvWriter = CSVWriterBuilder(writer)
+                    .withSeparator(csvSeparator)
+                    .withLineEnd(RFC4180_LINE_END)
+                    .build()
                 generateExport(csvWriter)
                 csvWriter.close()
             }
@@ -81,10 +93,10 @@ class CsvTransactionsExporter(
             val sign = if (split.type == TransactionType.CREDIT) "-" else ""
             val quantity = split.quantity
             fields[11] = sign + quantity.formattedString()
-            fields[12] = sign + quantity.formattedStringWithoutSymbol()
+            fields[12] = sign + quantity.formattedStringWithoutSymbol(withGrouping = false)
             val value = split.value
             fields[13] = sign + value.formattedString()
-            fields[14] = sign + value.formattedStringWithoutSymbol()
+            fields[14] = sign + value.formattedStringWithoutSymbol(withGrouping = false)
 
             fields[15] = split.reconcileState.toString()
             if (split.reconcileState == Split.FLAG_RECONCILED) {
@@ -93,11 +105,7 @@ class CsvTransactionsExporter(
             } else {
                 fields[16] = ""
             }
-            if (quantity.isAmountZero) {
-                fields[17] = "1"
-            } else {
-                fields[17] = (value / quantity.toBigDecimal()).formattedStringWithoutSymbol()
-            }
+            fields[17] = formatRate(value, quantity)
 
             writer.writeNext(fields)
         }
@@ -115,7 +123,7 @@ class CsvTransactionsExporter(
             while (cursor.moveToNext()) {
                 val transaction = mTransactionsDbAdapter.buildModelInstance(cursor)
                 val commodity = transaction.commodity
-                val fields = Array<String>(headers.size) { "" }
+                val fields = Array(headers.size) { "" }
                 fields[0] = dateFormat.print(transaction.timeMillis)
                 fields[1] = transaction.uid
                 fields[2] = ""  // Transaction number
@@ -131,5 +139,19 @@ class CsvTransactionsExporter(
         } catch (e: Exception) {
             throw ExporterException(mExportParams, e)
         }
+    }
+
+    private fun formatRate(value: Money, quantity: Money): String {
+        if (quantity.isAmountZero) {
+            return formatRate(1)
+        }
+        val precision = max(4, value.commodity.smallestFractionDigits)
+        val numerator = value.toBigDecimal().setScale(precision)
+        val denominator = quantity.toBigDecimal().setScale(precision)
+        return formatRate(numerator / denominator)
+    }
+
+    private fun formatRate(rate: Number): String {
+        return rateFormat.format(rate)
     }
 }

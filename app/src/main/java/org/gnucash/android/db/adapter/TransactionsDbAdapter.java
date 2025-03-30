@@ -439,8 +439,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         String currencyCode = c.getString(c.getColumnIndexOrThrow(TransactionEntry.COLUMN_CURRENCY));
         transaction.setCommodity(commoditiesDbAdapter.getCommodity(currencyCode));
         transaction.setScheduledActionUID(c.getString(c.getColumnIndexOrThrow(TransactionEntry.COLUMN_SCHEDX_ACTION_UID)));
-        long transactionID = c.getLong(c.getColumnIndexOrThrow(TransactionEntry._ID));
-        transaction.setSplits(mSplitsDbAdapter.getSplitsForTransaction(transactionID));
+        transaction.setSplits(mSplitsDbAdapter.getSplitsForTransaction(transaction.getUID()));
 
         return transaction;
     }

@@ -4,6 +4,7 @@
 "CASH","Assets:Current Assets:Cash in Wallet","Cash in Wallet","","Cash in Wallet","","","USD","CURRENCY","F","F","F"
 "BANK","Assets:Current Assets:Checking Account","Checking Account","","Checking Account","","","USD","CURRENCY","F","F","F"
 "CASH","Assets:Current Assets:Euro Wallet","Euro Wallet","","Euros in Wallet","rgb(28,113,216)","","EUR","CURRENCY","F","F","F"
+"ASSET","Assets:Current Assets:Japan Wallet","Japan Wallet","","Japanese","rgb(237,51,59)","","JPY","CURRENCY","F","F","F"
 "BANK","Assets:Current Assets:Savings Account","Savings Account","","Savings Account","","","USD","CURRENCY","F","F","F"
 "ASSET","Assets:Hidden Account","Hidden Account","","Hidden from view","","","USD","CURRENCY","T","F","F"
 "EQUITY","Equity","Equity","","Equity","","","USD","CURRENCY","F","F","T"

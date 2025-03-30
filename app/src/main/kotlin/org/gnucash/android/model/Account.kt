@@ -99,6 +99,8 @@ class Account : BaseModel {
 
     val isRoot: Boolean get() = accountType == AccountType.ROOT
 
+    val isTemplate: Boolean get() = commodity.isTemplate
+
     /**
      * Overloaded constructor
      *

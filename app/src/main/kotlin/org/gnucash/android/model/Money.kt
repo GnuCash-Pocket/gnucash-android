@@ -26,6 +26,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.NumberFormat
+import java.util.Currency
 import java.util.Locale
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -294,17 +295,27 @@ class Money : Number, Comparable<Money>, Parcelable {
      */
     @JvmOverloads
     fun formattedString(locale: Locale = Locale.getDefault()): String {
-        //if we want to show US Dollars for locales which also use Dollars, for example, Canada
-        val symbol = if (commodity == Commodity.USD && locale != Locale.US) {
-            "US$"
-        } else {
-            if (commodity.isCurrency) commodity.symbol else commodity.symbol + " "
-        }
         val precision = commodity.smallestFractionDigits
         val formatter = (NumberFormat.getCurrencyInstance(locale) as DecimalFormat).apply {
-            decimalFormatSymbols = decimalFormatSymbols.apply { currencySymbol = symbol }
-            minimumFractionDigits = precision
-            maximumFractionDigits = precision
+            if (commodity.isCurrency) {
+                try {
+                    currency = Currency.getInstance(commodity.currencyCode)
+                } catch (e: IllegalArgumentException) {
+                    //if we want to show US Dollars for locales which also use Dollars, for example, Canada
+                    val symbol = if (commodity == Commodity.USD && locale != Locale.US) {
+                        "US$"
+                    } else {
+                        commodity.symbol
+                    }
+                    decimalFormatSymbols = decimalFormatSymbols.apply { currencySymbol = symbol }
+                    minimumFractionDigits = precision
+                    maximumFractionDigits = precision
+                }
+            } else {
+                decimalFormatSymbols = decimalFormatSymbols.apply { currencySymbol = commodity.symbol }
+                minimumFractionDigits = precision
+                maximumFractionDigits = precision
+            }
         }
         return formatter.format(_amount)
     }
@@ -318,10 +329,13 @@ class Money : Number, Comparable<Money>, Parcelable {
      * @return String containing formatted Money representation
      */
     @JvmOverloads
-    fun formattedStringWithoutSymbol(locale: Locale = Locale.getDefault()): String {
-        val format = NumberFormat.getNumberInstance(locale)
-        format.setMinimumFractionDigits(commodity.smallestFractionDigits)
-        format.setMaximumFractionDigits(commodity.smallestFractionDigits)
+    fun formattedStringWithoutSymbol(locale: Locale = Locale.getDefault(), withGrouping: Boolean = true): String {
+        val precision = commodity.smallestFractionDigits
+        val format = NumberFormat.getNumberInstance(locale).apply {
+            minimumFractionDigits = precision
+            maximumFractionDigits = precision
+            isGroupingUsed = withGrouping
+        }
         return format.format(_amount)
     }
 

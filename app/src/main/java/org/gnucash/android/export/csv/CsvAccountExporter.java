@@ -98,6 +98,7 @@ public class CsvAccountExporter extends Exporter {
         final String[] fields = new String[names.length];
         for (Account account : accounts) {
             if (account.isRoot()) continue;
+            if (account.isTemplate()) continue;
 
             fields[0] = account.getAccountType().name();
             fields[1] = account.getFullName();
