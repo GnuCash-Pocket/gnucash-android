@@ -33,7 +33,6 @@ import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.model.Book;
 import org.gnucash.android.ui.common.GnucashProgressDialog;
-import org.gnucash.android.ui.util.TaskDelegate;
 import org.gnucash.android.util.BackupManager;
 import org.gnucash.android.util.BookUtils;
 import org.gnucash.android.util.ContentExtKt;
@@ -48,7 +47,8 @@ import timber.log.Timber;
  */
 public class ImportAsyncTask extends AsyncTask<Uri, Void, String> {
     private final Activity mContext;
-    private final TaskDelegate mDelegate;
+    @Nullable
+    private final ImportBookCallback bookCallback;
     private final boolean mBackup;
     private ProgressDialog mProgressDialog;
 
@@ -56,13 +56,13 @@ public class ImportAsyncTask extends AsyncTask<Uri, Void, String> {
         this(context, null);
     }
 
-    public ImportAsyncTask(@NonNull Activity context, @Nullable TaskDelegate delegate) {
-        this(context, delegate, false);
+    public ImportAsyncTask(@NonNull Activity context, @Nullable ImportBookCallback callback) {
+        this(context, callback, false);
     }
 
-    public ImportAsyncTask(@NonNull Activity context, @Nullable TaskDelegate delegate, boolean backup) {
+    public ImportAsyncTask(@NonNull Activity context, @Nullable ImportBookCallback callback, boolean backup) {
         this.mContext = context;
-        this.mDelegate = delegate;
+        this.bookCallback = callback;
         this.mBackup = backup;
     }
 
@@ -148,7 +148,8 @@ public class ImportAsyncTask extends AsyncTask<Uri, Void, String> {
             Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
         }
 
-        if (mDelegate != null)
-            mDelegate.onTaskComplete();
+        if (bookCallback != null) {
+            bookCallback.onBookImported(bookUID);
+        }
     }
 }

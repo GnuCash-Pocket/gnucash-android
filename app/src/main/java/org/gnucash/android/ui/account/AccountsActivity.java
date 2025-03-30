@@ -52,14 +52,16 @@ import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.databinding.ActivityAccountsBinding;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
+import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.importer.ImportAsyncTask;
+import org.gnucash.android.importer.ImportBookCallback;
+import org.gnucash.android.model.Commodity;
 import org.gnucash.android.service.ScheduledActionService;
 import org.gnucash.android.ui.common.BaseDrawerActivity;
 import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.transaction.TransactionsActivity;
-import org.gnucash.android.ui.util.TaskDelegate;
 import org.gnucash.android.ui.util.widget.FragmentStateAdapter;
 import org.gnucash.android.ui.wizard.FirstRunWizardActivity;
 import org.gnucash.android.util.BackupManager;
@@ -364,31 +366,35 @@ public class AccountsActivity extends BaseDrawerActivity implements
      * Creates default accounts with the specified currency code.
      * If the currency parameter is null, then locale currency will be used if available
      *
-     * @param currencyCode Currency code to assign to the imported accounts
      * @param activity     Activity for providing context and displaying dialogs
+     * @param currencyCode Currency code to assign to the imported accounts
      */
-    public static void createDefaultAccounts(@NonNull final String currencyCode, @NonNull final Activity activity) {
-        createDefaultAccounts(currencyCode, activity, null);
+    public static void createDefaultAccounts(@NonNull final Activity activity, @NonNull final String currencyCode) {
+        createDefaultAccounts(activity, currencyCode, null);
     }
 
     /**
      * Creates default accounts with the specified currency code.
      * If the currency parameter is null, then locale currency will be used if available
      *
-     * @param currencyCode Currency code to assign to the imported accounts
      * @param activity     Activity for providing context and displaying dialogs
+     * @param currencyCode Currency code to assign to the imported accounts
      * @param callback     The callback to call when the book has been imported.
      */
-    public static void createDefaultAccounts(@NonNull final String currencyCode, @NonNull final Activity activity, @Nullable final TaskDelegate callback) {
-        TaskDelegate delegate = callback;
+    public static void createDefaultAccounts(@NonNull final Activity activity, @NonNull final String currencyCode, @Nullable final ImportBookCallback callback) {
+        ImportBookCallback delegate = callback;
         if (!TextUtils.isEmpty(currencyCode)) {
-            delegate = new TaskDelegate() {
+            delegate = new ImportBookCallback() {
                 @Override
-                public void onTaskComplete() {
-                    AccountsDbAdapter.getInstance().updateAllAccounts(DatabaseSchema.AccountEntry.COLUMN_CURRENCY, currencyCode);
-                    GnuCashApplication.setDefaultCurrencyCode(activity, currencyCode);
+                public void onBookImported(@Nullable String bookUID) {
+                    Commodity currency = CommoditiesDbAdapter.getInstance().getCommodity(currencyCode);
+                    if (currency != null) {
+                        AccountsDbAdapter.getInstance().updateAllAccounts(DatabaseSchema.AccountEntry.COLUMN_CURRENCY, currencyCode);
+                        AccountsDbAdapter.getInstance().updateAllAccounts(DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID, currency.getUID());
+                        GnuCashApplication.setDefaultCurrencyCode(activity, currencyCode);
+                    }
                     if (callback != null) {
-                        callback.onTaskComplete();
+                        callback.onBookImported(bookUID);
                     }
                 }
             };
@@ -404,11 +410,11 @@ public class AccountsActivity extends BaseDrawerActivity implements
 
     /**
      * Starts Intent chooser for selecting a GnuCash accounts file to import.
-     * <p>The {@code activity} is responsible for the actual import of the file and can do so by calling {@link #importXmlFileFromIntent(Activity, Intent, TaskDelegate)}<br>
+     * <p>The {@code activity} is responsible for the actual import of the file and can do so by calling {@link #importXmlFileFromIntent(Activity, Intent, ImportBookCallback)}<br>
      * The calling class should respond to the request code {@link AccountsActivity#REQUEST_PICK_ACCOUNTS_FILE} in its {@link #onActivityResult(int, int, Intent)} method</p>
      *
      * @param activity Activity starting the request and will also handle the response
-     * @see #importXmlFileFromIntent(Activity, Intent, TaskDelegate)
+     * @see #importXmlFileFromIntent(Activity, Intent, ImportBookCallback)
      */
     public static void startXmlFileChooser(Activity activity) {
         Intent pickIntent = new Intent(Intent.ACTION_GET_CONTENT)
@@ -453,7 +459,7 @@ public class AccountsActivity extends BaseDrawerActivity implements
      * @param data         Intent data containing the XML uri
      * @param onFinishTask Task to be executed when import is complete
      */
-    public static void importXmlFileFromIntent(Activity context, Intent data, TaskDelegate onFinishTask) {
+    public static void importXmlFileFromIntent(@NonNull Activity context, @NonNull Intent data, @Nullable ImportBookCallback onFinishTask) {
         boolean backup = GnuCashApplication.shouldBackupForImport(context);
         new ImportAsyncTask(context, onFinishTask, backup).execute(data.getData());
     }

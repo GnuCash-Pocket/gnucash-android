@@ -126,7 +126,7 @@ public class BookManagerFragment extends ListFragment implements
                     Timber.w("Activity expected");
                     return false;
                 }
-                AccountsActivity.createDefaultAccounts(GnuCashApplication.getDefaultCurrencyCode(), activity);
+                AccountsActivity.createDefaultAccounts(activity, GnuCashApplication.getDefaultCurrencyCode());
                 return true;
             }
 

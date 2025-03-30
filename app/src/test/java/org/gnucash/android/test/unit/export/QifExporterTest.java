@@ -69,8 +69,9 @@ public class QifExporterTest extends BookHelperTest {
 
     @After
     public void tearDown() {
+        Context context = GnuCashApplication.getAppContext();
         BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
-        booksDbAdapter.deleteBook(mBookUID);
+        booksDbAdapter.deleteBook(context, mBookUID);
         mDb.close();
     }
 
