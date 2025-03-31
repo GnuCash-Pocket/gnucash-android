@@ -18,6 +18,8 @@ package org.gnucash.android.export.csv;
 
 import static com.opencsv.ICSVWriter.RFC4180_LINE_END;
 
+import static org.gnucash.android.util.ColorExtKt.formatRGB;
+
 import android.content.Context;
 import android.graphics.Color;
 
@@ -106,7 +108,7 @@ public class CsvAccountExporter extends Exporter {
 
             fields[3] = ""; //Account code
             fields[4] = account.getDescription();
-            fields[5] = formatColor(account.getColor());
+            fields[5] = formatRGB(account.getColor());
             fields[6] = orEmpty(account.getNote());
 
             fields[7] = account.getCommodity().getCurrencyCode();
@@ -122,16 +124,6 @@ public class CsvAccountExporter extends Exporter {
     @NonNull
     private String orEmpty(@Nullable String s) {
         return (s != null) ? s : "";
-    }
-
-    private String formatColor(@ColorInt int color) {
-        if (color != Account.DEFAULT_COLOR) {
-            int r = Color.red(color);
-            int g = Color.green(color);
-            int b = Color.blue(color);
-            return "rgb(" + r + "," + g + "," + b + ")";
-        }
-        return "";
     }
 
     private String format(boolean value) {

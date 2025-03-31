@@ -17,6 +17,7 @@
 package org.gnucash.android.test.unit.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.gnucash.android.export.xml.GncXmlHelper.formatNumeric;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.export.xml.GncXmlHelper;
@@ -241,5 +242,29 @@ public class GncXmlHelperTest extends GnuCashTest {
         df = new SimpleDateFormat("EEE, d MMM");
         dtf = DateTimeFormat.forPattern("EEE, d MMM");
         assertThat(df.format(new Date(now))).isEqualTo(dtf.print(now));
+    }
+
+    @Test
+    public void format_number() {
+        assertThat(formatNumeric(0, 1)).isEqualTo("0/1");
+        assertThat(formatNumeric(1, 1)).isEqualTo("1/1");
+        assertThat(formatNumeric(2, 1)).isEqualTo("2/1");
+        assertThat(formatNumeric(10, 1)).isEqualTo("10/1");
+        assertThat(formatNumeric(123, 1)).isEqualTo("123/1");
+        assertThat(formatNumeric(1230, 1)).isEqualTo("1230/1");
+
+        assertThat(formatNumeric(0, 10)).isEqualTo("0/1");
+        assertThat(formatNumeric(1, 10)).isEqualTo("1/10");
+        assertThat(formatNumeric(2, 10)).isEqualTo("2/10");
+        assertThat(formatNumeric(10, 10)).isEqualTo("1/1");
+        assertThat(formatNumeric(123, 10)).isEqualTo("123/10");
+        assertThat(formatNumeric(1230, 10)).isEqualTo("123/1");
+
+        assertThat(formatNumeric(0, 100)).isEqualTo("0/1");
+        assertThat(formatNumeric(1, 100)).isEqualTo("1/100");
+        assertThat(formatNumeric(2, 100)).isEqualTo("2/100");
+        assertThat(formatNumeric(10, 100)).isEqualTo("1/10");
+        assertThat(formatNumeric(123, 100)).isEqualTo("123/100");
+        assertThat(formatNumeric(1230, 100)).isEqualTo("123/10");
     }
 }

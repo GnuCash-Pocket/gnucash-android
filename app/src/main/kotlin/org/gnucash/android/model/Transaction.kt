@@ -129,7 +129,7 @@ class Transaction : BaseModel {
         if (!imbalance.isAmountZero) {
             // yes, this is on purpose the account UID is set to the currency.
             // This should be overridden before saving to db
-            val split = Split(imbalance, commodity.currencyCode)
+            val split = Split(imbalance, accountUID = commodity.uid)
             split.type = if (imbalance.isNegative) TransactionType.CREDIT else TransactionType.DEBIT
             addSplit(split)
             return split

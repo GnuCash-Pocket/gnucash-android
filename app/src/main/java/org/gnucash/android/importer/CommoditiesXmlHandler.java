@@ -40,6 +40,7 @@ public class CommoditiesXmlHandler extends DefaultHandler {
     public static final String ATTR_EXCHANGE_CODE = "exchange-code";
     public static final String ATTR_SMALLEST_FRACTION = "smallest-fraction";
     public static final String ATTR_LOCAL_SYMBOL = "local-symbol";
+    public static final String SOURCE_CURRENCY = "currency";
     /**
      * List of commodities parsed from the XML file.
      * They will be all added to db at once at the end of the document
@@ -74,6 +75,7 @@ public class CommoditiesXmlHandler extends DefaultHandler {
             commodity.setNamespace(namespace);
             commodity.setCusip(cusip);
             commodity.setLocalSymbol(localSymbol);
+            commodity.setQuoteSource(SOURCE_CURRENCY);
 
             mCommodities.add(commodity);
         }

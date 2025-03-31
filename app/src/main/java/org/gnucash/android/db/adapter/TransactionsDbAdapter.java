@@ -119,20 +119,23 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      */
     @Override
     public void addRecord(@NonNull Transaction transaction, UpdateMethod updateMethod) throws SQLException {
-        Timber.d("Adding transaction to the db via %s", updateMethod.name());
+        Timber.d("%s transaction to the db", updateMethod.name());
+        // Did the transaction have any splits before?
+        final boolean didChange = transaction.id != 0;
         try {
             beginTransaction();
+            super.addRecord(transaction, updateMethod);
+
             Split imbalanceSplit = transaction.createAutoBalanceSplit();
             if (imbalanceSplit != null) {
                 String imbalanceAccountUID = new AccountsDbAdapter(mDb, this)
-                        .getOrCreateImbalanceAccountUID(transaction.getCommodity());
+                    .getOrCreateImbalanceAccountUID(transaction.getCommodity());
                 imbalanceSplit.setAccountUID(imbalanceAccountUID);
             }
-            super.addRecord(transaction, updateMethod);
-
-            Timber.d("Adding splits for transaction");
-            List<String> splitUIDs = new ArrayList<>(transaction.getSplits().size());
-            for (Split split : transaction.getSplits()) {
+            List<Split> splits = transaction.getSplits();
+            Timber.d("Adding %d splits for transaction", splits.size());
+            List<String> splitUIDs = new ArrayList<>(splits.size());
+            for (Split split : splits) {
                 Timber.d("Replace transaction split in db");
                 if (imbalanceSplit == split) {
                     mSplitsDbAdapter.addRecord(split, UpdateMethod.insert);
@@ -141,13 +144,15 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
                 }
                 splitUIDs.add(split.getUID());
             }
-            Timber.d("%d splits added", transaction.getSplits().size());
+            Timber.d("%d splits added", splitUIDs.size());
 
-            long deleted = mDb.delete(SplitEntry.TABLE_NAME,
+            if (didChange) {
+                long deleted = mDb.delete(SplitEntry.TABLE_NAME,
                     SplitEntry.COLUMN_TRANSACTION_UID + " = ? AND "
-                            + SplitEntry.COLUMN_UID + " NOT IN ('" + TextUtils.join("' , '", splitUIDs) + "')",
+                        + SplitEntry.COLUMN_UID + " NOT IN ('" + TextUtils.join("','", splitUIDs) + "')",
                     new String[]{transaction.getUID()});
-            Timber.d("%d splits deleted", deleted);
+                Timber.d("%d splits deleted", deleted);
+            }
 
             setTransactionSuccessful();
         } finally {

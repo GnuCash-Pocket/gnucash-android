@@ -40,7 +40,7 @@ class Commodity(
      * The fraction is a power of 10. So commodities with 2 fraction digits, have fraction of 10^2 = 100.<br />
      * If the parameter is any other value, a default fraction of 100 will be set
      */
-    var smallestFraction: Int = 100
+    var smallestFraction: Int = DEFAULT_SMALLEST_FRACTION
 ) : BaseModel() {
 
     var namespace = COMMODITY_CURRENCY
@@ -52,6 +52,9 @@ class Commodity(
 
     val isCurrency: Boolean
         get() = (COMMODITY_CURRENCY == namespace || COMMODITY_ISO4217 == namespace)
+
+    val isTemplate: Boolean
+        get() = (TEMPLATE == namespace) || (TEMPLATE == mnemonic) || (TEMPLATE == cusip)
 
     /**
      * Returns the mnemonic, or currency code for ISO4217 currencies
@@ -138,6 +141,7 @@ class Commodity(
         const val COMMODITY_CURRENCY = "CURRENCY"
         const val COMMODITY_ISO4217 = "ISO4217"
         const val TEMPLATE = "template"
+        const val DEFAULT_SMALLEST_FRACTION = 100
 
         /**
          * ISO 4217 currency code for "No Currency"
@@ -145,25 +149,25 @@ class Commodity(
         const val NO_CURRENCY_CODE = "XXX"
 
         @JvmField
-        var USD = Commodity("", "USD", 100)
+        var USD = Commodity("", "USD", DEFAULT_SMALLEST_FRACTION)
 
         @JvmField
-        var EUR = Commodity("", "EUR", 100)
+        var EUR = Commodity("", "EUR", DEFAULT_SMALLEST_FRACTION)
 
         @JvmField
-        var GBP = Commodity("", "GBP", 100)
+        var GBP = Commodity("", "GBP", DEFAULT_SMALLEST_FRACTION)
 
         @JvmField
-        var CHF = Commodity("", "CHF", 100)
+        var CHF = Commodity("", "CHF", DEFAULT_SMALLEST_FRACTION)
 
         @JvmField
-        var CAD = Commodity("", "CAD", 100)
+        var CAD = Commodity("", "CAD", DEFAULT_SMALLEST_FRACTION)
 
         @JvmField
         var JPY = Commodity("", "JPY", 1)
 
         @JvmField
-        var AUD = Commodity("", "AUD", 100)
+        var AUD = Commodity("", "AUD", DEFAULT_SMALLEST_FRACTION)
 
         /**
          * Default commodity for device locale

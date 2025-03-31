@@ -156,6 +156,9 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     @Override
     public void addRecord(@NonNull Account account, UpdateMethod updateMethod) {
         Timber.d("Replace account to db");
+        if (account.getAccountType() == AccountType.ROOT) {
+            rootUID = account.getUID();
+        }
         //in-case the account already existed, we want to update the templates based on it as well
         super.addRecord(account, updateMethod);
         //now add transactions if there are any
@@ -916,6 +919,35 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     }
 
     /**
+     * Get the list of direct children account UIDs.
+     * @param accountUID the parent account UID.
+     * @return the list of children.
+     */
+    @NonNull
+    public List<String> getChildren(String accountUID) {
+        List<String> uids = new ArrayList<>();
+        Cursor cursor = mDb.query(
+            mTableName,
+            new String[]{AccountEntry.COLUMN_UID},
+            AccountEntry.COLUMN_PARENT_ACCOUNT_UID + "=?",
+            new String[]{accountUID},
+            null,
+            null,
+            AccountEntry.COLUMN_ID
+        );
+        if (cursor.moveToFirst()) {
+            try {
+                do {
+                    uids.add(cursor.getString(0));
+                } while (cursor.moveToNext());
+            } finally {
+                cursor.close();
+            }
+        }
+        return uids;
+    }
+
+    /**
      * Retrieve all descendant accounts of an account
      * Note, in filtering, once an account is filtered out, all its descendants
      * will also be filtered out, even they don't meet the filter where
@@ -925,6 +957,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @param whereArgs  Condition args to filter accounts
      * @return The descendant accounts list.
      */
+    @NonNull
     public List<String> getDescendantAccountUIDs(String accountUID, String where, String[] whereArgs) {
         // holds accountUID with all descendant accounts.
         List<String> accounts = new ArrayList<>();
@@ -1057,10 +1090,9 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             cursor.close();
         }
         // No ROOT exits, create a new one
-        Account rootAccount = new Account("ROOT Account");
+        Account rootAccount = new Account(ROOT_ACCOUNT_NAME);
         rootAccount.setAccountType(AccountType.ROOT);
         rootAccount.setFullName(ROOT_ACCOUNT_FULL_NAME);
-        rootAccount.setHidden(true);
         rootAccount.setPlaceholder(true);
         ContentValues contentValues = new ContentValues();
         contentValues.put(AccountEntry.COLUMN_UID, rootAccount.getUID());
@@ -1353,7 +1385,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      */
     public List<Commodity> getCommoditiesInUse() {
         Cursor cursor = mDb.query(true, AccountEntry.TABLE_NAME, new String[]{AccountEntry.COLUMN_CURRENCY},
-            null, null, null, null, null, null);
+            null, null, null, null, AccountEntry.COLUMN_CURRENCY, null);
         List<Commodity> commodityList = new ArrayList<>();
         try {
             while (cursor.moveToNext()) {

@@ -1,21 +1,34 @@
-<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <gnc-v2
-    xmlns:act="http://www.gnucash.org/XML/act" xmlns:addr="http://www.gnucash.org/XML/addr"
-    xmlns:bgt="http://www.gnucash.org/XML/bgt" xmlns:billterm="http://www.gnucash.org/XML/billterm"
-    xmlns:book="http://www.gnucash.org/XML/book" xmlns:bt-days="http://www.gnucash.org/XML/bt-days"
-    xmlns:bt-prox="http://www.gnucash.org/XML/bt-prox" xmlns:cd="http://www.gnucash.org/XML/cd"
-    xmlns:cmdty="http://www.gnucash.org/XML/cmdty" xmlns:cust="http://www.gnucash.org/XML/cust"
-    xmlns:employee="http://www.gnucash.org/XML/employee"
-    xmlns:entry="http://www.gnucash.org/XML/entry" xmlns:fs="http://www.gnucash.org/XML/fs"
-    xmlns:gnc="http://www.gnucash.org/XML/gnc" xmlns:invoice="http://www.gnucash.org/XML/invoice"
-    xmlns:job="http://www.gnucash.org/XML/job" xmlns:lot="http://www.gnucash.org/XML/lot"
-    xmlns:order="http://www.gnucash.org/XML/order" xmlns:owner="http://www.gnucash.org/XML/owner"
+    xmlns:gnc="http://www.gnucash.org/XML/gnc"
+    xmlns:act="http://www.gnucash.org/XML/act"
+    xmlns:book="http://www.gnucash.org/XML/book"
+    xmlns:cd="http://www.gnucash.org/XML/cd"
+    xmlns:cmdty="http://www.gnucash.org/XML/cmdty"
     xmlns:price="http://www.gnucash.org/XML/price"
+    xmlns:slot="http://www.gnucash.org/XML/slot"
+    xmlns:split="http://www.gnucash.org/XML/split"
+    xmlns:sx="http://www.gnucash.org/XML/sx"
+    xmlns:trn="http://www.gnucash.org/XML/trn"
+    xmlns:ts="http://www.gnucash.org/XML/ts"
+    xmlns:fs="http://www.gnucash.org/XML/fs"
+    xmlns:bgt="http://www.gnucash.org/XML/bgt"
     xmlns:recurrence="http://www.gnucash.org/XML/recurrence"
-    xmlns:slot="http://www.gnucash.org/XML/slot" xmlns:split="http://www.gnucash.org/XML/split"
-    xmlns:sx="http://www.gnucash.org/XML/sx" xmlns:taxtable="http://www.gnucash.org/XML/taxtable"
-    xmlns:trn="http://www.gnucash.org/XML/trn" xmlns:ts="http://www.gnucash.org/XML/ts"
-    xmlns:tte="http://www.gnucash.org/XML/tte" xmlns:vendor="http://www.gnucash.org/XML/vendor">
+    xmlns:lot="http://www.gnucash.org/XML/lot"
+    xmlns:addr="http://www.gnucash.org/XML/addr"
+    xmlns:billterm="http://www.gnucash.org/XML/billterm"
+    xmlns:bt-days="http://www.gnucash.org/XML/bt-days"
+    xmlns:bt-prox="http://www.gnucash.org/XML/bt-prox"
+    xmlns:cust="http://www.gnucash.org/XML/cust"
+    xmlns:employee="http://www.gnucash.org/XML/employee"
+    xmlns:entry="http://www.gnucash.org/XML/entry"
+    xmlns:invoice="http://www.gnucash.org/XML/invoice"
+    xmlns:job="http://www.gnucash.org/XML/job"
+    xmlns:order="http://www.gnucash.org/XML/order"
+    xmlns:owner="http://www.gnucash.org/XML/owner"
+    xmlns:taxtable="http://www.gnucash.org/XML/taxtable"
+    xmlns:tte="http://www.gnucash.org/XML/tte"
+    xmlns:vendor="http://www.gnucash.org/XML/vendor">
   <gnc:count-data cd:type="book">1</gnc:count-data>
   <gnc:book version="2.0.0">
     <book:id type="guid">a7682e5d878e43cea216611401f08463</book:id>
@@ -24,6 +37,7 @@
     <gnc:commodity version="2.0.0">
       <cmdty:space>CURRENCY</cmdty:space>
       <cmdty:id>USD</cmdty:id>
+      <cmdty:fraction>100</cmdty:fraction>
       <cmdty:get_quotes />
       <cmdty:quote_source>currency</cmdty:quote_source>
       <cmdty:quote_tz />
@@ -340,8 +354,7 @@
       <act:slots>
         <slot>
           <slot:key>notes</slot:key>
-          <slot:value type="string">Create subaccounts for each used type, if desired.
-          </slot:value>
+          <slot:value type="string">Create subaccounts for each used type, if desired.</slot:value>
         </slot>
       </act:slots>
       <act:parent type="guid">5d8aba12766c44cca1aa3a172d4f1e40</act:parent>
@@ -878,12 +891,6 @@
       </act:commodity>
       <act:commodity-scu>100</act:commodity-scu>
       <act:description>Opening Balances</act:description>
-      <act:slots>
-        <slot>
-          <slot:key>equity-type</slot:key>
-          <slot:value type="string">opening-balance</slot:value>
-        </slot>
-      </act:slots>
       <act:parent type="guid">cee86947018b4a8792ff54dd19c83692</act:parent>
     </gnc:account>
   </gnc:book>

@@ -25,6 +25,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.DatabaseSchema.AccountEntry;
@@ -224,7 +225,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @param updateMethod Method to use for adding the record
      */
     public void addRecord(@NonNull final Model model, UpdateMethod updateMethod) throws SQLException {
-        Timber.d("Adding %s record to database: ", model.getClass().getSimpleName());
+        Timber.d("Adding record to database: %s %s", model.getClass().getSimpleName(), model.getUID());
         final SQLiteStatement statement;
         switch (updateMethod) {
             case insert:
@@ -443,8 +444,13 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      */
     @NonNull
     public List<Model> getAllRecords() {
+        return getAllRecords(null, null);
+    }
+
+    @NonNull
+    public List<Model> getAllRecords(@Nullable String where, @Nullable String[] whereArgs) {
         List<Model> modelRecords = new ArrayList<>();
-        Cursor c = fetchAllRecords();
+        Cursor c = fetchAllRecords(where, whereArgs, null);
         try {
             if (c.moveToFirst()) {
                 do {
@@ -828,6 +834,15 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      */
     public long getRecordsCount() {
         return DatabaseUtils.queryNumEntries(mDb, mTableName);
+    }
+
+    /**
+     * Returns the number of records in the database table backed by this adapter
+     *
+     * @return Total number of records in the database
+     */
+    public long getRecordsCount(String where, String[] whereArgs) {
+        return DatabaseUtils.queryNumEntries(mDb, mTableName, where, whereArgs);
     }
 
     /**

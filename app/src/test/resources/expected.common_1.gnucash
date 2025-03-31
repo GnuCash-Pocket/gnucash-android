@@ -32,206 +32,32 @@
   <gnc:count-data cd:type="book">1</gnc:count-data>
   <gnc:book version="2.0.0">
     <book:id type="guid">a7682e5d878e43cea216611401f08463</book:id>
-    <book:slots>
-      <slot>
-        <slot:key>counter_formats</slot:key>
-        <slot:value type="frame">
-          <slot>
-            <slot:key>gncBill</slot:key>
-            <slot:value type="string"></slot:value>
-          </slot>
-          <slot>
-            <slot:key>gncCustomer</slot:key>
-            <slot:value type="string"></slot:value>
-          </slot>
-          <slot>
-            <slot:key>gncEmployee</slot:key>
-            <slot:value type="string"></slot:value>
-          </slot>
-          <slot>
-            <slot:key>gncExpVoucher</slot:key>
-            <slot:value type="string"></slot:value>
-          </slot>
-          <slot>
-            <slot:key>gncInvoice</slot:key>
-            <slot:value type="string"></slot:value>
-          </slot>
-          <slot>
-            <slot:key>gncJob</slot:key>
-            <slot:value type="string"></slot:value>
-          </slot>
-          <slot>
-            <slot:key>gncOrder</slot:key>
-            <slot:value type="string"></slot:value>
-          </slot>
-          <slot>
-            <slot:key>gncVendor</slot:key>
-            <slot:value type="string"></slot:value>
-          </slot>
-        </slot:value>
-      </slot>
-      <slot>
-        <slot:key>counters</slot:key>
-        <slot:value type="frame">
-          <slot>
-            <slot:key>gncBill</slot:key>
-            <slot:value type="integer">0</slot:value>
-          </slot>
-          <slot>
-            <slot:key>gncCustomer</slot:key>
-            <slot:value type="integer">0</slot:value>
-          </slot>
-          <slot>
-            <slot:key>gncEmployee</slot:key>
-            <slot:value type="integer">0</slot:value>
-          </slot>
-          <slot>
-            <slot:key>gncExpVoucher</slot:key>
-            <slot:value type="integer">0</slot:value>
-          </slot>
-          <slot>
-            <slot:key>gncInvoice</slot:key>
-            <slot:value type="integer">0</slot:value>
-          </slot>
-          <slot>
-            <slot:key>gncJob</slot:key>
-            <slot:value type="integer">0</slot:value>
-          </slot>
-          <slot>
-            <slot:key>gncOrder</slot:key>
-            <slot:value type="integer">0</slot:value>
-          </slot>
-          <slot>
-            <slot:key>gncVendor</slot:key>
-            <slot:value type="integer">0</slot:value>
-          </slot>
-        </slot:value>
-      </slot>
-      <slot>
-        <slot:key>features</slot:key>
-        <slot:value type="frame">
-          <slot>
-            <slot:key>Register sort and filter settings stored in .gcm file</slot:key>
-            <slot:value type="string">Store the register sort and filter settings in .gcm metadata file (requires at least GnuCash 3.3)</slot:value>
-          </slot>
-          <slot>
-            <slot:key>Use a dedicated opening balance account identified by an 'equity-type' slot</slot:key>
-            <slot:value type="string">Use a dedicated opening balance account identified by an 'equity-type' slot (requires at least Gnucash 4.3)</slot:value>
-          </slot>
-          <slot>
-            <slot:key>Use natural signs in budget amounts</slot:key>
-            <slot:value type="string">Store budget amounts unreversed (i.e. natural) signs (requires at least Gnucash 3.8)</slot:value>
-          </slot>
-        </slot:value>
-      </slot>
-      <slot>
-        <slot:key>options</slot:key>
-        <slot:value type="frame">
-          <slot>
-            <slot:key>Accounts</slot:key>
-            <slot:value type="frame">
-              <slot>
-                <slot:key>Day Threshold for Read-Only Transactions (red line)</slot:key>
-                <slot:value type="double">0</slot:value>
-              </slot>
-              <slot>
-                <slot:key>Use Split Action Field for Number</slot:key>
-                <slot:value type="string">f</slot:value>
-              </slot>
-              <slot>
-                <slot:key>Use Trading Accounts</slot:key>
-                <slot:value type="string">f</slot:value>
-              </slot>
-            </slot:value>
-          </slot>
-          <slot>
-            <slot:key>Business</slot:key>
-            <slot:value type="frame">
-              <slot>
-                <slot:key>Company Address</slot:key>
-                <slot:value type="string"></slot:value>
-              </slot>
-              <slot>
-                <slot:key>Company Contact Person</slot:key>
-                <slot:value type="string"></slot:value>
-              </slot>
-              <slot>
-                <slot:key>Company Email Address</slot:key>
-                <slot:value type="string"></slot:value>
-              </slot>
-              <slot>
-                <slot:key>Company Fax Number</slot:key>
-                <slot:value type="string"></slot:value>
-              </slot>
-              <slot>
-                <slot:key>Company ID</slot:key>
-                <slot:value type="string"></slot:value>
-              </slot>
-              <slot>
-                <slot:key>Company Name</slot:key>
-                <slot:value type="string"></slot:value>
-              </slot>
-              <slot>
-                <slot:key>Company Phone Number</slot:key>
-                <slot:value type="string"></slot:value>
-              </slot>
-              <slot>
-                <slot:key>Company Website URL</slot:key>
-                <slot:value type="string"></slot:value>
-              </slot>
-              <slot>
-                <slot:key>Default Customer TaxTable</slot:key>
-                <slot:value type="guid">84c93168b9474ee5ab91755952d07c9b</slot:value>
-              </slot>
-              <slot>
-                <slot:key>Default Invoice Report</slot:key>
-                <slot:value type="string">5123a759ceb9483abf2182d01c140e8d/Printable Invoice</slot:value>
-              </slot>
-              <slot>
-                <slot:key>Default Invoice Report Timeout</slot:key>
-                <slot:value type="double">0</slot:value>
-              </slot>
-              <slot>
-                <slot:key>Default Vendor TaxTable</slot:key>
-                <slot:value type="guid">eb37eaccab3f4ae089d41a986a60df15</slot:value>
-              </slot>
-            </slot:value>
-          </slot>
-          <slot>
-            <slot:key>Tax</slot:key>
-            <slot:value type="frame">
-              <slot>
-                <slot:key>Tax Number</slot:key>
-                <slot:value type="string"></slot:value>
-              </slot>
-            </slot:value>
-          </slot>
-        </slot:value>
-      </slot>
-      <slot>
-        <slot:key>remove-color-not-set-slots</slot:key>
-        <slot:value type="string">true</slot:value>
-      </slot>
-    </book:slots>
     <gnc:count-data cd:type="commodity">1</gnc:count-data>
-    <gnc:count-data cd:type="account">66</gnc:count-data>
-    <gnc:count-data cd:type="transaction">2</gnc:count-data>
+    <gnc:count-data cd:type="account">67</gnc:count-data>
+    <gnc:count-data cd:type="transaction">3</gnc:count-data>
     <gnc:count-data cd:type="schedxaction">1</gnc:count-data>
     <gnc:count-data cd:type="budget">1</gnc:count-data>
-    <gnc:count-data cd:type="price">1</gnc:count-data>
+    <gnc:count-data cd:type="price">2</gnc:count-data>
     <gnc:commodity version="2.0.0">
       <cmdty:space>CURRENCY</cmdty:space>
       <cmdty:id>EUR</cmdty:id>
-      <cmdty:get_quotes/>
+      <cmdty:get_quotes />
       <cmdty:quote_source>currency</cmdty:quote_source>
-      <cmdty:quote_tz/>
+      <cmdty:quote_tz />
+    </gnc:commodity>
+    <gnc:commodity version="2.0.0">
+      <cmdty:space>CURRENCY</cmdty:space>
+      <cmdty:id>JPY</cmdty:id>
+      <cmdty:get_quotes />
+      <cmdty:quote_source>currency</cmdty:quote_source>
+      <cmdty:quote_tz />
     </gnc:commodity>
     <gnc:commodity version="2.0.0">
       <cmdty:space>CURRENCY</cmdty:space>
       <cmdty:id>USD</cmdty:id>
-      <cmdty:get_quotes/>
+      <cmdty:get_quotes />
       <cmdty:quote_source>currency</cmdty:quote_source>
-      <cmdty:quote_tz/>
+      <cmdty:quote_tz />
     </gnc:commodity>
     <gnc:commodity version="2.0.0">
       <cmdty:space>template</cmdty:space>
@@ -241,6 +67,23 @@
       <cmdty:fraction>1</cmdty:fraction>
     </gnc:commodity>
     <gnc:pricedb version="1">
+      <price>
+        <price:id type="guid">2d84ca13f3354ddda42d2ecbd0f2b45f</price:id>
+        <price:commodity>
+          <cmdty:space>CURRENCY</cmdty:space>
+          <cmdty:id>JPY</cmdty:id>
+        </price:commodity>
+        <price:currency>
+          <cmdty:space>CURRENCY</cmdty:space>
+          <cmdty:id>USD</cmdty:id>
+        </price:currency>
+        <price:time>
+          <ts:date>2025-03-31 10:59:00 +0000</ts:date>
+        </price:time>
+        <price:source>user:price</price:source>
+        <price:type>transaction</price:type>
+        <price:value>888/133253</price:value>
+      </price>
       <price>
         <price:id type="guid">f3991a096ad0452389192eb6e6e69fff</price:id>
         <price:commodity>
@@ -353,12 +196,26 @@
       <act:description>Euros in Wallet</act:description>
       <act:slots>
         <slot>
-          <slot:key>balance-limit</slot:key>
-          <slot:value type="frame"/>
-        </slot>
-        <slot>
           <slot:key>color</slot:key>
           <slot:value type="string">rgb(28,113,216)</slot:value>
+        </slot>
+      </act:slots>
+      <act:parent type="guid">647d3c810489407b8bc1fc7e2e422a52</act:parent>
+    </gnc:account>
+    <gnc:account version="2.0.0">
+      <act:name>Japan Wallet</act:name>
+      <act:id type="guid">f973a7c67330448bb6dda4ed40b45d81</act:id>
+      <act:type>ASSET</act:type>
+      <act:commodity>
+        <cmdty:space>CURRENCY</cmdty:space>
+        <cmdty:id>JPY</cmdty:id>
+      </act:commodity>
+      <act:commodity-scu>1</act:commodity-scu>
+      <act:description>Japanese</act:description>
+      <act:slots>
+        <slot>
+          <slot:key>color</slot:key>
+          <slot:value type="string">rgb(237,51,59)</slot:value>
         </slot>
       </act:slots>
       <act:parent type="guid">647d3c810489407b8bc1fc7e2e422a52</act:parent>
@@ -374,10 +231,6 @@
       <act:commodity-scu>100</act:commodity-scu>
       <act:description>Hidden from view</act:description>
       <act:slots>
-        <slot>
-          <slot:key>balance-limit</slot:key>
-          <slot:value type="frame"/>
-        </slot>
         <slot>
           <slot:key>hidden</slot:key>
           <slot:value type="string">true</slot:value>
@@ -1145,12 +998,6 @@
       </act:commodity>
       <act:commodity-scu>100</act:commodity-scu>
       <act:description>Opening Balances</act:description>
-      <act:slots>
-        <slot>
-          <slot:key>equity-type</slot:key>
-          <slot:value type="string">opening-balance</slot:value>
-        </slot>
-      </act:slots>
       <act:parent type="guid">cee86947018b4a8792ff54dd19c83692</act:parent>
     </gnc:account>
     <gnc:transaction version="2.0.0">
@@ -1235,11 +1082,54 @@
         </trn:split>
       </trn:splits>
     </gnc:transaction>
+    <gnc:transaction version="2.0.0">
+      <trn:id type="guid">46b64b7d40194fbb8270892c171d7c93</trn:id>
+      <trn:currency>
+        <cmdty:space>CURRENCY</cmdty:space>
+        <cmdty:id>USD</cmdty:id>
+      </trn:currency>
+      <trn:date-posted>
+        <ts:date>2025-03-31 10:59:00 +0000</ts:date>
+      </trn:date-posted>
+      <trn:date-entered>
+        <ts:date>2025-03-31 11:26:04 +0000</ts:date>
+      </trn:date-entered>
+      <trn:description>mom</trn:description>
+      <trn:slots>
+        <slot>
+          <slot:key>date-posted</slot:key>
+          <slot:value type="gdate">
+            <gdate>2025-03-31</gdate>
+          </slot:value>
+        </slot>
+      </trn:slots>
+      <trn:splits>
+        <trn:split>
+          <split:id type="guid">b5bed6bb14ff491fb60995d08bb4b427</split:id>
+          <split:reconciled-state>n</split:reconciled-state>
+          <split:value>88800/100</split:value>
+          <split:quantity>133253/1</split:quantity>
+          <split:account type="guid">f973a7c67330448bb6dda4ed40b45d81</split:account>
+        </trn:split>
+        <trn:split>
+          <split:id type="guid">760c07e706234fb29e9f6d751be6c1fd</split:id>
+          <split:reconciled-state>n</split:reconciled-state>
+          <split:value>-88800/100</split:value>
+          <split:quantity>-88800/100</split:quantity>
+          <split:account type="guid">5cd48b4cbd9b492db920690207d5d89b</split:account>
+        </trn:split>
+      </trn:splits>
+    </gnc:transaction>
     <gnc:template-transactions>
       <gnc:account version="2.0.0">
         <act:name>Template Root</act:name>
         <act:id type="guid">5569f2318478400f94606478b0de55c5</act:id>
         <act:type>ROOT</act:type>
+        <act:commodity>
+          <cmdty:space>template</cmdty:space>
+          <cmdty:id>template</cmdty:id>
+        </act:commodity>
+        <act:commodity-scu>1</act:commodity-scu>
       </gnc:account>
       <gnc:account version="2.0.0">
         <act:name>11d621073ed745debd5027325d7853a4</act:name>
@@ -1298,11 +1188,11 @@
                   </slot>
                   <slot>
                     <slot:key>debit-formula</slot:key>
-                    <slot:value type="string">99</slot:value>
+                    <slot:value type="string">99.90</slot:value>
                   </slot>
                   <slot>
                     <slot:key>debit-numeric</slot:key>
-                    <slot:value type="numeric">99/1</slot:value>
+                    <slot:value type="numeric">999/10</slot:value>
                   </slot>
                 </slot:value>
               </slot>
@@ -1324,11 +1214,11 @@
                   </slot>
                   <slot>
                     <slot:key>credit-formula</slot:key>
-                    <slot:value type="string">99</slot:value>
+                    <slot:value type="string">99.90</slot:value>
                   </slot>
                   <slot>
                     <slot:key>credit-numeric</slot:key>
-                    <slot:value type="numeric">99/1</slot:value>
+                    <slot:value type="numeric">999/10</slot:value>
                   </slot>
                   <slot>
                     <slot:key>debit-formula</slot:key>
@@ -1393,14 +1283,6 @@
               <slot:value type="numeric">1010/1</slot:value>
             </slot>
             <slot>
-              <slot:key>10</slot:key>
-              <slot:value type="numeric">1100/1</slot:value>
-            </slot>
-            <slot>
-              <slot:key>11</slot:key>
-              <slot:value type="numeric">1110/1</slot:value>
-            </slot>
-            <slot>
               <slot:key>2</slot:key>
               <slot:value type="numeric">1020/1</slot:value>
             </slot>
@@ -1431,6 +1313,28 @@
             <slot>
               <slot:key>9</slot:key>
               <slot:value type="numeric">1090/1</slot:value>
+            </slot>
+            <slot>
+              <slot:key>10</slot:key>
+              <slot:value type="numeric">1100/1</slot:value>
+            </slot>
+            <slot>
+              <slot:key>11</slot:key>
+              <slot:value type="numeric">1110/1</slot:value>
+            </slot>
+          </slot:value>
+        </slot>
+        <slot>
+          <slot:key>notes</slot:key>
+          <slot:value type="frame">
+            <slot>
+              <slot:key>84bbb4a4c12844fa9a4a7b4d6915288a</slot:key>
+              <slot:value type="frame">
+                <slot>
+                  <slot:key>0</slot:key>
+                  <slot:value type="string">note #1</slot:value>
+                </slot>
+              </slot:value>
             </slot>
           </slot:value>
         </slot>
