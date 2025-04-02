@@ -154,7 +154,6 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -861,6 +860,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 if (mRecurrencePeriod > 0) { //if we find an old format recurrence period, parse it
                     mTransaction.setTemplate(true);
                     ScheduledAction scheduledAction = ScheduledAction.parseScheduledAction(mTransaction, mRecurrencePeriod);
+                    System.out.println("±!@ 863");
                     mScheduledActionsList.add(scheduledAction);
                 }
                 mRecurrencePeriod = 0;
@@ -873,13 +873,11 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
 
             // ========================= PROCESSING SCHEDULED ACTIONS ==================================
             case TAG_SX_ID:
+                // The template account name.
                 mScheduledAction.setUID(characterString);
                 break;
             case TAG_SX_NAME:
-                if (characterString.equals(ScheduledAction.ActionType.BACKUP.name()))
-                    mScheduledAction.setActionType(ScheduledAction.ActionType.BACKUP);
-                else
-                    mScheduledAction.setActionType(ScheduledAction.ActionType.TRANSACTION);
+                mScheduledAction.setName(characterString);
                 break;
             case TAG_SX_ENABLED:
                 mScheduledAction.setEnabled(characterString.equals("y"));
@@ -887,7 +885,6 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
             case TAG_SX_AUTO_CREATE:
                 mScheduledAction.setAutoCreate(characterString.equals("y"));
                 break;
-            //todo: export auto_notify, advance_create, advance_notify
             case TAG_SX_NUM_OCCUR:
                 mScheduledAction.setTotalPlannedExecutionCount(Integer.parseInt(characterString));
                 break;
@@ -936,9 +933,12 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 break;
             case TAG_SX_TEMPL_ACCOUNT:
                 if (mScheduledAction.getActionType() == ScheduledAction.ActionType.TRANSACTION) {
-                    mScheduledAction.setActionUID(mTemplateAccountToTransactionMap.get(characterString));
+                    String accountUID = characterString;
+                    mScheduledAction.setTemplateAccountUID(accountUID);
+                    String transactionUID = mTemplateAccountToTransactionMap.get(accountUID);
+                    mScheduledAction.setActionUID(transactionUID);
                 } else {
-                    mScheduledAction.setActionUID(BaseModel.generateUID());
+                    mScheduledAction.setActionUID(mBook.getUID());
                 }
                 break;
             case TAG_GNC_RECURRENCE:
@@ -1172,16 +1172,17 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
 
             long nAccounts = mAccountsDbAdapter.bulkAddRecords(mAccountList, DatabaseAdapter.UpdateMethod.insert);
             Timber.d("%d accounts inserted", nAccounts);
-            //We need to add scheduled actions first because there is a foreign key constraint on transactions
-            //which are generated from scheduled actions (we do auto-create some transactions during import)
-            long nSchedActions = mScheduledActionsDbAdapter.bulkAddRecords(mScheduledActionsList, DatabaseAdapter.UpdateMethod.insert);
-            Timber.d("%d scheduled actions inserted", nSchedActions);
 
             long nTempTransactions = mTransactionsDbAdapter.bulkAddRecords(mTemplateTransactions, DatabaseAdapter.UpdateMethod.insert);
             Timber.d("%d template transactions inserted", nTempTransactions);
 
             long nTransactions = mTransactionsDbAdapter.bulkAddRecords(mTransactionList, DatabaseAdapter.UpdateMethod.insert);
             Timber.d("%d transactions inserted", nTransactions);
+
+            //We need to add scheduled actions after transactions because there is a foreign key constraint on transactions
+            //which are generated from scheduled actions (we do auto-create some transactions during import)
+            long nSchedActions = mScheduledActionsDbAdapter.bulkAddRecords(mScheduledActionsList, DatabaseAdapter.UpdateMethod.insert);
+            Timber.d("%d scheduled actions inserted", nSchedActions);
 
             long nPrices = mPricesDbAdapter.bulkAddRecords(mPriceList, DatabaseAdapter.UpdateMethod.insert);
             Timber.d("%d prices inserted", nPrices);
@@ -1280,9 +1281,9 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     private int generateMissedScheduledTransactions(ScheduledAction scheduledAction) {
         //if this scheduled action should not be run for any reason, return immediately
         if (scheduledAction.getActionType() != ScheduledAction.ActionType.TRANSACTION
-            || !scheduledAction.isEnabled() || !scheduledAction.shouldAutoCreate()
+            || !scheduledAction.isEnabled() || !scheduledAction.getAutoCreate()
             || (scheduledAction.getEndTime() > 0 && scheduledAction.getEndTime() > System.currentTimeMillis())
-            || (scheduledAction.getTotalPlannedExecutionCount() > 0 && scheduledAction.getExecutionCount() >= scheduledAction.getTotalPlannedExecutionCount())) {
+            || (scheduledAction.getTotalPlannedExecutionCount() > 0 && scheduledAction.getInstanceCount() >= scheduledAction.getTotalPlannedExecutionCount())) {
             return 0;
         }
 
@@ -1305,7 +1306,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                     //so we add them to the mAutoBalanceSplits which will be updated to real GUIDs before saving
                     List<Split> autoBalanceSplits = transaction.getSplits(transaction.getCurrencyCode());
                     mAutoBalanceSplits.addAll(autoBalanceSplits);
-                    scheduledAction.setExecutionCount(scheduledAction.getExecutionCount() + 1);
+                    scheduledAction.setInstanceCount(scheduledAction.getInstanceCount() + 1);
                     ++generatedTransactionCount;
                     break;
                 }

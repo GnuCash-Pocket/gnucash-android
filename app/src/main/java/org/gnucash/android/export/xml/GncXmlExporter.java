@@ -505,40 +505,31 @@ public class GncXmlExporter extends Exporter {
             xmlSerializer.startTag(null, TAG_SCHEDULED_ACTION);
             xmlSerializer.attribute(null, ATTR_KEY_VERSION, BOOK_VERSION);
             xmlSerializer.startTag(null, TAG_SX_ID);
-
-            String nameUID = account.getName();
             xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID);
-            xmlSerializer.text(nameUID);
+            xmlSerializer.text(scheduledAction.getUID());
             xmlSerializer.endTag(null, TAG_SX_ID);
-            xmlSerializer.startTag(null, TAG_SX_NAME);
-
-            ScheduledAction.ActionType actionType = scheduledAction.getActionType();
-            if (actionType == ScheduledAction.ActionType.TRANSACTION) {
-                String description = mTransactionsDbAdapter.getAttribute(actionUID, TransactionEntry.COLUMN_DESCRIPTION);
-                xmlSerializer.text(description);
-            } else {
-                xmlSerializer.text(actionType.name());
+            if (scheduledAction.getName() != null) {
+                xmlSerializer.startTag(null, TAG_SX_NAME);
+                xmlSerializer.text(scheduledAction.getName());
+                xmlSerializer.endTag(null, TAG_SX_NAME);
             }
-            xmlSerializer.endTag(null, TAG_SX_NAME);
             xmlSerializer.startTag(null, TAG_SX_ENABLED);
             xmlSerializer.text(scheduledAction.isEnabled() ? "y" : "n");
             xmlSerializer.endTag(null, TAG_SX_ENABLED);
             xmlSerializer.startTag(null, TAG_SX_AUTO_CREATE);
-            xmlSerializer.text(scheduledAction.shouldAutoCreate() ? "y" : "n");
+            xmlSerializer.text(scheduledAction.getAutoCreate() ? "y" : "n");
             xmlSerializer.endTag(null, TAG_SX_AUTO_CREATE);
             xmlSerializer.startTag(null, TAG_SX_AUTO_CREATE_NOTIFY);
-            xmlSerializer.text(scheduledAction.shouldAutoNotify() ? "y" : "n");
+            xmlSerializer.text(scheduledAction.getAutoCreateNotify() ? "y" : "n");
             xmlSerializer.endTag(null, TAG_SX_AUTO_CREATE_NOTIFY);
             xmlSerializer.startTag(null, TAG_SX_ADVANCE_CREATE_DAYS);
             xmlSerializer.text(Integer.toString(scheduledAction.getAdvanceCreateDays()));
             xmlSerializer.endTag(null, TAG_SX_ADVANCE_CREATE_DAYS);
             xmlSerializer.startTag(null, TAG_SX_ADVANCE_REMIND_DAYS);
-            xmlSerializer.text(Integer.toString(scheduledAction.getAdvanceNotifyDays()));
+            xmlSerializer.text(Integer.toString(scheduledAction.getAdvanceRemindDays()));
             xmlSerializer.endTag(null, TAG_SX_ADVANCE_REMIND_DAYS);
             xmlSerializer.startTag(null, TAG_SX_INSTANCE_COUNT);
-            String scheduledActionUID = scheduledAction.getUID();
-            long instanceCount = mScheduledActionDbAdapter.getActionInstanceCount(scheduledActionUID);
-            xmlSerializer.text(Long.toString(instanceCount));
+            xmlSerializer.text(Long.toString(scheduledAction.getInstanceCount()));
             xmlSerializer.endTag(null, TAG_SX_INSTANCE_COUNT);
 
             //start date
@@ -564,7 +555,7 @@ public class GncXmlExporter extends Exporter {
                 }
 
                 //remaining occurrences
-                int executionCount = scheduledAction.getExecutionCount();
+                int executionCount = scheduledAction.getInstanceCount();
                 if (executionCount > 0) {
                     xmlSerializer.startTag(null, TAG_SX_REM_OCCUR);
                     xmlSerializer.text(Integer.toString(totalFrequency - executionCount));

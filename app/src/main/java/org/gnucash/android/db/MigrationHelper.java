@@ -115,7 +115,10 @@ public class MigrationHelper {
 
         String sqlAddNotes = "ALTER TABLE " + DatabaseSchema.AccountEntry.TABLE_NAME +
             " ADD COLUMN " + DatabaseSchema.AccountEntry.COLUMN_NOTES + " text";
+        String sqlAddName = "ALTER TABLE " + DatabaseSchema.ScheduledActionEntry.TABLE_NAME +
+            " ADD COLUMN " + DatabaseSchema.ScheduledActionEntry.COLUMN_NAME + " varchar(255)";
 
         db.execSQL(sqlAddNotes);
+        db.execSQL(sqlAddName);
     }
 }

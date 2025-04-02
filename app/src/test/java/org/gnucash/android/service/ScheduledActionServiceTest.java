@@ -39,7 +39,6 @@ import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.model.TransactionType;
 import org.gnucash.android.test.unit.GnuCashTest;
-import org.gnucash.android.util.TimestampHelper;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.LocalDateTime;
@@ -108,7 +107,7 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         TransactionsDbAdapter trxnAdapter = TransactionsDbAdapter.getInstance();
 
         assertThat(trxnAdapter.getRecordsCount()).isZero();
-        ScheduledActionService.processScheduledAction(scheduledAction1, mDb);
+        ScheduledActionService.processScheduledAction("", scheduledAction1, mDb);
         assertThat(trxnAdapter.getRecordsCount()).isZero();
     }
 
@@ -123,7 +122,7 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         TransactionsDbAdapter trxnAdapter = TransactionsDbAdapter.getInstance();
 
         assertThat(trxnAdapter.getRecordsCount()).isZero();
-        ScheduledActionService.processScheduledAction(scheduledAction, mDb);
+        ScheduledActionService.processScheduledAction("", scheduledAction, mDb);
         assertThat(trxnAdapter.getRecordsCount()).isZero();
     }
 
@@ -138,11 +137,11 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         scheduledAction.setEnabled(true);
         scheduledAction.setRecurrence(new Recurrence(PeriodType.WEEK));
         scheduledAction.setTotalPlannedExecutionCount(4);
-        scheduledAction.setExecutionCount(4);
+        scheduledAction.setInstanceCount(4);
 
         TransactionsDbAdapter trxnAdapter = TransactionsDbAdapter.getInstance();
         assertThat(trxnAdapter.getRecordsCount()).isZero();
-        ScheduledActionService.processScheduledAction(scheduledAction, mDb);
+        ScheduledActionService.processScheduledAction("", scheduledAction, mDb);
         assertThat(trxnAdapter.getRecordsCount()).isZero();
     }
 
@@ -168,7 +167,7 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
         assertThat(transactionsDbAdapter.getRecordsCount()).isZero();
 
-        ScheduledActionService.processScheduledAction(scheduledAction, mDb);
+        ScheduledActionService.processScheduledAction("", scheduledAction, mDb);
 
         assertThat(transactionsDbAdapter.getRecordsCount()).isEqualTo(7);
     }
@@ -186,7 +185,7 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
         assertThat(transactionsDbAdapter.getRecordsCount()).isZero();
 
-        ScheduledActionService.processScheduledAction(scheduledAction, mDb);
+        ScheduledActionService.processScheduledAction("", scheduledAction, mDb);
 
         int weeks = Weeks.weeksBetween(startTime, new DateTime(2016, 8, 29, 10, 0)).getWeeks();
         int expectedTransactionCount = weeks / 2; //multiplier from the PeriodType
@@ -217,10 +216,10 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
         assertThat(transactionsDbAdapter.getRecordsCount()).isZero();
 
-        ScheduledActionService.processScheduledAction(scheduledAction, mDb);
+        ScheduledActionService.processScheduledAction("", scheduledAction, mDb);
 
         int expectedCount = 5;
-        assertThat(scheduledAction.getExecutionCount()).isEqualTo(expectedCount);
+        assertThat(scheduledAction.getInstanceCount()).isEqualTo(expectedCount);
         assertThat(transactionsDbAdapter.getRecordsCount()).isEqualTo(expectedCount); //would be 6 if the end time is not respected
     }
 
@@ -237,7 +236,7 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
         assertThat(transactionsDbAdapter.getRecordsCount()).isZero();
 
-        ScheduledActionService.processScheduledAction(scheduledAction, mDb);
+        ScheduledActionService.processScheduledAction("", scheduledAction, mDb);
 
         //no change in the database since no action UID was specified
         assertThat(transactionsDbAdapter.getRecordsCount()).isZero();
@@ -260,7 +259,7 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         scheduledBackup.setStartTime(LocalDateTime.now()
                 .minusMonths(4).minusDays(2).toDate().getTime());
         scheduledBackup.setRecurrence(PeriodType.MONTH, 1);
-        scheduledBackup.setExecutionCount(2);
+        scheduledBackup.setInstanceCount(2);
         scheduledBackup.setLastRunTime(LocalDateTime.now().minusMonths(2).toDate().getTime());
         long previousLastRun = scheduledBackup.getLastRunTime();
 
@@ -273,8 +272,8 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         assertThat(backupFolder.listFiles()).isEmpty();
 
         // Check there's not a backup for each missed run
-        ScheduledActionService.processScheduledAction(scheduledBackup, mDb);
-        assertThat(scheduledBackup.getExecutionCount()).isEqualTo(3);
+        ScheduledActionService.processScheduledAction("", scheduledBackup, mDb);
+        assertThat(scheduledBackup.getInstanceCount()).isEqualTo(3);
         assertThat(scheduledBackup.getLastRunTime()).isGreaterThan(previousLastRun);
         File[] backupFiles = backupFolder.listFiles();
         assertThat(backupFiles).hasSize(1);
@@ -282,8 +281,8 @@ public class ScheduledActionServiceTest extends GnuCashTest {
 
         // Check also across service runs
         previousLastRun = scheduledBackup.getLastRunTime();
-        ScheduledActionService.processScheduledAction(scheduledBackup, mDb);
-        assertThat(scheduledBackup.getExecutionCount()).isEqualTo(3);
+        ScheduledActionService.processScheduledAction("", scheduledBackup, mDb);
+        assertThat(scheduledBackup.getInstanceCount()).isEqualTo(3);
         assertThat(scheduledBackup.getLastRunTime()).isEqualTo(previousLastRun);
         backupFiles = backupFolder.listFiles();
         assertThat(backupFiles).hasSize(1);
@@ -303,7 +302,7 @@ public class ScheduledActionServiceTest extends GnuCashTest {
                 LocalDateTime.now().withDayOfWeek(DateTimeConstants.WEDNESDAY).toDate().getTime());
         scheduledBackup.setLastRunTime(scheduledBackup.getStartTime());
         long previousLastRun = scheduledBackup.getLastRunTime();
-        scheduledBackup.setExecutionCount(1);
+        scheduledBackup.setInstanceCount(1);
         Recurrence recurrence = new Recurrence(PeriodType.WEEK);
         recurrence.setMultiplier(1);
         recurrence.setByDays(Collections.singletonList(Calendar.MONDAY));
@@ -318,9 +317,9 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         assertThat(backupFolder).exists();
         assertThat(backupFolder.listFiles()).isEmpty();
 
-        ScheduledActionService.processScheduledAction(scheduledBackup, mDb);
+        ScheduledActionService.processScheduledAction("", scheduledBackup, mDb);
 
-        assertThat(scheduledBackup.getExecutionCount()).isEqualTo(1);
+        assertThat(scheduledBackup.getInstanceCount()).isEqualTo(1);
         assertThat(scheduledBackup.getLastRunTime()).isEqualTo(previousLastRun);
         assertThat(backupFolder.listFiles()).hasSize(0);
     }
@@ -335,7 +334,7 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         scheduledBackup.setStartTime(LocalDateTime.now().minusDays(15).toDate().getTime());
         scheduledBackup.setLastRunTime(LocalDateTime.now().minusDays(8).toDate().getTime());
         long previousLastRun = scheduledBackup.getLastRunTime();
-        scheduledBackup.setExecutionCount(1);
+        scheduledBackup.setInstanceCount(1);
         Recurrence recurrence = new Recurrence(PeriodType.WEEK);
         recurrence.setMultiplier(1);
         recurrence.setByDays(Collections.singletonList(Calendar.WEDNESDAY));
@@ -363,9 +362,9 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         assertThat(backupFolder).exists();
         assertThat(backupFolder.listFiles()).isEmpty();
 
-        ScheduledActionService.processScheduledAction(scheduledBackup, mDb);
+        ScheduledActionService.processScheduledAction("", scheduledBackup, mDb);
 
-        assertThat(scheduledBackup.getExecutionCount()).isEqualTo(1);
+        assertThat(scheduledBackup.getInstanceCount()).isEqualTo(1);
         assertThat(scheduledBackup.getLastRunTime()).isEqualTo(previousLastRun);
         File[] files = backupFolder.listFiles();
         assertThat(files).isNotNull();
@@ -395,7 +394,7 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         scheduledBackup.setStartTime(LocalDateTime.now().minusDays(15).toDate().getTime());
         scheduledBackup.setLastRunTime(LocalDateTime.now().minusDays(8).toDate().getTime());
         long previousLastRun = scheduledBackup.getLastRunTime();
-        scheduledBackup.setExecutionCount(1);
+        scheduledBackup.setInstanceCount(1);
         Recurrence recurrence = new Recurrence(PeriodType.WEEK);
         recurrence.setMultiplier(1);
         recurrence.setByDays(Collections.singletonList(Calendar.FRIDAY));
@@ -418,9 +417,9 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         assertThat(backupFolder).exists();
         assertThat(backupFolder.listFiles()).isEmpty();
 
-        ScheduledActionService.processScheduledAction(scheduledBackup, mDb);
+        ScheduledActionService.processScheduledAction("", scheduledBackup, mDb);
 
-        assertThat(scheduledBackup.getExecutionCount()).isEqualTo(2);
+        assertThat(scheduledBackup.getInstanceCount()).isEqualTo(2);
         assertThat(scheduledBackup.getLastRunTime()).isGreaterThan(previousLastRun);
         File[] files = backupFolder.listFiles();
         assertThat(files).isNotNull();

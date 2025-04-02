@@ -74,47 +74,50 @@ public class ScheduledActionDbAdapterTest extends GnuCashTest {
     @Test
     public void testAddGetRecord() {
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
-        scheduledAction.setActionUID("Some UID");
+        scheduledAction.setName("Some Name");
+        scheduledAction.setActionUID("Some TX UID");
         scheduledAction.setAdvanceCreateDays(1);
-        scheduledAction.setAdvanceNotifyDays(2);
+        scheduledAction.setAdvanceRemindDays(2);
         scheduledAction.setAutoCreate(true);
-        scheduledAction.setAutoNotify(true);
+        scheduledAction.setAutoCreateNotify(true);
         scheduledAction.setEnabled(true);
         scheduledAction.setStartTime(11111);
         scheduledAction.setEndTime(33333);
         scheduledAction.setLastRunTime(22222);
-        scheduledAction.setExecutionCount(3);
+        scheduledAction.setInstanceCount(3);
         scheduledAction.setRecurrence(new Recurrence(PeriodType.MONTH));
         scheduledAction.setTag("QIF;SD_CARD;2016-06-25 12:56:07.175;false");
         mScheduledActionDbAdapter.addRecord(scheduledAction);
 
         ScheduledAction scheduledActionFromDb =
                 mScheduledActionDbAdapter.getRecord(scheduledAction.getUID());
-        assertThat(scheduledActionFromDb.getUID()).isEqualTo(
-                scheduledAction.getUID());
-        assertThat(scheduledActionFromDb.getActionUID()).isEqualTo(
-                scheduledAction.getActionUID());
-        assertThat(scheduledActionFromDb.getAdvanceCreateDays()).isEqualTo(
-                scheduledAction.getAdvanceCreateDays());
-        assertThat(scheduledActionFromDb.getAdvanceNotifyDays()).isEqualTo(
-                scheduledAction.getAdvanceNotifyDays());
-        assertThat(scheduledActionFromDb.shouldAutoCreate()).isEqualTo(
-                scheduledAction.shouldAutoCreate());
-        assertThat(scheduledActionFromDb.shouldAutoNotify()).isEqualTo(
-                scheduledAction.shouldAutoNotify());
-        assertThat(scheduledActionFromDb.isEnabled()).isEqualTo(
-                scheduledAction.isEnabled());
-        assertThat(scheduledActionFromDb.getStartTime()).isEqualTo(
-                scheduledAction.getStartTime());
-        assertThat(scheduledActionFromDb.getEndTime()).isEqualTo(
-                scheduledAction.getEndTime());
-        assertThat(scheduledActionFromDb.getLastRunTime()).isEqualTo(
-                scheduledAction.getLastRunTime());
-        assertThat(scheduledActionFromDb.getExecutionCount()).isEqualTo(
-                scheduledAction.getExecutionCount());
-        assertThat(scheduledActionFromDb.getRecurrence()).isEqualTo(
-                scheduledAction.getRecurrence());
-        assertThat(scheduledActionFromDb.getTag()).isEqualTo(
-                scheduledAction.getTag());
+        assertThat(scheduledActionFromDb.getUID())
+            .isEqualTo(scheduledAction.getUID());
+        assertThat(scheduledActionFromDb.getName())
+            .isEqualTo(scheduledAction.getName());
+        assertThat(scheduledActionFromDb.getActionUID())
+            .isEqualTo(scheduledAction.getActionUID());
+        assertThat(scheduledActionFromDb.getAdvanceCreateDays())
+            .isEqualTo(scheduledAction.getAdvanceCreateDays());
+        assertThat(scheduledActionFromDb.getAdvanceRemindDays())
+            .isEqualTo(scheduledAction.getAdvanceRemindDays());
+        assertThat(scheduledActionFromDb.getAutoCreate())
+            .isEqualTo(scheduledAction.getAutoCreate());
+        assertThat(scheduledActionFromDb.getAutoCreateNotify())
+            .isEqualTo(scheduledAction.getAutoCreateNotify());
+        assertThat(scheduledActionFromDb.isEnabled())
+            .isEqualTo(scheduledAction.isEnabled());
+        assertThat(scheduledActionFromDb.getStartTime())
+            .isEqualTo(scheduledAction.getStartTime());
+        assertThat(scheduledActionFromDb.getEndTime())
+            .isEqualTo(scheduledAction.getEndTime());
+        assertThat(scheduledActionFromDb.getLastRunTime())
+            .isEqualTo(scheduledAction.getLastRunTime());
+        assertThat(scheduledActionFromDb.getInstanceCount())
+            .isEqualTo(scheduledAction.getInstanceCount());
+        assertThat(scheduledActionFromDb.getRecurrence())
+            .isEqualTo(scheduledAction.getRecurrence());
+        assertThat(scheduledActionFromDb.getTag())
+            .isEqualTo(scheduledAction.getTag());
     }
 }

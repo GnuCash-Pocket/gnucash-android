@@ -11,6 +11,7 @@ import org.gnucash.android.R
 import org.gnucash.android.databinding.ListItemScheduledTrxnBinding
 import org.gnucash.android.db.DatabaseCursorLoader
 import org.gnucash.android.db.DatabaseSchema
+import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.model.ScheduledAction
@@ -86,25 +87,27 @@ class ScheduledExportsListFragment : ScheduledActionsListFragment() {
         refreshable: Refreshable
     ) : ScheduledViewHolder(binding, refreshable) {
 
+        private val booksDbAdapter = BooksDbAdapter.getInstance()
+
         override fun bind(scheduledAction: ScheduledAction) {
             super.bind(scheduledAction)
             val context = itemView.context
+            primaryTextView.text = scheduledAction.toString()
 
             val params = ExportParams.parseCsv(scheduledAction.tag)
-            var exportDestination = params.exportTarget.description
-            if (params.exportTarget == ExportParams.ExportTarget.URI) {
-                exportDestination =
-                    exportDestination + " (" + params.exportLocation.getDocumentName(context) + ")"
+            var exportDestination = params.exportLocation.getDocumentName(context)
+            if (exportDestination.isEmpty()) {
+                exportDestination = params.exportLocation.toString()
             }
             val description = context.getString(
                 R.string.schedule_export_description,
-                params.exportFormat.name,
+                "",
                 context.getString(scheduledAction.actionType.labelId),
                 exportDestination
             )
-            primaryTextView.text = description
+            primaryTextView.text = description.trim()
             descriptionTextView.text = formatSchedule(scheduledAction)
-            amountTextView.visibility = View.GONE
+            amountTextView.text = params.exportFormat.name
 
             itemView.setOnClickListener { editExport(scheduledAction) }
         }

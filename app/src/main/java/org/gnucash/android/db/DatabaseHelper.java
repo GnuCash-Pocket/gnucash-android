@@ -121,6 +121,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String SCHEDULED_ACTIONS_TABLE_CREATE = "CREATE TABLE " + ScheduledActionEntry.TABLE_NAME + " ("
             + ScheduledActionEntry._ID + " integer primary key autoincrement, "
             + ScheduledActionEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
+            + ScheduledActionEntry.COLUMN_NAME + " varchar(255), "
             + ScheduledActionEntry.COLUMN_ACTION_UID + " varchar(255) not null, "
             + ScheduledActionEntry.COLUMN_TYPE + " varchar(255) not null, "
             + ScheduledActionEntry.COLUMN_RECURRENCE_UID + " varchar(255) not null, "

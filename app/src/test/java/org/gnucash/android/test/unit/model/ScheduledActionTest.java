@@ -115,7 +115,7 @@ public class ScheduledActionTest {
 
         assertThat(scheduledAction.computeNextCountBasedScheduledExecutionTime()).isEqualTo(startDate.getMillis());
 
-        scheduledAction.setExecutionCount(3);
+        scheduledAction.setInstanceCount(3);
         DateTime expectedTime = new DateTime(2016, 2, 15, 12, 0);
         assertThat(scheduledAction.computeNextCountBasedScheduledExecutionTime()).isEqualTo(expectedTime.getMillis());
     }
@@ -132,7 +132,7 @@ public class ScheduledActionTest {
 
         assertThat(scheduledAction.getTimeOfLastSchedule()).isEqualTo(-1L);
 
-        scheduledAction.setExecutionCount(3);
+        scheduledAction.setInstanceCount(3);
         DateTime expectedDate = new DateTime(2016, 7, 4, 9, 0);
         assertThat(scheduledAction.getTimeOfLastSchedule()).isEqualTo(expectedDate.getMillis());
 

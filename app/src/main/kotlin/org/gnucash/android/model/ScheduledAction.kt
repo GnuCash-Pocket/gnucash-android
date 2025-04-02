@@ -37,8 +37,10 @@ class ScheduledAction    //all actions are enabled by default
     /**
      * Type of event being scheduled
      */
-    var actionType: ActionType
+    var actionType: ActionType = ActionType.TRANSACTION
 ) : BaseModel() {
+
+    var name: String? = null
 
     private var _startDate: Long = 0
 
@@ -89,13 +91,19 @@ class ScheduledAction    //all actions are enabled by default
     /**
      * How many times this action has already been executed
      */
-    var executionCount = 0
+    var instanceCount = 0
 
     /**
      * Flag for whether the scheduled transaction should be auto-created
      */
-    private var _autoCreate = true
-    private var _autoNotify = false
+    var autoCreate = false
+
+    /**
+     * Sets whether to notify the user that scheduled transactions have been created
+     *
+     * This flag is currently unused in the app. It is only included here for compatibility with GnuCash desktop XML
+     */
+    var autoCreateNotify = false
 
     /**
      * Number of days in advance to create the transaction
@@ -109,7 +117,7 @@ class ScheduledAction    //all actions are enabled by default
      *
      * This flag is currently unused in the app. It is only included here for compatibility with GnuCash desktop XML
      */
-    var advanceNotifyDays = 0
+    var advanceRemindDays = 0
 
     /**
      * Returns the time when the last schedule in the sequence of planned executions was executed.
@@ -122,7 +130,7 @@ class ScheduledAction    //all actions are enabled by default
      */
     val timeOfLastSchedule: Long
         get() {
-            val count = executionCount
+            val count = instanceCount
             if (count <= 0) return -1
             recurrence?.let { recurrence ->
                 var startDate = LocalDateTime(_startDate)
@@ -273,71 +281,25 @@ class ScheduledAction    //all actions are enabled by default
             recurrence?.setPeriodEnd(Timestamp(_endDate))
         }
 
-    /**
-     * Returns flag if transactions should be automatically created or not
-     *
-     * This flag is currently unused in the app. It is only included here for compatibility with GnuCash desktop XML
-     *
-     * @return `true` if the transaction should be auto-created, `false` otherwise
-     */
-    fun shouldAutoCreate(): Boolean {
-        return _autoCreate
-    }
-
-    /**
-     * Set flag for automatically creating transaction based on this scheduled action
-     *
-     * This flag is currently unused in the app. It is only included here for compatibility with GnuCash desktop XML
-     *
-     * @param autoCreate Flag for auto creating transactions
-     */
-    fun setAutoCreate(autoCreate: Boolean) {
-        _autoCreate = autoCreate
-    }
-
-    /**
-     * Check if user will be notified of creation of scheduled transactions
-     *
-     * This flag is currently unused in the app. It is only included here for compatibility with GnuCash desktop XML
-     *
-     * @return `true` if user will be notified, `false` otherwise
-     */
-    fun shouldAutoNotify(): Boolean {
-        return _autoNotify
-    }
-
-    /**
-     * Sets whether to notify the user that scheduled transactions have been created
-     *
-     * This flag is currently unused in the app. It is only included here for compatibility with GnuCash desktop XML
-     *
-     * @param autoNotify Boolean flag
-     */
-    fun setAutoNotify(autoNotify: Boolean) {
-        _autoNotify = autoNotify
-    }
-
-    /** Backing field for @{link ScheduledAction#templateAccountUID} */
     private var _templateAccountUID: String? = null
-    var templateAccountUID: String?
-        /**
-         * Return the template account GUID for this scheduled action
-         *
-         * If no GUID was set, a new one is going to be generated and returned.
-         *
-         * @return String GUID of template account
-         */
-        get() = if (_templateAccountUID == null) generateUID().also {
-            _templateAccountUID = it
-        } else _templateAccountUID
-        /**
-         * Set the template account GUID
-         *
-         * @param templateAccountUID String GUID of template account
-         */
-        set(templateAccountUID) {
-            _templateAccountUID = templateAccountUID
+    /**
+     * Return the template account GUID for this scheduled action
+     *
+     * If no GUID was set, a new one is going to be generated and returned.
+     */
+    val templateAccountUID: String
+        get() {
+            var value = _templateAccountUID
+            if (value == null) {
+                value = generateUID()
+                _templateAccountUID = value
+            }
+            return value
         }
+
+    fun setTemplateAccountUID(uid: String?) {
+        _templateAccountUID = uid
+    }
 
     /**
      * Returns the event schedule (start, end and recurrence)

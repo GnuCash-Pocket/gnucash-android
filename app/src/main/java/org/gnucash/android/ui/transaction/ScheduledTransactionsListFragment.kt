@@ -100,7 +100,7 @@ class ScheduledTransactionsListFragment : ScheduledActionsListFragment() {
             }
             val splits = transaction.splits
 
-            primaryTextView.text = transaction.description
+            primaryTextView.text = scheduledAction.name ?: transaction.description
             descriptionTextView.text = formatSchedule(scheduledAction)
 
             var text = ""
@@ -109,7 +109,7 @@ class ScheduledTransactionsListFragment : ScheduledActionsListFragment() {
                 val first = splits[0]
                 for (split in splits) {
                     if ((first !== split) && first.isPairOf(split)) {
-                        text = first.value!!.formattedString()
+                        text = first.value.formattedString()
                         break
                     }
                 }
@@ -140,7 +140,7 @@ class ScheduledTransactionsListFragment : ScheduledActionsListFragment() {
         @SuppressLint("NotifyDataSetChanged")
         override fun deleteSchedule(scheduledAction: ScheduledAction) {
             Timber.i("Removing scheduled transaction")
-            val transactionUID = scheduledAction.actionUID!!
+            val transactionUID = scheduledAction.actionUID ?: return
             scheduledActionDbAdapter.deleteRecord(scheduledAction.uid);
             if (transactionsDbAdapter.deleteRecord(transactionUID)) {
                 val context = itemView.context

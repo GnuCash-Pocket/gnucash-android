@@ -38,22 +38,12 @@ public class ExportParams {
      * It could be stored on the {@link #SD_CARD} or exported through another program via {@link #SHARING}
      */
     public enum ExportTarget {
-        SD_CARD("SD Card"),
-        SHARING("External Service"),
-        DROPBOX("Dropbox"),
-        GOOGLE_DRIVE("Google Drive"),
-        OWNCLOUD("ownCloud"),
-        URI("Sync Service");
-
-        private final String mDescription;
-
-        ExportTarget(String description) {
-            mDescription = description;
-        }
-
-        public String getDescription() {
-            return mDescription;
-        }
+        SD_CARD,
+        SHARING,
+        DROPBOX,
+        GOOGLE_DRIVE,
+        OWNCLOUD,
+        URI;
     }
 
     /**

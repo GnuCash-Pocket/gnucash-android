@@ -190,6 +190,8 @@ public class DatabaseSchema {
         @Column(Cursor.FIELD_TYPE_STRING)
         public static final String COLUMN_TYPE = "type";
         @Column(Cursor.FIELD_TYPE_STRING)
+        public static final String COLUMN_NAME = "name";
+        @Column(Cursor.FIELD_TYPE_STRING)
         public static final String COLUMN_ACTION_UID = "action_uid";
         @Column(Cursor.FIELD_TYPE_INTEGER)
         public static final String COLUMN_START_TIME = "start_time";
