@@ -384,7 +384,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      * Set up action bar navigation list and listener callbacks
      */
     private void setupActionBarNavigation() {
-        Cursor accountsCursor = mAccountsDbAdapter.fetchAllRecordsOrderedByFullName();
+        Cursor accountsCursor = mAccountsDbAdapter.fetchAccountsOrderedByFavoriteAndFullName();
         if (accountNameAdapter == null) {
             accountNameAdapter = new QualifiedAccountNameCursorAdapter(
                 getSupportActionBar().getThemedContext(), accountsCursor, R.layout.account_spinner_item);

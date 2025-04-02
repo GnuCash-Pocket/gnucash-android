@@ -134,7 +134,7 @@ public class BalanceSheetFragment extends BaseReportFragment {
         tableLayout.removeAllViews();
 
         // FIXME move this to generateReport
-        Cursor cursor = mAccountsDbAdapter.fetchAccounts(DatabaseSchema.AccountEntry.COLUMN_TYPE
+        Cursor cursor = mAccountsDbAdapter.fetchAllRecords(DatabaseSchema.AccountEntry.COLUMN_TYPE
                         + " IN ( '" + TextUtils.join("' , '", accountTypes) + "' ) AND "
                         + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0",
                 null, DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC");

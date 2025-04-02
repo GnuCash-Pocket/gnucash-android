@@ -17,6 +17,8 @@
 
 package org.gnucash.android.export.xml;
 
+import androidx.annotation.NonNull;
+
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.transaction.TransactionFormFragment;
@@ -28,7 +30,6 @@ import org.joda.time.format.DateTimeFormatter;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
@@ -294,11 +295,19 @@ public abstract class GncXmlHelper {
         }
 
         int scale = amountString.length() - index - 2; //do this before, because we could modify the string
-        //String numerator = TransactionFormFragment.stripCurrencyFormatting(amountString.substring(0, pos));
         String numerator = amountString.substring(0, index);
         numerator = TransactionFormFragment.stripCurrencyFormatting(numerator);
         BigInteger numeratorInt = new BigInteger(numerator);
         return new BigDecimal(numeratorInt, scale);
+    }
+
+    public static String formatFormula(BigDecimal amount, Commodity commodity) {
+        Money money = new Money(amount, commodity);
+        return formatFormula(money);
+    }
+
+    public static String formatFormula(Money money) {
+        return money.formattedStringWithoutSymbol();
     }
 
     /**
@@ -309,26 +318,14 @@ public abstract class GncXmlHelper {
      * @return Formatted split amount
      * @deprecated Just use the values for numerator and denominator which are saved in the database
      */
-    @Deprecated
-    public static String formatSplitAmount(BigDecimal amount, Commodity commodity) {
-        long numerator = amount.longValue();
+    @NonNull
+    public static String formatNumeric(BigDecimal amount, Commodity commodity) {
         long denominator = commodity.getSmallestFraction();
+        long numerator = (amount.multiply(BigDecimal.valueOf(denominator))).longValue();
         return formatNumeric(numerator, denominator);
     }
 
-    /**
-     * Format the amount in template transaction splits.
-     * <p>GnuCash desktop always formats with a locale dependent format, and that varies per user.<br>
-     * So we will use the device locale here and hope that the user has the same locale on the desktop GnuCash</p>
-     *
-     * @param amount Amount to be formatted
-     * @return String representation of amount
-     */
-    public static String formatTemplateSplitAmount(BigDecimal amount) {
-        //TODO: If we ever implement an application-specific locale setting, use it here as well
-        return NumberFormat.getNumberInstance().format(amount);
-    }
-
+    @NonNull
     public static String formatNumeric(long numerator, long denominator) {
         if (denominator == 0) return "1/0";
         if (numerator == 0) return "0/1";

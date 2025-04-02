@@ -30,6 +30,8 @@ import java.util.Currency
 import java.util.Locale
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Money represents a money amount and a corresponding currency.
@@ -218,14 +220,11 @@ class Money : Number, Comparable<Money>, Parcelable {
      */
     private val scale: Int
         get() {
-            var scale = commodity.smallestFractionDigits
-            if (scale < 0) {
-                scale = _amount.scale()
+            var scale = _amount.scale()
+            if (scale <= 0) {
+                scale = commodity.smallestFractionDigits
             }
-            if (scale < 0) {
-                scale = 0
-            }
-            return scale
+            return max(1, scale)
         }
 
     /**
@@ -295,6 +294,7 @@ class Money : Number, Comparable<Money>, Parcelable {
      */
     @JvmOverloads
     fun formattedString(locale: Locale = Locale.getDefault()): String {
+        if (commodity.isTemplate) return _amount.toPlainString()
         val precision = commodity.smallestFractionDigits
         val formatter = (NumberFormat.getCurrencyInstance(locale) as DecimalFormat).apply {
             if (commodity.isCurrency) {
@@ -355,7 +355,7 @@ class Money : Number, Comparable<Money>, Parcelable {
      * @param amount [BigDecimal] amount to be set
      */
     private fun setAmount(amount: BigDecimal) {
-        _amount = amount.setScale(commodity.smallestFractionDigits, roundingMode)
+        _amount = amount.setScale(amount.scale(), roundingMode)
     }
 
     /**

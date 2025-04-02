@@ -63,7 +63,8 @@ public class GncXmlHandlerTest extends BookHelperTest {
         Account rootAccount = mAccountsDbAdapter.getRecord("308ade8cf0be2b0b05c5eec3114a65fa");
         assertThat(rootAccount.getParentUID()).isNull();
         assertThat(rootAccount.getName()).isEqualTo("Root Account");
-        assertThat(rootAccount.isHidden()).isTrue();
+        assertThat(rootAccount.isHidden()).isFalse();
+        assertThat(rootAccount.isPlaceholder()).isFalse();
 
         Account assetsAccount = mAccountsDbAdapter.getRecord("3f44d61cb1afd201e8ea5a54ec4fbbff");
         assertThat(assetsAccount.getParentUID()).isEqualTo(rootAccount.getUID());
@@ -336,7 +337,8 @@ public class GncXmlHandlerTest extends BookHelperTest {
         assertThat(scheduledTransaction.getSplits().size()).isEqualTo(2);
 
         Split splitCredit = scheduledTransaction.getSplits().get(0);
-        assertThat(splitCredit.getAccountUID()).isEqualTo("6a7cf8267314992bdddcee56d71a3908");
+        assertThat(splitCredit.getAccountUID()).isEqualTo("2e9b02b5ed6fb07c7d4536bb8a03599e");
+        assertThat(splitCredit.getScheduledActionAccountUID()).isEqualTo("6a7cf8267314992bdddcee56d71a3908");
         assertThat(splitCredit.getType()).isEqualTo(TransactionType.CREDIT);
         assertThat(splitCredit.getValue()).isEqualTo(new Money("20", "USD"));
         // FIXME: the quantity is always 0 as it's set from <split:quantity> instead
@@ -344,7 +346,8 @@ public class GncXmlHandlerTest extends BookHelperTest {
         //assertThat(split1.getQuantity()).isEqualTo(new Money("20", "USD"));
 
         Split splitDebit = scheduledTransaction.getSplits().get(1);
-        assertThat(splitDebit.getAccountUID()).isEqualTo("dae686a1636addc0dae1ae670701aa4a");
+        assertThat(splitDebit.getAccountUID()).isEqualTo("2e9b02b5ed6fb07c7d4536bb8a03599e");
+        assertThat(splitDebit.getScheduledActionAccountUID()).isEqualTo("dae686a1636addc0dae1ae670701aa4a");
         assertThat(splitDebit.getType()).isEqualTo(TransactionType.DEBIT);
         assertThat(splitDebit.getValue()).isEqualTo(new Money("20", "USD"));
         // FIXME: the quantity is always 0 as it's set from <split:quantity> instead

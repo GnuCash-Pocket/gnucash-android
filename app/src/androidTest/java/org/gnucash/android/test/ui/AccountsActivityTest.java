@@ -308,7 +308,7 @@ public class AccountsActivityTest extends GnuAndroidTest {
         sleep(1000);
         //no sub-accounts
         assertThat(mAccountsDbAdapter.getSubAccountCount(SIMPLE_ACCOUNT_UID)).isEqualTo(0);
-        assertThat(mAccountsDbAdapter.getSubAccountCount(mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID())).isEqualTo(2);
+        assertThat(mAccountsDbAdapter.getSubAccountCount(mAccountsDbAdapter.getOrCreateRootAccountUID())).isEqualTo(2);
         assertThat(mAccountsDbAdapter.getSimpleAccountList()).extracting("accountType").contains(AccountType.TRADING);
     }
 

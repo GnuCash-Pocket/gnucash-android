@@ -110,7 +110,7 @@ class Account : BaseModel {
     @JvmOverloads
     constructor(name: String, commodity: Commodity = Commodity.DEFAULT_COMMODITY) {
         this.name = name
-        fullName = this.name
+        this.fullName = this.name
         this.commodity = commodity
     }
 
@@ -247,5 +247,16 @@ class Account : BaseModel {
 
         private const val maskRGB: Int = 0xFFFFFF
         private const val maskOpaque: Int = 0xFF000000.toInt()
+
+        @JvmStatic
+        fun applyRoot(account: Account) {
+            account.accountType = AccountType.ROOT
+            account.setColor(null)
+            account.defaultTransferAccountUID = null
+            account.isFavorite = false
+            account.isHidden = false
+            account.parentUID = null
+            account.isPlaceholder = false
+        }
     }
 }

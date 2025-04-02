@@ -32,7 +32,7 @@
   <gnc:count-data cd:type="book">1</gnc:count-data>
   <gnc:book version="2.0.0">
     <book:id type="guid">a7682e5d878e43cea216611401f08463</book:id>
-    <gnc:count-data cd:type="commodity">1</gnc:count-data>
+    <gnc:count-data cd:type="commodity">3</gnc:count-data>
     <gnc:count-data cd:type="account">67</gnc:count-data>
     <gnc:count-data cd:type="transaction">3</gnc:count-data>
     <gnc:count-data cd:type="schedxaction">1</gnc:count-data>

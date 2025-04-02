@@ -272,7 +272,9 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         assertThat(backupFolder.listFiles()).isEmpty();
 
         // Check there's not a backup for each missed run
-        ScheduledActionService.processScheduledAction("", scheduledBackup, mDb);
+        String bookUID = GnuCashApplication.getActiveBookUID();
+        assertThat(bookUID).isNotNull();
+        ScheduledActionService.processScheduledAction(bookUID, scheduledBackup, mDb);
         assertThat(scheduledBackup.getInstanceCount()).isEqualTo(3);
         assertThat(scheduledBackup.getLastRunTime()).isGreaterThan(previousLastRun);
         File[] backupFiles = backupFolder.listFiles();
@@ -412,12 +414,13 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         transaction.addSplit(split.createPair(mTransferAccount.getUID()));
         mTransactionsDbAdapter.addRecord(transaction);
 
-        File backupFolder = new File(
-                Exporter.getExportFolderPath(GnuCashApplication.getActiveBookUID()));
+        String bookUID = GnuCashApplication.getActiveBookUID();
+        assertThat(bookUID).isNotNull();
+        File backupFolder = new File(Exporter.getExportFolderPath(bookUID));
         assertThat(backupFolder).exists();
         assertThat(backupFolder.listFiles()).isEmpty();
 
-        ScheduledActionService.processScheduledAction("", scheduledBackup, mDb);
+        ScheduledActionService.processScheduledAction(bookUID, scheduledBackup, mDb);
 
         assertThat(scheduledBackup.getInstanceCount()).isEqualTo(2);
         assertThat(scheduledBackup.getLastRunTime()).isGreaterThan(previousLastRun);

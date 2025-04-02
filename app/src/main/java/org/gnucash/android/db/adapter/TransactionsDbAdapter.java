@@ -631,13 +631,16 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
                 null, null, null, null, null);
 
         Timestamp timestamp = TimestampHelper.getTimestampFromNow();
-        if (cursor.moveToFirst()) {
-            String timeString = cursor.getString(0);
-            if (timeString != null) { //in case there were no transactions in the XML file (account structure only)
-                timestamp = TimestampHelper.getTimestampFromUtcString(timeString);
+        try {
+            if (cursor.moveToFirst()) {
+                String timeString = cursor.getString(0);
+                if (timeString != null) { //in case there were no transactions in the XML file (account structure only)
+                    timestamp = TimestampHelper.getTimestampFromUtcString(timeString);
+                }
             }
+        } finally {
+            cursor.close();
         }
-        cursor.close();
         return timestamp;
     }
 
@@ -665,10 +668,11 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
                 + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + " = 0";
         Cursor cursor = mDb.rawQuery(sql, new String[]{type.name(), currencyCode});
         long timestamp = 0;
-        if (cursor != null) {
+        try {
             if (cursor.moveToFirst()) {
                 timestamp = cursor.getLong(0);
             }
+        } finally {
             cursor.close();
         }
         return timestamp;

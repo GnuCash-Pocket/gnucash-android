@@ -182,6 +182,13 @@ class Commodity(
             USD.smallestFraction
         ) //this value is a stub. Will be overwritten when the app is launched
 
+        @JvmField
+        val template = Commodity(TEMPLATE, TEMPLATE, 1).apply {
+            namespace = TEMPLATE
+            cusip = TEMPLATE
+            localSymbol = TEMPLATE
+        }
+
         /**
          * Returns an instance of commodity for the specified currencyCode
          *

@@ -73,7 +73,8 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
                 SplitEntry.COLUMN_RECONCILE_STATE,
                 SplitEntry.COLUMN_RECONCILE_DATE,
                 SplitEntry.COLUMN_ACCOUNT_UID,
-                SplitEntry.COLUMN_TRANSACTION_UID
+                SplitEntry.COLUMN_TRANSACTION_UID,
+                SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID
         });
         this.commoditiesDbAdapter = commoditiesDbAdapter;
     }
@@ -133,7 +134,10 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
         stmt.bindString(9, TimestampHelper.getUtcStringFromTimestamp(split.getReconcileDate()));
         stmt.bindString(10, split.getAccountUID());
         stmt.bindString(11, split.getTransactionUID());
-        stmt.bindString(12, split.getUID());
+        if (split.getScheduledActionAccountUID() != null) {
+            stmt.bindString(12, split.getScheduledActionAccountUID());
+        }
+        stmt.bindString(13, split.getUID());
 
         return stmt;
     }
@@ -156,6 +160,7 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
         String memo = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_MEMO));
         String reconcileState = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_RECONCILE_STATE));
         String reconcileDate = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_RECONCILE_DATE));
+        String schedxAccountUID = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID));
 
         String transactionCurrency = getAttribute(TransactionEntry.TABLE_NAME, transxUID, TransactionEntry.COLUMN_CURRENCY);
         Money value = new Money(valueNum, valueDenom, transactionCurrency);
@@ -169,8 +174,10 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
         split.setType(TransactionType.valueOf(typeName));
         split.setMemo(memo);
         split.setReconcileState(reconcileState.charAt(0));
-        if (reconcileDate != null && !reconcileDate.isEmpty())
+        if (reconcileDate != null && !reconcileDate.isEmpty()) {
             split.setReconcileDate(TimestampHelper.getTimestampFromUtcString(reconcileDate));
+        }
+        split.setScheduledActionAccountUID(schedxAccountUID);
 
         return split;
     }

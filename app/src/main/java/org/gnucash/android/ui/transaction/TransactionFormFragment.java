@@ -244,7 +244,7 @@ public class TransactionFormFragment extends MenuFragment implements
 
         //if both accounts have same currency
         Cursor cursor = (Cursor) binding.inputTransferAccountSpinner.getSelectedItem();
-        String targetCurrencyCode = cursor.getString(cursor.getColumnIndex(DatabaseSchema.AccountEntry.COLUMN_CURRENCY));
+        String targetCurrencyCode = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_CURRENCY));
         if (fromCurrencyCode.equals(targetCurrencyCode)) {
             transferComplete(amount, amount);
             return;
@@ -283,7 +283,7 @@ public class TransactionFormFragment extends MenuFragment implements
         mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled();
 
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-        mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID, mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID());
+        mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID, mAccountsDbAdapter.getOrCreateRootAccountUID());
         assert (mAccountUID != null);
         mAccountType = mAccountsDbAdapter.getAccountType(mAccountUID);
 
@@ -514,7 +514,7 @@ public class TransactionFormFragment extends MenuFragment implements
         if (mUseDoubleEntry) {
             String currentAccountUID = mAccountUID;
             long defaultTransferAccountID;
-            String rootAccountUID = mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID();
+            String rootAccountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
             do {
                 defaultTransferAccountID = mAccountsDbAdapter.getDefaultTransferAccountID(mAccountsDbAdapter.getID(currentAccountUID));
                 if (defaultTransferAccountID > 0) {
@@ -537,12 +537,14 @@ public class TransactionFormFragment extends MenuFragment implements
         String conditions = "(" + DatabaseSchema.AccountEntry.COLUMN_UID + " != ?"
             + " AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + " != ?"
             + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0"
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_CURRENCY + " != ?"
             + ")";
+        String[] whereArgs = new String[]{mAccountUID, AccountType.ROOT.name(), Commodity.TEMPLATE};
 
         if (mCursor != null) {
             mCursor.close();
         }
-        mCursor = mAccountsDbAdapter.fetchAccountsOrderedByFavoriteAndFullName(conditions, new String[]{mAccountUID, AccountType.ROOT.name()});
+        mCursor = mAccountsDbAdapter.fetchAccountsOrderedByFavoriteAndFullName(conditions, whereArgs);
 
         Context context = binding.getRoot().getContext();
         mAccountCursorAdapter = new QualifiedAccountNameCursorAdapter(context, mCursor);

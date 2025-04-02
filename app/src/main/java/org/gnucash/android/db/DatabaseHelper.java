@@ -111,6 +111,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + SplitEntry.COLUMN_TRANSACTION_UID + " varchar(255) not null, "
             + SplitEntry.COLUMN_RECONCILE_STATE + " varchar(1) not null default 'n', "
             + SplitEntry.COLUMN_RECONCILE_DATE + " timestamp not null default current_timestamp, "
+            + SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID + " varchar(255), "
             + SplitEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
             + SplitEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
             + "FOREIGN KEY (" + SplitEntry.COLUMN_ACCOUNT_UID + ") REFERENCES " + AccountEntry.TABLE_NAME + " (" + AccountEntry.COLUMN_UID + ") ON DELETE CASCADE, "

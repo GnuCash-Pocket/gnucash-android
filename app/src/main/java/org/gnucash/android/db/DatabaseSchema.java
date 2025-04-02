@@ -180,6 +180,8 @@ public class DatabaseSchema {
         public static final String COLUMN_RECONCILE_STATE = "reconcile_state";
         @Column(Cursor.FIELD_TYPE_STRING)
         public static final String COLUMN_RECONCILE_DATE = "reconcile_date";
+        @Column(Cursor.FIELD_TYPE_STRING)
+        public static final String COLUMN_SCHEDX_ACTION_ACCOUNT_UID = "sched_account_uid";
 
         public static final String INDEX_UID = "split_uid_index";
     }

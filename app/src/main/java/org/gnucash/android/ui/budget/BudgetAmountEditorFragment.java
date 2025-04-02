@@ -201,12 +201,10 @@ public class BudgetAmountEditorFragment extends MenuFragment {
      * Loads the accounts in the spinner
      */
     private void setupAccountSpinnerAdapter() {
-        String conditions = "(" + DatabaseSchema.AccountEntry.COLUMN_HIDDEN + " = 0 )";
-
         if (mAccountCursor != null) {
             mAccountCursor.close();
         }
-        mAccountCursor = mAccountsDbAdapter.fetchAccountsOrderedByFavoriteAndFullName(conditions, null);
+        mAccountCursor = mAccountsDbAdapter.fetchAccountsOrderedByFavoriteAndFullName();
 
         mAccountCursorAdapter = new QualifiedAccountNameCursorAdapter(getActivity(), mAccountCursor);
     }

@@ -82,7 +82,7 @@ public class BookDbHelper extends SQLiteOpenHelper {
             new TransactionsDbAdapter(mainDb)
         );
 
-        String rootAccountUID = accountsDbAdapter.getOrCreateGnuCashRootAccountUID();
+        String rootAccountUID = accountsDbAdapter.getOrCreateRootAccountUID();
         try {
             accountsDbAdapter.close();
             helper.close();

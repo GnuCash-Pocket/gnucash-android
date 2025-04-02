@@ -117,8 +117,11 @@ public class MigrationHelper {
             " ADD COLUMN " + DatabaseSchema.AccountEntry.COLUMN_NOTES + " text";
         String sqlAddName = "ALTER TABLE " + DatabaseSchema.ScheduledActionEntry.TABLE_NAME +
             " ADD COLUMN " + DatabaseSchema.ScheduledActionEntry.COLUMN_NAME + " varchar(255)";
+        String sqlAddSchedxActionAccount = "ALTER TABLE " + DatabaseSchema.SplitEntry.TABLE_NAME +
+            " ADD COLUMN " + DatabaseSchema.SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID + " varchar(255)";
 
         db.execSQL(sqlAddNotes);
         db.execSQL(sqlAddName);
+        db.execSQL(sqlAddSchedxActionAccount);
     }
 }

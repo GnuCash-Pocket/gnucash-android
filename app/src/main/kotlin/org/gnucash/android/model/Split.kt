@@ -66,6 +66,11 @@ class Split : BaseModel, Parcelable {
     var reconcileDate = Timestamp(System.currentTimeMillis())
 
     /**
+     * Account UID for a scheduled action.
+     */
+    var scheduledActionAccountUID: String? = null
+
+    /**
      * Initialize split with a value and quantity amounts and the owning account
      *
      * The transaction type is set to CREDIT. The amounts are stored unsigned.
