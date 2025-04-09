@@ -709,7 +709,7 @@ public class TransactionFormFragment extends MenuFragment implements
                 if (pricePair.first > 0 && pricePair.second > 0) {
                     quantity = quantity.times(pricePair.first.intValue())
                         .div(pricePair.second.intValue())
-                        .withCurrency(commoditiesDbAdapter.getRecord(targetCmdtyUID));
+                        .withCommodity(commoditiesDbAdapter.getRecord(targetCmdtyUID));
                 }
             }
         }

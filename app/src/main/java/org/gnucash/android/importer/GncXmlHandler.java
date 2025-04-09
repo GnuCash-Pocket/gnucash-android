@@ -1220,7 +1220,8 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
             // HACK: Check for bug #562. If a value has already been set, ignore the one just read
             if (split.getValue().isAmountZero()) {
                 BigDecimal splitAmount = parseSplitAmount(value);
-                Money amount = new Money(splitAmount, getCommodityForAccount(split.getAccountUID()));
+                Commodity commodity = getCommodityForAccount(split.getAccountUID());
+                Money amount = new Money(splitAmount, commodity);
 
                 split.setValue(amount);
                 split.setType(splitType);

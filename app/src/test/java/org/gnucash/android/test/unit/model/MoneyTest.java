@@ -19,7 +19,6 @@ package org.gnucash.android.test.unit.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertThrows;
 
@@ -144,7 +143,7 @@ public class MoneyTest extends GnuCashTest {
     public void nonMatchingCommodityFraction_shouldThrowException() {
         Money money = new Money("12.345", "JPY");
         assertThat(money.getNumerator()).isEqualTo(12L);
-        assertThat(money.getDenominator()).isEqualTo(1);
+        assertThat(money.getDenominator()).isEqualTo(1L);
     }
 
     @Test
@@ -170,7 +169,7 @@ public class MoneyTest extends GnuCashTest {
     public void validateImmutability() {
         assertThat(mMoneyInEur.hashCode()).isEqualTo(mHashcode);
         assertThat(mMoneyInEur.toPlainString()).isEqualTo(amountString);
-        assertNotNull(mMoneyInEur.getCommodity());
+        assertThat(mMoneyInEur.getCommodity()).isNotNull();
         assertThat(mMoneyInEur.getCommodity().getCurrencyCode()).isEqualTo(CURRENCY_EUR);
     }
 
@@ -191,7 +190,7 @@ public class MoneyTest extends GnuCashTest {
     @Config(sdk = 25)
     public void evaluate_25() {
         BigDecimal value = AmountParser.evaluate("123456789012345678.90");
-        assertNotNull(value);
+        assertThat(value).isNotNull();
         assertThat(value.doubleValue()).isCloseTo(123456789012345678.90, within(1e-2));
         assertThat(value.longValue()).isEqualTo(123456789012345680L);
     }
@@ -200,7 +199,7 @@ public class MoneyTest extends GnuCashTest {
     @Config(sdk = 26)
     public void evaluate_26() {
         BigDecimal value = AmountParser.evaluate("123456789012345678.90");
-        assertNotNull(value);
+        assertThat(value).isNotNull();
         assertThat(value.doubleValue()).isCloseTo(123456789012345678.90, within(1e-2));
         assertThat(value.longValue()).isEqualTo(123456789012345678L);
     }
@@ -230,5 +229,80 @@ public class MoneyTest extends GnuCashTest {
         final Money money1 = new Money(100.00, Commodity.USD);
         final Money money2 = new Money(123.45, Commodity.EUR);
         assertThrows(Money.CurrencyMismatchException.class, () -> money1.plus(money2));
+    }
+
+    @Test
+    public void scale() {
+        final double d = 123.0;
+        final Money m0 = new Money(BigDecimal.valueOf(d).setScale(0), Commodity.TEMPLATE);
+        final Money m1 = new Money(BigDecimal.valueOf(d).setScale(1), Commodity.TEMPLATE);
+        final Money m2 = new Money(BigDecimal.valueOf(d).setScale(2), Commodity.TEMPLATE);
+        assertThat(m0.doubleValue()).isEqualTo(d);
+        assertThat(m1.doubleValue()).isEqualTo(d);
+        assertThat(m2.doubleValue()).isEqualTo(d);
+        assertThat(m0).isEqualTo(m1);
+        assertThat(m0).isEqualTo(m2);
+        assertThat(m1).isEqualTo(m0);
+        assertThat(m1).isEqualTo(m2);
+        assertThat(m2).isEqualTo(m0);
+        assertThat(m2).isEqualTo(m1);
+
+        final Money m3 = new Money(BigDecimal.valueOf(d + 0.4).setScale(1), Commodity.TEMPLATE);
+        assertThat(m3).isNotEqualTo(m0);
+        assertThat(m3).isNotEqualTo(m1);
+        assertThat(m3).isNotEqualTo(m2);
+    }
+
+    @Test
+    public void scale_1() {
+        Money money = new Money(123.0, Commodity.JPY);
+        assertThat(money.getCommodity().getSmallestFraction()).isEqualTo(1);
+        assertThat(money.getCommodity().getSmallestFractionDigits()).isEqualTo(0);
+        assertThat(money.getNumerator()).isEqualTo(123L);
+        assertThat(money.getDenominator()).isEqualTo(1L);
+
+        money = new Money(123.4, Commodity.JPY);
+        assertThat(money.getCommodity().getSmallestFraction()).isEqualTo(1);
+        assertThat(money.getCommodity().getSmallestFractionDigits()).isEqualTo(0);
+        assertThat(money.getNumerator()).isEqualTo(123L);
+        assertThat(money.getDenominator()).isEqualTo(1L);
+
+        money = new Money(123.45, Commodity.JPY);
+        assertThat(money.getCommodity().getSmallestFraction()).isEqualTo(1);
+        assertThat(money.getCommodity().getSmallestFractionDigits()).isEqualTo(0);
+        assertThat(money.getNumerator()).isEqualTo(123L);
+        assertThat(money.getDenominator()).isEqualTo(1L);
+
+        money = new Money(123.456, Commodity.JPY);
+        assertThat(money.getCommodity().getSmallestFraction()).isEqualTo(1);
+        assertThat(money.getCommodity().getSmallestFractionDigits()).isEqualTo(0);
+        assertThat(money.getNumerator()).isEqualTo(123L);
+        assertThat(money.getDenominator()).isEqualTo(1L);
+    }
+
+    @Test
+    public void scale_10() {
+        Commodity commodity = new Commodity("scale-10", "S10", 10);
+        final Money money = new Money(123.456, commodity);
+        assertThat(money.getCommodity().getSmallestFraction()).isEqualTo(10);
+        assertThat(money.getCommodity().getSmallestFractionDigits()).isEqualTo(1);
+        assertThat(money.getNumerator()).isEqualTo(1235L);
+        assertThat(money.getDenominator()).isEqualTo(10L);
+    }
+
+    @Test
+    public void scale_100() {
+        final Money money = new Money(123.456, Commodity.USD);
+        assertThat(money.getCommodity().getSmallestFraction()).isEqualTo(100);
+        assertThat(money.getCommodity().getSmallestFractionDigits()).isEqualTo(2);
+        assertThat(money.getNumerator()).isEqualTo(12346L);
+        assertThat(money.getDenominator()).isEqualTo(100L);
+    }
+
+    @Test
+    public void scale_template() {
+        final Money money = new Money(123456L, 1000L, Commodity.template);
+        assertThat(money.getNumerator()).isEqualTo(123456L);
+        assertThat(money.getDenominator()).isEqualTo(1000L);
     }
 }

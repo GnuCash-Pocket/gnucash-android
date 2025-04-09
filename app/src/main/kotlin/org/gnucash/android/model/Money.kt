@@ -18,6 +18,7 @@ package org.gnucash.android.model
 import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
+import org.gnucash.android.math.equalsIgnoreScale
 import org.gnucash.android.math.isZero
 import org.gnucash.android.math.readBigDecimal
 import org.gnucash.android.math.toBigDecimal
@@ -31,7 +32,6 @@ import java.util.Locale
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.math.max
-import kotlin.math.min
 
 /**
  * Money represents a money amount and a corresponding currency.
@@ -54,13 +54,13 @@ class Money : Number, Comparable<Money>, Parcelable {
     /**
      * Amount value held by this object
      */
-    private var _amount: BigDecimal = BigDecimal.ZERO
+    private var amount: BigDecimal = BigDecimal.ZERO
 
     /**
      * Rounding mode to be applied when performing operations
-     * Defaults to [RoundingMode.HALF_EVEN]
+     * Defaults to [RoundingMode.HALF_UP]
      */
-    private var roundingMode = RoundingMode.HALF_EVEN
+    private var roundingMode = RoundingMode.HALF_UP
 
     /**
      * Creates a new money amount
@@ -69,9 +69,8 @@ class Money : Number, Comparable<Money>, Parcelable {
      * @param commodity Commodity of the money
      */
     constructor(amount: BigDecimal, commodity: Commodity) {
-        //commodity has to be set first. Because we use it's scale
-        this.commodity = commodity
-        setAmount(amount)
+        this.amount = amount
+        setCommodity(commodity)
     }
 
     /**
@@ -150,7 +149,7 @@ class Money : Number, Comparable<Money>, Parcelable {
      *
      * @param money Money instance to be cloned
      */
-    constructor(money: Money) : this(money.asBigDecimal(), money.commodity)
+    constructor(money: Money) : this(money.toBigDecimal(), money.commodity)
 
     /**
      * Returns a new `Money` object the currency specified by `currency`
@@ -159,8 +158,8 @@ class Money : Number, Comparable<Money>, Parcelable {
      * @param commodity [Commodity] to assign to new `Money` object
      * @return [Money] object with same value as current object, but with new `currency`
      */
-    fun withCurrency(commodity: Commodity): Money {
-        return Money(_amount, commodity)
+    fun withCommodity(commodity: Commodity): Money {
+        return Money(amount, commodity)
     }
 
     /**
@@ -172,6 +171,7 @@ class Money : Number, Comparable<Money>, Parcelable {
      */
     private fun setCommodity(commodity: Commodity) {
         this.commodity = commodity
+        amount = amount.setScale(scale, roundingMode)
     }
 
     /**
@@ -180,7 +180,7 @@ class Money : Number, Comparable<Money>, Parcelable {
      * @param currencyCode ISO 4217 currency code
      */
     private fun setCommodity(currencyCode: String) {
-        commodity = Commodity.getInstance(currencyCode)
+        setCommodity(Commodity.getInstance(currencyCode))
     }
 
     /**
@@ -192,11 +192,11 @@ class Money : Number, Comparable<Money>, Parcelable {
      */
     val numerator: Long
         get() = try {
-            _amount.scaleByPowerOfTen(scale).longValueExact()
+            amount.scaleByPowerOfTen(scale).longValueExact()
         } catch (e: ArithmeticException) {
             val msg = "Currency " + commodity.currencyCode +
                     " with scale " + scale +
-                    " has amount " + _amount
+                    " has amount " + amount
             Timber.e(e, msg)
             throw ArithmeticException(msg)
         }
@@ -209,7 +209,7 @@ class Money : Number, Comparable<Money>, Parcelable {
      * @return GnuCash format denominator
      */
     val denominator: Long
-        get() = BigDecimal.ONE.scaleByPowerOfTen(scale).longValueExact()
+        get() = BigDecimal.ONE.scaleByPowerOfTen(amount.scale()).longValueExact()
 
     /**
      * Returns the scale (precision) used for the decimal places of this amount.
@@ -218,14 +218,10 @@ class Money : Number, Comparable<Money>, Parcelable {
      *
      * @return Scale of amount as integer
      */
-    private val scale: Int
-        get() {
-            var scale = _amount.scale()
-            if (scale <= 0) {
-                scale = commodity.smallestFractionDigits
-            }
-            return max(1, scale)
-        }
+    private val scale: Int get() {
+        val s = if (commodity.isTemplate) amount.scale() else commodity.smallestFractionDigits
+        return max(0, s)
+    }
 
     /**
      * Returns the amount represented by this Money object
@@ -235,7 +231,7 @@ class Money : Number, Comparable<Money>, Parcelable {
      * @return [BigDecimal] valure of amount in object
      */
     fun asBigDecimal(): BigDecimal {
-        return _amount.setScale(commodity.smallestFractionDigits, RoundingMode.HALF_EVEN)
+        return amount.setScale(scale, roundingMode)
     }
 
     fun toBigDecimal(): BigDecimal {
@@ -248,31 +244,31 @@ class Money : Number, Comparable<Money>, Parcelable {
      * @return Double value of the amount in the object
      */
     override fun toDouble(): Double {
-        return _amount.toDouble()
+        return amount.toDouble()
     }
 
     override fun toByte(): Byte {
-        return _amount.toByte()
+        return amount.toByte()
     }
 
     override fun toChar(): Char {
-        return _amount.toChar()
+        return amount.toChar()
     }
 
     override fun toFloat(): Float {
-        return _amount.toFloat()
+        return amount.toFloat()
     }
 
     override fun toInt(): Int {
-        return _amount.toInt()
+        return amount.toInt()
     }
 
     override fun toLong(): Long {
-        return _amount.toLong()
+        return amount.toLong()
     }
 
     override fun toShort(): Short {
-        return _amount.toShort()
+        return amount.toShort()
     }
 
     /**
@@ -294,7 +290,7 @@ class Money : Number, Comparable<Money>, Parcelable {
      */
     @JvmOverloads
     fun formattedString(locale: Locale = Locale.getDefault()): String {
-        if (commodity.isTemplate) return _amount.toPlainString()
+        if (commodity.isTemplate) return amount.toPlainString()
         val precision = commodity.smallestFractionDigits
         val formatter = (NumberFormat.getCurrencyInstance(locale) as DecimalFormat).apply {
             if (commodity.isCurrency) {
@@ -312,12 +308,13 @@ class Money : Number, Comparable<Money>, Parcelable {
                     maximumFractionDigits = precision
                 }
             } else {
-                decimalFormatSymbols = decimalFormatSymbols.apply { currencySymbol = commodity.symbol }
+                decimalFormatSymbols =
+                    decimalFormatSymbols.apply { currencySymbol = commodity.symbol }
                 minimumFractionDigits = precision
                 maximumFractionDigits = precision
             }
         }
-        return formatter.format(_amount)
+        return formatter.format(amount)
     }
 
     /**
@@ -329,14 +326,17 @@ class Money : Number, Comparable<Money>, Parcelable {
      * @return String containing formatted Money representation
      */
     @JvmOverloads
-    fun formattedStringWithoutSymbol(locale: Locale = Locale.getDefault(), withGrouping: Boolean = true): String {
+    fun formattedStringWithoutSymbol(
+        locale: Locale = Locale.getDefault(),
+        withGrouping: Boolean = true
+    ): String {
         val precision = commodity.smallestFractionDigits
         val format = NumberFormat.getNumberInstance(locale).apply {
             minimumFractionDigits = precision
             maximumFractionDigits = precision
             isGroupingUsed = withGrouping
         }
-        return format.format(_amount)
+        return format.format(amount)
     }
 
     /**
@@ -346,16 +346,7 @@ class Money : Number, Comparable<Money>, Parcelable {
      * @return Negated `Money` object
      */
     operator fun unaryMinus(): Money {
-        return Money(_amount.negate(), commodity)
-    }
-
-    /**
-     * Sets the amount value of this `Money` object
-     *
-     * @param amount [BigDecimal] amount to be set
-     */
-    private fun setAmount(amount: BigDecimal) {
-        _amount = amount.setScale(amount.scale(), roundingMode)
+        return Money(amount.negate(), commodity)
     }
 
     /**
@@ -374,7 +365,7 @@ class Money : Number, Comparable<Money>, Parcelable {
             commodity,
             addend.commodity
         )
-        val amount = _amount.add(addend._amount)
+        val amount = amount.add(addend.amount)
         return Money(amount, commodity)
     }
 
@@ -391,7 +382,7 @@ class Money : Number, Comparable<Money>, Parcelable {
     }
 
     operator fun plus(rhs: BigDecimal): Money {
-        return Money(_amount.add(rhs), commodity)
+        return Money(amount.add(rhs), commodity)
     }
 
     /**
@@ -411,7 +402,7 @@ class Money : Number, Comparable<Money>, Parcelable {
             commodity,
             subtrahend.commodity
         )
-        val amount = _amount.subtract(subtrahend._amount)
+        val amount = amount.subtract(subtrahend.amount)
         return Money(amount, commodity)
     }
 
@@ -428,7 +419,7 @@ class Money : Number, Comparable<Money>, Parcelable {
     }
 
     operator fun minus(rhs: BigDecimal): Money {
-        return Money(_amount.subtract(rhs), commodity)
+        return Money(amount.subtract(rhs), commodity)
     }
 
     /**
@@ -449,8 +440,7 @@ class Money : Number, Comparable<Money>, Parcelable {
             commodity,
             divisor.commodity
         )
-        val amount =
-            _amount.divide(divisor._amount, commodity.smallestFractionDigits, roundingMode)
+        val amount = amount.divide(divisor.amount, scale, roundingMode)
         return Money(amount, commodity)
     }
 
@@ -474,7 +464,7 @@ class Money : Number, Comparable<Money>, Parcelable {
     }
 
     operator fun div(divisor: BigDecimal): Money {
-        val amount = _amount.divide(divisor, commodity.smallestFractionDigits, roundingMode)
+        val amount = amount.divide(divisor, scale, roundingMode)
         return Money(amount, commodity)
     }
 
@@ -494,7 +484,7 @@ class Money : Number, Comparable<Money>, Parcelable {
             commodity,
             factor.commodity
         )
-        val amount = _amount.multiply(factor._amount)
+        val amount = amount.multiply(factor.amount)
         return Money(amount, commodity)
     }
 
@@ -506,7 +496,7 @@ class Money : Number, Comparable<Money>, Parcelable {
      * @return Money object whose value is the product of this objects values and `multiplier`
      */
     operator fun times(factor: BigDecimal): Money {
-        return Money(_amount.multiply(factor), commodity)
+        return Money(amount.multiply(factor), commodity)
     }
 
     /**
@@ -536,7 +526,7 @@ class Money : Number, Comparable<Money>, Parcelable {
      * @return `true` if the amount is negative, `false` otherwise.
      */
     val isNegative: Boolean
-        get() = _amount.compareTo(BigDecimal.ZERO) < 0
+        get() = amount.compareTo(BigDecimal.ZERO) < 0
 
     /**
      * Returns the string representation of the amount (without currency) of the Money object.
@@ -548,7 +538,7 @@ class Money : Number, Comparable<Money>, Parcelable {
      * @return String representation of the amount (without currency) of the Money object
      */
     fun toPlainString(): String {
-        return _amount.setScale(commodity.smallestFractionDigits, roundingMode).toPlainString()
+        return amount.toPlainString()
     }
 
     /**
@@ -562,7 +552,7 @@ class Money : Number, Comparable<Money>, Parcelable {
     }
 
     override fun hashCode(): Int {
-        var result = _amount.hashCode()
+        var result = amount.hashCode()
         result = 31 * result + commodity.hashCode()
         return result
     }
@@ -579,7 +569,7 @@ class Money : Number, Comparable<Money>, Parcelable {
         if (other == null) return false
         if (javaClass != other.javaClass) return false
         val that = other as Money
-        if (_amount != that._amount) return false
+        if (amount != that.amount && !amount.equalsIgnoreScale(that.amount)) return false
         return commodity == that.commodity
     }
 
@@ -589,7 +579,7 @@ class Money : Number, Comparable<Money>, Parcelable {
             commodity,
             other.commodity
         )
-        return _amount.compareTo(other._amount)
+        return amount.compareTo(other.amount)
     }
 
     /**
@@ -598,7 +588,7 @@ class Money : Number, Comparable<Money>, Parcelable {
      * @return Money object with absolute value of this instance
      */
     fun abs(): Money {
-        return Money(_amount.abs(), commodity)
+        return Money(amount.abs(), commodity)
     }
 
     /**
@@ -607,21 +597,19 @@ class Money : Number, Comparable<Money>, Parcelable {
      * @return `true` if this money amount is zero, `false` otherwise
      */
     val isAmountZero: Boolean
-        get() = _amount.isZero
+        get() = amount.isZero
 
     constructor(parcel: Parcel) {
-        setAmount(parcel.readBigDecimal()!!)
-        setCommodity(parcel.readString()!!)
+        amount = parcel.readBigDecimal()!!
+        setCommodity(parcel.readCommodity()!!)
     }
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeSerializable(_amount)
-        parcel.writeString(commodity.currencyCode)
+    override fun writeToParcel(dest: Parcel, flags: Int) {
+        dest.writeSerializable(amount)
+        dest.writeCommodity(commodity, flags)
     }
 
-    override fun describeContents(): Int {
-        return 0
-    }
+    override fun describeContents(): Int = 0
 
     inner class CurrencyMismatchException(s: String) : IllegalArgumentException(s) {
         constructor() : this("Cannot perform operation on Money instances with different currencies")
@@ -678,6 +666,7 @@ fun Parcel.readMoney(): Money? {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         readParcelable(clazz.classLoader, clazz)
     } else {
+        @Suppress("DEPRECATION")
         readParcelable(clazz.classLoader)
     }
 }
