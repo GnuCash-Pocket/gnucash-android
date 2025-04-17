@@ -107,7 +107,7 @@ class ScheduledExportsListFragment : ScheduledActionsListFragment() {
             )
             primaryTextView.text = description.trim()
             descriptionTextView.text = formatSchedule(scheduledAction)
-            amountTextView.text = params.exportFormat.name
+            rightTextView.text = params.exportFormat.name
 
             itemView.setOnClickListener { editExport(scheduledAction) }
         }

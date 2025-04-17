@@ -337,8 +337,7 @@ public class SplitEditorFragment extends MenuFragment {
             updateTransferAccountsList(accountsSpinner);
 
             if (split != null) {
-                splitAmountEditText.setCommodity(split.getValue().getCommodity());
-                splitAmountEditText.setValue(split.getFormattedValue().asBigDecimal(), true /* isOriginal */);
+                splitAmountEditText.setValue(split.getValue(), true /* isOriginal */);
                 splitCurrencyTextView.setText(split.getValue().getCommodity().getSymbol());
                 splitMemoEditText.setText(split.getMemo());
                 splitUidTextView.setText(split.getUID());

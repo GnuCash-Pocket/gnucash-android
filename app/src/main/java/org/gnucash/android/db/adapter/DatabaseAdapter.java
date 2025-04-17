@@ -641,6 +641,29 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
         }
     }
 
+    /**
+     * Returns the currency code (according to the ISO 4217 standard) of the account
+     * with unique Identifier <code>accountUID</code>
+     *
+     * @param accountUID Unique Identifier of the account
+     * @return Currency code of the account. "" if accountUID
+     * does not exist in DB
+     */
+    public String getAccountCommodity(@NonNull String accountUID) {
+        Cursor cursor = mDb.query(DatabaseSchema.AccountEntry.TABLE_NAME,
+                new String[]{AccountEntry.COLUMN_COMMODITY_UID},
+                DatabaseSchema.AccountEntry.COLUMN_UID + "= ?",
+                new String[]{accountUID}, null, null, null);
+        try {
+            if (cursor.moveToFirst()) {
+                return cursor.getString(0);
+            } else {
+                throw new IllegalArgumentException("Account " + accountUID + " does not exist");
+            }
+        } finally {
+            cursor.close();
+        }
+    }
 
     /**
      * Returns the commodity GUID for the given ISO 4217 currency code

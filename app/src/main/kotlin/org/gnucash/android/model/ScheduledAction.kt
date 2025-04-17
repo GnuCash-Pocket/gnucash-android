@@ -325,7 +325,6 @@ class ScheduledAction    //all actions are enabled by default
     val ruleString: String
         get() {
             val recurrence = recurrence ?: return ""
-            val separator = ";"
             val ruleBuilder = StringBuilder(recurrence.ruleString)
             if (_endDate > 0) {
                 val df = DateTimeFormat.forPattern("yyyyMMdd'T'HHmmss'Z'").withZoneUTC()

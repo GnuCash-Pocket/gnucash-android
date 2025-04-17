@@ -340,6 +340,11 @@ public class CalculatorEditText extends AppCompatEditText {
         setTextToEnd(this, resultString);
     }
 
+    public void setValue(@NonNull Money value, boolean isOriginal) {
+        setCommodity(value.getCommodity());
+        setValue(value.toBigDecimal(), isOriginal);
+    }
+
     @Override
     protected void onVisibilityChanged(View changedView, int visibility) {
         super.onVisibilityChanged(changedView, visibility);

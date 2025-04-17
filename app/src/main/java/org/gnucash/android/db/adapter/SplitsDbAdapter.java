@@ -162,10 +162,17 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
         String reconcileDate = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_RECONCILE_DATE));
         String schedxAccountUID = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID));
 
-        String transactionCurrency = getAttribute(TransactionEntry.TABLE_NAME, transxUID, TransactionEntry.COLUMN_CURRENCY);
-        Money value = new Money(valueNum, valueDenom, transactionCurrency);
-        String currencyCode = getAccountCurrencyCode(accountUID);
-        Money quantity = new Money(quantityNum, quantityDenom, currencyCode);
+        String txCommodityUID = getAttribute(TransactionEntry.TABLE_NAME, transxUID, TransactionEntry.COLUMN_COMMODITY_UID);
+        Commodity txCommodity = commoditiesDbAdapter.getRecord(txCommodityUID);
+        Money value = new Money(valueNum, valueDenom, txCommodity);
+        final String quantityCommodityUID;
+        if (!TextUtils.isEmpty(schedxAccountUID)) {
+            quantityCommodityUID = getAccountCommodity(schedxAccountUID);
+        } else {
+            quantityCommodityUID = getAccountCommodity(accountUID);
+        }
+        Commodity quantityCommodity = commoditiesDbAdapter.getRecord(quantityCommodityUID);
+        Money quantity = new Money(quantityNum, quantityDenom, quantityCommodity);
 
         Split split = new Split(value, accountUID);
         populateBaseModelAttributes(cursor, split);

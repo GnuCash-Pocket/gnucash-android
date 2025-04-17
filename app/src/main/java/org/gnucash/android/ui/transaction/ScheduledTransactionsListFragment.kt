@@ -7,6 +7,7 @@ import android.database.Cursor
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.loader.content.Loader
 import org.gnucash.android.R
 import org.gnucash.android.databinding.ListItemScheduledTrxnBinding
@@ -98,31 +99,13 @@ class ScheduledTransactionsListFragment : ScheduledActionsListFragment() {
                 )
                 Transaction(null)
             }
-            val splits = transaction.splits
 
             primaryTextView.text = scheduledAction.name ?: transaction.description
             descriptionTextView.text = formatSchedule(scheduledAction)
-
-            var text = ""
-            val slitsSize = splits.size
-            if (slitsSize == 2) {
-                val first = splits[0]
-                for (split in splits) {
-                    if ((first !== split) && first.isPairOf(split)) {
-                        text = first.value.formattedString()
-                        break
-                    }
-                }
-            } else {
-                text = context.getString(R.string.label_split_count, slitsSize)
-            }
-            amountTextView.text = text
+            rightTextView.isVisible = false
 
             itemView.setOnClickListener {
-                val accountUID = if (slitsSize > 0) splits[0].accountUID else null
-                if (accountUID != null) {
-                    editTransaction(scheduledAction, accountUID)
-                }
+                editTransaction(scheduledAction, scheduledAction.templateAccountUID)
             }
         }
 

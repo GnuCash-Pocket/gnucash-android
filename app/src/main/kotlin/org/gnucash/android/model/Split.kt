@@ -111,8 +111,8 @@ class Split : BaseModel, Parcelable {
         accountUID = sourceSplit.accountUID
         type = sourceSplit.type
         transactionUID = sourceSplit.transactionUID
-        value = Money(sourceSplit.value!!)
-        quantity = Money(sourceSplit.quantity!!)
+        value = Money(sourceSplit.value)
+        quantity = Money(sourceSplit.quantity)
 
         //todo: clone reconciled status
         if (generateUID) {
