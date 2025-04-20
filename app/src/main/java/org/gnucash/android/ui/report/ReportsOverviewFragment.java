@@ -231,7 +231,7 @@ public class ReportsOverviewFragment extends BaseReportFragment {
                 reportType = ReportType.LINE_CHART;
                 break;
             case R.id.btn_balance_sheet:
-                reportType = ReportType.TEXT;
+                reportType = ReportType.SHEET;
                 break;
             default:
                 reportType = ReportType.NONE;

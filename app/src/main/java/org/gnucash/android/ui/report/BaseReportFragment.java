@@ -55,6 +55,7 @@ import org.joda.time.LocalDateTime;
 import org.joda.time.Months;
 import org.joda.time.Years;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -123,7 +124,7 @@ public abstract class BaseReportFragment extends MenuFragment implements
 
     protected TextView mSelectedValueTextView;
 
-    private AsyncTask<Void, Void, Void> mReportGenerator;
+    private GeneratorTask mReportGenerator;
 
     /**
      * Return the title of this report
@@ -285,38 +286,11 @@ public abstract class BaseReportFragment extends MenuFragment implements
 
     @Override
     public void refresh() {
-        if (mReportGenerator != null)
+        if (mReportGenerator != null) {
             mReportGenerator.cancel(true);
-
-        mReportGenerator = new AsyncTask<Void, Void, Void>() {
-
-            @Override
-            protected void onPreExecute() {
-                BaseDrawerActivity activity = mReportsActivity;
-                assert activity != null;
-                activity.showProgressBar(true);
-            }
-
-            @Override
-            protected Void doInBackground(Void... params) {
-                BaseDrawerActivity activity = mReportsActivity;
-                if (activity != null) {
-                    // FIXME return data to be displayed.
-                    generateReport(activity);
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void result) {
-                BaseDrawerActivity activity = mReportsActivity;
-                if (activity != null) {
-                    // FIXME display the result data that was generated.
-                    displayReport();
-                    activity.showProgressBar(false);
-                }
-            }
-        }.execute();
+        }
+        mReportGenerator = new GeneratorTask(mReportsActivity);
+        mReportGenerator.execute();
     }
 
     /**
@@ -395,5 +369,41 @@ public abstract class BaseReportFragment extends MenuFragment implements
     @ColorInt
     protected int getTextColor(@NonNull Context context) {
         return getTextColorPrimary(context);
+    }
+
+    private class GeneratorTask extends AsyncTask<Void, Void, Void> {
+
+        private final WeakReference<ReportsActivity> activityRef;
+
+        private GeneratorTask(ReportsActivity activity) {
+            this.activityRef = new WeakReference<>(activity);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            BaseDrawerActivity activity = this.activityRef.get();
+            assert activity != null;
+            activity.showProgressBar(true);
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            BaseDrawerActivity activity = this.activityRef.get();
+            if (activity != null) {
+                // FIXME return data to be displayed.
+                generateReport(activity);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            BaseDrawerActivity activity = this.activityRef.get();
+            if (activity != null) {
+                // FIXME display the result data that was generated.
+                displayReport();
+                activity.showProgressBar(false);
+            }
+        }
     }
 }
