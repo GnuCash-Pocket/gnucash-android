@@ -233,19 +233,19 @@ public class TransactionFormFragment extends MenuFragment implements
      * Starts the transfer of funds from one currency to another
      */
     private void startTransferFunds(FragmentTransactionFormBinding binding) {
-        String fromCurrencyCode = mAccountsDbAdapter.getAccountCurrencyCode(mAccountUID);
-
         BigDecimal enteredAmount = binding.inputTransactionAmount.getValue();
         if ((enteredAmount == null) || enteredAmount.equals(BigDecimal.ZERO)) {
             return;
         }
-        Commodity fromCommodity = Commodity.getInstance(fromCurrencyCode);
+        Commodity fromCommodity = mAccountsDbAdapter.getCommodity(mAccountUID);
+        String fromCurrencyCode = fromCommodity.getCurrencyCode();
         Money amount = new Money(enteredAmount, fromCommodity).abs();
 
         //if both accounts have same currency
         Cursor cursor = (Cursor) binding.inputTransferAccountSpinner.getSelectedItem();
-        String targetCurrencyCode = cursor.getString(cursor.getColumnIndex(DatabaseSchema.AccountEntry.COLUMN_CURRENCY));
-        if (fromCurrencyCode.equals(targetCurrencyCode)) {
+        String targetCommodityUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID));
+        Commodity targetCommodity = commoditiesDbAdapter.getRecord(targetCommodityUID);
+        if (fromCommodity.equals(targetCommodity)) {
             transferComplete(amount, amount);
             return;
         }
@@ -261,8 +261,8 @@ public class TransactionFormFragment extends MenuFragment implements
         mSplitQuantity = null;
 
         TransferFundsDialogFragment fragment
-            = TransferFundsDialogFragment.getInstance(amount, targetCurrencyCode, this);
-        fragment.show(getParentFragmentManager(), "transfer_funds_editor;" + fromCurrencyCode + ";" + targetCurrencyCode + ";" + amount.toPlainString());
+            = TransferFundsDialogFragment.getInstance(amount, targetCommodity, this);
+        fragment.show(getParentFragmentManager(), "transfer_funds_editor;" + fromCurrencyCode + ";" + targetCommodity + ";" + amount.toPlainString());
     }
 
     @Override
@@ -442,12 +442,9 @@ public class TransactionFormFragment extends MenuFragment implements
             setDoubleEntryViewsVisibility(binding, View.GONE);
         }
 
-        String currencyCode = mAccountsDbAdapter.getAccountCurrencyCode(mAccountUID);
-        Commodity accountCommodity = Commodity.getInstance(currencyCode);
+        Commodity accountCommodity = mAccountsDbAdapter.getCommodity(mAccountUID);
         binding.currencySymbol.setText(accountCommodity.getSymbol());
-
-        Commodity commodity = Commodity.getInstance(currencyCode);
-        binding.inputTransactionAmount.setCommodity(commodity);
+        binding.inputTransactionAmount.setCommodity(accountCommodity);
 
         binding.checkboxSaveTemplate.setChecked(transaction.isTemplate());
         String scheduledActionUID = transaction.getScheduledActionUID();
@@ -492,14 +489,13 @@ public class TransactionFormFragment extends MenuFragment implements
         TransactionType txType = GnuCashApplication.getDefaultTransactionType(context);
         binding.inputTransactionType.setChecked(txType);
 
-        final String code;
+        final Commodity commodity;
         if (mAccountUID != null) {
-            code = mAccountsDbAdapter.getAccountCurrencyCode(mAccountUID);
+            commodity = mAccountsDbAdapter.getCommodity(mAccountUID);
         } else {
-            code = GnuCashApplication.getDefaultCurrencyCode();
+            commodity = Commodity.getInstance(GnuCashApplication.getDefaultCurrencyCode());
         }
 
-        Commodity commodity = Commodity.getInstance(code);
         binding.currencySymbol.setText(commodity.getSymbol());
         binding.inputTransactionAmount.setCommodity(commodity);
         binding.inputTransactionAmount.bindKeyboard(binding.calculatorKeyboard);
@@ -687,27 +683,25 @@ public class TransactionFormFragment extends MenuFragment implements
 
         BigDecimal enteredAmount = binding.inputTransactionAmount.getValue();
         if (enteredAmount == null) enteredAmount = BigDecimal.ZERO;
-        String baseCurrencyCode = mAccountsDbAdapter.getAccountCurrencyCode(mAccountUID);
-        Money value = new Money(enteredAmount, commoditiesDbAdapter.getCommodity(baseCurrencyCode));
+        Commodity commodity = mAccountsDbAdapter.getCommodity(mAccountUID);
+        Money value = new Money(enteredAmount, commodity);
         Money quantity = new Money(value);
 
         String transferAcctUID = getTransferAccountUID(binding);
 
         if (isMultiCurrencyTransaction(binding)) { //if multi-currency transaction
-            String transferCurrencyCode = mAccountsDbAdapter.getAccountCurrencyCode(transferAcctUID);
-            String commodityUID = commoditiesDbAdapter.getCommodityUID(baseCurrencyCode);
-            String targetCmdtyUID = commoditiesDbAdapter.getCommodityUID(transferCurrencyCode);
+            Commodity targetCommodity = mAccountsDbAdapter.getCommodity(transferAcctUID);
 
             if ((value.equals(mSplitValue)) && mSplitQuantity != null) {
                 quantity = mSplitQuantity;
             } else {
                 Pair<Long, Long> pricePair = PricesDbAdapter.getInstance()
-                    .getPrice(commodityUID, targetCmdtyUID);
+                    .getPrice(commodity, targetCommodity);
 
                 if (pricePair.first > 0 && pricePair.second > 0) {
                     quantity = quantity.times(pricePair.first.intValue())
                         .div(pricePair.second.intValue())
-                        .withCurrency(commoditiesDbAdapter.getRecord(targetCmdtyUID));
+                        .withCurrency(targetCommodity);
                 }
             }
         }
@@ -775,8 +769,7 @@ public class TransactionFormFragment extends MenuFragment implements
             mTime.get(Calendar.SECOND));
         String description = binding.inputTransactionName.getText().toString();
         String notes = binding.inputDescription.getText().toString();
-        String currencyCode = mAccountsDbAdapter.getAccountCurrencyCode(mAccountUID);
-        Commodity commodity = commoditiesDbAdapter.getCommodity(currencyCode);
+        Commodity commodity = mAccountsDbAdapter.getCommodity(mAccountUID);
 
         List<Split> splits = extractSplitsFromView(binding);
 
@@ -811,8 +804,7 @@ public class TransactionFormFragment extends MenuFragment implements
         if (!mUseDoubleEntry)
             return false;
 
-        String currencyCode = mAccountsDbAdapter.getAccountCurrencyCode(mAccountUID);
-        Commodity accountCommodity = Commodity.getInstance(currencyCode);
+        Commodity accountCommodity = mAccountsDbAdapter.getCommodity(mAccountUID);
 
         List<Split> splits = mSplitsList;
         for (Split split : splits) {
@@ -823,9 +815,9 @@ public class TransactionFormFragment extends MenuFragment implements
         }
 
         String transferAcctUID = mAccountsDbAdapter.getUID(binding.inputTransferAccountSpinner.getSelectedItemId());
-        String transferCurrencyCode = mAccountsDbAdapter.getCurrencyCode(transferAcctUID);
+        Commodity transferCommodity = mAccountsDbAdapter.getCommodity(transferAcctUID);
 
-        return !currencyCode.equals(transferCurrencyCode);
+        return !accountCommodity.equals(transferCommodity);
     }
 
     /**

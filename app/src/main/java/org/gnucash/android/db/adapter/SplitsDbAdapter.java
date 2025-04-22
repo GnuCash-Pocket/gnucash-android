@@ -162,8 +162,8 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
         String transactionCurrency = getAttribute(TransactionEntry.TABLE_NAME, transxUID, TransactionEntry.COLUMN_CURRENCY);
         Money value = new Money(valueNum, valueDenom, transactionCurrency);
-        String currencyCode = getAccountCurrencyCode(accountUID);
-        Money quantity = new Money(quantityNum, quantityDenom, currencyCode);
+        Commodity commodity = getCommodity(accountUID);
+        Money quantity = new Money(quantityNum, quantityDenom, commodity);
 
         Split split = new Split(value, accountUID);
         populateBaseModelAttributes(cursor, split);
@@ -467,21 +467,22 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
     }
 
     /**
-     * Returns the currency code (according to the ISO 4217 standard) of the account
+     * Returns the commodity of the account
      * with unique Identifier <code>accountUID</code>
      *
      * @param accountUID Unique Identifier of the account
-     * @return Currency code of the account.
+     * @return Commodity of the account.
      */
-    // FIXME use a SQL JOIN to read the account currency code per record.
-    private String getAccountCurrencyCode(@NonNull String accountUID) {
-        Cursor cursor = mDb.query(DatabaseSchema.AccountEntry.TABLE_NAME,
-            new String[]{DatabaseSchema.AccountEntry.COLUMN_CURRENCY},
+    public Commodity getCommodity(@NonNull String accountUID) {
+        Cursor cursor = mDb.query(
+            DatabaseSchema.AccountEntry.TABLE_NAME,
+            new String[]{DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID},
             DatabaseSchema.AccountEntry.COLUMN_UID + "= ?",
             new String[]{accountUID}, null, null, null);
         try {
             if (cursor.moveToFirst()) {
-                return cursor.getString(0);
+                String commodityUID = cursor.getString(0);
+                return commoditiesDbAdapter.getRecord(commodityUID);
             } else {
                 throw new IllegalArgumentException("Account " + accountUID + " does not exist");
             }

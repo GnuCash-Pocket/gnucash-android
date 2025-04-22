@@ -39,6 +39,7 @@ import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.AccountType;
+import org.gnucash.android.model.Commodity;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity;
@@ -173,29 +174,29 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
         getDialog().setTitle(getString(R.string.alert_dialog_ok_delete) + ": " + accountName);
         List<String> descendantAccountUIDs = accountsDbAdapter.getDescendantAccountUIDs(mOriginAccountUID, null, null);
 
-        String currencyCode = accountsDbAdapter.getCurrencyCode(mOriginAccountUID);
+        Commodity commodity = accountsDbAdapter.getCommodity(mOriginAccountUID);
         AccountType accountType = accountsDbAdapter.getAccountType(mOriginAccountUID);
 
         String transactionDeleteConditions = "(" + DatabaseSchema.AccountEntry.COLUMN_UID + " != ? AND "
-            + DatabaseSchema.AccountEntry.COLUMN_CURRENCY + " = ? AND "
+            + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + " = ? AND "
             + DatabaseSchema.AccountEntry.COLUMN_TYPE + " = ? AND "
             + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0 AND "
             + DatabaseSchema.AccountEntry.COLUMN_UID + " NOT IN ('" + TextUtils.join("','", descendantAccountUIDs) + "')"
             + ")";
-        Cursor cursor = accountsDbAdapter.fetchAccountsOrderedByFullName(transactionDeleteConditions,
-            new String[]{mOriginAccountUID, currencyCode, accountType.name()});
+        String[] transactionDeleteArgs = new String[]{mOriginAccountUID, commodity.getUID(), accountType.name()};
+        Cursor cursor = accountsDbAdapter.fetchAccountsOrderedByFullName(transactionDeleteConditions, transactionDeleteArgs);
 
         SimpleCursorAdapter adapter = new QualifiedAccountNameCursorAdapter(getActivity(), cursor);
         transactionOptions.targetAccountsSpinner.setAdapter(adapter);
 
         //target accounts for transactions and accounts have different conditions
         String accountMoveConditions = "(" + DatabaseSchema.AccountEntry.COLUMN_UID + " != ? AND "
-            + DatabaseSchema.AccountEntry.COLUMN_CURRENCY + " = ? AND "
+            + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + " = ? AND "
             + DatabaseSchema.AccountEntry.COLUMN_TYPE + " = ? AND "
             + DatabaseSchema.AccountEntry.COLUMN_UID + " NOT IN ('" + TextUtils.join("','", descendantAccountUIDs) + "')"
             + ")";
-        cursor = accountsDbAdapter.fetchAccountsOrderedByFullName(accountMoveConditions,
-            new String[]{mOriginAccountUID, currencyCode, accountType.name()});
+        String[] accountMoveArgs = new String[]{mOriginAccountUID, commodity.getUID(), accountType.name()};
+        cursor = accountsDbAdapter.fetchAccountsOrderedByFullName(accountMoveConditions, accountMoveArgs);
         adapter = new QualifiedAccountNameCursorAdapter(getActivity(), cursor);
         accountOptions.targetAccountsSpinner.setAdapter(adapter);
 

@@ -173,8 +173,8 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
         if (mBudgetAmounts.isEmpty()) { //has not been set in budget amounts editor
             ArrayList<BudgetAmount> budgetAmounts = new ArrayList<>();
             String accountUID = mAccountsDbAdapter.getUID(mBinding.budgetAmountLayout.inputBudgetAccountSpinner.getSelectedItemId());
-            String currencyCode = mAccountsDbAdapter.getCurrencyCode(accountUID);
-            Money amount = new Money(value, currencyCode);
+            Commodity commodity = mAccountsDbAdapter.getCommodity(accountUID);
+            Money amount = new Money(value, commodity);
             BudgetAmount budgetAmount = new BudgetAmount(amount, accountUID);
             budgetAmounts.add(budgetAmount);
             return budgetAmounts;

@@ -85,12 +85,12 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
 
     public static TransferFundsDialogFragment getInstance(
         @NonNull Money transactionAmount,
-        @NonNull Commodity targetCurrency,
+        @NonNull Commodity targetCommodity,
         @Nullable OnTransferFundsListener transferFundsListener
     ) {
         TransferFundsDialogFragment fragment = new TransferFundsDialogFragment();
         fragment.mOriginAmount = transactionAmount;
-        fragment.mTargetCommodity = targetCurrency;
+        fragment.mTargetCommodity = targetCommodity;
         fragment.mOnTransferFundsListener = transferFundsListener;
         return fragment;
     }

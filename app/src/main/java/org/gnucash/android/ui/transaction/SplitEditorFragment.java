@@ -153,8 +153,8 @@ public class SplitEditorFragment extends MenuFragment {
             loadSplitViews(splitList);
             mImbalanceWatcher.afterTextChanged(null);
         } else {
-            final String currencyCode = mAccountsDbAdapter.getAccountCurrencyCode(mAccountUID);
-            Split split = new Split(new Money(mBaseAmount, Commodity.getInstance(currencyCode)), mAccountUID);
+            Commodity commodity = mAccountsDbAdapter.getCommodity(mAccountUID);
+            Split split = new Split(new Money(mBaseAmount, commodity), mAccountUID);
             AccountType accountType = mAccountsDbAdapter.getAccountType(mAccountUID);
             TransactionType transactionType = Transaction.getTypeForBalance(accountType, mBaseAmount.signum() < 0);
             split.setType(transactionType);
@@ -252,7 +252,7 @@ public class SplitEditorFragment extends MenuFragment {
                 + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0"
                 + ")";
         mCursor = mAccountsDbAdapter.fetchAccountsOrderedByFavoriteAndFullName(conditions, null);
-        mCommodity = CommoditiesDbAdapter.getInstance().getCommodity(mAccountsDbAdapter.getCurrencyCode(mAccountUID));
+        mCommodity = mAccountsDbAdapter.getCommodity(mAccountUID);
     }
 
     /**
@@ -433,8 +433,8 @@ public class SplitEditorFragment extends MenuFragment {
             if (enteredAmount == null)
                 continue;
 
-            String currencyCode = mAccountsDbAdapter.getCurrencyCode(mAccountUID);
-            Money valueAmount = new Money(enteredAmount.abs(), Commodity.getInstance(currencyCode));
+            Commodity commodity = mAccountsDbAdapter.getCommodity(mAccountUID);
+            Money valueAmount = new Money(enteredAmount.abs(), commodity);
 
             String accountUID = mAccountsDbAdapter.getUID(viewHolder.accountsSpinner.getSelectedItemId());
             Split split = new Split(valueAmount, accountUID);
@@ -517,17 +517,17 @@ public class SplitEditorFragment extends MenuFragment {
             //refresh the imbalance amount if we change the account
             mImbalanceWatcher.afterTextChanged(null);
 
-            String fromCurrencyCode = mAccountsDbAdapter.getCurrencyCode(mAccountUID);
-            String targetCurrencyCode = mAccountsDbAdapter.getCurrencyCode(mAccountsDbAdapter.getUID(id));
+            Commodity fromCommodity = mAccountsDbAdapter.getCommodity(mAccountUID);
+            Commodity targetCommodity = mAccountsDbAdapter.getCommodity(mAccountsDbAdapter.getUID(id));
 
-            if (!userInteraction || fromCurrencyCode.equals(targetCurrencyCode)) {
+            if (!userInteraction || fromCommodity.equals(targetCommodity)) {
                 //first call is on layout, subsequent calls will be true and transfer will work as usual
                 userInteraction = true;
                 return;
             }
 
             transferAttempt.clear();
-            startTransferFunds(fromCurrencyCode, targetCurrencyCode, mSplitViewHolder);
+            startTransferFunds(fromCommodity, targetCommodity, mSplitViewHolder);
         }
 
         @Override
@@ -539,17 +539,17 @@ public class SplitEditorFragment extends MenuFragment {
     /**
      * Starts the transfer of funds from one currency to another
      */
-    private void startTransferFunds(String fromCurrencyCode, String targetCurrencyCode, SplitViewHolder splitViewHolder) {
+    private void startTransferFunds(Commodity fromCommodity, Commodity targetCommodity, SplitViewHolder splitViewHolder) {
         BigDecimal enteredAmount = splitViewHolder.splitAmountEditText.getValue();
         if ((enteredAmount == null) || enteredAmount.equals(BigDecimal.ZERO))
             return;
 
         transferAttempt.add(splitViewHolder);
 
-        Money amount = new Money(enteredAmount, fromCurrencyCode).abs();
+        Money amount = new Money(enteredAmount, fromCommodity).abs();
         TransferFundsDialogFragment fragment
-            = TransferFundsDialogFragment.getInstance(amount, targetCurrencyCode, splitViewHolder);
-        fragment.show(getParentFragmentManager(), "transfer_funds_editor;" + fromCurrencyCode + ";" + targetCurrencyCode + ";" + amount.toPlainString());
+            = TransferFundsDialogFragment.getInstance(amount, targetCommodity, splitViewHolder);
+        fragment.show(getParentFragmentManager(), "transfer_funds_editor;" + fromCommodity + ";" + targetCommodity + ";" + amount.toPlainString());
     }
 
     /**
@@ -557,8 +557,7 @@ public class SplitEditorFragment extends MenuFragment {
      */
     private boolean startTransferFunds() {
         boolean result = false;
-        String fromCurrencyCode = mAccountsDbAdapter.getAccountCurrencyCode(mAccountUID);
-        Commodity fromCommodity = Commodity.getInstance(fromCurrencyCode);
+        Commodity fromCommodity = mAccountsDbAdapter.getCommodity(mAccountUID);
         transferAttempt.clear();
 
         for (View splitView : mSplitItemViewList) {
@@ -568,8 +567,7 @@ public class SplitEditorFragment extends MenuFragment {
             if (splitQuantity == null) continue;
             Commodity splitCommodity = splitQuantity.getCommodity();
             if (fromCommodity.equals(splitCommodity)) continue;
-            String splitCurrencyCode = splitCommodity.getCurrencyCode();
-            startTransferFunds(fromCurrencyCode, splitCurrencyCode, viewHolder);
+            startTransferFunds(fromCommodity, splitCommodity, viewHolder);
             result = true;
         }
 
@@ -584,8 +582,7 @@ public class SplitEditorFragment extends MenuFragment {
      * @return {@code true} if multi-currency transaction, {@code false} otherwise
      */
     private boolean isMultiCurrencyTransaction() {
-        String currencyCode = mAccountsDbAdapter.getAccountCurrencyCode(mAccountUID);
-        Commodity accountCommodity = Commodity.getInstance(currencyCode);
+        Commodity accountCommodity = mAccountsDbAdapter.getCommodity(mAccountUID);
 
         List<Split> splits = extractSplitsFromView();
         for (Split split : splits) {

@@ -1074,9 +1074,10 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @param accountUID Unique Identifier of the account
      * @return Currency code of the account.
      */
+    @Deprecated
     public String getAccountCurrencyCode(@NonNull String accountUID) {
         Cursor cursor = mDb.query(
-            mTableName,
+            AccountEntry.TABLE_NAME,
             new String[]{AccountEntry.COLUMN_CURRENCY},
             AccountEntry.COLUMN_UID + "= ?",
             new String[]{accountUID}, null, null, null);
@@ -1092,13 +1093,28 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     }
 
     /**
-     * Returns currency code of account with database ID <code>id</code>
+     * Returns the commodity of the account
+     * with unique Identifier <code>accountUID</code>
      *
-     * @param accountUID GUID of the account
-     * @return Currency code of the account
+     * @param accountUID Unique Identifier of the account
+     * @return Commodity of the account.
      */
-    public String getCurrencyCode(String accountUID) {
-        return getAccountCurrencyCode(accountUID);
+    public Commodity getCommodity(@NonNull String accountUID) {
+        Cursor cursor = mDb.query(
+            AccountEntry.TABLE_NAME,
+            new String[]{AccountEntry.COLUMN_COMMODITY_UID},
+            AccountEntry.COLUMN_UID + "= ?",
+            new String[]{accountUID}, null, null, null);
+        try {
+            if (cursor.moveToFirst()) {
+                String commodityUID = cursor.getString(0);
+                return commoditiesDbAdapter.getRecord(commodityUID);
+            } else {
+                throw new IllegalArgumentException("Account " + accountUID + " does not exist");
+            }
+        } finally {
+            cursor.close();
+        }
     }
 
     /**
@@ -1246,17 +1262,17 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             while (cursor.moveToNext()) {
                 long id = cursor.getLong(cursor.getColumnIndexOrThrow(AccountEntry._ID));
                 String accountUID = getUID(id);
-                String currencyCode = getCurrencyCode(accountUID);
+                Commodity commodity = getCommodity(accountUID);
                 ArrayList<String> accountList = new ArrayList<>();
                 accountList.add(accountUID);
                 Money balance = splitsDbAdapter.computeSplitBalance(accountList,
-                    currencyCode, getAccountType(accountUID).hasDebitNormalBalance());
+                    commodity.getCurrencyCode(), getAccountType(accountUID).hasDebitNormalBalance());
                 if (balance.asBigDecimal().compareTo(new BigDecimal(0)) == 0)
                     continue;
 
                 Transaction transaction = new Transaction(GnuCashApplication.getAppContext().getString(R.string.account_name_opening_balances));
                 transaction.setNote(getAccountName(accountUID));
-                transaction.setCommodity(Commodity.getInstance(currencyCode));
+                transaction.setCommodity(commodity);
                 TransactionType transactionType = Transaction.getTypeForBalance(getAccountType(accountUID),
                     balance.isNegative());
                 Split split = new Split(balance, accountUID);

@@ -137,4 +137,19 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
             cursor.close();
         }
     }
+
+    /**
+     * Get the price for commodity / currency pair.
+     * The price can be used to convert from one commodity to another. The 'commodity' is the origin and the 'currency' is the target for the conversion.
+     *
+     * <p>Pair is used instead of Price object because we must sometimes invert the commodity/currency in DB,
+     * rendering the Price UID invalid.</p>
+     *
+     * @param commodity the commodity which is starting point for conversion
+     * @param currency  target commodity for the conversion
+     * @return The numerator/denominator pair for commodity / currency pair
+     */
+    public Pair<Long, Long> getPrice(@NonNull Commodity commodity, @NonNull Commodity currency) {
+        return getPrice(commodity.getUID(), currency.getUID());
+    }
 }

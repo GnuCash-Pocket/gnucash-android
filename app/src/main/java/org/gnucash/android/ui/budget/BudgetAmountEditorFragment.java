@@ -224,8 +224,8 @@ public class BudgetAmountEditorFragment extends MenuFragment {
             if (amountValue == null)
                 continue;
             String accountUID = mAccountsDbAdapter.getUID(viewHolder.budgetAccountSpinner.getSelectedItemId());
-            String currencyCode = mAccountsDbAdapter.getAccountCurrencyCode(accountUID);
-            Money amount = new Money(amountValue, currencyCode);
+            Commodity commodity = mAccountsDbAdapter.getCommodity(accountUID);
+            Money amount = new Money(amountValue, commodity);
             BudgetAmount budgetAmount = new BudgetAmount(amount, accountUID);
             budgetAmounts.add(budgetAmount);
         }
@@ -270,8 +270,8 @@ public class BudgetAmountEditorFragment extends MenuFragment {
             budgetAccountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    String currencyCode = mAccountsDbAdapter.getCurrencyCode(mAccountsDbAdapter.getUID(id));
-                    Commodity commodity = Commodity.getInstance(currencyCode);
+                    String accountUID = mAccountsDbAdapter.getUID(id);
+                    Commodity commodity = mAccountsDbAdapter.getCommodity(accountUID);
                     currencySymbolTextView.setText(commodity.getSymbol());
                 }
 

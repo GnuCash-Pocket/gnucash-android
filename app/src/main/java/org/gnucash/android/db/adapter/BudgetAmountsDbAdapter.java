@@ -26,8 +26,10 @@ import androidx.annotation.NonNull;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.model.BudgetAmount;
+import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -35,13 +37,15 @@ import java.util.List;
  */
 public class BudgetAmountsDbAdapter extends DatabaseAdapter<BudgetAmount> {
 
-    /**
-     * Opens the database adapter with an existing database
-     *
-     * @param db SQLiteDatabase object
-     */
+    @NonNull
+    final CommoditiesDbAdapter commoditiesDbAdapter;
+
     public BudgetAmountsDbAdapter(@NonNull SQLiteDatabase db) {
-        super(db, BudgetAmountEntry.TABLE_NAME, new String[]{
+        this(new CommoditiesDbAdapter(db));
+    }
+
+    public BudgetAmountsDbAdapter(@NonNull CommoditiesDbAdapter commoditiesDbAdapter) {
+        super(commoditiesDbAdapter.mDb, BudgetAmountEntry.TABLE_NAME, new String[]{
             BudgetAmountEntry.COLUMN_BUDGET_UID,
             BudgetAmountEntry.COLUMN_ACCOUNT_UID,
             BudgetAmountEntry.COLUMN_AMOUNT_NUM,
@@ -49,10 +53,17 @@ public class BudgetAmountsDbAdapter extends DatabaseAdapter<BudgetAmount> {
             BudgetAmountEntry.COLUMN_PERIOD_NUM,
             BudgetAmountEntry.COLUMN_NOTES
         });
+        this.commoditiesDbAdapter = commoditiesDbAdapter;
     }
 
     public static BudgetAmountsDbAdapter getInstance() {
         return GnuCashApplication.getBudgetAmountsDbAdapter();
+    }
+
+    @Override
+    public void close() throws IOException {
+        commoditiesDbAdapter.close();
+        super.close();
     }
 
     @Override
@@ -66,7 +77,7 @@ public class BudgetAmountsDbAdapter extends DatabaseAdapter<BudgetAmount> {
 
         BudgetAmount budgetAmount = new BudgetAmount(budgetUID, accountUID);
         populateBaseModelAttributes(cursor, budgetAmount);
-        budgetAmount.setAmount(new Money(amountNum, amountDenom, getAccountCurrencyCode(accountUID)));
+        budgetAmount.setAmount(new Money(amountNum, amountDenom, getCommodity(accountUID)));
         budgetAmount.setPeriodNum(periodNum);
         budgetAmount.setNotes(notes);
 
@@ -130,7 +141,7 @@ public class BudgetAmountsDbAdapter extends DatabaseAdapter<BudgetAmount> {
      */
     public Money getBudgetAmountSum(String accountUID) {
         List<BudgetAmount> budgetAmounts = getBudgetAmounts(accountUID);
-        Money sum = Money.createZeroInstance(getAccountCurrencyCode(accountUID));
+        Money sum = Money.createZeroInstance(getCommodity(accountUID));
         for (BudgetAmount budgetAmount : budgetAmounts) {
             sum = sum.plus(budgetAmount.getAmount());
         }
@@ -138,21 +149,22 @@ public class BudgetAmountsDbAdapter extends DatabaseAdapter<BudgetAmount> {
     }
 
     /**
-     * Returns the currency code (according to the ISO 4217 standard) of the account
+     * Returns the commodity of the account
      * with unique Identifier <code>accountUID</code>
      *
      * @param accountUID Unique Identifier of the account
-     * @return Currency code of the account.
+     * @return Commodity of the account.
      */
-    // FIXME use a SQL JOIN to read the account currency code per record.
-    private String getAccountCurrencyCode(@NonNull String accountUID) {
-        Cursor cursor = mDb.query(DatabaseSchema.AccountEntry.TABLE_NAME,
-            new String[]{DatabaseSchema.AccountEntry.COLUMN_CURRENCY},
+    public Commodity getCommodity(@NonNull String accountUID) {
+        Cursor cursor = mDb.query(
+            DatabaseSchema.AccountEntry.TABLE_NAME,
+            new String[]{DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID},
             DatabaseSchema.AccountEntry.COLUMN_UID + "= ?",
             new String[]{accountUID}, null, null, null);
         try {
             if (cursor.moveToFirst()) {
-                return cursor.getString(0);
+                String commodityUID = cursor.getString(0);
+                return commoditiesDbAdapter.getRecord(commodityUID);
             } else {
                 throw new IllegalArgumentException("Account " + accountUID + " does not exist");
             }

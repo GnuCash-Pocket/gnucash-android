@@ -35,6 +35,7 @@ import org.gnucash.android.databinding.DialogBulkMoveBinding;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
+import org.gnucash.android.model.Commodity;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity;
@@ -71,20 +72,21 @@ public class BulkMoveDialogFragment extends DialogFragment {
         DialogBulkMoveBinding binding = DialogBulkMoveBinding.inflate(getLayoutInflater());
         final Context context = binding.getRoot().getContext();
         final Spinner accountSpinner = binding.accountsListSpinner;
+        AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
 
         Bundle args = getArguments();
         final long[] selectedTransactionIds = args.getLongArray(UxArgument.SELECTED_TRANSACTION_IDS);
         final long[] transactionIds = (selectedTransactionIds != null) ? selectedTransactionIds : new long[0];
         final String originAccountUID = args.getString(UxArgument.ORIGIN_ACCOUNT_UID);
+        final Commodity originCommodity = accountsDbAdapter.getCommodity(originAccountUID);
 
-        AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
         String conditions = "(" + DatabaseSchema.AccountEntry.COLUMN_UID + " != ? AND "
-            + DatabaseSchema.AccountEntry.COLUMN_CURRENCY + " = ? AND "
+            + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + " = ? AND "
             + DatabaseSchema.AccountEntry.COLUMN_HIDDEN + " = 0 AND "
             + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0"
             + ")";
-        Cursor cursor = accountsDbAdapter.fetchAccountsOrderedByFullName(conditions,
-            new String[]{originAccountUID, accountsDbAdapter.getCurrencyCode(originAccountUID)});
+        String[] whereArgs = new String[]{originAccountUID, originCommodity.getUID()};
+        Cursor cursor = accountsDbAdapter.fetchAccountsOrderedByFullName(conditions, whereArgs);
 
         SimpleCursorAdapter adapter = new QualifiedAccountNameCursorAdapter(context, cursor);
         accountSpinner.setAdapter(adapter);
@@ -117,8 +119,8 @@ public class BulkMoveDialogFragment extends DialogFragment {
         TransactionsDbAdapter trxnAdapter = TransactionsDbAdapter.getInstance();
         AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
         String dstAccountUID = accountsDbAdapter.getUID(dstAccountId);
-        String currencySrc = accountsDbAdapter.getAccountCurrencyCode(dstAccountUID);
-        String currencyDst = accountsDbAdapter.getAccountCurrencyCode(srcAccountUID);
+        Commodity currencySrc = accountsDbAdapter.getCommodity(srcAccountUID);
+        Commodity currencyDst = accountsDbAdapter.getCommodity(dstAccountUID);
         if (!currencySrc.equals(currencyDst)) {
             Toast.makeText(context, R.string.toast_incompatible_currency, Toast.LENGTH_LONG).show();
             return;
