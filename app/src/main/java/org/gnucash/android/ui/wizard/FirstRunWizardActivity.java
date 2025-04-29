@@ -20,6 +20,7 @@ package org.gnucash.android.ui.wizard;
 import static org.gnucash.android.ui.account.AccountsActivity.createDefaultAccounts;
 import static org.gnucash.android.ui.account.AccountsActivity.importXmlFileFromIntent;
 import static org.gnucash.android.ui.account.AccountsActivity.startXmlFileChooser;
+import static org.gnucash.android.util.DocumentExtKt.openDocument;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -369,7 +370,7 @@ public class FirstRunWizardActivity extends AppCompatActivity implements
                 finish();
             }
         };
-        importXmlFileFromIntent(activity, data, callbackAfterImport);
+        openDocument(this, data, callbackAfterImport);
     }
 
     private void maybeDeleteOldBook(@NonNull Context context, @Nullable String bookOldUID, @Nullable String bookNewUID) {

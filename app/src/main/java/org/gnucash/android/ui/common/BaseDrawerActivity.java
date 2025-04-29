@@ -15,7 +15,8 @@
  */
 package org.gnucash.android.ui.common;
 
-import static org.gnucash.android.app.IntentExtKt.takePersistableUriPermission;
+import static org.gnucash.android.util.DocumentExtKt.chooseDocument;
+import static org.gnucash.android.util.DocumentExtKt.openDocument;
 
 import android.app.Activity;
 import android.content.Context;
@@ -264,25 +265,17 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
      */
     protected void onDrawerMenuItemClicked(int itemId) {
         switch (itemId) {
-            case R.id.nav_item_open: { //Open... files
-                String[] mimeTypes = {"text/*", "application/*"};
-                //use the storage access framework
-                Intent openDocument = new Intent(Intent.ACTION_OPEN_DOCUMENT)
-                    .addCategory(Intent.CATEGORY_OPENABLE)
-                    .setType("text/*|application/*")
-                    .putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
-                startActivityForResult(openDocument, REQUEST_OPEN_DOCUMENT);
-            }
-            break;
+            case R.id.nav_item_open:  //Open... files
+                chooseDocument(this, REQUEST_OPEN_DOCUMENT);
+                break;
 
-            case R.id.nav_item_favorites: { //favorite accounts
+            case R.id.nav_item_favorites:  //favorite accounts
                 AccountsActivity.start(this, AccountsActivity.INDEX_FAVORITE_ACCOUNTS_FRAGMENT);
-            }
-            break;
+                break;
 
             case R.id.nav_item_reports: {
-                Intent intent = new Intent(this, ReportsActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                Intent intent = new Intent(this, ReportsActivity.class)
+                    .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
             }
             break;
@@ -317,21 +310,12 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_CANCELED) {
-            super.onActivityResult(requestCode, resultCode, data);
-            return;
-        }
-
         switch (requestCode) {
             case AccountsActivity.REQUEST_PICK_ACCOUNTS_FILE:
-                AccountsActivity.importXmlFileFromIntent(this, data, null);
-                break;
             case BaseDrawerActivity.REQUEST_OPEN_DOCUMENT: //this uses the Storage Access Framework
-                final int takeFlags = data.getFlags()
-                        & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                getContentResolver().takePersistableUriPermission(data.getData(), takeFlags);
-                AccountsActivity.importXmlFileFromIntent(this, data, null);
-                takePersistableUriPermission(this, data);
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    openDocument(this, data);
+                }
                 break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);

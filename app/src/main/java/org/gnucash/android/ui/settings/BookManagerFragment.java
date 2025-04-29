@@ -16,7 +16,8 @@
 
 package org.gnucash.android.ui.settings;
 
-import static org.gnucash.android.app.IntentExtKt.takePersistableUriPermission;
+import static org.gnucash.android.util.DocumentExtKt.chooseDocument;
+import static org.gnucash.android.util.DocumentExtKt.openDocument;
 
 import android.app.Activity;
 import android.content.Context;
@@ -131,13 +132,7 @@ public class BookManagerFragment extends ListFragment implements
             }
 
             case R.id.menu_open:
-                String[] mimeTypes = {"text/*", "application/*"};
-                //use the storage access framework
-                Intent openDocument = new Intent(Intent.ACTION_OPEN_DOCUMENT)
-                    .addCategory(Intent.CATEGORY_OPENABLE)
-                    .setType("text/*|application/*")
-                    .putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
-                startActivityForResult(openDocument, REQUEST_OPEN_DOCUMENT);
+                chooseDocument(this, REQUEST_OPEN_DOCUMENT);
                 return true;
 
             default:
@@ -189,11 +184,7 @@ public class BookManagerFragment extends ListFragment implements
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == REQUEST_OPEN_DOCUMENT) {
-                Activity context = requireActivity();
-                final int takeFlags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                context.getContentResolver().takePersistableUriPermission(data.getData(), takeFlags);
-                AccountsActivity.importXmlFileFromIntent(context, data, null);
-                takePersistableUriPermission(context, data);
+                openDocument(requireActivity(), data);
                 return;
             }
         }

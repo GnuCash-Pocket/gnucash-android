@@ -16,6 +16,8 @@
 
 package org.gnucash.android.ui.settings;
 
+import static org.gnucash.android.util.DocumentExtKt.openDocument;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
@@ -47,6 +49,7 @@ import org.gnucash.android.export.Exporter;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.ui.account.AccountsActivity;
 import org.gnucash.android.ui.settings.dialog.DeleteAllAccountsConfirmationDialog;
+import org.gnucash.android.util.DocumentExtKt;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -222,10 +225,12 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Activity activity = requireActivity();
+
         switch (requestCode) {
             case AccountsActivity.REQUEST_PICK_ACCOUNTS_FILE:
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    AccountsActivity.importXmlFileFromIntent(getActivity(), data, null);
+                    openDocument(activity, data);
                 }
                 break;
 
@@ -234,17 +239,20 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
                     ExportParams exportParams = new ExportParams(ExportFormat.CSVA);
                     exportParams.setExportTarget(ExportParams.ExportTarget.URI);
                     exportParams.setExportLocation(data.getData());
-                    Activity context = requireActivity();
-                    ExportAsyncTask exportTask = new ExportAsyncTask(context, GnuCashApplication.getActiveBookUID());
+                    ExportAsyncTask exportTask = new ExportAsyncTask(activity, GnuCashApplication.getActiveBookUID());
 
                     try {
                         exportTask.execute(exportParams).get();
                     } catch (InterruptedException | ExecutionException e) {
                         Timber.e(e);
-                        Toast.makeText(context, "An error occurred during the Accounts CSV export",
+                        Toast.makeText(activity, "An error occurred during the Accounts CSV export",
                                 Toast.LENGTH_LONG).show();
                     }
                 }
+
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
         }
     }
 }

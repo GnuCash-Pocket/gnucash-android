@@ -17,10 +17,11 @@
 
 package org.gnucash.android.ui.account;
 
+import static org.gnucash.android.util.DocumentExtKt.chooseContent;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.SearchManager;
-import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -32,7 +33,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -65,8 +65,6 @@ import org.gnucash.android.ui.transaction.TransactionsActivity;
 import org.gnucash.android.ui.util.widget.FragmentStateAdapter;
 import org.gnucash.android.ui.wizard.FirstRunWizardActivity;
 import org.gnucash.android.util.BackupManager;
-
-import timber.log.Timber;
 
 /**
  * Manages actions related to accounts, displaying, exporting and creating new accounts
@@ -417,17 +415,7 @@ public class AccountsActivity extends BaseDrawerActivity implements
      * @see #importXmlFileFromIntent(Activity, Intent, ImportBookCallback)
      */
     public static void startXmlFileChooser(Activity activity) {
-        Intent pickIntent = new Intent(Intent.ACTION_GET_CONTENT)
-            .addCategory(Intent.CATEGORY_OPENABLE)
-            .setType("*/*");
-        Intent chooser = Intent.createChooser(pickIntent, "Select GnuCash account file"); //todo internationalize string
-
-        try {
-            activity.startActivityForResult(chooser, REQUEST_PICK_ACCOUNTS_FILE);
-        } catch (ActivityNotFoundException ex) {
-            Timber.e(ex, "No file manager for selecting files available");
-            Toast.makeText(activity, R.string.toast_install_file_manager, Toast.LENGTH_LONG).show();
-        }
+        chooseContent(activity, REQUEST_PICK_ACCOUNTS_FILE);
     }
 
     /**
@@ -438,17 +426,7 @@ public class AccountsActivity extends BaseDrawerActivity implements
      * @see #startXmlFileChooser(Activity)
      */
     public static void startXmlFileChooser(Fragment fragment) {
-        Intent pickIntent = new Intent(Intent.ACTION_GET_CONTENT)
-            .addCategory(Intent.CATEGORY_OPENABLE)
-            .setType("*/*");
-        Intent chooser = Intent.createChooser(pickIntent, "Select GnuCash account file"); //todo internationalize string
-
-        try {
-            fragment.startActivityForResult(chooser, REQUEST_PICK_ACCOUNTS_FILE);
-        } catch (ActivityNotFoundException ex) {
-            Timber.e(ex, "No file manager for selecting files available");
-            Toast.makeText(fragment.getActivity(), R.string.toast_install_file_manager, Toast.LENGTH_LONG).show();
-        }
+        chooseContent(fragment, REQUEST_PICK_ACCOUNTS_FILE);
     }
 
     /**
