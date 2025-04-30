@@ -59,11 +59,6 @@ class Account : BaseModel {
     var description: String? = ""
 
     /**
-     * Commodity used by this account
-     */
-    private var _commodity: Commodity? = null
-
-    /**
      * Type of account
      * Defaults to [AccountType.CASH]
      */
@@ -161,21 +156,6 @@ class Account : BaseModel {
         get() = _transactionsList.size
 
     /**
-     * Returns the aggregate of all transactions in this account.
-     * It takes into account debit and credit amounts, it does not however consider sub-accounts
-     *
-     * @return [Money] aggregate amount of all transactions in account.
-     */
-    val balance: Money
-        get() {
-            var balance = Money.createZeroInstance(commodity)
-            for (transaction in _transactionsList) {
-                balance += transaction.getBalance(this)
-            }
-            return balance
-        }
-
-    /**
      * The color of the account.
      */
     @ColorInt
@@ -216,11 +196,7 @@ class Account : BaseModel {
     /**
      * The commodity for this account
      */
-    var commodity: Commodity
-        get() = _commodity!!
-        set(value) {
-            _commodity = value
-        }
+    var commodity: Commodity = Commodity.DEFAULT_COMMODITY
 
     /**
      * Returns `true` if this account is a placeholder account, `false` otherwise.

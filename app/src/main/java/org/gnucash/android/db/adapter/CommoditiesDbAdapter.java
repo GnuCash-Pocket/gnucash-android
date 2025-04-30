@@ -11,7 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.model.Commodity;
 
 import java.util.Objects;
@@ -48,7 +47,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
             CommodityEntry.COLUMN_SMALLEST_FRACTION,
             CommodityEntry.COLUMN_QUOTE_SOURCE,
             CommodityEntry.COLUMN_QUOTE_TZ
-        });
+        }, true);
         if (initCommon) {
             initCommon();
         } else {
@@ -148,31 +147,45 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
         if (TextUtils.isEmpty(currencyCode)) {
             return null;
         }
-        Cursor cursor = fetchAllRecords(CommodityEntry.COLUMN_MNEMONIC + "=?", new String[]{currencyCode}, null);
-        Commodity commodity = null;
-        if (cursor.moveToNext()) {
-            commodity = buildModelInstance(cursor);
-        } else {
-            String msg = "Commodity not found in the database: " + currencyCode;
-            Timber.e(msg);
+        if (isCached) {
+            for (Commodity commodity : cache.values()) {
+                if (commodity.isCurrency() && commodity.getCurrencyCode().equals(currencyCode)) {
+                    return commodity;
+                }
+            }
         }
-        cursor.close();
-        return commodity;
-    }
-
-    public String getCurrencyCode(@NonNull String guid) {
-        Cursor cursor = mDb.query(mTableName, new String[]{CommodityEntry.COLUMN_MNEMONIC},
-            DatabaseSchema.CommonColumns.COLUMN_UID + " = ?", new String[]{guid},
-            null, null, null);
+        String where = CommodityEntry.COLUMN_MNEMONIC + "=?"
+            + " AND " + CommodityEntry.COLUMN_NAMESPACE + " IN ('" + Commodity.COMMODITY_CURRENCY + "','" + Commodity.COMMODITY_ISO4217 + "')";
+        String[] whereArgs = new String[]{currencyCode};
+        Cursor cursor = fetchAllRecords(where, whereArgs, null);
         try {
             if (cursor.moveToNext()) {
-                return cursor.getString(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_MNEMONIC));
+                Commodity commodity = buildModelInstance(cursor);
+                if (isCached) {
+                    cache.put(commodity.getUID(), commodity);
+                }
+                return commodity;
             } else {
-                throw new IllegalArgumentException("guid " + guid + " not exits in commodity db");
+                String msg = "Commodity not found in the database: " + currencyCode;
+                Timber.e(msg);
             }
         } finally {
             cursor.close();
         }
+        return null;
+    }
+
+    public String getCommodityUID(String currencyCode) {
+        Commodity commodity = getCommodity(currencyCode);
+        return (commodity != null) ? commodity.getUID() : null;
+    }
+
+    public String getCurrencyCode(@NonNull String guid) {
+        Commodity commodity = getRecord(guid);
+        if (commodity != null) {
+            return commodity.getCurrencyCode();
+        }
+        throw new IllegalArgumentException("guid " + guid + " not exits in commodity db");
     }
 
     @Nullable

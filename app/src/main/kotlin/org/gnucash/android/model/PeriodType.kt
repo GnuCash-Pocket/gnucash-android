@@ -40,10 +40,12 @@ enum class PeriodType(@JvmField val value: String) {
     YEAR("year");
 
     companion object {
+        private val _values = values()
+
         @JvmStatic
         fun of(value: String): PeriodType {
             val valueLower = value.lowercase(Locale.ROOT)
-            return values().firstOrNull { it.value == valueLower } ?: ONCE
+            return _values.firstOrNull { it.value == valueLower } ?: ONCE
         }
     }
 }

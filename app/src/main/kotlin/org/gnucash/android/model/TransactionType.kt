@@ -47,9 +47,11 @@ enum class TransactionType(
             CREDIT.opposite = DEBIT
         }
 
+        private val _values = values()
+
         @JvmStatic
         fun of(value: String?): TransactionType {
-            return values().firstOrNull { it.value == value } ?: DEBIT
+            return _values.firstOrNull { it.value == value } ?: DEBIT
         }
     }
 }

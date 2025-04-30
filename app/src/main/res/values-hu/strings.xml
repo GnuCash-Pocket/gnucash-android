@@ -32,8 +32,8 @@
     <string name="label_transaction_amount">Összeg</string>
     <string name="title_add_transaction">Új tranzakció</string>
     <string name="label_no_transactions">Nincs megjeleníthető tranzakció</string>
-    <string name="label_debit">DEBIT</string>
-    <string name="label_credit">CREDIT</string>
+    <string name="label_debit">Debit</string>
+    <string name="label_credit">Credit</string>
     <string name="title_accounts">Fiókok</string>
     <string name="title_transactions">Tranzakicók</string>
     <string name="menu_delete">DELETE</string>

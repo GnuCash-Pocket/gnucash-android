@@ -32,8 +32,8 @@
     <string name="label_transaction_amount">Сума</string>
     <string name="title_add_transaction">Нова операція</string>
     <string name="label_no_transactions">Операцій немає</string>
-    <string name="label_debit">ДЕБЕТ</string>
-    <string name="label_credit">КРЕДИТ</string>
+    <string name="label_debit">Дебет</string>
+    <string name="label_credit">Кредит</string>
     <string name="title_accounts">Рахунки</string>
     <string name="title_transactions">Операції</string>
     <string name="menu_delete">Видалити</string>

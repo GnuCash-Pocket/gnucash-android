@@ -28,7 +28,6 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -70,6 +69,7 @@ import org.gnucash.android.inputmethodservice.CalculatorKeyboardView;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
+import org.gnucash.android.model.Price;
 import org.gnucash.android.model.Recurrence;
 import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Split;
@@ -695,13 +695,9 @@ public class TransactionFormFragment extends MenuFragment implements
             if ((value.equals(mSplitValue)) && mSplitQuantity != null) {
                 quantity = mSplitQuantity;
             } else {
-                Pair<Long, Long> pricePair = PricesDbAdapter.getInstance()
-                    .getPrice(commodity, targetCommodity);
-
-                if (pricePair.first > 0 && pricePair.second > 0) {
-                    quantity = quantity.times(pricePair.first.intValue())
-                        .div(pricePair.second.intValue())
-                        .withCurrency(targetCommodity);
+                Price price = PricesDbAdapter.getInstance().getPrice(commodity, targetCommodity);
+                if (price != null && price.getValueDenom() > 0 && price.getValueDenom() > 0) {
+                    quantity = quantity.times(price).withCommodity(targetCommodity);
                 }
             }
         }

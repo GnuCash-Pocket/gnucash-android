@@ -17,6 +17,7 @@
 
 package org.gnucash.android.ui.account;
 
+import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
 import static org.gnucash.android.ui.colorpicker.ColorPickerDialog.COLOR_PICKER_DIALOG_TAG;
 import static org.gnucash.android.ui.util.widget.ViewExtKt.setTextToEnd;
 
@@ -383,7 +384,8 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      * @param currencyCode ISO 4217 currency code to be selected
      */
     private void setSelectedCurrency(String currencyCode) {
-        long commodityId = commodityDbAdapter.getID(commodityDbAdapter.getCommodityUID(currencyCode));
+        Commodity commodity = commodityDbAdapter.getCommodity(currencyCode);
+        long commodityId = (commodity != null) ? commodity.id : NO_POSITION;
         int position = 0;
         for (int i = 0; i < mBinding.inputCurrencySpinner.getCount(); i++) {
             if (commodityId == mBinding.inputCurrencySpinner.getItemIdAtPosition(i)) {

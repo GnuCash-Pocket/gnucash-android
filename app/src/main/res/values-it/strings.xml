@@ -32,8 +32,8 @@
     <string name="label_transaction_amount">Importo</string>
     <string name="title_add_transaction">Nuova transazione</string>
     <string name="label_no_transactions">Nessuna transazione da visualizzare</string>
-    <string name="label_debit">DEBITO</string>
-    <string name="label_credit">CREDITO</string>
+    <string name="label_debit">Debito</string>
+    <string name="label_credit">Credito</string>
     <string name="title_accounts">Conti</string>
     <string name="title_transactions">Transazioni</string>
     <string name="menu_delete">Elimina</string>

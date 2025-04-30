@@ -3,7 +3,10 @@ package org.gnucash.android.math
 import android.os.Build
 import android.os.Parcel
 import java.math.BigDecimal
+import java.math.BigInteger
+import java.math.RoundingMode
 import kotlin.math.log10
+import kotlin.math.max
 
 val BigDecimal.isZero get() = compareTo(BigDecimal.ZERO) == 0
 
@@ -39,5 +42,35 @@ val Number.numberOfTrailingZeros: Int
  * @return BigDecimal representation of the number
  */
 fun toBigDecimal(numerator: Long, denominator: Long): BigDecimal {
-    return BigDecimal.valueOf(numerator).divide(BigDecimal.valueOf(denominator))
+    // Assume denominator is multiple of "10"s only.
+    val scale = denominator.numberOfTrailingZeros
+    return BigDecimal.valueOf(numerator, scale)
+}
+
+/**
+ * Returns the [BigDecimal] from the `numerator` and `denominator`
+ *
+ * @param numerator   Numerator of the fraction
+ * @param denominator Denominator of the fraction
+ * @return BigDecimal representation of the number
+ */
+fun toBigDecimal(numerator: BigInteger, denominator: Long): BigDecimal {
+    // Assume denominator is multiple of "10"s only.
+    val scale = denominator.numberOfTrailingZeros
+    return BigDecimal(numerator, scale)
+}
+
+fun BigDecimal.equalsIgnoreScale(that: BigDecimal): Boolean {
+    val thisScale = this.scale()
+    val thatScale = that.scale()
+    val scale = max(thisScale, thatScale)
+    val thisAmount = if (thisScale == scale)
+        this
+    else
+        this.setScale(scale, RoundingMode.UNNECESSARY)
+    val thatAmount = if (thatScale == scale)
+        that
+    else
+        that.setScale(scale, RoundingMode.UNNECESSARY)
+    return thisAmount == thatAmount
 }

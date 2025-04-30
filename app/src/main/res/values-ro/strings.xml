@@ -32,8 +32,8 @@
     <string name="label_transaction_amount">Sumă</string>
     <string name="title_add_transaction">Tranzacţie nouă</string>
     <string name="label_no_transactions">Nicio tranzacție de afișat</string>
-    <string name="label_debit">DEBIT</string>
-    <string name="label_credit">CREDIT</string>
+    <string name="label_debit">Debit</string>
+    <string name="label_credit">Credit</string>
     <string name="title_accounts">Conturi</string>
     <string name="title_transactions">Tranzacţii</string>
     <string name="menu_delete">Stergeti</string>

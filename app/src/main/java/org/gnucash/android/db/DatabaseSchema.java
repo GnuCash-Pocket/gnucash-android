@@ -39,7 +39,7 @@ public class DatabaseSchema {
      * Version number of database containing accounts and transactions info.
      * With any change to the database schema, this number must increase
      */
-    public static final int DATABASE_VERSION = 17;
+    public static final int DATABASE_VERSION = 18;
 
     //no instances are to be instantiated
     private DatabaseSchema() {
@@ -82,6 +82,12 @@ public class DatabaseSchema {
         public static final String COLUMN_TYPE = "type";
         public static final String COLUMN_HIDDEN = "is_hidden";
         public static final String COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID = "default_transfer_account_uid";
+
+        /* cached parameters */
+        public static final String COLUMN_BALANCE = "balance";
+        public static final String COLUMN_NOCLOSING_BALANCE = "noclosing_balance";
+        public static final String COLUMN_CLEARED_BALANCE = "cleared_balance";
+        public static final String COLUMN_RECONCILED_BALANCE = "reconciled_balance";
 
         public static final String INDEX_UID = "account_uid_index";
     }

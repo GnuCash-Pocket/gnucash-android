@@ -32,8 +32,8 @@
     <string name="label_transaction_amount">Beløp</string>
     <string name="title_add_transaction">Ny transaksjon</string>
     <string name="label_no_transactions">Ingen transaksjoner å vise</string>
-    <string name="label_debit">DEBET</string>
-    <string name="label_credit">KREDIT</string>
+    <string name="label_debit">Debet</string>
+    <string name="label_credit">Kredit</string>
     <string name="title_accounts">Kontoer</string>
     <string name="title_transactions">Transaksjoner</string>
     <string name="menu_delete">Slett</string>

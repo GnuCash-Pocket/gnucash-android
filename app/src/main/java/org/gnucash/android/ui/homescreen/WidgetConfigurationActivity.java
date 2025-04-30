@@ -303,7 +303,7 @@ public class WidgetConfigurationActivity extends Activity {
         if (hideAccountBalance) {
             views.setViewVisibility(R.id.transactions_summary, View.GONE);
         } else {
-            Money accountBalance = accountsDbAdapter.getAccountBalance(accountUID, -1, System.currentTimeMillis());
+            Money accountBalance = accountsDbAdapter.getCurrentAccountBalance(accountUID);
             views.setTextViewText(R.id.transactions_summary,
                 accountBalance.formattedString());
             int color = accountBalance.isNegative() ? R.color.debit_red : R.color.credit_green;

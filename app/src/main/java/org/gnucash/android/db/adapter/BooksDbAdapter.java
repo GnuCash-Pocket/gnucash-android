@@ -347,6 +347,4 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
             bookCount++;
         }
     }
-
-
 }

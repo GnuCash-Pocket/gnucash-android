@@ -6,6 +6,8 @@ import java.math.MathContext
 import java.sql.Timestamp
 import java.text.DecimalFormat
 import java.text.NumberFormat
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 /**
  * Model for commodity prices
@@ -40,6 +42,24 @@ class Price : BaseModel {
     constructor(commodity1: Commodity, commodity2: Commodity, exchangeRate: BigDecimal) :
             this(commodity1, commodity2) {
         setExchangeRate(exchangeRate)
+    }
+
+    /**
+     * Create new instance with the GUIDs of the commodities and the specified exchange rate.
+     *
+     * @param commodity1 the origin commodity
+     * @param commodity2 the target commodity
+     * @param exchangeRateNumerator  exchange rate numerator between the commodities
+     * @param exchangeRateDenominator  exchange rate denominator between the commodities
+     */
+    constructor(
+        commodity1: Commodity,
+        commodity2: Commodity,
+        exchangeRateNumerator: Long,
+        exchangeRateDenominator: Long
+    ) :
+            this(commodity1, commodity2) {
+        setExchangeRate(exchangeRateNumerator, exchangeRateDenominator)
     }
 
     private var _valueNum = 0L
@@ -134,10 +154,25 @@ class Price : BaseModel {
         valueDenom = BigDecimal.ONE.scaleByPowerOfTen(rate.scale()).toLong()
     }
 
+    fun setExchangeRate(numerator: Long, denominator: Long) {
+        // Store 0.1234 as 1234/10000
+        valueNum = numerator
+        valueDenom = denominator
+    }
+
     companion object {
         /**
          * String indicating that the price was provided by the user
          */
         const val SOURCE_USER = "user:xfer-dialog"
     }
+}
+
+@OptIn(ExperimentalContracts::class)
+fun Price?.isNullOrEmpty(): Boolean {
+    contract {
+        returns(false) implies (this@isNullOrEmpty != null)
+    }
+
+    return this == null || this.valueNum <= 0 || this.valueDenom <= 0
 }

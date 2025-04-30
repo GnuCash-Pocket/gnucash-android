@@ -44,17 +44,18 @@ public class BookDbHelper extends SQLiteOpenHelper {
      * Create the books table
      */
     private static final String BOOKS_TABLE_CREATE = "CREATE TABLE " + BookEntry.TABLE_NAME + " ("
-            + BookEntry._ID + " integer primary key autoincrement, "
-            + BookEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
-            + BookEntry.COLUMN_DISPLAY_NAME + " varchar(255) not null, "
-            + BookEntry.COLUMN_ROOT_GUID + " varchar(255) not null, "
-            + BookEntry.COLUMN_TEMPLATE_GUID + " varchar(255), "
-            + BookEntry.COLUMN_ACTIVE + " tinyint default 0, "
-            + BookEntry.COLUMN_SOURCE_URI + " varchar(255), "
-            + BookEntry.COLUMN_LAST_SYNC + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-            + BookEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-            + BookEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP "
-            + ");" + DatabaseHelper.createUpdatedAtTrigger(BookEntry.TABLE_NAME);
+        + BookEntry._ID + " integer primary key autoincrement, "
+        + BookEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
+        + BookEntry.COLUMN_DISPLAY_NAME + " varchar(255) not null, "
+        + BookEntry.COLUMN_ROOT_GUID + " varchar(255) not null, "
+        + BookEntry.COLUMN_TEMPLATE_GUID + " varchar(255), "
+        + BookEntry.COLUMN_ACTIVE + " tinyint default 0, "
+        + BookEntry.COLUMN_SOURCE_URI + " varchar(255), "
+        + BookEntry.COLUMN_LAST_SYNC + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+        + BookEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+        + BookEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP "
+        + ");"
+        + DatabaseHelper.createUpdatedAtTrigger(BookEntry.TABLE_NAME);
 
     @NonNull
     private final Context context;

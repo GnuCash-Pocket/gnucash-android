@@ -32,7 +32,7 @@
     <string name="label_transaction_amount">Jumlah</string>
     <string name="title_add_transaction">Transaksi baru</string>
     <string name="label_no_transactions">Tidak ada transaksi untuk ditampilkan</string>
-    <string name="label_debit">DEBIT</string>
+    <string name="label_debit">Debit</string>
     <string name="label_credit">KREDIT</string>
     <string name="title_accounts">Akun</string>
     <string name="title_transactions">Transaksi</string>

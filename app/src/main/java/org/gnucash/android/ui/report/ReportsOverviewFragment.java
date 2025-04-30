@@ -148,12 +148,12 @@ public class ReportsOverviewFragment extends BaseReportFragment {
         accountTypes.add(AccountType.ASSET);
         accountTypes.add(AccountType.CASH);
         accountTypes.add(AccountType.BANK);
-        mAssetsBalance = mAccountsDbAdapter.getAccountBalance(accountTypes, -1, System.currentTimeMillis());
+        mAssetsBalance = mAccountsDbAdapter.getCurrentAccountsBalance(accountTypes);
 
         accountTypes.clear();
         accountTypes.add(AccountType.LIABILITY);
         accountTypes.add(AccountType.CREDIT);
-        mLiabilitiesBalance = mAccountsDbAdapter.getAccountBalance(accountTypes, -1, System.currentTimeMillis());
+        mLiabilitiesBalance = mAccountsDbAdapter.getCurrentAccountsBalance(accountTypes);
     }
 
     /**

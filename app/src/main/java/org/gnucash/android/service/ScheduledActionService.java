@@ -100,7 +100,7 @@ public class ScheduledActionService {
     private void processScheduledBooks(@NonNull Context context) {
         BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
         List<Book> books = booksDbAdapter.getAllRecords();
-        for (Book book : books) { //// TODO: 20.04.2017 Retrieve only the book UIDs with new method
+        for (Book book : books) {
             processScheduledBook(context, book);
         }
     }

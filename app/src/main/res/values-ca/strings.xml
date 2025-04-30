@@ -32,8 +32,8 @@
     <string name="label_transaction_amount">Import</string>
     <string name="title_add_transaction">Transacció Nova</string>
     <string name="label_no_transactions">No hi ha cap transacció per mostrar</string>
-    <string name="label_debit">DÈBIT</string>
-    <string name="label_credit">CRÈDIT</string>
+    <string name="label_debit">Dèbit</string>
+    <string name="label_credit">Crèdit</string>
     <string name="title_accounts">Comptes</string>
     <string name="title_transactions">Assentaments</string>
     <string name="menu_delete">Suprimeix</string>

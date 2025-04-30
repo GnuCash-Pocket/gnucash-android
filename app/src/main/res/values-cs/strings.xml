@@ -32,8 +32,8 @@
     <string name="label_transaction_amount">Částka</string>
     <string name="title_add_transaction">Nová transakce</string>
     <string name="label_no_transactions">Žádné transakce k zobrazení</string>
-    <string name="label_debit">DEBET</string>
-    <string name="label_credit">ÚVĚR</string>
+    <string name="label_debit">Debet</string>
+    <string name="label_credit">Úvěr</string>
     <string name="title_accounts">Účty</string>
     <string name="title_transactions">Transakce</string>
     <string name="menu_delete">Smazat</string>

@@ -4,9 +4,9 @@ import static org.gnucash.android.db.DatabaseSchema.PriceEntry;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteStatement;
-import android.util.Pair;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.model.Commodity;
@@ -14,6 +14,8 @@ import org.gnucash.android.model.Price;
 import org.gnucash.android.util.TimestampHelper;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Database adapter for prices
@@ -21,6 +23,7 @@ import java.io.IOException;
 public class PricesDbAdapter extends DatabaseAdapter<Price> {
     @NonNull
     final CommoditiesDbAdapter commoditiesDbAdapter;
+    private final Map<String, Price> cachePair = new HashMap<>();
 
     /**
      * Opens the database adapter with an existing database
@@ -36,7 +39,7 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
             PriceEntry.COLUMN_TYPE,
             PriceEntry.COLUMN_VALUE_NUM,
             PriceEntry.COLUMN_VALUE_DENOM
-        });
+        }, true);
         this.commoditiesDbAdapter = commoditiesDbAdapter;
     }
 
@@ -46,8 +49,9 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
 
     @Override
     public void close() throws IOException {
-        super.close();
         commoditiesDbAdapter.close();
+        cachePair.clear();
+        super.close();
     }
 
     @Override
@@ -95,17 +99,35 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
      * Get the price for commodity / currency pair.
      * The price can be used to convert from one commodity to another. The 'commodity' is the origin and the 'currency' is the target for the conversion.
      *
-     * <p>Pair is used instead of Price object because we must sometimes invert the commodity/currency in DB,
-     * rendering the Price UID invalid.</p>
-     *
      * @param commodityUID GUID of the commodity which is starting point for conversion
      * @param currencyUID  GUID of target commodity for the conversion
      * @return The numerator/denominator pair for commodity / currency pair
      */
-    public Pair<Long, Long> getPrice(@NonNull String commodityUID, @NonNull String currencyUID) {
-        Pair<Long, Long> pairZero = new Pair<>(0L, 0L);
-        if (commodityUID.equals(currencyUID)) {
-            return new Pair<>(1L, 1L);
+    public Price getPrice(@NonNull String commodityUID, @NonNull String currencyUID) {
+        Commodity commodity = commoditiesDbAdapter.getRecord(commodityUID);
+        Commodity currency = commoditiesDbAdapter.getRecord(currencyUID);
+        return getPrice(commodity, currency);
+    }
+
+    /**
+     * Get the price for commodity / currency pair.
+     * The price can be used to convert from one commodity to another. The 'commodity' is the origin and the 'currency' is the target for the conversion.
+     *
+     * @param commodity the commodity which is starting point for conversion
+     * @param currency  the target commodity for the conversion
+     * @return The numerator/denominator pair for commodity / currency pair
+     */
+    @Nullable
+    public Price getPrice(@NonNull Commodity commodity, @NonNull Commodity currency) {
+        if (commodity.equals(currency)) {
+            return null;
+        }
+        String commodityUID = commodity.getUID();
+        String currencyUID = currency.getUID();
+        if (isCached) {
+            String key = commodityUID + "/" + currencyUID;
+            Price price = cachePair.get(key);
+            if (price != null) return price;
         }
         Cursor cursor = mDb.query(PriceEntry.TABLE_NAME, null,
             // the commodity and currency can be swapped
@@ -119,9 +141,9 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
                 String commodityUIDdb = cursor.getString(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_COMMODITY_UID));
                 long valueNum = cursor.getLong(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_VALUE_NUM));
                 long valueDenom = cursor.getLong(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_VALUE_DENOM));
-                if (valueNum < 0 || valueDenom < 0) {
+                if (valueNum <= 0 || valueDenom <= 0) {
                     // this should not happen
-                    return pairZero;
+                    return null;
                 }
                 if (!commodityUIDdb.equals(commodityUID)) {
                     // swap Num and denom
@@ -129,27 +151,16 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
                     valueNum = valueDenom;
                     valueDenom = t;
                 }
-                return new Pair<>(valueNum, valueDenom);
-            } else {
-                return pairZero;
+                Price price = new Price(commodity, currency, valueNum, valueDenom);
+                if (isCached) {
+                    String key = commodityUID + "/" + currencyUID;
+                    cachePair.put(key, price);
+                }
+                return price;
             }
         } finally {
             cursor.close();
         }
-    }
-
-    /**
-     * Get the price for commodity / currency pair.
-     * The price can be used to convert from one commodity to another. The 'commodity' is the origin and the 'currency' is the target for the conversion.
-     *
-     * <p>Pair is used instead of Price object because we must sometimes invert the commodity/currency in DB,
-     * rendering the Price UID invalid.</p>
-     *
-     * @param commodity the commodity which is starting point for conversion
-     * @param currency  target commodity for the conversion
-     * @return The numerator/denominator pair for commodity / currency pair
-     */
-    public Pair<Long, Long> getPrice(@NonNull Commodity commodity, @NonNull Commodity currency) {
-        return getPrice(commodity.getUID(), currency.getUID());
+        return null;
     }
 }

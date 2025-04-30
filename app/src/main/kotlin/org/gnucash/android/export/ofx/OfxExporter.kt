@@ -17,6 +17,19 @@ package org.gnucash.android.export.ofx
 
 import android.content.Context
 import android.preference.PreferenceManager
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.export.ExportParams
+import org.gnucash.android.export.Exporter
+import org.gnucash.android.model.Account
+import org.gnucash.android.model.Account.Companion.convertToOfxAccountType
+import org.gnucash.android.model.Money
+import org.gnucash.android.util.PreferencesHelper
+import org.gnucash.android.util.TimestampHelper
+import org.w3c.dom.Document
+import org.w3c.dom.Element
+import org.w3c.dom.Node
+import timber.log.Timber
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileOutputStream
@@ -24,6 +37,7 @@ import java.io.IOException
 import java.io.OutputStreamWriter
 import java.io.StringWriter
 import java.io.Writer
+import java.nio.charset.StandardCharsets
 import java.sql.Timestamp
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
@@ -33,19 +47,6 @@ import javax.xml.transform.TransformerException
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
-import org.gnucash.android.R
-import org.gnucash.android.app.GnuCashApplication
-import org.gnucash.android.export.ExportParams
-import org.gnucash.android.export.Exporter
-import org.gnucash.android.model.Account
-import org.gnucash.android.model.Account.Companion.convertToOfxAccountType
-import org.gnucash.android.util.PreferencesHelper
-import org.gnucash.android.util.TimestampHelper
-import org.w3c.dom.Document
-import org.w3c.dom.Element
-import org.w3c.dom.Node
-import timber.log.Timber
-import java.nio.charset.StandardCharsets
 
 /**
  * Exports the data in the database in OFX format.
@@ -77,14 +78,18 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
         accounts
             .filter { it.transactionCount > 0 }
             .filter {
-                isDoubleEntryEnabled ||
-                    // TODO: investigate whether skipping the imbalance accounts makes sense.
-                    // Also, using locale-dependant names here is error-prone.
-                    it.name?.contains(nameImbalance) == false
+                // TODO: investigate whether skipping the imbalance accounts makes sense.
+                // Also, using locale-dependant names here is error-prone.
+                isDoubleEntryEnabled || !it.name.contains(nameImbalance)
             }
             .forEach { account ->
                 // Add account details (transactions) to the XML document.
-                writeAccount(account, doc, statementTransactionResponse, mExportParams.exportStartTime)
+                writeAccount(
+                    account,
+                    doc,
+                    statementTransactionResponse,
+                    mExportParams.exportStartTime
+                )
                 // Mark as exported.
                 mAccountsDbAdapter.markAsExported(account.uid)
             }
@@ -139,7 +144,8 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
         var writer: BufferedWriter? = null
         try {
             val file = File(exportCacheFilePath)
-            writer = BufferedWriter(OutputStreamWriter(FileOutputStream(file), StandardCharsets.UTF_8))
+            writer =
+                BufferedWriter(OutputStreamWriter(FileOutputStream(file), StandardCharsets.UTF_8))
             writer.write(generateOfxExport(accounts))
             close()
         } catch (e: IOException) {
@@ -224,7 +230,7 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
 
 
         //================= BEGIN ACCOUNT BALANCE INFO =================================
-        val balance = account.balance.toPlainString()
+        val balance = getAccountBalance(account).toPlainString()
         val formattedCurrentTimeString = OfxHelper.getFormattedCurrentTime()
         val balanceAmount = doc.createElement(OfxHelper.TAG_BALANCE_AMOUNT)
         balanceAmount.appendChild(doc.createTextNode(balance))
@@ -261,5 +267,19 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
         statementTransactions.appendChild(bankTransactionsList)
         statementTransactions.appendChild(ledgerBalance)
         parent.appendChild(statementTransactions)
+    }
+
+    /**
+     * Returns the aggregate of all transactions in this account.
+     * It takes into account debit and credit amounts, it does not however consider sub-accounts
+     *
+     * @return [Money] aggregate amount of all transactions in account.
+     */
+    private fun getAccountBalance(account: Account): Money {
+        var balance = Money.createZeroInstance(account.commodity)
+        for (transaction in account.transactions) {
+            balance += transaction.getBalance(account)
+        }
+        return balance
     }
 }

@@ -32,8 +32,8 @@
     <string name="label_transaction_amount">Сумма</string>
     <string name="title_add_transaction">Новая проводка</string>
     <string name="label_no_transactions">Нет проводок</string>
-    <string name="label_debit">ДЕБЕТ</string>
-    <string name="label_credit">КРЕДИТ</string>
+    <string name="label_debit">Дебет</string>
+    <string name="label_credit">Кредит</string>
     <string name="title_accounts">Счета</string>
     <string name="title_transactions">Проводки</string>
     <string name="menu_delete">Удалить</string>

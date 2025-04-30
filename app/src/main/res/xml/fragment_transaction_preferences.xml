@@ -32,6 +32,7 @@
         android:title="@string/title_use_double_entry" />
 
     <SwitchPreference
+        android:defaultValue="false"
         android:dependency="@string/key_use_double_entry"
         android:icon="@drawable/ic_compress"
         android:key="@string/key_use_compact_list"

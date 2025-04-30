@@ -32,8 +32,8 @@
     <string name="label_transaction_amount">Bedrag</string>
     <string name="title_add_transaction">Nuwe transaksie</string>
     <string name="label_no_transactions">Geen transaksies om te wys</string>
-    <string name="label_debit">DEBIET</string>
-    <string name="label_credit">KREDIET</string>
+    <string name="label_debit">Debiet</string>
+    <string name="label_credit">Krediet</string>
     <string name="title_accounts">Rekeninge</string>
     <string name="title_transactions">Transaksies</string>
     <string name="menu_delete">Vee uit</string>

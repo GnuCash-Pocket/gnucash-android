@@ -32,8 +32,8 @@
     <string name="label_transaction_amount">Importe</string>
     <string name="title_add_transaction">Nueva transacción</string>
     <string name="label_no_transactions">No hay transacciones que mostrar</string>
-    <string name="label_debit">CARGO</string>
-    <string name="label_credit">ABONO</string>
+    <string name="label_debit">Cargo</string>
+    <string name="label_credit">Abono</string>
     <string name="title_accounts">Cuentas</string>
     <string name="title_transactions">Transacciones</string>
     <string name="menu_delete">Borrar</string>

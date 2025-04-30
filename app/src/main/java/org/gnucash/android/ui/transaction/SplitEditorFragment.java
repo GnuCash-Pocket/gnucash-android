@@ -337,9 +337,10 @@ public class SplitEditorFragment extends MenuFragment {
             updateTransferAccountsList(accountsSpinner);
 
             if (split != null) {
-                splitAmountEditText.setCommodity(split.getValue().getCommodity());
+                Commodity valueCommodity = split.getValue().getCommodity();
+                splitAmountEditText.setCommodity(valueCommodity);
                 splitAmountEditText.setValue(split.getFormattedValue().asBigDecimal(), true /* isOriginal */);
-                splitCurrencyTextView.setText(split.getValue().getCommodity().getSymbol());
+                splitCurrencyTextView.setText(valueCommodity.getSymbol());
                 splitMemoEditText.setText(split.getMemo());
                 splitUidTextView.setText(split.getUID());
                 String splitAccountUID = split.getAccountUID();
@@ -472,7 +473,7 @@ public class SplitEditorFragment extends MenuFragment {
                 BigDecimal amount = viewHolder.getAmountValue().abs();
                 long accountId = viewHolder.accountsSpinner.getSelectedItemId();
                 boolean hasDebitNormalBalance = AccountsDbAdapter.getInstance()
-                        .getAccountType(accountId).hasDebitNormalBalance();
+                        .getAccountType(accountId).hasDebitNormalBalance;
 
                 if (viewHolder.splitTypeSwitch.isChecked()) {
                     if (hasDebitNormalBalance)

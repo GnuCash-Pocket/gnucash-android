@@ -32,8 +32,8 @@
     <string name="label_transaction_amount">Tutar</string>
     <string name="title_add_transaction">Yeni işlem</string>
     <string name="label_no_transactions">Görüntülenecek işlem yok</string>
-    <string name="label_debit">BANKA</string>
-    <string name="label_credit">KREDİ</string>
+    <string name="label_debit">Banka</string>
+    <string name="label_credit">Kredi̇</string>
     <string name="title_accounts">Hesaplar</string>
     <string name="title_transactions">İşlemler</string>
     <string name="menu_delete">Sil</string>

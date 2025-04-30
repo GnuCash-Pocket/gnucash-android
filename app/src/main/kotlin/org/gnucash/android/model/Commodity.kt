@@ -15,8 +15,12 @@
  */
 package org.gnucash.android.model
 
+import android.os.Build
+import android.os.Parcel
+import android.os.Parcelable
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.math.numberOfTrailingZeros
+import java.util.Currency
 import java.util.TimeZone
 
 /**
@@ -40,8 +44,8 @@ class Commodity(
      * The fraction is a power of 10. So commodities with 2 fraction digits, have fraction of 10^2 = 100.<br />
      * If the parameter is any other value, a default fraction of 100 will be set
      */
-    var smallestFraction: Int = 100
-) : BaseModel() {
+    var smallestFraction: Int = DEFAULT_SMALLEST_FRACTION
+) : BaseModel(), Parcelable {
 
     var namespace = COMMODITY_CURRENCY
         set(value) {
@@ -52,6 +56,9 @@ class Commodity(
 
     val isCurrency: Boolean
         get() = (COMMODITY_CURRENCY == namespace || COMMODITY_ISO4217 == namespace)
+
+    val isTemplate: Boolean
+        get() = (TEMPLATE == namespace) || (TEMPLATE == mnemonic) || (TEMPLATE == cusip)
 
     /**
      * Returns the mnemonic, or currency code for ISO4217 currencies
@@ -73,6 +80,8 @@ class Commodity(
      */
     val currencyCode: String
         get() = mnemonic
+
+    val currency: Currency by lazy { Currency.getInstance(currencyCode) }
 
     /**
      * Returns the symbol for this commodity.
@@ -96,6 +105,29 @@ class Commodity(
      */
     val smallestFractionDigits: Int
         get() = smallestFraction.numberOfTrailingZeros
+
+    constructor(parcel: Parcel) : this(
+        parcel.readString(),
+        parcel.readString()!!,
+        parcel.readInt()
+    ) {
+        id = parcel.readLong()
+        setUID(parcel.readString())
+        namespace = parcel.readString()!!
+        localSymbol = parcel.readString()
+    }
+
+    override fun describeContents(): Int = 0
+
+    override fun writeToParcel(dest: Parcel, flags: Int) {
+        dest.writeString(fullname)
+        dest.writeString(mnemonic)
+        dest.writeInt(smallestFraction)
+        dest.writeLong(id)
+        dest.writeString(uid)
+        dest.writeString(namespace)
+        dest.writeString(localSymbol)
+    }
 
     /**
      * Returns the full name of the currency, or the currency code if there is no full name
@@ -138,6 +170,7 @@ class Commodity(
         const val COMMODITY_CURRENCY = "CURRENCY"
         const val COMMODITY_ISO4217 = "ISO4217"
         const val TEMPLATE = "template"
+        const val DEFAULT_SMALLEST_FRACTION = 100
 
         /**
          * ISO 4217 currency code for "No Currency"
@@ -145,25 +178,25 @@ class Commodity(
         const val NO_CURRENCY_CODE = "XXX"
 
         @JvmField
-        var USD = Commodity("", "USD", 100)
+        var USD = Commodity("US Dollar", "USD", DEFAULT_SMALLEST_FRACTION)
 
         @JvmField
-        var EUR = Commodity("", "EUR", 100)
+        var EUR = Commodity("Euro", "EUR", DEFAULT_SMALLEST_FRACTION)
 
         @JvmField
-        var GBP = Commodity("", "GBP", 100)
+        var GBP = Commodity("Pound Sterling", "GBP", DEFAULT_SMALLEST_FRACTION)
 
         @JvmField
-        var CHF = Commodity("", "CHF", 100)
+        var CHF = Commodity("Swiss Franc", "CHF", DEFAULT_SMALLEST_FRACTION)
 
         @JvmField
-        var CAD = Commodity("", "CAD", 100)
+        var CAD = Commodity("Canadian Dollar", "CAD", DEFAULT_SMALLEST_FRACTION)
 
         @JvmField
-        var JPY = Commodity("", "JPY", 1)
+        var JPY = Commodity("Yen", "JPY", 1)
 
         @JvmField
-        var AUD = Commodity("", "AUD", 100)
+        var AUD = Commodity("Australian Dollar", "AUD", DEFAULT_SMALLEST_FRACTION)
 
         /**
          * Default commodity for device locale
@@ -177,6 +210,13 @@ class Commodity(
             USD.mnemonic,
             USD.smallestFraction
         ) //this value is a stub. Will be overwritten when the app is launched
+
+        @JvmField
+        val template = Commodity(TEMPLATE, TEMPLATE, 1).apply {
+            namespace = TEMPLATE
+            cusip = TEMPLATE
+            localSymbol = TEMPLATE
+        }
 
         /**
          * Returns an instance of commodity for the specified currencyCode
@@ -210,9 +250,34 @@ class Commodity(
             }
             return "$currencyCode ($name)"
         }
+
+        @JvmField
+        val CREATOR = object : Parcelable.Creator<Commodity> {
+            override fun createFromParcel(parcel: Parcel): Commodity {
+                return Commodity(parcel)
+            }
+
+            override fun newArray(size: Int): Array<Commodity?> {
+                return arrayOfNulls(size)
+            }
+        }
     }
 
     fun formatListItem(): String {
         return formatListItem(currencyCode, fullname)
+    }
+}
+
+fun Parcel.writeCommodity(value: Commodity?, flags: Int) {
+    writeParcelable(value, flags)
+}
+
+fun Parcel.readCommodity(): Commodity? {
+    val clazz = Commodity::class.java
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        readParcelable(clazz.classLoader, clazz)
+    } else {
+        @Suppress("DEPRECATION")
+        readParcelable(clazz.classLoader)
     }
 }

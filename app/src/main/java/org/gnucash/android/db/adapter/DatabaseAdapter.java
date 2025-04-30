@@ -32,7 +32,6 @@ import org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import org.gnucash.android.db.DatabaseSchema.CommonColumns;
 import org.gnucash.android.db.DatabaseSchema.SplitEntry;
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry;
-import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.BaseModel;
 import org.gnucash.android.util.TimestampHelper;
 
@@ -40,6 +39,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import timber.log.Timber;
 
@@ -67,6 +68,9 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
 
     protected volatile SQLiteStatement mInsertStatement;
 
+    protected final Map<String, Model> cache = new ConcurrentHashMap<>();
+    protected final boolean isCached;
+
     public enum UpdateMethod {
         insert, update, replace
     }
@@ -77,9 +81,19 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @param db SQLiteDatabase object
      */
     public DatabaseAdapter(@NonNull SQLiteDatabase db, @NonNull String tableName, @NonNull String[] columns) {
+        this(db, tableName, columns, false);
+    }
+
+    /**
+     * Opens the database adapter with an existing database
+     *
+     * @param db SQLiteDatabase object
+     */
+    public DatabaseAdapter(SQLiteDatabase db, @NonNull String tableName, @NonNull String[] columns, boolean isCached) {
         this.mTableName = tableName;
         this.mDb = db;
         this.mColumns = columns;
+        this.isCached = isCached;
         if (!db.isOpen()) {
             throw new IllegalArgumentException("Database not open.");
         }
@@ -139,6 +153,8 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
             + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID + " , "
             + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_NAME + " AS "
             + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_NAME + " , "
+            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_COMMODITY_UID + " AS "
+            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_COMMODITY_UID + " , "
             + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_CURRENCY + " AS "
             + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_CURRENCY + " , "
             + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " AS "
@@ -251,6 +267,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
                 }
                 break;
         }
+        if (isCached) cache.put(model.getUID(), model);
     }
 
     /**
@@ -452,12 +469,17 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @throws IllegalArgumentException if the record UID does not exist in thd database
      */
     public Model getRecord(@NonNull String uid) {
+        if (isCached) {
+            Model model = cache.get(uid);
+            if (model != null) return model;
+        }
         Timber.v("Fetching record from %s with UID %s", mTableName, uid);
-
         Cursor cursor = fetchRecord(uid);
         try {
             if (cursor.moveToFirst()) {
-                return buildModelInstance(cursor);
+                Model model = buildModelInstance(cursor);
+                if (isCached) cache.put(uid, model);
+                return model;
             } else {
                 throw new IllegalArgumentException("Record with " + uid + " does not exist");
             }
@@ -495,7 +517,11 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
         try {
             if (cursor.moveToFirst()) {
                 do {
-                    records.add(buildModelInstance(cursor));
+                    Model model = buildModelInstance(cursor);
+                    records.add(model);
+                    if (isCached) {
+                        cache.put(model.getUID(), model);
+                    }
                 } while (cursor.moveToNext());
             }
         } finally {
@@ -592,6 +618,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @return Number of deleted records
      */
     public int deleteAllRecords() {
+        cache.clear();
         return mDb.delete(mTableName, null, null);
     }
 
@@ -603,6 +630,10 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @throws IllegalArgumentException if the GUID does not exist in the database
      */
     public long getID(@NonNull String uid) {
+        if (isCached) {
+            Model model = cache.get(uid);
+            if (model != null) return model.id;
+        }
         Cursor cursor = mDb.query(mTableName,
             new String[]{DatabaseSchema.CommonColumns._ID},
             DatabaseSchema.CommonColumns.COLUMN_UID + " = ?",
@@ -629,42 +660,23 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @throws IllegalArgumentException if the record ID does not exist in the database
      */
     public String getUID(long id) {
+        if (isCached) {
+            for (Model model : cache.values()) {
+                if (model.id == id) {
+                    return model.getUID();
+                }
+            }
+        }
         Cursor cursor = mDb.query(mTableName,
             new String[]{DatabaseSchema.CommonColumns.COLUMN_UID},
             DatabaseSchema.CommonColumns._ID + " = " + id,
             null, null, null, null);
 
-        final String uid;
         try {
             if (cursor.moveToFirst()) {
-                uid = cursor.getString(0);
+                return cursor.getString(0);
             } else {
                 throw new IllegalArgumentException(mTableName + " Record ID " + id + " does not exist in the db");
-            }
-        } finally {
-            cursor.close();
-        }
-        return uid;
-    }
-
-    /**
-     * Returns the commodity GUID for the given ISO 4217 currency code
-     *
-     * @param currencyCode ISO 4217 currency code
-     * @return GUID of commodity
-     */
-    public String getCommodityUID(String currencyCode) {
-        String where = DatabaseSchema.CommodityEntry.COLUMN_MNEMONIC + "= ?";
-        String[] whereArgs = new String[]{currencyCode};
-
-        Cursor cursor = mDb.query(DatabaseSchema.CommodityEntry.TABLE_NAME,
-            new String[]{DatabaseSchema.CommodityEntry.COLUMN_UID},
-            where, whereArgs, null, null, null);
-        try {
-            if (cursor.moveToNext()) {
-                return cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.CommodityEntry.COLUMN_UID));
-            } else {
-                throw new IllegalArgumentException("Currency code not found in commodities");
             }
         } finally {
             cursor.close();
@@ -680,6 +692,16 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @return Number of records affected
      */
     protected int updateRecord(String tableName, long recordId, String columnKey, String newValue) {
+        if (isCached) {
+            String uid = null;
+            for (Model model : cache.values()) {
+                if (model.id == recordId) {
+                    uid = model.getUID();
+                    break;
+                }
+            }
+            if (uid != null) cache.remove(uid);
+        }
         ContentValues contentValues = new ContentValues();
         if (newValue == null) {
             contentValues.putNull(columnKey);
@@ -699,6 +721,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @return Number of records affected
      */
     public int updateRecord(@NonNull String uid, @NonNull String columnKey, String newValue) {
+        if (isCached) cache.remove(uid);
         return updateRecords(CommonColumns.COLUMN_UID + "=?", new String[]{uid}, columnKey, newValue);
     }
 
@@ -710,6 +733,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @return Number of records updated
      */
     public int updateRecord(@NonNull String uid, @NonNull ContentValues contentValues) {
+        if (isCached) cache.remove(uid);
         return mDb.update(mTableName, contentValues, CommonColumns.COLUMN_UID + "=?", new String[]{uid});
     }
 
@@ -745,6 +769,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @see #deleteRecord(long)
      */
     public boolean deleteRecord(@NonNull String uid) throws SQLException {
+        if (isCached) cache.remove(uid);
         return deleteRecord(getID(uid));
     }
 
@@ -872,6 +897,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
         if (mDb.isOpen()) {
             mDb.close();
         }
+        cache.clear();
     }
 
     public void closeQuietly() {

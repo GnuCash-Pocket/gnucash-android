@@ -48,7 +48,9 @@ import java.util.List;
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class TransactionTypeSwitch extends SwitchCompat {
-    private AccountType mAccountType = AccountType.EXPENSE;
+    private AccountType mAccountType;
+    private String textCredit;
+    private String textDebit;
 
     private final List<OnCheckedChangeListener> mOnCheckedChangeListeners = new ArrayList<>();
 
@@ -57,77 +59,97 @@ public class TransactionTypeSwitch extends SwitchCompat {
 
     public TransactionTypeSwitch(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        setAccountType(AccountType.BANK);
     }
 
     public TransactionTypeSwitch(Context context, AttributeSet attrs) {
         super(context, attrs);
+        setAccountType(AccountType.BANK);
     }
 
     public TransactionTypeSwitch(Context context) {
         super(context);
+        setAccountType(AccountType.BANK);
     }
 
     public void setAccountType(AccountType accountType) {
         this.mAccountType = accountType;
-        Context context = getContext();
-        final String textOn;
-        final String textOff;
-        switch (mAccountType) {
-            case CASH:
-                textOn = context.getString(R.string.label_spend);
-                textOff = context.getString(R.string.label_receive);
-                break;
+        final boolean hasDebitBalance = accountType.hasDebitNormalBalance;
+        final Context context = getContext();
+        final String textDebit;
+        final String textCredit;
+        switch (accountType) {
             case BANK:
-                textOn = context.getString(R.string.label_withdrawal);
-                textOff = context.getString(R.string.label_deposit);
+                textDebit = context.getString(R.string.label_deposit);
+                textCredit = context.getString(R.string.label_withdrawal);
+                break;
+            case CASH:
+                textDebit = context.getString(R.string.label_receive);
+                textCredit = context.getString(R.string.label_spend);
                 break;
             case CREDIT:
-                textOn = context.getString(R.string.label_payment);
-                textOff = context.getString(R.string.label_charge);
+                textDebit = context.getString(R.string.label_payment);
+                textCredit = context.getString(R.string.label_charge);
                 break;
             case ASSET:
-            case EQUITY:
+                textDebit = context.getString(R.string.label_increase);
+                textCredit = context.getString(R.string.label_decrease);
+                break;
             case LIABILITY:
-                textOn = context.getString(R.string.label_decrease);
-                textOff = context.getString(R.string.label_increase);
-                break;
-            case INCOME:
-                textOn = context.getString(R.string.label_charge);
-                textOff = context.getString(R.string.label_income);
-                break;
-            case EXPENSE:
-                textOn = context.getString(R.string.label_rebate);
-                textOff = context.getString(R.string.label_expense);
-                break;
-            case PAYABLE:
-                textOn = context.getString(R.string.label_payment);
-                textOff = context.getString(R.string.label_bill);
-                break;
-            case RECEIVABLE:
-                textOn = context.getString(R.string.label_payment);
-                textOff = context.getString(R.string.label_invoice);
+            case TRADING:
+            case EQUITY:
+                textDebit = context.getString(R.string.label_decrease);
+                textCredit = context.getString(R.string.label_increase);
                 break;
             case STOCK:
             case MUTUAL:
-                textOn = context.getString(R.string.label_buy);
-                textOff = context.getString(R.string.label_sell);
-                break;
             case CURRENCY:
+                textDebit = context.getString(R.string.label_buy);
+                textCredit = context.getString(R.string.label_sell);
+                break;
+            case INCOME:
+                textDebit = context.getString(R.string.label_charge);
+                textCredit = context.getString(R.string.label_income);
+                break;
+            case EXPENSE:
+                textDebit = context.getString(R.string.label_expense);
+                textCredit = context.getString(R.string.label_rebate);
+                break;
+            case PAYABLE:
+                textDebit = context.getString(R.string.label_payment);
+                textCredit = context.getString(R.string.label_bill);
+                break;
+            case RECEIVABLE:
+                textDebit = context.getString(R.string.label_invoice);
+                textCredit = context.getString(R.string.label_payment);
+                break;
             case ROOT:
             default:
-                textOn = context.getString(R.string.label_debit);
-                textOff = context.getString(R.string.label_credit);
+                textDebit = context.getString(R.string.label_debit);
+                textCredit = context.getString(R.string.label_credit);
                 break;
         }
 
-        setTextOn(textOn);
+        this.textCredit = textCredit;
+        this.textDebit = textDebit;
+        final String textOff = hasDebitBalance ? textDebit : textCredit;
+        final String textOn = hasDebitBalance ? textCredit : textDebit;
         setTextOff(textOff);
+        setTextOn(textOn);
         setText(isChecked() ? textOn : textOff);
 
         TextPaint paint = getPaint();
         float widthOn = paint.measureText(textOn);
         float widthOff = paint.measureText(textOff);
         textWidthMax = round(max(widthOn, widthOff));
+    }
+
+    public String getTextCredit() {
+        return textCredit;
+    }
+
+    public String getTextDebit() {
+        return textDebit;
     }
 
     @Override
@@ -144,8 +166,7 @@ public class TransactionTypeSwitch extends SwitchCompat {
                 thumbWidth = thumbDrawable.getIntrinsicWidth() - padding.left - padding.right;
                 // Adjust left and right padding to ensure there's enough room for the
                 // thumb's padding (when present).
-                @SuppressLint("RestrictedApi")
-                final Rect inset = DrawableUtils.getOpticalBounds(thumbDrawable);
+                @SuppressLint("RestrictedApi") final Rect inset = DrawableUtils.getOpticalBounds(thumbDrawable);
                 paddingLeft = Math.max(padding.left, inset.left);
                 paddingRight = Math.max(padding.right, inset.right);
             } else {
@@ -162,7 +183,7 @@ public class TransactionTypeSwitch extends SwitchCompat {
     /**
      * Set a checked change listener to monitor the amount view and currency views and update the display (color & balance accordingly)
      *
-     * @param amountView        Amount string {@link android.widget.EditText}
+     * @param amountView       Amount string {@link android.widget.EditText}
      * @param currencyTextView Currency symbol text view
      */
     public void setAmountFormattingListener(CalculatorEditText amountView, TextView currencyTextView) {
@@ -197,10 +218,10 @@ public class TransactionTypeSwitch extends SwitchCompat {
     }
 
     public TransactionType getTransactionType() {
-        if (mAccountType.hasDebitNormalBalance()) {
-            return isChecked() ? TransactionType.CREDIT : TransactionType.DEBIT;
+        if (isChecked()) {
+            return mAccountType.hasDebitNormalBalance ? TransactionType.CREDIT : TransactionType.DEBIT;
         } else {
-            return isChecked() ? TransactionType.DEBIT : TransactionType.CREDIT;
+            return mAccountType.hasDebitNormalBalance ? TransactionType.DEBIT : TransactionType.CREDIT;
         }
     }
 
@@ -236,7 +257,7 @@ public class TransactionTypeSwitch extends SwitchCompat {
             BigDecimal amount = mAmountEditText.getValue();
             if (amount != null) {
                 if ((isChecked && amount.signum() > 0) //we switched to debit but the amount is +ve
-                        || (!isChecked && amount.signum() < 0)) { //credit but amount is -ve
+                    || (!isChecked && amount.signum() < 0)) { //credit but amount is -ve
                     mAmountEditText.setValue(amount.negate());
                 }
 

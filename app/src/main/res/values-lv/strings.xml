@@ -32,8 +32,8 @@
     <string name="label_transaction_amount">Amount</string>
     <string name="title_add_transaction">New transaction</string>
     <string name="label_no_transactions">No transactions to display</string>
-    <string name="label_debit">DEBIT</string>
-    <string name="label_credit">CREDIT</string>
+    <string name="label_debit">Debit</string>
+    <string name="label_credit">Credit</string>
     <string name="title_accounts">Accounts</string>
     <string name="title_transactions">Transactions</string>
     <string name="menu_delete">Delete</string>

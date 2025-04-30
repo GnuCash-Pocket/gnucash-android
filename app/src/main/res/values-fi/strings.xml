@@ -32,8 +32,8 @@
     <string name="label_transaction_amount">Summa</string>
     <string name="title_add_transaction">Uusi tapahtuma</string>
     <string name="label_no_transactions">Ei näytettäviä tapahtumia</string>
-    <string name="label_debit">VELOITUS</string>
-    <string name="label_credit">HYVITYS</string>
+    <string name="label_debit">Veloitus</string>
+    <string name="label_credit">Hyvitys</string>
     <string name="title_accounts">Tilit</string>
     <string name="title_transactions">Tapahtumat</string>
     <string name="menu_delete">Poista</string>

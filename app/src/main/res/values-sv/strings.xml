@@ -32,7 +32,7 @@
     <string name="label_transaction_amount">Belopp</string>
     <string name="title_add_transaction">Lägg till transaktion</string>
     <string name="label_no_transactions">Inga transaktioner att visa</string>
-    <string name="label_debit">DEBIT</string>
+    <string name="label_debit">Debit</string>
     <string name="label_credit">KREDIT</string>
     <string name="title_accounts">Konton</string>
     <string name="title_transactions">Transaktioner</string>

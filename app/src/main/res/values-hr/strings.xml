@@ -32,8 +32,8 @@
     <string name="label_transaction_amount">Iznos</string>
     <string name="title_add_transaction">Nova transakcija</string>
     <string name="label_no_transactions">Nema transakcija</string>
-    <string name="label_debit">DUGUJE</string>
-    <string name="label_credit">POTRAŽUJE</string>
+    <string name="label_debit">Duguje</string>
+    <string name="label_credit">Potražuje</string>
     <string name="title_accounts">Konti</string>
     <string name="title_transactions">Transakcije</string>
     <string name="menu_delete">Izbriši</string>

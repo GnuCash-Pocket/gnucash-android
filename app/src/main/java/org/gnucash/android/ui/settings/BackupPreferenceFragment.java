@@ -43,6 +43,7 @@ import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
+import androidx.preference.SwitchPreference;
 import androidx.preference.TwoStatePreference;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -54,6 +55,7 @@ import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.material.snackbar.Snackbar;
 
+import org.gnucash.android.BuildConfig;
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
@@ -97,6 +99,14 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
     @Override
     public void onCreatePreferences(Bundle bundle, String s) {
         addPreferencesFromResource(R.xml.fragment_backup_preferences);
+
+        if (BuildConfig.DEBUG) {
+            SwitchPreference delete_transaction_backup = findPreference(getString(R.string.key_delete_transaction_backup));
+            delete_transaction_backup.setChecked(false);
+
+            SwitchPreference import_book_backup = findPreference(getString(R.string.key_import_book_backup));
+            import_book_backup.setChecked(false);
+        }
     }
 
     @Override

@@ -23,7 +23,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.database.SQLException;
 import android.os.Bundle;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -154,14 +153,9 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
             }
         });
 
-        String fromCommodityUID = fromCommodity.getUID();
-        String targetCommodityUID = targetCommodity.getUID();
-        Pair<Long, Long> pricePair = pricesDbAdapter.getPrice(fromCommodityUID, targetCommodityUID);
-        if (pricePair.first > 0 && pricePair.second > 0) {
+        Price price = pricesDbAdapter.getPrice(fromCommodity, targetCommodity);
+        if (price != null && price.getValueDenom() > 0 && price.getValueDenom() > 0) {
             // a valid price exists
-            Price price = new Price(fromCommodity, targetCommodity);
-            price.setValueNum(pricePair.first);
-            price.setValueDenom(pricePair.second);
             BigDecimal priceDecimal = price.toBigDecimal();
             NumberFormat formatter = NumberFormat.getNumberInstance();
 
@@ -239,7 +233,7 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
                 binding.exchangeRateTextInputLayout.setError(getString(R.string.error_invalid_exchange_rate));
                 return;
             }
-            convertedAmount = mOriginAmount.times(rate).withCurrency(targetCommodity);
+            convertedAmount = mOriginAmount.times(rate).withCommodity(targetCommodity);
 
             price.setExchangeRate(rate);
         } else {

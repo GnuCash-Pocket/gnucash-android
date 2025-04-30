@@ -239,13 +239,13 @@ class Transaction : BaseModel {
             val commodity = this.commodity
             var imbalance = Money.createZeroInstance(commodity)
             for (split in splits) {
-                if (split.quantity!!.commodity != commodity) {
+                if (split.quantity.commodity != commodity) {
                     // this may happen when importing XML exported from GNCA before 2.0.0
                     // these transactions should only be imported from XML exported from GNC desktop
                     // so imbalance split should not be generated for them
                     return Money.createZeroInstance(commodity)
                 }
-                val amount = split.value!!
+                val amount = split.value
                 if (amount.commodity != commodity) {
                     return Money.createZeroInstance(commodity)
                 }
@@ -457,7 +457,7 @@ class Transaction : BaseModel {
             val accountUID = account.uid
             val accountType = account.accountType
             val accountCommodity = account.commodity
-            val isDebitAccount = accountType.hasDebitNormalBalance()
+            val isDebitAccount = accountType.hasDebitNormalBalance
             var balance = Money.createZeroInstance(accountCommodity)
             for (split in splits) {
                 if (split.accountUID != accountUID) continue
@@ -489,7 +489,7 @@ class Transaction : BaseModel {
             accountType: AccountType,
             shouldReduceBalance: Boolean
         ): TransactionType {
-            val type: TransactionType = if (accountType.hasDebitNormalBalance()) {
+            val type: TransactionType = if (accountType.hasDebitNormalBalance) {
                 if (shouldReduceBalance) TransactionType.CREDIT else TransactionType.DEBIT
             } else {
                 if (shouldReduceBalance) TransactionType.DEBIT else TransactionType.CREDIT
@@ -508,7 +508,7 @@ class Transaction : BaseModel {
             accountType: AccountType,
             transactionType: TransactionType
         ): Boolean {
-            return if (accountType.hasDebitNormalBalance()) {
+            return if (accountType.hasDebitNormalBalance) {
                 transactionType === TransactionType.CREDIT
             } else transactionType === TransactionType.DEBIT
         }

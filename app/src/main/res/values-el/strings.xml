@@ -32,8 +32,8 @@
     <string name="label_transaction_amount">Ποσό</string>
     <string name="title_add_transaction">Νέα συναλλαγή</string>
     <string name="label_no_transactions">Δεν υπάρχουν συναλλαγές για εμφάνιση</string>
-    <string name="label_debit">ΧΡΕΩΣΗ</string>
-    <string name="label_credit">ΠΙΣΤΩΣΗ</string>
+    <string name="label_debit">Χρεωση</string>
+    <string name="label_credit">Πιστωση</string>
     <string name="title_accounts">Λογαριασμοί</string>
     <string name="title_transactions">Συναλλαγές</string>
     <string name="menu_delete">ΔΙΑΓΡΑΦΗ</string>
