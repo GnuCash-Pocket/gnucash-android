@@ -17,7 +17,7 @@
 package org.gnucash.android.ui.settings;
 
 import static org.gnucash.android.util.DocumentExtKt.chooseDocument;
-import static org.gnucash.android.util.DocumentExtKt.openDocument;
+import static org.gnucash.android.util.DocumentExtKt.openBook;
 
 import android.app.Activity;
 import android.content.Context;
@@ -184,7 +184,7 @@ public class BookManagerFragment extends ListFragment implements
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == REQUEST_OPEN_DOCUMENT) {
-                openDocument(requireActivity(), data);
+                openBook(requireActivity(), data);
                 return;
             }
         }

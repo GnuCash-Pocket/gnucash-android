@@ -1,13 +1,11 @@
 package org.gnucash.android.util
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import org.gnucash.android.R
-import org.gnucash.android.app.takePersistableUriPermission
 import org.gnucash.android.importer.ImportBookCallback
 import org.gnucash.android.ui.account.AccountsActivity.importXmlFileFromIntent
 import timber.log.Timber
@@ -69,17 +67,12 @@ fun Fragment.chooseDocument(requestCode: Int) {
     }
 }
 
-@SuppressLint("WrongConstant")
 @JvmOverloads
-fun openDocument(activity: Activity, data: Intent?, onFinishTask: ImportBookCallback? = null) {
+fun openBook(activity: Activity, data: Intent?, onFinishTask: ImportBookCallback? = null) {
     val uri = data?.data
     if (uri == null) {
         Timber.w("Document location expected!")
         return
     }
-    val takeFlags =
-        data.flags and (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-    activity.contentResolver.takePersistableUriPermission(uri, takeFlags)
     importXmlFileFromIntent(activity, data, onFinishTask)
-    activity.takePersistableUriPermission(data)
 }

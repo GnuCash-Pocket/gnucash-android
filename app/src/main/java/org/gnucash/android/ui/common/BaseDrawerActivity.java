@@ -16,7 +16,7 @@
 package org.gnucash.android.ui.common;
 
 import static org.gnucash.android.util.DocumentExtKt.chooseDocument;
-import static org.gnucash.android.util.DocumentExtKt.openDocument;
+import static org.gnucash.android.util.DocumentExtKt.openBook;
 
 import android.app.Activity;
 import android.content.Context;
@@ -314,7 +314,7 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
             case AccountsActivity.REQUEST_PICK_ACCOUNTS_FILE:
             case BaseDrawerActivity.REQUEST_OPEN_DOCUMENT: //this uses the Storage Access Framework
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    openDocument(this, data);
+                    openBook(this, data);
                 }
                 break;
             default:

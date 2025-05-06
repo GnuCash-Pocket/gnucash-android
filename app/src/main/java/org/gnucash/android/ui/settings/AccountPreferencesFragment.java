@@ -16,7 +16,7 @@
 
 package org.gnucash.android.ui.settings;
 
-import static org.gnucash.android.util.DocumentExtKt.openDocument;
+import static org.gnucash.android.util.DocumentExtKt.openBook;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -49,7 +49,6 @@ import org.gnucash.android.export.Exporter;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.ui.account.AccountsActivity;
 import org.gnucash.android.ui.settings.dialog.DeleteAllAccountsConfirmationDialog;
-import org.gnucash.android.util.DocumentExtKt;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -230,7 +229,7 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
         switch (requestCode) {
             case AccountsActivity.REQUEST_PICK_ACCOUNTS_FILE:
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    openDocument(activity, data);
+                    openBook(activity, data);
                 }
                 break;
 
