@@ -5,6 +5,8 @@ import static org.junit.Assert.fail;
 
 import android.database.sqlite.SQLiteDatabase;
 
+import androidx.annotation.NonNull;
+
 import org.gnucash.android.BuildConfig;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHelper;
@@ -103,5 +105,59 @@ public abstract class BookHelperTest extends GnuCashTest {
             mImportedDb.close();
             mImportedDb = null;
         }
+    }
+
+    private String removeTag(@NonNull String xml, @NonNull String tag) {
+        String tagStart1 = "<" + tag + ">\n";
+        String tagStart2 = "<" + tag + ">";
+        String tagStart3 = "<" + tag + "\n";
+        String tagStart4 = "<" + tag + " ";
+        String tagEnd1 = "</" + tag + ">\n";
+        String tagEnd2 = "</" + tag + ">";
+        int indexStart = xml.indexOf(tagStart1);
+        if (indexStart < 0) {
+            indexStart = xml.indexOf(tagStart2);
+            if (indexStart < 0) {
+                indexStart = xml.indexOf(tagStart3);
+                if (indexStart < 0) {
+                    indexStart = xml.indexOf(tagStart4);
+                }
+            }
+        }
+        while (indexStart > 0) {
+            if (Character.isSpaceChar(xml.charAt(indexStart - 1))) {
+                indexStart--;
+            } else {
+                break;
+            }
+        }
+        String tagEnd = tagEnd1;
+        int indexEnd = xml.indexOf(tagEnd, indexStart + 1);
+        if (indexEnd < 0) {
+            tagEnd = tagEnd2;
+            indexEnd = xml.indexOf(tagEnd, indexStart + 1);
+        }
+        return xml.substring(0, indexStart) + xml.substring(indexEnd + tagEnd.length());
+    }
+
+    private String insideTag(@NonNull String xml, @NonNull String tag) {
+        String tagStart = "<" + tag + ">";
+        String tagStartLF = "<" + tag + "\n";
+        String tagStartSP = "<" + tag + " ";
+        String tagEnd = "</" + tag + ">";
+        int indexStart = xml.indexOf(tagStart);
+        if (indexStart < 0) {
+            indexStart = xml.indexOf(tagStartLF);
+            if (indexStart < 0) {
+                indexStart = xml.indexOf(tagStartSP);
+            }
+        }
+        indexStart = xml.indexOf('>', indexStart + 1);
+        int indexEnd = xml.indexOf(tagEnd, indexStart + 1);
+        return xml.substring(indexStart, indexEnd);
+    }
+
+    protected String insideRoot(@NonNull String xml) {
+        return insideTag(xml, "gnc-v2");
     }
 }

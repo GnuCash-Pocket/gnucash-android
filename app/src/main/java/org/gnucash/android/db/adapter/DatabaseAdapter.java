@@ -25,6 +25,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.DatabaseSchema.AccountEntry;
@@ -224,7 +225,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @param updateMethod Method to use for adding the record
      */
     public void addRecord(@NonNull final Model model, UpdateMethod updateMethod) throws SQLException {
-        Timber.d("Adding %s record to database: ", model.getClass().getSimpleName());
+        Timber.d("Adding record to database: %s %s", model.getClass().getSimpleName(), model.getUID());
         final SQLiteStatement statement;
         switch (updateMethod) {
             case insert:
@@ -443,8 +444,13 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      */
     @NonNull
     public List<Model> getAllRecords() {
+        return getAllRecords(null, null);
+    }
+
+    @NonNull
+    public List<Model> getAllRecords(@Nullable String where, @Nullable String[] whereArgs) {
         List<Model> modelRecords = new ArrayList<>();
-        Cursor c = fetchAllRecords();
+        Cursor c = fetchAllRecords(where, whereArgs, null);
         try {
             if (c.moveToFirst()) {
                 do {
@@ -635,6 +641,29 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
         }
     }
 
+    /**
+     * Returns the currency code (according to the ISO 4217 standard) of the account
+     * with unique Identifier <code>accountUID</code>
+     *
+     * @param accountUID Unique Identifier of the account
+     * @return Currency code of the account. "" if accountUID
+     * does not exist in DB
+     */
+    public String getAccountCommodity(@NonNull String accountUID) {
+        Cursor cursor = mDb.query(DatabaseSchema.AccountEntry.TABLE_NAME,
+                new String[]{AccountEntry.COLUMN_COMMODITY_UID},
+                DatabaseSchema.AccountEntry.COLUMN_UID + "= ?",
+                new String[]{accountUID}, null, null, null);
+        try {
+            if (cursor.moveToFirst()) {
+                return cursor.getString(0);
+            } else {
+                throw new IllegalArgumentException("Account " + accountUID + " does not exist");
+            }
+        } finally {
+            cursor.close();
+        }
+    }
 
     /**
      * Returns the commodity GUID for the given ISO 4217 currency code
@@ -828,6 +857,15 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      */
     public long getRecordsCount() {
         return DatabaseUtils.queryNumEntries(mDb, mTableName);
+    }
+
+    /**
+     * Returns the number of records in the database table backed by this adapter
+     *
+     * @return Total number of records in the database
+     */
+    public long getRecordsCount(String where, String[] whereArgs) {
+        return DatabaseUtils.queryNumEntries(mDb, mTableName, where, whereArgs);
     }
 
     /**

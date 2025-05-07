@@ -219,7 +219,7 @@ public class AccountsDbAdapterTest extends GnuCashTest {
         List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList();
         assertThat(accounts).extracting("accountType").contains(AccountType.ROOT);
 
-        String rootAccountUID = mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID();
+        String rootAccountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
         assertThat(rootAccountUID).isEqualTo(accounts.get(1).getParentUID());
     }
 
@@ -370,7 +370,10 @@ public class AccountsDbAdapterTest extends GnuCashTest {
 
         List<Account> accounts = mAccountsDbAdapter.getAllRecords();
         assertThat(accounts).hasSize(3);
-        assertThat(accounts).extracting("_uid").contains(uid);
+        assertThat(accounts.get(0).getFullName()).isEqualTo("Assets");
+        assertThat(accounts.get(1).getFullName()).isEqualTo("Assets:Current Assets");
+        assertThat(accounts.get(2).getFullName()).isEqualTo("Assets:Current Assets:Cash in Wallet");
+        assertThat(accounts).extracting("uid").contains(uid);
     }
 
     @Test

@@ -37,7 +37,6 @@ import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.export.ExportAsyncTask;
 import org.gnucash.android.export.ExportParams;
-import org.gnucash.android.model.Book;
 import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.util.BackupManager;
@@ -99,26 +98,26 @@ public class ScheduledActionService {
 
     private void processScheduledBooks(@NonNull Context context) {
         BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
-        List<Book> books = booksDbAdapter.getAllRecords();
-        for (Book book : books) { //// TODO: 20.04.2017 Retrieve only the book UIDs with new method
-            processScheduledBook(context, book);
+        List<String> bookUIDs = booksDbAdapter.getAllBookUIDs();
+        for (String bookUID : bookUIDs) { //// TODO: 20.04.2017 Retrieve only the book UIDs with new method
+            processScheduledBook(context, bookUID);
         }
     }
 
-    private void processScheduledBook(@NonNull Context context, @NonNull Book book) {
+    private void processScheduledBook(@NonNull Context context, @NonNull String bookUID) {
         final String activeBookUID = GnuCashApplication.getActiveBookUID();
-        DatabaseHelper dbHelper = new DatabaseHelper(context, book.getUID());
+        DatabaseHelper dbHelper = new DatabaseHelper(context, bookUID);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(db);
         ScheduledActionDbAdapter scheduledActionDbAdapter = new ScheduledActionDbAdapter(db, recurrenceDbAdapter);
 
         List<ScheduledAction> scheduledActions = scheduledActionDbAdapter.getAllEnabledScheduledActions();
         Timber.i("Processing %d total scheduled actions for Book: %s",
-            scheduledActions.size(), book.getDisplayName());
-        processScheduledActions(context, scheduledActions, db);
+            scheduledActions.size(), bookUID);
+        processScheduledActions(context, bookUID, scheduledActions, db);
 
         //close all databases except the currently active database
-        if (!book.getUID().equals(activeBookUID)) {
+        if (!bookUID.equals(activeBookUID)) {
             dbHelper.close();
         }
     }
@@ -131,9 +130,14 @@ public class ScheduledActionService {
      */
     //made public static for testing. Do not call these methods directly
     @VisibleForTesting
-    static void processScheduledActions(@NonNull Context context, List<ScheduledAction> scheduledActions, SQLiteDatabase db) {
+    static void processScheduledActions(
+        @NonNull Context context,
+        @NonNull String bookUID,
+        @NonNull List<ScheduledAction> scheduledActions,
+        @NonNull SQLiteDatabase db
+    ) {
         for (ScheduledAction scheduledAction : scheduledActions) {
-            processScheduledAction(context, scheduledAction, db);
+            processScheduledAction(context, bookUID, scheduledAction, db);
         }
     }
 
@@ -144,8 +148,8 @@ public class ScheduledActionService {
      */
     //made public static for testing. Do not call these methods directly
     @VisibleForTesting
-    static void processScheduledAction(@NonNull ScheduledAction scheduledAction, SQLiteDatabase db) {
-        processScheduledAction(GnuCashApplication.getAppContext(), scheduledAction, db);
+    static void processScheduledAction(@NonNull String bookUID, @NonNull ScheduledAction scheduledAction, @NonNull SQLiteDatabase db) {
+        processScheduledAction(GnuCashApplication.getAppContext(), bookUID, scheduledAction, db);
     }
 
     /**
@@ -156,10 +160,10 @@ public class ScheduledActionService {
      */
     //made public static for testing. Do not call these methods directly
     @VisibleForTesting
-    static void processScheduledAction(@NonNull Context context, @NonNull ScheduledAction scheduledAction, SQLiteDatabase db) {
+    static void processScheduledAction(@NonNull Context context, @NonNull String bookUID, @NonNull ScheduledAction scheduledAction, @NonNull SQLiteDatabase db) {
         long now = System.currentTimeMillis();
         int totalPlannedExecutions = scheduledAction.getTotalPlannedExecutionCount();
-        int executionCount = scheduledAction.getExecutionCount();
+        int executionCount = scheduledAction.getInstanceCount();
 
         //the end time of the ScheduledAction is not handled here because
         //it is handled differently for transactions and backups. See the individual methods.
@@ -170,7 +174,7 @@ public class ScheduledActionService {
             return;
         }
 
-        executeScheduledEvent(context, scheduledAction, db);
+        executeScheduledEvent(context, bookUID, scheduledAction, db);
     }
 
     /**
@@ -179,8 +183,8 @@ public class ScheduledActionService {
      * @param context         The application context.
      * @param scheduledAction ScheduledEvent to be executed
      */
-    private static void executeScheduledEvent(@NonNull Context context, ScheduledAction scheduledAction, SQLiteDatabase db) {
-        Timber.i("Executing scheduled action: %s", scheduledAction.toString());
+    private static void executeScheduledEvent(@NonNull Context context, @NonNull String bookUID, @NonNull ScheduledAction scheduledAction, @NonNull SQLiteDatabase db) {
+        Timber.i("Executing scheduled action: %s", scheduledAction);
         int executionCount = 0;
 
         switch (scheduledAction.getActionType()) {
@@ -189,7 +193,7 @@ public class ScheduledActionService {
                 break;
 
             case BACKUP:
-                executionCount += executeBackup(context, scheduledAction, GnuCashApplication.getActiveBookUID());
+                executionCount += executeBackup(context, scheduledAction, bookUID);
                 break;
         }
 
@@ -198,15 +202,16 @@ public class ScheduledActionService {
             // Set the execution count in the object because it will be checked
             // for the next iteration in the calling loop.
             // This call is important, do not remove!!
-            scheduledAction.setExecutionCount(scheduledAction.getExecutionCount() + executionCount);
+            scheduledAction.setInstanceCount(scheduledAction.getInstanceCount() + executionCount);
             // Update the last run time and execution count
             ContentValues contentValues = new ContentValues();
             contentValues.put(DatabaseSchema.ScheduledActionEntry.COLUMN_LAST_RUN,
                 scheduledAction.getLastRunTime());
             contentValues.put(DatabaseSchema.ScheduledActionEntry.COLUMN_EXECUTION_COUNT,
-                scheduledAction.getExecutionCount());
-            db.update(DatabaseSchema.ScheduledActionEntry.TABLE_NAME, contentValues,
-                DatabaseSchema.ScheduledActionEntry.COLUMN_UID + "=?", new String[]{scheduledAction.getUID()});
+                scheduledAction.getInstanceCount());
+            String where = DatabaseSchema.ScheduledActionEntry.COLUMN_UID + "=?";
+            String[] whereArgs = new String[]{scheduledAction.getUID()};
+            db.update(DatabaseSchema.ScheduledActionEntry.TABLE_NAME, contentValues, where, whereArgs);
         }
     }
 
@@ -229,6 +234,7 @@ public class ScheduledActionService {
         Integer result = null;
         try {
             //wait for async task to finish before we proceed (we are holding a wake lock)
+            //TODO use exporter directly, and not "async"
             result = new ExportAsyncTask(context, bookUID).execute(params).get();
         } catch (InterruptedException | ExecutionException e) {
             Timber.e(e);
@@ -298,7 +304,7 @@ public class ScheduledActionService {
         int totalPlannedExecutions = scheduledAction.getTotalPlannedExecutionCount();
         List<Transaction> transactions = new ArrayList<>();
 
-        int previousExecutionCount = scheduledAction.getExecutionCount(); // We'll modify it
+        int previousExecutionCount = scheduledAction.getInstanceCount(); // We'll modify it
         //we may be executing scheduled action significantly after scheduled time (depending on when Android fires the alarm)
         //so compute the actual transaction time from pre-known values
         long transactionTime = scheduledAction.computeNextCountBasedScheduledExecutionTime();
@@ -307,7 +313,7 @@ public class ScheduledActionService {
             recurringTrxn.setTime(transactionTime);
             transactions.add(recurringTrxn);
             recurringTrxn.setScheduledActionUID(scheduledAction.getUID());
-            scheduledAction.setExecutionCount(++executionCount); //required for computingNextScheduledExecutionTime
+            scheduledAction.setInstanceCount(++executionCount); //required for computingNextScheduledExecutionTime
 
             if (totalPlannedExecutions > 0 && executionCount >= totalPlannedExecutions)
                 break; //if we hit the total planned executions set, then abort
@@ -316,7 +322,7 @@ public class ScheduledActionService {
 
         transactionsDbAdapter.bulkAddRecords(transactions, DatabaseAdapter.UpdateMethod.insert);
         // Be nice and restore the parameter's original state to avoid confusing the callers
-        scheduledAction.setExecutionCount(previousExecutionCount);
+        scheduledAction.setInstanceCount(previousExecutionCount);
         return executionCount;
     }
 }

@@ -430,14 +430,14 @@
     </string-array>
     <string-array name="csv_account_headers">
         <item>סוג</item>
-        <item>שם מלא</item>
-        <item>שם</item>
-        <item>קוד</item>
+        <item>שם חשבון מלא</item>
+        <item>שם חשבון</item>
+        <item>קוד חשבון</item>
         <item>תיאור</item>
-        <item>צבע</item>
+        <item>צבע חשבון</item>
         <item>הערות</item>
-        <item>מצרך</item>
-        <item>סחורה</item>
+        <item>אות</item>
+        <item>מרחב שמות</item>
         <item>נסתר</item>
         <item>מס</item>
         <item>מחזיק מקום</item>

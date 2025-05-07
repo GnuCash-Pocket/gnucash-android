@@ -73,7 +73,8 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
                 SplitEntry.COLUMN_RECONCILE_STATE,
                 SplitEntry.COLUMN_RECONCILE_DATE,
                 SplitEntry.COLUMN_ACCOUNT_UID,
-                SplitEntry.COLUMN_TRANSACTION_UID
+                SplitEntry.COLUMN_TRANSACTION_UID,
+                SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID
         });
         this.commoditiesDbAdapter = commoditiesDbAdapter;
     }
@@ -102,17 +103,17 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
      * @param split {@link org.gnucash.android.model.Split} to be recorded in DB
      */
     public void addRecord(@NonNull final Split split, UpdateMethod updateMethod) {
-        Timber.d("Replace transaction split in db");
+        Timber.d("%s split to the db", updateMethod.name());
         super.addRecord(split, updateMethod);
 
-        long transactionId = getTransactionID(split.getTransactionUID());
-        //when a split is updated, we want mark the transaction as not exported
-        updateRecord(TransactionEntry.TABLE_NAME, transactionId,
-                TransactionEntry.COLUMN_EXPORTED, String.valueOf(0));
+        if (updateMethod != UpdateMethod.insert) {
+            long transactionId = getTransactionID(split.getTransactionUID());
+            //when a split is updated, we want mark the transaction as not exported
+            updateRecord(TransactionEntry.TABLE_NAME, transactionId, TransactionEntry.COLUMN_EXPORTED, String.valueOf(0));
 
-        //modifying a split means modifying the accompanying transaction as well
-        updateRecord(TransactionEntry.TABLE_NAME, transactionId,
-                TransactionEntry.COLUMN_MODIFIED_AT, TimestampHelper.getUtcStringFromTimestamp(TimestampHelper.getTimestampFromNow()));
+            //modifying a split means modifying the accompanying transaction as well
+            updateRecord(TransactionEntry.TABLE_NAME, transactionId, TransactionEntry.COLUMN_MODIFIED_AT, TimestampHelper.getUtcStringFromTimestamp(TimestampHelper.getTimestampFromNow()));
+        }
     }
 
     @Override
@@ -133,7 +134,10 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
         stmt.bindString(9, TimestampHelper.getUtcStringFromTimestamp(split.getReconcileDate()));
         stmt.bindString(10, split.getAccountUID());
         stmt.bindString(11, split.getTransactionUID());
-        stmt.bindString(12, split.getUID());
+        if (split.getScheduledActionAccountUID() != null) {
+            stmt.bindString(12, split.getScheduledActionAccountUID());
+        }
+        stmt.bindString(13, split.getUID());
 
         return stmt;
     }
@@ -156,11 +160,19 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
         String memo = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_MEMO));
         String reconcileState = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_RECONCILE_STATE));
         String reconcileDate = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_RECONCILE_DATE));
+        String schedxAccountUID = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID));
 
-        String transactionCurrency = getAttribute(TransactionEntry.TABLE_NAME, transxUID, TransactionEntry.COLUMN_CURRENCY);
-        Money value = new Money(valueNum, valueDenom, transactionCurrency);
-        String currencyCode = getAccountCurrencyCode(accountUID);
-        Money quantity = new Money(quantityNum, quantityDenom, currencyCode);
+        String txCommodityUID = getAttribute(TransactionEntry.TABLE_NAME, transxUID, TransactionEntry.COLUMN_COMMODITY_UID);
+        Commodity txCommodity = commoditiesDbAdapter.getRecord(txCommodityUID);
+        Money value = new Money(valueNum, valueDenom, txCommodity);
+        final String quantityCommodityUID;
+        if (!TextUtils.isEmpty(schedxAccountUID)) {
+            quantityCommodityUID = getAccountCommodity(schedxAccountUID);
+        } else {
+            quantityCommodityUID = getAccountCommodity(accountUID);
+        }
+        Commodity quantityCommodity = commoditiesDbAdapter.getRecord(quantityCommodityUID);
+        Money quantity = new Money(quantityNum, quantityDenom, quantityCommodity);
 
         Split split = new Split(value, accountUID);
         populateBaseModelAttributes(cursor, split);
@@ -169,8 +181,10 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
         split.setType(TransactionType.valueOf(typeName));
         split.setMemo(memo);
         split.setReconcileState(reconcileState.charAt(0));
-        if (reconcileDate != null && !reconcileDate.isEmpty())
+        if (reconcileDate != null && !reconcileDate.isEmpty()) {
             split.setReconcileDate(TimestampHelper.getTimestampFromUtcString(reconcileDate));
+        }
+        split.setScheduledActionAccountUID(schedxAccountUID);
 
         return split;
     }
@@ -352,10 +366,10 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
      */
     public Cursor fetchSplitsForTransaction(String transactionUID) {
         Timber.v("Fetching all splits for transaction UID %s", transactionUID);
-        return mDb.query(SplitEntry.TABLE_NAME,
-                null, SplitEntry.COLUMN_TRANSACTION_UID + " = ?",
-                new String[]{transactionUID},
-                null, null, null);
+        String where = SplitEntry.COLUMN_TRANSACTION_UID + " = ?";
+        String[] whereArgs = new String[]{transactionUID};
+        String orderBy = SplitEntry.COLUMN_TYPE + " ASC";
+        return mDb.query(mTableName, null, where, whereArgs, null, null, orderBy);
     }
 
     /**

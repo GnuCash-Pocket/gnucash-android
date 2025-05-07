@@ -261,7 +261,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
             actionBar.setTitle(R.string.title_create_account);
         }
 
-        mRootAccountUID = mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID();
+        mRootAccountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
         if (mRootAccountUID != null)
             mRootAccountId = mAccountsDbAdapter.getID(mRootAccountUID);
 
@@ -310,6 +310,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
 
         setTextToEnd(mBinding.inputAccountName, account.getName());
         mBinding.inputAccountDescription.setText(account.getDescription());
+        mBinding.notes.setText(account.getNote());
 
         if (mUseDoubleEntry) {
             if (account.getDefaultTransferAccountUID() != null) {
@@ -317,7 +318,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
                 setDefaultTransferAccountSelection(doubleDefaultAccountId, true);
             } else {
                 String currentAccountUID = account.getParentUID();
-                String rootAccountUID = mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID();
+                String rootAccountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
                 while (!currentAccountUID.equals(rootAccountUID)) {
                     long defaultTransferAccountID = mAccountsDbAdapter.getDefaultTransferAccountID(mAccountsDbAdapter.getID(currentAccountUID));
                     if (defaultTransferAccountID > 0) {
@@ -329,8 +330,9 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
             }
         }
 
-        mBinding.checkboxPlaceholderAccount.setChecked(account.isPlaceholderAccount());
+        mBinding.placeholderStatus.setChecked(account.isPlaceholder());
         mBinding.favoriteStatus.setChecked(account.isFavorite());
+        mBinding.hiddenStatus.setChecked(account.isHidden());
         mSelectedColor = account.getColor();
         mBinding.inputColorPicker.setBackgroundColor(account.getColor());
 
@@ -507,10 +509,11 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         String condition = DatabaseSchema.AccountEntry.COLUMN_UID + " != '" + mAccountUID + "' " //when creating a new account mAccountUID is null, so don't use whereArgs
             + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0"
             + " AND " + DatabaseSchema.AccountEntry.COLUMN_HIDDEN + "=0"
-            + " AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + " != ?";
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + " != ?"
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_CURRENCY + " != ?";
+        String[] whereArgs = new String[]{AccountType.ROOT.name(), Commodity.TEMPLATE};
 
-        Cursor defaultTransferAccountCursor = mAccountsDbAdapter.fetchAccountsOrderedByFullName(condition,
-            new String[]{AccountType.ROOT.name()});
+        Cursor defaultTransferAccountCursor = mAccountsDbAdapter.fetchAccountsOrderedByFullName(condition, whereArgs);
 
         if (mBinding.inputDefaultTransferAccount.getCount() <= 0) {
             setDefaultTransferAccountInputsVisible(false);
@@ -533,7 +536,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
 
         if (mAccount != null) {  //if editing an account
             mDescendantAccountUIDs = mAccountsDbAdapter.getDescendantAccountUIDs(mAccount.getUID(), null, null);
-            String rootAccountUID = mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID();
+            String rootAccountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
             List<String> descendantAccountUIDs = new ArrayList<>(mDescendantAccountUIDs);
             if (rootAccountUID != null)
                 descendantAccountUIDs.add(rootAccountUID);
@@ -698,8 +701,10 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         mAccount.setAccountType(selectedAccountType);
 
         mAccount.setDescription(mBinding.inputAccountDescription.getText().toString());
-        mAccount.setPlaceHolderFlag(mBinding.checkboxPlaceholderAccount.isChecked());
+        mAccount.setNote(mBinding.notes.getText().toString());
+        mAccount.setPlaceholder(mBinding.placeholderStatus.isChecked());
         mAccount.setFavorite(mBinding.favoriteStatus.isChecked());
+        mAccount.setHidden(mBinding.hiddenStatus.isChecked());
         mAccount.setColor(mSelectedColor);
 
         long newParentAccountId;

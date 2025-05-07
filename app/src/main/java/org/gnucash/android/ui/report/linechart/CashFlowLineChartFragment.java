@@ -220,7 +220,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
         List<String> accountUIDList = new ArrayList<>();
         for (Account account : mAccountsDbAdapter.getSimpleAccountList()) {
             if (account.getAccountType() == accountType
-                && !account.isPlaceholderAccount()
+                && !account.isPlaceholder()
                 && account.getCommodity().equals(mCommodity)) {
                 accountUIDList.add(account.getUID());
             }

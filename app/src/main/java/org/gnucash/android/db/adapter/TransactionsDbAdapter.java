@@ -119,20 +119,23 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      */
     @Override
     public void addRecord(@NonNull Transaction transaction, UpdateMethod updateMethod) throws SQLException {
-        Timber.d("Adding transaction to the db via %s", updateMethod.name());
+        Timber.d("%s transaction to the db", updateMethod.name());
+        // Did the transaction have any splits before?
+        final boolean didChange = transaction.id != 0;
         try {
             beginTransaction();
+            super.addRecord(transaction, updateMethod);
+
             Split imbalanceSplit = transaction.createAutoBalanceSplit();
             if (imbalanceSplit != null) {
                 String imbalanceAccountUID = new AccountsDbAdapter(mDb, this)
-                        .getOrCreateImbalanceAccountUID(transaction.getCommodity());
+                    .getOrCreateImbalanceAccountUID(transaction.getCommodity());
                 imbalanceSplit.setAccountUID(imbalanceAccountUID);
             }
-            super.addRecord(transaction, updateMethod);
-
-            Timber.d("Adding splits for transaction");
-            List<String> splitUIDs = new ArrayList<>(transaction.getSplits().size());
-            for (Split split : transaction.getSplits()) {
+            List<Split> splits = transaction.getSplits();
+            Timber.d("Adding %d splits for transaction", splits.size());
+            List<String> splitUIDs = new ArrayList<>(splits.size());
+            for (Split split : splits) {
                 Timber.d("Replace transaction split in db");
                 if (imbalanceSplit == split) {
                     mSplitsDbAdapter.addRecord(split, UpdateMethod.insert);
@@ -141,13 +144,15 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
                 }
                 splitUIDs.add(split.getUID());
             }
-            Timber.d("%d splits added", transaction.getSplits().size());
+            Timber.d("%d splits added", splitUIDs.size());
 
-            long deleted = mDb.delete(SplitEntry.TABLE_NAME,
+            if (didChange) {
+                long deleted = mDb.delete(SplitEntry.TABLE_NAME,
                     SplitEntry.COLUMN_TRANSACTION_UID + " = ? AND "
-                            + SplitEntry.COLUMN_UID + " NOT IN ('" + TextUtils.join("' , '", splitUIDs) + "')",
+                        + SplitEntry.COLUMN_UID + " NOT IN ('" + TextUtils.join("','", splitUIDs) + "')",
                     new String[]{transaction.getUID()});
-            Timber.d("%d splits deleted", deleted);
+                Timber.d("%d splits deleted", deleted);
+            }
 
             setTransactionSuccessful();
         } finally {
@@ -357,8 +362,10 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         queryBuilder.setTables(TransactionEntry.TABLE_NAME);
         String startTimeString = Long.toString(timestamp.getTime());
-        return queryBuilder.query(mDb, null, TransactionEntry.COLUMN_TIMESTAMP + " >= ?",
-                new String[]{startTimeString}, null, null, TransactionEntry.COLUMN_TIMESTAMP + " ASC", null);
+        String where = TransactionEntry.COLUMN_TEMPLATE + "=0 AND " + TransactionEntry.COLUMN_TIMESTAMP + " >= ?";
+        String[] whereArgs = new String[]{startTimeString};
+        String orderBy = TransactionEntry.COLUMN_TIMESTAMP + " ASC, " + TransactionEntry.COLUMN_ID + " ASC";
+        return queryBuilder.query(mDb, null, where, whereArgs, null, null, orderBy, null);
     }
 
     public Cursor fetchTransactionsWithSplitsWithTransactionAccount(String[] columns, String where, String[] whereArgs, String orderBy) {
@@ -437,8 +444,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         String currencyCode = c.getString(c.getColumnIndexOrThrow(TransactionEntry.COLUMN_CURRENCY));
         transaction.setCommodity(commoditiesDbAdapter.getCommodity(currencyCode));
         transaction.setScheduledActionUID(c.getString(c.getColumnIndexOrThrow(TransactionEntry.COLUMN_SCHEDX_ACTION_UID)));
-        long transactionID = c.getLong(c.getColumnIndexOrThrow(TransactionEntry._ID));
-        transaction.setSplits(mSplitsDbAdapter.getSplitsForTransaction(transactionID));
+        transaction.setSplits(mSplitsDbAdapter.getSplitsForTransaction(transaction.getUID()));
 
         return transaction;
     }
@@ -625,13 +631,16 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
                 null, null, null, null, null);
 
         Timestamp timestamp = TimestampHelper.getTimestampFromNow();
-        if (cursor.moveToFirst()) {
-            String timeString = cursor.getString(0);
-            if (timeString != null) { //in case there were no transactions in the XML file (account structure only)
-                timestamp = TimestampHelper.getTimestampFromUtcString(timeString);
+        try {
+            if (cursor.moveToFirst()) {
+                String timeString = cursor.getString(0);
+                if (timeString != null) { //in case there were no transactions in the XML file (account structure only)
+                    timestamp = TimestampHelper.getTimestampFromUtcString(timeString);
+                }
             }
+        } finally {
+            cursor.close();
         }
-        cursor.close();
         return timestamp;
     }
 
@@ -659,10 +668,11 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
                 + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + " = 0";
         Cursor cursor = mDb.rawQuery(sql, new String[]{type.name(), currencyCode});
         long timestamp = 0;
-        if (cursor != null) {
+        try {
             if (cursor.moveToFirst()) {
                 timestamp = cursor.getLong(0);
             }
+        } finally {
             cursor.close();
         }
         return timestamp;

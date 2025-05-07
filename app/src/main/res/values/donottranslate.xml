@@ -267,4 +267,5 @@
         <item>@string/theme_dark</item>
         <item>@string/theme_light</item>
     </string-array>
+    <string name="hint_notes" translatable="false">@string/label_transaction_description</string>
 </resources>

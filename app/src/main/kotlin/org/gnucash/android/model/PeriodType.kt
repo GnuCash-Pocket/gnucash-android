@@ -43,7 +43,7 @@ enum class PeriodType(@JvmField val value: String) {
         @JvmStatic
         fun of(value: String): PeriodType {
             val valueLower = value.lowercase(Locale.ROOT)
-            return values().firstOrNull { it.value == valueLower } ?: ONCE
+            return values().firstOrNull { (it.value == valueLower) || (it.name == value) } ?: ONCE
         }
     }
 }

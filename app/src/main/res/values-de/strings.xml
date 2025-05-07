@@ -445,8 +445,8 @@
     <string-array name="csv_account_headers">
         <item>Typ</item>
         <item>Vollständige Bezeichnung</item>
-        <item>Name</item>
-        <item>Code</item>
+        <item>Account Name</item>
+        <item>Account Code</item>
         <item>Beschreibung</item>
         <item>Farbe</item>
         <item>Bemerkungen</item>

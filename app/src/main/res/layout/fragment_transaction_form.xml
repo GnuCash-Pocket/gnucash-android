@@ -74,7 +74,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:hint="@string/label_transaction_amount"
-                    android:nextFocusDown="@+id/input_description"
+                    android:nextFocusDown="@+id/notes"
                     android:textColor="@color/debit_red"
                     android:textSize="20sp" />
 
@@ -149,12 +149,12 @@
                     android:src="@drawable/ic_notes" />
 
                 <EditText
-                    android:id="@+id/input_description"
+                    android:id="@+id/notes"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="@null"
-                    android:hint="@string/label_transaction_description"
+                    android:hint="@string/hint_notes"
                     android:inputType="textMultiLine|textCapSentences"
                     android:singleLine="false" />
             </TableRow>
@@ -177,15 +177,6 @@
                     android:text="@string/label_tap_to_create_schedule" />
 
             </TableRow>
-
-            <CheckBox
-                android:id="@+id/checkbox_save_template"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/form_row_bottom_margin"
-                android:text="@string/label_save_template"
-                android:visibility="gone" />
-            <!-- Not exposing the transaction template checkbox to the UI at this time -->
         </TableLayout>
     </ScrollView>
 

@@ -39,7 +39,7 @@ public class CommoditiesCursorAdapter extends SimpleCursorAdapter {
 
     public CommoditiesCursorAdapter(Context context, @LayoutRes int itemLayoutResource) {
         super(context, itemLayoutResource,
-                CommoditiesDbAdapter.getInstance().fetchAllRecords(DatabaseSchema.CommodityEntry.COLUMN_MNEMONIC + " ASC"),
+                CommoditiesDbAdapter.getInstance().fetchAllRecords(DatabaseSchema.CommodityEntry.COLUMN_NAMESPACE + "!=?", new String[]{Commodity.TEMPLATE}, DatabaseSchema.CommodityEntry.COLUMN_MNEMONIC + " ASC"),
                 new String[]{DatabaseSchema.CommodityEntry.COLUMN_FULLNAME},
                 new int[]{android.R.id.text1}, 0);
     }

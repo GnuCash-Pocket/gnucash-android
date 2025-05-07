@@ -33,7 +33,6 @@ import android.widget.CompoundButton;
 import android.widget.RemoteViews;
 
 import androidx.core.content.ContextCompat;
-import androidx.preference.PreferenceManager;
 
 import org.gnucash.android.R;
 import org.gnucash.android.databinding.WidgetConfigurationBinding;
@@ -54,7 +53,6 @@ import org.gnucash.android.util.QualifiedAccountNameCursorAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import timber.log.Timber;
 
@@ -120,7 +118,7 @@ public class WidgetConfigurationActivity extends Activity {
 
                 mAccountsDbAdapter = new AccountsDbAdapter(BookDbHelper.getDatabase(bookUID));
 
-                Cursor cursor = mAccountsDbAdapter.fetchAllRecordsOrderedByFullName();
+                Cursor cursor = mAccountsDbAdapter.fetchAccountsOrderedByFavoriteAndFullName();
                 accountsAdapter.swapCursor(cursor);
 
                 int accountIndex = accountsAdapter.getItemPosition(selectedAccountUID);

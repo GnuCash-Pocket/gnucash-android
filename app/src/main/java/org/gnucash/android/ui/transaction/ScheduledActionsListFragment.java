@@ -170,7 +170,7 @@ public abstract class ScheduledActionsListFragment extends MenuFragment implemen
         protected final ListItemScheduledTrxnBinding binding;
         protected final TextView primaryTextView;
         protected final TextView descriptionTextView;
-        protected final TextView amountTextView;
+        protected final TextView rightTextView;
         protected final View menuView;
 
         private ScheduledAction scheduledAction;
@@ -181,7 +181,7 @@ public abstract class ScheduledActionsListFragment extends MenuFragment implemen
             this.refreshable = refreshable;
             primaryTextView = binding.primaryText;
             descriptionTextView = binding.secondaryText;
-            amountTextView = binding.rightText;
+            rightTextView = binding.rightText;
             menuView = binding.optionsMenu;
 
             menuView.setOnClickListener(v -> {

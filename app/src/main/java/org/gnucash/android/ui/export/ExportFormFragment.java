@@ -362,14 +362,15 @@ public class ExportFormFragment extends MenuFragment implements
         }
 
         Timber.i("Commencing async export of transactions");
-        new ExportAsyncTask(requireActivity(), GnuCashApplication.getActiveBookUID()).execute(exportParameters);
+        final String bookUID = GnuCashApplication.getActiveBookUID();
+        new ExportAsyncTask(requireActivity(), bookUID).execute(exportParameters);
 
         if (mRecurrenceRule != null) {
             DatabaseAdapter.UpdateMethod updateMethod = DatabaseAdapter.UpdateMethod.replace;
             ScheduledAction scheduledAction = mScheduledAction;
             if (scheduledAction == null) {
                 scheduledAction = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
-                scheduledAction.setActionUID(BaseModel.generateUID());
+                scheduledAction.setActionUID(bookUID);
                 updateMethod = DatabaseAdapter.UpdateMethod.insert;
             }
             scheduledAction.setRecurrence(RecurrenceParser.parse(mEventRecurrence));

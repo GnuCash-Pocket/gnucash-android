@@ -31,18 +31,13 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.model.Commodity;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.sql.SQLDataException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -74,6 +69,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + AccountEntry.COLUMN_PLACEHOLDER + " tinyint default 0, "
             + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " varchar(255), "
             + AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID + " varchar(255), "
+            + AccountEntry.COLUMN_NOTES + " text, "
             + AccountEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
             + AccountEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
             + "FOREIGN KEY (" + AccountEntry.COLUMN_COMMODITY_UID + ") REFERENCES " + CommodityEntry.TABLE_NAME + " (" + CommodityEntry.COLUMN_UID + ") "
@@ -115,6 +111,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + SplitEntry.COLUMN_TRANSACTION_UID + " varchar(255) not null, "
             + SplitEntry.COLUMN_RECONCILE_STATE + " varchar(1) not null default 'n', "
             + SplitEntry.COLUMN_RECONCILE_DATE + " timestamp not null default current_timestamp, "
+            + SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID + " varchar(255), "
             + SplitEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
             + SplitEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
             + "FOREIGN KEY (" + SplitEntry.COLUMN_ACCOUNT_UID + ") REFERENCES " + AccountEntry.TABLE_NAME + " (" + AccountEntry.COLUMN_UID + ") ON DELETE CASCADE, "
@@ -125,6 +122,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String SCHEDULED_ACTIONS_TABLE_CREATE = "CREATE TABLE " + ScheduledActionEntry.TABLE_NAME + " ("
             + ScheduledActionEntry._ID + " integer primary key autoincrement, "
             + ScheduledActionEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
+            + ScheduledActionEntry.COLUMN_NAME + " varchar(255), "
             + ScheduledActionEntry.COLUMN_ACTION_UID + " varchar(255) not null, "
             + ScheduledActionEntry.COLUMN_TYPE + " varchar(255) not null, "
             + ScheduledActionEntry.COLUMN_RECURRENCE_UID + " varchar(255) not null, "

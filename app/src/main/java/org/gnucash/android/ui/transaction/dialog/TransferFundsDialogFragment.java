@@ -239,7 +239,7 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
                 binding.exchangeRateTextInputLayout.setError(getString(R.string.error_invalid_exchange_rate));
                 return;
             }
-            convertedAmount = mOriginAmount.times(rate).withCurrency(targetCommodity);
+            convertedAmount = mOriginAmount.times(rate).withCommodity(targetCommodity);
 
             price.setExchangeRate(rate);
         } else {

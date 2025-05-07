@@ -441,16 +441,16 @@
     </string-array>
     <string-array name="csv_account_headers">
         <item>Type</item>
-        <item>Full Name</item>
-        <item>Name</item>
-        <item>Code</item>
+        <item>Full Account Name</item>
+        <item>Account Name</item>
+        <item>Account Code</item>
         <item>Description</item>
-        <item>Colour</item>
+        <item>Account Colour</item>
         <item>Notes</item>
-        <item>Commoditym</item>
-        <item>Commodityn</item>
+        <item>Symbol</item>
+        <item>Namespace</item>
         <item>Hidden</item>
-        <item>Tax</item>
+        <item>Tax Info</item>
         <item>Placeholder</item>
     </string-array>
     <string name="title_edit_budget">Edit Budget</string>
@@ -468,4 +468,5 @@
     <string name="light_ui_title">"Light Mode"</string>
     <!-- Dark UI screen, setting option name to enable Dark UI [CHAR LIMIT=30] -->
     <string name="dark_ui_title">Dark Mode</string>
+    <string name="label_hidden">Hidden</string>
 </resources>

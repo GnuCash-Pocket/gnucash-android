@@ -16,9 +16,16 @@
 
 package org.gnucash.android.export.csv;
 
-import android.content.Context;
+import static com.opencsv.ICSVWriter.RFC4180_LINE_END;
 
+import static org.gnucash.android.util.ColorExtKt.formatRGB;
+
+import android.content.Context;
+import android.graphics.Color;
+
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.opencsv.CSVWriterBuilder;
 import com.opencsv.ICSVWriter;
@@ -40,7 +47,6 @@ import java.util.List;
  * @author Semyannikov Gleb <nightdevgame@gmail.com>
  */
 public class CsvAccountExporter extends Exporter {
-    private final char mCsvSeparator;
 
     /**
      * Overloaded constructor.
@@ -54,19 +60,23 @@ public class CsvAccountExporter extends Exporter {
                               @NonNull ExportParams params,
                               @NonNull String bookUID) {
         super(context, params, bookUID);
-        mCsvSeparator = params.getCsvSeparator();
     }
 
     @Override
     public List<String> generateExport() throws ExporterException {
+        final ExportParams exportParams = mExportParams;
+        final char csvSeparator = exportParams.getCsvSeparator();
         String outputFile = getExportCacheFilePath();
         try (Writer writer = new FileWriter(outputFile)) {
-            ICSVWriter csvWriter = new CSVWriterBuilder(writer).withSeparator(mCsvSeparator).build();
+            ICSVWriter csvWriter = new CSVWriterBuilder(writer)
+                .withSeparator(csvSeparator)
+                .withLineEnd(RFC4180_LINE_END)
+                .build();
             generateExport(csvWriter);
             csvWriter.close();
             return Collections.singletonList(outputFile);
         } catch (Exception ex) {
-            throw new ExporterException(mExportParams, ex);
+            throw new ExporterException(exportParams, ex);
         } finally {
             try {
                 close();
@@ -89,24 +99,31 @@ public class CsvAccountExporter extends Exporter {
 
         final String[] fields = new String[names.length];
         for (Account account : accounts) {
-            fields[0] = account.getAccountType().toString();
+            if (account.isRoot()) continue;
+            if (account.isTemplate()) continue;
+
+            fields[0] = account.getAccountType().name();
             fields[1] = account.getFullName();
             fields[2] = account.getName();
 
-            fields[3] = null; //Account code
+            fields[3] = ""; //Account code
             fields[4] = account.getDescription();
-            fields[5] = account.getColorHexString();
-            fields[6] = null; //Account notes
+            fields[5] = formatRGB(account.getColor());
+            fields[6] = orEmpty(account.getNote());
 
             fields[7] = account.getCommodity().getCurrencyCode();
             fields[8] = account.getCommodity().getNamespace();
             fields[9] = format(account.isHidden());
-
             fields[10] = format(false); //Tax
-            fields[11] = format(account.isPlaceholderAccount());
+            fields[11] = format(account.isPlaceholder());
 
             csvWriter.writeNext(fields);
         }
+    }
+
+    @NonNull
+    private String orEmpty(@Nullable String s) {
+        return (s != null) ? s : "";
     }
 
     private String format(boolean value) {

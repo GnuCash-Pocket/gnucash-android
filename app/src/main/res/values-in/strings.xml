@@ -443,16 +443,16 @@
     </string-array>
     <string-array name="csv_account_headers">
         <item>Type</item>
-        <item>Full Name</item>
-        <item>Name</item>
-        <item>Code</item>
+        <item>Full Account Name</item>
+        <item>Account Name</item>
+        <item>Account Code</item>
         <item>Description</item>
-        <item>Color</item>
+        <item>Account Color</item>
         <item>Notes</item>
-        <item>Commoditym</item>
-        <item>Commodityn</item>
+        <item>Symbol</item>
+        <item>Namespace</item>
         <item>Hidden</item>
-        <item>Tax</item>
+        <item>Tax Info</item>
         <item>Placeholder</item>
     </string-array>
     <string name="title_edit_budget">Edit Budget</string>

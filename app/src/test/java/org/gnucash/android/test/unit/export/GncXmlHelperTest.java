@@ -17,9 +17,11 @@
 package org.gnucash.android.test.unit.export;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.gnucash.android.export.xml.GncXmlHelper.formatDateTime;
+import static org.gnucash.android.export.xml.GncXmlHelper.formatNumeric;
+import static org.gnucash.android.export.xml.GncXmlHelper.parseSplitAmount;
 
 import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.export.xml.GncXmlHelper;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.test.unit.GnuCashTest;
 import org.joda.time.DateTimeZone;
@@ -50,16 +52,16 @@ public class GncXmlHelperTest extends GnuCashTest {
     @Test
     public void testParseSplitAmount() throws ParseException {
         String splitAmount = "12345/100";
-        BigDecimal amount = GncXmlHelper.parseSplitAmount(splitAmount);
+        BigDecimal amount = parseSplitAmount(splitAmount);
         assertThat(amount.toPlainString()).isEqualTo("123.45");
 
-        amount = GncXmlHelper.parseSplitAmount("1.234,50/100");
+        amount = parseSplitAmount("1.234,50/100");
         assertThat(amount.toPlainString()).isEqualTo("1234.50");
     }
 
     @Test(expected = ParseException.class)
     public void shouldFailToParseWronglyFormattedInput() throws ParseException {
-        GncXmlHelper.parseSplitAmount("123.45");
+        parseSplitAmount("123.45");
     }
 
     @Test
@@ -68,13 +70,13 @@ public class GncXmlHelperTest extends GnuCashTest {
         Commodity euroCommodity = new Commodity("Euro", "EUR", 100);
 
         BigDecimal bigDecimal = new BigDecimal("45.90");
-        String amount = GncXmlHelper.formatSplitAmount(bigDecimal, usdCommodity);
-        assertThat(amount).isEqualTo("4590/100");
+        String amount = formatNumeric(bigDecimal, usdCommodity);
+        assertThat(amount).isEqualTo("459/10");
 
 
         bigDecimal = new BigDecimal("350");
-        amount = GncXmlHelper.formatSplitAmount(bigDecimal, euroCommodity);
-        assertThat(amount).isEqualTo("35000/100");
+        amount = formatNumeric(bigDecimal, euroCommodity);
+        assertThat(amount).isEqualTo("350/1");
     }
 
     @Test
@@ -89,15 +91,15 @@ public class GncXmlHelperTest extends GnuCashTest {
         cal.set(Calendar.SECOND, 56);
         cal.set(Calendar.MILLISECOND, 999);
 
-        String formatted = GncXmlHelper.formatDateTime(cal);
+        String formatted = formatDateTime(cal);
         assertThat(formatted).isEqualTo("2024-02-28 12:34:56 +0000");
 
         cal.add(Calendar.DAY_OF_MONTH, 1);
-        formatted = GncXmlHelper.formatDateTime(cal);
+        formatted = formatDateTime(cal);
         assertThat(formatted).isEqualTo("2024-02-29 12:34:56 +0000");
 
         cal.add(Calendar.DAY_OF_MONTH, 1);
-        formatted = GncXmlHelper.formatDateTime(cal);
+        formatted = formatDateTime(cal);
         assertThat(formatted).isEqualTo("2024-03-01 12:34:56 +0000");
     }
 
@@ -114,15 +116,15 @@ public class GncXmlHelperTest extends GnuCashTest {
         cal.set(Calendar.SECOND, 56);
         cal.set(Calendar.MILLISECOND, 999);
 
-        String formatted = GncXmlHelper.formatDateTime(cal);
+        String formatted = formatDateTime(cal);
         assertThat(formatted).isEqualTo("2024-02-28 12:34:56 +0200");
 
         cal.add(Calendar.DAY_OF_MONTH, 1);
-        formatted = GncXmlHelper.formatDateTime(cal);
+        formatted = formatDateTime(cal);
         assertThat(formatted).isEqualTo("2024-02-29 12:34:56 +0200");
 
         cal.add(Calendar.DAY_OF_MONTH, 1);
-        formatted = GncXmlHelper.formatDateTime(cal);
+        formatted = formatDateTime(cal);
         assertThat(formatted).isEqualTo("2024-03-01 12:34:56 +0200");
     }
 
@@ -171,7 +173,7 @@ public class GncXmlHelperTest extends GnuCashTest {
         public void run() {
             try {
                 for (int i = 0; i < 1000; i++) {
-                    assertThat(GncXmlHelper.formatDateTime(calendar)).isEqualTo(expected);
+                    assertThat(formatDateTime(calendar)).isEqualTo(expected);
                     try {
                         Thread.sleep(1);
                     } catch (InterruptedException ignore) {
@@ -196,7 +198,7 @@ public class GncXmlHelperTest extends GnuCashTest {
         cal.set(Calendar.MILLISECOND, 999);
 
         Timestamp ts = new Timestamp(cal.getTimeInMillis());
-        String formatted = GncXmlHelper.formatDateTime(ts);
+        String formatted = formatDateTime(ts);
         assertThat(formatted).isEqualTo("2024-05-19 12:34:56 +0000");
     }
 
@@ -241,5 +243,29 @@ public class GncXmlHelperTest extends GnuCashTest {
         df = new SimpleDateFormat("EEE, d MMM");
         dtf = DateTimeFormat.forPattern("EEE, d MMM");
         assertThat(df.format(new Date(now))).isEqualTo(dtf.print(now));
+    }
+
+    @Test
+    public void format_number() {
+        assertThat(formatNumeric(0, 1)).isEqualTo("0/1");
+        assertThat(formatNumeric(1, 1)).isEqualTo("1/1");
+        assertThat(formatNumeric(2, 1)).isEqualTo("2/1");
+        assertThat(formatNumeric(10, 1)).isEqualTo("10/1");
+        assertThat(formatNumeric(123, 1)).isEqualTo("123/1");
+        assertThat(formatNumeric(1230, 1)).isEqualTo("1230/1");
+
+        assertThat(formatNumeric(0, 10)).isEqualTo("0/1");
+        assertThat(formatNumeric(1, 10)).isEqualTo("1/10");
+        assertThat(formatNumeric(2, 10)).isEqualTo("2/10");
+        assertThat(formatNumeric(10, 10)).isEqualTo("1/1");
+        assertThat(formatNumeric(123, 10)).isEqualTo("123/10");
+        assertThat(formatNumeric(1230, 10)).isEqualTo("123/1");
+
+        assertThat(formatNumeric(0, 100)).isEqualTo("0/1");
+        assertThat(formatNumeric(1, 100)).isEqualTo("1/100");
+        assertThat(formatNumeric(2, 100)).isEqualTo("2/100");
+        assertThat(formatNumeric(10, 100)).isEqualTo("1/10");
+        assertThat(formatNumeric(123, 100)).isEqualTo("123/100");
+        assertThat(formatNumeric(1230, 100)).isEqualTo("123/10");
     }
 }

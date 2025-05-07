@@ -17,7 +17,12 @@
 
 package org.gnucash.android.export.xml;
 
+import static org.gnucash.android.math.MathExtKt.toBigDecimal;
+
+import androidx.annotation.NonNull;
+
 import org.gnucash.android.model.Commodity;
+import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.transaction.TransactionFormFragment;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Instant;
@@ -27,7 +32,6 @@ import org.joda.time.format.DateTimeFormatter;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
@@ -42,12 +46,14 @@ public abstract class GncXmlHelper {
 
     public static final String ATTR_KEY_CD_TYPE = "cd:type";
     public static final String ATTR_KEY_TYPE = "type";
+    public static final String ATTR_KEY_DATE_POSTED = "date-posted";
     public static final String ATTR_KEY_VERSION = "version";
     public static final String ATTR_VALUE_STRING = "string";
     public static final String ATTR_VALUE_NUMERIC = "numeric";
     public static final String ATTR_VALUE_GUID = "guid";
     public static final String ATTR_VALUE_BOOK = "book";
     public static final String ATTR_VALUE_FRAME = "frame";
+    public static final String ATTR_VALUE_GDATE = "gdate";
     public static final String TAG_GDATE = "gdate";
 
     /*
@@ -148,7 +154,7 @@ public abstract class GncXmlHelper {
     public static final String TAG_RX_MULT = "recurrence:mult";
     public static final String TAG_RX_PERIOD_TYPE = "recurrence:period_type";
     public static final String TAG_RX_START = "recurrence:start";
-    public static final String TAG_RX_WEEKEND_ADJ =  "recurrence:weekend_adj";
+    public static final String TAG_RX_WEEKEND_ADJ = "recurrence:weekend_adj";
 
 
     public static final String TAG_BUDGET = "gnc:budget";
@@ -162,12 +168,13 @@ public abstract class GncXmlHelper {
 
     public static final String RECURRENCE_VERSION = "1.0.0";
     public static final String BOOK_VERSION = "2.0.0";
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss Z");
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss Z").withZoneUTC();
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
 
     public static final String KEY_PLACEHOLDER = "placeholder";
     public static final String KEY_COLOR = "color";
     public static final String KEY_FAVORITE = "favorite";
+    public static final String KEY_HIDDEN = "hidden";
     public static final String KEY_NOTES = "notes";
     public static final String KEY_EXPORTED = "exported";
     public static final String KEY_SCHED_XACTION = "sched-xaction";
@@ -178,6 +185,14 @@ public abstract class GncXmlHelper {
     public static final String KEY_CREDIT_NUMERIC = "credit-numeric";
     public static final String KEY_FROM_SCHED_ACTION = "from-sched-xaction";
     public static final String KEY_DEFAULT_TRANSFER_ACCOUNT = "default_transfer_account";
+
+    public static final String CD_TYPE_BOOK = "book";
+    public static final String CD_TYPE_BUDGET = "budget";
+    public static final String CD_TYPE_COMMODITY = "commodity";
+    public static final String CD_TYPE_ACCOUNT = "account";
+    public static final String CD_TYPE_TRANSACTION = "transaction";
+    public static final String CD_TYPE_SCHEDXACTION = "schedxaction";
+    public static final String CD_TYPE_PRICE = "price";
 
     /**
      * Formats dates for the GnuCash XML format
@@ -276,17 +291,23 @@ public abstract class GncXmlHelper {
      * @throws ParseException if the amount could not be parsed
      */
     public static BigDecimal parseSplitAmount(String amountString) throws ParseException {
-        int index = amountString.indexOf("/");
+        int index = amountString.indexOf('/');
         if (index < 0) {
             throw new ParseException("Cannot parse money string : " + amountString, 0);
         }
 
-        int scale = amountString.length() - index - 2; //do this before, because we could modify the string
-        //String numerator = TransactionFormFragment.stripCurrencyFormatting(amountString.substring(0, pos));
-        String numerator = amountString.substring(0, index);
-        numerator = TransactionFormFragment.stripCurrencyFormatting(numerator);
-        BigInteger numeratorInt = new BigInteger(numerator);
-        return new BigDecimal(numeratorInt, scale);
+        String numerator = TransactionFormFragment.stripCurrencyFormatting(amountString.substring(0, index));
+        String denominator = TransactionFormFragment.stripCurrencyFormatting(amountString.substring(index + 1));
+        return toBigDecimal(Long.parseLong(numerator), Long.parseLong(denominator));
+    }
+
+    public static String formatFormula(BigDecimal amount, Commodity commodity) {
+        Money money = new Money(amount, commodity);
+        return formatFormula(money);
+    }
+
+    public static String formatFormula(Money money) {
+        return money.formattedStringWithoutSymbol();
     }
 
     /**
@@ -297,26 +318,33 @@ public abstract class GncXmlHelper {
      * @return Formatted split amount
      * @deprecated Just use the values for numerator and denominator which are saved in the database
      */
-    @Deprecated
-    public static String formatSplitAmount(BigDecimal amount, Commodity commodity) {
-        int denomInt = commodity.getSmallestFraction();
-        BigDecimal denom = new BigDecimal(denomInt);
-        String denomString = Integer.toString(denomInt);
-
-        String numerator = TransactionFormFragment.stripCurrencyFormatting(amount.multiply(denom).stripTrailingZeros().toPlainString());
-        return numerator + "/" + denomString;
+    @NonNull
+    public static String formatNumeric(BigDecimal amount, Commodity commodity) {
+        long denominator = commodity.getSmallestFraction();
+        long numerator = (amount.multiply(BigDecimal.valueOf(denominator))).longValue();
+        return formatNumeric(numerator, denominator);
     }
 
-    /**
-     * Format the amount in template transaction splits.
-     * <p>GnuCash desktop always formats with a locale dependent format, and that varies per user.<br>
-     * So we will use the device locale here and hope that the user has the same locale on the desktop GnuCash</p>
-     *
-     * @param amount Amount to be formatted
-     * @return String representation of amount
-     */
-    public static String formatTemplateSplitAmount(BigDecimal amount) {
-        //TODO: If we ever implement an application-specific locale setting, use it here as well
-        return NumberFormat.getNumberInstance().format(amount);
+    @NonNull
+    public static String formatNumeric(long numerator, long denominator) {
+        if (denominator == 0) return "1/0";
+        if (numerator == 0) return "0/1";
+        long n = numerator;
+        long d = denominator;
+        if ((n >= 10) && (d >= 10)) {
+            long n10 = n % 10L;
+            long d10 = d % 10L;
+            while ((n10 == 0) && (d10 == 0) && (n >= 10) && (d >= 10)) {
+                n /= 10;
+                d /= 10;
+                n10 = n % 10L;
+                d10 = d % 10L;
+            }
+        }
+        return n + "/" + d;
+    }
+
+    public static String formatNumeric(Money money) {
+        return formatNumeric(money.getNumerator(), money.getDenominator());
     }
 }
