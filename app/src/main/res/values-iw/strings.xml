@@ -465,4 +465,5 @@
     <string name="action_backup">גיבוי ל-</string>
     <string name="title_import_book_backup">כאשר מייבאים ספר?</string>
     <string name="summary_import_book_backup">לגבות את הספר הפעיל לפני ייבוא ספר?</string>
+    <string name="option_compress_export">דחיסת הנתונים</string>
 </resources>

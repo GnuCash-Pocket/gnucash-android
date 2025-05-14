@@ -487,4 +487,5 @@
     <string name="action_backup">backup to</string>
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
+    <string name="option_compress_export">Стиснути дані</string>
 </resources>
