@@ -42,6 +42,8 @@ import org.gnucash.android.R;
 import org.gnucash.android.databinding.FragmentPieChartBinding;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.model.Account;
+import org.gnucash.android.model.AccountType;
+import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.report.BaseReportFragment;
 import org.gnucash.android.ui.report.ReportType;
 
@@ -76,9 +78,9 @@ public class PieChartFragment extends BaseReportFragment {
     private FragmentPieChartBinding mBinding;
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        final Context context = mBinding.pieChart.getContext();
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        final Context context = view.getContext();
         @ColorInt int textColorPrimary = getTextColor(context);
 
         mBinding.pieChart.setCenterTextSize(CENTER_TEXT_SIZE);
@@ -140,15 +142,18 @@ public class PieChartFragment extends BaseReportFragment {
         PieDataSet dataSet = new PieDataSet(null, "");
         List<String> labels = new ArrayList<>();
         List<Integer> colors = new ArrayList<>();
-        List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(
-                DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND " + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + "=? AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?",
-                new String[]{mCommodity.getUID(), mAccountType.name()},
-                DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC"
-        );
+        AccountType accountType = mAccountType;
+        String where = DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND "
+            + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + "=? AND "
+            + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?";
+        String[] whereArgs = new String[]{mCommodity.getUID(), accountType.name()};
+        String orderBy = DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC";
+        List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(where, whereArgs, orderBy);
         for (Account account : accounts) {
-            float balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), mReportPeriodStart, mReportPeriodEnd, false).toFloat();
-            if (balance > 0) {
-                dataSet.addEntry(new Entry(balance, dataSet.getEntryCount()));
+            Money balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), mReportPeriodStart, mReportPeriodEnd, false);
+            float value = balance.toFloat();
+            if (value > 0f) {
+                dataSet.addEntry(new Entry(value, dataSet.getEntryCount()));
                 @ColorInt int color;
                 if (mUseAccountColor) {
                     color = (account.getColor() != Account.DEFAULT_COLOR)
@@ -165,7 +170,6 @@ public class PieChartFragment extends BaseReportFragment {
         dataSet.setSliceSpace(SPACE_BETWEEN_SLICES);
         return new PieData(labels, dataSet);
     }
-
 
     /**
      * Returns a data object that represents situation when no user data available

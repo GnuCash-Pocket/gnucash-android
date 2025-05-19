@@ -29,6 +29,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.LimitLine;
@@ -44,6 +45,7 @@ import org.gnucash.android.databinding.FragmentLineChartBinding;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
+import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.report.BaseReportFragment;
 import org.gnucash.android.ui.report.ReportType;
 import org.gnucash.android.ui.report.ReportsActivity.GroupInterval;
@@ -99,9 +101,9 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        final Context context = mBinding.lineChart.getContext();
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        final Context context = view.getContext();
 
         @ColorInt int textColorPrimary = getTextColor(context);
 
@@ -265,8 +267,10 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
                     earliest = earliest.plusYears(1);
                     break;
             }
-            float balance = mAccountsDbAdapter.getAccountsBalance(accountUIDList, start, end).toFloat();
-            values.add(new Entry(balance, i + xAxisOffset));
+            Money balance = mAccountsDbAdapter.getAccountsBalance(accountUIDList, start, end);
+            Money balanceDisplay = accountType.hasDebitNormalBalance ? balance : balance.unaryMinus();
+            float value = balanceDisplay.toFloat();
+            values.add(new Entry(value, i + xAxisOffset));
             Timber.d(accountType + earliest.toString(" MMM yyyy") + ", balance = " + balance);
         }
 

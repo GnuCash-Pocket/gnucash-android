@@ -281,6 +281,7 @@ public abstract class BaseReportFragment extends MenuFragment implements
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
+        menu.clear();
         inflater.inflate(R.menu.chart_actions, menu);
     }
 

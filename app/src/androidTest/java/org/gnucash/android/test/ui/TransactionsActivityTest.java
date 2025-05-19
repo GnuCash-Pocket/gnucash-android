@@ -30,7 +30,6 @@ import static androidx.test.espresso.matcher.ViewMatchers.withParent;
 import static androidx.test.espresso.matcher.ViewMatchers.withTagValue;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.gnucash.android.test.ui.AccountsActivityTest.preventFirstRunDialogs;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -96,6 +95,7 @@ public class TransactionsActivityTest extends GnuAndroidTest {
     private static AccountsDbAdapter mAccountsDbAdapter;
     private static TransactionsDbAdapter mTransactionsDbAdapter;
     private static SplitsDbAdapter mSplitsDbAdapter;
+    private static CommoditiesDbAdapter commoditiesDbAdapter;
     private TransactionsActivity mTransactionsActivity;
 
     @Rule
@@ -116,10 +116,11 @@ public class TransactionsActivityTest extends GnuAndroidTest {
         Context context = GnuCashApplication.getAppContext();
         preventFirstRunDialogs(context);
 
-        mSplitsDbAdapter = SplitsDbAdapter.getInstance();
-        mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-        COMMODITY = CommoditiesDbAdapter.getInstance().getCommodity(CURRENCY_CODE);
+        mTransactionsDbAdapter = mAccountsDbAdapter.transactionsDbAdapter;
+        mSplitsDbAdapter = mTransactionsDbAdapter.splitsDbAdapter;
+        commoditiesDbAdapter = mAccountsDbAdapter.commoditiesDbAdapter;
+        COMMODITY = commoditiesDbAdapter.getCommodity(CURRENCY_CODE);
     }
 
     @Before
@@ -656,7 +657,7 @@ public class TransactionsActivityTest extends GnuAndroidTest {
      */
     @Test
     public void openingAndSavingMultiCurrencyTransaction_shouldNotModifyTheSplits() {
-        Commodity bgnCommodity = CommoditiesDbAdapter.getInstance().getCommodity("BGN");
+        Commodity bgnCommodity = commoditiesDbAdapter.getCommodity("BGN");
         Account account = new Account("Zen Account", bgnCommodity);
 
         mAccountsDbAdapter.addRecord(account);
@@ -720,7 +721,7 @@ public class TransactionsActivityTest extends GnuAndroidTest {
     @Test
     public void testEditingTransferAccountOfMultiCurrencyTransaction() {
         mTransactionsDbAdapter.deleteAllRecords(); //clean slate
-        Commodity euroCommodity = CommoditiesDbAdapter.getInstance().getCommodity("EUR");
+        Commodity euroCommodity = commoditiesDbAdapter.getCommodity("EUR");
         Account euroAccount = new Account("Euro Account", euroCommodity);
 
         mAccountsDbAdapter.addRecord(euroAccount);
@@ -784,7 +785,7 @@ public class TransactionsActivityTest extends GnuAndroidTest {
     public void editingTransferAccount_shouldKeepSplitAmountsConsistent() {
         mTransactionsDbAdapter.deleteAllRecords(); //clean slate
         String currencyOther = "EUR".equals(COMMODITY.getCurrencyCode()) ? "USD" : "EUR";
-        Commodity commodityOther = CommoditiesDbAdapter.getInstance().getCommodity(currencyOther);
+        Commodity commodityOther = commoditiesDbAdapter.getCommodity(currencyOther);
         Account accountOther = new Account("Other Account", commodityOther);
 
         mAccountsDbAdapter.addRecord(accountOther);

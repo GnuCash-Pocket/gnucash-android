@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.model.Account;
+import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Money;
 
 import java.lang.ref.WeakReference;
@@ -63,9 +64,12 @@ public class AccountBalanceTask extends AsyncTask<String, Void, Money> {
         }
 
         try {
-            return accountsDbAdapter.getAccountBalance(accountUID);
-        } catch (Exception ex) {
-            Timber.e(ex, "Error computing account balance");
+            Money balance = accountsDbAdapter.getAccountBalance(accountUID);
+            Account account = accountsDbAdapter.getSimpleRecord(accountUID);
+            AccountType accountType = account.getAccountType();
+            return (accountType.hasDebitNormalBalance != accountType.hasDebitDisplayBalance) ? balance.unaryMinus() : balance;
+        } catch (Exception e) {
+            Timber.e(e, "Error computing account balance");
         }
         return null;
     }

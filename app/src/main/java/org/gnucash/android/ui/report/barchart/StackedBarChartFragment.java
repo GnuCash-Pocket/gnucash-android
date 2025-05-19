@@ -46,6 +46,7 @@ import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
+import org.gnucash.android.model.Money;
 import org.gnucash.android.ui.report.BaseReportFragment;
 import org.gnucash.android.ui.report.ReportType;
 import org.joda.time.LocalDate;
@@ -91,9 +92,9 @@ public class StackedBarChartFragment extends BaseReportFragment {
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        final Context context = mBinding.barChart.getContext();
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        final Context context = view.getContext();
 
         @ColorInt int textColorPrimary = getTextColor(context);
 
@@ -123,9 +124,10 @@ public class StackedBarChartFragment extends BaseReportFragment {
         List<Integer> colors = new ArrayList<>();
         Map<String, Integer> accountToColorMap = new LinkedHashMap<>();
         List<String> xValues = new ArrayList<>();
-        LocalDateTime tmpDate = new LocalDateTime(getStartDate(mAccountType).toDate().getTime());
-        int count = getDateDiff(new LocalDateTime(getStartDate(mAccountType).toDate().getTime()),
-                new LocalDateTime(getEndDate(mAccountType).toDate().getTime()));
+        AccountType accountType = mAccountType;
+        LocalDateTime tmpDate = new LocalDateTime(getStartDate(accountType).toDate().getTime());
+        int count = getDateDiff(new LocalDateTime(getStartDate(accountType).toDate().getTime()),
+                new LocalDateTime(getEndDate(accountType).toDate().getTime()));
         for (int i = 0; i <= count; i++) {
             long start = 0;
             long end = 0;
@@ -154,15 +156,17 @@ public class StackedBarChartFragment extends BaseReportFragment {
                     break;
             }
             List<Float> stack = new ArrayList<>();
-            List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(
-                    DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND " + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + "=? AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?",
-                    new String[]{mCommodity.getUID(), mAccountType.name()},
-                    DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC"
-            );
+            String where = DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND "
+                + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + "=? AND "
+                + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?";
+            String[] whereArgs = new String[]{mCommodity.getUID(), accountType.name()};
+            String orderBy = DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC";
+            List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(where, whereArgs, orderBy);
             for (Account account : accounts) {
-                float balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), start, end, false).toFloat();
-                if (balance != 0) {
-                    stack.add(balance);
+                Money balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), start, end, false);
+                float value = balance.toFloat();
+                if (value > 0f) {
+                    stack.add(value);
 
                     String accountName = account.getName();
                     while (labels.contains(accountName)) {
@@ -191,7 +195,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
                     }
                     colors.add(accountToColorMap.get(account.getUID()));
 
-                    Timber.d(mAccountType + tmpDate.toString(" MMMM yyyy ") + account.getName() + " = " + stack.get(stack.size() - 1));
+                    Timber.d(accountType + tmpDate.toString(" MMMM yyyy ") + account.getName() + " = " + stack.get(stack.size() - 1));
                 }
             }
 

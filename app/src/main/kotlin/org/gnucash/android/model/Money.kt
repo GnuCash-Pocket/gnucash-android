@@ -28,7 +28,6 @@ import java.math.BigInteger
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.NumberFormat
-import java.util.Currency
 import java.util.Locale
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -589,7 +588,15 @@ class Money : Number, Comparable<Money>, Parcelable {
             commodity,
             other.commodity
         )
-        return amount.compareTo(other.amount)
+        return compareTo(other.amount)
+    }
+
+    operator fun compareTo(other: BigDecimal): Int {
+        return amount.compareTo(other)
+    }
+
+    operator fun compareTo(other: Number): Int {
+        return amount.toString().compareTo(other.toString())
     }
 
     /**

@@ -95,9 +95,9 @@ public class ReportsOverviewFragment extends BaseReportFragment {
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        final Context context = mBinding.btnPieChart.getContext();
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        final Context context = view.getContext();
 
         setHasOptionsMenu(false);
 
@@ -176,7 +176,7 @@ public class ReportsOverviewFragment extends BaseReportFragment {
         );
         for (Account account : accounts) {
             float balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), start, end, false).toFloat();
-            if (balance > 0) {
+            if (balance > 0f) {
                 dataSet.addEntry(new Entry(balance, dataSet.getEntryCount()));
                 colors.add(account.getColor() != Account.DEFAULT_COLOR
                         ? account.getColor()

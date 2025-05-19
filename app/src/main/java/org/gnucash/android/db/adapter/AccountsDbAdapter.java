@@ -676,7 +676,9 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     public String findAccountUidByFullName(String fullName) {
         if (isCached) {
             for (Account account : cache.values()) {
-                if (account.getFullName().equals(fullName)) return account.getFullName();
+                if (account.getFullName().equals(fullName)) {
+                    return account.getUID();
+                }
             }
         }
         Cursor c = mDb.query(AccountEntry.TABLE_NAME, new String[]{AccountEntry.COLUMN_UID},
@@ -684,7 +686,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             null, null, null, "1");
         try {
             if (c.moveToNext()) {
-                return c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_UID));
+                return c.getString(0);
             } else {
                 return null;
             }
@@ -860,29 +862,34 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
     private Money computeBalance(String accountUID, long startTimestamp, long endTimestamp, boolean includeSubAccounts) {
         Account account = getSimpleRecord(accountUID);
-
-        // Is the value cached?
         String[] columns = new String[]{AccountEntry.COLUMN_BALANCE};
         String selection = AccountEntry.COLUMN_UID + "=?";
         String[] selectionArgs = new String[]{accountUID};
-        Cursor cursor = mDb.query(mTableName, columns, selection, selectionArgs, null, null, null);
-        try {
-            if (cursor.moveToFirst()) {
-                BigDecimal amount = getBigDecimal(cursor, 0);
-                if (amount != null) {
-                    return new Money(amount, account.getCommodity());
+
+        // Is the value cached?
+        boolean useCachedValue = (startTimestamp == -1L) && (endTimestamp == -1L);
+        if (useCachedValue) {
+            Cursor cursor = mDb.query(mTableName, columns, selection, selectionArgs, null, null, null);
+            try {
+                if (cursor.moveToFirst()) {
+                    BigDecimal amount = getBigDecimal(cursor, 0);
+                    if (amount != null) {
+                        return new Money(amount, account.getCommodity());
+                    }
                 }
+            } finally {
+                cursor.close();
             }
-        } finally {
-            cursor.close();
         }
 
         Money balance = computeBalance(account, startTimestamp, endTimestamp, includeSubAccounts);
 
         // Cache for next read.
-        ContentValues values = new ContentValues();
-        values.put(AccountEntry.COLUMN_BALANCE, balance.toBigDecimal().toString());
-        mDb.update(mTableName, values, selection, selectionArgs);
+        if (useCachedValue) {
+            ContentValues values = new ContentValues();
+            values.put(AccountEntry.COLUMN_BALANCE, balance.toBigDecimal().toString());
+            mDb.update(mTableName, values, selection, selectionArgs);
+        }
 
         return balance;
     }
@@ -901,7 +908,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
         SplitsDbAdapter splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter;
         Money balance = splitsDbAdapter.computeSplitBalance(accountsList, currencyCode, startTimestamp, endTimestamp);
-        return accountType.hasDebitDisplayBalance ? balance : balance.unaryMinus();
+        return accountType.hasDebitNormalBalance ? balance : balance.unaryMinus();
     }
 
     /**

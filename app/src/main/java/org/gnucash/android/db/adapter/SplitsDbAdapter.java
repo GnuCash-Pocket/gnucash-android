@@ -248,7 +248,7 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
             + ", s." + SplitEntry.COLUMN_TYPE
             + ", a." + AccountEntry.COLUMN_COMMODITY_UID
             + " FROM " + TransactionEntry.TABLE_NAME + " t, "
-            + SplitEntry.TABLE_NAME + " s ON t." + TransactionEntry.COLUMN_UID + "= s." + SplitEntry.COLUMN_TRANSACTION_UID + ", "
+            + SplitEntry.TABLE_NAME + " s ON t." + TransactionEntry.COLUMN_UID + " = s." + SplitEntry.COLUMN_TRANSACTION_UID + ", "
             + AccountEntry.TABLE_NAME + " a ON s." + SplitEntry.COLUMN_ACCOUNT_UID + " = a." + AccountEntry.COLUMN_UID
             + " WHERE " + selection
             + " GROUP BY a.commodity_uid, s.type, s.quantity_denom";

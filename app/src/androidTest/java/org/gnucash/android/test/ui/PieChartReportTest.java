@@ -40,7 +40,6 @@ import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.importer.GncXmlImporter;
@@ -118,14 +117,15 @@ public class PieChartReportTest extends GnuAndroidTest {
     @BeforeClass
     public static void prepareTestCase() throws Exception {
         Context context = GnuCashApplication.getAppContext();
+        preventFirstRunDialogs(context);
         oldActiveBookUID = GnuCashApplication.getActiveBookUID();
         testBookUID = GncXmlImporter.parse(context, context.getResources().openRawResource(R.raw.default_accounts));
 
         BookUtils.loadBook(context, testBookUID);
-        mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+        mTransactionsDbAdapter = mAccountsDbAdapter.transactionsDbAdapter;
 
-        commodity = CommoditiesDbAdapter.getInstance().getCommodity("USD");
+        commodity = mAccountsDbAdapter.commoditiesDbAdapter.getCommodity("USD");
 
         PreferenceActivity.getActiveBookSharedPreferences(context).edit()
                 .putString(context.getString(R.string.key_default_currency), commodity.getCurrencyCode())
@@ -134,7 +134,7 @@ public class PieChartReportTest extends GnuAndroidTest {
 
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         mTransactionsDbAdapter.deleteAllRecords();
         mReportsActivity = mActivityRule.getActivity();
         assertThat(mAccountsDbAdapter.getRecordsCount()).isGreaterThan(20); //lots of accounts in the default
@@ -144,9 +144,8 @@ public class PieChartReportTest extends GnuAndroidTest {
     /**
      * Add a transaction for the current month in order to test the report view
      *
-     * @throws Exception
      */
-    private void addTransactionForCurrentMonth() throws Exception {
+    private void addTransactionForCurrentMonth() {
         Transaction transaction = new Transaction(TRANSACTION_NAME);
         transaction.setTime(System.currentTimeMillis());
 
@@ -177,7 +176,6 @@ public class PieChartReportTest extends GnuAndroidTest {
         mTransactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.insert);
     }
 
-
     @Test
     public void testNoData() {
         onView(withId(R.id.pie_chart)).perform(click());
@@ -185,9 +183,10 @@ public class PieChartReportTest extends GnuAndroidTest {
     }
 
     @Test
-    public void testSelectingValue() throws Exception {
+    public void testSelectingValue() {
         addTransactionForCurrentMonth();
         addTransactionForPreviousMonth(1);
+        assertThat(mTransactionsDbAdapter.getRecordsCount()).isGreaterThan(1);
         refreshReport();
 
         onView(withId(R.id.pie_chart)).perform(clickXY(Position.BEGIN, Position.MIDDLE));
