@@ -153,15 +153,9 @@ public class PieChartFragment extends BaseReportFragment {
             Money balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), mReportPeriodStart, mReportPeriodEnd, false);
             float value = balance.toFloat();
             if (value > 0f) {
-                dataSet.addEntry(new Entry(value, dataSet.getEntryCount()));
-                @ColorInt int color;
-                if (mUseAccountColor) {
-                    color = (account.getColor() != Account.DEFAULT_COLOR)
-                            ? account.getColor()
-                            : COLORS[(dataSet.getEntryCount() - 1) % COLORS.length];
-                } else {
-                    color = COLORS[(dataSet.getEntryCount() - 1) % COLORS.length];
-                }
+                int count = dataSet.getEntryCount();
+                @ColorInt int color = getAccountColor(account, count);
+                dataSet.addEntry(new Entry(value, count));
                 colors.add(color);
                 labels.add(account.getName());
             }

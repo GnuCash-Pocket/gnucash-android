@@ -127,7 +127,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
         AccountType accountType = mAccountType;
         LocalDateTime tmpDate = new LocalDateTime(getStartDate(accountType).toDate().getTime());
         int count = getDateDiff(new LocalDateTime(getStartDate(accountType).toDate().getTime()),
-                new LocalDateTime(getEndDate(accountType).toDate().getTime()));
+            new LocalDateTime(getEndDate(accountType).toDate().getTime()));
         for (int i = 0; i <= count; i++) {
             long start = 0;
             long end = 0;
@@ -162,48 +162,34 @@ public class StackedBarChartFragment extends BaseReportFragment {
             String[] whereArgs = new String[]{mCommodity.getUID(), accountType.name()};
             String orderBy = DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC";
             List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(where, whereArgs, orderBy);
+            @ColorInt int color;
             for (Account account : accounts) {
-                Money balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), start, end, false);
+                String accountUID = account.getUID();
+                Money balance = mAccountsDbAdapter.getAccountBalance(accountUID, start, end, false);
                 float value = balance.toFloat();
                 if (value > 0f) {
                     stack.add(value);
 
                     String accountName = account.getName();
-                    while (labels.contains(accountName)) {
-                        if (!accountToColorMap.containsKey(account.getUID())) {
-                            for (String label : labels) {
-                                if (label.equals(accountName)) {
-                                    accountName += " ";
-                                }
-                            }
-                        } else {
-                            break;
-                        }
-                    }
                     labels.add(accountName);
 
-                    if (!accountToColorMap.containsKey(account.getUID())) {
-                        @ColorInt int color;
-                        if (mUseAccountColor) {
-                            color = (account.getColor() != Account.DEFAULT_COLOR)
-                                    ? account.getColor()
-                                    : COLORS[accountToColorMap.size() % COLORS.length];
-                        } else {
-                            color = COLORS[accountToColorMap.size() % COLORS.length];
-                        }
-                        accountToColorMap.put(account.getUID(), color);
+                    if (accountToColorMap.containsKey(accountUID)) {
+                        color = accountToColorMap.get(accountUID);
+                    } else {
+                        color = getAccountColor(account, colors.size());
+                        accountToColorMap.put(accountUID, color);
                     }
-                    colors.add(accountToColorMap.get(account.getUID()));
+                    colors.add(color);
 
                     Timber.d(accountType + tmpDate.toString(" MMMM yyyy ") + account.getName() + " = " + stack.get(stack.size() - 1));
                 }
             }
 
             String stackLabels = labels.subList(labels.size() - stack.size(), labels.size()).toString();
-            values.add(new BarEntry(floatListToArray(stack), i, stackLabels));
+            values.add(new BarEntry(toFloatArray(stack), i, stackLabels));
         }
 
-        BarDataSet set = new BarDataSet(values, "");
+        BarDataSet set = new BarDataSet(values, accountType.name());
         set.setDrawValues(false);
         set.setStackLabels(labels.toArray(new String[0]));
         set.setColors(colors);
@@ -281,7 +267,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
      * @param list a list of floats
      * @return a float array
      */
-    private float[] floatListToArray(List<Float> list) {
+    private float[] toFloatArray(List<Float> list) {
         final int size = list.size();
         float[] array = new float[size];
         for (int i = 0; i < size; i++) {
@@ -364,7 +350,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
             case R.id.menu_percentage_mode:
                 mTotalPercentageMode = !mTotalPercentageMode;
                 @StringRes int msgId = mTotalPercentageMode ? R.string.toast_chart_percentage_mode_total
-                        : R.string.toast_chart_percentage_mode_current_bar;
+                    : R.string.toast_chart_percentage_mode_current_bar;
                 Toast.makeText(context, msgId, Toast.LENGTH_LONG).show();
                 return true;
 
@@ -380,7 +366,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
         int index = h.getStackIndex() == -1 ? 0 : h.getStackIndex();
         String stackLabels = entry.getData().toString();
         String label = mBinding.barChart.getData().getXVals().get(entry.getXIndex()) + ", "
-                + stackLabels.substring(1, stackLabels.length() - 1).split(",")[index];
+            + stackLabels.substring(1, stackLabels.length() - 1).split(",")[index];
         double value = Math.abs(entry.getVals()[index]);
         double sum = 0;
         if (mTotalPercentageMode) {

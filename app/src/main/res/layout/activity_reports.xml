@@ -65,7 +65,8 @@
                     android:layout_gravity="center_vertical"
                     android:gravity="center_vertical"
                     android:text="@string/label_report_period"
-                    android:textSize="14sp" />
+                    android:textSize="14sp"
+                    android:visibility="gone" />
 
                 <org.gnucash.android.ui.util.widget.ReselectSpinner
                     android:id="@+id/time_range_spinner"

@@ -47,6 +47,7 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import org.gnucash.android.R;
 import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
+import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.ui.common.BaseDrawerActivity;
@@ -370,6 +371,19 @@ public abstract class BaseReportFragment extends MenuFragment implements
     @ColorInt
     protected int getTextColor(@NonNull Context context) {
         return getTextColorPrimary(context);
+    }
+
+    @ColorInt
+    protected int getAccountColor(@NonNull Account account, int count) {
+        @ColorInt int color;
+        if (mUseAccountColor) {
+            color = (account.getColor() != Account.DEFAULT_COLOR)
+                ? account.getColor()
+                : COLORS[count % COLORS.length];
+        } else {
+            color = COLORS[count % COLORS.length];
+        }
+        return color;
     }
 
     private class GeneratorTask extends AsyncTask<Void, Void, Void> {
