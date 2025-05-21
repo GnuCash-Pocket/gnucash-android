@@ -59,11 +59,6 @@ public class GeneralPreferenceFragment extends PreferenceFragmentCompat {
     private SwitchPreference preferencePasscode;
 
     @Override
-    public void onCreatePreferences(Bundle bundle, String s) {
-        addPreferencesFromResource(R.xml.fragment_general_preferences);
-    }
-
-    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
@@ -72,8 +67,8 @@ public class GeneralPreferenceFragment extends PreferenceFragmentCompat {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onCreatePreferences(Bundle bundle, String rootKey) {
+        addPreferencesFromResource(R.xml.fragment_general_preferences);
 
         findPreference(getString(R.string.key_theme)).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override

@@ -61,13 +61,8 @@ public class TransactionsPreferenceFragment extends PreferenceFragmentCompat imp
     }
 
     @Override
-    public void onCreatePreferences(Bundle bundle, String s) {
+    public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         addPreferencesFromResource(R.xml.fragment_transaction_preferences);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
 
         SharedPreferences sharedPreferences = getPreferenceManager().getSharedPreferences();
 

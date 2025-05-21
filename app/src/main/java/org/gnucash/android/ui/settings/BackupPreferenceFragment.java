@@ -85,19 +85,6 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
     private static final int REQUEST_BACKUP_FILE = 0x13;
 
     @Override
-    public void onCreatePreferences(Bundle bundle, String s) {
-        addPreferencesFromResource(R.xml.fragment_backup_preferences);
-
-        if (BuildConfig.DEBUG) {
-            SwitchPreference delete_transaction_backup = findPreference(getString(R.string.key_delete_transaction_backup));
-            delete_transaction_backup.setChecked(false);
-
-            SwitchPreference import_book_backup = findPreference(getString(R.string.key_import_book_backup));
-            import_book_backup.setChecked(false);
-        }
-    }
-
-    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
@@ -106,10 +93,19 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
+        addPreferencesFromResource(R.xml.fragment_backup_preferences);
+
         Context context = requireContext();
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        if (BuildConfig.DEBUG) {
+            SwitchPreference delete_transaction_backup = findPreference(getString(R.string.key_delete_transaction_backup));
+            delete_transaction_backup.setChecked(false);
+
+            SwitchPreference import_book_backup = findPreference(getString(R.string.key_import_book_backup));
+            import_book_backup.setChecked(false);
+        }
 
         //if we are returning from DropBox authentication, save the key which was generated
 

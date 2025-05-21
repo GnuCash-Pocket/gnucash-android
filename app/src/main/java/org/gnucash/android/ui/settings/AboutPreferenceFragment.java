@@ -35,7 +35,7 @@ import org.gnucash.android.R;
 public class AboutPreferenceFragment extends PreferenceFragmentCompat {
 
     @Override
-    public void onCreatePreferences(Bundle bundle, String s) {
+    public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         addPreferencesFromResource(R.xml.fragment_about_preferences);
     }
 

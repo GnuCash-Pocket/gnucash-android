@@ -72,11 +72,6 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
     private final List<CharSequence> currencyEntryValues = new ArrayList<>();
 
     @Override
-    public void onCreatePreferences(Bundle bundle, String s) {
-        addPreferencesFromResource(R.xml.fragment_account_preferences);
-    }
-
-    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -97,9 +92,8 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
         actionBar.setTitle(R.string.title_account_preferences);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
+    public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
+        addPreferencesFromResource(R.xml.fragment_account_preferences);
 
         ListPreference listPreference = findPreference(getString(R.string.key_default_currency));
         String currencyCode = listPreference.getValue();
