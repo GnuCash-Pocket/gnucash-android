@@ -17,6 +17,8 @@
 
 package org.gnucash.android.export.xml;
 
+import static org.gnucash.android.math.MathExtKt.toBigDecimal;
+
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.ui.transaction.TransactionFormFragment;
 import org.joda.time.DateTimeZone;
@@ -26,7 +28,6 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Calendar;
@@ -42,12 +43,14 @@ public abstract class GncXmlHelper {
 
     public static final String ATTR_KEY_CD_TYPE = "cd:type";
     public static final String ATTR_KEY_TYPE = "type";
+    public static final String ATTR_KEY_DATE_POSTED = "date-posted";
     public static final String ATTR_KEY_VERSION = "version";
     public static final String ATTR_VALUE_STRING = "string";
     public static final String ATTR_VALUE_NUMERIC = "numeric";
     public static final String ATTR_VALUE_GUID = "guid";
     public static final String ATTR_VALUE_BOOK = "book";
     public static final String ATTR_VALUE_FRAME = "frame";
+    public static final String ATTR_VALUE_GDATE = "gdate";
     public static final String TAG_GDATE = "gdate";
 
     /*
@@ -162,7 +165,7 @@ public abstract class GncXmlHelper {
 
     public static final String RECURRENCE_VERSION = "1.0.0";
     public static final String BOOK_VERSION = "2.0.0";
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss Z");
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss Z").withZoneUTC();
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
 
     public static final String KEY_PLACEHOLDER = "placeholder";
@@ -179,6 +182,14 @@ public abstract class GncXmlHelper {
     public static final String KEY_CREDIT_NUMERIC = "credit-numeric";
     public static final String KEY_FROM_SCHED_ACTION = "from-sched-xaction";
     public static final String KEY_DEFAULT_TRANSFER_ACCOUNT = "default_transfer_account";
+
+    public static final String CD_TYPE_BOOK = "book";
+    public static final String CD_TYPE_BUDGET = "budget";
+    public static final String CD_TYPE_COMMODITY = "commodity";
+    public static final String CD_TYPE_ACCOUNT = "account";
+    public static final String CD_TYPE_TRANSACTION = "transaction";
+    public static final String CD_TYPE_SCHEDXACTION = "schedxaction";
+    public static final String CD_TYPE_PRICE = "price";
 
     /**
      * Formats dates for the GnuCash XML format
@@ -277,17 +288,14 @@ public abstract class GncXmlHelper {
      * @throws ParseException if the amount could not be parsed
      */
     public static BigDecimal parseSplitAmount(String amountString) throws ParseException {
-        int index = amountString.indexOf("/");
+        int index = amountString.indexOf('/');
         if (index < 0) {
             throw new ParseException("Cannot parse money string : " + amountString, 0);
         }
 
-        int scale = amountString.length() - index - 2; //do this before, because we could modify the string
-        //String numerator = TransactionFormFragment.stripCurrencyFormatting(amountString.substring(0, pos));
-        String numerator = amountString.substring(0, index);
-        numerator = TransactionFormFragment.stripCurrencyFormatting(numerator);
-        BigInteger numeratorInt = new BigInteger(numerator);
-        return new BigDecimal(numeratorInt, scale);
+        String numerator = TransactionFormFragment.stripCurrencyFormatting(amountString.substring(0, index));
+        String denominator = TransactionFormFragment.stripCurrencyFormatting(amountString.substring(index + 1));
+        return toBigDecimal(Long.parseLong(numerator), Long.parseLong(denominator));
     }
 
     /**
