@@ -6,8 +6,8 @@ import android.util.AttributeSet
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TableLayout
-import java.text.DecimalFormatSymbols
 import org.gnucash.android.R
+import java.text.DecimalFormatSymbols
 import java.text.NumberFormat
 
 class CalculatorKeyboardView @JvmOverloads constructor(

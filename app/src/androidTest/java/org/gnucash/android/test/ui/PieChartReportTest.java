@@ -128,8 +128,8 @@ public class PieChartReportTest extends GnuAndroidTest {
         commodity = mAccountsDbAdapter.commoditiesDbAdapter.getCommodity("USD");
 
         PreferenceActivity.getActiveBookSharedPreferences(context).edit()
-                .putString(context.getString(R.string.key_default_currency), commodity.getCurrencyCode())
-                .commit();
+            .putString(context.getString(R.string.key_default_currency), commodity.getCurrencyCode())
+            .commit();
     }
 
 
@@ -143,7 +143,6 @@ public class PieChartReportTest extends GnuAndroidTest {
 
     /**
      * Add a transaction for the current month in order to test the report view
-     *
      */
     private void addTransactionForCurrentMonth() {
         Transaction transaction = new Transaction(TRANSACTION_NAME);
@@ -223,19 +222,19 @@ public class PieChartReportTest extends GnuAndroidTest {
 
     public static ViewAction clickXY(final Position horizontal, final Position vertical) {
         return new GeneralClickAction(
-                Tap.SINGLE,
-                new CoordinatesProvider() {
-                    @Override
-                    public float[] calculateCoordinates(View view) {
-                        int[] xy = new int[2];
-                        view.getLocationOnScreen(xy);
+            Tap.SINGLE,
+            new CoordinatesProvider() {
+                @Override
+                public float[] calculateCoordinates(View view) {
+                    int[] xy = new int[2];
+                    view.getLocationOnScreen(xy);
 
-                        float x = horizontal.getPosition(xy[0], view.getWidth());
-                        float y = vertical.getPosition(xy[1], view.getHeight());
-                        return new float[]{x, y};
-                    }
-                },
-                Press.FINGER);
+                    float x = horizontal.getPosition(xy[0], view.getWidth());
+                    float y = vertical.getPosition(xy[1], view.getHeight());
+                    return new float[]{x, y};
+                }
+            },
+            Press.FINGER);
     }
 
     private enum Position {

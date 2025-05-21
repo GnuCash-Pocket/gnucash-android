@@ -18,9 +18,6 @@ package org.gnucash.android.model
 import android.content.Intent
 import org.gnucash.android.BuildConfig
 import org.gnucash.android.db.adapter.AccountsDbAdapter
-import org.gnucash.android.export.ofx.OfxHelper
-import org.w3c.dom.Document
-import org.w3c.dom.Element
 import java.util.Date
 
 /**
@@ -320,7 +317,8 @@ class Transaction : BaseModel {
          *
          */
         @Deprecated("use {@link Split}s instead")
-        const val EXTRA_DOUBLE_ACCOUNT_UID = "${BuildConfig.APPLICATION_ID}.extra.double_account_uid"
+        const val EXTRA_DOUBLE_ACCOUNT_UID =
+            "${BuildConfig.APPLICATION_ID}.extra.double_account_uid"
 
         /**
          * Key for identifying the amount of the transaction through an Intent
@@ -388,11 +386,12 @@ class Transaction : BaseModel {
                     split.quantity
                 }
                 val isDebitSplit = split.type === TransactionType.DEBIT
-                balance = if ((isDebitAccount && isDebitSplit) || (!isDebitAccount && !isDebitSplit)) {
-                    balance + amount
-                } else {
-                    balance - amount
-                }
+                balance =
+                    if ((isDebitAccount && isDebitSplit) || (!isDebitAccount && !isDebitSplit)) {
+                        balance + amount
+                    } else {
+                        balance - amount
+                    }
             }
             return balance
         }

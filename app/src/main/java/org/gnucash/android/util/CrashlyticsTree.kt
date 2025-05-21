@@ -26,7 +26,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 class CrashlyticsTree(debug: Boolean) : LogTree(debug) {
 
     private val crashlytics: FirebaseCrashlytics = FirebaseCrashlytics.getInstance().apply {
-        setCrashlyticsCollectionEnabled(!debug)
+        isCrashlyticsCollectionEnabled = !debug
     }
 
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {

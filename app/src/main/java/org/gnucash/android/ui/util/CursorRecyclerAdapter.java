@@ -57,8 +57,8 @@ import androidx.recyclerview.widget.RecyclerView;
  * @see CursorFilter.CursorFilterClient
  */
 public abstract class CursorRecyclerAdapter<VH
-        extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH>
-        implements Filterable, CursorFilter.CursorFilterClient {
+    extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH>
+    implements Filterable, CursorFilter.CursorFilterClient {
     private boolean mDataValid;
     private int mRowIDColumn;
     private Cursor mCursor;

@@ -4,8 +4,10 @@ import java.util.Locale
 
 enum class WeekendAdjust(@JvmField val value: String?) {
     NONE("none"),
+
     /* Previous weekday */
     BACK("back"),
+
     /* Next weekday */
     FORWARD("forward");
 

@@ -629,7 +629,7 @@ public class TransactionsActivityTest extends GnuAndroidTest {
             .setType(Transaction.MIME_TYPE)
             .putExtra(Intent.EXTRA_TITLE, "Power intents")
             .putExtra(Intent.EXTRA_TEXT, "Intents for sale")
-            .putExtra(Transaction.EXTRA_AMOUNT, new BigDecimal(4.99))
+            .putExtra(Transaction.EXTRA_AMOUNT, BigDecimal.valueOf(4.99))
             .putExtra(Transaction.EXTRA_ACCOUNT_UID, TRANSACTIONS_ACCOUNT_UID)
             .putExtra(Transaction.EXTRA_TRANSACTION_TYPE, TransactionType.DEBIT.name())
             .putExtra(Account.EXTRA_CURRENCY_CODE, "USD");

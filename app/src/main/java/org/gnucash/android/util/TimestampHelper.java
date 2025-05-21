@@ -37,9 +37,9 @@ public final class TimestampHelper {
      * We are using Joda Time classes because they are thread-safe.
      */
     private static final DateTimeFormatter UTC_DATE_FORMAT =
-            DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZoneUTC();
+        DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZoneUTC();
     private static final DateTimeFormatter UTC_DATE_WITH_MILLISECONDS_FORMAT =
-            DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").withZoneUTC();
+        DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").withZoneUTC();
 
     /**
      * Get a {@link String} representing the {@link Timestamp}

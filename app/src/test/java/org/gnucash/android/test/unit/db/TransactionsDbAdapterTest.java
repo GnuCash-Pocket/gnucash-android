@@ -104,7 +104,7 @@ public class TransactionsDbAdapterTest extends GnuCashTest {
         Context context = GnuCashApplication.getAppContext();
         Transaction transaction = new Transaction("Auto balance");
         Split split = new Split(new Money(BigDecimal.TEN, alphaAccount.getCommodity()),
-                alphaAccount.getUID());
+            alphaAccount.getUID());
 
         transaction.addSplit(split);
 

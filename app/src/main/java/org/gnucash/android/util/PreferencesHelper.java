@@ -62,9 +62,9 @@ public final class PreferencesHelper {
         final String utcString = TimestampHelper.getUtcStringFromTimestamp(lastExportTime);
         Timber.d("Storing '" + utcString + "' as lastExportTime in Android Preferences.");
         GnuCashApplication.getAppContext().getSharedPreferences(bookUID, Context.MODE_PRIVATE)
-                .edit()
-                .putString(PREFERENCE_LAST_EXPORT_TIME_KEY, utcString)
-                .apply();
+            .edit()
+            .putString(PREFERENCE_LAST_EXPORT_TIME_KEY, utcString)
+            .apply();
     }
 
     /**
@@ -74,8 +74,8 @@ public final class PreferencesHelper {
      */
     public static Timestamp getLastExportTime(Context context) {
         final String utcString = PreferenceActivity.getActiveBookSharedPreferences(context)
-                .getString(PREFERENCE_LAST_EXPORT_TIME_KEY,
-                        TimestampHelper.getUtcStringFromTimestamp(TimestampHelper.getTimestampFromEpochZero()));
+            .getString(PREFERENCE_LAST_EXPORT_TIME_KEY,
+                TimestampHelper.getUtcStringFromTimestamp(TimestampHelper.getTimestampFromEpochZero()));
         Timber.d("Retrieving '" + utcString + "' as lastExportTime from Android Preferences.");
         return TimestampHelper.getTimestampFromUtcString(utcString);
     }
@@ -87,9 +87,9 @@ public final class PreferencesHelper {
      */
     public static Timestamp getLastExportTime(Context context, String bookUID) {
         final String utcString = context.getSharedPreferences(bookUID, Context.MODE_PRIVATE)
-                        .getString(PREFERENCE_LAST_EXPORT_TIME_KEY,
-                                TimestampHelper.getUtcStringFromTimestamp(
-                                        TimestampHelper.getTimestampFromEpochZero()));
+            .getString(PREFERENCE_LAST_EXPORT_TIME_KEY,
+                TimestampHelper.getUtcStringFromTimestamp(
+                    TimestampHelper.getTimestampFromEpochZero()));
         Timber.d("Retrieving '" + utcString + "' as lastExportTime from Android Preferences.");
         return TimestampHelper.getTimestampFromUtcString(utcString);
     }

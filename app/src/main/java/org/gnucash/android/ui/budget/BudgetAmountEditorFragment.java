@@ -62,7 +62,7 @@ import java.util.List;
 public class BudgetAmountEditorFragment extends MenuFragment {
 
     private QualifiedAccountNameAdapter accountNameAdapter;
-    private List<View> mBudgetAmountViews = new ArrayList<>();
+    private final List<View> mBudgetAmountViews = new ArrayList<>();
     private AccountsDbAdapter mAccountsDbAdapter;
 
     private FragmentBudgetAmountEditorBinding mBinding;
@@ -147,7 +147,7 @@ public class BudgetAmountEditorFragment extends MenuFragment {
             //at least one account should be loaded (don't create budget with empty account tree
             if (viewHolder.budgetAccountSpinner.getCount() == 0) {
                 Toast.makeText(getActivity(), "You need an account hierarchy to create a budget!",
-                        Toast.LENGTH_SHORT).show();
+                    Toast.LENGTH_SHORT).show();
                 return false;
             }
         }

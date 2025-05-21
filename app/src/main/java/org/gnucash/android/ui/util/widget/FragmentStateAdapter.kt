@@ -109,7 +109,7 @@ abstract class FragmentStateAdapter(activity: FragmentActivity) :
 
     private fun handlePageSelected(position: Int) {
         selectedPosition = position
-        val count = getItemCount()
+        val count = itemCount
         for (i in 0 until count) {
             val fragment = getFragment(i)
             fragment?.setMenuVisibility(i == position)

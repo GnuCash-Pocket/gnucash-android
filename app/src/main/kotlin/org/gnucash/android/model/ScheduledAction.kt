@@ -17,8 +17,6 @@ package org.gnucash.android.model
 
 import android.content.Context
 import androidx.annotation.StringRes
-import java.sql.Timestamp
-import java.util.Calendar
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.util.dayOfWeek
@@ -26,6 +24,8 @@ import org.gnucash.android.util.lastDayOfMonth
 import org.gnucash.android.util.lastDayOfWeek
 import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
+import java.sql.Timestamp
+import java.util.Calendar
 
 /**
  * Represents a scheduled event which is stored in the database and run at regular period
@@ -61,6 +61,7 @@ class ScheduledAction    //all actions are enabled by default
      */
     enum class ActionType(@JvmField @StringRes val labelId: Int) {
         TRANSACTION(R.string.action_transaction),
+
         // TODO rename `BACKUP` to `EXPORT`
         BACKUP(R.string.action_backup)
     }

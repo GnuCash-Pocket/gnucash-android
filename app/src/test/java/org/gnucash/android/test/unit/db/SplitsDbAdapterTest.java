@@ -110,7 +110,7 @@ public class SplitsDbAdapterTest extends GnuCashTest {
         mSplitsDbAdapter.addRecord(split);
 
         String isExported = mTransactionsDbAdapter.getAttribute(transaction.getUID(),
-                DatabaseSchema.TransactionEntry.COLUMN_EXPORTED);
+            DatabaseSchema.TransactionEntry.COLUMN_EXPORTED);
         assertThat(Boolean.parseBoolean(isExported)).isFalse();
     }
 

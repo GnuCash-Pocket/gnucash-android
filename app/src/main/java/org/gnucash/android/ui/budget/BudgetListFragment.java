@@ -16,8 +16,6 @@
 
 package org.gnucash.android.ui.budget;
 
-import static org.gnucash.android.math.MathExtKt.isZero;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -71,7 +69,7 @@ import timber.log.Timber;
  * Budget list fragment
  */
 public class BudgetListFragment extends Fragment implements Refreshable,
-        LoaderManager.LoaderCallbacks<Cursor> {
+    LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final int REQUEST_EDIT_BUDGET = 0xB;
     private static final int REQUEST_OPEN_ACCOUNT = 0xC;

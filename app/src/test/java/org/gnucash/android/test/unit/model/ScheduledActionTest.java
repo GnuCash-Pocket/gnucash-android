@@ -157,7 +157,7 @@ public class ScheduledActionTest {
 
         long expectedNextDueDate = new DateTime(2017, 4, 20, 9, 0).getMillis(); // Thursday
         assertThat(scheduledAction.computeNextTimeBasedScheduledExecutionTime())
-                .isEqualTo(expectedNextDueDate);
+            .isEqualTo(expectedNextDueDate);
     }
 
     /**
@@ -177,7 +177,7 @@ public class ScheduledActionTest {
         // Wednesday, 2 weeks after the last run
         long expectedNextDueDate = new DateTime(2017, 4, 26, 9, 0).getMillis();
         assertThat(scheduledAction.computeNextTimeBasedScheduledExecutionTime())
-                .isEqualTo(expectedNextDueDate);
+            .isEqualTo(expectedNextDueDate);
     }
 
     /**
@@ -190,7 +190,7 @@ public class ScheduledActionTest {
     public void weeklyActionsWithoutDayOfWeekSet_shouldReturnDateInTheFuture() {
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
         Recurrence recurrence = new Recurrence(PeriodType.WEEK);
-        recurrence.setByDays(Collections.<Integer>emptyList());
+        recurrence.setByDays(Collections.emptyList());
         scheduledAction.setRecurrence(recurrence);
         scheduledAction.setStartTime(new DateTime(2016, 6, 6, 9, 0).getMillis());
         scheduledAction.setLastRunTime(new DateTime(2017, 4, 12, 9, 0).getMillis());

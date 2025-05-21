@@ -47,7 +47,7 @@ internal class ScheduledTransactionsViewHolder(
             val first = splits[0]
             for (split in splits) {
                 if ((first !== split) && first.isPairOf(split)) {
-                    text = first.value!!.formattedString()
+                    text = first.value.formattedString()
                     break
                 }
             }
@@ -79,14 +79,14 @@ internal class ScheduledTransactionsViewHolder(
     override fun deleteSchedule(scheduledAction: ScheduledAction) {
         Timber.i("Removing scheduled transaction")
         val transactionUID = scheduledAction.actionUID!!
-        scheduledActionDbAdapter.deleteRecord(scheduledAction.uid);
+        scheduledActionDbAdapter.deleteRecord(scheduledAction.uid)
         if (transactionsDbAdapter.deleteRecord(transactionUID)) {
             val context = itemView.context
             Toast.makeText(
                 context,
                 R.string.toast_recurring_transaction_deleted,
                 Toast.LENGTH_LONG
-            ).show();
+            ).show()
         }
     }
 }

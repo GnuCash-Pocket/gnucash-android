@@ -16,7 +16,6 @@
 
 package org.gnucash.android.ui.homescreen;
 
-import android.app.Activity;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;

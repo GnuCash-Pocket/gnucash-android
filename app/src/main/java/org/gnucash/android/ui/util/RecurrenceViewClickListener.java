@@ -17,7 +17,6 @@
 package org.gnucash.android.ui.util;
 
 import android.os.Bundle;
-import android.text.format.Time;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -57,7 +56,7 @@ public class RecurrenceViewClickListener implements View.OnClickListener {
         b.putString(RecurrencePickerDialogFragment.BUNDLE_RRULE, mRecurrenceRule);
 
         RecurrencePickerDialogFragment rpd = (RecurrencePickerDialogFragment) fm.findFragmentByTag(
-                FRAGMENT_TAG_RECURRENCE_PICKER);
+            FRAGMENT_TAG_RECURRENCE_PICKER);
         if (rpd != null) {
             rpd.dismiss();
         }

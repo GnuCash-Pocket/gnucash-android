@@ -348,7 +348,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         queryBuilder.setTables(TransactionEntry.TABLE_NAME);
         String startTimeString = Long.toString(timestamp.getTime());
         String where = TransactionEntry.COLUMN_TEMPLATE + "=0 AND " + TransactionEntry.COLUMN_TIMESTAMP + " >= ?";
-           String[] whereArgs = new String[]{startTimeString};
+        String[] whereArgs = new String[]{startTimeString};
         String orderBy = TransactionEntry.COLUMN_TIMESTAMP + " ASC, " + TransactionEntry.COLUMN_ID + " ASC";
         return queryBuilder.query(mDb, null, where, whereArgs, null, null, orderBy, null);
     }

@@ -63,7 +63,7 @@ import timber.log.Timber;
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
 public class AccountPreferencesFragment extends PreferenceFragmentCompat implements
-        Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
+    Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
 
     private static final int REQUEST_EXPORT_FILE = 0xC5;
 
@@ -137,23 +137,23 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
             public boolean onPreferenceClick(Preference preference) {
                 final Activity activity = requireActivity();
                 new AlertDialog.Builder(activity)
-                        .setTitle(R.string.title_create_default_accounts)
-                        .setMessage(R.string.msg_confirm_create_default_accounts_setting)
-                        .setIcon(R.drawable.ic_warning)
-                        .setPositiveButton(R.string.btn_create_accounts, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int which) {
-                                AccountsActivity.createDefaultAccounts(activity, Commodity.DEFAULT_COMMODITY.getCurrencyCode());
-                            }
-                        })
-                        .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        })
-                        .create()
-                        .show();
+                    .setTitle(R.string.title_create_default_accounts)
+                    .setMessage(R.string.msg_confirm_create_default_accounts_setting)
+                    .setIcon(R.drawable.ic_warning)
+                    .setPositiveButton(R.string.btn_create_accounts, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int which) {
+                            AccountsActivity.createDefaultAccounts(activity, Commodity.DEFAULT_COMMODITY.getCurrencyCode());
+                        }
+                    })
+                    .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .create()
+                    .show();
 
                 return true;
             }
@@ -245,7 +245,7 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
                     } catch (InterruptedException | ExecutionException e) {
                         Timber.e(e);
                         Toast.makeText(activity, "An error occurred during the Accounts CSV export",
-                                Toast.LENGTH_LONG).show();
+                            Toast.LENGTH_LONG).show();
                     }
                 }
 

@@ -88,7 +88,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      * Number of pages to show
      */
     private static final int DEFAULT_NUM_PAGES = 2;
-    private static DateTimeFormatter dayMonthFormatter = DateTimeFormat.forPattern("EEE, d MMM");
+    private static final DateTimeFormatter dayMonthFormatter = DateTimeFormat.forPattern("EEE, d MMM");
 
     /**
      * GUID of {@link Account} whose transactions are displayed
@@ -101,7 +101,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     private final AccountsDbAdapter mAccountsDbAdapter = AccountsDbAdapter.getInstance();
     private QualifiedAccountNameAdapter accountNameAdapter;
 
-    private SparseArray<Refreshable> mFragmentPageReferenceMap = new SparseArray<>();
+    private final SparseArray<Refreshable> mFragmentPageReferenceMap = new SparseArray<>();
 
     private ActivityTransactionsBinding mBinding;
 

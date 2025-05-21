@@ -66,7 +66,7 @@ abstract class ScheduledViewHolder(
     override fun onMenuItemClick(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.menu_delete -> {
-                val action=scheduledAction
+                val action = scheduledAction
                 if (action != null) {
                     val activity = itemView.context.findActivity()
                     BackupManager.backupActiveBookAsync(activity) {

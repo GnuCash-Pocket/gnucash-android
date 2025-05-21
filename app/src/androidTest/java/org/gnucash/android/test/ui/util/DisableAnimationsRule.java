@@ -26,10 +26,10 @@ import timber.log.Timber;
 public class DisableAnimationsRule implements TestRule {
     private void setAnimationState(AnimationState state) throws IOException {
         List<String> commands = List.of(
-                "settings get global animator_duration_scale",
-                "settings put global animator_duration_scale " + state.getStatusCode(),
-                "settings put global transition_animation_scale " + state.getStatusCode(),
-                "settings put global window_animation_scale " + state.getStatusCode()
+            "settings get global animator_duration_scale",
+            "settings put global animator_duration_scale " + state.getStatusCode(),
+            "settings put global transition_animation_scale " + state.getStatusCode(),
+            "settings put global window_animation_scale " + state.getStatusCode()
         );
 
         UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
@@ -39,10 +39,10 @@ public class DisableAnimationsRule implements TestRule {
 
         for (String command : commands) {
             try (
-                    ParcelFileDescriptor fd = uiAutomation.executeShellCommand(command);
-                    InputStream is = new BufferedInputStream(new FileInputStream(fd.getFileDescriptor()));
-                    fd;
-                    is
+                ParcelFileDescriptor fd = uiAutomation.executeShellCommand(command);
+                InputStream is = new BufferedInputStream(new FileInputStream(fd.getFileDescriptor()));
+                fd;
+                is
             ) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // https://stackoverflow.com/a/75837274/2249464
                     String commandOutput = new String(is.readAllBytes());

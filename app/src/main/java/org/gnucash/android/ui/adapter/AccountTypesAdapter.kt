@@ -16,7 +16,7 @@ class AccountTypesAdapter @JvmOverloads constructor(
         val records = AccountType.entries.filter { it != AccountType.ROOT }
         val labels = context.resources.getStringArray(R.array.account_type_entry_values)
         val items = records.map { type -> Label(type, labels[type.labelIndex]) }
-            .sortedBy { it.label   }
+            .sortedBy { it.label }
 
         clear()
         addAll(items)

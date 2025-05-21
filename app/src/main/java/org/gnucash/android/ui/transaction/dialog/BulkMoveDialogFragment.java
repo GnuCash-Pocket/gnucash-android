@@ -52,7 +52,7 @@ public class BulkMoveDialogFragment extends DialogFragment {
     /**
      * Create new instance of the bulk move dialog
      *
-     * @param transactionUIDs   Array of transaction database record IDs
+     * @param transactionUIDs  Array of transaction database record IDs
      * @param originAccountUID Account from which to move the transactions
      * @return BulkMoveDialogFragment instance with arguments set
      */

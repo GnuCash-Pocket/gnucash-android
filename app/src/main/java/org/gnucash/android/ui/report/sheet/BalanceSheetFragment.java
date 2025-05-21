@@ -135,9 +135,9 @@ public class BalanceSheetFragment extends BaseReportFragment {
 
         // FIXME move this to generateReport
         Cursor cursor = mAccountsDbAdapter.fetchAccounts(DatabaseSchema.AccountEntry.COLUMN_TYPE
-                        + " IN ( '" + TextUtils.join("' , '", accountTypes) + "' ) AND "
-                        + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0",
-                null, DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC");
+                + " IN ( '" + TextUtils.join("' , '", accountTypes) + "' ) AND "
+                + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0",
+            null, DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC");
         final int columnIndexUID = cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_UID);
         final int columnIndexName = cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_NAME);
 
@@ -149,7 +149,7 @@ public class BalanceSheetFragment extends BaseReportFragment {
             // TODO alternate light and dark rows
             View view = inflater.inflate(R.layout.row_balance_sheet, tableLayout, false);
             ((TextView) view.findViewById(R.id.account_name)).setText(name);
-            TextView balanceTextView = (TextView) view.findViewById(R.id.account_balance);
+            TextView balanceTextView = view.findViewById(R.id.account_balance);
             @ColorInt int colorBalanceZero = balanceTextView.getCurrentTextColor();
             displayBalance(balanceTextView, balance, colorBalanceZero);
             tableLayout.addView(view);
@@ -161,10 +161,10 @@ public class BalanceSheetFragment extends BaseReportFragment {
         layoutParams.setMargins(layoutParams.leftMargin, 20, layoutParams.rightMargin, layoutParams.bottomMargin);
         totalView.setLayoutParams(layoutParams);
 
-        TextView accountName = (TextView) totalView.findViewById(R.id.account_name);
+        TextView accountName = totalView.findViewById(R.id.account_name);
         accountName.setTextSize(16);
         accountName.setText(R.string.label_balance_sheet_total);
-        TextView accountBalance = (TextView) totalView.findViewById(R.id.account_balance);
+        TextView accountBalance = totalView.findViewById(R.id.account_balance);
         accountBalance.setTextSize(16);
         accountBalance.setTypeface(null, Typeface.BOLD);
         @ColorInt int colorBalanceZero = accountBalance.getCurrentTextColor();

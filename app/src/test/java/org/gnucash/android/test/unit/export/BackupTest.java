@@ -55,7 +55,7 @@ public class BackupTest extends GnuCashTest {
         Context context = GnuCashApplication.getAppContext();
         String bookUID = GnuCashApplication.getActiveBookUID();
         Exporter exporter = new GncXmlExporter(context, new ExportParams(ExportFormat.XML), bookUID);
-        Uri uriExported  = exporter.generateExport();
+        Uri uriExported = exporter.generateExport();
 
         assertThat(uriExported).isNotNull();
         assertThat(uriExported.getScheme()).isEqualTo("file");

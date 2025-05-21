@@ -84,7 +84,7 @@ public class GnucashAndroidTestRunner extends AndroidJUnitRunner {
             Method getService = serviceManagerClazz.getDeclaredMethod("getService", String.class);
             Class<?> windowManagerClazz = Class.forName("android.view.IWindowManager");
             Method setAnimationScales = windowManagerClazz.getDeclaredMethod("setAnimationScales",
-                    float[].class);
+                float[].class);
             Method getAnimationScales = windowManagerClazz.getDeclaredMethod("getAnimationScales");
 
             IBinder windowManagerBinder = (IBinder) getService.invoke(null, "window");
@@ -95,7 +95,8 @@ public class GnucashAndroidTestRunner extends AndroidJUnitRunner {
             }
             setAnimationScales.invoke(windowManagerObj, currentScales);
             return true;
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | ClassNotFoundException | RuntimeException e) {
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException |
+                 ClassNotFoundException | RuntimeException e) {
             Timber.w(e, "Cannot disable animations reflectively.");
         }
         return false;

@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
 
 import timber.log.Timber;
 
@@ -89,7 +90,7 @@ public class TransactionRecorder extends BroadcastReceiver {
             } else {
                 amountBigDecimal = (BigDecimal) args.getSerializable(Transaction.EXTRA_AMOUNT);
             }
-            amountBigDecimal = amountBigDecimal.setScale(commodity.getSmallestFractionDigits(), BigDecimal.ROUND_HALF_EVEN).round(MathContext.DECIMAL128);
+            amountBigDecimal = amountBigDecimal.setScale(commodity.getSmallestFractionDigits(), RoundingMode.HALF_EVEN).round(MathContext.DECIMAL128);
             Money amount = new Money(amountBigDecimal, commodity);
             Split split = new Split(amount, accountUID);
             split.setType(type);

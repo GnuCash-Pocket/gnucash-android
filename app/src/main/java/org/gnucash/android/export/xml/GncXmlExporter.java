@@ -22,7 +22,6 @@ import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
 import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 import static org.gnucash.android.export.xml.GncXmlHelper.*;
 import static org.gnucash.android.math.MathExtKt.toBigDecimal;
-import static org.gnucash.android.model.Commodity.NO_CURRENCY_CODE;
 import static org.gnucash.android.model.Commodity.TEMPLATE;
 
 import android.content.Context;

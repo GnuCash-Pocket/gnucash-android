@@ -102,7 +102,7 @@ public class TransactionsListFragment extends MenuFragment implements
 
         boolean isDoubleEntryDisabled = !GnuCashApplication.isDoubleEntryEnabled();
         mUseCompactView = PreferenceActivity.getActiveBookSharedPreferences(context)
-                .getBoolean(getString(R.string.key_use_compact_list), false) || isDoubleEntryDisabled;
+            .getBoolean(getString(R.string.key_use_compact_list), false) || isDoubleEntryDisabled;
         //if there was a local override of the global setting, respect it
         if (savedInstanceState != null) {
             mUseCompactView = savedInstanceState.getBoolean(getString(R.string.key_use_compact_list), mUseCompactView);

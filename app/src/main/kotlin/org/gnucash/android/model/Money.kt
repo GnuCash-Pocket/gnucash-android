@@ -269,7 +269,7 @@ class Money : Number, Comparable<Money>, Parcelable {
     }
 
     override fun toChar(): Char {
-        return amount.toChar()
+        return amount.toInt().toChar()
     }
 
     override fun toFloat(): Float {

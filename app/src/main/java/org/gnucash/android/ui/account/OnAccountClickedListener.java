@@ -30,6 +30,6 @@ public interface OnAccountClickedListener {
      *
      * @param accountUID GUID of the selected account
      */
-    public void accountSelected(String accountUID);
+    void accountSelected(String accountUID);
 
 }

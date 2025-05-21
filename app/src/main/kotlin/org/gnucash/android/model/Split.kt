@@ -2,7 +2,6 @@ package org.gnucash.android.model
 
 import android.os.Parcel
 import android.os.Parcelable
-import java.lang.StringBuilder
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import java.sql.Timestamp
 
@@ -92,7 +91,7 @@ class Split : BaseModel, Parcelable {
      * as both the value and the quantity of this split.
      * @param accountUID String UID of owning account
      */
-    constructor(amount: Money, accountUID: String?) : this(amount, Money(amount), accountUID) {}
+    constructor(amount: Money, accountUID: String?) : this(amount, Money(amount), accountUID)
 
     /**
      * Clones the `sourceSplit` to create a new instance with same fields
@@ -377,7 +376,8 @@ class Split : BaseModel, Parcelable {
             splitType: TransactionType
         ): Money {
             val accountUID = accountGUID ?: return Money.createZeroInstance(amount.commodity)
-            val account = AccountsDbAdapter.getInstance().getSimpleRecord(accountUID) ?: return Money.createZeroInstance(amount.commodity)
+            val account = AccountsDbAdapter.getInstance().getSimpleRecord(accountUID)
+                ?: return Money.createZeroInstance(amount.commodity)
             return getFormattedAmount(amount, account, splitType)
         }
 

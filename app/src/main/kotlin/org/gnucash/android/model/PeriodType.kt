@@ -28,13 +28,16 @@ enum class PeriodType(@JvmField val value: String) {
     ONCE("once"),
     HOUR("hour"),
     DAY("day"),
+
     /* Also a phase.
      * The last day in date's month with date's day-of-week is used. */
     LAST_WEEKDAY("last weekday"),
+
     /* Also a phase, e.g. Second Tuesday. */
     NTH_WEEKDAY("nth weekday"),
     WEEK("week"),
     MONTH("month"),
+
     /* This is actually a period plus a phase. */
     END_OF_MONTH("end of month"),
     YEAR("year");

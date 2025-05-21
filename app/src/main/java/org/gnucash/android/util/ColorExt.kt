@@ -268,11 +268,12 @@ fun Color.formatHexRGB(): String = String.format(
 )
 
 @get:ColorInt
-val Context.textColorPrimary: Int get() {
-    val typedValue  = TypedValue()
-    theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
-    // resourceId is used if it's a ColorStateList, and data if it's a color reference or a hex color
-    val colorRes = if (typedValue.resourceId != 0) typedValue.resourceId else typedValue.data
-    return ContextCompat.getColor(this, colorRes)
-}
+val Context.textColorPrimary: Int
+    get() {
+        val typedValue = TypedValue()
+        theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
+        // resourceId is used if it's a ColorStateList, and data if it's a color reference or a hex color
+        val colorRes = if (typedValue.resourceId != 0) typedValue.resourceId else typedValue.data
+        return ContextCompat.getColor(this, colorRes)
+    }
 

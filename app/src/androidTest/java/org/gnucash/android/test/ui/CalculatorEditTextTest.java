@@ -24,7 +24,6 @@ import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withInputType;
-import static org.gnucash.android.test.ui.AccountsActivityTest.preventFirstRunDialogs;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -74,7 +73,7 @@ public class CalculatorEditTextTest extends GnuAndroidTest {
 
     @Rule
     public ActivityTestRule<TransactionsActivity> mActivityRule =
-            new ActivityTestRule<>(TransactionsActivity.class, true, false);
+        new ActivityTestRule<>(TransactionsActivity.class, true, false);
 
 
     @BeforeClass

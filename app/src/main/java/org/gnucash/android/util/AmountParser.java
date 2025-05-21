@@ -63,7 +63,7 @@ public class AmountParser {
         try {
             Expression expression = builder.build();
             if (expression != null && expression.validate().isValid()) {
-                return new BigDecimal(expression.evaluate());
+                return BigDecimal.valueOf(expression.evaluate());
             }
         } catch (Exception e) {
             Timber.w(e, "Invalid expression: %s", expressionString);

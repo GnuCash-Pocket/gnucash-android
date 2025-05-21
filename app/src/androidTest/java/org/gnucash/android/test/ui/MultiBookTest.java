@@ -26,7 +26,6 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withParent;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.gnucash.android.test.ui.AccountsActivityTest.preventFirstRunDialogs;
 import static org.hamcrest.Matchers.allOf;
 
 import android.Manifest;
@@ -124,8 +123,8 @@ public class MultiBookTest extends GnuAndroidTest {
         shouldOpenBookManager();
 
         onView(withId(R.id.menu_create))
-                .check(matches(isDisplayed()))
-                .perform(click());
+            .check(matches(isDisplayed()))
+            .perform(click());
 
         assertThat(mBooksDbAdapter.getRecordsCount()).isEqualTo(bookCount + 1);
     }
@@ -144,7 +143,7 @@ public class MultiBookTest extends GnuAndroidTest {
         shouldOpenBookManager();
 
         onView(allOf(withParent(hasDescendant(withText(displayName))),
-                withId(R.id.options_menu))).perform(click());
+            withId(R.id.options_menu))).perform(click());
 
         onView(withText(R.string.menu_delete)).perform(click());
         onView(withText(R.string.btn_delete_book)).perform(click());

@@ -18,7 +18,6 @@ package org.gnucash.android.ui.settings.dialog;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
@@ -67,22 +66,22 @@ public class DeleteBookConfirmationDialog extends DoubleConfirmationDialog {
         final Activity activity = requireActivity();
 
         return getDialogBuilder()
-                .setTitle(R.string.title_confirm_delete_book)
-                .setIcon(R.drawable.ic_warning)
-                .setMessage(R.string.msg_all_book_data_will_be_deleted)
-                .setPositiveButton(R.string.btn_delete_book, new DialogInterface.OnClickListener() {
-                    @SuppressWarnings("ConstantConditions")
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int which) {
-                        BackupManager.backupBookAsync(activity, bookUID, backed -> {
-                            boolean deleted = BooksDbAdapter.getInstance().deleteBook(activity, bookUID);
-                            Bundle result = new Bundle();
-                            result.putBoolean(Refreshable.EXTRA_REFRESH, deleted);
-                            fm.setFragmentResult(requestKey, result);
-                            return null;
-                        });
-                    }
-                })
-                .create();
+            .setTitle(R.string.title_confirm_delete_book)
+            .setIcon(R.drawable.ic_warning)
+            .setMessage(R.string.msg_all_book_data_will_be_deleted)
+            .setPositiveButton(R.string.btn_delete_book, new DialogInterface.OnClickListener() {
+                @SuppressWarnings("ConstantConditions")
+                @Override
+                public void onClick(DialogInterface dialogInterface, int which) {
+                    BackupManager.backupBookAsync(activity, bookUID, backed -> {
+                        boolean deleted = BooksDbAdapter.getInstance().deleteBook(activity, bookUID);
+                        Bundle result = new Bundle();
+                        result.putBoolean(Refreshable.EXTRA_REFRESH, deleted);
+                        fm.setFragmentResult(requestKey, result);
+                        return null;
+                    });
+                }
+            })
+            .create();
     }
 }

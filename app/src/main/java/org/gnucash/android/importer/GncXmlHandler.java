@@ -326,20 +326,20 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     @Deprecated
     private long mRecurrencePeriod = 0;
 
-    private TransactionsDbAdapter mTransactionsDbAdapter;
+    private final TransactionsDbAdapter mTransactionsDbAdapter;
 
-    private ScheduledActionDbAdapter mScheduledActionsDbAdapter;
+    private final ScheduledActionDbAdapter mScheduledActionsDbAdapter;
 
-    private CommoditiesDbAdapter mCommoditiesDbAdapter;
+    private final CommoditiesDbAdapter mCommoditiesDbAdapter;
 
-    private PricesDbAdapter mPricesDbAdapter;
+    private final PricesDbAdapter mPricesDbAdapter;
 
-    private Map<String, Integer> mCurrencyCount;
+    private final Map<String, Integer> mCurrencyCount;
 
-    private BudgetsDbAdapter mBudgetsDbAdapter;
+    private final BudgetsDbAdapter mBudgetsDbAdapter;
     private final Book mBook = new Book();
-    private SQLiteDatabase mDB;
-    private DatabaseHelper mDatabaseHelper;
+    private final SQLiteDatabase mDB;
+    private final DatabaseHelper mDatabaseHelper;
     @NonNull
     private final Context context;
 

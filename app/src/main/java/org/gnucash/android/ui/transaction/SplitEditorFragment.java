@@ -452,7 +452,7 @@ public class SplitEditorFragment extends MenuFragment {
                 BigDecimal amount = viewHolder.getAmountValue().abs();
                 long accountId = viewHolder.accountsSpinner.getSelectedItemId();
                 boolean hasDebitNormalBalance = AccountsDbAdapter.getInstance()
-                        .getAccountType(accountId).hasDebitNormalBalance;
+                    .getAccountType(accountId).hasDebitNormalBalance;
 
                 if (viewHolder.splitTypeSwitch.isChecked()) {
                     if (hasDebitNormalBalance)

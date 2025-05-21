@@ -145,8 +145,8 @@ class Price : BaseModel {
         )
     }
 
-    val commodityUID: String? get() = commodity.uid
-    val currencyUID: String? get() = currency.uid
+    val commodityUID: String get() = commodity.uid
+    val currencyUID: String get() = currency.uid
 
     fun setExchangeRate(rate: BigDecimal) {
         // Store 0.1234 as 1234/10000

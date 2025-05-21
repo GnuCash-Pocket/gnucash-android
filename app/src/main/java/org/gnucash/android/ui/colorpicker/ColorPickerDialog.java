@@ -110,8 +110,8 @@ public class ColorPickerDialog extends DialogFragment implements OnColorSelected
         final Activity activity = getActivity();
 
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.color_picker_dialog, null);
-        mProgress = (ProgressBar) view.findViewById(android.R.id.progress);
-        mPalette = (ColorPickerPalette) view.findViewById(R.id.color_picker);
+        mProgress = view.findViewById(android.R.id.progress);
+        mPalette = view.findViewById(R.id.color_picker);
         mPalette.init(mSize, mColumns, this);
 
         if (mColors != null) {
@@ -119,9 +119,9 @@ public class ColorPickerDialog extends DialogFragment implements OnColorSelected
         }
 
         mAlertDialog = new AlertDialog.Builder(activity)
-                .setTitle(mTitleResId)
-                .setView(view)
-                .create();
+            .setTitle(mTitleResId)
+            .setView(view)
+            .create();
 
         return mAlertDialog;
     }

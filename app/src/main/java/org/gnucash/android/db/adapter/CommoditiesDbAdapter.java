@@ -22,6 +22,7 @@ import timber.log.Timber;
  */
 public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
     private Commodity defaultCommodity;
+
     /**
      * Opens the database adapter with an existing database
      *

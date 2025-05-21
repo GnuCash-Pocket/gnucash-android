@@ -62,7 +62,6 @@ import org.gnucash.android.ui.settings.dialog.DeleteBookConfirmationDialog;
 import org.gnucash.android.util.BookUtils;
 import org.gnucash.android.util.PreferencesHelper;
 
-import java.io.IOException;
 import java.sql.Timestamp;
 
 import timber.log.Timber;
@@ -71,7 +70,7 @@ import timber.log.Timber;
  * Fragment for managing the books in the database
  */
 public class BookManagerFragment extends ListFragment implements
-        Refreshable, FragmentResultListener {
+    Refreshable, FragmentResultListener {
 
     private static final int REQUEST_OPEN_DOCUMENT = 0x20;
 
@@ -212,8 +211,8 @@ public class BookManagerFragment extends ListFragment implements
 
         private void setUpMenu(View view, final Context context, Cursor cursor, final String bookUID) {
             final String bookName = cursor.getString(
-                    cursor.getColumnIndexOrThrow(BookEntry.COLUMN_DISPLAY_NAME));
-            ImageView optionsMenu = (ImageView) view.findViewById(R.id.options_menu);
+                cursor.getColumnIndexOrThrow(BookEntry.COLUMN_DISPLAY_NAME));
+            ImageView optionsMenu = view.findViewById(R.id.options_menu);
             optionsMenu.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -265,24 +264,24 @@ public class BookManagerFragment extends ListFragment implements
         private boolean handleMenuRenameBook(String bookName, final String bookUID) {
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
             dialogBuilder.setTitle(R.string.title_rename_book)
-                    .setView(R.layout.dialog_rename_book)
-                    .setPositiveButton(R.string.btn_rename, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            EditText bookTitle = (EditText) ((AlertDialog) dialog).findViewById(R.id.input_book_title);
-                            BooksDbAdapter.getInstance()
-                                    .updateRecord(bookUID,
-                                            BookEntry.COLUMN_DISPLAY_NAME,
-                                            bookTitle.getText().toString().trim());
-                            refresh();
-                        }
-                    })
-                    .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
+                .setView(R.layout.dialog_rename_book)
+                .setPositiveButton(R.string.btn_rename, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        EditText bookTitle = ((AlertDialog) dialog).findViewById(R.id.input_book_title);
+                        BooksDbAdapter.getInstance()
+                            .updateRecord(bookUID,
+                                BookEntry.COLUMN_DISPLAY_NAME,
+                                bookTitle.getText().toString().trim());
+                        refresh();
+                    }
+                })
+                .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
             AlertDialog dialog = dialogBuilder.create();
             dialog.show();
             ((TextView) dialog.findViewById(R.id.input_book_title)).setText(bookName);
@@ -291,11 +290,11 @@ public class BookManagerFragment extends ListFragment implements
 
         private void setLastExportedText(View view, String bookUID) {
             Context context = view.getContext();
-            TextView labelLastSync = (TextView) view.findViewById(R.id.label_last_sync);
+            TextView labelLastSync = view.findViewById(R.id.label_last_sync);
             labelLastSync.setText(R.string.label_last_export_time);
 
             Timestamp lastSyncTime = PreferencesHelper.getLastExportTime(context, bookUID);
-            TextView lastSyncText = (TextView) view.findViewById(R.id.last_sync_time);
+            TextView lastSyncText = view.findViewById(R.id.last_sync_time);
             if (lastSyncTime.equals(new Timestamp(0)))
                 lastSyncText.setText(R.string.last_export_time_never);
             else
@@ -315,7 +314,7 @@ public class BookManagerFragment extends ListFragment implements
             String transactionStats = getResources().getQuantityString(R.plurals.book_transaction_stats, transactionCount, transactionCount);
             String accountStats = getResources().getQuantityString(R.plurals.book_account_stats, accountsCount, accountsCount);
             String stats = accountStats + ", " + transactionStats;
-            TextView statsText = (TextView) view.findViewById(R.id.secondary_text);
+            TextView statsText = view.findViewById(R.id.secondary_text);
             statsText.setText(stats);
         }
     }

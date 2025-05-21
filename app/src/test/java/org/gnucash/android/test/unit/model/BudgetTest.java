@@ -52,7 +52,7 @@ public class BudgetTest extends GnuCashTest {
         budget.setBudgetAmounts(budgetAmounts);
 
         assertThat(budget.getBudgetAmounts()).extracting("budgetUID")
-                .contains(budget.getUID());
+            .contains(budget.getUID());
     }
 
     @Test
@@ -92,10 +92,10 @@ public class BudgetTest extends GnuCashTest {
         List<BudgetAmount> compactedBudgetAmounts = budget.getCompactedBudgetAmounts();
         assertThat(compactedBudgetAmounts).hasSize(3);
         assertThat(compactedBudgetAmounts).extracting("accountUID")
-                .contains("test", "secondAccount");
+            .contains("test", "secondAccount");
 
         assertThat(compactedBudgetAmounts).extracting("periodNum")
-                .contains(1L, 2L, 5L).doesNotContain(-1L);
+            .contains(1L, 2L, 5L).doesNotContain(-1L);
     }
 
     /**
@@ -130,10 +130,10 @@ public class BudgetTest extends GnuCashTest {
 
         assertThat(compactedBudgetAmounts).hasSize(3);
         assertThat(compactedBudgetAmounts).extracting("periodNum").hasSize(3)
-                .contains(-1L, 4L).doesNotContain(1L, 2L, 3L);
+            .contains(-1L, 4L).doesNotContain(1L, 2L, 3L);
 
         assertThat(compactedBudgetAmounts).extracting("accountUID").hasSize(3)
-                .contains("first", "second", "third");
+            .contains("first", "second", "third");
 
     }
 
@@ -154,7 +154,7 @@ public class BudgetTest extends GnuCashTest {
         assertThat(expandedBudgetAmount).hasSize(6);
 
         assertThat(expandedBudgetAmount).extracting("periodNum").hasSize(6)
-                .contains(0L, 1L, 2L, 3L, 4L, 5L).doesNotContain(-1L);
+            .contains(0L, 1L, 2L, 3L, 4L, 5L).doesNotContain(-1L);
 
         assertThat(expandedBudgetAmount).extracting("accountUID").hasSize(6);
     }

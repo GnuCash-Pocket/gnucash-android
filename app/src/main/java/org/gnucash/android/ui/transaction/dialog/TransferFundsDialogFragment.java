@@ -114,8 +114,8 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
             fromCurrencyCode,
             targetCurrencyCode));
         final TextInputResetError textChangeListener = new TextInputResetError(
-                binding.convertedAmountTextInputLayout,
-                binding.exchangeRateTextInputLayout
+            binding.convertedAmountTextInputLayout,
+            binding.exchangeRateTextInputLayout
         );
 
         binding.inputExchangeRate.addTextChangedListener(textChangeListener);
@@ -204,9 +204,9 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
      * Converts the currency amount with the given exchange rate and saves the price to the db
      */
     private void transferFunds(
-            @NonNull Commodity originCommodity,
-            @NonNull Commodity targetCommodity,
-            @NonNull DialogTransferFundsBinding binding
+        @NonNull Commodity originCommodity,
+        @NonNull Commodity targetCommodity,
+        @NonNull DialogTransferFundsBinding binding
     ) {
         Commodity commodityFrom = commoditiesDbAdapter.loadCommodity(originCommodity);
         if (commodityFrom == null) {

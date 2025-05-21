@@ -80,8 +80,8 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
         parseColor("#0065FF"), parseColor("#8F038A"),
     };
 
-    private Map<AccountType, Long> mEarliestTimestampsMap = new HashMap<>();
-    private Map<AccountType, Long> mLatestTimestampsMap = new HashMap<>();
+    private final Map<AccountType, Long> mEarliestTimestampsMap = new HashMap<>();
+    private final Map<AccountType, Long> mLatestTimestampsMap = new HashMap<>();
     private long mEarliestTransactionTimestamp;
     private long mLatestTransactionTimestamp;
     private boolean mChartDataPresent = true;

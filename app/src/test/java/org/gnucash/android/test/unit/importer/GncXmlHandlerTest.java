@@ -107,9 +107,9 @@ public class GncXmlHandlerTest extends BookHelperTest {
         assertThat(transaction.isExported()).isTrue();
         assertThat(transaction.isTemplate()).isFalse();
         assertThat(transaction.getTimeMillis()).
-                isEqualTo(GncXmlHelper.parseDateTime("2016-08-23 10:00:00 +0200"));
+            isEqualTo(GncXmlHelper.parseDateTime("2016-08-23 10:00:00 +0200"));
         assertThat(transaction.getCreatedTimestamp().getTime()).
-                isEqualTo(GncXmlHelper.parseDateTime("2016-08-23 12:44:19 +0200"));
+            isEqualTo(GncXmlHelper.parseDateTime("2016-08-23 12:44:19 +0200"));
 
         // Check splits
         assertThat(transaction.getSplits().size()).isEqualTo(2);
@@ -247,7 +247,7 @@ public class GncXmlHandlerTest extends BookHelperTest {
         assertThat(mTransactionsDbAdapter.getTemplateTransactionsCount()).isEqualTo(1);
 
         Transaction scheduledTransaction =
-                mTransactionsDbAdapter.getRecord("b645bef06d0844aece6424ceeec03983");
+            mTransactionsDbAdapter.getRecord("b645bef06d0844aece6424ceeec03983");
 
         // Check attributes
         assertThat(scheduledTransaction.getDescription()).isEqualTo("Los pollos hermanos");
@@ -257,9 +257,9 @@ public class GncXmlHandlerTest extends BookHelperTest {
         assertThat(scheduledTransaction.isExported()).isTrue();
         assertThat(scheduledTransaction.isTemplate()).isTrue();
         assertThat(scheduledTransaction.getTimeMillis())
-                .isEqualTo(GncXmlHelper.parseDateTime("2016-08-24 10:00:00 +0200"));
+            .isEqualTo(GncXmlHelper.parseDateTime("2016-08-24 10:00:00 +0200"));
         assertThat(scheduledTransaction.getCreatedTimestamp().getTime())
-                .isEqualTo(GncXmlHelper.parseDateTime("2016-08-24 19:50:15 +0200"));
+            .isEqualTo(GncXmlHelper.parseDateTime("2016-08-24 19:50:15 +0200"));
 
         // Check splits
         assertThat(scheduledTransaction.getSplits().size()).isEqualTo(2);
@@ -298,7 +298,7 @@ public class GncXmlHandlerTest extends BookHelperTest {
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
 
         ScheduledAction scheduledTransaction =
-                mScheduledActionDbAdapter.getRecord("b5a13acb5a9459ebed10d06b75bbad10");
+            mScheduledActionDbAdapter.getRecord("b5a13acb5a9459ebed10d06b75bbad10");
 
         // There are 3 byDays but, for now, getting one is enough to ensure it is executed
         assertThat(scheduledTransaction.getRecurrence().getByDays().size()).isGreaterThanOrEqualTo(1);
@@ -326,7 +326,7 @@ public class GncXmlHandlerTest extends BookHelperTest {
         assertThat(mTransactionsDbAdapter.getTemplateTransactionsCount()).isEqualTo(1);
 
         Transaction scheduledTransaction =
-                mTransactionsDbAdapter.getRecord("b645bef06d0844aece6424ceeec03983");
+            mTransactionsDbAdapter.getRecord("b645bef06d0844aece6424ceeec03983");
 
         // Ensure it's the correct transaction
         assertThat(scheduledTransaction.getDescription()).isEqualTo("Los pollos hermanos");

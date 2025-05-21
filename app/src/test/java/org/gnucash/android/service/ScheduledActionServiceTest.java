@@ -40,7 +40,6 @@ import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.model.TransactionType;
 import org.gnucash.android.test.unit.GnuCashTest;
-import org.gnucash.android.util.TimestampHelper;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.LocalDateTime;
@@ -267,7 +266,7 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         Context context = GnuCashApplication.getAppContext();
         ScheduledAction scheduledBackup = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
         scheduledBackup.setStartTime(LocalDateTime.now()
-                .minusMonths(4).minusDays(2).toDate().getTime());
+            .minusMonths(4).minusDays(2).toDate().getTime());
         scheduledBackup.setRecurrence(PeriodType.MONTH, 1);
         scheduledBackup.setExecutionCount(2);
         scheduledBackup.setLastRunTime(LocalDateTime.now().minusMonths(2).toDate().getTime());
@@ -310,7 +309,7 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         Context context = GnuCashApplication.getAppContext();
         ScheduledAction scheduledBackup = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
         scheduledBackup.setStartTime(
-                LocalDateTime.now().withDayOfWeek(DateTimeConstants.WEDNESDAY).toDate().getTime());
+            LocalDateTime.now().withDayOfWeek(DateTimeConstants.WEDNESDAY).toDate().getTime());
         scheduledBackup.setLastRunTime(scheduledBackup.getStartTime());
         long previousLastRun = scheduledBackup.getLastRunTime();
         scheduledBackup.setExecutionCount(0);
@@ -324,7 +323,7 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         scheduledBackup.setTag(backupParams.toTag());
 
         File backupFolder = new File(
-                Exporter.getExportFolderPath(context, GnuCashApplication.getActiveBookUID()));
+            Exporter.getExportFolderPath(context, GnuCashApplication.getActiveBookUID()));
         assertThat(backupFolder).exists();
         assertThat(backupFolder.listFiles()).isEmpty();
 
@@ -359,7 +358,7 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         // Create a transaction with a modified date previous to the last run
         Transaction transaction = new Transaction("Tandoori express");
         Split split = new Split(new Money("10", Commodity.DEFAULT_COMMODITY.getCurrencyCode()),
-                mBaseAccount.getUID());
+            mBaseAccount.getUID());
         split.setType(TransactionType.DEBIT);
         transaction.addSplit(split);
         transaction.addSplit(split.createPair(mTransferAccount.getUID()));
@@ -367,10 +366,10 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         // We set the date directly in the database as the corresponding field
         // is ignored when the object is stored. It's set through a trigger instead.
         setTransactionInDbTimestamp(transaction.getUID(),
-                new Timestamp(LocalDateTime.now().minusDays(9).toDate().getTime()));
+            new Timestamp(LocalDateTime.now().minusDays(9).toDate().getTime()));
 
         File backupFolder = new File(
-                Exporter.getExportFolderPath(context, GnuCashApplication.getActiveBookUID()));
+            Exporter.getExportFolderPath(context, GnuCashApplication.getActiveBookUID()));
         assertThat(backupFolder).exists();
         assertThat(backupFolder.listFiles()).isEmpty();
 
@@ -393,7 +392,7 @@ public class ScheduledActionServiceTest extends GnuCashTest {
         ContentValues values = new ContentValues();
         values.put(DatabaseSchema.TransactionEntry.COLUMN_TIMESTAMP, timestamp.getTime());
         mTransactionsDbAdapter.updateTransaction(values, DatabaseSchema.TransactionEntry.COLUMN_UID + "=?",
-                new String[]{transactionUID});
+            new String[]{transactionUID});
     }
 
     /**
@@ -419,14 +418,14 @@ public class ScheduledActionServiceTest extends GnuCashTest {
 
         Transaction transaction = new Transaction("Orient palace");
         Split split = new Split(new Money("10", Commodity.DEFAULT_COMMODITY.getCurrencyCode()),
-                mBaseAccount.getUID());
+            mBaseAccount.getUID());
         split.setType(TransactionType.DEBIT);
         transaction.addSplit(split);
         transaction.addSplit(split.createPair(mTransferAccount.getUID()));
         mTransactionsDbAdapter.addRecord(transaction);
 
         File backupFolder = new File(
-                Exporter.getExportFolderPath(context, GnuCashApplication.getActiveBookUID()));
+            Exporter.getExportFolderPath(context, GnuCashApplication.getActiveBookUID()));
         assertThat(backupFolder).exists();
         assertThat(backupFolder.listFiles()).isEmpty();
 

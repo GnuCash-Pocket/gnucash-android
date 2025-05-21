@@ -1358,7 +1358,7 @@ object PangoColorTable {
 
     @ColorInt
     fun find(name: String): Int? {
-        val index : Int = color_names.binarySearch(name.lowercase(Locale.ROOT))
+        val index: Int = color_names.binarySearch(name.lowercase(Locale.ROOT))
         if (index >= 0) {
             val found = color_entries[index]
             return Color.rgb(found.red, found.green, found.blue)

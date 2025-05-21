@@ -65,9 +65,9 @@ public class TransactionTest extends GnuCashTest {
         t1.setSplits(splits);
 
         assertThat(t1.getSplits()).extracting("transactionUID")
-                .contains(t1.getUID())
-                .doesNotContain("non-existent")
-                .doesNotContain("pre-existent");
+            .contains(t1.getUID())
+            .doesNotContain("non-existent")
+            .doesNotContain("pre-existent");
     }
 
     @Test

@@ -26,8 +26,8 @@ fun Activity.chooseContent(requestCode: Int) {
     try {
         startActivityForResult(intent, requestCode)
     } catch (e: ActivityNotFoundException) {
-        Timber.e(e, "No file manager for selecting files available");
-        Toast.makeText(context, R.string.toast_install_file_manager, Toast.LENGTH_LONG).show();
+        Timber.e(e, "No file manager for selecting files available")
+        Toast.makeText(context, R.string.toast_install_file_manager, Toast.LENGTH_LONG).show()
     }
 }
 
@@ -37,8 +37,8 @@ fun Fragment.chooseContent(requestCode: Int) {
     try {
         startActivityForResult(intent, requestCode)
     } catch (e: ActivityNotFoundException) {
-        Timber.e(e, "No file manager for selecting files available");
-        Toast.makeText(context, R.string.toast_install_file_manager, Toast.LENGTH_LONG).show();
+        Timber.e(e, "No file manager for selecting files available")
+        Toast.makeText(context, R.string.toast_install_file_manager, Toast.LENGTH_LONG).show()
     }
 }
 

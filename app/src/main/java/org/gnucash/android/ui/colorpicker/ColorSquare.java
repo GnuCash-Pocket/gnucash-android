@@ -39,7 +39,7 @@ public class ColorSquare extends QuickContactBadge {
     @Override
     public void setBackgroundColor(int color) {
         Drawable[] colorDrawable = new Drawable[]{
-                getContext().getResources().getDrawable(R.drawable.color_square)};
+            getContext().getResources().getDrawable(R.drawable.color_square)};
         setImageDrawable(new ColorStateDrawable(colorDrawable, color));
     }
 }

@@ -37,13 +37,13 @@ public class TimestampHelperTest extends GnuCashTest {
         final String unixBillenniumUtcString = "2001-09-09 01:46:40.000";
         final Timestamp unixBillenniumTimestamp = new Timestamp(unixBillennium);
         assertThat(TimestampHelper.getUtcStringFromTimestamp(unixBillenniumTimestamp))
-                .isEqualTo(unixBillenniumUtcString);
+            .isEqualTo(unixBillenniumUtcString);
 
         final long the1234567890thSecond = 1234567890 * 1000L;
         final String the1234567890thSecondUtcString = "2009-02-13 23:31:30.000";
         final Timestamp the1234567890thSecondTimestamp = new Timestamp(the1234567890thSecond);
         assertThat(TimestampHelper.getUtcStringFromTimestamp(the1234567890thSecondTimestamp))
-                .isEqualTo(the1234567890thSecondUtcString);
+            .isEqualTo(the1234567890thSecondUtcString);
     }
 
     @Test
@@ -59,18 +59,18 @@ public class TimestampHelperTest extends GnuCashTest {
         final String unixBillenniumWithMillisecondsUtcString = "2001-09-09 01:46:40.000";
         final Timestamp unixBillenniumTimestamp = new Timestamp(unixBillennium);
         assertThat(TimestampHelper.getTimestampFromUtcString(unixBillenniumUtcString))
-                .isEqualTo(unixBillenniumTimestamp);
+            .isEqualTo(unixBillenniumTimestamp);
         assertThat(TimestampHelper.getTimestampFromUtcString(unixBillenniumWithMillisecondsUtcString))
-                .isEqualTo(unixBillenniumTimestamp);
+            .isEqualTo(unixBillenniumTimestamp);
 
         final long the1234567890thSecond = 1234567890 * 1000L;
         final String the1234567890thSecondUtcString = "2009-02-13 23:31:30";
         final String the1234567890thSecondWithMillisecondsUtcString = "2009-02-13 23:31:30.000";
         final Timestamp the1234567890thSecondTimestamp = new Timestamp(the1234567890thSecond);
         assertThat(TimestampHelper.getTimestampFromUtcString(the1234567890thSecondUtcString))
-                .isEqualTo(the1234567890thSecondTimestamp);
+            .isEqualTo(the1234567890thSecondTimestamp);
         assertThat(TimestampHelper.getTimestampFromUtcString(the1234567890thSecondWithMillisecondsUtcString))
-                .isEqualTo(the1234567890thSecondTimestamp);
+            .isEqualTo(the1234567890thSecondTimestamp);
     }
 
     @Test
@@ -79,6 +79,6 @@ public class TimestampHelperTest extends GnuCashTest {
         final long now = TimestampHelper.getTimestampFromNow().getTime();
         final long after = System.currentTimeMillis();
         assertThat(now).isGreaterThanOrEqualTo(before)
-                .isLessThanOrEqualTo(after);
+            .isLessThanOrEqualTo(after);
     }
 }

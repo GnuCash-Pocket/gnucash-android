@@ -170,17 +170,17 @@ public class ReportsOverviewFragment extends BaseReportFragment {
         long end = now.toDateTime().getMillis();
 
         List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(
-                DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND " + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + "=? AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?",
-                new String[]{mCommodity.getUID(), mAccountType.name()},
-                DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC"
+            DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND " + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + "=? AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?",
+            new String[]{mCommodity.getUID(), mAccountType.name()},
+            DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC"
         );
         for (Account account : accounts) {
             float balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), start, end, false).toFloat();
             if (balance > 0f) {
                 dataSet.addEntry(new Entry(balance, dataSet.getEntryCount()));
                 colors.add(account.getColor() != Account.DEFAULT_COLOR
-                        ? account.getColor()
-                        : COLORS[(dataSet.getEntryCount() - 1) % COLORS.length]);
+                    ? account.getColor()
+                    : COLORS[(dataSet.getEntryCount() - 1) % COLORS.length]);
                 labels.add(account.getName());
             }
         }

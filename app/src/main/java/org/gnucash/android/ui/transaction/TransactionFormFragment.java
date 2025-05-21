@@ -162,7 +162,7 @@ public class TransactionFormFragment extends MenuFragment implements
 
     private RecurrenceViewClickListener mRecurrenceViewClickListener;
     private String mRecurrenceRule;
-    private EventRecurrence mEventRecurrence = new EventRecurrence();
+    private final EventRecurrence mEventRecurrence = new EventRecurrence();
 
     private String mAccountUID;
 
@@ -329,7 +329,7 @@ public class TransactionFormFragment extends MenuFragment implements
             String dateString = DateUtils.formatDateTime(view.getContext(), timestamp,
                 DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_YEAR);
 
-            TextView secondaryTextView = (TextView) view.findViewById(R.id.secondary_text);
+            TextView secondaryTextView = view.findViewById(R.id.secondary_text);
             secondaryTextView.setText(balance.formattedString() + " on " + dateString); //TODO: Extract string
         }
     }

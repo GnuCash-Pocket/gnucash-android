@@ -242,7 +242,7 @@ public class AccountsListFragment extends MenuFragment implements
      * It shows the delete confirmation dialog if the account has transactions,
      * else deletes the account immediately
      *
-     * @param activity The activity context.
+     * @param activity   The activity context.
      * @param accountUID The UID of the account
      */
     private void tryDeleteAccount(final Activity activity, final String accountUID) {

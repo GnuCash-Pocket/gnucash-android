@@ -50,10 +50,10 @@ public class KeyboardFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_numeric_keyboard, container, false);
 
-        pass1 = (TextView) rootView.findViewById(R.id.passcode1);
-        pass2 = (TextView) rootView.findViewById(R.id.passcode2);
-        pass3 = (TextView) rootView.findViewById(R.id.passcode3);
-        pass4 = (TextView) rootView.findViewById(R.id.passcode4);
+        pass1 = rootView.findViewById(R.id.passcode1);
+        pass2 = rootView.findViewById(R.id.passcode2);
+        pass3 = rootView.findViewById(R.id.passcode3);
+        pass4 = rootView.findViewById(R.id.passcode4);
 
         rootView.findViewById(R.id.one_btn).setOnClickListener(new View.OnClickListener() {
             @Override

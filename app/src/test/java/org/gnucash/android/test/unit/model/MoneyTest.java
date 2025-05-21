@@ -39,7 +39,7 @@ public class MoneyTest extends GnuCashTest {
     private static final String CURRENCY_EUR = "EUR";
     private Money mMoneyInEur;
     private int mHashcode;
-    private String amountString = "15.75";
+    private final String amountString = "15.75";
 
     @Before
     public void setUp() throws Exception {

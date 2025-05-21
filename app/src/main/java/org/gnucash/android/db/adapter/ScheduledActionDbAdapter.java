@@ -20,7 +20,6 @@ import static org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
-import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 
 import androidx.annotation.NonNull;

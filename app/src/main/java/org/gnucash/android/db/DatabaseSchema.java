@@ -48,13 +48,13 @@ public class DatabaseSchema {
 
     public interface CommonColumns extends BaseColumns {
         @Column(value = Cursor.FIELD_TYPE_INTEGER, readOnly = true)
-        public static final String COLUMN_ID = _ID;
+        String COLUMN_ID = _ID;
         @Column(Cursor.FIELD_TYPE_STRING)
-        public static final String COLUMN_UID = "uid";
+        String COLUMN_UID = "uid";
         @Column(Cursor.FIELD_TYPE_STRING)
-        public static final String COLUMN_CREATED_AT = "created_at";
+        String COLUMN_CREATED_AT = "created_at";
         @Column(Cursor.FIELD_TYPE_STRING)
-        public static final String COLUMN_MODIFIED_AT = "modified_at";
+        String COLUMN_MODIFIED_AT = "modified_at";
     }
 
     public static final class BookEntry implements CommonColumns {

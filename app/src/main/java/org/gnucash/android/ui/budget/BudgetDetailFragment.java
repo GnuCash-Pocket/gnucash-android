@@ -16,7 +16,6 @@
 
 package org.gnucash.android.ui.budget;
 
-import static org.gnucash.android.math.MathExtKt.isZero;
 import static org.gnucash.android.math.MathExtKt.times;
 
 import android.app.Activity;
@@ -191,8 +190,8 @@ public class BudgetDetailFragment extends MenuFragment implements Refreshable {
 
 
     public class BudgetAmountAdapter extends RecyclerView.Adapter<BudgetAmountAdapter.BudgetAmountViewHolder> {
-        private List<BudgetAmount> mBudgetAmounts;
-        private Budget mBudget;
+        private final List<BudgetAmount> mBudgetAmounts;
+        private final Budget mBudget;
 
         public BudgetAmountAdapter() {
             mBudget = mBudgetsDbAdapter.getRecord(mBudgetUID);
@@ -232,8 +231,8 @@ public class BudgetDetailFragment extends MenuFragment implements Refreshable {
 
             for (int periodNum = 1; periodNum <= periods; periodNum++) {
                 BigDecimal amount = accountsDbAdapter.getAccountBalance(budgetAmount.getAccountUID(),
-                                mBudget.getStartOfPeriod(periodNum), mBudget.getEndOfPeriod(periodNum))
-                        .asBigDecimal();
+                        mBudget.getStartOfPeriod(periodNum), mBudget.getEndOfPeriod(periodNum))
+                    .asBigDecimal();
 
                 if (amount.equals(BigDecimal.ZERO))
                     continue;

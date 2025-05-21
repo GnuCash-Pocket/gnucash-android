@@ -25,8 +25,8 @@ public class StethoUtils {
             return;
 
         Stetho.initialize(Stetho.newInitializerBuilder(application)
-                .enableWebKitInspector(Stetho.defaultInspectorModulesProvider(application))
-                .build());
+            .enableWebKitInspector(Stetho.defaultInspectorModulesProvider(application))
+            .build());
     }
 
     /**

@@ -43,6 +43,6 @@ public class PreferencesHelperTest extends GnuCashTest {
         final Timestamp goldenBoyBirthdayTimestamp = new Timestamp(goldenBoyBirthday);
         PreferencesHelper.setLastExportTime(goldenBoyBirthdayTimestamp);
         assertThat(PreferencesHelper.getLastExportTime(context))
-                .isEqualTo(goldenBoyBirthdayTimestamp);
+            .isEqualTo(goldenBoyBirthdayTimestamp);
     }
 }

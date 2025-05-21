@@ -32,7 +32,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 

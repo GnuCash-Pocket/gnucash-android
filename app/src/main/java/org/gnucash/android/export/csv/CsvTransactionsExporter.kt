@@ -65,7 +65,8 @@ class CsvTransactionsExporter(
     @Throws(IOException::class)
     private fun writeSplitsToCsv(splits: List<Split>, fields: Array<String>, writer: ICSVWriter) {
         // Sort splits by account name.
-        val splitToAccount = splits.associate { it.uid to mAccountsDbAdapter.getAccountFullName(it.accountUID) }
+        val splitToAccount =
+            splits.associate { it.uid to mAccountsDbAdapter.getAccountFullName(it.accountUID) }
         val splitsByAccount = splits.sortedBy { splitToAccount[it.uid] }
 
         for (split in splitsByAccount) {

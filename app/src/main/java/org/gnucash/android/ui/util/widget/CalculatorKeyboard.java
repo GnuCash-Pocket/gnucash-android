@@ -218,6 +218,7 @@ public class CalculatorKeyboard {
 
     /**
      * Is the keyboard visible?
+     *
      * @return `true` when visible.
      */
     public boolean isVisible() {

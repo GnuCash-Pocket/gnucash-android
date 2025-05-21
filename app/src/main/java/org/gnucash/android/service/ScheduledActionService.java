@@ -223,7 +223,7 @@ public class ScheduledActionService {
         } catch (InterruptedException | ExecutionException e) {
             Timber.e(e);
         }
-        if (result == null ) {
+        if (result == null) {
             Timber.w("Backup/export did not occur." +
                 " There might have been no new transactions to export");
             return 0;

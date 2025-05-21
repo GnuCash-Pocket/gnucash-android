@@ -21,8 +21,6 @@ import android.content.Context;
 
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity;
 
-import java.util.Arrays;
-
 /**
  * {@link AppWidgetProvider} which is responsible for managing widgets on the homescreen
  * It receives broadcasts related to updating and deleting widgets

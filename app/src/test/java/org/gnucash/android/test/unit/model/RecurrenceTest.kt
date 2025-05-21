@@ -426,7 +426,7 @@ class RecurrenceTest : GnuCashTest() {
         assertThat(recurrence.byDays).isEmpty()
 
         // Monthly; week starts on Sunday; on 4th Wednesday of the month.
-        val rule = "FREQ=MONTHLY;WKST=SU;BYDAY=4WE";
+        val rule = "FREQ=MONTHLY;WKST=SU;BYDAY=4WE"
         recurrence.ruleString = rule
         assertThat(recurrence.ruleString).isEqualTo(rule)
         assertThat(recurrence.periodType).isEqualTo(PeriodType.MONTH)

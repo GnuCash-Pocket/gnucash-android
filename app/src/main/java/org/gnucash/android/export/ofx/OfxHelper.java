@@ -16,7 +16,6 @@
 package org.gnucash.android.export.ofx;
 
 import org.gnucash.android.BuildConfig;
-
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -116,7 +115,7 @@ public class OfxHelper {
      * "For example, “19961005132200.124[-5:EST]” represents October 5, 1996, at 1:22 and 124 milliseconds p.m., in Eastern Standard Time.
      * This is the same as 6:22 p.m. Greenwich Mean Time (GMT)."
      *
-     * @param date Long value representing the time to be formatted
+     * @param date     Long value representing the time to be formatted
      * @param timeZone the time zone.
      * @return Formatted string representation of time in <code>milliseconds</code>
      */
@@ -125,7 +124,7 @@ public class OfxHelper {
         DateTimeZone zone = DateTimeZone.forTimeZone(tz);
         DateTimeFormatter formatter = DateTimeFormat.forPattern(OFX_DATE_PATTERN).withZone(zone);
         int offsetMillis = zone.getOffset(date);
-        int hours = (int) ((offsetMillis / (1000 * 60 * 60)) % 24);
+        int hours = (offsetMillis / (1000 * 60 * 60)) % 24;
         String sign = offsetMillis > 0 ? "+" : "";
         String tzName = zone.getShortName(date, Locale.ROOT);
         return formatter.print(date) + "[" + sign + hours + ":" + tzName + "]";

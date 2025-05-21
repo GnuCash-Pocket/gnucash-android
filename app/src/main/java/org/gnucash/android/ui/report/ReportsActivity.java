@@ -130,7 +130,7 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
         mBinding.toolbarLayout.toolbarSpinner.setOnItemSelectedListener(mReportTypeSelectedListener);
 
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.report_time_range,
-                android.R.layout.simple_spinner_item);
+            android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mBinding.timeRangeSpinner.setAdapter(adapter);
         mBinding.timeRangeSpinner.setOnItemSelectedListener(this);
@@ -177,8 +177,7 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
 
     void onFragmentResumed(@NonNull Fragment fragment) {
         ReportType reportType = ReportType.NONE;
-        if (fragment instanceof BaseReportFragment) {
-            BaseReportFragment reportFragment = (BaseReportFragment) fragment;
+        if (fragment instanceof BaseReportFragment reportFragment) {
             reportType = reportFragment.getReportType();
 
             int visibility = reportFragment.requiresAccountTypeOptions() ? View.VISIBLE : View.GONE;

@@ -15,8 +15,6 @@
  */
 package org.gnucash.android.ui.settings
 
-import androidx.annotation.StyleRes
-
 /**
  * Theme preferences.
  */

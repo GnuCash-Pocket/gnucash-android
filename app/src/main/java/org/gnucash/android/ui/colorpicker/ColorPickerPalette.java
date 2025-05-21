@@ -75,7 +75,7 @@ public class ColorPickerPalette extends TableLayout {
     private TableRow createTableRow() {
         TableRow row = new TableRow(getContext());
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(LayoutParams.WRAP_CONTENT,
-                LayoutParams.WRAP_CONTENT);
+            LayoutParams.WRAP_CONTENT);
         row.setLayoutParams(params);
         return row;
     }
@@ -100,7 +100,7 @@ public class ColorPickerPalette extends TableLayout {
 
             View colorSwatch = createColorSwatch(color, selectedColor);
             setSwatchDescription(rowNumber, tableElements, rowElements, color == selectedColor,
-                    colorSwatch);
+                colorSwatch);
             addSwatchToRow(row, colorSwatch, rowNumber);
 
             rowElements++;
@@ -177,7 +177,7 @@ public class ColorPickerPalette extends TableLayout {
      */
     private ColorPickerSwatch createColorSwatch(int color, int selectedColor) {
         ColorPickerSwatch view = new ColorPickerSwatch(getContext(), color,
-                color == selectedColor, mOnColorSelectedListener);
+            color == selectedColor, mOnColorSelectedListener);
         TableRow.LayoutParams params = new TableRow.LayoutParams(mSwatchLength, mSwatchLength);
         params.setMargins(mMarginSize, mMarginSize, mMarginSize, mMarginSize);
         view.setLayoutParams(params);

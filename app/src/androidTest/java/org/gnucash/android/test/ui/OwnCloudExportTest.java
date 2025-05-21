@@ -29,7 +29,6 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-import static org.gnucash.android.test.ui.AccountsActivityTest.preventFirstRunDialogs;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
@@ -67,10 +66,10 @@ public class OwnCloudExportTest extends GnuAndroidTest {
 
     private SharedPreferences mPrefs;
 
-    private String OC_SERVER = "https://demo.owncloud.org";
-    private String OC_USERNAME = "admin";
-    private String OC_PASSWORD = "admin";
-    private String OC_DIR = "gc_test";
+    private final String OC_SERVER = "https://demo.owncloud.org";
+    private final String OC_USERNAME = "admin";
+    private final String OC_PASSWORD = "admin";
+    private final String OC_DIR = "gc_test";
     private static final boolean OC_DEMO_DISABLED = true;
 
     /**
@@ -175,7 +174,7 @@ public class OwnCloudExportTest extends GnuAndroidTest {
         assertTrue(mPrefs.getBoolean(context.getString(R.string.key_owncloud_sync), false));
     }
 
-    //// FIXME: 20.04.2017 This test now fails since introduction of SAF.
+    /// / FIXME: 20.04.2017 This test now fails since introduction of SAF.
     public void ownCloudExport() {
         Context context = GnuCashApplication.getAppContext();
         Assume.assumeTrue(hasActiveInternetConnection(context));

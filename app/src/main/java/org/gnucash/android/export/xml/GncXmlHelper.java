@@ -148,7 +148,7 @@ public abstract class GncXmlHelper {
     public static final String TAG_RX_MULT = "recurrence:mult";
     public static final String TAG_RX_PERIOD_TYPE = "recurrence:period_type";
     public static final String TAG_RX_START = "recurrence:start";
-    public static final String TAG_RX_WEEKEND_ADJ =  "recurrence:weekend_adj";
+    public static final String TAG_RX_WEEKEND_ADJ = "recurrence:weekend_adj";
 
 
     public static final String TAG_BUDGET = "gnc:budget";

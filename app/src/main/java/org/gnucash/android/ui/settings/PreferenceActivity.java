@@ -47,7 +47,7 @@ import timber.log.Timber;
  * Activity for unified preferences
  */
 public class PreferenceActivity extends PasscodeLockActivity implements
-        PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
+    PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
 
     public static final String ACTION_MANAGE_BOOKS = BuildConfig.APPLICATION_ID + ".action.MANAGE_BOOKS";
 

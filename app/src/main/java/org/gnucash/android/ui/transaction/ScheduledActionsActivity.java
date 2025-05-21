@@ -27,7 +27,6 @@ import com.google.android.material.tabs.TabLayout;
 
 import org.gnucash.android.R;
 import org.gnucash.android.databinding.ActivityScheduledEventsBinding;
-import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.ui.common.BaseDrawerActivity;
 
 /**
