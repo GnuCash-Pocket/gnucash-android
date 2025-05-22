@@ -6,6 +6,8 @@
     <color name="debit_red">#FF1B17</color>
     <color name="credit_green">#5DE15D</color>
 
+    <color name="theme_accent">#FF8000</color>
+
     <color name="widget_bg">#CC000000</color>
 
     <color name="kbd_bg">#EE1F1F23</color>
