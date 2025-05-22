@@ -22,6 +22,7 @@ import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
+import org.gnucash.android.export.ofx.OfxHelper.*
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Transaction
@@ -58,14 +59,14 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
      * @param doc DOM document of the OFX expenses.
      * @param parent Parent node for all expenses in report.
      */
-    private fun generateOfx(accounts: List<Account>, doc: Document, parent: Element) {
-        val transactionUid = doc.createElement(OfxHelper.TAG_TRANSACTION_UID)
+    private fun writeOFX(doc: Document, parent: Element, accounts: List<Account>) {
+        val transactionUid = doc.createElement(TAG_TRANSACTION_UID)
         // Unsolicited because the data exported is not as a result of a request.
-        transactionUid.appendChild(doc.createTextNode(OfxHelper.UNSOLICITED_TRANSACTION_ID))
+        transactionUid.appendChild(doc.createTextNode(UNSOLICITED_TRANSACTION_ID))
         val statementTransactionResponse =
-            doc.createElement(OfxHelper.TAG_STATEMENT_TRANSACTION_RESPONSE)
+            doc.createElement(TAG_STATEMENT_TRANSACTION_RESPONSE)
         statementTransactionResponse.appendChild(transactionUid)
-        val bankmsgs = doc.createElement(OfxHelper.TAG_BANK_MESSAGES_V1)
+        val bankmsgs = doc.createElement(TAG_BANK_MESSAGES_V1)
         bankmsgs.appendChild(statementTransactionResponse)
         parent.appendChild(bankmsgs)
         val isDoubleEntryEnabled = GnuCashApplication.isDoubleEntryEnabled()
@@ -80,9 +81,9 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
             .forEach { account ->
                 // Add account details (transactions) to the XML document.
                 writeAccount(
-                    account,
                     doc,
                     statementTransactionResponse,
+                    account,
                     mExportParams.exportStartTime
                 )
                 // Mark as exported.
@@ -98,29 +99,29 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
      * @throws ExporterException if an XML builder could not be created.
      */
     @Throws(ExporterException::class)
-    private fun generateOfxExport(accounts: List<Account>, writer: Writer) {
-        val document = makeDocBuilder().newDocument()
+    private fun writeAccounts(writer: Writer, accounts: List<Account>) {
+        val document = createDocumentBuilder().newDocument()
         val root = document.createElement("OFX")
-        val pi = document.createProcessingInstruction("OFX", OfxHelper.OFX_HEADER)
+        val pi = document.createProcessingInstruction("OFX", OFX_HEADER)
         document.appendChild(pi)
         document.appendChild(root)
-        generateOfx(accounts, document, root)
+        writeOFX(document, root, accounts)
         val useXmlHeader = PreferenceManager.getDefaultSharedPreferences(mContext)
             .getBoolean(mContext.getString(R.string.key_xml_ofx_header), false)
         PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow(), bookUID)
         if (useXmlHeader) {
-            write(document, writer, false)
+            write(writer, document, false)
         } else {
             // If we want SGML OFX headers, write first to string and then prepend header.
             val ofxNode = document.getElementsByTagName("OFX").item(0)
-            writer.write(OfxHelper.OFX_SGML_HEADER)
+            writer.write(OFX_SGML_HEADER)
             writer.write("\n")
-            write(ofxNode, writer, true)
+            write(writer, ofxNode, true)
         }
     }
 
     @Throws(ExporterException::class)
-    private fun makeDocBuilder(): DocumentBuilder {
+    private fun createDocumentBuilder(): DocumentBuilder {
         val docFactory = DocumentBuilderFactory.newInstance()
         try {
             return docFactory.newDocumentBuilder()
@@ -129,27 +130,27 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
         }
     }
 
-    override fun writeExport(exportParams: ExportParams, writer: Writer) {
+    override fun writeExport(writer: Writer, exportParams: ExportParams) {
         val accounts = mAccountsDbAdapter.getExportableAccounts(exportParams.exportStartTime)
         if (accounts.isEmpty()) {
             throw ExporterException(exportParams, "No accounts to export")
         }
-        generateOfxExport(accounts, writer)
+        writeAccounts(writer, accounts)
     }
 
     /**
      * Writes out the document held in `node` to `outputWriter`
      *
+     * @param writer Writer to use in writing the file to stream.
      * @param node Node, containing the OFX document structure. Usually the parent node.
-     * @param outputWriter Writer to use in writing the file to stream.
      * @param omitXmlDeclaration Flag which causes the XML declaration to be omitted.
      */
-    private fun write(node: Node, outputWriter: Writer, omitXmlDeclaration: Boolean) {
+    private fun write(writer: Writer, node: Node, omitXmlDeclaration: Boolean) {
         try {
             val transformerFactory = TransformerFactory.newInstance()
             val transformer = transformerFactory.newTransformer()
             val source = DOMSource(node)
-            val result = StreamResult(outputWriter)
+            val result = StreamResult(writer)
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2")
             transformer.setOutputProperty(OutputKeys.INDENT, "yes")
             if (omitXmlDeclaration) {
@@ -163,40 +164,31 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
     }
 
     /**
-     * Returns the MIME type for this exporter.
-     *
-     * @return MIME type as string
-     */
-    override fun getExportMimeType(): String {
-        return "text/xml"
-    }
-
-    /**
      * Converts this account's transactions into XML and adds them to the DOM document
      *
-     * @param account The account.
      * @param doc             XML DOM document for the OFX data
      * @param parent          Parent node to which to add this account's transactions in XML
+     * @param account         The account.
      * @param exportStartTime Time from which to export transactions which are created/modified after
      */
     private fun writeAccount(
-        account: Account,
         doc: Document,
         parent: Element,
+        account: Account,
         exportStartTime: Timestamp?
     ) {
-        val currency = doc.createElement(OfxHelper.TAG_CURRENCY_DEF)
+        val currency = doc.createElement(TAG_CURRENCY_DEF)
         currency.appendChild(doc.createTextNode(account.commodity.currencyCode))
 
         //================= BEGIN BANK ACCOUNT INFO (BANKACCTFROM) =================================
-        val bankId = doc.createElement(OfxHelper.TAG_BANK_ID)
-        bankId.appendChild(doc.createTextNode(OfxHelper.APP_ID))
-        val acctId = doc.createElement(OfxHelper.TAG_ACCOUNT_ID)
+        val bankId = doc.createElement(TAG_BANK_ID)
+        bankId.appendChild(doc.createTextNode(APP_ID))
+        val acctId = doc.createElement(TAG_ACCOUNT_ID)
         acctId.appendChild(doc.createTextNode(account.uid))
-        val accttype = doc.createElement(OfxHelper.TAG_ACCOUNT_TYPE)
+        val accttype = doc.createElement(TAG_ACCOUNT_TYPE)
         val ofxAccountType = OfxAccountType.of(account.accountType).name
         accttype.appendChild(doc.createTextNode(ofxAccountType))
-        val bankFrom = doc.createElement(OfxHelper.TAG_BANK_ACCOUNT_FROM)
+        val bankFrom = doc.createElement(TAG_BANK_ACCOUNT_FROM)
         bankFrom.appendChild(bankId)
         bankFrom.appendChild(acctId)
         bankFrom.appendChild(accttype)
@@ -206,12 +198,12 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
 
         //================= BEGIN ACCOUNT BALANCE INFO =================================
         val balance = getAccountBalance(account).toPlainString()
-        val formattedCurrentTimeString = OfxHelper.getFormattedCurrentTime()
-        val balanceAmount = doc.createElement(OfxHelper.TAG_BALANCE_AMOUNT)
+        val formattedCurrentTimeString = getFormattedCurrentTime()
+        val balanceAmount = doc.createElement(TAG_BALANCE_AMOUNT)
         balanceAmount.appendChild(doc.createTextNode(balance))
-        val dtasof = doc.createElement(OfxHelper.TAG_DATE_AS_OF)
+        val dtasof = doc.createElement(TAG_DATE_AS_OF)
         dtasof.appendChild(doc.createTextNode(formattedCurrentTimeString))
-        val ledgerBalance = doc.createElement(OfxHelper.TAG_LEDGER_BALANCE)
+        val ledgerBalance = doc.createElement(TAG_LEDGER_BALANCE)
         ledgerBalance.appendChild(balanceAmount)
         ledgerBalance.appendChild(dtasof)
 
@@ -219,16 +211,16 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
 
 
         //================= BEGIN TIME PERIOD INFO =================================
-        val dtstart = doc.createElement(OfxHelper.TAG_DATE_START)
+        val dtstart = doc.createElement(TAG_DATE_START)
         dtstart.appendChild(doc.createTextNode(formattedCurrentTimeString))
-        val dtend = doc.createElement(OfxHelper.TAG_DATE_END)
+        val dtend = doc.createElement(TAG_DATE_END)
         dtend.appendChild(doc.createTextNode(formattedCurrentTimeString))
 
         //================= END TIME PERIOD INFO =================================
 
 
         //================= BEGIN TRANSACTIONS LIST =================================
-        val bankTransactionsList = doc.createElement(OfxHelper.TAG_BANK_TRANSACTION_LIST)
+        val bankTransactionsList = doc.createElement(TAG_BANK_TRANSACTION_LIST)
         bankTransactionsList.appendChild(dtstart)
         bankTransactionsList.appendChild(dtend)
         for (transaction in account.transactions) {
@@ -236,7 +228,7 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
             bankTransactionsList.appendChild(toOFX(transaction, doc, account.uid))
         }
         //================= END TRANSACTIONS LIST =================================
-        val statementTransactions = doc.createElement(OfxHelper.TAG_STATEMENT_TRANSACTIONS)
+        val statementTransactions = doc.createElement(TAG_STATEMENT_TRANSACTIONS)
         statementTransactions.appendChild(currency)
         statementTransactions.appendChild(bankFrom)
         statementTransactions.appendChild(bankTransactionsList)
@@ -275,33 +267,33 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
             TransactionType.CREDIT
         }
 
-        val transactionNode = doc.createElement(OfxHelper.TAG_STATEMENT_TRANSACTION)
-        val typeNode = doc.createElement(OfxHelper.TAG_TRANSACTION_TYPE)
+        val transactionNode = doc.createElement(TAG_STATEMENT_TRANSACTION)
+        val typeNode = doc.createElement(TAG_TRANSACTION_TYPE)
         typeNode.appendChild(doc.createTextNode(transactionType.toString()))
         transactionNode.appendChild(typeNode)
 
-        val datePosted = doc.createElement(OfxHelper.TAG_DATE_POSTED)
-        datePosted.appendChild(doc.createTextNode(OfxHelper.getOfxFormattedTime(transaction.timeMillis)))
+        val datePosted = doc.createElement(TAG_DATE_POSTED)
+        datePosted.appendChild(doc.createTextNode(getOfxFormattedTime(transaction.timeMillis)))
         transactionNode.appendChild(datePosted)
 
-        val dateUser = doc.createElement(OfxHelper.TAG_DATE_USER)
-        dateUser.appendChild(doc.createTextNode(OfxHelper.getOfxFormattedTime(transaction.timeMillis)))
+        val dateUser = doc.createElement(TAG_DATE_USER)
+        dateUser.appendChild(doc.createTextNode(getOfxFormattedTime(transaction.timeMillis)))
         transactionNode.appendChild(dateUser)
 
-        val amount = doc.createElement(OfxHelper.TAG_TRANSACTION_AMOUNT)
+        val amount = doc.createElement(TAG_TRANSACTION_AMOUNT)
         amount.appendChild(doc.createTextNode(balance.toPlainString()))
         transactionNode.appendChild(amount)
 
-        val transID = doc.createElement(OfxHelper.TAG_TRANSACTION_FITID)
+        val transID = doc.createElement(TAG_TRANSACTION_FITID)
         transID.appendChild(doc.createTextNode(transaction.uid))
         transactionNode.appendChild(transID)
 
-        val name = doc.createElement(OfxHelper.TAG_NAME)
+        val name = doc.createElement(TAG_NAME)
         name.appendChild(doc.createTextNode(transaction.description))
         transactionNode.appendChild(name)
 
         if (transaction.note != null && transaction.note!!.isNotEmpty()) {
-            val memo = doc.createElement(OfxHelper.TAG_MEMO)
+            val memo = doc.createElement(TAG_MEMO)
             memo.appendChild(doc.createTextNode(transaction.note))
             transactionNode.appendChild(memo)
         }
@@ -314,17 +306,17 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
                     break
                 }
             }
-            val bankId = doc.createElement(OfxHelper.TAG_BANK_ID)
-            bankId.appendChild(doc.createTextNode(OfxHelper.APP_ID))
+            val bankId = doc.createElement(TAG_BANK_ID)
+            bankId.appendChild(doc.createTextNode(APP_ID))
 
-            val acctId = doc.createElement(OfxHelper.TAG_ACCOUNT_ID)
+            val acctId = doc.createElement(TAG_ACCOUNT_ID)
             acctId.appendChild(doc.createTextNode(transferAccountUID))
 
-            val accttype = doc.createElement(OfxHelper.TAG_ACCOUNT_TYPE)
+            val accttype = doc.createElement(TAG_ACCOUNT_TYPE)
             val ofxAccountType = OfxAccountType.of(acctDbAdapter.getAccountType(transferAccountUID))
             accttype.appendChild(doc.createTextNode(ofxAccountType.toString()))
 
-            val bankAccountTo = doc.createElement(OfxHelper.TAG_BANK_ACCOUNT_TO)
+            val bankAccountTo = doc.createElement(TAG_BANK_ACCOUNT_TO)
             bankAccountTo.appendChild(bankId)
             bankAccountTo.appendChild(acctId)
             bankAccountTo.appendChild(accttype)

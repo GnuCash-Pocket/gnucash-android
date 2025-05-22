@@ -162,7 +162,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     @Override
     public void addRecord(@NonNull Account account, UpdateMethod updateMethod) throws SQLException {
         Timber.d("Replace account to db");
-        if (account.getAccountType() == AccountType.ROOT) {
+        if (account.isRoot() && !account.isTemplate()) {
             rootUID = account.getUID();
         }
         //in-case the account already existed, we want to update the templates based on it as well
