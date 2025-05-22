@@ -308,6 +308,11 @@ public class TransactionsActivity extends BaseDrawerActivity implements
             accountUID = mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID();
         }
         account = accountNameAdapter.getAccount(accountUID);
+        if (account == null) {
+            Timber.e("Account not found %s", accountUID);
+            finish();
+            return;
+        }
 
         mBinding.tabLayout.addTab(mBinding.tabLayout.newTab().setText(R.string.section_header_subaccounts));
         if (!account.isPlaceholder()) {
