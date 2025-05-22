@@ -101,17 +101,17 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
      * @param split {@link org.gnucash.android.model.Split} to be recorded in DB
      */
     public void addRecord(@NonNull final Split split, UpdateMethod updateMethod) {
-        Timber.d("Replace transaction split in db");
+        Timber.d("%s split to the db", updateMethod.name());
         super.addRecord(split, updateMethod);
 
-        long transactionId = getTransactionID(split.getTransactionUID());
-        //when a split is updated, we want mark the transaction as not exported
-        updateRecord(TransactionEntry.TABLE_NAME, transactionId,
-            TransactionEntry.COLUMN_EXPORTED, String.valueOf(0));
+        if (updateMethod != UpdateMethod.insert) {
+            long transactionId = getTransactionID(split.getTransactionUID());
+            //when a split is updated, we want mark the transaction as not exported
+            updateRecord(TransactionEntry.TABLE_NAME, transactionId, TransactionEntry.COLUMN_EXPORTED, "0");
 
-        //modifying a split means modifying the accompanying transaction as well
-        updateRecord(TransactionEntry.TABLE_NAME, transactionId,
-            TransactionEntry.COLUMN_MODIFIED_AT, TimestampHelper.getUtcStringFromTimestamp(TimestampHelper.getTimestampFromNow()));
+            //modifying a split means modifying the accompanying transaction as well
+            updateRecord(TransactionEntry.TABLE_NAME, transactionId, TransactionEntry.COLUMN_MODIFIED_AT, TimestampHelper.getUtcStringFromTimestamp(TimestampHelper.getTimestampFromNow()));
+        }
     }
 
     @Override
