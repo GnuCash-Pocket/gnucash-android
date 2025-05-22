@@ -59,7 +59,7 @@ public class CsvAccountExporter extends Exporter {
     }
 
     @Override
-    protected void writeExport(@NonNull ExportParams exportParams, @NonNull Writer writer) throws ExporterException, IOException {
+    protected void writeExport(@NonNull Writer writer, @NonNull ExportParams exportParams) throws ExporterException, IOException {
         ICSVWriter csvWriter = new CSVWriterBuilder(writer)
             .withSeparator(exportParams.getCsvSeparator())
             .withLineEnd(RFC4180_LINE_END)
@@ -71,37 +71,39 @@ public class CsvAccountExporter extends Exporter {
     /**
      * Writes out all the accounts in the system as CSV to the provided writer
      *
-     * @param csvWriter Destination for the CSV export
-     * @throws IOException if an error occurred while writing to the stream
+     * @param writer Destination for the CSV export
      */
-    public void writeExport(final ICSVWriter csvWriter) throws IOException {
+    public void writeExport(@NonNull ICSVWriter writer) {
         String[] names = mContext.getResources().getStringArray(R.array.csv_account_headers);
         List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList();
 
-        csvWriter.writeNext(names);
+        writer.writeNext(names);
 
         final String[] fields = new String[names.length];
         for (Account account : accounts) {
             if (account.isRoot()) continue;
             if (account.isTemplate()) continue;
 
-            fields[0] = account.getAccountType().name();
-            fields[1] = account.getFullName();
-            fields[2] = account.getName();
-
-            fields[3] = ""; //Account code
-            fields[4] = account.getDescription();
-            fields[5] = formatColor(account.getColor());
-            fields[6] = orEmpty(account.getNote());
-
-            fields[7] = account.getCommodity().getCurrencyCode();
-            fields[8] = account.getCommodity().getNamespace();
-            fields[9] = format(account.isHidden());
-            fields[10] = format(false); //Tax
-            fields[11] = format(account.isPlaceholder());
-
-            csvWriter.writeNext(fields);
+            writeAccount(fields, account);
+            writer.writeNext(fields);
         }
+    }
+
+    private void writeAccount(@NonNull String[] fields, @NonNull Account account) {
+        fields[0] = account.getAccountType().name();
+        fields[1] = account.getFullName();
+        fields[2] = account.getName();
+
+        fields[3] = ""; //Account code
+        fields[4] = account.getDescription();
+        fields[5] = formatColor(account.getColor());
+        fields[6] = orEmpty(account.getNote());
+
+        fields[7] = account.getCommodity().getCurrencyCode();
+        fields[8] = account.getCommodity().getNamespace();
+        fields[9] = format(account.isHidden());
+        fields[10] = format(false); //Tax
+        fields[11] = format(account.isPlaceholder());
     }
 
     @NonNull

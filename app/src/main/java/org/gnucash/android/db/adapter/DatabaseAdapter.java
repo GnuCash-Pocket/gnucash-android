@@ -216,7 +216,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @param updateMethod Method to use for adding the record
      */
     public void addRecord(@NonNull final Model model, UpdateMethod updateMethod) throws SQLException {
-        Timber.d("Adding %s record to database: ", model.getClass().getSimpleName());
+        Timber.d("Adding record to database: %s %s", model.getClass().getSimpleName(), model.getUID());
         final SQLiteStatement statement;
         switch (updateMethod) {
             case insert:

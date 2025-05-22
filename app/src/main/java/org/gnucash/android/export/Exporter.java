@@ -293,7 +293,7 @@ public abstract class Exporter {
     protected File writeToFile(@NonNull ExportParams exportParams) throws ExporterException, IOException {
         File cacheFile = getExportCacheFile(exportParams);
         try (Writer writer = createWriter(cacheFile)) {
-            writeExport(exportParams, writer);
+            writeExport(writer, exportParams);
         } catch (ExporterException ee) {
             throw ee;
         } catch (Exception e) {
@@ -302,7 +302,7 @@ public abstract class Exporter {
         return cacheFile;
     }
 
-    protected abstract void writeExport(@NonNull ExportParams exportParams, @NonNull Writer writer) throws ExporterException, IOException;
+    protected abstract void writeExport(@NonNull Writer writer, @NonNull ExportParams exportParams) throws ExporterException, IOException;
 
     /**
      * Recursively delete all files in a directory
