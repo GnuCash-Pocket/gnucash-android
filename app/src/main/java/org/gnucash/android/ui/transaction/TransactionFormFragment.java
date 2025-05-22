@@ -16,6 +16,7 @@
 
 package org.gnucash.android.ui.transaction;
 
+import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
 import static org.gnucash.android.ui.util.widget.ViewExtKt.setTextToEnd;
 
 import android.app.Activity;
@@ -231,8 +232,11 @@ public class TransactionFormFragment extends MenuFragment implements
     private void startTransferFunds(FragmentTransactionFormBinding binding) {
         Account accountFrom = this.account;
         Commodity fromCommodity = accountFrom.getCommodity();
-        int position = binding.inputTransferAccountSpinner.getSelectedItemPosition();
-        Account accountTarget = accountNameAdapter.getAccount(position);
+        int targetPosition = binding.inputTransferAccountSpinner.getSelectedItemPosition();
+        if (targetPosition == NO_POSITION) {
+            return;
+        }
+        Account accountTarget = accountNameAdapter.getAccount(targetPosition);
         Commodity targetCommodity = accountTarget.getCommodity();
 
         BigDecimal enteredAmount = binding.inputTransactionAmount.getValue();
@@ -732,11 +736,12 @@ public class TransactionFormFragment extends MenuFragment implements
     private String getTransferAccountUID(FragmentTransactionFormBinding binding) {
         String transferAcctUID;
         if (mUseDoubleEntry) {
-            long transferAcctId = binding.inputTransferAccountSpinner.getSelectedItemId();
-            transferAcctUID = mAccountsDbAdapter.getUID(transferAcctId);
+            int transferPosition = binding.inputTransferAccountSpinner.getSelectedItemPosition();
+            if (transferPosition == NO_POSITION) return null;
+            transferAcctUID = accountNameAdapter.getUID(transferPosition);
         } else {
             Context context = binding.getRoot().getContext();
-            Commodity baseCommodity = mAccountsDbAdapter.getSimpleRecord(mAccountUID).getCommodity();
+            Commodity baseCommodity = account.getCommodity();
             transferAcctUID = mAccountsDbAdapter.getOrCreateImbalanceAccountUID(context, baseCommodity);
         }
         return transferAcctUID;
@@ -758,7 +763,7 @@ public class TransactionFormFragment extends MenuFragment implements
             mTime.get(Calendar.SECOND));
         String description = binding.inputTransactionName.getText().toString();
         String notes = binding.notes.getText().toString();
-        Commodity commodity = mAccountsDbAdapter.getCommodity(mAccountUID);
+        Commodity commodity = account.getCommodity();
 
         List<Split> splits = extractSplitsFromView(binding);
 
@@ -793,7 +798,7 @@ public class TransactionFormFragment extends MenuFragment implements
         if (!mUseDoubleEntry)
             return false;
 
-        Commodity accountCommodity = mAccountsDbAdapter.getCommodity(mAccountUID);
+        Commodity accountCommodity = account.getCommodity();
 
         List<Split> splits = mSplitsList;
         for (Split split : splits) {
@@ -803,8 +808,10 @@ public class TransactionFormFragment extends MenuFragment implements
             }
         }
 
-        String transferAcctUID = mAccountsDbAdapter.getUID(binding.inputTransferAccountSpinner.getSelectedItemId());
-        Commodity transferCommodity = mAccountsDbAdapter.getCommodity(transferAcctUID);
+        int transferAccountPosition = binding.inputTransferAccountSpinner.getSelectedItemPosition();
+        if (transferAccountPosition == NO_POSITION) return true;
+        Account transferAccount = accountNameAdapter.getAccount(transferAccountPosition);
+        Commodity transferCommodity = transferAccount.getCommodity();
 
         return !accountCommodity.equals(transferCommodity);
     }

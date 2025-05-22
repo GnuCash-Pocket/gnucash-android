@@ -1,6 +1,7 @@
 package org.gnucash.android.ui.adapter
 
 import android.content.Context
+import android.text.TextUtils.TruncateAt
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
@@ -80,11 +81,20 @@ class QualifiedAccountNameAdapter @JvmOverloads constructor(
         return -1
     }
 
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+        val view = super.getView(position, convertView, parent)
+        if (view is TextView) {
+            view.ellipsize = TruncateAt.MIDDLE
+        }
+        return view
+    }
+
     override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
         val account = getAccount(position)!!
 
         val view = super.getDropDownView(position, convertView, parent)
         val textView = if (view is TextView) view else view.findViewById(android.R.id.text1)
+        textView.ellipsize = TruncateAt.MIDDLE
 
         @DrawableRes val icon = if (account.isFavorite) R.drawable.ic_favorite else 0
         textView.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, icon, 0)
