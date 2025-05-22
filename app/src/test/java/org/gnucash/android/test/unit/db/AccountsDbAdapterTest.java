@@ -357,7 +357,7 @@ public class AccountsDbAdapterTest extends GnuCashTest {
         mSplitsDbAdapter.addRecord(split);
 
         //balance computation ignores the currency of the split
-        Money balance = mAccountsDbAdapter.getAccountBalance(account.getUID());
+        Money balance = mAccountsDbAdapter.getAccountBalance(account);
         Money expectedBalance = new Money("17.29", "USD"); //EUR splits should be ignored
 
         assertThat(balance).isEqualTo(expectedBalance);

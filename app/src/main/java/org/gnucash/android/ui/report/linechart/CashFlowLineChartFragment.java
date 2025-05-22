@@ -42,6 +42,7 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import org.gnucash.android.R;
 import org.gnucash.android.databinding.FragmentLineChartBinding;
+import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
@@ -219,14 +220,11 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
      * @return entries which represent a user data
      */
     private List<Entry> getEntryList(AccountType accountType) {
-        List<String> accountUIDList = new ArrayList<>();
-        for (Account account : mAccountsDbAdapter.getSimpleAccountList()) {
-            if (account.getAccountType() == accountType
-                && !account.isPlaceholder()
-                && account.getCommodity().equals(mCommodity)) {
-                accountUIDList.add(account.getUID());
-            }
-        }
+        String where = DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?"
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0"
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + "=?";
+        String[] whereArgs = new String[]{accountType.name(), mCommodity.getUID()};
+        List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(where, whereArgs, null);
 
         LocalDateTime earliest;
         LocalDateTime latest;
@@ -267,7 +265,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
                     earliest = earliest.plusYears(1);
                     break;
             }
-            Money balance = mAccountsDbAdapter.getAccountsBalance(accountUIDList, start, end);
+            Money balance = mAccountsDbAdapter.getAccountsBalance(accounts, start, end);
             Money balanceDisplay = accountType.hasDebitNormalBalance ? balance : balance.unaryMinus();
             float value = balanceDisplay.toFloat();
             values.add(new Entry(value, i + xAxisOffset));

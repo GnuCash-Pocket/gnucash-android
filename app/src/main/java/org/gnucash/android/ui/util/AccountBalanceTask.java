@@ -63,8 +63,8 @@ public class AccountBalanceTask extends AsyncTask<String, Void, Money> {
         }
 
         try {
-            Money balance = accountsDbAdapter.getAccountBalance(accountUID);
             Account account = accountsDbAdapter.getSimpleRecord(accountUID);
+            Money balance = accountsDbAdapter.getAccountBalance(account);
             AccountType accountType = account.getAccountType();
             return (accountType.hasDebitNormalBalance != accountType.hasDebitDisplayBalance) ? balance.unaryMinus() : balance;
         } catch (Exception e) {

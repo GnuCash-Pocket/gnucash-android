@@ -118,6 +118,7 @@ public class TransactionFormFragment extends MenuFragment implements
      * Accounts database adapter
      */
     private AccountsDbAdapter mAccountsDbAdapter;
+    private ScheduledActionDbAdapter scheduledActionDbAdapter;
 
     /**
      * Adapter for transfer account spinner
@@ -280,9 +281,15 @@ public class TransactionFormFragment extends MenuFragment implements
         mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled();
 
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+        scheduledActionDbAdapter = ScheduledActionDbAdapter.getInstance();
         mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID, mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID());
         assert !TextUtils.isEmpty(mAccountUID);
-        account = mAccountsDbAdapter.getSimpleRecord(mAccountUID);
+        try {
+            account = mAccountsDbAdapter.getSimpleRecord(mAccountUID);
+        } catch (IllegalArgumentException e) {
+            Timber.e(e);
+            account = null;
+        }
         if (account == null) {
             Timber.e("Account not found %s", mAccountUID);
             finish(Activity.RESULT_CANCELED);
@@ -401,13 +408,15 @@ public class TransactionFormFragment extends MenuFragment implements
      * This method is called if the fragment is used for editing a transaction
      */
     private void initializeViewsWithTransaction(@NonNull final FragmentTransactionFormBinding binding, @NonNull Transaction transaction) {
+        final Context context = binding.getRoot().getContext();
         setTextToEnd(binding.inputTransactionName, transaction.getDescription());
 
+        TransactionType transactionType = GnuCashApplication.getDefaultTransactionType(context);
         binding.inputTransactionType.setAccountType(account.getAccountType());
-        binding.inputTransactionType.setChecked(transaction.getBalance(mAccountUID).isNegative());
+        binding.inputTransactionType.setChecked(transactionType);
 
         //when autocompleting, only change the amount if the user has not manually changed it already
-        binding.inputTransactionAmount.setValue(transaction.getBalance(mAccountUID).asBigDecimal(), !binding.inputTransactionAmount.isInputModified());
+        binding.inputTransactionAmount.setValue(transaction.getBalance(account).asBigDecimal(), !binding.inputTransactionAmount.isInputModified());
         binding.currencySymbol.setText(transaction.getCommodity().getSymbol());
         binding.notes.setText(transaction.getNote());
         binding.inputDate.setText(DATE_FORMATTER.print(transaction.getTimeMillis()));
@@ -426,6 +435,7 @@ public class TransactionFormFragment extends MenuFragment implements
             for (Split split : mSplitsList) {
                 if (split.getAccountUID().equals(mAccountUID)) {
                     mSplitValue = split.getValue();
+                    transactionType = split.getType();
                 } else if (!split.getQuantity().getCommodity().equals(transaction.getCommodity())) {
                     mSplitQuantity = split.getQuantity();
                 }
@@ -442,17 +452,20 @@ public class TransactionFormFragment extends MenuFragment implements
             }
         } else {
             setDoubleEntryViewsVisibility(binding, View.GONE);
+            if (mSplitValue != null) {
+                transactionType = mSplitValue.isNegative() ? TransactionType.CREDIT : TransactionType.DEBIT;
+            }
         }
 
         Commodity accountCommodity = mAccountsDbAdapter.getCommodity(mAccountUID);
         binding.currencySymbol.setText(accountCommodity.getSymbol());
         binding.inputTransactionAmount.setCommodity(accountCommodity);
+        binding.inputTransactionType.setChecked(transactionType);
 
         binding.checkboxSaveTemplate.setChecked(transaction.isTemplate());
         String scheduledActionUID = transaction.getScheduledActionUID();
         if (!TextUtils.isEmpty(scheduledActionUID)) {
-            Context context = binding.inputRecurrence.getContext();
-            ScheduledAction scheduledAction = ScheduledActionDbAdapter.getInstance().getRecord(scheduledActionUID);
+            ScheduledAction scheduledAction = scheduledActionDbAdapter.getRecord(scheduledActionUID);
             onRecurrenceSet(scheduledAction.getRuleString());
         }
     }
@@ -863,7 +876,7 @@ public class TransactionFormFragment extends MenuFragment implements
             mTransactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.replace);
 
             if (!isTemplate && wasScheduled) { //we were editing a schedule and it was turned off
-                ScheduledActionDbAdapter.getInstance().deleteRecord(scheduledActionUID);
+                scheduledActionDbAdapter.deleteRecord(scheduledActionUID);
             }
 
             mAccountsDbAdapter.setTransactionSuccessful();
@@ -886,7 +899,6 @@ public class TransactionFormFragment extends MenuFragment implements
      */
     private void scheduleRecurringTransaction(@NonNull Transaction transaction) {
         String transactionUID = transaction.getUID();
-        ScheduledActionDbAdapter scheduledActionDbAdapter = ScheduledActionDbAdapter.getInstance();
 
         Recurrence recurrence = RecurrenceParser.parse(mEventRecurrence);
 
@@ -984,12 +996,11 @@ public class TransactionFormFragment extends MenuFragment implements
      */
     private void setSplits(FragmentTransactionFormBinding binding, List<Split> splitList) {
         mSplitsList = splitList;
-        Money balance = Transaction.computeBalance(mAccountUID, splitList);
+        Money balance = Transaction.computeBalance(account, splitList);
 
         binding.inputTransactionAmount.setValue(balance.asBigDecimal());
         binding.inputTransactionType.setChecked(balance.isNegative());
     }
-
 
     /**
      * Finishes the fragment appropriately.
