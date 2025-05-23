@@ -184,7 +184,7 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
             mBinding.reportAccountTypeSpinner.setVisibility(visibility);
         }
 
-        setAppBarColor(reportType.colorId);
+        setTitlesColor(ContextCompat.getColor(this, reportType.colorId));
         updateReportTypeSpinner(reportType);
         toggleToolbarTitleVisibility(reportType);
     }
@@ -239,17 +239,6 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
             mBinding.toolbarLayout.toolbarSpinner.setVisibility(View.VISIBLE);
         }
         actionBar.setDisplayShowTitleEnabled(reportType == ReportType.NONE);
-    }
-
-    /**
-     * Sets the color Action Bar and Status bar (where applicable)
-     */
-    public void setAppBarColor(int color) {
-        int resolvedColor = ContextCompat.getColor(this, color);
-        if (getSupportActionBar() != null)
-            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(resolvedColor));
-
-        getWindow().setStatusBarColor(GnuCashApplication.darken(resolvedColor));
     }
 
     /**

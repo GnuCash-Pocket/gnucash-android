@@ -17,11 +17,10 @@
 
 package org.gnucash.android.ui.transaction;
 
-import static org.gnucash.android.model.Account.DEFAULT_COLOR;
-
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
@@ -43,7 +42,6 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 import com.google.android.material.tabs.TabLayout;
 
 import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.databinding.ActivityTransactionsBinding;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
@@ -371,17 +369,9 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      * Sets the color for the ViewPager title indicator to match the account color
      */
     private void setTitleIndicatorColor() {
-        @ColorInt int color = account.getColor();
-        if (color == DEFAULT_COLOR) {
-            color = mAccountsDbAdapter.getActiveAccountColor(this, account.getUID());
-        }
-
+        @ColorInt int color = mAccountsDbAdapter.getActiveAccountColor(this, account.getUID());
+        setTitlesColor(color);
         mBinding.tabLayout.setBackgroundColor(color);
-
-        if (getSupportActionBar() != null)
-            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(color));
-
-        getWindow().setStatusBarColor(GnuCashApplication.darken(color));
     }
 
     /**

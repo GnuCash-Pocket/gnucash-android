@@ -1325,22 +1325,6 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     }
 
     /**
-     * Returns the account color for the active account as an Android resource ID.
-     * <p>
-     * Basically, if we are in a top level account, use the default title color.
-     * but propagate a parent account's title color to children who don't have own color
-     * </p>
-     *
-     * @param context    the context
-     * @param accountUID GUID of the account
-     * @return Android resource ID representing the color which can be directly set to a view
-     */
-    @ColorInt
-    public static int getActiveAccountColorResource(@NonNull Context context, @NonNull String accountUID) {
-        return AccountsDbAdapter.getInstance().getActiveAccountColor(context, accountUID);
-    }
-
-    /**
      * Returns the account color for the account as an Android resource ID.
      * <p>
      * Basically, if we are in a top level account, use the default title color.

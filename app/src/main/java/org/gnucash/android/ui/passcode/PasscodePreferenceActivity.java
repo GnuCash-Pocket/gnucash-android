@@ -19,9 +19,8 @@ package org.gnucash.android.ui.passcode;
 import android.content.Intent;
 import android.os.Bundle;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import org.gnucash.android.R;
+import org.gnucash.android.app.GnuCashActivity;
 import org.gnucash.android.ui.settings.ThemeHelper;
 
 /**
@@ -29,7 +28,7 @@ import org.gnucash.android.ui.settings.ThemeHelper;
  *
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
-public class PasscodePreferenceActivity extends AppCompatActivity {
+public class PasscodePreferenceActivity extends GnuCashActivity {
 
     public static final String DISABLE_PASSCODE = PasscodeModifyFragment.DISABLE_PASSCODE;
 

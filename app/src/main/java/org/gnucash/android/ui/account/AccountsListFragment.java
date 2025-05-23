@@ -40,6 +40,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -529,8 +530,9 @@ public class AccountsListFragment extends MenuFragment implements
             public void bind(@NonNull final Cursor cursor) {
                 final String accountUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_UID));
                 this.accountUID = accountUID;
+                Account account = mAccountsDbAdapter.getSimpleRecord(accountUID);
 
-                accountName.setText(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_NAME)));
+                accountName.setText(account.getName());
                 int subAccountCount = mAccountsDbAdapter.getSubAccountCount(accountUID);
                 if (subAccountCount > 0) {
                     description.setVisibility(View.VISIBLE);
@@ -547,13 +549,10 @@ public class AccountsListFragment extends MenuFragment implements
                 accountBalanceTasks.add(task);
                 task.execute(accountUID);
 
-                String accountColor = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_COLOR_CODE));
-                Integer colorValue = parseColor(accountColor);
-                int colorCode = (colorValue != null) ? colorValue : Account.DEFAULT_COLOR;
-                colorStripView.setBackgroundColor(colorCode);
+                @ColorInt int accountColor = getColor(account);
+                colorStripView.setBackgroundColor(accountColor);
 
-                boolean isPlaceholderAccount = mAccountsDbAdapter.isPlaceholderAccount(accountUID);
-                if (isPlaceholderAccount) {
+                if (account.isPlaceholder()) {
                     createTransaction.setVisibility(View.INVISIBLE);
                 } else {
                     createTransaction.setOnClickListener(new View.OnClickListener() {
@@ -624,6 +623,25 @@ public class AccountsListFragment extends MenuFragment implements
                     default:
                         return false;
                 }
+            }
+
+            @ColorInt
+            private int getColor(Account account) {
+                @ColorInt int color = account.getColor();
+                if (color == Account.DEFAULT_COLOR) {
+                    color = getParentColor(account);
+                }
+                return color;
+            }
+
+            @ColorInt
+            private int getParentColor(Account account) {
+                String parentUID = account.getParentUID();
+                if (TextUtils.isEmpty(parentUID)) {
+                    return Account.DEFAULT_COLOR;
+                }
+                Account parentAccount = mAccountsDbAdapter.getSimpleRecord(parentUID);
+                return getColor(parentAccount);
             }
         }
     }
