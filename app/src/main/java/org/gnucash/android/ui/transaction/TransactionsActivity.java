@@ -527,7 +527,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
             BackupManager.backupActiveBookAsync(this, result -> {
                 // Avoid calling AccountsDbAdapter.deleteRecord(long). See #654
                 if (mAccountsDbAdapter.deleteRecord(accountUID)) {
-                    refresh();
+                    finish();
                 }
                 return null;
             });

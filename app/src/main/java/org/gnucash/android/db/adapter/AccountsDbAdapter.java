@@ -1388,7 +1388,6 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         mDb.delete(BudgetEntry.TABLE_NAME, null, null);
         mDb.delete(RecurrenceEntry.TABLE_NAME, null, null);
         rootUID = null;
-        cache.clear();
 
         return super.deleteAllRecords();
     }
