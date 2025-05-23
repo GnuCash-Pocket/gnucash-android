@@ -35,7 +35,6 @@ import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.widget.ViewPager2;
@@ -48,6 +47,7 @@ import com.tech.freak.wizardpager.ui.PageFragmentCallbacks;
 import com.tech.freak.wizardpager.ui.StepPagerStrip;
 
 import org.gnucash.android.R;
+import org.gnucash.android.app.GnuCashActivity;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.databinding.ActivityFirstRunWizardBinding;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
@@ -65,7 +65,7 @@ import timber.log.Timber;
 /**
  * Activity for managing the wizard displayed upon first run of the application
  */
-public class FirstRunWizardActivity extends AppCompatActivity implements
+public class FirstRunWizardActivity extends GnuCashActivity implements
     PageFragmentCallbacks, ReviewFragment.Callbacks, ModelCallbacks {
 
     private static final String STATE_MODEL = "model";

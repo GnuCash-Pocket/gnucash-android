@@ -80,20 +80,18 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
             throw new MissingFormatArgumentException("You must specify both the transaction and account GUID");
         }
 
-        int themeColor = accountsDbAdapter.getActiveAccountColor(this, mAccountUID);
-        mBinding.toolbar.setBackgroundColor(themeColor);
-
         setSupportActionBar(mBinding.toolbar);
-
         ActionBar actionBar = getSupportActionBar();
         assert actionBar != null;
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowTitleEnabled(false);
 
-        bindViews();
+        int themeColor = accountsDbAdapter.getActiveAccountColor(this, mAccountUID);
+        setTitlesColor(themeColor);
+        mBinding.toolbar.setBackgroundColor(themeColor);
 
-        getWindow().setStatusBarColor(GnuCashApplication.darken(themeColor));
+        bindViews();
 
         mBinding.fabEditTransaction.setOnClickListener(v -> editTransaction());
     }

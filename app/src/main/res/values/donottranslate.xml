@@ -287,4 +287,5 @@
     <string name="csv_account_header_notes" translatable="false">@string/notes</string>
     <string name="csv_account_header_hidden" translatable="false">@string/hidden</string>
     <string name="csv_account_header_placeholder" translatable="false">@string/placeholder</string>
+    <string name="default_color" translatable="false">@string/default_theme</string>
 </resources>

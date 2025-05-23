@@ -19,6 +19,7 @@ package org.gnucash.android.ui.colorpicker;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +28,7 @@ import android.widget.ProgressBar;
 import androidx.fragment.app.DialogFragment;
 
 import org.gnucash.android.R;
+import org.gnucash.android.model.Account;
 import org.gnucash.android.ui.colorpicker.ColorPickerSwatch.OnColorSelectedListener;
 
 /**
@@ -107,9 +109,9 @@ public class ColorPickerDialog extends DialogFragment implements OnColorSelected
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final Activity activity = getActivity();
+        final Activity activity = requireActivity();
 
-        View view = LayoutInflater.from(getActivity()).inflate(R.layout.color_picker_dialog, null);
+        View view = LayoutInflater.from(activity).inflate(R.layout.color_picker_dialog, null);
         mProgress = view.findViewById(android.R.id.progress);
         mPalette = view.findViewById(R.id.color_picker);
         mPalette.init(mSize, mColumns, this);
@@ -121,6 +123,12 @@ public class ColorPickerDialog extends DialogFragment implements OnColorSelected
         mAlertDialog = new AlertDialog.Builder(activity)
             .setTitle(mTitleResId)
             .setView(view)
+            .setNeutralButton(R.string.default_color, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    onColorSelected(Account.DEFAULT_COLOR);
+                }
+            })
             .create();
 
         return mAlertDialog;

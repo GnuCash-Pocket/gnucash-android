@@ -31,10 +31,10 @@ import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.RemoteViews;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import org.gnucash.android.R;
+import org.gnucash.android.app.GnuCashActivity;
 import org.gnucash.android.databinding.WidgetConfigurationBinding;
 import org.gnucash.android.db.BookDbHelper;
 import org.gnucash.android.db.DatabaseHelper;
@@ -63,7 +63,7 @@ import timber.log.Timber;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class WidgetConfigurationActivity extends AppCompatActivity {
+public class WidgetConfigurationActivity extends GnuCashActivity {
 
     private static final String PREFS_PREFIX = "widget:";
     private static final int FLAGS_UPDATE = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
