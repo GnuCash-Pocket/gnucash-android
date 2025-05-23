@@ -350,7 +350,6 @@ public class TransactionsListFragment extends MenuFragment implements
 
             public void bind(@NonNull Cursor cursor) {
                 transactionUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_UID));
-                transactionUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_UID));
 
                 String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_DESCRIPTION));
                 primaryText.setText(description);

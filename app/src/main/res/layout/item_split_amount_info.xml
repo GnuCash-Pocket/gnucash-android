@@ -42,7 +42,8 @@
         android:layout_weight="1.5"
         android:gravity="right"
         android:textSize="16sp"
-        tools:text="$ 2000" />
+        tools:text="$ 2000"
+        tools:textColor="@color/debit_red" />
 
     <TextView
         android:id="@+id/split_credit"
@@ -52,5 +53,6 @@
         android:layout_weight="1.5"
         android:gravity="right"
         android:textSize="16sp"
-        tools:text="$ 2000" />
+        tools:text="$ 2000"
+        tools:textColor="@color/credit_green" />
 </TableRow>

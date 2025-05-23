@@ -167,9 +167,9 @@ public class GnuCashApplication extends Application {
 
         mCommoditiesDbAdapter = new CommoditiesDbAdapter(mainDb);
         mPricesDbAdapter = new PricesDbAdapter(mCommoditiesDbAdapter);
-        mSplitsDbAdapter = new SplitsDbAdapter(mPricesDbAdapter);
+        mSplitsDbAdapter = new SplitsDbAdapter(mCommoditiesDbAdapter);
         mTransactionsDbAdapter = new TransactionsDbAdapter(mSplitsDbAdapter);
-        mAccountsDbAdapter = new AccountsDbAdapter(mTransactionsDbAdapter);
+        mAccountsDbAdapter = new AccountsDbAdapter(mTransactionsDbAdapter, mPricesDbAdapter);
         mRecurrenceDbAdapter = new RecurrenceDbAdapter(mainDb);
         mScheduledActionDbAdapter = new ScheduledActionDbAdapter(mRecurrenceDbAdapter);
         mBudgetAmountsDbAdapter = new BudgetAmountsDbAdapter(mainDb);
