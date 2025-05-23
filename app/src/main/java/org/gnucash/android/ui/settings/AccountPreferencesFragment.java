@@ -72,19 +72,6 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
     private final List<CharSequence> currencyEntryValues = new ArrayList<>();
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        currencyEntries.clear();
-        currencyEntryValues.clear();
-        List<Commodity> commodities = commoditiesDbAdapter.getAllRecords();
-        for (Commodity commodity : commodities) {
-            currencyEntries.add(commodity.formatListItem());
-            currencyEntryValues.add(commodity.getCurrencyCode());
-        }
-    }
-
-    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
@@ -95,6 +82,13 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         addPreferencesFromResource(R.xml.fragment_account_preferences);
 
+        currencyEntries.clear();
+        currencyEntryValues.clear();
+        List<Commodity> commodities = commoditiesDbAdapter.getAllRecords();
+        for (Commodity commodity : commodities) {
+            currencyEntries.add(commodity.formatListItem());
+            currencyEntryValues.add(commodity.getCurrencyCode());
+        }
         ListPreference listPreference = findPreference(getString(R.string.key_default_currency));
         String currencyCode = listPreference.getValue();
         if (TextUtils.isEmpty(currencyCode)) {
