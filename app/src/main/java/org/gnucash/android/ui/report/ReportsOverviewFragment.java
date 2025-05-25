@@ -45,6 +45,7 @@ import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Money;
+import org.gnucash.android.model.Price;
 import org.gnucash.android.ui.report.piechart.PieChartFragment;
 import org.joda.time.LocalDateTime;
 
@@ -170,17 +171,23 @@ public class ReportsOverviewFragment extends BaseReportFragment {
         long end = now.toDateTime().getMillis();
 
         List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(
-            DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND " + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + "=? AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?",
-            new String[]{mCommodity.getUID(), mAccountType.name()},
+            DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?",
+            new String[]{mAccountType.name()},
             DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC"
         );
         for (Account account : accounts) {
-            float balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), start, end, false).toFloat();
-            if (balance > 0f) {
-                dataSet.addEntry(new Entry(balance, dataSet.getEntryCount()));
-                colors.add(account.getColor() != Account.DEFAULT_COLOR
-                    ? account.getColor()
-                    : COLORS[(dataSet.getEntryCount() - 1) % COLORS.length]);
+            Money balance = mAccountsDbAdapter.getAccountBalance(account, start, end, false);
+            if (balance.isAmountZero()) continue;
+            Price price = pricesDbAdapter.getPrice(balance.getCommodity(), mCommodity);
+            if (price != null) {
+                balance = balance.times(price);
+            }
+            float value = balance.toFloat();
+            if (value > 0f) {
+                int count = dataSet.getEntryCount();
+                dataSet.addEntry(new Entry(value, count));
+                @ColorInt int color = getAccountColor(account, count);
+                colors.add(color);
                 labels.add(account.getName());
             }
         }

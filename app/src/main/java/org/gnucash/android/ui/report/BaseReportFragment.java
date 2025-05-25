@@ -47,6 +47,7 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import org.gnucash.android.R;
 import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
+import org.gnucash.android.db.adapter.PricesDbAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
@@ -104,6 +105,7 @@ public abstract class BaseReportFragment extends MenuFragment implements
      */
     protected AccountType mAccountType = AccountType.EXPENSE;
     protected AccountsDbAdapter mAccountsDbAdapter;
+    protected PricesDbAdapter pricesDbAdapter;
     protected boolean mUseAccountColor = true;
 
     /**
@@ -200,6 +202,7 @@ public abstract class BaseReportFragment extends MenuFragment implements
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+        pricesDbAdapter = PricesDbAdapter.getInstance();
         mUseAccountColor = PreferenceManager.getDefaultSharedPreferences(requireContext())
             .getBoolean(getString(R.string.key_use_account_color), false);
     }

@@ -118,6 +118,7 @@ public class TransactionFormFragment extends MenuFragment implements
      * Accounts database adapter
      */
     private AccountsDbAdapter mAccountsDbAdapter;
+    private PricesDbAdapter pricesDbAdapter;
     private ScheduledActionDbAdapter scheduledActionDbAdapter;
 
     /**
@@ -281,6 +282,7 @@ public class TransactionFormFragment extends MenuFragment implements
         mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled();
 
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+        pricesDbAdapter= PricesDbAdapter.getInstance();
         scheduledActionDbAdapter = ScheduledActionDbAdapter.getInstance();
         mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID, mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID());
         assert !TextUtils.isEmpty(mAccountUID);
@@ -706,9 +708,9 @@ public class TransactionFormFragment extends MenuFragment implements
             if ((value.equals(mSplitValue)) && mSplitQuantity != null) {
                 quantity = mSplitQuantity;
             } else {
-                Price price = PricesDbAdapter.getInstance().getPrice(commodity, targetCommodity);
-                if (price != null && price.getValueDenom() > 0 && price.getValueDenom() > 0) {
-                    quantity = quantity.times(price).withCommodity(targetCommodity);
+                Price price = pricesDbAdapter.getPrice(commodity, targetCommodity);
+                if (price != null) {
+                    quantity = quantity.times(price);
                 }
             }
         }
