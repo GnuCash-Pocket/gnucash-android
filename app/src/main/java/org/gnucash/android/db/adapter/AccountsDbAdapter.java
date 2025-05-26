@@ -462,6 +462,9 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         account.setFavorite(c.getInt(c.getColumnIndexOrThrow(AccountEntry.COLUMN_FAVORITE)) != 0);
         account.setFullName(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_FULL_NAME)));
         account.setHidden(c.getInt(c.getColumnIndexOrThrow(AccountEntry.COLUMN_HIDDEN)) != 0);
+        if (account.isRoot()) {
+            account.setHidden(false);
+        }
         account.setNote(c.getString(c.getColumnIndexOrThrow(AccountEntry.COLUMN_NOTES)));
         return account;
     }
@@ -1082,8 +1085,8 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         Account rootAccount = new Account(ROOT_ACCOUNT_NAME, commodity);
         rootAccount.setAccountType(AccountType.ROOT);
         rootAccount.setFullName(ROOT_ACCOUNT_FULL_NAME);
-        rootAccount.setHidden(true);
-        rootAccount.setPlaceholder(true);
+        rootAccount.setHidden(false);
+        rootAccount.setPlaceholder(false);
         ContentValues contentValues = new ContentValues();
         contentValues.put(AccountEntry.COLUMN_UID, rootAccount.getUID());
         contentValues.put(AccountEntry.COLUMN_NAME, rootAccount.getName());

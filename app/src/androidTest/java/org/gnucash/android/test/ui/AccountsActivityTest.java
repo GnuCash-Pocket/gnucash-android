@@ -88,7 +88,6 @@ public class AccountsActivityTest extends GnuAndroidTest {
     private final Commodity ACCOUNTS_CURRENCY = Commodity.getInstance(ACCOUNTS_CURRENCY_CODE);
     private static final String SIMPLE_ACCOUNT_NAME = "Simple account";
     private static final String SIMPLE_ACCOUNT_UID = "simple-account";
-    private static final String ROOT_ACCOUNT_NAME = "Root account";
     private static final String ROOT_ACCOUNT_UID = "root-account";
     private static final String PARENT_ACCOUNT_NAME = "Parent account";
     private static final String PARENT_ACCOUNT_UID = "parent-account";
