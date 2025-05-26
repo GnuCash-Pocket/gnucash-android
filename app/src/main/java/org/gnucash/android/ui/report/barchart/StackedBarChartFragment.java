@@ -168,9 +168,8 @@ public class StackedBarChartFragment extends BaseReportFragment {
                 Money balance = mAccountsDbAdapter.getAccountBalance(account, start, end, false);
                 if (balance.isAmountZero()) continue;
                 Price price = pricesDbAdapter.getPrice(balance.getCommodity(), mCommodity);
-                if (price != null) {
-                    balance = balance.times(price);
-                }
+                if (price == null) continue;
+                balance = balance.times(price);
                 float value = balance.toFloat();
                 if (value > 0f) {
                     stack.add(value);

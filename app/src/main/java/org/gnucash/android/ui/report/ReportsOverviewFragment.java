@@ -170,18 +170,15 @@ public class ReportsOverviewFragment extends BaseReportFragment {
         long start = now.minusMonths(2).dayOfMonth().withMinimumValue().toDateTime().getMillis();
         long end = now.toDateTime().getMillis();
 
-        List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(
-            DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?",
-            new String[]{mAccountType.name()},
-            DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC"
-        );
+        String where = DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?";
+        String[] whereArgs = new String[]{mAccountType.name()};
+        List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(where, whereArgs, DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC");
         for (Account account : accounts) {
             Money balance = mAccountsDbAdapter.getAccountBalance(account, start, end, false);
             if (balance.isAmountZero()) continue;
             Price price = pricesDbAdapter.getPrice(balance.getCommodity(), mCommodity);
-            if (price != null) {
-                balance = balance.times(price);
-            }
+            if (price == null) continue;
+            balance = balance.times(price);
             float value = balance.toFloat();
             if (value > 0f) {
                 int count = dataSet.getEntryCount();

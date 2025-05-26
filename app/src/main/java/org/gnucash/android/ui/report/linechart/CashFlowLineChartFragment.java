@@ -268,9 +268,8 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
             Money balance = mAccountsDbAdapter.getAccountsBalance(accounts, start, end);
             if (balance.isAmountZero()) continue;
             Price price = pricesDbAdapter.getPrice(balance.getCommodity(), mCommodity);
-            if (price != null) {
-                balance = balance.times(price);
-            }
+            if (price == null) continue;
+            balance = balance.times(price);
             float value = balance.toFloat();
             values.add(new Entry(value, i + xAxisOffset));
             Timber.d(accountType + earliest.toString(" MMM yyyy") + ", balance = " + balance);

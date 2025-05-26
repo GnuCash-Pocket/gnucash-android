@@ -165,9 +165,8 @@ public class BalanceSheetFragment extends BaseReportFragment {
 
             // Price conversion.
             Price price = pricesDbAdapter.getPrice(balance.getCommodity(), total.getCommodity());
-            if (price != null) {
-                balance = balance.times(price);
-            }
+            if (price == null) continue;
+            balance = balance.times(price);
             total = total.plus(balance);
         }
 
