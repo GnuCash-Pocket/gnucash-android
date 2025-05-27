@@ -111,7 +111,6 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
      * @param split {@link org.gnucash.android.model.Split} to be recorded in DB
      */
     public void addRecord(@NonNull final Split split, UpdateMethod updateMethod) {
-        Timber.d("%s split to the db", updateMethod.name());
         super.addRecord(split, updateMethod);
 
         if (updateMethod != UpdateMethod.insert) {

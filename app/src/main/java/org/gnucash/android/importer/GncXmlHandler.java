@@ -197,11 +197,6 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     private final List<Account> mAccountList = new ArrayList<>();
 
     /**
-     * List of all the template accounts found
-     */
-    private final List<Account> mTemplatAccountList = new ArrayList<>();
-
-    /**
      * Map of the template accounts to the template transactions UIDs
      */
     private final Map<String, String> mTemplateAccountToTransactionMap = new HashMap<>();
@@ -220,16 +215,6 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
      * Transaction instance which will be built for each transaction found
      */
     private Transaction mTransaction;
-
-    /**
-     * All the transaction instances found in a file to be inserted, used in bulk mode
-     */
-    private final List<Transaction> mTransactionList = new ArrayList<>();
-
-    /**
-     * All the template transactions found during parsing of the XML
-     */
-    private final List<Transaction> mTemplateTransactions = new ArrayList<>();
 
     /**
      * Accumulate attributes of splits found in this object
@@ -254,8 +239,6 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     private boolean mPriceCommodity;
     private boolean mPriceCurrency;
 
-    private final List<Price> mPriceList = new ArrayList<>();
-
     /**
      * Whether the quantity is negative
      */
@@ -276,15 +259,6 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
      */
     private ScheduledAction mScheduledAction;
 
-    /**
-     * List of scheduled actions to be bulk inserted
-     */
-    private final List<ScheduledAction> mScheduledActionsList = new ArrayList<>();
-
-    /**
-     * List of budgets which have been parsed from XML
-     */
-    private final List<Budget> mBudgetList = new ArrayList<>();
     private Budget mBudget;
     private Recurrence mRecurrence;
     private BudgetAmount mBudgetAmount;
@@ -404,7 +378,6 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
 
         switch (qualifiedName) {
             case TAG_BOOK:
-                mBook.setDisplayName(booksDbAdapter.generateDefaultBookName());
                 break;
             case TAG_ACCOUNT:
                 mAccount = new Account(""); // dummy name, will be replaced when we find name tag
@@ -495,7 +468,6 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
             case TAG_ACCT_NAME:
                 mAccount.setName(characterString);
                 mAccount.setFullName(characterString);
-                if (listener != null) listener.onAccount(mAccount);
                 break;
             case TAG_ACCT_ID:
                 mAccount.setUID(characterString);
@@ -506,7 +478,11 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 mAccount.setHidden(accountType == AccountType.ROOT); //flag root account as hidden
                 break;
             case TAG_BOOK:
-                if (listener != null) listener.onBook(mBook);
+            case TAG_ROOT:
+                if (mBook.id == 0) {
+                    booksDbAdapter.addRecord(mBook, DatabaseAdapter.UpdateMethod.insert);
+                    if (listener != null) listener.onBook(mBook);
+                }
                 break;
             case TAG_BOOK_ID:
                 //FIXME mBook.setUID(characterString);
@@ -617,6 +593,8 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                         mAccountMap.put(mRootAccount.getUID(), mRootAccount);
                         mBook.setRootAccountUID(mRootAccount.getUID());
                     }
+                    mAccountsDbAdapter.addRecord(mAccount, DatabaseAdapter.UpdateMethod.insert);
+                    if (listener != null) listener.onAccount(mAccount);
                     // prepare for next input
                     mAccount = null;
                 }
@@ -681,22 +659,10 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
             case TAG_SLOT_VALUE:
                 String slotType = slotTypes.pop();
                 if (mInPlaceHolderSlot) {
-                    //Timber.v("Setting account placeholder flag");
                     mAccount.setPlaceholder(Boolean.parseBoolean(characterString));
                     mInPlaceHolderSlot = false;
                 } else if (mInColorSlot) {
-                    //Timber.d("Parsing color code: " + characterString);
-                    String color = characterString.trim();
-                    //GnuCash exports the account color in format #rrrgggbbb, but we need only #rrggbb.
-                    //so we trim the last digit in each block, doesn't affect the color much
-                    if (mAccount != null) {
-                        try {
-                            mAccount.setColor(color);
-                        } catch (IllegalArgumentException ex) {
-                            //sometimes the color entry in the account file is "Not set" instead of just blank. So catch!
-                            Timber.e(ex, "Invalid color code '" + color + "' for account " + mAccount.getName());
-                        }
-                    }
+                    mAccount.setColor(characterString.trim());
                     mInColorSlot = false;
                 } else if (mInFavoriteSlot) {
                     mAccount.setFavorite(Boolean.parseBoolean(characterString));
@@ -845,16 +811,17 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                     mAutoBalanceSplits.add(imbSplit);
                 }
                 if (mInTemplates) {
-                    if (!mIgnoreTemplateTransaction)
-                        mTemplateTransactions.add(mTransaction);
+                    if (!mIgnoreTemplateTransaction) {
+                        mTransactionsDbAdapter.addRecord(mTransaction, DatabaseAdapter.UpdateMethod.insert);
+                    }
                 } else {
-                    mTransactionList.add(mTransaction);
+                    mTransactionsDbAdapter.addRecord(mTransaction, DatabaseAdapter.UpdateMethod.insert);
                     if (listener != null) listener.onTransaction(mTransaction);
                 }
                 if (mRecurrencePeriod > 0) { //if we find an old format recurrence period, parse it
                     mTransaction.setTemplate(true);
                     ScheduledAction scheduledAction = ScheduledAction.parseScheduledAction(mTransaction, mRecurrencePeriod);
-                    mScheduledActionsList.add(scheduledAction);
+                    mScheduledActionsDbAdapter.addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.insert);
                     if (listener != null) listener.onSchedule(scheduledAction);
                 }
                 mRecurrencePeriod = 0;
@@ -948,10 +915,9 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                         // TODO: implement parsing of by days for scheduled actions
                         setMinimalScheduledActionByDays();
                     }
-                    mScheduledActionsList.add(mScheduledAction);
+                    mScheduledActionsDbAdapter.addRecord(mScheduledAction, DatabaseAdapter.UpdateMethod.insert);
                     if (listener != null) listener.onSchedule(mScheduledAction);
-                    int count = generateMissedScheduledTransactions(mScheduledAction);
-                    Timber.i("Generated %d transactions from scheduled action", count);
+                    mScheduledAction = null;
                 }
                 mIgnoreScheduledAction = false;
                 break;
@@ -985,14 +951,17 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 break;
             case TAG_PRICE:
                 if (mPrice != null) {
-                    mPriceList.add(mPrice);
+                    mPricesDbAdapter.addRecord(mPrice, DatabaseAdapter.UpdateMethod.insert);
+                    if (listener != null) listener.onPrice(mPrice);
                     mPrice = null;
                 }
                 break;
             case TAG_BUDGET:
                 if (!mBudget.getBudgetAmounts().isEmpty()) { //ignore if no budget amounts exist for the budget
-                    mBudgetList.add(mBudget);
+                    //// TODO: 01.06.2016 Re-enable import of Budget stuff when the UI is complete
+                    mBudgetsDbAdapter.addRecord(mBudget, DatabaseAdapter.UpdateMethod.insert);
                     if (listener != null) listener.onBudget(mBudget);
+                    mBudget = null;
                 }
                 break;
             case TAG_BUDGET_ID:
@@ -1012,7 +981,13 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 break;
             case TAG_COMMODITY:
                 if (mCommodity != null) {
-                    putCommodity(mCommodity);
+                    Commodity commodity = putCommodity(mCommodity);
+                    if (commodity != null) {
+                        Commodity commodityDb = mCommoditiesDbAdapter.getRecordOrNull(commodity.getUID());
+                        if (commodityDb == null) {
+                            mCommoditiesDbAdapter.addRecord(commodity, DatabaseAdapter.UpdateMethod.insert);
+                        }
+                    }
                     if (listener != null) listener.onCommodity(mCommodity);
                     mCommodity = null;
                 }
@@ -1073,20 +1048,14 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     public void endDocument() throws SAXException {
         super.endDocument();
 
-        // Add all account without a parent to ROOT, and collect top level imbalance accounts
-        Map<String, String> mapFullName = new HashMap<>(mAccountList.size());
-        Map<String, Account> mapImbalanceAccount = new HashMap<>();
+        Map<String, Account> imbalanceAccounts = new HashMap<>();
         String imbalancePrefix = AccountsDbAdapter.getImbalanceAccountPrefix(context);
+        final String rootUID = mRootAccount.getUID();
         for (Account account : mAccountList) {
-            mapFullName.put(account.getUID(), null);
-            boolean topLevel = false;
-            if (account.getParentUID() == null && account.getAccountType() != AccountType.ROOT) {
-                account.setParentUID(mRootAccount.getUID());
-                topLevel = true;
-            }
-            if (topLevel || mRootAccount.getUID().equals(account.getParentUID())) {
+            if ((account.getParentUID() == null && !account.isRoot())
+                || rootUID.equals(account.getParentUID())) {
                 if (account.getName().startsWith(imbalancePrefix)) {
-                    mapImbalanceAccount.put(account.getName().substring(imbalancePrefix.length()), account);
+                    imbalanceAccounts.put(account.getName().substring(imbalancePrefix.length()), account);
                 }
             }
         }
@@ -1095,56 +1064,17 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
         for (Split split : mAutoBalanceSplits) {
             // XXX: yes, getAccountUID() returns a currency UID in this case (see Transaction.createAutoBalanceSplit())
             String currencyUID = split.getAccountUID();
-            Account imbAccount = mapImbalanceAccount.get(currencyUID);
+            Account imbAccount = imbalanceAccounts.get(currencyUID);
             if (imbAccount == null) {
                 Commodity commodity = mCommoditiesDbAdapter.getRecord(currencyUID);
                 imbAccount = new Account(imbalancePrefix + commodity.getCurrencyCode(), commodity);
                 imbAccount.setParentUID(mRootAccount.getUID());
                 imbAccount.setAccountType(AccountType.BANK);
-                mapImbalanceAccount.put(currencyUID, imbAccount);
-                mAccountList.add(imbAccount);
+                imbalanceAccounts.put(currencyUID, imbAccount);
+                mAccountsDbAdapter.addRecord(imbAccount, DatabaseAdapter.UpdateMethod.insert);
+                if (listener != null) listener.onAccount(imbAccount);
             }
             split.setAccountUID(imbAccount.getUID());
-        }
-
-        Stack<Account> stack = new Stack<>();
-        for (Account account : mAccountList) {
-            if (mapFullName.get(account.getUID()) != null) {
-                continue;
-            }
-            stack.push(account);
-            String parentAccountFullName;
-            while (!stack.isEmpty()) {
-                Account acc = stack.peek();
-                if (acc.isRoot()) {
-                    // ROOT_ACCOUNT_FULL_NAME should ensure ROOT always sorts first
-                    mapFullName.put(acc.getUID(), AccountsDbAdapter.ROOT_ACCOUNT_FULL_NAME);
-                    stack.pop();
-                    continue;
-                }
-                String parentUID = acc.getParentUID();
-                Account parentAccount = mAccountMap.get(parentUID);
-                // ROOT account will be added if not exist, so now only ROOT
-                // has an empty parent
-                if (parentAccount.isRoot()) {
-                    // top level account, full name is the same as its name
-                    mapFullName.put(acc.getUID(), acc.getName());
-                    stack.pop();
-                    continue;
-                }
-                parentAccountFullName = mapFullName.get(parentUID);
-                if (parentAccountFullName == null) {
-                    // non-top-level account, parent full name still unknown
-                    stack.push(parentAccount);
-                    continue;
-                }
-                mapFullName.put(acc.getUID(), parentAccountFullName +
-                    AccountsDbAdapter.ACCOUNT_NAME_SEPARATOR + acc.getName());
-                stack.pop();
-            }
-        }
-        for (Account account : mAccountList) {
-            account.setFullName(mapFullName.get(account.getUID()));
         }
 
         String mostAppearedCurrency = "";
@@ -1163,71 +1093,15 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     }
 
     /**
-     * Saves the imported data to the database
-     *
-     * @return GUID of the newly created book, or null if not successful
+     * Saves the imported data to the database.
+     * We on purpose do not set the book active. Only import. Caller should handle activation
      */
     private void saveToDatabase() {
-        //we on purpose do not set the book active. Only import. Caller should handle activation
+        mAccountsDbAdapter.enableForeignKey(true);
+        close();
 
-        long startTime = System.nanoTime();
-        Timber.d("bulk insert starts");
-        try {
-            mAccountsDbAdapter.beginTransaction();
-            // disable foreign key. The database structure should be ensured by the data inserted.
-            // it will make insertion much faster.
-            mAccountsDbAdapter.enableForeignKey(false);
-            Timber.d("before clean up db");
-            mAccountsDbAdapter.deleteAllRecords();
-            Timber.d("db clean up done %d ns", System.nanoTime() - startTime);
-
-            if (listener != null) listener.onCommodityCount(0);
-            List<Commodity> commodities = new ArrayList<>();
-            for (Map<String, Commodity> commoditiesById : mCommodities.values()) {
-                commodities.addAll(commoditiesById.values());
-            }
-            long nCommodities = mCommoditiesDbAdapter.bulkAddRecords(commodities, DatabaseAdapter.UpdateMethod.insert);
-            Timber.d("%d commodities inserted", nCommodities);
-
-            if (listener != null) listener.onAccountCount(0);
-            long nAccounts = mAccountsDbAdapter.bulkAddRecords(mAccountList, DatabaseAdapter.UpdateMethod.insert);
-            Timber.d("%d accounts inserted", nAccounts);
-
-            //We need to add scheduled actions first because there is a foreign key constraint on transactions
-            //which are generated from scheduled actions (we do auto-create some transactions during import)
-            if (listener != null) listener.onScheduleCount(0);
-            long nSchedActions = mScheduledActionsDbAdapter.bulkAddRecords(mScheduledActionsList, DatabaseAdapter.UpdateMethod.insert);
-            Timber.d("%d scheduled actions inserted", nSchedActions);
-
-            if (listener != null) listener.onTransactionCount(0);
-            long nTempTransactions = mTransactionsDbAdapter.bulkAddRecords(mTemplateTransactions, DatabaseAdapter.UpdateMethod.insert);
-            Timber.d("%d template transactions inserted", nTempTransactions);
-
-            if (listener != null) listener.onTransactionCount(0);
-            long nTransactions = mTransactionsDbAdapter.bulkAddRecords(mTransactionList, DatabaseAdapter.UpdateMethod.insert);
-            Timber.d("%d transactions inserted", nTransactions);
-
-            if (listener != null) listener.onPriceCount(0);
-            long nPrices = mPricesDbAdapter.bulkAddRecords(mPriceList, DatabaseAdapter.UpdateMethod.insert);
-            Timber.d("%d prices inserted", nPrices);
-
-            //// TODO: 01.06.2016 Re-enable import of Budget stuff when the UI is complete
-            if (listener != null) listener.onBudgetCount(0);
-            long nBudgets = mBudgetsDbAdapter.bulkAddRecords(mBudgetList, DatabaseAdapter.UpdateMethod.insert);
-            Timber.d("%d budgets inserted", nBudgets);
-
-            long endTime = System.nanoTime();
-            Timber.d("bulk insert time: %d", endTime - startTime);
-
-            //if all of the import went smoothly, then add the book to the book db
-            if (listener != null) listener.onBook(mBook);
-            booksDbAdapter.addRecord(mBook, DatabaseAdapter.UpdateMethod.insert);
-            mAccountsDbAdapter.setTransactionSuccessful();
-        } finally {
-            mAccountsDbAdapter.enableForeignKey(true);
-            mAccountsDbAdapter.endTransaction();
-            close();
-        }
+        // generate missed scheduled transactions.
+        //FIXME ScheduledActionService.schedulePeriodic(context);
     }
 
     @Override
@@ -1296,50 +1170,6 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     }
 
     /**
-     * Generates the runs of the scheduled action which have been missed since the file was last opened.
-     *
-     * @param scheduledAction Scheduled action for transaction
-     * @return Number of transaction instances generated
-     */
-    private int generateMissedScheduledTransactions(ScheduledAction scheduledAction) {
-        //if this scheduled action should not be run for any reason, return immediately
-        if (scheduledAction.getActionType() != ScheduledAction.ActionType.TRANSACTION
-            || !scheduledAction.isEnabled() || !scheduledAction.shouldAutoCreate()
-            || (scheduledAction.getEndTime() > 0 && scheduledAction.getEndTime() > System.currentTimeMillis())
-            || (scheduledAction.getTotalPlannedExecutionCount() > 0 && scheduledAction.getExecutionCount() >= scheduledAction.getTotalPlannedExecutionCount())) {
-            return 0;
-        }
-
-        long lastRuntime = scheduledAction.getStartTime();
-        if (scheduledAction.getLastRunTime() > 0) {
-            lastRuntime = scheduledAction.getLastRunTime();
-        }
-
-        int generatedTransactionCount = 0;
-        long period = scheduledAction.getPeriod();
-        final String actionUID = scheduledAction.getActionUID();
-        while ((lastRuntime = lastRuntime + period) <= System.currentTimeMillis()) {
-            for (Transaction templateTransaction : mTemplateTransactions) {
-                if (templateTransaction.getUID().equals(actionUID)) {
-                    Transaction transaction = new Transaction(templateTransaction, true);
-                    transaction.setTime(lastRuntime);
-                    transaction.setScheduledActionUID(scheduledAction.getUID());
-                    mTransactionList.add(transaction);
-                    //autobalance splits are generated with the currency of the transactions as the GUID
-                    //so we add them to the mAutoBalanceSplits which will be updated to real GUIDs before saving
-                    List<Split> autoBalanceSplits = transaction.getSplits(transaction.getCurrencyCode());
-                    mAutoBalanceSplits.addAll(autoBalanceSplits);
-                    scheduledAction.setExecutionCount(scheduledAction.getExecutionCount() + 1);
-                    ++generatedTransactionCount;
-                    break;
-                }
-            }
-        }
-        scheduledAction.setLastRunTime(lastRuntime);
-        return generatedTransactionCount;
-    }
-
-    /**
      * Sets the by days of the scheduled action to the day of the week of the start time.
      *
      * <p>Until we implement parsing of days of the week for scheduled actions,
@@ -1387,6 +1217,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
             commoditiesById = new HashMap<>();
             mCommodities.put(space, commoditiesById);
         }
-        return commoditiesById.put(id, commodity);
+        commoditiesById.put(id, commodity);
+        return commodity;
     }
 }
