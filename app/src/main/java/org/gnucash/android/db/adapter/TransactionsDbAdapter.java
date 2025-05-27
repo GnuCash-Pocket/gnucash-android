@@ -130,12 +130,10 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
             }
             super.addRecord(transaction, updateMethod);
 
-            Timber.d("Adding splits for transaction");
             List<Split> splits = transaction.getSplits();
             Timber.d("Adding %d splits for transaction", splits.size());
             List<String> splitUIDs = new ArrayList<>(splits.size());
             for (Split split : splits) {
-                Timber.d("Replace transaction split in db");
                 if (imbalanceSplit == split) {
                     splitsDbAdapter.addRecord(split, UpdateMethod.insert);
                 } else {
@@ -143,7 +141,6 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
                 }
                 splitUIDs.add(split.getUID());
             }
-            Timber.d("%d splits added", splitUIDs.size());
 
             if (didChange) {
                 long deleted = mDb.delete(SplitEntry.TABLE_NAME,

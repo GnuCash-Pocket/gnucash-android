@@ -181,7 +181,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         super.addRecord(account, updateMethod);
         //now add transactions if there are any
         // NB! Beware of transactions that reference accounts not yet in the db,
-        if (account.getAccountType() != AccountType.ROOT) {
+        if (!account.isRoot()) {
             for (Transaction t : account.getTransactions()) {
                 t.setCommodity(account.getCommodity());
                 transactionsDbAdapter.addRecord(t, updateMethod);
@@ -227,7 +227,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     @Override
     protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final Account account) throws SQLException {
         String parentAccountUID = account.getParentUID();
-        if (account.getAccountType() != AccountType.ROOT) {
+        if (!account.isRoot()) {
             if (TextUtils.isEmpty(parentAccountUID)) {
                 parentAccountUID = getOrCreateGnuCashRootAccountUID();
                 account.setParentUID(parentAccountUID);
