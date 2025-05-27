@@ -172,7 +172,6 @@ class Account : BaseModel {
      * Sets the color of the account.
      *
      * @param colorCode Color code to be set in the format #rrggbb
-     * @throws java.lang.IllegalArgumentException if the color code is not properly formatted or
      * the color is transparent.
      */
     fun setColor(colorCode: String?) {
