@@ -496,6 +496,22 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
     }
 
     @NonNull
+    public List<Model> getAllRecords(@Nullable String where, @Nullable String[] whereArgs) {
+        List<Model> modelRecords = new ArrayList<>();
+        Cursor cursor = fetchAllRecords(where, whereArgs, null);
+        try {
+            if (cursor.moveToFirst()) {
+                do {
+                    modelRecords.add(buildModelInstance(cursor));
+                } while (cursor.moveToNext());
+            }
+        } finally {
+            cursor.close();
+        }
+        return modelRecords;
+    }
+
+    @NonNull
     protected List<Model> getRecords(@Nullable Cursor cursor) {
         List<Model> records = new ArrayList<>();
         if (cursor == null) return records;
@@ -833,7 +849,18 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @return Total number of records in the database
      */
     public long getRecordsCount() {
-        return DatabaseUtils.queryNumEntries(mDb, mTableName);
+        return getRecordsCount(null, null);
+    }
+
+    /**
+     * Returns the number of transactions in the database which fulfill the conditions
+     *
+     * @param where     SQL WHERE clause without the "WHERE" itself
+     * @param whereArgs Arguments to substitute question marks for
+     * @return Number of records in the databases
+     */
+    public long getRecordsCount(@Nullable String where, @Nullable String[] whereArgs) {
+        return DatabaseUtils.queryNumEntries(mDb, mTableName, where, whereArgs);
     }
 
     /**

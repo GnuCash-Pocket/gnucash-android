@@ -51,7 +51,7 @@ class BackupTest : GnuCashTest() {
             context, ExportParams(ExportFormat.XML),
             bookUID!!
         )
-        val uriExported = exporter.generateExport()
+        val uriExported = exporter.export()
 
         assertThat(uriExported).isNotNull()
         assertThat(uriExported!!.scheme).isEqualTo("file")

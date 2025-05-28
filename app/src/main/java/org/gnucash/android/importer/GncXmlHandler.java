@@ -148,6 +148,7 @@ import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.model.TransactionType;
 import org.gnucash.android.model.WeekendAdjust;
+import org.gnucash.android.service.ScheduledActionService;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -180,7 +181,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
      * Adapter for saving the imported accounts
      */
     @NonNull
-    private final AccountsDbAdapter mAccountsDbAdapter;
+    private AccountsDbAdapter mAccountsDbAdapter;
 
     /**
      * StringBuilder for accumulating characters between XML tags
@@ -319,24 +320,25 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     @NonNull
     private final BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
     @NonNull
-    private final TransactionsDbAdapter mTransactionsDbAdapter;
+    private TransactionsDbAdapter mTransactionsDbAdapter;
     @NonNull
-    private final ScheduledActionDbAdapter mScheduledActionsDbAdapter;
+    private ScheduledActionDbAdapter mScheduledActionsDbAdapter;
     @NonNull
-    private final CommoditiesDbAdapter mCommoditiesDbAdapter;
+    private CommoditiesDbAdapter mCommoditiesDbAdapter;
     @NonNull
-    private final PricesDbAdapter mPricesDbAdapter;
+    private PricesDbAdapter mPricesDbAdapter;
     @NonNull
     private final Map<String, Integer> mCurrencyCount = new HashMap<>();
     @NonNull
-    private final BudgetsDbAdapter mBudgetsDbAdapter;
+    private BudgetsDbAdapter mBudgetsDbAdapter;
     private final Book mBook = new Book();
     @NonNull
-    private final DatabaseHelper mDatabaseHelper;
+    private DatabaseHelper mDatabaseHelper;
     @NonNull
     private final Context context;
     @Nullable
     private final GncProgressListener listener;
+    @Nullable
     private String countDataType;
     private boolean isValidRoot = false;
 
@@ -354,7 +356,11 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
         super();
         this.context = context;
         this.listener = listener;
-        DatabaseHelper databaseHelper = new DatabaseHelper(context, mBook.getUID());
+        initDb(mBook.getUID());
+    }
+
+    private void initDb(@NonNull String bookUID) {
+        DatabaseHelper databaseHelper = new DatabaseHelper(context, bookUID);
         mDatabaseHelper = databaseHelper;
         SQLiteDatabase db = databaseHelper.getWritableDatabase();
         mCommoditiesDbAdapter = new CommoditiesDbAdapter(db);
@@ -364,6 +370,18 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
         RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(db);
         mScheduledActionsDbAdapter = new ScheduledActionDbAdapter(recurrenceDbAdapter);
         mBudgetsDbAdapter = new BudgetsDbAdapter(recurrenceDbAdapter);
+
+        Timber.d("before clean up db");
+        // disable foreign key. The database structure should be ensured by the data inserted.
+        // it will make insertion much faster.
+        mAccountsDbAdapter.enableForeignKey(false);
+
+        recurrenceDbAdapter.deleteAllRecords();
+        mBudgetsDbAdapter.deleteAllRecords();
+        mPricesDbAdapter.deleteAllRecords();
+        mScheduledActionsDbAdapter.deleteAllRecords();
+        mTransactionsDbAdapter.deleteAllRecords();
+        mAccountsDbAdapter.deleteAllRecords();
     }
 
     @Override
@@ -486,7 +504,9 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 if (listener != null) listener.onBook(mBook);
                 break;
             case TAG_BOOK_ID:
-                //FIXME mBook.setUID(characterString);
+                mBook.setUID(characterString);
+                close();
+                initDb(mBook.getUID());
                 break;
             case TAG_COMMODITY_SPACE:
                 mCommoditySpace = characterString;
@@ -593,6 +613,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                         mAccountList.add(mRootAccount);
                         mAccountMap.put(mRootAccount.getUID(), mRootAccount);
                         mBook.setRootAccountUID(mRootAccount.getUID());
+                        mAccountsDbAdapter.addRecord(mRootAccount, DatabaseAdapter.UpdateMethod.insert);
                     }
                     mAccountsDbAdapter.addRecord(mAccount, DatabaseAdapter.UpdateMethod.insert);
                     if (listener != null) listener.onAccount(mAccount);
@@ -1022,6 +1043,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                         }
                     }
                 }
+                countDataType = null;
                 break;
             case TAG_ACCT_TITLE:
                 mBook.setDisplayName(characterString);
@@ -1035,17 +1057,6 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     @Override
     public void characters(char[] chars, int start, int length) throws SAXException {
         mContent.append(chars, start, length);
-    }
-
-    @Override
-    public void startDocument() throws SAXException {
-        super.startDocument();
-
-        Timber.d("before clean up db");
-        // disable foreign key. The database structure should be ensured by the data inserted.
-        // it will make insertion much faster.
-        mAccountsDbAdapter.enableForeignKey(false);
-        mAccountsDbAdapter.deleteAllRecords();
     }
 
     @Override
@@ -1094,6 +1105,9 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
         }
 
         saveToDatabase();
+
+        // generate missed scheduled transactions.
+        //FIXME ScheduledActionService.schedulePeriodic(context);
     }
 
     /**
@@ -1103,14 +1117,19 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     private void saveToDatabase() {
         mAccountsDbAdapter.enableForeignKey(true);
         close();
-
-        // generate missed scheduled transactions.
-        //FIXME ScheduledActionService.schedulePeriodic(context);
     }
 
     @Override
     public void close() {
-        mDatabaseHelper.close(); //close it after import
+        String activeBookUID = null;
+        try {
+            activeBookUID = GnuCashApplication.getActiveBookUID();
+        } catch (BooksDbAdapter.NoActiveBookFoundException ignore) {
+        }
+        String newBookUID = mBook.getUID();
+        if (!TextUtils.equals(activeBookUID, newBookUID)) {
+            mDatabaseHelper.close(); //close it after import
+        }
     }
 
     /**

@@ -56,7 +56,7 @@ class QifExporterTest : BookHelperTest() {
         val testBook = Book("testRootAccountUID")
         booksDbAdapter.addRecord(testBook)
         bookUID = testBook.uid
-        val databaseHelper = DatabaseHelper(GnuCashApplication.getAppContext(), testBook.uid)
+        val databaseHelper = DatabaseHelper(context, testBook.uid)
         db = databaseHelper.writableDatabase
     }
 
@@ -78,7 +78,7 @@ class QifExporterTest : BookHelperTest() {
         exportParameters.exportTarget = ExportParams.ExportTarget.SD_CARD
         exportParameters.setDeleteTransactionsAfterExport(false)
         val exporter = QifExporter(context, exportParameters, bookUID!!)
-        val exportedFile = exporter.generateExport()
+        val exportedFile = exporter.export()
         assertThat(exportedFile).isNull()
     }
 
@@ -102,7 +102,7 @@ class QifExporterTest : BookHelperTest() {
         exportParameters.setDeleteTransactionsAfterExport(false)
 
         val exporter = QifExporter(context, exportParameters, bookUID!!)
-        val exportedFile = exporter.generateExport()
+        val exportedFile = exporter.export()
 
         assertThat(exportedFile).isNotNull()
         val file = File(exportedFile!!.path)
@@ -142,7 +142,7 @@ class QifExporterTest : BookHelperTest() {
         exportParameters.setDeleteTransactionsAfterExport(false)
 
         val exporter = QifExporter(context, exportParameters, bookUID!!)
-        val exportedFile = exporter.generateExport()
+        val exportedFile = exporter.export()
 
         assertThat(exportedFile).isNotNull()
         val file = File(exportedFile!!.path)
@@ -177,7 +177,7 @@ class QifExporterTest : BookHelperTest() {
         exportParameters.setDeleteTransactionsAfterExport(false)
 
         val exporter = QifExporter(context, exportParameters, bookUID!!)
-        val exportedFile = exporter.generateExport()
+        val exportedFile = exporter.export()
 
         assertThat(exportedFile).isNotNull()
         val file = File(exportedFile!!.path)
@@ -222,7 +222,7 @@ class QifExporterTest : BookHelperTest() {
         exportParameters.setDeleteTransactionsAfterExport(false)
 
         val exporter = QifExporter(context, exportParameters, bookUID)
-        val exportedFile = exporter.generateExport()
+        val exportedFile = exporter.export()
 
         assertThat(exportedFile).isNotNull()
         val file = File(exportedFile!!.path)
@@ -272,7 +272,7 @@ class QifExporterTest : BookHelperTest() {
         exportParameters.setDeleteTransactionsAfterExport(false)
 
         val exporter = QifExporter(context, exportParameters, bookUID)
-        val exportedFile = exporter.generateExport()
+        val exportedFile = exporter.export()
 
         assertThat(exportedFile).isNotNull()
         val file = File(exportedFile!!.path)
@@ -339,7 +339,7 @@ class QifExporterTest : BookHelperTest() {
         exportParameters.setDeleteTransactionsAfterExport(false)
 
         val exporter = QifExporter(context, exportParameters, bookUID!!)
-        val exportedFile = exporter.generateExport()
+        val exportedFile = exporter.export()
 
         assertThat(exportedFile).isNotNull()
         val file = File(exportedFile!!.path)

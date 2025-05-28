@@ -162,7 +162,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
         String[] whereArgs = new String[]{currencyCode};
         Cursor cursor = fetchAllRecords(where, whereArgs, null);
         try {
-            if (cursor.moveToNext()) {
+            if (cursor.moveToFirst()) {
                 Commodity commodity = buildModelInstance(cursor);
                 if (isCached) {
                     cache.put(commodity.getUID(), commodity);

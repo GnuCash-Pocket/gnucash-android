@@ -115,7 +115,7 @@ class BooksDbAdapterTest : GnuCashTest() {
     @Test
     fun deletingBook_shouldDeleteDbFile() {
         val bookUID = createNewBookWithDefaultAccounts()
-        val dbPath = GnuCashApplication.getAppContext().getDatabasePath(bookUID)
+        val dbPath = context.getDatabasePath(bookUID)
         assertThat(dbPath).exists()
         val booksDbAdapter = BooksDbAdapter.getInstance()
         assertThat(booksDbAdapter.getRecord(bookUID)).isNotNull()

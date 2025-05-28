@@ -51,21 +51,22 @@ class GncXmlHandlerTest : BookHelperTest() {
         val bookUID = importGnuCashXml("accountsImport.xml")
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
 
-        assertThat(accountsDbAdapter!!.recordsCount).isEqualTo(5) // 4 accounts + root
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(5) // 4 accounts + root
 
-        val rootAccount = accountsDbAdapter!!.getRecord("308ade8cf0be2b0b05c5eec3114a65fa")
+        val rootAccount = accountsDbAdapter.getRecord("308ade8cf0be2b0b05c5eec3114a65fa")
         assertThat(rootAccount.parentUID).isNull()
         assertThat(rootAccount.name).isEqualTo(AccountsDbAdapter.ROOT_ACCOUNT_NAME)
         assertThat(rootAccount.isHidden).isFalse()
+        assertThat(rootAccount.isPlaceholder).isFalse()
 
-        val assetsAccount = accountsDbAdapter!!.getRecord("3f44d61cb1afd201e8ea5a54ec4fbbff")
+        val assetsAccount = accountsDbAdapter.getRecord("3f44d61cb1afd201e8ea5a54ec4fbbff")
         assertThat(assetsAccount.parentUID).isEqualTo(rootAccount.uid)
         assertThat(assetsAccount.name).isEqualTo("Assets")
         assertThat(assetsAccount.isHidden).isFalse()
         assertThat(assetsAccount.isPlaceholder).isTrue()
         assertThat(assetsAccount.accountType).isEqualTo(AccountType.ASSET)
 
-        val diningAccount = accountsDbAdapter!!.getRecord("6a7cf8267314992bdddcee56d71a3908")
+        val diningAccount = accountsDbAdapter.getRecord("6a7cf8267314992bdddcee56d71a3908")
         assertThat(diningAccount.parentUID).isEqualTo("9b607f63aecb1a175556676904432365")
         assertThat(diningAccount.name).isEqualTo("Dining")
         assertThat(diningAccount.description).isEqualTo("Dining")
@@ -88,9 +89,9 @@ class GncXmlHandlerTest : BookHelperTest() {
         val bookUID = importGnuCashXml("simpleTransactionImport.xml")
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
 
-        assertThat(transactionsDbAdapter!!.recordsCount).isEqualTo(1)
+        assertThat(transactionsDbAdapter.recordsCount).isEqualTo(1)
 
-        val transaction = transactionsDbAdapter!!.getRecord("b33c8a6160494417558fd143731fc26a")
+        val transaction = transactionsDbAdapter.getRecord("b33c8a6160494417558fd143731fc26a")
 
         // Check attributes
         assertThat(transaction.description).isEqualTo("Kahuna Burger")
@@ -137,9 +138,9 @@ class GncXmlHandlerTest : BookHelperTest() {
         val bookUID = importGnuCashXml("transactionWithNonDefaultSplitsImport.xml")
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
 
-        assertThat(transactionsDbAdapter!!.recordsCount).isEqualTo(1)
+        assertThat(transactionsDbAdapter.recordsCount).isEqualTo(1)
 
-        val transaction = transactionsDbAdapter!!.getRecord("042ff745a80e94e6237fb0549f6d32ae")
+        val transaction = transactionsDbAdapter.getRecord("042ff745a80e94e6237fb0549f6d32ae")
 
         // Ensure it's the correct one
         assertThat(transaction.description).isEqualTo("Tandoori Mahal")
@@ -187,9 +188,9 @@ class GncXmlHandlerTest : BookHelperTest() {
         val bookUID = importGnuCashXml("multiCurrencyTransactionImport.xml")
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
 
-        assertThat(transactionsDbAdapter!!.recordsCount).isEqualTo(1)
+        assertThat(transactionsDbAdapter.recordsCount).isEqualTo(1)
 
-        val transaction = transactionsDbAdapter!!.getRecord("ded49386f8ea319ccaee043ba062b3e1")
+        val transaction = transactionsDbAdapter.getRecord("ded49386f8ea319ccaee043ba062b3e1")
 
         // Ensure it's the correct one
         assertThat(transaction.description).isEqualTo("Salad express")
@@ -235,10 +236,10 @@ class GncXmlHandlerTest : BookHelperTest() {
         val bookUID = importGnuCashXml("simpleScheduledTransactionImport.xml")
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
 
-        assertThat(transactionsDbAdapter!!.templateTransactionsCount).isEqualTo(1)
+        assertThat(transactionsDbAdapter.templateTransactionsCount).isEqualTo(1)
 
         val scheduledTransaction =
-            transactionsDbAdapter!!.getRecord("b645bef06d0844aece6424ceeec03983")
+            transactionsDbAdapter.getRecord("b645bef06d0844aece6424ceeec03983")
 
         // Check attributes
         assertThat(scheduledTransaction.description).isEqualTo("Los pollos hermanos")
@@ -287,7 +288,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
 
         val scheduledTransaction =
-            scheduledActionDbAdapter!!.getRecord("b5a13acb5a9459ebed10d06b75bbad10")
+            scheduledActionDbAdapter.getRecord("b5a13acb5a9459ebed10d06b75bbad10")
 
         // There are 3 byDays but, for now, getting one is enough to ensure it is executed
         assertThat(scheduledTransaction.recurrence!!.byDays.size).isGreaterThanOrEqualTo(1)
@@ -314,10 +315,10 @@ class GncXmlHandlerTest : BookHelperTest() {
             importGnuCashXml("bug562_scheduledTransactionImportedWithImbalancedSplits.xml")
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
 
-        assertThat(transactionsDbAdapter!!.templateTransactionsCount).isEqualTo(1)
+        assertThat(transactionsDbAdapter.templateTransactionsCount).isEqualTo(1)
 
         val scheduledTransaction =
-            transactionsDbAdapter!!.getRecord("b645bef06d0844aece6424ceeec03983")
+            transactionsDbAdapter.getRecord("b645bef06d0844aece6424ceeec03983")
 
         // Ensure it's the correct transaction
         assertThat(scheduledTransaction.description).isEqualTo("Los pollos hermanos")
@@ -347,10 +348,11 @@ class GncXmlHandlerTest : BookHelperTest() {
     @Test
     fun commodities() {
         val bookUID = importGnuCashXml("commodities.xml")
+        assertThat(bookUID).isEqualTo("76d1839cfd30459998717d04ce719add")
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
 
         assertThat(commoditiesDbAdapter).isNotNull()
-        val commodities = commoditiesDbAdapter!!.allRecords
+        val commodities = commoditiesDbAdapter.allRecords
         assertThat(commodities).isNotNull()
         assertThat(commodities.size).isGreaterThanOrEqualTo(3)
 

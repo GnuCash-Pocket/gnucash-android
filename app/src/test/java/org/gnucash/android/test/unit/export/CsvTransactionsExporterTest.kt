@@ -39,8 +39,7 @@ class CsvTransactionsExporterTest : BookHelperTest() {
             setDeleteTransactionsAfterExport(false)
         }
 
-        val exportedFile = CsvTransactionsExporter(context, exportParameters, bookUID)
-            .generateExport()
+        val exportedFile = CsvTransactionsExporter(context, exportParameters, bookUID).export()
 
         assertThat(exportedFile).isNotNull()
         val file = exportedFile!!.toFile()
@@ -69,7 +68,7 @@ class CsvTransactionsExporterTest : BookHelperTest() {
         }
 
         val exportedFile = CsvTransactionsExporter(context, exportParameters, bookUID)
-            .generateExport()
+            .export()
 
         assertThat(exportedFile).isNotNull()
         val file = exportedFile!!.toFile()
@@ -96,7 +95,7 @@ class CsvTransactionsExporterTest : BookHelperTest() {
         }
 
         val exportedFile = CsvTransactionsExporter(context, exportParameters, bookUID)
-            .generateExport()
+            .export()
 
         assertThat(exportedFile).isNotNull()
         val file = exportedFile!!.toFile()
