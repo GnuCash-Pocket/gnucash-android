@@ -120,7 +120,6 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      */
     @Override
     public void addRecord(@NonNull Transaction transaction, UpdateMethod updateMethod) throws SQLException {
-        Timber.d("%s transaction to the db", updateMethod.name());
         // Did the transaction have any splits before?
         final boolean didChange = transaction.id != 0;
         try {
@@ -374,41 +373,17 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
             columns, where, whereArgs, null, null, orderBy);
     }
 
-    /**
-     * Return number of transactions in the database (excluding templates)
-     *
-     * @return Number of transactions
-     */
+    @Override
     public long getRecordsCount() {
         return DatabaseUtils.queryNumEntries(mDb, TransactionEntry.TABLE_NAME, TransactionEntry.COLUMN_TEMPLATE + "=0");
     }
 
-    /**
-     * Returns the number of transactions in the database which fulfill the conditions
-     *
-     * @param where     SQL WHERE clause without the "WHERE" itself
-     * @param whereArgs Arguments to substitute question marks for
-     * @return Number of records in the databases
-     */
+    @Override
     public long getRecordsCount(@Nullable String where, @Nullable String[] whereArgs) {
-        Cursor cursor = mDb.query(true, TransactionEntry.TABLE_NAME + " , trans_extra_info ON "
-                + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID
-                + " = trans_extra_info.trans_acct_t_uid",
-            new String[]{"COUNT(*)"},
-            where,
-            whereArgs,
-            null,
-            null,
-            null,
-            null);
-        try {
-            if (cursor != null && cursor.moveToFirst()) {
-                return cursor.getLong(0);
-            }
-        } finally {
-            cursor.close();
-        }
-        return 0L;
+        String table = mTableName + ", trans_extra_info ON "
+            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID
+            + " = trans_extra_info.trans_acct_t_uid";
+        return DatabaseUtils.queryNumEntries(mDb, table, where, whereArgs);
     }
 
     /**

@@ -249,7 +249,7 @@ public abstract class Exporter {
      * @throws ExporterException if an error occurs during export
      */
     @Nullable
-    public Uri generateExport() throws ExporterException {
+    public Uri export() throws ExporterException {
         Timber.i("generate export");
         final ExportParams exportParams = mExportParams;
         final Uri result;
