@@ -23,7 +23,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.SystemClock;
 import android.text.TextUtils;
 import android.widget.Toast;
 
@@ -33,15 +32,8 @@ import androidx.annotation.Nullable;
 import org.gnucash.android.R;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.gnc.DefaultProgressListener;
-import org.gnucash.android.gnc.GncProgressListener;
-import org.gnucash.android.model.Account;
+import org.gnucash.android.gnc.AsyncTaskProgressListener;
 import org.gnucash.android.model.Book;
-import org.gnucash.android.model.Budget;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Price;
-import org.gnucash.android.model.ScheduledAction;
-import org.gnucash.android.model.Transaction;
 import org.gnucash.android.service.ScheduledActionService;
 import org.gnucash.android.ui.common.GnucashProgressDialog;
 import org.gnucash.android.util.BackupManager;
@@ -63,7 +55,7 @@ public class ImportAsyncTask extends AsyncTask<Uri, Object, String> {
     @NonNull
     private final ProgressDialog progressDialog;
     @NonNull
-    private final GncProgressListener listener;
+    private final AsyncTaskProgressListener listener;
 
     public ImportAsyncTask(@NonNull Activity context) {
         this(context, null);
@@ -77,156 +69,21 @@ public class ImportAsyncTask extends AsyncTask<Uri, Object, String> {
         this.bookCallback = callback;
         this.mBackup = backup;
         progressDialog = new GnucashProgressDialog(context);
-        progressDialog.setTitle(R.string.title_progress_processing_books);
+        progressDialog.setTitle(R.string.title_import_accounts);
         progressDialog.setCancelable(true);
         progressDialog.setOnCancelListener(dialogInterface -> cancel(true));
         this.listener = new ProgressListener(context);
     }
 
-    private class ProgressListener extends DefaultProgressListener {
-        private static final long PUBLISH_TIMEOUT = 100;
-
-        private static class PublishItem {
-            final Object[] values;
-            final long timestamp;
-
-            private PublishItem(Object[] values, long timestamp) {
-                this.values = values;
-                this.timestamp = timestamp;
-            }
-        }
-
-        private final String labelAccounts;
-        private final String labelBook;
-        private final String labelBudgets;
-        private final String labelCommodities;
-        private final String labelPrices;
-        private final String labelSchedules;
-        private final String labelTransactions;
-        private long countDataBudgetsTotal = 0;
-        private long countDataBudgets = 0;
-        private long countDataCommodityTotal = 0;
-        private long countDataCommodity = 0;
-        private long countDataAccountTotal = 0;
-        private long countDataAccount = 0;
-        private long countDataTransactionTotal = 0;
-        private long countDataTransaction = 0;
-        private long countDataPriceTotal = 0;
-        private long countDataPrice = 0;
-        private long countDataScheduledTotal = 0;
-        private long countDataScheduled = 0;
-        @Nullable
-        private PublishItem itemPublished = null;
+    private class ProgressListener extends AsyncTaskProgressListener {
 
         ProgressListener(Context context) {
-            labelAccounts = context.getString(R.string.title_progress_processing_accounts);
-            labelBook = context.getString(R.string.title_progress_processing_books);
-            labelBudgets = context.getString(R.string.title_progress_processing_budgets);
-            labelCommodities = context.getString(R.string.title_progress_processing_commodities);
-            labelPrices = context.getString(R.string.title_progress_processing_prices);
-            labelSchedules = context.getString(R.string.title_progress_processing_schedules);
-            labelTransactions = context.getString(R.string.title_progress_processing_transactions);
+            super(context);
         }
 
         @Override
-        public void onAccountCount(long count) {
-            countDataAccountTotal = count;
-            publishProgressDebounce(labelAccounts, countDataAccount, countDataAccountTotal);
-        }
-
-        @Override
-        public void onAccount(@NonNull Account account) {
-            Timber.v("%s: %s", labelAccounts, account);
-            publishProgressDebounce(labelAccounts, ++countDataAccount, countDataAccountTotal);
-        }
-
-        @Override
-        public void onBookCount(long count) {
-            publishProgressDebounce(labelBook);
-        }
-
-        @Override
-        public void onBook(@NonNull Book book) {
-            Timber.v("%s: %s", labelBook, book.getDisplayName());
-            publishProgressDebounce(labelBook);
-        }
-
-        @Override
-        public void onBudgetCount(long count) {
-            countDataBudgetsTotal = count;
-            publishProgressDebounce(labelBudgets, countDataBudgets, countDataBudgetsTotal);
-        }
-
-        @Override
-        public void onBudget(@NonNull Budget budget) {
-            Timber.v("%s: %s", labelBudgets, budget);
-            publishProgressDebounce(labelBudgets, ++countDataBudgets, countDataBudgetsTotal);
-        }
-
-        @Override
-        public void onCommodityCount(long count) {
-            countDataCommodityTotal = count;
-            publishProgressDebounce(labelCommodities, countDataCommodity, countDataCommodityTotal);
-        }
-
-        @Override
-        public void onCommodity(@NonNull Commodity commodity) {
-            if (commodity.isTemplate()) return;
-            Timber.v("%s: %s", labelCommodities, commodity);
-            publishProgressDebounce(labelCommodities, ++countDataCommodity, countDataCommodityTotal);
-        }
-
-        @Override
-        public void onPriceCount(long count) {
-            countDataPriceTotal = count;
-            publishProgressDebounce(labelPrices, countDataPrice, countDataPriceTotal);
-        }
-
-        @Override
-        public void onPrice(@NonNull Price price) {
-            Timber.v("%s: %s", labelPrices, price);
-            publishProgressDebounce(labelPrices, ++countDataPrice, countDataPriceTotal);
-        }
-
-        @Override
-        public void onScheduleCount(long count) {
-            countDataScheduledTotal = count;
-            publishProgressDebounce(labelSchedules, countDataScheduled, countDataScheduledTotal);
-        }
-
-        @Override
-        public void onSchedule(@NonNull ScheduledAction scheduledAction) {
-            Timber.v("%s: %s", labelSchedules, scheduledAction);
-            publishProgressDebounce(labelSchedules, ++countDataScheduled, countDataScheduledTotal);
-        }
-
-        @Override
-        public void onTransactionCount(long count) {
-            countDataTransactionTotal = count;
-            publishProgressDebounce(labelTransactions, countDataTransaction, countDataTransactionTotal);
-        }
-
-        @Override
-        public void onTransaction(@NonNull Transaction transaction) {
-            if (transaction.isTemplate()) return;
-            Timber.v("%s: %s", labelTransactions, transaction);
-            publishProgressDebounce(labelTransactions, ++countDataTransaction, countDataTransactionTotal);
-        }
-
-        private void publishProgressDebounce(final Object... values) {
-            int length = values.length;
-            if (length == 0) {
-                return;
-            }
-            String labelProgress = (String) values[0];
-            final PublishItem item = itemPublished;
-            String labelPublished = (item != null) ? (String) item.values[0] : null;
-            long timestampDelta = (item != null) ? SystemClock.elapsedRealtime() - item.timestamp : PUBLISH_TIMEOUT;
-            if (timestampDelta >= PUBLISH_TIMEOUT || !TextUtils.equals(labelProgress, labelPublished)) {
-                // Publish straight away, or if we waited enough time, or label changed.
-                itemPublished = new PublishItem(values, SystemClock.elapsedRealtime());
-                publishProgress(values);
-            }
+        protected void publishProgress(@NonNull String label, long progress, long total) {
+            ImportAsyncTask.this.publishProgress(label, progress, total);
         }
     }
 
@@ -294,25 +151,8 @@ public class ImportAsyncTask extends AsyncTask<Uri, Object, String> {
 
     @Override
     protected void onProgressUpdate(Object... values) {
-        final ProgressDialog progressDialog = this.progressDialog;
-
-        int length = values.length;
-        if (length > 0) {
-            String value = (String) values[0];
-            progressDialog.setTitle(value);
-            if (length >= 3) {
-                float count = ((Number) values[1]).floatValue();
-                float total = ((Number) values[2]).floatValue();
-                if (total > 0) {
-                    float progress = (count * 100) / total;
-                    progressDialog.setIndeterminate(false);
-                    progressDialog.setProgress((int) progress);
-                } else {
-                    progressDialog.setIndeterminate(true);
-                }
-            } else {
-                progressDialog.setIndeterminate(true);
-            }
+        if (progressDialog.isShowing()) {
+            listener.showProgress(progressDialog, values);
         }
     }
 

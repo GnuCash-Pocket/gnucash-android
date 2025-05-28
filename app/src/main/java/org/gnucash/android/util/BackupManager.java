@@ -126,7 +126,7 @@ public class BackupManager {
             Uri backupUri = getBookBackupFileUri(context, bookUID, params);
             params.setExportLocation(backupUri);
             Exporter exporter = new GncXmlExporter(context, params, bookUID);
-            Uri uri = exporter.generateExport();
+            Uri uri = exporter.export();
             return (uri != null);
         } catch (Throwable e) {
             Timber.e(e, "Error creating backup");
