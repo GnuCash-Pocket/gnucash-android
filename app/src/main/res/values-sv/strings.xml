@@ -481,4 +481,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">Komprimera data</string>
+    <string name="title_progress_processing_accounts">Bearbetning av räkenskaper</string>
+    <string name="title_progress_processing_books">Bearbetning av böcker</string>
+    <string name="title_progress_processing_budgets">Bearbetning av budgetar</string>
+    <string name="title_progress_processing_commodities">Bearbetning av varor</string>
+    <string name="title_progress_processing_prices">Bearbetning av priser</string>
+    <string name="title_progress_processing_schedules">Bearbetning av scheman</string>
+    <string name="title_progress_processing_transactions">Bearbetning av transaktioner</string>
 </resources>

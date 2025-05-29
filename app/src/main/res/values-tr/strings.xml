@@ -481,4 +481,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">Verileri sıkıştırın</string>
+    <string name="title_progress_processing_accounts">Hesapların işlenmesi</string>
+    <string name="title_progress_processing_books">Defterlerin işlenmesi</string>
+    <string name="title_progress_processing_budgets">Bütçelerin işlenmesi</string>
+    <string name="title_progress_processing_commodities">Emtiaların işlenmesi</string>
+    <string name="title_progress_processing_prices">Fiyatların işlenmesi</string>
+    <string name="title_progress_processing_schedules">Takvimlerin işlenmesi</string>
+    <string name="title_progress_processing_transactions">İşlemlerin işlenmesi</string>
 </resources>

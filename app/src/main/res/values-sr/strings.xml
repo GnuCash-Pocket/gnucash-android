@@ -484,4 +484,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">Компресујте податке</string>
+    <string name="title_progress_processing_accounts">Обрада рачуна</string>
+    <string name="title_progress_processing_books">Обрада књига</string>
+    <string name="title_progress_processing_budgets">Обрада буџета</string>
+    <string name="title_progress_processing_commodities">Обрада робе</string>
+    <string name="title_progress_processing_prices">Обрада цена</string>
+    <string name="title_progress_processing_schedules">Обрада распореда</string>
+    <string name="title_progress_processing_transactions">Обрада трансакција</string>
 </resources>
