@@ -481,4 +481,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">Comprimeer de gegevens</string>
+    <string name="title_progress_processing_accounts">Rekeningen verwerken</string>
+    <string name="title_progress_processing_books">Boekingen verwerken</string>
+    <string name="title_progress_processing_budgets">Budgetten verwerken</string>
+    <string name="title_progress_processing_commodities">Grondstoffen verwerken</string>
+    <string name="title_progress_processing_prices">Prijzen verwerken</string>
+    <string name="title_progress_processing_schedules">Schema\'s verwerken</string>
+    <string name="title_progress_processing_transactions">Transacties verwerken</string>
 </resources>
