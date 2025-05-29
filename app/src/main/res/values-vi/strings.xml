@@ -481,4 +481,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">Nén dữ liệu</string>
+    <string name="title_progress_processing_accounts">Xử lý tài khoản</string>
+    <string name="title_progress_processing_books">Xử lý sổ sách</string>
+    <string name="title_progress_processing_budgets">Xử lý ngân sách</string>
+    <string name="title_progress_processing_commodities">Xử lý hàng hóa</string>
+    <string name="title_progress_processing_prices">Xử lý giá cả</string>
+    <string name="title_progress_processing_schedules">Xử lý lịch trình</string>
+    <string name="title_progress_processing_transactions">Xử lý giao dịch</string>
 </resources>

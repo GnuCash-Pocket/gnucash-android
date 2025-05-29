@@ -481,4 +481,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">Az adatok tömörítése</string>
+    <string name="title_progress_processing_accounts">Számlák feldolgozása</string>
+    <string name="title_progress_processing_books">Könyvek feldolgozása</string>
+    <string name="title_progress_processing_budgets">Költségvetések feldolgozása</string>
+    <string name="title_progress_processing_commodities">Áruk feldolgozása</string>
+    <string name="title_progress_processing_prices">Árak feldolgozása</string>
+    <string name="title_progress_processing_schedules">Jegyzékek feldolgozása</string>
+    <string name="title_progress_processing_transactions">Tranzakciók feldolgozása</string>
 </resources>

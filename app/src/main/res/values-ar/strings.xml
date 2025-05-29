@@ -493,4 +493,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">ضغط البيانات</string>
+    <string name="title_progress_processing_accounts">معالجة الحسابات</string>
+    <string name="title_progress_processing_books">معالجة الدفاتر</string>
+    <string name="title_progress_processing_budgets">معالجة الميزانيات</string>
+    <string name="title_progress_processing_commodities">معالجة السلع</string>
+    <string name="title_progress_processing_prices">معالجة الأسعار</string>
+    <string name="title_progress_processing_schedules">معالجة الجداول</string>
+    <string name="title_progress_processing_transactions">معالجة المعاملات</string>
 </resources>

@@ -480,4 +480,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">Komprimer dataene</string>
+    <string name="title_progress_processing_accounts">Behandling af regnskaber</string>
+    <string name="title_progress_processing_books">Behandling af bøger</string>
+    <string name="title_progress_processing_budgets">Behandling af budgetter</string>
+    <string name="title_progress_processing_commodities">Behandling af varer</string>
+    <string name="title_progress_processing_prices">Behandling af priser</string>
+    <string name="title_progress_processing_schedules">Behandling af tidsplaner</string>
+    <string name="title_progress_processing_transactions">Behandling af transaktioner</string>
 </resources>
