@@ -16,6 +16,7 @@
 
 package org.gnucash.android.ui.settings;
 
+import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
 import static org.gnucash.android.util.DocumentExtKt.chooseDocument;
 import static org.gnucash.android.util.DocumentExtKt.openBook;
 
@@ -34,6 +35,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -56,7 +58,9 @@ import org.gnucash.android.db.DatabaseSchema.BookEntry;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
+import org.gnucash.android.importer.AccountsTemplate;
 import org.gnucash.android.ui.account.AccountsActivity;
+import org.gnucash.android.ui.adapter.AccountsTemplatesAdapter;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.settings.dialog.DeleteBookConfirmationDialog;
 import org.gnucash.android.util.BookUtils;
@@ -75,6 +79,7 @@ public class BookManagerFragment extends ListFragment implements
     private static final int REQUEST_OPEN_DOCUMENT = 0x20;
 
     private BooksAdapter booksAdapter;
+    private AccountsTemplatesAdapter accountsTemplatesAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -88,6 +93,13 @@ public class BookManagerFragment extends ListFragment implements
 
         booksAdapter = new BooksAdapter(requireContext());
         setListAdapter(booksAdapter);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        booksAdapter = null;
+        accountsTemplatesAdapter = null;
     }
 
     @Override
@@ -121,7 +133,7 @@ public class BookManagerFragment extends ListFragment implements
                     Timber.w("Activity expected");
                     return false;
                 }
-                AccountsActivity.createDefaultAccounts(activity, GnuCashApplication.getDefaultCurrencyCode());
+                createBook(activity);
                 return true;
             }
 
@@ -165,6 +177,28 @@ public class BookManagerFragment extends ListFragment implements
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void createBook(@NonNull final Activity activity) {
+        if (accountsTemplatesAdapter == null) {
+            accountsTemplatesAdapter = new AccountsTemplatesAdapter(activity);
+        }
+        final ListAdapter adapter = accountsTemplatesAdapter;
+
+        new AlertDialog.Builder(activity)
+            .setTitle(R.string.title_create_default_accounts)
+            .setCancelable(true)
+            .setSingleChoiceItems(adapter, NO_POSITION, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    AccountsTemplate.Header item = (AccountsTemplate.Header) adapter.getItem(which);
+                    String fileId = item.assetId;
+                    dialog.dismiss();
+                    String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
+                    AccountsActivity.createDefaultAccounts(activity, currencyCode, fileId, null);
+                }
+            })
+            .show();
     }
 
     private class BooksAdapter extends SimpleCursorAdapter {

@@ -16,12 +16,15 @@
 
 package org.gnucash.android.db.adapter;
 
+import static java.lang.Math.max;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
+import android.provider.BaseColumns;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -93,9 +96,11 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
 
     @Override
     protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final Book book) {
+        if (TextUtils.isEmpty(book.getDisplayName())) {
+            book.setDisplayName(generateDefaultBookName());
+        }
         bindBaseModel(stmt, book);
-        String displayName = TextUtils.isEmpty(book.getDisplayName()) ? generateDefaultBookName() : book.getDisplayName();
-        stmt.bindString(1, displayName);
+        stmt.bindString(1, book.getDisplayName());
         stmt.bindString(2, book.getRootAccountUID());
         stmt.bindString(3, book.getRootTemplateUID());
         if (book.getSourceUri() != null) {
@@ -327,7 +332,9 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
      * @return String with default name
      */
     public @NonNull String generateDefaultBookName() {
-        long bookCount = getRecordsCount() + 1;
+        String sqlMax = "SELECT MAX(" + BaseColumns._ID +") FROM " + mTableName;
+        SQLiteStatement statementMax = mDb.compileStatement(sqlMax);
+        long bookCount = max(statementMax.simpleQueryForLong(), 1);
 
         String sql = "SELECT COUNT(*) FROM " + mTableName + " WHERE " + BookEntry.COLUMN_DISPLAY_NAME + " = ?";
         SQLiteStatement statement = mDb.compileStatement(sql);

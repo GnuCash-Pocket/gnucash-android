@@ -83,6 +83,7 @@ public abstract class GncXmlHelper {
     public static final String TAG_ACCT_COMMODITY_SCU = "act:commodity-scu";
     public static final String TAG_ACCT_PARENT = "act:parent";
     public static final String TAG_ACCT_DESCRIPTION = "act:description";
+    public static final String TAG_ACCT_TITLE = "gnc-act:title";
 
     public static final String TAG_SLOT_KEY = "slot:key";
     public static final String TAG_SLOT_VALUE = "slot:value";

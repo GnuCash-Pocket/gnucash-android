@@ -53,6 +53,6 @@ internal class ScheduledExportViewHolder(
     @SuppressLint("NotifyDataSetChanged")
     override fun deleteSchedule(scheduledAction: ScheduledAction) {
         Timber.i("Removing scheduled export")
-        scheduledActionDbAdapter.deleteRecord(scheduledAction.uid)
+        scheduledActionDbAdapter.deleteRecord(scheduledAction)
     }
 }

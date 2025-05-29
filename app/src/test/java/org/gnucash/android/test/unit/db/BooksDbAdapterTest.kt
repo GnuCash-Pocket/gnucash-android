@@ -132,13 +132,24 @@ class BooksDbAdapterTest : GnuCashTest() {
      */
     @Test
     fun testGeneratedDisplayNames_shouldBeUnique() {
+        val name1 = context.getString(R.string.book_default_name, 1)
+        val name2 = context.getString(R.string.book_default_name, 2)
+        val name3 = context.getString(R.string.book_default_name, 3)
+        val name4 = context.getString(R.string.book_default_name, 4)
+
         val book1 = Book(generateUID())
         val book2 = Book(generateUID())
         val book3 = Book(generateUID())
 
         booksDbAdapter.addRecord(book1)
+        assertThat(book1.id).isNotZero()
+        assertThat(book1.displayName).isEqualTo(name1)
         booksDbAdapter.addRecord(book2)
+        assertThat(book2.id).isNotZero()
+        assertThat(book2.displayName).isEqualTo(name2)
         booksDbAdapter.addRecord(book3)
+        assertThat(book3.id).isNotZero()
+        assertThat(book3.displayName).isEqualTo(name3)
 
         assertThat(booksDbAdapter.recordsCount).isEqualTo(3L)
 
@@ -146,8 +157,7 @@ class BooksDbAdapterTest : GnuCashTest() {
         assertThat(booksDbAdapter.recordsCount).isEqualTo(2L)
 
         val generatedName = booksDbAdapter.generateDefaultBookName()
-        assertThat(generatedName).isNotEqualTo(book3.displayName)
-        assertThat(generatedName).isEqualTo("Book 4")
+        assertThat(generatedName).isEqualTo(name4)
     }
 
     @Test

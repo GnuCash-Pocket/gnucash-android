@@ -39,6 +39,7 @@ import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ACCT_DESCRIPTION;
 import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ACCT_ID;
 import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ACCT_NAME;
 import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ACCT_PARENT;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ACCT_TITLE;
 import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ACCT_TYPE;
 import static org.gnucash.android.export.xml.GncXmlHelper.TAG_BUDGET;
 import static org.gnucash.android.export.xml.GncXmlHelper.TAG_BUDGET_DESCRIPTION;
@@ -67,6 +68,7 @@ import static org.gnucash.android.export.xml.GncXmlHelper.TAG_PRICE_SOURCE;
 import static org.gnucash.android.export.xml.GncXmlHelper.TAG_PRICE_TYPE;
 import static org.gnucash.android.export.xml.GncXmlHelper.TAG_PRICE_VALUE;
 import static org.gnucash.android.export.xml.GncXmlHelper.TAG_RECURRENCE_PERIOD;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ROOT;
 import static org.gnucash.android.export.xml.GncXmlHelper.TAG_RX_MULT;
 import static org.gnucash.android.export.xml.GncXmlHelper.TAG_RX_PERIOD_TYPE;
 import static org.gnucash.android.export.xml.GncXmlHelper.TAG_RX_START;
@@ -347,6 +349,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     private final DatabaseHelper mDatabaseHelper;
     @NonNull
     private final Context context;
+    private boolean isValidRoot = false;
 
     /**
      * Creates a handler for handling XML stream events when parsing the XML backup file
@@ -376,6 +379,14 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     @Override
     public void startElement(String uri, String localName,
                              String qualifiedName, Attributes attributes) throws SAXException {
+        if (!isValidRoot) {
+            if (TAG_ROOT.equals(qualifiedName) || AccountsTemplate.TAG_ROOT.equals(qualifiedName)) {
+                isValidRoot = true;
+                return;
+            }
+            throw new SAXException("Expected root element " + TAG_ROOT);
+        }
+
         switch (qualifiedName) {
             case TAG_ACCOUNT:
                 mAccount = new Account(""); // dummy name, will be replaced when we find name tag
@@ -964,6 +975,9 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                     mCommodity = null;
                 }
                 break;
+            case TAG_ACCT_TITLE:
+                mBook.setDisplayName(characterString);
+                break;
         }
 
         //reset the accumulated characters
@@ -1083,7 +1097,6 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
      */
     private void saveToDatabase() {
         mBook.setRootAccountUID(mRootAccount.getUID());
-        mBook.setDisplayName(booksDbAdapter.generateDefaultBookName());
         //we on purpose do not set the book active. Only import. Caller should handle activation
 
         long startTime = System.nanoTime();

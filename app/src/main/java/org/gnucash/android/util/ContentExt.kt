@@ -2,10 +2,13 @@ package org.gnucash.android.util
 
 import android.content.ContentResolver
 import android.content.Context
+import android.content.res.AssetManager
 import android.content.res.Resources
 import android.net.Uri
 import android.provider.DocumentsContract
 import timber.log.Timber
+import java.io.FileNotFoundException
+import java.io.InputStream
 import java.util.Locale
 
 private val PROJECTION_DOCUMENT_NAME = arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
@@ -55,4 +58,26 @@ fun Context.applyLocale(locale: Locale): Context {
     config.setLocale(locale)
     resources?.updateConfiguration(config, res.displayMetrics)
     return createConfigurationContext(config)
+}
+
+fun Uri.isAsset(): Boolean {
+    return (ContentResolver.SCHEME_FILE == scheme) && ("/android_asset" == authority)
+}
+
+fun Uri.getAssetPath(): String {
+    var path: String = this.path ?: return ""
+    if (path[0] == '/') {
+        path = path.substring(1)
+    }
+    return path
+}
+
+@Throws(FileNotFoundException::class)
+fun Uri.openStream(context: Context): InputStream? {
+    if (isAsset()) {
+        val assets: AssetManager = context.getAssets()
+        return assets.open(getAssetPath())
+    }
+    val contentResolver: ContentResolver = context.getContentResolver()
+    return contentResolver.openInputStream(this)
 }

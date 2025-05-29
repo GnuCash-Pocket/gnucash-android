@@ -84,6 +84,7 @@ class FirstRunWizardActivityTest : GnuAndroidTest() {
 
         onView(withId(R.id.btn_save)).perform(click())
 
+        // Select a currency.
         onView(withText("EUR (Euro)"))
             .perform(click())
         onView(withText(R.string.btn_wizard_next))
@@ -91,16 +92,23 @@ class FirstRunWizardActivityTest : GnuAndroidTest() {
         onView(withText(R.string.wizard_title_account_setup))
             .check(matches(isDisplayed()))
 
+        // Select accounts template.
         onView(withText(R.string.wizard_option_create_default_accounts))
             .perform(click())
-
         onView(withText(R.string.btn_wizard_next))
             .perform(click())
+        onView(withText(R.string.wizard_option_create_default_accounts))
+            .check(matches(isDisplayed()))
+        onView(withText(R.string.btn_wizard_next))
+            .perform(click())
+
+        // Select feedback.
         onView(withText(R.string.wizard_option_auto_send_crash_reports))
             .perform(click())
         onView(withText(R.string.btn_wizard_next))
             .perform(click())
 
+        // Review.
         onView(withText(R.string.review))
             .check(matches(isDisplayed()))
 

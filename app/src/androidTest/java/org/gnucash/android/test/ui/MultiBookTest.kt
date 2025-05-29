@@ -81,7 +81,8 @@ class MultiBookTest : GnuAndroidTest() {
 
     @Test
     fun creatingNewAccounts_shouldCreatedNewBook() {
-        val booksCount = booksDbAdapter.recordsCount
+        val bookCount = booksDbAdapter.recordsCount
+        assertThat(bookCount).isOne()
 
         onView(withId(R.id.drawer_layout)).perform(DrawerActions.open())
         onView(withId(R.id.drawer_layout)).perform(swipeUp())
@@ -96,11 +97,12 @@ class MultiBookTest : GnuAndroidTest() {
         /* TODO: 18.05.2016 wait for import to finish instead */
         sleep(2000) //give import time to finish
 
-        assertThat(booksDbAdapter.recordsCount).isEqualTo(booksCount + 1)
+        assertThat(booksDbAdapter.recordsCount).isEqualTo(bookCount + 1)
 
         /* TODO: 25.08.2016 Delete all books before the start of this test */
         val activeBook = booksDbAdapter.getRecord(booksDbAdapter.activeBookUID)
-        assertThat(activeBook.displayName).isEqualTo("Book " + (booksCount + 1))
+        val name = context.getString(R.string.book_default_name, bookCount + 1)
+        assertThat(activeBook.displayName).isEqualTo(name)
     }
 
     @Test
@@ -111,7 +113,11 @@ class MultiBookTest : GnuAndroidTest() {
 
         onView(withId(R.id.menu_create))
             .check(matches(isDisplayed()))
-            .perform(click())
+            .perform(click()) // select the accounts template
+
+        onView(withText("Common Accounts"))
+            .check(matches(isDisplayed()))
+            .perform(click()) // create book from the accounts template
 
         assertThat(booksDbAdapter.recordsCount).isEqualTo(bookCount + 1)
     }
