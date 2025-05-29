@@ -35,6 +35,7 @@ import android.widget.AdapterView;
 import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentResultListener;
@@ -99,6 +100,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      * Account database adapter for manipulating the accounts list in navigation
      */
     private final AccountsDbAdapter mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+    private final TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
     private QualifiedAccountNameAdapter accountNameAdapter;
 
     private final SparseArray<Refreshable> mFragmentPageReferenceMap = new SparseArray<>();
@@ -127,6 +129,15 @@ public class TransactionsActivity extends BaseDrawerActivity implements
                 }
                 //refresh any fragments in the tab with the new account UID
                 refresh(accountUID);
+
+                //if there are no transactions, and there are sub-accounts, show the sub-accounts
+                long txCount = transactionsDbAdapter.getTransactionsCount(accountUID);
+                long subCount = mAccountsDbAdapter.getSubAccountCount(accountUID);
+                if (txCount == 0 && subCount > 0) {
+                    mBinding.pager.setCurrentItem(INDEX_SUB_ACCOUNTS_FRAGMENT);
+                } else {
+                    mBinding.pager.setCurrentItem(INDEX_TRANSACTIONS_FRAGMENT);
+                }
             } else {
                 //refresh any fragments in the tab with the new account UID
                 refresh();
@@ -298,8 +309,10 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ActionBar actionBar = getSupportActionBar();
+        assert actionBar != null;
+        actionBar.setDisplayShowTitleEnabled(false);
+        actionBar.setDisplayHomeAsUpEnabled(true);
 
         final Context contextWithTheme = mBinding.toolbarLayout.toolbar.getContext();
         accountNameAdapter = new QualifiedAccountNameAdapter(contextWithTheme);
@@ -336,14 +349,6 @@ public class TransactionsActivity extends BaseDrawerActivity implements
                 //nothing to see here, move along
             }
         });
-
-        //if there are no transactions, and there are sub-accounts, show the sub-accounts
-        if (TransactionsDbAdapter.getInstance().getTransactionsCount(accountUID) == 0
-            && mAccountsDbAdapter.getSubAccountCount(accountUID) > 0) {
-            mBinding.pager.setCurrentItem(INDEX_SUB_ACCOUNTS_FRAGMENT);
-        } else {
-            mBinding.pager.setCurrentItem(INDEX_TRANSACTIONS_FRAGMENT);
-        }
 
         mBinding.fabCreateTransaction.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -397,7 +402,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      * Updates the action bar navigation list selection to that of the current account
      * whose transactions are being displayed/manipulated
      */
-    public void updateNavigationSelection() {
+    private void updateNavigationSelection() {
         Account account = this.account;
         String accountUID = account.getUID();
         int position = accountNameAdapter.getPosition(accountUID);
