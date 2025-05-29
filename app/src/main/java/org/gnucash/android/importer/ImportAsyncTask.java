@@ -15,9 +15,10 @@
  */
 package org.gnucash.android.importer;
 
+import static org.gnucash.android.util.ContentExtKt.openStream;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
@@ -86,12 +87,12 @@ public class ImportAsyncTask extends AsyncTask<Uri, Void, String> {
         }
 
         Uri uri = uris[0];
+        final Context context = mProgressDialog.getContext();
         Book book;
         String bookUID;
         try {
-            ContentResolver contentResolver = mContext.getContentResolver();
-            InputStream accountInputStream = contentResolver.openInputStream(uri);
-            book = GncXmlImporter.parseBook(mContext, accountInputStream);
+            final InputStream accountInputStream = openStream(uri, context);
+            book = GncXmlImporter.parseBook(context, accountInputStream);
             book.setSourceUri(uri);
             bookUID = book.getUID();
         } catch (final Throwable e) {
@@ -100,27 +101,33 @@ public class ImportAsyncTask extends AsyncTask<Uri, Void, String> {
             return null;
         }
 
+        BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
         ContentValues contentValues = new ContentValues();
         contentValues.put(DatabaseSchema.BookEntry.COLUMN_SOURCE_URI, uri.toString());
 
         String displayName = book.getDisplayName();
-        String name = ContentExtKt.getDocumentName(uri, mContext);
-        if (!TextUtils.isEmpty(name)) {
-            // Remove short file type extension, e.g. ".xml" or ".gnucash" or ".gnca.gz"
-            int indexFileType = name.indexOf('.');
-            if (indexFileType > 0) {
-                name = name.substring(0, indexFileType);
+        if (TextUtils.isEmpty(displayName)) {
+            String name = ContentExtKt.getDocumentName(uri, context);
+            if (!TextUtils.isEmpty(name)) {
+                // Remove short file type extension, e.g. ".xml" or ".gnucash" or ".gnca.gz"
+                int indexFileType = name.indexOf('.');
+                if (indexFileType > 0) {
+                    name = name.substring(0, indexFileType);
+                }
+                displayName = name;
             }
-            displayName = name;
+            if (TextUtils.isEmpty(displayName)) {
+                displayName = booksDbAdapter.generateDefaultBookName();
+            }
             book.setDisplayName(displayName);
+            contentValues.put(DatabaseSchema.BookEntry.COLUMN_DISPLAY_NAME, displayName);
+            booksDbAdapter.updateRecord(bookUID, contentValues);
         }
-        contentValues.put(DatabaseSchema.BookEntry.COLUMN_DISPLAY_NAME, displayName);
-        BooksDbAdapter.getInstance().updateRecord(bookUID, contentValues);
 
         //set the preferences to their default values
-        mContext.getSharedPreferences(bookUID, Context.MODE_PRIVATE)
+        context.getSharedPreferences(bookUID, Context.MODE_PRIVATE)
             .edit()
-            .putBoolean(mContext.getString(R.string.key_use_double_entry), true)
+            .putBoolean(context.getString(R.string.key_use_double_entry), true)
             .apply();
 
         return bookUID;
