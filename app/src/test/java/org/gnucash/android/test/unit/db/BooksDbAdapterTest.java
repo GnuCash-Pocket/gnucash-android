@@ -140,22 +140,32 @@ public class BooksDbAdapterTest extends GnuCashTest {
      */
     @Test
     public void testGeneratedDisplayNames_shouldBeUnique() {
+        Context context = GnuCashApplication.getAppContext();
+        String name1 = context.getString(R.string.book_default_name, 1);
+        String name2 = context.getString(R.string.book_default_name, 2);
+        String name3 = context.getString(R.string.book_default_name, 3);
+        String name4 = context.getString(R.string.book_default_name, 4);
+
         Book book1 = new Book(BaseModel.generateUID());
         Book book2 = new Book(BaseModel.generateUID());
         Book book3 = new Book(BaseModel.generateUID());
 
         mBooksDbAdapter.addRecord(book1);
+        assertThat(book1.id).isNotZero();
+        assertThat(book1.getDisplayName()).isEqualTo(name1);
         mBooksDbAdapter.addRecord(book2);
+        assertThat(book2.id).isNotZero();
+        assertThat(book2.getDisplayName()).isEqualTo(name2);
         mBooksDbAdapter.addRecord(book3);
+        assertThat(book3.id).isNotZero();
+        assertThat(book3.getDisplayName()).isEqualTo(name3);
 
         assertThat(mBooksDbAdapter.getRecordsCount()).isEqualTo(3L);
-
         mBooksDbAdapter.deleteRecord(book2.getUID());
         assertThat(mBooksDbAdapter.getRecordsCount()).isEqualTo(2L);
 
         String generatedName = mBooksDbAdapter.generateDefaultBookName();
-        assertThat(generatedName).isNotEqualTo(book3.getDisplayName());
-        assertThat(generatedName).isEqualTo("Book 4");
+        assertThat(generatedName).isEqualTo(name4);
     }
 
     @Test

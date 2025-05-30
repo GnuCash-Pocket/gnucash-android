@@ -36,14 +36,14 @@ import java.util.TreeSet;
  */
 public class CurrencySelectPage extends SingleFixedChoicePage {
 
-    final Map<String, String> currencies = new HashMap<>();
+    final Map<String, String> currenciesByLabel = new HashMap<>();
 
     public CurrencySelectPage(ModelCallbacks callbacks, String title) {
         super(callbacks, title);
     }
 
     public CurrencySelectPage setChoices() {
-        currencies.clear();
+        currenciesByLabel.clear();
         CommoditiesDbAdapter adapter = GnuCashApplication.getCommoditiesDbAdapter();
         List<Commodity> commodities = adapter.getAllRecords();
         SortedSet<String> choices = new TreeSet<>();
@@ -57,7 +57,7 @@ public class CurrencySelectPage extends SingleFixedChoicePage {
     private String addCurrency(@NonNull Commodity commodity) {
         String code = commodity.getCurrencyCode();
         String label = commodity.formatListItem();
-        currencies.put(label, code);
+        currenciesByLabel.put(label, code);
         return label;
     }
 }

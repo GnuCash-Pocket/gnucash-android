@@ -45,6 +45,7 @@ public class FirstRunWizardModel extends AbstractWizardModel {
     public String titleOtherCurrency;
     public String optionCurrencyOther;
     private Map<String, String> currencies;
+    private Map<String, String> accounts;
 
     public String titleAccount;
 
@@ -64,28 +65,51 @@ public class FirstRunWizardModel extends AbstractWizardModel {
     protected PageList onNewRootPageList() {
         final Context context = mContext;
 
+        return new PageList(
+            createWelcomPage(context),
+            createCurrencyPage(context)
+        );
+    }
+
+    private Page createWelcomPage(Context context) {
         titleWelcome = context.getString(R.string.wizard_title_welcome_to_gnucash);
-        Page welomePage = new WelcomePage(this, titleWelcome);
+        return new WelcomePage(this, titleWelcome);
+    }
 
-        titleOtherCurrency = context.getString(R.string.wizard_title_select_currency);
-
-        CurrencySelectPage otherCurrencyPage = new CurrencySelectPage(this, titleOtherCurrency)
-            .setChoices();
-        currencies = new HashMap<>();
-        currencies.putAll(otherCurrencyPage.currencies);
+    private Page createAccountsPage(Context context) {
+        Page feedbackPage = createFeedbackPage(context);
 
         titleAccount = context.getString(R.string.wizard_title_account_setup);
         optionAccountDefault = context.getString(R.string.wizard_option_create_default_accounts);
         optionAccountImport = context.getString(R.string.wizard_option_import_my_accounts);
         optionAccountUser = context.getString(R.string.wizard_option_let_me_handle_it);
 
-        Page accountsPage = new SingleFixedChoicePage(this, titleAccount)
-            .setChoices(optionAccountDefault, optionAccountImport, optionAccountUser)
-            .setValue(optionAccountDefault)
-            .setRequired(true);
+        AccountsSelectPage otherAccountsPage = new AccountsSelectPage(this, optionAccountDefault)
+            .setChoices(context);
+        // Called before field initialized.
+        accounts = new HashMap<>();
+        accounts.putAll(otherAccountsPage.accountsByLabel);
+
+        BranchPage accountsPage = new BranchPage(this, titleAccount)
+            .addBranch(optionAccountDefault, otherAccountsPage, feedbackPage)
+            .addBranch(optionAccountImport, feedbackPage)
+            .addBranch(optionAccountUser, feedbackPage);
+        return accountsPage.setRequired(true);
+    }
+
+    private Page createCurrencyPage(Context context) {
+        Page accountsPage = createAccountsPage(context);
+
+        titleOtherCurrency = context.getString(R.string.wizard_title_select_currency);
 
         titleCurrency = context.getString(R.string.wizard_title_default_currency);
         optionCurrencyOther = context.getString(R.string.wizard_option_currency_other);
+
+        CurrencySelectPage otherCurrencyPage = new CurrencySelectPage(this, titleOtherCurrency)
+            .setChoices();
+        // Called before field initialized.
+        currencies = new HashMap<>();
+        currencies.putAll(otherCurrencyPage.currenciesByLabel);
 
         SortedSet<String> currenciesLabels = new TreeSet<>();
         String currencyDefault = addCurrency(Commodity.DEFAULT_COMMODITY);
@@ -106,19 +130,17 @@ public class FirstRunWizardModel extends AbstractWizardModel {
             .setValue(currencyDefault)
             .setRequired(true);
 
+        return currencyPage;
+    }
+
+    private Page createFeedbackPage(Context context) {
         titleFeedback = context.getString(R.string.wizard_title_feedback_options);
         optionFeedbackSend = context.getString(R.string.wizard_option_auto_send_crash_reports);
         optionFeedbackDisable = context.getString(R.string.wizard_option_disable_crash_reports);
 
-        Page feedbackPage = new SingleFixedChoicePage(this, titleFeedback)
+        return new SingleFixedChoicePage(this, titleFeedback)
             .setChoices(optionFeedbackSend, optionFeedbackDisable)
             .setRequired(true);
-
-        return new PageList(
-            welomePage,
-            currencyPage,
-            feedbackPage
-        );
     }
 
     private String addCurrency(@NonNull Commodity commodity) {
@@ -131,5 +153,10 @@ public class FirstRunWizardModel extends AbstractWizardModel {
     @Nullable
     public String getCurrencyByLabel(String label) {
         return currencies.get(label);
+    }
+
+    @Nullable
+    public String getAccountsByLabel(String label) {
+        return accounts.get(label);
     }
 }

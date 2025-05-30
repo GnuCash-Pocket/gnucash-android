@@ -773,6 +773,15 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
         return deleteRecord(getID(uid));
     }
 
+    public boolean deleteRecord(@NonNull Model model) throws SQLException {
+        if (deleteRecord(model.id)) {
+            if (isCached) cache.remove(model.getUID());
+            model.id = 0L;
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Returns an attribute from a specific column in the database for a specific record.
      * <p>The attribute is returned as a string which can then be converted to another type if
