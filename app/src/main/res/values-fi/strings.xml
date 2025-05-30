@@ -481,4 +481,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">Pakkaa tiedot</string>
+    <string name="title_progress_processing_accounts">Tilin käsittely</string>
+    <string name="title_progress_processing_books">Kirjojen käsittely</string>
+    <string name="title_progress_processing_budgets">Budjettien käsittely</string>
+    <string name="title_progress_processing_commodities">Hyödykkeiden käsittely</string>
+    <string name="title_progress_processing_prices">Hintojen käsittely</string>
+    <string name="title_progress_processing_schedules">Aikataulujen käsittely</string>
+    <string name="title_progress_processing_transactions">Transaktioiden käsittely</string>
 </resources>

@@ -478,4 +478,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">데이터를 압축하다</string>
+    <string name="title_progress_processing_accounts">계정 처리</string>
+    <string name="title_progress_processing_books">장부 처리</string>
+    <string name="title_progress_processing_budgets">예산 처리</string>
+    <string name="title_progress_processing_commodities">통화 처리</string>
+    <string name="title_progress_processing_prices">가격 처리</string>
+    <string name="title_progress_processing_schedules">일정 처리</string>
+    <string name="title_progress_processing_transactions">거래 처리</string>
 </resources>

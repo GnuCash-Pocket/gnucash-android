@@ -3,6 +3,7 @@ package org.gnucash.android.test.unit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
+import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
 import org.gnucash.android.BuildConfig;
@@ -67,7 +68,8 @@ public abstract class BookHelperTest extends GnuCashTest {
     }
 
     private void setUpDbAdapters(String bookUID) {
-        DatabaseHelper databaseHelper = new DatabaseHelper(GnuCashApplication.getAppContext(), bookUID);
+        Context context = GnuCashApplication.getAppContext();
+        DatabaseHelper databaseHelper = new DatabaseHelper(context, bookUID);
         SQLiteDatabase mainDb = databaseHelper.getReadableDatabase();
         mCommoditiesDbAdapter = new CommoditiesDbAdapter(mainDb);
         mTransactionsDbAdapter = new TransactionsDbAdapter(mCommoditiesDbAdapter);

@@ -33,6 +33,8 @@ import org.gnucash.android.export.csv.CsvTransactionsExporter;
 import org.gnucash.android.export.ofx.OfxExporter;
 import org.gnucash.android.export.qif.QifExporter;
 import org.gnucash.android.export.xml.GncXmlExporter;
+import org.gnucash.android.gnc.AsyncTaskProgressListener;
+import org.gnucash.android.gnc.GncProgressListener;
 import org.gnucash.android.ui.common.GnucashProgressDialog;
 import org.gnucash.android.ui.common.Refreshable;
 
@@ -43,52 +45,52 @@ import timber.log.Timber;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Uri> {
-
+public class ExportAsyncTask extends AsyncTask<ExportParams, Object, Uri> {
+    @NonNull
     private final Context mContext;
-
-    private ProgressDialog mProgressDialog;
-
+    @Nullable
+    private final ProgressDialog progressDialog;
+    @NonNull
     private final String mBookUID;
-
-    /**
-     * Export parameters
-     */
+    @NonNull
     private ExportParams mExportParams;
+    @Nullable
+    private final AsyncTaskProgressListener listener;
 
-    public ExportAsyncTask(Context context, String bookUID) {
+    public ExportAsyncTask(@NonNull Context context, @NonNull String bookUID) {
         super();
         this.mContext = context;
         this.mBookUID = bookUID;
+        if (context instanceof Activity) {
+            ProgressDialog progressDialog = new GnucashProgressDialog((Activity) context);
+            progressDialog.setTitle(R.string.nav_menu_export);
+            progressDialog.setCancelable(true);
+            progressDialog.setOnCancelListener(dialogInterface -> cancel(true));
+            this.progressDialog = progressDialog;
+            this.listener = new ProgressListener(context);
+        } else {
+            progressDialog = null;
+            this.listener = null;
+        }
     }
 
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        if (mContext instanceof Activity) {
-            mProgressDialog = new GnucashProgressDialog((Activity) mContext);
-            mProgressDialog.setTitle(R.string.title_progress_exporting_transactions);
-            mProgressDialog.setCancelable(true);
-            mProgressDialog.setOnCancelListener(dialogInterface -> cancel(true));
-            mProgressDialog.show();
+        if (progressDialog != null) {
+            progressDialog.show();
         }
     }
 
-    /**
-     * Generates the appropriate exported transactions file for the given parameters
-     *
-     * @param params Export parameters
-     * @return <code>true</code> if export was successful, <code>false</code> otherwise
-     */
     @Override
     protected Uri doInBackground(ExportParams... params) {
         final ExportParams exportParams = params[0];
         mExportParams = exportParams;
-        Exporter exporter = createExporter(mContext, exportParams, mBookUID);
+        Exporter exporter = createExporter(mContext, exportParams, mBookUID, listener);
         final Uri exportedFile;
 
         try {
-            exportedFile = exporter.generateExport();
+            exportedFile = exporter.export();
         } catch (Throwable e) {
             Timber.e(e, "Error exporting: %s", e.getMessage());
             return null;
@@ -100,12 +102,11 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Uri> {
         return exportedFile;
     }
 
-    /**
-     * Transmits the exported transactions to the designated location, either SD card or third-party application
-     * Finishes the activity if the export was starting  in the context of an activity
-     *
-     * @param exportSuccessful Result of background export execution
-     */
+    @Override
+    protected void onProgressUpdate(Object... values) {
+        listener.showProgress(progressDialog, values);
+    }
+
     @Override
     protected void onPostExecute(@Nullable Uri exportSuccessful) {
         dismissProgressDialog();
@@ -128,15 +129,14 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Uri> {
     }
 
     private void dismissProgressDialog() {
+        final ProgressDialog progressDialog = this.progressDialog;
         try {
-            if (mProgressDialog != null && mProgressDialog.isShowing()) {
-                mProgressDialog.dismiss();
+            if (progressDialog != null && progressDialog.isShowing()) {
+                progressDialog.dismiss();
             }
         } catch (IllegalArgumentException ex) {
             //TODO: This is a hack to catch "View not attached to window" exceptions
             //FIXME by moving the creation and display of the progress dialog to the Fragment
-        } finally {
-            mProgressDialog = null;
         }
         if (mContext instanceof Activity) {
             ((Activity) mContext).finish();
@@ -151,7 +151,8 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Uri> {
     private Exporter createExporter(
         @NonNull Context context,
         @NonNull ExportParams exportParams,
-        @NonNull String bookUID
+        @NonNull String bookUID,
+        @Nullable GncProgressListener listener
     ) {
         switch (exportParams.getExportFormat()) {
             case QIF:
@@ -164,7 +165,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Uri> {
                 return new CsvTransactionsExporter(context, exportParams, bookUID);
             case XML:
             default:
-                return new GncXmlExporter(context, exportParams, bookUID);
+                return new GncXmlExporter(context, exportParams, bookUID, listener);
         }
     }
 
@@ -201,6 +202,18 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Void, Uri> {
     private void refreshViews() {
         if (mContext instanceof Refreshable) {
             ((Refreshable) mContext).refresh();
+        }
+    }
+
+    private class ProgressListener extends AsyncTaskProgressListener {
+
+        ProgressListener(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void publishProgress(@NonNull String label, long progress, long total) {
+            ExportAsyncTask.this.publishProgress(label, progress, total);
         }
     }
 }

@@ -484,4 +484,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">Saspiest datus</string>
+    <string name="title_progress_processing_accounts">Kontu apstrāde</string>
+    <string name="title_progress_processing_books">Grāmatvedības apstrāde</string>
+    <string name="title_progress_processing_budgets">Budžetu apstrāde</string>
+    <string name="title_progress_processing_commodities">Valūtu apstrāde</string>
+    <string name="title_progress_processing_prices">Cenu apstrāde</string>
+    <string name="title_progress_processing_schedules">Grafiksu apstrāde</string>
+    <string name="title_progress_processing_transactions">Darījumu apstrāde</string>
 </resources>

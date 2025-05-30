@@ -488,4 +488,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">Стиснути дані</string>
+    <string name="title_progress_processing_accounts">Обробка рахунків</string>
+    <string name="title_progress_processing_books">Обробка книг обліку</string>
+    <string name="title_progress_processing_budgets">Обробка бюджетів</string>
+    <string name="title_progress_processing_commodities">Обробка товарів</string>
+    <string name="title_progress_processing_prices">Обробка цін</string>
+    <string name="title_progress_processing_schedules">Обробка графіків</string>
+    <string name="title_progress_processing_transactions">Обробка транзакцій</string>
 </resources>

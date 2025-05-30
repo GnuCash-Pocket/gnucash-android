@@ -484,4 +484,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">Comprimați datele</string>
+    <string name="title_progress_processing_accounts">Prelucrarea conturilor</string>
+    <string name="title_progress_processing_books">Prelucrarea registrelor</string>
+    <string name="title_progress_processing_budgets">Prelucrarea bugetelor</string>
+    <string name="title_progress_processing_commodities">Prelucrarea mărfurilor</string>
+    <string name="title_progress_processing_prices">Prelucrarea prețurilor</string>
+    <string name="title_progress_processing_schedules">Prelucrarea programelor</string>
+    <string name="title_progress_processing_transactions">Prelucrarea tranzacțiilor</string>
 </resources>

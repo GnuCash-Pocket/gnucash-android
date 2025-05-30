@@ -481,4 +481,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">Συμπίεση των δεδομένων</string>
+    <string name="title_progress_processing_accounts">Επεξεργασία λογαριασμών</string>
+    <string name="title_progress_processing_books">Επεξεργασία βιβλίων</string>
+    <string name="title_progress_processing_budgets">Επεξεργασία προϋπολογισμών</string>
+    <string name="title_progress_processing_commodities">Επεξεργασία εμπορευμάτων</string>
+    <string name="title_progress_processing_prices">Επεξεργασία τιμών</string>
+    <string name="title_progress_processing_schedules">Επεξεργασία χρονοδιαγραμμάτων</string>
+    <string name="title_progress_processing_transactions">Επεξεργασία συναλλαγών</string>
 </resources>
