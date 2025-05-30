@@ -47,6 +47,7 @@ import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Money;
+import org.gnucash.android.model.Price;
 import org.gnucash.android.ui.report.BaseReportFragment;
 import org.gnucash.android.ui.report.ReportType;
 import org.joda.time.LocalDate;
@@ -157,15 +158,18 @@ public class StackedBarChartFragment extends BaseReportFragment {
             }
             List<Float> stack = new ArrayList<>();
             String where = DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND "
-                + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + "=? AND "
                 + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?";
-            String[] whereArgs = new String[]{mCommodity.getUID(), accountType.name()};
+            String[] whereArgs = new String[]{accountType.name()};
             String orderBy = DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC";
             List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(where, whereArgs, orderBy);
             @ColorInt int color;
             for (Account account : accounts) {
                 String accountUID = account.getUID();
-                Money balance = mAccountsDbAdapter.getAccountBalance(accountUID, start, end, false);
+                Money balance = mAccountsDbAdapter.getAccountBalance(account, start, end, false);
+                if (balance.isAmountZero()) continue;
+                Price price = pricesDbAdapter.getPrice(balance.getCommodity(), mCommodity);
+                if (price == null) continue;
+                balance = balance.times(price);
                 float value = balance.toFloat();
                 if (value > 0f) {
                     stack.add(value);

@@ -84,7 +84,7 @@
     <style name="FormRow">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">?android:attr/listPreferredItemHeight</item>
-        <item name="android:orientation">vertical</item>
+        <item name="android:orientation">horizontal</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:layout_marginBottom">@dimen/form_row_bottom_margin</item>
         <item name="android:layout_marginTop">@dimen/form_row_bottom_margin</item>

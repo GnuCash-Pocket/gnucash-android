@@ -527,7 +527,7 @@ class Money : Number, Comparable<Money>, Parcelable {
     }
 
     operator fun times(price: Price): Money {
-        return times(price.toBigDecimal())
+        return withCommodity(price.currency).times(price.toBigDecimal())
     }
 
     /**

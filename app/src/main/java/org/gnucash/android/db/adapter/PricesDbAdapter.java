@@ -14,6 +14,7 @@ import org.gnucash.android.model.Price;
 import org.gnucash.android.util.TimestampHelper;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -119,23 +120,26 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
      */
     @Nullable
     public Price getPrice(@NonNull Commodity commodity, @NonNull Commodity currency) {
-        if (commodity.equals(currency)) {
-            return null;
-        }
         String commodityUID = commodity.getUID();
         String currencyUID = currency.getUID();
+        String key = commodityUID + "/" + currencyUID;
         if (isCached) {
-            String key = commodityUID + "/" + currencyUID;
             Price price = cachePair.get(key);
             if (price != null) return price;
         }
-        Cursor cursor = mDb.query(PriceEntry.TABLE_NAME, null,
-            // the commodity and currency can be swapped
-            "( " + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " + PriceEntry.COLUMN_CURRENCY_UID + " = ? ) OR ( "
-                + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " + PriceEntry.COLUMN_CURRENCY_UID + " = ? )",
-            new String[]{commodityUID, currencyUID, currencyUID, commodityUID}, null, null,
-            // only get the latest price
-            PriceEntry.COLUMN_DATE + " DESC", "1");
+        if (commodity.equals(currency)) {
+            Price price = new Price(commodity, currency, BigDecimal.ONE);
+            if (isCached) {
+                cachePair.put(key, price);
+            }
+            return price;
+        }
+        // the commodity and currency can be swapped
+        String where = "( " + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " + PriceEntry.COLUMN_CURRENCY_UID + " = ? ) OR ( "
+            + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " + PriceEntry.COLUMN_CURRENCY_UID + " = ? )";
+        String[] whereArgs = new String[]{commodityUID, currencyUID, currencyUID, commodityUID};
+        // only get the latest price
+        Cursor cursor = mDb.query(PriceEntry.TABLE_NAME, null, where, whereArgs, null, null, PriceEntry.COLUMN_DATE + " DESC", "1");
         try {
             if (cursor.moveToNext()) {
                 String commodityUIDdb = cursor.getString(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_COMMODITY_UID));
@@ -153,7 +157,6 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
                 }
                 Price price = new Price(commodity, currency, valueNum, valueDenom);
                 if (isCached) {
-                    String key = commodityUID + "/" + currencyUID;
                     cachePair.put(key, price);
                 }
                 return price;
@@ -161,6 +164,7 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
         } finally {
             cursor.close();
         }
+        // TODO Try with intermediate currency, e.g. EUR -> ETB -> ILS
         return null;
     }
 }

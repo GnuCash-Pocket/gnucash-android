@@ -95,11 +95,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
     }
 
     public TransactionsDbAdapter(@NonNull CommoditiesDbAdapter commoditiesDbAdapter) {
-        this(new PricesDbAdapter(commoditiesDbAdapter));
-    }
-
-    public TransactionsDbAdapter(@NonNull PricesDbAdapter pricesDbAdapter) {
-        this(new SplitsDbAdapter(pricesDbAdapter));
+        this(new SplitsDbAdapter(commoditiesDbAdapter));
     }
 
     /**
