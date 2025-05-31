@@ -127,8 +127,6 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
             + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_DESCRIPTION + " , "
             + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_NOTES + " AS "
             + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_NOTES + " , "
-            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_CURRENCY + " AS "
-            + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_CURRENCY + " , "
             + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " AS "
             + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " , "
             + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_EXPORTED + " AS "
@@ -155,8 +153,6 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
             + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_NAME + " , "
             + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_COMMODITY_UID + " AS "
             + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_COMMODITY_UID + " , "
-            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_CURRENCY + " AS "
-            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_CURRENCY + " , "
             + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " AS "
             + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " , "
             + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_PLACEHOLDER + " AS "
@@ -177,31 +173,6 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
             + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID + "=" + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_UID
         );
 
-        // SELECT transactions_uid AS trans_acct_t_uid ,
-        //      SUBSTR (
-        //          MIN (
-        //              ( CASE WHEN IFNULL ( splits_memo , '' ) == '' THEN 'a' ELSE 'b' END ) || accounts_uid
-        //          ) ,
-        //          2
-        //      ) AS trans_acct_a_uid ,
-        //   TOTAL ( CASE WHEN splits_type = 'DEBIT' THEN splits_value_num
-        //                ELSE - splits_value_num END ) * 1.0 / splits_value_denom AS trans_acct_balance ,
-        //   COUNT ( DISTINCT accounts_currency_code ) AS trans_currency_count ,
-        //   COUNT (*) AS trans_split_count
-        //   FROM trans_split_acct GROUP BY transactions_uid
-        //
-        // This temporary view would pick one Account_UID for each
-        // Transaction, which can be used to order all transactions. If possible, account_uid of a split whose
-        // memo is null is select.
-        //
-        // Transaction balance is also picked out by this view
-        //
-        // a split without split memo is chosen if possible, in the following manner:
-        //   if the splits memo is null or empty string, attach an 'a' in front of the split account uid,
-        //   if not, attach a 'b' to the split account uid
-        //   pick the minimal value of the modified account uid (one of the ones begins with 'a', if exists)
-        //   use substr to get account uid
-
         mDb.execSQL("CREATE TEMP VIEW IF NOT EXISTS trans_extra_info AS SELECT " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID +
             " AS trans_acct_t_uid , SUBSTR ( MIN ( ( CASE WHEN IFNULL ( " + SplitEntry.TABLE_NAME + "_" +
             SplitEntry.COLUMN_MEMO + " , '' ) == '' THEN 'a' ELSE 'b' END ) || " +
@@ -211,7 +182,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
             SplitEntry.COLUMN_VALUE_NUM + " ELSE - " + SplitEntry.TABLE_NAME + "_" +
             SplitEntry.COLUMN_VALUE_NUM + " END ) * 1.0 / " + SplitEntry.TABLE_NAME + "_" +
             SplitEntry.COLUMN_VALUE_DENOM + " AS trans_acct_balance , COUNT ( DISTINCT " +
-            AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_CURRENCY +
+            AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_COMMODITY_UID +
             " ) AS trans_currency_count , COUNT (*) AS trans_split_count FROM trans_split_acct " +
             " GROUP BY " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID
         );
