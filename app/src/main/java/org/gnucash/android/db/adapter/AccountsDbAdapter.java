@@ -109,7 +109,6 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             AccountEntry.COLUMN_NAME,
             AccountEntry.COLUMN_DESCRIPTION,
             AccountEntry.COLUMN_TYPE,
-            AccountEntry.COLUMN_CURRENCY,
             AccountEntry.COLUMN_COLOR_CODE,
             AccountEntry.COLUMN_FAVORITE,
             AccountEntry.COLUMN_FULL_NAME,
@@ -228,24 +227,23 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         stmt.bindString(1, account.getName());
         stmt.bindString(2, account.getDescription());
         stmt.bindString(3, account.getAccountType().name());
-        stmt.bindString(4, account.getCommodity().getCurrencyCode());
         if (account.getColor() != Account.DEFAULT_COLOR) {
-            stmt.bindString(5, account.getColorHexString());
+            stmt.bindString(4, account.getColorHexString());
         }
-        stmt.bindLong(6, account.isFavorite() ? 1 : 0);
-        stmt.bindString(7, account.getFullName());
-        stmt.bindLong(8, account.isPlaceholder() ? 1 : 0);
-        stmt.bindString(9, TimestampHelper.getUtcStringFromTimestamp(account.getCreatedTimestamp()));
-        stmt.bindLong(10, account.isHidden() ? 1 : 0);
-        stmt.bindString(11, account.getCommodity().getUID());
+        stmt.bindLong(5, account.isFavorite() ? 1 : 0);
+        stmt.bindString(6, account.getFullName());
+        stmt.bindLong(7, account.isPlaceholder() ? 1 : 0);
+        stmt.bindString(8, TimestampHelper.getUtcStringFromTimestamp(account.getCreatedTimestamp()));
+        stmt.bindLong(9, account.isHidden() ? 1 : 0);
+        stmt.bindString(10, account.getCommodity().getUID());
         if (parentAccountUID != null) {
-            stmt.bindString(12, parentAccountUID);
+            stmt.bindString(11, parentAccountUID);
         }
         if (account.getDefaultTransferAccountUID() != null) {
-            stmt.bindString(13, account.getDefaultTransferAccountUID());
+            stmt.bindString(12, account.getDefaultTransferAccountUID());
         }
         if (account.getNote() != null) {
-            stmt.bindString(14, account.getNote());
+            stmt.bindString(13, account.getNote());
         }
 
         return stmt;
@@ -815,11 +813,12 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * Compute the account balance for all accounts with the specified type within a specific duration
      *
      * @param accountType    Account Type for which to compute balance
+     * @param currency       the currency
      * @param startTimestamp Begin time for the duration in milliseconds
      * @param endTimestamp   End time for duration in milliseconds
      * @return Account balance
      */
-    public Money getAccountBalance(AccountType accountType, String currencyCode, long startTimestamp, long endTimestamp) {
+    public Money getAccountBalance(AccountType accountType, Commodity currency, long startTimestamp, long endTimestamp) {
         String where = AccountEntry.COLUMN_TYPE + "= ?";
         String[] whereArgs = new String[]{accountType.name()};
         Cursor cursor = fetchAccounts(where, whereArgs, null);
@@ -833,22 +832,22 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
 
         Timber.d("all account list : %d", accountUidList.size());
         SplitsDbAdapter splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter;
-        return splitsDbAdapter.computeSplitBalance(accountUidList, currencyCode, startTimestamp, endTimestamp);
+        return splitsDbAdapter.computeSplitBalance(accountUidList, currency, startTimestamp, endTimestamp);
     }
 
     /**
      * Returns the account balance for all accounts types specified
      *
      * @param accountTypes List of account types
+     * @param currency     The currency
      * @param start        Begin timestamp for transactions
      * @param end          End timestamp of transactions
      * @return Money balance of the account types
      */
-    public Money getAccountBalance(List<AccountType> accountTypes, long start, long end) {
-        String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
-        Money balance = Money.createZeroInstance(currencyCode);
+    public Money getAccountBalance(List<AccountType> accountTypes, Commodity currency, long start, long end) {
+        Money balance = Money.createZeroInstance(currency);
         for (AccountType accountType : accountTypes) {
-            balance = balance.plus(getAccountBalance(accountType, currencyCode, start, end));
+            balance = balance.plus(getAccountBalance(accountType, currency, start, end));
         }
         return balance;
     }
@@ -857,10 +856,11 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * Returns the current account balance for the accounts type.
      *
      * @param accountTypes The account type
+     * @param currency     The currency.
      * @return Money balance of the account type
      */
-    public Money getCurrentAccountsBalance(List<AccountType> accountTypes) {
-        return getAccountBalance(accountTypes, -1, System.currentTimeMillis());
+    public Money getCurrentAccountsBalance(List<AccountType> accountTypes, Commodity currency) {
+        return getAccountBalance(accountTypes, currency, -1, System.currentTimeMillis());
     }
 
     private Money computeBalance(String accountUID, long startTimestamp, long endTimestamp, boolean includeSubAccounts) {
@@ -901,7 +901,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         Timber.d("Computing account balance for account %s", account);
         String accountUID = account.getUID();
         AccountType accountType = account.getAccountType();
-        String currencyCode = account.getCommodity().getCurrencyCode();
+        Commodity currency = account.getCommodity();
 
         List<String> accountsList = includeSubAccounts ? getDescendantAccountUIDs(accountUID,
             null, null) : new ArrayList<>();
@@ -910,7 +910,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         Timber.d("compute account list : %d", accountsList.size());
 
         SplitsDbAdapter splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter;
-        Money balance = splitsDbAdapter.computeSplitBalance(accountsList, currencyCode, startTimestamp, endTimestamp);
+        Money balance = splitsDbAdapter.computeSplitBalance(accountsList, currency, startTimestamp, endTimestamp);
         return accountType.hasDebitNormalBalance ? balance : balance.unaryMinus();
     }
 
@@ -924,14 +924,14 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return Money balance of account list
      */
     public Money getAccountsBalance(@NonNull List<String> accountUIDList, long startTimestamp, long endTimestamp) {
-        String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
+        Commodity currency = Commodity.DEFAULT_COMMODITY;
         if (accountUIDList.isEmpty()) {
-            return Money.createZeroInstance(currencyCode);
+            return Money.createZeroInstance(currency);
         }
 
         SplitsDbAdapter splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter;
 
-        return splitsDbAdapter.computeSplitBalance(accountUIDList, currencyCode, startTimestamp, endTimestamp);
+        return splitsDbAdapter.computeSplitBalance(accountUIDList, currency, startTimestamp, endTimestamp);
     }
 
     /**
@@ -1067,9 +1067,8 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         if (rootUID != null) {
             return rootUID;
         }
-        String where = AccountEntry.COLUMN_TYPE + "=?"
-            + " AND " + AccountEntry.COLUMN_CURRENCY + "!=?";
-        String[] whereArgs = new String[]{AccountType.ROOT.name(), Commodity.TEMPLATE};
+        String where = AccountEntry.COLUMN_TYPE + "=?";
+        String[] whereArgs = new String[]{AccountType.ROOT.name()};
         Cursor cursor = fetchAccounts(where, whereArgs, null);
         try {
             if (cursor.moveToFirst()) {
@@ -1093,7 +1092,6 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         contentValues.put(AccountEntry.COLUMN_FULL_NAME, rootAccount.getFullName());
         contentValues.put(AccountEntry.COLUMN_TYPE, rootAccount.getAccountType().name());
         contentValues.put(AccountEntry.COLUMN_HIDDEN, rootAccount.isHidden());
-        contentValues.put(AccountEntry.COLUMN_CURRENCY, rootAccount.getCommodity().getCurrencyCode());
         contentValues.put(AccountEntry.COLUMN_COMMODITY_UID, rootAccount.getCommodity().getUID());
         contentValues.put(AccountEntry.COLUMN_PLACEHOLDER, rootAccount.isPlaceholder());
         Timber.i("Creating ROOT account");
@@ -1274,10 +1272,10 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         List<Transaction> openingTransactions = new ArrayList<>();
         SplitsDbAdapter splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter;
         for (Account account : accounts) {
-            String currencyCode = account.getCommodity().getCurrencyCode();
+            Commodity currency = account.getCommodity();
             List<String> accountList = new ArrayList<>();
             accountList.add(account.getUID());
-            Money balance = splitsDbAdapter.computeSplitBalance(accountList, currencyCode);
+            Money balance = splitsDbAdapter.computeSplitBalance(accountList, currency);
             if (balance.isAmountZero())
                 continue;
 

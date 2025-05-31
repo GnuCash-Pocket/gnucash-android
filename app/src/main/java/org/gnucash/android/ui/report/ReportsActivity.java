@@ -21,7 +21,6 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 import android.app.DatePickerDialog;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
@@ -40,10 +39,10 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.databinding.ActivityReportsBinding;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.AccountType;
+import org.gnucash.android.model.Commodity;
 import org.gnucash.android.ui.common.BaseDrawerActivity;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.util.dialog.DateRangePickerDialogFragment;
@@ -338,9 +337,9 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
                 mReportPeriodEnd = new LocalDate(-1L);
                 break;
             case 5: // custom range
-                String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
-                long earliest = mTransactionsDbAdapter.getTimestampOfEarliestTransaction(mAccountType, currencyCode);
-                long latest = mTransactionsDbAdapter.getTimestampOfLatestTransaction(mAccountType, currencyCode);
+                String commodityUID = Commodity.DEFAULT_COMMODITY.getUID();
+                long earliest = mTransactionsDbAdapter.getTimestampOfEarliestTransaction(mAccountType, commodityUID);
+                long latest = mTransactionsDbAdapter.getTimestampOfLatestTransaction(mAccountType, commodityUID);
                 long today = now.toDate().getTime();
                 long tomorrow = now.plusDays(1).toDate().getTime();
                 DialogFragment rangeFragment = DateRangePickerDialogFragment.newInstance(

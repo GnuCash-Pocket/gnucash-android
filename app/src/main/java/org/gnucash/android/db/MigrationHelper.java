@@ -20,12 +20,16 @@ import static org.gnucash.android.db.DatabaseHelper.createResetBalancesTriggers;
 import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import static org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry;
 import static org.gnucash.android.db.DatabaseSchema.CommodityEntry;
+import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 
 import android.database.sqlite.SQLiteDatabase;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.importer.CommoditiesXmlHandler;
+import org.gnucash.android.model.Account;
+import org.gnucash.android.model.Commodity;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -33,6 +37,7 @@ import org.xml.sax.XMLReader;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -77,6 +82,9 @@ public class MigrationHelper {
         if (oldVersion < 18) {
             migrateTo18(db);
         }
+        if (oldVersion < 19) {
+            migrateTo19(db);
+        }
     }
 
     /**
@@ -118,7 +126,6 @@ public class MigrationHelper {
     private static void migrateTo18(SQLiteDatabase db) {
         Timber.i("Upgrading database to version 18");
 
-
         String sqlAddNotes = "ALTER TABLE " + AccountEntry.TABLE_NAME
             + " ADD COLUMN " + AccountEntry.COLUMN_NOTES + " text";
         String sqlAddBalance = "ALTER TABLE " + AccountEntry.TABLE_NAME
@@ -136,5 +143,32 @@ public class MigrationHelper {
         db.execSQL(sqlAddNoClosingBalance);
         db.execSQL(sqlAddReconciledBalance);
         createResetBalancesTriggers(db);
+    }
+
+    /**
+     * Upgrade the database to version 19.
+     *
+     * @param db the database.
+     */
+    private static void migrateTo19(SQLiteDatabase db) {
+        Timber.i("Upgrading database to version 19");
+
+        String sqlAccountCommodity = "UPDATE " + AccountEntry.TABLE_NAME
+            + " SET " + AccountEntry.COLUMN_COMMODITY_UID + " = "
+            + "(SELECT " + CommodityEntry.COLUMN_UID + " FROM " + CommodityEntry.TABLE_NAME
+            + " WHERE " + CommodityEntry.COLUMN_MNEMONIC + " = " + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_CURRENCY
+            + " AND (" + CommodityEntry.COLUMN_NAMESPACE + " = ? OR " + CommodityEntry.COLUMN_NAMESPACE + " = ?)"
+            + ")";
+        String[] sqlAccountCommodityArgs = new String[]{Commodity.COMMODITY_CURRENCY, Commodity.COMMODITY_ISO4217};
+
+        String sqlAccountCurrency = "ALTER TABLE " + AccountEntry.TABLE_NAME
+            + " DROP COLUMN " + AccountEntry.COLUMN_CURRENCY;
+
+        String sqlTransactionCurrency = "ALTER TABLE " + TransactionEntry.TABLE_NAME
+            + " DROP COLUMN " + TransactionEntry.COLUMN_CURRENCY;
+
+        db.execSQL(sqlAccountCommodity, sqlAccountCommodityArgs);
+        db.execSQL(sqlAccountCurrency);
+        db.execSQL(sqlTransactionCurrency);
     }
 }

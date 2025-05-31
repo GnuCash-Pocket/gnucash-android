@@ -292,10 +292,10 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
         mEarliestTimestampsMap.clear();
         mLatestTimestampsMap.clear();
         TransactionsDbAdapter dbAdapter = TransactionsDbAdapter.getInstance();
-        final String currencyCode = mCommodity.getCurrencyCode();
+        final String commodityUID = mCommodity.getUID();
         for (AccountType type : accountTypes) {
-            long earliest = dbAdapter.getTimestampOfEarliestTransaction(type, currencyCode);
-            long latest = dbAdapter.getTimestampOfLatestTransaction(type, currencyCode);
+            long earliest = dbAdapter.getTimestampOfEarliestTransaction(type, commodityUID);
+            long latest = dbAdapter.getTimestampOfLatestTransaction(type, commodityUID);
             if (earliest > 0 && latest > 0) {
                 mEarliestTimestampsMap.put(type, earliest);
                 mLatestTimestampsMap.put(type, latest);

@@ -226,6 +226,7 @@ public abstract class BaseReportFragment extends MenuFragment implements
         }
         mReportsActivity.onFragmentResumed(this);
         toggleBaseReportingOptionsVisibility(mReportsActivity);
+        mCommodity = Commodity.DEFAULT_COMMODITY;
         refresh();
     }
 

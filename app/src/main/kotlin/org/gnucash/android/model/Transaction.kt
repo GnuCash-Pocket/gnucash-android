@@ -259,6 +259,7 @@ class Transaction : BaseModel {
      *
      * @return ISO 4217 currency code string
      */
+    @Deprecated("use commodity")
     val currencyCode: String
         get() = commodity.currencyCode
 
@@ -446,7 +447,7 @@ class Transaction : BaseModel {
             intent.type = MIME_TYPE
             intent.putExtra(Intent.EXTRA_TITLE, transaction.description)
             intent.putExtra(Intent.EXTRA_TEXT, transaction.note)
-            intent.putExtra(Account.EXTRA_CURRENCY_CODE, transaction.currencyCode)
+            intent.putExtra(Account.EXTRA_CURRENCY_UID, transaction.commodity.uid)
             val stringBuilder = StringBuilder()
             for (split in transaction.splits) {
                 stringBuilder.append(split.toCsv()).append("\n")

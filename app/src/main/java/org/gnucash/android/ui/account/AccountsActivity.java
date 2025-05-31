@@ -375,28 +375,24 @@ public class AccountsActivity extends BaseDrawerActivity implements
      * Creates default accounts with the specified currency code.
      * If the currency parameter is null, then locale currency will be used if available
      *
-     * @param activity     Activity for providing context and displaying dialogs
+     * @param activity Activity for providing context and displaying dialogs
      * @param currencyCode Currency code to assign to the imported accounts
-     * @param callback     The callback to call when the book has been imported.
+     * @param callback The callback to call when the book has been imported.
      */
-    public static void createDefaultAccounts(@NonNull final Activity activity, @NonNull final String currencyCode, @Nullable final ImportBookCallback callback) {
-        ImportBookCallback delegate = callback;
-        if (!TextUtils.isEmpty(currencyCode)) {
-            delegate = new ImportBookCallback() {
-                @Override
-                public void onBookImported(@Nullable String bookUID) {
-                    Commodity currency = CommoditiesDbAdapter.getInstance().getCommodity(currencyCode);
-                    if (currency != null) {
-                        AccountsDbAdapter.getInstance().updateAllAccounts(DatabaseSchema.AccountEntry.COLUMN_CURRENCY, currencyCode);
-                        AccountsDbAdapter.getInstance().updateAllAccounts(DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID, currency.getUID());
-                        GnuCashApplication.setDefaultCurrencyCode(activity, currencyCode);
-                    }
-                    if (callback != null) {
-                        callback.onBookImported(bookUID);
-                    }
+    public static void createDefaultAccounts(@NonNull final Activity activity, @Nullable final String currencyCode, @Nullable final ImportBookCallback callback) {
+        ImportBookCallback delegate = new ImportBookCallback() {
+            @Override
+            public void onBookImported(@Nullable String bookUID) {
+                if (!TextUtils.isEmpty(currencyCode)) {
+                    String currencyUID = CommoditiesDbAdapter.getInstance().getCommodityUID(currencyCode);
+                    AccountsDbAdapter.getInstance().updateAllAccounts(DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID, currencyUID);
+                    GnuCashApplication.setDefaultCurrencyCode(activity, currencyCode);
                 }
-            };
-        }
+                if (callback != null) {
+                    callback.onBookImported(bookUID);
+                }
+            }
+        };
 
         Uri uri = new Uri.Builder()
             .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)

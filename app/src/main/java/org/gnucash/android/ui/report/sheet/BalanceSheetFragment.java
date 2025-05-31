@@ -103,8 +103,8 @@ public class BalanceSheetFragment extends BaseReportFragment {
 
     @Override
     protected void generateReport(@NonNull Context context) {
-        mAssetsBalance = mAccountsDbAdapter.getCurrentAccountsBalance(mAssetAccountTypes);
-        mLiabilitiesBalance = mAccountsDbAdapter.getCurrentAccountsBalance(mLiabilityAccountTypes);
+        mAssetsBalance = mAccountsDbAdapter.getCurrentAccountsBalance(mAssetAccountTypes, mCommodity);
+        mLiabilitiesBalance = mAccountsDbAdapter.getCurrentAccountsBalance(mLiabilityAccountTypes, mCommodity);
     }
 
     @Override
@@ -168,7 +168,7 @@ public class BalanceSheetFragment extends BaseReportFragment {
         accountBalance.setTextSize(16);
         accountBalance.setTypeface(null, Typeface.BOLD);
         @ColorInt int colorBalanceZero = accountBalance.getCurrentTextColor();
-        displayBalance(accountBalance, mAccountsDbAdapter.getAccountBalance(accountTypes, -1, System.currentTimeMillis()), colorBalanceZero);
+        displayBalance(accountBalance, mAccountsDbAdapter.getAccountBalance(accountTypes, mCommodity, -1, System.currentTimeMillis()), colorBalanceZero);
 
         tableLayout.addView(totalView);
     }

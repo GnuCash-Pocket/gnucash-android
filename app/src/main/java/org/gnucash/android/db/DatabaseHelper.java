@@ -59,7 +59,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         + AccountEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
         + AccountEntry.COLUMN_NAME + " varchar(255) not null, "
         + AccountEntry.COLUMN_TYPE + " varchar(255) not null, "
-        + AccountEntry.COLUMN_CURRENCY + " varchar(255) not null, "
         + AccountEntry.COLUMN_COMMODITY_UID + " varchar(255) not null, "
         + AccountEntry.COLUMN_DESCRIPTION + " varchar(255), "
         + AccountEntry.COLUMN_COLOR_CODE + " varchar(255), "
@@ -91,7 +90,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         + TransactionEntry.COLUMN_TIMESTAMP + " integer not null, "
         + TransactionEntry.COLUMN_EXPORTED + " tinyint default 0, "
         + TransactionEntry.COLUMN_TEMPLATE + " tinyint default 0, "
-        + TransactionEntry.COLUMN_CURRENCY + " varchar(255) not null, "
         + TransactionEntry.COLUMN_COMMODITY_UID + " varchar(255) not null, "
         + TransactionEntry.COLUMN_SCHEDX_ACTION_UID + " varchar(255), "
         + TransactionEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
@@ -397,7 +395,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String sqlWhenUpdateAccount = "CREATE TRIGGER reset_balances_update_" + AccountEntry.TABLE_NAME
             + " AFTER UPDATE OF "
             + AccountEntry.COLUMN_COMMODITY_UID + ", "
-            + AccountEntry.COLUMN_CURRENCY + ", "
             + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + ", "
             + AccountEntry.COLUMN_TYPE
             + " ON " + AccountEntry.TABLE_NAME
