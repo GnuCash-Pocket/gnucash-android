@@ -19,8 +19,6 @@ package org.gnucash.android.ui.transaction;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
@@ -60,6 +58,8 @@ import org.gnucash.android.util.BackupManager;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+
+import java.util.List;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
@@ -102,6 +102,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     private QualifiedAccountNameAdapter accountNameAdapter;
 
     private final SparseArray<Refreshable> mFragmentPageReferenceMap = new SparseArray<>();
+    private boolean isShowHiddenAccounts = false;
 
     private ActivityTransactionsBinding mBinding;
 
@@ -233,6 +234,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
             String accountUID = (account != null) ? account.getUID() : null;
             Bundle args = new Bundle();
             args.putString(UxArgument.PARENT_ACCOUNT_UID, accountUID);
+            args.putBoolean(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts);
             AccountsListFragment fragment = new AccountsListFragment();
             fragment.setArguments(args);
             return fragment;
@@ -312,8 +314,10 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
+        isShowHiddenAccounts = getIntent().getBooleanExtra(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts);
+
         final Context contextWithTheme = mBinding.toolbarLayout.toolbar.getContext();
-        accountNameAdapter = new QualifiedAccountNameAdapter(contextWithTheme);
+        accountNameAdapter = new QualifiedAccountNameAdapter(contextWithTheme, null, null, mAccountsDbAdapter);
         String accountUID = getIntent().getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
         if (TextUtils.isEmpty(accountUID)) {
             accountUID = mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID();
@@ -367,6 +371,15 @@ public class TransactionsActivity extends BaseDrawerActivity implements
                 }
             }
         });
+
+        List<Fragment> fragments = getSupportFragmentManager().getFragments();
+        for (Fragment fragment : fragments) {
+            if (fragment instanceof AccountsListFragment) {
+                mFragmentPageReferenceMap.put(INDEX_SUB_ACCOUNTS_FRAGMENT, (AccountsListFragment) fragment);
+            } else if (fragment instanceof TransactionsListFragment) {
+                mFragmentPageReferenceMap.put(INDEX_TRANSACTIONS_FRAGMENT, (TransactionsListFragment) fragment);
+            }
+        }
     }
 
     @Override
@@ -419,9 +432,17 @@ public class TransactionsActivity extends BaseDrawerActivity implements
             return super.onPrepareOptionsMenu(menu);
 
         boolean isFavoriteAccount = account.isFavorite();
-
         @DrawableRes int favoriteIcon = isFavoriteAccount ? R.drawable.ic_favorite : R.drawable.ic_favorite_border;
         favoriteAccountMenuItem.setIcon(favoriteIcon);
+
+        MenuItem itemHidden = menu.findItem(R.id.menu_hidden);
+        if (itemHidden != null) {
+            boolean isHidden = !isShowHiddenAccounts;
+            itemHidden.setChecked(isHidden);
+            @DrawableRes int hiddenIcon = isHidden ? R.drawable.ic_visibility_off : R.drawable.ic_visibility;
+            itemHidden.setIcon(hiddenIcon);
+        }
+
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -441,6 +462,10 @@ public class TransactionsActivity extends BaseDrawerActivity implements
 
             case R.id.menu_delete:
                 deleteAccount(account.getUID());
+                return true;
+
+            case R.id.menu_hidden:
+                toggleHidden(item);
                 return true;
 
             default:
@@ -499,10 +524,11 @@ public class TransactionsActivity extends BaseDrawerActivity implements
 
     @Override
     public void accountSelected(String accountUID) {
-        Intent restartIntent = new Intent(this, TransactionsActivity.class)
+        Intent intent = new Intent(this, TransactionsActivity.class)
             .setAction(Intent.ACTION_VIEW)
-            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
-        startActivity(restartIntent);
+            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+            .putExtra(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts);
+        startActivity(intent);
     }
 
     private void toggleFavorite(Account account) {
@@ -555,5 +581,22 @@ public class TransactionsActivity extends BaseDrawerActivity implements
             DeleteAccountDialogFragment.newInstance(accountUID);
         fm.setFragmentResultListener(DeleteAccountDialogFragment.TAG, this, this);
         alertFragment.show(fm, DeleteAccountDialogFragment.TAG);
+    }
+
+    private void toggleHidden(@NonNull MenuItem item) {
+        boolean isHidden = !item.isChecked();
+        item.setChecked(isHidden);
+        @DrawableRes int hiddenIcon = isHidden ? R.drawable.ic_visibility_off : R.drawable.ic_visibility;
+        item.setIcon(hiddenIcon);
+        isShowHiddenAccounts = !isHidden;
+
+        final int count = mFragmentPageReferenceMap.size();
+        for (int i = 0; i < count; i++) {
+            Refreshable refreshable = mFragmentPageReferenceMap.valueAt(i);
+            if (refreshable instanceof AccountsListFragment) {
+                AccountsListFragment fragment = (AccountsListFragment) refreshable;
+                fragment.setShowHiddenAccounts(!isHidden);
+            }
+        }
     }
 }

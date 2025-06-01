@@ -345,7 +345,7 @@ public class GnuCashApplication extends Application {
      *
      * @return <code>true</code> if double entry is enabled, <code>false</code> otherwise
      */
-    public static boolean isDoubleEntryEnabled() {
+    public static boolean isDoubleEntryEnabled(@NonNull Context context) {
         SharedPreferences sharedPrefs = PreferenceActivity.getActiveBookSharedPreferences(context);
         return sharedPrefs.getBoolean(context.getString(R.string.key_use_double_entry), true);
     }

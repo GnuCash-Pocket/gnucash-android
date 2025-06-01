@@ -92,6 +92,11 @@ public final class UxArgument {
      */
     public static final String BOOK_UID = "book_uid";
 
+    /**
+     * Show hidden items?
+     */
+    public static final String SHOW_HIDDEN = "show_hidden";
+
     //prevent initialization of instances of this class
     private UxArgument() {
         //prevent even the native class from calling the ctor
