@@ -79,7 +79,7 @@ internal class ScheduledTransactionsViewHolder(
     override fun deleteSchedule(scheduledAction: ScheduledAction) {
         Timber.i("Removing scheduled transaction")
         val transactionUID = scheduledAction.actionUID!!
-        scheduledActionDbAdapter.deleteRecord(scheduledAction.uid)
+        scheduledActionDbAdapter.deleteRecord(scheduledAction)
         if (transactionsDbAdapter.deleteRecord(transactionUID)) {
             val context = itemView.context
             Toast.makeText(
