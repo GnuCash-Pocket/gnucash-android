@@ -19,6 +19,7 @@ package org.gnucash.android.test.ui;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.clearText;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.RootMatchers.withDecorView;
@@ -552,21 +553,19 @@ public class TransactionsActivityTest extends GnuAndroidTest {
 
     @Test
     public void testMoveTransaction() {
-        Account account = new Account("Move account");
-        account.setCommodity(COMMODITY);
+        Account account = new Account("Move account", COMMODITY);
         mAccountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert);
 
-        assertThat(mTransactionsDbAdapter.getAllTransactionsForAccount(account.getUID())).hasSize(0);
+        assertThat(mTransactionsDbAdapter.getAllTransactionsForAccount(account.getUID())).isEmpty();
 
         onView(withId(R.id.options_menu)).perform(click());
         onView(withText(R.string.menu_move_transaction)).perform(click());
 
         onView(withId(BUTTON_POSITIVE)).perform(click());
 
-        assertThat(mTransactionsDbAdapter.getAllTransactionsForAccount(TRANSACTIONS_ACCOUNT_UID)).hasSize(0);
+        assertThat(mTransactionsDbAdapter.getAllTransactionsForAccount(TRANSACTIONS_ACCOUNT_UID)).isEmpty();
 
         assertThat(mTransactionsDbAdapter.getAllTransactionsForAccount(account.getUID())).hasSize(1);
-
     }
 
     /**
@@ -665,6 +664,7 @@ public class TransactionsActivityTest extends GnuAndroidTest {
         onView(withId(R.id.fab_create_transaction)).perform(click());
         String trnDescription = "Multi-currency trn";
         onView(withId(R.id.input_transaction_name)).perform(typeText(trnDescription));
+        onView(withId(R.id.input_transaction_name)).perform(replaceText(trnDescription));//Fix auto-correct.
         onView(withId(R.id.input_transaction_amount)).perform(typeText("10"));
         Espresso.closeSoftKeyboard();
 
@@ -683,6 +683,7 @@ public class TransactionsActivityTest extends GnuAndroidTest {
         List<Transaction> transactions = mTransactionsDbAdapter.getAllTransactionsForAccount(account.getUID());
         assertThat(transactions).hasSize(1);
         Transaction transaction = transactions.get(0);
+        assertThat(transaction.getDescription()).isEqualTo(trnDescription);
         assertThat(transaction.getSplits()).hasSize(2);
         assertThat(transaction.getSplits()).extracting("accountUID")
             .contains(account.getUID()).contains(mBaseAccount.getUID());

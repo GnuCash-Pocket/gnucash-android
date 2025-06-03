@@ -16,6 +16,8 @@
 
 package org.gnucash.android.ui.transaction.dialog;
 
+import static android.database.DatabaseUtils.sqlEscapeString;
+
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -34,6 +36,7 @@ import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
+import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter;
 import org.gnucash.android.ui.common.Refreshable;
@@ -81,11 +84,11 @@ public class BulkMoveDialogFragment extends DialogFragment {
 
         String where = DatabaseSchema.AccountEntry.COLUMN_UID + " != ? AND "
             + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + " = ? AND "
-            + DatabaseSchema.AccountEntry.COLUMN_HIDDEN + " = 0 AND "
+            + DatabaseSchema.AccountEntry.COLUMN_TYPE + " != " + sqlEscapeString(AccountType.ROOT.name()) + " AND "
             + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0";
         String[] whereArgs = new String[]{originAccountUID, originCommodity.getUID()};
 
-        final QualifiedAccountNameAdapter accountNameAdapter = QualifiedAccountNameAdapter.where(context, where, whereArgs);
+        final QualifiedAccountNameAdapter accountNameAdapter = new QualifiedAccountNameAdapter(context, where, whereArgs, accountsDbAdapter);
         accountSpinner.setAdapter(accountNameAdapter);
 
         String title = context.getString(R.string.title_move_transactions, transactionUIDs.length);

@@ -20,6 +20,7 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.clearText;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
@@ -107,8 +108,8 @@ public class OwnCloudExportTest extends GnuAndroidTest {
 
         GnuCashApplication.initializeDatabaseAdapters(context);
 
-        AccountsDbAdapter mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-        mAccountsDbAdapter.deleteAllRecords();
+        AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
+        accountsDbAdapter.deleteAllRecords();
 
         String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
         Commodity.DEFAULT_COMMODITY = CommoditiesDbAdapter.getInstance().getCommodity(currencyCode);
@@ -119,10 +120,10 @@ public class OwnCloudExportTest extends GnuAndroidTest {
         Split split = new Split(new Money("11.11", currencyCode), account.getUID());
         transaction.addSplit(split);
         transaction.addSplit(split.createPair(
-            mAccountsDbAdapter.getOrCreateImbalanceAccountUID(context, Commodity.DEFAULT_COMMODITY)));
+            accountsDbAdapter.getOrCreateImbalanceAccountUID(context, Commodity.DEFAULT_COMMODITY)));
         account.addTransaction(transaction);
 
-        mAccountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert);
+        accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert);
 
         mPrefs.edit()
             .putBoolean(context.getString(R.string.key_owncloud_sync), false)
@@ -150,16 +151,19 @@ public class OwnCloudExportTest extends GnuAndroidTest {
         Context context = GnuCashApplication.getAppContext();
         Assume.assumeTrue(hasActiveInternetConnection(context));
         onView(withId(R.id.drawer_layout)).perform(DrawerActions.open());
-        onView(withText(R.string.title_settings)).perform(scrollTo());
-        onView(withText(R.string.title_settings)).perform(click());
+        onView(withText(R.string.title_settings)).perform(scrollTo(), click());
         onView(withText(R.string.header_backup_and_export_settings)).perform(click());
         onView(withText(R.string.title_owncloud_sync_preference)).perform(click());
         onView(withId(R.id.owncloud_hostname)).check(matches(isDisplayed()));
 
-        onView(withId(R.id.owncloud_hostname)).perform(clearText()).perform(typeText(OC_SERVER), closeSoftKeyboard());
-        onView(withId(R.id.owncloud_username)).perform(clearText()).perform(typeText(OC_USERNAME), closeSoftKeyboard());
-        onView(withId(R.id.owncloud_password)).perform(clearText()).perform(typeText(OC_PASSWORD), closeSoftKeyboard());
-        onView(withId(R.id.owncloud_dir)).perform(clearText()).perform(typeText(OC_DIR), closeSoftKeyboard());
+        onView(withId(R.id.owncloud_hostname))
+            .perform(clearText(), typeText(OC_SERVER), closeSoftKeyboard());
+        onView(withId(R.id.owncloud_username))
+            .perform(clearText(), replaceText(OC_USERNAME), closeSoftKeyboard());
+        onView(withId(R.id.owncloud_password))
+            .perform(clearText(), replaceText(OC_PASSWORD), closeSoftKeyboard());
+        onView(withId(R.id.owncloud_dir))
+            .perform(clearText(), typeText(OC_DIR), closeSoftKeyboard());
         // owncloud demo server is offline, so fake check data succeeded.
         if (OC_DEMO_DISABLED) return;
         onView(withId(BUTTON_POSITIVE)).perform(click());

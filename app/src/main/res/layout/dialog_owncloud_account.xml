@@ -10,7 +10,6 @@
         android:layout_marginStart="4dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="4dp"
-        android:layout_marginBottom="4dp"
         android:hint="@string/owncloud_server"
         android:inputType="textUri" />
 
@@ -29,7 +28,6 @@
         android:layout_marginStart="4dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="4dp"
-        android:layout_marginBottom="4dp"
         android:hint="@string/username"
         android:inputType="text" />
 
@@ -48,17 +46,16 @@
         android:layout_marginStart="4dp"
         android:layout_marginTop="4dp"
         android:layout_marginEnd="4dp"
-        android:layout_marginBottom="16dp"
         android:fontFamily="sans-serif"
         android:hint="@string/password"
-        android:inputType="textWebPassword" />
+        android:inputType="textPassword" />
 
     <EditText
         android:id="@+id/owncloud_dir"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="4dp"
         android:layout_marginEnd="4dp"
         android:layout_marginBottom="4dp"
         android:hint="Directory"
