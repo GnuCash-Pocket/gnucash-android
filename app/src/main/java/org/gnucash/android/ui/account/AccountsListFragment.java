@@ -16,8 +16,6 @@
 
 package org.gnucash.android.ui.account;
 
-import static org.gnucash.android.util.ColorExtKt.parseColor;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentValues;
@@ -106,7 +104,7 @@ public class AccountsListFragment extends MenuFragment implements
     /**
      * Tag to save {@link AccountsListFragment#mDisplayMode} to fragment state
      */
-    private static final String STATE_DISPLAY_MODE = "mDisplayMode";
+    private static final String STATE_DISPLAY_MODE = "display_mode";
 
     /**
      * Database adapter for loading Account records from the database
@@ -127,13 +125,16 @@ public class AccountsListFragment extends MenuFragment implements
      * Filter for which accounts should be displayed. Used by search interface
      */
     private String mCurrentFilter;
+    private boolean isShowHiddenAccounts = false;
 
     private FragmentAccountsListBinding mBinding;
     private final List<AccountBalanceTask> accountBalanceTasks = new ArrayList<>();
 
     public static AccountsListFragment newInstance(DisplayMode displayMode) {
+        Bundle args = new Bundle();
+        args.putSerializable(STATE_DISPLAY_MODE, displayMode);
         AccountsListFragment fragment = new AccountsListFragment();
-        fragment.mDisplayMode = displayMode;
+        fragment.setArguments(args);
         return fragment;
     }
 
@@ -184,8 +185,15 @@ public class AccountsListFragment extends MenuFragment implements
         super.onCreate(savedInstanceState);
 
         Bundle args = getArguments();
-        if (args != null)
+        if (args != null) {
             mParentAccountUID = args.getString(UxArgument.PARENT_ACCOUNT_UID);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                mDisplayMode = args.getSerializable(STATE_DISPLAY_MODE, DisplayMode.class);
+            } else {
+                mDisplayMode = (DisplayMode) args.getSerializable(STATE_DISPLAY_MODE);
+            }
+            isShowHiddenAccounts = args.getBoolean(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts);
+        }
 
         if (savedInstanceState != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -193,6 +201,9 @@ public class AccountsListFragment extends MenuFragment implements
             } else {
                 mDisplayMode = (DisplayMode) savedInstanceState.getSerializable(STATE_DISPLAY_MODE);
             }
+        }
+        if (mDisplayMode == null) {
+            mDisplayMode = DisplayMode.TOP_LEVEL;
         }
 
         // specify an adapter (see also next example)
@@ -363,7 +374,7 @@ public class AccountsListFragment extends MenuFragment implements
         String parentAccountUID = arguments == null ? null : arguments.getString(UxArgument.PARENT_ACCOUNT_UID);
 
         Context context = requireContext();
-        return new AccountsCursorLoader(context, parentAccountUID, mDisplayMode, mCurrentFilter);
+        return new AccountsCursorLoader(context, parentAccountUID, mDisplayMode, mCurrentFilter, isShowHiddenAccounts);
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -419,22 +430,25 @@ public class AccountsListFragment extends MenuFragment implements
         private final String mParentAccountUID;
         private final String mFilter;
         private final DisplayMode mDisplayMode;
+        private final boolean isShowHiddenAccounts;
 
         /**
          * Initializes the loader to load accounts from the database.
          * If the <code>parentAccountId <= 0</code> then only top-level accounts are loaded.
          * Else only the child accounts of the <code>parentAccountId</code> will be loaded
          *
-         * @param context          Application context
-         * @param parentAccountUID GUID of the parent account
-         * @param displayMode      the mode.
-         * @param filter           Account name filter string
+         * @param context              Application context
+         * @param parentAccountUID     GUID of the parent account
+         * @param displayMode          the mode.
+         * @param filter               Account name filter string
+         * @param isShowHiddenAccounts Hidden accounts are visible?
          */
-        public AccountsCursorLoader(Context context, String parentAccountUID, DisplayMode displayMode, @Nullable String filter) {
+        public AccountsCursorLoader(Context context, String parentAccountUID, DisplayMode displayMode, @Nullable String filter, boolean isShowHiddenAccounts) {
             super(context);
             this.mParentAccountUID = parentAccountUID;
             this.mDisplayMode = displayMode;
             this.mFilter = filter;
+            this.isShowHiddenAccounts = isShowHiddenAccounts;
         }
 
         @Override
@@ -445,18 +459,18 @@ public class AccountsListFragment extends MenuFragment implements
             final Cursor cursor;
 
             if (!TextUtils.isEmpty(mParentAccountUID)) {
-                cursor = dbAdapter.fetchSubAccounts(mParentAccountUID);
+                cursor = dbAdapter.fetchSubAccounts(mParentAccountUID, isShowHiddenAccounts);
             } else {
                 switch (mDisplayMode) {
                     case RECENT:
-                        cursor = dbAdapter.fetchRecentAccounts(10, mFilter);
+                        cursor = dbAdapter.fetchRecentAccounts(10, mFilter, isShowHiddenAccounts);
                         break;
                     case FAVORITES:
-                        cursor = dbAdapter.fetchFavoriteAccounts(mFilter);
+                        cursor = dbAdapter.fetchFavoriteAccounts(mFilter, isShowHiddenAccounts);
                         break;
                     case TOP_LEVEL:
                     default:
-                        cursor = dbAdapter.fetchTopLevelAccounts(mFilter);
+                        cursor = dbAdapter.fetchTopLevelAccounts(mFilter, isShowHiddenAccounts);
                         break;
                 }
             }
@@ -471,6 +485,11 @@ public class AccountsListFragment extends MenuFragment implements
             boolean refresh = result.getBoolean(Refreshable.EXTRA_REFRESH);
             if (refresh) refreshActivity();
         }
+    }
+
+    public void setShowHiddenAccounts(boolean isVisible) {
+        isShowHiddenAccounts = isVisible;
+        refresh();
     }
 
     class AccountRecyclerAdapter extends CursorRecyclerAdapter<AccountRecyclerAdapter.AccountViewHolder> {

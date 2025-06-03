@@ -595,7 +595,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             Account account = new Account(imbalanceAccountName, commodity);
             account.setAccountType(AccountType.BANK);
             account.setParentUID(getOrCreateGnuCashRootAccountUID());
-            account.setHidden(!GnuCashApplication.isDoubleEntryEnabled());
+            account.setHidden(!GnuCashApplication.isDoubleEntryEnabled(context));
             addRecord(account, UpdateMethod.insert);
             uid = account.getUID();
         }
@@ -709,18 +709,6 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         Timber.v("Fetching all accounts from db");
         String selection = AccountEntry.COLUMN_HIDDEN + " = 0 AND " + AccountEntry.COLUMN_TYPE + " != ?";
         return fetchAccounts(selection, new String[]{AccountType.ROOT.name()}, AccountEntry.COLUMN_NAME + " ASC");
-    }
-
-    /**
-     * Returns a cursor to all account records in the database ordered by full name.
-     * GnuCash ROOT accounts and hidden accounts will not be included in the result set.
-     *
-     * @return {@link Cursor} to all account records
-     */
-    public Cursor fetchAllRecordsOrderedByFullName() {
-        Timber.v("Fetching all accounts from db");
-        String selection = AccountEntry.COLUMN_HIDDEN + " = 0 AND " + AccountEntry.COLUMN_TYPE + " != ?";
-        return fetchAccounts(selection, new String[]{AccountType.ROOT.name()}, AccountEntry.COLUMN_FULL_NAME + " ASC");
     }
 
     /**
@@ -982,15 +970,17 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     /**
      * Returns a cursor to the dataset containing sub-accounts of the account with record ID <code>accountUID</code>
      *
-     * @param accountUID GUID of the parent account
+     * @param accountUID           GUID of the parent account
+     * @param isShowHiddenAccounts Show hidden accounts?
      * @return {@link Cursor} to the sub accounts data set
      */
-    public Cursor fetchSubAccounts(String accountUID) {
+    public Cursor fetchSubAccounts(String accountUID, boolean isShowHiddenAccounts) {
         Timber.v("Fetching sub accounts for account id %s", accountUID);
-        String selection = AccountEntry.COLUMN_HIDDEN + " = 0 AND "
-            + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " = ?";
-        final String[] selectionArgs =
-            new String[]{accountUID};
+        String selection = AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " = ?";
+        if (!isShowHiddenAccounts) {
+            selection += " AND " + AccountEntry.COLUMN_HIDDEN + " = 0";
+        }
+        String[] selectionArgs = new String[]{accountUID};
         return fetchAccounts(selection, selectionArgs, null);
     }
 
@@ -999,11 +989,13 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      *
      * @return Cursor to the top level accounts
      */
-    public Cursor fetchTopLevelAccounts(@Nullable String filterName) {
+    public Cursor fetchTopLevelAccounts(@Nullable String filterName, boolean isShowHiddenAccounts) {
         //condition which selects accounts with no parent, whose UID is not ROOT and whose type is not ROOT
         final String[] selectionArgs;
-        String selection = AccountEntry.COLUMN_HIDDEN + " = 0 AND "
-            + AccountEntry.COLUMN_TYPE + " != ?";
+        String selection = AccountEntry.COLUMN_TYPE + " != ?";
+        if (!isShowHiddenAccounts) {
+            selection += " AND " + AccountEntry.COLUMN_HIDDEN + " = 0";
+        }
         if (TextUtils.isEmpty(filterName)) {
             selection += " AND (" + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " IS NULL OR "
                 + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " = ?)";
@@ -1020,10 +1012,16 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      *
      * @return Cursor to recently used accounts
      */
-    public Cursor fetchRecentAccounts(int numberOfRecent, @Nullable String filterName) {
-        String selection = AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_HIDDEN + " = 0";
+    public Cursor fetchRecentAccounts(int numberOfRecent, @Nullable String filterName, boolean isShowHiddenAccounts) {
+        String selection = "";
+        if (!isShowHiddenAccounts) {
+            selection = AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_HIDDEN + " = 0";
+        }
         if (!TextUtils.isEmpty(filterName)) {
-            selection += " AND (" + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_NAME + " LIKE '%" + escapeForLike(filterName) + "%')";
+            if (!selection.isEmpty()) {
+                selection += " AND ";
+            }
+            selection += "(" + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_NAME + " LIKE '%" + escapeForLike(filterName) + "%')";
         }
         return mDb.query(TransactionEntry.TABLE_NAME
                 + " LEFT OUTER JOIN " + SplitEntry.TABLE_NAME + " ON "
@@ -1046,10 +1044,12 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      *
      * @return Cursor holding set of favorite accounts
      */
-    public Cursor fetchFavoriteAccounts(@Nullable String filterName) {
+    public Cursor fetchFavoriteAccounts(@Nullable String filterName, boolean isShowHiddenAccounts) {
         Timber.v("Fetching favorite accounts from db");
-        String selection = AccountEntry.COLUMN_HIDDEN + " = 0 AND "
-            + AccountEntry.COLUMN_FAVORITE + "=1";
+        String selection = AccountEntry.COLUMN_FAVORITE + " = 1";
+        if (!isShowHiddenAccounts) {
+            selection += " AND " + AccountEntry.COLUMN_HIDDEN + " = 0";
+        }
         if (!TextUtils.isEmpty(filterName)) {
             selection += " AND (" + AccountEntry.COLUMN_NAME + " LIKE '%" + escapeForLike(filterName) + "%')";
         }

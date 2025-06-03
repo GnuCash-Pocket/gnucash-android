@@ -137,10 +137,12 @@ public class ExportFormFragment extends MenuFragment implements
     private FragmentExportFormBinding mBinding;
 
     private void onRadioButtonClicked(View view) {
+        final Context context = view.getContext();
+
         switch (view.getId()) {
             case R.id.radio_ofx_format:
                 mExportParams.setExportFormat(ExportFormat.OFX);
-                if (GnuCashApplication.isDoubleEntryEnabled()) {
+                if (GnuCashApplication.isDoubleEntryEnabled(context)) {
                     mBinding.exportWarning.setText(getString(R.string.export_warning_ofx));
                     mBinding.exportWarning.setVisibility(View.VISIBLE);
                 } else {
@@ -154,7 +156,7 @@ public class ExportFormFragment extends MenuFragment implements
             case R.id.radio_qif_format:
                 mExportParams.setExportFormat(ExportFormat.QIF);
                 //TODO: Also check that there exist transactions with multiple currencies before displaying warning
-                if (GnuCashApplication.isDoubleEntryEnabled()) {
+                if (GnuCashApplication.isDoubleEntryEnabled(context)) {
                     mBinding.exportWarning.setText(getString(R.string.export_warning_qif));
                     mBinding.exportWarning.setVisibility(View.VISIBLE);
                 } else {
@@ -531,7 +533,7 @@ public class ExportFormFragment extends MenuFragment implements
 
         ExportFormat defaultFormat = ExportFormat.of(defaultExportFormat.toUpperCase());
 
-        if (GnuCashApplication.isDoubleEntryEnabled()) {
+        if (GnuCashApplication.isDoubleEntryEnabled(context)) {
             mBinding.radioOfxFormat.setVisibility(View.GONE);
             if (defaultFormat == ExportFormat.OFX) {
                 defaultFormat = ExportFormat.XML;

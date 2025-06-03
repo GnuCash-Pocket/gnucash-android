@@ -276,8 +276,9 @@ public class TransactionFormFragment extends MenuFragment implements
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Bundle args = getArguments();
+        final Context context = requireContext();
 
-        mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled();
+        mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled(context);
 
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
         mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID, mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID());
@@ -531,10 +532,9 @@ public class TransactionFormFragment extends MenuFragment implements
      * Only accounts with the same currency can be transferred to
      */
     private void updateTransferAccountsList(FragmentTransactionFormBinding binding) {
-        String conditions = "(" + DatabaseSchema.AccountEntry.COLUMN_UID + " != ?"
+        String conditions = DatabaseSchema.AccountEntry.COLUMN_UID + " != ?"
             + " AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + " != ?"
-            + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0"
-            + ")";
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0";
 
         accountNameAdapter = QualifiedAccountNameAdapter.where(
             binding.getRoot().getContext(),
