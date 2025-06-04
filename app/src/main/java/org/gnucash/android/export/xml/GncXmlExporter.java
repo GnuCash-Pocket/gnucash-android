@@ -390,7 +390,7 @@ public class GncXmlExporter extends Exporter {
                 // new transaction
                 String description = cursor.getString(cursor.getColumnIndexOrThrow("trans_desc"));
                 String currencyUID = cursor.getString(cursor.getColumnIndexOrThrow("trans_commodity"));
-                trnCommodity = mCommoditiesDbAdapter.getCommodity(currencyUID);
+                trnCommodity = mCommoditiesDbAdapter.getRecord(currencyUID);
                 transaction = new Transaction(description);
                 transaction.setUID(curTrxUID);
                 transaction.setCommodity(trnCommodity);

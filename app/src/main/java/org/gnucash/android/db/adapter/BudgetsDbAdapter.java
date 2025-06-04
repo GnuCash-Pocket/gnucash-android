@@ -28,6 +28,7 @@ import org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry;
 import org.gnucash.android.db.DatabaseSchema.BudgetEntry;
 import org.gnucash.android.model.Budget;
 import org.gnucash.android.model.BudgetAmount;
+import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.Recurrence;
 
@@ -206,7 +207,8 @@ public class BudgetsDbAdapter extends DatabaseAdapter<Budget> {
         for (BudgetAmount budgetAmount : budgetAmounts) {
             accountUIDs.add(budgetAmount.getAccountUID());
         }
+        Commodity commodity = Commodity.DEFAULT_COMMODITY;
 
-        return new AccountsDbAdapter(mDb).getAccountsBalanceByUID(accountUIDs, periodStart, periodEnd);
+        return new AccountsDbAdapter(mDb).getAccountsBalanceByUID(accountUIDs, commodity, periodStart, periodEnd);
     }
 }

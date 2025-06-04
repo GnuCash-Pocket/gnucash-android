@@ -265,7 +265,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
                     earliest = earliest.plusYears(1);
                     break;
             }
-            Money balance = mAccountsDbAdapter.getAccountsBalance(accounts, start, end);
+            Money balance = mAccountsDbAdapter.getAccountsBalance(accounts, mCommodity, start, end);
             if (balance.isAmountZero()) continue;
             Price price = pricesDbAdapter.getPrice(balance.getCommodity(), mCommodity);
             if (price == null) continue;
