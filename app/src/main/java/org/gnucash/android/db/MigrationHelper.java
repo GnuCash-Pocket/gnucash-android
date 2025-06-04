@@ -84,8 +84,8 @@ public class MigrationHelper {
         if (oldVersion < 18) {
             migrateTo18(db);
         }
-        if (oldVersion < 20) {
-            migrateTo20(db);
+        if (oldVersion < 19) {
+            migrateTo19(db);
         }
     }
 
@@ -148,12 +148,12 @@ public class MigrationHelper {
     }
 
     /**
-     * Upgrade the database to version 20.
+     * Upgrade the database to version 19.
      *
      * @param db the database.
      */
-    private static void migrateTo20(SQLiteDatabase db) {
-        Timber.i("Upgrading database to version 20");
+    private static void migrateTo19(SQLiteDatabase db) {
+        Timber.i("Upgrading database to version 19");
 
         // Fetch list of accounts with mismatched currencies.
         String sqlAccountCurrencyWrong = "SELECT DISTINCT a." + AccountEntry.COLUMN_CURRENCY + ", a." + AccountEntry.COLUMN_COMMODITY_UID + ", c." + CommodityEntry.COLUMN_UID
