@@ -207,6 +207,6 @@ public class BudgetsDbAdapter extends DatabaseAdapter<Budget> {
             accountUIDs.add(budgetAmount.getAccountUID());
         }
 
-        return new AccountsDbAdapter(mDb).getAccountsBalance(accountUIDs, periodStart, periodEnd);
+        return new AccountsDbAdapter(mDb).getAccountsBalanceByUID(accountUIDs, periodStart, periodEnd);
     }
 }

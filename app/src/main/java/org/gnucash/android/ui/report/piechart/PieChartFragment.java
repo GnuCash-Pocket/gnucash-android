@@ -44,6 +44,7 @@ import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Money;
+import org.gnucash.android.model.Price;
 import org.gnucash.android.ui.report.BaseReportFragment;
 import org.gnucash.android.ui.report.ReportType;
 
@@ -144,13 +145,16 @@ public class PieChartFragment extends BaseReportFragment {
         List<Integer> colors = new ArrayList<>();
         AccountType accountType = mAccountType;
         String where = DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND "
-            + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + "=? AND "
             + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?";
-        String[] whereArgs = new String[]{mCommodity.getUID(), accountType.name()};
+        String[] whereArgs = new String[]{accountType.name()};
         String orderBy = DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC";
         List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(where, whereArgs, orderBy);
         for (Account account : accounts) {
-            Money balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), mReportPeriodStart, mReportPeriodEnd, false);
+            Money balance = mAccountsDbAdapter.getAccountBalance(account, mReportPeriodStart, mReportPeriodEnd, false);
+            if (balance.isAmountZero()) continue;
+            Price price = pricesDbAdapter.getPrice(balance.getCommodity(), mCommodity);
+            if (price == null) continue;
+            balance = balance.times(price);
             float value = balance.toFloat();
             if (value > 0f) {
                 int count = dataSet.getEntryCount();

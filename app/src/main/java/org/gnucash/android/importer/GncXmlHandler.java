@@ -369,8 +369,8 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
         mDB = databaseHelper.getWritableDatabase();
         mCommoditiesDbAdapter = new CommoditiesDbAdapter(mDB);
         mPricesDbAdapter = new PricesDbAdapter(mCommoditiesDbAdapter);
-        mTransactionsDbAdapter = new TransactionsDbAdapter(mPricesDbAdapter);
-        mAccountsDbAdapter = new AccountsDbAdapter(mTransactionsDbAdapter);
+        mTransactionsDbAdapter = new TransactionsDbAdapter(mCommoditiesDbAdapter);
+        mAccountsDbAdapter = new AccountsDbAdapter(mTransactionsDbAdapter, mPricesDbAdapter);
         RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(mDB);
         mScheduledActionsDbAdapter = new ScheduledActionDbAdapter(recurrenceDbAdapter);
         mBudgetsDbAdapter = new BudgetsDbAdapter(recurrenceDbAdapter);

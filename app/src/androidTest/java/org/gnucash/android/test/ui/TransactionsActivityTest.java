@@ -602,7 +602,7 @@ public class TransactionsActivityTest extends GnuAndroidTest {
 
         assertThat(mTransactionsDbAdapter.getTransactionsCount(TRANSACTIONS_ACCOUNT_UID)).isZero();
 
-        assertThat(mAccountsDbAdapter.getAccountBalance(account.getUID()))
+        assertThat(mAccountsDbAdapter.getAccountBalance(account))
             .isEqualTo(new Money("1024", CURRENCY_CODE));
     }
 
