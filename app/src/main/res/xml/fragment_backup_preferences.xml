@@ -60,6 +60,7 @@
     <PreferenceCategory android:title="@string/title_export_preference_category">
 
         <ListPreference
+            android:defaultValue="@string/file_format_xml"
             android:entries="@array/export_formats"
             android:entryValues="@array/key_export_format_values"
             android:key="@string/key_default_export_format"

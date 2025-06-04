@@ -21,8 +21,10 @@ import static java.util.zip.GZIPInputStream.GZIP_MAGIC;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
+import org.gnucash.android.gnc.GncProgressListener;
 import org.gnucash.android.model.Book;
 import org.gnucash.android.util.PreferencesHelper;
 import org.xml.sax.InputSource;
@@ -61,20 +63,21 @@ public class GncXmlImporter {
      * @return GUID of the book into which the XML was imported
      */
     public static String parse(@NonNull Context context, @NonNull InputStream gncXmlInputStream) throws ParserConfigurationException, SAXException, IOException {
-        return parseBook(context, gncXmlInputStream).getUID();
+        return parseBook(context, gncXmlInputStream, null).getUID();
     }
 
     /**
      * Parse GnuCash XML input and populates the database
      *
      * @param gncXmlInputStream InputStream source of the GnuCash XML file
+     * @param listener the listener to receive events.
      * @return the book into which the XML was imported
      */
-    public static Book parseBook(@NonNull Context context, @NonNull InputStream gncXmlInputStream) throws ParserConfigurationException, SAXException, IOException {
+    public static Book parseBook(@NonNull Context context, @NonNull InputStream gncXmlInputStream, @Nullable GncProgressListener listener) throws ParserConfigurationException, SAXException, IOException {
         //TODO: Set an error handler which can log errors
         Timber.d("Start import");
         InputStream input = getInputStream(gncXmlInputStream);
-        GncXmlHandler handler = new GncXmlHandler(context);
+        GncXmlHandler handler = new GncXmlHandler(context, listener);
         XMLReader reader = createXMLReader(handler);
 
         long startTime = System.nanoTime();

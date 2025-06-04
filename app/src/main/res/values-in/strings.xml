@@ -478,4 +478,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">Kompres data</string>
+    <string name="title_progress_processing_accounts">Memproses akun</string>
+    <string name="title_progress_processing_books">Memproses buku</string>
+    <string name="title_progress_processing_budgets">Memproses anggaran</string>
+    <string name="title_progress_processing_commodities">Memproses komoditas</string>
+    <string name="title_progress_processing_prices">Memproses harga</string>
+    <string name="title_progress_processing_schedules">Memproses jadwal</string>
+    <string name="title_progress_processing_transactions">Memproses transaksi</string>
 </resources>

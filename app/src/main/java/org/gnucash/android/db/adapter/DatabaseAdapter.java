@@ -245,7 +245,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @param updateMethod Method to use for adding the record
      */
     public void addRecord(@NonNull final Model model, UpdateMethod updateMethod) throws SQLException {
-        Timber.d("Adding %s record to database: ", model.getClass().getSimpleName());
+        Timber.d("Adding record to database: %s %s", model.getClass().getSimpleName(), model.getUID());
         final SQLiteStatement statement;
         switch (updateMethod) {
             case insert:
@@ -460,15 +460,8 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
         stmt.bindString(1 + mColumns.length, model.getUID());
     }
 
-    /**
-     * Returns a model instance populated with data from the record with GUID {@code uid}
-     * <p>Sub-classes which require special handling should override this method</p>
-     *
-     * @param uid GUID of the record
-     * @return BaseModel instance of the record
-     * @throws IllegalArgumentException if the record UID does not exist in thd database
-     */
-    public Model getRecord(@NonNull String uid) {
+    @Nullable
+    public Model getRecordOrNull(String uid) {
         if (isCached) {
             Model model = cache.get(uid);
             if (model != null) return model;
@@ -478,14 +471,32 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
         try {
             if (cursor.moveToFirst()) {
                 Model model = buildModelInstance(cursor);
-                if (isCached) cache.put(uid, model);
+                if (isCached) {
+                    cache.put(uid, model);
+                }
                 return model;
-            } else {
-                throw new IllegalArgumentException("Record with " + uid + " does not exist");
             }
         } finally {
             cursor.close();
         }
+        return null;
+    }
+
+    /**
+     * Returns a model instance populated with data from the record with GUID {@code uid}
+     * <p>Sub-classes which require special handling should override this method</p>
+     *
+     * @param uid GUID of the record
+     * @return BaseModel instance of the record
+     * @throws IllegalArgumentException if the record UID does not exist in thd database
+     */
+    @NonNull
+    public Model getRecord(@NonNull String uid) throws IllegalArgumentException {
+        Model model = getRecordOrNull(uid);
+        if (model == null) {
+            throw new IllegalArgumentException("Record with " + uid + " does not exist");
+        }
+        return model;
     }
 
     /**
@@ -495,7 +506,8 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @param id Database record ID
      * @return Subclass of {@link BaseModel} containing record info
      */
-    public Model getRecord(long id) {
+    @NonNull
+    public Model getRecord(long id) throws IllegalArgumentException {
         return getRecord(getUID(id));
     }
 
@@ -507,6 +519,22 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
     @NonNull
     public List<Model> getAllRecords() {
         return getRecords(fetchAllRecords());
+    }
+
+    @NonNull
+    public List<Model> getAllRecords(@Nullable String where, @Nullable String[] whereArgs) {
+        List<Model> modelRecords = new ArrayList<>();
+        Cursor cursor = fetchAllRecords(where, whereArgs, null);
+        try {
+            if (cursor.moveToFirst()) {
+                do {
+                    modelRecords.add(buildModelInstance(cursor));
+                } while (cursor.moveToNext());
+            }
+        } finally {
+            cursor.close();
+        }
+        return modelRecords;
     }
 
     @NonNull
@@ -847,7 +875,18 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @return Total number of records in the database
      */
     public long getRecordsCount() {
-        return DatabaseUtils.queryNumEntries(mDb, mTableName);
+        return getRecordsCount(null, null);
+    }
+
+    /**
+     * Returns the number of transactions in the database which fulfill the conditions
+     *
+     * @param where     SQL WHERE clause without the "WHERE" itself
+     * @param whereArgs Arguments to substitute question marks for
+     * @return Number of records in the databases
+     */
+    public long getRecordsCount(@Nullable String where, @Nullable String[] whereArgs) {
+        return DatabaseUtils.queryNumEntries(mDb, mTableName, where, whereArgs);
     }
 
     /**

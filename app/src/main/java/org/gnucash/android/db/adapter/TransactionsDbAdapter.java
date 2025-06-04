@@ -116,7 +116,8 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      */
     @Override
     public void addRecord(@NonNull Transaction transaction, UpdateMethod updateMethod) throws SQLException {
-        Timber.d("Adding transaction to the db via %s", updateMethod.name());
+        // Did the transaction have any splits before?
+        final boolean didChange = transaction.id != 0;
         try {
             beginTransaction();
             Split imbalanceSplit = transaction.createAutoBalanceSplit();
@@ -128,10 +129,10 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
             }
             super.addRecord(transaction, updateMethod);
 
-            Timber.d("Adding splits for transaction");
-            List<String> splitUIDs = new ArrayList<>(transaction.getSplits().size());
-            for (Split split : transaction.getSplits()) {
-                Timber.d("Replace transaction split in db");
+            List<Split> splits = transaction.getSplits();
+            Timber.d("Adding %d splits for transaction", splits.size());
+            List<String> splitUIDs = new ArrayList<>(splits.size());
+            for (Split split : splits) {
                 if (imbalanceSplit == split) {
                     splitsDbAdapter.addRecord(split, UpdateMethod.insert);
                 } else {
@@ -139,13 +140,14 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
                 }
                 splitUIDs.add(split.getUID());
             }
-            Timber.d("%d splits added", transaction.getSplits().size());
 
-            long deleted = mDb.delete(SplitEntry.TABLE_NAME,
-                SplitEntry.COLUMN_TRANSACTION_UID + " = ? AND "
-                    + SplitEntry.COLUMN_UID + " NOT IN ('" + TextUtils.join("' , '", splitUIDs) + "')",
-                new String[]{transaction.getUID()});
-            Timber.d("%d splits deleted", deleted);
+            if (didChange) {
+                long deleted = mDb.delete(SplitEntry.TABLE_NAME,
+                    SplitEntry.COLUMN_TRANSACTION_UID + " = ? AND "
+                        + SplitEntry.COLUMN_UID + " NOT IN ('" + TextUtils.join("','", splitUIDs) + "')",
+                    new String[]{transaction.getUID()});
+                Timber.d("%d splits deleted", deleted);
+            }
 
             setTransactionSuccessful();
         } finally {
@@ -342,9 +344,8 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
     public Cursor fetchTransactionsModifiedSince(Timestamp timestamp) {
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         queryBuilder.setTables(TransactionEntry.TABLE_NAME);
-        String startTimeString = Long.toString(timestamp.getTime());
         String where = TransactionEntry.COLUMN_TEMPLATE + "=0 AND " + TransactionEntry.COLUMN_TIMESTAMP + " >= ?";
-        String[] whereArgs = new String[]{startTimeString};
+        String[] whereArgs = new String[]{Long.toString(timestamp.getTime())};
         String orderBy = TransactionEntry.COLUMN_TIMESTAMP + " ASC, " + TransactionEntry.COLUMN_ID + " ASC";
         return queryBuilder.query(mDb, null, where, whereArgs, null, null, orderBy, null);
     }
@@ -368,41 +369,17 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
             columns, where, whereArgs, null, null, orderBy);
     }
 
-    /**
-     * Return number of transactions in the database (excluding templates)
-     *
-     * @return Number of transactions
-     */
+    @Override
     public long getRecordsCount() {
         return DatabaseUtils.queryNumEntries(mDb, TransactionEntry.TABLE_NAME, TransactionEntry.COLUMN_TEMPLATE + "=0");
     }
 
-    /**
-     * Returns the number of transactions in the database which fulfill the conditions
-     *
-     * @param where     SQL WHERE clause without the "WHERE" itself
-     * @param whereArgs Arguments to substitute question marks for
-     * @return Number of records in the databases
-     */
+    @Override
     public long getRecordsCount(@Nullable String where, @Nullable String[] whereArgs) {
-        Cursor cursor = mDb.query(true, TransactionEntry.TABLE_NAME + " , trans_extra_info ON "
-                + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID
-                + " = trans_extra_info.trans_acct_t_uid",
-            new String[]{"COUNT(*)"},
-            where,
-            whereArgs,
-            null,
-            null,
-            null,
-            null);
-        try {
-            if (cursor != null && cursor.moveToFirst()) {
-                return cursor.getLong(0);
-            }
-        } finally {
-            cursor.close();
-        }
-        return 0L;
+        String table = mTableName + ", trans_extra_info ON "
+            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID
+            + " = trans_extra_info.trans_acct_t_uid";
+        return DatabaseUtils.queryNumEntries(mDb, table, where, whereArgs);
     }
 
     /**

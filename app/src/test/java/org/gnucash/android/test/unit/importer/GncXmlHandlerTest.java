@@ -65,6 +65,7 @@ public class GncXmlHandlerTest extends BookHelperTest {
         assertThat(rootAccount.getParentUID()).isNull();
         assertThat(rootAccount.getName()).isEqualTo(ROOT_ACCOUNT_NAME);
         assertThat(rootAccount.isHidden()).isFalse();
+        assertThat(rootAccount.isPlaceholder()).isFalse();
 
         Account assetsAccount = mAccountsDbAdapter.getRecord("3f44d61cb1afd201e8ea5a54ec4fbbff");
         assertThat(assetsAccount.getParentUID()).isEqualTo(rootAccount.getUID());
@@ -357,6 +358,7 @@ public class GncXmlHandlerTest extends BookHelperTest {
     @Test
     public void commodities() {
         String bookUID = importGnuCashXml("commodities.xml");
+        assertThat(bookUID).isEqualTo("76d1839cfd30459998717d04ce719add");
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue();
 
         CommoditiesDbAdapter commoditiesDbAdapter = mCommoditiesDbAdapter;
