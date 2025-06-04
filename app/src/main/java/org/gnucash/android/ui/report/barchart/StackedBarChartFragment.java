@@ -235,8 +235,8 @@ public class StackedBarChartFragment extends BaseReportFragment {
         LocalDate startDate;
         if (mReportPeriodStart == -1) {
             TransactionsDbAdapter adapter = TransactionsDbAdapter.getInstance();
-            String currencyCode = mCommodity.getCurrencyCode();
-            startDate = new LocalDate(adapter.getTimestampOfEarliestTransaction(accountType, currencyCode));
+            String commodityUID = mCommodity.getUID();
+            startDate = new LocalDate(adapter.getTimestampOfEarliestTransaction(accountType, commodityUID));
         } else {
             startDate = new LocalDate(mReportPeriodStart);
         }
@@ -255,8 +255,8 @@ public class StackedBarChartFragment extends BaseReportFragment {
         LocalDate endDate;
         if (mReportPeriodEnd == -1) {
             TransactionsDbAdapter adapter = TransactionsDbAdapter.getInstance();
-            String currencyCode = mCommodity.getCurrencyCode();
-            endDate = new LocalDate(adapter.getTimestampOfLatestTransaction(accountType, currencyCode));
+            String commodityUID = mCommodity.getUID();
+            endDate = new LocalDate(adapter.getTimestampOfLatestTransaction(accountType, commodityUID));
         } else {
             endDate = new LocalDate(mReportPeriodEnd);
         }

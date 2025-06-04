@@ -226,6 +226,11 @@ class Account : BaseModel {
         const val EXTRA_CURRENCY_CODE = "${BuildConfig.APPLICATION_ID}.extra.currency_code"
 
         /**
+         * An extra key for passing the currency UID in an intent
+         */
+        const val EXTRA_CURRENCY_UID = "${BuildConfig.APPLICATION_ID}.extra.currency_uid"
+
+        /**
          * Extra key for passing the unique ID of the parent account when creating a
          * new account using Intents
          */

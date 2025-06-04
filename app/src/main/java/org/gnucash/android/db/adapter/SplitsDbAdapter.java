@@ -177,7 +177,6 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
         String selection = "a." + CommonColumns.COLUMN_UID + " = ?"
             + " AND t." + TransactionEntry.COLUMN_TEMPLATE + " = 0"
-            + " AND a." + AccountEntry.COLUMN_CURRENCY + " != '" + Commodity.TEMPLATE + "'"
             + " AND s." + SplitEntry.COLUMN_QUANTITY_DENOM + " >= 1";
 
         boolean validStart = startTimestamp != -1;

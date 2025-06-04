@@ -105,8 +105,8 @@ public class BalanceSheetFragment extends BaseReportFragment {
 
     @Override
     protected void generateReport(@NonNull Context context) {
-        mAssetsBalance = mAccountsDbAdapter.getCurrentAccountsBalance(mAssetAccountTypes);
-        mLiabilitiesBalance = mAccountsDbAdapter.getCurrentAccountsBalance(mLiabilityAccountTypes);
+        mAssetsBalance = mAccountsDbAdapter.getCurrentAccountsBalance(mAssetAccountTypes, mCommodity);
+        mLiabilitiesBalance = mAccountsDbAdapter.getCurrentAccountsBalance(mLiabilityAccountTypes, mCommodity);
     }
 
     @Override

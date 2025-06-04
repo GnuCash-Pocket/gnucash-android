@@ -331,7 +331,7 @@ public class GncXmlExporter extends Exporter {
             TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_NOTES + " AS trans_notes",
             TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " AS trans_time",
             TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_EXPORTED + " AS trans_exported",
-            TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_CURRENCY + " AS trans_currency",
+            TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_COMMODITY_UID + " AS trans_commodity",
             TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_CREATED_AT + " AS trans_date_posted",
             TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_SCHEDX_ACTION_UID + " AS trans_from_sched_action",
             SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_UID + " AS split_uid",
@@ -389,8 +389,8 @@ public class GncXmlExporter extends Exporter {
                 }
                 // new transaction
                 String description = cursor.getString(cursor.getColumnIndexOrThrow("trans_desc"));
-                String currencyCode = cursor.getString(cursor.getColumnIndexOrThrow("trans_currency"));
-                trnCommodity = mCommoditiesDbAdapter.getCommodity(currencyCode);
+                String currencyUID = cursor.getString(cursor.getColumnIndexOrThrow("trans_commodity"));
+                trnCommodity = mCommoditiesDbAdapter.getCommodity(currencyUID);
                 transaction = new Transaction(description);
                 transaction.setUID(curTrxUID);
                 transaction.setCommodity(trnCommodity);

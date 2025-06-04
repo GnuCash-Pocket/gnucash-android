@@ -122,7 +122,6 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             AccountEntry.COLUMN_NAME,
             AccountEntry.COLUMN_DESCRIPTION,
             AccountEntry.COLUMN_TYPE,
-            AccountEntry.COLUMN_CURRENCY,
             AccountEntry.COLUMN_COLOR_CODE,
             AccountEntry.COLUMN_FAVORITE,
             AccountEntry.COLUMN_FULL_NAME,
@@ -243,24 +242,23 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         stmt.bindString(1, account.getName());
         stmt.bindString(2, account.getDescription());
         stmt.bindString(3, account.getAccountType().name());
-        stmt.bindString(4, account.getCommodity().getCurrencyCode());
         if (account.getColor() != Account.DEFAULT_COLOR) {
-            stmt.bindString(5, account.getColorHexString());
+            stmt.bindString(4, account.getColorHexString());
         }
-        stmt.bindLong(6, account.isFavorite() ? 1 : 0);
-        stmt.bindString(7, account.getFullName());
-        stmt.bindLong(8, account.isPlaceholder() ? 1 : 0);
-        stmt.bindString(9, TimestampHelper.getUtcStringFromTimestamp(account.getCreatedTimestamp()));
-        stmt.bindLong(10, account.isHidden() ? 1 : 0);
-        stmt.bindString(11, account.getCommodity().getUID());
+        stmt.bindLong(5, account.isFavorite() ? 1 : 0);
+        stmt.bindString(6, account.getFullName());
+        stmt.bindLong(7, account.isPlaceholder() ? 1 : 0);
+        stmt.bindString(8, TimestampHelper.getUtcStringFromTimestamp(account.getCreatedTimestamp()));
+        stmt.bindLong(9, account.isHidden() ? 1 : 0);
+        stmt.bindString(10, account.getCommodity().getUID());
         if (parentAccountUID != null) {
-            stmt.bindString(12, parentAccountUID);
+            stmt.bindString(11, parentAccountUID);
         }
         if (account.getDefaultTransferAccountUID() != null) {
-            stmt.bindString(13, account.getDefaultTransferAccountUID());
+            stmt.bindString(12, account.getDefaultTransferAccountUID());
         }
         if (account.getNote() != null) {
-            stmt.bindString(14, account.getNote());
+            stmt.bindString(13, account.getNote());
         }
 
         return stmt;
@@ -856,31 +854,31 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * Compute the account balance for all accounts with the specified type within a specific duration
      *
      * @param accountType    Account Type for which to compute balance
+     * @param currency       the currency
      * @param startTimestamp Begin time for the duration in milliseconds
      * @param endTimestamp   End time for duration in milliseconds
      * @return Account balance
      */
-    public Money getAccountsBalance(AccountType accountType, String currencyCode, long startTimestamp, long endTimestamp) {
-        String where = AccountEntry.COLUMN_TYPE + "=?"
-            + " AND " + AccountEntry.COLUMN_CURRENCY + "=?";
-        String[] whereArgs = new String[]{accountType.name(), currencyCode};
+    public Money getAccountsBalance(AccountType accountType, Commodity currency, long startTimestamp, long endTimestamp) {
+        String where = AccountEntry.COLUMN_TYPE + "=?";
+        String[] whereArgs = new String[]{accountType.name()};
         List<Account> accounts = getSimpleAccountList(where, whereArgs, null);
-        return getAccountsBalance(accounts, startTimestamp, endTimestamp);
+        return getAccountsBalance(accounts, currency, startTimestamp, endTimestamp);
     }
 
     /**
      * Returns the account balance for all accounts types specified
      *
      * @param accountTypes List of account types
+     * @param currency     The currency
      * @param start        Begin timestamp for transactions
      * @param end          End timestamp of transactions
      * @return Money balance of the account types
      */
-    public Money getBalancesByType(List<AccountType> accountTypes, long start, long end) {
-        String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
-        Money balance = Money.createZeroInstance(currencyCode);
+    public Money getBalancesByType(List<AccountType> accountTypes, Commodity currency, long start, long end) {
+        Money balance = Money.createZeroInstance(currency);
         for (AccountType accountType : accountTypes) {
-            Money accountsBalance = getAccountsBalance(accountType, currencyCode, start, end);
+            Money accountsBalance = getAccountsBalance(accountType, currency, start, end);
             balance = balance.plus(accountsBalance);
         }
         return balance;
@@ -890,10 +888,11 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * Returns the current account balance for the accounts type.
      *
      * @param accountTypes The account type
+     * @param currency     The currency.
      * @return Money balance of the account type
      */
-    public Money getCurrentAccountsBalance(List<AccountType> accountTypes) {
-        return getBalancesByType(accountTypes, -1, System.currentTimeMillis());
+    public Money getCurrentAccountsBalance(List<AccountType> accountTypes, Commodity currency) {
+        return getBalancesByType(accountTypes, currency, -1, System.currentTimeMillis());
     }
 
     private Money computeBalance(@NonNull String accountUID, long startTimestamp, long endTimestamp, boolean includeSubAccounts) {
@@ -968,12 +967,12 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @param endTimestamp   the end timestamp of the time range
      * @return Money balance of account list
      */
-    public Money getAccountsBalanceByUID(@NonNull List<String> accountUIDList, long startTimestamp, long endTimestamp) {
+    public Money getAccountsBalanceByUID(@NonNull List<String> accountUIDList, Commodity commodity, long startTimestamp, long endTimestamp) {
         List<Account> accounts = new ArrayList<>();
         for (String accountUID : accountUIDList) {
             accounts.add(getSimpleRecord(accountUID));
         }
-        return getAccountsBalance(accounts, startTimestamp, endTimestamp);
+        return getAccountsBalance(accounts, commodity, startTimestamp, endTimestamp);
     }
 
     /**
@@ -985,9 +984,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @param endTimestamp   the end timestamp of the time range
      * @return Money balance of account list
      */
-    public Money getAccountsBalance(@NonNull List<Account> accounts, long startTimestamp, long endTimestamp) {
-        String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
-        Commodity commodity = commoditiesDbAdapter.getCommodity(currencyCode);
+    public Money getAccountsBalance(@NonNull List<Account> accounts, Commodity commodity, long startTimestamp, long endTimestamp) {
         Money balance = Money.createZeroInstance(commodity);
         for (Account account : accounts) {
             Money accountBalance = getAccountBalance(account, startTimestamp, endTimestamp, false);
@@ -1174,9 +1171,8 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         if (rootUID != null) {
             return rootUID;
         }
-        String where = AccountEntry.COLUMN_TYPE + "=?"
-            + " AND " + AccountEntry.COLUMN_CURRENCY + "!=?";
-        String[] whereArgs = new String[]{AccountType.ROOT.name(), Commodity.TEMPLATE};
+        String where = AccountEntry.COLUMN_TYPE + "=?";
+        String[] whereArgs = new String[]{AccountType.ROOT.name()};
         Cursor cursor = fetchAccounts(where, whereArgs, null);
         try {
             if (cursor.moveToFirst()) {
@@ -1200,7 +1196,6 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         contentValues.put(AccountEntry.COLUMN_FULL_NAME, rootAccount.getFullName());
         contentValues.put(AccountEntry.COLUMN_TYPE, rootAccount.getAccountType().name());
         contentValues.put(AccountEntry.COLUMN_HIDDEN, rootAccount.isHidden());
-        contentValues.put(AccountEntry.COLUMN_CURRENCY, rootAccount.getCommodity().getCurrencyCode());
         contentValues.put(AccountEntry.COLUMN_COMMODITY_UID, rootAccount.getCommodity().getUID());
         contentValues.put(AccountEntry.COLUMN_PLACEHOLDER, rootAccount.isPlaceholder());
         Timber.i("Creating ROOT account");

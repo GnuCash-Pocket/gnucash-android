@@ -398,7 +398,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
     }
 
     /**
-     * Selects the currency with code <code>currencyCode</code> in the spinner
+     * Selects the currency in the spinner
      *
      * @param commodity the selected commodity
      */

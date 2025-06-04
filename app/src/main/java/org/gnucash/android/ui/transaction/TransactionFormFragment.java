@@ -60,7 +60,6 @@ import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.databinding.FragmentTransactionFormBinding;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.db.adapter.PricesDbAdapter;
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
@@ -190,8 +189,6 @@ public class TransactionFormFragment extends MenuFragment implements
 
     @Nullable
     private FragmentTransactionFormBinding mBinding;
-
-    private final CommoditiesDbAdapter commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
 
     /**
      * Create the view and retrieve references to the UI elements

@@ -419,7 +419,6 @@ public class AccountsActivity extends BaseDrawerActivity implements
                 public void onBookImported(@Nullable String bookUID) {
                     Commodity currency = CommoditiesDbAdapter.getInstance().getCommodity(currencyCode);
                     if (currency != null) {
-                        AccountsDbAdapter.getInstance().updateAllAccounts(DatabaseSchema.AccountEntry.COLUMN_CURRENCY, currencyCode);
                         AccountsDbAdapter.getInstance().updateAllAccounts(DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID, currency.getUID());
                         GnuCashApplication.setDefaultCurrencyCode(activity, currencyCode);
                     }
