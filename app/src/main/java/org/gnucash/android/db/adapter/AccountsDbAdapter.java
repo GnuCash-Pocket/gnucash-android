@@ -18,7 +18,7 @@
 package org.gnucash.android.db.adapter;
 
 import static org.gnucash.android.db.DatabaseExtKt.getBigDecimal;
-import static org.gnucash.android.db.DatabaseHelper.escapeForLike;
+import static org.gnucash.android.db.DatabaseHelper.sqlEscapeLike;
 import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import static org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry;
 import static org.gnucash.android.db.DatabaseSchema.BudgetEntry;
@@ -1009,7 +1009,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
                 + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " = ?)";
             selectionArgs = new String[]{AccountType.ROOT.name(), getOrCreateGnuCashRootAccountUID()};
         } else {
-            selection += " AND (" + AccountEntry.COLUMN_NAME + " LIKE '%" + escapeForLike(filterName) + "%')";
+            selection += " AND (" + AccountEntry.COLUMN_NAME + " LIKE " + sqlEscapeLike(filterName) + ")";
             selectionArgs = new String[]{AccountType.ROOT.name()};
         }
         return fetchAccounts(selection, selectionArgs, null);
@@ -1023,7 +1023,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     public Cursor fetchRecentAccounts(int numberOfRecent, @Nullable String filterName) {
         String selection = AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_HIDDEN + " = 0";
         if (!TextUtils.isEmpty(filterName)) {
-            selection += " AND (" + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_NAME + " LIKE '%" + escapeForLike(filterName) + "%')";
+            selection += " AND (" + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_NAME + " LIKE " + sqlEscapeLike(filterName) + ")";
         }
         return mDb.query(TransactionEntry.TABLE_NAME
                 + " LEFT OUTER JOIN " + SplitEntry.TABLE_NAME + " ON "
@@ -1051,7 +1051,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         String selection = AccountEntry.COLUMN_HIDDEN + " = 0 AND "
             + AccountEntry.COLUMN_FAVORITE + "=1";
         if (!TextUtils.isEmpty(filterName)) {
-            selection += " AND (" + AccountEntry.COLUMN_NAME + " LIKE '%" + escapeForLike(filterName) + "%')";
+            selection += " AND (" + AccountEntry.COLUMN_NAME + " LIKE " + sqlEscapeLike(filterName) + ")";
         }
         return fetchAccounts(selection, null, null);
     }

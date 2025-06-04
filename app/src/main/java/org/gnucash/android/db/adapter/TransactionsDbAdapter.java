@@ -17,7 +17,7 @@
 
 package org.gnucash.android.db.adapter;
 
-import static org.gnucash.android.db.DatabaseHelper.escapeForLike;
+import static org.gnucash.android.db.DatabaseHelper.sqlEscapeLike;
 import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import static org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry;
 import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
@@ -541,8 +541,8 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         queryBuilder.setDistinct(true);
         String[] projectionIn = new String[]{TransactionEntry.TABLE_NAME + ".*"};
         String selection = "(" + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
-            + " OR " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + "=1 )"
-            + " AND " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_DESCRIPTION + " LIKE '" + escapeForLike(prefix) + "%'";
+            + " OR " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + " = 1)"
+            + " AND " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_DESCRIPTION + " LIKE " + sqlEscapeLike(prefix);
         String[] selectionArgs = new String[]{accountUID};
         String sortOrder = TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " DESC";
         String subquery = queryBuilder.buildQuery(projectionIn, selection, null, null, sortOrder, null);
