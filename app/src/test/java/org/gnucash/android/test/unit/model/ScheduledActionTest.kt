@@ -13,89 +13,81 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.test.unit.model
 
-package org.gnucash.android.test.unit.model;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.gnucash.android.model.PeriodType;
-import org.gnucash.android.model.Recurrence;
-import org.gnucash.android.model.ScheduledAction;
-import org.joda.time.DateTime;
-import org.joda.time.LocalDateTime;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-
-import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-
+import org.assertj.core.api.Assertions.assertThat
+import org.gnucash.android.model.PeriodType
+import org.gnucash.android.model.Recurrence
+import org.gnucash.android.model.ScheduledAction
+import org.gnucash.android.test.unit.GnuCashTest
+import org.joda.time.DateTime
+import org.joda.time.LocalDateTime
+import org.junit.Test
+import java.sql.Timestamp
+import java.util.Arrays
+import java.util.Calendar
 
 /**
  * Test scheduled actions
  */
-@RunWith(RobolectricTestRunner.class)
-public class ScheduledActionTest {
-
+class ScheduledActionTest : GnuCashTest() {
     @Test
-    public void settingStartTime_shouldSetRecurrenceStart() {
-        ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
-        long startTime = getTimeInMillis(2014, 8, 26);
-        scheduledAction.setStartTime(startTime);
-        assertThat(scheduledAction.getRecurrence()).isNull();
+    fun settingStartTime_shouldSetRecurrenceStart() {
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
+        val startTime = getTimeInMillis(2014, 8, 26)
+        scheduledAction.startTime = startTime
+        assertThat(scheduledAction.recurrence).isNull()
 
-        Recurrence recurrence = new Recurrence(PeriodType.MONTH);
-        assertThat(recurrence.getPeriodStart()).isNotEqualTo(startTime);
-        scheduledAction.setRecurrence(recurrence);
-        assertThat(recurrence.getPeriodStart()).isEqualTo(startTime);
+        val recurrence = Recurrence(PeriodType.MONTH)
+        assertThat(recurrence.periodStart).isNotEqualTo(startTime)
+        scheduledAction.setRecurrence(recurrence)
+        assertThat(recurrence.periodStart).isEqualTo(startTime)
 
-        long newStartTime = getTimeInMillis(2015, 6, 6);
-        scheduledAction.setStartTime(newStartTime);
-        assertThat(recurrence.getPeriodStart()).isEqualTo(newStartTime);
+        val newStartTime = getTimeInMillis(2015, 6, 6)
+        scheduledAction.startTime = newStartTime
+        assertThat(recurrence.periodStart).isEqualTo(newStartTime)
     }
 
     @Test
-    public void settingEndTime_shouldSetRecurrenceEnd() {
-        ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
-        long endTime = getTimeInMillis(2014, 8, 26);
-        scheduledAction.setEndTime(endTime);
-        assertThat(scheduledAction.getRecurrence()).isNull();
+    fun settingEndTime_shouldSetRecurrenceEnd() {
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
+        val endTime = getTimeInMillis(2014, 8, 26)
+        scheduledAction.endTime = endTime
+        assertThat(scheduledAction.recurrence).isNull()
 
-        Recurrence recurrence = new Recurrence(PeriodType.MONTH);
-        assertThat(recurrence.getPeriodEnd()).isNull();
-        scheduledAction.setRecurrence(recurrence);
-        assertThat(recurrence.getPeriodEnd()).isEqualTo(endTime);
+        val recurrence = Recurrence(PeriodType.MONTH)
+        assertThat(recurrence.periodEnd).isNull()
+        scheduledAction.setRecurrence(recurrence)
+        assertThat(recurrence.periodEnd).isEqualTo(endTime)
 
-        long newEndTime = getTimeInMillis(2015, 6, 6);
-        scheduledAction.setEndTime(newEndTime);
-        assertThat(recurrence.getPeriodEnd()).isEqualTo(newEndTime);
+        val newEndTime = getTimeInMillis(2015, 6, 6)
+        scheduledAction.endTime = newEndTime
+        assertThat(recurrence.periodEnd).isEqualTo(newEndTime)
     }
 
     @Test
-    public void settingRecurrence_shouldSetScheduledActionStartTime() {
-        ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
-        assertThat(scheduledAction.getStartTime()).isEqualTo(0);
+    fun settingRecurrence_shouldSetScheduledActionStartTime() {
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.BACKUP)
+        assertThat(scheduledAction.startTime).isEqualTo(0)
 
-        long startTime = getTimeInMillis(2014, 8, 26);
-        Recurrence recurrence = new Recurrence(PeriodType.WEEK);
-        recurrence.setPeriodStart(startTime);
-        scheduledAction.setRecurrence(recurrence);
-        assertThat(scheduledAction.getStartTime()).isEqualTo(startTime);
+        val startTime = getTimeInMillis(2014, 8, 26)
+        val recurrence = Recurrence(PeriodType.WEEK)
+        recurrence.periodStart = startTime
+        scheduledAction.setRecurrence(recurrence)
+        assertThat(scheduledAction.startTime).isEqualTo(startTime)
     }
 
     @Test
-    public void settingRecurrence_shouldSetEndTime() {
-        ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
-        assertThat(scheduledAction.getStartTime()).isEqualTo(0);
+    fun settingRecurrence_shouldSetEndTime() {
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.BACKUP)
+        assertThat(scheduledAction.startTime).isEqualTo(0)
 
-        long endTime = getTimeInMillis(2017, 8, 26);
-        Recurrence recurrence = new Recurrence(PeriodType.WEEK);
-        recurrence.setPeriodEnd(new Timestamp(endTime));
-        scheduledAction.setRecurrence(recurrence);
+        val endTime = getTimeInMillis(2017, 8, 26)
+        val recurrence = Recurrence(PeriodType.WEEK)
+        recurrence.setPeriodEnd(Timestamp(endTime))
+        scheduledAction.setRecurrence(recurrence)
 
-        assertThat(scheduledAction.getEndTime()).isEqualTo(endTime);
+        assertThat(scheduledAction.endTime).isEqualTo(endTime)
     }
 
     /**
@@ -103,61 +95,63 @@ public class ScheduledActionTest {
      * and the last time the action was run
      */
     @Test
-    public void testComputingNextScheduledExecution() {
-        ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
-        PeriodType periodType = PeriodType.MONTH;
+    fun testComputingNextScheduledExecution() {
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
+        val periodType = PeriodType.MONTH
 
-        Recurrence recurrence = new Recurrence(periodType);
-        recurrence.setMultiplier(2);
-        DateTime startDate = new DateTime(2015, 8, 15, 12, 0);
-        recurrence.setPeriodStart(startDate.getMillis());
-        scheduledAction.setRecurrence(recurrence);
+        val recurrence = Recurrence(periodType)
+        recurrence.multiplier = 2
+        val startDate = DateTime(2015, 8, 15, 12, 0)
+        recurrence.periodStart = startDate.millis
+        scheduledAction.setRecurrence(recurrence)
 
-        assertThat(scheduledAction.computeNextCountBasedScheduledExecutionTime()).isEqualTo(startDate.getMillis());
+        assertThat(scheduledAction.computeNextCountBasedScheduledExecutionTime())
+            .isEqualTo(startDate.millis)
 
-        scheduledAction.setExecutionCount(3);
-        DateTime expectedTime = new DateTime(2016, 2, 15, 12, 0);
-        assertThat(scheduledAction.computeNextCountBasedScheduledExecutionTime()).isEqualTo(expectedTime.getMillis());
+        scheduledAction.executionCount = 3
+        val expectedTime = DateTime(2016, 2, 15, 12, 0)
+        assertThat(scheduledAction.computeNextCountBasedScheduledExecutionTime())
+            .isEqualTo(expectedTime.millis)
     }
 
     @Test
-    public void testComputingTimeOfLastSchedule() {
-        ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
-        PeriodType periodType = PeriodType.WEEK;
-        Recurrence recurrence = new Recurrence(periodType);
-        recurrence.setMultiplier(2);
-        scheduledAction.setRecurrence(recurrence);
-        DateTime startDate = new DateTime(2016, 6, 6, 9, 0);
-        scheduledAction.setStartTime(startDate.getMillis());
+    fun testComputingTimeOfLastSchedule() {
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
+        val periodType = PeriodType.WEEK
+        val recurrence = Recurrence(periodType)
+        recurrence.multiplier = 2
+        scheduledAction.setRecurrence(recurrence)
+        val startDate = DateTime(2016, 6, 6, 9, 0)
+        scheduledAction.startTime = startDate.millis
 
-        assertThat(scheduledAction.getTimeOfLastSchedule()).isEqualTo(-1L);
+        assertThat(scheduledAction.timeOfLastSchedule).isEqualTo(-1L)
 
-        scheduledAction.setExecutionCount(3);
-        DateTime expectedDate = new DateTime(2016, 7, 4, 9, 0);
-        assertThat(scheduledAction.getTimeOfLastSchedule()).isEqualTo(expectedDate.getMillis());
-
+        scheduledAction.executionCount = 3
+        val expectedDate = DateTime(2016, 7, 4, 9, 0)
+        assertThat(scheduledAction.timeOfLastSchedule).isEqualTo(expectedDate.millis)
     }
 
     /**
      * Weekly actions scheduled to run on multiple days of the week should be due
      * in each of them in the same week.
-     * <p>
+     *
+     *
      * For an action scheduled on Mondays and Thursdays, we test that, if
      * the last run was on Monday, the next should be due on the Thursday
      * of the same week instead of the following week.
      */
     @Test
-    public void multiDayOfWeekWeeklyActions_shouldBeDueOnEachDayOfWeekSet() {
-        ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
-        Recurrence recurrence = new Recurrence(PeriodType.WEEK);
-        recurrence.setByDays(Arrays.asList(Calendar.MONDAY, Calendar.THURSDAY));
-        scheduledAction.setRecurrence(recurrence);
-        scheduledAction.setStartTime(new DateTime(2016, 6, 6, 9, 0).getMillis());
-        scheduledAction.setLastRunTime(new DateTime(2017, 4, 17, 9, 0).getMillis()); // Monday
+    fun multiDayOfWeekWeeklyActions_shouldBeDueOnEachDayOfWeekSet() {
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.BACKUP)
+        val recurrence = Recurrence(PeriodType.WEEK)
+        recurrence.byDays = Arrays.asList(Calendar.MONDAY, Calendar.THURSDAY)
+        scheduledAction.setRecurrence(recurrence)
+        scheduledAction.startTime = DateTime(2016, 6, 6, 9, 0).millis
+        scheduledAction.lastRunTime = DateTime(2017, 4, 17, 9, 0).millis // Monday
 
-        long expectedNextDueDate = new DateTime(2017, 4, 20, 9, 0).getMillis(); // Thursday
+        val expectedNextDueDate = DateTime(2017, 4, 20, 9, 0).millis // Thursday
         assertThat(scheduledAction.computeNextTimeBasedScheduledExecutionTime())
-            .isEqualTo(expectedNextDueDate);
+            .isEqualTo(expectedNextDueDate)
     }
 
     /**
@@ -165,46 +159,46 @@ public class ScheduledActionTest {
      * weeks and be due in the specified day of the week.
      */
     @Test
-    public void weeklyActionsWithMultiplier_shouldBeDueOnTheDayOfWeekSet() {
-        ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
-        Recurrence recurrence = new Recurrence(PeriodType.WEEK);
-        recurrence.setMultiplier(2);
-        recurrence.setByDays(Collections.singletonList(Calendar.WEDNESDAY));
-        scheduledAction.setRecurrence(recurrence);
-        scheduledAction.setStartTime(new DateTime(2016, 6, 6, 9, 0).getMillis());
-        scheduledAction.setLastRunTime(new DateTime(2017, 4, 12, 9, 0).getMillis()); // Wednesday
+    fun weeklyActionsWithMultiplier_shouldBeDueOnTheDayOfWeekSet() {
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.BACKUP)
+        val recurrence = Recurrence(PeriodType.WEEK)
+        recurrence.multiplier = 2
+        recurrence.byDays = listOf(Calendar.WEDNESDAY)
+        scheduledAction.setRecurrence(recurrence)
+        scheduledAction.startTime = DateTime(2016, 6, 6, 9, 0).millis
+        scheduledAction.lastRunTime = DateTime(2017, 4, 12, 9, 0).millis // Wednesday
 
         // Wednesday, 2 weeks after the last run
-        long expectedNextDueDate = new DateTime(2017, 4, 26, 9, 0).getMillis();
+        val expectedNextDueDate = DateTime(2017, 4, 26, 9, 0).millis
         assertThat(scheduledAction.computeNextTimeBasedScheduledExecutionTime())
-            .isEqualTo(expectedNextDueDate);
+            .isEqualTo(expectedNextDueDate)
     }
 
     /**
      * Weekly actions should return a date in the future when no
      * days of the week have been set in the recurrence.
-     * <p>
+     *
+     *
      * See ScheduledAction.computeNextTimeBasedScheduledExecutionTime()
      */
     @Test
-    public void weeklyActionsWithoutDayOfWeekSet_shouldReturnDateInTheFuture() {
-        ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
-        Recurrence recurrence = new Recurrence(PeriodType.WEEK);
-        recurrence.setByDays(Collections.emptyList());
-        scheduledAction.setRecurrence(recurrence);
-        scheduledAction.setStartTime(new DateTime(2016, 6, 6, 9, 0).getMillis());
-        scheduledAction.setLastRunTime(new DateTime(2017, 4, 12, 9, 0).getMillis());
+    fun weeklyActionsWithoutDayOfWeekSet_shouldReturnDateInTheFuture() {
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.BACKUP)
+        val recurrence = Recurrence(PeriodType.WEEK)
+        recurrence.byDays = emptyList()
+        scheduledAction.setRecurrence(recurrence)
+        scheduledAction.startTime = DateTime(2016, 6, 6, 9, 0).millis
+        scheduledAction.lastRunTime = DateTime(2017, 4, 12, 9, 0).millis
 
-        long now = LocalDateTime.now().toDateTime().getMillis();
-        assertThat(scheduledAction.computeNextTimeBasedScheduledExecutionTime()).isGreaterThan(now);
+        val now = LocalDateTime.now().toDateTime().millis
+        assertThat(scheduledAction.computeNextTimeBasedScheduledExecutionTime())
+            .isGreaterThan(now)
     }
 
-    private long getTimeInMillis(int year, int month, int day) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(year, month, day);
-        calendar.set(Calendar.MILLISECOND, 0);
-        return calendar.getTimeInMillis();
-    }
-
-    //todo add test for computing the scheduledaction endtime from the recurrence count
+    private fun getTimeInMillis(year: Int, month: Int, day: Int): Long {
+        val calendar = Calendar.getInstance()
+        calendar[year, month] = day
+        calendar[Calendar.MILLISECOND] = 0
+        return calendar.timeInMillis
+    } //todo add test for computing the scheduledaction endtime from the recurrence count
 }

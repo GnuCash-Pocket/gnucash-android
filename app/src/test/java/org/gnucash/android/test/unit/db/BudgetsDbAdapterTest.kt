@@ -13,157 +13,157 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.test.unit.db;
+package org.gnucash.android.test.unit.db
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import androidx.annotation.NonNull;
-
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.BudgetAmountsDbAdapter;
-import org.gnucash.android.db.adapter.BudgetsDbAdapter;
-import org.gnucash.android.db.adapter.RecurrenceDbAdapter;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.Budget;
-import org.gnucash.android.model.BudgetAmount;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.model.PeriodType;
-import org.gnucash.android.model.Recurrence;
-import org.gnucash.android.test.unit.GnuCashTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.assertj.core.api.Assertions.assertThat
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.BudgetAmountsDbAdapter
+import org.gnucash.android.db.adapter.BudgetsDbAdapter
+import org.gnucash.android.db.adapter.RecurrenceDbAdapter
+import org.gnucash.android.model.Account
+import org.gnucash.android.model.Budget
+import org.gnucash.android.model.BudgetAmount
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.model.Money
+import org.gnucash.android.model.Money.Companion.createZeroInstance
+import org.gnucash.android.model.PeriodType
+import org.gnucash.android.model.Recurrence
+import org.gnucash.android.test.unit.GnuCashTest
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 
 /**
  * Tests for the budgets database adapter
  */
-public class BudgetsDbAdapterTest extends GnuCashTest {
+class BudgetsDbAdapterTest : GnuCashTest() {
+    private lateinit var budgetsDbAdapter: BudgetsDbAdapter
+    private lateinit var recurrenceDbAdapter: RecurrenceDbAdapter
+    private lateinit var budgetAmountsDbAdapter: BudgetAmountsDbAdapter
+    private lateinit var accountsDbAdapter: AccountsDbAdapter
 
-    private BudgetsDbAdapter mBudgetsDbAdapter;
-    private RecurrenceDbAdapter mRecurrenceDbAdapter;
-    private BudgetAmountsDbAdapter mBudgetAmountsDbAdapter;
-    private AccountsDbAdapter mAccountsDbAdapter;
-
-    private Account mAccount;
-    private Account mSecondAccount;
+    private lateinit var account: Account
+    private lateinit var secondAccount: Account
 
     @Before
-    public void setUp() {
-        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-        mBudgetsDbAdapter = BudgetsDbAdapter.getInstance();
-        mBudgetAmountsDbAdapter = mBudgetsDbAdapter.budgetAmountsDbAdapter;
-        mRecurrenceDbAdapter = RecurrenceDbAdapter.getInstance();
+    fun setUp() {
+        accountsDbAdapter = AccountsDbAdapter.getInstance()
+        budgetsDbAdapter = BudgetsDbAdapter.getInstance()
+        budgetAmountsDbAdapter = budgetsDbAdapter.budgetAmountsDbAdapter
+        recurrenceDbAdapter = RecurrenceDbAdapter.getInstance()
 
-        mAccount = new Account("Budgeted account");
-        mSecondAccount = new Account("Another account");
-        mAccountsDbAdapter.addRecord(mAccount);
-        mAccountsDbAdapter.addRecord(mSecondAccount);
+        account = Account("Budgeted account")
+        secondAccount = Account("Another account")
+        accountsDbAdapter.addRecord(account)
+        accountsDbAdapter.addRecord(secondAccount)
     }
 
     @After
-    public void tearDown() {
-        mBudgetsDbAdapter.deleteAllRecords();
-        mBudgetAmountsDbAdapter.deleteAllRecords();
-        mRecurrenceDbAdapter.deleteAllRecords();
+    fun tearDown() {
+        budgetsDbAdapter.deleteAllRecords()
+        budgetAmountsDbAdapter.deleteAllRecords()
+        recurrenceDbAdapter.deleteAllRecords()
     }
 
     @Test
-    public void testAddingBudget() {
-        assertThat(mBudgetsDbAdapter.getRecordsCount()).isZero();
-        assertThat(mBudgetAmountsDbAdapter.getRecordsCount()).isZero();
-        assertThat(mRecurrenceDbAdapter.getRecordsCount()).isZero();
-        Commodity defaultCurrency = Commodity.DEFAULT_COMMODITY;
+    fun testAddingBudget() {
+        assertThat(budgetsDbAdapter.recordsCount).isZero()
+        assertThat(budgetAmountsDbAdapter.recordsCount).isZero()
+        assertThat(recurrenceDbAdapter.recordsCount).isZero()
+        val defaultCurrency = Commodity.DEFAULT_COMMODITY
 
-        Budget budget = new Budget("Test");
-        budget.addAmount(new BudgetAmount(Money.createZeroInstance(mAccount.getCommodity()), mAccount.getUID()));
-        budget.addAmount(new BudgetAmount(new Money("10", defaultCurrency), mSecondAccount.getUID()));
-        Recurrence recurrence = new Recurrence(PeriodType.MONTH);
-        budget.setRecurrence(recurrence);
+        val budget = Budget("Test")
+        budget.addAmount(BudgetAmount(createZeroInstance(account.commodity), account.uid))
+        budget.addAmount(BudgetAmount(Money("10", defaultCurrency), secondAccount.uid))
+        val recurrence = Recurrence(PeriodType.MONTH)
+        budget.recurrence = recurrence
 
-        mBudgetsDbAdapter.addRecord(budget);
-        assertThat(mBudgetsDbAdapter.getRecordsCount()).isEqualTo(1);
-        assertThat(mBudgetAmountsDbAdapter.getRecordsCount()).isEqualTo(2);
-        assertThat(mRecurrenceDbAdapter.getRecordsCount()).isEqualTo(1);
+        budgetsDbAdapter.addRecord(budget)
+        assertThat(budgetsDbAdapter.recordsCount).isEqualTo(1)
+        assertThat(budgetAmountsDbAdapter.recordsCount).isEqualTo(2)
+        assertThat(recurrenceDbAdapter.recordsCount).isEqualTo(1)
 
-        budget.clearBudgetAmounts();
-        BudgetAmount budgetAmount = new BudgetAmount(new Money("5", defaultCurrency), mAccount.getUID());
-        budget.addAmount(budgetAmount);
-        mBudgetsDbAdapter.addRecord(budget);
+        budget.clearBudgetAmounts()
+        val budgetAmount = BudgetAmount(Money("5", defaultCurrency), account.uid)
+        budget.addAmount(budgetAmount)
+        budgetsDbAdapter.addRecord(budget)
 
-        assertThat(mBudgetAmountsDbAdapter.getRecordsCount()).isEqualTo(1);
-        assertThat(mBudgetAmountsDbAdapter.getAllRecords().get(0).getUID()).isEqualTo(budgetAmount.getUID());
+        assertThat(budgetAmountsDbAdapter.recordsCount).isEqualTo(1)
+        assertThat(budgetAmountsDbAdapter.allRecords[0].uid).isEqualTo(budgetAmount.uid)
     }
 
     /**
      * Test that when bulk adding budgets, all the associated budgetAmounts and recurrences are saved
      */
     @Test
-    public void testBulkAddBudgets() {
-        assertThat(mBudgetsDbAdapter.getRecordsCount()).isZero();
-        assertThat(mBudgetAmountsDbAdapter.getRecordsCount()).isZero();
-        assertThat(mRecurrenceDbAdapter.getRecordsCount()).isZero();
+    fun testBulkAddBudgets() {
+        assertThat(budgetsDbAdapter.recordsCount).isZero()
+        assertThat(budgetAmountsDbAdapter.recordsCount).isZero()
+        assertThat(recurrenceDbAdapter.recordsCount).isZero()
 
-        List<Budget> budgets = bulkCreateBudgets();
+        val budgets = bulkCreateBudgets()
 
-        mBudgetsDbAdapter.bulkAddRecords(budgets);
+        budgetsDbAdapter.bulkAddRecords(budgets)
 
-        assertThat(mBudgetsDbAdapter.getRecordsCount()).isEqualTo(2);
-        assertThat(mBudgetAmountsDbAdapter.getRecordsCount()).isEqualTo(3);
-        assertThat(mRecurrenceDbAdapter.getRecordsCount()).isEqualTo(2);
-
+        assertThat(budgetsDbAdapter.recordsCount).isEqualTo(2)
+        assertThat(budgetAmountsDbAdapter.recordsCount).isEqualTo(3)
+        assertThat(recurrenceDbAdapter.recordsCount).isEqualTo(2)
     }
 
     @Test
-    public void testGetAccountBudgets() {
-        mBudgetsDbAdapter.bulkAddRecords(bulkCreateBudgets());
+    fun testGetAccountBudgets() {
+        budgetsDbAdapter.bulkAddRecords(bulkCreateBudgets())
 
-        List<Budget> budgets = mBudgetsDbAdapter.getAccountBudgets(mAccount.getUID());
-        assertThat(budgets).hasSize(2);
+        val budgets = budgetsDbAdapter.getAccountBudgets(account.uid)
+        assertThat(budgets).hasSize(2)
 
-        assertThat(mBudgetsDbAdapter.getAccountBudgets(mSecondAccount.getUID())).hasSize(1);
+        assertThat(budgetsDbAdapter.getAccountBudgets(secondAccount.uid)).hasSize(1)
     }
 
-    @NonNull
-    private List<Budget> bulkCreateBudgets() {
-        List<Budget> budgets = new ArrayList<>();
-        Budget budget = new Budget("", new Recurrence(PeriodType.MONTH));
-        budget.addAmount(new BudgetAmount(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), mAccount.getUID()));
-        budgets.add(budget);
+    private fun bulkCreateBudgets(): List<Budget> {
+        val budgets: MutableList<Budget> = ArrayList()
+        var budget = Budget("", Recurrence(PeriodType.MONTH))
+        budget.addAmount(
+            BudgetAmount(createZeroInstance(Commodity.DEFAULT_COMMODITY), account.uid)
+        )
+        budgets.add(budget)
 
-        String defaultCurrencyCode = Commodity.DEFAULT_COMMODITY.getCurrencyCode();
-        budget = new Budget("Random", new Recurrence(PeriodType.WEEK));
-        budget.addAmount(new BudgetAmount(new Money("10.50", defaultCurrencyCode), mAccount.getUID()));
-        budget.addAmount(new BudgetAmount(new Money("32.35", defaultCurrencyCode), mSecondAccount.getUID()));
+        val defaultCurrencyCode = Commodity.DEFAULT_COMMODITY.currencyCode
+        budget = Budget("Random", Recurrence(PeriodType.WEEK))
+        budget.addAmount(BudgetAmount(Money("10.50", defaultCurrencyCode), account.uid))
+        budget.addAmount(
+            BudgetAmount(Money("32.35", defaultCurrencyCode), secondAccount.uid)
+        )
 
-        budgets.add(budget);
-        return budgets;
+        budgets.add(budget)
+        return budgets
     }
 
-    @Test(expected = NullPointerException.class)
-    public void savingBudget_shouldRequireExistingAccount() {
-        Budget budget = new Budget("");
-        budget.addAmount(new BudgetAmount(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), "unknown-account"));
+    @Test(expected = NullPointerException::class)
+    fun savingBudget_shouldRequireExistingAccount() {
+        val budget = Budget("")
+        budget.addAmount(
+            BudgetAmount(createZeroInstance(Commodity.DEFAULT_COMMODITY), "unknown-account")
+        )
 
-        mBudgetsDbAdapter.addRecord(budget);
+        budgetsDbAdapter.addRecord(budget)
     }
 
-    @Test(expected = NullPointerException.class)
-    public void savingBudget_shouldRequireRecurrence() {
-        Budget budget = new Budget("");
-        budget.addAmount(new BudgetAmount(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), mAccount.getUID()));
+    @Test(expected = NullPointerException::class)
+    fun savingBudget_shouldRequireRecurrence() {
+        val budget = Budget("")
+        budget.addAmount(
+            BudgetAmount(createZeroInstance(Commodity.DEFAULT_COMMODITY), account.uid)
+        )
 
-        mBudgetsDbAdapter.addRecord(budget);
+        budgetsDbAdapter.addRecord(budget)
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void savingBudget_shouldRequireBudgetAmount() {
-        Budget budget = new Budget("");
-        budget.setRecurrence(new Recurrence(PeriodType.MONTH));
+    @Test(expected = IllegalArgumentException::class)
+    fun savingBudget_shouldRequireBudgetAmount() {
+        val budget = Budget("")
+        budget.recurrence = Recurrence(PeriodType.MONTH)
 
-        mBudgetsDbAdapter.addRecord(budget);
+        budgetsDbAdapter.addRecord(budget)
     }
 }

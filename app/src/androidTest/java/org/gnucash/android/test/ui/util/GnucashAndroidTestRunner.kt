@@ -13,92 +13,101 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.test.ui.util
 
-package org.gnucash.android.test.ui.util;
-
-import android.content.pm.PackageManager;
-import android.os.Bundle;
-import android.os.IBinder;
-
-import androidx.test.runner.AndroidJUnitRunner;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
-import timber.log.Timber;
+import android.content.pm.PackageManager
+import android.os.Bundle
+import android.os.IBinder
+import androidx.test.runner.AndroidJUnitRunner
+import timber.log.Timber
+import java.lang.reflect.InvocationTargetException
 
 /**
  * Custom test runner
  */
-public class GnucashAndroidTestRunner extends AndroidJUnitRunner {
-
-    private static final String ANIMATION_PERMISSION = "android.permission.SET_ANIMATION_SCALE";
-    private static final float DISABLED = 0.0f;
-    private static final float DEFAULT = 1.0f;
-
-    @Override
-    public void onCreate(Bundle args) {
-        super.onCreate(args);
+@Suppress("unused")
+class GnucashAndroidTestRunner : AndroidJUnitRunner() {
+    override fun onCreate(args: Bundle) {
+        super.onCreate(args)
         // as time goes on we may actually need to process our arguments.
-        disableAnimation();
-
+        disableAnimation()
     }
 
-    @Override
-    public void onDestroy() {
-        enableAnimation();
-        super.onDestroy();
+    override fun onDestroy() {
+        enableAnimation()
+        super.onDestroy()
     }
 
-    private void disableAnimation() {
-        int permStatus = getContext().checkCallingOrSelfPermission(ANIMATION_PERMISSION);
+    private fun disableAnimation() {
+        val permStatus = context.checkCallingOrSelfPermission(ANIMATION_PERMISSION)
         if (permStatus == PackageManager.PERMISSION_GRANTED) {
             if (reflectivelyDisableAnimation(DISABLED)) {
-                Timber.i("All animations disabled.");
+                Timber.i("All animations disabled.")
             } else {
-                Timber.i("Could not disable animations.");
+                Timber.i("Could not disable animations.")
             }
         } else {
-            Timber.i("Cannot disable animations due to lack of permission.");
+            Timber.i("Cannot disable animations due to lack of permission.")
         }
     }
 
-    private void enableAnimation() {
-        int permStatus = getContext().checkCallingOrSelfPermission(ANIMATION_PERMISSION);
+    private fun enableAnimation() {
+        val permStatus = context.checkCallingOrSelfPermission(ANIMATION_PERMISSION)
         if (permStatus == PackageManager.PERMISSION_GRANTED) {
             if (reflectivelyDisableAnimation(DEFAULT)) {
-                Timber.i("All animations enabled.");
+                Timber.i("All animations enabled.")
             } else {
-                Timber.i("Could not enable animations.");
+                Timber.i("Could not enable animations.")
             }
         } else {
-            Timber.i("Cannot disable animations due to lack of permission.");
+            Timber.i("Cannot disable animations due to lack of permission.")
         }
     }
 
-    private boolean reflectivelyDisableAnimation(float animationScale) {
+    private fun reflectivelyDisableAnimation(animationScale: Float): Boolean {
         try {
-            Class<?> windowManagerStubClazz = Class.forName("android.view.IWindowManager$Stub");
-            Method asInterface = windowManagerStubClazz.getDeclaredMethod("asInterface", IBinder.class);
-            Class<?> serviceManagerClazz = Class.forName("android.os.ServiceManager");
-            Method getService = serviceManagerClazz.getDeclaredMethod("getService", String.class);
-            Class<?> windowManagerClazz = Class.forName("android.view.IWindowManager");
-            Method setAnimationScales = windowManagerClazz.getDeclaredMethod("setAnimationScales",
-                float[].class);
-            Method getAnimationScales = windowManagerClazz.getDeclaredMethod("getAnimationScales");
+            val windowManagerStubClazz = Class.forName("android.view.IWindowManager\$Stub")
+            val asInterface = windowManagerStubClazz.getDeclaredMethod(
+                "asInterface",
+                IBinder::class.java
+            )
+            val serviceManagerClazz = Class.forName("android.os.ServiceManager")
+            val getService = serviceManagerClazz.getDeclaredMethod(
+                "getService",
+                String::class.java
+            )
+            val windowManagerClazz = Class.forName("android.view.IWindowManager")
+            val setAnimationScales = windowManagerClazz.getDeclaredMethod(
+                "setAnimationScales",
+                FloatArray::class.java
+            )
+            val getAnimationScales = windowManagerClazz.getDeclaredMethod("getAnimationScales")
 
-            IBinder windowManagerBinder = (IBinder) getService.invoke(null, "window");
-            Object windowManagerObj = asInterface.invoke(null, windowManagerBinder);
-            float[] currentScales = (float[]) getAnimationScales.invoke(windowManagerObj);
-            for (int i = 0; i < currentScales.length; i++) {
-                currentScales[i] = animationScale;
+            val windowManagerBinder = getService.invoke(null, "window") as IBinder
+            val windowManagerObj = asInterface.invoke(null, windowManagerBinder)
+            val currentScales = getAnimationScales.invoke(windowManagerObj) as Array<Float>
+            for (i in currentScales.indices) {
+                currentScales[i] = animationScale
             }
-            setAnimationScales.invoke(windowManagerObj, currentScales);
-            return true;
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException |
-                 ClassNotFoundException | RuntimeException e) {
-            Timber.w(e, "Cannot disable animations reflectively.");
+            setAnimationScales.invoke(windowManagerObj, *currentScales)
+            return true
+        } catch (e: NoSuchMethodException) {
+            Timber.w(e, "Cannot disable animations reflectively.")
+        } catch (e: InvocationTargetException) {
+            Timber.w(e, "Cannot disable animations reflectively.")
+        } catch (e: IllegalAccessException) {
+            Timber.w(e, "Cannot disable animations reflectively.")
+        } catch (e: ClassNotFoundException) {
+            Timber.w(e, "Cannot disable animations reflectively.")
+        } catch (e: RuntimeException) {
+            Timber.w(e, "Cannot disable animations reflectively.")
         }
-        return false;
+        return false
+    }
+
+    companion object {
+        private const val ANIMATION_PERMISSION = "android.permission.SET_ANIMATION_SCALE"
+        private const val DISABLED = 0.0f
+        private const val DEFAULT = 1.0f
     }
 }

@@ -13,134 +13,131 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.test.unit.db;
+package org.gnucash.android.test.unit.db
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.data.Index
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.SplitsDbAdapter
+import org.gnucash.android.db.adapter.TransactionsDbAdapter
+import org.gnucash.android.model.Account
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.model.Money
+import org.gnucash.android.model.Money.Companion.createZeroInstance
+import org.gnucash.android.model.Split
+import org.gnucash.android.model.Transaction
+import org.gnucash.android.test.unit.GnuCashTest
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import java.math.BigDecimal
 
-import android.content.Context;
-
-import org.assertj.core.data.Index;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.SplitsDbAdapter;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.model.Split;
-import org.gnucash.android.model.Transaction;
-import org.gnucash.android.test.unit.GnuCashTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-public class TransactionsDbAdapterTest extends GnuCashTest {
-    private static final String ALPHA_ACCOUNT_NAME = "Alpha";
-    private static final String BRAVO_ACCOUNT_NAME = "Bravo";
-
-    private AccountsDbAdapter mAccountsDbAdapter;
-    private TransactionsDbAdapter mTransactionsDbAdapter;
-    private SplitsDbAdapter mSplitsDbAdapter;
-    private Account alphaAccount;
-    private Account bravoAccount;
-
-    private Split mTestSplit;
+class TransactionsDbAdapterTest : GnuCashTest() {
+    private lateinit var accountsDbAdapter: AccountsDbAdapter
+    private lateinit var transactionsDbAdapter: TransactionsDbAdapter
+    private lateinit var splitsDbAdapter: SplitsDbAdapter
+    private lateinit var alphaAccount: Account
+    private lateinit var bravoAccount: Account
+    private lateinit var testSplit: Split
 
     @Before
-    public void setUp() throws Exception {
-        mSplitsDbAdapter = SplitsDbAdapter.getInstance();
-        mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
-        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+    fun setUp() {
+        splitsDbAdapter = SplitsDbAdapter.getInstance()
+        transactionsDbAdapter = TransactionsDbAdapter.getInstance()
+        accountsDbAdapter = AccountsDbAdapter.getInstance()
 
-        alphaAccount = new Account(ALPHA_ACCOUNT_NAME);
-        bravoAccount = new Account(BRAVO_ACCOUNT_NAME);
+        alphaAccount = Account(ALPHA_ACCOUNT_NAME)
+        bravoAccount = Account(BRAVO_ACCOUNT_NAME)
 
-        mAccountsDbAdapter.addRecord(bravoAccount);
-        mAccountsDbAdapter.addRecord(alphaAccount);
+        accountsDbAdapter.addRecord(bravoAccount)
+        accountsDbAdapter.addRecord(alphaAccount)
 
-        mTestSplit = new Split(new Money(BigDecimal.TEN, alphaAccount.getCommodity()), alphaAccount.getUID());
-    }
-
-    @Test
-    public void testTransactionsAreTimeSorted() {
-        Transaction t1 = new Transaction("T800");
-        t1.setTime(System.currentTimeMillis() - 10000);
-        Split split = new Split(Money.createZeroInstance(alphaAccount.getCommodity()), alphaAccount.getUID());
-        t1.addSplit(split);
-        t1.addSplit(split.createPair(bravoAccount.getUID()));
-
-        Transaction t2 = new Transaction("T1000");
-        t2.setTime(System.currentTimeMillis());
-        Split split2 = new Split(new Money("23.50", bravoAccount.getCommodity()), bravoAccount.getUID());
-        t2.addSplit(split2);
-        t2.addSplit(split2.createPair(alphaAccount.getUID()));
-
-        mTransactionsDbAdapter.addRecord(t1);
-        mTransactionsDbAdapter.addRecord(t2);
-
-        List<Transaction> transactionsList = mTransactionsDbAdapter.getAllTransactionsForAccount(alphaAccount.getUID());
-        assertThat(transactionsList).contains(t2, Index.atIndex(0));
-        assertThat(transactionsList).contains(t1, Index.atIndex(1));
-    }
-
-    @Test
-    public void deletingTransactionsShouldDeleteSplits() {
-        Transaction transaction = new Transaction("");
-        Split split = new Split(Money.createZeroInstance(alphaAccount.getCommodity()), alphaAccount.getUID());
-        transaction.addSplit(split);
-        mTransactionsDbAdapter.addRecord(transaction);
-
-        assertThat(mSplitsDbAdapter.getSplitsForTransaction(transaction.getUID())).hasSize(1);
-
-        mTransactionsDbAdapter.deleteRecord(transaction.getUID());
-        assertThat(mSplitsDbAdapter.getSplitsForTransaction(transaction.getUID())).isEmpty();
-    }
-
-    @Test
-    public void shouldBalanceTransactionsOnSave() {
-        Context context = GnuCashApplication.getAppContext();
-        Transaction transaction = new Transaction("Auto balance");
-        Split split = new Split(new Money(BigDecimal.TEN, alphaAccount.getCommodity()),
-            alphaAccount.getUID());
-
-        transaction.addSplit(split);
-
-        mTransactionsDbAdapter.addRecord(transaction);
-
-        Transaction trn = mTransactionsDbAdapter.getRecord(transaction.getUID());
-        assertThat(trn.getSplits()).hasSize(2);
-
-        String imbalanceAccountUID = mAccountsDbAdapter.getImbalanceAccountUID(context, Commodity.DEFAULT_COMMODITY);
-        assertThat(trn.getSplits()).extracting("accountUID").contains(imbalanceAccountUID);
-    }
-
-    @Test
-    public void testComputeBalance() {
-        Transaction transaction = new Transaction("Compute");
-        Money firstSplitAmount = new Money("4.99", alphaAccount.getCommodity());
-        Split split = new Split(firstSplitAmount, alphaAccount.getUID());
-        transaction.addSplit(split);
-        Money secondSplitAmount = new Money("3.50", bravoAccount.getCommodity());
-        split = new Split(secondSplitAmount, bravoAccount.getUID());
-        transaction.addSplit(split);
-
-        mTransactionsDbAdapter.addRecord(transaction);
-
-        //balance is negated because the CASH account has inverse normal balance
-        transaction = mTransactionsDbAdapter.getRecord(transaction.getUID());
-        Money savedBalance = transaction.getBalance(alphaAccount);
-        assertThat(savedBalance).isEqualTo(firstSplitAmount.unaryMinus());
-
-        savedBalance = transaction.getBalance(bravoAccount);
-        assertThat(savedBalance).isEqualTo(secondSplitAmount.unaryMinus());
-        assertThat(savedBalance.getCommodity()).isEqualTo(secondSplitAmount.getCommodity());
+        testSplit = Split(Money(BigDecimal.TEN, alphaAccount.commodity), alphaAccount.uid)
     }
 
     @After
-    public void tearDown() throws Exception {
-        mAccountsDbAdapter.deleteAllRecords();
+    fun tearDown() {
+        accountsDbAdapter.deleteAllRecords()
+    }
+
+    @Test
+    fun testTransactionsAreTimeSorted() {
+        val t1 = Transaction("T800")
+        t1.setTime(System.currentTimeMillis() - 10000)
+        val split = Split(createZeroInstance(alphaAccount.commodity), alphaAccount.uid)
+        t1.addSplit(split)
+        t1.addSplit(split.createPair(bravoAccount.uid))
+
+        val t2 = Transaction("T1000")
+        t2.setTime(System.currentTimeMillis())
+        val split2 = Split(Money("23.50", bravoAccount.commodity), bravoAccount.uid)
+        t2.addSplit(split2)
+        t2.addSplit(split2.createPair(alphaAccount.uid))
+
+        transactionsDbAdapter.addRecord(t1)
+        transactionsDbAdapter.addRecord(t2)
+
+        val transactionsList = transactionsDbAdapter.getAllTransactionsForAccount(
+            alphaAccount.uid
+        )
+        assertThat(transactionsList).contains(t2, Index.atIndex(0))
+        assertThat(transactionsList).contains(t1, Index.atIndex(1))
+    }
+
+    @Test
+    fun deletingTransactionsShouldDeleteSplits() {
+        val transaction = Transaction("")
+        val split = Split(createZeroInstance(alphaAccount.commodity), alphaAccount.uid)
+        transaction.addSplit(split)
+        transactionsDbAdapter.addRecord(transaction)
+
+        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction.uid)).hasSize(1)
+
+        transactionsDbAdapter.deleteRecord(transaction.uid)
+        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction.uid)).isEmpty()
+    }
+
+    @Test
+    fun shouldBalanceTransactionsOnSave() {
+        val transaction = Transaction("Auto balance")
+        val split = Split(Money(BigDecimal.TEN, alphaAccount.commodity), alphaAccount.uid)
+
+        transaction.addSplit(split)
+
+        transactionsDbAdapter.addRecord(transaction)
+
+        val trn = transactionsDbAdapter.getRecord(transaction.uid)
+        assertThat(trn.splits).hasSize(2)
+
+        val imbalanceAccountUID =
+            accountsDbAdapter.getImbalanceAccountUID(context, Commodity.DEFAULT_COMMODITY)
+        assertThat(trn.splits).extracting("accountUID").contains(imbalanceAccountUID)
+    }
+
+    @Test
+    fun testComputeBalance() {
+        var transaction = Transaction("Compute")
+        val firstSplitAmount = Money("4.99", alphaAccount.commodity)
+        var split = Split(firstSplitAmount, alphaAccount.uid)
+        transaction.addSplit(split)
+        val secondSplitAmount = Money("3.50", bravoAccount.commodity)
+        split = Split(secondSplitAmount, bravoAccount.uid)
+        transaction.addSplit(split)
+
+        transactionsDbAdapter.addRecord(transaction)
+
+        //balance is negated because the CASH account has inverse normal balance
+        transaction = transactionsDbAdapter.getRecord(transaction.uid)
+        var savedBalance = transaction.getBalance(alphaAccount)
+        assertThat(savedBalance).isEqualTo(firstSplitAmount.unaryMinus())
+
+        savedBalance = transaction.getBalance(bravoAccount)
+        assertThat(savedBalance).isEqualTo(secondSplitAmount.unaryMinus())
+        assertThat(savedBalance.commodity).isEqualTo(secondSplitAmount.commodity)
+    }
+
+    companion object {
+        private const val ALPHA_ACCOUNT_NAME = "Alpha"
+        private const val BRAVO_ACCOUNT_NAME = "Bravo"
     }
 }

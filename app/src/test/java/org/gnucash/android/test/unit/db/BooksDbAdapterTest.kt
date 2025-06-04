@@ -13,92 +13,85 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.test.unit.db;
+package org.gnucash.android.test.unit.db
 
-import static junit.framework.Assert.fail;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import android.content.Context;
-
-import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.db.adapter.DatabaseAdapter;
-import org.gnucash.android.importer.GncXmlImporter;
-import org.gnucash.android.model.BaseModel;
-import org.gnucash.android.model.Book;
-import org.gnucash.android.test.unit.GnuCashTest;
-import org.junit.Before;
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
-import java.io.File;
-import java.io.IOException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import timber.log.Timber;
+import junit.framework.TestCase.fail
+import org.assertj.core.api.Assertions.assertThat
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.db.adapter.BooksDbAdapter
+import org.gnucash.android.db.adapter.BooksDbAdapter.NoActiveBookFoundException
+import org.gnucash.android.db.adapter.DatabaseAdapter
+import org.gnucash.android.importer.GncXmlImporter
+import org.gnucash.android.model.BaseModel.Companion.generateUID
+import org.gnucash.android.model.Book
+import org.gnucash.android.test.unit.GnuCashTest
+import org.junit.Before
+import org.junit.Test
+import org.xml.sax.SAXException
+import timber.log.Timber
+import java.io.IOException
+import javax.xml.parsers.ParserConfigurationException
 
 /**
  * Test the book database adapter
  */
-public class BooksDbAdapterTest extends GnuCashTest {
-
-    private BooksDbAdapter mBooksDbAdapter;
+class BooksDbAdapterTest : GnuCashTest() {
+    private lateinit var booksDbAdapter: BooksDbAdapter
 
     @Before
-    public void setUp() {
-        mBooksDbAdapter = BooksDbAdapter.getInstance();
-        assertThat(mBooksDbAdapter.getRecordsCount()).isEqualTo(1); //there is always a default book after app start
-        assertThat(mBooksDbAdapter.getActiveBookUID()).isNotNull();
+    fun setUp() {
+        booksDbAdapter = BooksDbAdapter.getInstance()
+        assertThat(booksDbAdapter.recordsCount).isEqualTo(1) //there is always a default book after app start
+        assertThat(booksDbAdapter.activeBookUID).isNotNull()
 
-        mBooksDbAdapter.deleteAllRecords();
-        assertThat(mBooksDbAdapter.getRecordsCount()).isZero();
+        booksDbAdapter.deleteAllRecords()
+        assertThat(booksDbAdapter.recordsCount).isZero()
     }
 
     @Test
-    public void addBook() {
-        Book book = new Book(BaseModel.generateUID());
-        mBooksDbAdapter.addRecord(book, DatabaseAdapter.UpdateMethod.insert);
+    fun addBook() {
+        val book = Book(generateUID())
+        booksDbAdapter.addRecord(book, DatabaseAdapter.UpdateMethod.insert)
 
-        assertThat(mBooksDbAdapter.getRecordsCount()).isEqualTo(1);
-        assertThat(mBooksDbAdapter.getRecord(book.getUID()).getDisplayName()).isEqualTo("Book 1");
+        assertThat(booksDbAdapter.recordsCount).isEqualTo(1)
+        assertThat(booksDbAdapter.getRecord(book.uid).displayName).isEqualTo("Book 1")
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void savingBook_requiresRootAccountGUID() {
-        Book book = new Book();
-        mBooksDbAdapter.addRecord(book);
-    }
-
-    @Test
-    public void deleteBook() {
-        Book book = new Book();
-        book.setRootAccountUID(BaseModel.generateUID());
-        mBooksDbAdapter.addRecord(book);
-
-        mBooksDbAdapter.deleteRecord(book.getUID());
-
-        assertThat(mBooksDbAdapter.getRecordsCount()).isZero();
+    @Test(expected = IllegalArgumentException::class)
+    fun savingBook_requiresRootAccountGUID() {
+        val book = Book()
+        booksDbAdapter.addRecord(book)
     }
 
     @Test
-    public void setBookActive() {
-        Book book1 = new Book(BaseModel.generateUID());
-        Book book2 = new Book(BaseModel.generateUID());
+    fun deleteBook() {
+        val book = Book()
+        book.rootAccountUID = generateUID()
+        booksDbAdapter.addRecord(book)
 
-        mBooksDbAdapter.addRecord(book1);
-        mBooksDbAdapter.addRecord(book2);
+        booksDbAdapter.deleteRecord(book.uid)
 
-        mBooksDbAdapter.setActive(book1.getUID());
+        assertThat(booksDbAdapter.recordsCount).isZero()
+    }
 
-        assertThat(mBooksDbAdapter.getActiveBookUID()).isEqualTo(book1.getUID());
+    @Test
+    fun setBookActive() {
+        val book1 = Book(generateUID())
+        val book2 = Book(generateUID())
 
-        mBooksDbAdapter.setActive(book2.getUID());
-        assertThat(mBooksDbAdapter.isActive(book2.getUID())).isTrue();
+        booksDbAdapter.addRecord(book1)
+        booksDbAdapter.addRecord(book2)
+
+        booksDbAdapter.setActive(book1.uid)
+
+        assertThat(booksDbAdapter.activeBookUID).isEqualTo(book1.uid)
+
+        booksDbAdapter.setActive(book2.uid)
+        assertThat(booksDbAdapter.isActive(book2.uid)).isTrue()
         //setting book2 as active should disable book1 as active
-        Book book = mBooksDbAdapter.getRecord(book1.getUID());
-        assertThat(book.isActive()).isFalse();
+        val book = booksDbAdapter.getRecord(book1.uid)
+        assertThat(book.isActive).isFalse()
     }
 
     /**
@@ -106,32 +99,31 @@ public class BooksDbAdapterTest extends GnuCashTest {
      * book records in the database
      */
     @Test
-    public void testGeneratedDisplayName() {
-        Book book1 = new Book(BaseModel.generateUID());
-        Book book2 = new Book(BaseModel.generateUID());
+    fun testGeneratedDisplayName() {
+        val book1 = Book(generateUID())
+        val book2 = Book(generateUID())
 
-        mBooksDbAdapter.addRecord(book1);
-        mBooksDbAdapter.addRecord(book2);
+        booksDbAdapter.addRecord(book1)
+        booksDbAdapter.addRecord(book2)
 
-        assertThat(mBooksDbAdapter.generateDefaultBookName()).isEqualTo("Book 3");
+        assertThat(booksDbAdapter.generateDefaultBookName()).isEqualTo("Book 3")
     }
 
     /**
      * Test that deleting a book record also deletes the book database
      */
     @Test
-    public void deletingBook_shouldDeleteDbFile() {
-        Context context = GnuCashApplication.getAppContext();
-        String bookUID = createNewBookWithDefaultAccounts();
-        File dbPath = GnuCashApplication.getAppContext().getDatabasePath(bookUID);
-        assertThat(dbPath).exists();
-        BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
-        assertThat(booksDbAdapter.getRecord(bookUID)).isNotNull();
+    fun deletingBook_shouldDeleteDbFile() {
+        val bookUID = createNewBookWithDefaultAccounts()
+        val dbPath = GnuCashApplication.getAppContext().getDatabasePath(bookUID)
+        assertThat(dbPath).exists()
+        val booksDbAdapter = BooksDbAdapter.getInstance()
+        assertThat(booksDbAdapter.getRecord(bookUID)).isNotNull()
 
-        long booksCount = booksDbAdapter.getRecordsCount();
-        booksDbAdapter.deleteBook(context, bookUID);
-        assertThat(dbPath).doesNotExist();
-        assertThat(booksDbAdapter.getRecordsCount()).isEqualTo(booksCount - 1);
+        val booksCount = booksDbAdapter.recordsCount
+        booksDbAdapter.deleteBook(context, bookUID)
+        assertThat(dbPath).doesNotExist()
+        assertThat(booksDbAdapter.recordsCount).isEqualTo(booksCount - 1)
     }
 
     /**
@@ -139,59 +131,59 @@ public class BooksDbAdapterTest extends GnuCashTest {
      * increased irrespective of the order in which books are added to and deleted from the db
      */
     @Test
-    public void testGeneratedDisplayNames_shouldBeUnique() {
-        Book book1 = new Book(BaseModel.generateUID());
-        Book book2 = new Book(BaseModel.generateUID());
-        Book book3 = new Book(BaseModel.generateUID());
+    fun testGeneratedDisplayNames_shouldBeUnique() {
+        val book1 = Book(generateUID())
+        val book2 = Book(generateUID())
+        val book3 = Book(generateUID())
 
-        mBooksDbAdapter.addRecord(book1);
-        mBooksDbAdapter.addRecord(book2);
-        mBooksDbAdapter.addRecord(book3);
+        booksDbAdapter.addRecord(book1)
+        booksDbAdapter.addRecord(book2)
+        booksDbAdapter.addRecord(book3)
 
-        assertThat(mBooksDbAdapter.getRecordsCount()).isEqualTo(3L);
+        assertThat(booksDbAdapter.recordsCount).isEqualTo(3L)
 
-        mBooksDbAdapter.deleteRecord(book2.getUID());
-        assertThat(mBooksDbAdapter.getRecordsCount()).isEqualTo(2L);
+        booksDbAdapter.deleteRecord(book2.uid)
+        assertThat(booksDbAdapter.recordsCount).isEqualTo(2L)
 
-        String generatedName = mBooksDbAdapter.generateDefaultBookName();
-        assertThat(generatedName).isNotEqualTo(book3.getDisplayName());
-        assertThat(generatedName).isEqualTo("Book 4");
+        val generatedName = booksDbAdapter.generateDefaultBookName()
+        assertThat(generatedName).isNotEqualTo(book3.displayName)
+        assertThat(generatedName).isEqualTo("Book 4")
     }
 
     @Test
-    public void recoverFromNoActiveBookFound() {
-        Book book1 = new Book(BaseModel.generateUID());
-        book1.setActive(false);
-        mBooksDbAdapter.addRecord(book1);
+    fun recoverFromNoActiveBookFound() {
+        val book1 = Book(generateUID())
+        book1.isActive = false
+        booksDbAdapter.addRecord(book1)
 
-        Book book2 = new Book(BaseModel.generateUID());
-        book2.setActive(false);
-        mBooksDbAdapter.addRecord(book2);
+        val book2 = Book(generateUID())
+        book2.isActive = false
+        booksDbAdapter.addRecord(book2)
 
         try {
-            mBooksDbAdapter.getActiveBookUID();
-            fail("There shouldn't be any active book.");
-        } catch (BooksDbAdapter.NoActiveBookFoundException e) {
-            mBooksDbAdapter.fixBooksDatabase();
+            booksDbAdapter.activeBookUID
+            fail("There shouldn't be any active book.")
+        } catch (e: NoActiveBookFoundException) {
+            booksDbAdapter.fixBooksDatabase()
         }
 
-        assertThat(mBooksDbAdapter.getActiveBookUID()).isEqualTo(book1.getUID());
+        assertThat(booksDbAdapter.activeBookUID).isEqualTo(book1.uid)
     }
 
     /**
      * Tests the recovery from an empty books database.
      */
     @Test
-    public void recoverFromEmptyDatabase() {
-        createNewBookWithDefaultAccounts();
-        mBooksDbAdapter.deleteAllRecords();
-        assertThat(mBooksDbAdapter.getRecordsCount()).isZero();
+    fun recoverFromEmptyDatabase() {
+        createNewBookWithDefaultAccounts()
+        booksDbAdapter.deleteAllRecords()
+        assertThat(booksDbAdapter.recordsCount).isZero()
 
-        mBooksDbAdapter.fixBooksDatabase();
+        booksDbAdapter.fixBooksDatabase()
 
         // Should've recovered the one from setUp() plus the one created above
-        assertThat(mBooksDbAdapter.getRecordsCount()).isEqualTo(2);
-        mBooksDbAdapter.getActiveBookUID(); // should not throw exception
+        assertThat(booksDbAdapter.recordsCount).isEqualTo(2)
+        booksDbAdapter.activeBookUID // should not throw exception
     }
 
     /**
@@ -200,13 +192,21 @@ public class BooksDbAdapterTest extends GnuCashTest {
      * @return The book UID for the new database
      * @throws RuntimeException if the new books could not be created
      */
-    private String createNewBookWithDefaultAccounts() {
+    private fun createNewBookWithDefaultAccounts(): String {
         try {
-            Context context = GnuCashApplication.getAppContext();
-            return GncXmlImporter.parse(context, context.getResources().openRawResource(R.raw.default_accounts));
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            Timber.e(e);
-            throw new RuntimeException("Could not create default accounts");
+            return GncXmlImporter.parse(
+                context,
+                context.resources.openRawResource(R.raw.default_accounts)
+            )
+        } catch (e: ParserConfigurationException) {
+            Timber.e(e)
+            throw RuntimeException("Could not create default accounts")
+        } catch (e: SAXException) {
+            Timber.e(e)
+            throw RuntimeException("Could not create default accounts")
+        } catch (e: IOException) {
+            Timber.e(e)
+            throw RuntimeException("Could not create default accounts")
         }
     }
 }

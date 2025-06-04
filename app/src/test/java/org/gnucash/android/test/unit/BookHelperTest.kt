@@ -1,107 +1,103 @@
-package org.gnucash.android.test.unit;
+package org.gnucash.android.test.unit
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import android.database.sqlite.SQLiteDatabase
+import junit.framework.TestCase.fail
+import org.assertj.core.api.Assertions.assertThat
+import org.gnucash.android.BuildConfig
+import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.db.DatabaseHelper
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.BooksDbAdapter
+import org.gnucash.android.db.adapter.BudgetsDbAdapter
+import org.gnucash.android.db.adapter.CommoditiesDbAdapter
+import org.gnucash.android.db.adapter.RecurrenceDbAdapter
+import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
+import org.gnucash.android.db.adapter.TransactionsDbAdapter
+import org.gnucash.android.importer.GncXmlHandler
+import org.gnucash.android.util.ConsoleTree
+import org.junit.After
+import org.junit.Before
+import org.xml.sax.InputSource
+import timber.log.Timber
+import java.io.BufferedInputStream
+import javax.xml.parsers.SAXParser
+import javax.xml.parsers.SAXParserFactory
 
-import android.database.sqlite.SQLiteDatabase;
+abstract class BookHelperTest : GnuCashTest() {
+    @JvmField
+    protected var importedDb: SQLiteDatabase? = null
+    protected lateinit var booksDbAdapter: BooksDbAdapter
+    @JvmField
+    protected var transactionsDbAdapter: TransactionsDbAdapter? = null
+    @JvmField
+    protected var accountsDbAdapter: AccountsDbAdapter? = null
+    @JvmField
+    protected var scheduledActionDbAdapter: ScheduledActionDbAdapter? = null
+    @JvmField
+    protected var commoditiesDbAdapter: CommoditiesDbAdapter? = null
+    @JvmField
+    protected var budgetsDbAdapter: BudgetsDbAdapter? = null
 
-import org.gnucash.android.BuildConfig;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseHelper;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.db.adapter.BudgetsDbAdapter;
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
-import org.gnucash.android.db.adapter.RecurrenceDbAdapter;
-import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
-import org.gnucash.android.importer.GncXmlHandler;
-import org.gnucash.android.util.ConsoleTree;
-import org.junit.After;
-import org.junit.Before;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
-import timber.log.Timber;
-
-public abstract class BookHelperTest extends GnuCashTest {
-    protected SQLiteDatabase mImportedDb;
-    protected BooksDbAdapter mBooksDbAdapter;
-    protected TransactionsDbAdapter mTransactionsDbAdapter;
-    protected AccountsDbAdapter mAccountsDbAdapter;
-    protected ScheduledActionDbAdapter mScheduledActionDbAdapter;
-    protected CommoditiesDbAdapter mCommoditiesDbAdapter;
-    protected BudgetsDbAdapter mBudgetsDbAdapter;
-
-    static {
-        Timber.plant((Timber.Tree) new ConsoleTree(BuildConfig.DEBUG));
-    }
-
-    protected String importGnuCashXml(String filename) {
-        SAXParser parser;
-        GncXmlHandler handler = null;
+    protected fun importGnuCashXml(filename: String): String {
+        val handler = GncXmlHandler()
         try {
-            parser = SAXParserFactory.newInstance().newSAXParser();
-            XMLReader reader = parser.getXMLReader();
-            handler = new GncXmlHandler();
-            reader.setContentHandler(handler);
-            InputStream inputStream = openResourceStream(filename);
-            InputSource inputSource = new InputSource(new BufferedInputStream(inputStream));
-            reader.parse(inputSource);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            Timber.e(e);
-            fail();
+            val parser: SAXParser = SAXParserFactory.newInstance().newSAXParser()
+            val reader = parser.xmlReader
+            reader.contentHandler = handler
+            val inputStream = openResourceStream(filename)
+            val inputSource = InputSource(BufferedInputStream(inputStream))
+            reader.parse(inputSource)
+        } catch (e: Exception) {
+            Timber.e(e)
+            fail()
         }
-        String bookUID = handler.getImportedBookUID();
-        setUpDbAdapters(bookUID);
-        return bookUID;
+        val bookUID = handler.importedBookUID
+        setUpDbAdapters(bookUID)
+        return bookUID
     }
 
-    private void setUpDbAdapters(String bookUID) {
-        DatabaseHelper databaseHelper = new DatabaseHelper(GnuCashApplication.getAppContext(), bookUID);
-        SQLiteDatabase mainDb = databaseHelper.getReadableDatabase();
-        mCommoditiesDbAdapter = new CommoditiesDbAdapter(mainDb);
-        mTransactionsDbAdapter = new TransactionsDbAdapter(mCommoditiesDbAdapter);
-        mAccountsDbAdapter = new AccountsDbAdapter(mTransactionsDbAdapter);
-        RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(mainDb);
-        mScheduledActionDbAdapter = new ScheduledActionDbAdapter(recurrenceDbAdapter);
-        mBudgetsDbAdapter = new BudgetsDbAdapter(recurrenceDbAdapter);
-        mImportedDb = mainDb;
+    private fun setUpDbAdapters(bookUID: String) {
+        val databaseHelper = DatabaseHelper(GnuCashApplication.getAppContext(), bookUID)
+        val mainDb = databaseHelper.readableDatabase
+        commoditiesDbAdapter = CommoditiesDbAdapter(mainDb)
+        transactionsDbAdapter = TransactionsDbAdapter(commoditiesDbAdapter!!)
+        accountsDbAdapter = AccountsDbAdapter(transactionsDbAdapter!!)
+        val recurrenceDbAdapter = RecurrenceDbAdapter(mainDb)
+        scheduledActionDbAdapter = ScheduledActionDbAdapter(recurrenceDbAdapter)
+        budgetsDbAdapter = BudgetsDbAdapter(recurrenceDbAdapter)
+        importedDb = mainDb
     }
 
     @Before
-    public void setUp() throws Exception {
-        mBooksDbAdapter = BooksDbAdapter.getInstance();
-        mBooksDbAdapter.deleteAllRecords();
-        assertThat(mBooksDbAdapter.getRecordsCount()).isZero();
+    open fun setUp() {
+        booksDbAdapter = BooksDbAdapter.getInstance()
+        booksDbAdapter.deleteAllRecords()
+        assertThat(booksDbAdapter.getRecordsCount()).isZero()
     }
 
     @After
-    public void tearDown() throws Exception {
-        if (mTransactionsDbAdapter != null) {
-            mTransactionsDbAdapter.close();
-            mTransactionsDbAdapter = null;
+    open fun tearDown() {
+        if (transactionsDbAdapter != null) {
+            transactionsDbAdapter!!.close()
+            transactionsDbAdapter = null
         }
-        if (mAccountsDbAdapter != null) {
-            mAccountsDbAdapter.close();
-            mAccountsDbAdapter = null;
+        if (accountsDbAdapter != null) {
+            accountsDbAdapter!!.close()
+            accountsDbAdapter = null
         }
-        if (mScheduledActionDbAdapter != null) {
-            mScheduledActionDbAdapter.close();
-            mScheduledActionDbAdapter = null;
+        if (scheduledActionDbAdapter != null) {
+            scheduledActionDbAdapter!!.close()
+            scheduledActionDbAdapter = null
         }
-        if (mImportedDb != null) {
-            mImportedDb.close();
-            mImportedDb = null;
+        if (importedDb != null) {
+            importedDb!!.close()
+            importedDb = null
+        }
+    }
+
+    companion object {
+        init {
+            Timber.plant(ConsoleTree(BuildConfig.DEBUG) as Timber.Tree)
         }
     }
 }

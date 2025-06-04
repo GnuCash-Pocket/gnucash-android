@@ -13,36 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.test.unit.util;
+package org.gnucash.android.test.unit.util
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.assertj.core.api.Assertions.assertThat
+import org.gnucash.android.test.unit.GnuCashTest
+import org.gnucash.android.util.PreferencesHelper
+import org.gnucash.android.util.TimestampHelper
+import org.junit.Test
+import java.sql.Timestamp
 
-import android.content.Context;
-
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.test.unit.GnuCashTest;
-import org.gnucash.android.util.PreferencesHelper;
-import org.gnucash.android.util.TimestampHelper;
-import org.junit.Test;
-
-import java.sql.Timestamp;
-
-public class PreferencesHelperTest extends GnuCashTest {
-
+class PreferencesHelperTest : GnuCashTest() {
     @Test
-    public void shouldGetLastExportTimeDefaultValue() {
-        Context context = GnuCashApplication.getAppContext();
-        final Timestamp lastExportTime = PreferencesHelper.getLastExportTime(context);
-        assertThat(lastExportTime).isEqualTo(TimestampHelper.getTimestampFromEpochZero());
+    fun shouldGetLastExportTimeDefaultValue() {
+        val lastExportTime = PreferencesHelper.getLastExportTime(context)
+        assertThat(lastExportTime).isEqualTo(TimestampHelper.getTimestampFromEpochZero())
     }
 
     @Test
-    public void shouldGetLastExportTimeCurrentValue() {
-        Context context = GnuCashApplication.getAppContext();
-        final long goldenBoyBirthday = 1190136000L * 1000;
-        final Timestamp goldenBoyBirthdayTimestamp = new Timestamp(goldenBoyBirthday);
-        PreferencesHelper.setLastExportTime(goldenBoyBirthdayTimestamp);
+    fun shouldGetLastExportTimeCurrentValue() {
+        val goldenBoyBirthday = 1_190_136_000L * 1000
+        val goldenBoyBirthdayTimestamp = Timestamp(goldenBoyBirthday)
+        PreferencesHelper.setLastExportTime(goldenBoyBirthdayTimestamp)
         assertThat(PreferencesHelper.getLastExportTime(context))
-            .isEqualTo(goldenBoyBirthdayTimestamp);
+            .isEqualTo(goldenBoyBirthdayTimestamp)
     }
 }

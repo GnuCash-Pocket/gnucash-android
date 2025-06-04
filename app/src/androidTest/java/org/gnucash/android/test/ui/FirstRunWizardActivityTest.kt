@@ -13,136 +13,148 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.test.ui;
+package org.gnucash.android.test.ui
 
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import android.Manifest;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
-
-import androidx.test.rule.ActivityTestRule;
-import androidx.test.rule.GrantPermissionRule;
-
-import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseHelper;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.SplitsDbAdapter;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
-import org.gnucash.android.model.BaseModel;
-import org.gnucash.android.ui.wizard.FirstRunWizardActivity;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-
-import timber.log.Timber;
+import android.Manifest
+import android.database.SQLException
+import android.database.sqlite.SQLiteDatabase
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.test.rule.ActivityTestRule
+import androidx.test.rule.GrantPermissionRule
+import org.assertj.core.api.Assertions.assertThat
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.db.DatabaseHelper
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.SplitsDbAdapter
+import org.gnucash.android.db.adapter.TransactionsDbAdapter
+import org.gnucash.android.model.BaseModel.Companion.generateUID
+import org.gnucash.android.ui.wizard.FirstRunWizardActivity
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import timber.log.Timber
 
 /**
  * Tests the first run wizard
  *
  * @author Ngewi Fet
  */
-public class FirstRunWizardActivityTest extends GnuAndroidTest {
-    private DatabaseHelper mDbHelper;
-    private SQLiteDatabase mDb;
-    private AccountsDbAdapter mAccountsDbAdapter;
-    private TransactionsDbAdapter mTransactionsDbAdapter;
-    private SplitsDbAdapter mSplitsDbAdapter;
-
-    FirstRunWizardActivity mActivity;
-
-    @Rule
-    public ActivityTestRule<FirstRunWizardActivity> rule = new ActivityTestRule<>(FirstRunWizardActivity.class);
+class FirstRunWizardActivityTest : GnuAndroidTest() {
+    private lateinit var dbHelper: DatabaseHelper
+    private lateinit var db: SQLiteDatabase
+    private lateinit var accountsDbAdapter: AccountsDbAdapter
+    private lateinit var transactionsDbAdapter: TransactionsDbAdapter
+    private lateinit var splitsDbAdapter: SplitsDbAdapter
+    private lateinit var activity: FirstRunWizardActivity
 
     @Rule
-    public GrantPermissionRule animationPermissionsRule = GrantPermissionRule.grant(Manifest.permission.SET_ANIMATION_SCALE);
+    @JvmField
+    val rule = ActivityTestRule(FirstRunWizardActivity::class.java)
+
+    @Rule
+    @JvmField
+    val animationPermissionsRule =
+        GrantPermissionRule.grant(Manifest.permission.SET_ANIMATION_SCALE)
 
     @Before
-    public void setUp() throws Exception {
-        mActivity = rule.getActivity();
-        mDbHelper = new DatabaseHelper(mActivity, BaseModel.generateUID());
+    fun setUp() {
+        activity = rule.activity
+        dbHelper = DatabaseHelper(activity, generateUID())
         try {
-            mDb = mDbHelper.getWritableDatabase();
-        } catch (SQLException e) {
-            Timber.e(e, "Error getting database: " + e.getMessage());
-            mDb = mDbHelper.getReadableDatabase();
+            db = dbHelper.writableDatabase
+        } catch (e: SQLException) {
+            Timber.e(e, "Error getting database: " + e.message)
+            db = dbHelper.readableDatabase
         }
-        mSplitsDbAdapter = new SplitsDbAdapter(mDb);
-        mTransactionsDbAdapter = new TransactionsDbAdapter(mSplitsDbAdapter);
-        mAccountsDbAdapter = new AccountsDbAdapter(mTransactionsDbAdapter);
-        mAccountsDbAdapter.deleteAllRecords();
+        splitsDbAdapter = SplitsDbAdapter(db)
+        transactionsDbAdapter = TransactionsDbAdapter(splitsDbAdapter)
+        accountsDbAdapter = AccountsDbAdapter(transactionsDbAdapter)
+        accountsDbAdapter.deleteAllRecords()
     }
 
-
     @Test
-    public void shouldRunWizardToEnd() {
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(0);
+    fun shouldRunWizardToEnd() {
+        assertThat(accountsDbAdapter.recordsCount).isZero()
 
-        onView(withId(R.id.btn_save)).perform(click());
+        onView(withId(R.id.btn_save)).perform(click())
 
-        onView(withText("EUR (Euro)")).perform(click());
-        onView(withText(R.string.btn_wizard_next)).perform(click());
-        onView(withText(R.string.wizard_title_account_setup)).check(matches(isDisplayed()));
+        onView(withText("EUR (Euro)"))
+            .perform(click())
+        onView(withText(R.string.btn_wizard_next))
+            .perform(click())
+        onView(withText(R.string.wizard_title_account_setup))
+            .check(matches(isDisplayed()))
 
-        onView(withText(R.string.wizard_option_create_default_accounts)).perform(click());
+        onView(withText(R.string.wizard_option_create_default_accounts))
+            .perform(click())
 
-        onView(withText(R.string.btn_wizard_next)).perform(click());
-        onView(withText(R.string.wizard_option_auto_send_crash_reports)).perform(click());
-        onView(withText(R.string.btn_wizard_next)).perform(click());
+        onView(withText(R.string.btn_wizard_next))
+            .perform(click())
+        onView(withText(R.string.wizard_option_auto_send_crash_reports))
+            .perform(click())
+        onView(withText(R.string.btn_wizard_next))
+            .perform(click())
 
-        onView(withText(R.string.review)).check(matches(isDisplayed()));
+        onView(withText(R.string.review))
+            .check(matches(isDisplayed()))
 
-        onView(withId(R.id.btn_save)).perform(click());
+        onView(withId(R.id.btn_save))
+            .perform(click())
 
         //default accounts should be created
-        long actualCount = GnuCashApplication.getAccountsDbAdapter().getRecordsCount();
-        assertThat(actualCount).isGreaterThan(60L);
+        val actualCount = GnuCashApplication.getAccountsDbAdapter()!!.recordsCount
+        assertThat(actualCount).isGreaterThan(60L)
 
-        boolean enableCrashlytics = GnuCashApplication.isCrashlyticsEnabled();
-        assertThat(enableCrashlytics).isTrue();
+        val enableCrashlytics = GnuCashApplication.isCrashlyticsEnabled()
+        assertThat(enableCrashlytics).isTrue()
 
-        String defaultCurrencyCode = GnuCashApplication.getDefaultCurrencyCode();
-        assertThat(defaultCurrencyCode).isEqualTo("EUR");
+        val defaultCurrencyCode = GnuCashApplication.getDefaultCurrencyCode()
+        assertThat(defaultCurrencyCode).isEqualTo("EUR")
     }
 
     @Test
-    public void shouldDisplayFullCurrencyList() {
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(0);
+    fun shouldDisplayFullCurrencyList() {
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(0)
 
-        onView(withId(R.id.btn_save)).perform(click());
+        onView(withId(R.id.btn_save)).perform(click())
 
-        onView(withText(R.string.wizard_option_currency_other)).perform(click());
-        onView(withText(R.string.btn_wizard_next)).perform(click());
-        onView(withText(R.string.wizard_title_select_currency)).check(matches(isDisplayed()));
+        onView(withText(R.string.wizard_option_currency_other))
+            .perform(click())
+        onView(withText(R.string.btn_wizard_next))
+            .perform(click())
+        onView(withText(R.string.wizard_title_select_currency))
+            .check(matches(isDisplayed()))
 
-//        onData(allOf(is(instanceOf(String.class)), is("CHF")))
-//                .inAdapterView(withTagValue(is((Object)"currency_list_view"))).perform(click());
-        onView(withText("AFA (Afghani)")).perform(click());
-        onView(withId(R.id.btn_save)).perform(click());
+        onView(withText("AFA (Afghani)")).perform(click())
+        onView(withId(R.id.btn_save)).perform(click())
 
-        onView(withText(R.string.wizard_option_let_me_handle_it)).perform(click());
+        onView(withText(R.string.wizard_option_let_me_handle_it))
+            .perform(click())
 
-        onView(withText(R.string.btn_wizard_next)).perform(click());
-        onView(withText(R.string.wizard_option_disable_crash_reports)).perform(click());
-        onView(withText(R.string.btn_wizard_next)).perform(click());
+        onView(withText(R.string.btn_wizard_next))
+            .perform(click())
+        onView(withText(R.string.wizard_option_disable_crash_reports))
+            .perform(click())
+        onView(withText(R.string.btn_wizard_next))
+            .perform(click())
 
-        onView(withText(R.string.review)).check(matches(isDisplayed()));
-        onView(withId(R.id.btn_save)).perform(click());
+        onView(withText(R.string.review))
+            .check(matches(isDisplayed()))
+        onView(withId(R.id.btn_save)).perform(click())
 
         //default accounts should not be created
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isZero();
+        assertThat(accountsDbAdapter.recordsCount).isZero()
 
-        boolean enableCrashlytics = GnuCashApplication.isCrashlyticsEnabled();
-        assertThat(enableCrashlytics).isFalse();
+        val enableCrashlytics = GnuCashApplication.isCrashlyticsEnabled()
+        assertThat(enableCrashlytics).isFalse()
 
-        String defaultCurrencyCode = GnuCashApplication.getDefaultCurrencyCode();
-        assertThat(defaultCurrencyCode).isEqualTo("AFA");
+        val defaultCurrencyCode = GnuCashApplication.getDefaultCurrencyCode()
+        assertThat(defaultCurrencyCode).isEqualTo("AFA")
     }
 }

@@ -13,71 +13,74 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.test.unit.export;
+package org.gnucash.android.test.unit.export
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import android.content.Context;
-import android.net.Uri;
-
-import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.export.ExportFormat;
-import org.gnucash.android.export.ExportParams;
-import org.gnucash.android.export.Exporter;
-import org.gnucash.android.export.xml.GncXmlExporter;
-import org.gnucash.android.importer.GncXmlImporter;
-import org.gnucash.android.test.unit.GnuCashTest;
-import org.junit.Before;
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
-import java.io.File;
-import java.io.IOException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import timber.log.Timber;
+import org.assertj.core.api.Assertions.assertThat
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.db.adapter.BooksDbAdapter
+import org.gnucash.android.export.ExportFormat
+import org.gnucash.android.export.ExportParams
+import org.gnucash.android.export.Exporter
+import org.gnucash.android.export.Exporter.ExporterException
+import org.gnucash.android.export.xml.GncXmlExporter
+import org.gnucash.android.importer.GncXmlImporter
+import org.gnucash.android.test.unit.GnuCashTest
+import org.junit.Before
+import org.junit.Test
+import org.xml.sax.SAXException
+import timber.log.Timber
+import java.io.File
+import java.io.IOException
+import javax.xml.parsers.ParserConfigurationException
 
 /**
  * Test backup and restore functionality
  */
-public class BackupTest extends GnuCashTest {
-
+class BackupTest : GnuCashTest() {
     @Before
-    public void setUp() {
-        loadDefaultAccounts();
+    fun setUp() {
+        loadDefaultAccounts()
     }
 
     @Test
-    public void shouldCreateBackupFileName() throws Exporter.ExporterException {
-        Context context = GnuCashApplication.getAppContext();
-        String bookUID = GnuCashApplication.getActiveBookUID();
-        Exporter exporter = new GncXmlExporter(context, new ExportParams(ExportFormat.XML), bookUID);
-        Uri uriExported = exporter.generateExport();
+    @Throws(ExporterException::class)
+    fun shouldCreateBackupFileName() {
+        val bookUID = GnuCashApplication.getActiveBookUID()
+        val exporter: Exporter = GncXmlExporter(
+            context, ExportParams(ExportFormat.XML),
+            bookUID!!
+        )
+        val uriExported = exporter.generateExport()
 
-        assertThat(uriExported).isNotNull();
-        assertThat(uriExported.getScheme()).isEqualTo("file");
-        File file = new File(uriExported.getPath());
-        assertThat(file)
-            .exists()
-            .hasExtension(ExportFormat.XML.extension.substring(1));
+        assertThat(uriExported).isNotNull()
+        assertThat(uriExported!!.scheme).isEqualTo("file")
+        val file = File(uriExported.path)
+        assertThat(file).exists()
+            .hasExtension(ExportFormat.XML.extension.substring(1))
     }
 
     /**
      * Loads the default accounts from file resource
      */
-    private void loadDefaultAccounts() {
+    private fun loadDefaultAccounts() {
         try {
-            Context context = GnuCashApplication.getAppContext();
-            String bookUID = GncXmlImporter.parse(context, context.getResources().openRawResource(R.raw.default_accounts));
-            BooksDbAdapter.getInstance().setActive(bookUID);
-            assertThat(BooksDbAdapter.getInstance().getActiveBookUID()).isEqualTo(bookUID);
-            assertThat(GnuCashApplication.getActiveBookUID()).isEqualTo(bookUID);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            Timber.e(e);
-            throw new RuntimeException("Could not create default accounts");
+            val bookUID = GncXmlImporter.parse(
+                context,
+                context.resources.openRawResource(R.raw.default_accounts)
+            )
+            BooksDbAdapter.getInstance().setActive(bookUID)
+            assertThat(BooksDbAdapter.getInstance().activeBookUID).isEqualTo(bookUID)
+            assertThat(GnuCashApplication.getActiveBookUID()).isEqualTo(bookUID)
+        } catch (e: ParserConfigurationException) {
+            Timber.e(e)
+            throw RuntimeException("Could not create default accounts")
+        } catch (e: SAXException) {
+            Timber.e(e)
+            throw RuntimeException("Could not create default accounts")
+        } catch (e: IOException) {
+            Timber.e(e)
+            throw RuntimeException("Could not create default accounts")
         }
     }
 }

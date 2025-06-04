@@ -17,7 +17,6 @@ package org.gnucash.android.test.unit.model
 
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence
 import org.assertj.core.api.Assertions.assertThat
-import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.model.PeriodType
 import org.gnucash.android.model.Recurrence
 import org.gnucash.android.test.unit.GnuCashTest
@@ -164,7 +163,6 @@ class RecurrenceTest : GnuCashTest() {
     @Test
     fun frequency_formatted() {
         Locale.setDefault(Locale.US)
-        val context = GnuCashApplication.getAppContext()
         assertThat(context).isNotNull()
         val res = context.resources
         assertThat(res).isNotNull()

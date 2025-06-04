@@ -192,7 +192,7 @@ dependencies {
 
     testImplementation("org.robolectric:robolectric:4.14.1")
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.assertj:assertj-core:3.26.3")
+    testImplementation("org.assertj:assertj-core:3.27.3")
 
     androidTestImplementation("androidx.test:runner:1.6.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
@@ -205,7 +205,7 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-intents:$androidEspressoVersion")
     androidTestImplementation("androidx.test.espresso:espresso-contrib:$androidEspressoVersion")
 
-    androidTestImplementation("org.assertj:assertj-core:3.26.3")
+    androidTestImplementation("org.assertj:assertj-core:3.27.3")
 
     androidTestImplementation("com.squareup.spoon:spoon-client:1.7.1")
 }

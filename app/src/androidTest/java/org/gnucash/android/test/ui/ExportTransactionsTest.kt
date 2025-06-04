@@ -13,96 +13,95 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.test.ui
 
-package org.gnucash.android.test.ui;
+import android.Manifest
+import androidx.annotation.StringRes
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.scrollTo
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.contrib.DrawerActions
+import androidx.test.espresso.matcher.RootMatchers.withDecorView
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.test.rule.ActivityTestRule
+import androidx.test.rule.GrantPermissionRule
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.CommoditiesDbAdapter
+import org.gnucash.android.db.adapter.DatabaseAdapter
+import org.gnucash.android.model.Account
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.model.Money
+import org.gnucash.android.model.Split
+import org.gnucash.android.model.Transaction
+import org.gnucash.android.ui.account.AccountsActivity
+import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.not
+import org.junit.Before
+import org.junit.BeforeClass
+import org.junit.Rule
+import org.junit.Test
 
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.action.ViewActions.scrollTo;
-import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.matcher.RootMatchers.withDecorView;
-import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-
-import android.Manifest;
-import android.content.Context;
-
-import androidx.annotation.StringRes;
-import androidx.test.espresso.contrib.DrawerActions;
-import androidx.test.rule.ActivityTestRule;
-import androidx.test.rule.GrantPermissionRule;
-
-import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
-import org.gnucash.android.db.adapter.DatabaseAdapter;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.model.Split;
-import org.gnucash.android.model.Transaction;
-import org.gnucash.android.ui.account.AccountsActivity;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-
-public class ExportTransactionsTest extends GnuAndroidTest {
-
-    private AccountsDbAdapter mAccountsDbAdapter;
+class ExportTransactionsTest : GnuAndroidTest() {
+    private lateinit var accountsDbAdapter: AccountsDbAdapter
 
     @Rule
-    public GrantPermissionRule animationPermissionsRule = GrantPermissionRule.grant(Manifest.permission.SET_ANIMATION_SCALE);
+    @JvmField
+    val animationPermissionsRule =
+        GrantPermissionRule.grant(Manifest.permission.SET_ANIMATION_SCALE)
 
     @Rule
-    public ActivityTestRule<AccountsActivity> rule = new ActivityTestRule<>(AccountsActivity.class);
-
-    @BeforeClass
-    public static void prepTest() {
-        Context context = GnuCashApplication.getAppContext();
-        preventFirstRunDialogs(context);
-    }
+    @JvmField
+    val rule: ActivityTestRule<AccountsActivity> =
+        ActivityTestRule(AccountsActivity::class.java)
 
     @Before
-    public void setUp() throws Exception {
-        Context context = GnuCashApplication.getAppContext();
-
-        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-        mAccountsDbAdapter.deleteAllRecords();
+    fun setUp() {
+        accountsDbAdapter = AccountsDbAdapter.getInstance()
+        accountsDbAdapter.deleteAllRecords()
 
         //this call initializes the static variables like DEFAULT_COMMODITY which are used implicitly by accounts/transactions
-        @SuppressWarnings("unused")
-        String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
-        Commodity.DEFAULT_COMMODITY = CommoditiesDbAdapter.getInstance().getCommodity(currencyCode);
+        @Suppress("unused") val currencyCode = GnuCashApplication.getDefaultCurrencyCode()
+        Commodity.DEFAULT_COMMODITY =
+            CommoditiesDbAdapter.getInstance()!!.getCommodity(currencyCode)!!
 
-        Account account = new Account("Exportable");
-        Transaction transaction = new Transaction("Pizza");
-        transaction.setNote("What up?");
-        transaction.setTime(System.currentTimeMillis());
-        Split split = new Split(new Money("8.99", currencyCode), account.getUID());
-        split.setMemo("Hawaii is the best!");
-        transaction.addSplit(split);
-        transaction.addSplit(split.createPair(
-            mAccountsDbAdapter.getOrCreateImbalanceAccountUID(context, Commodity.DEFAULT_COMMODITY)));
-        account.addTransaction(transaction);
+        val account = Account("Exportable")
+        val transaction = Transaction("Pizza")
+        transaction.note = "What up?"
+        transaction.setTime(System.currentTimeMillis())
+        val split = Split(Money("8.99", currencyCode), account.uid)
+        split.memo = "Hawaii is the best!"
+        transaction.addSplit(split)
+        transaction.addSplit(
+            split.createPair(
+                accountsDbAdapter.getOrCreateImbalanceAccountUID(
+                    context,
+                    Commodity.DEFAULT_COMMODITY
+                )
+            )
+        )
+        account.addTransaction(transaction)
 
-        mAccountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert);
+        accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert)
     }
 
     @Test
-    public void testCreateBackup() {
-        rule.getActivity();
-        onView(withId(R.id.drawer_layout)).perform(DrawerActions.open());
-        onView(withText(R.string.title_settings)).perform(scrollTo());
-        onView(withText(R.string.title_settings)).perform(click());
-        onView(withText(R.string.header_backup_and_export_settings)).perform(click());
+    fun testCreateBackup() {
+        rule.activity
+        onView(withId(R.id.drawer_layout)).perform(DrawerActions.open())
+        onView(withText(R.string.title_settings))
+            .perform(scrollTo())
+        onView(withText(R.string.title_settings)).perform(click())
+        onView(withText(R.string.header_backup_and_export_settings))
+            .perform(click())
 
-        onView(withText(R.string.title_create_backup_pref)).perform(click());
-        assertToastDisplayed(R.string.toast_backup_successful);
+        onView(withText(R.string.title_create_backup_pref))
+            .perform(click())
+        assertToastDisplayed(R.string.toast_backup_successful)
     }
 
     /**
@@ -110,9 +109,17 @@ public class ExportTransactionsTest extends GnuAndroidTest {
      *
      * @param toastString String that should be displayed
      */
-    private void assertToastDisplayed(@StringRes int toastString) {
+    private fun assertToastDisplayed(@StringRes toastString: Int) {
         onView(withText(toastString))
-            .inRoot(withDecorView(not(is(rule.getActivity().getWindow().getDecorView()))))
-            .check(matches(isDisplayed()));
+            .inRoot(withDecorView(not(`is`(rule.activity.window.decorView))))
+            .check(matches(isDisplayed()))
+    }
+
+    companion object {
+        @BeforeClass
+        @JvmStatic
+        fun prepTest() {
+            preventFirstRunDialogs()
+        }
     }
 }

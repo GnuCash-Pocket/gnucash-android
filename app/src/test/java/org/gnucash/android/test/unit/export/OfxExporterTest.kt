@@ -13,98 +13,95 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.test.unit.export;
+package org.gnucash.android.test.unit.export
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertThrows;
+import org.assertj.core.api.Assertions.assertThat
+import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.export.ExportFormat
+import org.gnucash.android.export.ExportParams
+import org.gnucash.android.export.Exporter.ExporterException
+import org.gnucash.android.export.ofx.OfxExporter
+import org.gnucash.android.export.ofx.OfxHelper
+import org.gnucash.android.model.Account
+import org.gnucash.android.model.Money.Companion.createZeroInstance
+import org.gnucash.android.model.Split
+import org.gnucash.android.model.Transaction
+import org.gnucash.android.test.unit.GnuCashTest
+import org.gnucash.android.util.TimestampHelper
+import org.junit.Assert.assertThrows
+import org.junit.Test
+import java.io.File
+import java.util.Calendar
+import java.util.TimeZone
 
-import android.content.Context;
-import android.net.Uri;
-
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.export.ExportFormat;
-import org.gnucash.android.export.ExportParams;
-import org.gnucash.android.export.Exporter;
-import org.gnucash.android.export.ofx.OfxExporter;
-import org.gnucash.android.export.ofx.OfxHelper;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.model.Split;
-import org.gnucash.android.model.Transaction;
-import org.gnucash.android.test.unit.GnuCashTest;
-import org.gnucash.android.util.TimestampHelper;
-import org.junit.Test;
-
-import java.io.File;
-import java.util.Calendar;
-import java.util.TimeZone;
-
-public class OfxExporterTest extends GnuCashTest {
-
+class OfxExporterTest : GnuCashTest() {
     /**
      * When there aren't new or modified transactions, the OFX exporter
      * shouldn't create any file.
      */
     @Test
-    public void testWithNoTransactionsToExport_shouldNotCreateAnyFile() {
-        Context context = GnuCashApplication.getAppContext();
-        ExportParams exportParameters = new ExportParams(ExportFormat.OFX);
-        exportParameters.setExportStartTime(TimestampHelper.getTimestampFromEpochZero());
-        exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
-        exportParameters.setDeleteTransactionsAfterExport(false);
-        OfxExporter exporter = new OfxExporter(context, exportParameters, GnuCashApplication.getActiveBookUID());
-        assertThrows(Exporter.ExporterException.class, () -> exporter.generateExport());
+    fun testWithNoTransactionsToExport_shouldNotCreateAnyFile() {
+        val exportParameters = ExportParams(ExportFormat.OFX)
+        exportParameters.exportStartTime = TimestampHelper.getTimestampFromEpochZero()
+        exportParameters.exportTarget = ExportParams.ExportTarget.SD_CARD
+        exportParameters.setDeleteTransactionsAfterExport(false)
+        val exporter = OfxExporter(
+            context, exportParameters,
+            GnuCashApplication.getActiveBookUID()!!
+        )
+        assertThrows(ExporterException::class.java) { exporter.generateExport() }
     }
 
     /**
      * Test that OFX files are generated
      */
     @Test
-    public void testGenerateOFXExport() {
-        Context context = GnuCashApplication.getAppContext();
-        AccountsDbAdapter accountsDbAdapter = GnuCashApplication.getAccountsDbAdapter();
+    fun testGenerateOFXExport() {
+        val accountsDbAdapter = GnuCashApplication.getAccountsDbAdapter()
 
-        Account account = new Account("Basic Account");
-        Transaction transaction = new Transaction("One transaction");
-        transaction.addSplit(new Split(Money.createZeroInstance("EUR"), account.getUID()));
-        account.addTransaction(transaction);
+        val account = Account("Basic Account")
+        val transaction = Transaction("One transaction")
+        transaction.addSplit(Split(createZeroInstance("EUR"), account.uid))
+        account.addTransaction(transaction)
 
-        accountsDbAdapter.addRecord(account);
+        accountsDbAdapter!!.addRecord(account)
 
-        ExportParams exportParameters = new ExportParams(ExportFormat.OFX);
-        exportParameters.setExportStartTime(TimestampHelper.getTimestampFromEpochZero());
-        exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
-        exportParameters.setDeleteTransactionsAfterExport(false);
+        val exportParameters = ExportParams(ExportFormat.OFX)
+        exportParameters.exportStartTime = TimestampHelper.getTimestampFromEpochZero()
+        exportParameters.exportTarget = ExportParams.ExportTarget.SD_CARD
+        exportParameters.setDeleteTransactionsAfterExport(false)
 
-        OfxExporter exporter = new OfxExporter(context, exportParameters, GnuCashApplication.getActiveBookUID());
-        Uri exportedFile = exporter.generateExport();
+        val exporter = OfxExporter(
+            context, exportParameters,
+            GnuCashApplication.getActiveBookUID()!!
+        )
+        val exportedFile = exporter.generateExport()
 
-        assertThat(exportedFile).isNotNull();
-        File file = new File(exportedFile.getPath());
-        assertThat(file).exists().hasExtension("ofx");
-        assertThat(file.length()).isGreaterThan(0L);
-        file.delete();
+        assertThat(exportedFile).isNotNull()
+        val file = File(exportedFile!!.path)
+        assertThat(file).exists().hasExtension("ofx")
+        assertThat(file.length()).isGreaterThan(0L)
+        file.delete()
     }
 
     @Test
-    public void testDateTime() {
-        TimeZone tz = TimeZone.getTimeZone("EST");
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeZone(tz);
-        cal.set(Calendar.YEAR, 1996);
-        cal.set(Calendar.MONTH, Calendar.DECEMBER);
-        cal.set(Calendar.DAY_OF_MONTH, 5);
-        cal.set(Calendar.HOUR_OF_DAY, 13);
-        cal.set(Calendar.MINUTE, 22);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 124);
+    fun testDateTime() {
+        val tz = TimeZone.getTimeZone("EST")
+        val cal = Calendar.getInstance()
+        cal.timeZone = tz
+        cal[Calendar.YEAR] = 1996
+        cal[Calendar.MONTH] = Calendar.DECEMBER
+        cal[Calendar.DAY_OF_MONTH] = 5
+        cal[Calendar.HOUR_OF_DAY] = 13
+        cal[Calendar.MINUTE] = 22
+        cal[Calendar.SECOND] = 0
+        cal[Calendar.MILLISECOND] = 124
 
-        String formatted = OfxHelper.getOfxFormattedTime(cal.getTimeInMillis(), tz);
-        assertThat(formatted).isEqualTo("19961205132200.124[-5:EST]");
+        var formatted = OfxHelper.getOfxFormattedTime(cal.timeInMillis, tz)
+        assertThat(formatted).isEqualTo("19961205132200.124[-5:EST]")
 
-        cal.set(Calendar.MONTH, Calendar.OCTOBER);
-        formatted = OfxHelper.getOfxFormattedTime(cal.getTimeInMillis(), tz);
-        assertThat(formatted).isEqualTo("19961005142200.124[-4:EDT]");
+        cal[Calendar.MONTH] = Calendar.OCTOBER
+        formatted = OfxHelper.getOfxFormattedTime(cal.timeInMillis, tz)
+        assertThat(formatted).isEqualTo("19961005142200.124[-4:EDT]")
     }
 }

@@ -3,7 +3,6 @@ package org.gnucash.android.test.unit.export
 import androidx.core.net.toFile
 import com.opencsv.ICSVWriter.RFC4180_LINE_END
 import org.assertj.core.api.Assertions.assertThat
-import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.export.ExportFormat
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.csv.CsvTransactionsExporter
@@ -33,7 +32,6 @@ class CsvTransactionsExporterTest : BookHelperTest() {
     fun `generate export in US locale`() {
         Locale.setDefault(Locale.US)
 
-        val context = GnuCashApplication.getAppContext()
         val bookUID = importGnuCashXml("multipleTransactionImport.xml")
         val exportParameters = ExportParams(ExportFormat.CSVT).apply {
             exportStartTime = TimestampHelper.getTimestampFromEpochZero()
@@ -61,7 +59,7 @@ class CsvTransactionsExporterTest : BookHelperTest() {
 
     @Test
     fun `generate export in Italian locale`() {
-        val context = GnuCashApplication.getAppContext().applyLocale(Locale.ITALY)
+        val context = context.applyLocale(Locale.ITALY)
 
         val bookUID = importGnuCashXml("multipleTransactionImport.xml")
         val exportParameters = ExportParams(ExportFormat.CSVT).apply {
@@ -90,7 +88,7 @@ class CsvTransactionsExporterTest : BookHelperTest() {
 
     @Test
     fun `export multiple currencies`() {
-        val context = GnuCashApplication.getAppContext().applyLocale(Locale.GERMANY)
+        val context = context.applyLocale(Locale.GERMANY)
 
         val bookUID = importGnuCashXml("common_1.gnucash")
         val exportParameters = ExportParams(ExportFormat.CSVT).apply {

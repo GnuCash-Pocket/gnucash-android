@@ -13,116 +13,116 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.test.unit.model;
+package org.gnucash.android.test.unit.model
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.gnucash.android.util.ColorExtKt.parseColor;
+import android.graphics.Color
+import org.assertj.core.api.Assertions.assertThat
+import org.gnucash.android.model.Account
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.model.Transaction
+import org.gnucash.android.test.unit.GnuCashTest
+import org.gnucash.android.util.parseColor
+import org.junit.Test
 
-import android.graphics.Color;
-
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Transaction;
-import org.gnucash.android.test.unit.GnuCashTest;
-import org.junit.Test;
-
-public class AccountTest extends GnuCashTest {
-
+class AccountTest : GnuCashTest() {
     @Test
-    public void testAccountUsesDefaultCurrency() {
-        Account account = new Account("Dummy account");
-        assertThat(account.getCommodity().getCurrencyCode()).isEqualTo(Commodity.DEFAULT_COMMODITY.getCurrencyCode());
+    fun testAccountUsesDefaultCurrency() {
+        val account = Account("Dummy account")
+        assertThat(account.commodity.currencyCode)
+            .isEqualTo(Commodity.DEFAULT_COMMODITY.currencyCode)
     }
 
     @Test
-    public void testAccountAlwaysHasUID() {
-        Account account = new Account("Dummy");
-        assertThat(account.getUID()).isNotNull();
+    fun testAccountAlwaysHasUID() {
+        val account = Account("Dummy")
+        assertThat(account.uid).isNotNull()
     }
 
     @Test
-    public void testTransactionsHaveSameCurrencyAsAccount() {
-        Account acc1 = new Account("Japanese", Commodity.JPY);
-        acc1.setUID("simile");
-        Transaction trx = new Transaction("Underground");
-        Transaction term = new Transaction("Tube");
+    fun testTransactionsHaveSameCurrencyAsAccount() {
+        val acc1 = Account("Japanese", Commodity.JPY)
+        acc1.setUID("simile")
+        val trx = Transaction("Underground")
+        val term = Transaction("Tube")
 
-        assertThat(trx.getCurrencyCode()).isEqualTo(Commodity.DEFAULT_COMMODITY.getCurrencyCode());
+        assertThat(trx.currencyCode).isEqualTo(Commodity.DEFAULT_COMMODITY.currencyCode)
 
-        acc1.addTransaction(trx);
-        acc1.addTransaction(term);
+        acc1.addTransaction(trx)
+        acc1.addTransaction(term)
 
-        assertThat(trx.getCurrencyCode()).isEqualTo("JPY");
-        assertThat(term.getCurrencyCode()).isEqualTo("JPY");
+        assertThat(trx.currencyCode).isEqualTo("JPY")
+        assertThat(term.currencyCode).isEqualTo("JPY")
     }
 
     @Test
-    public void testSetInvalidColorCode() {
-        Account account = new Account("Test");
-        account.setColor("443859");
-        assertThat(account.getColor()).isEqualTo(Account.DEFAULT_COLOR);
+    fun testSetInvalidColorCode() {
+        val account = Account("Test")
+        account.setColor("443859")
+        assertThat(account.color).isEqualTo(Account.DEFAULT_COLOR)
     }
 
     @Test
-    public void testSetColorWithAlphaComponent() {
-        Account account = new Account("Test");
-        account.setColor(parseColor("#aa112233"));
-        assertThat(account.getColor()).isEqualTo(Color.rgb(0xaa, 0x11, 0x22));
+    fun testSetColorWithAlphaComponent() {
+        val account = Account("Test")
+        account.color = parseColor("#aa112233")!!
+        assertThat(account.color).isEqualTo(Color.rgb(0xaa, 0x11, 0x22))
     }
 
     @Test
-    public void shouldSetFullNameWhenCreated() {
-        String fullName = "Full name ";
-        Account account = new Account(fullName);
-        assertThat(account.getName()).isEqualTo(fullName.trim()); //names are trimmed
-        assertThat(account.getFullName()).isEqualTo(fullName.trim()); //names are trimmed
+    fun shouldSetFullNameWhenCreated() {
+        val fullName = "Full name "
+        val account = Account(fullName)
+        assertThat(account.name)
+            .isEqualTo(fullName.trim { it <= ' ' }) //names are trimmed
+        assertThat(account.fullName)
+            .isEqualTo(fullName.trim { it <= ' ' }) //names are trimmed
     }
 
     @Test
-    public void settingNameShouldNotChangeFullName() {
-        String fullName = "Full name";
-        Account account = new Account(fullName);
+    fun settingNameShouldNotChangeFullName() {
+        val fullName = "Full name"
+        val account = Account(fullName)
 
-        account.setName("Name");
-        assertThat(account.getName()).isEqualTo("Name");
-        assertThat(account.getFullName()).isEqualTo(fullName);
+        account.name = "Name"
+        assertThat(account.name).isEqualTo("Name")
+        assertThat(account.fullName).isEqualTo(fullName)
     }
 
     @Test
-    public void newInstance_shouldReturnNonNullValues() {
-        Account account = new Account("Test account");
-        assertThat(account.getDescription()).isEqualTo("");
-        assertThat(account.getColor()).isEqualTo(Account.DEFAULT_COLOR);
+    fun newInstance_shouldReturnNonNullValues() {
+        val account = Account("Test account")
+        assertThat(account.description).isEqualTo("")
+        assertThat(account.color).isEqualTo(Account.DEFAULT_COLOR)
     }
 
     @Test
-    public void colors() {
-        Account account = new Account("Name");
-        assertThat(account.getColor()).isEqualTo(Account.DEFAULT_COLOR);
-        account.setColor("null");
-        assertThat(account.getColor()).isEqualTo(Account.DEFAULT_COLOR);
-        account.setColor("blah");
-        assertThat(account.getColor()).isEqualTo(Account.DEFAULT_COLOR);
-        account.setColor("aliceblue");
-        assertThat(account.getColor()).isEqualTo(Color.rgb(240, 248, 255));
-        assertThat(account.getColorHexString()).isEqualTo("#F0F8FF");
-        account.setColor("#0000ff");
-        assertThat(account.getColor()).isEqualTo(Color.BLUE);
-        assertThat(account.getColorHexString()).isEqualTo("#0000FF");
-        account.setColor("#fff");
-        assertThat(account.getColor()).isEqualTo(Color.WHITE);
-        assertThat(account.getColorHexString()).isEqualTo("#FFFFFF");
-        account.setColor("rgb(0,255,0)");
-        assertThat(account.getColor()).isEqualTo(Color.GREEN);
-        assertThat(account.getColorHexString()).isEqualTo("#00FF00");
-        account.setColor("rgba(255, 0, 0, 0.5)");
-        assertThat(account.getColor()).isEqualTo(Color.RED);
-        assertThat(account.getColorHexString()).isEqualTo("#FF0000");
-        account.setColor("hsl(300, 100%, 50%)");
-        assertThat(account.getColor()).isEqualTo(Color.MAGENTA);
-        assertThat(account.getColorHexString()).isEqualTo("#FF00FF");
-        account.setColor("hsla(0, 100%, 50%, 1.0)");
-        assertThat(account.getColor()).isEqualTo(Color.RED);
-        assertThat(account.getColorHexString()).isEqualTo("#FF0000");
+    fun colors() {
+        val account = Account("Name")
+        assertThat(account.color).isEqualTo(Account.DEFAULT_COLOR)
+        account.setColor("null")
+        assertThat(account.color).isEqualTo(Account.DEFAULT_COLOR)
+        account.setColor("blah")
+        assertThat(account.color).isEqualTo(Account.DEFAULT_COLOR)
+        account.setColor("aliceblue")
+        assertThat(account.color).isEqualTo(Color.rgb(240, 248, 255))
+        assertThat(account.colorHexString).isEqualTo("#F0F8FF")
+        account.setColor("#0000ff")
+        assertThat(account.color).isEqualTo(Color.BLUE)
+        assertThat(account.colorHexString).isEqualTo("#0000FF")
+        account.setColor("#fff")
+        assertThat(account.color).isEqualTo(Color.WHITE)
+        assertThat(account.colorHexString).isEqualTo("#FFFFFF")
+        account.setColor("rgb(0,255,0)")
+        assertThat(account.color).isEqualTo(Color.GREEN)
+        assertThat(account.colorHexString).isEqualTo("#00FF00")
+        account.setColor("rgba(255, 0, 0, 0.5)")
+        assertThat(account.color).isEqualTo(Color.RED)
+        assertThat(account.colorHexString).isEqualTo("#FF0000")
+        account.setColor("hsl(300, 100%, 50%)")
+        assertThat(account.color).isEqualTo(Color.MAGENTA)
+        assertThat(account.colorHexString).isEqualTo("#FF00FF")
+        account.setColor("hsla(0, 100%, 50%, 1.0)")
+        assertThat(account.color).isEqualTo(Color.RED)
+        assertThat(account.colorHexString).isEqualTo("#FF0000")
     }
 }

@@ -1,94 +1,71 @@
-package org.gnucash.android.test.ui.util;
+package org.gnucash.android.test.ui.util
 
-import android.Manifest;
-import android.app.UiAutomation;
-import android.os.Build;
-import android.os.ParcelFileDescriptor;
-
-import androidx.test.platform.app.InstrumentationRegistry;
-
-import org.junit.rules.TestRule;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
-
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
-import timber.log.Timber;
+import android.Manifest
+import android.os.Build
+import androidx.test.platform.app.InstrumentationRegistry
+import org.junit.rules.TestRule
+import org.junit.runner.Description
+import org.junit.runners.model.Statement
+import timber.log.Timber
+import java.io.BufferedInputStream
+import java.io.FileInputStream
 
 /**
  * Created by Ngewi on 19.04.2016.
- * Credit: <a href="https://product.reverb.com/2015/06/06/disabling-animations-in-espresso-for-android-testing/">reverb.com</a>
+ * Credit: [reverb.com](https://product.reverb.com/2015/06/06/disabling-animations-in-espresso-for-android-testing/)
  */
-public class DisableAnimationsRule implements TestRule {
-    private void setAnimationState(AnimationState state) throws IOException {
-        List<String> commands = List.of(
+class DisableAnimationsRule : TestRule {
+    private fun setAnimationState(state: AnimationState) {
+        val commands = listOf(
             "settings get global animator_duration_scale",
-            "settings put global animator_duration_scale " + state.getStatusCode(),
-            "settings put global transition_animation_scale " + state.getStatusCode(),
-            "settings put global window_animation_scale " + state.getStatusCode()
-        );
+            "settings put global animator_duration_scale " + state.statusCode,
+            "settings put global transition_animation_scale " + state.statusCode,
+            "settings put global window_animation_scale " + state.statusCode
+        )
 
-        UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+        val uiAutomation = InstrumentationRegistry.getInstrumentation().uiAutomation
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            uiAutomation.adoptShellPermissionIdentity(Manifest.permission.WRITE_SECURE_SETTINGS);
+            uiAutomation.adoptShellPermissionIdentity(Manifest.permission.WRITE_SECURE_SETTINGS)
         }
 
-        for (String command : commands) {
-            try (
-                ParcelFileDescriptor fd = uiAutomation.executeShellCommand(command);
-                InputStream is = new BufferedInputStream(new FileInputStream(fd.getFileDescriptor()));
-                fd;
-                is
-            ) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // https://stackoverflow.com/a/75837274/2249464
-                    String commandOutput = new String(is.readAllBytes());
-                    Timber.d(commandOutput);
-                } else {
-                    StringBuilder commandOutput = new StringBuilder();
-                    int i;
-                    while ((i = is.read()) != -1) {
-                        commandOutput.append(i);
+        for (command in commands) {
+            uiAutomation.executeShellCommand(command).use { fd ->
+                BufferedInputStream(FileInputStream(fd.fileDescriptor)).use { input ->
+                    fd.use {
+                        input.use {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // https://stackoverflow.com/a/75837274/2249464
+                                val commandOutput = String(input.readAllBytes())
+                                Timber.d(commandOutput)
+                            } else {
+                                val commandOutput = StringBuilder()
+                                var i: Int
+                                while ((input.read().also { i = it }) != -1) {
+                                    commandOutput.append(i)
+                                }
+                                Timber.d(commandOutput.toString())
+                            }
+                        }
                     }
-                    Timber.d(commandOutput.toString());
                 }
             }
         }
     }
 
-    @Override
-    public Statement apply(final Statement statement, Description description) {
-        return new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                setAnimationState(AnimationState.DISABLED);
+    override fun apply(statement: Statement, description: Description): Statement {
+        return object : Statement() {
+            override fun evaluate() {
+                setAnimationState(AnimationState.DISABLED)
                 try {
-                    statement.evaluate();
+                    statement.evaluate()
                 } finally {
-                    setAnimationState(AnimationState.DEFAULT);
+                    setAnimationState(AnimationState.DEFAULT)
                 }
             }
-        };
+        }
     }
 
-    private enum AnimationState {
-        DISABLED(AnimationState.ANIMATIONS_DISABLED),
-        DEFAULT(AnimationState.ANIMATIONS_DEFAULT);
-
-        private final float statusCode;
-
-        AnimationState(float statusCode) {
-            this.statusCode = statusCode;
-        }
-
-        public float getStatusCode() {
-            return statusCode;
-        }
-
-        private static final float ANIMATIONS_DISABLED = 0.0f;
-        private static final float ANIMATIONS_DEFAULT = 1.0f;
+    private enum class AnimationState(val statusCode: Float) {
+        DISABLED(0.0f),
+        DEFAULT(1.0f);
     }
 }

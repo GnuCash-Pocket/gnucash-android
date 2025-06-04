@@ -13,325 +13,326 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.service;
+package org.gnucash.android.service
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import android.content.ContentValues;
-import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseSchema;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.DatabaseAdapter;
-import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
-import org.gnucash.android.export.ExportFormat;
-import org.gnucash.android.export.ExportParams;
-import org.gnucash.android.export.Exporter;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.model.PeriodType;
-import org.gnucash.android.model.Recurrence;
-import org.gnucash.android.model.ScheduledAction;
-import org.gnucash.android.model.Split;
-import org.gnucash.android.model.Transaction;
-import org.gnucash.android.model.TransactionType;
-import org.gnucash.android.test.unit.GnuCashTest;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeConstants;
-import org.joda.time.LocalDateTime;
-import org.joda.time.Weeks;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.Collections;
-
-import timber.log.Timber;
+import android.content.ContentValues
+import android.database.sqlite.SQLiteDatabase
+import org.assertj.core.api.Assertions.assertThat
+import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.db.DatabaseSchema
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.DatabaseAdapter
+import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
+import org.gnucash.android.db.adapter.TransactionsDbAdapter
+import org.gnucash.android.export.ExportFormat
+import org.gnucash.android.export.ExportParams
+import org.gnucash.android.export.Exporter
+import org.gnucash.android.model.Account
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.model.Money
+import org.gnucash.android.model.PeriodType
+import org.gnucash.android.model.Recurrence
+import org.gnucash.android.model.ScheduledAction
+import org.gnucash.android.model.Split
+import org.gnucash.android.model.Transaction
+import org.gnucash.android.model.TransactionType
+import org.gnucash.android.test.unit.GnuCashTest
+import org.joda.time.DateTime
+import org.joda.time.DateTimeConstants
+import org.joda.time.LocalDateTime
+import org.joda.time.Weeks
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import timber.log.Timber
+import java.io.File
+import java.math.BigDecimal
+import java.sql.Timestamp
+import java.util.Calendar
 
 /**
  * Test the the scheduled actions service runs as expected
  */
-public class ScheduledActionServiceTest extends GnuCashTest {
+class ScheduledActionServiceTest : GnuCashTest() {
+    private var actionUID: String? = null
+    private var db: SQLiteDatabase? = null
 
-    private String mActionUID;
-    private SQLiteDatabase mDb;
+    private val baseAccount = Account("Base Account")
+    private val transferAccount = Account("Transfer Account")
 
-    private final Account mBaseAccount = new Account("Base Account");
-    private final Account mTransferAccount = new Account("Transfer Account");
-
-    private TransactionsDbAdapter mTransactionsDbAdapter;
+    private lateinit var transactionsDbAdapter: TransactionsDbAdapter
 
     @Before
-    public void setUp() {
-        mDb = GnuCashApplication.getActiveDb();
-        mBaseAccount.setCommodity(Commodity.DEFAULT_COMMODITY);
-        mTransferAccount.setCommodity(Commodity.DEFAULT_COMMODITY);
+    fun setUp() {
+        db = GnuCashApplication.getActiveDb()
+        baseAccount.commodity = Commodity.DEFAULT_COMMODITY
+        transferAccount.commodity = Commodity.DEFAULT_COMMODITY
 
-        Transaction templateTransaction = new Transaction("Recurring Transaction");
-        templateTransaction.setCommodity(Commodity.DEFAULT_COMMODITY);
-        templateTransaction.setTemplate(true);
+        val templateTransaction = Transaction("Recurring Transaction")
+        templateTransaction.commodity = Commodity.DEFAULT_COMMODITY
+        templateTransaction.isTemplate = true
 
-        Split split1 = new Split(new Money(BigDecimal.TEN, Commodity.DEFAULT_COMMODITY), mBaseAccount.getUID());
-        Split split2 = split1.createPair(mTransferAccount.getUID());
+        val split1 =
+            Split(Money(BigDecimal.TEN, Commodity.DEFAULT_COMMODITY), baseAccount.uid)
+        val split2 = split1.createPair(transferAccount.uid)
 
-        templateTransaction.addSplit(split1);
-        templateTransaction.addSplit(split2);
+        templateTransaction.addSplit(split1)
+        templateTransaction.addSplit(split2)
 
-        mActionUID = templateTransaction.getUID();
-        Timber.v("action ID: " + mActionUID);
+        actionUID = templateTransaction.uid
+        Timber.v("action ID: $actionUID")
 
-        AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
-        accountsDbAdapter.addRecord(mBaseAccount);
-        accountsDbAdapter.addRecord(mTransferAccount);
+        val accountsDbAdapter = AccountsDbAdapter.getInstance()
+        accountsDbAdapter.addRecord(baseAccount)
+        accountsDbAdapter.addRecord(transferAccount)
 
-        mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
-        mTransactionsDbAdapter.addRecord(templateTransaction, DatabaseAdapter.UpdateMethod.insert);
+        transactionsDbAdapter = TransactionsDbAdapter.getInstance()
+        transactionsDbAdapter.addRecord(templateTransaction, DatabaseAdapter.UpdateMethod.insert)
+    }
+
+    @After
+    fun tearDown() {
+        transactionsDbAdapter.deleteAllRecords()
     }
 
     @Test
-    public void disabledScheduledActions_shouldNotRun() {
-        Context context = GnuCashApplication.getAppContext();
-        Recurrence recurrence = new Recurrence(PeriodType.WEEK);
-        ScheduledAction scheduledAction1 = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
-        scheduledAction1.setStartTime(System.currentTimeMillis() - 100000);
-        scheduledAction1.setEnabled(false);
-        scheduledAction1.setActionUID(mActionUID);
-        scheduledAction1.setRecurrence(recurrence);
+    fun disabledScheduledActions_shouldNotRun() {
+        val recurrence = Recurrence(PeriodType.WEEK)
+        val scheduledAction1 = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
+        scheduledAction1.startTime = System.currentTimeMillis() - 100000
+        scheduledAction1.isEnabled = false
+        scheduledAction1.actionUID = actionUID
+        scheduledAction1.setRecurrence(recurrence)
 
-        TransactionsDbAdapter trxnAdapter = TransactionsDbAdapter.getInstance();
+        val trxnAdapter = TransactionsDbAdapter.getInstance()
 
-        assertThat(trxnAdapter.getRecordsCount()).isZero();
-        ScheduledActionService.processScheduledAction(context, scheduledAction1, mDb);
-        assertThat(trxnAdapter.getRecordsCount()).isZero();
+        assertThat(trxnAdapter.recordsCount).isZero()
+        ScheduledActionService.processScheduledAction(context, scheduledAction1, db)
+        assertThat(trxnAdapter.recordsCount).isZero()
     }
 
     @Test
-    public void futureScheduledActions_shouldNotRun() {
-        Context context = GnuCashApplication.getAppContext();
-        ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
-        scheduledAction.setStartTime(System.currentTimeMillis() + 100000);
-        scheduledAction.setEnabled(true);
-        scheduledAction.setRecurrence(new Recurrence(PeriodType.MONTH));
-        scheduledAction.setActionUID(mActionUID);
+    fun futureScheduledActions_shouldNotRun() {
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
+        scheduledAction.startTime = System.currentTimeMillis() + 100000
+        scheduledAction.isEnabled = true
+        scheduledAction.setRecurrence(Recurrence(PeriodType.MONTH))
+        scheduledAction.actionUID = actionUID
 
-        TransactionsDbAdapter trxnAdapter = TransactionsDbAdapter.getInstance();
+        val trxnAdapter = TransactionsDbAdapter.getInstance()
 
-        assertThat(trxnAdapter.getRecordsCount()).isZero();
-        ScheduledActionService.processScheduledAction(context, scheduledAction, mDb);
-        assertThat(trxnAdapter.getRecordsCount()).isZero();
+        assertThat(trxnAdapter.recordsCount).isZero()
+        ScheduledActionService.processScheduledAction(context, scheduledAction, db)
+        assertThat(trxnAdapter.recordsCount).isZero()
     }
 
     /**
      * Transactions whose execution count has reached or exceeded the planned execution count
      */
     @Test
-    public void exceededExecutionCounts_shouldNotRun() {
-        Context context = GnuCashApplication.getAppContext();
-        ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
-        scheduledAction.setActionUID(mActionUID);
-        scheduledAction.setStartTime(new DateTime(2015, 5, 31, 14, 0).getMillis());
-        scheduledAction.setEnabled(true);
-        scheduledAction.setRecurrence(new Recurrence(PeriodType.WEEK));
-        scheduledAction.setTotalPlannedExecutionCount(4);
-        scheduledAction.setExecutionCount(4);
+    fun exceededExecutionCounts_shouldNotRun() {
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
+        scheduledAction.actionUID = actionUID
+        scheduledAction.startTime = DateTime(2015, 5, 31, 14, 0).millis
+        scheduledAction.isEnabled = true
+        scheduledAction.setRecurrence(Recurrence(PeriodType.WEEK))
+        scheduledAction.totalPlannedExecutionCount = 4
+        scheduledAction.executionCount = 4
 
-        TransactionsDbAdapter trxnAdapter = TransactionsDbAdapter.getInstance();
-        assertThat(trxnAdapter.getRecordsCount()).isZero();
-        ScheduledActionService.processScheduledAction(context, scheduledAction, mDb);
-        assertThat(trxnAdapter.getRecordsCount()).isZero();
+        val trxnAdapter = TransactionsDbAdapter.getInstance()
+        assertThat(trxnAdapter.recordsCount).isZero()
+        ScheduledActionService.processScheduledAction(context, scheduledAction, db)
+        assertThat(trxnAdapter.recordsCount).isZero()
     }
 
     /**
      * Test that normal scheduled transactions would lead to new transaction entries
      */
     @Test
-    public void missedScheduledTransactions_shouldBeGenerated() {
-        Context context = GnuCashApplication.getAppContext();
-        ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
-        DateTime startTime = new DateTime(2016, 6, 6, 9, 0);
-        scheduledAction.setStartTime(startTime.getMillis());
-        DateTime endTime = new DateTime(2016, 9, 12, 8, 0); //end just before last appointment
-        scheduledAction.setEndTime(endTime.getMillis());
+    fun missedScheduledTransactions_shouldBeGenerated() {
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
+        val startTime = DateTime(2016, 6, 6, 9, 0)
+        scheduledAction.startTime = startTime.millis
+        val endTime = DateTime(2016, 9, 12, 8, 0) //end just before last appointment
+        scheduledAction.endTime = endTime.millis
 
-        scheduledAction.setActionUID(mActionUID);
+        scheduledAction.actionUID = actionUID
 
-        Recurrence recurrence = new Recurrence(PeriodType.WEEK);
-        recurrence.setMultiplier(2);
-        recurrence.setByDays(Collections.singletonList(Calendar.MONDAY));
-        scheduledAction.setRecurrence(recurrence);
-        ScheduledActionDbAdapter.getInstance().addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.insert);
+        val recurrence = Recurrence(PeriodType.WEEK)
+        recurrence.multiplier = 2
+        recurrence.byDays = listOf(Calendar.MONDAY)
+        scheduledAction.setRecurrence(recurrence)
+        ScheduledActionDbAdapter.getInstance()
+            .addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.insert)
 
-        TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
-        assertThat(transactionsDbAdapter.getRecordsCount()).isZero();
+        val transactionsDbAdapter = TransactionsDbAdapter.getInstance()
+        assertThat(transactionsDbAdapter.recordsCount).isZero()
 
-        ScheduledActionService.processScheduledAction(context, scheduledAction, mDb);
+        ScheduledActionService.processScheduledAction(context, scheduledAction, db)
 
-        assertThat(transactionsDbAdapter.getRecordsCount()).isEqualTo(7);
+        assertThat(transactionsDbAdapter.recordsCount).isEqualTo(7)
     }
 
-    public void endTimeInTheFuture_shouldExecuteOnlyUntilPresent() {
-        Context context = GnuCashApplication.getAppContext();
-        ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
-        DateTime startTime = new DateTime(2016, 6, 6, 9, 0);
-        scheduledAction.setStartTime(startTime.getMillis());
-        scheduledAction.setActionUID(mActionUID);
+    fun endTimeInTheFuture_shouldExecuteOnlyUntilPresent() {
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
+        val startTime = DateTime(2016, 6, 6, 9, 0)
+        scheduledAction.startTime = startTime.millis
+        scheduledAction.actionUID = actionUID
 
-        scheduledAction.setRecurrence(PeriodType.WEEK, 2);
-        scheduledAction.setEndTime(new DateTime(2017, 8, 16, 9, 0).getMillis());
-        ScheduledActionDbAdapter.getInstance().addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.insert);
+        scheduledAction.setRecurrence(PeriodType.WEEK, 2)
+        scheduledAction.endTime = DateTime(2017, 8, 16, 9, 0).millis
+        ScheduledActionDbAdapter.getInstance()
+            .addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.insert)
 
-        TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
-        assertThat(transactionsDbAdapter.getRecordsCount()).isZero();
+        val transactionsDbAdapter = TransactionsDbAdapter.getInstance()
+        assertThat(transactionsDbAdapter.recordsCount).isZero()
 
-        ScheduledActionService.processScheduledAction(context, scheduledAction, mDb);
+        ScheduledActionService.processScheduledAction(context, scheduledAction, db)
 
-        int weeks = Weeks.weeksBetween(startTime, new DateTime(2016, 8, 29, 10, 0)).getWeeks();
-        int expectedTransactionCount = weeks / 2; //multiplier from the PeriodType
+        val weeks = Weeks.weeksBetween(startTime, DateTime(2016, 8, 29, 10, 0)).weeks
+        val expectedTransactionCount = weeks / 2 //multiplier from the PeriodType
 
-        assertThat(transactionsDbAdapter.getRecordsCount()).isEqualTo(expectedTransactionCount);
+        assertThat(transactionsDbAdapter.recordsCount)
+            .isEqualTo(expectedTransactionCount.toLong())
     }
 
     /**
      * Test that if the end time of a scheduled transaction has passed, but the schedule was missed
      * (either because the book was not opened or similar) then the scheduled transactions for the
      * relevant period should still be executed even though end time has passed.
-     * <p>This holds only for transactions. Backups will be skipped</p>
+     *
+     * This holds only for transactions. Backups will be skipped
      */
     @Test
-    public void scheduledTransactionsWithEndTimeInPast_shouldBeExecuted() {
-        Context context = GnuCashApplication.getAppContext();
-        ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
-        DateTime startTime = new DateTime(2016, 6, 6, 9, 0);
-        scheduledAction.setStartTime(startTime.getMillis());
-        scheduledAction.setActionUID(mActionUID);
+    fun scheduledTransactionsWithEndTimeInPast_shouldBeExecuted() {
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
+        val startTime = DateTime(2016, 6, 6, 9, 0)
+        scheduledAction.startTime = startTime.millis
+        scheduledAction.actionUID = actionUID
 
-        Recurrence recurrence = new Recurrence(PeriodType.WEEK);
-        recurrence.setMultiplier(2);
-        recurrence.setByDays(Collections.singletonList(Calendar.MONDAY));
-        scheduledAction.setRecurrence(recurrence);
-        scheduledAction.setEndTime(new DateTime(2016, 8, 8, 9, 0).getMillis());
-        ScheduledActionDbAdapter.getInstance().addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.insert);
+        val recurrence = Recurrence(PeriodType.WEEK)
+        recurrence.multiplier = 2
+        recurrence.byDays = listOf(Calendar.MONDAY)
+        scheduledAction.setRecurrence(recurrence)
+        scheduledAction.endTime = DateTime(2016, 8, 8, 9, 0).millis
+        ScheduledActionDbAdapter.getInstance()
+            .addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.insert)
 
-        TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
-        assertThat(transactionsDbAdapter.getRecordsCount()).isZero();
+        val transactionsDbAdapter = TransactionsDbAdapter.getInstance()
+        assertThat(transactionsDbAdapter.recordsCount).isZero()
 
-        ScheduledActionService.processScheduledAction(context, scheduledAction, mDb);
+        ScheduledActionService.processScheduledAction(context, scheduledAction, db)
 
-        int expectedCount = 5;
-        assertThat(scheduledAction.getExecutionCount()).isEqualTo(expectedCount);
-        assertThat(transactionsDbAdapter.getRecordsCount()).isEqualTo(expectedCount); //would be 6 if the end time is not respected
+        val expectedCount = 5
+        assertThat(scheduledAction.executionCount).isEqualTo(expectedCount)
+        assertThat(transactionsDbAdapter.recordsCount)
+            .isEqualTo(expectedCount.toLong()) //would be 6 if the end time is not respected
     }
 
     /**
      * Test that only scheduled actions with action UIDs are processed
      */
     @Test //(expected = IllegalArgumentException.class)
-    public void recurringTransactions_shouldHaveScheduledActionUID() {
-        Context context = GnuCashApplication.getAppContext();
-        ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
-        DateTime startTime = new DateTime(2016, 7, 4, 12, 0);
-        scheduledAction.setStartTime(startTime.getMillis());
-        scheduledAction.setRecurrence(PeriodType.MONTH, 1);
+    fun recurringTransactions_shouldHaveScheduledActionUID() {
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
+        val startTime = DateTime(2016, 7, 4, 12, 0)
+        scheduledAction.startTime = startTime.millis
+        scheduledAction.setRecurrence(PeriodType.MONTH, 1)
 
-        TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
-        assertThat(transactionsDbAdapter.getRecordsCount()).isZero();
+        val transactionsDbAdapter = TransactionsDbAdapter.getInstance()
+        assertThat(transactionsDbAdapter.recordsCount).isZero()
 
-        ScheduledActionService.processScheduledAction(context, scheduledAction, mDb);
+        ScheduledActionService.processScheduledAction(context, scheduledAction, db)
 
         //no change in the database since no action UID was specified
-        assertThat(transactionsDbAdapter.getRecordsCount()).isZero();
+        assertThat(transactionsDbAdapter.recordsCount).isZero()
     }
 
     /**
      * Scheduled backups should run only once.
      *
-     * <p>Backups may have been missed since the last run, but still only
-     * one should be done.</p>
      *
-     * <p>For example, if we have set up a daily backup, the last one
+     * Backups may have been missed since the last run, but still only
+     * one should be done.
+     *
+     *
+     * For example, if we have set up a daily backup, the last one
      * was done on Monday and it's Thursday, two backups have been
      * missed. Doing the two missed backups plus today's wouldn't be
-     * useful, so just one should be done.</p>
+     * useful, so just one should be done.
      */
     @Test
-    public void scheduledBackups_shouldRunOnlyOnce() {
-        Context context = GnuCashApplication.getAppContext();
-        ScheduledAction scheduledBackup = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
-        scheduledBackup.setStartTime(LocalDateTime.now()
-            .minusMonths(4).minusDays(2).toDate().getTime());
-        scheduledBackup.setRecurrence(PeriodType.MONTH, 1);
-        scheduledBackup.setExecutionCount(2);
-        scheduledBackup.setLastRunTime(LocalDateTime.now().minusMonths(2).toDate().getTime());
-        long previousLastRun = scheduledBackup.getLastRunTime();
+    fun scheduledBackups_shouldRunOnlyOnce() {
+        val scheduledBackup = ScheduledAction(ScheduledAction.ActionType.BACKUP)
+        scheduledBackup.startTime = LocalDateTime.now()
+            .minusMonths(4).minusDays(2).toDate().time
+        scheduledBackup.setRecurrence(PeriodType.MONTH, 1)
+        scheduledBackup.executionCount = 2
+        scheduledBackup.lastRunTime = LocalDateTime.now().minusMonths(2).toDate().time
+        var previousLastRun = scheduledBackup.lastRunTime
 
-        ExportParams backupParams = new ExportParams(ExportFormat.XML);
-        backupParams.setExportTarget(ExportParams.ExportTarget.SD_CARD);
-        scheduledBackup.setTag(backupParams.toTag());
+        val backupParams = ExportParams(ExportFormat.XML)
+        backupParams.exportTarget = ExportParams.ExportTarget.SD_CARD
+        scheduledBackup.tag = backupParams.toTag()
 
-        File backupFolder = new File(Exporter.getExportFolderPath(context, GnuCashApplication.getActiveBookUID()));
-        assertThat(backupFolder).exists();
-        assertThat(backupFolder.listFiles()).isEmpty();
+        val backupFolder =
+            File(Exporter.getExportFolderPath(context, GnuCashApplication.getActiveBookUID()))
+        assertThat(backupFolder).exists()
+        assertThat(backupFolder.listFiles()).isEmpty()
 
         // Check there's not a backup for each missed run
-        ScheduledActionService.processScheduledAction(context, scheduledBackup, mDb);
-        assertThat(scheduledBackup.getExecutionCount()).isEqualTo(3);
-        assertThat(scheduledBackup.getLastRunTime()).isGreaterThan(previousLastRun);
-        File[] backupFiles = backupFolder.listFiles();
-        assertThat(backupFiles).hasSize(1);
-        assertThat(backupFiles[0]).exists().hasExtension("xac");
+        ScheduledActionService.processScheduledAction(context, scheduledBackup, db)
+        assertThat(scheduledBackup.executionCount).isEqualTo(3)
+        assertThat(scheduledBackup.lastRunTime).isGreaterThan(previousLastRun)
+        var backupFiles = backupFolder.listFiles()
+        assertThat(backupFiles!!).hasSize(1)
+        assertThat(backupFiles[0]).exists().hasExtension("xac")
 
         // Check also across service runs
-        previousLastRun = scheduledBackup.getLastRunTime();
-        ScheduledActionService.processScheduledAction(context, scheduledBackup, mDb);
-        assertThat(scheduledBackup.getExecutionCount()).isEqualTo(3);
-        assertThat(scheduledBackup.getLastRunTime()).isEqualTo(previousLastRun);
-        backupFiles = backupFolder.listFiles();
-        assertThat(backupFiles).hasSize(1);
-        assertThat(backupFiles[0]).exists().hasExtension("xac");
+        previousLastRun = scheduledBackup.lastRunTime
+        ScheduledActionService.processScheduledAction(context, scheduledBackup, db)
+        assertThat(scheduledBackup.executionCount).isEqualTo(3)
+        assertThat(scheduledBackup.lastRunTime).isEqualTo(previousLastRun)
+        backupFiles = backupFolder.listFiles()
+        assertThat(backupFiles!!).hasSize(1)
+        assertThat(backupFiles[0]).exists().hasExtension("xac")
     }
 
     /**
      * Tests that a scheduled backup isn't executed before the next scheduled
      * execution according to its recurrence.
      *
-     * <p>Tests for bug <a href="https://github.com/codinguser/gnucash-android/issues/583">codinguser/gnucash-android#583</a></p>
+     *
+     * Tests for bug [codinguser/gnucash-android#583](https://github.com/codinguser/gnucash-android/issues/583)
      */
     @Test
-    public void scheduledBackups_shouldNotRunBeforeNextScheduledExecution() {
-        Context context = GnuCashApplication.getAppContext();
-        ScheduledAction scheduledBackup = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
-        scheduledBackup.setStartTime(
-            LocalDateTime.now().withDayOfWeek(DateTimeConstants.WEDNESDAY).toDate().getTime());
-        scheduledBackup.setLastRunTime(scheduledBackup.getStartTime());
-        long previousLastRun = scheduledBackup.getLastRunTime();
-        scheduledBackup.setExecutionCount(0);
-        Recurrence recurrence = new Recurrence(PeriodType.WEEK);
-        recurrence.setMultiplier(1);
-        recurrence.setByDays(Collections.singletonList(Calendar.MONDAY));
-        scheduledBackup.setRecurrence(recurrence);
+    fun scheduledBackups_shouldNotRunBeforeNextScheduledExecution() {
+        val scheduledBackup = ScheduledAction(ScheduledAction.ActionType.BACKUP)
+        scheduledBackup.startTime =
+            LocalDateTime.now().withDayOfWeek(DateTimeConstants.WEDNESDAY).toDate().time
+        scheduledBackup.lastRunTime = scheduledBackup.startTime
+        val previousLastRun = scheduledBackup.lastRunTime
+        scheduledBackup.executionCount = 0
+        val recurrence = Recurrence(PeriodType.WEEK)
+        recurrence.multiplier = 1
+        recurrence.byDays = listOf(Calendar.MONDAY)
+        scheduledBackup.setRecurrence(recurrence)
 
-        ExportParams backupParams = new ExportParams(ExportFormat.XML);
-        backupParams.setExportTarget(ExportParams.ExportTarget.SD_CARD);
-        scheduledBackup.setTag(backupParams.toTag());
+        val backupParams = ExportParams(ExportFormat.XML)
+        backupParams.exportTarget = ExportParams.ExportTarget.SD_CARD
+        scheduledBackup.tag = backupParams.toTag()
 
-        File backupFolder = new File(
-            Exporter.getExportFolderPath(context, GnuCashApplication.getActiveBookUID()));
-        assertThat(backupFolder).exists();
-        assertThat(backupFolder.listFiles()).isEmpty();
+        val backupFolder = File(
+            Exporter.getExportFolderPath(context, GnuCashApplication.getActiveBookUID())
+        )
+        assertThat(backupFolder).exists()
+        assertThat(backupFolder.listFiles()).isEmpty()
 
-        ScheduledActionService.processScheduledAction(context, scheduledBackup, mDb);
+        ScheduledActionService.processScheduledAction(context, scheduledBackup, db)
 
-        assertThat(scheduledBackup.getExecutionCount()).isEqualTo(0);
-        assertThat(scheduledBackup.getLastRunTime()).isEqualTo(previousLastRun);
-        assertThat(backupFolder.listFiles()).isEmpty();
+        assertThat(scheduledBackup.executionCount).isEqualTo(0)
+        assertThat(scheduledBackup.lastRunTime).isEqualTo(previousLastRun)
+        assertThat(backupFolder.listFiles()).isEmpty()
     }
 
     /**
@@ -339,47 +340,51 @@ public class ScheduledActionServiceTest extends GnuCashTest {
      * been added or modified after the last run.
      */
     @Test
-    public void scheduledBackups_shouldNotIncludeTransactionsPreviousToTheLastRun() {
-        Context context = GnuCashApplication.getAppContext();
-        ScheduledAction scheduledBackup = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
-        scheduledBackup.setStartTime(LocalDateTime.now().minusDays(15).toDate().getTime());
-        scheduledBackup.setLastRunTime(LocalDateTime.now().minusDays(8).toDate().getTime());
-        long previousLastRun = scheduledBackup.getLastRunTime();
-        scheduledBackup.setExecutionCount(1);
-        Recurrence recurrence = new Recurrence(PeriodType.WEEK);
-        recurrence.setMultiplier(1);
-        recurrence.setByDays(Collections.singletonList(Calendar.WEDNESDAY));
-        scheduledBackup.setRecurrence(recurrence);
-        ExportParams backupParams = new ExportParams(ExportFormat.QIF);
-        backupParams.setExportTarget(ExportParams.ExportTarget.SD_CARD);
-        backupParams.setExportStartTime(new Timestamp(scheduledBackup.getStartTime()));
-        scheduledBackup.setTag(backupParams.toTag());
+    fun scheduledBackups_shouldNotIncludeTransactionsPreviousToTheLastRun() {
+        val scheduledBackup = ScheduledAction(ScheduledAction.ActionType.BACKUP)
+        scheduledBackup.startTime = LocalDateTime.now().minusDays(15).toDate().time
+        scheduledBackup.lastRunTime = LocalDateTime.now().minusDays(8).toDate().time
+        val previousLastRun = scheduledBackup.lastRunTime
+        scheduledBackup.executionCount = 1
+        val recurrence = Recurrence(PeriodType.WEEK)
+        recurrence.multiplier = 1
+        recurrence.byDays = listOf(Calendar.WEDNESDAY)
+        scheduledBackup.setRecurrence(recurrence)
+        val backupParams = ExportParams(ExportFormat.QIF)
+        backupParams.exportTarget = ExportParams.ExportTarget.SD_CARD
+        backupParams.exportStartTime = Timestamp(scheduledBackup.startTime)
+        scheduledBackup.tag = backupParams.toTag()
 
         // Create a transaction with a modified date previous to the last run
-        Transaction transaction = new Transaction("Tandoori express");
-        Split split = new Split(new Money("10", Commodity.DEFAULT_COMMODITY.getCurrencyCode()),
-            mBaseAccount.getUID());
-        split.setType(TransactionType.DEBIT);
-        transaction.addSplit(split);
-        transaction.addSplit(split.createPair(mTransferAccount.getUID()));
-        mTransactionsDbAdapter.addRecord(transaction);
+        val transaction = Transaction("Tandoori express")
+        val split = Split(
+            Money("10", Commodity.DEFAULT_COMMODITY.currencyCode),
+            baseAccount.uid
+        )
+        split.type = TransactionType.DEBIT
+        transaction.addSplit(split)
+        transaction.addSplit(split.createPair(transferAccount.uid))
+        transactionsDbAdapter.addRecord(transaction)
         // We set the date directly in the database as the corresponding field
         // is ignored when the object is stored. It's set through a trigger instead.
-        setTransactionInDbTimestamp(transaction.getUID(),
-            new Timestamp(LocalDateTime.now().minusDays(9).toDate().getTime()));
+        setTransactionInDbTimestamp(
+            transaction.uid,
+            Timestamp(LocalDateTime.now().minusDays(9).toDate().time)
+        )
 
-        File backupFolder = new File(
-            Exporter.getExportFolderPath(context, GnuCashApplication.getActiveBookUID()));
-        assertThat(backupFolder).exists();
-        assertThat(backupFolder.listFiles()).isEmpty();
+        val backupFolder = File(
+            Exporter.getExportFolderPath(context, GnuCashApplication.getActiveBookUID())
+        )
+        assertThat(backupFolder).exists()
+        assertThat(backupFolder.listFiles()).isEmpty()
 
-        ScheduledActionService.processScheduledAction(context, scheduledBackup, mDb);
+        ScheduledActionService.processScheduledAction(context, scheduledBackup, db)
 
-        assertThat(scheduledBackup.getExecutionCount()).isEqualTo(1);
-        assertThat(scheduledBackup.getLastRunTime()).isEqualTo(previousLastRun);
-        File[] files = backupFolder.listFiles();
-        assertThat(files).isNotNull();
-        assertThat(files).isEmpty();
+        assertThat(scheduledBackup.executionCount).isEqualTo(1)
+        assertThat(scheduledBackup.lastRunTime).isEqualTo(previousLastRun)
+        val files = backupFolder.listFiles()
+        assertThat(files).isNotNull()
+        assertThat(files).isEmpty()
     }
 
     /**
@@ -388,11 +393,13 @@ public class ScheduledActionServiceTest extends GnuCashTest {
      * @param transactionUID UID of the transaction to set the timestamp.
      * @param timestamp      the new timestamp.
      */
-    private void setTransactionInDbTimestamp(String transactionUID, Timestamp timestamp) {
-        ContentValues values = new ContentValues();
-        values.put(DatabaseSchema.TransactionEntry.COLUMN_TIMESTAMP, timestamp.getTime());
-        mTransactionsDbAdapter.updateTransaction(values, DatabaseSchema.TransactionEntry.COLUMN_UID + "=?",
-            new String[]{transactionUID});
+    private fun setTransactionInDbTimestamp(transactionUID: String, timestamp: Timestamp) {
+        val values = ContentValues()
+        values.put(DatabaseSchema.TransactionEntry.COLUMN_TIMESTAMP, timestamp.time)
+        transactionsDbAdapter.updateTransaction(
+            values, DatabaseSchema.TransactionEntry.COLUMN_UID + "=?",
+            arrayOf(transactionUID)
+        )
     }
 
     /**
@@ -400,48 +407,45 @@ public class ScheduledActionServiceTest extends GnuCashTest {
      * after the last run.
      */
     @Test
-    public void scheduledBackups_shouldIncludeTransactionsAfterTheLastRun() {
-        Context context = GnuCashApplication.getAppContext();
-        ScheduledAction scheduledBackup = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
-        scheduledBackup.setStartTime(LocalDateTime.now().minusDays(15).toDate().getTime());
-        scheduledBackup.setLastRunTime(LocalDateTime.now().minusDays(8).toDate().getTime());
-        long previousLastRun = scheduledBackup.getLastRunTime();
-        scheduledBackup.setExecutionCount(1);
-        Recurrence recurrence = new Recurrence(PeriodType.WEEK);
-        recurrence.setMultiplier(1);
-        recurrence.setByDays(Collections.singletonList(Calendar.FRIDAY));
-        scheduledBackup.setRecurrence(recurrence);
-        ExportParams backupParams = new ExportParams(ExportFormat.QIF);
-        backupParams.setExportTarget(ExportParams.ExportTarget.SD_CARD);
-        backupParams.setExportStartTime(new Timestamp(scheduledBackup.getStartTime()));
-        scheduledBackup.setTag(backupParams.toTag());
+    fun scheduledBackups_shouldIncludeTransactionsAfterTheLastRun() {
+        val scheduledBackup = ScheduledAction(ScheduledAction.ActionType.BACKUP)
+        scheduledBackup.startTime = LocalDateTime.now().minusDays(15).toDate().time
+        scheduledBackup.lastRunTime = LocalDateTime.now().minusDays(8).toDate().time
+        val previousLastRun = scheduledBackup.lastRunTime
+        scheduledBackup.executionCount = 1
+        val recurrence = Recurrence(PeriodType.WEEK)
+        recurrence.multiplier = 1
+        recurrence.byDays = listOf(Calendar.FRIDAY)
+        scheduledBackup.setRecurrence(recurrence)
+        val backupParams = ExportParams(ExportFormat.QIF)
+        backupParams.exportTarget = ExportParams.ExportTarget.SD_CARD
+        backupParams.exportStartTime = Timestamp(scheduledBackup.startTime)
+        scheduledBackup.tag = backupParams.toTag()
 
-        Transaction transaction = new Transaction("Orient palace");
-        Split split = new Split(new Money("10", Commodity.DEFAULT_COMMODITY.getCurrencyCode()),
-            mBaseAccount.getUID());
-        split.setType(TransactionType.DEBIT);
-        transaction.addSplit(split);
-        transaction.addSplit(split.createPair(mTransferAccount.getUID()));
-        mTransactionsDbAdapter.addRecord(transaction);
+        val transaction = Transaction("Orient palace")
+        val split = Split(
+            Money("10", Commodity.DEFAULT_COMMODITY.currencyCode),
+            baseAccount.uid
+        )
+        split.type = TransactionType.DEBIT
+        transaction.addSplit(split)
+        transaction.addSplit(split.createPair(transferAccount.uid))
+        transactionsDbAdapter.addRecord(transaction)
 
-        File backupFolder = new File(
-            Exporter.getExportFolderPath(context, GnuCashApplication.getActiveBookUID()));
-        assertThat(backupFolder).exists();
-        assertThat(backupFolder.listFiles()).isEmpty();
+        val backupFolder = File(
+            Exporter.getExportFolderPath(context, GnuCashApplication.getActiveBookUID())
+        )
+        assertThat(backupFolder).exists()
+        assertThat(backupFolder.listFiles()).isEmpty()
 
-        ScheduledActionService.processScheduledAction(context, scheduledBackup, mDb);
+        ScheduledActionService.processScheduledAction(context, scheduledBackup, db)
 
-        assertThat(scheduledBackup.getExecutionCount()).isEqualTo(2);
-        assertThat(scheduledBackup.getLastRunTime()).isGreaterThan(previousLastRun);
-        File[] files = backupFolder.listFiles();
-        assertThat(files).isNotNull();
-        assertThat(files).hasSize(1);
-        assertThat(files[0]).isNotNull();
-        assertThat(files[0].getName()).endsWith(".qif");
-    }
-
-    @After
-    public void tearDown() {
-        TransactionsDbAdapter.getInstance().deleteAllRecords();
+        assertThat(scheduledBackup.executionCount).isEqualTo(2)
+        assertThat(scheduledBackup.lastRunTime).isGreaterThan(previousLastRun)
+        val files = backupFolder.listFiles()
+        assertThat(files!!).isNotNull()
+        assertThat(files).hasSize(1)
+        assertThat(files[0]).isNotNull()
+        assertThat(files[0].name).endsWith(".qif")
     }
 }

@@ -13,76 +13,70 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.test.unit.db;
+package org.gnucash.android.test.unit.db
 
-import static org.assertj.core.api.Assertions.assertThat;
+import android.graphics.Color
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.data.Index
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.db.DatabaseHelper
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.BooksDbAdapter
+import org.gnucash.android.db.adapter.BudgetAmountsDbAdapter
+import org.gnucash.android.db.adapter.BudgetsDbAdapter
+import org.gnucash.android.db.adapter.CommoditiesDbAdapter
+import org.gnucash.android.db.adapter.DatabaseAdapter
+import org.gnucash.android.db.adapter.PricesDbAdapter
+import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
+import org.gnucash.android.db.adapter.SplitsDbAdapter
+import org.gnucash.android.db.adapter.TransactionsDbAdapter
+import org.gnucash.android.importer.GncXmlImporter
+import org.gnucash.android.model.Account
+import org.gnucash.android.model.AccountType
+import org.gnucash.android.model.Budget
+import org.gnucash.android.model.BudgetAmount
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.model.Money
+import org.gnucash.android.model.Money.Companion.createZeroInstance
+import org.gnucash.android.model.PeriodType
+import org.gnucash.android.model.Recurrence
+import org.gnucash.android.model.ScheduledAction
+import org.gnucash.android.model.Split
+import org.gnucash.android.model.Transaction
+import org.gnucash.android.model.TransactionType
+import org.gnucash.android.test.unit.GnuCashTest
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import org.xml.sax.SAXException
+import timber.log.Timber
+import java.io.IOException
+import java.math.BigDecimal
+import javax.xml.parsers.ParserConfigurationException
 
-import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
-
-import org.assertj.core.data.Index;
-import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseHelper;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.db.adapter.BudgetAmountsDbAdapter;
-import org.gnucash.android.db.adapter.BudgetsDbAdapter;
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
-import org.gnucash.android.db.adapter.DatabaseAdapter;
-import org.gnucash.android.db.adapter.PricesDbAdapter;
-import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
-import org.gnucash.android.db.adapter.SplitsDbAdapter;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
-import org.gnucash.android.importer.GncXmlImporter;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.AccountType;
-import org.gnucash.android.model.Budget;
-import org.gnucash.android.model.BudgetAmount;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.model.PeriodType;
-import org.gnucash.android.model.Recurrence;
-import org.gnucash.android.model.ScheduledAction;
-import org.gnucash.android.model.Split;
-import org.gnucash.android.model.Transaction;
-import org.gnucash.android.model.TransactionType;
-import org.gnucash.android.test.unit.GnuCashTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import timber.log.Timber;
-
-public class AccountsDbAdapterTest extends GnuCashTest {
-
-    private static final String BRAVO_ACCOUNT_NAME = "Bravo";
-    private static final String ALPHA_ACCOUNT_NAME = "Alpha";
-    private AccountsDbAdapter mAccountsDbAdapter;
-    private TransactionsDbAdapter mTransactionsDbAdapter;
-    private SplitsDbAdapter mSplitsDbAdapter;
-    private CommoditiesDbAdapter mCommoditiesDbAdapter;
+class AccountsDbAdapterTest : GnuCashTest() {
+    private lateinit var accountsDbAdapter: AccountsDbAdapter
+    private lateinit var transactionsDbAdapter: TransactionsDbAdapter
+    private lateinit var splitsDbAdapter: SplitsDbAdapter
+    private lateinit var commoditiesDbAdapter: CommoditiesDbAdapter
 
     @Before
-    public void setUp() throws Exception {
-        initAdapters(null);
+    fun setUp() {
+        initAdapters(null)
     }
 
     @After
-    public void after() throws Exception {
-        mAccountsDbAdapter.close();
-        mCommoditiesDbAdapter.close();
-        mSplitsDbAdapter.close();
-        mTransactionsDbAdapter.close();
+    fun after() {
+        accountsDbAdapter.close()
+        commoditiesDbAdapter.close()
+        splitsDbAdapter.close()
+        transactionsDbAdapter.close()
+    }
+
+    @After
+    fun tearDown() {
+        accountsDbAdapter.deleteAllRecords()
     }
 
     /**
@@ -91,20 +85,20 @@ public class AccountsDbAdapterTest extends GnuCashTest {
      *
      * @param bookUID GUID of the GnuCash book
      */
-    private void initAdapters(String bookUID) {
+    private fun initAdapters(bookUID: String?) {
         if (bookUID == null) {
-            mCommoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
-            mSplitsDbAdapter = SplitsDbAdapter.getInstance();
-            mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
-            mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+            commoditiesDbAdapter = CommoditiesDbAdapter.getInstance()!!
+            splitsDbAdapter = SplitsDbAdapter.getInstance()
+            transactionsDbAdapter = TransactionsDbAdapter.getInstance()
+            accountsDbAdapter = AccountsDbAdapter.getInstance()
         } else {
-            DatabaseHelper databaseHelper = new DatabaseHelper(GnuCashApplication.getAppContext(), bookUID);
-            SQLiteDatabase db = databaseHelper.getWritableDatabase();
-            mCommoditiesDbAdapter = new CommoditiesDbAdapter(db);
-            mSplitsDbAdapter = new SplitsDbAdapter(mCommoditiesDbAdapter);
-            mTransactionsDbAdapter = new TransactionsDbAdapter(mSplitsDbAdapter);
-            mAccountsDbAdapter = new AccountsDbAdapter(mTransactionsDbAdapter);
-            BooksDbAdapter.getInstance().setActive(bookUID);
+            val databaseHelper = DatabaseHelper(GnuCashApplication.getAppContext(), bookUID)
+            val db = databaseHelper.writableDatabase
+            commoditiesDbAdapter = CommoditiesDbAdapter(db)
+            splitsDbAdapter = SplitsDbAdapter(commoditiesDbAdapter)
+            transactionsDbAdapter = TransactionsDbAdapter(splitsDbAdapter)
+            accountsDbAdapter = AccountsDbAdapter(transactionsDbAdapter)
+            BooksDbAdapter.getInstance().setActive(bookUID)
         }
     }
 
@@ -112,476 +106,497 @@ public class AccountsDbAdapterTest extends GnuCashTest {
      * Test that the list of accounts is always returned sorted alphabetically
      */
     @Test
-    public void shouldBeAlphabeticallySortedByDefault() {
-        Account first = new Account(ALPHA_ACCOUNT_NAME);
-        Account second = new Account(BRAVO_ACCOUNT_NAME);
+    fun shouldBeAlphabeticallySortedByDefault() {
+        val first = Account(ALPHA_ACCOUNT_NAME)
+        val second = Account(BRAVO_ACCOUNT_NAME)
         //purposefully added the second after the first
-        mAccountsDbAdapter.addRecord(second);
-        mAccountsDbAdapter.addRecord(first);
+        accountsDbAdapter.addRecord(second)
+        accountsDbAdapter.addRecord(first)
 
-        List<Account> accountsList = mAccountsDbAdapter.getAllRecords();
-        assertThat(accountsList.size()).isEqualTo(2);
+        val accountsList = accountsDbAdapter.allRecords
+        assertThat(accountsList.size).isEqualTo(2)
         //bravo was saved first, but alpha should be first alphabetically
-        assertThat(accountsList).contains(first, Index.atIndex(0));
-        assertThat(accountsList).contains(second, Index.atIndex(1));
+        assertThat(accountsList).contains(first, Index.atIndex(0))
+        assertThat(accountsList).contains(second, Index.atIndex(1))
     }
 
     @Test
-    public void bulkAddAccountsShouldNotModifyTransactions() {
-        Account account1 = new Account("AlphaAccount");
-        Account account2 = new Account("BetaAccount");
-        Transaction transaction = new Transaction("MyTransaction");
-        Split split = new Split(Money.createZeroInstance(account1.getCommodity()), account1.getUID());
-        transaction.addSplit(split);
-        transaction.addSplit(split.createPair(account2.getUID()));
-        account1.addTransaction(transaction);
-        account2.addTransaction(transaction);
+    fun bulkAddAccountsShouldNotModifyTransactions() {
+        val account1 = Account("AlphaAccount")
+        val account2 = Account("BetaAccount")
+        val transaction = Transaction("MyTransaction")
+        val split = Split(createZeroInstance(account1.commodity), account1.uid)
+        transaction.addSplit(split)
+        transaction.addSplit(split.createPair(account2.uid))
+        account1.addTransaction(transaction)
+        account2.addTransaction(transaction)
 
-        List<Account> accounts = new ArrayList<>();
-        accounts.add(account1);
-        accounts.add(account2);
+        val accounts: MutableList<Account> = ArrayList()
+        accounts.add(account1)
+        accounts.add(account2)
 
-        mAccountsDbAdapter.bulkAddRecords(accounts);
+        accountsDbAdapter.bulkAddRecords(accounts)
 
-        SplitsDbAdapter splitsDbAdapter = SplitsDbAdapter.getInstance();
-        assertThat(splitsDbAdapter.getSplitsForTransactionInAccount(transaction.getUID(), account1.getUID())).hasSize(1);
-        assertThat(splitsDbAdapter.getSplitsForTransactionInAccount(transaction.getUID(), account2.getUID())).hasSize(1);
+        assertThat(
+            splitsDbAdapter.getSplitsForTransactionInAccount(transaction.uid, account1.uid)
+        ).hasSize(1)
+        assertThat(
+            splitsDbAdapter.getSplitsForTransactionInAccount(transaction.uid, account2.uid)
+        ).hasSize(1)
 
-        assertThat(mAccountsDbAdapter.getRecord(account1.getUID()).getTransactions()).hasSize(1);
+        assertThat(accountsDbAdapter.getRecord(account1.uid).transactions).hasSize(1)
     }
 
     @Test
-    public void shouldAddAccountsToDatabase() {
-        Account account1 = new Account("AlphaAccount");
-        Account account2 = new Account("BetaAccount");
-        Transaction transaction = new Transaction("MyTransaction");
-        Split split = new Split(Money.createZeroInstance(account1.getCommodity()), account1.getUID());
-        transaction.addSplit(split);
-        transaction.addSplit(split.createPair(account2.getUID()));
-        account1.addTransaction(transaction);
-        account2.addTransaction(transaction);
+    fun shouldAddAccountsToDatabase() {
+        val account1 = Account("AlphaAccount")
+        val account2 = Account("BetaAccount")
+        val transaction = Transaction("MyTransaction")
+        val split = Split(createZeroInstance(account1.commodity), account1.uid)
+        transaction.addSplit(split)
+        transaction.addSplit(split.createPair(account2.uid))
+        account1.addTransaction(transaction)
+        account2.addTransaction(transaction)
 
         // Disable foreign key validation because the second split,
         // which is added during 1st account,
         // references the second account which has not been added yet.
-        mAccountsDbAdapter.enableForeignKey(false);
-        mAccountsDbAdapter.addRecord(account1);
-        mAccountsDbAdapter.addRecord(account2);
-        mAccountsDbAdapter.enableForeignKey(true);
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(3);//root+account1+account2
+        accountsDbAdapter.enableForeignKey(false)
+        accountsDbAdapter.addRecord(account1)
+        accountsDbAdapter.addRecord(account2)
+        accountsDbAdapter.enableForeignKey(true)
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(3) //root+account1+account2
 
-        Account firstAccount = mAccountsDbAdapter.getRecord(account1.getUID());
-        assertThat(firstAccount).isNotNull();
-        assertThat(firstAccount.getUID()).isEqualTo(account1.getUID());
-        assertThat(firstAccount.getFullName()).isEqualTo(account1.getFullName());
+        val firstAccount = accountsDbAdapter.getRecord(account1.uid)
+        assertThat(firstAccount).isNotNull()
+        assertThat(firstAccount.uid).isEqualTo(account1.uid)
+        assertThat(firstAccount.fullName).isEqualTo(account1.fullName)
 
-        Account secondAccount = mAccountsDbAdapter.getRecord(account2.getUID());
-        assertThat(secondAccount).isNotNull();
-        assertThat(secondAccount.getUID()).isEqualTo(account2.getUID());
+        val secondAccount = accountsDbAdapter.getRecord(account2.uid)
+        assertThat(secondAccount).isNotNull()
+        assertThat(secondAccount.uid).isEqualTo(account2.uid)
 
-        assertThat(mTransactionsDbAdapter.getRecordsCount()).isEqualTo(1);
+        assertThat(transactionsDbAdapter.recordsCount).isEqualTo(1)
     }
 
     /**
      * Tests the foreign key constraint "ON DELETE CASCADE" between accounts and splits
      */
     @Test
-    public void shouldDeleteSplitsWhenAccountDeleted() {
-        Account first = new Account(ALPHA_ACCOUNT_NAME);
-        first.setUID(ALPHA_ACCOUNT_NAME);
-        Account second = new Account(BRAVO_ACCOUNT_NAME);
-        second.setUID(BRAVO_ACCOUNT_NAME);
+    fun shouldDeleteSplitsWhenAccountDeleted() {
+        val first = Account(ALPHA_ACCOUNT_NAME)
+        first.setUID(ALPHA_ACCOUNT_NAME)
+        val second = Account(BRAVO_ACCOUNT_NAME)
+        second.setUID(BRAVO_ACCOUNT_NAME)
 
-        mAccountsDbAdapter.addRecord(second);
-        mAccountsDbAdapter.addRecord(first);
+        accountsDbAdapter.addRecord(second)
+        accountsDbAdapter.addRecord(first)
 
-        Transaction transaction = new Transaction("TestTrn");
-        Split split = new Split(Money.createZeroInstance(first.getCommodity()), ALPHA_ACCOUNT_NAME);
-        transaction.addSplit(split);
-        transaction.addSplit(split.createPair(BRAVO_ACCOUNT_NAME));
+        val transaction = Transaction("TestTrn")
+        val split = Split(createZeroInstance(first.commodity), ALPHA_ACCOUNT_NAME)
+        transaction.addSplit(split)
+        transaction.addSplit(split.createPair(BRAVO_ACCOUNT_NAME))
 
-        mTransactionsDbAdapter.addRecord(transaction);
+        transactionsDbAdapter.addRecord(transaction)
 
-        mAccountsDbAdapter.deleteRecord(ALPHA_ACCOUNT_NAME);
+        accountsDbAdapter.deleteRecord(ALPHA_ACCOUNT_NAME)
 
-        Transaction trxn = mTransactionsDbAdapter.getRecord(transaction.getUID());
-        assertThat(trxn.getSplits().size()).isEqualTo(1);
-        assertThat(trxn.getSplits().get(0).getAccountUID()).isEqualTo(BRAVO_ACCOUNT_NAME);
+        val trxn = transactionsDbAdapter.getRecord(transaction.uid)
+        assertThat(trxn.splits.size).isEqualTo(1)
+        assertThat(trxn.splits[0].accountUID).isEqualTo(BRAVO_ACCOUNT_NAME)
     }
 
     /**
      * Tests that a ROOT account will always be created in the system
      */
     @Test
-    public void shouldCreateDefaultRootAccount() {
-        Account account = new Account("Some account");
-        mAccountsDbAdapter.addRecord(account);
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(2L);
+    fun shouldCreateDefaultRootAccount() {
+        val account = Account("Some account")
+        accountsDbAdapter.addRecord(account)
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(2L)
 
-        List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList();
-        assertThat(accounts).extracting("accountType").contains(AccountType.ROOT);
+        val accounts = accountsDbAdapter.simpleAccountList
+        assertThat(accounts).extracting("accountType").contains(AccountType.ROOT)
 
-        String rootAccountUID = mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID();
-        assertThat(rootAccountUID).isEqualTo(accounts.get(1).getParentUID());
+        val rootAccountUID = accountsDbAdapter.getOrCreateGnuCashRootAccountUID()
+        assertThat(rootAccountUID).isEqualTo(accounts[1].parentUID)
     }
 
     @Test
-    public void shouldUpdateFullNameAfterParentChange() {
-        Account parent = new Account("Test");
-        Account child = new Account("Child");
+    fun shouldUpdateFullNameAfterParentChange() {
+        var parent = Account("Test")
+        var child = Account("Child")
 
-        mAccountsDbAdapter.addRecord(parent);
-        mAccountsDbAdapter.addRecord(child);
-        assertThat(child.getFullName()).isEqualTo("Child");
+        accountsDbAdapter.addRecord(parent)
+        accountsDbAdapter.addRecord(child)
+        assertThat(child.fullName).isEqualTo("Child")
 
-        child.setParentUID(parent.getUID());
-        mAccountsDbAdapter.addRecord(child);
+        child.parentUID = parent.uid
+        accountsDbAdapter.addRecord(child)
 
-        child = mAccountsDbAdapter.getRecord(child.getUID());
-        parent = mAccountsDbAdapter.getRecord(parent.getUID());
+        child = accountsDbAdapter.getRecord(child.uid)
+        parent = accountsDbAdapter.getRecord(parent.uid)
 
-        assertThat(mAccountsDbAdapter.getSubAccountCount(parent.getUID())).isEqualTo(1);
-        assertThat(parent.getUID()).isEqualTo(child.getParentUID());
+        assertThat(accountsDbAdapter.getSubAccountCount(parent.uid)).isEqualTo(1)
+        assertThat(parent.uid).isEqualTo(child.parentUID)
 
-        assertThat(child.getFullName()).isEqualTo("Test:Child");
+        assertThat(child.fullName).isEqualTo("Test:Child")
     }
 
     @Test
-    public void shouldAddTransactionsAndSplitsWhenAddingAccounts() {
-        Account account = new Account("Test");
-        mAccountsDbAdapter.addRecord(account);
+    fun shouldAddTransactionsAndSplitsWhenAddingAccounts() {
+        val account = Account("Test")
+        accountsDbAdapter.addRecord(account)
 
-        Transaction transaction = new Transaction("Test description");
-        Split split = new Split(Money.createZeroInstance(account.getCommodity()), account.getUID());
-        transaction.addSplit(split);
-        Account account1 = new Account("Transfer account");
-        transaction.addSplit(split.createPair(account1.getUID()));
-        account1.addTransaction(transaction);
+        val transaction = Transaction("Test description")
+        val split = Split(createZeroInstance(account.commodity), account.uid)
+        transaction.addSplit(split)
+        val account1 = Account("Transfer account")
+        transaction.addSplit(split.createPair(account1.uid))
+        account1.addTransaction(transaction)
 
-        mAccountsDbAdapter.addRecord(account1);
+        accountsDbAdapter.addRecord(account1)
 
-        assertThat(mTransactionsDbAdapter.getRecordsCount()).isEqualTo(1);
-        assertThat(mSplitsDbAdapter.getRecordsCount()).isEqualTo(2);
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(3); //ROOT account automatically added
-
+        assertThat(transactionsDbAdapter.recordsCount).isEqualTo(1)
+        assertThat(splitsDbAdapter.recordsCount).isEqualTo(2)
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(3) //ROOT account automatically added
     }
 
     @Test
-    public void shouldClearAllTablesWhenDeletingAllAccounts() {
-        Account account = new Account("Test");
-        Transaction transaction = new Transaction("Test description");
-        Split split = new Split(Money.createZeroInstance(account.getCommodity()), account.getUID());
-        transaction.addSplit(split);
-        Account account2 = new Account("Transfer account");
-        transaction.addSplit(split.createPair(account2.getUID()));
+    fun shouldClearAllTablesWhenDeletingAllAccounts() {
+        val account = Account("Test")
+        val transaction = Transaction("Test description")
+        val split = Split(createZeroInstance(account.commodity), account.uid)
+        transaction.addSplit(split)
+        val account2 = Account("Transfer account")
+        transaction.addSplit(split.createPair(account2.uid))
 
-        mAccountsDbAdapter.addRecord(account);
-        mAccountsDbAdapter.addRecord(account2);
+        accountsDbAdapter.addRecord(account)
+        accountsDbAdapter.addRecord(account2)
 
-        ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
-        scheduledAction.setActionUID("Test-uid");
-        scheduledAction.setRecurrence(new Recurrence(PeriodType.WEEK));
-        ScheduledActionDbAdapter scheduledActionDbAdapter = ScheduledActionDbAdapter.getInstance();
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.BACKUP)
+        scheduledAction.actionUID = "Test-uid"
+        scheduledAction.setRecurrence(Recurrence(PeriodType.WEEK))
+        val scheduledActionDbAdapter = ScheduledActionDbAdapter.getInstance()
 
-        scheduledActionDbAdapter.addRecord(scheduledAction);
+        scheduledActionDbAdapter.addRecord(scheduledAction)
 
-        Budget budget = new Budget("Test");
-        BudgetAmount budgetAmount = new BudgetAmount(Money.createZeroInstance(account.getCommodity()), account.getUID());
-        budget.addAmount(budgetAmount);
-        budget.setRecurrence(new Recurrence(PeriodType.MONTH));
-        BudgetsDbAdapter.getInstance().addRecord(budget);
+        val budget = Budget("Test")
+        val budgetAmount = BudgetAmount(createZeroInstance(account.commodity), account.uid)
+        budget.addAmount(budgetAmount)
+        budget.recurrence = Recurrence(PeriodType.MONTH)
+        BudgetsDbAdapter.getInstance().addRecord(budget)
 
-        mAccountsDbAdapter.deleteAllRecords();
+        accountsDbAdapter.deleteAllRecords()
 
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isZero();
-        assertThat(mTransactionsDbAdapter.getRecordsCount()).isZero();
-        assertThat(mSplitsDbAdapter.getRecordsCount()).isZero();
-        assertThat(scheduledActionDbAdapter.getRecordsCount()).isZero();
-        assertThat(BudgetAmountsDbAdapter.getInstance().getRecordsCount()).isZero();
-        assertThat(BudgetsDbAdapter.getInstance().getRecordsCount()).isZero();
-        assertThat(PricesDbAdapter.getInstance().getRecordsCount()).isZero(); //prices should remain
-        assertThat(CommoditiesDbAdapter.getInstance().getRecordsCount()).isGreaterThan(50); //commodities should remain
+        assertThat(accountsDbAdapter.recordsCount).isZero()
+        assertThat(transactionsDbAdapter.recordsCount).isZero()
+        assertThat(splitsDbAdapter.recordsCount).isZero()
+        assertThat(scheduledActionDbAdapter.recordsCount).isZero()
+        assertThat(BudgetAmountsDbAdapter.getInstance().recordsCount).isZero()
+        assertThat(BudgetsDbAdapter.getInstance().recordsCount).isZero()
+        assertThat(PricesDbAdapter.getInstance().recordsCount).isZero() //prices should remain
+        assertThat(CommoditiesDbAdapter.getInstance()!!.recordsCount).isGreaterThan(50) //commodities should remain
     }
 
     @Test
-    public void simpleAccountListShouldNotContainTransactions() {
-        Account account = new Account("Test");
-        Transaction transaction = new Transaction("Test description");
-        Split split = new Split(Money.createZeroInstance(account.getCommodity()), account.getUID());
-        transaction.addSplit(split);
-        Account account1 = new Account("Transfer");
-        transaction.addSplit(split.createPair(account1.getUID()));
+    fun simpleAccountListShouldNotContainTransactions() {
+        val account = Account("Test")
+        val transaction = Transaction("Test description")
+        val split = Split(createZeroInstance(account.commodity), account.uid)
+        transaction.addSplit(split)
+        val account1 = Account("Transfer")
+        transaction.addSplit(split.createPair(account1.uid))
 
-        mAccountsDbAdapter.addRecord(account);
-        mAccountsDbAdapter.addRecord(account1);
+        accountsDbAdapter.addRecord(account)
+        accountsDbAdapter.addRecord(account1)
 
-        List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList();
-        for (Account testAcct : accounts) {
-            assertThat(testAcct.getTransactionCount()).isZero();
+        val accounts = accountsDbAdapter.simpleAccountList
+        for (testAcct in accounts) {
+            assertThat(testAcct.transactionCount).isZero()
         }
     }
 
     @Test
-    public void shouldComputeAccountBalanceCorrectly() {
-        Account account = new Account("Test", Commodity.USD);
-        account.setAccountType(AccountType.ASSET); //debit normal account balance
-        Account transferAcct = new Account("Transfer");
+    fun shouldComputeAccountBalanceCorrectly() {
+        val account = Account("Test", Commodity.USD)
+        account.accountType = AccountType.ASSET //debit normal account balance
+        val transferAcct = Account("Transfer")
 
-        mAccountsDbAdapter.addRecord(account);
-        mAccountsDbAdapter.addRecord(transferAcct);
+        accountsDbAdapter.addRecord(account)
+        accountsDbAdapter.addRecord(transferAcct)
 
-        Transaction transaction = new Transaction("Test description");
-        mTransactionsDbAdapter.addRecord(transaction);
-        Split split = new Split(new Money(BigDecimal.TEN, Commodity.USD), account.getUID());
-        split.setTransactionUID(transaction.getUID());
-        split.setType(TransactionType.DEBIT);
-        mSplitsDbAdapter.addRecord(split);
+        val transaction = Transaction("Test description")
+        transactionsDbAdapter.addRecord(transaction)
+        var split = Split(Money(BigDecimal.TEN, Commodity.USD), account.uid)
+        split.transactionUID = transaction.uid
+        split.type = TransactionType.DEBIT
+        splitsDbAdapter.addRecord(split)
 
-        split = new Split(new Money("4.99", "USD"), account.getUID());
-        split.setTransactionUID(transaction.getUID());
-        split.setType(TransactionType.DEBIT);
-        mSplitsDbAdapter.addRecord(split);
+        split = Split(Money("4.99", "USD"), account.uid)
+        split.transactionUID = transaction.uid
+        split.type = TransactionType.DEBIT
+        splitsDbAdapter.addRecord(split)
 
-        split = new Split(new Money("1.19", "USD"), account.getUID());
-        split.setTransactionUID(transaction.getUID());
-        split.setType(TransactionType.CREDIT);
-        mSplitsDbAdapter.addRecord(split);
+        split = Split(Money("1.19", "USD"), account.uid)
+        split.transactionUID = transaction.uid
+        split.type = TransactionType.CREDIT
+        splitsDbAdapter.addRecord(split)
 
-        split = new Split(new Money("3.49", "EUR"), account.getUID());
-        split.setTransactionUID(transaction.getUID());
-        split.setType(TransactionType.DEBIT);
-        mSplitsDbAdapter.addRecord(split);
+        split = Split(Money("3.49", "EUR"), account.uid)
+        split.transactionUID = transaction.uid
+        split.type = TransactionType.DEBIT
+        splitsDbAdapter.addRecord(split)
 
-        split = new Split(new Money("8.39", "USD"), transferAcct.getUID());
-        split.setTransactionUID(transaction.getUID());
-        mSplitsDbAdapter.addRecord(split);
+        split = Split(Money("8.39", "USD"), transferAcct.uid)
+        split.transactionUID = transaction.uid
+        splitsDbAdapter.addRecord(split)
 
         //balance computation ignores the currency of the split
-        Money balance = mAccountsDbAdapter.getAccountBalance(account.getUID());
-        Money expectedBalance = new Money("17.29", "USD"); //EUR splits should be ignored
+        val balance = accountsDbAdapter.getAccountBalance(account.uid)
+        val expectedBalance = Money("17.29", "USD") //EUR splits should be ignored
 
-        assertThat(balance).isEqualTo(expectedBalance);
+        assertThat(balance).isEqualTo(expectedBalance)
     }
 
     /**
      * Test creating an account hierarchy by specifying fully qualified name
      */
     @Test
-    public void shouldCreateAccountHierarchy() {
-        String uid = mAccountsDbAdapter.createAccountHierarchy("Assets:Current Assets:Cash in Wallet", AccountType.ASSET);
+    fun shouldCreateAccountHierarchy() {
+        val uid = accountsDbAdapter.createAccountHierarchy(
+            "Assets:Current Assets:Cash in Wallet",
+            AccountType.ASSET
+        )
 
-        List<Account> accounts = mAccountsDbAdapter.getAllRecords();
-        assertThat(accounts).hasSize(3);
-        assertThat(accounts).extracting("_uid").contains(uid);
+        val accounts = accountsDbAdapter.allRecords
+        assertThat(accounts).hasSize(3)
+        assertThat(accounts).extracting("_uid").contains(uid)
     }
 
     @Test
-    public void shouldRecursivelyDeleteAccount() {
-        Account account = new Account("Parent");
-        Account account2 = new Account("Child");
-        account2.setParentUID(account.getUID());
+    fun shouldRecursivelyDeleteAccount() {
+        val account = Account("Parent")
+        val account2 = Account("Child")
+        account2.parentUID = account.uid
 
-        Transaction transaction = new Transaction("Random");
-        account2.addTransaction(transaction);
+        val transaction = Transaction("Random")
+        account2.addTransaction(transaction)
 
-        Split split = new Split(Money.createZeroInstance(account.getCommodity()), account.getUID());
-        transaction.addSplit(split);
-        transaction.addSplit(split.createPair(account2.getUID()));
+        val split = Split(createZeroInstance(account.commodity), account.uid)
+        transaction.addSplit(split)
+        transaction.addSplit(split.createPair(account2.uid))
 
-        mAccountsDbAdapter.addRecord(account);
-        mAccountsDbAdapter.addRecord(account2);
+        accountsDbAdapter.addRecord(account)
+        accountsDbAdapter.addRecord(account2)
 
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(3);
-        assertThat(mTransactionsDbAdapter.getRecordsCount()).isEqualTo(1);
-        assertThat(mSplitsDbAdapter.getRecordsCount()).isEqualTo(2);
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(3)
+        assertThat(transactionsDbAdapter.recordsCount).isEqualTo(1)
+        assertThat(splitsDbAdapter.recordsCount).isEqualTo(2)
 
-        boolean result = mAccountsDbAdapter.recursiveDeleteAccount(account.getUID());
-        assertThat(result).isTrue();
+        val result = accountsDbAdapter.recursiveDeleteAccount(account.uid)
+        assertThat(result).isTrue()
 
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(1); //the root account
-        assertThat(mTransactionsDbAdapter.getRecordsCount()).isZero();
-        assertThat(mSplitsDbAdapter.getRecordsCount()).isZero();
-
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(1) //the root account
+        assertThat(transactionsDbAdapter.recordsCount).isZero()
+        assertThat(splitsDbAdapter.recordsCount).isZero()
     }
 
     @Test
-    public void shouldGetDescendantAccounts() {
-        loadDefaultAccounts();
+    fun shouldGetDescendantAccounts() {
+        loadDefaultAccounts()
 
-        String uid = mAccountsDbAdapter.findAccountUidByFullName("Expenses:Auto");
-        List<String> descendants = mAccountsDbAdapter.getDescendantAccountUIDs(uid, null, null);
+        val uid = accountsDbAdapter.findAccountUidByFullName("Expenses:Auto")
+        val descendants = accountsDbAdapter.getDescendantAccountUIDs(uid, null, null)
 
-        assertThat(descendants).hasSize(4);
+        assertThat(descendants).hasSize(4)
     }
 
     @Test
-    public void shouldReassignDescendantAccounts() {
-        loadDefaultAccounts();
+    fun shouldReassignDescendantAccounts() {
+        loadDefaultAccounts()
 
-        String assetsUID = mAccountsDbAdapter.findAccountUidByFullName("Assets");
-        String savingsAcctUID = mAccountsDbAdapter.findAccountUidByFullName("Assets:Current Assets:Savings Account");
-        String currentAssetsUID = mAccountsDbAdapter.findAccountUidByFullName("Assets:Current Assets");
+        val assetsUID = accountsDbAdapter.findAccountUidByFullName("Assets")
+        val savingsAcctUID =
+            accountsDbAdapter.findAccountUidByFullName("Assets:Current Assets:Savings Account")
+        val currentAssetsUID =
+            accountsDbAdapter.findAccountUidByFullName("Assets:Current Assets")
 
-        assertThat(mAccountsDbAdapter.getParentAccountUID(savingsAcctUID)).isEqualTo(currentAssetsUID);
-        mAccountsDbAdapter.reassignDescendantAccounts(currentAssetsUID, assetsUID);
-        assertThat(mAccountsDbAdapter.getParentAccountUID(savingsAcctUID)).isEqualTo(assetsUID);
-        assertThat(mAccountsDbAdapter.getFullyQualifiedAccountName(savingsAcctUID)).isEqualTo("Assets:Savings Account");
-
+        assertThat(accountsDbAdapter.getParentAccountUID(savingsAcctUID))
+            .isEqualTo(currentAssetsUID)
+        accountsDbAdapter.reassignDescendantAccounts(currentAssetsUID, assetsUID)
+        assertThat(accountsDbAdapter.getParentAccountUID(savingsAcctUID))
+            .isEqualTo(assetsUID)
+        assertThat(accountsDbAdapter.getFullyQualifiedAccountName(savingsAcctUID))
+            .isEqualTo("Assets:Savings Account")
     }
 
     @Test
-    public void shouldCreateImbalanceAccountOnDemand() {
-        Context context = GnuCashApplication.getAppContext();
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(1L);
+    fun shouldCreateImbalanceAccountOnDemand() {
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(1L)
 
-        Commodity usd = mCommoditiesDbAdapter.getCommodity("USD");
-        String imbalanceUID = mAccountsDbAdapter.getImbalanceAccountUID(context, usd);
-        assertThat(imbalanceUID).isNull();
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(1L);
+        val usd = commoditiesDbAdapter.getCommodity("USD")!!
+        var imbalanceUID = accountsDbAdapter.getImbalanceAccountUID(context, usd)
+        assertThat(imbalanceUID).isNull()
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(1L)
 
-        imbalanceUID = mAccountsDbAdapter.getOrCreateImbalanceAccountUID(context, usd);
-        assertThat(imbalanceUID).isNotNull().isNotEmpty();
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(2);
+        imbalanceUID = accountsDbAdapter.getOrCreateImbalanceAccountUID(context, usd)
+        assertThat(imbalanceUID).isNotNull().isNotEmpty()
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(2)
     }
 
 
     @Test
-    public void editingAccountShouldNotDeleteTemplateSplits() {
-        Account account = new Account("First", Commodity.EUR);
-        Account transferAccount = new Account("Transfer", Commodity.EUR);
-        mAccountsDbAdapter.addRecord(account);
-        mAccountsDbAdapter.addRecord(transferAccount);
+    fun editingAccountShouldNotDeleteTemplateSplits() {
+        val account = Account("First", Commodity.EUR)
+        val transferAccount = Account("Transfer", Commodity.EUR)
+        accountsDbAdapter.addRecord(account)
+        accountsDbAdapter.addRecord(transferAccount)
 
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(3); //plus root account
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(3) //plus root account
 
-        Money money = new Money(BigDecimal.TEN, Commodity.EUR);
-        Transaction transaction = new Transaction("Template");
-        transaction.setTemplate(true);
-        transaction.setCommodity(Commodity.EUR);
-        Split split = new Split(money, account.getUID());
-        transaction.addSplit(split);
-        transaction.addSplit(split.createPair(transferAccount.getUID()));
+        val money = Money(BigDecimal.TEN, Commodity.EUR)
+        val transaction = Transaction("Template")
+        transaction.isTemplate = true
+        transaction.commodity = Commodity.EUR
+        val split = Split(money, account.uid)
+        transaction.addSplit(split)
+        transaction.addSplit(split.createPair(transferAccount.uid))
 
-        mTransactionsDbAdapter.addRecord(transaction);
-        List<Transaction> transactions = mTransactionsDbAdapter.getAllRecords();
-        assertThat(transactions).hasSize(1);
+        transactionsDbAdapter.addRecord(transaction)
+        val transactions = transactionsDbAdapter.allRecords
+        assertThat(transactions).hasSize(1)
 
-        assertThat(mTransactionsDbAdapter.getScheduledTransactionsForAccount(account.getUID())).hasSize(1);
+        assertThat(
+            transactionsDbAdapter.getScheduledTransactionsForAccount(account.uid)
+        ).hasSize(1)
 
         //edit the account
-        account.setName("Edited account");
-        mAccountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.update);
+        account.name = "Edited account"
+        accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.update)
 
-        assertThat(mTransactionsDbAdapter.getScheduledTransactionsForAccount(account.getUID())).hasSize(1);
-        assertThat(mSplitsDbAdapter.getSplitsForTransaction(transaction.getUID())).hasSize(2);
+        assertThat(
+            transactionsDbAdapter.getScheduledTransactionsForAccount(account.uid)
+        ).hasSize(1)
+        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction.uid)).hasSize(2)
     }
 
     @Test
-    public void shouldSetDefaultTransferColumnToNull_WhenTheAccountIsDeleted() {
-        mAccountsDbAdapter.deleteAllRecords();
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isZero();
+    fun shouldSetDefaultTransferColumnToNull_WhenTheAccountIsDeleted() {
+        accountsDbAdapter.deleteAllRecords()
+        assertThat(accountsDbAdapter.recordsCount).isZero()
 
-        Account account1 = new Account("Test");
-        Account account2 = new Account("Transfer Account");
-        account1.setDefaultTransferAccountUID(account2.getUID());
+        val account1 = Account("Test")
+        val account2 = Account("Transfer Account")
+        account1.defaultTransferAccountUID = account2.uid
 
-        mAccountsDbAdapter.addRecord(account1);
-        mAccountsDbAdapter.addRecord(account2);
+        accountsDbAdapter.addRecord(account1)
+        accountsDbAdapter.addRecord(account2)
 
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(3L); //plus ROOT account
-        mAccountsDbAdapter.deleteRecord(account2.getUID());
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(3L) //plus ROOT account
+        accountsDbAdapter.deleteRecord(account2.uid)
 
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(2L);
-        assertThat(mAccountsDbAdapter.getRecord(account1.getUID()).getDefaultTransferAccountUID()).isNull();
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(2L)
+        assertThat(accountsDbAdapter.getRecord(account1.uid).defaultTransferAccountUID)
+            .isNull()
 
-        Account account3 = new Account("Sub-test");
-        account3.setParentUID(account1.getUID());
-        Account account4 = new Account("Third-party");
-        account4.setDefaultTransferAccountUID(account3.getUID());
+        val account3 = Account("Sub-test")
+        account3.parentUID = account1.uid
+        val account4 = Account("Third-party")
+        account4.defaultTransferAccountUID = account3.uid
 
-        mAccountsDbAdapter.addRecord(account3);
-        mAccountsDbAdapter.addRecord(account4);
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(4L);
+        accountsDbAdapter.addRecord(account3)
+        accountsDbAdapter.addRecord(account4)
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(4L)
 
-        mAccountsDbAdapter.recursiveDeleteAccount(account1.getUID());
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(2L);
-        assertThat(mAccountsDbAdapter.getRecord(account4.getUID()).getDefaultTransferAccountUID()).isNull();
+        accountsDbAdapter.recursiveDeleteAccount(account1.uid)
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(2L)
+        assertThat(accountsDbAdapter.getRecord(account4.uid).defaultTransferAccountUID)
+            .isNull()
     }
 
     /**
      * Opening an XML file should set the default currency to that used by the most accounts in the file
      */
     @Test
-    public void importingXml_shouldSetDefaultCurrencyFromXml() {
-        GnuCashApplication.setDefaultCurrencyCode("JPY");
+    fun importingXml_shouldSetDefaultCurrencyFromXml() {
+        GnuCashApplication.setDefaultCurrencyCode("JPY")
 
-        assertThat(GnuCashApplication.getDefaultCurrencyCode()).isEqualTo("JPY");
-        assertThat(Commodity.DEFAULT_COMMODITY).isEqualTo(Commodity.JPY);
+        assertThat(GnuCashApplication.getDefaultCurrencyCode()).isEqualTo("JPY")
+        assertThat(Commodity.DEFAULT_COMMODITY).isEqualTo(Commodity.JPY)
 
-        mAccountsDbAdapter.deleteAllRecords();
-        loadDefaultAccounts();
+        accountsDbAdapter.deleteAllRecords()
+        loadDefaultAccounts()
 
-        assertThat(GnuCashApplication.getDefaultCurrencyCode()).isNotEqualTo("JPY");
+        assertThat(GnuCashApplication.getDefaultCurrencyCode()).isNotEqualTo("JPY")
         //the book has USD occuring most often and this will be used as the default currency
-        assertThat(GnuCashApplication.getDefaultCurrencyCode()).isEqualTo("USD");
-        assertThat(Commodity.DEFAULT_COMMODITY).isEqualTo(Commodity.USD);
+        assertThat(GnuCashApplication.getDefaultCurrencyCode()).isEqualTo("USD")
+        assertThat(Commodity.DEFAULT_COMMODITY).isEqualTo(Commodity.USD)
 
-        System.out.println("Default currency is now: " + Commodity.DEFAULT_COMMODITY);
+        println("Default currency is now: " + Commodity.DEFAULT_COMMODITY)
     }
 
     @Test
-    public void testChangesToAccount() {
-        mAccountsDbAdapter.deleteAllRecords();
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isZero();
+    fun testChangesToAccount() {
+        accountsDbAdapter.deleteAllRecords()
+        assertThat(accountsDbAdapter.recordsCount).isZero()
 
-        Account account1 = new Account("Test");
-        mAccountsDbAdapter.addRecord(account1, DatabaseAdapter.UpdateMethod.insert);
-        assertThat(account1.id).isNotEqualTo(0); //plus ROOT account
-        assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(2); //plus ROOT account
+        val account1 = Account("Test")
+        accountsDbAdapter.addRecord(account1, DatabaseAdapter.UpdateMethod.insert)
+        assertThat(account1.id).isNotEqualTo(0) //plus ROOT account
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(2) //plus ROOT account
 
-        Account account2 = mAccountsDbAdapter.getRecord(account1.getUID());
-        assertThat(account2).isEqualTo(account1);
-        assertThat(account2.isPlaceholder()).isFalse();
-        assertThat(account2.isFavorite()).isFalse();
-        assertThat(account2.getColor()).isEqualTo(Account.DEFAULT_COLOR);
+        val account2 = accountsDbAdapter.getRecord(account1.uid)
+        assertThat(account2).isEqualTo(account1)
+        assertThat(account2.isPlaceholder).isFalse()
+        assertThat(account2.isFavorite).isFalse()
+        assertThat(account2.color).isEqualTo(Account.DEFAULT_COLOR)
 
-        account2.setPlaceholder(true);
-        account2.setFavorite(true);
-        account2.setColor(Color.MAGENTA);
-        mAccountsDbAdapter.addRecord(account2, DatabaseAdapter.UpdateMethod.replace);
-        Account account3 = mAccountsDbAdapter.getRecord(account2.getUID());
-        assertThat(account3).isEqualTo(account2);
-        assertThat(account3.isPlaceholder()).isTrue();
-        assertThat(account3.isFavorite()).isTrue();
-        assertThat(account3.getColor()).isEqualTo(Color.MAGENTA);
+        account2.isPlaceholder = true
+        account2.isFavorite = true
+        account2.color = Color.MAGENTA
+        accountsDbAdapter.addRecord(account2, DatabaseAdapter.UpdateMethod.replace)
+        val account3 = accountsDbAdapter.getRecord(account2.uid)
+        assertThat(account3).isEqualTo(account2)
+        assertThat(account3.isPlaceholder).isTrue()
+        assertThat(account3.isFavorite).isTrue()
+        assertThat(account3.color).isEqualTo(Color.MAGENTA)
 
-        account3.setPlaceholder(true);
-        account3.setFavorite(false);
-        account3.setColor(Color.YELLOW);
-        mAccountsDbAdapter.addRecord(account3, DatabaseAdapter.UpdateMethod.update);
-        Account account4 = mAccountsDbAdapter.getRecord(account3.getUID());
-        assertThat(account4).isEqualTo(account3);
-        assertThat(account4.isPlaceholder()).isTrue();
-        assertThat(account4.isFavorite()).isFalse();
-        assertThat(account4.getColor()).isEqualTo(Color.YELLOW);
+        account3.isPlaceholder = true
+        account3.isFavorite = false
+        account3.color = Color.YELLOW
+        accountsDbAdapter.addRecord(account3, DatabaseAdapter.UpdateMethod.update)
+        val account4 = accountsDbAdapter.getRecord(account3.uid)
+        assertThat(account4).isEqualTo(account3)
+        assertThat(account4.isPlaceholder).isTrue()
+        assertThat(account4.isFavorite).isFalse()
+        assertThat(account4.color).isEqualTo(Color.YELLOW)
     }
 
     /**
      * Loads the default accounts from file resource
      */
-    private void loadDefaultAccounts() {
+    private fun loadDefaultAccounts() {
         try {
-            Context context = GnuCashApplication.getAppContext();
-            String bookUID = GncXmlImporter.parse(context, context.getResources().openRawResource(R.raw.default_accounts));
-            initAdapters(bookUID);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            Timber.e(e);
-            throw new RuntimeException("Could not create default accounts");
+            val bookUID = GncXmlImporter.parse(
+                context,
+                context.resources.openRawResource(R.raw.default_accounts)
+            )
+            initAdapters(bookUID)
+        } catch (e: ParserConfigurationException) {
+            Timber.e(e)
+            throw RuntimeException("Could not create default accounts")
+        } catch (e: SAXException) {
+            Timber.e(e)
+            throw RuntimeException("Could not create default accounts")
+        } catch (e: IOException) {
+            Timber.e(e)
+            throw RuntimeException("Could not create default accounts")
         }
     }
 
-    @After
-    public void tearDown() throws Exception {
-        mAccountsDbAdapter.deleteAllRecords();
+    companion object {
+        private const val BRAVO_ACCOUNT_NAME = "Bravo"
+        private const val ALPHA_ACCOUNT_NAME = "Alpha"
     }
 }

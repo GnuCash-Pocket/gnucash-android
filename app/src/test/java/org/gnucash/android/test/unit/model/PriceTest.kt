@@ -13,53 +13,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.test.unit.model
 
-package org.gnucash.android.test.unit.model;
+import junit.framework.TestCase.fail
+import org.assertj.core.api.Assertions.assertThat
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.model.Price
+import org.gnucash.android.test.unit.GnuCashTest
+import org.junit.Test
+import java.math.BigDecimal
+import java.util.Locale
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
-
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Price;
-import org.gnucash.android.test.unit.GnuCashTest;
-import org.junit.Test;
-
-import java.math.BigDecimal;
-import java.util.Locale;
-
-
-public class PriceTest extends GnuCashTest {
+class PriceTest : GnuCashTest() {
     @Test
-    public void creatingFromExchangeRate_ShouldGetPrecisionRight() {
-        Locale.setDefault(Locale.US);
-        Commodity commodity1 = Commodity.USD;
-        Commodity commodity2 = Commodity.EUR;
+    fun creatingFromExchangeRate_ShouldGetPrecisionRight() {
+        Locale.setDefault(Locale.US)
+        val commodity1 = Commodity.USD
+        val commodity2 = Commodity.EUR
 
-        String exchangeRateString = "0.123";
-        BigDecimal exchangeRate = new BigDecimal(exchangeRateString);
-        Price price = new Price(commodity1, commodity2, exchangeRate);
+        var exchangeRateString = "0.123"
+        var exchangeRate = BigDecimal(exchangeRateString)
+        var price = Price(commodity1, commodity2, exchangeRate)
         // EUR uses 2 fractional digits.
-        assertThat(price.toString()).isEqualTo("0.12");
+        assertThat(price.toString()).isEqualTo("0.12")
 
         // ensure we don't get more decimal places than needed (0.123000)
-        exchangeRateString = "0.123456";
-        exchangeRate = new BigDecimal(exchangeRateString);
-        price = new Price(commodity1, commodity2, exchangeRate);
+        exchangeRateString = "0.123456"
+        exchangeRate = BigDecimal(exchangeRateString)
+        price = Price(commodity1, commodity2, exchangeRate)
         // EUR uses 2 fractional digits.
-        assertThat(price.toString()).isEqualTo("0.12");
+        assertThat(price.toString()).isEqualTo("0.12")
     }
 
     @Test
-    public void toString_shouldUseDefaultLocale() {
-        Locale.setDefault(Locale.GERMANY);
-        Commodity commodity1 = Commodity.EUR;
-        Commodity commodity2 = Commodity.USD;
+    fun toString_shouldUseDefaultLocale() {
+        Locale.setDefault(Locale.GERMANY)
+        val commodity1 = Commodity.EUR
+        val commodity2 = Commodity.USD
 
-        String exchangeRateString = "1.234";
-        BigDecimal exchangeRate = new BigDecimal(exchangeRateString);
-        Price price = new Price(commodity1, commodity2, exchangeRate);
+        val exchangeRateString = "1.234"
+        val exchangeRate = BigDecimal(exchangeRateString)
+        val price = Price(commodity1, commodity2, exchangeRate)
         // USD uses 2 fractional digits.
-        assertThat(price.toString()).isEqualTo("1,23");
+        assertThat(price.toString()).isEqualTo("1,23")
     }
 
     /**
@@ -68,39 +64,39 @@ public class PriceTest extends GnuCashTest {
      * round mode is specified with a MathContext.
      */
     @Test
-    public void toString_shouldNotFailForInfinitelyLongDecimalExpansion() {
-        long numerator = 1;
-        long denominator = 3;
-        Price price = new Price();
+    fun toString_shouldNotFailForInfinitelyLongDecimalExpansion() {
+        val numerator: Long = 1
+        val denominator: Long = 3
+        val price = Price()
 
-        price.setValueNum(numerator);
-        price.setValueDenom(denominator);
+        price.valueNum = numerator
+        price.valueDenom = denominator
         try {
-            price.toString();
-        } catch (ArithmeticException e) {
-            fail("The numerator/denominator division in Price.toString() should not fail.");
+            price.toString()
+        } catch (e: ArithmeticException) {
+            fail("The numerator/denominator division in Price.toString() should not fail.")
         }
     }
 
     @Test
-    public void getNumerator_shouldReduceAutomatically() {
-        long numerator = 1;
-        long denominator = 3;
-        Price price = new Price();
+    fun numerator_shouldReduceAutomatically() {
+        val numerator: Long = 1
+        val denominator: Long = 3
+        val price = Price()
 
-        price.setValueNum(numerator * 2);
-        price.setValueDenom(denominator * 2);
-        assertThat(price.getValueNum()).isEqualTo(numerator);
+        price.valueNum = numerator * 2
+        price.valueDenom = denominator * 2
+        assertThat(price.valueNum).isEqualTo(numerator)
     }
 
     @Test
-    public void getDenominator_shouldReduceAutomatically() {
-        long numerator = 1;
-        long denominator = 3;
-        Price price = new Price();
+    fun denominator_shouldReduceAutomatically() {
+        val numerator: Long = 1
+        val denominator: Long = 3
+        val price = Price()
 
-        price.setValueNum(numerator * 2);
-        price.setValueDenom(denominator * 2);
-        assertThat(price.getValueDenom()).isEqualTo(denominator);
+        price.valueNum = numerator * 2
+        price.valueDenom = denominator * 2
+        assertThat(price.valueDenom).isEqualTo(denominator)
     }
 }

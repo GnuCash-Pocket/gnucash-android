@@ -1,36 +1,33 @@
-package org.gnucash.android.test.unit.model;
+package org.gnucash.android.test.unit.model
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.assertj.core.api.Assertions.assertThat
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.model.Commodity.Companion.getInstance
+import org.gnucash.android.model.Money
+import org.gnucash.android.model.Money.Companion.createZeroInstance
+import org.gnucash.android.model.Split
+import org.gnucash.android.model.Transaction
+import org.gnucash.android.model.TransactionType
+import org.gnucash.android.test.unit.GnuCashTest
+import org.junit.Test
 
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.model.Split;
-import org.gnucash.android.model.Transaction;
-import org.gnucash.android.model.TransactionType;
-import org.gnucash.android.test.unit.GnuCashTest;
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
-public class TransactionTest extends GnuCashTest {
-
+class TransactionTest : GnuCashTest() {
     @Test
-    public void testCloningTransaction() {
-        Transaction transaction = new Transaction("Bobba Fett");
-        assertThat(transaction.getUID()).isNotNull();
-        assertThat(transaction.getCurrencyCode()).isEqualTo(Commodity.DEFAULT_COMMODITY.getCurrencyCode());
+    fun testCloningTransaction() {
+        val transaction = Transaction("Bobba Fett")
+        assertThat(transaction.uid).isNotNull()
+        assertThat(transaction.currencyCode).isEqualTo(Commodity.DEFAULT_COMMODITY.currencyCode)
 
-        Transaction clone1 = new Transaction(transaction, false);
-        assertThat(transaction.getUID()).isEqualTo(clone1.getUID());
-        assertThat(transaction).isEqualTo(clone1);
+        val clone1 = Transaction(transaction, false)
+        assertThat(transaction.uid).isEqualTo(clone1.uid)
+        assertThat(transaction).isEqualTo(clone1)
 
-        Transaction clone2 = new Transaction(transaction, true);
-        assertThat(transaction.getUID()).isNotEqualTo(clone2.getUID());
-        assertThat(transaction.getCurrencyCode()).isEqualTo(clone2.getCurrencyCode());
-        assertThat(transaction.getDescription()).isEqualTo(clone2.getDescription());
-        assertThat(transaction.getNote()).isEqualTo(clone2.getNote());
-        assertThat(transaction.getTimeMillis()).isEqualTo(clone2.getTimeMillis());
+        val clone2 = Transaction(transaction, true)
+        assertThat(transaction.uid).isNotEqualTo(clone2.uid)
+        assertThat(transaction.currencyCode).isEqualTo(clone2.currencyCode)
+        assertThat(transaction.description).isEqualTo(clone2.description)
+        assertThat(transaction.note).isEqualTo(clone2.note)
+        assertThat(transaction.timeMillis).isEqualTo(clone2.timeMillis)
         //TODO: Clone the created_at and modified_at times?
     }
 
@@ -38,65 +35,64 @@ public class TransactionTest extends GnuCashTest {
      * Adding a split to a transaction should set the transaction UID of the split to the GUID of the transaction
      */
     @Test
-    public void addingSplitsShouldSetTransactionUID() {
-        Transaction transaction = new Transaction("");
-        assertThat(transaction.getCurrencyCode()).isEqualTo(Commodity.DEFAULT_COMMODITY.getCurrencyCode());
+    fun addingSplitsShouldSetTransactionUID() {
+        val transaction = Transaction("")
+        assertThat(transaction.currencyCode).isEqualTo(Commodity.DEFAULT_COMMODITY.currencyCode)
 
-        Split split = new Split(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), "test-account");
-        assertThat(split.getTransactionUID()).isEmpty();
+        val split = Split(createZeroInstance(Commodity.DEFAULT_COMMODITY), "test-account")
+        assertThat(split.transactionUID).isEmpty()
 
-        transaction.addSplit(split);
-        assertThat(split.getTransactionUID()).isEqualTo(transaction.getUID());
+        transaction.addSplit(split)
+        assertThat(split.transactionUID).isEqualTo(transaction.uid)
     }
 
     @Test
-    public void settingUID_shouldSetTransactionUidOfSplits() {
-        Transaction t1 = new Transaction("Test");
-        Split split1 = new Split(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), "random");
-        split1.setTransactionUID("non-existent");
+    fun settingUID_shouldSetTransactionUidOfSplits() {
+        val t1 = Transaction("Test")
+        val split1 = Split(createZeroInstance(Commodity.DEFAULT_COMMODITY), "random")
+        split1.transactionUID = "non-existent"
 
-        Split split2 = new Split(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), "account-something");
-        split2.setTransactionUID("pre-existent");
+        val split2 = Split(createZeroInstance(Commodity.DEFAULT_COMMODITY), "account-something")
+        split2.transactionUID = "pre-existent"
 
-        List<Split> splits = new ArrayList<>();
-        splits.add(split1);
-        splits.add(split2);
+        val splits: MutableList<Split> = ArrayList()
+        splits.add(split1)
+        splits.add(split2)
 
-        t1.setSplits(splits);
+        t1.setSplits(splits)
 
-        assertThat(t1.getSplits()).extracting("transactionUID")
-            .contains(t1.getUID())
-            .doesNotContain("non-existent")
-            .doesNotContain("pre-existent");
+        val transactionUID = assertThat(t1.splits).extracting("transactionUID")
+        transactionUID.contains(t1.uid)
+        transactionUID.doesNotContain("non-existent")
+        transactionUID.doesNotContain("pre-existent")
     }
 
     @Test
-    public void testCreateAutoBalanceSplit() {
-        Transaction transactionCredit = new Transaction("Transaction with more credit");
-        transactionCredit.setCommodity(Commodity.getInstance("EUR"));
-        Split creditSplit = new Split(new Money("1", "EUR"), "test-account");
-        creditSplit.setType(TransactionType.CREDIT);
-        transactionCredit.addSplit(creditSplit);
-        Split debitBalanceSplit = transactionCredit.createAutoBalanceSplit();
+    fun testCreateAutoBalanceSplit() {
+        val transactionCredit = Transaction("Transaction with more credit")
+        transactionCredit.commodity = getInstance("EUR")
+        val creditSplit = Split(Money("1", "EUR"), "test-account")
+        creditSplit.type = TransactionType.CREDIT
+        transactionCredit.addSplit(creditSplit)
+        val debitBalanceSplit = transactionCredit.createAutoBalanceSplit()
 
-        assertThat(creditSplit.getValue().isNegative()).isFalse();
-        assertThat(debitBalanceSplit.getValue()).isEqualTo(creditSplit.getValue());
+        assertThat(creditSplit.value.isNegative).isFalse()
+        assertThat(debitBalanceSplit!!.value).isEqualTo(creditSplit.value)
 
-        assertThat(creditSplit.getQuantity().isNegative()).isFalse();
-        assertThat(debitBalanceSplit.getQuantity()).isEqualTo(creditSplit.getQuantity());
+        assertThat(creditSplit.quantity.isNegative).isFalse()
+        assertThat(debitBalanceSplit.quantity).isEqualTo(creditSplit.quantity)
 
+        val transactionDebit = Transaction("Transaction with more debit")
+        transactionDebit.commodity = getInstance("EUR")
+        val debitSplit = Split(Money("1", "EUR"), "test-account")
+        debitSplit.type = TransactionType.DEBIT
+        transactionDebit.addSplit(debitSplit)
+        val creditBalanceSplit = transactionDebit.createAutoBalanceSplit()
 
-        Transaction transactionDebit = new Transaction("Transaction with more debit");
-        transactionDebit.setCommodity(Commodity.getInstance("EUR"));
-        Split debitSplit = new Split(new Money("1", "EUR"), "test-account");
-        debitSplit.setType(TransactionType.DEBIT);
-        transactionDebit.addSplit(debitSplit);
-        Split creditBalanceSplit = transactionDebit.createAutoBalanceSplit();
+        assertThat(debitSplit.value.isNegative).isFalse()
+        assertThat(creditBalanceSplit!!.value).isEqualTo(debitSplit.value)
 
-        assertThat(debitSplit.getValue().isNegative()).isFalse();
-        assertThat(creditBalanceSplit.getValue()).isEqualTo(debitSplit.getValue());
-
-        assertThat(debitSplit.getQuantity().isNegative()).isFalse();
-        assertThat(creditBalanceSplit.getQuantity()).isEqualTo(debitSplit.getQuantity());
+        assertThat(debitSplit.quantity.isNegative).isFalse()
+        assertThat(creditBalanceSplit.quantity).isEqualTo(debitSplit.quantity)
     }
 }

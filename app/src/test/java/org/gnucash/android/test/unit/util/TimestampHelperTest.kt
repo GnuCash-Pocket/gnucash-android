@@ -13,72 +13,75 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.test.unit.util;
+package org.gnucash.android.test.unit.util
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.assertj.core.api.Assertions.assertThat
+import org.gnucash.android.test.unit.GnuCashTest
+import org.gnucash.android.util.TimestampHelper
+import org.junit.Test
+import java.sql.Timestamp
 
-import org.gnucash.android.test.unit.GnuCashTest;
-import org.gnucash.android.util.TimestampHelper;
-import org.junit.Test;
-
-import java.sql.Timestamp;
-
-public class TimestampHelperTest extends GnuCashTest {
-
+class TimestampHelperTest : GnuCashTest() {
     @Test
-    public void shouldGetUtcStringFromTimestamp() {
+    fun shouldGetUtcStringFromTimestamp() {
         /**
          * The values used here are well known.
          * See https://en.wikipedia.org/wiki/Unix_time#Notable_events_in_Unix_time
          * for details.
          */
 
-        final long unixBillennium = 1_000_000_000 * 1000L;
-        final String unixBillenniumUtcString = "2001-09-09 01:46:40.000";
-        final Timestamp unixBillenniumTimestamp = new Timestamp(unixBillennium);
+        val unixBillennium = 1_000_000_000 * 1000L
+        val unixBillenniumUtcString = "2001-09-09 01:46:40.000"
+        val unixBillenniumTimestamp = Timestamp(unixBillennium)
         assertThat(TimestampHelper.getUtcStringFromTimestamp(unixBillenniumTimestamp))
-            .isEqualTo(unixBillenniumUtcString);
+            .isEqualTo(unixBillenniumUtcString)
 
-        final long the1234567890thSecond = 1234567890 * 1000L;
-        final String the1234567890thSecondUtcString = "2009-02-13 23:31:30.000";
-        final Timestamp the1234567890thSecondTimestamp = new Timestamp(the1234567890thSecond);
-        assertThat(TimestampHelper.getUtcStringFromTimestamp(the1234567890thSecondTimestamp))
-            .isEqualTo(the1234567890thSecondUtcString);
+        val the1234567890thSecond = 1_234_567_890 * 1000L
+        val the1234567890thSecondUtcString = "2009-02-13 23:31:30.000"
+        val the1234567890thSecondTimestamp = Timestamp(the1234567890thSecond)
+        assertThat(
+            TimestampHelper.getUtcStringFromTimestamp(the1234567890thSecondTimestamp)
+        ).isEqualTo(the1234567890thSecondUtcString)
     }
 
     @Test
-    public void shouldGetTimestampFromEpochZero() {
-        Timestamp epochZero = TimestampHelper.getTimestampFromEpochZero();
-        assertThat(epochZero.getTime()).isZero();
+    fun shouldGetTimestampFromEpochZero() {
+        val epochZero = TimestampHelper.getTimestampFromEpochZero()
+        assertThat(epochZero.time).isZero()
     }
 
     @Test
-    public void shouldGetTimestampFromUtcString() {
-        final long unixBillennium = 1_000_000_000 * 1000L;
-        final String unixBillenniumUtcString = "2001-09-09 01:46:40";
-        final String unixBillenniumWithMillisecondsUtcString = "2001-09-09 01:46:40.000";
-        final Timestamp unixBillenniumTimestamp = new Timestamp(unixBillennium);
+    fun shouldGetTimestampFromUtcString() {
+        val unixBillennium = 1_000_000_000 * 1000L
+        val unixBillenniumUtcString = "2001-09-09 01:46:40"
+        val unixBillenniumWithMillisecondsUtcString = "2001-09-09 01:46:40.000"
+        val unixBillenniumTimestamp = Timestamp(unixBillennium)
+        assertThat(
+            TimestampHelper.getTimestampFromUtcString(
+                unixBillenniumWithMillisecondsUtcString
+            )
+        ).isEqualTo(unixBillenniumTimestamp)
         assertThat(TimestampHelper.getTimestampFromUtcString(unixBillenniumUtcString))
-            .isEqualTo(unixBillenniumTimestamp);
-        assertThat(TimestampHelper.getTimestampFromUtcString(unixBillenniumWithMillisecondsUtcString))
-            .isEqualTo(unixBillenniumTimestamp);
+            .isEqualTo(unixBillenniumTimestamp)
 
-        final long the1234567890thSecond = 1234567890 * 1000L;
-        final String the1234567890thSecondUtcString = "2009-02-13 23:31:30";
-        final String the1234567890thSecondWithMillisecondsUtcString = "2009-02-13 23:31:30.000";
-        final Timestamp the1234567890thSecondTimestamp = new Timestamp(the1234567890thSecond);
-        assertThat(TimestampHelper.getTimestampFromUtcString(the1234567890thSecondUtcString))
-            .isEqualTo(the1234567890thSecondTimestamp);
-        assertThat(TimestampHelper.getTimestampFromUtcString(the1234567890thSecondWithMillisecondsUtcString))
-            .isEqualTo(the1234567890thSecondTimestamp);
+        val the1234567890thSecond = 1_234_567_890 * 1000L
+        val the1234567890thSecondUtcString = "2009-02-13 23:31:30"
+        val the1234567890thSecondWithMillisecondsUtcString = "2009-02-13 23:31:30.000"
+        val the1234567890thSecondTimestamp = Timestamp(the1234567890thSecond)
+        assertThat(
+            TimestampHelper.getTimestampFromUtcString(the1234567890thSecondUtcString)
+        ).isEqualTo(the1234567890thSecondTimestamp)
+        assertThat(
+            TimestampHelper.getTimestampFromUtcString(the1234567890thSecondWithMillisecondsUtcString)
+        ).isEqualTo(the1234567890thSecondTimestamp)
     }
 
     @Test
-    public void shouldGetTimestampFromNow() {
-        final long before = System.currentTimeMillis();
-        final long now = TimestampHelper.getTimestampFromNow().getTime();
-        final long after = System.currentTimeMillis();
+    fun shouldGetTimestampFromNow() {
+        val before = System.currentTimeMillis()
+        val now = TimestampHelper.getTimestampFromNow().time
+        val after = System.currentTimeMillis()
         assertThat(now).isGreaterThanOrEqualTo(before)
-            .isLessThanOrEqualTo(after);
+            .isLessThanOrEqualTo(after)
     }
 }

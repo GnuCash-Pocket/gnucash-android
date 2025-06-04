@@ -13,109 +13,106 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.test.unit.db;
+package org.gnucash.android.test.unit.db
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import android.database.sqlite.SQLiteException;
-
-import org.gnucash.android.db.DatabaseSchema;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.SplitsDbAdapter;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.model.Split;
-import org.gnucash.android.model.Transaction;
-import org.gnucash.android.test.unit.GnuCashTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.List;
+import android.database.sqlite.SQLiteException
+import org.assertj.core.api.Assertions.assertThat
+import org.gnucash.android.db.DatabaseSchema
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.SplitsDbAdapter
+import org.gnucash.android.db.adapter.TransactionsDbAdapter
+import org.gnucash.android.model.Account
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.model.Money.Companion.createZeroInstance
+import org.gnucash.android.model.Split
+import org.gnucash.android.model.Transaction
+import org.gnucash.android.test.unit.GnuCashTest
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 
 /**
  * Some tests for the splits database adapter
  */
-public class SplitsDbAdapterTest extends GnuCashTest {
+class SplitsDbAdapterTest : GnuCashTest() {
+    private lateinit var accountsDbAdapter: AccountsDbAdapter
+    private lateinit var transactionsDbAdapter: TransactionsDbAdapter
+    private lateinit var splitsDbAdapter: SplitsDbAdapter
 
-    private AccountsDbAdapter mAccountsDbAdapter;
-    private TransactionsDbAdapter mTransactionsDbAdapter;
-    private SplitsDbAdapter mSplitsDbAdapter;
-
-    private Account mAccount;
+    private lateinit var account: Account
 
     @Before
-    public void setUp() throws Exception {
-        mSplitsDbAdapter = SplitsDbAdapter.getInstance();
-        mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
-        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-        mAccount = new Account("Test account");
-        mAccountsDbAdapter.addRecord(mAccount);
+    fun setUp() {
+        splitsDbAdapter = SplitsDbAdapter.getInstance()
+        transactionsDbAdapter = TransactionsDbAdapter.getInstance()
+        accountsDbAdapter = AccountsDbAdapter.getInstance()
+        account = Account("Test account")
+        accountsDbAdapter.addRecord(account)
+    }
+
+    @After
+    fun tearDown() {
+        accountsDbAdapter.deleteAllRecords()
     }
 
     /**
      * Adding a split where the account does not exist in the database should generate an exception
      */
-    @Test(expected = SQLiteException.class)
-    public void shouldHaveAccountInDatabase() {
-        Transaction transaction = new Transaction("");
-        mTransactionsDbAdapter.addRecord(transaction);
+    @Test(expected = SQLiteException::class)
+    fun shouldHaveAccountInDatabase() {
+        val transaction = Transaction("")
+        transactionsDbAdapter.addRecord(transaction)
 
-        Split split = new Split(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), "non-existent");
-        split.setTransactionUID(transaction.getUID());
-        mSplitsDbAdapter.addRecord(split);
+        val split = Split(createZeroInstance(Commodity.DEFAULT_COMMODITY), "non-existent")
+        split.transactionUID = transaction.uid
+        splitsDbAdapter.addRecord(split)
     }
 
     /**
      * Adding a split where the account does not exist in the database should generate an exception
      */
-    @Test(expected = SQLiteException.class)
-    public void shouldHaveTransactionInDatabase() {
-        Transaction transaction = new Transaction(""); //not added to the db
+    @Test(expected = SQLiteException::class)
+    fun shouldHaveTransactionInDatabase() {
+        val transaction = Transaction("") //not added to the db
 
-        Split split = new Split(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), mAccount.getUID());
-        split.setTransactionUID(transaction.getUID());
-        mSplitsDbAdapter.addRecord(split);
+        val split = Split(createZeroInstance(Commodity.DEFAULT_COMMODITY), account.uid)
+        split.transactionUID = transaction.uid
+        splitsDbAdapter.addRecord(split)
     }
 
     @Test
-    public void testAddSplit() {
-        Transaction transaction = new Transaction("");
-        mTransactionsDbAdapter.addRecord(transaction);
+    fun testAddSplit() {
+        val transaction = Transaction("")
+        transactionsDbAdapter.addRecord(transaction)
 
-        Split split = new Split(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), mAccount.getUID());
-        split.setTransactionUID(transaction.getUID());
-        mSplitsDbAdapter.addRecord(split);
+        val split = Split(createZeroInstance(Commodity.DEFAULT_COMMODITY), account.uid)
+        split.transactionUID = transaction.uid
+        splitsDbAdapter.addRecord(split)
 
-        List<Split> splits = mSplitsDbAdapter.getSplitsForTransaction(transaction.getUID());
-        assertThat(splits).isNotEmpty();
-        assertThat(splits.get(0).getUID()).isEqualTo(split.getUID());
+        val splits = splitsDbAdapter.getSplitsForTransaction(transaction.uid)
+        assertThat(splits).isNotEmpty()
+        assertThat(splits[0].uid).isEqualTo(split.uid)
     }
 
     /**
      * When a split is added or modified to a transaction, we should set the
      */
     @Test
-    public void addingSplitShouldUnsetExportedFlagOfTransaction() {
-        Transaction transaction = new Transaction("");
-        transaction.setExported(true);
-        mTransactionsDbAdapter.addRecord(transaction);
+    fun addingSplitShouldUnsetExportedFlagOfTransaction() {
+        val transaction = Transaction("")
+        transaction.isExported = true
+        transactionsDbAdapter.addRecord(transaction)
 
-        assertThat(transaction.isExported()).isTrue();
+        assertThat(transaction.isExported).isTrue()
 
-        Split split = new Split(Money.createZeroInstance(Commodity.DEFAULT_COMMODITY), mAccount.getUID());
-        split.setTransactionUID(transaction.getUID());
-        mSplitsDbAdapter.addRecord(split);
+        val split = Split(createZeroInstance(Commodity.DEFAULT_COMMODITY), account.uid)
+        split.transactionUID = transaction.uid
+        splitsDbAdapter.addRecord(split)
 
-        String isExported = mTransactionsDbAdapter.getAttribute(transaction.getUID(),
-            DatabaseSchema.TransactionEntry.COLUMN_EXPORTED);
-        assertThat(Boolean.parseBoolean(isExported)).isFalse();
-    }
-
-    @After
-    public void tearDown() {
-        mAccountsDbAdapter.deleteAllRecords();
+        val isExported = transactionsDbAdapter.getAttribute(
+            transaction.uid,
+            DatabaseSchema.TransactionEntry.COLUMN_EXPORTED
+        )
+        assertThat(isExported.toBoolean()).isFalse()
     }
 }

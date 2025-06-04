@@ -1,62 +1,60 @@
-package org.gnucash.android.test.unit.util;
+package org.gnucash.android.test.unit.util
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.assertj.core.api.Assertions.assertThat
+import org.gnucash.android.test.unit.GnuCashTest
+import org.gnucash.android.util.AmountParser
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import java.math.BigDecimal
+import java.text.ParseException
+import java.util.Locale
 
-import org.gnucash.android.test.unit.GnuCashTest;
-import org.gnucash.android.util.AmountParser;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.math.BigDecimal;
-import java.text.ParseException;
-import java.util.Locale;
-
-public class AmountParserTest extends GnuCashTest {
-    private Locale mPreviousLocale;
+class AmountParserTest : GnuCashTest() {
+    private lateinit var previousLocale: Locale
 
     @Before
-    public void setUp() {
-        mPreviousLocale = Locale.getDefault();
-        Locale.setDefault(Locale.US);
+    fun setUp() {
+        previousLocale = Locale.getDefault()
+        Locale.setDefault(Locale.US)
     }
 
     @After
-    public void tearDown() {
-        Locale.setDefault(mPreviousLocale);
+    fun tearDown() {
+        Locale.setDefault(previousLocale)
     }
 
     @Test
-    public void testParseIntegerAmount() throws Exception {
-        assertThat(AmountParser.parse("123")).isEqualTo(new BigDecimal(123));
+    fun testParseIntegerAmount() {
+        assertThat(AmountParser.parse("123")).isEqualTo(BigDecimal(123))
     }
 
     @Test
-    public void parseDecimalAmount() throws Exception {
-        assertThat(AmountParser.parse("123.45")).isEqualTo(new BigDecimal("123.45"));
+    fun parseDecimalAmount() {
+        assertThat(AmountParser.parse("123.45")).isEqualTo(BigDecimal("123.45"))
     }
 
     @Test
-    public void parseDecimalAmountWithDifferentSeparator() throws Exception {
-        Locale.setDefault(Locale.GERMANY);
-        assertThat(AmountParser.parse("123,45")).isEqualTo(new BigDecimal("123.45"));
+    fun parseDecimalAmountWithDifferentSeparator() {
+        Locale.setDefault(Locale.GERMANY)
+        assertThat(AmountParser.parse("123,45")).isEqualTo(BigDecimal("123.45"))
 
-        Locale.setDefault(new Locale("es"));
-        assertThat(AmountParser.parse("123,45")).isEqualTo(new BigDecimal("123.45"));
+        Locale.setDefault(Locale("es"))
+        assertThat(AmountParser.parse("123,45")).isEqualTo(BigDecimal("123.45"))
     }
 
-    @Test(expected = ParseException.class)
-    public void withGarbageAtTheBeginning_shouldFailWithException() throws Exception {
-        AmountParser.parse("asdf123.45");
+    @Test(expected = ParseException::class)
+    fun withGarbageAtTheBeginning_shouldFailWithException() {
+        AmountParser.parse("asdf123.45")
     }
 
-    @Test(expected = ParseException.class)
-    public void withGarbageAtTheEnd_shouldFailWithException() throws ParseException {
-        AmountParser.parse("123.45asdf");
+    @Test(expected = ParseException::class)
+    fun withGarbageAtTheEnd_shouldFailWithException() {
+        AmountParser.parse("123.45asdf")
     }
 
-    @Test(expected = ParseException.class)
-    public void emptyString_shouldFailWithException() throws ParseException {
-        AmountParser.parse("");
+    @Test(expected = ParseException::class)
+    fun emptyString_shouldFailWithException() {
+        AmountParser.parse("")
     }
 }
