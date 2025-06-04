@@ -498,6 +498,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 break;
             case TAG_BOOK:
             case TAG_ROOT:
+            case AccountsTemplate.TAG_ROOT:
                 booksDbAdapter.addRecord(mBook, DatabaseAdapter.UpdateMethod.replace);
                 if (listener != null) listener.onBook(mBook);
                 break;
