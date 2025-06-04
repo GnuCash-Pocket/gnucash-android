@@ -16,19 +16,20 @@
 
 package org.gnucash.android.db;
 
+import static android.database.DatabaseUtils.sqlEscapeString;
 import static org.gnucash.android.db.DatabaseHelper.createResetBalancesTriggers;
 import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import static org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry;
 import static org.gnucash.android.db.DatabaseSchema.CommodityEntry;
-import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+
+import androidx.annotation.NonNull;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.importer.CommoditiesXmlHandler;
-import org.gnucash.android.model.Account;
 import org.gnucash.android.model.Commodity;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -37,6 +38,7 @@ import org.xml.sax.XMLReader;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -82,8 +84,8 @@ public class MigrationHelper {
         if (oldVersion < 18) {
             migrateTo18(db);
         }
-        if (oldVersion < 19) {
-            migrateTo19(db);
+        if (oldVersion < 20) {
+            migrateTo20(db);
         }
     }
 
@@ -146,29 +148,66 @@ public class MigrationHelper {
     }
 
     /**
-     * Upgrade the database to version 19.
+     * Upgrade the database to version 20.
      *
      * @param db the database.
      */
-    private static void migrateTo19(SQLiteDatabase db) {
-        Timber.i("Upgrading database to version 19");
+    private static void migrateTo20(SQLiteDatabase db) {
+        Timber.i("Upgrading database to version 20");
 
-        String sqlAccountCommodity = "UPDATE " + AccountEntry.TABLE_NAME
-            + " SET " + AccountEntry.COLUMN_COMMODITY_UID + " = "
-            + "(SELECT " + CommodityEntry.COLUMN_UID + " FROM " + CommodityEntry.TABLE_NAME
-            + " WHERE " + CommodityEntry.COLUMN_MNEMONIC + " = " + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_CURRENCY
-            + " AND (" + CommodityEntry.COLUMN_NAMESPACE + " = ? OR " + CommodityEntry.COLUMN_NAMESPACE + " = ?)"
-            + ")";
-        String[] sqlAccountCommodityArgs = new String[]{Commodity.COMMODITY_CURRENCY, Commodity.COMMODITY_ISO4217};
+        // Fetch list of accounts with mismatched currencies.
+        String sqlAccountCurrencyWrong = "SELECT DISTINCT a." + AccountEntry.COLUMN_CURRENCY + ", a." + AccountEntry.COLUMN_COMMODITY_UID + ", c." + CommodityEntry.COLUMN_UID
+            + " FROM " + AccountEntry.TABLE_NAME + " a, " + CommodityEntry.TABLE_NAME + " c"
+            + " WHERE a." + AccountEntry.COLUMN_CURRENCY + " = c." + CommodityEntry.COLUMN_MNEMONIC
+            + " AND (c." + CommodityEntry.COLUMN_NAMESPACE + " = " + sqlEscapeString(Commodity.COMMODITY_CURRENCY)
+            + " OR c." + CommodityEntry.COLUMN_NAMESPACE + " = " + sqlEscapeString(Commodity.COMMODITY_ISO4217) + ")"
+            + " AND a." + AccountEntry.COLUMN_COMMODITY_UID + " != c." + CommodityEntry.COLUMN_UID;
+        Cursor cursor = db.rawQuery(sqlAccountCurrencyWrong, null);
+        List<AccountCurrency> accountsWrong = new ArrayList<>();
+        if (cursor.moveToFirst()) {
+            do {
+                String currencyCode = cursor.getString(0);
+                String commodityUIDOld = cursor.getString(1);
+                String commodityUIDNew = cursor.getString(2);
+                accountsWrong.add(new AccountCurrency(currencyCode, commodityUIDOld, commodityUIDNew));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        // Update with correct commodities.
+        for (AccountCurrency accountWrong : accountsWrong) {
+            String sql = "UPDATE " + AccountEntry.TABLE_NAME
+                + " SET " + AccountEntry.COLUMN_COMMODITY_UID + " = " + sqlEscapeString(accountWrong.commodityUIDNew)
+                + " WHERE " + AccountEntry.COLUMN_CURRENCY + " = " + sqlEscapeString(accountWrong.currencyCode)
+                + " AND " + AccountEntry.COLUMN_COMMODITY_UID + " = " + sqlEscapeString(accountWrong.commodityUIDOld);
+            db.execSQL(sql);
+        }
 
         String sqlAccountCurrency = "ALTER TABLE " + AccountEntry.TABLE_NAME
             + " DROP COLUMN " + AccountEntry.COLUMN_CURRENCY;
 
-        String sqlTransactionCurrency = "ALTER TABLE " + TransactionEntry.TABLE_NAME
-            + " DROP COLUMN " + TransactionEntry.COLUMN_CURRENCY;
+        String sqlTransactionCurrency = "ALTER TABLE " + DatabaseSchema.TransactionEntry.TABLE_NAME
+            + " DROP COLUMN " + DatabaseSchema.TransactionEntry.COLUMN_CURRENCY;
 
-        db.execSQL(sqlAccountCommodity, sqlAccountCommodityArgs);
         db.execSQL(sqlAccountCurrency);
         db.execSQL(sqlTransactionCurrency);
+    }
+
+    private static class AccountCurrency {
+        @NonNull
+        public final String currencyCode;
+        @NonNull
+        public final String commodityUIDOld;
+        @NonNull
+        public final String commodityUIDNew;
+
+        private AccountCurrency(
+            @NonNull String currencyCode,
+            @NonNull String commodityUIDOld,
+            @NonNull String commodityUIDNew) {
+            this.currencyCode = currencyCode;
+            this.commodityUIDOld = commodityUIDOld;
+            this.commodityUIDNew = commodityUIDNew;
+        }
     }
 }
