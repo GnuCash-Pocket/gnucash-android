@@ -149,8 +149,14 @@ abstract class AsyncTaskProgressListener(context: Context) : DefaultProgressList
     fun showProgress(dialog: ProgressDialog, vararg values: Any) {
         val length = values.size
         if (length == 0) return
-        val value = values[0] as String
-        dialog.setTitle(value)
+        val title = values[0] as String
+        try {
+            dialog.setTitle(title)
+        } catch (e: IllegalArgumentException) {
+            // not attached to window manager
+            Timber.e(e)
+            return
+        }
 
         if (length >= 3) {
             val count = (values[1] as Number).toLong()
