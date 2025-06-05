@@ -21,8 +21,10 @@ import static org.gnucash.android.db.DatabaseHelper.createResetBalancesTriggers;
 import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import static org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry;
 import static org.gnucash.android.db.DatabaseSchema.CommodityEntry;
+import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
 import androidx.annotation.NonNull;
@@ -185,12 +187,19 @@ public class MigrationHelper {
 
         String sqlAccountCurrency = "ALTER TABLE " + AccountEntry.TABLE_NAME
             + " DROP COLUMN " + AccountEntry.COLUMN_CURRENCY;
+        try {
+            db.execSQL(sqlAccountCurrency);
+        } catch (SQLException e) {
+            Timber.e(e);
+        }
 
-        String sqlTransactionCurrency = "ALTER TABLE " + DatabaseSchema.TransactionEntry.TABLE_NAME
-            + " DROP COLUMN " + DatabaseSchema.TransactionEntry.COLUMN_CURRENCY;
-
-        db.execSQL(sqlAccountCurrency);
-        db.execSQL(sqlTransactionCurrency);
+        String sqlTransactionCurrency = "ALTER TABLE " + TransactionEntry.TABLE_NAME
+            + " DROP COLUMN " + TransactionEntry.COLUMN_CURRENCY;
+        try {
+            db.execSQL(sqlTransactionCurrency);
+        } catch (SQLException e) {
+            Timber.e(e);
+        }
     }
 
     private static class AccountCurrency {
