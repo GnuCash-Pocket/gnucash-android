@@ -480,6 +480,32 @@ public class AccountsActivityTest extends GnuAndroidTest {
         }
     }
 
+    @Test
+    public void showHiddenAccounts() {
+        // Root + SIMPLE_ACCOUNT_NAME
+        assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(2);
+
+        Account hiddenAccount = new Account(PARENT_ACCOUNT_NAME);
+        hiddenAccount.setUID(PARENT_ACCOUNT_UID);
+        hiddenAccount.setHidden(true);
+        mAccountsDbAdapter.addRecord(hiddenAccount, DatabaseAdapter.UpdateMethod.insert);
+        assertThat(mAccountsDbAdapter.getRecordsCount()).isEqualTo(3);
+
+        refreshAccountsList();
+        onView(allOf(withText(PARENT_ACCOUNT_NAME)))
+            .check(doesNotExist());
+
+        // Show hidden accounts.
+        onView(withId(R.id.menu_hidden)).perform(click());
+        onView(allOf(withText(PARENT_ACCOUNT_NAME)))
+            .check(matches(isDisplayed()));
+
+        // Hide hidden accounts.
+        onView(withId(R.id.menu_hidden)).perform(click());
+        onView(allOf(withText(PARENT_ACCOUNT_NAME)))
+            .check(doesNotExist());
+    }
+
     /**
      * Matcher to select the first of multiple views which are matched in the UI
      *

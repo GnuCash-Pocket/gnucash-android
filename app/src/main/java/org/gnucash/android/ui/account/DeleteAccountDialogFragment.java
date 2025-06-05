@@ -184,8 +184,9 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
             + DatabaseSchema.AccountEntry.COLUMN_TYPE + " = ? AND "
             + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0 AND "
             + DatabaseSchema.AccountEntry.COLUMN_UID + " NOT IN " + joinedUIDs;
+        String[] transactionDeleteConditionsArgs = new String[]{mOriginAccountUID, commodity.getUID(), accountType.name()};
 
-        accountNameAdapterTransactionsDestination = QualifiedAccountNameAdapter.where(context, transactionDeleteConditions, new String[]{mOriginAccountUID, commodity.getUID(), accountType.name()});
+        accountNameAdapterTransactionsDestination = QualifiedAccountNameAdapter.where(context, transactionDeleteConditions, transactionDeleteConditionsArgs);
         transactionOptions.targetAccountsSpinner.setAdapter(accountNameAdapterTransactionsDestination);
 
         //target accounts for transactions and accounts have different conditions
@@ -193,7 +194,8 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
             + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + " = ? AND "
             + DatabaseSchema.AccountEntry.COLUMN_TYPE + " = ? AND "
             + DatabaseSchema.AccountEntry.COLUMN_UID + " NOT IN " + joinedUIDs;
-        accountNameAdapterAccountsDestination = QualifiedAccountNameAdapter.where(context, accountMoveConditions, new String[]{mOriginAccountUID, commodity.getUID(), accountType.name()});
+        String[] accountMoveConditionsArgs = new String[]{mOriginAccountUID, commodity.getUID(), accountType.name()};
+        accountNameAdapterAccountsDestination = QualifiedAccountNameAdapter.where(context, accountMoveConditions, accountMoveConditionsArgs);
         accountOptions.targetAccountsSpinner.setAdapter(accountNameAdapterAccountsDestination);
 
         //this comes after the listeners because of some useful bindings done there
@@ -233,7 +235,7 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
             accountsDbAdapter.reassignDescendantAccounts(accountUID, targetAccountUID);
         }
 
-        if (GnuCashApplication.isDoubleEntryEnabled()) { //reassign splits to imbalance
+        if (GnuCashApplication.isDoubleEntryEnabled(context)) { //reassign splits to imbalance
             transactionsDbAdapter.deleteTransactionsForAccount(accountUID);
         }
 

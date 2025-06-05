@@ -1,6 +1,7 @@
 package org.gnucash.android.ui.adapter
 
 import android.content.Context
+import android.database.DatabaseUtils.sqlEscapeString
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
@@ -17,6 +18,7 @@ import org.gnucash.android.R
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.model.Account
+import org.gnucash.android.model.AccountType
 
 class QualifiedAccountNameAdapter @JvmOverloads constructor(
     context: Context,
@@ -144,11 +146,10 @@ class QualifiedAccountNameAdapter @JvmOverloads constructor(
     }
 
     private fun loadData(adapter: AccountsDbAdapter): List<Account> {
-        return adapter.getSimpleAccountList(
-            where ?: (AccountEntry.COLUMN_HIDDEN + " = 0"),
-            whereArgs,
+        val where = where ?: WHERE_NO_ROOT
+        val orderBy =
             AccountEntry.COLUMN_FAVORITE + " DESC, " + AccountEntry.COLUMN_FULL_NAME + " ASC"
-        )
+        return adapter.getSimpleAccountList(where, whereArgs, orderBy)
     }
 
     data class Label(val account: Account) {
@@ -158,6 +159,8 @@ class QualifiedAccountNameAdapter @JvmOverloads constructor(
     }
 
     companion object {
+        private val WHERE_NO_ROOT = AccountEntry.COLUMN_TYPE + " != " + sqlEscapeString(AccountType.ROOT.name)
+
         @JvmStatic
         @JvmOverloads
         fun where(

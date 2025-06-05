@@ -19,9 +19,17 @@
 
     <item
         android:id="@+id/menu_search"
-        android:title="@string/menu_search_accounts"
         android:icon="@drawable/ic_search"
-        app:showAsAction="collapseActionView|ifRoom"
-        app:actionViewClass="androidx.appcompat.widget.SearchView" />
+        android:title="@string/menu_search_accounts"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="collapseActionView|ifRoom" />
+
+    <item
+        android:id="@+id/menu_hidden"
+        android:checkable="true"
+        android:checked="true"
+        android:icon="@drawable/ic_visibility_off"
+        android:title="@string/menu_accounts_hidden"
+        app:showAsAction="ifRoom" />
 
 </menu>

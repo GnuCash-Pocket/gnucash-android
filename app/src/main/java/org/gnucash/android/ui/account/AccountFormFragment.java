@@ -84,7 +84,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
     /**
      * Accounts database adapter
      */
-    private final AccountsDbAdapter mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+    private AccountsDbAdapter mAccountsDbAdapter = AccountsDbAdapter.getInstance();
     private AccountTypesAdapter accountTypesAdapter;
     private CommoditiesAdapter commoditiesAdapter;
 
@@ -149,13 +149,14 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled();
+        final Context context = requireContext();
+        mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled(context);
         String accountUID = getArguments().getString(UxArgument.SELECTED_ACCOUNT_UID);
         mParentAccountUID = getArguments().getString(UxArgument.PARENT_ACCOUNT_UID);
         mRootAccountUID = mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID();
 
-        final Context context = requireContext();
-        accountNameAdapter = new QualifiedAccountNameAdapter(context);
+        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+        accountNameAdapter = new QualifiedAccountNameAdapter(context, null, null, mAccountsDbAdapter);
         accountTypesAdapter = new AccountTypesAdapter(context);
         commoditiesAdapter = new CommoditiesAdapter(context);
         Account account = accountNameAdapter.getAccount(accountUID);
@@ -517,7 +518,6 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
     private void loadDefaultTransferAccountList(@NonNull FragmentAccountFormBinding binding, @Nullable Account account) {
         String condition = DatabaseSchema.AccountEntry.COLUMN_UID + " != ?"
             + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0"
-            + " AND " + DatabaseSchema.AccountEntry.COLUMN_HIDDEN + " = 0"
             + " AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + " != ?";
 
         final Context context = binding.getRoot().getContext();
@@ -539,7 +539,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      */
     private void loadParentAccountList(@NonNull FragmentAccountFormBinding binding, AccountType accountType) {
         String condition = DatabaseSchema.SplitEntry.COLUMN_TYPE + " IN ("
-            + getAllowedParentAccountTypes(accountType) + ") AND " + DatabaseSchema.AccountEntry.COLUMN_HIDDEN + " = 0";
+            + getAllowedParentAccountTypes(accountType) + ")";
 
         Account account = mAccount;
         if (account != null) {  //if editing an account

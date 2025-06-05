@@ -31,5 +31,13 @@
         android:id="@+id/menu_delete"
         android:icon="@drawable/ic_delete"
         android:title="@string/title_delete_account"
-        app:showAsAction="never" />
+        app:showAsAction="never|withText" />
+
+    <item
+        android:id="@+id/menu_hidden"
+        android:checkable="true"
+        android:checked="true"
+        android:icon="@drawable/ic_visibility_off"
+        android:title="@string/menu_accounts_hidden"
+        app:showAsAction="ifRoom" />
 </menu>

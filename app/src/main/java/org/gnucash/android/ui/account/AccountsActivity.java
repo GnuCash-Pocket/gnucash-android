@@ -34,6 +34,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -125,6 +126,7 @@ public class AccountsActivity extends BaseDrawerActivity implements
      * Filter for which accounts should be displayed. Used by search interface
      */
     private String mCurrentFilter;
+    private boolean isShowHiddenAccounts = false;
 
     @SuppressLint("NotifyDataSetChanged")
     @Override
@@ -355,8 +357,12 @@ public class AccountsActivity extends BaseDrawerActivity implements
             case android.R.id.home:
                 return super.onOptionsItemSelected(item);
 
+            case R.id.menu_hidden:
+                toggleHidden(item);
+                return true;
+
             default:
-                return false;
+                return super.onOptionsItemSelected(item);
         }
     }
 
@@ -467,9 +473,10 @@ public class AccountsActivity extends BaseDrawerActivity implements
 
     @Override
     public void accountSelected(String accountUID) {
-        Intent intent = new Intent(this, TransactionsActivity.class);
-        intent.setAction(Intent.ACTION_VIEW);
-        intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
+        Intent intent = new Intent(this, TransactionsActivity.class)
+            .setAction(Intent.ACTION_VIEW)
+            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+            .putExtra(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts);
 
         startActivity(intent);
     }
@@ -523,6 +530,22 @@ public class AccountsActivity extends BaseDrawerActivity implements
             AccountsListFragment fragment = (AccountsListFragment) mPagerAdapter.getFragment(i);
             if (fragment != null) {
                 fragment.onQueryTextChange(filter);
+            }
+        }
+    }
+
+    private void toggleHidden(@NonNull MenuItem item) {
+        boolean isHidden = !item.isChecked();
+        item.setChecked(isHidden);
+        @DrawableRes int hiddenIcon = isHidden ? R.drawable.ic_visibility_off : R.drawable.ic_visibility;
+        item.setIcon(hiddenIcon);
+        isShowHiddenAccounts = !isHidden;
+        // apply to each page
+        final int count = mPagerAdapter.getItemCount();
+        for (int i = 0; i < count; i++) {
+            AccountsListFragment fragment = (AccountsListFragment) mPagerAdapter.getFragment(i);
+            if (fragment != null) {
+                fragment.setShowHiddenAccounts(isShowHiddenAccounts);
             }
         }
     }
