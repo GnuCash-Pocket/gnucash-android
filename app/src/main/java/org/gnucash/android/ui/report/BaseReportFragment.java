@@ -332,7 +332,7 @@ public abstract class BaseReportFragment extends MenuFragment implements
     }
 
     @Override
-    public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
+    public void onValueSelected(Entry e, Highlight h) {
         //nothing to see here, move along
     }
 
@@ -342,12 +342,12 @@ public abstract class BaseReportFragment extends MenuFragment implements
             mSelectedValueTextView.setText(R.string.select_chart_to_view_details);
     }
 
-    protected static <E extends Entry, T extends IDataSet<E>> int getYValueSum(ChartData<T> data) {
-        return (int) (data.getYMax() - data.getYMin());
+    protected static <E extends Entry, T extends IDataSet<E>> float getYValueSum(ChartData<T> data) {
+        return data.getYMax() - data.getYMin();
     }
 
-    protected static <E extends Entry> int getYValueSum(IDataSet<E> dataSet) {
-        return (int) (dataSet.getYMax() - dataSet.getYMin());
+    protected static <E extends Entry> float getYValueSum(IDataSet<E> dataSet) {
+        return dataSet.getYMax() - dataSet.getYMin();
     }
 
     protected static <E extends Entry, T extends IDataSet<E>> List<E> getYVals(ChartData<T> data) {

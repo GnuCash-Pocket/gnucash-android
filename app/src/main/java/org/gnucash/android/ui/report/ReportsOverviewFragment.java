@@ -35,9 +35,9 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 
 import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.data.PieEntry;
 
 import org.gnucash.android.R;
 import org.gnucash.android.databinding.FragmentReportSummaryBinding;
@@ -49,7 +49,6 @@ import org.gnucash.android.ui.report.piechart.PieChartFragment;
 import org.joda.time.LocalDateTime;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -103,7 +102,6 @@ public class ReportsOverviewFragment extends BaseReportFragment {
 
         @ColorInt int textColorPrimary = getTextColor(context);
         mBinding.pieChart.setCenterTextSize(PieChartFragment.CENTER_TEXT_SIZE);
-        mBinding.pieChart.setDescription("");
         mBinding.pieChart.setDrawSliceText(false);
         mBinding.pieChart.setCenterTextColor(textColorPrimary);
         mBinding.pieChart.setHoleColor(Color.TRANSPARENT);
@@ -130,7 +128,7 @@ public class ReportsOverviewFragment extends BaseReportFragment {
     @Override
     protected void generateReport(@NonNull Context context) {
         PieData pieData = PieChartFragment.groupSmallerSlices(context, getData());
-        if (pieData.getYValCount() != 0) {
+        if (pieData.getDataSetCount() > 0 && pieData.getDataSet().getEntryCount() > 0) {
             mBinding.pieChart.setData(pieData);
             float sum = mBinding.pieChart.getData().getYValueSum();
             String total = context.getString(R.string.label_chart_total);
@@ -163,30 +161,28 @@ public class ReportsOverviewFragment extends BaseReportFragment {
      */
     private PieData getData() {
         PieDataSet dataSet = new PieDataSet(null, "");
-        List<String> labels = new ArrayList<>();
         List<Integer> colors = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
         long start = now.minusMonths(2).dayOfMonth().withMinimumValue().toDateTime().getMillis();
         long end = now.toDateTime().getMillis();
 
         List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(
-            DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND " + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + "=? AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?",
-            new String[]{mCommodity.getUID(), mAccountType.name()},
+            DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?",
+            new String[]{mAccountType.name()},
             DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC"
         );
         for (Account account : accounts) {
             float balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), start, end, false).toFloat();
             if (balance > 0f) {
-                dataSet.addEntry(new Entry(balance, dataSet.getEntryCount()));
+                dataSet.addEntry(new PieEntry(balance, account.getName(), dataSet.getEntryCount()));
                 colors.add(account.getColor() != Account.DEFAULT_COLOR
                     ? account.getColor()
                     : COLORS[(dataSet.getEntryCount() - 1) % COLORS.length]);
-                labels.add(account.getName());
             }
         }
         dataSet.setColors(colors);
         dataSet.setSliceSpace(PieChartFragment.SPACE_BETWEEN_SLICES);
-        return new PieData(labels, dataSet);
+        return new PieData(dataSet);
     }
 
     @Override
@@ -212,10 +208,10 @@ public class ReportsOverviewFragment extends BaseReportFragment {
      */
     private PieData getEmptyData(@NonNull Context context) {
         PieDataSet dataSet = new PieDataSet(null, context.getString(R.string.label_chart_no_data));
-        dataSet.addEntry(new Entry(1, 0));
+        dataSet.addEntry(new PieEntry(1, 0));
         dataSet.setColor(PieChartFragment.NO_DATA_COLOR);
         dataSet.setDrawValues(false);
-        return new PieData(Collections.singletonList(""), dataSet);
+        return new PieData(dataSet);
     }
 
     public void onClickChartTypeButton(View view) {

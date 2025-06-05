@@ -222,7 +222,6 @@ public class BudgetDetailFragment extends MenuFragment implements Refreshable {
             AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
 
             List<BarEntry> barEntries = new ArrayList<>();
-            List<String> xVals = new ArrayList<>();
 
             //todo: refactor getNumberOfPeriods into budget
             int budgetPeriods = (int) mBudget.getNumberOfPeriods();
@@ -237,14 +236,13 @@ public class BudgetDetailFragment extends MenuFragment implements Refreshable {
                 if (amount.equals(BigDecimal.ZERO))
                     continue;
 
-                barEntries.add(new BarEntry(amount.floatValue(), periodNum));
-                xVals.add(mBudget.getRecurrence().getTextOfCurrentPeriod(periodNum));
+                barEntries.add(new BarEntry(periodNum, amount.floatValue()));
             }
 
             String label = accountsDbAdapter.getAccountName(budgetAmount.getAccountUID());
             BarDataSet barDataSet = new BarDataSet(barEntries, label);
 
-            BarData barData = new BarData(xVals, barDataSet);
+            BarData barData = new BarData(barDataSet);
             LimitLine limitLine = new LimitLine(budgetAmount.getAmount().asBigDecimal().floatValue());
             limitLine.setLineWidth(2f);
             limitLine.setLineColor(Color.RED);

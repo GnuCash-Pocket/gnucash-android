@@ -156,24 +156,24 @@ android {
 
 dependencies {
     // Jetpack
-    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.appcompat:appcompat:1.7.1")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.cardview:cardview:1.0.0")
     implementation("androidx.preference:preference-ktx:1.2.1")
     implementation("androidx.recyclerview:recyclerview:1.4.0")
-    implementation("androidx.work:work-runtime-ktx:2.10.0")
+    implementation("androidx.work:work-runtime-ktx:2.10.1")
 
     implementation("net.objecthunter:exp4j:0.4.7")
     implementation("com.ezylang:EvalEx:3.2.0")
     implementation("androidx.drawerlayout:drawerlayout:1.2.0")
 
     // Logging
-    implementation("com.google.firebase:firebase-crashlytics:19.4.1")
+    implementation("com.google.firebase:firebase-crashlytics:19.4.4")
     implementation("com.jakewharton.timber:timber:5.0.1")
 
     implementation("com.github.nextcloud:android-library:1.0.31")
     implementation("com.squareup:android-times-square:1.6.5")
-    implementation("com.github.PhilJay:MPAndroidChart:2.2.4")
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
     implementation("joda-time:joda-time:2.13.0")
     implementation("org.apache.jackrabbit:jackrabbit-webdav:2.13.3")
@@ -190,7 +190,7 @@ dependencies {
     // Debug
     debugImplementation("com.facebook.stetho:stetho:1.5.0")
 
-    testImplementation("org.robolectric:robolectric:4.13")
+    testImplementation("org.robolectric:robolectric:4.14.1")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.assertj:assertj-core:3.26.3")
 

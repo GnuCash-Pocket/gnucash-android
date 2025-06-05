@@ -17,8 +17,6 @@
 
 package org.gnucash.android.ui.report.piechart;
 
-import static org.gnucash.android.util.ColorExtKt.getTextColorPrimary;
-
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -36,6 +34,7 @@ import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.highlight.Highlight;
 
 import org.gnucash.android.R;
@@ -84,9 +83,8 @@ public class PieChartFragment extends BaseReportFragment {
         @ColorInt int textColorPrimary = getTextColor(context);
 
         mBinding.pieChart.setCenterTextSize(CENTER_TEXT_SIZE);
-        mBinding.pieChart.setDescription("");
         mBinding.pieChart.setOnChartValueSelectedListener(this);
-        mBinding.pieChart.setHoleColor(Color.TRANSPARENT);
+        mBinding.pieChart.setDrawHoleEnabled(false);
         mBinding.pieChart.setCenterTextColor(textColorPrimary);
         Legend legend = mBinding.pieChart.getLegend();
         legend.setTextColor(textColorPrimary);
@@ -107,7 +105,7 @@ public class PieChartFragment extends BaseReportFragment {
     @Override
     protected void generateReport(@NonNull Context context) {
         PieData pieData = getData();
-        if (pieData != null && pieData.getYValCount() != 0) {
+        if (pieData.getDataSetCount() > 0 && pieData.getDataSet().getEntryCount() > 0) {
             mChartDataPresent = true;
             mBinding.pieChart.setData(mGroupSmallerSlices ? groupSmallerSlices(context, pieData) : pieData);
             float sum = mBinding.pieChart.getData().getYValueSum();
@@ -138,15 +136,14 @@ public class PieChartFragment extends BaseReportFragment {
      *
      * @return {@code PieData} instance
      */
+    @NonNull
     private PieData getData() {
         PieDataSet dataSet = new PieDataSet(null, "");
-        List<String> labels = new ArrayList<>();
         List<Integer> colors = new ArrayList<>();
         AccountType accountType = mAccountType;
         String where = DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND "
-            + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + "=? AND "
             + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?";
-        String[] whereArgs = new String[]{mCommodity.getUID(), accountType.name()};
+        String[] whereArgs = new String[]{accountType.name()};
         String orderBy = DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC";
         List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(where, whereArgs, orderBy);
         for (Account account : accounts) {
@@ -155,14 +152,13 @@ public class PieChartFragment extends BaseReportFragment {
             if (value > 0f) {
                 int count = dataSet.getEntryCount();
                 @ColorInt int color = getAccountColor(account, count);
-                dataSet.addEntry(new Entry(value, count));
+                dataSet.addEntry(new PieEntry(value, account.getName()));
                 colors.add(color);
-                labels.add(account.getName());
             }
         }
         dataSet.setColors(colors);
         dataSet.setSliceSpace(SPACE_BETWEEN_SLICES);
-        return new PieData(labels, dataSet);
+        return new PieData(dataSet);
     }
 
     /**
@@ -172,41 +168,32 @@ public class PieChartFragment extends BaseReportFragment {
      */
     private PieData getEmptyData(@NonNull Context context) {
         PieDataSet dataSet = new PieDataSet(null, context.getString(R.string.label_chart_no_data));
-        dataSet.addEntry(new Entry(1, 0));
+        dataSet.addEntry(new PieEntry(1, 0));
         dataSet.setColor(NO_DATA_COLOR);
         dataSet.setDrawValues(false);
-        return new PieData(Collections.singletonList(""), dataSet);
+        return new PieData(dataSet);
     }
 
     /**
      * Sorts the pie's slices in ascending order
      */
-    private void bubbleSort() {
-        List<String> labels = mBinding.pieChart.getData().getXVals();
-        List<Entry> values = getYVals(mBinding.pieChart.getData().getDataSet());
-        List<Integer> colors = mBinding.pieChart.getData().getDataSet().getColors();
-        float tmp1;
-        String tmp2;
-        Integer tmp3;
-        final int size = values.size();
-        for (int i = 0; i < size - 1; i++) {
-            for (int j = 1; j < size - i; j++) {
-                int j1 = j - 1;
-                if (values.get(j1).getVal() > values.get(j).getVal()) {
-                    tmp1 = values.get(j1).getVal();
-                    values.get(j1).setVal(values.get(j).getVal());
-                    values.get(j).setVal(tmp1);
-
-                    tmp2 = labels.get(j1);
-                    labels.set(j1, labels.get(j));
-                    labels.set(j, tmp2);
-
-                    tmp3 = colors.get(j1);
-                    colors.set(j1, colors.get(j));
-                    colors.set(j, tmp3);
-                }
-            }
+    private void sort() {
+        PieData data = mBinding.pieChart.getData();
+        PieDataSet dataSet = (PieDataSet) data.getDataSetByIndex(0);
+        final int size = dataSet.getEntryCount();
+        List<PieChartEntry> entries = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            entries.add(new PieChartEntry(dataSet.getEntryForIndex(i), dataSet.getColor(i)));
         }
+        Collections.sort(entries, new PieChartComparator());
+        List<Integer> colors = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            PieChartEntry entry = entries.get(i);
+            dataSet.removeFirst();
+            dataSet.addEntry(entry.getEntry());
+            colors.add(entry.getColor());
+        }
+        dataSet.setColors(colors);
 
         mBinding.pieChart.notifyDataSetChanged();
         mBinding.pieChart.highlightValues(null);
@@ -231,7 +218,7 @@ public class PieChartFragment extends BaseReportFragment {
             item.setChecked(!item.isChecked());
         switch (item.getItemId()) {
             case R.id.menu_order_by_size: {
-                bubbleSort();
+                sort();
                 return true;
             }
             case R.id.menu_toggle_legend: {
@@ -241,8 +228,9 @@ public class PieChartFragment extends BaseReportFragment {
                 return true;
             }
             case R.id.menu_toggle_labels: {
-                mBinding.pieChart.getData().setDrawValues(!mBinding.pieChart.isDrawSliceTextEnabled());
-                mBinding.pieChart.setDrawSliceText(!mBinding.pieChart.isDrawSliceTextEnabled());
+                boolean draw = !mBinding.pieChart.isDrawEntryLabelsEnabled();
+                mBinding.pieChart.getData().setDrawValues(draw);
+                mBinding.pieChart.setDrawEntryLabels(draw);
                 mBinding.pieChart.invalidate();
                 return true;
             }
@@ -266,43 +254,47 @@ public class PieChartFragment extends BaseReportFragment {
      */
     @NonNull
     public static PieData groupSmallerSlices(@NonNull Context context, @NonNull PieData data) {
+        PieDataSet dataSet = (PieDataSet) data.getDataSetByIndex(0);
+        final int size = dataSet.getEntryCount();
+        if (size == 0) return data;
+        float range = data.getYValueSum();
+        if (range <= 0) return data;
+
         float otherSlice = 0f;
-        List<Entry> newEntries = new ArrayList<>();
-        List<String> newLabels = new ArrayList<>();
-        List<Integer> newColors = new ArrayList<>();
-        List<Entry> entries = getYVals(data.getDataSet());
-        for (int i = 0; i < entries.size(); i++) {
-            float val = entries.get(i).getVal();
-            if ((val * 100) / data.getYValueSum() > GROUPING_SMALLER_SLICES_THRESHOLD) {
-                newEntries.add(new Entry(val, newEntries.size()));
-                newLabels.add(data.getXVals().get(i));
-                newColors.add(data.getDataSet().getColors().get(i));
+        List<PieEntry> entriesSmaller = new ArrayList<>();
+        List<Integer> colorsSmaller = new ArrayList<>();
+
+        for (int i = 0; i < size; i++) {
+            PieEntry entry = dataSet.getEntryForIndex(i);
+            float value = entry.getValue();
+            if ((value * 100) / range > GROUPING_SMALLER_SLICES_THRESHOLD) {
+                entriesSmaller.add(entry);
+                colorsSmaller.add(dataSet.getColor(i));
             } else {
-                otherSlice += val;
+                otherSlice += value;
             }
         }
 
         if (otherSlice > 0) {
-            newEntries.add(new Entry(otherSlice, newEntries.size()));
-            newLabels.add(context.getString(R.string.label_other_slice));
-            newColors.add(Color.LTGRAY);
+            entriesSmaller.add(new PieEntry(otherSlice, context.getString(R.string.label_other_slice)));
+            colorsSmaller.add(Color.LTGRAY);
         }
 
-        PieDataSet dataSet = new PieDataSet(newEntries, "");
-        dataSet.setSliceSpace(SPACE_BETWEEN_SLICES);
-        dataSet.setColors(newColors);
+        PieDataSet dataSetSmaller = new PieDataSet(entriesSmaller, "");
+        dataSetSmaller.setSliceSpace(SPACE_BETWEEN_SLICES);
+        dataSetSmaller.setColors(colorsSmaller);
 
-        PieData dataSmaller = new PieData(newLabels, dataSet);
-        dataSmaller.setValueTextColor(getTextColorPrimary(context));
-        return dataSmaller;
+        return new PieData(dataSetSmaller);
     }
 
     @Override
-    public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
+    public void onValueSelected(Entry e, Highlight h) {
         if (e == null) return;
-        String label = mBinding.pieChart.getData().getXVals().get(e.getXIndex());
-        float value = e.getVal();
-        float percent = (value * 100) / mBinding.pieChart.getData().getYValueSum();
+        PieEntry entry = (PieEntry) e;
+        String label = entry.getLabel();
+        float value = entry.getValue();
+        PieData data = mBinding.pieChart.getData();
+        float percent = (value * 100) / data.getYValueSum();
         mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label, value, percent));
     }
 }

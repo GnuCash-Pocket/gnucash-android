@@ -108,7 +108,6 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
         @ColorInt int textColorPrimary = getTextColor(context);
 
         mBinding.lineChart.setOnChartValueSelectedListener(this);
-        mBinding.lineChart.setDescription("");
         mBinding.lineChart.getXAxis().setDrawGridLines(false);
         mBinding.lineChart.getXAxis().setTextColor(textColorPrimary);
         mBinding.lineChart.getAxisRight().setEnabled(false);
@@ -147,22 +146,18 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
 
         int count = getDateDiff(new LocalDateTime(startDate.toDate().getTime()), new LocalDateTime(endDate.toDate().getTime()));
         Timber.d("X-axis count %d", count);
-        List<String> xValues = new ArrayList<>();
         for (int i = 0; i <= count; i++) {
             switch (mGroupInterval) {
                 case MONTH:
-                    xValues.add(startDate.toString(X_AXIS_PATTERN));
                     Timber.d("X-axis %s", startDate.toString("MM yy"));
                     startDate = startDate.plusMonths(1);
                     break;
                 case QUARTER:
                     int quarter = getQuarter(new LocalDateTime(startDate.toDate().getTime()));
-                    xValues.add("Q" + quarter + startDate.toString(" yy"));
                     Timber.d("X-axis " + "Q" + quarter + startDate.toString(" MM yy"));
                     startDate = startDate.plusMonths(3);
                     break;
                 case YEAR:
-                    xValues.add(startDate.toString("yyyy"));
                     Timber.d("X-axis %s", startDate.toString("yyyy"));
                     startDate = startDate.plusYears(1);
                     break;
@@ -171,16 +166,16 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
 
         List<ILineDataSet> dataSets = new ArrayList<>();
         for (AccountType accountType : accountTypeList) {
-            LineDataSet set = new LineDataSet(getEntryList(accountType), accountType.toString());
-            set.setDrawFilled(true);
-            set.setLineWidth(2);
-            set.setColor(LINE_COLORS[dataSets.size()]);
-            set.setFillColor(FILL_COLORS[dataSets.size()]);
+            LineDataSet dataSet = new LineDataSet(getEntryList(accountType), accountType.toString());
+            dataSet.setDrawFilled(true);
+            dataSet.setLineWidth(2);
+            dataSet.setColor(LINE_COLORS[dataSets.size()]);
+            dataSet.setFillColor(FILL_COLORS[dataSets.size()]);
 
-            dataSets.add(set);
+            dataSets.add(dataSet);
         }
 
-        LineData lineData = new LineData(xValues, dataSets);
+        LineData lineData = new LineData(dataSets);
         if (getYValueSum(lineData) == 0) {
             mChartDataPresent = false;
             return getEmptyData(context);
@@ -195,21 +190,19 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
      * @return a {@code LineData} instance for situation when no user data available
      */
     private LineData getEmptyData(@NonNull Context context) {
-        List<String> xValues = new ArrayList<>();
         List<Entry> yValues = new ArrayList<>();
         boolean isEven = true;
         for (int i = 0; i < NO_DATA_BAR_COUNTS; i++) {
-            xValues.add("");
-            yValues.add(new Entry(isEven ? 5f : 4.5f, i));
+            yValues.add(new Entry(i, isEven ? 5f : 4.5f));
             isEven = !isEven;
         }
-        LineDataSet set = new LineDataSet(yValues, context.getString(R.string.label_chart_no_data));
-        set.setDrawFilled(true);
-        set.setDrawValues(false);
-        set.setColor(NO_DATA_COLOR);
-        set.setFillColor(NO_DATA_COLOR);
+        LineDataSet dataSet = new LineDataSet(yValues, context.getString(R.string.label_chart_no_data));
+        dataSet.setDrawFilled(true);
+        dataSet.setDrawValues(false);
+        dataSet.setColor(NO_DATA_COLOR);
+        dataSet.setFillColor(NO_DATA_COLOR);
 
-        return new LineData(xValues, Collections.singletonList(set));
+        return new LineData(dataSet);
     }
 
     /**
@@ -242,7 +235,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
 
         int xAxisOffset = getDateDiff(new LocalDateTime(mEarliestTransactionTimestamp), earliest);
         int count = getDateDiff(earliest, latest);
-        List<Entry> values = new ArrayList<>(count + 1);
+        List<Entry> entries = new ArrayList<>(count + 1);
         for (int i = 0; i <= count; i++) {
             long start = 0;
             long end = 0;
@@ -270,11 +263,11 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
             Money balance = mAccountsDbAdapter.getAccountsBalance(accountUIDList, start, end);
             Money balanceDisplay = accountType.hasDebitNormalBalance ? balance : balance.unaryMinus();
             float value = balanceDisplay.toFloat();
-            values.add(new Entry(value, i + xAxisOffset));
+            entries.add(new Entry(i + xAxisOffset, value));
             Timber.d(accountType + earliest.toString(" MMM yyyy") + ", balance = " + balance);
         }
 
-        return values;
+        return entries;
     }
 
     /**
@@ -400,11 +393,14 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     }
 
     @Override
-    public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
+    public void onValueSelected(Entry e, Highlight h) {
         if (e == null) return;
-        String label = mBinding.lineChart.getData().getXVals().get(e.getXIndex());
-        double value = e.getVal();
-        double sum = getYValueSum(mBinding.lineChart.getData().getDataSetByIndex(dataSetIndex));
+        int dataSetIndex = h.getDataSetIndex();
+        LineData data = mBinding.lineChart.getData();
+        ILineDataSet dataSet = data.getDataSetByIndex(dataSetIndex);
+        String label = dataSet.getLabel();
+        float value = e.getY();
+        float sum = getYValueSum(data.getDataSetByIndex(dataSetIndex));
         mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label, value, (value * 100) / sum));
     }
 

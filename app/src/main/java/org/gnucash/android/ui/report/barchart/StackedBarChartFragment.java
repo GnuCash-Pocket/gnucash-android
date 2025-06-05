@@ -32,6 +32,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
 import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.LegendEntry;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
@@ -53,7 +54,6 @@ import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,7 +99,6 @@ public class StackedBarChartFragment extends BaseReportFragment {
         @ColorInt int textColorPrimary = getTextColor(context);
 
         mBinding.barChart.setOnChartValueSelectedListener(this);
-        mBinding.barChart.setDescription("");
         mBinding.barChart.getXAxis().setDrawGridLines(false);
         mBinding.barChart.getXAxis().setTextColor(textColorPrimary);
         mBinding.barChart.getAxisRight().setEnabled(false);
@@ -119,11 +118,10 @@ public class StackedBarChartFragment extends BaseReportFragment {
      * @return a {@code BarData} instance that represents a user data
      */
     protected BarData getData(@NonNull Context context) {
-        List<BarEntry> values = new ArrayList<>();
+        List<BarEntry> entries = new ArrayList<>();
         List<String> labels = new ArrayList<>();
         List<Integer> colors = new ArrayList<>();
         Map<String, Integer> accountToColorMap = new LinkedHashMap<>();
-        List<String> xValues = new ArrayList<>();
         AccountType accountType = mAccountType;
         LocalDateTime tmpDate = new LocalDateTime(getStartDate(accountType).toDate().getTime());
         int count = getDateDiff(new LocalDateTime(getStartDate(accountType).toDate().getTime()),
@@ -136,7 +134,6 @@ public class StackedBarChartFragment extends BaseReportFragment {
                     start = tmpDate.dayOfMonth().withMinimumValue().millisOfDay().withMinimumValue().toDateTime().getMillis();
                     end = tmpDate.dayOfMonth().withMaximumValue().millisOfDay().withMaximumValue().toDateTime().getMillis();
 
-                    xValues.add(tmpDate.toString(X_AXIS_MONTH_PATTERN));
                     tmpDate = tmpDate.plusMonths(1);
                     break;
                 case QUARTER:
@@ -144,22 +141,19 @@ public class StackedBarChartFragment extends BaseReportFragment {
                     start = tmpDate.withMonthOfYear(quarter * 3 - 2).dayOfMonth().withMinimumValue().millisOfDay().withMinimumValue().toDateTime().getMillis();
                     end = tmpDate.withMonthOfYear(quarter * 3).dayOfMonth().withMaximumValue().millisOfDay().withMaximumValue().toDateTime().getMillis();
 
-                    xValues.add(String.format(X_AXIS_QUARTER_PATTERN, quarter, tmpDate.toString(" YY")));
                     tmpDate = tmpDate.plusMonths(3);
                     break;
                 case YEAR:
                     start = tmpDate.dayOfYear().withMinimumValue().millisOfDay().withMinimumValue().toDateTime().getMillis();
                     end = tmpDate.dayOfYear().withMaximumValue().millisOfDay().withMaximumValue().toDateTime().getMillis();
 
-                    xValues.add(tmpDate.toString(X_AXIS_YEAR_PATTERN));
                     tmpDate = tmpDate.plusYears(1);
                     break;
             }
             List<Float> stack = new ArrayList<>();
             String where = DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND "
-                + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + "=? AND "
                 + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?";
-            String[] whereArgs = new String[]{mCommodity.getUID(), accountType.name()};
+            String[] whereArgs = new String[]{accountType.name()};
             String orderBy = DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC";
             List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(where, whereArgs, orderBy);
             @ColorInt int color;
@@ -186,20 +180,23 @@ public class StackedBarChartFragment extends BaseReportFragment {
             }
 
             String stackLabels = labels.subList(labels.size() - stack.size(), labels.size()).toString();
-            values.add(new BarEntry(toFloatArray(stack), i, stackLabels));
+            if (stack.isEmpty()) {
+                stack.add(0f);
+            }
+            entries.add(new BarEntry(i, toFloatArray(stack), stackLabels));
         }
 
-        BarDataSet set = new BarDataSet(values, accountType.name());
-        set.setDrawValues(false);
-        set.setStackLabels(labels.toArray(new String[0]));
-        set.setColors(colors);
+        BarDataSet dataSet = new BarDataSet(entries, accountType.name());
+        dataSet.setDrawValues(false);
+        dataSet.setStackLabels(labels.toArray(new String[0]));
+        dataSet.setColors(colors);
 
-        if (getYValueSum(set) == 0) {
+        if (getYValueSum(dataSet) == 0) {
             mChartDataPresent = false;
             return getEmptyData(context);
         }
         mChartDataPresent = true;
-        return new BarData(xValues, set);
+        return new BarData(dataSet);
     }
 
     /**
@@ -208,17 +205,15 @@ public class StackedBarChartFragment extends BaseReportFragment {
      * @return a {@code BarData} instance for situation when no user data available
      */
     private BarData getEmptyData(@NonNull Context context) {
-        List<String> xValues = new ArrayList<>();
         List<BarEntry> yValues = new ArrayList<>();
         for (int i = 0; i < NO_DATA_BAR_COUNTS; i++) {
-            xValues.add("");
-            yValues.add(new BarEntry(i + 1, i));
+            yValues.add(new BarEntry(i, i + 1));
         }
-        BarDataSet set = new BarDataSet(yValues, context.getString(R.string.label_chart_no_data));
-        set.setDrawValues(false);
-        set.setColor(NO_DATA_COLOR);
+        BarDataSet dataSet = new BarDataSet(yValues, context.getString(R.string.label_chart_no_data));
+        dataSet.setDrawValues(false);
+        dataSet.setColor(NO_DATA_COLOR);
 
-        return new BarData(xValues, set);
+        return new BarData(dataSet);
     }
 
     /**
@@ -308,10 +303,18 @@ public class StackedBarChartFragment extends BaseReportFragment {
         IBarDataSet dataSet = mBinding.barChart.getData().getDataSetByIndex(0);
 
         List<Integer> colors = dataSet.getColors();
-        List<String> labels = Arrays.asList(dataSet.getStackLabels());
+        String[] labels = dataSet.getStackLabels();
 
-        if (colors.size() == labels.size()) {
-            legend.setCustom(colors, labels);
+        final int length = colors.size();
+        if (length == labels.length) {
+            LegendEntry[] entries = new LegendEntry[length];
+            for (int i = 0; i < length; i++) {
+                LegendEntry entry = new LegendEntry();
+                entry.formColor = colors.get(i);
+                entry.label = labels[i];
+                entries[i] = entry;
+            }
+            legend.setCustom(entries);
             return;
         }
         legend.setEnabled(false);
@@ -360,17 +363,20 @@ public class StackedBarChartFragment extends BaseReportFragment {
     }
 
     @Override
-    public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
-        if (e == null || ((BarEntry) e).getVals().length == 0) return;
+    public void onValueSelected(Entry e, Highlight h) {
+        if (e == null) return;
         BarEntry entry = (BarEntry) e;
+        BarData data = mBinding.barChart.getData();
+        int dataSetIndex = h.getDataSetIndex();
         int index = h.getStackIndex() == -1 ? 0 : h.getStackIndex();
         String stackLabels = entry.getData().toString();
-        String label = mBinding.barChart.getData().getXVals().get(entry.getXIndex()) + ", "
+        String label = data.getDataSetLabels()[dataSetIndex] + ", "
             + stackLabels.substring(1, stackLabels.length() - 1).split(",")[index];
-        double value = Math.abs(entry.getVals()[index]);
-        double sum = 0;
+        float value = entry.getYVals()[index];
+        float sum = 0;
         if (mTotalPercentageMode) {
-            for (BarEntry barEntry : getYVals(mBinding.barChart.getData().getDataSetByIndex(dataSetIndex))) {
+            List<BarEntry> yVals = getYVals(data.getDataSetByIndex(dataSetIndex));
+            for (BarEntry barEntry : yVals) {
                 sum += barEntry.getNegativeSum() + barEntry.getPositiveSum();
             }
         } else {
