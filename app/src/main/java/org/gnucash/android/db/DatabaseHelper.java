@@ -264,13 +264,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onOpen(SQLiteDatabase db) {
         super.onOpen(db);
         db.execSQL("PRAGMA foreign_keys=ON");
+        MigrationHelper.migrateAccounts(db);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         MigrationHelper.migrate(db, oldVersion, newVersion);
     }
-
 
     /**
      * Creates the tables in the database and import default commodities into the database

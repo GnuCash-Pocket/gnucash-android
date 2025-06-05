@@ -202,6 +202,27 @@ public class MigrationHelper {
         }
     }
 
+    // In case the table column was not deleted when upgrading to 19.
+    public static void migrateAccounts(SQLiteDatabase db) {
+        Cursor cursor = db.rawQuery("PRAGMA table_xinfo(" + AccountEntry.TABLE_NAME +")", null);
+        boolean hasCurrencyCode = false;
+        if (cursor.moveToFirst()) {
+            final int indexName = cursor.getColumnIndex("name");
+            do {
+                String name = cursor.getString(indexName);
+                if (AccountEntry.COLUMN_CURRENCY.equals(name)) {
+                    hasCurrencyCode = true;
+                    break;
+                }
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        if (hasCurrencyCode) {
+            migrateTo19(db);
+        }
+    }
+
     private static class AccountCurrency {
         @NonNull
         public final String currencyCode;
