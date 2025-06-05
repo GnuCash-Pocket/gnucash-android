@@ -153,9 +153,9 @@ public abstract class Exporter {
         mDb = db;
         mCommoditiesDbAdapter = new CommoditiesDbAdapter(db);
         mPricesDbAdapter = new PricesDbAdapter(mCommoditiesDbAdapter);
-        mSplitsDbAdapter = new SplitsDbAdapter(mPricesDbAdapter);
+        mSplitsDbAdapter = new SplitsDbAdapter(mCommoditiesDbAdapter);
         mTransactionsDbAdapter = new TransactionsDbAdapter(mSplitsDbAdapter);
-        mAccountsDbAdapter = new AccountsDbAdapter(mTransactionsDbAdapter);
+        mAccountsDbAdapter = new AccountsDbAdapter(mTransactionsDbAdapter, mPricesDbAdapter);
         RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(db);
         mBudgetsDbAdapter = new BudgetsDbAdapter(recurrenceDbAdapter);
         mScheduledActionDbAdapter = new ScheduledActionDbAdapter(recurrenceDbAdapter);

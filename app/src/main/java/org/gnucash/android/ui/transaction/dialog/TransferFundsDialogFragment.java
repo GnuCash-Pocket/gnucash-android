@@ -154,7 +154,7 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
         });
 
         Price price = pricesDbAdapter.getPrice(fromCommodity, targetCommodity);
-        if (price != null && price.getValueDenom() > 0 && price.getValueDenom() > 0) {
+        if (price != null) {
             // a valid price exists
             BigDecimal priceDecimal = price.toBigDecimal();
             NumberFormat formatter = NumberFormat.getNumberInstance();
