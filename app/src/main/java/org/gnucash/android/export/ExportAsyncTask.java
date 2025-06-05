@@ -104,7 +104,9 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Object, Uri> {
 
     @Override
     protected void onProgressUpdate(Object... values) {
-        listener.showProgress(progressDialog, values);
+        if (progressDialog != null && progressDialog.isShowing()) {
+            listener.showProgress(progressDialog, values);
+        }
     }
 
     @Override
