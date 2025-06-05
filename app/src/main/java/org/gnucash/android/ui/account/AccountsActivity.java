@@ -368,7 +368,28 @@ public class AccountsActivity extends BaseDrawerActivity implements
      * @param currencyCode Currency code to assign to the imported accounts
      */
     public static void createDefaultAccounts(@NonNull final Activity activity, @NonNull final String currencyCode) {
-        createDefaultAccounts(activity, currencyCode, null);
+        Uri uri = new Uri.Builder()
+            .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+            .authority(BuildConfig.APPLICATION_ID)
+            .path(String.valueOf(R.raw.default_accounts))
+            .build();
+        createDefaultAccounts(activity, currencyCode, uri, null);
+    }
+
+    /**
+     * Creates default accounts with the specified currency code.
+     * If the currency parameter is null, then locale currency will be used if available
+     *
+     * @param activity     Activity for providing context and displaying dialogs
+     * @param currencyCode Currency code to assign to the imported accounts
+     */
+    public static void createDefaultAccounts(@NonNull final Activity activity, @NonNull final String currencyCode, @NonNull String assetId, @Nullable final ImportBookCallback callback) {
+        Uri uri = new Uri.Builder()
+            .scheme(ContentResolver.SCHEME_FILE)
+            .encodedAuthority("/android_asset")
+            .path(assetId)
+            .build();
+        createDefaultAccounts(activity, currencyCode, uri, callback);
     }
 
     /**
@@ -379,7 +400,12 @@ public class AccountsActivity extends BaseDrawerActivity implements
      * @param currencyCode Currency code to assign to the imported accounts
      * @param callback     The callback to call when the book has been imported.
      */
-    public static void createDefaultAccounts(@NonNull final Activity activity, @NonNull final String currencyCode, @Nullable final ImportBookCallback callback) {
+    public static void createDefaultAccounts(
+        @NonNull final Activity activity,
+        @NonNull final String currencyCode,
+        @NonNull final Uri uri,
+        @Nullable final ImportBookCallback callback
+    ) {
         ImportBookCallback delegate = callback;
         if (!TextUtils.isEmpty(currencyCode)) {
             delegate = new ImportBookCallback() {
@@ -398,11 +424,6 @@ public class AccountsActivity extends BaseDrawerActivity implements
             };
         }
 
-        Uri uri = new Uri.Builder()
-            .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
-            .authority(BuildConfig.APPLICATION_ID)
-            .path(String.valueOf(R.raw.default_accounts))
-            .build();
         new ImportAsyncTask(activity, delegate).execute(uri);
     }
 
