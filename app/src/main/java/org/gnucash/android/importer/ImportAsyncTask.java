@@ -151,7 +151,9 @@ public class ImportAsyncTask extends AsyncTask<Uri, Object, String> {
 
     @Override
     protected void onProgressUpdate(Object... values) {
-        listener.showProgress(progressDialog, values);
+        if (progressDialog.isShowing()) {
+            listener.showProgress(progressDialog, values);
+        }
     }
 
     @Override
