@@ -589,17 +589,28 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return String unique ID of the account
      */
     public String getOrCreateImbalanceAccountUID(@NonNull Context context, @NonNull Commodity commodity) {
+        return getOrCreateImbalanceAccount(context, commodity).getUID();
+    }
+
+    /**
+     * Retrieves the unique ID of the imbalance account for a particular currency (creates the imbalance account
+     * on demand if necessary)
+     *
+     * @param commodity Commodity for the imbalance account
+     * @return The account
+     */
+    public Account getOrCreateImbalanceAccount(@NonNull Context context, @NonNull Commodity commodity) {
         String imbalanceAccountName = getImbalanceAccountName(context, commodity);
         String uid = findAccountUidByFullName(imbalanceAccountName);
-        if (uid == null) {
+        if (TextUtils.isEmpty(uid)) {
             Account account = new Account(imbalanceAccountName, commodity);
             account.setAccountType(AccountType.BANK);
             account.setParentUID(getOrCreateGnuCashRootAccountUID());
             account.setHidden(!GnuCashApplication.isDoubleEntryEnabled());
             addRecord(account, UpdateMethod.insert);
-            uid = account.getUID();
+            return account;
         }
-        return uid;
+        return getSimpleRecord(uid);
     }
 
     /**
@@ -709,18 +720,6 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         Timber.v("Fetching all accounts from db");
         String selection = AccountEntry.COLUMN_HIDDEN + " = 0 AND " + AccountEntry.COLUMN_TYPE + " != ?";
         return fetchAccounts(selection, new String[]{AccountType.ROOT.name()}, AccountEntry.COLUMN_NAME + " ASC");
-    }
-
-    /**
-     * Returns a cursor to all account records in the database ordered by full name.
-     * GnuCash ROOT accounts and hidden accounts will not be included in the result set.
-     *
-     * @return {@link Cursor} to all account records
-     */
-    public Cursor fetchAllRecordsOrderedByFullName() {
-        Timber.v("Fetching all accounts from db");
-        String selection = AccountEntry.COLUMN_HIDDEN + " = 0 AND " + AccountEntry.COLUMN_TYPE + " != ?";
-        return fetchAccounts(selection, new String[]{AccountType.ROOT.name()}, AccountEntry.COLUMN_FULL_NAME + " ASC");
     }
 
     /**
