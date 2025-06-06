@@ -122,6 +122,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             AccountEntry.COLUMN_NAME,
             AccountEntry.COLUMN_DESCRIPTION,
             AccountEntry.COLUMN_TYPE,
+            AccountEntry.COLUMN_CURRENCY,
             AccountEntry.COLUMN_COLOR_CODE,
             AccountEntry.COLUMN_FAVORITE,
             AccountEntry.COLUMN_FULL_NAME,
@@ -242,23 +243,24 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         stmt.bindString(1, account.getName());
         stmt.bindString(2, account.getDescription());
         stmt.bindString(3, account.getAccountType().name());
+        stmt.bindString(4, account.getCommodity().getCurrencyCode());
         if (account.getColor() != Account.DEFAULT_COLOR) {
-            stmt.bindString(4, account.getColorHexString());
+            stmt.bindString(5, account.getColorHexString());
         }
-        stmt.bindLong(5, account.isFavorite() ? 1 : 0);
-        stmt.bindString(6, account.getFullName());
-        stmt.bindLong(7, account.isPlaceholder() ? 1 : 0);
-        stmt.bindString(8, TimestampHelper.getUtcStringFromTimestamp(account.getCreatedTimestamp()));
-        stmt.bindLong(9, account.isHidden() ? 1 : 0);
-        stmt.bindString(10, account.getCommodity().getUID());
+        stmt.bindLong(6, account.isFavorite() ? 1 : 0);
+        stmt.bindString(7, account.getFullName());
+        stmt.bindLong(8, account.isPlaceholder() ? 1 : 0);
+        stmt.bindString(9, TimestampHelper.getUtcStringFromTimestamp(account.getCreatedTimestamp()));
+        stmt.bindLong(10, account.isHidden() ? 1 : 0);
+        stmt.bindString(11, account.getCommodity().getUID());
         if (parentAccountUID != null) {
-            stmt.bindString(11, parentAccountUID);
+            stmt.bindString(12, parentAccountUID);
         }
         if (account.getDefaultTransferAccountUID() != null) {
-            stmt.bindString(12, account.getDefaultTransferAccountUID());
+            stmt.bindString(13, account.getDefaultTransferAccountUID());
         }
         if (account.getNote() != null) {
-            stmt.bindString(13, account.getNote());
+            stmt.bindString(14, account.getNote());
         }
 
         return stmt;
@@ -1196,6 +1198,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         contentValues.put(AccountEntry.COLUMN_FULL_NAME, rootAccount.getFullName());
         contentValues.put(AccountEntry.COLUMN_TYPE, rootAccount.getAccountType().name());
         contentValues.put(AccountEntry.COLUMN_HIDDEN, rootAccount.isHidden());
+        contentValues.put(AccountEntry.COLUMN_CURRENCY, rootAccount.getCommodity().getCurrencyCode());
         contentValues.put(AccountEntry.COLUMN_COMMODITY_UID, rootAccount.getCommodity().getUID());
         contentValues.put(AccountEntry.COLUMN_PLACEHOLDER, rootAccount.isPlaceholder());
         Timber.i("Creating ROOT account");

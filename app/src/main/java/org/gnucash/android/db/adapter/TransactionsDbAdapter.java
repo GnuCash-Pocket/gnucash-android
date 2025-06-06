@@ -84,6 +84,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
             TransactionEntry.COLUMN_NOTES,
             TransactionEntry.COLUMN_TIMESTAMP,
             TransactionEntry.COLUMN_EXPORTED,
+            TransactionEntry.COLUMN_CURRENCY,
             TransactionEntry.COLUMN_COMMODITY_UID,
             TransactionEntry.COLUMN_CREATED_AT,
             TransactionEntry.COLUMN_SCHEDX_ACTION_UID,
@@ -198,12 +199,13 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         stmt.bindString(2, transaction.getNote());
         stmt.bindLong(3, transaction.getTimeMillis());
         stmt.bindLong(4, transaction.isExported() ? 1 : 0);
-        stmt.bindString(5, transaction.getCommodity().getUID());
-        stmt.bindString(6, TimestampHelper.getUtcStringFromTimestamp(transaction.getCreatedTimestamp()));
+        stmt.bindString(5, transaction.getCurrencyCode());
+        stmt.bindString(6, transaction.getCommodity().getUID());
+        stmt.bindString(7, TimestampHelper.getUtcStringFromTimestamp(transaction.getCreatedTimestamp()));
         if (transaction.getScheduledActionUID() != null) {
-            stmt.bindString(7, transaction.getScheduledActionUID());
+            stmt.bindString(8, transaction.getScheduledActionUID());
         }
-        stmt.bindLong(8, transaction.isTemplate() ? 1 : 0);
+        stmt.bindLong(9, transaction.isTemplate() ? 1 : 0);
 
         return stmt;
     }

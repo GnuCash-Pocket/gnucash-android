@@ -40,7 +40,7 @@ public class DatabaseSchema {
      * Version number of database containing accounts and transactions info.
      * With any change to the database schema, this number must increase
      */
-    public static final int DATABASE_VERSION = 20;
+    public static final int DATABASE_VERSION = 21;
 
     //no instances are to be instantiated
     private DatabaseSchema() {
@@ -84,7 +84,7 @@ public class DatabaseSchema {
         @Column(Cursor.FIELD_TYPE_STRING)
         public static final String COLUMN_NAME = "name";
         @Column(Cursor.FIELD_TYPE_STRING)
-        @Deprecated(forRemoval = true)
+        @Deprecated
         public static final String COLUMN_CURRENCY = "currency_code";
         @Column(Cursor.FIELD_TYPE_STRING)
         public static final String COLUMN_COMMODITY_UID = "commodity_uid";
@@ -136,7 +136,7 @@ public class DatabaseSchema {
         @Column(Cursor.FIELD_TYPE_STRING)
         public static final String COLUMN_NOTES = "description";
         @Column(Cursor.FIELD_TYPE_STRING)
-        @Deprecated(forRemoval = true)
+        @Deprecated
         public static final String COLUMN_CURRENCY = "currency_code";
         @Column(Cursor.FIELD_TYPE_STRING)
         public static final String COLUMN_COMMODITY_UID = "commodity_uid";

@@ -89,6 +89,9 @@ public class MigrationHelper {
         if (oldVersion < 19) {
             migrateTo19(db);
         }
+        if ((oldVersion >= 19) && (oldVersion < 21)) {
+            migrateTo21(db);
+        }
     }
 
     /**
@@ -202,27 +205,6 @@ public class MigrationHelper {
         }
     }
 
-    // In case the table column was not deleted when upgrading to 19.
-    public static void migrateAccounts(SQLiteDatabase db) {
-        Cursor cursor = db.rawQuery("PRAGMA table_xinfo(" + AccountEntry.TABLE_NAME +")", null);
-        boolean hasCurrencyCode = false;
-        if (cursor.moveToFirst()) {
-            final int indexName = cursor.getColumnIndex("name");
-            do {
-                String name = cursor.getString(indexName);
-                if (AccountEntry.COLUMN_CURRENCY.equals(name)) {
-                    hasCurrencyCode = true;
-                    break;
-                }
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-
-        if (hasCurrencyCode) {
-            migrateTo19(db);
-        }
-    }
-
     private static class AccountCurrency {
         @NonNull
         public final String currencyCode;
@@ -238,6 +220,48 @@ public class MigrationHelper {
             this.currencyCode = currencyCode;
             this.commodityUIDOld = commodityUIDOld;
             this.commodityUIDNew = commodityUIDNew;
+        }
+    }
+
+    /**
+     * Upgrade the database to version 21.
+     *
+     * @param db the database.
+     */
+    private static void migrateTo21(SQLiteDatabase db) {
+        Timber.i("Upgrading database to version 21");
+
+        Cursor cursor = db.rawQuery("PRAGMA table_info(" + AccountEntry.TABLE_NAME + ")", null);
+        try {
+            if (cursor.moveToFirst()) {
+                final int indexName = cursor.getColumnIndex("name");
+                do {
+                    String name = cursor.getString(indexName);
+                    if (AccountEntry.COLUMN_CURRENCY.equals(name)) {
+                        return;
+                    }
+                } while (cursor.moveToNext());
+            }
+        } finally {
+            cursor.close();
+        }
+
+        // Restore the currency code column.
+        String sqlAccountCurrency = "ALTER TABLE " + AccountEntry.TABLE_NAME
+            + " ADD COLUMN " + AccountEntry.COLUMN_CURRENCY + " varchar(255)";
+        try {
+            db.execSQL(sqlAccountCurrency);
+        } catch (SQLException e) {
+            Timber.e(e);
+        }
+
+        // Restore the currency code column.
+        String sqlTransactionCurrency = "ALTER TABLE " + TransactionEntry.TABLE_NAME
+            + " ADD COLUMN " + TransactionEntry.COLUMN_CURRENCY + " varchar(255)";
+        try {
+            db.execSQL(sqlTransactionCurrency);
+        } catch (SQLException e) {
+            Timber.e(e);
         }
     }
 }

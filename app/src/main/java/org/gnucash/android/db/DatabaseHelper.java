@@ -264,7 +264,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onOpen(SQLiteDatabase db) {
         super.onOpen(db);
         db.execSQL("PRAGMA foreign_keys=ON");
-        MigrationHelper.migrateAccounts(db);
     }
 
     @Override
