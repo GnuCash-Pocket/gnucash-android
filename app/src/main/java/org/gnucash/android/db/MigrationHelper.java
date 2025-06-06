@@ -187,22 +187,6 @@ public class MigrationHelper {
                 + " AND " + AccountEntry.COLUMN_COMMODITY_UID + " = " + sqlEscapeString(accountWrong.commodityUIDOld);
             db.execSQL(sql);
         }
-
-        String sqlAccountCurrency = "ALTER TABLE " + AccountEntry.TABLE_NAME
-            + " DROP COLUMN " + AccountEntry.COLUMN_CURRENCY;
-        try {
-            db.execSQL(sqlAccountCurrency);
-        } catch (SQLException e) {
-            Timber.e(e);
-        }
-
-        String sqlTransactionCurrency = "ALTER TABLE " + TransactionEntry.TABLE_NAME
-            + " DROP COLUMN " + TransactionEntry.COLUMN_CURRENCY;
-        try {
-            db.execSQL(sqlTransactionCurrency);
-        } catch (SQLException e) {
-            Timber.e(e);
-        }
     }
 
     private static class AccountCurrency {
