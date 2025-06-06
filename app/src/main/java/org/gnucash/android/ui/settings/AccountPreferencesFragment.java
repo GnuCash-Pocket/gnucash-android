@@ -67,9 +67,16 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
 
     private static final int REQUEST_EXPORT_FILE = 0xC5;
 
-    private final CommoditiesDbAdapter commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
+    @NonNull
+    private CommoditiesDbAdapter commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
     private final List<CharSequence> currencyEntries = new ArrayList<>();
     private final List<CharSequence> currencyEntryValues = new ArrayList<>();
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
+    }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -131,7 +138,8 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
                     .setPositiveButton(R.string.btn_create_accounts, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int which) {
-                            AccountsActivity.createDefaultAccounts(activity, Commodity.DEFAULT_COMMODITY.getCurrencyCode());
+                            String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
+                            AccountsActivity.createDefaultAccounts(activity, currencyCode);
                         }
                     })
                     .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {

@@ -185,52 +185,50 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
     /**
      * Returns the sum of the splits for given set of accounts.
      * This takes into account the kind of movement caused by the split in the account (which also depends on account type)
-     * The Caller must make sure all accounts have the currency, which is passed in as currencyCode
+     * The Caller must make sure all accounts have the currency, which is passed in as currency
      *
      * @param accountUIDList List of String unique IDs of given set of accounts
-     * @param currencyCode   currencyCode for all the accounts in the list
+     * @param currency       currency for all the accounts in the list
      * @return Balance of the splits for this account
      */
-    public Money computeSplitBalance(List<String> accountUIDList, String currencyCode) {
-        return calculateSplitBalance(accountUIDList, currencyCode, -1, -1);
+    public Money computeSplitBalance(List<String> accountUIDList, Commodity currency) {
+        return computeSplitBalance(accountUIDList, currency, -1, -1);
     }
 
     /**
      * Returns the sum of the splits for given set of accounts within the specified time range.
      * This takes into account the kind of movement caused by the split in the account (which also depends on account type)
-     * The Caller must make sure all accounts have the currency, which is passed in as currencyCode
+     * The Caller must make sure all accounts have the currency, which is passed in as currency
      *
      * @param accountUIDList List of String unique IDs of given set of accounts
-     * @param currencyCode   currencyCode for all the accounts in the list
+     * @param currency       currency for all the accounts in the list
      * @param startTimestamp the start timestamp of the time range
      * @param endTimestamp   the end timestamp of the time range
      * @return Balance of the splits for this account within the specified time range
      */
     public Money computeSplitBalance(
         List<String> accountUIDList,
-        String currencyCode,
+        Commodity currency,
         long startTimestamp,
         long endTimestamp
     ) {
-        return calculateSplitBalance(accountUIDList, currencyCode, startTimestamp, endTimestamp);
+        return calculateSplitBalance(accountUIDList, currency, startTimestamp, endTimestamp);
     }
 
     private Money calculateSplitBalance(
         List<String> accountUIDList,
-        String currencyCode,
+        Commodity currency,
         long startTimestamp,
         long endTimestamp
     ) {
-        final Commodity currency = commoditiesDbAdapter.getCommodity(currencyCode);
-        final String currencyUID = currency.getUID();
         BigDecimal total = BigDecimal.ZERO;
         if (accountUIDList.isEmpty()) {
             return new Money(total, currency);
         }
+        final String currencyUID = currency.getUID();
 
         String selection = "a." + CommonColumns.COLUMN_UID + " IN ('" + TextUtils.join("','", accountUIDList) + "')"
             + " AND t." + TransactionEntry.COLUMN_TEMPLATE + " = 0"
-            + " AND a." + AccountEntry.COLUMN_CURRENCY + " != '" + Commodity.TEMPLATE + "'"
             + " AND s." + SplitEntry.COLUMN_QUANTITY_DENOM + " >= 1";
 
         boolean validStart = startTimestamp != -1;

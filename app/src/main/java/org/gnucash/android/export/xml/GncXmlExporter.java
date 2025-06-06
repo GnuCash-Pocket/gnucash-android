@@ -263,7 +263,7 @@ public class GncXmlExporter extends Exporter {
             TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_NOTES + " AS trans_notes",
             TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " AS trans_time",
             TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_EXPORTED + " AS trans_exported",
-            TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_CURRENCY + " AS trans_currency",
+            TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_COMMODITY_UID + " AS trans_commodity",
             TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_CREATED_AT + " AS trans_date_posted",
             TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_SCHEDX_ACTION_UID + " AS trans_from_sched_action",
             SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_UID + " AS split_uid",
@@ -322,14 +322,14 @@ public class GncXmlExporter extends Exporter {
                 xmlSerializer.text(curTrxUID);
                 xmlSerializer.endTag(null, TAG_TRX_ID);
                 // currency
-                String currencyCode = cursor.getString(cursor.getColumnIndexOrThrow("trans_currency"));
-                trnCommodity = CommoditiesDbAdapter.getInstance().getCommodity(currencyCode);
+                String commodityUID = cursor.getString(cursor.getColumnIndexOrThrow("trans_commodity"));
+                trnCommodity = mAccountsDbAdapter.commoditiesDbAdapter.getRecord(commodityUID);
                 xmlSerializer.startTag(null, TAG_TRX_CURRENCY);
                 xmlSerializer.startTag(null, TAG_COMMODITY_SPACE);
-                xmlSerializer.text(COMMODITY_CURRENCY);
+                xmlSerializer.text(trnCommodity.getNamespace());
                 xmlSerializer.endTag(null, TAG_COMMODITY_SPACE);
                 xmlSerializer.startTag(null, TAG_COMMODITY_ID);
-                xmlSerializer.text(currencyCode);
+                xmlSerializer.text(trnCommodity.getCurrencyCode());
                 xmlSerializer.endTag(null, TAG_COMMODITY_ID);
                 xmlSerializer.endTag(null, TAG_TRX_CURRENCY);
                 // date posted, time which user put on the transaction

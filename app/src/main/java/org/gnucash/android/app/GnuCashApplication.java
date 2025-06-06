@@ -174,6 +174,7 @@ public class GnuCashApplication extends Application {
         mScheduledActionDbAdapter = new ScheduledActionDbAdapter(mRecurrenceDbAdapter);
         mBudgetAmountsDbAdapter = new BudgetAmountsDbAdapter(mainDb);
         mBudgetsDbAdapter = new BudgetsDbAdapter(mBudgetAmountsDbAdapter, mRecurrenceDbAdapter);
+        Commodity.DEFAULT_COMMODITY = mCommoditiesDbAdapter.getDefaultCommodity();
     }
 
     private static void destroyDatabaseAdapters() {

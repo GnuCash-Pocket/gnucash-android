@@ -65,22 +65,7 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
     private OnTransferFundsListener mOnTransferFundsListener;
 
     private DialogTransferFundsBinding binding;
-    @ColorInt
-    private int colorBalanceZero;
-    private final PricesDbAdapter pricesDbAdapter = PricesDbAdapter.getInstance();
-    private final CommoditiesDbAdapter commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
-
-    public static TransferFundsDialogFragment getInstance(
-        @NonNull Money transactionAmount,
-        @NonNull String targetCurrencyCode,
-        @Nullable OnTransferFundsListener transferFundsListener
-    ) {
-        return getInstance(
-            transactionAmount,
-            CommoditiesDbAdapter.getInstance().getCommodity(targetCurrencyCode),
-            transferFundsListener
-        );
-    }
+    private PricesDbAdapter pricesDbAdapter = PricesDbAdapter.getInstance();
 
     public static TransferFundsDialogFragment getInstance(
         @NonNull Money transactionAmount,
@@ -94,12 +79,18 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
         return fragment;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        pricesDbAdapter = PricesDbAdapter.getInstance();
+    }
+
     @NonNull
     private DialogTransferFundsBinding onCreateBinding(LayoutInflater inflater) {
         final DialogTransferFundsBinding binding = DialogTransferFundsBinding.inflate(inflater, null, false);
         this.binding = binding;
 
-        colorBalanceZero = binding.amountToConvert.getCurrentTextColor();
+        @ColorInt int colorBalanceZero = binding.amountToConvert.getCurrentTextColor();
 
         displayBalance(binding.amountToConvert, mOriginAmount, colorBalanceZero);
         final Commodity fromCommodity = mOriginAmount.getCommodity();
@@ -208,6 +199,7 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
         @NonNull Commodity targetCommodity,
         @NonNull DialogTransferFundsBinding binding
     ) {
+        CommoditiesDbAdapter commoditiesDbAdapter = pricesDbAdapter.commoditiesDbAdapter;
         Commodity commodityFrom = commoditiesDbAdapter.loadCommodity(originCommodity);
         if (commodityFrom == null) {
             Timber.e("Origin commodity not found in db!");

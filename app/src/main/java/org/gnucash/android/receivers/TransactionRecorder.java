@@ -23,6 +23,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 
+import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
@@ -70,10 +71,23 @@ public class TransactionRecorder extends BroadcastReceiver {
             Timber.w("Transaction name required");
             return;
         }
+        TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
+        CommoditiesDbAdapter commoditiesDbAdapter = transactionsDbAdapter.commoditiesDbAdapter;
+
         String note = args.getString(Intent.EXTRA_TEXT);
 
-        String currencyCode = args.getString(Account.EXTRA_CURRENCY_CODE);
-        Commodity commodity = Commodity.getInstance(currencyCode);
+        String currencyUID = args.getString(Account.EXTRA_CURRENCY_UID);
+        final Commodity commodity;
+        if (TextUtils.isEmpty(currencyUID)) {
+            String currencyCode = args.getString(Account.EXTRA_CURRENCY_CODE);
+            commodity = CommoditiesDbAdapter.getInstance().getCommodity(currencyCode);
+        } else {
+            commodity = CommoditiesDbAdapter.getInstance().getRecord(currencyUID);
+        }
+        if (commodity == null) {
+            Timber.w("Commodity required");
+            return;
+        }
 
         Transaction transaction = new Transaction(name);
         transaction.setTime(System.currentTimeMillis());
@@ -117,7 +131,7 @@ public class TransactionRecorder extends BroadcastReceiver {
             }
         }
 
-        TransactionsDbAdapter.getInstance().addRecord(transaction, DatabaseAdapter.UpdateMethod.insert);
+        transactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.insert);
 
         WidgetConfigurationActivity.updateAllWidgets(context);
     }

@@ -173,7 +173,7 @@ public class FirstRunWizardActivity extends GnuCashActivity implements
      * Create accounts depending on the user preference (import or default set) and finish this activity
      * <p>This method also removes the first run flag from the application</p>
      */
-    private void createAccountsAndFinish(@NonNull String accountOption, String currencyCode) {
+    private void createAccountsAndFinish(@NonNull String accountOption, @Nullable String currencyCode) {
         if (accountOption.equals(mWizardModel.optionAccountDefault)) {
             final Activity activity = FirstRunWizardActivity.this;
             //save the UID of the active book, and then delete it after successful import
