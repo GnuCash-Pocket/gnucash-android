@@ -34,6 +34,7 @@ import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -203,7 +204,8 @@ public class BooksDbAdapterTest extends GnuCashTest {
     private String createNewBookWithDefaultAccounts() {
         try {
             Context context = GnuCashApplication.getAppContext();
-            return GncXmlImporter.parse(context, context.getResources().openRawResource(R.raw.default_accounts));
+            InputStream input = context.getResources().openRawResource(R.raw.default_accounts);
+            return GncXmlImporter.parse(context, input);
         } catch (ParserConfigurationException | SAXException | IOException e) {
             Timber.e(e);
             throw new RuntimeException("Could not create default accounts");

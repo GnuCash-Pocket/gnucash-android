@@ -478,4 +478,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">データを圧縮する</string>
+    <string name="title_progress_processing_accounts">会計処理</string>
+    <string name="title_progress_processing_books">帳簿処理</string>
+    <string name="title_progress_processing_budgets">予算処理</string>
+    <string name="title_progress_processing_commodities">通貨処理</string>
+    <string name="title_progress_processing_prices">価格処理</string>
+    <string name="title_progress_processing_schedules">スケジュール処理</string>
+    <string name="title_progress_processing_transactions">取引処理</string>
 </resources>

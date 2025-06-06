@@ -94,7 +94,9 @@ public class MultiBookTest extends GnuAndroidTest {
 
     @Test
     public void creatingNewAccounts_shouldCreatedNewBook() {
-        long booksCount = mBooksDbAdapter.getRecordsCount();
+        Context context = GnuCashApplication.getAppContext();
+        final long bookCount = mBooksDbAdapter.getRecordsCount();
+        assertThat(bookCount).isOne();
 
         onView(withId(R.id.drawer_layout)).perform(DrawerActions.open());
         onView(withId(R.id.drawer_layout)).perform(swipeUp());
@@ -109,11 +111,12 @@ public class MultiBookTest extends GnuAndroidTest {
         //// TODO: 18.05.2016 wait for import to finish instead
         sleep(2000); //give import time to finish
 
-        assertThat(mBooksDbAdapter.getRecordsCount()).isEqualTo(booksCount + 1);
+        assertThat(mBooksDbAdapter.getRecordsCount()).isEqualTo(bookCount + 1);
 
         //// TODO: 25.08.2016 Delete all books before the start of this test
         Book activeBook = mBooksDbAdapter.getRecord(mBooksDbAdapter.getActiveBookUID());
-        assertThat(activeBook.getDisplayName()).isEqualTo("Book " + (booksCount + 1));
+        String name = context.getString(R.string.book_default_name, bookCount + 1);
+        assertThat(activeBook.getDisplayName()).isEqualTo(name);
     }
 
     @Test

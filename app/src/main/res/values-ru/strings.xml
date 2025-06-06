@@ -488,4 +488,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">Сжать данные</string>
+    <string name="title_progress_processing_accounts">Обработка счетов</string>
+    <string name="title_progress_processing_books">Обработка книг</string>
+    <string name="title_progress_processing_budgets">Обработка бюджетов</string>
+    <string name="title_progress_processing_commodities">Обработка товаров</string>
+    <string name="title_progress_processing_prices">Обработка цен</string>
+    <string name="title_progress_processing_schedules">Обработка графиков</string>
+    <string name="title_progress_processing_transactions">Обработка транзакций</string>
 </resources>

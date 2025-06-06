@@ -482,4 +482,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">压缩数据</string>
+    <string name="title_progress_processing_accounts">处理账目</string>
+    <string name="title_progress_processing_books">处理账簿</string>
+    <string name="title_progress_processing_budgets">处理预算</string>
+    <string name="title_progress_processing_commodities">处理商品</string>
+    <string name="title_progress_processing_prices">处理价格</string>
+    <string name="title_progress_processing_schedules">处理进度表</string>
+    <string name="title_progress_processing_transactions">处理交易</string>
 </resources>

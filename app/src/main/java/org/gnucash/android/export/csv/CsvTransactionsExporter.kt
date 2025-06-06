@@ -25,6 +25,7 @@ import org.gnucash.android.export.Exporter
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Split
+import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.util.PreferencesHelper
 import org.gnucash.android.util.TimestampHelper
@@ -53,7 +54,7 @@ class CsvTransactionsExporter(
         maximumFractionDigits = 4
     }
 
-    override fun writeExport(exportParams: ExportParams, writer: Writer) {
+    override fun writeExport(writer: Writer, exportParams: ExportParams) {
         val csvWriter = CSVWriterBuilder(writer)
             .withSeparator(exportParams.csvSeparator)
             .withLineEnd(RFC4180_LINE_END)
@@ -62,8 +63,7 @@ class CsvTransactionsExporter(
         csvWriter.close()
     }
 
-    @Throws(IOException::class)
-    private fun writeSplitsToCsv(splits: List<Split>, fields: Array<String>, writer: ICSVWriter) {
+    private fun writeSplitsToCsv(writer: ICSVWriter, fields: Array<String>, splits: List<Split>) {
         // Sort splits by account name.
         val splitToAccount =
             splits.associate { it.uid to mAccountsDbAdapter.getAccountFullName(it.accountUID) }
@@ -106,22 +106,31 @@ class CsvTransactionsExporter(
         val cursor =
             mTransactionsDbAdapter.fetchTransactionsModifiedSince(mExportParams.exportStartTime)
         Timber.d("Exporting %d transactions to CSV", cursor.count)
+        val fields = Array(headers.size) { "" }
         while (cursor.moveToNext()) {
             val transaction = mTransactionsDbAdapter.buildModelInstance(cursor)
-            val commodity = transaction.commodity
-            val fields = Array(headers.size) { "" }
-            fields[0] = dateFormat.print(transaction.timeMillis)
-            fields[1] = transaction.uid
-            fields[2] = ""  // Transaction number
-            fields[3] = transaction.description.orEmpty()
-            fields[4] = transaction.note.orEmpty()
-            fields[5] = "${commodity.namespace}::${commodity.currencyCode}"
-            fields[6] = ""  // Void Reason
-            fields[7] = ""  // Action
-            writeSplitsToCsv(transaction.splits, fields, writer)
+            writeTransaction(writer, fields, transaction)
         }
         cursor.close()
         PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow(), bookUID)
+    }
+
+    private fun writeTransaction(
+        writer: ICSVWriter,
+        fields: Array<String>,
+        transaction: Transaction
+    ) {
+        val commodity = transaction.commodity
+
+        fields[0] = dateFormat.print(transaction.timeMillis)
+        fields[1] = transaction.uid
+        fields[2] = ""  // Transaction number
+        fields[3] = transaction.description.orEmpty()
+        fields[4] = transaction.note.orEmpty()
+        fields[5] = "${commodity.namespace}::${commodity.currencyCode}"
+        fields[6] = ""  // Void Reason
+        fields[7] = ""  // Action
+        writeSplitsToCsv(writer, fields, transaction.splits)
     }
 
     private fun formatRate(value: Money, quantity: Money): String {

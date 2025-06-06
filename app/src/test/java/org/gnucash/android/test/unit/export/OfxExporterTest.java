@@ -54,7 +54,7 @@ public class OfxExporterTest extends GnuCashTest {
         exportParameters.setExportTarget(ExportParams.ExportTarget.SD_CARD);
         exportParameters.setDeleteTransactionsAfterExport(false);
         OfxExporter exporter = new OfxExporter(context, exportParameters, GnuCashApplication.getActiveBookUID());
-        assertThrows(Exporter.ExporterException.class, () -> exporter.generateExport());
+        assertThrows(Exporter.ExporterException.class, () -> exporter.export());
     }
 
     /**
@@ -78,7 +78,7 @@ public class OfxExporterTest extends GnuCashTest {
         exportParameters.setDeleteTransactionsAfterExport(false);
 
         OfxExporter exporter = new OfxExporter(context, exportParameters, GnuCashApplication.getActiveBookUID());
-        Uri exportedFile = exporter.generateExport();
+        Uri exportedFile = exporter.export();
 
         assertThat(exportedFile).isNotNull();
         File file = new File(exportedFile.getPath());
