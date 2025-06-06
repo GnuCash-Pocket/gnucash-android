@@ -17,6 +17,7 @@ package org.gnucash.android.export
 
 import androidx.annotation.StringRes
 import org.gnucash.android.R
+import java.util.Locale
 
 /**
  * Enumeration of the different export formats supported by the application
@@ -57,7 +58,7 @@ enum class ExportFormat(
 
         @JvmStatic
         fun of(key: String?): ExportFormat {
-            val value = key ?: return XML
+            val value = key?.uppercase(Locale.ROOT) ?: return XML
             return values.firstOrNull { it.value == value } ?: XML
         }
     }

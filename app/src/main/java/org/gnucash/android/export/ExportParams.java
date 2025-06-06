@@ -88,10 +88,14 @@ public class ExportParams {
      */
     private Uri mExportLocation;
 
+    public static final char CSV_COMMA = ',';
+    public static final char CSV_COLON = ':';
+    public static final char CSV_SEMICOLON = ';';
+
     /**
      * CSV-separator char
      */
-    private char mCsvSeparator = ',';
+    private char mCsvSeparator = CSV_COMMA;
 
     /**
      * Compress the file using gzip?

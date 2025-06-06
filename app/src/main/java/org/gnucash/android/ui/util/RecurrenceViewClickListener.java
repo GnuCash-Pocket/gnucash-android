@@ -19,7 +19,7 @@ package org.gnucash.android.ui.util;
 import android.os.Bundle;
 import android.view.View;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 
 import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment;
@@ -33,12 +33,15 @@ import java.util.Calendar;
 public class RecurrenceViewClickListener implements View.OnClickListener {
     private static final String FRAGMENT_TAG_RECURRENCE_PICKER = "recurrence_picker";
 
-    private final AppCompatActivity mActivity;
+    private final FragmentActivity mActivity;
     private String mRecurrenceRule;
     private final OnRecurrenceSetListener mRecurrenceSetListener;
 
-    public RecurrenceViewClickListener(AppCompatActivity activity, String recurrenceRule,
-                                       OnRecurrenceSetListener recurrenceSetListener) {
+    public RecurrenceViewClickListener(
+        FragmentActivity activity,
+        String recurrenceRule,
+        OnRecurrenceSetListener recurrenceSetListener
+    ) {
         this.mActivity = activity;
         this.mRecurrenceRule = recurrenceRule;
         this.mRecurrenceSetListener = recurrenceSetListener;
