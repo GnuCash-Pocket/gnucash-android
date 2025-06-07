@@ -18,7 +18,7 @@
 package org.gnucash.android.db.adapter;
 
 import static org.gnucash.android.db.DatabaseExtKt.getBigDecimal;
-import static org.gnucash.android.db.DatabaseHelper.escapeForLike;
+import static org.gnucash.android.db.DatabaseHelper.sqlEscapeLike;
 import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import static org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry;
 import static org.gnucash.android.db.DatabaseSchema.BudgetEntry;
@@ -608,17 +608,28 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return String unique ID of the account
      */
     public String getOrCreateImbalanceAccountUID(@NonNull Context context, @NonNull Commodity commodity) {
+        return getOrCreateImbalanceAccount(context, commodity).getUID();
+    }
+
+    /**
+     * Retrieves the unique ID of the imbalance account for a particular currency (creates the imbalance account
+     * on demand if necessary)
+     *
+     * @param commodity Commodity for the imbalance account
+     * @return The account
+     */
+    public Account getOrCreateImbalanceAccount(@NonNull Context context, @NonNull Commodity commodity) {
         String imbalanceAccountName = getImbalanceAccountName(context, commodity);
         String uid = findAccountUidByFullName(imbalanceAccountName);
-        if (uid == null) {
+        if (TextUtils.isEmpty(uid)) {
             Account account = new Account(imbalanceAccountName, commodity);
             account.setAccountType(AccountType.BANK);
             account.setParentUID(getOrCreateGnuCashRootAccountUID());
             account.setHidden(!GnuCashApplication.isDoubleEntryEnabled(context));
             addRecord(account, UpdateMethod.insert);
-            uid = account.getUID();
+            return account;
         }
-        return uid;
+        return getSimpleRecord(uid);
     }
 
     /**
@@ -1107,7 +1118,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
                 + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " = ?)";
             selectionArgs = new String[]{AccountType.ROOT.name(), getOrCreateGnuCashRootAccountUID()};
         } else {
-            selection += " AND (" + AccountEntry.COLUMN_NAME + " LIKE '%" + escapeForLike(filterName) + "%')";
+            selection += " AND (" + AccountEntry.COLUMN_NAME + " LIKE " + sqlEscapeLike(filterName) + ")";
             selectionArgs = new String[]{AccountType.ROOT.name()};
         }
         return fetchAccounts(selection, selectionArgs, null);
@@ -1127,7 +1138,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             if (!selection.isEmpty()) {
                 selection += " AND ";
             }
-            selection += "(" + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_NAME + " LIKE '%" + escapeForLike(filterName) + "%')";
+            selection += "(" + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_NAME + " LIKE " + sqlEscapeLike(filterName) + ")";
         }
         return mDb.query(TransactionEntry.TABLE_NAME
                 + " LEFT OUTER JOIN " + SplitEntry.TABLE_NAME + " ON "
@@ -1157,7 +1168,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             selection += " AND " + AccountEntry.COLUMN_HIDDEN + " = 0";
         }
         if (!TextUtils.isEmpty(filterName)) {
-            selection += " AND (" + AccountEntry.COLUMN_NAME + " LIKE '%" + escapeForLike(filterName) + "%')";
+            selection += " AND (" + AccountEntry.COLUMN_NAME + " LIKE " + sqlEscapeLike(filterName) + ")";
         }
         return fetchAccounts(selection, null, null);
     }

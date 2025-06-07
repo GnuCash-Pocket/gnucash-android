@@ -16,6 +16,7 @@
 
 package org.gnucash.android.db;
 
+import static android.database.DatabaseUtils.appendEscapedSQLString;
 import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import static org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry;
 import static org.gnucash.android.db.DatabaseSchema.BudgetEntry;
@@ -28,6 +29,7 @@ import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
 import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 
 import android.content.Context;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -340,22 +342,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * Escape the given argument for use in a {@code LIKE} statement.
      *
-     * @hide
+     * @param value the value to escape.
      */
-    public static String escapeForLike(@NonNull String arg) {
-        // Shamelessly borrowed from android.database.DatabaseUtils
-        final StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < arg.length(); i++) {
-            final char c = arg.charAt(i);
-            switch (c) {
-                case '%':
-                case '_':
-                    sb.append('\\');
-                    break;
+    public static String sqlEscapeLike(String value) {
+        StringBuilder escaper = new StringBuilder();
+        appendEscapedSQLString(escaper, value);
+        boolean escape = false;
+        int length = escaper.length();
+        for (int i = length - 1; i > 0; i--) {
+            char c = escaper.charAt(i);
+            if ((c == '%') || (c == '_')) {
+                escape = true;
+                escaper.insert(i, '_');
             }
-            sb.append(c);
         }
-        return sb.toString();
+        escaper.insert(1, '%');
+        escaper.insert(escaper.length() - 1, '%');
+        if (escape) {
+            escaper.append(" ESCAPE '_'");
+        }
+        return escaper.toString();
     }
 
     static void createResetBalancesTriggers(SQLiteDatabase db) {
