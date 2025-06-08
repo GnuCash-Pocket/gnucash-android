@@ -87,6 +87,7 @@
         <item name="android:orientation">horizontal</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:layout_marginTop">@dimen/form_row_bottom_margin</item>
+        <item name="android:padding">4dp</item>
     </style>
 
     <style name="NumericButton" parent="Widget.AppCompat.Button">

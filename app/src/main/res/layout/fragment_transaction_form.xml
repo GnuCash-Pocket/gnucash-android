@@ -35,22 +35,26 @@
 
             <TableRow style="@style/FormRow">
 
-                <AutoCompleteTextView
-                    android:id="@+id/input_transaction_name"
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_span="4"
-                    android:background="@null"
-                    android:completionThreshold="1"
-                    android:hint="@string/label_transaction_name"
-                    android:imeOptions="actionNext"
-                    android:inputType="textCapSentences"
-                    android:nextFocusDown="@+id/input_transaction_amount"
-                    android:singleLine="true"
-                    android:textSize="22sp">
+                    android:layout_span="4">
 
-                    <requestFocus />
-                </AutoCompleteTextView>
+                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                        android:id="@+id/input_transaction_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:completionThreshold="1"
+                        android:hint="@string/label_transaction_name"
+                        android:imeOptions="actionNext"
+                        android:inputType="textCapSentences"
+                        android:nextFocusDown="@+id/input_transaction_amount"
+                        android:singleLine="true"
+                        android:textSize="22sp">
+
+                        <requestFocus />
+                    </com.google.android.material.textfield.MaterialAutoCompleteTextView>
+                </com.google.android.material.textfield.TextInputLayout>
             </TableRow>
 
             <View
@@ -61,9 +65,11 @@
 
                 <TextView
                     android:id="@+id/currency_symbol"
-                    style="@style/FormIcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="$"
+                    android:minWidth="32dp"
+                    android:text="USD"
                     android:textColor="@color/debit_red"
                     android:textSize="22sp" />
 
@@ -72,30 +78,35 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:layout_marginStart="4dp"
                     android:hint="@string/label_transaction_amount"
                     android:nextFocusDown="@+id/notes"
                     android:textColor="@color/debit_red"
                     android:textSize="20sp" />
+
+                <org.gnucash.android.ui.util.widget.TransactionTypeSwitch
+                    android:id="@+id/input_transaction_type"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:checked="true"
+                    android:gravity="center_vertical"
+                    android:textColor="@color/debit_red"
+                    android:textOff="@string/label_credit"
+                    android:textOn="@string/label_debit"
+                    android:textSize="14sp"
+                    tools:text="@string/label_debit" />
 
                 <ImageView
                     android:id="@+id/btn_split_editor"
                     style="@style/FormIcon"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="0dp"
                     android:contentDescription="@string/title_split_editor"
-                    android:src="@drawable/ic_split" />
-
-                <org.gnucash.android.ui.util.widget.TransactionTypeSwitch
-                    android:id="@+id/input_transaction_type"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
                     android:gravity="end|center_vertical"
-                    android:textColor="@color/debit_red"
-                    android:textOff="@string/label_credit"
-                    android:textOn="@string/label_debit"
-                    android:textSize="14sp"
-                    tools:text="@string/label_debit" />
+                    android:src="@drawable/ic_split" />
 
             </TableRow>
 
@@ -113,7 +124,8 @@
                     android:id="@+id/input_transfer_account_spinner"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    android:minHeight="40dp" />
             </TableRow>
 
             <View style="@style/Divider" />
@@ -129,14 +141,16 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="3"
-                    android:gravity="center" />
+                    android:gravity="center"
+                    android:padding="4dp" />
 
                 <TextView
                     android:id="@+id/input_time"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="2"
-                    android:gravity="center" />
+                    android:gravity="center"
+                    android:padding="4dp" />
             </TableRow>
 
             <View style="@style/Divider" />
@@ -147,15 +161,19 @@
                     style="@style/FormIcon"
                     android:src="@drawable/ic_notes" />
 
-                <EditText
-                    android:id="@+id/notes"
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@null"
-                    android:hint="@string/hint_notes"
-                    android:inputType="textMultiLine|textCapSentences"
-                    android:singleLine="false" />
+                    android:layout_weight="1">
+
+                    <EditText
+                        android:id="@+id/notes"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/hint_notes"
+                        android:inputType="textMultiLine|textCapSentences"
+                        android:singleLine="false" />
+                </com.google.android.material.textfield.TextInputLayout>
             </TableRow>
 
             <View style="@style/Divider" />
@@ -173,6 +191,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
+                    android:padding="4dp"
                     android:text="@string/label_tap_to_create_schedule" />
 
             </TableRow>
