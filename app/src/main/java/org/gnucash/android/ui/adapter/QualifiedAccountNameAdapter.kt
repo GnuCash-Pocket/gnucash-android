@@ -1,6 +1,8 @@
 package org.gnucash.android.ui.adapter
 
 import android.content.Context
+import android.database.DatabaseUtils.sqlEscapeString
+import android.text.TextUtils
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
@@ -17,6 +19,7 @@ import org.gnucash.android.R
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.model.Account
+import org.gnucash.android.model.AccountType
 
 class QualifiedAccountNameAdapter @JvmOverloads constructor(
     context: Context,
@@ -80,11 +83,19 @@ class QualifiedAccountNameAdapter @JvmOverloads constructor(
         return -1
     }
 
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+        val view = super.getView(position, convertView, parent)
+        val textView = if (view is TextView) view else view.findViewById(android.R.id.text1)
+        textView.ellipsize = TextUtils.TruncateAt.MIDDLE
+        return view
+    }
+
     override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
         val account = getAccount(position)!!
 
         val view = super.getDropDownView(position, convertView, parent)
         val textView = if (view is TextView) view else view.findViewById(android.R.id.text1)
+        textView.ellipsize = TextUtils.TruncateAt.MIDDLE
 
         @DrawableRes val icon = if (account.isFavorite) R.drawable.ic_favorite else 0
         textView.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, icon, 0)
@@ -144,11 +155,10 @@ class QualifiedAccountNameAdapter @JvmOverloads constructor(
     }
 
     private fun loadData(adapter: AccountsDbAdapter): List<Account> {
-        return adapter.getSimpleAccountList(
-            where ?: (AccountEntry.COLUMN_HIDDEN + " = 0"),
-            whereArgs,
+        val where = where ?: WHERE_NO_ROOT
+        val orderBy =
             AccountEntry.COLUMN_FAVORITE + " DESC, " + AccountEntry.COLUMN_FULL_NAME + " ASC"
-        )
+        return adapter.getSimpleAccountList(where, whereArgs, orderBy)
     }
 
     data class Label(val account: Account) {
@@ -158,6 +168,8 @@ class QualifiedAccountNameAdapter @JvmOverloads constructor(
     }
 
     companion object {
+        private val WHERE_NO_ROOT = AccountEntry.COLUMN_TYPE + " != " + sqlEscapeString(AccountType.ROOT.name)
+
         @JvmStatic
         @JvmOverloads
         fun where(
