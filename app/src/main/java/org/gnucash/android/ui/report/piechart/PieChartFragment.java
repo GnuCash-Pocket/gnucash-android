@@ -43,6 +43,7 @@ import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Money;
+import org.gnucash.android.model.Price;
 import org.gnucash.android.ui.report.BaseReportFragment;
 import org.gnucash.android.ui.report.ReportType;
 
@@ -147,7 +148,12 @@ public class PieChartFragment extends BaseReportFragment {
         String orderBy = DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC";
         List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(where, whereArgs, orderBy);
         for (Account account : accounts) {
-            Money balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), mReportPeriodStart, mReportPeriodEnd, false);
+            Money balance = mAccountsDbAdapter.getAccountBalance(account, mReportPeriodStart, mReportPeriodEnd, false);
+            if (balance.isAmountZero()) continue;
+            Price price = pricesDbAdapter.getPrice(balance.getCommodity(), mCommodity);
+            if (price != null) {
+                balance = balance.times(price);
+            }
             float value = balance.toFloat();
             if (value > 0f) {
                 int count = dataSet.getEntryCount();

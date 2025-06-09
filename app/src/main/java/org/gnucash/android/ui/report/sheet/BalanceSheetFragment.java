@@ -18,8 +18,6 @@ package org.gnucash.android.ui.report.sheet;
 import static org.gnucash.android.ui.util.TextViewExtKt.displayBalance;
 
 import android.content.Context;
-import android.database.Cursor;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -35,15 +33,19 @@ import androidx.annotation.Nullable;
 
 import org.gnucash.android.R;
 import org.gnucash.android.databinding.FragmentTextReportBinding;
+import org.gnucash.android.databinding.RowBalanceSheetBinding;
+import org.gnucash.android.databinding.TotalBalanceSheetBinding;
 import org.gnucash.android.db.DatabaseSchema;
+import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
+import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
+import org.gnucash.android.model.Price;
 import org.gnucash.android.ui.report.BaseReportFragment;
 import org.gnucash.android.ui.report.ReportType;
 
 import java.util.ArrayList;
 import java.util.List;
-
 
 /**
  * Balance sheet report fragment
@@ -134,43 +136,46 @@ public class BalanceSheetFragment extends BaseReportFragment {
         tableLayout.removeAllViews();
 
         // FIXME move this to generateReport
-        Cursor cursor = mAccountsDbAdapter.fetchAccounts(DatabaseSchema.AccountEntry.COLUMN_TYPE
-                + " IN ( '" + TextUtils.join("' , '", accountTypes) + "' ) AND "
-                + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0",
-            null, DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC");
-        final int columnIndexUID = cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_UID);
-        final int columnIndexName = cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_NAME);
+        String where = DatabaseSchema.AccountEntry.COLUMN_TYPE
+            + " IN ('" + TextUtils.join("','", accountTypes) + "') AND "
+            + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0";
+        String orderBy = DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC";
+        List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(where, null, orderBy);
+        Money total = Money.createZeroInstance(Commodity.DEFAULT_COMMODITY);
+        boolean isRowEven = true;
 
-        while (cursor.moveToNext()) {
-            String accountUID = cursor.getString(columnIndexUID);
-            String name = cursor.getString(columnIndexName);
-            Money balance = mAccountsDbAdapter.getAccountBalance(accountUID);
+        for (Account account : accounts) {
+            Money balance = mAccountsDbAdapter.getAccountBalance(account.getUID());
             if (balance.isAmountZero()) continue;
-            // TODO alternate light and dark rows
-            View view = inflater.inflate(R.layout.row_balance_sheet, tableLayout, false);
-            ((TextView) view.findViewById(R.id.account_name)).setText(name);
-            TextView balanceTextView = view.findViewById(R.id.account_balance);
+            AccountType accountType = account.getAccountType();
+            balance = (accountType.hasDebitDisplayBalance) ? balance : balance.unaryMinus();
+            RowBalanceSheetBinding binding = RowBalanceSheetBinding.inflate(inflater, tableLayout, true);
+            // alternate light and dark rows
+            if (isRowEven) {
+                binding.getRoot().setBackgroundResource(R.color.row_even);
+                isRowEven = false;
+            } else {
+                binding.getRoot().setBackgroundResource(R.color.row_odd);
+                isRowEven = true;
+            }
+            binding.accountName.setText(account.getName());
+            TextView balanceTextView = binding.accountBalance;
             @ColorInt int colorBalanceZero = balanceTextView.getCurrentTextColor();
             displayBalance(balanceTextView, balance, colorBalanceZero);
-            tableLayout.addView(view);
+
+            // Price conversion.
+            Price price = pricesDbAdapter.getPrice(balance.getCommodity(), total.getCommodity());
+            if (price != null) {
+                balance = balance.times(price);
+            }
+            total = total.plus(balance);
         }
-        cursor.close();
 
-        View totalView = inflater.inflate(R.layout.row_balance_sheet, tableLayout, false);
-        TableLayout.LayoutParams layoutParams = (TableLayout.LayoutParams) totalView.getLayoutParams();
-        layoutParams.setMargins(layoutParams.leftMargin, 20, layoutParams.rightMargin, layoutParams.bottomMargin);
-        totalView.setLayoutParams(layoutParams);
+        TotalBalanceSheetBinding binding = TotalBalanceSheetBinding.inflate(inflater, tableLayout, true);
 
-        TextView accountName = totalView.findViewById(R.id.account_name);
-        accountName.setTextSize(16);
-        accountName.setText(R.string.label_balance_sheet_total);
-        TextView accountBalance = totalView.findViewById(R.id.account_balance);
-        accountBalance.setTextSize(16);
-        accountBalance.setTypeface(null, Typeface.BOLD);
+        TextView accountBalance = binding.accountBalance;
         @ColorInt int colorBalanceZero = accountBalance.getCurrentTextColor();
-        displayBalance(accountBalance, mAccountsDbAdapter.getBalancesByType(accountTypes, -1, System.currentTimeMillis()), colorBalanceZero);
-
-        tableLayout.addView(totalView);
+        displayBalance(accountBalance, total, colorBalanceZero);
     }
 
 }

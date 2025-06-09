@@ -47,6 +47,7 @@ import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Money;
+import org.gnucash.android.model.Price;
 import org.gnucash.android.ui.report.BaseReportFragment;
 import org.gnucash.android.ui.report.ReportType;
 import org.gnucash.android.ui.report.ReportsActivity.GroupInterval;
@@ -214,9 +215,8 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
      */
     private List<Entry> getEntryList(AccountType accountType) {
         String where = DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?"
-            + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0"
-            + " AND " + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + "=?";
-        String[] whereArgs = new String[]{accountType.name(), mCommodity.getUID()};
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0";
+        String[] whereArgs = new String[]{accountType.name()};
         List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(where, whereArgs, null);
 
         LocalDateTime earliest;
@@ -259,8 +259,12 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
                     break;
             }
             Money balance = mAccountsDbAdapter.getAccountsBalance(accounts, start, end);
-            Money balanceDisplay = accountType.hasDebitNormalBalance ? balance : balance.unaryMinus();
-            float value = balanceDisplay.toFloat();
+            if (balance.isAmountZero()) continue;
+            Price price = pricesDbAdapter.getPrice(balance.getCommodity(), mCommodity);
+            if (price != null) {
+                balance = balance.times(price);
+            }
+            float value = balance.toFloat();
             entries.add(new Entry(i + xAxisOffset, value));
             Timber.d(accountType + earliest.toString(" MMM yyyy") + ", balance = " + balance);
         }

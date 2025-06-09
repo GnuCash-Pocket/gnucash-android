@@ -48,6 +48,7 @@ import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Money;
+import org.gnucash.android.model.Price;
 import org.gnucash.android.ui.report.BaseReportFragment;
 import org.gnucash.android.ui.report.ReportType;
 import org.joda.time.LocalDate;
@@ -159,7 +160,12 @@ public class StackedBarChartFragment extends BaseReportFragment {
             @ColorInt int color;
             for (Account account : accounts) {
                 String accountUID = account.getUID();
-                Money balance = mAccountsDbAdapter.getAccountBalance(accountUID, start, end, false);
+                Money balance = mAccountsDbAdapter.getAccountBalance(account, start, end, false);
+                if (balance.isAmountZero()) continue;
+                Price price = pricesDbAdapter.getPrice(balance.getCommodity(), mCommodity);
+                if (price != null) {
+                    balance = balance.times(price);
+                }
                 float value = balance.toFloat();
                 if (value > 0f) {
                     stack.add(value);

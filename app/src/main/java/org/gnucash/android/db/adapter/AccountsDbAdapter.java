@@ -27,7 +27,6 @@ import static org.gnucash.android.db.DatabaseSchema.RecurrenceEntry;
 import static org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry;
 import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
 import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
-import static org.gnucash.android.model.PriceKt.isNullOrEmpty;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -865,7 +864,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @param endTimestamp   End time for duration in milliseconds
      * @return Account balance
      */
-    public Money getAccountBalance(AccountType accountType, String currencyCode, long startTimestamp, long endTimestamp) {
+    public Money getAccountsBalance(AccountType accountType, String currencyCode, long startTimestamp, long endTimestamp) {
         String where = AccountEntry.COLUMN_TYPE + "=?"
             + " AND " + AccountEntry.COLUMN_CURRENCY + "=?";
         String[] whereArgs = new String[]{accountType.name(), currencyCode};
@@ -885,7 +884,8 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
         Money balance = Money.createZeroInstance(currencyCode);
         for (AccountType accountType : accountTypes) {
-            balance = balance.plus(getAccountBalance(accountType, currencyCode, start, end));
+            Money accountsBalance = getAccountsBalance(accountType, currencyCode, start, end);
+            balance = balance.plus(accountsBalance);
         }
         return balance;
     }
@@ -1003,7 +1003,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             return balance;
         }
         for (Account account : accounts) {
-            Money accountBalance = getAccountBalance(account, startTimestamp, endTimestamp);
+            Money accountBalance = getAccountBalance(account, startTimestamp, endTimestamp, false);
             // FIXME beware of CurrencyMismatchException
             balance = balance.plus(accountBalance);
         }
