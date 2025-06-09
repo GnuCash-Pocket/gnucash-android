@@ -33,6 +33,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.SQLException;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
@@ -181,7 +182,12 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             rootUID = account.getUID();
         }
         //in-case the account already existed, we want to update the templates based on it as well
-        super.addRecord(account, updateMethod);
+        try {
+            super.addRecord(account, updateMethod);
+        } catch (SQLiteConstraintException e) {
+            Timber.e(e, toString(account));
+            throw e;
+        }
         //now add transactions if there are any
         // NB! Beware of transactions that reference accounts not yet in the db,
         if (!account.isRoot()) {
@@ -1601,5 +1607,25 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         Account account = getSimpleRecord(accountUID);
         if (account != null) return account.getAccountType();
         throw new IllegalArgumentException("account " + accountUID + " does not exist in DB");
+    }
+
+    @NonNull
+    private String toString(Account account) {
+        return "Account: {id" + ':' + account.id +
+            ',' + "uid" + ':' + account.getUID() +
+            ',' + "name" + ':' + account.getName() +
+            ',' + "fullname" + ':' + account.getFullName() +
+            ',' + "description" + ':' + account.getDescription() +
+            ',' + "note" + ':' + account.getNote() +
+            ',' + "type" + ':' + account.getAccountType().name() +
+            ',' + "currency" + ':' + account.getCommodity().getCurrencyCode() +
+            ',' + "commodity" + ':' + account.getCommodity().getUID() +
+            ',' + "color" + ':' + account.getColorHexString() +
+            ',' + "favorite" + ':' + account.isFavorite() +
+            ',' + "placeholder" + ':' + account.isPlaceholder() +
+            ',' + "hidden" + ':' + account.isHidden() +
+            ',' + "default_transfer_account" + ':' + account.getDefaultTransferAccountUID() +
+            ',' + "created" + ':' + account.getCreatedTimestamp()
+            + '}';
     }
 }
