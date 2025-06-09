@@ -151,9 +151,8 @@ public class PieChartFragment extends BaseReportFragment {
             Money balance = mAccountsDbAdapter.getAccountBalance(account, mReportPeriodStart, mReportPeriodEnd, false);
             if (balance.isAmountZero()) continue;
             Price price = pricesDbAdapter.getPrice(balance.getCommodity(), mCommodity);
-            if (price != null) {
-                balance = balance.times(price);
-            }
+            if (price == null) continue;
+            balance = balance.times(price);
             float value = balance.toFloat();
             if (value > 0f) {
                 int count = dataSet.getEntryCount();

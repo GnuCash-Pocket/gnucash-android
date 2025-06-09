@@ -938,16 +938,10 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
                 Account child = getSimpleRecord(childUID);
                 final Commodity childCurrency = child.getCommodity();
                 Money balanceChild = computeBalance(child, startTimestamp, endTimestamp, true);
-                if (!commodity.equals(childCurrency)) {
-                    // there is a second currency involved - get price, e.g. EUR -> ILS
-                    Price price = pricesDbAdapter.getPrice(childCurrency, commodity);
-                    if (isNullOrEmpty(price)) {
-                        // TODO Try with transaction currency, e.g. EUR -> ETB -> ILS
-                        // no price exists, just ignore it
-                        continue;
-                    }
-                    balanceChild = balanceChild.withCommodity(commodity).times(price.toBigDecimal());
-                }
+                if (balanceChild.isAmountZero()) continue;
+                Price price = pricesDbAdapter.getPrice(childCurrency, commodity);
+                if (price == null) continue;
+                balanceChild = balanceChild.times(price);
                 balance = balance.plus(balanceChild);
             }
         }
@@ -999,12 +993,12 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
         Commodity commodity = commoditiesDbAdapter.getCommodity(currencyCode);
         Money balance = Money.createZeroInstance(commodity);
-        if (accounts.isEmpty()) {
-            return balance;
-        }
         for (Account account : accounts) {
             Money accountBalance = getAccountBalance(account, startTimestamp, endTimestamp, false);
-            // FIXME beware of CurrencyMismatchException
+            if (accountBalance.isAmountZero()) continue;
+            Price price = pricesDbAdapter.getPrice(accountBalance.getCommodity(), commodity);
+            if (price == null) continue;
+            accountBalance = accountBalance.times(price);
             balance = balance.plus(accountBalance);
         }
         return balance;
