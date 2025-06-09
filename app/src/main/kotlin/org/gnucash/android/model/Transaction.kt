@@ -376,7 +376,7 @@ class Transaction : BaseModel {
             val accountUID = account.uid
             val accountType = account.accountType
             val accountCommodity = account.commodity
-            val isDebitAccount = accountType.hasDebitNormalBalance
+            val isDebitAccount = accountType.hasDebitDisplayBalance
             var balance = Money.createZeroInstance(accountCommodity)
             for (split in splits) {
                 if (split.accountUID != accountUID) continue
@@ -415,22 +415,6 @@ class Transaction : BaseModel {
                 if (shouldReduceBalance) TransactionType.DEBIT else TransactionType.CREDIT
             }
             return type
-        }
-
-        /**
-         * Returns true if the transaction type represents a decrease for the account balance for the `accountType`, false otherwise
-         *
-         * @return true if the amount represents a decrease in the account balance, false otherwise
-         * @see getTypeForBalance
-         */
-        @JvmStatic
-        fun shouldDecreaseBalance(
-            accountType: AccountType,
-            transactionType: TransactionType
-        ): Boolean {
-            return if (accountType.hasDebitNormalBalance) {
-                transactionType === TransactionType.CREDIT
-            } else transactionType === TransactionType.DEBIT
         }
 
         /**

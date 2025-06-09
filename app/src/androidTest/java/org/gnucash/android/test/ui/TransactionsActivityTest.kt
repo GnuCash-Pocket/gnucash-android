@@ -714,7 +714,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         ).isZero()
 
         assertThat(
-            accountsDbAdapter.getAccountBalance(account.uid)
+            accountsDbAdapter.getAccountBalance(account)
         )
             .isEqualTo(Money("1024", CURRENCY_CODE))
     }

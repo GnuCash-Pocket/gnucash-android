@@ -297,7 +297,7 @@ public class WidgetConfigurationActivity extends GnuCashActivity {
         if (hideAccountBalance) {
             views.setViewVisibility(R.id.transactions_summary, View.GONE);
         } else {
-            Money accountBalance = accountsDbAdapter.getCurrentAccountBalance(accountUID);
+            Money accountBalance = accountsDbAdapter.getCurrentAccountBalance(account);
             views.setTextViewText(R.id.transactions_summary,
                 accountBalance.formattedString());
             int color = accountBalance.isNegative() ? R.color.debit_red : R.color.credit_green;

@@ -29,10 +29,12 @@ import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
+import org.gnucash.android.model.Account;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
+import org.gnucash.android.model.TransactionType;
 import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
@@ -116,11 +118,11 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
         public SplitAmountViewHolder(ItemSplitAmountInfoBinding binding, Split split) {
             itemView = binding.getRoot();
 
-            binding.splitAccountName.setText(accountsDbAdapter.getAccountFullName(split.getAccountUID()));
-            Money quantity = split.getFormattedQuantity();
-            TextView balanceView = quantity.isNegative() ? binding.splitDebit : binding.splitCredit;
+            Account account = accountsDbAdapter.getSimpleRecord(split.getAccountUID());
+            binding.splitAccountName.setText(account.getFullName());
+            TextView balanceView = split.getType() == TransactionType.DEBIT ? binding.splitDebit : binding.splitCredit;
             colorBalanceZero = balanceView.getCurrentTextColor();
-            displayBalance(balanceView, quantity, colorBalanceZero);
+            displayBalance(balanceView, split.getFormattedQuantity(account), colorBalanceZero);
         }
     }
 
@@ -133,8 +135,9 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
         mBinding.trnDescription.setText(transaction.getDescription());
         mBinding.transactionAccount.setText(getString(R.string.label_inside_account_with_name, accountsDbAdapter.getAccountFullName(mAccountUID)));
 
+        Account account = accountsDbAdapter.getSimpleRecord(mAccountUID);
         Money accountBalance = accountsDbAdapter.getAccountBalance(mAccountUID, -1, transaction.getTimeMillis(), false);
-        TextView balanceTextView = accountBalance.isNegative() ? mBinding.balanceDebit : mBinding.balanceCredit;
+        TextView balanceTextView = account.getAccountType().hasDebitDisplayBalance ? mBinding.balanceDebit : mBinding.balanceCredit;
         displayBalance(balanceTextView, accountBalance, colorBalanceZero);
 
         mDetailTableRows = mBinding.fragmentTransactionDetails.getChildCount();

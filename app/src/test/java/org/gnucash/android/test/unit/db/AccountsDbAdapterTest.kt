@@ -353,7 +353,7 @@ class AccountsDbAdapterTest : GnuCashTest() {
         splitsDbAdapter.addRecord(split)
 
         //balance computation ignores the currency of the split
-        val balance = accountsDbAdapter.getAccountBalance(account.uid)
+        val balance = accountsDbAdapter.getAccountBalance(account)
         val expectedBalance = Money("17.29", "USD") //EUR splits should be ignored
 
         assertThat(balance).isEqualTo(expectedBalance)

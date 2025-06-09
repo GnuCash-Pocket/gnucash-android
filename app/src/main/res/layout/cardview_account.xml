@@ -31,7 +31,8 @@
         android:id="@+id/relativeLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="@dimen/card_min_height">
+        android:minHeight="@dimen/card_min_height"
+        android:padding="4dp">
 
         <View
             android:id="@+id/account_color_strip"

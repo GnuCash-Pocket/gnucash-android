@@ -168,7 +168,7 @@ public class BalanceSheetFragment extends BaseReportFragment {
         accountBalance.setTextSize(16);
         accountBalance.setTypeface(null, Typeface.BOLD);
         @ColorInt int colorBalanceZero = accountBalance.getCurrentTextColor();
-        displayBalance(accountBalance, mAccountsDbAdapter.getAccountBalance(accountTypes, -1, System.currentTimeMillis()), colorBalanceZero);
+        displayBalance(accountBalance, mAccountsDbAdapter.getBalancesByType(accountTypes, -1, System.currentTimeMillis()), colorBalanceZero);
 
         tableLayout.addView(totalView);
     }
