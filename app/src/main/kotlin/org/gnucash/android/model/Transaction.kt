@@ -442,16 +442,16 @@ class Transaction : BaseModel {
          */
         @JvmStatic
         fun createIntent(transaction: Transaction): Intent {
-            val intent = Intent(Intent.ACTION_INSERT)
-            intent.type = MIME_TYPE
-            intent.putExtra(Intent.EXTRA_TITLE, transaction.description)
-            intent.putExtra(Intent.EXTRA_TEXT, transaction.note)
-            intent.putExtra(Account.EXTRA_CURRENCY_CODE, transaction.currencyCode)
             val stringBuilder = StringBuilder()
             for (split in transaction.splits) {
                 stringBuilder.append(split.toCsv()).append("\n")
             }
-            intent.putExtra(EXTRA_SPLITS, stringBuilder.toString())
+            val intent = Intent(Intent.ACTION_INSERT)
+                .setType(MIME_TYPE)
+                .putExtra(Intent.EXTRA_TITLE, transaction.description)
+                .putExtra(Intent.EXTRA_TEXT, transaction.note)
+                .putExtra(Account.EXTRA_CURRENCY_CODE, transaction.currencyCode)
+                .putExtra(EXTRA_SPLITS, stringBuilder.toString())
             return intent
         }
     }

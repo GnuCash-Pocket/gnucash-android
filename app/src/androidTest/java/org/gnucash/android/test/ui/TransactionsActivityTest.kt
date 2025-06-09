@@ -71,10 +71,10 @@ import java.text.NumberFormat
 import java.util.Locale
 
 class TransactionsActivityTest : GnuAndroidTest() {
-    private lateinit var mTransaction: Transaction
-    private var mTransactionTimeMillis: Long = 0
+    private lateinit var transaction: Transaction
+    private var transactionTimeMillis: Long = 0
 
-    private lateinit var mTransactionsActivity: TransactionsActivity
+    private lateinit var transactionsActivity: TransactionsActivity
 
     @Rule
     @JvmField
@@ -106,23 +106,28 @@ class TransactionsActivityTest : GnuAndroidTest() {
         assertThat(accountsDbAdapter.recordsCount)
             .isEqualTo(3) //including ROOT account
 
-        mTransactionTimeMillis = System.currentTimeMillis()
-        mTransaction = Transaction(TRANSACTION_NAME)
-        mTransaction.commodity = COMMODITY
-        mTransaction.note = "What up?"
-        mTransaction.setTime(mTransactionTimeMillis)
+        transactionTimeMillis = System.currentTimeMillis()
+        transaction = Transaction(TRANSACTION_NAME)
+        transaction.commodity = COMMODITY
+        transaction.note = "What up?"
+        transaction.setTime(transactionTimeMillis)
         val split = Split(Money(TRANSACTION_AMOUNT, CURRENCY_CODE), TRANSACTIONS_ACCOUNT_UID)
         split.type = TransactionType.DEBIT
 
-        mTransaction.addSplit(split)
-        mTransaction.addSplit(split.createPair(TRANSFER_ACCOUNT_UID))
+        transaction.addSplit(split)
+        transaction.addSplit(split.createPair(TRANSFER_ACCOUNT_UID))
 
-        transactionsDbAdapter.addRecord(mTransaction, DatabaseAdapter.UpdateMethod.insert)
+        transactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.insert)
         assertThat(transactionsDbAdapter.recordsCount).isEqualTo(1)
 
         val intent = Intent(Intent.ACTION_VIEW)
-        intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, TRANSACTIONS_ACCOUNT_UID)
-        mTransactionsActivity = activityRule.launchActivity(intent)
+            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, TRANSACTIONS_ACCOUNT_UID)
+        transactionsActivity = activityRule.launchActivity(intent)
+    }
+
+    @After
+    fun tearDown() {
+        transactionsActivity.finish()
     }
 
     private fun validateTransactionListDisplayed() {
@@ -181,7 +186,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
     private fun assertToastDisplayed(toastString: Int) {
         UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).waitForIdle()
         onView(withText(toastString))
-            .inRoot(withDecorView(not(mTransactionsActivity.window.decorView)))
+            .inRoot(withDecorView(not(transactionsActivity.window.decorView)))
             .check(matches(isDisplayed()))
     }
 
@@ -322,7 +327,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         onView(withId(R.id.edit_transaction))
             .perform(ViewActions.click())
 
-        validateEditTransactionFields(mTransaction)
+        validateEditTransactionFields(transaction)
 
         val trnName = "Pasta"
         onView(withId(R.id.input_transaction_name))
@@ -330,15 +335,15 @@ class TransactionsActivityTest : GnuAndroidTest() {
         onView(withId(R.id.menu_save))
             .perform(ViewActions.click())
 
-        val editedTransaction = transactionsDbAdapter.getRecord(mTransaction.uid)
+        val editedTransaction = transactionsDbAdapter.getRecord(transaction.uid)
         assertThat(editedTransaction.description).isEqualTo(trnName)
         assertThat(editedTransaction.splits).hasSize(2)
 
-        var split = mTransaction.getSplits(TRANSACTIONS_ACCOUNT_UID)[0]
+        var split = transaction.getSplits(TRANSACTIONS_ACCOUNT_UID)[0]
         var editedSplit = editedTransaction.getSplits(TRANSACTIONS_ACCOUNT_UID)[0]
         assertThat(split.isEquivalentTo(editedSplit)).isTrue()
 
-        split = mTransaction.getSplits(TRANSFER_ACCOUNT_UID)[0]
+        split = transaction.getSplits(TRANSFER_ACCOUNT_UID)[0]
         editedSplit = editedTransaction.getSplits(TRANSFER_ACCOUNT_UID)[0]
         assertThat(split.isEquivalentTo(editedSplit)).isTrue()
     }
@@ -527,15 +532,11 @@ class TransactionsActivityTest : GnuAndroidTest() {
         )
         accountsDbAdapter.updateRecord(TRANSACTIONS_ACCOUNT_UID, contentValues)
 
-        val intent = Intent(
-            mTransactionsActivity,
-            TransactionsActivity::class.java
-        )
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        intent.setAction(Intent.ACTION_INSERT_OR_EDIT)
-        intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, childAccount.uid)
-
-        mTransactionsActivity.startActivity(intent)
+        val intent = Intent(transactionsActivity, TransactionsActivity::class.java)
+            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            .setAction(Intent.ACTION_INSERT_OR_EDIT)
+            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, childAccount.uid)
+        transactionsActivity.startActivity(intent)
 
         onView(withId(R.id.input_transaction_amount))
             .perform(ViewActions.typeText("1299"))
@@ -553,7 +554,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         onView(withId(R.id.edit_transaction))
             .perform(ViewActions.click())
 
-        validateEditTransactionFields(mTransaction)
+        validateEditTransactionFields(transaction)
 
         onView(withId(R.id.input_transaction_type)).check(
             matches(
@@ -586,7 +587,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
 
         onView(withId(R.id.edit_transaction))
             .perform(ViewActions.click())
-        validateTimeInput(mTransactionTimeMillis)
+        validateTimeInput(transactionTimeMillis)
 
         clickOnView(R.id.menu_save)
 
@@ -597,7 +598,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         assertThat(transactions).hasSize(1)
         val transaction = transactions[0]
         assertThat(TRANSACTION_NAME).isEqualTo(transaction.description)
-        val expectedDate = mTransactionTimeMillis
+        val expectedDate = transactionTimeMillis
         val trxDate = transaction.timeMillis
         assertThat(DATE_FORMATTER.print(expectedDate))
             .isEqualTo(DATE_FORMATTER.print(trxDate))
@@ -755,7 +756,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
             .putExtra(Transaction.EXTRA_TRANSACTION_TYPE, TransactionType.DEBIT.name)
             .putExtra(Account.EXTRA_CURRENCY_CODE, "USD")
 
-        TransactionRecorder().onReceive(mTransactionsActivity, transactionIntent)
+        TransactionRecorder().onReceive(transactionsActivity, transactionIntent)
 
         val afterCount = transactionsDbAdapter.getTransactionsCount(TRANSACTIONS_ACCOUNT_UID)
 
@@ -1046,17 +1047,11 @@ class TransactionsActivityTest : GnuAndroidTest() {
      */
     private fun refreshTransactionsList() {
         try {
-            activityRule.runOnUiThread { mTransactionsActivity.refresh() }
+            activityRule.runOnUiThread { transactionsActivity.refresh() }
             sleep(1000)
         } catch (throwable: Throwable) {
             System.err.println("Failed to refresh transactions")
         }
-    }
-
-    @After
-    @Throws(Exception::class)
-    fun tearDown() {
-        mTransactionsActivity.finish()
     }
 
     companion object {

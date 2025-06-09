@@ -78,7 +78,7 @@ class CalculatorEditTextTest : GnuAndroidTest() {
         accountsDbAdapter.addRecord(account2)
 
         val intent = Intent(Intent.ACTION_VIEW)
-        intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, DUMMY_ACCOUNT_UID)
+            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, DUMMY_ACCOUNT_UID)
         activityRule.launchActivity(intent)
         transactionsActivity = activityRule.activity
     }
