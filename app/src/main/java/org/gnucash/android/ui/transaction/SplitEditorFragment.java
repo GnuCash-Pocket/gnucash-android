@@ -320,7 +320,7 @@ public class SplitEditorFragment extends MenuFragment {
             return (amount != null) ? amount : BigDecimal.ZERO;
         }
 
-        public void bind(final Split split) {
+        public void bind(@Nullable final Split split) {
             if (split != null && !split.getQuantity().equals(split.getValue())) {
                 this.quantity = split.getQuantity();
             }
@@ -332,6 +332,11 @@ public class SplitEditorFragment extends MenuFragment {
                 splitAmountEditText.setCommodity(valueCommodity);
                 String splitAccountUID = split.getAccountUID();
                 Account account = accountNameAdapter.getAccount(splitAccountUID);
+                if (account == null) {
+                    Timber.e("Account for split not found");
+                    bind(null);
+                    return;
+                }
                 splitAmountEditText.setValue(split.getFormattedValue(account).asBigDecimal(), true /* isOriginal */);
                 splitCurrencyTextView.setText(valueCommodity.getSymbol());
                 splitMemoEditText.setText(split.getMemo());
