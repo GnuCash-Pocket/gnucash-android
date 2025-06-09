@@ -711,6 +711,9 @@ public class TransactionFormFragment extends MenuFragment implements
         Money quantity = new Money(value);
 
         final Account transferAccount = getTransferAccount(binding);
+        if (transferAccount == null) {
+            return mSplitsList;
+        }
         final String transferAccountUID = transferAccount.getUID();
 
         if (isMultiCurrencyTransaction(binding)) { //if multi-currency transaction
@@ -759,7 +762,7 @@ public class TransactionFormFragment extends MenuFragment implements
      *
      * @return GUID of transfer account
      */
-    @NonNull
+    @Nullable
     private Account getTransferAccount(FragmentTransactionFormBinding binding) {
         if (mUseDoubleEntry) {
             int position = binding.inputTransferAccountSpinner.getSelectedItemPosition();
