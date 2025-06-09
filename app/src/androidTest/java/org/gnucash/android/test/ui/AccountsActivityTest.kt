@@ -94,9 +94,8 @@ class AccountsActivityTest : GnuAndroidTest() {
 
         accountsDbAdapter.deleteAllRecords() //clear the data
 
-        val simpleAccount = Account(SIMPLE_ACCOUNT_NAME)
+        val simpleAccount = Account(SIMPLE_ACCOUNT_NAME, getInstance(ACCOUNTS_CURRENCY_CODE))
         simpleAccount.setUID(SIMPLE_ACCOUNT_UID)
-        simpleAccount.commodity = getInstance(ACCOUNTS_CURRENCY_CODE)
         accountsDbAdapter.addRecord(simpleAccount, DatabaseAdapter.UpdateMethod.insert)
 
         refreshAccountsList()
@@ -500,11 +499,42 @@ class AccountsActivityTest : GnuAndroidTest() {
         }
     }
 
+    @Test
+    fun showHiddenAccounts() {
+        // Root + SIMPLE_ACCOUNT_NAME
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(2)
+
+        val hiddenAccount = Account(PARENT_ACCOUNT_NAME)
+        hiddenAccount.setUID(PARENT_ACCOUNT_UID)
+        hiddenAccount.isHidden = true
+        accountsDbAdapter.addRecord(
+            hiddenAccount,
+            DatabaseAdapter.UpdateMethod.insert
+        )
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(3)
+
+        refreshAccountsList()
+        onView(allOf<View>(withText(PARENT_ACCOUNT_NAME)))
+            .check(doesNotExist())
+
+        // Show hidden accounts.
+        onView(withId(R.id.menu_hidden)).perform(click())
+        onView(allOf<View>(withText(AccountsActivityTest.PARENT_ACCOUNT_NAME)))
+            .check(matches(isDisplayed()))
+
+        // Hide hidden accounts.
+        onView(withId(R.id.menu_hidden)).perform(click())
+        onView(allOf<View>(withText(AccountsActivityTest.PARENT_ACCOUNT_NAME)))
+            .check(doesNotExist())
+    }
+
     companion object {
         private const val ACCOUNTS_CURRENCY_CODE = "USD"
         private const val SIMPLE_ACCOUNT_NAME = "Simple account"
         private const val SIMPLE_ACCOUNT_UID = "simple-account"
         private const val CHILD_ACCOUNT_UID = "child-account"
+        private const val PARENT_ACCOUNT_NAME = "Parent account"
+        private const val PARENT_ACCOUNT_UID = "parent-account"
 
         private lateinit var accountsDbAdapter: AccountsDbAdapter
         private lateinit var transactionsDbAdapter: TransactionsDbAdapter
@@ -531,7 +561,7 @@ class AccountsActivityTest : GnuAndroidTest() {
          * @param expected Matcher which fits multiple views
          * @return Single match
          */
-        fun first(expected: Matcher<View?>): Matcher<View> {
+        fun first(expected: Matcher<View>): Matcher<View> {
             return object : TypeSafeMatcher<View>() {
                 private var first = false
 

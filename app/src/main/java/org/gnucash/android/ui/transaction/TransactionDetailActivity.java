@@ -138,7 +138,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
         displayBalance(balanceTextView, accountBalance, colorBalanceZero);
 
         mDetailTableRows = mBinding.fragmentTransactionDetails.getChildCount();
-        boolean useDoubleEntry = GnuCashApplication.isDoubleEntryEnabled();
+        boolean useDoubleEntry = GnuCashApplication.isDoubleEntryEnabled(this);
         Context context = this;
         LayoutInflater inflater = LayoutInflater.from(context);
         int index = 0;

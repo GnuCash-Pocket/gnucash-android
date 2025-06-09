@@ -278,7 +278,7 @@ public class TransactionFormFragment extends MenuFragment implements
         Bundle args = getArguments();
         final Context context = requireContext();
 
-        mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled();
+        mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled(context);
 
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
         pricesDbAdapter = PricesDbAdapter.getInstance();

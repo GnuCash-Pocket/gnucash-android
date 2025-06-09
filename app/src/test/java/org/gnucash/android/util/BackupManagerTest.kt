@@ -17,7 +17,7 @@ class BackupManagerTest : GnuCashTest() {
     fun setUp() {
         booksDbAdapter = BooksDbAdapter.getInstance()
         booksDbAdapter.deleteAllRecords()
-        assertThat(booksDbAdapter.getRecordsCount()).isZero()
+        assertThat(booksDbAdapter.recordsCount).isZero()
     }
 
     @Test

@@ -49,7 +49,7 @@ import javax.xml.transform.stream.StreamResult
  * @author Ngewi Fet <ngewi.fet@gmail.com>
  * @author Yongxin Wang <fefe.wyx@gmail.com>
  */
-class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
+class OfxExporter(private val context: Context, params: ExportParams, bookUID: String) :
     Exporter(context, params, bookUID) {
     /**
      * Converts all expenses into OFX XML format and adds them to the XML document.
@@ -68,7 +68,7 @@ class OfxExporter(context: Context, params: ExportParams, bookUID: String) :
         val bankmsgs = doc.createElement(OfxHelper.TAG_BANK_MESSAGES_V1)
         bankmsgs.appendChild(statementTransactionResponse)
         parent.appendChild(bankmsgs)
-        val isDoubleEntryEnabled = GnuCashApplication.isDoubleEntryEnabled()
+        val isDoubleEntryEnabled = GnuCashApplication.isDoubleEntryEnabled(context)
         val nameImbalance = mContext.getString(R.string.imbalance_account_name)
         accounts
             .filter { it.transactionCount > 0 }

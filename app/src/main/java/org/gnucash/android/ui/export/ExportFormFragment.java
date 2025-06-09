@@ -183,12 +183,15 @@ public class ExportFormFragment extends MenuFragment implements
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        isDoubleEntry = GnuCashApplication.isDoubleEntryEnabled();
+        isDoubleEntry = GnuCashApplication.isDoubleEntryEnabled(requireContext());
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(
+        @NonNull LayoutInflater inflater,
+        @NonNull ViewGroup container,
+        @Nullable Bundle savedInstanceState
+    ) {
         mBinding = FragmentExportFormBinding.inflate(inflater, container, false);
         return mBinding.getRoot();
     }
