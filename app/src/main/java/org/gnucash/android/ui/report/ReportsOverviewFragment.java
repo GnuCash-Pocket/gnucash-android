@@ -129,7 +129,7 @@ public class ReportsOverviewFragment extends BaseReportFragment {
     @Override
     protected void generateReport(@NonNull Context context) {
         PieData pieData = PieChartFragment.groupSmallerSlices(context, getData());
-        if (pieData.getDataSetCount() != 0) {
+        if (pieData.getDataSetCount() > 0 && pieData.getDataSet().getEntryCount() > 0) {
             mBinding.pieChart.setData(pieData);
             float sum = mBinding.pieChart.getData().getYValueSum();
             String total = context.getString(R.string.label_chart_total);
