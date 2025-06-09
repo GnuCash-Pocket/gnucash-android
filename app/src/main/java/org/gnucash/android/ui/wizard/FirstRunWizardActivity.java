@@ -173,7 +173,7 @@ public class FirstRunWizardActivity extends GnuCashActivity implements
      * Create accounts depending on the user preference (import or default set) and finish this activity
      * <p>This method also removes the first run flag from the application</p>
      */
-    private void createAccountsAndFinish(@NonNull String accountOption, String currencyCode) {
+    private void createAccountsAndFinish(@NonNull String accountOption, @Nullable String currencyCode) {
         if (accountOption.equals(mWizardModel.optionAccountImport)) {
             startXmlFileChooser(this);
         } else if (accountOption.equals(mWizardModel.optionAccountUser)) {

@@ -422,8 +422,8 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         transaction.setNote(c.getString(c.getColumnIndexOrThrow(TransactionEntry.COLUMN_NOTES)));
         transaction.setExported(c.getInt(c.getColumnIndexOrThrow(TransactionEntry.COLUMN_EXPORTED)) != 0);
         transaction.setTemplate(c.getInt(c.getColumnIndexOrThrow(TransactionEntry.COLUMN_TEMPLATE)) != 0);
-        String currencyCode = c.getString(c.getColumnIndexOrThrow(TransactionEntry.COLUMN_CURRENCY));
-        transaction.setCommodity(commoditiesDbAdapter.getCommodity(currencyCode));
+        String commodityUID = c.getString(c.getColumnIndexOrThrow(TransactionEntry.COLUMN_COMMODITY_UID));
+        transaction.setCommodity(commoditiesDbAdapter.getRecord(commodityUID));
         transaction.setScheduledActionUID(c.getString(c.getColumnIndexOrThrow(TransactionEntry.COLUMN_SCHEDX_ACTION_UID)));
         transaction.setSplits(splitsDbAdapter.getSplitsForTransaction(transaction.getUID()));
 
@@ -578,22 +578,22 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      * Returns a timestamp of the earliest transaction for a specified account type and currency
      *
      * @param type         the account type
-     * @param currencyCode the currency code
+     * @param commodityUID the currency UID
      * @return the earliest transaction's timestamp. Returns 1970-01-01 00:00:00.000 if no transaction found
      */
-    public long getTimestampOfEarliestTransaction(AccountType type, String currencyCode) {
-        return getTimestamp("MIN", type, currencyCode);
+    public long getTimestampOfEarliestTransaction(AccountType type, String commodityUID) {
+        return getTimestamp("MIN", type, commodityUID);
     }
 
     /**
      * Returns a timestamp of the latest transaction for a specified account type and currency
      *
      * @param type         the account type
-     * @param currencyCode the currency code
+     * @param commodityUID the currency UID
      * @return the latest transaction's timestamp. Returns 1970-01-01 00:00:00.000 if no transaction found
      */
-    public long getTimestampOfLatestTransaction(AccountType type, String currencyCode) {
-        return getTimestamp("MAX", type, currencyCode);
+    public long getTimestampOfLatestTransaction(AccountType type, String commodityUID) {
+        return getTimestamp("MAX", type, commodityUID);
     }
 
     /**
@@ -622,12 +622,12 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      *
      * @param mod          Mode (either MAX or MIN)
      * @param type         AccountType
-     * @param currencyCode the currency code
+     * @param commodityUID the currency UID
      * @return earliest or latest timestamp of transactions
      * @see #getTimestampOfLatestTransaction(AccountType, String)
      * @see #getTimestampOfEarliestTransaction(AccountType, String)
      */
-    private long getTimestamp(String mod, AccountType type, String currencyCode) {
+    private long getTimestamp(String mod, AccountType type, String commodityUID) {
         String sql = "SELECT " + mod + "(" + TransactionEntry.COLUMN_TIMESTAMP + ")"
             + " FROM " + TransactionEntry.TABLE_NAME
             + " INNER JOIN " + SplitEntry.TABLE_NAME + " ON "
@@ -637,9 +637,9 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
             + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_UID + " = "
             + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID
             + " WHERE " + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_TYPE + " = ? AND "
-            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_CURRENCY + " = ? AND "
+            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_COMMODITY_UID + " = ? AND "
             + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + " = 0";
-        Cursor cursor = mDb.rawQuery(sql, new String[]{type.name(), currencyCode});
+        Cursor cursor = mDb.rawQuery(sql, new String[]{type.name(), commodityUID});
         long timestamp = 0;
         if (cursor != null) {
             if (cursor.moveToFirst()) {

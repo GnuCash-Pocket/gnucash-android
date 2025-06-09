@@ -860,14 +860,14 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * Compute the account balance for all accounts with the specified type within a specific duration
      *
      * @param accountType    Account Type for which to compute balance
+     * @param currency       the currency
      * @param startTimestamp Begin time for the duration in milliseconds
      * @param endTimestamp   End time for duration in milliseconds
      * @return Account balance
      */
-    public Money getAccountsBalance(AccountType accountType, String currencyCode, long startTimestamp, long endTimestamp) {
-        String where = AccountEntry.COLUMN_TYPE + "=?"
-            + " AND " + AccountEntry.COLUMN_CURRENCY + "=?";
-        String[] whereArgs = new String[]{accountType.name(), currencyCode};
+    public Money getAccountsBalance(AccountType accountType, Commodity currency, long startTimestamp, long endTimestamp) {
+        String where = AccountEntry.COLUMN_TYPE + "= ?";
+        String[] whereArgs = new String[]{accountType.name()};
         List<Account> accounts = getSimpleAccountList(where, whereArgs, null);
         return getAccountsBalance(accounts, startTimestamp, endTimestamp);
     }
@@ -876,15 +876,15 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * Returns the account balance for all accounts types specified
      *
      * @param accountTypes List of account types
+     * @param currency     The currency
      * @param start        Begin timestamp for transactions
      * @param end          End timestamp of transactions
      * @return Money balance of the account types
      */
-    public Money getBalancesByType(List<AccountType> accountTypes, long start, long end) {
-        String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
-        Money balance = Money.createZeroInstance(currencyCode);
+    public Money getBalancesByType(List<AccountType> accountTypes, Commodity currency, long start, long end) {
+        Money balance = Money.createZeroInstance(currency);
         for (AccountType accountType : accountTypes) {
-            Money accountsBalance = getAccountsBalance(accountType, currencyCode, start, end);
+            Money accountsBalance = getAccountsBalance(accountType, currency, start, end);
             balance = balance.plus(accountsBalance);
         }
         return balance;
@@ -894,10 +894,11 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * Returns the current account balance for the accounts type.
      *
      * @param accountTypes The account type
+     * @param currency     The currency.
      * @return Money balance of the account type
      */
-    public Money getCurrentAccountsBalance(List<AccountType> accountTypes) {
-        return getBalancesByType(accountTypes, -1, System.currentTimeMillis());
+    public Money getCurrentAccountsBalance(List<AccountType> accountTypes, Commodity currency) {
+        return getBalancesByType(accountTypes, currency, -1, System.currentTimeMillis());
     }
 
     private Money computeBalance(@NonNull String accountUID, long startTimestamp, long endTimestamp, boolean includeSubAccounts) {
@@ -1178,9 +1179,8 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         if (rootUID != null) {
             return rootUID;
         }
-        String where = AccountEntry.COLUMN_TYPE + "=?"
-            + " AND " + AccountEntry.COLUMN_CURRENCY + "!=?";
-        String[] whereArgs = new String[]{AccountType.ROOT.name(), Commodity.TEMPLATE};
+        String where = AccountEntry.COLUMN_TYPE + "=?";
+        String[] whereArgs = new String[]{AccountType.ROOT.name()};
         Cursor cursor = fetchAccounts(where, whereArgs, null);
         try {
             if (cursor.moveToFirst()) {
@@ -1276,7 +1276,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             AccountEntry._ID + " = " + accountID,
             null, null, null, null);
         try {
-            if (cursor.moveToNext()) {
+            if (cursor.moveToFirst()) {
                 String uid = cursor.getString(
                     cursor.getColumnIndexOrThrow(AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID));
                 return TextUtils.isEmpty(uid) ? 0 : getID(uid);

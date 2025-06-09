@@ -209,8 +209,8 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
         if (commodity != null) {
             return commodity;
         }
-        String commodityCode = GnuCashApplication.getDefaultCurrencyCode();
-        defaultCommodity = commodity = getCommodity(commodityCode);
+        String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
+        defaultCommodity = commodity = getCommodity(currencyCode);
         return (commodity != null) ? commodity : Commodity.DEFAULT_COMMODITY;
     }
 }

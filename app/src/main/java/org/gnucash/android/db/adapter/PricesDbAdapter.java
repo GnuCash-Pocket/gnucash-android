@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public class PricesDbAdapter extends DatabaseAdapter<Price> {
     @NonNull
-    final CommoditiesDbAdapter commoditiesDbAdapter;
+    public final CommoditiesDbAdapter commoditiesDbAdapter;
     private final Map<String, Price> cachePair = new HashMap<>();
 
     /**

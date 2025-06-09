@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
+import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.Commodity;
@@ -38,7 +39,7 @@ import timber.log.Timber;
  * in order to be able to use Intents to create accounts. So remember to declare it in your manifest
  *
  * @author Ngewi Fet <ngewif@gmail.com>
- * @see {@link Account#EXTRA_CURRENCY_CODE}, {@link Account#MIME_TYPE} {@link Intent#EXTRA_TITLE}, {@link Intent#EXTRA_UID}
+ * @see {@link Account#EXTRA_CURRENCY_UID}, {@link Account#MIME_TYPE} {@link Intent#EXTRA_TITLE}, {@link Intent#EXTRA_UID}
  */
 public class AccountCreator extends BroadcastReceiver {
 
@@ -59,13 +60,24 @@ public class AccountCreator extends BroadcastReceiver {
         Account account = new Account(name);
         account.setParentUID(args.getString(Account.EXTRA_PARENT_UID));
 
-        String currencyCode = args.getString(Account.EXTRA_CURRENCY_CODE);
-        Commodity commodity = Commodity.getInstance(currencyCode);
+        String currencyUID = args.getString(Account.EXTRA_CURRENCY_UID);
+        final Commodity commodity;
+        if (TextUtils.isEmpty(currencyUID)) {
+            String currencyCode = args.getString(Account.EXTRA_CURRENCY_CODE);
+            commodity = CommoditiesDbAdapter.getInstance().getCommodity(currencyCode);
+        } else {
+            commodity = CommoditiesDbAdapter.getInstance().getRecord(currencyUID);
+        }
+        if (commodity == null) {
+            Timber.w("Commodity required");
+            return;
+        }
         account.setCommodity(commodity);
 
         String uid = args.getString(Intent.EXTRA_UID);
-        if (uid != null)
+        if (uid != null) {
             account.setUID(uid);
+        }
 
         AccountsDbAdapter.getInstance().addRecord(account, DatabaseAdapter.UpdateMethod.insert);
     }

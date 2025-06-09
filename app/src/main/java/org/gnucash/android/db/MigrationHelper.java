@@ -16,16 +16,23 @@
 
 package org.gnucash.android.db;
 
+import static android.database.DatabaseUtils.sqlEscapeString;
 import static org.gnucash.android.db.DatabaseHelper.createResetBalancesTriggers;
 import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import static org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry;
 import static org.gnucash.android.db.DatabaseSchema.CommodityEntry;
+import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 
+import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+
+import androidx.annotation.NonNull;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.importer.CommoditiesXmlHandler;
+import org.gnucash.android.model.Commodity;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -33,6 +40,8 @@ import org.xml.sax.XMLReader;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -77,6 +86,12 @@ public class MigrationHelper {
         if (oldVersion < 18) {
             migrateTo18(db);
         }
+        if (oldVersion < 19) {
+            migrateTo19(db);
+        }
+        if ((oldVersion >= 19) && (oldVersion < 21)) {
+            migrateTo21(db);
+        }
     }
 
     /**
@@ -118,7 +133,6 @@ public class MigrationHelper {
     private static void migrateTo18(SQLiteDatabase db) {
         Timber.i("Upgrading database to version 18");
 
-
         String sqlAddNotes = "ALTER TABLE " + AccountEntry.TABLE_NAME
             + " ADD COLUMN " + AccountEntry.COLUMN_NOTES + " text";
         String sqlAddBalance = "ALTER TABLE " + AccountEntry.TABLE_NAME
@@ -136,5 +150,102 @@ public class MigrationHelper {
         db.execSQL(sqlAddNoClosingBalance);
         db.execSQL(sqlAddReconciledBalance);
         createResetBalancesTriggers(db);
+    }
+
+    /**
+     * Upgrade the database to version 19.
+     *
+     * @param db the database.
+     */
+    private static void migrateTo19(SQLiteDatabase db) {
+        Timber.i("Upgrading database to version 19");
+
+        // Fetch list of accounts with mismatched currencies.
+        String sqlAccountCurrencyWrong = "SELECT DISTINCT a." + AccountEntry.COLUMN_CURRENCY + ", a." + AccountEntry.COLUMN_COMMODITY_UID + ", c." + CommodityEntry.COLUMN_UID
+            + " FROM " + AccountEntry.TABLE_NAME + " a, " + CommodityEntry.TABLE_NAME + " c"
+            + " WHERE a." + AccountEntry.COLUMN_CURRENCY + " = c." + CommodityEntry.COLUMN_MNEMONIC
+            + " AND (c." + CommodityEntry.COLUMN_NAMESPACE + " = " + sqlEscapeString(Commodity.COMMODITY_CURRENCY)
+            + " OR c." + CommodityEntry.COLUMN_NAMESPACE + " = " + sqlEscapeString(Commodity.COMMODITY_ISO4217) + ")"
+            + " AND a." + AccountEntry.COLUMN_COMMODITY_UID + " != c." + CommodityEntry.COLUMN_UID;
+        Cursor cursor = db.rawQuery(sqlAccountCurrencyWrong, null);
+        List<AccountCurrency> accountsWrong = new ArrayList<>();
+        if (cursor.moveToFirst()) {
+            do {
+                String currencyCode = cursor.getString(0);
+                String commodityUIDOld = cursor.getString(1);
+                String commodityUIDNew = cursor.getString(2);
+                accountsWrong.add(new AccountCurrency(currencyCode, commodityUIDOld, commodityUIDNew));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        // Update with correct commodities.
+        for (AccountCurrency accountWrong : accountsWrong) {
+            String sql = "UPDATE " + AccountEntry.TABLE_NAME
+                + " SET " + AccountEntry.COLUMN_COMMODITY_UID + " = " + sqlEscapeString(accountWrong.commodityUIDNew)
+                + " WHERE " + AccountEntry.COLUMN_CURRENCY + " = " + sqlEscapeString(accountWrong.currencyCode)
+                + " AND " + AccountEntry.COLUMN_COMMODITY_UID + " = " + sqlEscapeString(accountWrong.commodityUIDOld);
+            db.execSQL(sql);
+        }
+    }
+
+    private static class AccountCurrency {
+        @NonNull
+        public final String currencyCode;
+        @NonNull
+        public final String commodityUIDOld;
+        @NonNull
+        public final String commodityUIDNew;
+
+        private AccountCurrency(
+            @NonNull String currencyCode,
+            @NonNull String commodityUIDOld,
+            @NonNull String commodityUIDNew) {
+            this.currencyCode = currencyCode;
+            this.commodityUIDOld = commodityUIDOld;
+            this.commodityUIDNew = commodityUIDNew;
+        }
+    }
+
+    /**
+     * Upgrade the database to version 21.
+     *
+     * @param db the database.
+     */
+    private static void migrateTo21(SQLiteDatabase db) {
+        Timber.i("Upgrading database to version 21");
+
+        Cursor cursor = db.rawQuery("PRAGMA table_info(" + AccountEntry.TABLE_NAME + ")", null);
+        try {
+            if (cursor.moveToFirst()) {
+                final int indexName = cursor.getColumnIndex("name");
+                do {
+                    String name = cursor.getString(indexName);
+                    if (AccountEntry.COLUMN_CURRENCY.equals(name)) {
+                        return;
+                    }
+                } while (cursor.moveToNext());
+            }
+        } finally {
+            cursor.close();
+        }
+
+        // Restore the currency code column that was deleted in v19.
+        String sqlAccountCurrency = "ALTER TABLE " + AccountEntry.TABLE_NAME
+            + " ADD COLUMN " + AccountEntry.COLUMN_CURRENCY + " varchar(255)";
+        try {
+            db.execSQL(sqlAccountCurrency);
+        } catch (SQLException e) {
+            Timber.e(e);
+        }
+
+        // Restore the currency code column.
+        String sqlTransactionCurrency = "ALTER TABLE " + TransactionEntry.TABLE_NAME
+            + " ADD COLUMN " + TransactionEntry.COLUMN_CURRENCY + " varchar(255)";
+        try {
+            db.execSQL(sqlTransactionCurrency);
+        } catch (SQLException e) {
+            Timber.e(e);
+        }
     }
 }

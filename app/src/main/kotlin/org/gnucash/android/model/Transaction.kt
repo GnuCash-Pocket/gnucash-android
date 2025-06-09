@@ -259,6 +259,7 @@ class Transaction : BaseModel {
      *
      * @return ISO 4217 currency code string
      */
+    @Deprecated("use commodity")
     val currencyCode: String
         get() = commodity.currencyCode
 
