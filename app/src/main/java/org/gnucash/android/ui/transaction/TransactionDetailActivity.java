@@ -25,6 +25,7 @@ import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.databinding.ActivityTransactionDetailBinding;
 import org.gnucash.android.databinding.ItemSplitAmountInfoBinding;
+import org.gnucash.android.databinding.RowBalanceBinding;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
@@ -56,13 +57,10 @@ import timber.log.Timber;
 public class TransactionDetailActivity extends PasscodeLockActivity implements FragmentResultListener, Refreshable {
     private String mTransactionUID;
     private String mAccountUID;
-    private int mDetailTableRows;
 
     public static final int REQUEST_EDIT_TRANSACTION = 0x10;
 
     private ActivityTransactionDetailBinding mBinding;
-    @ColorInt
-    private int colorBalanceZero;
     private final TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
 
     private final AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
@@ -72,7 +70,6 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
         super.onCreate(savedInstanceState);
 
         mBinding = ActivityTransactionDetailBinding.inflate(getLayoutInflater());
-        colorBalanceZero = mBinding.balanceCredit.getCurrentTextColor();
         setContentView(mBinding.getRoot());
 
         mTransactionUID = getIntent().getStringExtra(UxArgument.SELECTED_TRANSACTION_UID);
@@ -110,74 +107,72 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
         }
     }
 
-    class SplitAmountViewHolder {
-        private final View itemView;
-        @ColorInt
-        private final int colorBalanceZero;
+    private void bind(ItemSplitAmountInfoBinding binding, Split split) {
+        Account account = accountsDbAdapter.getSimpleRecord(split.getAccountUID());
+        binding.splitAccountName.setText(account.getFullName());
+        TextView balanceView = split.getType() == TransactionType.DEBIT ? binding.splitDebit : binding.splitCredit;
+        @ColorInt int colorBalanceZero = balanceView.getCurrentTextColor();
+        displayBalance(balanceView, split.getFormattedQuantity(account), colorBalanceZero);
+    }
 
-        public SplitAmountViewHolder(ItemSplitAmountInfoBinding binding, Split split) {
-            itemView = binding.getRoot();
-
-            Account account = accountsDbAdapter.getSimpleRecord(split.getAccountUID());
-            binding.splitAccountName.setText(account.getFullName());
-            TextView balanceView = split.getType() == TransactionType.DEBIT ? binding.splitDebit : binding.splitCredit;
-            colorBalanceZero = balanceView.getCurrentTextColor();
-            displayBalance(balanceView, split.getFormattedQuantity(account), colorBalanceZero);
-        }
+    private void bind(RowBalanceBinding binding, String accountUID, long timeMillis) {
+        Account account = accountsDbAdapter.getSimpleRecord(accountUID);
+        Money accountBalance = accountsDbAdapter.getAccountBalance(accountUID, -1, timeMillis, true);
+        TextView balanceTextView = account.getAccountType().hasDebitDisplayBalance ? binding.balanceDebit : binding.balanceCredit;
+        displayBalance(balanceTextView, accountBalance, balanceTextView.getCurrentTextColor());
     }
 
     /**
      * Reads the transaction information from the database and binds it to the views
      */
     private void bindViews() {
+        ActivityTransactionDetailBinding binding = mBinding;
+        if (binding == null) return;
+        // Remove all rows that are not special.
+        binding.transactionItems.removeAllViews();
+
         Transaction transaction = transactionsDbAdapter.getRecord(mTransactionUID);
 
-        mBinding.trnDescription.setText(transaction.getDescription());
-        mBinding.transactionAccount.setText(getString(R.string.label_inside_account_with_name, accountsDbAdapter.getAccountFullName(mAccountUID)));
+        binding.trnDescription.setText(transaction.getDescription());
+        binding.transactionAccount.setText(getString(R.string.label_inside_account_with_name, accountsDbAdapter.getAccountFullName(mAccountUID)));
 
-        Account account = accountsDbAdapter.getSimpleRecord(mAccountUID);
-        Money accountBalance = accountsDbAdapter.getAccountBalance(mAccountUID, -1, transaction.getTimeMillis(), false);
-        TextView balanceTextView = account.getAccountType().hasDebitDisplayBalance ? mBinding.balanceDebit : mBinding.balanceCredit;
-        displayBalance(balanceTextView, accountBalance, colorBalanceZero);
-
-        mDetailTableRows = mBinding.fragmentTransactionDetails.getChildCount();
         boolean useDoubleEntry = GnuCashApplication.isDoubleEntryEnabled(this);
         Context context = this;
         LayoutInflater inflater = LayoutInflater.from(context);
-        int index = 0;
         for (Split split : transaction.getSplits()) {
             if (!useDoubleEntry && split.getAccountUID().equals(
                 accountsDbAdapter.getImbalanceAccountUID(context, split.getValue().getCommodity()))) {
                 //do now show imbalance accounts for single entry use case
                 continue;
             }
-            ItemSplitAmountInfoBinding binding = ItemSplitAmountInfoBinding.inflate(inflater, mBinding.fragmentTransactionDetails, false);
-            SplitAmountViewHolder viewHolder = new SplitAmountViewHolder(binding, split);
-            mBinding.fragmentTransactionDetails.addView(viewHolder.itemView, index++);
+            ItemSplitAmountInfoBinding splitBinding = ItemSplitAmountInfoBinding.inflate(inflater, binding.transactionItems, true);
+            bind(splitBinding, split);
         }
 
+        RowBalanceBinding balanceBinding = RowBalanceBinding.inflate(inflater, binding.transactionItems, true);
+        bind(balanceBinding, mAccountUID, transaction.getTimeMillis());
+
         String timeAndDate = DateExtKt.formatFullDate(transaction.getTimeMillis());
-        mBinding.trnTimeAndDate.setText(timeAndDate);
+        binding.trnTimeAndDate.setText(timeAndDate);
+
+        if (!TextUtils.isEmpty(transaction.getNote())) {
+            binding.notes.setText(transaction.getNote());
+            binding.rowTrnNotes.setVisibility(View.VISIBLE);
+        } else {
+            binding.rowTrnNotes.setVisibility(View.GONE);
+        }
 
         if (transaction.getScheduledActionUID() != null) {
             ScheduledAction scheduledAction = ScheduledActionDbAdapter.getInstance().getRecord(transaction.getScheduledActionUID());
-            mBinding.trnRecurrence.setText(scheduledAction.getRepeatString(context));
-            mBinding.rowTrnRecurrence.setVisibility(View.VISIBLE);
+            binding.trnRecurrence.setText(scheduledAction.getRepeatString(context));
+            binding.rowTrnRecurrence.setVisibility(View.VISIBLE);
         } else {
-            mBinding.rowTrnRecurrence.setVisibility(View.GONE);
-        }
-
-        if (transaction.getNote() != null && !transaction.getNote().isEmpty()) {
-            mBinding.notes.setText(transaction.getNote());
-            mBinding.rowTrnNotes.setVisibility(View.VISIBLE);
-        } else {
-            mBinding.rowTrnNotes.setVisibility(View.GONE);
+            binding.rowTrnRecurrence.setVisibility(View.GONE);
         }
     }
 
     @Override
     public void refresh() {
-        removeSplitItemViews();
         bindViews();
     }
 
@@ -185,16 +180,6 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
     public void refresh(String uid) {
         mTransactionUID = uid;
         refresh();
-    }
-
-    /**
-     * Remove the split item views from the transaction detail prior to refreshing them
-     */
-    private void removeSplitItemViews() {
-        // Remove all rows that are not special.
-        mBinding.fragmentTransactionDetails.removeViews(0, mBinding.fragmentTransactionDetails.getChildCount() - mDetailTableRows);
-        mBinding.balanceDebit.setText("");
-        mBinding.balanceCredit.setText("");
     }
 
     private void editTransaction() {
