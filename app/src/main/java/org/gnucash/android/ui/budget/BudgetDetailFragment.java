@@ -229,9 +229,11 @@ public class BudgetDetailFragment extends MenuFragment implements Refreshable {
             int periods = mBudget.getRecurrence().getNumberOfPeriods(budgetPeriods); //// FIXME: 15.08.2016 why do we need number of periods
 
             for (int periodNum = 1; periodNum <= periods; periodNum++) {
-                BigDecimal amount = accountsDbAdapter.getAccountBalance(budgetAmount.getAccountUID(),
-                        mBudget.getStartOfPeriod(periodNum), mBudget.getEndOfPeriod(periodNum))
-                    .asBigDecimal();
+                BigDecimal amount = accountsDbAdapter.getAccountBalance(
+                        budgetAmount.getAccountUID(),
+                        mBudget.getStartOfPeriod(periodNum),
+                        mBudget.getEndOfPeriod(periodNum)
+                    ).toBigDecimal();
 
                 if (amount.equals(BigDecimal.ZERO))
                     continue;
@@ -243,10 +245,9 @@ public class BudgetDetailFragment extends MenuFragment implements Refreshable {
             BarDataSet barDataSet = new BarDataSet(barEntries, label);
 
             BarData barData = new BarData(barDataSet);
-            LimitLine limitLine = new LimitLine(budgetAmount.getAmount().asBigDecimal().floatValue());
+            LimitLine limitLine = new LimitLine(budgetAmount.getAmount().toFloat());
             limitLine.setLineWidth(2f);
             limitLine.setLineColor(Color.RED);
-
 
             barChart.setData(barData);
             barChart.getAxisLeft().addLimitLine(limitLine);
@@ -296,7 +297,7 @@ public class BudgetDetailFragment extends MenuFragment implements Refreshable {
 
                 double budgetProgress = 0;
                 if (!projectedAmount.isAmountZero()) {
-                    budgetProgress = spentAmount.asBigDecimal().divide(projectedAmount.asBigDecimal(),
+                    budgetProgress = spentAmount.toBigDecimal().divide(projectedAmount.toBigDecimal(),
                         spentAmount.getCommodity().getSmallestFractionDigits(),
                         RoundingMode.HALF_EVEN).doubleValue();
                 }

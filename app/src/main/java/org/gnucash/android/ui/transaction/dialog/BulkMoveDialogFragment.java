@@ -82,10 +82,11 @@ public class BulkMoveDialogFragment extends DialogFragment {
         final String originAccountUID = args.getString(UxArgument.ORIGIN_ACCOUNT_UID);
         final Commodity originCommodity = accountsDbAdapter.getCommodity(originAccountUID);
 
-        String where = DatabaseSchema.AccountEntry.COLUMN_UID + " != ? AND "
-            + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + " = ? AND "
-            + DatabaseSchema.AccountEntry.COLUMN_TYPE + " != " + sqlEscapeString(AccountType.ROOT.name()) + " AND "
-            + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0";
+        String where = DatabaseSchema.AccountEntry.COLUMN_UID + " != ?"
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + " = ?"
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + " != " + sqlEscapeString(AccountType.ROOT.name())
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_TEMPLATE + " = 0"
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0";
         String[] whereArgs = new String[]{originAccountUID, originCommodity.getUID()};
 
         final QualifiedAccountNameAdapter accountNameAdapter = new QualifiedAccountNameAdapter(context, where, whereArgs, accountsDbAdapter);

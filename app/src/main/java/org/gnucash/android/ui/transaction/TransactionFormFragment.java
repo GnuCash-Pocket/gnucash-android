@@ -58,7 +58,8 @@ import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.databinding.FragmentTransactionFormBinding;
-import org.gnucash.android.db.DatabaseSchema;
+import org.gnucash.android.db.DatabaseSchema.AccountEntry;
+import org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.db.adapter.PricesDbAdapter;
@@ -91,7 +92,6 @@ import org.joda.time.format.DateTimeFormatter;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import timber.log.Timber;
@@ -152,11 +152,6 @@ public class TransactionFormFragment extends MenuFragment implements
     private Calendar mDate = Calendar.getInstance();
 
     /**
-     * {@link Calendar} object holding the set time
-     */
-    private Calendar mTime;
-
-    /**
      * The Account of the account to which this transaction belongs.
      * Used for determining the accounting rules for credits and debits
      */
@@ -168,7 +163,7 @@ public class TransactionFormFragment extends MenuFragment implements
 
     private String rootAccountUID;
 
-    private List<Split> mSplitsList = new ArrayList<>();
+    private final List<Split> mSplitsList = new ArrayList<>();
 
     private boolean mEditMode = false;
 
@@ -286,7 +281,7 @@ public class TransactionFormFragment extends MenuFragment implements
         scheduledActionDbAdapter = ScheduledActionDbAdapter.getInstance();
         accountNameAdapter = new QualifiedAccountNameAdapter(context, mAccountsDbAdapter);
 
-        rootAccountUID = mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID();
+        rootAccountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
         String accountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID, rootAccountUID);
         assert !TextUtils.isEmpty(accountUID);
         try {
@@ -309,13 +304,13 @@ public class TransactionFormFragment extends MenuFragment implements
         if (!TextUtils.isEmpty(transactionUID)) {
             transaction = mTransactionsDbAdapter.getRecord(transactionUID);
             if (transaction != null) {
-                mEditMode = true;
                 String scheduledActionUID = args.getString(UxArgument.SCHEDULED_ACTION_UID);
                 if (!TextUtils.isEmpty(scheduledActionUID)) {
                     transaction.setScheduledActionUID(scheduledActionUID);
                 }
             }
         }
+        mEditMode = transaction != null;
         mTransaction = transaction;
     }
 
@@ -340,10 +335,10 @@ public class TransactionFormFragment extends MenuFragment implements
         public void bindView(View view, Context context, Cursor cursor) {
             super.bindView(view, context, cursor);
             String accountUID = account.getUID();
-            String transactionUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_UID));
+            String transactionUID = cursor.getString(cursor.getColumnIndexOrThrow(TransactionEntry.COLUMN_UID));
             Money balance = mTransactionsDbAdapter.getBalance(transactionUID, accountUID);
 
-            long timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_TIMESTAMP));
+            long timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(TransactionEntry.COLUMN_TIMESTAMP));
             String dateString = DateUtils.formatDateTime(view.getContext(), timestamp,
                 DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_YEAR);
 
@@ -356,8 +351,8 @@ public class TransactionFormFragment extends MenuFragment implements
      * Initializes the transaction name field for autocompletion with existing transaction names in the database
      */
     private void initTransactionNameAutocomplete(final FragmentTransactionFormBinding binding) {
+        final String[] from = new String[]{TransactionEntry.COLUMN_DESCRIPTION};
         final int[] to = new int[]{R.id.primary_text};
-        final String[] from = new String[]{DatabaseSchema.TransactionEntry.COLUMN_DESCRIPTION};
 
         Context context = binding.inputTransactionName.getContext();
         SimpleCursorAdapter adapter = new DropDownCursorAdapter(
@@ -366,7 +361,7 @@ public class TransactionFormFragment extends MenuFragment implements
         adapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter() {
             @Override
             public CharSequence convertToString(Cursor cursor) {
-                final int colIndex = cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_DESCRIPTION);
+                final int colIndex = cursor.getColumnIndexOrThrow(TransactionEntry.COLUMN_DESCRIPTION);
                 return cursor.getString(colIndex);
             }
         });
@@ -392,7 +387,7 @@ public class TransactionFormFragment extends MenuFragment implements
                 if (isSplitPair) {
                     mSplitsList.clear();
                     if (!amountEntered) //if user already entered an amount
-                        binding.inputTransactionAmount.setValue(splitList.get(0).getValue().asBigDecimal());
+                        binding.inputTransactionAmount.setValue(splitList.get(0).getValue().toBigDecimal());
                 } else {
                     if (amountEntered) { //if user entered own amount, clear loaded splits and use the user value
                         mSplitsList.clear();
@@ -408,6 +403,7 @@ public class TransactionFormFragment extends MenuFragment implements
         });
 
         binding.inputTransactionName.setAdapter(adapter);
+        mRecurrenceRule = null;
     }
 
     /**
@@ -425,17 +421,18 @@ public class TransactionFormFragment extends MenuFragment implements
         binding.inputTransactionType.setChecked(transactionType);
 
         //when autocompleting, only change the amount if the user has not manually changed it already
-        binding.inputTransactionAmount.setValue(transaction.getBalance(account).asBigDecimal(), !binding.inputTransactionAmount.isInputModified());
+        binding.inputTransactionAmount.setValue(transaction.getBalance(account).toBigDecimal(), !binding.inputTransactionAmount.isInputModified());
         binding.currencySymbol.setText(transaction.getCommodity().getSymbol());
         binding.notes.setText(transaction.getNote());
         binding.inputDate.setText(DATE_FORMATTER.print(transaction.getTimeMillis()));
         binding.inputTime.setText(TIME_FORMATTER.print(transaction.getTimeMillis()));
-        Calendar cal = GregorianCalendar.getInstance();
+        Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(transaction.getTimeMillis());
-        mDate = mTime = cal;
+        mDate = cal;
 
         //TODO: deep copy the split list. We need a copy so we can modify with impunity
-        mSplitsList = new ArrayList<>(transaction.getSplits());
+        mSplitsList.clear();
+        mSplitsList.addAll(transaction.getSplits());
         toggleAmountInputEntryMode(binding, mSplitsList.size() <= 2);
 
         mSplitValue = null;
@@ -482,6 +479,7 @@ public class TransactionFormFragment extends MenuFragment implements
     private void setDoubleEntryViewsVisibility(FragmentTransactionFormBinding binding, int visibility) {
         binding.layoutDoubleEntry.setVisibility(visibility);
         binding.inputTransactionType.setVisibility(visibility);
+        binding.btnSplitEditor.setVisibility(visibility);
     }
 
     private void toggleAmountInputEntryMode(FragmentTransactionFormBinding binding, boolean enabled) {
@@ -508,7 +506,7 @@ public class TransactionFormFragment extends MenuFragment implements
         long now = System.currentTimeMillis();
         binding.inputDate.setText(DATE_FORMATTER.print(now));
         binding.inputTime.setText(TIME_FORMATTER.print(now));
-        mTime = mDate = Calendar.getInstance();
+        mDate = Calendar.getInstance();
 
         TransactionType transactionType = GnuCashApplication.getDefaultTransactionType(context);
         binding.inputTransactionType.setAccountType(account.getAccountType());
@@ -540,9 +538,10 @@ public class TransactionFormFragment extends MenuFragment implements
      */
     private void updateTransferAccountsList(FragmentTransactionFormBinding binding) {
         final String accountUID = account.getUID();
-        String conditions = DatabaseSchema.AccountEntry.COLUMN_UID + " != ?"
-            + " AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + " != ?"
-            + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0";
+        String conditions = AccountEntry.COLUMN_UID + " != ?"
+            + " AND " + AccountEntry.COLUMN_TYPE + " != ?"
+            + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0"
+            + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0";
 
         accountTransferNameAdapter = new QualifiedAccountNameAdapter(
             binding.getRoot().getContext(),
@@ -574,7 +573,7 @@ public class TransactionFormFragment extends MenuFragment implements
         } else {
             Money biggestAmount = Money.createZeroInstance(mTransaction.getCurrencyCode());
             for (Split split : mTransaction.getSplits()) {
-                if (split.getValue().asBigDecimal().compareTo(biggestAmount.asBigDecimal()) > 0)
+                if (split.getValue().toBigDecimal().compareTo(biggestAmount.toBigDecimal()) > 0)
                     biggestAmount = split.getValue();
             }
             baseAmountString = biggestAmount.toPlainString();
@@ -769,13 +768,6 @@ public class TransactionFormFragment extends MenuFragment implements
      */
     @NonNull
     private Transaction extractTransactionFromView(FragmentTransactionFormBinding binding) {
-        Calendar cal = new GregorianCalendar(
-            mDate.get(Calendar.YEAR),
-            mDate.get(Calendar.MONTH),
-            mDate.get(Calendar.DAY_OF_MONTH),
-            mTime.get(Calendar.HOUR_OF_DAY),
-            mTime.get(Calendar.MINUTE),
-            mTime.get(Calendar.SECOND));
         String description = binding.inputTransactionName.getText().toString();
         String notes = binding.notes.getText().toString();
         final Commodity accountCommodity = account.getCommodity();
@@ -783,11 +775,12 @@ public class TransactionFormFragment extends MenuFragment implements
         List<Split> splits = extractSplitsFromView(binding);
 
         Transaction transaction = new Transaction(description);
-        transaction.setTime(cal.getTimeInMillis());
+        transaction.setTime(mDate.getTimeInMillis());
         transaction.setCommodity(accountCommodity);
         transaction.setNote(notes);
         transaction.setSplits(splits);
         transaction.setExported(false); //not necessary as exports use timestamps now. Because, legacy
+        transaction.setTemplate(account.isTemplate() || !TextUtils.isEmpty(mRecurrenceRule));
 
         return transaction;
     }
@@ -860,14 +853,14 @@ public class TransactionFormFragment extends MenuFragment implements
         mTransaction = transaction;
 
         try {
-            mAccountsDbAdapter.beginTransaction();
+            mTransactionsDbAdapter.beginTransaction();
 
             if (isTemplate) { //template is automatically checked when a transaction is scheduled
                 if (mEditMode && wasScheduled) {
                     transaction.setScheduledActionUID(scheduledActionUID);
                     scheduleRecurringTransaction(transaction);
                 } else { //means it was new transaction, so a new template
-                    Transaction templateTransaction = new Transaction(transaction, true);
+                    Transaction templateTransaction = new Transaction(transaction);
                     templateTransaction.setTemplate(true);
                     mTransactionsDbAdapter.addRecord(templateTransaction, DatabaseAdapter.UpdateMethod.insert);
                     scheduleRecurringTransaction(templateTransaction);
@@ -883,7 +876,7 @@ public class TransactionFormFragment extends MenuFragment implements
                 scheduledActionDbAdapter.deleteRecord(scheduledActionUID);
             }
 
-            mAccountsDbAdapter.setTransactionSuccessful();
+            mTransactionsDbAdapter.setTransactionSuccessful();
 
             finish(Activity.RESULT_OK);
         } catch (ArithmeticException ae) {
@@ -892,7 +885,7 @@ public class TransactionFormFragment extends MenuFragment implements
         } catch (Throwable e) {
             Timber.e(e);
         } finally {
-            mAccountsDbAdapter.endTransaction();
+            mTransactionsDbAdapter.endTransaction();
         }
     }
 
@@ -996,13 +989,13 @@ public class TransactionFormFragment extends MenuFragment implements
     /**
      * Called by the split editor fragment to notify of finished editing
      *
-     * @param splitList List of splits produced in the fragment
+     * @param splits List of splits produced in the fragment
      */
-    private void setSplits(FragmentTransactionFormBinding binding, List<Split> splitList) {
-        mSplitsList = splitList;
-        Money balance = Transaction.computeBalance(account, splitList);
-
-        binding.inputTransactionAmount.setValue(balance.asBigDecimal());
+    private void setSplits(FragmentTransactionFormBinding binding, List<Split> splits) {
+        mSplitsList.clear();
+        mSplitsList.addAll(splits);
+        Money balance = Transaction.computeBalance(account, splits);
+        binding.inputTransactionAmount.setValue(balance.toBigDecimal());
         binding.inputTransactionType.setChecked(balance.isNegative());
     }
 
@@ -1040,11 +1033,11 @@ public class TransactionFormFragment extends MenuFragment implements
 
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        mTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
-        mTime.set(Calendar.MINUTE, minute);
+        mDate.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        mDate.set(Calendar.MINUTE, minute);
         final FragmentTransactionFormBinding binding = mBinding;
         if (binding == null) return;
-        binding.inputTime.setText(TIME_FORMATTER.print(mTime.getTimeInMillis()));
+        binding.inputTime.setText(TIME_FORMATTER.print(mDate.getTimeInMillis()));
     }
 
     /**

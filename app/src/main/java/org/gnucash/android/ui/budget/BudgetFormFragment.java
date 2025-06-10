@@ -337,7 +337,7 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
             mBinding.budgetAmountLayout.getRoot().setVisibility(View.VISIBLE);
             if (!mBudgetAmounts.isEmpty()) {
                 BudgetAmount budgetAmount = mBudgetAmounts.get(0);
-                mBinding.budgetAmountLayout.inputBudgetAmount.setValue(budgetAmount.getAmount().asBigDecimal());
+                mBinding.budgetAmountLayout.inputBudgetAmount.setValue(budgetAmount.getAmount().toBigDecimal());
                 mBinding.budgetAmountLayout.inputBudgetAccountSpinner.setSelection(accountNameAdapter.getPosition(budgetAmount.getAccountUID()));
             }
         }

@@ -8,6 +8,7 @@ import android.util.TypedValue
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
+import org.gnucash.android.model.Account
 import kotlin.math.max
 import kotlin.math.min
 
@@ -266,6 +267,16 @@ fun Color.formatHexRGB(): String = String.format(
     (green() * 255.0f + 0.5f).toInt(),
     (blue() * 255.0f + 0.5f).toInt()
 )
+
+fun formatRGB(@ColorInt color: Int): String {
+    if (color != Account.DEFAULT_COLOR) {
+        val r = Color.red(color)
+        val g = Color.green(color)
+        val b = Color.blue(color)
+        return "rgb($r,$g,$b)"
+    }
+    return ""
+}
 
 @get:ColorInt
 val Context.textColorPrimary: Int

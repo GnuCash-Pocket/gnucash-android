@@ -27,15 +27,16 @@ import java.util.TimeZone
  * Commodities are the currencies used in the application.
  * At the moment only ISO4217 currencies are supported
  */
-class Commodity(
+class Commodity @JvmOverloads constructor(
     /**
      * Official full name of the currency
      */
-    var fullname: String?,
+    var fullname: String? = null,
     /**
      * This is the currency code for ISO4217 currencies
      */
     var mnemonic: String,
+    namespace: String = COMMODITY_CURRENCY,
     /**
      * The smallest fraction supported by the commodity as a power of 10.
      *
@@ -106,14 +107,18 @@ class Commodity(
     val smallestFractionDigits: Int
         get() = smallestFraction.numberOfTrailingZeros
 
+    init {
+        this.namespace = namespace
+    }
+
     constructor(parcel: Parcel) : this(
         parcel.readString(),
+        parcel.readString()!!,
         parcel.readString()!!,
         parcel.readInt()
     ) {
         id = parcel.readLong()
         setUID(parcel.readString())
-        namespace = parcel.readString()!!
         localSymbol = parcel.readString()
     }
 
@@ -122,10 +127,10 @@ class Commodity(
     override fun writeToParcel(dest: Parcel, flags: Int) {
         dest.writeString(fullname)
         dest.writeString(mnemonic)
+        dest.writeString(namespace)
         dest.writeInt(smallestFraction)
         dest.writeLong(id)
         dest.writeString(uid)
-        dest.writeString(namespace)
         dest.writeString(localSymbol)
     }
 
@@ -178,25 +183,25 @@ class Commodity(
         const val NO_CURRENCY_CODE = "XXX"
 
         @JvmField
-        var USD = Commodity("US Dollar", "USD", DEFAULT_SMALLEST_FRACTION)
+        var USD = Commodity("US Dollar", "USD")
 
         @JvmField
-        var EUR = Commodity("Euro", "EUR", DEFAULT_SMALLEST_FRACTION)
+        var EUR = Commodity("Euro", "EUR")
 
         @JvmField
-        var GBP = Commodity("Pound Sterling", "GBP", DEFAULT_SMALLEST_FRACTION)
+        var GBP = Commodity("Pound Sterling", "GBP")
 
         @JvmField
-        var CHF = Commodity("Swiss Franc", "CHF", DEFAULT_SMALLEST_FRACTION)
+        var CHF = Commodity("Swiss Franc", "CHF")
 
         @JvmField
-        var CAD = Commodity("Canadian Dollar", "CAD", DEFAULT_SMALLEST_FRACTION)
+        var CAD = Commodity("Canadian Dollar", "CAD")
 
         @JvmField
-        var JPY = Commodity("Yen", "JPY", 1)
+        var JPY = Commodity("Yen", "JPY", smallestFraction = 1)
 
         @JvmField
-        var AUD = Commodity("Australian Dollar", "AUD", DEFAULT_SMALLEST_FRACTION)
+        var AUD = Commodity("Australian Dollar", "AUD")
 
         /**
          * Default commodity for device locale
@@ -208,12 +213,12 @@ class Commodity(
         var DEFAULT_COMMODITY = Commodity(
             USD.fullname,
             USD.mnemonic,
+            USD.namespace,
             USD.smallestFraction
         ) //this value is a stub. Will be overwritten when the app is launched
 
         @JvmField
-        val template = Commodity(TEMPLATE, TEMPLATE, 1).apply {
-            namespace = TEMPLATE
+        val template = Commodity(TEMPLATE, TEMPLATE, TEMPLATE, 1).apply {
             cusip = TEMPLATE
             localSymbol = TEMPLATE
         }

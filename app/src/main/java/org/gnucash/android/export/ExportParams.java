@@ -40,21 +40,11 @@ public class ExportParams {
      * It could be stored on the {@link #SD_CARD} or exported through another program via {@link #SHARING}
      */
     public enum ExportTarget {
-        SD_CARD("SD Card"),
-        SHARING("External Service"),
-        DROPBOX("Dropbox"),
-        OWNCLOUD("ownCloud"),
-        URI("Sync Service");
-
-        private final String mDescription;
-
-        ExportTarget(String description) {
-            mDescription = description;
-        }
-
-        public String getDescription() {
-            return mDescription;
-        }
+        URI,
+        DROPBOX,
+        OWNCLOUD,
+        SHARING,
+        SD_CARD;
     }
 
     private static final String TAG_SEPARATOR = ";";
@@ -244,12 +234,12 @@ public class ExportParams {
      * @return String containing CSV format of ExportParams
      */
     public String toTag() {
-        return mExportFormat.name() +
-            TAG_SEPARATOR + mExportTarget.name() +
-            TAG_SEPARATOR + TimestampHelper.getUtcStringFromTimestamp(mExportStartTime) +
-            TAG_SEPARATOR + mDeleteTransactionsAfterExport +
-            TAG_SEPARATOR + (mExportLocation != null ? mExportLocation : "") +
-            TAG_SEPARATOR + isCompressed;
+        return mExportFormat.name()
+            + TAG_SEPARATOR + mExportTarget.name()
+            + TAG_SEPARATOR + TimestampHelper.getUtcStringFromTimestamp(mExportStartTime)
+            + TAG_SEPARATOR + mDeleteTransactionsAfterExport
+            + TAG_SEPARATOR + (mExportLocation != null ? mExportLocation : "")
+            + TAG_SEPARATOR + isCompressed;
     }
 
     /**

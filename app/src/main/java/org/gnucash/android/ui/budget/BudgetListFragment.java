@@ -282,9 +282,12 @@ public class BudgetListFragment extends Fragment implements Refreshable,
 
                 BigDecimal spentAmountValue = BigDecimal.ZERO;
                 for (BudgetAmount budgetAmount : budget.getCompactedBudgetAmounts()) {
-                    Money balance = accountsDbAdapter.getAccountBalance(budgetAmount.getAccountUID(),
-                        budget.getStartOfCurrentPeriod(), budget.getEndOfCurrentPeriod());
-                    spentAmountValue = spentAmountValue.add(balance.asBigDecimal());
+                    Money balance = accountsDbAdapter.getAccountBalance(
+                        budgetAmount.getAccountUID(),
+                        budget.getStartOfCurrentPeriod(),
+                        budget.getEndOfCurrentPeriod()
+                    );
+                    spentAmountValue = spentAmountValue.add(balance.toBigDecimal());
                 }
 
                 Money budgetTotal = budget.getAmountSum();
@@ -293,8 +296,8 @@ public class BudgetListFragment extends Fragment implements Refreshable,
                     + budgetTotal.formattedString();
                 budgetAmount.setText(usedAmount);
 
-                double budgetProgress = budgetTotal.isAmountZero() ? 0.0 : spentAmountValue.divide(budgetTotal.asBigDecimal(),
-                        commodity.getSmallestFractionDigits(), RoundingMode.HALF_EVEN)
+                double budgetProgress = budgetTotal.isAmountZero() ? 0.0 : spentAmountValue.divide(budgetTotal.toBigDecimal(),
+                        commodity.getSmallestFractionDigits(), RoundingMode.HALF_UP)
                     .doubleValue();
                 budgetIndicator.setProgress((int) (budgetProgress * 100));
 

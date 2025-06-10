@@ -23,20 +23,18 @@ internal class ScheduledExportViewHolder(
         val context = itemView.context
 
         val params = ExportParams.parseTag(scheduledAction.tag)
-        var exportDestination = params.exportTarget.description
-        if (params.exportTarget == ExportParams.ExportTarget.URI) {
-            exportDestination =
-                exportDestination + " (" + params.exportLocation.getDocumentName(context) + ")"
+        var exportDestination = params.exportLocation.getDocumentName(context)
+        if (exportDestination.isEmpty()) {
+            exportDestination = params.exportLocation.toString()
         }
         val description = context.getString(
             R.string.schedule_export_description,
-            params.exportFormat.name,
             context.getString(scheduledAction.actionType.labelId),
             exportDestination
         )
-        primaryTextView.text = description
+        primaryTextView.text = description.trim()
         descriptionTextView.text = formatSchedule(scheduledAction)
-        amountTextView.visibility = View.GONE
+        amountTextView.text = params.exportFormat.name
 
         itemView.setOnClickListener { editExport(scheduledAction) }
     }

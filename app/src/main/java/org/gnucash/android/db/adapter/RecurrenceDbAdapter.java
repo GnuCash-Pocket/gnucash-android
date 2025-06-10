@@ -67,7 +67,7 @@ public class RecurrenceDbAdapter extends DatabaseAdapter<Recurrence> {
         String periodEnd = cursor.getString(cursor.getColumnIndexOrThrow(RecurrenceEntry.COLUMN_PERIOD_END));
         String byDays = cursor.getString(cursor.getColumnIndexOrThrow(RecurrenceEntry.COLUMN_BYDAY));
 
-        PeriodType periodType = PeriodType.of(type);
+        PeriodType periodType = PeriodType.valueOf(type);
         Recurrence recurrence = new Recurrence(periodType);
         populateBaseModelAttributes(cursor, recurrence);
         recurrence.setMultiplier(multiplier);

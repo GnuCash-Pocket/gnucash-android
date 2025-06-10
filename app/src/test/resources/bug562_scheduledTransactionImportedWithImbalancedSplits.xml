@@ -247,8 +247,7 @@
                                 <slot:value type="frame">
                                     <slot>
                                         <slot:key>account</slot:key>
-                                        <slot:value type="guid">6a7cf8267314992bdddcee56d71a3908
-                                        </slot:value>
+                                        <slot:value type="guid">6a7cf8267314992bdddcee56d71a3908</slot:value>
                                     </slot>
                                     <slot>
                                         <slot:key>credit-formula</slot:key>
@@ -282,8 +281,7 @@
                                 <slot:value type="frame">
                                     <slot>
                                         <slot:key>account</slot:key>
-                                        <slot:value type="guid">dae686a1636addc0dae1ae670701aa4a
-                                        </slot:value>
+                                        <slot:value type="guid">dae686a1636addc0dae1ae670701aa4a</slot:value>
                                     </slot>
                                     <slot>
                                         <slot:key>credit-formula</slot:key>

@@ -258,7 +258,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
         if (TextUtils.isEmpty(transactionUID)) return;
 
         Transaction transaction = transactionsDbAdapter.getRecord(transactionUID);
-        Transaction duplicate = new Transaction(transaction, true);
+        Transaction duplicate = new Transaction(transaction);
         duplicate.setTime(System.currentTimeMillis());
         try {
             transactionsDbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.insert);
