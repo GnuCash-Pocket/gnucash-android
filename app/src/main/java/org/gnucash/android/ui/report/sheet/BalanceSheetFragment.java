@@ -140,7 +140,7 @@ public class BalanceSheetFragment extends BaseReportFragment {
             + " IN ('" + TextUtils.join("','", accountTypes) + "') AND "
             + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0";
         String orderBy = DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC";
-        List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(where, null, orderBy);
+        List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, null, orderBy);
         Money total = Money.createZeroInstance(Commodity.DEFAULT_COMMODITY);
         boolean isRowEven = true;
 

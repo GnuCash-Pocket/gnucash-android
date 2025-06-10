@@ -30,7 +30,7 @@ import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.ui.settings.dialog.DeleteAllTransactionsConfirmationDialog;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * Fragment for displaying transaction preferences
@@ -90,7 +90,7 @@ public class TransactionsPreferenceFragment extends GnuPreferenceFragment {
     private void setImbalanceAccountsHidden(@NonNull Context context, boolean useDoubleEntry) {
         String isHidden = useDoubleEntry ? "0" : "1";
         AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
-        Collection<Commodity> commodities = accountsDbAdapter.getCommoditiesInUse();
+        List<Commodity> commodities = accountsDbAdapter.getCommoditiesInUse();
         for (Commodity commodity : commodities) {
             String uid = accountsDbAdapter.getImbalanceAccountUID(context, commodity);
             if (uid != null) {

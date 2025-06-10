@@ -418,7 +418,7 @@ public class TransactionsListFragment extends MenuFragment implements
     private void duplicateTransaction(String transactionUID) {
         try {
             Transaction transaction = mTransactionsDbAdapter.getRecord(transactionUID);
-            Transaction duplicate = new Transaction(transaction, true);
+            Transaction duplicate = new Transaction(transaction);
             duplicate.setTime(System.currentTimeMillis());
             mTransactionsDbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.insert);
             refresh();

@@ -118,7 +118,7 @@ class FirstRunWizardActivityTest : GnuAndroidTest() {
 
     @Test
     fun shouldDisplayFullCurrencyList() {
-        assertThat(accountsDbAdapter.recordsCount).isEqualTo(0)
+        assertThat(accountsDbAdapter.recordsCount).isZero()
 
         onView(withId(R.id.btn_save)).perform(click())
 

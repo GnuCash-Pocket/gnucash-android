@@ -105,7 +105,7 @@ public class BookDbHelper extends SQLiteOpenHelper {
         Commodity.DEFAULT_COMMODITY = commoditiesDbAdapter.getDefaultCommodity();
 
         AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(dbHolder);
-        String rootAccountUID = accountsDbAdapter.getOrCreateGnuCashRootAccountUID();
+        String rootAccountUID = accountsDbAdapter.getOrCreateRootAccountUID();
         try {
             dbHelper.close();
         } catch (Exception ignore) {

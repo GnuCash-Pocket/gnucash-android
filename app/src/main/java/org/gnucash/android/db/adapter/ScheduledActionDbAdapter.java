@@ -21,6 +21,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteStatement;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
@@ -140,7 +141,7 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
     protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final ScheduledAction schedxAction) {
         bindBaseModel(stmt, schedxAction);
         stmt.bindString(1, schedxAction.getActionUID());
-        stmt.bindString(2, schedxAction.getActionType().name());
+        stmt.bindString(2, schedxAction.getActionType().value);
         stmt.bindLong(3, schedxAction.getStartTime());
         stmt.bindLong(4, schedxAction.getEndTime());
         stmt.bindLong(5, schedxAction.getLastRunTime());
@@ -170,7 +171,7 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
      */
     @Override
     public ScheduledAction buildModelInstance(@NonNull final Cursor cursor) {
-        String actionUid = cursor.getString(cursor.getColumnIndexOrThrow(ScheduledActionEntry.COLUMN_ACTION_UID));
+        String actionUID = cursor.getString(cursor.getColumnIndexOrThrow(ScheduledActionEntry.COLUMN_ACTION_UID));
         long startTime = cursor.getLong(cursor.getColumnIndexOrThrow(ScheduledActionEntry.COLUMN_START_TIME));
         long endTime = cursor.getLong(cursor.getColumnIndexOrThrow(ScheduledActionEntry.COLUMN_END_TIME));
         long lastRun = cursor.getLong(cursor.getColumnIndexOrThrow(ScheduledActionEntry.COLUMN_LAST_RUN));
@@ -184,13 +185,14 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
         int advanceCreate = cursor.getInt(cursor.getColumnIndexOrThrow(ScheduledActionEntry.COLUMN_ADVANCE_CREATION));
         int advanceNotify = cursor.getInt(cursor.getColumnIndexOrThrow(ScheduledActionEntry.COLUMN_ADVANCE_NOTIFY));
         String recurrenceUID = cursor.getString(cursor.getColumnIndexOrThrow(ScheduledActionEntry.COLUMN_RECURRENCE_UID));
-        String templateActUID = cursor.getString(cursor.getColumnIndexOrThrow(ScheduledActionEntry.COLUMN_TEMPLATE_ACCT_UID));
+        String templateAccountUID = cursor.getString(cursor.getColumnIndexOrThrow(ScheduledActionEntry.COLUMN_TEMPLATE_ACCT_UID));
 
-        ScheduledAction event = new ScheduledAction(ScheduledAction.ActionType.valueOf(typeString));
+        ScheduledAction.ActionType actionType = ScheduledAction.ActionType.of(typeString);
+        ScheduledAction event = new ScheduledAction(actionType);
         populateBaseModelAttributes(cursor, event);
         event.setStartTime(startTime);
         event.setEndTime(endTime);
-        event.setActionUID(actionUid);
+        event.setActionUID(actionUID);
         event.setLastRunTime(lastRun);
         event.setTag(tag);
         event.setEnabled(enabled);
@@ -202,7 +204,7 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
         event.setAdvanceNotifyDays(advanceNotify);
         //TODO: optimize by doing overriding fetchRecord(String) and join the two tables
         event.setRecurrence(recurrenceDbAdapter.getRecord(recurrenceUID));
-        event.setTemplateAccountUID(templateActUID);
+        event.setTemplateAccountUID(templateAccountUID);
 
         return event;
     }
@@ -250,13 +252,13 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
     @NotNull
     public List<ScheduledAction> getRecords(@NotNull ScheduledAction.ActionType actionType) {
         final String where = ScheduledActionEntry.COLUMN_TYPE + "=?";
-        final String[] whereArgs = new String[]{actionType.name()};
+        final String[] whereArgs = new String[]{actionType.value};
         return getAllRecords(where, whereArgs);
     }
 
     public long getRecordsCount(@NotNull ScheduledAction.ActionType actionType) {
         final String where = ScheduledActionEntry.COLUMN_TYPE + "=?";
-        final String[] whereArgs = new String[]{actionType.name()};
+        final String[] whereArgs = new String[]{actionType.value};
         return getRecordsCount(where, whereArgs);
     }
 }

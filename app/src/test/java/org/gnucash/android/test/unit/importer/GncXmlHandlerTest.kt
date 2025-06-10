@@ -15,14 +15,18 @@
  */
 package org.gnucash.android.test.unit.importer
 
+import android.database.DatabaseUtils.queryNumEntries
 import org.assertj.core.api.Assertions.assertThat
+import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
+import org.gnucash.android.export.xml.GncXmlHelper.formatDate
 import org.gnucash.android.export.xml.GncXmlHelper.parseDateTime
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.AccountType
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
+import org.gnucash.android.model.PeriodType
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.test.unit.BookHelperTest
 import org.junit.Ignore
@@ -35,7 +39,6 @@ import java.util.Calendar
 class GncXmlHandlerTest : BookHelperTest() {
     /**
      * Tests basic accounts import.
-     *
      *
      * Checks hierarchy and attributes. We should have:
      * <pre>
@@ -81,15 +84,13 @@ class GncXmlHandlerTest : BookHelperTest() {
 
     /**
      * Tests importing a simple transaction with default splits.
-     *
-     * @throws ParseException
      */
     @Test
     fun simpleTransactionImport() {
         val bookUID = importGnuCashXml("simpleTransactionImport.xml")
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
 
-        assertThat(transactionsDbAdapter.recordsCount).isEqualTo(1)
+        assertThat(transactionsDbAdapter.recordsCount).isOne()
 
         val transaction = transactionsDbAdapter.getRecord("b33c8a6160494417558fd143731fc26a")
 
@@ -106,7 +107,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         // Check splits
         assertThat(transaction.splits.size).isEqualTo(2)
 
-        val split1 = transaction.splits[1]
+        val split1 = transaction.splits[0]
         assertThat(split1.uid).isEqualTo("ad2cbc774fc4e71885d17e6932448e8e")
         assertThat(split1.accountUID).isEqualTo("6a7cf8267314992bdddcee56d71a3908")
         assertThat(split1.transactionUID).isEqualTo("b33c8a6160494417558fd143731fc26a")
@@ -116,7 +117,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(split1.quantity).isEqualTo(Money("10", "USD"))
         assertThat(split1.reconcileState).isEqualTo('n')
 
-        val split2 = transaction.splits[0]
+        val split2 = transaction.splits[1]
         assertThat(split2.uid).isEqualTo("61d4d604bc00a59cabff4e8875d00bee")
         assertThat(split2.accountUID).isEqualTo("dae686a1636addc0dae1ae670701aa4a")
         assertThat(split2.transactionUID).isEqualTo("b33c8a6160494417558fd143731fc26a")
@@ -130,15 +131,13 @@ class GncXmlHandlerTest : BookHelperTest() {
 
     /**
      * Tests importing a transaction with non-default splits.
-     *
-     * @throws ParseException
      */
     @Test
     fun transactionWithNonDefaultSplitsImport() {
         val bookUID = importGnuCashXml("transactionWithNonDefaultSplitsImport.xml")
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
 
-        assertThat(transactionsDbAdapter.recordsCount).isEqualTo(1)
+        assertThat(transactionsDbAdapter.recordsCount).isOne()
 
         val transaction = transactionsDbAdapter.getRecord("042ff745a80e94e6237fb0549f6d32ae")
 
@@ -148,7 +147,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         // Check splits
         assertThat(transaction.splits.size).isEqualTo(3)
 
-        val splitExpense = transaction.splits[2]
+        val splitExpense = transaction.splits[0]
         assertThat(splitExpense.uid).isEqualTo("c50cce06e2bf9085730821c82d0b36ca")
         assertThat(splitExpense.accountUID).isEqualTo("6a7cf8267314992bdddcee56d71a3908")
         assertThat(splitExpense.transactionUID).isEqualTo("042ff745a80e94e6237fb0549f6d32ae")
@@ -157,7 +156,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(splitExpense.value).isEqualTo(Money("50", "USD"))
         assertThat(splitExpense.quantity).isEqualTo(Money("50", "USD"))
 
-        val splitAsset1 = transaction.splits[0]
+        val splitAsset1 = transaction.splits[1]
         assertThat(splitAsset1.uid).isEqualTo("4930f412665a705eedba39789b6c3a35")
         assertThat(splitAsset1.accountUID).isEqualTo("dae686a1636addc0dae1ae670701aa4a")
         assertThat(splitAsset1.transactionUID).isEqualTo("042ff745a80e94e6237fb0549f6d32ae")
@@ -167,7 +166,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(splitAsset1.quantity).isEqualTo(Money("5", "USD"))
         assertThat(splitAsset1.isPairOf(splitExpense)).isFalse()
 
-        val splitAsset2 = transaction.splits[1]
+        val splitAsset2 = transaction.splits[2]
         assertThat(splitAsset2.uid).isEqualTo("b97cd9bbaa17f181d0a5b39b260dabda")
         assertThat(splitAsset2.accountUID).isEqualTo("ee139a5658a0d37507dc26284798e347")
         assertThat(splitAsset2.transactionUID).isEqualTo("042ff745a80e94e6237fb0549f6d32ae")
@@ -180,15 +179,13 @@ class GncXmlHandlerTest : BookHelperTest() {
 
     /**
      * Tests importing a transaction with multiple currencies.
-     *
-     * @throws ParseException
      */
     @Test
     fun multiCurrencyTransactionImport() {
         val bookUID = importGnuCashXml("multiCurrencyTransactionImport.xml")
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
 
-        assertThat(transactionsDbAdapter.recordsCount).isEqualTo(1)
+        assertThat(transactionsDbAdapter.recordsCount).isOne()
 
         val transaction = transactionsDbAdapter.getRecord("ded49386f8ea319ccaee043ba062b3e1")
 
@@ -200,7 +197,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         // Check splits
         assertThat(transaction.splits.size).isEqualTo(2)
 
-        val splitDebit = transaction.splits[1]
+        val splitDebit = transaction.splits[0]
         assertThat(splitDebit.uid).isEqualTo("88bbbbac7689a8657b04427f8117a783")
         assertThat(splitDebit.accountUID).isEqualTo("6a7cf8267314992bdddcee56d71a3908")
         assertThat(splitDebit.transactionUID).isEqualTo("ded49386f8ea319ccaee043ba062b3e1")
@@ -212,7 +209,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(splitDebit.quantity.denominator).isEqualTo(100)
         assertThat(splitDebit.quantity).isEqualTo(Money("20", "USD"))
 
-        val splitCredit = transaction.splits[0]
+        val splitCredit = transaction.splits[1]
         assertThat(splitCredit.uid).isEqualTo("e0dd885065bfe3c9ef63552fe84c6d23")
         assertThat(splitCredit.accountUID).isEqualTo("0469e915a22ba7846aca0e69f9f9b683")
         assertThat(splitCredit.transactionUID).isEqualTo("ded49386f8ea319ccaee043ba062b3e1")
@@ -315,7 +312,7 @@ class GncXmlHandlerTest : BookHelperTest() {
             importGnuCashXml("bug562_scheduledTransactionImportedWithImbalancedSplits.xml")
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
 
-        assertThat(transactionsDbAdapter.templateTransactionsCount).isEqualTo(1)
+        assertThat(transactionsDbAdapter.templateTransactionsCount).isOne()
 
         val scheduledTransaction =
             transactionsDbAdapter.getRecord("b645bef06d0844aece6424ceeec03983")
@@ -323,25 +320,25 @@ class GncXmlHandlerTest : BookHelperTest() {
         // Ensure it's the correct transaction
         assertThat(scheduledTransaction.description).isEqualTo("Los pollos hermanos")
         assertThat(scheduledTransaction.isTemplate).isTrue()
+        assertThat(scheduledTransaction.commodity.currencyCode).isEqualTo("USD")
 
         // Check splits
         assertThat(scheduledTransaction.splits.size).isEqualTo(2)
 
+        val amount = Money("20", "USD")
         val splitCredit = scheduledTransaction.splits[0]
-        assertThat(splitCredit.accountUID).isEqualTo("6a7cf8267314992bdddcee56d71a3908")
+        assertThat(splitCredit.accountUID).isEqualTo("2e9b02b5ed6fb07c7d4536bb8a03599e")
+        assertThat(splitCredit.scheduledActionAccountUID).isEqualTo("6a7cf8267314992bdddcee56d71a3908")
         assertThat(splitCredit.type).isEqualTo(TransactionType.CREDIT)
-        assertThat(splitCredit.value).isEqualTo(Money("20", "USD"))
+        assertThat(splitCredit.value).isEqualTo(amount)
+        assertThat(splitCredit.quantity.isAmountZero).isTrue()
 
-        // FIXME: the quantity is always 0 as it's set from <split:quantity> instead
-        // of from the slots
-        //assertThat(split1.getQuantity()).isEqualTo(new Money("20", "USD"));
         val splitDebit = scheduledTransaction.splits[1]
-        assertThat(splitDebit.accountUID).isEqualTo("dae686a1636addc0dae1ae670701aa4a")
+        assertThat(splitDebit.accountUID).isEqualTo("2e9b02b5ed6fb07c7d4536bb8a03599e")
+        assertThat(splitDebit.scheduledActionAccountUID).isEqualTo("dae686a1636addc0dae1ae670701aa4a")
         assertThat(splitDebit.type).isEqualTo(TransactionType.DEBIT)
-        assertThat(splitDebit.value).isEqualTo(Money("20", "USD"))
-        // FIXME: the quantity is always 0 as it's set from <split:quantity> instead
-        // of from the slots
-        //assertThat(split2.getQuantity()).isEqualTo(new Money("20", "USD"));
+        assertThat(splitDebit.value).isEqualTo(amount)
+        assertThat(splitDebit.quantity.isAmountZero).isTrue()
         assertThat(splitDebit.isPairOf(splitCredit)).isTrue()
     }
 

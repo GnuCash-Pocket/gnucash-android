@@ -68,7 +68,7 @@ class ScheduledActionTest : GnuCashTest() {
     @Test
     fun settingRecurrence_shouldSetScheduledActionStartTime() {
         val scheduledAction = ScheduledAction(ScheduledAction.ActionType.BACKUP)
-        assertThat(scheduledAction.startTime).isEqualTo(0)
+        assertThat(scheduledAction.startTime).isZero()
 
         val startTime = getTimeInMillis(2014, 8, 26)
         val recurrence = Recurrence(PeriodType.WEEK)
@@ -80,7 +80,7 @@ class ScheduledActionTest : GnuCashTest() {
     @Test
     fun settingRecurrence_shouldSetEndTime() {
         val scheduledAction = ScheduledAction(ScheduledAction.ActionType.BACKUP)
-        assertThat(scheduledAction.startTime).isEqualTo(0)
+        assertThat(scheduledAction.startTime).isZero()
 
         val endTime = getTimeInMillis(2017, 8, 26)
         val recurrence = Recurrence(PeriodType.WEEK)

@@ -121,7 +121,7 @@ public class QifExporter extends Exporter {
         String lastExportTimeStamp = Long.toString(mExportParams.getExportStartTime().getTime());
         TransactionsDbAdapter transactionsDbAdapter = mTransactionsDbAdapter;
 
-        final List<Account> accountsList = mAccountsDbAdapter.getSimpleAccountList();
+        final List<Account> accountsList = mAccountsDbAdapter.getSimpleAccounts();
         final Map<String, Account> accounts = new HashMap<>();
         for (Account account : accountsList) {
             accounts.put(account.getUID(), account);

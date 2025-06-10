@@ -45,7 +45,7 @@ public class CommoditiesXmlHandler extends DefaultHandler {
     public static final String ATTR_EXCHANGE_CODE = "exchange-code";
     public static final String ATTR_SMALLEST_FRACTION = "smallest-fraction";
     public static final String ATTR_LOCAL_SYMBOL = "local-symbol";
-    private static final String SOURCE_CURRENCY = "currency";
+    public static final String SOURCE_CURRENCY = "currency";
     /**
      * List of commodities parsed from the XML file.
      * They will be all added to db at once at the end of the document
@@ -93,7 +93,7 @@ public class CommoditiesXmlHandler extends DefaultHandler {
             String key = namespace + "::" + isoCode;
             Commodity commodity = commodities.get(key);
             if (commodity == null) {
-                commodity = new Commodity(fullname, isoCode, Integer.parseInt(smallestFraction));
+                commodity = new Commodity(fullname, isoCode, namespace, Integer.parseInt(smallestFraction));
                 commodity.setNamespace(namespace);
                 commodities.put(key, commodity);
             } else {

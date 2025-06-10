@@ -279,8 +279,10 @@ class ScheduledActionServiceTest : GnuCashTest() {
         backupParams.exportTarget = ExportParams.ExportTarget.SD_CARD
         scheduledBackup.tag = backupParams.toTag()
 
-        val backupFolder =
-            File(Exporter.getExportFolderPath(context, GnuCashApplication.getActiveBookUID()))
+        // Check there's not a backup for each missed run
+        val bookUID = GnuCashApplication.getActiveBookUID()
+        assertThat(bookUID).isNotNull()
+        val backupFolder = File(Exporter.getExportFolderPath(context, bookUID))
         assertThat(backupFolder).exists()
         assertThat(backupFolder.listFiles()).isEmpty()
 
@@ -326,9 +328,9 @@ class ScheduledActionServiceTest : GnuCashTest() {
         backupParams.exportTarget = ExportParams.ExportTarget.SD_CARD
         scheduledBackup.tag = backupParams.toTag()
 
-        val backupFolder = File(
-            Exporter.getExportFolderPath(context, GnuCashApplication.getActiveBookUID())
-        )
+        val bookUID = GnuCashApplication.getActiveBookUID()
+        assertThat(bookUID).isNotNull()
+        val backupFolder = File(Exporter.getExportFolderPath(context, bookUID))
         assertThat(backupFolder).exists()
         assertThat(backupFolder.listFiles()).isEmpty()
 
@@ -376,9 +378,9 @@ class ScheduledActionServiceTest : GnuCashTest() {
             Timestamp(LocalDateTime.now().minusDays(9).toDate().time)
         )
 
-        val backupFolder = File(
-            Exporter.getExportFolderPath(context, GnuCashApplication.getActiveBookUID())
-        )
+        val bookUID = GnuCashApplication.getActiveBookUID()
+        assertThat(bookUID).isNotNull()
+        val backupFolder = File(Exporter.getExportFolderPath(context, bookUID))
         assertThat(backupFolder).exists()
         assertThat(backupFolder.listFiles()).isEmpty()
 
@@ -437,9 +439,9 @@ class ScheduledActionServiceTest : GnuCashTest() {
         transaction.addSplit(split.createPair(transferAccount.uid))
         transactionsDbAdapter.addRecord(transaction)
 
-        val backupFolder = File(
-            Exporter.getExportFolderPath(context, GnuCashApplication.getActiveBookUID())
-        )
+        val bookUID = GnuCashApplication.getActiveBookUID()
+        assertThat(bookUID).isNotNull()
+        val backupFolder = File(Exporter.getExportFolderPath(context, bookUID))
         assertThat(backupFolder).exists()
         assertThat(backupFolder.listFiles()).isEmpty()
 

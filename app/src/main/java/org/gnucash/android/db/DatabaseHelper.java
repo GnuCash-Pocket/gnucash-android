@@ -29,6 +29,7 @@ import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
 import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -75,6 +76,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         + AccountEntry.COLUMN_CLEARED_BALANCE + " varchar(255), "
         + AccountEntry.COLUMN_NOCLOSING_BALANCE + " varchar(255), "
         + AccountEntry.COLUMN_RECONCILED_BALANCE + " varchar(255), "
+        + AccountEntry.COLUMN_TEMPLATE + " tinyint default 0, "
         + AccountEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
         + AccountEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
         + "FOREIGN KEY (" + AccountEntry.COLUMN_COMMODITY_UID + ") REFERENCES " + CommodityEntry.TABLE_NAME + " (" + CommodityEntry.COLUMN_UID + ") "
@@ -118,6 +120,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         + SplitEntry.COLUMN_TRANSACTION_UID + " varchar(255) not null, "
         + SplitEntry.COLUMN_RECONCILE_STATE + " varchar(1) not null default 'n', "
         + SplitEntry.COLUMN_RECONCILE_DATE + " timestamp not null default current_timestamp, "
+        + SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID + " varchar(255), "
         + SplitEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
         + SplitEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
         + "FOREIGN KEY (" + SplitEntry.COLUMN_ACCOUNT_UID + ") REFERENCES " + AccountEntry.TABLE_NAME + " (" + AccountEntry.COLUMN_UID + ") ON DELETE CASCADE, "
@@ -419,5 +422,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public DatabaseHolder getReadableHolder() {
         return new DatabaseHolder(context, getReadableDatabase(), getDatabaseName());
+    }
+
+    public static boolean hasTableColumn(@NonNull SQLiteDatabase db, @NonNull String tableName, @NonNull String columnName) {
+        Cursor cursor = db.rawQuery("PRAGMA table_info(" + tableName + ")", null);
+        try {
+            if (cursor.moveToFirst()) {
+                final int indexName = cursor.getColumnIndexOrThrow("name");
+                do {
+                    String name = cursor.getString(indexName);
+                    if (columnName.equals(name)) {
+                        return true;
+                    }
+                } while (cursor.moveToNext());
+            }
+        } finally {
+            cursor.close();
+        }
+        return false;
     }
 }

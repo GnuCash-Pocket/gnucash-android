@@ -18,9 +18,12 @@ package org.gnucash.android.db;
 
 import static android.database.DatabaseUtils.sqlEscapeString;
 import static org.gnucash.android.db.DatabaseHelper.createResetBalancesTriggers;
+import static org.gnucash.android.db.DatabaseHelper.hasTableColumn;
 import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import static org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry;
 import static org.gnucash.android.db.DatabaseSchema.CommodityEntry;
+import static org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry;
+import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
 import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 
 import android.content.Context;
@@ -95,6 +98,9 @@ public class MigrationHelper {
         }
         if (oldVersion < 23) {
             migrateTo23(context, db);
+        }
+        if (oldVersion < 24) {
+            migrateTo24(db);
         }
     }
 
@@ -219,19 +225,9 @@ public class MigrationHelper {
     private static void migrateTo21(SQLiteDatabase db) {
         Timber.i("Upgrading database to version 21");
 
-        Cursor cursor = db.rawQuery("PRAGMA table_info(" + AccountEntry.TABLE_NAME + ")", null);
-        try {
-            if (cursor.moveToFirst()) {
-                final int indexName = cursor.getColumnIndex("name");
-                do {
-                    String name = cursor.getString(indexName);
-                    if (AccountEntry.COLUMN_CURRENCY.equals(name)) {
-                        return;
-                    }
-                } while (cursor.moveToNext());
-            }
-        } finally {
-            cursor.close();
+        boolean hasColumnCurrency = hasTableColumn(db, AccountEntry.TABLE_NAME, AccountEntry.COLUMN_CURRENCY);
+        if (hasColumnCurrency) {
+            return;
         }
 
         // Restore the currency code column that was deleted in v19.
@@ -262,23 +258,7 @@ public class MigrationHelper {
     private static void migrateTo23(@NonNull Context context, @NonNull SQLiteDatabase db) {
         Timber.i("Upgrading database to version 23");
 
-        boolean hasColumnQuoteFlag = false;
-        Cursor cursor = db.rawQuery("PRAGMA table_info(" + CommodityEntry.TABLE_NAME + ")", null);
-        try {
-            if (cursor.moveToFirst()) {
-                final int indexName = cursor.getColumnIndex("name");
-                do {
-                    String name = cursor.getString(indexName);
-                    if (CommodityEntry.COLUMN_QUOTE_FLAG.equals(name)) {
-                        hasColumnQuoteFlag = true;
-                        break;
-                    }
-                } while (cursor.moveToNext());
-            }
-        } finally {
-            cursor.close();
-        }
-
+        boolean hasColumnQuoteFlag = hasTableColumn(db, CommodityEntry.TABLE_NAME, CommodityEntry.COLUMN_QUOTE_FLAG);
         if (!hasColumnQuoteFlag) {
             // Restore the currency code column that was deleted in v19.
             String sqlCommodityFlag = "ALTER TABLE " + CommodityEntry.TABLE_NAME
@@ -297,6 +277,27 @@ public class MigrationHelper {
             String msg = "Error loading currencies into the database";
             Timber.e(e, msg);
             throw new SQLiteException(msg, e);
+        }
+    }
+
+    /**
+     * Upgrade the database to version 24.
+     *
+     * @param db the database.
+     */
+    private static void migrateTo24(@NonNull SQLiteDatabase db) {
+        Timber.i("Upgrading database to version 24");
+
+        if (!hasTableColumn(db, AccountEntry.TABLE_NAME, AccountEntry.COLUMN_TEMPLATE)) {
+            String sqlAccountTemplate = "ALTER TABLE " + AccountEntry.TABLE_NAME +
+                " ADD COLUMN " + AccountEntry.COLUMN_TEMPLATE + " tinyint default 0";
+            db.execSQL(sqlAccountTemplate);
+        }
+
+        if (!hasTableColumn(db, SplitEntry.TABLE_NAME, SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID)) {
+            String sqlAddSchedxActionAccount = "ALTER TABLE " + SplitEntry.TABLE_NAME +
+                " ADD COLUMN " + SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID + " varchar(255)";
+            db.execSQL(sqlAddSchedxActionAccount);
         }
     }
 }
