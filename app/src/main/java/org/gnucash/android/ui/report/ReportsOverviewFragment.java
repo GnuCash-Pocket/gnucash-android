@@ -169,7 +169,7 @@ public class ReportsOverviewFragment extends BaseReportFragment {
 
         String where = DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?";
         String[] whereArgs = new String[]{mAccountType.name()};
-        List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(where, whereArgs, DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC");
+        List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, whereArgs, DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC");
         for (Account account : accounts) {
             Money balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), start, end, false);
             if (balance.isAmountZero()) continue;

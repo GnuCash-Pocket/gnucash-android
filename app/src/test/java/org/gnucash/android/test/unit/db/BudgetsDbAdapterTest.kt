@@ -79,16 +79,16 @@ class BudgetsDbAdapterTest : GnuCashTest() {
         budget.recurrence = recurrence
 
         budgetsDbAdapter.addRecord(budget)
-        assertThat(budgetsDbAdapter.recordsCount).isEqualTo(1)
+        assertThat(budgetsDbAdapter.recordsCount).isOne()
         assertThat(budgetAmountsDbAdapter.recordsCount).isEqualTo(2)
-        assertThat(recurrenceDbAdapter.recordsCount).isEqualTo(1)
+        assertThat(recurrenceDbAdapter.recordsCount).isOne()
 
         budget.clearBudgetAmounts()
         val budgetAmount = BudgetAmount(Money("5", defaultCurrency), account.uid)
         budget.addAmount(budgetAmount)
         budgetsDbAdapter.addRecord(budget)
 
-        assertThat(budgetAmountsDbAdapter.recordsCount).isEqualTo(1)
+        assertThat(budgetAmountsDbAdapter.recordsCount).isOne()
         assertThat(budgetAmountsDbAdapter.allRecords[0].uid).isEqualTo(budgetAmount.uid)
     }
 

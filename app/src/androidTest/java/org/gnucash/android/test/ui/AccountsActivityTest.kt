@@ -275,13 +275,12 @@ class AccountsActivityTest : GnuAndroidTest() {
         //no sub-accounts
         assertThat(accountsDbAdapter.getSubAccountCount(SIMPLE_ACCOUNT_UID)).isZero()
         assertThat(
-            accountsDbAdapter.getSubAccountCount(accountsDbAdapter.getOrCreateGnuCashRootAccountUID())
+            accountsDbAdapter.getSubAccountCount(accountsDbAdapter.getOrCreateRootAccountUID())
         ).isEqualTo(2)
-        assertThat(accountsDbAdapter.simpleAccountList).extracting(
+        assertThat(accountsDbAdapter.simpleAccounts).extracting(
             "accountType",
             AccountType::class.java
-        )
-            .contains(AccountType.TRADING)
+        ).contains(AccountType.TRADING)
     }
 
     @Test
@@ -334,16 +333,16 @@ class AccountsActivityTest : GnuAndroidTest() {
         account.addTransaction(transaction)
         accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert)
 
-        assertThat(accountsDbAdapter.getTransactionCount(account.uid)).isEqualTo(1)
-        assertThat(accountsDbAdapter.getTransactionCount(SIMPLE_ACCOUNT_UID)).isEqualTo(1)
+        assertThat(accountsDbAdapter.getTransactionCount(account.uid)).isOne()
+        assertThat(accountsDbAdapter.getTransactionCount(SIMPLE_ACCOUNT_UID)).isOne()
         assertThat(splitsDbAdapter.getSplitsForTransaction(transaction.uid)).hasSize(2)
 
         onView(withText(R.string.title_edit_account))
             .perform(click())
 
         onView(withId(R.id.menu_save)).perform(click())
-        assertThat(accountsDbAdapter.getTransactionCount(SIMPLE_ACCOUNT_UID)).isEqualTo(1)
-        assertThat(splitsDbAdapter.fetchSplitsForAccount(SIMPLE_ACCOUNT_UID).count).isEqualTo(1)
+        assertThat(accountsDbAdapter.getTransactionCount(SIMPLE_ACCOUNT_UID)).isOne()
+        assertThat(splitsDbAdapter.fetchSplitsForAccount(SIMPLE_ACCOUNT_UID).count).isOne()
         assertThat(splitsDbAdapter.getSplitsForTransaction(transaction.uid)).hasSize(2)
     }
 
@@ -360,7 +359,7 @@ class AccountsActivityTest : GnuAndroidTest() {
         onView(withText(R.string.title_delete_account))
             .perform(click())
 
-        assertThat(accountsDbAdapter.recordsCount).isEqualTo(1)
+        assertThat(accountsDbAdapter.recordsCount).isOne()
 
         val accounts = accountsDbAdapter.allRecords
         assertThat(accounts).hasSize(0) //root account is never returned

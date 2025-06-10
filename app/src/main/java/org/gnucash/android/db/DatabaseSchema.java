@@ -108,6 +108,8 @@ public class DatabaseSchema {
         public static final String COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID = "default_transfer_account_uid";
         @Column(Cursor.FIELD_TYPE_STRING)
         public static final String COLUMN_NOTES = "notes";
+        @Column(Cursor.FIELD_TYPE_INTEGER)
+        public static final String COLUMN_TEMPLATE = "is_template";
 
         /* cached parameters */
         @Column(Cursor.FIELD_TYPE_INTEGER)
@@ -192,6 +194,8 @@ public class DatabaseSchema {
         public static final String COLUMN_RECONCILE_STATE = "reconcile_state";
         @Column(Cursor.FIELD_TYPE_STRING)
         public static final String COLUMN_RECONCILE_DATE = "reconcile_date";
+        @Column(Cursor.FIELD_TYPE_STRING)
+        public static final String COLUMN_SCHEDX_ACTION_ACCOUNT_UID = "sched_account_uid";
 
         public static final String INDEX_UID = "split_uid_index";
     }
@@ -219,12 +223,8 @@ public class DatabaseSchema {
         public static final String COLUMN_ENABLED = "is_enabled";
         @Column(Cursor.FIELD_TYPE_INTEGER)
         public static final String COLUMN_TOTAL_FREQUENCY = "total_frequency";
-
-        /**
-         * Number of times this scheduledAction has been run. Analogous to instance_count in GnuCash desktop SQL
-         */
+        @Column(Cursor.FIELD_TYPE_INTEGER)
         public static final String COLUMN_EXECUTION_COUNT = "execution_count";
-
         @Column(Cursor.FIELD_TYPE_STRING)
         public static final String COLUMN_RECURRENCE_UID = "recurrence_uid";
         @Column(Cursor.FIELD_TYPE_INTEGER)

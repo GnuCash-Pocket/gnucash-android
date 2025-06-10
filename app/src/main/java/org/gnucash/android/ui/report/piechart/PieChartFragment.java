@@ -146,7 +146,7 @@ public class PieChartFragment extends BaseReportFragment {
             + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?";
         String[] whereArgs = new String[]{accountType.name()};
         String orderBy = DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC";
-        List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(where, whereArgs, orderBy);
+        List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, whereArgs, orderBy);
         for (Account account : accounts) {
             Money balance = mAccountsDbAdapter.getAccountBalance(account, mReportPeriodStart, mReportPeriodEnd, false);
             if (balance.isAmountZero()) continue;

@@ -153,7 +153,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled(context);
         String accountUID = getArguments().getString(UxArgument.SELECTED_ACCOUNT_UID);
         mParentAccountUID = getArguments().getString(UxArgument.PARENT_ACCOUNT_UID);
-        mRootAccountUID = mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID();
+        mRootAccountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
 
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
         accountNameAdapter = new QualifiedAccountNameAdapter(context, null, null, mAccountsDbAdapter);
@@ -522,7 +522,8 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
     private void loadDefaultTransferAccountList(@NonNull FragmentAccountFormBinding binding, @Nullable Account account) {
         String condition = DatabaseSchema.AccountEntry.COLUMN_UID + " != ?"
             + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0"
-            + " AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + " != ?";
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + " != ?"
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_TEMPLATE + " = 0";
 
         final Context context = binding.getRoot().getContext();
         String accountUID = (account == null) ? "" : account.getUID();
@@ -542,8 +543,8 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      * @param accountType AccountType of account whose allowed parent list is to be loaded
      */
     private void loadParentAccountList(@NonNull FragmentAccountFormBinding binding, AccountType accountType) {
-        String condition = DatabaseSchema.SplitEntry.COLUMN_TYPE + " IN ("
-            + getAllowedParentAccountTypes(accountType) + ")";
+        String condition = DatabaseSchema.SplitEntry.COLUMN_TYPE + " IN (" + getAllowedParentAccountTypes(accountType) + ")"
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_TEMPLATE + " = 0";
 
         Account account = mAccount;
         if (account != null) {  //if editing an account

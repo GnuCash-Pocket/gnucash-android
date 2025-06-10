@@ -37,7 +37,6 @@
     <gnc:commodity version="2.0.0">
       <cmdty:space>CURRENCY</cmdty:space>
       <cmdty:id>USD</cmdty:id>
-      <cmdty:fraction>100</cmdty:fraction>
       <cmdty:get_quotes />
       <cmdty:quote_source>currency</cmdty:quote_source>
       <cmdty:quote_tz />

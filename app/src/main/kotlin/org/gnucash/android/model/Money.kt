@@ -44,34 +44,21 @@ import kotlin.math.max
  *
  * @author Ngewi Fet<ngewif@gmail.com>
  */
-class Money : Number, Comparable<Money>, Parcelable {
-    /**
-     * Currency of the account
-     */
-    var commodity: Commodity = Commodity.DEFAULT_COMMODITY
-        private set
-
+class Money(
     /**
      * Amount value held by this object
      */
-    private var amount: BigDecimal = BigDecimal.ZERO
-
+    private var amount: BigDecimal = BigDecimal.ZERO,
+    /**
+     * Currency of the account
+     */
+    val commodity: Commodity = Commodity.DEFAULT_COMMODITY
+) : Number(), Comparable<Money>, Parcelable {
     /**
      * Rounding mode to be applied when performing operations
      * Defaults to [RoundingMode.HALF_UP]
      */
     private var roundingMode = RoundingMode.HALF_UP
-
-    /**
-     * Creates a new money amount
-     *
-     * @param amount    Value of the amount
-     * @param commodity Commodity of the money
-     */
-    constructor(amount: BigDecimal, commodity: Commodity) {
-        this.amount = amount
-        setCommodity(commodity)
-    }
 
     /**
      * Constructs a new money amount given the numerator and denominator of the amount.
@@ -178,27 +165,6 @@ class Money : Number, Comparable<Money>, Parcelable {
     }
 
     /**
-     * Sets the commodity for the Money
-     *
-     * No currency conversion is performed
-     *
-     * @param commodity Commodity instance
-     */
-    private fun setCommodity(commodity: Commodity) {
-        this.commodity = commodity
-        amount = amount.setScale(scale, roundingMode)
-    }
-
-    /**
-     * Sets the commodity for the Money
-     *
-     * @param currencyCode ISO 4217 currency code
-     */
-    private fun setCommodity(currencyCode: String) {
-        setCommodity(Commodity.getInstance(currencyCode))
-    }
-
-    /**
      * Returns the GnuCash format numerator for this amount.
      *
      * Example: Given an amount 32.50$, the numerator will be 3250
@@ -208,11 +174,9 @@ class Money : Number, Comparable<Money>, Parcelable {
     //FIXME beware of 64-bit overflow so use BigInteger
     val numerator: Long
         get() = try {
-            amount.scaleByPowerOfTen(scale).longValueExact()
+            amount.setScale(scale, RoundingMode.HALF_UP).scaleByPowerOfTen(scale).longValueExact()
         } catch (e: ArithmeticException) {
-            val msg = "Currency " + commodity.currencyCode +
-                    " with scale " + scale +
-                    " has amount " + amount
+            val msg = "Commodity $commodity with scale $scale has amount $amount"
             Timber.e(e, msg)
             throw ArithmeticException(msg)
         }
@@ -225,7 +189,7 @@ class Money : Number, Comparable<Money>, Parcelable {
      * @return GnuCash format denominator
      */
     val denominator: Long
-        get() = BigDecimal.ONE.scaleByPowerOfTen(amount.scale()).longValueExact()
+        get() = BigDecimal.ONE.scaleByPowerOfTen(scale).longValueExact()
 
     /**
      * Returns the scale (precision) used for the decimal places of this amount.
@@ -584,10 +548,9 @@ class Money : Number, Comparable<Money>, Parcelable {
 
     @Throws(CurrencyMismatchException::class)
     override fun compareTo(other: Money): Int {
-        if (commodity != other.commodity) throw CurrencyMismatchException(
-            commodity,
-            other.commodity
-        )
+        if (commodity != other.commodity) {
+            throw CurrencyMismatchException(commodity, other.commodity)
+        }
         return compareTo(other.amount)
     }
 
@@ -616,10 +579,10 @@ class Money : Number, Comparable<Money>, Parcelable {
     val isAmountZero: Boolean
         get() = amount.isZero
 
-    constructor(parcel: Parcel) {
-        amount = parcel.readBigDecimal()!!
-        setCommodity(parcel.readCommodity()!!)
-    }
+    constructor(parcel: Parcel) : this(
+        amount = parcel.readBigDecimal()!!,
+        commodity = parcel.readCommodity()!!
+    )
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
         dest.writeSerializable(amount)
@@ -629,8 +592,6 @@ class Money : Number, Comparable<Money>, Parcelable {
     override fun describeContents(): Int = 0
 
     inner class CurrencyMismatchException(s: String) : IllegalArgumentException(s) {
-        constructor() : this("Cannot perform operation on Money instances with different currencies")
-
         constructor(
             commodity1: Commodity,
             commodity2: Commodity

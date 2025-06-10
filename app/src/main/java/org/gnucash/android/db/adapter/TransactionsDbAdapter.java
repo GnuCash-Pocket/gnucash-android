@@ -142,10 +142,10 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
             }
 
             if (didChange) {
-                long deleted = mDb.delete(SplitEntry.TABLE_NAME,
-                    SplitEntry.COLUMN_TRANSACTION_UID + " = ? AND "
-                        + SplitEntry.COLUMN_UID + " NOT IN ('" + TextUtils.join("','", splitUIDs) + "')",
-                    new String[]{transaction.getUID()});
+                String deleteWhere = SplitEntry.COLUMN_TRANSACTION_UID + " = ? AND "
+                    + SplitEntry.COLUMN_UID + " NOT IN ('" + TextUtils.join("','", splitUIDs) + "')";
+                String[] deleteArgs = new String[]{transaction.getUID()};
+                long deleted = mDb.delete(SplitEntry.TABLE_NAME, deleteWhere, deleteArgs);
                 Timber.d("%d splits deleted", deleted);
             }
 
@@ -327,12 +327,11 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
     }
 
     public Cursor fetchTransactionsWithSplits(String[] columns, @Nullable String where, @Nullable String[] whereArgs, @Nullable String orderBy) {
-        return mDb.query(TransactionEntry.TABLE_NAME + " , " + SplitEntry.TABLE_NAME +
-                " ON " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID +
-                " = " + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID +
-                " , trans_extra_info ON trans_extra_info.trans_acct_t_uid = " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID,
-            columns, where, whereArgs, null, null,
-            orderBy);
+        String table = TransactionEntry.TABLE_NAME + ", " + SplitEntry.TABLE_NAME +
+            " ON " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID +
+            " = " + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID +
+            ", trans_extra_info ON trans_extra_info.trans_acct_t_uid = " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID;
+        return mDb.query(table, columns, where, whereArgs, null, null, orderBy);
     }
 
     /**
@@ -507,17 +506,18 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      */
     public Cursor fetchTransactionSuggestions(String prefix, String accountUID) {
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
-        queryBuilder.setTables(TransactionEntry.TABLE_NAME
-            + " INNER JOIN " + SplitEntry.TABLE_NAME + " ON "
-            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " = "
-            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID);
+        queryBuilder.setTables(
+            TransactionEntry.TABLE_NAME + " t"
+            + " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON "
+            + "t." + TransactionEntry.COLUMN_UID + " = "
+            + "s." + SplitEntry.COLUMN_TRANSACTION_UID);
         queryBuilder.setDistinct(true);
-        String[] projectionIn = new String[]{TransactionEntry.TABLE_NAME + ".*"};
-        String selection = "(" + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
-            + " OR " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + " = 1)"
-            + " AND " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_DESCRIPTION + " LIKE " + sqlEscapeLike(prefix);
+        String[] projectionIn = new String[]{"t.*"};
+        String selection = "s." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
+            + " AND t." + TransactionEntry.COLUMN_TEMPLATE + " = 0"
+            + " AND t." + TransactionEntry.COLUMN_DESCRIPTION + " LIKE " + sqlEscapeLike(prefix);
         String[] selectionArgs = new String[]{accountUID};
-        String sortOrder = TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " DESC";
+        String sortOrder = "t." + TransactionEntry.COLUMN_TIMESTAMP + " DESC";
         String subquery = queryBuilder.buildQuery(projectionIn, selection, null, null, sortOrder, null);
 
         // Need to use inner subquery because ORDER BY must be before GROUP BY!
@@ -584,13 +584,16 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
             null, null, null, null, null);
 
         Timestamp timestamp = TimestampHelper.getTimestampFromNow();
-        if (cursor.moveToFirst()) {
-            String timeString = cursor.getString(0);
-            if (timeString != null) { //in case there were no transactions in the XML file (account structure only)
-                timestamp = TimestampHelper.getTimestampFromUtcString(timeString);
+        try {
+            if (cursor.moveToFirst()) {
+                String timeString = cursor.getString(0);
+                if (timeString != null) { //in case there were no transactions in the XML file (account structure only)
+                    timestamp = TimestampHelper.getTimestampFromUtcString(timeString);
+                }
             }
+        } finally {
+            cursor.close();
         }
-        cursor.close();
         return timestamp;
     }
 
@@ -618,10 +621,11 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
             + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + " = 0";
         Cursor cursor = mDb.rawQuery(sql, new String[]{type.name(), commodityUID});
         long timestamp = 0;
-        if (cursor != null) {
+        try {
             if (cursor.moveToFirst()) {
                 timestamp = cursor.getLong(0);
             }
+        } finally {
             cursor.close();
         }
         return timestamp;

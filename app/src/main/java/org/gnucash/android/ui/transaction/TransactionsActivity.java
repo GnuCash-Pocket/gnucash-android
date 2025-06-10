@@ -110,7 +110,6 @@ public class TransactionsActivity extends BaseDrawerActivity implements
 
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            if (view == null) return;
             Account account = accountNameAdapter.getAccount(position);
             if (account != null) {
                 TransactionsActivity.this.account = account;
@@ -321,7 +320,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         accountNameAdapter = new QualifiedAccountNameAdapter(contextWithTheme, null, null, mAccountsDbAdapter);
         String accountUID = getIntent().getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
         if (TextUtils.isEmpty(accountUID)) {
-            accountUID = mAccountsDbAdapter.getOrCreateGnuCashRootAccountUID();
+            accountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
         }
         account = accountNameAdapter.getAccount(accountUID);
         if (account == null) {
