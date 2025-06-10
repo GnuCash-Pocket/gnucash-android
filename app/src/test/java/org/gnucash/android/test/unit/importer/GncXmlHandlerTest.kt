@@ -15,13 +15,17 @@
  */
 package org.gnucash.android.test.unit.importer
 
+import android.database.DatabaseUtils.queryNumEntries
 import org.assertj.core.api.Assertions.assertThat
+import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
+import org.gnucash.android.export.xml.GncXmlHelper.formatDate
 import org.gnucash.android.export.xml.GncXmlHelper.parseDateTime
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.AccountType
 import org.gnucash.android.model.Money
+import org.gnucash.android.model.PeriodType
 import org.gnucash.android.model.Price
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.test.unit.BookHelperTest
@@ -378,5 +382,101 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(commodity2.quoteFlag).isTrue()
         assertThat(commodity2.quoteSource).isEqualTo("googleweb")
         assertThat(commodity2.quoteTimeZone).isNull()
+    }
+
+    /**
+     * Tests importing a transaction with multiple currencies that are scheduled.
+     */
+    @Test
+    fun multiCurrencyTransactionScheduled() {
+        val bookUID = importGnuCashXml("multiCurrencyTransactionSchedule.xml")
+        assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
+
+        assertThat(transactionsDbAdapter.recordsCount).isOne()
+        assertThat(queryNumEntries(importedHolder!!.db, TransactionEntry.TABLE_NAME, null, null)).isEqualTo(2)// 1 regular + 1 template
+
+        var transaction = transactionsDbAdapter.getRecord("ded49386f8ea319ccaee043ba062b3e1")
+
+        // Ensure it's the correct one
+        assertThat(transaction.description).isEqualTo("Salad express")
+        assertThat(transaction.commodity.currencyCode).isEqualTo("USD")
+        assertThat(transaction.commodity.smallestFraction).isEqualTo(100)
+
+        // Check splits
+        assertThat(transaction.splits.size).isEqualTo(2)
+
+        var splitDebit = transaction.splits[0]
+        assertThat(splitDebit.uid).isEqualTo("88bbbbac7689a8657b04427f8117a783")
+        assertThat(splitDebit.accountUID).isEqualTo("6a7cf8267314992bdddcee56d71a3908")
+        assertThat(splitDebit.transactionUID).isEqualTo("ded49386f8ea319ccaee043ba062b3e1")
+        assertThat(splitDebit.type).isEqualTo(TransactionType.DEBIT)
+        assertThat(splitDebit.value.numerator).isEqualTo(2000)
+        assertThat(splitDebit.value.denominator).isEqualTo(100)
+        assertThat(splitDebit.value).isEqualTo(Money("20", "USD"))
+        assertThat(splitDebit.quantity.numerator).isEqualTo(2000)
+        assertThat(splitDebit.quantity.denominator).isEqualTo(100)
+        assertThat(splitDebit.quantity).isEqualTo(Money("20", "USD"))
+
+        var splitCredit = transaction.splits[1]
+        assertThat(splitCredit.uid).isEqualTo("e0dd885065bfe3c9ef63552fe84c6d23")
+        assertThat(splitCredit.accountUID).isEqualTo("0469e915a22ba7846aca0e69f9f9b683")
+        assertThat(splitCredit.transactionUID).isEqualTo("ded49386f8ea319ccaee043ba062b3e1")
+        assertThat(splitCredit.type).isEqualTo(TransactionType.CREDIT)
+        assertThat(splitCredit.value.numerator).isEqualTo(2000)
+        assertThat(splitCredit.value.denominator).isEqualTo(100)
+        assertThat(splitCredit.value).isEqualTo(Money("20", "USD"))
+        assertThat(splitCredit.quantity.numerator).isEqualTo(1793)
+        assertThat(splitCredit.quantity.denominator).isEqualTo(100)
+        assertThat(splitCredit.quantity).isEqualTo(Money("17.93", "EUR"))
+        assertThat(splitCredit.isPairOf(splitDebit)).isTrue()
+
+        assertThat(scheduledActionDbAdapter.recordsCount).isOne()
+
+        val scheduledAction = scheduledActionDbAdapter.getRecord("d1ecc943a53e48de91dac65dfbcd23b3")
+        //TODO assertThat(scheduledAction.name).isEqualTo("Salad express Scheduled")
+        assertThat(scheduledAction.actionUID).isEqualTo("a61cb5e0fc8f46e49f47a4812bfcd1e6")
+        assertThat(scheduledAction.isEnabled).isTrue()
+        //TODO assertThat(scheduledAction.isAutoCreate).isFalse()
+        //TODO assertThat(scheduledAction.isAutoCreateNotify).isFalse()
+        //TODO assertThat(scheduledAction.instanceCount).isOne()
+        assertThat(formatDate(scheduledAction.startTime)).isEqualTo("2016-09-25")
+        assertThat(formatDate(scheduledAction.endTime)).isEqualTo("2025-12-31")
+        assertThat(scheduledAction.templateAccountUID).isEqualTo("ea8dc2da727542c9becc721e5f05f0f9")
+        assertThat(scheduledAction.recurrence).isNotNull()
+        assertThat(scheduledAction.recurrence!!.periodType).isEqualTo(PeriodType.WEEK)
+        assertThat(scheduledAction.recurrence!!.multiplier).isOne()
+
+        transaction = transactionsDbAdapter.getRecord("a61cb5e0fc8f46e49f47a4812bfcd1e6")
+
+        // Ensure it's the correct one
+        assertThat(transaction.description).isEqualTo("Salad express")
+        assertThat(transaction.commodity.currencyCode).isEqualTo("USD")
+        assertThat(transaction.commodity.smallestFraction).isEqualTo(100)
+
+        // Check splits
+        assertThat(transaction.splits.size).isEqualTo(2)
+
+        splitDebit = transaction.splits[0]
+        assertThat(splitDebit.uid).isEqualTo("9fc187a80d444c0cadeda57d384e2f1f")
+        assertThat(splitDebit.accountUID).isEqualTo("ea8dc2da727542c9becc721e5f05f0f9")
+        assertThat(splitDebit.scheduledActionAccountUID).isEqualTo("6a7cf8267314992bdddcee56d71a3908")
+        assertThat(splitDebit.transactionUID).isEqualTo("a61cb5e0fc8f46e49f47a4812bfcd1e6")
+        assertThat(splitDebit.type).isEqualTo(TransactionType.DEBIT)
+        assertThat(splitDebit.value.numerator).isEqualTo(2000)
+        assertThat(splitDebit.value.denominator).isEqualTo(100)
+        assertThat(splitDebit.value).isEqualTo(Money("20", "USD"))
+        assertThat(splitDebit.quantity.isAmountZero).isTrue()
+
+        splitCredit = transaction.splits[1]
+        assertThat(splitCredit.uid).isEqualTo("7a61df8f81a64741a31e276a6d82ac9f")
+        assertThat(splitCredit.accountUID).isEqualTo("ea8dc2da727542c9becc721e5f05f0f9")
+        assertThat(splitCredit.scheduledActionAccountUID).isEqualTo("0469e915a22ba7846aca0e69f9f9b683")
+        assertThat(splitCredit.transactionUID).isEqualTo("a61cb5e0fc8f46e49f47a4812bfcd1e6")
+        assertThat(splitCredit.type).isEqualTo(TransactionType.CREDIT)
+        assertThat(splitCredit.value.numerator).isEqualTo(2000)
+        assertThat(splitCredit.value.denominator).isEqualTo(100)
+        assertThat(splitCredit.value).isEqualTo(Money("20", "USD"))
+        assertThat(splitCredit.quantity.isAmountZero).isTrue()
+        assertThat(splitCredit.isPairOf(splitDebit)).isTrue()
     }
 }
