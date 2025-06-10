@@ -200,7 +200,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
             @Override
             public void afterTextChanged(Editable s) {
                 if (!TextUtils.isEmpty(s)) {
-                    binding.nameTextInputLayout.setErrorEnabled(false);
+                    binding.nameTextInputLayout.setError(null);
                 }
                 selectedName = s.toString();
             }
@@ -659,22 +659,21 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         // accounts to update, in case we're updating full names of a sub account tree
         String newName = selectedName.trim();
         if (TextUtils.isEmpty(newName)) {
-            binding.nameTextInputLayout.setErrorEnabled(true);
             binding.nameTextInputLayout.setError(getString(R.string.toast_no_account_name_entered));
             return;
-        } else {
-            binding.nameTextInputLayout.setError(null);
         }
+        binding.nameTextInputLayout.setError(null);
 
         Account account = mAccount;
         if (account == null) {
-            account = new Account(newName);
-            mAccountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert); //new account, insert it
+            account = new Account(newName, selectedCommodity);
+            //new account, insert it
+            mAccountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert);
         } else {
             account.setName(newName);
+            account.setCommodity(selectedCommodity);
         }
 
-        account.setCommodity(selectedCommodity);
         account.setAccountType(selectedAccountType);
         account.setDescription(binding.inputAccountDescription.getText().toString().trim());
         account.setNote(binding.notes.getText().toString().trim());

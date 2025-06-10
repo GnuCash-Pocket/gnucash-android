@@ -203,9 +203,8 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
         if (!canSave) {
             if (budgetName.isEmpty()) {
                 mBinding.nameTextInputLayout.setError("A name is required");
-                mBinding.nameTextInputLayout.setErrorEnabled(true);
             } else {
-                mBinding.nameTextInputLayout.setErrorEnabled(false);
+                mBinding.nameTextInputLayout.setError(null);
             }
 
             if (mBudgetAmounts.isEmpty()) {
