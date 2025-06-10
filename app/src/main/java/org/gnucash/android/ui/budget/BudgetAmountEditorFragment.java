@@ -215,6 +215,7 @@ public class BudgetAmountEditorFragment extends MenuFragment {
                 continue;
             int accountPosition = viewHolder.budgetAccountSpinner.getSelectedItemPosition();
             Account account = accountNameAdapter.getAccount(accountPosition);
+            if (account == null) continue;
             Money amount = new Money(amountValue, account.getCommodity());
             BudgetAmount budgetAmount = new BudgetAmount(amount, account.getUID());
             budgetAmounts.add(budgetAmount);

@@ -233,6 +233,7 @@ public class TransactionFormFragment extends MenuFragment implements
         Commodity fromCommodity = accountFrom.getCommodity();
         int position = binding.inputTransferAccountSpinner.getSelectedItemPosition();
         Account accountTarget = accountTransferNameAdapter.getAccount(position);
+        if (accountTarget == null) return;
         Commodity targetCommodity = accountTarget.getCommodity();
 
         BigDecimal enteredAmount = binding.inputTransactionAmount.getValue();
@@ -836,6 +837,7 @@ public class TransactionFormFragment extends MenuFragment implements
 
         int position = binding.inputTransferAccountSpinner.getSelectedItemPosition();
         Account transferAccount = accountTransferNameAdapter.getAccount(position);
+        if (transferAccount == null) return false;
         Commodity transferCommodity = transferAccount.getCommodity();
 
         return !accountCommodity.equals(transferCommodity);

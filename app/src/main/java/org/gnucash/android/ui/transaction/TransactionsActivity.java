@@ -412,7 +412,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      */
     private void updateNavigationSelection() {
         Account account = this.account;
-        String accountUID = account.getUID();
+        String accountUID = (account != null) ? account.getUID() : null;
         int position = accountNameAdapter.getPosition(accountUID);
         // In case the account was deleted.
         if (position == AdapterView.INVALID_POSITION) {

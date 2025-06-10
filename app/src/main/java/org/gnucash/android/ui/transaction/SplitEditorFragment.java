@@ -421,7 +421,9 @@ public class SplitEditorFragment extends MenuFragment {
             Account account = accountNameAdapter.getAccount(mAccountUID);
             Money valueAmount = new Money(enteredAmount.abs(), account.getCommodity());
 
-            account = accountNameAdapter.getAccount(viewHolder.accountsSpinner.getSelectedItemPosition());
+            int position = viewHolder.accountsSpinner.getSelectedItemPosition();
+            account = accountNameAdapter.getAccount(position);
+            if (account == null) continue;
             Split split = new Split(valueAmount, account.getUID());
             split.setMemo(viewHolder.splitMemoEditText.getText().toString());
             split.setType(viewHolder.splitTypeSwitch.getTransactionType());
@@ -497,6 +499,7 @@ public class SplitEditorFragment extends MenuFragment {
         @Override
         public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
             Account accountFrom = accountNameAdapter.getAccount(mAccountUID);
+            if (accountFrom == null) return;
             Account accountTo = accountNameAdapter.getAccount(position);
 
             AccountType accountType = accountTo.getAccountType();

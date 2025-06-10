@@ -169,6 +169,7 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
             ArrayList<BudgetAmount> budgetAmounts = new ArrayList<>();
             int accountPosition = mBinding.budgetAmountLayout.inputBudgetAccountSpinner.getSelectedItemPosition();
             Account account = accountNameAdapter.getAccount(accountPosition);
+            if (account == null) return mBudgetAmounts;
             Money amount = new Money(value, account.getCommodity());
             BudgetAmount budgetAmount = new BudgetAmount(amount, account.getUID());
             budgetAmounts.add(budgetAmount);
