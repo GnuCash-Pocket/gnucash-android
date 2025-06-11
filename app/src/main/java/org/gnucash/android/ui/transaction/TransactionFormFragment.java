@@ -18,6 +18,8 @@ package org.gnucash.android.ui.transaction;
 
 import static org.gnucash.android.ui.util.widget.ViewExtKt.setTextToEnd;
 
+import static java.lang.Math.max;
+
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -415,6 +417,7 @@ public class TransactionFormFragment extends MenuFragment implements
      */
     private void initializeViewsWithTransaction(@NonNull final FragmentTransactionFormBinding binding, @NonNull Transaction transaction) {
         final Context context = binding.getRoot().getContext();
+        final Account account = this.account;
         final String accountUID = account.getUID();
         setTextToEnd(binding.inputTransactionName, transaction.getDescription());
 
@@ -500,25 +503,19 @@ public class TransactionFormFragment extends MenuFragment implements
      * Initialize views with default data for new transactions
      */
     private void initializeViews(final FragmentTransactionFormBinding binding) {
-        Context context = binding.inputTransactionType.getContext();
+        final Context context = binding.getRoot().getContext();
+        final Account account = this.account;
 
         long now = System.currentTimeMillis();
         binding.inputDate.setText(DATE_FORMATTER.print(now));
         binding.inputTime.setText(TIME_FORMATTER.print(now));
         mTime = mDate = Calendar.getInstance();
 
+        TransactionType transactionType = GnuCashApplication.getDefaultTransactionType(context);
         binding.inputTransactionType.setAccountType(account.getAccountType());
-        TransactionType txType = GnuCashApplication.getDefaultTransactionType(context);
-        binding.inputTransactionType.setChecked(txType);
+        binding.inputTransactionType.setChecked(transactionType);
 
-        Account account = this.account;
-        final Commodity commodity;
-        if (account != null) {
-            commodity = account.getCommodity();
-        } else {
-            String code = GnuCashApplication.getDefaultCurrencyCode();
-            commodity = Commodity.getInstance(code);
-        }
+        final Commodity commodity = account.getCommodity();
         binding.currencySymbol.setText(commodity.getSymbol());
         binding.inputTransactionAmount.setCommodity(commodity);
         binding.inputTransactionAmount.bindKeyboard(binding.calculatorKeyboard);
@@ -531,15 +528,7 @@ public class TransactionFormFragment extends MenuFragment implements
         });
 
         if (mUseDoubleEntry) {
-            String parentUID = account.getParentUID();
-            while ((parentUID != null) && !parentUID.equals(rootAccountUID)) {
-                if (!TextUtils.isEmpty(parentUID)) {
-                    setSelectedTransferAccount(binding, parentUID);
-                    break; //we found a parent with default transfer setting
-                }
-                Account parent = accountNameAdapter.getAccount(parentUID);
-                parentUID = parent.getParentUID();
-            }
+            setSelectedTransferAccount(binding, account.getDefaultTransferAccountUID());
         } else {
             binding.layoutDoubleEntry.setVisibility(View.GONE);
             binding.btnSplitEditor.setVisibility(View.GONE);
@@ -688,7 +677,7 @@ public class TransactionFormFragment extends MenuFragment implements
      */
     private void setSelectedTransferAccount(FragmentTransactionFormBinding binding, @Nullable String accountUID) {
         int position = accountTransferNameAdapter.getPosition(accountUID);
-        binding.inputTransferAccountSpinner.setSelection(position);
+        binding.inputTransferAccountSpinner.setSelection(max(position, 0));
     }
 
     /**

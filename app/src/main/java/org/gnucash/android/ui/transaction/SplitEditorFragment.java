@@ -223,9 +223,8 @@ public class SplitEditorFragment extends MenuFragment {
      * @return Returns the split view which was added
      */
     private View addSplitView(Split split) {
-        ItemSplitEntryBinding binding = ItemSplitEntryBinding.inflate(getLayoutInflater(), mBinding.splitListLayout, false);
+        ItemSplitEntryBinding binding = ItemSplitEntryBinding.inflate(getLayoutInflater(), mBinding.splitListLayout, true);
         View splitView = binding.getRoot();
-        mBinding.splitListLayout.addView(splitView, 0);
         SplitViewHolder viewHolder = new SplitViewHolder(binding);
         viewHolder.bind(split);
         splitView.setTag(viewHolder);

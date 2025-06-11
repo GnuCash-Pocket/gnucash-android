@@ -55,8 +55,7 @@ limitations under the License.
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/calculator_keyboard"
-        android:layout_below="@id/imbalance_layout"
-        android:padding="@dimen/dialog_padding">
+        android:layout_below="@id/imbalance_layout">
 
         <LinearLayout
             android:id="@+id/split_list_layout"

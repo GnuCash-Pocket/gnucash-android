@@ -22,7 +22,10 @@ limitations under the License.
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="40dp">
+        android:minHeight="40dp"
+        android:paddingStart="@dimen/dialog_padding"
+        android:paddingTop="4dp"
+        android:paddingEnd="@dimen/dialog_padding">
 
         <TextView
             android:id="@+id/split_currency_symbol"
@@ -47,7 +50,10 @@ limitations under the License.
                 android:hint="@string/label_transaction_amount"
                 android:nextFocusDown="@+id/input_split_memo"
                 android:textColor="@color/debit_red"
-                android:textSize="18sp" />
+                android:textSize="18sp">
+
+                <requestFocus />
+            </org.gnucash.android.ui.util.widget.CalculatorEditText>
         </com.google.android.material.textfield.TextInputLayout>
 
         <org.gnucash.android.ui.util.widget.TransactionTypeSwitch
@@ -57,9 +63,8 @@ limitations under the License.
             android:layout_gravity="center_vertical"
             android:layout_marginStart="4dp"
             android:checked="false"
-            android:textColor="@color/debit_red"
-            android:textOff="@string/label_credit"
-            android:textOn="@string/label_debit"
+            android:textOff="@string/label_debit"
+            android:textOn="@string/label_credit"
             android:textSize="14sp"
             tools:text="@string/label_debit" />
 
@@ -81,12 +86,18 @@ limitations under the License.
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:minHeight="40dp" />
+        android:minHeight="40dp"
+        android:paddingStart="@dimen/dialog_padding"
+        android:paddingTop="4dp"
+        android:paddingEnd="@dimen/dialog_padding" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/name_text_input_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/dialog_padding"
+        android:paddingTop="4dp"
+        android:paddingEnd="@dimen/dialog_padding">
 
         <EditText
             android:id="@+id/input_split_memo"

@@ -48,7 +48,10 @@
                         android:inputType="textCapSentences"
                         android:nextFocusDown="@+id/input_transaction_amount"
                         android:singleLine="true"
-                        android:textSize="22sp"></com.google.android.material.textfield.MaterialAutoCompleteTextView>
+                        android:textSize="22sp">
+
+                        <requestFocus />
+                    </com.google.android.material.textfield.MaterialAutoCompleteTextView>
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
@@ -70,10 +73,10 @@
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="0dp"
-                    android:gravity="center_vertical"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
-                    android:layout_weight="1">
+                    android:layout_weight="1"
+                    android:gravity="center_vertical">
 
                     <org.gnucash.android.ui.util.widget.CalculatorEditText
                         android:id="@+id/input_transaction_amount"
@@ -92,9 +95,8 @@
                     android:layout_marginStart="4dp"
                     android:checked="false"
                     android:gravity="center_vertical"
-                    android:textColor="@color/debit_red"
-                    android:textOff="@string/label_credit"
-                    android:textOn="@string/label_debit"
+                    android:textOff="@string/label_debit"
+                    android:textOn="@string/label_credit"
                     android:textSize="14sp"
                     tools:text="@string/label_debit" />
 
