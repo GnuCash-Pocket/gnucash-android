@@ -224,14 +224,23 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
         @Nullable Integer moveTransactionsAccountIndex,
         @Nullable Integer moveAccountsAccountIndex
     ) {
+        if (TextUtils.isEmpty(accountUID)) {
+            return;
+        }
         if ((mTransactionCount > 0) && (moveTransactionsAccountIndex != null)) {
             String targetAccountUID = accountNameAdapterTransactionsDestination.getUID(moveTransactionsAccountIndex);
+            if (TextUtils.isEmpty(targetAccountUID)) {
+                return;
+            }
             //move all the splits
             splitsDbAdapter.reassignAccount(accountUID, targetAccountUID);
         }
 
         if ((mSubAccountCount > 0) && (moveAccountsAccountIndex != null)) {
             String targetAccountUID = accountNameAdapterAccountsDestination.getUID(moveAccountsAccountIndex);
+            if (TextUtils.isEmpty(targetAccountUID)) {
+                return;
+            }
             accountsDbAdapter.reassignDescendantAccounts(accountUID, targetAccountUID);
         }
 
