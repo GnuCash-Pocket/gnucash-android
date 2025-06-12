@@ -354,24 +354,6 @@ public abstract class BaseReportFragment extends MenuFragment implements
         return dataSet.getYMax() - dataSet.getYMin();
     }
 
-    protected static <E extends Entry, T extends IDataSet<E>> List<E> getYVals(ChartData<T> data) {
-        List<E> values = new ArrayList<>();
-        List<T> dataSets = data.getDataSets();
-        for (T dataSet : dataSets) {
-            values.addAll(getYVals(dataSet));
-        }
-        return values;
-    }
-
-    protected static <E extends Entry> List<E> getYVals(IDataSet<E> dataSet) {
-        List<E> values = new ArrayList<>();
-        final int count = dataSet.getEntryCount();
-        for (int i = 0; i < count; i++) {
-            values.add(dataSet.getEntryForIndex(i));
-        }
-        return values;
-    }
-
     @ColorInt
     protected int getTextColor(@NonNull Context context) {
         return getTextColorPrimary(context);

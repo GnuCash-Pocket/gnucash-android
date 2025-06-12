@@ -19,6 +19,7 @@ package org.gnucash.android.ui.report.barchart;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -69,11 +70,7 @@ import timber.log.Timber;
  */
 public class StackedBarChartFragment extends BaseReportFragment {
 
-    private static final String X_AXIS_MONTH_PATTERN = "MMM YY";
-    private static final String X_AXIS_QUARTER_PATTERN = "Q%d %s";
-    private static final String X_AXIS_YEAR_PATTERN = "YYYY";
-
-    private static final int ANIMATION_DURATION = 2000;
+    private static final int ANIMATION_DURATION = (int) DateUtils.SECOND_IN_MILLIS;
     private static final int NO_DATA_BAR_COUNTS = 3;
 
     private boolean mTotalPercentageMode = true;
@@ -120,7 +117,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
      */
     protected BarData getData(@NonNull Context context) {
         List<BarEntry> entries = new ArrayList<>();
-        List<String> labels = new ArrayList<>();
+        List<String> stackLabels = new ArrayList<>();
         List<Integer> colors = new ArrayList<>();
         Map<String, Integer> accountToColorMap = new LinkedHashMap<>();
         AccountType accountType = mAccountType;
@@ -152,6 +149,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
                     break;
             }
             List<Float> stack = new ArrayList<>();
+            List<String> labels = new ArrayList<>();
             String where = DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND "
                 + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?";
             String[] whereArgs = new String[]{accountType.name()};
@@ -184,19 +182,19 @@ public class StackedBarChartFragment extends BaseReportFragment {
                 }
             }
 
-            String stackLabels = labels.subList(labels.size() - stack.size(), labels.size()).toString();
             if (stack.isEmpty()) {
                 stack.add(0f);
             }
-            entries.add(new BarEntry(i, toFloatArray(stack), stackLabels));
+            entries.add(new BarEntry(i, toFloatArray(stack), labels));
+            stackLabels.addAll(labels);
         }
 
         BarDataSet dataSet = new BarDataSet(entries, accountType.name());
         dataSet.setDrawValues(false);
-        dataSet.setStackLabels(labels.toArray(new String[0]));
+        dataSet.setStackLabels(stackLabels.toArray(new String[0]));
         dataSet.setColors(colors);
 
-        if (getYValueSum(dataSet) == 0) {
+        if ((dataSet.getEntryCount() == 0) || (getYValueSum(dataSet) == 0)) {
             mChartDataPresent = false;
             return getEmptyData(context);
         }
@@ -371,22 +369,21 @@ public class StackedBarChartFragment extends BaseReportFragment {
     public void onValueSelected(Entry e, Highlight h) {
         if (e == null) return;
         BarEntry entry = (BarEntry) e;
-        BarData data = mBinding.barChart.getData();
-        int dataSetIndex = h.getDataSetIndex();
         int index = h.getStackIndex() == -1 ? 0 : h.getStackIndex();
-        String stackLabels = entry.getData().toString();
-        String label = data.getDataSetLabels()[dataSetIndex] + ", "
-            + stackLabels.substring(1, stackLabels.length() - 1).split(",")[index];
         float value = entry.getYVals()[index];
-        float sum = 0;
+        List<String> labels = (List<String>) entry.getData();
+        String label = labels.get(index);
+
+        final float total;
         if (mTotalPercentageMode) {
-            List<BarEntry> yVals = getYVals(data.getDataSetByIndex(dataSetIndex));
-            for (BarEntry barEntry : yVals) {
-                sum += barEntry.getNegativeSum() + barEntry.getPositiveSum();
-            }
+            BarData data = mBinding.barChart.getData();
+            int dataSetIndex = h.getDataSetIndex();
+            IBarDataSet dataSet = data.getDataSetByIndex(dataSetIndex);
+            total = getYValueSum(dataSet);
         } else {
-            sum = entry.getNegativeSum() + entry.getPositiveSum();
+            total = entry.getNegativeSum() + entry.getPositiveSum();
         }
-        mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label.trim(), value, (value * 100) / sum));
+        final float percentage = (value * 100) / total;
+        mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label.trim(), value, percentage));
     }
 }

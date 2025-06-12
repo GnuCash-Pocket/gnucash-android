@@ -401,7 +401,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
         ILineDataSet dataSet = data.getDataSetByIndex(dataSetIndex);
         String label = dataSet.getLabel();
         float value = e.getY();
-        float sum = getYValueSum(data.getDataSetByIndex(dataSetIndex));
+        float sum = getYValueSum(dataSet);
         mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label, value, (value * 100) / sum));
     }
 
