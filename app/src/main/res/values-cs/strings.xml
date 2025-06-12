@@ -487,4 +487,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">Komprimovat data</string>
+    <string name="title_progress_processing_accounts">Zpracování účtů</string>
+    <string name="title_progress_processing_books">Zpracování knih</string>
+    <string name="title_progress_processing_budgets">Zpracování rozpočtů</string>
+    <string name="title_progress_processing_commodities">Zpracování komodit</string>
+    <string name="title_progress_processing_prices">Zpracování cen</string>
+    <string name="title_progress_processing_schedules">Zpracování harmonogramů</string>
+    <string name="title_progress_processing_transactions">Zpracování transakcí</string>
 </resources>

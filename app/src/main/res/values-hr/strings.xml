@@ -484,4 +484,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">Komprimiraj podatke</string>
+    <string name="title_progress_processing_accounts">Obrada računa</string>
+    <string name="title_progress_processing_books">Obrada knjiga</string>
+    <string name="title_progress_processing_budgets">Obrada proračuna</string>
+    <string name="title_progress_processing_commodities">Obrada robe</string>
+    <string name="title_progress_processing_prices">Obrada cijene</string>
+    <string name="title_progress_processing_schedules">Obrada rasporedi</string>
+    <string name="title_progress_processing_transactions">Obrada transakcija</string>
 </resources>

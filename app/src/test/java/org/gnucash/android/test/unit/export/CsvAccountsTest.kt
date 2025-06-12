@@ -21,7 +21,7 @@ class CsvAccountsTest : BookHelperTest() {
         }
 
         val exportedFile = CsvAccountExporter(context, exportParameters, bookUID)
-            .generateExport()
+            .export()
 
         assertThat(exportedFile).isNotNull()
         val file = exportedFile!!.toFile()

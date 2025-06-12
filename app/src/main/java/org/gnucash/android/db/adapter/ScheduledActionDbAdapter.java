@@ -248,11 +248,15 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
     }
 
     @NotNull
-    public List<ScheduledAction> getRecords(@NotNull ScheduledAction.ActionType type) {
-        Cursor cursor = fetchAllRecords(
-            DatabaseSchema.ScheduledActionEntry.COLUMN_TYPE + "=?",
-            new String[]{type.name()}, null
-        );
-        return getRecords(cursor);
+    public List<ScheduledAction> getRecords(@NotNull ScheduledAction.ActionType actionType) {
+        final String where = ScheduledActionEntry.COLUMN_TYPE + "=?";
+        final String[] whereArgs = new String[]{actionType.name()};
+        return getAllRecords(where, whereArgs);
+    }
+
+    public long getRecordsCount(@NotNull ScheduledAction.ActionType actionType) {
+        final String where = ScheduledActionEntry.COLUMN_TYPE + "=?";
+        final String[] whereArgs = new String[]{actionType.name()};
+        return getRecordsCount(where, whereArgs);
     }
 }

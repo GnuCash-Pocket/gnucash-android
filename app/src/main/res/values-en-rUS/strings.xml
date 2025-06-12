@@ -480,4 +480,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">Compress the data</string>
+    <string name="title_progress_processing_accounts">Processing accounts</string>
+    <string name="title_progress_processing_books">Processing books</string>
+    <string name="title_progress_processing_budgets">Processing budgets</string>
+    <string name="title_progress_processing_commodities">Processing commodities</string>
+    <string name="title_progress_processing_prices">Processing prices</string>
+    <string name="title_progress_processing_schedules">Processing schedules</string>
+    <string name="title_progress_processing_transactions">Processing transactions</string>
 </resources>

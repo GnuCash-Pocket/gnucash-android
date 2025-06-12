@@ -179,13 +179,13 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
             null,
             null)) {
             if (cursor.moveToFirst()) {
-                return cursor.getString(cursor.getColumnIndexOrThrow(BookEntry.COLUMN_UID));
+                return cursor.getString(0);
             }
             NoActiveBookFoundException e = new NoActiveBookFoundException(
                 "There is no active book in the app.\n"
                     + "This should NEVER happen - fix your bugs!\n"
                     + getNoActiveBookFoundExceptionInfo());
-            Timber.e(e);
+            // Timber.e(e);
             throw e;
         }
     }
