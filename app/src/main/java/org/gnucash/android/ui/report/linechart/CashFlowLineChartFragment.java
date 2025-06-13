@@ -376,10 +376,12 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
 
             case R.id.menu_toggle_average_lines:
                 if (mBinding.lineChart.getAxisLeft().getLimitLines().isEmpty()) {
-                    for (ILineDataSet set : mBinding.lineChart.getData().getDataSets()) {
-                        LimitLine line = new LimitLine(getYValueSum(set) / set.getEntryCount(), set.getLabel());
+                    for (ILineDataSet dataSet : mBinding.lineChart.getData().getDataSets()) {
+                        int entryCount = dataSet.getEntryCount();
+                        float limit = (entryCount != 0f) ? getYValueSum(dataSet) / entryCount : 0f;
+                        LimitLine line = new LimitLine(limit, dataSet.getLabel());
                         line.enableDashedLine(10, 5, 0);
-                        line.setLineColor(set.getColor());
+                        line.setLineColor(dataSet.getColor());
                         mBinding.lineChart.getAxisLeft().addLimitLine(line);
                     }
                 } else {
