@@ -678,7 +678,7 @@ public class TransactionFormFragment extends MenuFragment implements
      */
     private void setSelectedTransferAccount(FragmentTransactionFormBinding binding, @Nullable String accountUID) {
         int position = accountTransferNameAdapter.getPosition(accountUID);
-        binding.inputTransferAccountSpinner.setSelection(max(position, 0));
+        binding.inputTransferAccountSpinner.setSelection(position);
     }
 
     /**
