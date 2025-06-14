@@ -244,18 +244,18 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
     /**
      * Persist the model object to the database as records using the {@code updateMethod}
      *
-     * @param modelList    List of records
+     * @param models    List of records
      * @param updateMethod Method to use when persisting them
      * @return Number of rows affected in the database
      */
-    private long doAddModels(@NonNull final List<Model> modelList, UpdateMethod updateMethod) throws SQLException {
+    private long doAddModels(@NonNull final List<Model> models, UpdateMethod updateMethod) throws SQLException {
         long nRow = 0;
         final SQLiteStatement statement;
         switch (updateMethod) {
             case update:
                 statement = getUpdateStatement();
                 synchronized (statement) {
-                    for (Model model : modelList) {
+                    for (Model model : models) {
                         bind(statement, model).execute();
                         nRow++;
                     }
@@ -264,8 +264,8 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
             case insert:
                 statement = getInsertStatement();
                 synchronized (statement) {
-                    for (Model model : modelList) {
-                        bind(statement, model).execute();
+                    for (Model model : models) {
+                        model.id = bind(statement, model).executeInsert();
                         nRow++;
                     }
                 }
@@ -273,8 +273,8 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
             default:
                 statement = getReplaceStatement();
                 synchronized (statement) {
-                    for (Model model : modelList) {
-                        bind(statement, model).execute();
+                    for (Model model : models) {
+                        model.id = bind(statement, model).executeInsert();
                         nRow++;
                     }
                 }
@@ -307,6 +307,9 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
             beginTransaction();
             nRow = doAddModels(modelList, updateMethod);
             setTransactionSuccessful();
+            if (isCached) {
+                cache.clear();
+            }
         } finally {
             endTransaction();
         }

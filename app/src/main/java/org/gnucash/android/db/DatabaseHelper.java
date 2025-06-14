@@ -230,6 +230,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         + RecurrenceEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP); "
         + createUpdatedAtTrigger(RecurrenceEntry.TABLE_NAME);
 
+    @NonNull
+    private final Context context;
 
     /**
      * Constructor
@@ -237,9 +239,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * @param context      Application context
      * @param databaseName Name of the database
      */
-    public DatabaseHelper(Context context, String databaseName) {
+    public DatabaseHelper(@NonNull Context context, String databaseName) {
         super(context, databaseName, null, DatabaseSchema.DATABASE_VERSION);
-
+        this.context = context;
     }
 
     /**
@@ -260,7 +262,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        createDatabaseTables(db);
+        createDatabaseTables(context, db);
     }
 
     @Override
@@ -270,8 +272,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        MigrationHelper.migrate(db, oldVersion, newVersion);
+    public void onUpgrade(@NonNull SQLiteDatabase db, int oldVersion, int newVersion) {
+        MigrationHelper.migrate(context, db, oldVersion, newVersion);
     }
 
     /**
@@ -279,7 +281,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      *
      * @param db Database instance
      */
-    private void createDatabaseTables(SQLiteDatabase db) {
+    private void createDatabaseTables(@NonNull Context context, @NonNull SQLiteDatabase db) {
         Timber.i("Creating database tables");
         db.execSQL(ACCOUNTS_TABLE_CREATE);
         db.execSQL(TRANSACTIONS_TABLE_CREATE);
@@ -330,7 +332,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         createResetBalancesTriggers(db);
 
         try {
-            MigrationHelper.importCommodities(db);
+            MigrationHelper.importCommodities(context, db);
         } catch (SAXException | ParserConfigurationException | IOException e) {
             String msg = "Error loading currencies into the database";
             Timber.e(e, msg);

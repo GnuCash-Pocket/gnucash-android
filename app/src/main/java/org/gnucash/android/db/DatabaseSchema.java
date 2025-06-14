@@ -40,7 +40,7 @@ public class DatabaseSchema {
      * Version number of database containing accounts and transactions info.
      * With any change to the database schema, this number must increase
      */
-    public static final int DATABASE_VERSION = 21;
+    public static final int DATABASE_VERSION = 22;
 
     //no instances are to be instantiated
     private DatabaseSchema() {
