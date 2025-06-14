@@ -40,7 +40,7 @@ public class DatabaseSchema {
      * Version number of database containing accounts and transactions info.
      * With any change to the database schema, this number must increase
      */
-    public static final int DATABASE_VERSION = 21;
+    public static final int DATABASE_VERSION = 23;
 
     //no instances are to be instantiated
     private DatabaseSchema() {
@@ -279,6 +279,12 @@ public class DatabaseSchema {
         @Column(Cursor.FIELD_TYPE_STRING)
         public static final String COLUMN_CUSIP = "cusip";
 
+        /**
+         * TRUE if prices are to be downloaded for this commodity from a quote source
+         */
+        @Column(Cursor.FIELD_TYPE_INTEGER)
+        @Deprecated
+        public static final String COLUMN_QUOTE_FLAG = "quote_flag";
         /**
          * Prices are to be downloaded for this commodity from a quote source.
          */
