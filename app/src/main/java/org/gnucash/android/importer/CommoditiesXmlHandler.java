@@ -17,6 +17,8 @@ package org.gnucash.android.importer;
 
 import android.database.sqlite.SQLiteDatabase;
 
+import androidx.annotation.Nullable;
+
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
@@ -27,6 +29,8 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * XML stream handler for parsing currencies to add to the database
@@ -44,15 +48,26 @@ public class CommoditiesXmlHandler extends DefaultHandler {
      * List of commodities parsed from the XML file.
      * They will be all added to db at once at the end of the document
      */
-    private final List<Commodity> mCommodities = new ArrayList<>();
+    private final Map<String, Commodity> commodities = new TreeMap<>();
 
     private final CommoditiesDbAdapter mCommoditiesDbAdapter;
 
-    public CommoditiesXmlHandler(SQLiteDatabase db) {
+    public CommoditiesXmlHandler(@Nullable SQLiteDatabase db) {
         if (db == null) {
             mCommoditiesDbAdapter = GnuCashApplication.getCommoditiesDbAdapter();
         } else {
             mCommoditiesDbAdapter = new CommoditiesDbAdapter(db, false);
+        }
+    }
+
+    @Override
+    public void startDocument() throws SAXException {
+        super.startDocument();
+        List<Commodity> commoditiesDb = mCommoditiesDbAdapter.getAllRecords();
+        commodities.clear();
+        for (Commodity commodity : commoditiesDb) {
+            String key = commodity.getNamespace() + "::" + commodity.getMnemonic();;
+            commodities.put(key, commodity);
         }
     }
 
@@ -70,18 +85,28 @@ public class CommoditiesXmlHandler extends DefaultHandler {
             String smallestFraction = attributes.getValue(ATTR_SMALLEST_FRACTION);
             String localSymbol = attributes.getValue(ATTR_LOCAL_SYMBOL);
 
-            Commodity commodity = new Commodity(fullname, isoCode, Integer.parseInt(smallestFraction));
-            commodity.setNamespace(namespace);
+            if (Commodity.COMMODITY_ISO4217.equals(namespace)) {
+                namespace = Commodity.COMMODITY_CURRENCY;
+            }
+            String key = namespace + "::" + isoCode;
+            Commodity commodity = commodities.get(key);
+            if (commodity == null) {
+                commodity = new Commodity(fullname, isoCode, Integer.parseInt(smallestFraction));
+                commodity.setNamespace(namespace);
+                commodities.put(key, commodity);
+            } else {
+                commodity.setFullname(fullname);
+                commodity.setSmallestFraction(Integer.parseInt(smallestFraction));
+            }
             commodity.setCusip(cusip);
             commodity.setLocalSymbol(localSymbol);
-
-            mCommodities.add(commodity);
         }
     }
 
     @Override
-    public void endDocument() throws SAXException {
-        mCommoditiesDbAdapter.bulkAddRecords(mCommodities, DatabaseAdapter.UpdateMethod.insert);
+    public void endDocument() {
+        List<Commodity> records = new ArrayList<>(commodities.values());
+        mCommoditiesDbAdapter.bulkAddRecords(records, DatabaseAdapter.UpdateMethod.replace);
         mCommoditiesDbAdapter.initCommon();
     }
 }

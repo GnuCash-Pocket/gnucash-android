@@ -23,14 +23,15 @@ import static org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry;
 import static org.gnucash.android.db.DatabaseSchema.CommodityEntry;
 import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 
 import androidx.annotation.NonNull;
 
 import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.importer.CommoditiesXmlHandler;
 import org.gnucash.android.model.Commodity;
 import org.xml.sax.InputSource;
@@ -60,12 +61,12 @@ public class MigrationHelper {
     /**
      * Imports commodities into the database from XML resource file
      */
-    static void importCommodities(SQLiteDatabase db) throws SAXException, ParserConfigurationException, IOException {
+    static void importCommodities(@NonNull Context context, @NonNull SQLiteDatabase db) throws SAXException, ParserConfigurationException, IOException {
         SAXParserFactory spf = SAXParserFactory.newInstance();
         SAXParser sp = spf.newSAXParser();
         XMLReader xr = sp.getXMLReader();
 
-        InputStream commoditiesInputStream = GnuCashApplication.getAppContext().getResources()
+        InputStream commoditiesInputStream = context.getResources()
             .openRawResource(R.raw.iso_4217_currencies);
         BufferedInputStream bos = new BufferedInputStream(commoditiesInputStream);
 
@@ -76,7 +77,7 @@ public class MigrationHelper {
         xr.parse(new InputSource(bos));
     }
 
-    public static void migrate(SQLiteDatabase db, int oldVersion, int newVersion) {
+    public static void migrate(@NonNull Context context, @NonNull SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion < 16) {
             migrateTo16(db);
         }
@@ -91,6 +92,9 @@ public class MigrationHelper {
         }
         if ((oldVersion >= 19) && (oldVersion < 21)) {
             migrateTo21(db);
+        }
+        if (oldVersion < 22) {
+            migrateTo22(context, db);
         }
     }
 
@@ -246,6 +250,23 @@ public class MigrationHelper {
             db.execSQL(sqlTransactionCurrency);
         } catch (SQLException e) {
             Timber.e(e);
+        }
+    }
+
+    /**
+     * Upgrade the database to version 22.
+     *
+     * @param context the context.
+     * @param db      the database.
+     */
+    private static void migrateTo22(@NonNull Context context, @NonNull SQLiteDatabase db) {
+        Timber.i("Upgrading database to version 22");
+        try {
+            importCommodities(context, db);
+        } catch (SAXException | ParserConfigurationException | IOException e) {
+            String msg = "Error loading currencies into the database";
+            Timber.e(e, msg);
+            throw new SQLiteException(msg, e);
         }
     }
 }
