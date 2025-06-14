@@ -299,7 +299,8 @@ public class PieChartFragment extends BaseReportFragment {
         String label = entry.getLabel();
         float value = entry.getValue();
         PieData data = mBinding.pieChart.getData();
-        float percent = (value * 100) / data.getYValueSum();
+        float total = data.getYValueSum();
+        float percent = (total != 0f) ? ((value * 100) / total) : 0f;
         mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label, value, percent));
     }
 }

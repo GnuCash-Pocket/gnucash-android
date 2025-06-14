@@ -369,9 +369,11 @@ public class StackedBarChartFragment extends BaseReportFragment {
     public void onValueSelected(Entry e, Highlight h) {
         if (e == null) return;
         BarEntry entry = (BarEntry) e;
-        int index = h.getStackIndex() == -1 ? 0 : h.getStackIndex();
+        int index = h.getStackIndex();
+        if (index < 0) return;
         float value = entry.getYVals()[index];
         List<String> labels = (List<String>) entry.getData();
+        if (labels.isEmpty()) return;
         String label = labels.get(index);
 
         final float total;
@@ -383,7 +385,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
         } else {
             total = entry.getNegativeSum() + entry.getPositiveSum();
         }
-        final float percentage = (value * 100) / total;
+        final float percentage = (total != 0f) ? ((value * 100) / total) : 0f;
         mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label.trim(), value, percentage));
     }
 }

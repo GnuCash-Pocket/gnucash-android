@@ -396,13 +396,14 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     @Override
     public void onValueSelected(Entry e, Highlight h) {
         if (e == null) return;
+        float value = e.getY();
         int dataSetIndex = h.getDataSetIndex();
         LineData data = mBinding.lineChart.getData();
         ILineDataSet dataSet = data.getDataSetByIndex(dataSetIndex);
         String label = dataSet.getLabel();
-        float value = e.getY();
-        float sum = getYValueSum(dataSet);
-        mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label, value, (value * 100) / sum));
+        float total = getYValueSum(dataSet);
+        float percent = (total != 0f) ? ((value * 100) / total) : 0f;
+        mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label, value, percent));
     }
 
 }
