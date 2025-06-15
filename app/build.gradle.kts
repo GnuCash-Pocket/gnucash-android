@@ -13,7 +13,7 @@ plugins {
 }
 
 val versionMajor = 2
-val versionMinor = 5
+val versionMinor = 6
 val versionPatch = 0
 val versionBuild = 0
 
@@ -32,7 +32,7 @@ android {
         applicationId = "org.gnucash.pocket"
         minSdk = 21
         targetSdk = 34
-        versionCode = versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100 + versionBuild
+        versionCode = (((((versionMajor * 100) + versionMinor) * 1000) + versionPatch) * 1000) + versionBuild
         versionName = "${versionMajor}.${versionMinor}.${versionPatch}"
         resValue("string", "app_name", "GnuCash")
         resValue("string", "app_playstore_url", "market://details?id=${applicationId}")
