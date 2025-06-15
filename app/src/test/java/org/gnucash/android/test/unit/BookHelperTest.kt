@@ -24,19 +24,13 @@ import javax.xml.parsers.SAXParser
 import javax.xml.parsers.SAXParserFactory
 
 abstract class BookHelperTest : GnuCashTest() {
-    @JvmField
     protected var importedDb: SQLiteDatabase? = null
     protected lateinit var booksDbAdapter: BooksDbAdapter
-    @JvmField
-    protected var transactionsDbAdapter: TransactionsDbAdapter? = null
-    @JvmField
-    protected var accountsDbAdapter: AccountsDbAdapter? = null
-    @JvmField
-    protected var scheduledActionDbAdapter: ScheduledActionDbAdapter? = null
-    @JvmField
-    protected var commoditiesDbAdapter: CommoditiesDbAdapter? = null
-    @JvmField
-    protected var budgetsDbAdapter: BudgetsDbAdapter? = null
+    protected lateinit var transactionsDbAdapter: TransactionsDbAdapter
+    protected lateinit var accountsDbAdapter: AccountsDbAdapter
+    protected lateinit var scheduledActionDbAdapter: ScheduledActionDbAdapter
+    protected lateinit var commoditiesDbAdapter: CommoditiesDbAdapter
+    protected lateinit var budgetsDbAdapter: BudgetsDbAdapter
 
     protected fun importGnuCashXml(filename: String): String {
         val handler = GncXmlHandler()
@@ -57,11 +51,11 @@ abstract class BookHelperTest : GnuCashTest() {
     }
 
     private fun setUpDbAdapters(bookUID: String) {
-        val databaseHelper = DatabaseHelper(GnuCashApplication.getAppContext(), bookUID)
+        val databaseHelper = DatabaseHelper(context, bookUID)
         val mainDb = databaseHelper.readableDatabase
         commoditiesDbAdapter = CommoditiesDbAdapter(mainDb)
-        transactionsDbAdapter = TransactionsDbAdapter(commoditiesDbAdapter!!)
-        accountsDbAdapter = AccountsDbAdapter(transactionsDbAdapter!!)
+        transactionsDbAdapter = TransactionsDbAdapter(commoditiesDbAdapter)
+        accountsDbAdapter = AccountsDbAdapter(transactionsDbAdapter)
         val recurrenceDbAdapter = RecurrenceDbAdapter(mainDb)
         scheduledActionDbAdapter = ScheduledActionDbAdapter(recurrenceDbAdapter)
         budgetsDbAdapter = BudgetsDbAdapter(recurrenceDbAdapter)
@@ -77,22 +71,11 @@ abstract class BookHelperTest : GnuCashTest() {
 
     @After
     open fun tearDown() {
-        if (transactionsDbAdapter != null) {
-            transactionsDbAdapter!!.close()
-            transactionsDbAdapter = null
-        }
-        if (accountsDbAdapter != null) {
-            accountsDbAdapter!!.close()
-            accountsDbAdapter = null
-        }
-        if (scheduledActionDbAdapter != null) {
-            scheduledActionDbAdapter!!.close()
-            scheduledActionDbAdapter = null
-        }
-        if (importedDb != null) {
-            importedDb!!.close()
-            importedDb = null
-        }
+        transactionsDbAdapter.close()
+        accountsDbAdapter.close()
+        scheduledActionDbAdapter.close()
+        importedDb?.close()
+        importedDb = null
     }
 
     companion object {

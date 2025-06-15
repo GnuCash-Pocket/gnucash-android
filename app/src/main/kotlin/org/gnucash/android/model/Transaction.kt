@@ -18,6 +18,7 @@ package org.gnucash.android.model
 import android.content.Intent
 import org.gnucash.android.BuildConfig
 import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.util.formatShortDate
 import java.util.Date
 
 /**
@@ -126,7 +127,7 @@ class Transaction : BaseModel {
         if (!imbalance.isAmountZero) {
             // yes, this is on purpose the account UID is set to the currency.
             // This should be overridden before saving to db
-            val split = Split(imbalance, commodity.currencyCode)
+            val split = Split(imbalance, accountUID = commodity.uid)
             split.type = if (imbalance.isNegative) TransactionType.CREDIT else TransactionType.DEBIT
             addSplit(split)
             return split
@@ -296,6 +297,10 @@ class Transaction : BaseModel {
      */
     fun setTime(timeInMillis: Long) {
         timeMillis = timeInMillis
+    }
+
+    override fun toString(): String {
+        return "{description: $description, date: ${formatShortDate(timeMillis)}}"
     }
 
     companion object {

@@ -481,4 +481,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">Compresser les données</string>
+    <string name="title_progress_processing_accounts">Traitement des comptes</string>
+    <string name="title_progress_processing_books">Traitement des livres</string>
+    <string name="title_progress_processing_budgets">Traitement des budgets</string>
+    <string name="title_progress_processing_commodities">Traitement des marchandises</string>
+    <string name="title_progress_processing_prices">Traitement des prix</string>
+    <string name="title_progress_processing_schedules">Traitement des échéanciers</string>
+    <string name="title_progress_processing_transactions">Traitement des transactions</string>
 </resources>

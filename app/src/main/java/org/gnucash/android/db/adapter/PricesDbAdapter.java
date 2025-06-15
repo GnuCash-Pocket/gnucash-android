@@ -141,7 +141,7 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
         // only get the latest price
         Cursor cursor = mDb.query(PriceEntry.TABLE_NAME, null, where, whereArgs, null, null, PriceEntry.COLUMN_DATE + " DESC", "1");
         try {
-            if (cursor.moveToNext()) {
+            if (cursor.moveToFirst()) {
                 String commodityUIDdb = cursor.getString(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_COMMODITY_UID));
                 long valueNum = cursor.getLong(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_VALUE_NUM));
                 long valueDenom = cursor.getLong(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_VALUE_DENOM));

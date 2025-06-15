@@ -481,4 +481,11 @@
     <string name="title_import_book_backup">When importing a book?</string>
     <string name="summary_import_book_backup">Backup the active book before importing a book?</string>
     <string name="option_compress_export">Comprimi i dati</string>
+    <string name="title_progress_processing_accounts">Elaborazione dei conti</string>
+    <string name="title_progress_processing_books">Elaborazione dei libri contabili</string>
+    <string name="title_progress_processing_budgets">Elaborazione dei budget</string>
+    <string name="title_progress_processing_commodities">Elaborazione delle valute</string>
+    <string name="title_progress_processing_prices">Elaborazione dei prezzi</string>
+    <string name="title_progress_processing_schedules">Elaborazione dei calendari</string>
+    <string name="title_progress_processing_transactions">Elaborazione delle transazioni</string>
 </resources>

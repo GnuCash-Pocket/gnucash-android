@@ -49,7 +49,7 @@ class OfxExporterTest : GnuCashTest() {
             context, exportParameters,
             GnuCashApplication.getActiveBookUID()!!
         )
-        assertThrows(ExporterException::class.java) { exporter.generateExport() }
+        assertThrows(ExporterException::class.java) { exporter.export() }
     }
 
     /**
@@ -75,7 +75,7 @@ class OfxExporterTest : GnuCashTest() {
             context, exportParameters,
             GnuCashApplication.getActiveBookUID()!!
         )
-        val exportedFile = exporter.generateExport()
+        val exportedFile = exporter.export()
 
         assertThat(exportedFile).isNotNull()
         val file = File(exportedFile!!.path)

@@ -117,7 +117,7 @@ public class QifExporter extends Exporter {
 
     @Override
     // TODO write each commodity to separate file here, instead of splitting the file afterwards.
-    protected void writeExport(@NonNull ExportParams exportParams, @NonNull Writer writer) throws ExporterException, IOException {
+    protected void writeExport(@NonNull Writer writer, @NonNull ExportParams exportParams) throws ExporterException, IOException {
         String lastExportTimeStamp = Long.toString(mExportParams.getExportStartTime().getTime());
         TransactionsDbAdapter transactionsDbAdapter = mTransactionsDbAdapter;
 
@@ -366,15 +366,5 @@ public class QifExporter extends Exporter {
             }
         }
         return splitFiles;
-    }
-
-    /**
-     * Returns the mime type for this Exporter.
-     *
-     * @return MIME type as string
-     */
-    @NonNull
-    public String getExportMimeType() {
-        return "text/plain";
     }
 }
