@@ -46,6 +46,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
             CommodityEntry.COLUMN_LOCAL_SYMBOL,
             CommodityEntry.COLUMN_CUSIP,
             CommodityEntry.COLUMN_SMALLEST_FRACTION,
+            CommodityEntry.COLUMN_QUOTE_FLAG,
             CommodityEntry.COLUMN_QUOTE_SOURCE,
             CommodityEntry.COLUMN_QUOTE_TZ
         }, true);
@@ -89,11 +90,12 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
             stmt.bindString(5, commodity.getCusip());
         }
         stmt.bindLong(6, commodity.getSmallestFraction());
+        stmt.bindLong(7, commodity.getQuoteFlag() ? 1 : 0);
         if (commodity.getQuoteSource() != null) {
-            stmt.bindString(7, commodity.getQuoteSource());
+            stmt.bindString(8, commodity.getQuoteSource());
         }
         if (commodity.getQuoteTimeZoneId() != null) {
-            stmt.bindString(8, commodity.getQuoteTimeZoneId());
+            stmt.bindString(9, commodity.getQuoteTimeZoneId());
         }
 
         return stmt;
