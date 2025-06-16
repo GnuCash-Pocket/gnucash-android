@@ -303,11 +303,7 @@ public class AccountsActivity extends BaseDrawerActivity implements
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean firstRun = prefs.getBoolean(getString(R.string.key_first_run), true);
-
         if (firstRun) {
-            //default to using double entry and save the preference explicitly
-            prefs.edit().putBoolean(getString(R.string.key_use_double_entry), true).apply();
-
             startActivity(new Intent(context, FirstRunWizardActivity.class));
             finish();
             return;
@@ -420,9 +416,10 @@ public class AccountsActivity extends BaseDrawerActivity implements
             @Override
             public void onBookImported(@Nullable String bookUID) {
                 if (!TextUtils.isEmpty(currencyCode)) {
-                    String currencyUID = CommoditiesDbAdapter.getInstance().getCommodityUID(currencyCode);
+                    CommoditiesDbAdapter commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
+                    String currencyUID = commoditiesDbAdapter.getCommodityUID(currencyCode);
                     AccountsDbAdapter.getInstance().updateAllAccounts(DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID, currencyUID);
-                    GnuCashApplication.setDefaultCurrencyCode(activity, currencyCode);
+                    commoditiesDbAdapter.setDefaultCurrencyCode(currencyCode);
                 }
                 if (callback != null) {
                     callback.onBookImported(bookUID);

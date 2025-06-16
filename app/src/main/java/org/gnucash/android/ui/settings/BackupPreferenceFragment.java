@@ -36,13 +36,11 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
 import androidx.preference.TwoStatePreference;
@@ -71,8 +69,7 @@ import timber.log.Timber;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class BackupPreferenceFragment extends PreferenceFragmentCompat implements
-    Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
+public class BackupPreferenceFragment extends GnuPreferenceFragment {
 
     /**
      * Collects references to the UI elements and binds click listeners
@@ -85,19 +82,15 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
     private static final int REQUEST_BACKUP_FILE = 0x13;
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setTitle(R.string.title_backup_prefs);
+    protected int getTitleId() {
+        return R.string.title_backup_prefs;
     }
 
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         addPreferencesFromResource(R.xml.fragment_backup_preferences);
 
-        Context context = requireContext();
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        final Context context = requireContext();
 
         if (BuildConfig.DEBUG) {
             SwitchPreference delete_transaction_backup = findPreference(getString(R.string.key_delete_transaction_backup));
@@ -110,18 +103,23 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
         //if we are returning from DropBox authentication, save the key which was generated
 
         String keyDefaultEmail = getString(R.string.key_default_export_email);
-        Preference pref = findPreference(keyDefaultEmail);
-        String defaultEmail = sharedPrefs.getString(keyDefaultEmail, null);
-        if (defaultEmail != null && !defaultEmail.trim().isEmpty()) {
-            pref.setSummary(defaultEmail);
+        Preference preference = findPreference(keyDefaultEmail);
+        if (preference.getSummaryProvider() == null) {
+            preference.setSummaryProvider(p -> {
+                EditTextPreference textPreference = (EditTextPreference) p;
+                String email = textPreference.getText();
+                if (TextUtils.isEmpty(email) || email.trim().isEmpty()) {
+                    return getString(R.string.summary_default_export_email);
+                }
+                return email;
+            });
         }
-        pref.setOnPreferenceChangeListener(this);
 
         String keyDefaultExportFormat = getString(R.string.key_default_export_format);
-        pref = findPreference(keyDefaultExportFormat);
-        if (pref.getSummaryProvider() == null) {
-            pref.setSummaryProvider(preference -> {
-                ListPreference listPreference = (ListPreference) preference;
+        preference = findPreference(keyDefaultExportFormat);
+        if (preference.getSummaryProvider() == null) {
+            preference.setSummaryProvider(p -> {
+                ListPreference listPreference = (ListPreference) p;
                 String value = listPreference.getValue();
                 if (TextUtils.isEmpty(value)) {
                     return getString(R.string.summary_default_export_format);
@@ -130,113 +128,88 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
                 return getString(format.labelId);
             });
         }
-        pref.setOnPreferenceChangeListener(this);
 
-        pref = findPreference(getString(R.string.key_restore_backup));
-        pref.setOnPreferenceClickListener(this);
+        preference = findPreference(getString(R.string.key_restore_backup));
+        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(@NonNull Preference preference) {
+                restoreBackup();
+                return true;
+            }
+        });
 
-        pref = findPreference(getString(R.string.key_create_backup));
-        pref.setOnPreferenceClickListener(this);
+        preference = findPreference(getString(R.string.key_create_backup));
+        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(@NonNull Preference preference) {
+                final Fragment fragment = BackupPreferenceFragment.this;
+                final Activity activity = requireActivity();
+                BackupManager.backupActiveBookAsync(activity, result -> {
+                    int msg = result ? R.string.toast_backup_successful : R.string.toast_backup_failed;
+                    if (fragment.isVisible()) {
+                        View view = fragment.getView();
+                        Snackbar.make(view, msg, Snackbar.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(activity, msg, Toast.LENGTH_LONG).show();
+                    }
+                    return null;
+                });
+                return true;
+            }
+        });
 
-        pref = findPreference(getString(R.string.key_backup_location));
-        pref.setOnPreferenceClickListener(this);
+        preference = findPreference(getString(R.string.key_backup_location));
+        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(@NonNull Preference preference) {
+                String bookName = BooksDbAdapter.getInstance().getActiveBookDisplayName();
+                String fileName = Exporter.sanitizeFilename(bookName) + "_" + getString(R.string.label_backup_filename);
+
+                Intent createIntent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
+                    .setType(BackupManager.MIME_TYPE)
+                    .addCategory(Intent.CATEGORY_OPENABLE)
+                    .putExtra(Intent.EXTRA_TITLE, fileName);
+                try {
+                    startActivityForResult(createIntent, REQUEST_BACKUP_FILE);
+                } catch (ActivityNotFoundException e) {
+                    Timber.e(e, "Cannot create document for backup");
+                    if (isVisible()) {
+                        View view = getView();
+                        assert view != null;
+                        Snackbar.make(view, R.string.toast_install_file_manager, Snackbar.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(requireContext(), R.string.toast_install_file_manager, Toast.LENGTH_LONG).show();
+                    }
+                }
+                return true;
+            }
+        });
         Uri defaultBackupLocation = BackupManager.getBookBackupFileUri(context, GnuCashApplication.getActiveBookUID());
         if (defaultBackupLocation != null) {
-            pref.setSummary(getDocumentName(defaultBackupLocation, context));
+            preference.setSummary(getDocumentName(defaultBackupLocation, context));
         }
 
-        pref = findPreference(getString(R.string.key_dropbox_sync));
-        pref.setOnPreferenceClickListener(this);
-        toggleDropboxPreference(pref);
-
-        pref = findPreference(getString(R.string.key_owncloud_sync));
-        pref.setOnPreferenceClickListener(this);
-        toggleOwnCloudPreference(pref);
-    }
-
-    @Override
-    public boolean onPreferenceClick(Preference preference) {
-        String key = preference.getKey();
-
-        if (key.equals(getString(R.string.key_restore_backup))) {
-            restoreBackup();
-        }
-
-        if (key.equals(getString(R.string.key_backup_location))) {
-            String bookName = BooksDbAdapter.getInstance().getActiveBookDisplayName();
-            String fileName = Exporter.sanitizeFilename(bookName) + "_" + getString(R.string.label_backup_filename);
-
-            Intent createIntent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
-                .setType(BackupManager.MIME_TYPE)
-                .addCategory(Intent.CATEGORY_OPENABLE)
-                .putExtra(Intent.EXTRA_TITLE, fileName);
-            try {
-                startActivityForResult(createIntent, REQUEST_BACKUP_FILE);
-            } catch (ActivityNotFoundException e) {
-                Timber.e(e, "Cannot create document for backup");
-                if (isVisible()) {
-                    View view = getView();
-                    assert view != null;
-                    Snackbar.make(view, R.string.toast_install_file_manager, Snackbar.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(requireContext(), R.string.toast_install_file_manager, Toast.LENGTH_LONG).show();
-                }
+        preference = findPreference(getString(R.string.key_dropbox_sync));
+        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(@NonNull Preference preference) {
+                toggleDropboxSync(preference);
+                toggleDropboxPreference(preference);
+                return false;
             }
-        }
+        });
+        toggleDropboxPreference(preference);
 
-        if (key.equals(getString(R.string.key_dropbox_sync))) {
-            toggleDropboxSync(preference);
-            toggleDropboxPreference(preference);
-        }
-
-        if (key.equals(getString(R.string.key_owncloud_sync))) {
-            toggleOwnCloudSync(preference);
-            toggleOwnCloudPreference(preference);
-        }
-
-        if (key.equals(getString(R.string.key_create_backup))) {
-            final Fragment fragment = this;
-            final Activity activity = requireActivity();
-            BackupManager.backupActiveBookAsync(activity, result -> {
-                int msg = result ? R.string.toast_backup_successful : R.string.toast_backup_failed;
-                if (fragment.isVisible()) {
-                    View view = fragment.getView();
-                    Snackbar.make(view, msg, Snackbar.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(activity, msg, Toast.LENGTH_LONG).show();
-                }
-                return null;
-            });
-        }
-
-        return false;
-    }
-
-    /**
-     * Listens for changes to the preference and sets the preference summary to the new value
-     *
-     * @param preference Preference which has been changed
-     * @param newValue   New value for the changed preference
-     * @return <code>true</code> if handled, <code>false</code> otherwise
-     */
-    @Override
-    public boolean onPreferenceChange(Preference preference, Object newValue) {
-        if (preference.getSummaryProvider() == null) {
-            String summary = (newValue != null) ? newValue.toString() : null;
-            preference.setSummary(summary);
-        }
-        if (preference.getKey().equals(getString(R.string.key_default_currency))) {
-            GnuCashApplication.setDefaultCurrencyCode(preference.getContext(), newValue.toString());
-        }
-
-        if (preference.getKey().equals(getString(R.string.key_default_export_email))) {
-            String emailSetting = newValue.toString();
-            if (TextUtils.isEmpty(emailSetting) || emailSetting.trim().isEmpty()) {
-                preference.setSummary(R.string.summary_default_export_email);
+        preference = findPreference(getString(R.string.key_owncloud_sync));
+        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(@NonNull Preference preference) {
+                toggleOwnCloudSync(preference);
+                toggleOwnCloudPreference(preference);
+                return false;
             }
-        }
-
-        return true;
+        });
+        toggleOwnCloudPreference(preference);
     }
 
     /**
@@ -392,7 +365,7 @@ public class BackupPreferenceFragment extends PreferenceFragmentCompat implement
                     Context context = requireContext();
                     takePersistableUriPermission(context, data);
 
-                    PreferenceActivity.getActiveBookSharedPreferences(context)
+                    GnuCashApplication.getBookPreferences(context)
                         .edit()
                         .putString(BackupManager.KEY_BACKUP_FILE, backupFileUri.toString())
                         .apply();

@@ -275,13 +275,7 @@ class PieChartReportTest : GnuAndroidTest() {
 
             commodity = accountsDbAdapter.commoditiesDbAdapter.getCommodity("USD")!!
 
-            PreferenceActivity.getActiveBookSharedPreferences(context)
-                .edit()
-                .putString(
-                    context.getString(R.string.key_default_currency),
-                    commodity.currencyCode
-                )
-                .commit()
+            accountsDbAdapter.commoditiesDbAdapter.setDefaultCurrencyCode(commodity.currencyCode)
         }
 
 

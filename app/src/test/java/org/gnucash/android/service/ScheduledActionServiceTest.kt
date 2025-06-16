@@ -19,6 +19,7 @@ import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.DatabaseAdapter
@@ -55,7 +56,8 @@ import java.util.Calendar
  */
 class ScheduledActionServiceTest : GnuCashTest() {
     private var actionUID: String? = null
-    private var db: SQLiteDatabase? = null
+    private lateinit var dbHolder: DatabaseHolder
+    private lateinit var db: SQLiteDatabase
 
     private val baseAccount = Account("Base Account")
     private val transferAccount = Account("Transfer Account")
@@ -64,7 +66,8 @@ class ScheduledActionServiceTest : GnuCashTest() {
 
     @Before
     fun setUp() {
-        db = GnuCashApplication.getActiveDb()
+        db = GnuCashApplication.getActiveDb()!!
+        dbHolder = DatabaseHolder(context, db)
         baseAccount.commodity = Commodity.DEFAULT_COMMODITY
         transferAccount.commodity = Commodity.DEFAULT_COMMODITY
 
@@ -107,7 +110,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
         val trxnAdapter = TransactionsDbAdapter.getInstance()
 
         assertThat(trxnAdapter.recordsCount).isZero()
-        ScheduledActionService.processScheduledAction(context, scheduledAction1, db)
+        ScheduledActionService.processScheduledAction(dbHolder, scheduledAction1)
         assertThat(trxnAdapter.recordsCount).isZero()
     }
 
@@ -122,7 +125,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
         val trxnAdapter = TransactionsDbAdapter.getInstance()
 
         assertThat(trxnAdapter.recordsCount).isZero()
-        ScheduledActionService.processScheduledAction(context, scheduledAction, db)
+        ScheduledActionService.processScheduledAction(dbHolder, scheduledAction)
         assertThat(trxnAdapter.recordsCount).isZero()
     }
 
@@ -141,7 +144,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
 
         val trxnAdapter = TransactionsDbAdapter.getInstance()
         assertThat(trxnAdapter.recordsCount).isZero()
-        ScheduledActionService.processScheduledAction(context, scheduledAction, db)
+        ScheduledActionService.processScheduledAction(dbHolder, scheduledAction)
         assertThat(trxnAdapter.recordsCount).isZero()
     }
 
@@ -168,7 +171,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
         val transactionsDbAdapter = TransactionsDbAdapter.getInstance()
         assertThat(transactionsDbAdapter.recordsCount).isZero()
 
-        ScheduledActionService.processScheduledAction(context, scheduledAction, db)
+        ScheduledActionService.processScheduledAction(dbHolder, scheduledAction)
 
         assertThat(transactionsDbAdapter.recordsCount).isEqualTo(7)
     }
@@ -187,7 +190,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
         val transactionsDbAdapter = TransactionsDbAdapter.getInstance()
         assertThat(transactionsDbAdapter.recordsCount).isZero()
 
-        ScheduledActionService.processScheduledAction(context, scheduledAction, db)
+        ScheduledActionService.processScheduledAction(dbHolder, scheduledAction)
 
         val weeks = Weeks.weeksBetween(startTime, DateTime(2016, 8, 29, 10, 0)).weeks
         val expectedTransactionCount = weeks / 2 //multiplier from the PeriodType
@@ -221,7 +224,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
         val transactionsDbAdapter = TransactionsDbAdapter.getInstance()
         assertThat(transactionsDbAdapter.recordsCount).isZero()
 
-        ScheduledActionService.processScheduledAction(context, scheduledAction, db)
+        ScheduledActionService.processScheduledAction(dbHolder, scheduledAction)
 
         val expectedCount = 5
         assertThat(scheduledAction.executionCount).isEqualTo(expectedCount)
@@ -242,7 +245,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
         val transactionsDbAdapter = TransactionsDbAdapter.getInstance()
         assertThat(transactionsDbAdapter.recordsCount).isZero()
 
-        ScheduledActionService.processScheduledAction(context, scheduledAction, db)
+        ScheduledActionService.processScheduledAction(dbHolder, scheduledAction)
 
         //no change in the database since no action UID was specified
         assertThat(transactionsDbAdapter.recordsCount).isZero()
@@ -264,6 +267,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
     @Test
     fun scheduledBackups_shouldRunOnlyOnce() {
         val scheduledBackup = ScheduledAction(ScheduledAction.ActionType.BACKUP)
+        scheduledBackup.actionUID = GnuCashApplication.getActiveBookUID()
         scheduledBackup.startTime = LocalDateTime.now()
             .minusMonths(4).minusDays(2).toDate().time
         scheduledBackup.setRecurrence(PeriodType.MONTH, 1)
@@ -281,7 +285,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
         assertThat(backupFolder.listFiles()).isEmpty()
 
         // Check there's not a backup for each missed run
-        ScheduledActionService.processScheduledAction(context, scheduledBackup, db)
+        ScheduledActionService.processScheduledAction(dbHolder, scheduledBackup)
         assertThat(scheduledBackup.executionCount).isEqualTo(3)
         assertThat(scheduledBackup.lastRunTime).isGreaterThan(previousLastRun)
         var backupFiles = backupFolder.listFiles()
@@ -290,7 +294,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
 
         // Check also across service runs
         previousLastRun = scheduledBackup.lastRunTime
-        ScheduledActionService.processScheduledAction(context, scheduledBackup, db)
+        ScheduledActionService.processScheduledAction(dbHolder, scheduledBackup)
         assertThat(scheduledBackup.executionCount).isEqualTo(3)
         assertThat(scheduledBackup.lastRunTime).isEqualTo(previousLastRun)
         backupFiles = backupFolder.listFiles()
@@ -328,7 +332,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
         assertThat(backupFolder).exists()
         assertThat(backupFolder.listFiles()).isEmpty()
 
-        ScheduledActionService.processScheduledAction(context, scheduledBackup, db)
+        ScheduledActionService.processScheduledAction(dbHolder, scheduledBackup)
 
         assertThat(scheduledBackup.executionCount).isEqualTo(0)
         assertThat(scheduledBackup.lastRunTime).isEqualTo(previousLastRun)
@@ -378,7 +382,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
         assertThat(backupFolder).exists()
         assertThat(backupFolder.listFiles()).isEmpty()
 
-        ScheduledActionService.processScheduledAction(context, scheduledBackup, db)
+        ScheduledActionService.processScheduledAction(dbHolder, scheduledBackup)
 
         assertThat(scheduledBackup.executionCount).isEqualTo(1)
         assertThat(scheduledBackup.lastRunTime).isEqualTo(previousLastRun)
@@ -409,6 +413,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
     @Test
     fun scheduledBackups_shouldIncludeTransactionsAfterTheLastRun() {
         val scheduledBackup = ScheduledAction(ScheduledAction.ActionType.BACKUP)
+        scheduledBackup.actionUID = GnuCashApplication.getActiveBookUID()
         scheduledBackup.startTime = LocalDateTime.now().minusDays(15).toDate().time
         scheduledBackup.lastRunTime = LocalDateTime.now().minusDays(8).toDate().time
         val previousLastRun = scheduledBackup.lastRunTime
@@ -438,7 +443,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
         assertThat(backupFolder).exists()
         assertThat(backupFolder.listFiles()).isEmpty()
 
-        ScheduledActionService.processScheduledAction(context, scheduledBackup, db)
+        ScheduledActionService.processScheduledAction(dbHolder, scheduledBackup)
 
         assertThat(scheduledBackup.executionCount).isEqualTo(2)
         assertThat(scheduledBackup.lastRunTime).isGreaterThan(previousLastRun)

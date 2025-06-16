@@ -18,7 +18,6 @@ package org.gnucash.android.util;
 import android.content.Context;
 
 import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.ui.settings.PreferenceActivity;
 
 import java.sql.Timestamp;
 
@@ -73,7 +72,7 @@ public final class PreferencesHelper {
      * @return A {@link Timestamp} with the time.
      */
     public static Timestamp getLastExportTime(Context context) {
-        final String utcString = PreferenceActivity.getActiveBookSharedPreferences(context)
+        final String utcString = GnuCashApplication.getBookPreferences(context)
             .getString(PREFERENCE_LAST_EXPORT_TIME_KEY,
                 TimestampHelper.getUtcStringFromTimestamp(TimestampHelper.getTimestampFromEpochZero()));
         Timber.d("Retrieving '" + utcString + "' as lastExportTime from Android Preferences.");
@@ -86,7 +85,7 @@ public final class PreferencesHelper {
      * @return A {@link Timestamp} with the time.
      */
     public static Timestamp getLastExportTime(Context context, String bookUID) {
-        final String utcString = context.getSharedPreferences(bookUID, Context.MODE_PRIVATE)
+        final String utcString = GnuCashApplication.getBookPreferences(context, bookUID)
             .getString(PREFERENCE_LAST_EXPORT_TIME_KEY,
                 TimestampHelper.getUtcStringFromTimestamp(
                     TimestampHelper.getTimestampFromEpochZero()));
