@@ -67,7 +67,6 @@ import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity;
-import org.gnucash.android.ui.settings.PreferenceActivity;
 import org.gnucash.android.ui.transaction.dialog.BulkMoveDialogFragment;
 import org.gnucash.android.ui.util.CursorRecyclerAdapter;
 import org.gnucash.android.util.BackupManager;
@@ -101,7 +100,7 @@ public class TransactionsListFragment extends MenuFragment implements
         mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID);
 
         boolean isDoubleEntryDisabled = !GnuCashApplication.isDoubleEntryEnabled(context);
-        mUseCompactView = PreferenceActivity.getActiveBookSharedPreferences(context)
+        mUseCompactView = GnuCashApplication.getBookPreferences(context)
             .getBoolean(getString(R.string.key_use_compact_list), false) || isDoubleEntryDisabled;
         //if there was a local override of the global setting, respect it
         if (savedInstanceState != null) {
@@ -112,19 +111,16 @@ public class TransactionsListFragment extends MenuFragment implements
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(getString(R.string.key_use_compact_list), mUseCompactView);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mBinding = FragmentTransactionsListBinding.inflate(inflater, container, false);
-        View view = mBinding.getRoot();
-
-
-        return view;
+        return mBinding.getRoot();
     }
 
     @Override

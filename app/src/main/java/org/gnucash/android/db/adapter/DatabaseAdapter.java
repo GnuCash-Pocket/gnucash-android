@@ -17,6 +17,7 @@
 package org.gnucash.android.db.adapter;
 
 import android.content.ContentValues;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.SQLException;
@@ -27,6 +28,8 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.gnucash.android.db.BookDbHelper;
+import org.gnucash.android.db.DatabaseHolder;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import org.gnucash.android.db.DatabaseSchema.CommonColumns;
@@ -56,17 +59,18 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
     /**
      * SQLite database
      */
+    protected final DatabaseHolder holder;
     protected final SQLiteDatabase mDb;
 
     protected final String mTableName;
 
     protected final String[] mColumns;
 
-    protected volatile SQLiteStatement mReplaceStatement;
+    private volatile SQLiteStatement mReplaceStatement;
 
-    protected volatile SQLiteStatement mUpdateStatement;
+    private volatile SQLiteStatement mUpdateStatement;
 
-    protected volatile SQLiteStatement mInsertStatement;
+    private volatile SQLiteStatement mInsertStatement;
 
     protected final Map<String, Model> cache = new ConcurrentHashMap<>();
     protected final boolean isCached;
@@ -78,22 +82,24 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
     /**
      * Opens the database adapter with an existing database
      *
-     * @param db SQLiteDatabase object
+     * @param holder Database holder
      */
-    public DatabaseAdapter(@NonNull SQLiteDatabase db, @NonNull String tableName, @NonNull String[] columns) {
-        this(db, tableName, columns, false);
+    public DatabaseAdapter(@NonNull DatabaseHolder holder, @NonNull String tableName, @NonNull String[] columns) {
+        this(holder, tableName, columns, false);
     }
 
     /**
      * Opens the database adapter with an existing database
      *
-     * @param db SQLiteDatabase object
+     * @param holder Database holder
      */
-    public DatabaseAdapter(SQLiteDatabase db, @NonNull String tableName, @NonNull String[] columns, boolean isCached) {
+    public DatabaseAdapter(@NonNull DatabaseHolder holder, @NonNull String tableName, @NonNull String[] columns, boolean isCached) {
+        this.holder = holder;
         this.mTableName = tableName;
-        this.mDb = db;
         this.mColumns = columns;
         this.isCached = isCached;
+        SQLiteDatabase db = holder.db;
+        this.mDb = db;
         if (!db.isOpen()) {
             throw new IllegalArgumentException("Database not open.");
         }
@@ -931,5 +937,14 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
 
     public String getUID(Model model) {
         return model.getUID();
+    }
+
+    /**
+     * Return the {@link SharedPreferences} for a specific book
+     *
+     * @return Shared preferences
+     */
+    public SharedPreferences getBookPreferences() {
+        return BookDbHelper.getBookPreferences(holder);
     }
 }

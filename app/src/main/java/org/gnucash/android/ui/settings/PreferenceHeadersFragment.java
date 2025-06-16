@@ -19,7 +19,6 @@ package org.gnucash.android.ui.settings;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
-import androidx.preference.PreferenceFragmentCompat;
 
 import org.gnucash.android.R;
 
@@ -28,7 +27,12 @@ import org.gnucash.android.R;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class PreferenceHeadersFragment extends PreferenceFragmentCompat {
+public class PreferenceHeadersFragment extends GnuPreferenceFragment {
+
+    @Override
+    protected int getTitleId() {
+        return 0;
+    }
 
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {

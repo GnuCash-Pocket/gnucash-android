@@ -16,13 +16,14 @@
 
 package org.gnucash.android.db;
 
-import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseSchema.BookEntry;
@@ -31,6 +32,8 @@ import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.model.Book;
 import org.gnucash.android.model.Commodity;
+
+import java.io.File;
 
 /**
  * Database helper for managing database which stores information about the books in the application
@@ -57,39 +60,60 @@ public class BookDbHelper extends SQLiteOpenHelper {
         + ");"
         + DatabaseHelper.createUpdatedAtTrigger(BookEntry.TABLE_NAME);
 
-    @NonNull
-    private final Context context;
+    @Nullable
+    private Context context;
+    @Nullable
+    private DatabaseHolder holder;
 
     public BookDbHelper(@NonNull Context context) {
         super(context, DatabaseSchema.BOOK_DATABASE_NAME, null, DatabaseSchema.BOOK_DATABASE_VERSION);
         this.context = context;
     }
 
+    @NonNull
+    public DatabaseHolder getHolder() {
+        DatabaseHolder holder = this.holder;
+        if (holder == null) {
+            this.holder = holder = new DatabaseHolder(context, getWritableDatabase());
+            this.context = null;
+        }
+        return holder;
+    }
+
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(BOOKS_TABLE_CREATE);
-
-        insertBlankBook(db);
+        Context context = GnuCashApplication.getAppContext();
+        insertBlankBook(context, db);
     }
 
     @NonNull
-    public Book insertBlankBook(@NonNull SQLiteDatabase db) {
-        Book book = new Book();
-        DatabaseHelper helper = new DatabaseHelper(context, book.getUID());
-        SQLiteDatabase mainDb = helper.getWritableDatabase(); //actually create the db
-        CommoditiesDbAdapter commoditiesDbAdapter = new CommoditiesDbAdapter(mainDb);
-        Commodity.DEFAULT_COMMODITY = commoditiesDbAdapter.getDefaultCommodity();
-        AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(mainDb);
+    public Book insertBlankBook(@NonNull Context context) {
+        DatabaseHolder holder = getHolder();
+        return insertBlankBook(holder.context, holder.db);
+    }
 
+    @NonNull
+    public Book insertBlankBook(@NonNull Context context, @NonNull SQLiteDatabase db) {
+        DatabaseHolder bookHolder = new DatabaseHolder(context, db);
+        if (this.holder == null) {
+            this.holder = bookHolder;
+        }
+        Book book = new Book();
+        DatabaseHelper dbHelper = new DatabaseHelper(context, book.getUID());
+        DatabaseHolder dbHolder = dbHelper.getHolder();
+        CommoditiesDbAdapter commoditiesDbAdapter = new CommoditiesDbAdapter(dbHolder);
+        Commodity.DEFAULT_COMMODITY = commoditiesDbAdapter.getDefaultCommodity();
+
+        AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(dbHolder);
         String rootAccountUID = accountsDbAdapter.getOrCreateGnuCashRootAccountUID();
         try {
-            accountsDbAdapter.close();
-            helper.close();
+            dbHelper.close();
         } catch (Exception ignore) {
         }
         book.setRootAccountUID(rootAccountUID);
         book.setActive(true);
-        insertBook(db, book);
+        insertBook(bookHolder, book);
         return book;
     }
 
@@ -118,26 +142,51 @@ public class BookDbHelper extends SQLiteOpenHelper {
     /**
      * Inserts the book into the database
      *
-     * @param db   Book database
-     * @param book Book to insert
+     * @param holder Database holder
+     * @param book       Book to insert
      */
-    private void insertBook(SQLiteDatabase db, Book book) {
+    private void insertBook(@NonNull DatabaseHolder holder, Book book) {
+        BooksDbAdapter booksDbAdapter = new BooksDbAdapter(holder);
         String name = book.getDisplayName();
         if (TextUtils.isEmpty(name)) {
-            name = new BooksDbAdapter(db).generateDefaultBookName();
+            name = booksDbAdapter.generateDefaultBookName();
+            book.setDisplayName(name);
         }
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(BookEntry.COLUMN_UID, book.getUID());
-        contentValues.put(BookEntry.COLUMN_ROOT_GUID, book.getRootAccountUID());
-        contentValues.put(BookEntry.COLUMN_TEMPLATE_GUID, Book.generateUID());
-        contentValues.put(BookEntry.COLUMN_DISPLAY_NAME, name);
-        contentValues.put(BookEntry.COLUMN_ACTIVE, book.isActive() ? 1 : 0);
-
-        db.insert(BookEntry.TABLE_NAME, null, contentValues);
+        booksDbAdapter.addRecord(book);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         //nothing to see here yet, move along
+    }
+
+    public static String getBookUID(@NonNull SQLiteDatabase db) {
+        String path = db.getPath();
+        File file = new File(path);
+        return file.getName();
+    }
+
+    /**
+     * Return the {@link SharedPreferences} for a specific book
+     *
+     * @param context the application context.
+     * @param db      the book database.
+     * @return Shared preferences
+     */
+    public static SharedPreferences getBookPreferences(@NonNull Context context, @NonNull SQLiteDatabase db) {
+        String bookUID = getBookUID(db);
+        return context.getSharedPreferences(bookUID, Context.MODE_PRIVATE);
+    }
+
+    /**
+     * Return the {@link SharedPreferences} for a specific book
+     *
+     * @param holder Database holder
+     * @return Shared preferences
+     */
+    public static SharedPreferences getBookPreferences(@NonNull DatabaseHolder holder) {
+        Context context = holder.context;
+        String bookUID = holder.name;
+        return context.getSharedPreferences(bookUID, Context.MODE_PRIVATE);
     }
 }

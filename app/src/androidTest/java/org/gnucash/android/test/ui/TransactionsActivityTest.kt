@@ -37,6 +37,7 @@ import androidx.test.rule.GrantPermissionRule
 import androidx.test.uiautomator.UiDevice
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseSchema
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
@@ -478,8 +479,8 @@ class TransactionsActivityTest : GnuAndroidTest() {
 
 
     private fun setDoubleEntryEnabled(enabled: Boolean) {
-        val prefs = PreferenceActivity.getActiveBookSharedPreferences(context)
-        prefs.edit()
+        GnuCashApplication.getBookPreferences(context)
+            .edit()
             .putBoolean(
                 context.getString(R.string.key_use_double_entry),
                 enabled
@@ -504,8 +505,8 @@ class TransactionsActivityTest : GnuAndroidTest() {
     }
 
     private fun setDefaultTransactionType(type: TransactionType) {
-        val prefs = PreferenceActivity.getActiveBookSharedPreferences(context)
-        prefs.edit()
+        GnuCashApplication.getBookPreferences(context)
+            .edit()
             .putString(
                 context.getString(R.string.key_default_transaction_type),
                 type.value

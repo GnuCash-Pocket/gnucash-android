@@ -1,11 +1,11 @@
 package org.gnucash.android.test.unit
 
-import android.database.sqlite.SQLiteDatabase
 import junit.framework.TestCase.fail
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.BuildConfig
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseHelper
+import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.BudgetsDbAdapter
@@ -24,9 +24,10 @@ import javax.xml.parsers.SAXParser
 import javax.xml.parsers.SAXParserFactory
 
 abstract class BookHelperTest : GnuCashTest() {
-    protected var importedDb: SQLiteDatabase? = null
+    private var importedHolder: DatabaseHolder? = null
     protected lateinit var booksDbAdapter: BooksDbAdapter
-    protected lateinit var transactionsDbAdapter: TransactionsDbAdapter
+
+        protected lateinit var transactionsDbAdapter: TransactionsDbAdapter
     protected lateinit var accountsDbAdapter: AccountsDbAdapter
     protected lateinit var scheduledActionDbAdapter: ScheduledActionDbAdapter
     protected lateinit var commoditiesDbAdapter: CommoditiesDbAdapter
@@ -52,14 +53,14 @@ abstract class BookHelperTest : GnuCashTest() {
 
     private fun setUpDbAdapters(bookUID: String) {
         val databaseHelper = DatabaseHelper(context, bookUID)
-        val mainDb = databaseHelper.readableDatabase
-        commoditiesDbAdapter = CommoditiesDbAdapter(mainDb)
+        val mainHolder = databaseHelper.holder
+        commoditiesDbAdapter = CommoditiesDbAdapter(mainHolder)
         transactionsDbAdapter = TransactionsDbAdapter(commoditiesDbAdapter)
         accountsDbAdapter = AccountsDbAdapter(transactionsDbAdapter)
-        val recurrenceDbAdapter = RecurrenceDbAdapter(mainDb)
+        val recurrenceDbAdapter = RecurrenceDbAdapter(mainHolder)
         scheduledActionDbAdapter = ScheduledActionDbAdapter(recurrenceDbAdapter)
         budgetsDbAdapter = BudgetsDbAdapter(recurrenceDbAdapter)
-        importedDb = mainDb
+        importedHolder = mainHolder
     }
 
     @Before
@@ -74,8 +75,7 @@ abstract class BookHelperTest : GnuCashTest() {
         transactionsDbAdapter.close()
         accountsDbAdapter.close()
         scheduledActionDbAdapter.close()
-        importedDb?.close()
-        importedDb = null
+        importedHolder?.close()
     }
 
     companion object {
