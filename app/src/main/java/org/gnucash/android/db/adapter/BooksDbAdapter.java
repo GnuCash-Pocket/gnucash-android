@@ -21,7 +21,6 @@ import static java.lang.Math.max;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.provider.BaseColumns;
@@ -34,9 +33,9 @@ import androidx.annotation.VisibleForTesting;
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHelper;
+import org.gnucash.android.db.DatabaseHolder;
 import org.gnucash.android.db.DatabaseSchema.BookEntry;
 import org.gnucash.android.model.Book;
-import org.gnucash.android.ui.settings.PreferenceActivity;
 import org.gnucash.android.util.TimestampHelper;
 
 import java.util.ArrayList;
@@ -52,10 +51,10 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
     /**
      * Opens the database adapter with an existing database
      *
-     * @param db SQLiteDatabase object
+     * @param holder Database holder
      */
-    public BooksDbAdapter(@NonNull SQLiteDatabase db) {
-        super(db, BookEntry.TABLE_NAME, new String[]{
+    public BooksDbAdapter(@NonNull DatabaseHolder holder) {
+        super(holder, BookEntry.TABLE_NAME, new String[]{
             BookEntry.COLUMN_DISPLAY_NAME,
             BookEntry.COLUMN_ROOT_GUID,
             BookEntry.COLUMN_TEMPLATE_GUID,
@@ -125,7 +124,7 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
         if (result) //delete the db entry only if the file deletion was successful
             result &= deleteRecord(bookUID);
 
-        PreferenceActivity.getBookSharedPreferences(context, bookUID).edit().clear().apply();
+        GnuCashApplication.getBookPreferences(context, bookUID).edit().clear().apply();
 
         return result;
     }
@@ -169,15 +168,15 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
      * @return GUID of the active book
      * @throws NoActiveBookFoundException
      */
-    public @NonNull String getActiveBookUID() {
+    public @NonNull String getActiveBookUID() throws NoActiveBookFoundException {
         try (Cursor cursor = mDb.query(mTableName,
             new String[]{BookEntry.COLUMN_UID},
-            BookEntry.COLUMN_ACTIVE + "= 1",
+            BookEntry.COLUMN_ACTIVE + " = 1",
             null,
             null,
             null,
             null,
-            null)) {
+            "1")) {
             if (cursor.moveToFirst()) {
                 return cursor.getString(0);
             }
@@ -248,12 +247,12 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
      * Returns the root account UID from the database with name dbName.
      */
     private String getRootAccountUID(String dbName) {
-        Context context = GnuCashApplication.getAppContext();
+        Context context = holder.context;
         DatabaseHelper databaseHelper = new DatabaseHelper(context, dbName);
-        SQLiteDatabase db = databaseHelper.getReadableDatabase();
-        AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(db);
+        DatabaseHolder holder = databaseHelper.getHolder();
+        AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(holder);
         String uid = accountsDbAdapter.getOrCreateGnuCashRootAccountUID();
-        db.close();
+        databaseHelper.close();
         return uid;
     }
 

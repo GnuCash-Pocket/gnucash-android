@@ -15,11 +15,12 @@
  */
 package org.gnucash.android.importer;
 
-import android.database.sqlite.SQLiteDatabase;
+import androidx.annotation.NonNull;
 
 import androidx.annotation.Nullable;
 
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.db.DatabaseHolder;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.model.Commodity;
@@ -53,11 +54,11 @@ public class CommoditiesXmlHandler extends DefaultHandler {
 
     private final CommoditiesDbAdapter mCommoditiesDbAdapter;
 
-    public CommoditiesXmlHandler(@Nullable SQLiteDatabase db) {
-        if (db == null) {
+    public CommoditiesXmlHandler(@NonNull DatabaseHolder holder) {
+        if (holder.db == null) {
             mCommoditiesDbAdapter = GnuCashApplication.getCommoditiesDbAdapter();
         } else {
-            mCommoditiesDbAdapter = new CommoditiesDbAdapter(db, false);
+            mCommoditiesDbAdapter = new CommoditiesDbAdapter(holder, false);
         }
     }
 

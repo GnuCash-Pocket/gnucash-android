@@ -17,13 +17,13 @@
 package org.gnucash.android.db.adapter;
 
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
 
 import androidx.annotation.NonNull;
 
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.db.DatabaseHolder;
 import org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry;
 import org.gnucash.android.db.DatabaseSchema.BudgetEntry;
 import org.gnucash.android.model.Budget;
@@ -51,7 +51,7 @@ public class BudgetsDbAdapter extends DatabaseAdapter<Budget> {
      */
     public BudgetsDbAdapter(@NonNull BudgetAmountsDbAdapter budgetAmountsDbAdapter,
                             @NonNull RecurrenceDbAdapter recurrenceDbAdapter) {
-        super(budgetAmountsDbAdapter.mDb, BudgetEntry.TABLE_NAME, new String[]{
+        super(budgetAmountsDbAdapter.holder, BudgetEntry.TABLE_NAME, new String[]{
             BudgetEntry.COLUMN_NAME,
             BudgetEntry.COLUMN_DESCRIPTION,
             BudgetEntry.COLUMN_RECURRENCE_UID,
@@ -65,14 +65,14 @@ public class BudgetsDbAdapter extends DatabaseAdapter<Budget> {
      * Opens the database adapter with an existing database
      */
     public BudgetsDbAdapter(@NonNull RecurrenceDbAdapter recurrenceDbAdapter) {
-        this(new BudgetAmountsDbAdapter(recurrenceDbAdapter.mDb), recurrenceDbAdapter);
+        this(new BudgetAmountsDbAdapter(recurrenceDbAdapter.holder), recurrenceDbAdapter);
     }
 
     /**
      * Opens the database adapter with an existing database
      */
-    public BudgetsDbAdapter(@NonNull SQLiteDatabase db) {
-        this(new RecurrenceDbAdapter(db));
+    public BudgetsDbAdapter(@NonNull DatabaseHolder holder) {
+        this(new RecurrenceDbAdapter(holder));
     }
 
     /**
@@ -207,6 +207,6 @@ public class BudgetsDbAdapter extends DatabaseAdapter<Budget> {
             accountUIDs.add(budgetAmount.getAccountUID());
         }
 
-        return new AccountsDbAdapter(mDb).getAccountsBalanceByUID(accountUIDs, periodStart, periodEnd);
+        return new AccountsDbAdapter(holder).getAccountsBalanceByUID(accountUIDs, periodStart, periodEnd);
     }
 }

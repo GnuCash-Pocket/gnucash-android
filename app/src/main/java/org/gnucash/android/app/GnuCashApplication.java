@@ -15,11 +15,12 @@
  */
 package org.gnucash.android.app;
 
+import static org.gnucash.android.model.Commodity.getLocaleCurrencyCode;
+
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.text.TextUtils;
@@ -34,6 +35,7 @@ import org.gnucash.android.BuildConfig;
 import org.gnucash.android.R;
 import org.gnucash.android.db.BookDbHelper;
 import org.gnucash.android.db.DatabaseHelper;
+import org.gnucash.android.db.DatabaseHolder;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.db.adapter.BudgetAmountsDbAdapter;
@@ -46,13 +48,11 @@ import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.TransactionType;
-import org.gnucash.android.ui.settings.PreferenceActivity;
 import org.gnucash.android.ui.settings.ThemeHelper;
 import org.gnucash.android.util.CrashlyticsTree;
 import org.gnucash.android.util.LogTree;
 
 import java.io.IOException;
-import java.util.Currency;
 import java.util.Locale;
 
 import timber.log.Timber;
@@ -121,7 +121,7 @@ public class GnuCashApplication extends Application {
         Timber.plant(tree);
 
         initializeDatabaseAdapters(context);
-        setDefaultCurrencyCode(context, getDefaultCurrencyCode());
+        setDefaultCurrencyCode(getDefaultCurrencyCode());
 
         StethoUtils.install(this);
     }
@@ -140,11 +140,11 @@ public class GnuCashApplication extends Application {
      */
     public static void initializeDatabaseAdapters(@NonNull Context context) {
         BookDbHelper bookDbHelper = new BookDbHelper(context);
-        SQLiteDatabase db = bookDbHelper.getWritableDatabase();
-        mBooksDbAdapter = new BooksDbAdapter(db);
+        DatabaseHolder bookHolder = bookDbHelper.getHolder();
+        mBooksDbAdapter = new BooksDbAdapter(bookHolder);
 
         if (mDbHelper != null) { //close if open
-            mDbHelper.getReadableDatabase().close();
+            mDbHelper.close();
         }
 
         String bookUID;
@@ -154,25 +154,19 @@ public class GnuCashApplication extends Application {
             bookUID = mBooksDbAdapter.fixBooksDatabase();
         }
         if (TextUtils.isEmpty(bookUID)) {
-            bookUID = bookDbHelper.insertBlankBook(db).getUID();
+            bookUID = bookDbHelper.insertBlankBook().getUID();
         }
         mDbHelper = new DatabaseHelper(context, bookUID);
-        SQLiteDatabase mainDb;
-        try {
-            mainDb = mDbHelper.getWritableDatabase();
-        } catch (SQLException e) {
-            Timber.e(e, "Error getting database: %s", e.getMessage());
-            mainDb = mDbHelper.getReadableDatabase();
-        }
+        DatabaseHolder dbHolder = mDbHelper.getHolder();
 
-        mCommoditiesDbAdapter = new CommoditiesDbAdapter(mainDb);
+        mCommoditiesDbAdapter = new CommoditiesDbAdapter(dbHolder);
         mPricesDbAdapter = new PricesDbAdapter(mCommoditiesDbAdapter);
         mSplitsDbAdapter = new SplitsDbAdapter(mCommoditiesDbAdapter);
         mTransactionsDbAdapter = new TransactionsDbAdapter(mSplitsDbAdapter);
         mAccountsDbAdapter = new AccountsDbAdapter(mTransactionsDbAdapter, mPricesDbAdapter);
-        mRecurrenceDbAdapter = new RecurrenceDbAdapter(mainDb);
+        mRecurrenceDbAdapter = new RecurrenceDbAdapter(dbHolder);
         mScheduledActionDbAdapter = new ScheduledActionDbAdapter(mRecurrenceDbAdapter);
-        mBudgetAmountsDbAdapter = new BudgetAmountsDbAdapter(mainDb);
+        mBudgetAmountsDbAdapter = new BudgetAmountsDbAdapter(dbHolder);
         mBudgetsDbAdapter = new BudgetsDbAdapter(mBudgetAmountsDbAdapter, mRecurrenceDbAdapter);
         Commodity.DEFAULT_COMMODITY = mCommoditiesDbAdapter.getDefaultCommodity();
     }
@@ -305,7 +299,7 @@ public class GnuCashApplication extends Application {
     }
 
     @Nullable
-    public static String getActiveBookUID() {
+    public static String getActiveBookUID() throws BooksDbAdapter.NoActiveBookFoundException {
         BooksDbAdapter adapter = getBooksDbAdapter();
         return (adapter != null) ? adapter.getActiveBookUID() : null;
     }
@@ -327,7 +321,7 @@ public class GnuCashApplication extends Application {
      */
     @NonNull
     public static Context getAppContext() {
-        return GnuCashApplication.context;
+        return context;
     }
 
     /**
@@ -347,8 +341,8 @@ public class GnuCashApplication extends Application {
      * @return <code>true</code> if double entry is enabled, <code>false</code> otherwise
      */
     public static boolean isDoubleEntryEnabled(@NonNull Context context) {
-        SharedPreferences sharedPrefs = PreferenceActivity.getActiveBookSharedPreferences(context);
-        return sharedPrefs.getBoolean(context.getString(R.string.key_use_double_entry), true);
+        SharedPreferences preferences = getBookPreferences(context);
+        return preferences.getBoolean(context.getString(R.string.key_use_double_entry), true);
     }
 
     /**
@@ -359,8 +353,8 @@ public class GnuCashApplication extends Application {
      * @return <code>true</code> if opening balances should be saved, <code>false</code> otherwise
      */
     public static boolean shouldSaveOpeningBalances(boolean defaultValue) {
-        SharedPreferences sharedPrefs = PreferenceActivity.getActiveBookSharedPreferences(context);
-        return sharedPrefs.getBoolean(context.getString(R.string.key_save_opening_balances), defaultValue);
+        SharedPreferences preferences = getBookPreferences(context);
+        return preferences.getBoolean(context.getString(R.string.key_save_opening_balances), defaultValue);
     }
 
     /**
@@ -375,17 +369,32 @@ public class GnuCashApplication extends Application {
      */
     @NonNull
     public static String getDefaultCurrencyCode() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String currencyCode = prefs.getString(context.getString(R.string.key_default_currency), null);
+        return getDefaultCurrencyCode(context);
+    }
+
+    /**
+     * Returns the default currency code for the application. <br/>
+     * What value is actually returned is determined in this order of priority:<ul>
+     * <li>User currency preference (manually set be user in the app)</li>
+     * <li>Default currency for the device locale</li>
+     * <li>United States Dollars</li>
+     * </ul>
+     *
+     * @return Default currency code string for the application
+     */
+    @NonNull
+    public static String getDefaultCurrencyCode(@NonNull Context context) {
+        String prefKey = context.getString(R.string.key_default_currency);
+        SharedPreferences preferences = getBookPreferences(context);
+        String currencyCode = preferences.getString(prefKey, null);
         if (!TextUtils.isEmpty(currencyCode)) return currencyCode;
 
-        try {
-            Locale locale = getDefaultLocale();
-            currencyCode = Currency.getInstance(locale).getCurrencyCode();
-            if (!TextUtils.isEmpty(currencyCode)) return currencyCode;
-        } catch (Throwable e) {
-            Timber.e(e);
-        }
+        preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        currencyCode = preferences.getString(prefKey, null);
+        if (!TextUtils.isEmpty(currencyCode)) return currencyCode;
+
+        currencyCode = getLocaleCurrencyCode();
+        if (!TextUtils.isEmpty(currencyCode)) return currencyCode;
 
         // Maybe use the cached commodity.
         Commodity commodity = Commodity.DEFAULT_COMMODITY;
@@ -409,26 +418,7 @@ public class GnuCashApplication extends Application {
      * @see #getDefaultCurrencyCode()
      */
     public static void setDefaultCurrencyCode(@NonNull String currencyCode) {
-        setDefaultCurrencyCode(context, currencyCode);
-    }
-
-    /**
-     * Sets the default currency for the application in all relevant places:
-     * <ul>
-     *     <li>Shared preferences</li>
-     *     <li>{@link Commodity#DEFAULT_COMMODITY}</li>
-     * </ul>
-     *
-     * @param context      the context.
-     * @param currencyCode ISO 4217 currency code
-     * @see #getDefaultCurrencyCode()
-     */
-    public static void setDefaultCurrencyCode(@NonNull Context context, @NonNull String currencyCode) {
-        PreferenceManager.getDefaultSharedPreferences(context)
-            .edit()
-            .putString(context.getString(R.string.key_default_currency), currencyCode)
-            .apply();
-        Commodity.DEFAULT_COMMODITY = Commodity.getInstance(currencyCode);
+        getCommoditiesDbAdapter().setDefaultCurrencyCode(currencyCode);
     }
 
     /**
@@ -465,8 +455,8 @@ public class GnuCashApplication extends Application {
      * @return <code>true</code> if the book should be backed-up.
      */
     public static boolean shouldBackupTransactions(Context context) {
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPrefs.getBoolean(context.getString(R.string.key_delete_transaction_backup), true);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        return preferences.getBoolean(context.getString(R.string.key_delete_transaction_backup), true);
     }
 
     /**
@@ -477,8 +467,8 @@ public class GnuCashApplication extends Application {
      * @return <code>true</code> if the book should be backed-up.
      */
     public static boolean shouldBackupForImport(Context context) {
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPrefs.getBoolean(context.getString(R.string.key_import_book_backup), true);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        return preferences.getBoolean(context.getString(R.string.key_import_book_backup), true);
     }
 
     /**
@@ -488,8 +478,29 @@ public class GnuCashApplication extends Application {
      * @return <code>DEBIT</code> or <code>CREDIT</code>
      */
     public static TransactionType getDefaultTransactionType(@NonNull Context context) {
-        SharedPreferences sharedPrefs = PreferenceActivity.getActiveBookSharedPreferences(context);
-        String value = sharedPrefs.getString(context.getString(R.string.key_default_transaction_type), null);
+        SharedPreferences preferences = getBookPreferences(context);
+        String value = preferences.getString(context.getString(R.string.key_default_transaction_type), null);
         return TransactionType.of(value);
+    }
+
+    /**
+     * Returns the shared preferences file for the currently active book.
+     * Should be used instead of {@link PreferenceManager#getDefaultSharedPreferences(Context)}
+     *
+     * @param context the context.
+     * @return Shared preferences file
+     */
+    public static SharedPreferences getBookPreferences(@NonNull Context context) throws BooksDbAdapter.NoActiveBookFoundException {
+        return getBookPreferences(context, getActiveBookUID());
+    }
+
+    /**
+     * Return the {@link SharedPreferences} for a specific book
+     *
+     * @param bookUID GUID of the book
+     * @return Shared preferences
+     */
+    public static SharedPreferences getBookPreferences(@NonNull Context context, @NonNull String bookUID) {
+        return context.getSharedPreferences(bookUID, Context.MODE_PRIVATE);
     }
 }

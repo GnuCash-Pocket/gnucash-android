@@ -30,11 +30,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
 
 import com.google.android.material.snackbar.Snackbar;
 
@@ -62,15 +59,18 @@ import timber.log.Timber;
  * @author Ngewi Fet <ngewi.fet@gmail.com>
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
-public class AccountPreferencesFragment extends PreferenceFragmentCompat implements
-    Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
+public class AccountPreferencesFragment extends GnuPreferenceFragment {
 
     private static final int REQUEST_EXPORT_FILE = 0xC5;
 
-    @NonNull
     private CommoditiesDbAdapter commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
     private final List<CharSequence> currencyEntries = new ArrayList<>();
     private final List<CharSequence> currencyEntryValues = new ArrayList<>();
+
+    @Override
+    protected int getTitleId() {
+        return R.string.title_account_preferences;
+    }
 
     @Override
     public void onStart() {
@@ -78,15 +78,8 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
         commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setTitle(R.string.title_account_preferences);
-    }
-
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
+        getPreferenceManager().setSharedPreferencesName(GnuCashApplication.getActiveBookUID());
         addPreferencesFromResource(R.xml.fragment_account_preferences);
 
         currencyEntries.clear();
@@ -107,20 +100,41 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
         }
         String currencyName = commodity.formatListItem();
         listPreference.setSummary(currencyName);
-        listPreference.setOnPreferenceChangeListener(this);
+        listPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(@NonNull Preference preference, Object newValue) {
+                String currencyCode = newValue.toString();
+                commoditiesDbAdapter.setDefaultCurrencyCode(currencyCode);
+                String summary = commoditiesDbAdapter.getCommodity(currencyCode).formatListItem();
+                preference.setSummary(summary);
+                return true;
+            }
+        });
         listPreference.setEntries(currencyEntries.toArray(new CharSequence[0]));
         listPreference.setEntryValues(currencyEntryValues.toArray(new CharSequence[0]));
 
         Preference preference = findPreference(getString(R.string.key_import_accounts));
-        preference.setOnPreferenceClickListener(this);
+        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(@NonNull Preference preference) {
+                AccountsActivity.startXmlFileChooser(AccountPreferencesFragment.this);
+                return true;
+            }
+        });
 
         preference = findPreference(getString(R.string.key_export_accounts_csv));
-        preference.setOnPreferenceClickListener(this);
+        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(@NonNull Preference preference) {
+                selectExportFile();
+                return true;
+            }
+        });
 
         preference = findPreference(getString(R.string.key_delete_all_accounts));
         preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
-            public boolean onPreferenceClick(Preference preference) {
+            public boolean onPreferenceClick(@NonNull Preference preference) {
                 showDeleteAccountsDialog();
                 return true;
             }
@@ -129,7 +143,7 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
         preference = findPreference(getString(R.string.key_create_default_accounts));
         preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
-            public boolean onPreferenceClick(Preference preference) {
+            public boolean onPreferenceClick(@NonNull Preference preference) {
                 final Activity activity = requireActivity();
                 new AlertDialog.Builder(activity)
                     .setTitle(R.string.title_create_default_accounts)
@@ -148,29 +162,11 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
                             dialog.dismiss();
                         }
                     })
-                    .create()
                     .show();
 
                 return true;
             }
         });
-    }
-
-    @Override
-    public boolean onPreferenceClick(Preference preference) {
-        String key = preference.getKey();
-
-        if (key.equals(getString(R.string.key_import_accounts))) {
-            AccountsActivity.startXmlFileChooser(this);
-            return true;
-        }
-
-        if (key.equals(getString(R.string.key_export_accounts_csv))) {
-            selectExportFile();
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -198,24 +194,12 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
         }
     }
 
-    @Override
-    public boolean onPreferenceChange(Preference preference, Object newValue) {
-        if (preference.getKey().equals(getString(R.string.key_default_currency))) {
-            String currencyCode = newValue.toString();
-            GnuCashApplication.setDefaultCurrencyCode(preference.getContext(), currencyCode);
-            String summary = commoditiesDbAdapter.getCommodity(currencyCode).formatListItem();
-            preference.setSummary(summary);
-            return true;
-        }
-        return false;
-    }
-
     /**
      * Show the dialog for deleting accounts
      */
     public void showDeleteAccountsDialog() {
         DeleteAllAccountsConfirmationDialog deleteConfirmationDialog = DeleteAllAccountsConfirmationDialog.newInstance();
-        deleteConfirmationDialog.show(getActivity().getSupportFragmentManager(), "account_settings");
+        deleteConfirmationDialog.show(getParentFragmentManager(), "dslete_accounts");
     }
 
     @Override
@@ -244,6 +228,7 @@ public class AccountPreferencesFragment extends PreferenceFragmentCompat impleme
                             Toast.LENGTH_LONG).show();
                     }
                 }
+                break;
 
             default:
                 super.onActivityResult(requestCode, resultCode, data);

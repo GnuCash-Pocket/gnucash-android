@@ -25,7 +25,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -54,6 +53,7 @@ import androidx.fragment.app.ListFragment;
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHelper;
+import org.gnucash.android.db.DatabaseHolder;
 import org.gnucash.android.db.DatabaseSchema.BookEntry;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
@@ -260,9 +260,6 @@ public class BookManagerFragment extends ListFragment implements
                             switch (item.getItemId()) {
                                 case R.id.menu_rename:
                                     return handleMenuRenameBook(bookName, bookUID);
-                                case R.id.menu_sync:
-                                    //TODO implement sync
-                                    return false;
                                 case R.id.menu_delete:
                                     return handleMenuDeleteBook(bookUID);
                                 default:
@@ -296,8 +293,8 @@ public class BookManagerFragment extends ListFragment implements
          * @return {@code true}
          */
         private boolean handleMenuRenameBook(String bookName, final String bookUID) {
-            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
-            dialogBuilder.setTitle(R.string.title_rename_book)
+            AlertDialog dialog = new AlertDialog.Builder(getActivity())
+                .setTitle(R.string.title_rename_book)
                 .setView(R.layout.dialog_rename_book)
                 .setPositiveButton(R.string.btn_rename, new DialogInterface.OnClickListener() {
                     @Override
@@ -315,9 +312,8 @@ public class BookManagerFragment extends ListFragment implements
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
                     }
-                });
-            AlertDialog dialog = dialogBuilder.create();
-            dialog.show();
+                })
+                .show();
             ((TextView) dialog.findViewById(R.id.input_book_title)).setText(bookName);
             return true;
         }
@@ -338,8 +334,8 @@ public class BookManagerFragment extends ListFragment implements
         private void setStatisticsText(View view, String bookUID) {
             final Context context = view.getContext();
             DatabaseHelper dbHelper = new DatabaseHelper(context, bookUID);
-            SQLiteDatabase db = dbHelper.getReadableDatabase();
-            TransactionsDbAdapter trnAdapter = new TransactionsDbAdapter(db);
+            DatabaseHolder holder = dbHelper.getHolder();
+            TransactionsDbAdapter trnAdapter = new TransactionsDbAdapter(holder);
             int transactionCount = (int) trnAdapter.getRecordsCount();
             AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(trnAdapter);
             int accountsCount = (int) accountsDbAdapter.getRecordsCount();

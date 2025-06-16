@@ -48,7 +48,7 @@ public class ScheduledActionDbAdapter extends DatabaseAdapter<ScheduledAction> {
     final RecurrenceDbAdapter recurrenceDbAdapter;
 
     public ScheduledActionDbAdapter(@NonNull RecurrenceDbAdapter recurrenceDbAdapter) {
-        super(recurrenceDbAdapter.mDb, ScheduledActionEntry.TABLE_NAME, new String[]{
+        super(recurrenceDbAdapter.holder, ScheduledActionEntry.TABLE_NAME, new String[]{
             ScheduledActionEntry.COLUMN_ACTION_UID,
             ScheduledActionEntry.COLUMN_TYPE,
             ScheduledActionEntry.COLUMN_START_TIME,

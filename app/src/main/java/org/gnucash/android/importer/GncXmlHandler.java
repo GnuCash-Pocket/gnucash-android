@@ -114,7 +114,6 @@ import static org.gnucash.android.export.xml.GncXmlHelper.parseDateTime;
 import static org.gnucash.android.export.xml.GncXmlHelper.parseSplitAmount;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -122,6 +121,7 @@ import androidx.annotation.Nullable;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHelper;
+import org.gnucash.android.db.DatabaseHolder;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.db.adapter.BudgetsDbAdapter;
@@ -333,6 +333,8 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     private BudgetsDbAdapter mBudgetsDbAdapter;
     private final Book mBook = new Book();
     @NonNull
+    private DatabaseHolder holder;
+    @NonNull
     private DatabaseHelper mDatabaseHelper;
     @NonNull
     private final Context context;
@@ -362,12 +364,12 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     private void initDb(@NonNull String bookUID) {
         DatabaseHelper databaseHelper = new DatabaseHelper(context, bookUID);
         mDatabaseHelper = databaseHelper;
-        SQLiteDatabase db = databaseHelper.getWritableDatabase();
-        mCommoditiesDbAdapter = new CommoditiesDbAdapter(db);
+        holder = databaseHelper.getHolder();
+        mCommoditiesDbAdapter = new CommoditiesDbAdapter(holder);
         mPricesDbAdapter = new PricesDbAdapter(mCommoditiesDbAdapter);
         mTransactionsDbAdapter = new TransactionsDbAdapter(mCommoditiesDbAdapter);
         mAccountsDbAdapter = new AccountsDbAdapter(mTransactionsDbAdapter, mPricesDbAdapter);
-        RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(db);
+        RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(holder);
         mScheduledActionsDbAdapter = new ScheduledActionDbAdapter(recurrenceDbAdapter);
         mBudgetsDbAdapter = new BudgetsDbAdapter(recurrenceDbAdapter);
 
@@ -586,10 +588,12 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                         throw new SAXException("Commodity with '" + mCommoditySpace + ":" + mCommodityId
                             + "' currency code not found in the database for account " + mAccount.getUID());
                     }
-                    String currencyId = commodity.getCurrencyCode();
-                    Integer currencyCount = mCurrencyCount.get(currencyId);
-                    if (currencyCount == null) currencyCount = 0;
-                    mCurrencyCount.put(currencyId, currencyCount + 1);
+                    if (commodity.isCurrency()) {
+                        String currencyId = commodity.getCurrencyCode();
+                        Integer currencyCount = mCurrencyCount.get(currencyId);
+                        if (currencyCount == null) currencyCount = 0;
+                        mCurrencyCount.put(currencyId, currencyCount + 1);
+                    }
                 }
                 break;
             case TAG_ACCT_PARENT:
@@ -1101,7 +1105,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
             }
         }
         if (mostCurrencyAppearance > 0) {
-            GnuCashApplication.setDefaultCurrencyCode(mostAppearedCurrency);
+            mCommoditiesDbAdapter.setDefaultCurrencyCode(mostAppearedCurrency);
         }
 
         saveToDatabase();

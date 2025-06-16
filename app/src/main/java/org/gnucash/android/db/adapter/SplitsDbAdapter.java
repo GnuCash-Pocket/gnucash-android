@@ -31,6 +31,7 @@ import android.database.sqlite.SQLiteStatement;
 import androidx.annotation.NonNull;
 
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.db.DatabaseHolder;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
@@ -58,12 +59,12 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
     private static final String credit = TransactionType.CREDIT.value;
 
-    public SplitsDbAdapter(@NonNull SQLiteDatabase db) {
-        this(new CommoditiesDbAdapter(db));
+    public SplitsDbAdapter(@NonNull DatabaseHolder holder) {
+        this(new CommoditiesDbAdapter(holder));
     }
 
     public SplitsDbAdapter(@NonNull CommoditiesDbAdapter commoditiesDbAdapter) {
-        super(commoditiesDbAdapter.mDb, SplitEntry.TABLE_NAME, new String[]{
+        super(commoditiesDbAdapter.holder, SplitEntry.TABLE_NAME, new String[]{
             SplitEntry.COLUMN_MEMO,
             SplitEntry.COLUMN_TYPE,
             SplitEntry.COLUMN_VALUE_NUM,

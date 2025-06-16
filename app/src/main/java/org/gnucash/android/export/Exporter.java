@@ -24,7 +24,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ResolveInfo;
 import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -49,6 +48,7 @@ import org.gnucash.android.BuildConfig;
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHelper;
+import org.gnucash.android.db.DatabaseHolder;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
@@ -131,7 +131,7 @@ public abstract class Exporter {
     /**
      * Database being currently exported
      */
-    protected final SQLiteDatabase mDb;
+    protected final DatabaseHolder holder;
 
     /**
      * GUID of the book being exported
@@ -149,14 +149,13 @@ public abstract class Exporter {
         mBooksDbADapter = BooksDbAdapter.getInstance();
 
         DatabaseHelper dbHelper = new DatabaseHelper(context, bookUID);
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        mDb = db;
-        mCommoditiesDbAdapter = new CommoditiesDbAdapter(db);
+        holder = dbHelper.getReadableHolder();
+        mCommoditiesDbAdapter = new CommoditiesDbAdapter(holder);
         mPricesDbAdapter = new PricesDbAdapter(mCommoditiesDbAdapter);
         mSplitsDbAdapter = new SplitsDbAdapter(mCommoditiesDbAdapter);
         mTransactionsDbAdapter = new TransactionsDbAdapter(mSplitsDbAdapter);
         mAccountsDbAdapter = new AccountsDbAdapter(mTransactionsDbAdapter, mPricesDbAdapter);
-        RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(db);
+        RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(holder);
         mBudgetsDbAdapter = new BudgetsDbAdapter(recurrenceDbAdapter);
         mScheduledActionDbAdapter = new ScheduledActionDbAdapter(recurrenceDbAdapter);
 
@@ -370,7 +369,7 @@ public abstract class Exporter {
         mScheduledActionDbAdapter.close();
         mSplitsDbAdapter.close();
         mTransactionsDbAdapter.close();
-        mDb.close();
+        holder.close();
     }
 
     protected Writer createWriter(@NonNull File file) throws IOException {

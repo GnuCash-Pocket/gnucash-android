@@ -17,17 +17,11 @@
 package org.gnucash.android.ui.settings;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.SwitchPreference;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
@@ -43,68 +37,42 @@ import java.util.Collection;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class TransactionsPreferenceFragment extends PreferenceFragmentCompat implements Preference.OnPreferenceChangeListener {
+public class TransactionsPreferenceFragment extends GnuPreferenceFragment {
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        getPreferenceManager().setSharedPreferencesName(GnuCashApplication.getActiveBookUID());
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setTitle(R.string.title_transaction_preferences);
+    protected int getTitleId() {
+        return R.string.title_transaction_preferences;
     }
 
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
+        getPreferenceManager().setSharedPreferencesName(GnuCashApplication.getActiveBookUID());
         addPreferencesFromResource(R.xml.fragment_transaction_preferences);
 
-        SharedPreferences sharedPreferences = getPreferenceManager().getSharedPreferences();
-
-        Preference pref = findPreference(getString(R.string.key_use_double_entry));
-        pref.setOnPreferenceChangeListener(this);
-
-        String keyCompactView = getString(R.string.key_use_compact_list);
-        SwitchPreference switchPref = findPreference(keyCompactView);
-        switchPref.setChecked(sharedPreferences.getBoolean(keyCompactView, false));
-
-        String keySaveBalance = getString(R.string.key_save_opening_balances);
-        switchPref = findPreference(keySaveBalance);
-        switchPref.setChecked(sharedPreferences.getBoolean(keySaveBalance, false));
-
-        String keyDoubleEntry = getString(R.string.key_use_double_entry);
-        switchPref = findPreference(keyDoubleEntry);
-        switchPref.setChecked(sharedPreferences.getBoolean(keyDoubleEntry, true));
-
-        Preference preference = findPreference(getString(R.string.key_delete_all_transactions));
-        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+        Preference preferenceDouble = findPreference(getString(R.string.key_use_double_entry));
+        preferenceDouble.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
-            public boolean onPreferenceClick(Preference preference) {
-                showDeleteTransactionsDialog();
+            public boolean onPreferenceChange(@NonNull Preference preference, Object newValue) {
+                boolean useDoubleEntry = (Boolean) newValue;
+                setImbalanceAccountsHidden(preference.getContext(), useDoubleEntry);
+                return true;
+            }
+        });
+
+        Preference preferenceDelete = findPreference(getString(R.string.key_delete_all_transactions));
+        preferenceDelete.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(@NonNull Preference preference) {
+                showDeleteTransactionsDialog(preference.getContext());
                 return true;
             }
         });
     }
 
-    @Override
-    public boolean onPreferenceChange(Preference preference, Object newValue) {
-        if (preference.getKey().equals(getString(R.string.key_use_double_entry))) {
-            boolean useDoubleEntry = (Boolean) newValue;
-            setImbalanceAccountsHidden(preference.getContext(), useDoubleEntry);
-        }
-        return true;
-    }
-
     /**
      * Deletes all transactions in the system
      */
-    public void showDeleteTransactionsDialog() {
-        Context context = requireContext();
+    public void showDeleteTransactionsDialog(@NonNull Context context) {
         DeleteAllTransactionsConfirmationDialog deleteTransactionsConfirmationDialog =
             DeleteAllTransactionsConfirmationDialog.newInstance();
         if (GnuCashApplication.shouldBackupTransactions(context)) {
@@ -113,7 +81,6 @@ public class TransactionsPreferenceFragment extends PreferenceFragmentCompat imp
             deleteTransactionsConfirmationDialog.deleteAll(context);
         }
     }
-
 
     /**
      * Hide all imbalance accounts when double-entry mode is disabled
