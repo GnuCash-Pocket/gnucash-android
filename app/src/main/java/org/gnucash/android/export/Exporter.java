@@ -61,6 +61,7 @@ import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
 import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Transaction;
+import org.gnucash.android.ui.settings.OwnCloudPreferences;
 import org.gnucash.android.util.BackupManager;
 import org.gnucash.android.util.DateExtKt;
 import org.gnucash.android.util.FileUtils;
@@ -468,18 +469,18 @@ public abstract class Exporter {
     private Uri moveExportToOwnCloud(ExportParams exportParams, File exportedFile) throws Exporter.ExporterException {
         Timber.i("Copying exported file to ownCloud");
         final Context context = mContext;
-        SharedPreferences preferences = context.getSharedPreferences(context.getString(R.string.owncloud_pref), Context.MODE_PRIVATE);
+        final OwnCloudPreferences preferences = new OwnCloudPreferences(context);
 
-        boolean ocSync = preferences.getBoolean(context.getString(R.string.owncloud_sync), false);
+        boolean ocSync = preferences.isSync();
 
         if (!ocSync) {
             throw new Exporter.ExporterException(exportParams, "ownCloud not enabled.");
         }
 
-        String ocServer = preferences.getString(context.getString(R.string.key_owncloud_server), null);
-        String ocUsername = preferences.getString(context.getString(R.string.key_owncloud_username), null);
-        String ocPassword = preferences.getString(context.getString(R.string.key_owncloud_password), null);
-        String ocDir = preferences.getString(context.getString(R.string.key_owncloud_dir), null);
+        String ocServer = preferences.getServer();
+        String ocUsername = preferences.getUsername();
+        String ocPassword = preferences.getPassword();
+        String ocDir = preferences.getDir();
 
         Uri serverUri = Uri.parse(ocServer);
         OwnCloudClient client = OwnCloudClientFactory.createOwnCloudClient(serverUri, context, true);

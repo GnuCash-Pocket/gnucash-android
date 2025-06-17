@@ -16,7 +16,6 @@
 
 package org.gnucash.android.ui.settings;
 
-import static org.gnucash.android.app.ActivityExtKt.findActivity;
 import static org.gnucash.android.app.IntentExtKt.takePersistableUriPermission;
 import static org.gnucash.android.util.ContentExtKt.getDocumentName;
 
@@ -26,7 +25,6 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -37,11 +35,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
-import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
 import androidx.preference.TwoStatePreference;
 
@@ -229,22 +225,9 @@ public class BackupPreferenceFragment extends GnuPreferenceFragment {
      */
     public void toggleOwnCloudPreference(Preference preference) {
         Context context = preference.getContext();
-        SharedPreferences sharedPreferences = context.getSharedPreferences(getString(R.string.owncloud_pref), Context.MODE_PRIVATE);
-        ((TwoStatePreference) preference).setChecked(sharedPreferences.getBoolean(getString(R.string.owncloud_sync), false));
+        final OwnCloudPreferences preferences = new OwnCloudPreferences(context);
+        ((TwoStatePreference) preference).setChecked(preferences.isSync());
     }
-
-    /**
-     * Toggles the checkbox of the GoogleDrive Sync preference if a Google Drive account is linked
-     *
-     * @param preference Google Drive Sync preference
-     */
-    public void toggleGoogleDrivePreference(Preference preference) {
-        Context context = preference.getContext();
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        String appFolderId = sharedPreferences.getString(getString(R.string.key_google_drive_app_folder_id), null);
-        ((TwoStatePreference) preference).setChecked(appFolderId != null);
-    }
-
 
     /**
      * Toggles the authorization state of a DropBox account.
@@ -262,15 +245,15 @@ public class BackupPreferenceFragment extends GnuPreferenceFragment {
     /**
      * Toggles synchronization with ownCloud on or off
      */
-    private void toggleOwnCloudSync(Preference pref) {
-        FragmentActivity activity = (FragmentActivity) findActivity(pref.getContext());
-        SharedPreferences mPrefs = activity.getSharedPreferences(getString(R.string.owncloud_pref), Context.MODE_PRIVATE);
+    private void toggleOwnCloudSync(Preference preference) {
+        Context context = preference.getContext();
+        final OwnCloudPreferences preferences = new OwnCloudPreferences(context);
 
-        if (mPrefs.getBoolean(getString(R.string.owncloud_sync), false))
-            mPrefs.edit().putBoolean(getString(R.string.owncloud_sync), false).apply();
+        if (preferences.isSync())
+            preferences.setSync(false);
         else {
-            OwnCloudDialogFragment ocDialog = OwnCloudDialogFragment.newInstance(pref);
-            ocDialog.show(activity.getSupportFragmentManager(), "owncloud_dialog");
+            OwnCloudDialogFragment ocDialog = OwnCloudDialogFragment.newInstance(preference);
+            ocDialog.show(getParentFragmentManager(), "owncloud_dialog");
         }
     }
 
