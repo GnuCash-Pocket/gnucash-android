@@ -393,9 +393,9 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      * Sets the color for the ViewPager title indicator to match the account color
      */
     private void setTitleIndicatorColor() {
-        @ColorInt int color = mAccountsDbAdapter.getActiveAccountColor(this, account.getUID());
-        setTitlesColor(color);
-        mBinding.tabLayout.setBackgroundColor(color);
+        @ColorInt int accountColor = mAccountsDbAdapter.getActiveAccountColor(this, account.getUID());
+        setTitlesColor(accountColor);
+        mBinding.tabLayout.setBackgroundColor(accountColor);
     }
 
     /**

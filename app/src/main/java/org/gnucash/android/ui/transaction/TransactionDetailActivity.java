@@ -86,9 +86,9 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowTitleEnabled(false);
 
-        int themeColor = accountsDbAdapter.getActiveAccountColor(this, mAccountUID);
-        setTitlesColor(themeColor);
-        mBinding.toolbar.setBackgroundColor(themeColor);
+        @ColorInt int accountColor = accountsDbAdapter.getActiveAccountColor(this, mAccountUID);
+        setTitlesColor(accountColor);
+        mBinding.toolbar.setBackgroundColor(accountColor);
 
         bindViews();
 

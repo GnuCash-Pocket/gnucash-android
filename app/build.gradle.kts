@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.plugin.extraProperties
 import org.jetbrains.kotlin.konan.exec.Command
+import java.util.Locale
 
 plugins {
     id("com.android.application")
@@ -26,12 +27,12 @@ fun gitSha(): String {
 
 android {
     namespace = "org.gnucash.android"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "org.gnucash.pocket"
         minSdk = 21
-        targetSdk = 34
+        targetSdk = 36
         versionCode = (((((versionMajor * 100) + versionMinor) * 1000) + versionPatch) * 1000) + versionBuild
         versionName = "${versionMajor}.${versionMinor}.${versionPatch}"
         resValue("string", "app_name", "GnuCash")
@@ -158,7 +159,9 @@ dependencies {
     // Jetpack
     implementation("androidx.appcompat:appcompat:1.7.1")
     implementation("com.google.android.material:material:1.12.0")
+    implementation("androidx.activity:activity-ktx:1.10.1")
     implementation("androidx.cardview:cardview:1.0.0")
+    implementation("androidx.core:core-ktx:1.16.0")
     implementation("androidx.preference:preference-ktx:1.2.1")
     implementation("androidx.recyclerview:recyclerview:1.4.0")
     implementation("androidx.work:work-runtime-ktx:2.10.1")
@@ -219,7 +222,7 @@ afterEvaluate {
 
     // Disable Google Services plugin for some flavors.
     android.productFlavors.forEach { flavor ->
-        val flavorName = flavor.name.capitalize()
+        val flavorName = flavor.name.capitalize(Locale.ROOT)
         tasks.matching { task ->
             task.name.contains("GoogleServices") && task.name.contains(flavorName)
         }.forEach { task ->
