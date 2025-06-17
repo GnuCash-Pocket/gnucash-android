@@ -198,6 +198,12 @@ public class BookManagerFragment extends ListFragment implements
                     AccountsActivity.createDefaultAccounts(activity, currencyCode, fileId, null);
                 }
             })
+            .setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            })
             .show();
     }
 
