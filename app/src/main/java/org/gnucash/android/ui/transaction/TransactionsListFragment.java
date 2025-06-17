@@ -87,6 +87,7 @@ public class TransactionsListFragment extends MenuFragment implements
     private String mAccountUID;
 
     private boolean mUseCompactView = false;
+    private boolean mUseDoubleEntry = true;
 
     private TransactionRecyclerAdapter mTransactionRecyclerAdapter;
 
@@ -99,9 +100,8 @@ public class TransactionsListFragment extends MenuFragment implements
         Bundle args = getArguments();
         mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID);
 
-        boolean isDoubleEntryDisabled = !GnuCashApplication.isDoubleEntryEnabled(context);
-        mUseCompactView = GnuCashApplication.getBookPreferences(context)
-            .getBoolean(getString(R.string.key_use_compact_list), false) || isDoubleEntryDisabled;
+        mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled(context);
+        mUseCompactView = GnuCashApplication.getBookPreferences(context).getBoolean(getString(R.string.key_use_compact_list), mUseCompactView);
         //if there was a local override of the global setting, respect it
         if (savedInstanceState != null) {
             mUseCompactView = savedInstanceState.getBoolean(getString(R.string.key_use_compact_list), mUseCompactView);
@@ -188,10 +188,9 @@ public class TransactionsListFragment extends MenuFragment implements
     @Override
     public void onPrepareOptionsMenu(@NonNull Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        Context context = requireContext();
         MenuItem item = menu.findItem(R.id.menu_toggle_compact);
         item.setChecked(mUseCompactView);
-        item.setEnabled(GnuCashApplication.isDoubleEntryEnabled(context)); //always compact for single-entry
+        item.setEnabled(mUseDoubleEntry); //always compact for single-entry
     }
 
     @Override
@@ -199,7 +198,7 @@ public class TransactionsListFragment extends MenuFragment implements
         switch (item.getItemId()) {
             case R.id.menu_toggle_compact:
                 item.setChecked(!item.isChecked());
-                mUseCompactView = !mUseCompactView;
+                mUseCompactView = item.isChecked();
                 refresh();
                 return true;
             default:
@@ -358,7 +357,7 @@ public class TransactionsListFragment extends MenuFragment implements
                 String dateText = TransactionsActivity.getPrettyDateFormat(getActivity(), dateMillis);
                 transactionDate.setText(dateText);
 
-                if (mUseCompactView) {
+                if (mUseCompactView || !mUseDoubleEntry) {
                     secondaryText.setVisibility(View.GONE);
                     editTransaction.setVisibility(View.GONE);
                 } else {
