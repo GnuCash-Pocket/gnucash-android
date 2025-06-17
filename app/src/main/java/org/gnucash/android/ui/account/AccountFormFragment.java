@@ -209,6 +209,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         binding.inputAccountTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                if (view == null) return;
                 selectedAccountType = accountTypesAdapter.getType(position);
                 loadParentAccountList(binding, selectedAccountType);
                 setParentAccountSelection(binding, mParentAccountUID);
@@ -224,6 +225,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         binding.inputParentAccount.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (view == null) return;
                 selectedParentAccountUID = parentAccountNameAdapter.getUID(position);
             }
 
@@ -243,6 +245,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         binding.inputDefaultTransferAccount.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (view == null) return;
                 selectedDefaultTransferAccount = defaultAccountNameAdapter.getAccount(position);
             }
 
@@ -268,6 +271,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         binding.inputCurrencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (view == null) return;
                 selectedCommodity = commoditiesAdapter.getCommodity(position);
             }
 

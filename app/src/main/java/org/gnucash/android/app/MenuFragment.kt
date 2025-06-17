@@ -12,25 +12,32 @@ open class MenuFragment : Fragment() {
 
     private var menuThisFragment: MenuDiff? = null
     private var isMenuVisible = true
+    private val menuProvider = object : MenuProvider {
+        override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+            val itemsBefore = menu.children.toList()
+            onCreateOptionsMenu(menu, menuInflater)
+            onPrepareOptionsMenu(menu)
+            val itemsAfter = menu.children.toList()
+            menuThisFragment = MenuDiff(itemsBefore, itemsAfter).apply {
+                setMenuVisibility(isMenuVisible)
+            }
+        }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+            if (context == null) return false
+            return onOptionsItemSelected(menuItem)
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
         val activity = requireActivity()
-        activity.addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                val itemsBefore = menu.children.toList()
-                onCreateOptionsMenu(menu, menuInflater)
-                val itemsAfter = menu.children.toList()
-                menuThisFragment = MenuDiff(itemsBefore, itemsAfter).apply {
-                    setMenuVisibility(isMenuVisible)
-                }
-            }
+        activity.addMenuProvider(menuProvider, this)
+    }
 
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                if (context == null) return false
-                return onOptionsItemSelected(menuItem)
-            }
-        }, this)
+    override fun onStop() {
+        super.onStop()
+        activity?.removeMenuProvider(menuProvider)
     }
 
     override fun setMenuVisibility(menuVisible: Boolean) {

@@ -335,10 +335,9 @@ public class AccountsActivity extends BaseDrawerActivity implements
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        menu.clear();
-        inflater.inflate(R.menu.account_actions, menu);
+    public boolean onCreateOptionsMenu(@NonNull Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        getMenuInflater().inflate(R.menu.account_actions, menu);
         // Associate searchable configuration with the SearchView
         SearchView searchView = mSearchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
         if (searchView != null) {

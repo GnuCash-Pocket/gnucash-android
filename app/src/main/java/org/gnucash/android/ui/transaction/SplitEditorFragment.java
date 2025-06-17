@@ -496,7 +496,8 @@ public class SplitEditorFragment extends MenuFragment {
         }
 
         @Override
-        public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+        public void onItemSelected(AdapterView<?> parentView, View view, int position, long id) {
+            if (view == null) return;
             Account accountFrom = accountNameAdapter.getAccount(mAccountUID);
             if (accountFrom == null) return;
             Account accountTo = accountNameAdapter.getAccount(position);

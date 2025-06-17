@@ -237,6 +237,7 @@ public abstract class BaseDrawerActivity extends PasscodeLockActivity {
         mBookNameSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (view == null) return;
                 if (position == activeBookPosition) {
                     return;
                 }

@@ -18,8 +18,6 @@ package org.gnucash.android.ui.transaction;
 
 import static org.gnucash.android.ui.util.widget.ViewExtKt.setTextToEnd;
 
-import static java.lang.Math.max;
-
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -638,6 +636,7 @@ public class TransactionFormFragment extends MenuFragment implements
 
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+                if (view == null) return;
                 removeFavoriteIconFromSelectedView((TextView) view);
                 final String transferAccountUID = accountTransferNameAdapter.getUID(position);
 

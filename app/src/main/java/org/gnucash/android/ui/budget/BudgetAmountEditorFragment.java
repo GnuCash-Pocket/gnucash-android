@@ -261,6 +261,7 @@ public class BudgetAmountEditorFragment extends MenuFragment {
             budgetAccountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    if (view == null) return;
                     Account account = accountNameAdapter.getAccount(position);
                     Commodity commodity = account.getCommodity();
                     currencySymbolTextView.setText(commodity.getSymbol());

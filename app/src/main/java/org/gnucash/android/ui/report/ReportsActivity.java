@@ -88,6 +88,7 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
 
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            if (view == null) return;
             ReportType reportType = ReportType.values()[position];
             if (mReportType != reportType) {
                 showReport(reportType);
@@ -142,6 +143,7 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
         mBinding.reportAccountTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+                if (view == null) return;
                 final AccountType accountType;
                 switch (position) {
                     case 1:
@@ -280,7 +282,8 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(@NonNull Menu menu) {
+        super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.report_actions, menu);
         return true;
     }
@@ -317,6 +320,7 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        if (view == null) return;
         LocalDate now = LocalDate.now();
         mReportPeriodEnd = now.plusDays(1);
         switch (position) {

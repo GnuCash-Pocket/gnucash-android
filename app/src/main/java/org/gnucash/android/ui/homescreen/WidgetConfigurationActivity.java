@@ -110,6 +110,7 @@ public class WidgetConfigurationActivity extends GnuCashActivity {
         binding.inputBooksSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (view == null) return;
                 Context context = view.getContext();
                 Book book = books.get(position);
                 SQLiteDatabase db = new DatabaseHelper(context, book.getUID()).getReadableDatabase();
@@ -126,6 +127,7 @@ public class WidgetConfigurationActivity extends GnuCashActivity {
         binding.inputAccountsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (view == null) return;
                 selectedAccountUID = accountNameAdapter.getUID(position);
             }
 
