@@ -511,7 +511,6 @@ public class ExportFormFragment extends MenuFragment implements
 
         List<ExportFormatItem> formatItems = this.formatItems;
         formatItems.clear();
-        formatItems.add(new ExportFormatItem(ExportFormat.CSVA, "CSVA"));
         formatItems.add(new ExportFormatItem(ExportFormat.CSVT, context.getString(ExportFormat.CSVT.labelId)));
         formatItems.add(new ExportFormatItem(ExportFormat.QIF, context.getString(ExportFormat.QIF.labelId)));
         if (isDoubleEntry) {
@@ -555,19 +554,25 @@ public class ExportFormFragment extends MenuFragment implements
         binding.radioSeparatorCommaFormat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mExportParams.setCsvSeparator(CSV_COMMA);
+                if (isChecked) {
+                    mExportParams.setCsvSeparator(CSV_COMMA);
+                }
             }
         });
         binding.radioSeparatorColonFormat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mExportParams.setCsvSeparator(CSV_COLON);
+                if (isChecked) {
+                    mExportParams.setCsvSeparator(CSV_COLON);
+                }
             }
         });
         binding.radioSeparatorSemicolonFormat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mExportParams.setCsvSeparator(CSV_SEMICOLON);
+                if (isChecked) {
+                    mExportParams.setCsvSeparator(CSV_SEMICOLON);
+                }
             }
         });
     }
@@ -662,8 +667,9 @@ public class ExportFormFragment extends MenuFragment implements
                         setExportUri(null);
                     }
 
-                    if (mExportStarted)
+                    if (mExportStarted) {
                         startExport();
+                    }
                 }
                 break;
         }
