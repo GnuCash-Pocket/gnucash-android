@@ -59,9 +59,9 @@ class TransactionTest : GnuCashTest() {
         splits.add(split1)
         splits.add(split2)
 
-        t1.setSplits(splits)
+        t1.splits = splits
 
-        val transactionUID = assertThat(t1.splits).extracting("transactionUID")
+        val transactionUID = assertThat(t1.splits).extracting("transactionUID", String::class.java)
         transactionUID.contains(t1.uid)
         transactionUID.doesNotContain("non-existent")
         transactionUID.doesNotContain("pre-existent")

@@ -35,11 +35,6 @@ class Transaction : BaseModel {
     private var _commodity: Commodity? = null
 
     /**
-     * The splits making up this transaction
-     */
-    private var _splitList = mutableListOf<Split>()
-
-    /**
      * An extra note giving details about the transaction
      */
     var note: String? = ""
@@ -88,19 +83,17 @@ class Transaction : BaseModel {
      * @param transaction    Transaction to be cloned
      * @param generateNewUID Flag to determine if new UID should be assigned or not
      */
-    constructor(transaction: Transaction, generateNewUID: Boolean) {
+    @JvmOverloads
+    constructor(transaction: Transaction, generateNewUID: Boolean = true) {
         initDefaults()
-        description = transaction.description
-        note = transaction.note
-        setTime(transaction.timeMillis)
-        commodity = transaction.commodity
-        //exported flag is left at default value of false
-        for (split in transaction._splitList) {
-            addSplit(Split(split, generateNewUID))
-        }
         if (!generateNewUID) {
             setUID(transaction.uid)
         }
+        description = transaction.description
+        note = transaction.note
+        timeMillis = transaction.timeMillis
+        commodity = transaction.commodity
+        splits = transaction.splits.map { Split(it, generateNewUID) }
     }
 
     /**
@@ -141,18 +134,23 @@ class Transaction : BaseModel {
      */
     override fun setUID(uid: String?) {
         super.setUID(uid)
-        for (split in _splitList) {
+        for (split in splits) {
             split.transactionUID = uid
         }
     }
 
+    private val _splits = mutableListOf<Split>()
     /**
-     * Returns list of splits for this transaction
-     *
-     * @return [java.util.List] of splits in the transaction
+     * The list of splits for this transaction
      */
-    val splits: List<Split>
-        get() = _splitList
+    var splits: List<Split>
+        get() = _splits
+        set(value) {
+            _splits.clear()
+            for (split in value) {
+                addSplit(split)
+            }
+        }
 
     /**
      * Returns the list of splits belonging to a specific account
@@ -161,27 +159,7 @@ class Transaction : BaseModel {
      * @return List of [org.gnucash.android.model.Split]s
      */
     fun getSplits(accountUID: String): List<Split> {
-        val splits = mutableListOf<Split>()
-        for (split in _splitList) {
-            if (split.accountUID == accountUID) {
-                splits.add(split)
-            }
-        }
-        return splits
-    }
-
-    /**
-     * Sets the splits for this transaction
-     *
-     * All the splits in the list will have their transaction UID set to this transaction
-     *
-     * @param splitList List of splits for this transaction
-     */
-    fun setSplits(splitList: MutableList<Split>) {
-        _splitList = splitList
-        for (split in splitList) {
-            split.transactionUID = uid
-        }
+        return splits.filter { it.accountUID == accountUID }
     }
 
     /**
@@ -194,7 +172,7 @@ class Transaction : BaseModel {
     fun addSplit(split: Split) {
         //sets the currency of the split to the currency of the transaction
         split.transactionUID = uid
-        _splitList.add(split)
+        _splits.add(split)
     }
 
     /**
@@ -207,7 +185,7 @@ class Transaction : BaseModel {
      * @see computeBalance
      */
     fun getBalance(accountUID: String): Money {
-        return computeBalance(accountUID, _splitList)
+        return computeBalance(accountUID, splits)
     }
 
     /**
@@ -220,7 +198,7 @@ class Transaction : BaseModel {
      * @see computeBalance
      */
     fun getBalance(account: Account): Money {
-        return computeBalance(account, _splitList)
+        return computeBalance(account, splits)
     }
 
     /**

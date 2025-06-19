@@ -154,7 +154,7 @@ public class StackedBarChartFragment extends BaseReportFragment {
                 + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?";
             String[] whereArgs = new String[]{accountType.name()};
             String orderBy = DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC";
-            List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(where, whereArgs, orderBy);
+            List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, whereArgs, orderBy);
             @ColorInt int color;
             for (Account account : accounts) {
                 String accountUID = account.getUID();

@@ -376,7 +376,7 @@
     <string name="menu_title_enable_sync">Włącz synchronizację</string>
     <string name="menu_title_new_book">Nowa księga</string>
     <string name="toast_transaction_has_no_splits_and_cannot_open">Zaznaczone transakcje nie mają podziałów i nie mogą być otwarte</string>
-    <string name="label_split_count">podziały</string>
+    <string name="label_split_count">%1$d podziały</string>
     <string name="label_inside_account_with_name">w %1$s</string>
     <plurals name="book_account_stats">
         <item quantity="one">%d konto</item>

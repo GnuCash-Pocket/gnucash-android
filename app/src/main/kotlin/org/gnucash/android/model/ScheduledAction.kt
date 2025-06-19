@@ -26,6 +26,7 @@ import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
 import java.sql.Timestamp
 import java.util.Calendar
+import java.util.Locale
 
 /**
  * Represents a scheduled event which is stored in the database and run at regular period
@@ -37,7 +38,7 @@ class ScheduledAction    //all actions are enabled by default
     /**
      * Type of event being scheduled
      */
-    var actionType: ActionType
+    var actionType: ActionType = ActionType.TRANSACTION
 ) : BaseModel() {
 
     private var _startDate: Long = 0
@@ -59,11 +60,21 @@ class ScheduledAction    //all actions are enabled by default
     /**
      * Types of events which can be scheduled
      */
-    enum class ActionType(@JvmField @StringRes val labelId: Int) {
-        TRANSACTION(R.string.action_transaction),
+    enum class ActionType(@JvmField val value: String, @JvmField @StringRes val labelId: Int) {
+        TRANSACTION("TRANSACTION", R.string.action_transaction),
 
         // TODO rename `BACKUP` to `EXPORT`
-        BACKUP(R.string.action_backup)
+        BACKUP("BACKUP", R.string.action_backup);
+
+        companion object {
+            private val _values = values()
+
+            @JvmStatic
+            fun of(value: String): ActionType {
+                val valueLower = value.uppercase(Locale.ROOT)
+                return _values.firstOrNull { it.value == valueLower } ?: TRANSACTION
+            }
+        }
     }
 
     /**

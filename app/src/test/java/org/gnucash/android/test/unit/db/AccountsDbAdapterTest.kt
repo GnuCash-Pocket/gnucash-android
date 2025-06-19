@@ -107,17 +107,19 @@ class AccountsDbAdapterTest : GnuCashTest() {
      */
     @Test
     fun shouldBeAlphabeticallySortedByDefault() {
-        val first = Account(ALPHA_ACCOUNT_NAME)
-        val second = Account(BRAVO_ACCOUNT_NAME)
+        val alpha = Account(ALPHA_ACCOUNT_NAME)
+        val bravo = Account(BRAVO_ACCOUNT_NAME)
         //purposefully added the second after the first
-        accountsDbAdapter.addRecord(second)
-        accountsDbAdapter.addRecord(first)
+        accountsDbAdapter.addRecord(bravo)
+        accountsDbAdapter.addRecord(alpha)
 
-        val accountsList = accountsDbAdapter.allRecords
-        assertThat(accountsList.size).isEqualTo(2)
-        //bravo was saved first, but alpha should be first alphabetically
-        assertThat(accountsList).contains(first, Index.atIndex(0))
-        assertThat(accountsList).contains(second, Index.atIndex(1))
+        val accounts = accountsDbAdapter.getSimpleAccounts()
+        assertThat(accounts.size).isEqualTo(3)
+        val root = accounts.get(0)
+        val rootType = root.accountType
+        assertThat(rootType).isEqualTo(AccountType.ROOT)
+        assertThat(accounts).contains(alpha, Index.atIndex(1))
+        assertThat(accounts).contains(bravo, Index.atIndex(2))
     }
 
     @Test
@@ -176,7 +178,7 @@ class AccountsDbAdapterTest : GnuCashTest() {
         assertThat(secondAccount).isNotNull()
         assertThat(secondAccount.uid).isEqualTo(account2.uid)
 
-        assertThat(transactionsDbAdapter.recordsCount).isEqualTo(1)
+        assertThat(transactionsDbAdapter.recordsCount).isOne()
     }
 
     /**
@@ -202,7 +204,7 @@ class AccountsDbAdapterTest : GnuCashTest() {
         accountsDbAdapter.deleteRecord(ALPHA_ACCOUNT_NAME)
 
         val trxn = transactionsDbAdapter.getRecord(transaction.uid)
-        assertThat(trxn.splits.size).isEqualTo(1)
+        assertThat(trxn.splits.size).isOne()
         assertThat(trxn.splits[0].accountUID).isEqualTo(BRAVO_ACCOUNT_NAME)
     }
 
@@ -215,10 +217,11 @@ class AccountsDbAdapterTest : GnuCashTest() {
         accountsDbAdapter.addRecord(account)
         assertThat(accountsDbAdapter.recordsCount).isEqualTo(2L)
 
-        val accounts = accountsDbAdapter.simpleAccountList
-        assertThat(accounts).extracting("accountType").contains(AccountType.ROOT)
+        val accounts = accountsDbAdapter.simpleAccounts
+        assertThat(accounts).extracting("accountType", AccountType::class.java)
+            .contains(AccountType.ROOT)
 
-        val rootAccountUID = accountsDbAdapter.getOrCreateGnuCashRootAccountUID()
+        val rootAccountUID = accountsDbAdapter.getOrCreateRootAccountUID()
         assertThat(rootAccountUID).isEqualTo(accounts[1].parentUID)
     }
 
@@ -257,7 +260,7 @@ class AccountsDbAdapterTest : GnuCashTest() {
 
         accountsDbAdapter.addRecord(account1)
 
-        assertThat(transactionsDbAdapter.recordsCount).isEqualTo(1)
+        assertThat(transactionsDbAdapter.recordsCount).isOne()
         assertThat(splitsDbAdapter.recordsCount).isEqualTo(2)
         assertThat(accountsDbAdapter.recordsCount).isEqualTo(3) //ROOT account automatically added
     }
@@ -311,7 +314,7 @@ class AccountsDbAdapterTest : GnuCashTest() {
         accountsDbAdapter.addRecord(account)
         accountsDbAdapter.addRecord(account1)
 
-        val accounts = accountsDbAdapter.simpleAccountList
+        val accounts = accountsDbAdapter.simpleAccounts
         for (testAcct in accounts) {
             assertThat(testAcct.transactionCount).isZero()
         }
@@ -370,8 +373,15 @@ class AccountsDbAdapterTest : GnuCashTest() {
         )
 
         val accounts = accountsDbAdapter.allRecords
-        assertThat(accounts).hasSize(3)
-        assertThat(accounts).extracting("_uid").contains(uid)
+        assertThat(accounts).hasSize(4)
+        val root = accounts.get(0)
+        val rootType = root.accountType
+        assertThat(rootType).isEqualTo(AccountType.ROOT)
+        assertThat(accounts).extracting("uid", String::class.java).contains(uid)
+        assertThat(accounts[0].name).isEqualTo(AccountsDbAdapter.ROOT_ACCOUNT_NAME)
+        assertThat(accounts[1].fullName).isEqualTo("Assets")
+        assertThat(accounts[2].fullName).isEqualTo("Assets:Current Assets")
+        assertThat(accounts[3].fullName).isEqualTo("Assets:Current Assets:Cash in Wallet")
     }
 
     @Test
@@ -391,13 +401,13 @@ class AccountsDbAdapterTest : GnuCashTest() {
         accountsDbAdapter.addRecord(account2)
 
         assertThat(accountsDbAdapter.recordsCount).isEqualTo(3)
-        assertThat(transactionsDbAdapter.recordsCount).isEqualTo(1)
+        assertThat(transactionsDbAdapter.recordsCount).isOne()
         assertThat(splitsDbAdapter.recordsCount).isEqualTo(2)
 
         val result = accountsDbAdapter.recursiveDeleteAccount(account.uid)
         assertThat(result).isTrue()
 
-        assertThat(accountsDbAdapter.recordsCount).isEqualTo(1) //the root account
+        assertThat(accountsDbAdapter.recordsCount).isOne() //the root account
         assertThat(transactionsDbAdapter.recordsCount).isZero()
         assertThat(splitsDbAdapter.recordsCount).isZero()
     }

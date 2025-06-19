@@ -18,101 +18,10 @@
 package org.gnucash.android.importer;
 
 import static org.gnucash.android.db.adapter.AccountsDbAdapter.ROOT_ACCOUNT_NAME;
-import static org.gnucash.android.export.xml.GncXmlHelper.ATTR_KEY_CD_TYPE;
-import static org.gnucash.android.export.xml.GncXmlHelper.ATTR_KEY_TYPE;
-import static org.gnucash.android.export.xml.GncXmlHelper.ATTR_VALUE_FRAME;
-import static org.gnucash.android.export.xml.GncXmlHelper.ATTR_VALUE_NUMERIC;
-import static org.gnucash.android.export.xml.GncXmlHelper.ATTR_VALUE_STRING;
-import static org.gnucash.android.export.xml.GncXmlHelper.CD_TYPE_ACCOUNT;
-import static org.gnucash.android.export.xml.GncXmlHelper.CD_TYPE_BOOK;
-import static org.gnucash.android.export.xml.GncXmlHelper.CD_TYPE_BUDGET;
-import static org.gnucash.android.export.xml.GncXmlHelper.CD_TYPE_COMMODITY;
-import static org.gnucash.android.export.xml.GncXmlHelper.CD_TYPE_PRICE;
-import static org.gnucash.android.export.xml.GncXmlHelper.CD_TYPE_SCHEDXACTION;
-import static org.gnucash.android.export.xml.GncXmlHelper.CD_TYPE_TRANSACTION;
-import static org.gnucash.android.export.xml.GncXmlHelper.COMMODITY_CURRENCY;
-import static org.gnucash.android.export.xml.GncXmlHelper.COMMODITY_ISO4217;
-import static org.gnucash.android.export.xml.GncXmlHelper.KEY_COLOR;
-import static org.gnucash.android.export.xml.GncXmlHelper.KEY_CREDIT_NUMERIC;
-import static org.gnucash.android.export.xml.GncXmlHelper.KEY_DEBIT_NUMERIC;
-import static org.gnucash.android.export.xml.GncXmlHelper.KEY_DEFAULT_TRANSFER_ACCOUNT;
-import static org.gnucash.android.export.xml.GncXmlHelper.KEY_EXPORTED;
-import static org.gnucash.android.export.xml.GncXmlHelper.KEY_FAVORITE;
-import static org.gnucash.android.export.xml.GncXmlHelper.KEY_HIDDEN;
-import static org.gnucash.android.export.xml.GncXmlHelper.KEY_NOTES;
-import static org.gnucash.android.export.xml.GncXmlHelper.KEY_PLACEHOLDER;
-import static org.gnucash.android.export.xml.GncXmlHelper.KEY_SPLIT_ACCOUNT_SLOT;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ACCOUNT;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ACCT_COMMODITY;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ACCT_DESCRIPTION;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ACCT_ID;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ACCT_NAME;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ACCT_PARENT;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ACCT_TITLE;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ACCT_TYPE;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_BOOK;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_BOOK_ID;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_BUDGET;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_BUDGET_DESCRIPTION;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_BUDGET_ID;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_BUDGET_NAME;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_BUDGET_NUM_PERIODS;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_BUDGET_RECURRENCE;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_BUDGET_SLOTS;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_COMMODITY;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_COMMODITY_FRACTION;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_COMMODITY_ID;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_COMMODITY_NAME;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_COMMODITY_QUOTE_SOURCE;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_COMMODITY_QUOTE_TZ;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_COMMODITY_SPACE;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_COMMODITY_XCODE;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_COUNT_DATA;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_DATE_ENTERED;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_DATE_POSTED;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_GDATE;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_GNC_RECURRENCE;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_PRICE;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_PRICE_COMMODITY;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_PRICE_CURRENCY;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_PRICE_ID;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_PRICE_SOURCE;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_PRICE_TYPE;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_PRICE_VALUE;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_RECURRENCE_PERIOD;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ROOT;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_RX_MULT;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_RX_PERIOD_TYPE;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_RX_START;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_RX_WEEKEND_ADJ;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SCHEDULED_ACTION;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SLOT;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SLOT_KEY;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SLOT_VALUE;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SPLIT_ACCOUNT;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SPLIT_ID;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SPLIT_MEMO;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SPLIT_QUANTITY;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SPLIT_VALUE;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SX_AUTO_CREATE;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SX_ENABLED;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SX_END;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SX_ID;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SX_LAST;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SX_NAME;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SX_NUM_OCCUR;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SX_START;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SX_TEMPL_ACCOUNT;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_TEMPLATE_TRANSACTIONS;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_TRANSACTION;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_TRN_DESCRIPTION;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_TRN_SPLIT;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_TRX_ID;
-import static org.gnucash.android.export.xml.GncXmlHelper.TAG_TS_DATE;
-import static org.gnucash.android.export.xml.GncXmlHelper.parseDate;
-import static org.gnucash.android.export.xml.GncXmlHelper.parseDateTime;
-import static org.gnucash.android.export.xml.GncXmlHelper.parseSplitAmount;
+import static org.gnucash.android.db.adapter.AccountsDbAdapter.TEMPLATE_ACCOUNT_NAME;
+import static org.gnucash.android.export.xml.GncXmlHelper.*;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.text.TextUtils;
 
@@ -122,6 +31,7 @@ import androidx.annotation.Nullable;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHelper;
 import org.gnucash.android.db.DatabaseHolder;
+import org.gnucash.android.db.DatabaseSchema.TransactionEntry;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.db.adapter.BudgetsDbAdapter;
@@ -134,7 +44,6 @@ import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.gnc.GncProgressListener;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
-import org.gnucash.android.model.BaseModel;
 import org.gnucash.android.model.Book;
 import org.gnucash.android.model.Budget;
 import org.gnucash.android.model.BudgetAmount;
@@ -144,11 +53,11 @@ import org.gnucash.android.model.PeriodType;
 import org.gnucash.android.model.Price;
 import org.gnucash.android.model.Recurrence;
 import org.gnucash.android.model.ScheduledAction;
+import org.gnucash.android.model.Slot;
 import org.gnucash.android.model.Split;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.model.TransactionType;
 import org.gnucash.android.model.WeekendAdjust;
-import org.gnucash.android.service.ScheduledActionService;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -212,6 +121,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
      * ROOT account of the imported book
      */
     private Account mRootAccount;
+    private Account rootTemplateAccount;
 
     /**
      * Transaction instance which will be built for each transaction found
@@ -269,30 +179,18 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     private String mCommoditySpace;
     private String mCommodityId;
 
-    private boolean mInColorSlot = false;
-    private boolean mInPlaceHolderSlot = false;
-    private boolean mInFavoriteSlot = false;
-    private boolean mInHiddenSlot = false;
     private boolean mIsDatePosted = false;
     private boolean mIsDateEntered = false;
     private boolean mIsNote = false;
-    private boolean mInDefaultTransferAccount = false;
-    private boolean mInExported = false;
     private boolean mInTemplates = false;
-    private boolean mInSplitAccountSlot = false;
-    private boolean mInCreditNumericSlot = false;
-    private boolean mInDebitNumericSlot = false;
     private boolean mIsScheduledStart = false;
     private boolean mIsScheduledEnd = false;
     private boolean mIsLastRun = false;
     private boolean mIsRecurrenceStart = false;
     private boolean mInBudgetSlot = false;
 
-    /**
-     * Saves the attribute of the slot tag
-     * Used for determining where we are in the budget amounts
-     */
-    private final Stack<String> slotTypes = new Stack<>();
+    private final Stack<Slot> slots = new Stack<>();
+    private String slotKey = null;
 
     private Account budgetAccount = null;
     private Long budgetPeriod = null;
@@ -461,10 +359,13 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
             case TAG_SLOT_KEY:
                 break;
             case TAG_SLOT_VALUE:
-                slotTypes.push(attributes.getValue(ATTR_KEY_TYPE));
+                if (!TextUtils.isEmpty(slotKey)) {
+                    slots.push(new Slot(slotKey, attributes.getValue(ATTR_KEY_TYPE)));
+                }
+                slotKey = null;
                 break;
             case TAG_COMMODITY:
-                mCommodity = new Commodity("", "", 100);
+                mCommodity = new Commodity("", "");
                 break;
             case TAG_COUNT_DATA:
                 countDataType = attributes.getValue(ATTR_KEY_CD_TYPE);
@@ -485,6 +386,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
             mContent.setLength(0);
             return;
         }
+        Slot slot;
 
         switch (qualifiedName) {
             case TAG_ACCT_NAME:
@@ -497,12 +399,16 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
             case TAG_ACCT_TYPE:
                 AccountType accountType = AccountType.valueOf(characterString);
                 mAccount.setAccountType(accountType);
-                mAccount.setHidden(accountType == AccountType.ROOT); //flag root account as hidden
                 break;
             case TAG_BOOK:
             case TAG_ROOT:
             case AccountsTemplate.TAG_ROOT:
-                booksDbAdapter.addRecord(mBook, DatabaseAdapter.UpdateMethod.replace);
+                if (mBook.id == 0L) {
+                    //if all of the import went smoothly, then add the book to the book db
+                    booksDbAdapter.addRecord(mBook, DatabaseAdapter.UpdateMethod.insert);
+                } else {
+                    booksDbAdapter.addRecord(mBook, DatabaseAdapter.UpdateMethod.replace);
+                }
                 if (listener != null) listener.onBook(mBook);
                 break;
             case TAG_BOOK_ID:
@@ -545,7 +451,6 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                         mPrice.setCurrency(commodity);
                         mPriceCurrency = false;
                     }
-                    if (listener != null) listener.onPrice(mPrice);
                 }
                 break;
             case TAG_COMMODITY_FRACTION:
@@ -580,7 +485,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 mAccount.setDescription(characterString);
                 break;
             case TAG_ACCT_COMMODITY:
-                if (mAccount != null && !mInTemplates) {
+                if (mAccount != null) {
                     Commodity commodity = getCommodity(mCommoditySpace, mCommodityId);
                     if (commodity != null) {
                         mAccount.setCommodity(commodity);
@@ -600,9 +505,19 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 mAccount.setParentUID(characterString);
                 break;
             case TAG_ACCOUNT:
-                if (!mInTemplates) { //we ignore template accounts, we have no use for them. FIXME someday and import the templates too
-                    mAccountList.add(mAccount);
-                    mAccountMap.put(mAccount.getUID(), mAccount);
+                if (mInTemplates) {
+                    // check ROOT account
+                    if (mAccount.isRoot()) {
+                        if (rootTemplateAccount == null) {
+                            rootTemplateAccount = mAccount;
+                        } else {
+                            throw new SAXException("Multiple ROOT Template accounts exist in book");
+                        }
+                    } else if (rootTemplateAccount == null) {
+                        rootTemplateAccount = mAccount = new Account(TEMPLATE_ACCOUNT_NAME, Commodity.template);
+                        rootTemplateAccount.setAccountType(AccountType.ROOT);
+                    }
+                } else {
                     // check ROOT account
                     if (mAccount.isRoot()) {
                         if (mRootAccount == null) {
@@ -612,56 +527,30 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                             throw new SAXException("Multiple ROOT accounts exist in book");
                         }
                     } else if (mRootAccount == null) {
-                        mRootAccount = new Account(ROOT_ACCOUNT_NAME);
+                        mRootAccount = mAccount = new Account(ROOT_ACCOUNT_NAME);
                         mRootAccount.setAccountType(AccountType.ROOT);
-                        mAccountList.add(mRootAccount);
-                        mAccountMap.put(mRootAccount.getUID(), mRootAccount);
                         mBook.setRootAccountUID(mRootAccount.getUID());
-                        mAccountsDbAdapter.addRecord(mRootAccount, DatabaseAdapter.UpdateMethod.insert);
                     }
-                    mAccountsDbAdapter.addRecord(mAccount, DatabaseAdapter.UpdateMethod.insert);
-                    if (listener != null) listener.onAccount(mAccount);
-                    // prepare for next input
-                    mAccount = null;
                 }
+                mAccountsDbAdapter.addRecord(mAccount, DatabaseAdapter.UpdateMethod.insert);
+                mAccountList.add(mAccount);
+                mAccountMap.put(mAccount.getUID(), mAccount);
+                if (listener != null) listener.onAccount(mAccount);
+                // prepare for next input
+                mAccount = null;
                 break;
             case TAG_SLOT:
+                handleSlot(slots.pop());
                 if (mInBudgetSlot) {
                     budgetPeriod = null;
                 }
                 break;
             case TAG_SLOT_KEY:
+                slotKey = characterString;
                 switch (characterString) {
-                    case KEY_PLACEHOLDER:
-                        mInPlaceHolderSlot = true;
-                        break;
-                    case KEY_COLOR:
-                        mInColorSlot = true;
-                        break;
-                    case KEY_FAVORITE:
-                        mInFavoriteSlot = true;
-                        break;
-                    case KEY_HIDDEN:
-                        mInHiddenSlot = true;
-                        break;
                     case KEY_NOTES:
                         mIsNote = true;
                         budgetAccount = null;
-                        break;
-                    case KEY_DEFAULT_TRANSFER_ACCOUNT:
-                        mInDefaultTransferAccount = true;
-                        break;
-                    case KEY_EXPORTED:
-                        mInExported = true;
-                        break;
-                    case KEY_SPLIT_ACCOUNT_SLOT:
-                        mInSplitAccountSlot = true;
-                        break;
-                    case KEY_CREDIT_NUMERIC:
-                        mInCreditNumericSlot = true;
-                        break;
-                    case KEY_DEBIT_NUMERIC:
-                        mInDebitNumericSlot = true;
                         break;
                     default:
                         if (mInBudgetSlot) {
@@ -683,36 +572,17 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 }
                 break;
             case TAG_SLOT_VALUE:
-                String slotType = slotTypes.pop();
-                if (mInPlaceHolderSlot) {
-                    mAccount.setPlaceholder(Boolean.parseBoolean(characterString));
-                    mInPlaceHolderSlot = false;
-                } else if (mInColorSlot) {
-                    mAccount.setColor(characterString.trim());
-                    mInColorSlot = false;
-                } else if (mInFavoriteSlot) {
-                    mAccount.setFavorite(Boolean.parseBoolean(characterString));
-                    mInFavoriteSlot = false;
-                } else if (mInHiddenSlot) {
-                    mAccount.setHidden(Boolean.parseBoolean(characterString));
-                    mInHiddenSlot = false;
-                } else if (mInDefaultTransferAccount) {
-                    mAccount.setDefaultTransferAccountUID(characterString);
-                    mInDefaultTransferAccount = false;
-                } else if (mInExported) {
-                    if (mTransaction != null) {
-                        mTransaction.setExported(Boolean.parseBoolean(characterString));
-                    }
-                    mInExported = false;
-                } else if (mInTemplates && mInSplitAccountSlot) {
-                    mSplit.setAccountUID(characterString);
-                    mInSplitAccountSlot = false;
-                } else if (mInTemplates && mInCreditNumericSlot) {
-                    handleEndOfTemplateNumericSlot(mSplit, characterString, TransactionType.CREDIT);
-                } else if (mInTemplates && mInDebitNumericSlot) {
-                    handleEndOfTemplateNumericSlot(mSplit, characterString, TransactionType.DEBIT);
-                } else if (mInBudgetSlot) {
-                    switch (slotType) {
+                slot = slots.peek();
+                switch (slot.type) {
+                    case Slot.TYPE_GDATE:
+                    case Slot.TYPE_GUID:
+                    case Slot.TYPE_NUMERIC:
+                    case Slot.TYPE_STRING:
+                        slot.value = characterString;
+                        break;
+                }
+                if (mInBudgetSlot) {
+                    switch (slot.type) {
                         case ATTR_VALUE_FRAME:
                             budgetAccount = null;
                             budgetPeriod = null;
@@ -731,14 +601,15 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                         case ATTR_VALUE_STRING:
                             if (mIsNote && (budgetAccount != null) && (budgetPeriod != null)) {
                                 BudgetAmount budgetAmount = mBudget.getBudgetAmount(budgetAccount, budgetPeriod);
-                                if (budgetAmount != null) {
-                                    budgetAmount.setNotes(characterString);
+                                if (budgetAmount == null) {
+                                    budgetAmount = mBudget.addAmount(budgetAccount, budgetPeriod, BigDecimal.ZERO);
                                 }
+                                budgetAmount.setNotes(characterString);
                             }
                             budgetPeriod = null;
                             break;
                     }
-                } else if (mIsNote && ATTR_VALUE_STRING.equals(slotType)) {
+                } else if (mIsNote && ATTR_VALUE_STRING.equals(slot.type)) {
                     if (mTransaction != null) {
                         mTransaction.setNote(characterString);
                     } else if (mAccount != null) {
@@ -751,7 +622,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
             case TAG_BUDGET_SLOTS:
                 mInBudgetSlot = false;
                 mIsNote = false;
-                slotTypes.clear();
+                slots.clear();
                 break;
 
             //================  PROCESSING OF TRANSACTION TAGS =====================================
@@ -811,19 +682,17 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 }
                 break;
             case TAG_SPLIT_ACCOUNT:
-                String splitAccountId = characterString;
-                mSplit.setAccountUID(splitAccountId);
-                if (!mInTemplates) {
+                String splitAccountUID = characterString;
+                mSplit.setAccountUID(splitAccountUID);
+                if (mInTemplates) {
+                    mTemplateAccountToTransactionMap.put(splitAccountUID, mTransaction.getUID());
+                } else {
                     //this is intentional: GnuCash XML formats split amounts, credits are negative, debits are positive.
                     mSplit.setType(mNegativeQuantity ? TransactionType.CREDIT : TransactionType.DEBIT);
                     //the split amount uses the account currency
-                    mSplit.setQuantity(new Money(mQuantity, getCommodityForAccount(splitAccountId)));
+                    mSplit.setQuantity(new Money(mQuantity, getCommodityForAccount(splitAccountUID)));
                     //the split value uses the transaction currency
                     mSplit.setValue(new Money(mValue, mTransaction.getCommodity()));
-                } else {
-                    if (!mIgnoreTemplateTransaction) {
-                        mTemplateAccountToTransactionMap.put(splitAccountId, mTransaction.getUID());
-                    }
                 }
                 break;
             //todo: import split reconciled state and date
@@ -875,9 +744,27 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
             case TAG_SX_AUTO_CREATE:
                 mScheduledAction.setAutoCreate(characterString.equals("y"));
                 break;
+            case TAG_SX_AUTO_CREATE_NOTIFY:
+                mScheduledAction.setAutoNotify(characterString.equals("y"));
+                break;
+            case TAG_SX_ADVANCE_CREATE_DAYS:
+                mScheduledAction.setAdvanceCreateDays(Integer.parseInt(characterString));
+                break;
+            case TAG_SX_ADVANCE_REMIND_DAYS:
+                mScheduledAction.setAdvanceNotifyDays(Integer.parseInt(characterString));
+                break;
+            case TAG_SX_INSTANCE_COUNT:
+                mScheduledAction.setExecutionCount(Integer.parseInt(characterString));
+                break;
             //todo: export auto_notify, advance_create, advance_notify
             case TAG_SX_NUM_OCCUR:
                 mScheduledAction.setTotalPlannedExecutionCount(Integer.parseInt(characterString));
+                break;
+            case TAG_SX_REM_OCCUR:
+                mScheduledAction.setTotalPlannedExecutionCount(Integer.parseInt(characterString));
+                break;
+            case TAG_RX_START:
+                mIsRecurrenceStart = false;
                 break;
             case TAG_RX_MULT:
                 mRecurrence.setMultiplier(Integer.parseInt(characterString));
@@ -913,7 +800,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                         mIsLastRun = false;
                     }
 
-                    if (mIsRecurrenceStart && mScheduledAction != null) {
+                    if (mIsRecurrenceStart && mRecurrence != null) {
                         mRecurrence.setPeriodStart(date);
                         mIsRecurrenceStart = false;
                     }
@@ -924,9 +811,12 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 break;
             case TAG_SX_TEMPL_ACCOUNT:
                 if (mScheduledAction.getActionType() == ScheduledAction.ActionType.TRANSACTION) {
-                    mScheduledAction.setActionUID(mTemplateAccountToTransactionMap.get(characterString));
+                    String accountUID = characterString;
+                    mScheduledAction.setTemplateAccountUID(accountUID);
+                    String transactionUID = mTemplateAccountToTransactionMap.get(accountUID);
+                    mScheduledAction.setActionUID(transactionUID);
                 } else {
-                    mScheduledAction.setActionUID(BaseModel.generateUID());
+                    mScheduledAction.setActionUID(mBook.getUID());
                 }
                 break;
             case TAG_GNC_RECURRENCE:
@@ -943,6 +833,12 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                     }
                     mScheduledActionsDbAdapter.addRecord(mScheduledAction, DatabaseAdapter.UpdateMethod.insert);
                     if (listener != null) listener.onSchedule(mScheduledAction);
+                    if (mScheduledAction.getActionType() == ScheduledAction.ActionType.TRANSACTION) {
+                        String transactionUID = mScheduledAction.getActionUID();
+                        ContentValues txValues = new ContentValues();
+                        txValues.put(TransactionEntry.COLUMN_SCHEDX_ACTION_UID, mScheduledAction.getUID());
+                        mTransactionsDbAdapter.updateRecord(transactionUID, txValues);
+                    }
                     mScheduledAction = null;
                 }
                 mIgnoreScheduledAction = false;
@@ -983,7 +879,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 }
                 break;
             case TAG_BUDGET:
-                if (!mBudget.getBudgetAmounts().isEmpty()) { //ignore if no budget amounts exist for the budget
+                if (mBudget != null && !mBudget.getBudgetAmounts().isEmpty()) { //ignore if no budget amounts exist for the budget
                     //// TODO: 01.06.2016 Re-enable import of Budget stuff when the UI is complete
                     mBudgetsDbAdapter.addRecord(mBudget, DatabaseAdapter.UpdateMethod.insert);
                     if (listener != null) listener.onBudget(mBudget);
@@ -1083,6 +979,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
         for (Split split : mAutoBalanceSplits) {
             // XXX: yes, getAccountUID() returns a currency UID in this case (see Transaction.createAutoBalanceSplit())
             String currencyUID = split.getAccountUID();
+            if (currencyUID == null) continue;
             Account imbAccount = imbalanceAccounts.get(currencyUID);
             if (imbAccount == null) {
                 Commodity commodity = mCommoditiesDbAdapter.getRecord(currencyUID);
@@ -1170,7 +1067,6 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
         }
     }
 
-
     /**
      * Handles the case when we reach the end of the template numeric slot
      *
@@ -1181,7 +1077,11 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
             // HACK: Check for bug #562. If a value has already been set, ignore the one just read
             if (split.getValue().isAmountZero()) {
                 BigDecimal splitAmount = parseSplitAmount(value);
-                Commodity commodity = getCommodityForAccount(split.getAccountUID());
+                String accountUID = split.getScheduledActionAccountUID();
+                if (TextUtils.isEmpty(accountUID)) {
+                    accountUID = split.getAccountUID();
+                }
+                Commodity commodity = getCommodityForAccount(accountUID);
                 Money amount = new Money(splitAmount, commodity);
 
                 split.setValue(amount);
@@ -1189,10 +1089,32 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 mIgnoreTemplateTransaction = false; //we have successfully parsed an amount
             }
         } catch (NumberFormatException | ParseException e) {
-            Timber.e(e, "Error parsing template credit split amount %s", value);
-        } finally {
-            mInCreditNumericSlot = false;
-            mInDebitNumericSlot = false;
+            Timber.e(e, "Error parsing template split amount %s", value);
+        }
+    }
+
+    /**
+     * Handles the case when we reach the end of the template formula slot
+     *
+     * @param value Parsed characters containing split amount
+     */
+    private void handleEndOfTemplateFormulaSlot(@NonNull Split split, String value, TransactionType splitType) {
+        try {
+            // HACK: Check for bug #562. If a value has already been set, ignore the one just read
+            if (split.getValue().isAmountZero()) {
+                String accountUID = split.getScheduledActionAccountUID();
+                if (TextUtils.isEmpty(accountUID)) {
+                    accountUID = split.getAccountUID();
+                }
+                Commodity commodity = getCommodityForAccount(accountUID);
+                Money amount = new Money(value, commodity);
+
+                split.setValue(amount);
+                split.setType(splitType);
+                mIgnoreTemplateTransaction = false; //we have successfully parsed an amount
+            }
+        } catch (NumberFormatException e) {
+            Timber.e(e, "Error parsing template split amount %s", value);
         }
     }
 
@@ -1230,7 +1152,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
 
     @Nullable
     private Commodity putCommodity(@NonNull Commodity commodity) {
-        if (commodity.isTemplate()) return null;
+        //if (commodity.isTemplate()) return null;
         String space = commodity.getNamespace();
         if (TextUtils.isEmpty(space)) return null;
         String id = commodity.getMnemonic();
@@ -1246,5 +1168,79 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
         }
         commoditiesById.put(id, commodity);
         return commodity;
+    }
+
+    private void handleSlot(@NonNull Slot slot) {
+        switch (slot.key) {
+            case KEY_PLACEHOLDER:
+                if (mAccount != null) {
+                    mAccount.setPlaceholder(Boolean.parseBoolean(slot.getAsString()));
+                }
+                break;
+            case KEY_COLOR:
+                String color = slot.getAsString();
+                //GnuCash exports the account color in format #rrrgggbbb, but we need only #rrggbb.
+                //so we trim the last digit in each block, doesn't affect the color much
+                if (mAccount != null) {
+                    try {
+                        mAccount.setColor(color);
+                    } catch (IllegalArgumentException e) {
+                        //sometimes the color entry in the account file is "Not set" instead of just blank. So catch!
+                        Timber.e(e, "Invalid color code \"" + color + "\" for account " + mAccount);
+                    }
+                }
+                break;
+            case KEY_FAVORITE:
+                if (mAccount != null) {
+                    mAccount.setFavorite(Boolean.parseBoolean(slot.getAsString()));
+                }
+                break;
+            case KEY_HIDDEN:
+                if (mAccount != null) {
+                    mAccount.setHidden(Boolean.parseBoolean(slot.getAsString()));
+                }
+                break;
+            case KEY_DEFAULT_TRANSFER_ACCOUNT:
+                if (mAccount != null) {
+                    mAccount.setDefaultTransferAccountUID(slot.getAsString());
+                }
+                break;
+            case KEY_EXPORTED:
+                if (mTransaction != null) {
+                    mTransaction.setExported(Boolean.parseBoolean(slot.getAsString()));
+                }
+                break;
+            case KEY_SCHED_XACTION:
+                if (mSplit != null) {
+                    for (Slot s : slot.getAsFrame()) {
+                        switch (s.key) {
+                            case KEY_SPLIT_ACCOUNT_SLOT:
+                                mSplit.setScheduledActionAccountUID(s.getAsGUID());
+                                break;
+                            case KEY_CREDIT_FORMULA:
+                                handleEndOfTemplateFormulaSlot(mSplit, s.getAsString(), TransactionType.CREDIT);
+                                break;
+                            case KEY_CREDIT_NUMERIC:
+                                handleEndOfTemplateNumericSlot(mSplit, s.getAsNumeric(), TransactionType.CREDIT);
+                                break;
+                            case KEY_DEBIT_FORMULA:
+                                handleEndOfTemplateFormulaSlot(mSplit, s.getAsString(), TransactionType.DEBIT);
+                                break;
+                            case KEY_DEBIT_NUMERIC:
+                                handleEndOfTemplateNumericSlot(mSplit, s.getAsNumeric(), TransactionType.DEBIT);
+                                break;
+                        }
+                    }
+                }
+                break;
+            default:
+                if (!slots.isEmpty()) {
+                    Slot head = slots.peek();
+                    if (head.type.equals(Slot.TYPE_FRAME)) {
+                        head.add(slot);
+                    }
+                }
+                break;
+        }
     }
 }

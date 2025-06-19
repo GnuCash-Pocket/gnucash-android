@@ -65,6 +65,11 @@ class Split : BaseModel, Parcelable {
     var reconcileDate = Timestamp(System.currentTimeMillis())
 
     /**
+     * Account UID for a scheduled action.
+     */
+    var scheduledActionAccountUID: String? = null
+
+    /**
      * Initialize split with a value and quantity amounts and the owning account
      *
      * The transaction type is set to CREDIT. The amounts are stored unsigned.
@@ -100,20 +105,18 @@ class Split : BaseModel, Parcelable {
      * @param generateUID Determines if the clone should have a new UID or should
      * maintain the one from source
      */
-    constructor(sourceSplit: Split, generateUID: Boolean) {
+    @JvmOverloads
+    constructor(sourceSplit: Split, generateUID: Boolean = true) {
+        if (!generateUID) {
+            setUID(sourceSplit.uid)
+        }
         memo = sourceSplit.memo
         accountUID = sourceSplit.accountUID
         type = sourceSplit.type
         transactionUID = sourceSplit.transactionUID
-        value = Money(sourceSplit.value)
-        quantity = Money(sourceSplit.quantity)
-
-        //todo: clone reconciled status
-        if (generateUID) {
-            generateUID()
-        } else {
-            setUID(sourceSplit.uid)
-        }
+        value = sourceSplit.value
+        quantity = sourceSplit.quantity
+        scheduledActionAccountUID = sourceSplit.scheduledActionAccountUID
     }
 
     /**

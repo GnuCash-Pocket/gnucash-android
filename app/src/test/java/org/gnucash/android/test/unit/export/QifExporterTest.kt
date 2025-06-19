@@ -215,7 +215,7 @@ class QifExporterTest : BookHelperTest() {
         val bookUID = importGnuCashXml("simpleTransactionImport.xml")
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
 
-        assertThat(transactionsDbAdapter!!.recordsCount).isEqualTo(1)
+        assertThat(transactionsDbAdapter!!.recordsCount).isOne()
 
         val transaction = transactionsDbAdapter!!.getRecord("b33c8a6160494417558fd143731fc26a")
         assertThat(transaction.splits.size).isEqualTo(2)
@@ -260,9 +260,9 @@ class QifExporterTest : BookHelperTest() {
         val bookUID = importGnuCashXml("transactionWithNonDefaultSplitsImport.xml")
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
 
-        assertThat(transactionsDbAdapter!!.recordsCount).isEqualTo(1)
+        assertThat(transactionsDbAdapter.recordsCount).isOne()
 
-        val transaction = transactionsDbAdapter!!.getRecord("042ff745a80e94e6237fb0549f6d32ae")
+        val transaction = transactionsDbAdapter.getRecord("042ff745a80e94e6237fb0549f6d32ae")
 
         // Ensure it's the correct one
         assertThat(transaction.description).isEqualTo("Tandoori Mahal")

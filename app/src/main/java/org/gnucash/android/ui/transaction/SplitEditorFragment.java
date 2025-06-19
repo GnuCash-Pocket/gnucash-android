@@ -336,7 +336,7 @@ public class SplitEditorFragment extends MenuFragment {
                     bind(null);
                     return;
                 }
-                splitAmountEditText.setValue(split.getFormattedValue(account).asBigDecimal(), true /* isOriginal */);
+                splitAmountEditText.setValue(split.getFormattedValue(account).toBigDecimal(), true /* isOriginal */);
                 splitCurrencyTextView.setText(valueCommodity.getSymbol());
                 splitMemoEditText.setText(split.getMemo());
                 splitUidTextView.setText(split.getUID());

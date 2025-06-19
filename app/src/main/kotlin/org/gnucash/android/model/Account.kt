@@ -94,7 +94,7 @@ class Account : BaseModel {
 
     val isRoot: Boolean get() = accountType == AccountType.ROOT
 
-    val isTemplate: Boolean get() = commodity.isTemplate
+    var isTemplate = false
 
     /**
      * Overloaded constructor
@@ -105,7 +105,7 @@ class Account : BaseModel {
     @JvmOverloads
     constructor(name: String, commodity: Commodity = Commodity.DEFAULT_COMMODITY) {
         this.name = name
-        fullName = this.name
+        this.fullName = this.name
         this.commodity = commodity
     }
 
@@ -187,6 +187,10 @@ class Account : BaseModel {
      * The commodity for this account
      */
     var commodity: Commodity = Commodity.DEFAULT_COMMODITY
+        set(value) {
+            if (value.isTemplate) isTemplate = true
+            field = value
+        }
 
     var note: String? = null
 
