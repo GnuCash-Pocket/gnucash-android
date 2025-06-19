@@ -3,7 +3,6 @@ package org.gnucash.android.ui.settings.dialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,6 +30,7 @@ import com.owncloud.android.lib.resources.users.GetRemoteUserInfoOperation;
 
 import org.gnucash.android.R;
 import org.gnucash.android.databinding.DialogOwncloudAccountBinding;
+import org.gnucash.android.ui.settings.OwnCloudPreferences;
 import org.gnucash.android.ui.util.dialog.VolatileDialogFragment;
 
 import timber.log.Timber;
@@ -57,7 +57,7 @@ public class OwnCloudDialogFragment extends VolatileDialogFragment {
     private TextView mUsernameError;
     private TextView mDirError;
 
-    private SharedPreferences mPrefs;
+    private OwnCloudPreferences preferences;
 
     private TwoStatePreference ocCheckBox;
     private final Handler handler = new Handler();
@@ -83,12 +83,12 @@ public class OwnCloudDialogFragment extends VolatileDialogFragment {
         super.onCreate(savedInstanceState);
 
         final Context context = requireContext();
-        mPrefs = context.getSharedPreferences(context.getString(R.string.owncloud_pref), Context.MODE_PRIVATE);
+        preferences = new OwnCloudPreferences(context);
 
-        mOC_server = mPrefs.getString(context.getString(R.string.key_owncloud_server), context.getString(R.string.owncloud_server));
-        mOC_username = mPrefs.getString(context.getString(R.string.key_owncloud_username), null);
-        mOC_password = mPrefs.getString(context.getString(R.string.key_owncloud_password), null);
-        mOC_dir = mPrefs.getString(context.getString(R.string.key_owncloud_dir), context.getString(R.string.app_name));
+        mOC_server = preferences.getServer();
+        mOC_username = preferences.getUsername();
+        mOC_password = preferences.getPassword();
+        mOC_dir = preferences.getDir();
     }
 
     @NonNull
@@ -147,7 +147,7 @@ public class OwnCloudDialogFragment extends VolatileDialogFragment {
                             TextUtils.equals(mUsernameError.getText(), context.getString(R.string.owncloud_user_ok)) &&
                             TextUtils.equals(mServerError.getText(), context.getString(R.string.owncloud_server_ok))
                         ) {
-                            save(context);
+                            save();
                             dismiss();
                         }
                     }
@@ -158,15 +158,12 @@ public class OwnCloudDialogFragment extends VolatileDialogFragment {
         return dialog;
     }
 
-    private void save(@NonNull Context context) {
-        mPrefs.edit()
-            .clear()
-            .putString(context.getString(R.string.key_owncloud_server), mOC_server)
-            .putString(context.getString(R.string.key_owncloud_username), mOC_username)
-            .putString(context.getString(R.string.key_owncloud_password), mOC_password)
-            .putString(context.getString(R.string.key_owncloud_dir), mOC_dir)
-            .putBoolean(context.getString(R.string.owncloud_sync), true)
-            .apply();
+    private void save() {
+        preferences.setServer(mOC_server);
+        preferences.setUsername(mOC_username);
+        preferences.setPassword(mOC_password);
+        preferences.setDir(mOC_dir);
+        preferences.setSync(true);
 
         if (ocCheckBox != null) ocCheckBox.setChecked(true);
     }

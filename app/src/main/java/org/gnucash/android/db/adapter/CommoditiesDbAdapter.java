@@ -1,24 +1,32 @@
 package org.gnucash.android.db.adapter;
 
+import static org.gnucash.android.app.GnuCashApplication.getDefaultLocale;
 import static org.gnucash.android.db.DatabaseSchema.CommodityEntry;
+import static org.gnucash.android.model.Commodity.USD;
+import static org.gnucash.android.model.Commodity.getLocaleCurrencyCode;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.db.DatabaseHolder;
 import org.gnucash.android.model.Commodity;
 
+import java.util.Currency;
+import java.util.Locale;
 import java.util.Objects;
 
 import timber.log.Timber;
 
 /**
- * Database adapter for {@link org.gnucash.android.model.Commodity}
+ * Database adapter for {@link Commodity}
  */
 public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
     private Commodity defaultCommodity;
@@ -26,20 +34,20 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
     /**
      * Opens the database adapter with an existing database
      *
-     * @param db SQLiteDatabase object
+     * @param holder Database holder
      */
-    public CommoditiesDbAdapter(@NonNull SQLiteDatabase db) {
-        this(db, true);
+    public CommoditiesDbAdapter(@NonNull DatabaseHolder holder) {
+        this(holder, true);
     }
 
     /**
      * Opens the database adapter with an existing database
      *
-     * @param db         SQLiteDatabase object
+     * @param holder     Database holder
      * @param initCommon initialize commonly used commodities?
      */
-    public CommoditiesDbAdapter(@NonNull SQLiteDatabase db, boolean initCommon) {
-        super(db, CommodityEntry.TABLE_NAME, new String[]{
+    public CommoditiesDbAdapter(@NonNull DatabaseHolder holder, boolean initCommon) {
+        super(holder, CommodityEntry.TABLE_NAME, new String[]{
             CommodityEntry.COLUMN_FULLNAME,
             CommodityEntry.COLUMN_NAMESPACE,
             CommodityEntry.COLUMN_MNEMONIC,
@@ -67,7 +75,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
         Commodity.EUR = Objects.requireNonNull(getCommodity("EUR"));
         Commodity.GBP = Objects.requireNonNull(getCommodity("GBP"));
         Commodity.JPY = Objects.requireNonNull(getCommodity("JPY"));
-        Commodity.USD = Objects.requireNonNull(getCommodity("USD"));
+        USD = Objects.requireNonNull(getCommodity("USD"));
 
         defaultCommodity = Commodity.DEFAULT_COMMODITY = getDefaultCommodity();
     }
@@ -146,7 +154,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
      * @return Commodity associated with code or null if none is found
      */
     @Nullable
-    public Commodity getCommodity(String currencyCode) {
+    public Commodity getCommodity(@Nullable String currencyCode) {
         if (TextUtils.isEmpty(currencyCode)) {
             return null;
         }
@@ -175,7 +183,25 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
         } finally {
             cursor.close();
         }
-        return null;
+
+        switch (currencyCode) {
+            case "AUD":
+                return Commodity.AUD;
+            case "CAD":
+                return Commodity.CAD;
+            case "CHF":
+                return Commodity.CHF;
+            case "EUR":
+                return Commodity.EUR;
+            case "GBP":
+                return Commodity.GBP;
+            case "JPY":
+                return Commodity.JPY;
+            case "USD":
+                return USD;
+            default:
+                return null;
+        }
     }
 
     public String getCommodityUID(String currencyCode) {
@@ -211,8 +237,28 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
         if (commodity != null) {
             return commodity;
         }
-        String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
+
+        Context context = holder.context;
+        String prefKey = context.getString(R.string.key_default_currency);
+        SharedPreferences preferences = getBookPreferences();
+        String currencyCode = preferences.getString(prefKey, null);
+        if (currencyCode == null) {
+            currencyCode = getLocaleCurrencyCode();
+        }
         defaultCommodity = commodity = getCommodity(currencyCode);
         return (commodity != null) ? commodity : Commodity.DEFAULT_COMMODITY;
+    }
+
+    public void setDefaultCurrencyCode(@Nullable String currencyCode) {
+        Context context = holder.context;
+        SharedPreferences preferences = getBookPreferences();
+        String prefKey = context.getString(R.string.key_default_currency);
+        preferences.edit().putString(prefKey, currencyCode).apply();
+
+        Commodity commodity = getCommodity(currencyCode);
+        if (commodity != null) {
+            defaultCommodity = commodity;
+            Commodity.DEFAULT_COMMODITY = commodity;
+        }
     }
 }

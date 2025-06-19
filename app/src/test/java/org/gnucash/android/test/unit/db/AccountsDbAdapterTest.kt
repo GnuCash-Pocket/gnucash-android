@@ -93,8 +93,8 @@ class AccountsDbAdapterTest : GnuCashTest() {
             accountsDbAdapter = AccountsDbAdapter.getInstance()
         } else {
             val databaseHelper = DatabaseHelper(context, bookUID)
-            val db = databaseHelper.writableDatabase
-            commoditiesDbAdapter = CommoditiesDbAdapter(db)
+            val dbHolder = databaseHelper.holder
+            commoditiesDbAdapter = CommoditiesDbAdapter(dbHolder)
             splitsDbAdapter = SplitsDbAdapter(commoditiesDbAdapter)
             transactionsDbAdapter = TransactionsDbAdapter(splitsDbAdapter)
             accountsDbAdapter = AccountsDbAdapter(transactionsDbAdapter)

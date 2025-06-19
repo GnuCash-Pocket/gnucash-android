@@ -17,13 +17,8 @@
 package org.gnucash.android.ui.settings;
 
 import android.os.Bundle;
-import android.view.View;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.PreferenceFragmentCompat;
 
 import org.gnucash.android.R;
 
@@ -32,20 +27,15 @@ import org.gnucash.android.R;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class AboutPreferenceFragment extends PreferenceFragmentCompat {
+public class AboutPreferenceFragment extends GnuPreferenceFragment {
+
+    @Override
+    protected int getTitleId() {
+        return R.string.title_about_gnucash;
+    }
 
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
         addPreferencesFromResource(R.xml.fragment_about_preferences);
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setHomeButtonEnabled(true);
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setTitle(R.string.title_about_gnucash);
     }
 }

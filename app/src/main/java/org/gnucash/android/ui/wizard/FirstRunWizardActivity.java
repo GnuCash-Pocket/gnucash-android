@@ -357,7 +357,7 @@ public class FirstRunWizardActivity extends GnuCashActivity implements
         }
 
         Context context = FirstRunWizardActivity.this;
-        GnuCashApplication.setDefaultCurrencyCode(context, currencyCode);
+        GnuCashApplication.setDefaultCurrencyCode(currencyCode);
         PreferenceManager.getDefaultSharedPreferences(context)
             .edit()
             .putBoolean(getString(R.string.key_enable_crashlytics), feedbackOption.equals(mWizardModel.optionFeedbackSend))

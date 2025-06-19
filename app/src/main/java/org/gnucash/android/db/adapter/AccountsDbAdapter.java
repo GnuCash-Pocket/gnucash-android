@@ -33,7 +33,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
 
@@ -44,6 +43,7 @@ import androidx.core.content.ContextCompat;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.db.DatabaseHolder;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
@@ -118,7 +118,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * Overloaded constructor. Creates an adapter for an already open database
      */
     public AccountsDbAdapter(@NonNull TransactionsDbAdapter transactionsDbAdapter, @NonNull PricesDbAdapter pricesDbAdapter) {
-        super(transactionsDbAdapter.mDb, AccountEntry.TABLE_NAME, new String[]{
+        super(transactionsDbAdapter.holder, AccountEntry.TABLE_NAME, new String[]{
             AccountEntry.COLUMN_NAME,
             AccountEntry.COLUMN_DESCRIPTION,
             AccountEntry.COLUMN_TYPE,
@@ -145,10 +145,10 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * constructor {@link #AccountsDbAdapter(TransactionsDbAdapter)}
      * should be used whenever possible
      *
-     * @param db Database to create an adapter for
+     * @param holder Database holder
      */
-    public AccountsDbAdapter(@NonNull SQLiteDatabase db) {
-        this(new TransactionsDbAdapter(db));
+    public AccountsDbAdapter(@NonNull DatabaseHolder holder) {
+        this(new TransactionsDbAdapter(holder));
     }
 
     /**
@@ -1199,6 +1199,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             cursor.close();
         }
         // No ROOT exits, create a new one
+        Context context = holder.context;
         Commodity commodity = commoditiesDbAdapter.getDefaultCommodity();
         Account rootAccount = new Account(ROOT_ACCOUNT_NAME, commodity);
         rootAccount.setAccountType(AccountType.ROOT);

@@ -32,7 +32,7 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
      * @param commoditiesDbAdapter the commodities database adapter.
      */
     public PricesDbAdapter(@NonNull CommoditiesDbAdapter commoditiesDbAdapter) {
-        super(commoditiesDbAdapter.mDb, PriceEntry.TABLE_NAME, new String[]{
+        super(commoditiesDbAdapter.holder, PriceEntry.TABLE_NAME, new String[]{
             PriceEntry.COLUMN_COMMODITY_UID,
             PriceEntry.COLUMN_CURRENCY_UID,
             PriceEntry.COLUMN_DATE,
