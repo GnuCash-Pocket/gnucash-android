@@ -224,19 +224,9 @@ public class MigrationHelper {
     private static void migrateTo21(SQLiteDatabase db) {
         Timber.i("Upgrading database to version 21");
 
-        Cursor cursor = db.rawQuery("PRAGMA table_info(" + AccountEntry.TABLE_NAME + ")", null);
-        try {
-            if (cursor.moveToFirst()) {
-                final int indexName = cursor.getColumnIndex("name");
-                do {
-                    String name = cursor.getString(indexName);
-                    if (AccountEntry.COLUMN_CURRENCY.equals(name)) {
-                        return;
-                    }
-                } while (cursor.moveToNext());
-            }
-        } finally {
-            cursor.close();
+        boolean hasColumnCurrency = hasTableColumn(db, AccountEntry.TABLE_NAME, AccountEntry.COLUMN_CURRENCY);
+        if (hasColumnCurrency) {
+            return;
         }
 
         // Restore the currency code column that was deleted in v19.
@@ -267,22 +257,7 @@ public class MigrationHelper {
     private static void migrateTo23(@NonNull Context context, @NonNull SQLiteDatabase db) {
         Timber.i("Upgrading database to version 23");
 
-        boolean hasColumnQuoteFlag = false;
-        Cursor cursor = db.rawQuery("PRAGMA table_info(" + CommodityEntry.TABLE_NAME + ")", null);
-        try {
-            if (cursor.moveToFirst()) {
-                final int indexName = cursor.getColumnIndex("name");
-                do {
-                    String name = cursor.getString(indexName);
-                    if (CommodityEntry.COLUMN_QUOTE_FLAG.equals(name)) {
-                        hasColumnQuoteFlag = true;
-                        break;
-                    }
-                } while (cursor.moveToNext());
-            }
-        } finally {
-            cursor.close();
-        }
+        boolean hasColumnQuoteFlag = hasTableColumn(db, CommodityEntry.TABLE_NAME, CommodityEntry.COLUMN_QUOTE_FLAG);
 
         if (!hasColumnQuoteFlag) {
             // Restore the currency code column that was deleted in v19.
@@ -313,12 +288,34 @@ public class MigrationHelper {
     private static void migrateTo24(@NonNull SQLiteDatabase db) {
         Timber.i("Upgrading database to version 24");
 
-        String sqlAccountTemplate = "ALTER TABLE " + AccountEntry.TABLE_NAME +
-            " ADD COLUMN " + AccountEntry.COLUMN_TEMPLATE + " tinyint default 0";
-        db.execSQL(sqlAccountTemplate);
+        if (!hasTableColumn(db, AccountEntry.TABLE_NAME, AccountEntry.COLUMN_TEMPLATE)) {
+            String sqlAccountTemplate = "ALTER TABLE " + AccountEntry.TABLE_NAME +
+                " ADD COLUMN " + AccountEntry.COLUMN_TEMPLATE + " tinyint default 0";
+            db.execSQL(sqlAccountTemplate);
+        }
 
-        String sqlAddSchedxActionAccount = "ALTER TABLE " + SplitEntry.TABLE_NAME +
-            " ADD COLUMN " + SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID + " varchar(255)";
-        db.execSQL(sqlAddSchedxActionAccount);
+        if (!hasTableColumn(db, SplitEntry.TABLE_NAME, SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID)) {
+            String sqlAddSchedxActionAccount = "ALTER TABLE " + SplitEntry.TABLE_NAME +
+                " ADD COLUMN " + SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID + " varchar(255)";
+            db.execSQL(sqlAddSchedxActionAccount);
+        }
+    }
+
+    private static boolean hasTableColumn(@NonNull SQLiteDatabase db, @NonNull String tableName, @NonNull String columnName) {
+        Cursor cursor = db.rawQuery("PRAGMA table_info(" + tableName + ")", null);
+        try {
+            if (cursor.moveToFirst()) {
+                final int indexName = cursor.getColumnIndex("name");
+                do {
+                    String name = cursor.getString(indexName);
+                    if (columnName.equals(name)) {
+                        return true;
+                    }
+                } while (cursor.moveToNext());
+            }
+        } finally {
+            cursor.close();
+        }
+        return false;
     }
 }
