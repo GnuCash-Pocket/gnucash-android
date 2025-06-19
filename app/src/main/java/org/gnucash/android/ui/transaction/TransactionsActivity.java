@@ -437,10 +437,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
 
         MenuItem itemHidden = menu.findItem(R.id.menu_hidden);
         if (itemHidden != null) {
-            boolean isHidden = !isShowHiddenAccounts;
-            itemHidden.setChecked(isHidden);
-            @DrawableRes int hiddenIcon = isHidden ? R.drawable.ic_visibility_off : R.drawable.ic_visibility;
-            itemHidden.setIcon(hiddenIcon);
+            showHiddenAccounts(itemHidden, isShowHiddenAccounts);
         }
 
         return super.onPrepareOptionsMenu(menu);
@@ -584,18 +581,21 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     }
 
     private void toggleHidden(@NonNull MenuItem item) {
-        boolean isHidden = !item.isChecked();
-        item.setChecked(isHidden);
-        @DrawableRes int hiddenIcon = isHidden ? R.drawable.ic_visibility_off : R.drawable.ic_visibility;
-        item.setIcon(hiddenIcon);
-        isShowHiddenAccounts = !isHidden;
+        showHiddenAccounts(item, !item.isChecked());
+    }
 
+    private void showHiddenAccounts(@NonNull MenuItem item, boolean isVisible) {
+        item.setChecked(isVisible);
+        @DrawableRes int visibilityIcon = isVisible ? R.drawable.ic_visibility_off : R.drawable.ic_visibility;
+        item.setIcon(visibilityIcon);
+        isShowHiddenAccounts = isVisible;
+        // apply to each page
         final int count = mFragmentPageReferenceMap.size();
         for (int i = 0; i < count; i++) {
             Refreshable refreshable = mFragmentPageReferenceMap.valueAt(i);
             if (refreshable instanceof AccountsListFragment) {
                 AccountsListFragment fragment = (AccountsListFragment) refreshable;
-                fragment.setShowHiddenAccounts(!isHidden);
+                fragment.setShowHiddenAccounts(isVisible);
             }
         }
     }

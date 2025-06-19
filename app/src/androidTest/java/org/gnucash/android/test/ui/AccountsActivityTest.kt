@@ -22,6 +22,7 @@ import android.view.View
 import androidx.test.espresso.Espresso.onData
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
+import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.action.ViewActions.clearText
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
@@ -514,17 +515,72 @@ class AccountsActivityTest : GnuAndroidTest() {
         assertThat(accountsDbAdapter.recordsCount).isEqualTo(3)
 
         refreshAccountsList()
-        onView(allOf<View>(withText(PARENT_ACCOUNT_NAME)))
+        onView(allOf(withText(PARENT_ACCOUNT_NAME)))
             .check(doesNotExist())
 
         // Show hidden accounts.
         onView(withId(R.id.menu_hidden)).perform(click())
-        onView(allOf<View>(withText(AccountsActivityTest.PARENT_ACCOUNT_NAME)))
+        sleep(500) // wait for animations to finish
+        onView(allOf(withText(PARENT_ACCOUNT_NAME)))
             .check(matches(isDisplayed()))
 
         // Hide hidden accounts.
         onView(withId(R.id.menu_hidden)).perform(click())
-        onView(allOf<View>(withText(AccountsActivityTest.PARENT_ACCOUNT_NAME)))
+        onView(allOf(withText(PARENT_ACCOUNT_NAME)))
+            .check(doesNotExist())
+    }
+
+    @Test
+    fun showHiddenAccountsAfterChildren() {
+        // Root + SIMPLE_ACCOUNT_NAME
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(2)
+
+        val hiddenAccount = Account(PARENT_ACCOUNT_NAME)
+        hiddenAccount.setUID(PARENT_ACCOUNT_UID)
+        hiddenAccount.isHidden = true
+        accountsDbAdapter.addRecord(
+            hiddenAccount,
+            DatabaseAdapter.UpdateMethod.insert
+        )
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(3)
+
+        val hiddenAccountChild = Account("Child of Hidden")
+        hiddenAccountChild.setUID(CHILD_ACCOUNT_UID)
+        hiddenAccountChild.parentUID = PARENT_ACCOUNT_UID
+        accountsDbAdapter.addRecord(
+            hiddenAccountChild,
+            DatabaseAdapter.UpdateMethod.insert
+        )
+        assertThat(accountsDbAdapter.recordsCount).isEqualTo(4)
+
+        refreshAccountsList()
+        onView(allOf(withText(PARENT_ACCOUNT_NAME)))
+            .check(doesNotExist())
+
+        // Show hidden accounts.
+        onView(withId(R.id.menu_hidden))
+            .perform(click())
+        sleep(500) // wait for animations to finish
+        onView(allOf(withText(PARENT_ACCOUNT_NAME)))
+            .check(matches(isDisplayed()))
+
+        // Show children accounts.
+        onView(allOf(withText(PARENT_ACCOUNT_NAME)))
+            .perform(click())
+        onView(allOf(withText("Child of Hidden")))
+            .check(matches(isDisplayed()))
+
+        pressBack()
+
+        // Hidden accounts still visible
+        onView(allOf(withText(PARENT_ACCOUNT_NAME)))
+            .check(matches(isDisplayed()))
+
+        // Hide the accounts
+        onView(withId(R.id.menu_hidden))
+            .perform(click())
+        sleep(500) // wait for animations to finish
+        onView(allOf(withText(PARENT_ACCOUNT_NAME)))
             .check(doesNotExist())
     }
 

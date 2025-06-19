@@ -30,7 +30,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -56,7 +55,6 @@ import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
 import org.gnucash.android.importer.ImportAsyncTask;
 import org.gnucash.android.importer.ImportBookCallback;
-import org.gnucash.android.model.Commodity;
 import org.gnucash.android.service.ScheduledActionService;
 import org.gnucash.android.ui.common.BaseDrawerActivity;
 import org.gnucash.android.ui.common.FormActivity;
@@ -351,6 +349,13 @@ public class AccountsActivity extends BaseDrawerActivity implements
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem itemHidden = menu.findItem(R.id.menu_hidden);
+        showHiddenAccounts(itemHidden, isShowHiddenAccounts);
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
@@ -401,9 +406,9 @@ public class AccountsActivity extends BaseDrawerActivity implements
      * Creates default accounts with the specified currency code.
      * If the currency parameter is null, then locale currency will be used if available
      *
-     * @param activity Activity for providing context and displaying dialogs
+     * @param activity     Activity for providing context and displaying dialogs
      * @param currencyCode Currency code to assign to the imported accounts
-     * @param callback The callback to call when the book has been imported.
+     * @param callback     The callback to call when the book has been imported.
      */
     public static void createDefaultAccounts(
         @NonNull final Activity activity,
@@ -551,11 +556,14 @@ public class AccountsActivity extends BaseDrawerActivity implements
     }
 
     private void toggleHidden(@NonNull MenuItem item) {
-        boolean isHidden = !item.isChecked();
-        item.setChecked(isHidden);
-        @DrawableRes int hiddenIcon = isHidden ? R.drawable.ic_visibility_off : R.drawable.ic_visibility;
-        item.setIcon(hiddenIcon);
-        isShowHiddenAccounts = !isHidden;
+        showHiddenAccounts(item, !item.isChecked());
+    }
+
+    private void showHiddenAccounts(@NonNull MenuItem item, boolean isVisible) {
+        item.setChecked(isVisible);
+        @DrawableRes int visibilityIcon = isVisible ? R.drawable.ic_visibility_off : R.drawable.ic_visibility;
+        item.setIcon(visibilityIcon);
+        isShowHiddenAccounts = isVisible;
         // apply to each page
         final int count = mPagerAdapter.getItemCount();
         for (int i = 0; i < count; i++) {
@@ -565,5 +573,4 @@ public class AccountsActivity extends BaseDrawerActivity implements
             }
         }
     }
-
 }

@@ -36,8 +36,8 @@
     <item
         android:id="@+id/menu_hidden"
         android:checkable="true"
-        android:checked="true"
-        android:icon="@drawable/ic_visibility_off"
+        android:checked="false"
+        android:icon="@drawable/ic_visibility"
         android:title="@string/menu_accounts_hidden"
         app:showAsAction="ifRoom" />
 </menu>
