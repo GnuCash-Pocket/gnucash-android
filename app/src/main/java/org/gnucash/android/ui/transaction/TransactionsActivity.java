@@ -110,7 +110,6 @@ public class TransactionsActivity extends BaseDrawerActivity implements
 
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            if (view == null) return;
             Account account = accountNameAdapter.getAccount(position);
             if (account != null) {
                 TransactionsActivity.this.account = account;
