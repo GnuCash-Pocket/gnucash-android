@@ -373,7 +373,7 @@ class AccountsDbAdapterTest : GnuCashTest() {
         )
 
         val accounts = accountsDbAdapter.allRecords
-        assertThat(accounts).hasSize(4)
+        assertThat(accounts).hasSize(3)
         val root = accounts.get(0)
         val rootType = root.accountType
         assertThat(rootType).isEqualTo(AccountType.ROOT)
