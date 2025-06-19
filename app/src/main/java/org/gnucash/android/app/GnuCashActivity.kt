@@ -2,7 +2,7 @@ package org.gnucash.android.app
 
 import android.graphics.Color
 import android.os.Build
-import android.view.View
+import android.os.Bundle
 import android.view.ViewGroup
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
@@ -13,28 +13,20 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication.darken
-import org.gnucash.android.ui.util.widget.StatusBarContent
+import org.gnucash.android.ui.SystemBarsDrawable
 
 open class GnuCashActivity : AppCompatActivity() {
 
     private val contentView: ViewGroup get() = window.decorView.findViewById(android.R.id.content)
-    private var statusBarContent: StatusBarContent? = null
+    private val systemBarsDrawable = SystemBarsDrawable()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        contentView.background = systemBarsDrawable
+    }
 
     override fun onStart() {
         super.onStart()
-        statusBarContent?.let { view ->
-            ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
-                val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-                view.statusBarHeight = bars.top
-                v.updatePadding(
-                    left = bars.left,
-                    top = 0,
-                    right = bars.right,
-                    bottom = bars.bottom,
-                )
-                WindowInsetsCompat.CONSUMED
-            }
-        } ?: run {
             ViewCompat.setOnApplyWindowInsetsListener(contentView) { v, insets ->
                 val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
                 v.updatePadding(
@@ -43,11 +35,12 @@ open class GnuCashActivity : AppCompatActivity() {
                     right = bars.right,
                     bottom = bars.bottom,
                 )
+                systemBarsDrawable.statusBarHeight = bars.top
+                systemBarsDrawable.navigationBarHeight = bars.bottom
                 WindowInsetsCompat.CONSUMED
             }
-        }
 
-        if (statusBarContent?.statusBarColor == Color.TRANSPARENT) {
+        if (systemBarsDrawable.statusBarColor == Color.TRANSPARENT) {
             setTitlesColor(ContextCompat.getColor(this, R.color.theme_primary))
         }
     }
@@ -56,35 +49,14 @@ open class GnuCashActivity : AppCompatActivity() {
      * Sets the color Action Bar and Status bar (where applicable)
      */
     protected open fun setTitlesColor(@ColorInt color: Int) {
+        val colorDark = darken(color)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-            statusBarContent?.statusBarColor = darken(color)
+            systemBarsDrawable.statusBarColor = colorDark
+            systemBarsDrawable.navigationBarColor = colorDark
         } else {
             @Suppress("DEPRECATION")
-            window.statusBarColor = darken(color)
+            window.statusBarColor = colorDark
         }
         supportActionBar?.setBackgroundDrawable(color.toDrawable())
-    }
-
-    override fun setContentView(view: View?) {
-        var v = view ?: return
-        v = wrapStatusBar(v)
-        super.setContentView(v)
-    }
-
-    override fun setContentView(view: View?, params: ViewGroup.LayoutParams?) {
-        var v = view ?: return
-        v = wrapStatusBar(v)
-        super.setContentView(v, params)
-    }
-
-    override fun setContentView(layoutResID: Int) {
-        val view = layoutInflater.inflate(layoutResID, contentView, false)
-        setContentView(view)
-    }
-
-    private fun wrapStatusBar(view: View): View {
-        val container = StatusBarContent(view)
-        statusBarContent = container
-        return container
     }
 }
