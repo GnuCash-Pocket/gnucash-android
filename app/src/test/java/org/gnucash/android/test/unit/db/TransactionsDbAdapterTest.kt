@@ -111,7 +111,7 @@ class TransactionsDbAdapterTest : GnuCashTest() {
 
         val imbalanceAccountUID =
             accountsDbAdapter.getImbalanceAccountUID(context, Commodity.DEFAULT_COMMODITY)
-        assertThat(trn.splits).extracting("accountUID").contains(imbalanceAccountUID)
+        assertThat(trn.splits).extracting("accountUID", String::class.java).contains(imbalanceAccountUID)
     }
 
     @Test

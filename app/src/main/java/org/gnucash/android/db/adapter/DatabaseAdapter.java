@@ -38,6 +38,7 @@ import org.gnucash.android.util.TimestampHelper;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -492,7 +493,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      */
     @NonNull
     public List<Model> getAllRecords() {
-        return getRecords(fetchAllRecords());
+        return getAllRecords(null, null);
     }
 
     @NonNull
@@ -600,6 +601,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @return Cursor to records matching conditions
      */
     public Cursor fetchAllRecords(String where, String[] whereArgs, String orderBy) {
+        Timber.v("Fetching all accounts from db where " + where + "/" + Arrays.toString(whereArgs) + " order by " + orderBy);
         return mDb.query(mTableName, null, where, whereArgs, null, null, orderBy);
     }
 

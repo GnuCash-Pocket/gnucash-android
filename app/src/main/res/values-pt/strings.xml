@@ -374,7 +374,7 @@
     <string name="menu_title_enable_sync">Permitir Sincronização</string>
     <string name="menu_title_new_book">Novo Livro</string>
     <string name="toast_transaction_has_no_splits_and_cannot_open">A transação selecionadas não tem divisões e não pode ser aberta</string>
-    <string name="label_split_count">Servidor OC não encontrado</string>
+    <string name="label_split_count">%1$d divisões</string>
     <string name="label_inside_account_with_name">em %1$s</string>
     <plurals name="book_account_stats">
         <item quantity="one">%d conta</item>

@@ -113,9 +113,8 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
         String quoteSource = cursor.getString(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_QUOTE_SOURCE));
         String quoteTZ = cursor.getString(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_QUOTE_TZ));
 
-        Commodity commodity = new Commodity(fullname, mnemonic, fraction);
+        Commodity commodity = new Commodity(fullname, mnemonic, namespace, fraction);
         populateBaseModelAttributes(cursor, commodity);
-        commodity.setNamespace(namespace);
         commodity.setCusip(cusip);
         commodity.setQuoteSource(quoteSource);
         commodity.setQuoteTimeZone(quoteTZ);

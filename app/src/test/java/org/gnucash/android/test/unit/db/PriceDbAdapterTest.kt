@@ -27,7 +27,7 @@ class PriceDbAdapterTest : GnuCashTest() {
         pricesDbAdapter.addRecord(price)
 
         price = pricesDbAdapter.getRecord(price.uid)
-        assertThat(pricesDbAdapter.recordsCount).isEqualTo(1)
+        assertThat(pricesDbAdapter.recordsCount).isOne()
         assertThat(price.valueNum)
             .isEqualTo(67) //the price is reduced to 57/100 before saving
 
@@ -36,7 +36,7 @@ class PriceDbAdapterTest : GnuCashTest() {
         price1.valueDenom = 100
         pricesDbAdapter.addRecord(price1)
 
-        assertThat(pricesDbAdapter.recordsCount).isEqualTo(1)
+        assertThat(pricesDbAdapter.recordsCount).isOne()
         val savedPrice = pricesDbAdapter.allRecords[0]
         assertThat(savedPrice.uid).isEqualTo(price1.uid) //different records
         assertThat(savedPrice.valueNum).isEqualTo(187)

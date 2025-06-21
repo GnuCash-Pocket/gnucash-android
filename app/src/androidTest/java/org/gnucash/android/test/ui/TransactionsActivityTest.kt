@@ -118,7 +118,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         transaction.addSplit(split.createPair(TRANSFER_ACCOUNT_UID))
 
         transactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.insert)
-        assertThat(transactionsDbAdapter.recordsCount).isEqualTo(1)
+        assertThat(transactionsDbAdapter.recordsCount).isOne()
 
         val intent = Intent(Intent.ACTION_VIEW)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, TRANSACTIONS_ACCOUNT_UID)
@@ -357,7 +357,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         setDoubleEntryEnabled(false)
         transactionsDbAdapter.deleteAllRecords()
 
-        assertThat(transactionsDbAdapter.recordsCount).isEqualTo(0)
+        assertThat(transactionsDbAdapter.recordsCount).isZero()
         var imbalanceAcctUID = accountsDbAdapter.getImbalanceAccountUID(context, COMMODITY)
         assertThat(imbalanceAcctUID).isNull()
 
@@ -377,7 +377,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         onView(withId(R.id.menu_save))
             .perform(ViewActions.click())
 
-        assertThat(transactionsDbAdapter.recordsCount).isEqualTo(1)
+        assertThat(transactionsDbAdapter.recordsCount).isOne()
         val transaction = transactionsDbAdapter.allTransactions[0]
         assertThat(transaction.splits).hasSize(2)
         imbalanceAcctUID = accountsDbAdapter.getImbalanceAccountUID(context, COMMODITY)
@@ -386,7 +386,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         assertThat(accountsDbAdapter.isHiddenAccount(imbalanceAcctUID))
             .isTrue() //imbalance account should be hidden in single entry mode
 
-        assertThat(transaction.splits).extracting("mAccountUID")
+        assertThat(transaction.splits).extracting("accountUID", String::class.java)
             .contains(imbalanceAcctUID)
     }
 
@@ -462,7 +462,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         assertThat(accountsDbAdapter.isHiddenAccount(imbalanceAcctUID)).isFalse()
 
         //at least one split will belong to the imbalance account
-        assertThat(transaction.splits).extracting("accountUID")
+        assertThat(transaction.splits).extracting("accountUID", String::class.java)
             .contains(imbalanceAcctUID)
 
         val imbalanceSplits = splitsDbAdapter.getSplitsForTransactionInAccount(
@@ -472,7 +472,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         assertThat(imbalanceSplits).hasSize(1)
 
         val split = imbalanceSplits[0]
-        assertThat(split.value.asBigDecimal()).isEqualTo(BigDecimal("99.00"))
+        assertThat(split.value.toBigDecimal()).isEqualTo(BigDecimal("99.00"))
         assertThat(split.type).isEqualTo(TransactionType.CREDIT)
     }
 
@@ -684,11 +684,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         onView(withId(R.id.menu_save))
             .perform(ViewActions.click())
 
-        assertThat(
-            transactionsDbAdapter.getTransactionsCount(
-                TRANSACTIONS_ACCOUNT_UID
-            )
-        ).isEqualTo(1)
+        assertThat(transactionsDbAdapter.getTransactionsCount(TRANSACTIONS_ACCOUNT_UID)).isOne()
 
         sleep(500)
         onView(withText("Test Split")).perform(ViewActions.click())
@@ -887,8 +883,8 @@ class TransactionsActivityTest : GnuAndroidTest() {
         transactionsDbAdapter.addRecord(multiTransaction)
 
         val savedTransaction = transactionsDbAdapter.getRecord(multiTransaction.uid)
-        assertThat(savedTransaction.splits).extracting("quantity").contains(expectedQty)
-        assertThat(savedTransaction.splits).extracting("value").contains(expectedValue)
+        assertThat(savedTransaction.splits).extracting("quantity", Money::class.java).contains(expectedQty)
+        assertThat(savedTransaction.splits).extracting("value", Money::class.java).contains(expectedValue)
 
         refreshTransactionsList()
         onView(withText(trnDescription))

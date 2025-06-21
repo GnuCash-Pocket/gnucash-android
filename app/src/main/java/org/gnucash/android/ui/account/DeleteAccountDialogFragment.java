@@ -33,7 +33,7 @@ import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.databinding.DialogAccountDeleteBinding;
 import org.gnucash.android.databinding.RadioGroupDeleteOrMoveBinding;
-import org.gnucash.android.db.DatabaseSchema;
+import org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
@@ -179,21 +179,23 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
         AccountType accountType = accountsDbAdapter.getAccountType(mOriginAccountUID);
 
         String joinedUIDs = "('" + TextUtils.join("','", descendantAccountUIDs) + "')";
-        String transactionDeleteConditions = DatabaseSchema.AccountEntry.COLUMN_UID + " != ? AND "
-            + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + " = ? AND "
-            + DatabaseSchema.AccountEntry.COLUMN_TYPE + " = ? AND "
-            + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0 AND "
-            + DatabaseSchema.AccountEntry.COLUMN_UID + " NOT IN " + joinedUIDs;
+        String transactionDeleteConditions = AccountEntry.COLUMN_UID + " != ?"
+            + " AND " + AccountEntry.COLUMN_COMMODITY_UID + " = ?"
+            + " AND " + AccountEntry.COLUMN_TYPE + " = ?"
+            + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0"
+            + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
+            + " AND " + AccountEntry.COLUMN_UID + " NOT IN " + joinedUIDs;
         String[] transactionDeleteConditionsArgs = new String[]{mOriginAccountUID, commodity.getUID(), accountType.name()};
 
         accountNameAdapterTransactionsDestination = QualifiedAccountNameAdapter.where(context, transactionDeleteConditions, transactionDeleteConditionsArgs);
         transactionOptions.targetAccountsSpinner.setAdapter(accountNameAdapterTransactionsDestination);
 
         //target accounts for transactions and accounts have different conditions
-        String accountMoveConditions = DatabaseSchema.AccountEntry.COLUMN_UID + " != ? AND "
-            + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + " = ? AND "
-            + DatabaseSchema.AccountEntry.COLUMN_TYPE + " = ? AND "
-            + DatabaseSchema.AccountEntry.COLUMN_UID + " NOT IN " + joinedUIDs;
+        String accountMoveConditions = AccountEntry.COLUMN_UID + " != ?"
+            + " AND " + AccountEntry.COLUMN_COMMODITY_UID + " = ?"
+            + " AND " + AccountEntry.COLUMN_TYPE + " = ?"
+            + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0"
+            + " AND " + AccountEntry.COLUMN_UID + " NOT IN " + joinedUIDs;
         String[] accountMoveConditionsArgs = new String[]{mOriginAccountUID, commodity.getUID(), accountType.name()};
         accountNameAdapterAccountsDestination = QualifiedAccountNameAdapter.where(context, accountMoveConditions, accountMoveConditionsArgs);
         accountOptions.targetAccountsSpinner.setAdapter(accountNameAdapterAccountsDestination);

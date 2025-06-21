@@ -283,7 +283,7 @@ public class BudgetAmountEditorFragment extends MenuFragment {
         }
 
         public void bindViews(BudgetAmount budgetAmount) {
-            amountEditText.setValue(budgetAmount.getAmount().asBigDecimal());
+            amountEditText.setValue(budgetAmount.getAmount().toBigDecimal());
             budgetAccountSpinner.setSelection(accountNameAdapter.getPosition(budgetAmount.getAccountUID()));
         }
     }

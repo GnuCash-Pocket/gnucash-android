@@ -18,6 +18,10 @@ package org.gnucash.android.test.unit.export
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.export.xml.GncXmlHelper
+import org.gnucash.android.export.xml.GncXmlHelper.formatDateTime
+import org.gnucash.android.export.xml.GncXmlHelper.formatNumeric
+import org.gnucash.android.export.xml.GncXmlHelper.formatSplitAmount
+import org.gnucash.android.export.xml.GncXmlHelper.parseSplitAmount
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.test.unit.GnuCashTest
 import org.joda.time.DateTimeZone
@@ -44,30 +48,30 @@ class GncXmlHelperTest : GnuCashTest() {
     @Throws(ParseException::class)
     fun testParseSplitAmount() {
         val splitAmount = "12345/100"
-        var amount = GncXmlHelper.parseSplitAmount(splitAmount)
+        var amount = parseSplitAmount(splitAmount)
         assertThat(amount.toPlainString()).isEqualTo("123.45")
 
-        amount = GncXmlHelper.parseSplitAmount("1.234,50/100")
+        amount = parseSplitAmount("1.234,50/100")
         assertThat(amount.toPlainString()).isEqualTo("1234.50")
     }
 
     @Test(expected = ParseException::class)
     @Throws(ParseException::class)
     fun shouldFailToParseWronglyFormattedInput() {
-        GncXmlHelper.parseSplitAmount("123.45")
+        parseSplitAmount("123.45")
     }
 
     @Test
     fun testFormatSplitAmount() {
-        val usdCommodity = Commodity("US Dollars", "USD", 100)
-        val euroCommodity = Commodity("Euro", "EUR", 100)
+        val usdCommodity = Commodity("US Dollars", "USD")
+        val euroCommodity = Commodity("Euro", "EUR")
 
         var bigDecimal = BigDecimal("45.90")
-        var amount = GncXmlHelper.formatSplitAmount(bigDecimal, usdCommodity)
+        var amount = formatSplitAmount(bigDecimal, usdCommodity)
         assertThat(amount).isEqualTo("4590/100")
 
         bigDecimal = BigDecimal("350")
-        amount = GncXmlHelper.formatSplitAmount(bigDecimal, euroCommodity)
+        amount = formatSplitAmount(bigDecimal, euroCommodity)
         assertThat(amount).isEqualTo("35000/100")
     }
 
@@ -83,15 +87,15 @@ class GncXmlHelperTest : GnuCashTest() {
         cal[Calendar.SECOND] = 56
         cal[Calendar.MILLISECOND] = 999
 
-        var formatted = GncXmlHelper.formatDateTime(cal)
+        var formatted = formatDateTime(cal)
         assertThat(formatted).isEqualTo("2024-02-28 12:34:56 +0000")
 
         cal.add(Calendar.DAY_OF_MONTH, 1)
-        formatted = GncXmlHelper.formatDateTime(cal)
+        formatted = formatDateTime(cal)
         assertThat(formatted).isEqualTo("2024-02-29 12:34:56 +0000")
 
         cal.add(Calendar.DAY_OF_MONTH, 1)
-        formatted = GncXmlHelper.formatDateTime(cal)
+        formatted = formatDateTime(cal)
         assertThat(formatted).isEqualTo("2024-03-01 12:34:56 +0000")
     }
 
@@ -108,15 +112,15 @@ class GncXmlHelperTest : GnuCashTest() {
         cal[Calendar.SECOND] = 56
         cal[Calendar.MILLISECOND] = 999
 
-        var formatted = GncXmlHelper.formatDateTime(cal)
+        var formatted = formatDateTime(cal)
         assertThat(formatted).isEqualTo("2024-02-28 12:34:56 +0200")
 
         cal.add(Calendar.DAY_OF_MONTH, 1)
-        formatted = GncXmlHelper.formatDateTime(cal)
+        formatted = formatDateTime(cal)
         assertThat(formatted).isEqualTo("2024-02-29 12:34:56 +0200")
 
         cal.add(Calendar.DAY_OF_MONTH, 1)
-        formatted = GncXmlHelper.formatDateTime(cal)
+        formatted = formatDateTime(cal)
         assertThat(formatted).isEqualTo("2024-03-01 12:34:56 +0200")
     }
 
@@ -178,7 +182,7 @@ class GncXmlHelperTest : GnuCashTest() {
         cal[Calendar.MILLISECOND] = 999
 
         val ts = Timestamp(cal.timeInMillis)
-        val formatted = GncXmlHelper.formatDateTime(ts)
+        val formatted = formatDateTime(ts)
         assertThat(formatted).isEqualTo("2024-05-19 12:34:56 +0000")
     }
 
@@ -223,6 +227,30 @@ class GncXmlHelperTest : GnuCashTest() {
         df = SimpleDateFormat("EEE, d MMM")
         dtf = DateTimeFormat.forPattern("EEE, d MMM")
         assertThat(df.format(Date(now))).isEqualTo(dtf.print(now))
+    }
+
+    @Test
+    fun format_number() {
+        assertThat(formatNumeric(0, 1)).isEqualTo("0/1")
+        assertThat(formatNumeric(1, 1)).isEqualTo("1/1")
+        assertThat(formatNumeric(2, 1)).isEqualTo("2/1")
+        assertThat(formatNumeric(10, 1)).isEqualTo("10/1")
+        assertThat(formatNumeric(123, 1)).isEqualTo("123/1")
+        assertThat(formatNumeric(1230, 1)).isEqualTo("1230/1")
+
+        assertThat(formatNumeric(0, 10)).isEqualTo("0/1")
+        assertThat(formatNumeric(1, 10)).isEqualTo("1/10")
+        assertThat(formatNumeric(2, 10)).isEqualTo("2/10")
+        assertThat(formatNumeric(10, 10)).isEqualTo("1/1")
+        assertThat(formatNumeric(123, 10)).isEqualTo("123/10")
+        assertThat(formatNumeric(1230, 10)).isEqualTo("123/1")
+
+        assertThat(formatNumeric(0, 100)).isEqualTo("0/1")
+        assertThat(formatNumeric(1, 100)).isEqualTo("1/100")
+        assertThat(formatNumeric(2, 100)).isEqualTo("2/100")
+        assertThat(formatNumeric(10, 100)).isEqualTo("1/10")
+        assertThat(formatNumeric(123, 100)).isEqualTo("123/100")
+        assertThat(formatNumeric(1230, 100)).isEqualTo("123/10")
     }
 
     companion object {

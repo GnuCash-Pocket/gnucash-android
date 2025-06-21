@@ -217,7 +217,7 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
         String where = DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?"
             + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0";
         String[] whereArgs = new String[]{accountType.name()};
-        List<Account> accounts = mAccountsDbAdapter.getSimpleAccountList(where, whereArgs, null);
+        List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, whereArgs, null);
 
         LocalDateTime earliest;
         LocalDateTime latest;
