@@ -37,6 +37,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.db.DatabaseHolder;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.Split;
@@ -69,17 +70,17 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
     /**
      * Overloaded constructor. Creates adapter for already open db
      *
-     * @param db SQlite db instance
+     * @param holder Database holder
      */
-    public TransactionsDbAdapter(@NonNull SQLiteDatabase db) {
-        this(new SplitsDbAdapter(db));
+    public TransactionsDbAdapter(@NonNull DatabaseHolder holder) {
+        this(new SplitsDbAdapter(holder));
     }
 
     /**
      * Overloaded constructor. Creates adapter for already open db
      */
     public TransactionsDbAdapter(@NonNull SplitsDbAdapter splitsDbAdapter) {
-        super(splitsDbAdapter.mDb, TransactionEntry.TABLE_NAME, new String[]{
+        super(splitsDbAdapter.holder, TransactionEntry.TABLE_NAME, new String[]{
             TransactionEntry.COLUMN_DESCRIPTION,
             TransactionEntry.COLUMN_NOTES,
             TransactionEntry.COLUMN_TIMESTAMP,

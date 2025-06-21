@@ -114,7 +114,7 @@ public class GncXmlExporter extends Exporter {
                           @NonNull String bookUID,
                           @Nullable GncProgressListener listener) {
         super(context, params, bookUID);
-        mRecurrenceDbAdapter = new RecurrenceDbAdapter(mDb);
+        mRecurrenceDbAdapter = new RecurrenceDbAdapter(holder);
         this.listener = listener;
     }
 

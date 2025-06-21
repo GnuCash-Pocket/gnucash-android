@@ -18,12 +18,12 @@ package org.gnucash.android.db.adapter;
 import static org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry;
 
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 
 import androidx.annotation.NonNull;
 
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.db.DatabaseHolder;
 import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.model.BudgetAmount;
 import org.gnucash.android.model.Commodity;
@@ -40,12 +40,12 @@ public class BudgetAmountsDbAdapter extends DatabaseAdapter<BudgetAmount> {
     @NonNull
     final CommoditiesDbAdapter commoditiesDbAdapter;
 
-    public BudgetAmountsDbAdapter(@NonNull SQLiteDatabase db) {
-        this(new CommoditiesDbAdapter(db));
+    public BudgetAmountsDbAdapter(@NonNull DatabaseHolder holder) {
+        this(new CommoditiesDbAdapter(holder));
     }
 
     public BudgetAmountsDbAdapter(@NonNull CommoditiesDbAdapter commoditiesDbAdapter) {
-        super(commoditiesDbAdapter.mDb, BudgetAmountEntry.TABLE_NAME, new String[]{
+        super(commoditiesDbAdapter.holder, BudgetAmountEntry.TABLE_NAME, new String[]{
             BudgetAmountEntry.COLUMN_BUDGET_UID,
             BudgetAmountEntry.COLUMN_ACCOUNT_UID,
             BudgetAmountEntry.COLUMN_AMOUNT_NUM,

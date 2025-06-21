@@ -19,7 +19,6 @@ package org.gnucash.android.db.adapter;
 import static org.gnucash.android.db.DatabaseSchema.RecurrenceEntry;
 
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
 
@@ -27,6 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.gnucash.android.app.GnuCashApplication;
+import org.gnucash.android.db.DatabaseHolder;
 import org.gnucash.android.model.PeriodType;
 import org.gnucash.android.model.Recurrence;
 import org.gnucash.android.util.TimestampHelper;
@@ -43,10 +43,10 @@ public class RecurrenceDbAdapter extends DatabaseAdapter<Recurrence> {
     /**
      * Opens the database adapter with an existing database
      *
-     * @param db SQLiteDatabase object
+     * @param holder Database holder
      */
-    public RecurrenceDbAdapter(@NonNull SQLiteDatabase db) {
-        super(db, RecurrenceEntry.TABLE_NAME, new String[]{
+    public RecurrenceDbAdapter(@NonNull DatabaseHolder holder) {
+        super(holder, RecurrenceEntry.TABLE_NAME, new String[]{
             RecurrenceEntry.COLUMN_MULTIPLIER,
             RecurrenceEntry.COLUMN_PERIOD_TYPE,
             RecurrenceEntry.COLUMN_BYDAY,

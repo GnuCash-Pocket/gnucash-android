@@ -16,8 +16,6 @@
 package org.gnucash.android.test.ui
 
 import android.Manifest
-import android.database.SQLException
-import android.database.sqlite.SQLiteDatabase
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -38,7 +36,6 @@ import org.gnucash.android.ui.wizard.FirstRunWizardActivity
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import timber.log.Timber
 
 /**
  * Tests the first run wizard
@@ -47,7 +44,6 @@ import timber.log.Timber
  */
 class FirstRunWizardActivityTest : GnuAndroidTest() {
     private lateinit var dbHelper: DatabaseHelper
-    private lateinit var db: SQLiteDatabase
     private lateinit var accountsDbAdapter: AccountsDbAdapter
     private lateinit var transactionsDbAdapter: TransactionsDbAdapter
     private lateinit var splitsDbAdapter: SplitsDbAdapter
@@ -66,13 +62,7 @@ class FirstRunWizardActivityTest : GnuAndroidTest() {
     fun setUp() {
         activity = rule.activity
         dbHelper = DatabaseHelper(activity, generateUID())
-        try {
-            db = dbHelper.writableDatabase
-        } catch (e: SQLException) {
-            Timber.e(e, "Error getting database: " + e.message)
-            db = dbHelper.readableDatabase
-        }
-        splitsDbAdapter = SplitsDbAdapter(db)
+        splitsDbAdapter = SplitsDbAdapter(dbHelper.holder)
         transactionsDbAdapter = TransactionsDbAdapter(splitsDbAdapter)
         accountsDbAdapter = AccountsDbAdapter(transactionsDbAdapter)
         accountsDbAdapter.deleteAllRecords()

@@ -183,8 +183,8 @@ public class BackupManager {
      */
     @Nullable
     public static Uri getBookBackupFileUri(@NonNull Context context, String bookUID, @Nullable ExportParams exportParams) {
-        SharedPreferences sharedPreferences = PreferenceActivity.getBookSharedPreferences(context, bookUID);
-        String path = sharedPreferences.getString(KEY_BACKUP_FILE, null);
+        SharedPreferences preferences = GnuCashApplication.getBookPreferences(context, bookUID);
+        String path = preferences.getString(KEY_BACKUP_FILE, null);
         if (TextUtils.isEmpty(path)) {
             File file = getBackupFile(context, bookUID, exportParams);
             return Uri.fromFile(file);

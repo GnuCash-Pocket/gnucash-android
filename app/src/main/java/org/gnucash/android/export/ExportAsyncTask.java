@@ -37,6 +37,7 @@ import org.gnucash.android.gnc.AsyncTaskProgressListener;
 import org.gnucash.android.gnc.GncProgressListener;
 import org.gnucash.android.ui.common.GnucashProgressDialog;
 import org.gnucash.android.ui.common.Refreshable;
+import org.gnucash.android.ui.settings.OwnCloudPreferences;
 
 import timber.log.Timber;
 
@@ -180,19 +181,12 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Object, Uri> {
             case DROPBOX:
                 targetLocation = "DropBox -> Apps -> GnuCash";
                 break;
-            case OWNCLOUD:
-                targetLocation = mContext.getSharedPreferences(
-                    mContext.getString(R.string.owncloud_pref),
-                    Context.MODE_PRIVATE).getBoolean(
-                    mContext.getString(R.string.owncloud_sync), false) ?
-
-                    "ownCloud -> " +
-                        mContext.getSharedPreferences(
-                            mContext.getString(R.string.owncloud_pref),
-                            Context.MODE_PRIVATE).getString(
-                            mContext.getString(R.string.key_owncloud_dir), null) :
-                    "ownCloud sync not enabled";
-                break;
+            case OWNCLOUD: {
+                final OwnCloudPreferences preferences = new OwnCloudPreferences(mContext);
+                targetLocation = preferences.isSync() ?
+                    "ownCloud -> " + preferences.getDir() : "ownCloud sync not enabled";
+            }
+            break;
             default:
                 targetLocation = mContext.getString(R.string.label_export_target_external_service);
         }

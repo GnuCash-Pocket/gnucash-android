@@ -18,8 +18,10 @@ package org.gnucash.android.model
 import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
+import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.math.numberOfTrailingZeros
+import timber.log.Timber
 import java.util.Currency
 import java.util.TimeZone
 
@@ -249,6 +251,17 @@ class Commodity(
                 return currencyCode
             }
             return "$currencyCode ($name)"
+        }
+
+        @JvmStatic
+        fun getLocaleCurrencyCode(): String? {
+            return try {
+                val locale = GnuCashApplication.getDefaultLocale()
+                Currency.getInstance(locale).currencyCode
+            } catch (e: Throwable) {
+                Timber.e(e)
+                null
+            }
         }
 
         @JvmField

@@ -19,6 +19,7 @@ import android.database.sqlite.SQLiteDatabase
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseHelper
+import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
@@ -87,7 +88,8 @@ class QifExporterTest : BookHelperTest() {
      */
     @Test
     fun testGenerateQIFExport() {
-        val accountsDbAdapter = AccountsDbAdapter(db)
+        val holder = DatabaseHolder(context, db)
+        val accountsDbAdapter = AccountsDbAdapter(holder)
 
         val account = Account("Basic Account")
         val transaction = Transaction("One transaction")
@@ -118,7 +120,8 @@ class QifExporterTest : BookHelperTest() {
     // @Test Fails randomly. Sometimes it doesn't split the QIF.
     @Throws(IOException::class)
     fun multiCurrencyTransactions_shouldResultInMultipleZippedQifFiles() {
-        val accountsDbAdapter = AccountsDbAdapter(db)
+        val holder = DatabaseHolder(context, db)
+        val accountsDbAdapter = AccountsDbAdapter(holder)
 
         val account = Account("Basic Account", getInstance("EUR"))
         val transaction = Transaction("One transaction")
@@ -160,7 +163,8 @@ class QifExporterTest : BookHelperTest() {
         val expectedMemo = "my memo"
         val expectedAccountName = "Basic Account"
 
-        val accountsDbAdapter = AccountsDbAdapter(db)
+        val holder = DatabaseHolder(context, db)
+        val accountsDbAdapter = AccountsDbAdapter(holder)
 
         val account = Account(expectedAccountName)
         val transaction = Transaction("One transaction")
@@ -312,7 +316,8 @@ class QifExporterTest : BookHelperTest() {
         val expectedAccountName1 = "Basic Account"
         val expectedAccountName2 = "Cash in Wallet"
 
-        val accountsDbAdapter = AccountsDbAdapter(db)
+        val holder = DatabaseHolder(context, db)
+        val accountsDbAdapter = AccountsDbAdapter(holder)
         val account1 = Account(expectedAccountName1, Commodity.EUR)
         account1.accountType = AccountType.EXPENSE
         account1.setUID("account-001")
@@ -322,7 +327,7 @@ class QifExporterTest : BookHelperTest() {
         account2.setUID("account-002")
         accountsDbAdapter.addRecord(account2)
 
-        val transactionsDbAdapter = TransactionsDbAdapter(db)
+        val transactionsDbAdapter = TransactionsDbAdapter(holder)
         val transaction = Transaction("One transaction")
         val split1 = Split(Money(123.45, Commodity.EUR), account1.uid)
         val split2 = split1.createPair(account2.uid)

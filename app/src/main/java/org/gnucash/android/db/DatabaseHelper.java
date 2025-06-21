@@ -263,7 +263,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        createDatabaseTables(context, db);
+        DatabaseHolder holder = new DatabaseHolder(context, db);
+        createDatabaseTables(holder);
     }
 
     @Override
@@ -280,10 +281,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * Creates the tables in the database and import default commodities into the database
      *
-     * @param db Database instance
+     * @param holder Database holder
      */
-    private void createDatabaseTables(@NonNull Context context, @NonNull SQLiteDatabase db) {
+    private void createDatabaseTables(@NonNull DatabaseHolder holder) {
         Timber.i("Creating database tables");
+        SQLiteDatabase db = holder.db;
         db.execSQL(ACCOUNTS_TABLE_CREATE);
         db.execSQL(TRANSACTIONS_TABLE_CREATE);
         db.execSQL(SPLITS_TABLE_CREATE);
@@ -333,7 +335,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         createResetBalancesTriggers(db);
 
         try {
-            MigrationHelper.importCommodities(context, db);
+            MigrationHelper.importCommodities(holder);
         } catch (SAXException | ParserConfigurationException | IOException e) {
             String msg = "Error loading currencies into the database";
             Timber.e(e, msg);
@@ -409,5 +411,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + " ON " + AccountEntry.TABLE_NAME
             + " BEGIN " + sqlReset + "; END;";
         db.execSQL(sqlWhenUpdateAccount);
+    }
+
+    public DatabaseHolder getHolder() {
+        return new DatabaseHolder(context, getWritableDatabase(), getDatabaseName());
+    }
+
+    public DatabaseHolder getReadableHolder() {
+        return new DatabaseHolder(context, getReadableDatabase(), getDatabaseName());
     }
 }

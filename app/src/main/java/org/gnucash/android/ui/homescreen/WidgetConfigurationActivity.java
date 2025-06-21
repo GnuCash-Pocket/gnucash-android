@@ -22,7 +22,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -35,9 +34,11 @@ import androidx.core.content.ContextCompat;
 
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashActivity;
+import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.databinding.WidgetConfigurationBinding;
 import org.gnucash.android.db.BookDbHelper;
 import org.gnucash.android.db.DatabaseHelper;
+import org.gnucash.android.db.DatabaseHolder;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BooksDbAdapter;
 import org.gnucash.android.model.Account;
@@ -49,7 +50,6 @@ import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter;
 import org.gnucash.android.ui.common.FormActivity;
 import org.gnucash.android.ui.common.UxArgument;
 import org.gnucash.android.ui.passcode.PasscodeHelper;
-import org.gnucash.android.ui.settings.PreferenceActivity;
 import org.gnucash.android.ui.transaction.TransactionsActivity;
 
 import java.util.ArrayList;
@@ -113,8 +113,8 @@ public class WidgetConfigurationActivity extends GnuCashActivity {
                 if (view == null) return;
                 Context context = view.getContext();
                 Book book = books.get(position);
-                SQLiteDatabase db = new DatabaseHelper(context, book.getUID()).getReadableDatabase();
-                accountNameAdapter.swapAdapter(new AccountsDbAdapter(db));
+                DatabaseHolder holder = new DatabaseHelper(context, book.getUID()).getHolder();
+                accountNameAdapter.swapAdapter(new AccountsDbAdapter(holder));
                 selectedBookUID = book.getUID();
             }
 
@@ -267,7 +267,8 @@ public class WidgetConfigurationActivity extends GnuCashActivity {
             return;
         }
 
-        AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(BookDbHelper.getDatabase(bookUID));
+        DatabaseHolder holder = new DatabaseHolder(context, BookDbHelper.getDatabase(bookUID), bookUID);
+        AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(holder);
 
         Account account = null;
         try {
@@ -288,7 +289,8 @@ public class WidgetConfigurationActivity extends GnuCashActivity {
             views.setOnClickPendingIntent(R.id.btn_new_transaction, pendingIntent);
             appWidgetManager.updateAppWidget(appWidgetId, views);
 
-            PreferenceActivity.getActiveBookSharedPreferences(context).edit()
+            GnuCashApplication.getBookPreferences(context)
+                .edit()
                 .remove(UxArgument.SELECTED_ACCOUNT_UID + appWidgetId)
                 .apply();
             return;

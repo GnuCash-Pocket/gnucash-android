@@ -61,17 +61,17 @@ public class MigrationHelper {
     /**
      * Imports commodities into the database from XML resource file
      */
-    static void importCommodities(@NonNull Context context, @NonNull SQLiteDatabase db) throws SAXException, ParserConfigurationException, IOException {
+    static void importCommodities(@NonNull DatabaseHolder holder) throws SAXException, ParserConfigurationException, IOException {
         SAXParserFactory spf = SAXParserFactory.newInstance();
         SAXParser sp = spf.newSAXParser();
         XMLReader xr = sp.getXMLReader();
 
-        InputStream commoditiesInputStream = context.getResources()
+        InputStream commoditiesInputStream = holder.context.getResources()
             .openRawResource(R.raw.iso_4217_currencies);
         BufferedInputStream bos = new BufferedInputStream(commoditiesInputStream);
 
         /* Create handler to handle XML Tags ( extends DefaultHandler ) */
-        CommoditiesXmlHandler handler = new CommoditiesXmlHandler(db);
+        CommoditiesXmlHandler handler = new CommoditiesXmlHandler(holder);
 
         xr.setContentHandler(handler);
         xr.parse(new InputSource(bos));
@@ -291,7 +291,8 @@ public class MigrationHelper {
         }
 
         try {
-            importCommodities(context, db);
+            DatabaseHolder holder = new DatabaseHolder(context, db);
+            importCommodities(holder);
         } catch (SAXException | ParserConfigurationException | IOException e) {
             String msg = "Error loading currencies into the database";
             Timber.e(e, msg);

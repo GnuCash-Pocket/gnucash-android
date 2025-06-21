@@ -140,12 +140,6 @@ public class ImportAsyncTask extends AsyncTask<Uri, Object, String> {
         contentValues.put(DatabaseSchema.BookEntry.COLUMN_DISPLAY_NAME, displayName);
         booksDbAdapter.updateRecord(bookUID, contentValues);
 
-        //set the preferences to their default values
-        context.getSharedPreferences(bookUID, Context.MODE_PRIVATE)
-            .edit()
-            .putBoolean(context.getString(R.string.key_use_double_entry), true)
-            .apply();
-
         return bookUID;
     }
 
