@@ -285,6 +285,13 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
         mAccountsDbAdapter.deleteAllRecords();
     }
 
+    private void maybeInitDb(@Nullable String bookUIDOld, @NonNull String bookUIDNew) {
+        if (bookUIDOld != null && !bookUIDOld.equals(bookUIDNew)) {
+            mDatabaseHelper.close();
+            initDb(bookUIDNew);
+        }
+    }
+
     @Override
     public void startElement(String uri, String localName,
                              String qualifiedName, Attributes attributes) throws SAXException {
@@ -404,18 +411,12 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
             case TAG_BOOK:
             case TAG_ROOT:
             case AccountsTemplate.TAG_ROOT:
-                if (mBook.id == 0L) {
-                    //if all of the import went smoothly, then add the book to the book db
-                    booksDbAdapter.addRecord(mBook, DatabaseAdapter.UpdateMethod.insert);
-                } else {
-                    booksDbAdapter.addRecord(mBook, DatabaseAdapter.UpdateMethod.replace);
-                }
+                booksDbAdapter.addRecord(mBook, DatabaseAdapter.UpdateMethod.replace);
                 if (listener != null) listener.onBook(mBook);
                 break;
             case TAG_BOOK_ID:
+                maybeInitDb(mBook.getUID(), characterString);
                 mBook.setUID(characterString);
-                close();
-                initDb(mBook.getUID());
                 break;
             case TAG_COMMODITY_SPACE:
                 mCommoditySpace = characterString;
@@ -1018,19 +1019,23 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
      */
     private void saveToDatabase() {
         mAccountsDbAdapter.enableForeignKey(true);
-        close();
+        maybeClose();
     }
 
     @Override
     public void close() {
+        mDatabaseHelper.close();
+    }
+
+    private void maybeClose() {
         String activeBookUID = null;
         try {
             activeBookUID = GnuCashApplication.getActiveBookUID();
         } catch (BooksDbAdapter.NoActiveBookFoundException ignore) {
         }
         String newBookUID = mBook.getUID();
-        if (!TextUtils.equals(activeBookUID, newBookUID)) {
-            mDatabaseHelper.close(); //close it after import
+        if (activeBookUID != null && !activeBookUID.equals(newBookUID)) {
+            close(); //close it after import
         }
     }
 
