@@ -20,11 +20,14 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ProgressBar;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
 import org.gnucash.android.R;
@@ -44,45 +47,42 @@ public class ColorPickerDialog extends DialogFragment implements OnColorSelected
 
     public static final String EXTRA_COLOR = "color";
 
-    public static final int SIZE_LARGE = 1;
-    public static final int SIZE_SMALL = 2;
+    public static final int SIZE_LARGE = ColorPickerPalette.SIZE_LARGE;
+    public static final int SIZE_SMALL = ColorPickerPalette.SIZE_SMALL;
 
-    protected AlertDialog mAlertDialog;
+    private static final String KEY_TITLE_ID = "title_id";
+    private static final String KEY_COLORS = "colors";
+    private static final String KEY_SELECTED_COLOR = "selected_color";
+    private static final String KEY_COLUMNS = "columns";
+    private static final String KEY_SIZE = "size";
 
-    protected static final String KEY_TITLE_ID = "title_id";
-    protected static final String KEY_COLORS = "colors";
-    protected static final String KEY_SELECTED_COLOR = "selected_color";
-    protected static final String KEY_COLUMNS = "columns";
-    protected static final String KEY_SIZE = "size";
+    private int mTitleResId = R.string.color_picker_default_title;
+    @NonNull
+    private int[] mColors = new int[0];
+    @ColorInt
+    private int mSelectedColor = Color.TRANSPARENT;
+    private int mColumns;
+    private int mSize = ColorPickerPalette.SIZE_LARGE;
 
-    protected int mTitleResId = R.string.color_picker_default_title;
-    protected int[] mColors = null;
-    protected int mSelectedColor;
-    protected int mColumns;
-    protected int mSize;
-
+    @Nullable
     private ColorPickerPalette mPalette;
-    private ProgressBar mProgress;
-
-    protected OnColorSelectedListener mListener;
+    @Nullable
+    private OnColorSelectedListener mListener;
 
     public static ColorPickerDialog newInstance(int titleResId, int[] colors, int selectedColor,
                                                 int columns, int size) {
-        ColorPickerDialog ret = new ColorPickerDialog();
-        ret.initialize(titleResId, colors, selectedColor, columns, size);
-        return ret;
+        ColorPickerDialog dialog = new ColorPickerDialog();
+        dialog.setArguments(titleResId, columns, size, colors, selectedColor);
+        return dialog;
     }
 
-    public void initialize(int titleResId, int[] colors, int selectedColor, int columns, int size) {
-        setArguments(titleResId, columns, size);
-        setColors(colors, selectedColor);
-    }
-
-    public void setArguments(int titleResId, int columns, int size) {
+    private void setArguments(int titleResId, int columns, int size, int[] colors, @ColorInt int selectedColor) {
         Bundle bundle = new Bundle();
         bundle.putInt(KEY_TITLE_ID, titleResId);
         bundle.putInt(KEY_COLUMNS, columns);
         bundle.putInt(KEY_SIZE, size);
+        bundle.putIntArray(KEY_COLORS, colors);
+        bundle.putInt(KEY_SELECTED_COLOR, selectedColor);
         setArguments(bundle);
     }
 
@@ -95,10 +95,13 @@ public class ColorPickerDialog extends DialogFragment implements OnColorSelected
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments() != null) {
-            mTitleResId = getArguments().getInt(KEY_TITLE_ID);
-            mColumns = getArguments().getInt(KEY_COLUMNS);
-            mSize = getArguments().getInt(KEY_SIZE);
+        Bundle args = getArguments();
+        if (args != null) {
+            mTitleResId = args.getInt(KEY_TITLE_ID, mTitleResId);
+            mColumns = args.getInt(KEY_COLUMNS, mColumns);
+            mSize = args.getInt(KEY_SIZE, mSize);
+            mColors = args.getIntArray(KEY_COLORS);
+            mSelectedColor = args.getInt(KEY_SELECTED_COLOR, mSelectedColor);
         }
 
         if (savedInstanceState != null) {
@@ -112,15 +115,15 @@ public class ColorPickerDialog extends DialogFragment implements OnColorSelected
         final Activity activity = requireActivity();
 
         View view = LayoutInflater.from(activity).inflate(R.layout.color_picker_dialog, null);
-        mProgress = view.findViewById(android.R.id.progress);
-        mPalette = view.findViewById(R.id.color_picker);
-        mPalette.init(mSize, mColumns, this);
-
+        ColorPickerPalette palette = view.findViewById(R.id.color_picker);
+        palette.init(mSize, mColumns, this);
         if (mColors != null) {
-            showPaletteView();
+            palette.drawPalette(mColors, mSelectedColor);
+            palette.setVisibility(View.VISIBLE);
         }
+        mPalette = palette;
 
-        mAlertDialog = new AlertDialog.Builder(activity)
+        return new AlertDialog.Builder(activity)
             .setTitle(mTitleResId)
             .setView(view)
             .setNeutralButton(R.string.default_color, new DialogInterface.OnClickListener() {
@@ -129,13 +132,17 @@ public class ColorPickerDialog extends DialogFragment implements OnColorSelected
                     onColorSelected(Account.DEFAULT_COLOR);
                 }
             })
+            .setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            })
             .create();
-
-        return mAlertDialog;
     }
 
     @Override
-    public void onColorSelected(int color) {
+    public void onColorSelected(@ColorInt int color) {
         if (mListener != null) {
             mListener.onColorSelected(color);
         }
@@ -144,56 +151,13 @@ public class ColorPickerDialog extends DialogFragment implements OnColorSelected
         result.putInt(EXTRA_COLOR, color);
         getParentFragmentManager().setFragmentResult(COLOR_PICKER_DIALOG_TAG, result);
 
-        if (color != mSelectedColor) {
+        if (mPalette != null && color != mSelectedColor) {
             mSelectedColor = color;
             // Redraw palette to show checkmark on newly selected color before dismissing.
-            mPalette.drawPalette(mColors, mSelectedColor);
+            mPalette.drawPalette(mColors, color);
         }
 
         dismiss();
-    }
-
-    public void showPaletteView() {
-        if (mProgress != null && mPalette != null) {
-            mProgress.setVisibility(View.GONE);
-            refreshPalette();
-            mPalette.setVisibility(View.VISIBLE);
-        }
-    }
-
-    public void showProgressBarView() {
-        if (mProgress != null && mPalette != null) {
-            mProgress.setVisibility(View.VISIBLE);
-            mPalette.setVisibility(View.GONE);
-        }
-    }
-
-    public void setColors(int[] colors, int selectedColor) {
-        if (mColors != colors || mSelectedColor != selectedColor) {
-            mColors = colors;
-            mSelectedColor = selectedColor;
-            refreshPalette();
-        }
-    }
-
-    public void setColors(int[] colors) {
-        if (mColors != colors) {
-            mColors = colors;
-            refreshPalette();
-        }
-    }
-
-    public void setSelectedColor(int color) {
-        if (mSelectedColor != color) {
-            mSelectedColor = color;
-            refreshPalette();
-        }
-    }
-
-    private void refreshPalette() {
-        if (mPalette != null && mColors != null) {
-            mPalette.drawPalette(mColors, mSelectedColor);
-        }
     }
 
     public int[] getColors() {

@@ -22,9 +22,11 @@ import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TableLayout;
-import android.widget.TableRow;
+
+import androidx.annotation.ColorInt;
 
 import org.gnucash.android.R;
 import org.gnucash.android.ui.colorpicker.ColorPickerSwatch.OnColorSelectedListener;
@@ -35,7 +37,10 @@ import org.gnucash.android.ui.colorpicker.ColorPickerSwatch.OnColorSelectedListe
  */
 public class ColorPickerPalette extends TableLayout {
 
-    public OnColorSelectedListener mOnColorSelectedListener;
+    public static final int SIZE_LARGE = 1;
+    public static final int SIZE_SMALL = 2;
+
+    private OnColorSelectedListener mOnColorSelectedListener;
 
     private String mDescription;
     private String mDescriptionSelected;
@@ -59,7 +64,7 @@ public class ColorPickerPalette extends TableLayout {
     public void init(int size, int columns, OnColorSelectedListener listener) {
         mNumColumns = columns;
         Resources res = getResources();
-        if (size == ColorPickerDialog.SIZE_LARGE) {
+        if (size == SIZE_LARGE) {
             mSwatchLength = res.getDimensionPixelSize(R.dimen.color_swatch_large);
             mMarginSize = res.getDimensionPixelSize(R.dimen.color_swatch_margins_large);
         } else {
@@ -72,14 +77,6 @@ public class ColorPickerPalette extends TableLayout {
         mDescriptionSelected = res.getString(R.string.color_swatch_description_selected);
     }
 
-    private TableRow createTableRow() {
-        TableRow row = new TableRow(getContext());
-        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(LayoutParams.WRAP_CONTENT,
-            LayoutParams.WRAP_CONTENT);
-        row.setLayoutParams(params);
-        return row;
-    }
-
     /**
      * Adds swatches to table in a serpentine format.
      */
@@ -88,49 +85,32 @@ public class ColorPickerPalette extends TableLayout {
             return;
         }
 
-        this.removeAllViews();
+        removeAllViews();
+        ViewGroup table = createTable();
+        addView(table);
+
         int tableElements = 0;
         int rowElements = 0;
-        int rowNumber = 0;
 
         // Fills the table with swatches based on the array of colors.
-        TableRow row = createTableRow();
         for (int color : colors) {
             tableElements++;
 
             View colorSwatch = createColorSwatch(color, selectedColor);
-            setSwatchDescription(rowNumber, tableElements, rowElements, color == selectedColor,
+            setSwatchDescription(tableElements, rowElements, color == selectedColor,
                 colorSwatch);
-            addSwatchToRow(row, colorSwatch, rowNumber);
+            table.addView(colorSwatch);
 
             rowElements++;
             if (rowElements == mNumColumns) {
-                addView(row);
-                row = createTableRow();
                 rowElements = 0;
-                rowNumber++;
             }
         }
 
         // Create blank views to fill the row if the last row has not been filled.
-        if (rowElements > 0) {
-            while (rowElements != mNumColumns) {
-                addSwatchToRow(row, createBlankSpace(), rowNumber);
-                rowElements++;
-            }
-            addView(row);
-        }
-    }
-
-    /**
-     * Appends a swatch to the end of the row for even-numbered rows (starting with row 0),
-     * to the beginning of a row for odd-numbered rows.
-     */
-    private void addSwatchToRow(TableRow row, View swatch, int rowNumber) {
-        if ((rowNumber & 1) == 0) {
-            row.addView(swatch);
-        } else {
-            row.addView(swatch, 0);
+        while ((rowElements > 0) && (rowElements < mNumColumns)) {
+            table.addView(createBlankSpace());
+            rowElements++;
         }
     }
 
@@ -140,25 +120,21 @@ public class ColorPickerPalette extends TableLayout {
      * in an opposite direction from their left->right/top->bottom order, which is how the system
      * will arrange them for accessibility purposes.
      */
-    private void setSwatchDescription(int rowNumber, int index, int rowElements, boolean selected,
+    private void setSwatchDescription(int index, int rowElements, boolean selected,
                                       View swatch) {
-        int accessibilityIndex;
-        if ((rowNumber & 1) == 0) {
-            // We're in a regular-ordered row
-            accessibilityIndex = index;
-        } else {
-            // We're in a backwards-ordered row.
-            int rowMax = (rowNumber + 1) * mNumColumns;
-            accessibilityIndex = rowMax - rowElements;
-        }
-
-        String description;
+        final String description;
         if (selected) {
-            description = String.format(mDescriptionSelected, accessibilityIndex);
+            description = String.format(mDescriptionSelected, index);
         } else {
-            description = String.format(mDescription, accessibilityIndex);
+            description = String.format(mDescription, index);
         }
         swatch.setContentDescription(description);
+    }
+
+    private ViewGroup createTable() {
+        GridLayout table = new GridLayout(getContext());
+        table.setColumnCount(mNumColumns);
+        return table;
     }
 
     /**
@@ -166,7 +142,7 @@ public class ColorPickerPalette extends TableLayout {
      */
     private ImageView createBlankSpace() {
         ImageView view = new ImageView(getContext());
-        TableRow.LayoutParams params = new TableRow.LayoutParams(mSwatchLength, mSwatchLength);
+        MarginLayoutParams params = new MarginLayoutParams(mSwatchLength, mSwatchLength);
         params.setMargins(mMarginSize, mMarginSize, mMarginSize, mMarginSize);
         view.setLayoutParams(params);
         return view;
@@ -175,10 +151,10 @@ public class ColorPickerPalette extends TableLayout {
     /**
      * Creates a color swatch.
      */
-    private ColorPickerSwatch createColorSwatch(int color, int selectedColor) {
+    private ColorPickerSwatch createColorSwatch(@ColorInt int color, @ColorInt int selectedColor) {
         ColorPickerSwatch view = new ColorPickerSwatch(getContext(), color,
             color == selectedColor, mOnColorSelectedListener);
-        TableRow.LayoutParams params = new TableRow.LayoutParams(mSwatchLength, mSwatchLength);
+        MarginLayoutParams params = new MarginLayoutParams(mSwatchLength, mSwatchLength);
         params.setMargins(mMarginSize, mMarginSize, mMarginSize, mMarginSize);
         view.setLayoutParams(params);
         return view;
