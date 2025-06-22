@@ -374,14 +374,10 @@ class AccountsDbAdapterTest : GnuCashTest() {
 
         val accounts = accountsDbAdapter.allRecords
         assertThat(accounts).hasSize(3)
-        val root = accounts.get(0)
-        val rootType = root.accountType
-        assertThat(rootType).isEqualTo(AccountType.ROOT)
         assertThat(accounts).extracting("uid", String::class.java).contains(uid)
-        assertThat(accounts[0].name).isEqualTo(AccountsDbAdapter.ROOT_ACCOUNT_NAME)
-        assertThat(accounts[1].fullName).isEqualTo("Assets")
-        assertThat(accounts[2].fullName).isEqualTo("Assets:Current Assets")
-        assertThat(accounts[3].fullName).isEqualTo("Assets:Current Assets:Cash in Wallet")
+        assertThat(accounts[0].fullName).isEqualTo("Assets")
+        assertThat(accounts[1].fullName).isEqualTo("Assets:Current Assets")
+        assertThat(accounts[2].fullName).isEqualTo("Assets:Current Assets:Cash in Wallet")
     }
 
     @Test
