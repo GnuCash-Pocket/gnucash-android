@@ -321,6 +321,7 @@ public class AccountsListFragment extends MenuFragment implements
     @Override
     public void refresh() {
         if (isDetached() || getFragmentManager() == null) return;
+        cancelBalances();
         getLoaderManager().restartLoader(0, null, this);
     }
 
@@ -346,6 +347,10 @@ public class AccountsListFragment extends MenuFragment implements
         if (mAccountRecyclerAdapter != null) {
             mAccountRecyclerAdapter.changeCursor(null);
         }
+        cancelBalances();
+    }
+
+    private void cancelBalances() {
         for (AccountBalanceTask task : accountBalanceTasks) {
             task.cancel(true);
         }
@@ -547,12 +552,14 @@ public class AccountsListFragment extends MenuFragment implements
             }
 
             public void bind(@NonNull final Cursor cursor) {
+                if (!isResumed()) return;
+                AccountsDbAdapter accountsDbAdapter = mAccountsDbAdapter;
                 final String accountUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_UID));
                 this.accountUID = accountUID;
-                Account account = mAccountsDbAdapter.getSimpleRecord(accountUID);
+                Account account = accountsDbAdapter.getSimpleRecord(accountUID);
 
                 accountName.setText(account.getName());
-                int subAccountCount = mAccountsDbAdapter.getSubAccountCount(accountUID);
+                int subAccountCount = accountsDbAdapter.getSubAccountCount(accountUID);
                 if (subAccountCount > 0) {
                     description.setVisibility(View.VISIBLE);
                     String text = getResources().getQuantityString(R.plurals.label_sub_accounts, subAccountCount, subAccountCount);
@@ -564,11 +571,11 @@ public class AccountsListFragment extends MenuFragment implements
                 // add a summary of transactions to the account view
 
                 // Make sure the balance task is truly multi-thread
-                AccountBalanceTask task = new AccountBalanceTask(mAccountsDbAdapter, accountBalance, description.getCurrentTextColor());
+                AccountBalanceTask task = new AccountBalanceTask(accountsDbAdapter, accountBalance, description.getCurrentTextColor());
                 accountBalanceTasks.add(task);
                 task.execute(accountUID);
 
-                @ColorInt int accountColor = getColor(account);
+                @ColorInt int accountColor = getColor(account, accountsDbAdapter);
                 colorStripView.setBackgroundColor(accountColor);
 
                 if (account.isPlaceholder()) {
@@ -593,7 +600,7 @@ public class AccountsListFragment extends MenuFragment implements
 //                //TODO: include fetch only active budgets
 //                if (!budgets.isEmpty()) {
 //                    Budget budget = budgets.get(0);
-//                    Money balance = mAccountsDbAdapter.getAccountBalance(accountUID, budget.getStartOfCurrentPeriod(), budget.getEndOfCurrentPeriod());
+//                    Money balance = accountsDbAdapter.getAccountBalance(accountUID, budget.getStartOfCurrentPeriod(), budget.getEndOfCurrentPeriod());
 //                    Money budgetAmount = budget.getAmount(accountUID);
 //
 //                    if (budgetAmount != null) {
@@ -607,7 +614,7 @@ public class AccountsListFragment extends MenuFragment implements
 //                    budgetIndicator.setVisibility(View.GONE);
 //                }
 
-                boolean isFavoriteAccount = mAccountsDbAdapter.isFavoriteAccount(accountUID);
+                boolean isFavoriteAccount = accountsDbAdapter.isFavoriteAccount(accountUID);
                 favoriteStatus.setOnCheckedChangeListener(null);
                 favoriteStatus.setChecked(isFavoriteAccount);
                 favoriteStatus.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -645,22 +652,22 @@ public class AccountsListFragment extends MenuFragment implements
             }
 
             @ColorInt
-            private int getColor(Account account) {
+            private int getColor(@NonNull Account account, @NonNull AccountsDbAdapter accountsDbAdapter) {
                 @ColorInt int color = account.getColor();
                 if (color == Account.DEFAULT_COLOR) {
-                    color = getParentColor(account);
+                    color = getParentColor(account, accountsDbAdapter);
                 }
                 return color;
             }
 
             @ColorInt
-            private int getParentColor(Account account) {
+            private int getParentColor(@NonNull Account account, @NonNull AccountsDbAdapter accountsDbAdapter) {
                 String parentUID = account.getParentUID();
                 if (TextUtils.isEmpty(parentUID)) {
                     return Account.DEFAULT_COLOR;
                 }
-                Account parentAccount = mAccountsDbAdapter.getSimpleRecord(parentUID);
-                return getColor(parentAccount);
+                Account parentAccount = accountsDbAdapter.getSimpleRecord(parentUID);
+                return getColor(parentAccount, accountsDbAdapter);
             }
         }
     }
