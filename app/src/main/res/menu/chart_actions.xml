@@ -40,12 +40,14 @@
     <item
         android:id="@+id/menu_percentage_mode"
         android:checkable="true"
+        android:checked="false"
         android:title="@string/menu_toggle_percentage_mode"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/menu_toggle_average_lines"
         android:checkable="true"
+        android:checked="false"
         android:title="@string/menu_toggle_average_lines"
         app:showAsAction="never" />
 
