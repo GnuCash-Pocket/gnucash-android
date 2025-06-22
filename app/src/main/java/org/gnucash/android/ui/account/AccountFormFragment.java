@@ -25,8 +25,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -44,11 +42,11 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Spinner;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentResultListener;
 
@@ -129,6 +127,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      */
     private boolean mUseDoubleEntry;
 
+    @ColorInt
     private int mSelectedColor = Account.DEFAULT_COLOR;
     private Account selectedDefaultTransferAccount;
     private String selectedName = "";
@@ -452,33 +451,22 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      * @return Integer array of colors used for accounts
      */
     private int[] getAccountColorOptions() {
-        Context context = getContext();
+        Context context = requireContext();
         Resources res = context.getResources();
-        int colorDefault = ResourcesCompat.getColor(res, R.color.title_green, context.getTheme());
-        TypedArray colorTypedArray = res.obtainTypedArray(R.array.account_colors);
-        int colorLength = colorTypedArray.length();
-        int[] colorOptions = new int[colorLength];
-        for (int i = 0; i < colorLength; i++) {
-            colorOptions[i] = colorTypedArray.getColor(i, colorDefault);
-        }
-        colorTypedArray.recycle();
-        return colorOptions;
+        return res.getIntArray(R.array.account_colors);
     }
 
     /**
      * Shows the color picker dialog
      */
     private void showColorPickerDialog() {
-        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-        int currentColor = Color.LTGRAY;
-        if (mAccount != null) {
-            currentColor = mAccount.getColor();
-        }
+        FragmentManager fragmentManager = getParentFragmentManager();
+        @ColorInt int currentColor = mSelectedColor;
 
         ColorPickerDialog colorPickerDialogFragment = ColorPickerDialog.newInstance(
             R.string.color_picker_default_title,
             getAccountColorOptions(),
-            currentColor, 4, 12);
+            currentColor, -1, ColorPickerDialog.SIZE_SMALL);
         fragmentManager.setFragmentResultListener(COLOR_PICKER_DIALOG_TAG, this, this);
         colorPickerDialogFragment.show(fragmentManager, COLOR_PICKER_DIALOG_TAG);
     }
@@ -486,7 +474,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
     @Override
     public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
         if (COLOR_PICKER_DIALOG_TAG.equals(requestKey)) {
-            int color = result.getInt(ColorPickerDialog.EXTRA_COLOR);
+            @ColorInt int color = result.getInt(ColorPickerDialog.EXTRA_COLOR);
             FragmentAccountFormBinding binding = mBinding;
             if (binding != null) {
                 binding.inputColorPicker.setBackgroundTintList(ColorStateList.valueOf(color));

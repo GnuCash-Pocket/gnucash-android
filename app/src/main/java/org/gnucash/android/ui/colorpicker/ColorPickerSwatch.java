@@ -24,15 +24,24 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
+
 import org.gnucash.android.R;
 
 /**
  * Creates a circular swatch of a specified color.  Adds a checkmark if marked as checked.
  */
 public class ColorPickerSwatch extends FrameLayout implements View.OnClickListener {
-    private final int mColor;
-    private final ImageView mSwatchImage;
+    @ColorInt
+    public final int color;
+    @NonNull
     private final ImageView mCheckmarkImage;
+    @NonNull
+    private final ImageView mSwatchImage;
+    @Nullable
     private final OnColorSelectedListener mOnColorSelectedListener;
 
     /**
@@ -43,13 +52,16 @@ public class ColorPickerSwatch extends FrameLayout implements View.OnClickListen
         /**
          * Called when a specific color square has been selected.
          */
-        void onColorSelected(int color);
+        void onColorSelected(@ColorInt int color);
     }
 
-    public ColorPickerSwatch(Context context, int color, boolean checked,
-                             OnColorSelectedListener listener) {
+    public ColorPickerSwatch(@NonNull Context context,
+                             @ColorInt int color,
+                             boolean checked,
+                             @Nullable OnColorSelectedListener listener
+    ) {
         super(context);
-        mColor = color;
+        this.color = color;
         mOnColorSelectedListener = listener;
 
         LayoutInflater.from(context).inflate(R.layout.color_picker_swatch, this);
@@ -60,13 +72,13 @@ public class ColorPickerSwatch extends FrameLayout implements View.OnClickListen
         setOnClickListener(this);
     }
 
-    protected void setColor(int color) {
-        Drawable[] colorDrawable = new Drawable[]
-            {getContext().getResources().getDrawable(R.drawable.color_picker_swatch)};
-        mSwatchImage.setImageDrawable(new ColorStateDrawable(colorDrawable, color));
+    protected void setColor(@ColorInt int color) {
+        Drawable colorDrawable = ResourcesCompat.getDrawable(getResources(), R.drawable.color_picker_swatch, null);
+        colorDrawable.setTint(color);
+        mSwatchImage.setImageDrawable(colorDrawable);
     }
 
-    private void setChecked(boolean checked) {
+    public void setChecked(boolean checked) {
         if (checked) {
             mCheckmarkImage.setVisibility(View.VISIBLE);
         } else {
@@ -77,7 +89,7 @@ public class ColorPickerSwatch extends FrameLayout implements View.OnClickListen
     @Override
     public void onClick(View v) {
         if (mOnColorSelectedListener != null) {
-            mOnColorSelectedListener.onColorSelected(mColor);
+            mOnColorSelectedListener.onColorSelected(color);
         }
     }
 }
