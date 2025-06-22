@@ -357,6 +357,8 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
     public void onPrepareOptionsMenu(@NonNull Menu menu) {
         super.onPrepareOptionsMenu(menu);
         menu.findItem(R.id.menu_toggle_average_lines).setVisible(mChartDataPresent);
+        showLegend(menu.findItem(R.id.menu_toggle_legend).isChecked());
+        showAverageLines(menu.findItem(R.id.menu_toggle_average_lines).isChecked());
         // hide pie/bar chart specific menu items
         menu.findItem(R.id.menu_order_by_size).setVisible(false);
         menu.findItem(R.id.menu_toggle_labels).setVisible(false);
@@ -366,28 +368,16 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.isCheckable())
-            item.setChecked(!item.isChecked());
         switch (item.getItemId()) {
-            case R.id.menu_toggle_legend:
-                mBinding.lineChart.getLegend().setEnabled(!mBinding.lineChart.getLegend().isEnabled());
-                mBinding.lineChart.invalidate();
+            case R.id.menu_toggle_legend: {
+                item.setChecked(!item.isChecked());
+                showLegend(item.isChecked());
                 return true;
+            }
 
             case R.id.menu_toggle_average_lines:
-                if (mBinding.lineChart.getAxisLeft().getLimitLines().isEmpty()) {
-                    for (ILineDataSet dataSet : mBinding.lineChart.getData().getDataSets()) {
-                        int entryCount = dataSet.getEntryCount();
-                        float limit = (entryCount != 0f) ? getYValueSum(dataSet) / entryCount : 0f;
-                        LimitLine line = new LimitLine(limit, dataSet.getLabel());
-                        line.enableDashedLine(10, 5, 0);
-                        line.setLineColor(dataSet.getColor());
-                        mBinding.lineChart.getAxisLeft().addLimitLine(line);
-                    }
-                } else {
-                    mBinding.lineChart.getAxisLeft().removeAllLimitLines();
-                }
-                mBinding.lineChart.invalidate();
+                item.setChecked(!item.isChecked());
+                showAverageLines(item.isChecked());
                 return true;
 
             default:
@@ -406,6 +396,29 @@ public class CashFlowLineChartFragment extends BaseReportFragment {
         float total = getYValueSum(dataSet);
         float percent = (total != 0f) ? ((value * 100) / total) : 0f;
         mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label, value, percent));
+    }
+
+    private void showLegend(boolean isVisible) {
+        mBinding.lineChart.getLegend().setEnabled(isVisible);
+        mBinding.lineChart.invalidate();
+    }
+
+    private void showAverageLines(boolean isVisible) {
+        mBinding.lineChart.getAxisLeft().removeAllLimitLines();
+        if (isVisible) {
+            for (ILineDataSet dataSet : mBinding.lineChart.getData().getDataSets()) {
+                int entryCount = dataSet.getEntryCount();
+                float limit = 0f;
+                if (entryCount > 0) {
+                    limit = dataSet.getYMin() + (getYValueSum(dataSet) / entryCount);
+                }
+                LimitLine line = new LimitLine(limit, dataSet.getLabel());
+                line.enableDashedLine(10, 5, 0);
+                line.setLineColor(dataSet.getColor());
+                mBinding.lineChart.getAxisLeft().addLimitLine(line);
+            }
+        }
+        mBinding.lineChart.invalidate();
     }
 
 }
