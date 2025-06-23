@@ -20,6 +20,7 @@ import android.content.ContentValues
 import android.content.Intent
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions
+import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.pressBack
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -998,6 +999,9 @@ class TransactionsActivityTest : GnuAndroidTest() {
             .perform(ViewActions.click())
         onView(withText(accountOther.fullName)).perform(ViewActions.click())
         // Exchange dialog should be shown already.
+        onView(withId(R.id.radio_converted_amount))
+            .check(matches(isDisplayed()))
+            .perform(click())
         onView(withId(R.id.input_converted_amount))
             .check(matches(isDisplayed()))
             .perform(ViewActions.typeText("5"))

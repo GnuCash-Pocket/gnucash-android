@@ -23,6 +23,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.database.SQLException;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -40,6 +42,9 @@ import org.gnucash.android.db.adapter.PricesDbAdapter;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.Price;
+import org.gnucash.android.quote.QuoteCallback;
+import org.gnucash.android.quote.QuoteProvider;
+import org.gnucash.android.quote.YahooJson;
 import org.gnucash.android.ui.transaction.OnTransferFundsListener;
 import org.gnucash.android.ui.util.TextInputResetError;
 import org.gnucash.android.ui.util.dialog.VolatileDialogFragment;
@@ -64,8 +69,10 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
     // FIXME these fields must be persisted for when dialog is changed, e.g. rotated.
     private OnTransferFundsListener mOnTransferFundsListener;
 
-    private DialogTransferFundsBinding binding;
     private PricesDbAdapter pricesDbAdapter = PricesDbAdapter.getInstance();
+    private Price priceQuoted;
+
+    private static final int SCALE_RATE = 6;
 
     public static TransferFundsDialogFragment getInstance(
         @NonNull Money transactionAmount,
@@ -88,22 +95,28 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
     @NonNull
     private DialogTransferFundsBinding onCreateBinding(LayoutInflater inflater) {
         final DialogTransferFundsBinding binding = DialogTransferFundsBinding.inflate(inflater, null, false);
-        this.binding = binding;
 
+        final Money fromAmount = mOriginAmount;
+        final BigDecimal fromDecimal = fromAmount.toBigDecimal();
         @ColorInt int colorBalanceZero = binding.amountToConvert.getCurrentTextColor();
+        displayBalance(binding.amountToConvert, fromAmount, colorBalanceZero);
 
-        displayBalance(binding.amountToConvert, mOriginAmount, colorBalanceZero);
-        final Commodity fromCommodity = mOriginAmount.getCommodity();
+        final Commodity fromCommodity = fromAmount.getCommodity();
         final Commodity targetCommodity = mTargetCommodity;
-        String fromCurrencyCode = fromCommodity.getCurrencyCode();
-        String targetCurrencyCode = targetCommodity.getCurrencyCode();
-        binding.fromCurrency.setText(fromCurrencyCode);
-        binding.toCurrency.setText(targetCurrencyCode);
-        binding.targetCurrency.setText(targetCurrencyCode);
+        final NumberFormat formatterAmount = NumberFormat.getNumberInstance();
+        formatterAmount.setMinimumFractionDigits(targetCommodity.getSmallestFractionDigits());
+        formatterAmount.setMaximumFractionDigits(targetCommodity.getSmallestFractionDigits());
+        final NumberFormat formatterRate = NumberFormat.getNumberInstance();
+        formatterRate.setMinimumFractionDigits(SCALE_RATE);
+        formatterRate.setMaximumFractionDigits(SCALE_RATE);
 
-        binding.labelExchangeRateExample.setText(String.format(getString(R.string.sample_exchange_rate),
-            fromCurrencyCode,
-            targetCurrencyCode));
+        final String fromCurrencyCode = fromCommodity.getCurrencyCode();
+        final String targetCurrencyCode = targetCommodity.getCurrencyCode();
+        binding.fromCurrency.setText(fromCommodity.formatListItem());
+        binding.toCurrency.setText(targetCommodity.formatListItem());
+
+        binding.exchangeRateExample.setText(R.string.sample_exchange_rate);
+        binding.exchangeRateInverse.setText(null);
         final TextInputResetError textChangeListener = new TextInputResetError(
             binding.convertedAmountTextInputLayout,
             binding.exchangeRateTextInputLayout
@@ -129,7 +142,7 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 binding.inputExchangeRate.setEnabled(isChecked);
                 binding.exchangeRateTextInputLayout.setErrorEnabled(isChecked);
-                binding.btnFetchExchangeRate.setEnabled(isChecked);
+                binding.btnFetchExchangeRate.setEnabled(isChecked && fromCommodity.isCurrency() && targetCommodity.isCurrency());
                 binding.radioConvertedAmount.setChecked(!isChecked);
                 if (isChecked) {
                     binding.inputExchangeRate.requestFocus();
@@ -140,23 +153,109 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
         binding.btnFetchExchangeRate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO: Pull the exchange rate for the currency here
+                binding.btnFetchExchangeRate.setEnabled(false);
+                fetchQuote(binding, fromCommodity, targetCommodity);
+            }
+        });
+
+        binding.inputExchangeRate.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (!binding.radioExchangeRate.isChecked()) return;
+                String value = s.toString();
+                try {
+                    BigDecimal rateDecimal = AmountParser.parse(value);
+                    float rate = rateDecimal.floatValue();
+                    binding.exchangeRateExample.setText(
+                        getString(
+                            R.string.exchange_rate_example,
+                            fromCurrencyCode,
+                            formatterRate.format(rate),
+                            targetCurrencyCode
+                        )
+                    );
+                    if (rate > 0f) {
+                        binding.exchangeRateInverse.setText(
+                            getString(
+                                R.string.exchange_rate_example,
+                                targetCurrencyCode,
+                                formatterRate.format(1 / rate),
+                                fromCurrencyCode
+                            )
+                        );
+                        BigDecimal price = fromDecimal.multiply(rateDecimal);
+                        binding.inputConvertedAmount.setText(formatterAmount.format(price));
+                    } else {
+                        binding.exchangeRateInverse.setText(null);
+                    }
+                } catch (ParseException ignore) {
+                }
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+        });
+
+        binding.inputConvertedAmount.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (!binding.radioConvertedAmount.isChecked()) return;
+                String value = s.toString();
+                try {
+                    BigDecimal amount = AmountParser.parse(value);
+                    if (amount.compareTo(BigDecimal.ZERO) > 0) {
+                        float rate = amount.floatValue() / fromDecimal.floatValue();
+                        binding.exchangeRateExample.setText(
+                            getString(
+                                R.string.exchange_rate_example,
+                                fromCurrencyCode,
+                                formatterRate.format(rate),
+                                targetCurrencyCode
+                            )
+                        );
+                        binding.exchangeRateInverse.setText(
+                            getString(
+                                R.string.exchange_rate_example,
+                                targetCurrencyCode,
+                                formatterRate.format(1 / rate),
+                                fromCurrencyCode
+                            )
+                        );
+                        binding.inputExchangeRate.setText(formatterRate.format(rate));
+                    } else {
+                        binding.exchangeRateExample.setText(null);
+                        binding.exchangeRateInverse.setText(null);
+                    }
+                } catch (ParseException ignore) {
+                }
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
         });
 
         Price price = pricesDbAdapter.getPrice(fromCommodity, targetCommodity);
         if (price != null) {
             // a valid price exists
-            BigDecimal priceDecimal = price.toBigDecimal();
-            NumberFormat formatter = NumberFormat.getNumberInstance();
+            BigDecimal priceDecimal = price.toBigDecimal(SCALE_RATE);
 
             binding.radioExchangeRate.setChecked(true);
-            binding.inputExchangeRate.setText(formatter.format(priceDecimal));
+            binding.inputExchangeRate.setText(formatterRate.format(priceDecimal));
+            binding.btnFetchExchangeRate.setEnabled(fromCommodity.isCurrency() && targetCommodity.isCurrency());
 
-            // convertedAmount = mOriginAmount * numerator / denominator
-            BigDecimal convertedAmount = mOriginAmount.toBigDecimal().multiply(priceDecimal);
-            formatter.setMaximumFractionDigits(targetCommodity.getSmallestFractionDigits());
-            binding.inputConvertedAmount.setText(formatter.format(convertedAmount));
+            // convertedAmount = fromAmount * numerator / denominator
+            BigDecimal convertedAmount = fromDecimal.multiply(priceDecimal);
+            binding.inputConvertedAmount.setText(formatterAmount.format(convertedAmount));
         }
 
         return binding;
@@ -185,12 +284,6 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
             .create();
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
-    }
-
     /**
      * Converts the currency amount with the given exchange rate and saves the price to the db
      */
@@ -210,7 +303,7 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
             Timber.e("Target commodity not found in db!");
             return;
         }
-        final Price price = new Price(commodityFrom, commodityTo);
+        Price price = new Price(commodityFrom, commodityTo);
         price.setSource(Price.SOURCE_USER);
         final Money convertedAmount;
         if (binding.radioExchangeRate.isChecked()) {
@@ -246,6 +339,9 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
             price.setValueNum(convertedAmount.getNumerator() * mOriginAmount.getDenominator());
             price.setValueDenom(mOriginAmount.getNumerator() * convertedAmount.getDenominator());
         }
+        if (priceQuoted != null && priceQuoted.equals(price)) {
+            price = priceQuoted;
+        }
         try {
             pricesDbAdapter.addRecord(price, DatabaseAdapter.UpdateMethod.insert);
 
@@ -255,5 +351,32 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
         } catch (SQLException e) {
             Timber.e(e);
         }
+    }
+
+    private void fetchQuote(final DialogTransferFundsBinding binding, Commodity fromCommodity, Commodity targetCommodity) {
+        binding.exchangeRateTextInputLayout.setError(null);
+        if (!fromCommodity.isCurrency()) {
+            binding.exchangeRateTextInputLayout.setError("Currency expected");
+            return;
+        }
+        if (!targetCommodity.isCurrency()) {
+            binding.exchangeRateTextInputLayout.setError("Currency expected");
+            return;
+        }
+        final NumberFormat formatterRate = NumberFormat.getNumberInstance();
+        formatterRate.setMinimumFractionDigits(SCALE_RATE);
+        formatterRate.setMaximumFractionDigits(SCALE_RATE);
+
+        QuoteProvider provider = new YahooJson();
+        provider.get(fromCommodity, targetCommodity, this, new QuoteCallback() {
+
+            @Override
+            public void onQuote(@NonNull Price price) {
+                priceQuoted = price;
+                BigDecimal rate = price.toBigDecimal(SCALE_RATE);
+                binding.inputExchangeRate.setText(formatterRate.format(rate));
+                binding.btnFetchExchangeRate.setEnabled(true);
+            }
+        });
     }
 }

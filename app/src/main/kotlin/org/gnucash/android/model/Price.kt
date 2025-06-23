@@ -1,5 +1,6 @@
 package org.gnucash.android.model
 
+import org.gnucash.android.math.numberOfTrailingZeros
 import org.gnucash.android.util.TimestampHelper
 import java.math.BigDecimal
 import java.math.MathContext
@@ -8,6 +9,7 @@ import java.text.DecimalFormat
 import java.text.NumberFormat
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
+import kotlin.math.max
 
 /**
  * Model for commodity prices
@@ -17,7 +19,7 @@ class Price : BaseModel {
     var currency: Commodity
     var date: Timestamp = TimestampHelper.getTimestampFromNow()
     var source: String? = null
-    var type: String? = null
+    var type: PriceType = PriceType.Unknown
 
     constructor() : this(Commodity.DEFAULT_COMMODITY, Commodity.DEFAULT_COMMODITY)
 
@@ -131,18 +133,19 @@ class Price : BaseModel {
         val formatter = (NumberFormat.getNumberInstance() as DecimalFormat).apply {
             maximumFractionDigits = precision
         }
-        return formatter.format(numerator.divide(denominator, MathContext.DECIMAL32))
+        return formatter.format(numerator.divide(denominator, MathContext.DECIMAL64))
     }
 
     fun toBigDecimal(): BigDecimal {
-        val numerator = BigDecimal(valueNum)
-        val denominator = BigDecimal(valueDenom)
+        val denominator = BigDecimal.valueOf(valueDenom)
+        val scale = max(denominator.numberOfTrailingZeros, commodity.smallestFractionDigits)
+        return toBigDecimal(scale)
+    }
 
-        return numerator.divide(
-            denominator,
-            currency.smallestFractionDigits,
-            BigDecimal.ROUND_HALF_EVEN
-        )
+    fun toBigDecimal(scale: Int): BigDecimal {
+        val numerator = BigDecimal.valueOf(valueNum)
+        val denominator = BigDecimal.valueOf(valueDenom)
+        return numerator.divide(denominator, scale, BigDecimal.ROUND_HALF_EVEN)
     }
 
     val commodityUID: String get() = commodity.uid
@@ -160,11 +163,25 @@ class Price : BaseModel {
         valueDenom = denominator
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Price) return false
+        return this.commodity.equals(other.commodity)
+                && this.currency.equals(other.currency)
+                && this.valueNum.equals(other.valueNum)
+                && this.valueDenom.equals(other.valueDenom)
+    }
+
     companion object {
         /**
          * String indicating that the price was provided by the user
          */
         const val SOURCE_USER = "user:xfer-dialog"
+
+        /**
+         * The price was provided by the Finance::Quote module.
+         */
+        const val SOURCE_QUOTE = "Finance::Quote"
     }
 }
 
