@@ -48,6 +48,7 @@ import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.PeriodType;
 import org.gnucash.android.model.Price;
+import org.gnucash.android.model.PriceType;
 import org.gnucash.android.model.Recurrence;
 import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Transaction;
@@ -813,10 +814,10 @@ public class GncXmlExporter extends Exporter {
             xmlSerializer.endTag(null, TAG_PRICE_SOURCE);
         }
         // type, optional
-        String type = price.getType();
-        if (!TextUtils.isEmpty(type)) {
+        PriceType type = price.getType();
+        if (type != null) {
             xmlSerializer.startTag(null, TAG_PRICE_TYPE);
-            xmlSerializer.text(type);
+            xmlSerializer.text(type.getValue());
             xmlSerializer.endTag(null, TAG_PRICE_TYPE);
         }
         // value

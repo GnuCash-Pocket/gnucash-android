@@ -289,4 +289,5 @@
     <string name="csv_account_header_placeholder" translatable="false">@string/placeholder</string>
     <string name="default_color" translatable="false">@string/default_theme</string>
     <string name="menu_accounts_hidden" translatable="false">@string/hidden</string>
+    <string name="exchange_rate_example">1 %1$s = %2$s %3$s</string>
 </resources>

@@ -3,6 +3,7 @@ package org.gnucash.android.db.adapter;
 import static org.gnucash.android.db.DatabaseSchema.PriceEntry;
 
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteStatement;
 
 import androidx.annotation.NonNull;
@@ -11,6 +12,7 @@ import androidx.annotation.Nullable;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Price;
+import org.gnucash.android.model.PriceType;
 import org.gnucash.android.util.TimestampHelper;
 
 import java.io.IOException;
@@ -65,7 +67,7 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
             stmt.bindString(4, price.getSource());
         }
         if (price.getType() != null) {
-            stmt.bindString(5, price.getType());
+            stmt.bindString(5, price.getType().getValue());
         }
         stmt.bindLong(6, price.getValueNum());
         stmt.bindLong(7, price.getValueDenom());
@@ -89,7 +91,7 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
         populateBaseModelAttributes(cursor, price);
         price.setDate(TimestampHelper.getTimestampFromUtcString(dateString));
         price.setSource(source);
-        price.setType(type);
+        price.setType(PriceType.of(type));
         price.setValueNum(valueNum);
         price.setValueDenom(valueDenom);
 
@@ -139,7 +141,8 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
             + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " + PriceEntry.COLUMN_CURRENCY_UID + " = ? )";
         String[] whereArgs = new String[]{commodityUID, currencyUID, currencyUID, commodityUID};
         // only get the latest price
-        Cursor cursor = mDb.query(PriceEntry.TABLE_NAME, null, where, whereArgs, null, null, PriceEntry.COLUMN_DATE + " DESC", "1");
+        String ordeerBy = PriceEntry.COLUMN_DATE + " DESC";
+        Cursor cursor = mDb.query(PriceEntry.TABLE_NAME, null, where, whereArgs, null, null, ordeerBy, "1");
         try {
             if (cursor.moveToFirst()) {
                 String commodityUIDdb = cursor.getString(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_COMMODITY_UID));
@@ -166,5 +169,21 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
         }
         // TODO Try with intermediate currency, e.g. EUR -> ETB -> ILS
         return null;
+    }
+
+    @Override
+    public void addRecord(@NonNull Price model, UpdateMethod updateMethod) throws SQLException {
+        super.addRecord(model, updateMethod);
+        if (isCached) {
+            Commodity commodity = model.getCommodity();
+            Commodity currency = model.getCurrency();
+            String commodityUID = commodity.getUID();
+            String currencyUID = currency.getUID();
+            String key = commodityUID + "/" + currencyUID;
+            Price price = cachePair.get(key);
+            if (price == null || price.getDate().before(model.getDate())) {
+                cachePair.put(key, model);
+            }
+        }
     }
 }
