@@ -51,6 +51,7 @@ import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.PeriodType;
 import org.gnucash.android.model.Price;
+import org.gnucash.android.model.PriceType;
 import org.gnucash.android.model.Recurrence;
 import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Slot;
@@ -869,7 +870,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                 break;
             case TAG_PRICE_TYPE:
                 if (mPrice != null) {
-                    mPrice.setType(characterString);
+                    mPrice.setType(PriceType.of(characterString));
                 }
                 break;
             case TAG_PRICE:

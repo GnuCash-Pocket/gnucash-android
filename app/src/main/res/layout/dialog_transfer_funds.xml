@@ -14,159 +14,194 @@
  limitations under the License.
 -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:padding="@dimen/dialog_padding">
 
-    <TableLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:focusableInTouchMode="true"
-        android:orientation="vertical">
-
-        <TableRow android:padding="@dimen/dialog_padding">
-
-            <TextView
-                android:id="@+id/amount_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_transaction_amount"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/amount_to_convert"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:textSize="18sp"
-                tools:text="$ 2000.00" />
-        </TableRow>
-
-        <TableRow android:padding="@dimen/dialog_padding">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_convert_from"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/from_currency"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_weight="1"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                tools:text="USD" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:text="@string/label_convert_to"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/to_currency"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_weight="1"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                tools:text="EUR" />
-        </TableRow>
+        android:layout_height="wrap_content">
 
         <TextView
-            android:layout_width="match_parent"
+            android:id="@+id/amount_label"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="@dimen/dialog_padding"
-            android:text="@string/msg_provide_exchange_rate" />
+            android:text="@string/label_transaction_amount"
+            app:layout_constraintBottom_toBottomOf="@id/amount_to_convert"
+            app:layout_constraintEnd_toStartOf="@id/column_1"
+            app:layout_constraintHorizontal_bias="1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/amount_to_convert" />
 
-        <TableRow
-            android:gravity="center_vertical"
-            android:padding="@dimen/dialog_padding">
+        <TextView
+            android:id="@+id/amount_to_convert"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textAppearance="?android:textAppearanceMedium"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/column_1"
+            app:layout_constraintTop_toTopOf="@id/amount_label"
+            tools:text="$ 2000.00" />
 
-            <RadioButton
-                android:id="@+id/radio_exchange_rate"
-                android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/from_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_convert_from"
+            app:layout_constraintBottom_toBottomOf="@id/from_currency"
+            app:layout_constraintEnd_toStartOf="@id/column_1"
+            app:layout_constraintHorizontal_bias="1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/from_currency" />
+
+        <TextView
+            android:id="@+id/from_currency"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/column_1"
+            app:layout_constraintTop_toBottomOf="@id/amount_to_convert"
+            tools:text="USD" />
+
+        <TextView
+            android:id="@+id/to_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_convert_to"
+            app:layout_constraintBottom_toBottomOf="@id/to_currency"
+            app:layout_constraintEnd_toStartOf="@id/column_1"
+            app:layout_constraintHorizontal_bias="1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/to_currency" />
+
+        <TextView
+            android:id="@+id/to_currency"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/column_1"
+            app:layout_constraintTop_toBottomOf="@id/from_currency"
+            tools:text="EUR" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/column_1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:barrierDirection="end"
+            app:constraint_referenced_ids="amount_label,from_label,to_label" />
+
+        <TextView
+            android:id="@+id/description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/msg_provide_exchange_rate"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/to_label" />
+
+        <RadioButton
+            android:id="@+id/radio_exchange_rate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            app:layout_constraintBottom_toBottomOf="@id/exchange_rate_text_input_layout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/description" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/exchange_rate_text_input_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toStartOf="@id/btn_fetch_exchange_rate"
+            app:layout_constraintStart_toEndOf="@id/radio_exchange_rate"
+            app:layout_constraintTop_toBottomOf="@id/description">
+
+            <EditText
+                android:id="@+id/input_exchange_rate"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:checked="false" />
+                android:hint="@string/hint_exchange_rate"
+                android:inputType="numberDecimal">
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/exchange_rate_text_input_layout"
-                android:layout_width="0dp"
+                <requestFocus />
+            </EditText>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/btn_fetch_exchange_rate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="@string/btn_fetch_quote"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/exchange_rate_text_input_layout" />
+
+        <RadioButton
+            android:id="@+id/radio_converted_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            app:layout_constraintBottom_toBottomOf="@id/converted_amount_text_input_layout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/converted_amount_text_input_layout" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/converted_amount_text_input_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/radio_converted_amount"
+            app:layout_constraintTop_toBottomOf="@id/exchange_rate_text_input_layout">
+
+            <EditText
+                android:id="@+id/input_converted_amount"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1">
-
-                <EditText
-                    android:id="@+id/input_exchange_rate"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:hint="@string/hint_exchange_rate"
-                    android:inputType="numberDecimal" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- TODO: re-enable this button when fetching of price quotes is implemented -->
-            <Button
-                android:id="@+id/btn_fetch_exchange_rate"
-                style="?attr/borderlessButtonStyle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:enabled="false"
-                android:text="@string/btn_fetch_quote"
-                android:textColor="@color/theme_accent"
-                android:visibility="gone" />
-        </TableRow>
+                android:hint="@string/hint_converted_amount"
+                android:inputType="numberDecimal" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
-            android:id="@+id/label_exchange_rate_example"
-            android:layout_width="match_parent"
+            android:id="@+id/exchange_rate_example"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:paddingStart="@dimen/dialog_padding"
-            android:paddingEnd="@dimen/dialog_padding"
-            android:paddingBottom="@dimen/dialog_padding"
-            tools:text="1 USD = 1.34 EUR" />
+            android:layout_marginTop="8dp"
+            android:gravity="right"
+            android:textAppearance="?android:textAppearanceMedium"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/converted_amount_text_input_layout"
+            tools:ignore="RtlHardcoded"
+            tools:text="1 USD = x.xx EUR" />
 
-        <TableRow
-            android:gravity="center_vertical"
-            android:padding="@dimen/dialog_padding">
+        <TextView
+            android:id="@+id/exchange_rate_inverse"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="right"
+            android:textAppearance="?android:textAppearanceMedium"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/exchange_rate_example"
+            tools:ignore="RtlHardcoded"
+            tools:text="1 EUR = x.xx USD" />
 
-            <RadioButton
-                android:id="@+id/radio_converted_amount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/converted_amount_text_input_layout"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1">
-
-                <EditText
-                    android:id="@+id/input_converted_amount"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/hint_converted_amount"
-                    android:inputType="numberDecimal">
-
-                    <requestFocus />
-                </EditText>
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <TextView
-                android:id="@+id/target_currency"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textSize="16sp"
-                tools:text="EUR" />
-        </TableRow>
-    </TableLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

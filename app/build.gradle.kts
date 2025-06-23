@@ -184,6 +184,7 @@ dependencies {
     implementation("com.github.techfreak:wizardpager:1.0.3")
     implementation("com.dropbox.core:dropbox-android-sdk:7.0.0")
     implementation("com.kobakei:ratethisapp:0.0.7")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     // Export
     implementation("com.opencsv:opencsv:5.9") {
