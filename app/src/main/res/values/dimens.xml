@@ -25,8 +25,8 @@
     <dimen name="strip_width">5dp</dimen>
     <dimen name="color_swatch_large">64dip</dimen>
     <dimen name="color_swatch_small">48dip</dimen>
-    <dimen name="color_swatch_margins_large">8dip</dimen>
-    <dimen name="color_swatch_margins_small">4dip</dimen>
+    <dimen name="color_swatch_margins_large">12dip</dimen>
+    <dimen name="color_swatch_margins_small">8dip</dimen>
     <dimen name="card_min_height">80dp</dimen>
     <dimen name="toolbar_progress_height">5dp</dimen>
 

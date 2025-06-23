@@ -18,7 +18,8 @@ package org.gnucash.android.ui.colorpicker;
 
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -27,7 +28,6 @@ import android.widget.ImageView;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.res.ResourcesCompat;
 
 import org.gnucash.android.R;
 
@@ -55,10 +55,11 @@ public class ColorPickerSwatch extends FrameLayout implements View.OnClickListen
         void onColorSelected(@ColorInt int color);
     }
 
-    public ColorPickerSwatch(@NonNull Context context,
-                             @ColorInt int color,
-                             boolean checked,
-                             @Nullable OnColorSelectedListener listener
+    public ColorPickerSwatch(
+        @NonNull Context context,
+        @ColorInt int color,
+        boolean checked,
+        @Nullable OnColorSelectedListener listener
     ) {
         super(context);
         this.color = color;
@@ -67,15 +68,18 @@ public class ColorPickerSwatch extends FrameLayout implements View.OnClickListen
         LayoutInflater.from(context).inflate(R.layout.color_picker_swatch, this);
         mSwatchImage = findViewById(R.id.color_picker_swatch);
         mCheckmarkImage = findViewById(R.id.color_picker_checkmark);
+        mCheckmarkImage.setImageTintList(null);// Reset to white.
         setColor(color);
         setChecked(checked);
         setOnClickListener(this);
     }
 
     protected void setColor(@ColorInt int color) {
-        Drawable colorDrawable = ResourcesCompat.getDrawable(getResources(), R.drawable.color_picker_swatch, null);
-        colorDrawable.setTint(color);
-        mSwatchImage.setImageDrawable(colorDrawable);
+        ShapeDrawable drawable = new ShapeDrawable(new OvalShape());
+        drawable.getPaint().setColor(color);
+        drawable.setIntrinsicWidth(1);
+        drawable.setIntrinsicHeight(1);
+        mSwatchImage.setImageDrawable(drawable);
     }
 
     public void setChecked(boolean checked) {

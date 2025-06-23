@@ -23,14 +23,11 @@
         <item>#1469EB</item> <!-- Assets -->
         <item>#2A82D7</item> <!-- blue -->
         <item>#8BBDEB</item> <!-- light blue -->
-        <item>#008000</item> <!-- dark green -->
-        <item>#1B4F15</item> <!-- Income -->
         <item>#1B4F15</item> <!-- forest green -->
         <item>#2B4726</item> <!-- olive -->
+        <item>#008000</item> <!-- dark green -->
         <item>#2B8A6D</item> <!-- teal -->
         <item>#3AA03A</item> <!-- green -->
-        <item>#6041FA</item> <!-- violet blue -->
-        <item>#6B28CE</item> <!-- violet -->
         <item>#7F2B14</item> <!-- maroon -->
         <item>#964B00</item> <!-- brown -->
         <item>#A50516</item> <!-- crimson -->
@@ -39,11 +36,13 @@
         <item>#FC0D1B</item> <!-- red -->
         <item>#FC331C</item> <!-- orange red -->
         <item>#FC6A6C</item> <!-- light red -->
+        <item>#6B28CE</item> <!-- violet -->
+        <item>#6041FA</item> <!-- violet blue -->
         <item>#A51497</item> <!-- fuchsia -->
-        <item>#AF31F2</item> <!-- purple -->
         <item>#B304AD</item> <!-- Liabilities -->
-        <item>#FB3C8F</item> <!-- deep pink -->
+        <item>#AF31F2</item> <!-- purple -->
         <item>#FF0080</item> <!-- hot pink -->
+        <item>#FB3C8F</item> <!-- deep pink -->
         <item>#FC1CAD</item> <!-- magenta -->
         <item>#FC5AB8</item> <!-- pink -->
         <item>#F69E94</item> <!-- salmon -->
