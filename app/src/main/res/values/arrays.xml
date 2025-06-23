@@ -50,7 +50,6 @@
         <item>#EE8600</item> <!-- Equity -->
         <item>#FD7222</item> <!-- orange -->
         <item>#FEC42E</item> <!-- yellow orange -->
-        <item>#FFFF00</item> <!-- yellow -->
     </array>
     <string-array name="transaction_type_values" translatable="false">
         <item>CREDIT</item>
