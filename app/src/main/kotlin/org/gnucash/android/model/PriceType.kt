@@ -17,26 +17,26 @@ import java.util.Locale
  */
 enum class PriceType(val value: String) {
     /** the market buying price */
-    bid("Bid"),
+    Bid("bid"),
 
     /** Ask (the market selling price) */
-    ask("Ask"),
+    Ask("ask"),
 
     /** Last (the last transaction price) */
-    last("Last"),
+    Last("last"),
 
     /** Net Asset Value (mutual fund price per share, NAV for short) */
-    nav("Net Asset Value"),
+    NetAssetValue("nav"),
 
-    unknown("Unknown");
+    Unknown("unknown");
 
     companion object {
         private val values = PriceType.values()
 
         @JvmStatic
         fun of(key: String?): PriceType {
-            val value = key?.uppercase(Locale.ROOT) ?: return unknown
-            return values.firstOrNull { it.value == value } ?: unknown
+            val value = key?.uppercase(Locale.ROOT) ?: return Unknown
+            return values.firstOrNull { it.value == value } ?: Unknown
         }
     }
 }

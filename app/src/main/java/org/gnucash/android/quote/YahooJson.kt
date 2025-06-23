@@ -54,7 +54,7 @@ class YahooJson {
                     val price = Price(fromCommodity, targetCommodity, rate).apply {
                         date = Timestamp(regularMarketTime * DateUtils.SECOND_IN_MILLIS)
                         source = Price.SOURCE_QUOTE
-                        type = PriceType.last
+                        type = PriceType.Last
                     }
                     launch(Dispatchers.Main) {
                         callback.onQuote(price)
