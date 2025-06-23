@@ -36,7 +36,7 @@ import org.gnucash.android.R;
  */
 public class ColorPickerSwatch extends FrameLayout implements View.OnClickListener {
     @ColorInt
-    private final int mColor;
+    public final int color;
     @NonNull
     private final ImageView mCheckmarkImage;
     @NonNull
@@ -61,7 +61,7 @@ public class ColorPickerSwatch extends FrameLayout implements View.OnClickListen
                              @Nullable OnColorSelectedListener listener
     ) {
         super(context);
-        mColor = color;
+        this.color = color;
         mOnColorSelectedListener = listener;
 
         LayoutInflater.from(context).inflate(R.layout.color_picker_swatch, this);
@@ -78,7 +78,7 @@ public class ColorPickerSwatch extends FrameLayout implements View.OnClickListen
         mSwatchImage.setImageDrawable(colorDrawable);
     }
 
-    private void setChecked(boolean checked) {
+    public void setChecked(boolean checked) {
         if (checked) {
             mCheckmarkImage.setVisibility(View.VISIBLE);
         } else {
@@ -89,7 +89,7 @@ public class ColorPickerSwatch extends FrameLayout implements View.OnClickListen
     @Override
     public void onClick(View v) {
         if (mOnColorSelectedListener != null) {
-            mOnColorSelectedListener.onColorSelected(mColor);
+            mOnColorSelectedListener.onColorSelected(color);
         }
     }
 }

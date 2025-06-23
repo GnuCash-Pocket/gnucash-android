@@ -17,25 +17,27 @@
 package org.gnucash.android.ui.colorpicker;
 
 
+import static java.lang.Math.max;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.GridLayout;
-import android.widget.ImageView;
-import android.widget.TableLayout;
 
 import androidx.annotation.ColorInt;
 
 import org.gnucash.android.R;
 import org.gnucash.android.ui.colorpicker.ColorPickerSwatch.OnColorSelectedListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A color picker custom view which creates an grid of color squares.  The number of squares per
  * row (and the padding between the squares) is determined by the user.
  */
-public class ColorPickerPalette extends TableLayout {
+public class ColorPickerPalette extends GridLayout {
 
     public static final int SIZE_LARGE = 1;
     public static final int SIZE_SMALL = 2;
@@ -47,7 +49,8 @@ public class ColorPickerPalette extends TableLayout {
 
     private int mSwatchLength;
     private int mMarginSize;
-    private int mNumColumns;
+    private int mNumColumns = UNDEFINED;
+    private final List<ColorPickerSwatch> swatches = new ArrayList<>();
 
     public ColorPickerPalette(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -62,7 +65,11 @@ public class ColorPickerPalette extends TableLayout {
      * or SIZE_SMALL) from ColorPickerDialogFragment.
      */
     public void init(int size, int columns, OnColorSelectedListener listener) {
-        mNumColumns = columns;
+        if (columns > 0) {
+            mNumColumns = columns;
+            setColumnCount(columns);
+        }
+
         Resources res = getResources();
         if (size == SIZE_LARGE) {
             mSwatchLength = res.getDimensionPixelSize(R.dimen.color_swatch_large);
@@ -85,32 +92,19 @@ public class ColorPickerPalette extends TableLayout {
             return;
         }
 
+        swatches.clear();
         removeAllViews();
-        ViewGroup table = createTable();
-        addView(table);
 
         int tableElements = 0;
-        int rowElements = 0;
 
         // Fills the table with swatches based on the array of colors.
         for (int color : colors) {
             tableElements++;
 
-            View colorSwatch = createColorSwatch(color, selectedColor);
-            setSwatchDescription(tableElements, rowElements, color == selectedColor,
-                colorSwatch);
-            table.addView(colorSwatch);
-
-            rowElements++;
-            if (rowElements == mNumColumns) {
-                rowElements = 0;
-            }
-        }
-
-        // Create blank views to fill the row if the last row has not been filled.
-        while ((rowElements > 0) && (rowElements < mNumColumns)) {
-            table.addView(createBlankSpace());
-            rowElements++;
+            ColorPickerSwatch colorSwatch = createColorSwatch(color, selectedColor);
+            swatches.add(colorSwatch);
+            setSwatchDescription(tableElements, color == selectedColor, colorSwatch);
+            addView(colorSwatch);
         }
     }
 
@@ -120,8 +114,7 @@ public class ColorPickerPalette extends TableLayout {
      * in an opposite direction from their left->right/top->bottom order, which is how the system
      * will arrange them for accessibility purposes.
      */
-    private void setSwatchDescription(int index, int rowElements, boolean selected,
-                                      View swatch) {
+    private void setSwatchDescription(int index, boolean selected, View swatch) {
         final String description;
         if (selected) {
             description = String.format(mDescriptionSelected, index);
@@ -131,32 +124,46 @@ public class ColorPickerPalette extends TableLayout {
         swatch.setContentDescription(description);
     }
 
-    private ViewGroup createTable() {
-        GridLayout table = new GridLayout(getContext());
-        table.setColumnCount(mNumColumns);
-        return table;
-    }
-
-    /**
-     * Creates a blank space to fill the row.
-     */
-    private ImageView createBlankSpace() {
-        ImageView view = new ImageView(getContext());
-        MarginLayoutParams params = new MarginLayoutParams(mSwatchLength, mSwatchLength);
-        params.setMargins(mMarginSize, mMarginSize, mMarginSize, mMarginSize);
-        view.setLayoutParams(params);
-        return view;
-    }
-
     /**
      * Creates a color swatch.
      */
     private ColorPickerSwatch createColorSwatch(@ColorInt int color, @ColorInt int selectedColor) {
         ColorPickerSwatch view = new ColorPickerSwatch(getContext(), color,
             color == selectedColor, mOnColorSelectedListener);
-        MarginLayoutParams params = new MarginLayoutParams(mSwatchLength, mSwatchLength);
-        params.setMargins(mMarginSize, mMarginSize, mMarginSize, mMarginSize);
-        view.setLayoutParams(params);
+        view.setLayoutParams(generateSwatchParams());
         return view;
+    }
+
+    private LayoutParams generateSwatchParams() {
+        LayoutParams params = generateDefaultLayoutParams();
+        params.width = mSwatchLength;
+        params.height = mSwatchLength;
+        params.setMargins(mMarginSize, mMarginSize, mMarginSize, mMarginSize);
+        return params;
+    }
+
+    public void setSelected(@ColorInt int color) {
+        for (ColorPickerSwatch swatch : swatches) {
+            swatch.setChecked(swatch.color == color);
+        }
+    }
+
+    @Override
+    protected void onMeasure(int widthSpec, int heightSpec) {
+        super.onMeasure(widthSpec, heightSpec);
+
+        if (mNumColumns < 0) {
+            int hPadding = getPaddingLeft() + getPaddingRight();
+            final int widthSansPadding = getMeasuredWidth() - hPadding;
+            int widthSwatch = mMarginSize + mSwatchLength + mMarginSize;
+            int columnCount = max(1, widthSansPadding / widthSwatch);
+            int count = getChildCount();
+            // Reset the layout params to recalculate their spans.
+            for (int i = 0; i < count; i++) {
+                View child = getChildAt(i);
+                child.setLayoutParams(generateSwatchParams());
+            }
+            setColumnCount(columnCount);
+        }
     }
 }

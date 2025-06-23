@@ -466,7 +466,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         ColorPickerDialog colorPickerDialogFragment = ColorPickerDialog.newInstance(
             R.string.color_picker_default_title,
             getAccountColorOptions(),
-            currentColor, 4, ColorPickerDialog.SIZE_LARGE);
+            currentColor, -1, ColorPickerDialog.SIZE_SMALL);
         fragmentManager.setFragmentResultListener(COLOR_PICKER_DIALOG_TAG, this, this);
         colorPickerDialogFragment.show(fragmentManager, COLOR_PICKER_DIALOG_TAG);
     }

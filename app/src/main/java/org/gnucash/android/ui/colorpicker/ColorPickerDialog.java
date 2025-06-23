@@ -142,7 +142,7 @@ public class ColorPickerDialog extends DialogFragment implements OnColorSelected
     }
 
     @Override
-    public void onColorSelected(@ColorInt int color) {
+    public void onColorSelected(@ColorInt final int color) {
         if (mListener != null) {
             mListener.onColorSelected(color);
         }
@@ -152,12 +152,18 @@ public class ColorPickerDialog extends DialogFragment implements OnColorSelected
         getParentFragmentManager().setFragmentResult(COLOR_PICKER_DIALOG_TAG, result);
 
         if (mPalette != null && color != mSelectedColor) {
-            mSelectedColor = color;
+            mPalette.setSelected(color);
             // Redraw palette to show checkmark on newly selected color before dismissing.
-            mPalette.drawPalette(mColors, color);
+            mPalette.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    dismiss();
+                }
+            }, 300L);
+        } else {
+            dismiss();
         }
-
-        dismiss();
+        mSelectedColor = color;
     }
 
     public int[] getColors() {

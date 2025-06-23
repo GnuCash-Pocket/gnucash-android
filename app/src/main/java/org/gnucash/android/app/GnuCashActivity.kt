@@ -27,18 +27,21 @@ open class GnuCashActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-            ViewCompat.setOnApplyWindowInsetsListener(contentView) { v, insets ->
-                val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-                v.updatePadding(
-                    left = bars.left,
-                    top = bars.top,
-                    right = bars.right,
-                    bottom = bars.bottom,
-                )
-                systemBarsDrawable.statusBarHeight = bars.top
-                systemBarsDrawable.navigationBarHeight = bars.bottom
-                WindowInsetsCompat.CONSUMED
-            }
+        ViewCompat.setOnApplyWindowInsetsListener(contentView) { v, insets ->
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars()
+                        or WindowInsetsCompat.Type.displayCutout()
+            )
+            v.updatePadding(
+                left = bars.left,
+                top = bars.top,
+                right = bars.right,
+                bottom = bars.bottom,
+            )
+            systemBarsDrawable.statusBarHeight = bars.top
+            systemBarsDrawable.navigationBarHeight = bars.bottom
+            WindowInsetsCompat.CONSUMED
+        }
 
         if (systemBarsDrawable.statusBarColor == Color.TRANSPARENT) {
             setTitlesColor(ContextCompat.getColor(this, R.color.theme_primary))
