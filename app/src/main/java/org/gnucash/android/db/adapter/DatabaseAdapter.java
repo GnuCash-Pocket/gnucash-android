@@ -646,7 +646,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
             if (cursor.moveToFirst()) {
                 result = cursor.getLong(0);
             } else {
-                throw new IllegalArgumentException(mTableName + " with GUID " + uid + " does not exist in the db");
+                throw new IllegalArgumentException("Record not found in " + mTableName);
             }
         } finally {
             cursor.close();
@@ -678,7 +678,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
             if (cursor.moveToFirst()) {
                 return cursor.getString(0);
             } else {
-                throw new IllegalArgumentException(mTableName + " Record ID " + id + " does not exist in the db");
+                throw new IllegalArgumentException("Record not found in " + mTableName);
             }
         } finally {
             cursor.close();
@@ -836,7 +836,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
             if (cursor.moveToFirst())
                 return cursor.getString(cursor.getColumnIndexOrThrow(columnName));
             else {
-                throw new IllegalArgumentException(String.format("Record with GUID %s does not exist in the db", recordUID));
+                throw new IllegalArgumentException("Record not found in " + tableName + " with column" + columnName);
             }
         } finally {
             cursor.close();
