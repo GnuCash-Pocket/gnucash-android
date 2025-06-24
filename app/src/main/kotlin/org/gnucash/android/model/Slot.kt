@@ -4,9 +4,9 @@ import org.gnucash.android.export.xml.GncXmlHelper.formatNumeric
 
 data class Slot @JvmOverloads constructor(
     @JvmField
-    val key: String,
+    var key: String,
     @JvmField
-    val type: String,
+    var type: String,
     @JvmField
     var value: Any? = null
 ) {
@@ -83,5 +83,8 @@ data class Slot @JvmOverloads constructor(
 
         @JvmStatic
         fun numeric(key: String, value: Money) = Slot(key, TYPE_NUMERIC, formatNumeric(value))
+
+        @JvmStatic
+        fun empty() = Slot("", TYPE_STRING)
     }
 }

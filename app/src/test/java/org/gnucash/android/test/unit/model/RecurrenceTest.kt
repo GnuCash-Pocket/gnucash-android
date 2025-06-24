@@ -42,7 +42,7 @@ class RecurrenceTest : GnuCashTest() {
 
         val startTime = DateTime(2015, 10, 5, 0, 0)
         recurrence.periodStart = startTime.millis
-        recurrence.setPeriodEnd(3)
+        recurrence.setPeriodEndOccurrences(3)
 
         val expectedEndtime = DateTime(2016, 1, 5, 0, 0)
         assertThat(recurrence.periodEnd).isEqualTo(expectedEndtime.millis)
@@ -59,7 +59,7 @@ class RecurrenceTest : GnuCashTest() {
         recurrence.periodStart = start.millis
 
         val end = DateTime(2016, 8, 5, 0, 0)
-        recurrence.setPeriodEnd(Timestamp(end.millis))
+        recurrence.periodEnd = end.millis
 
         assertThat(recurrence.occurrences).isEqualTo(10)
 
@@ -70,7 +70,7 @@ class RecurrenceTest : GnuCashTest() {
         recurrence = Recurrence(biWeekly)
         recurrence.multiplier = 2
         recurrence.periodStart = startTime.millis
-        recurrence.setPeriodEnd(Timestamp(endTime.millis))
+        recurrence.periodEnd = endTime.millis
 
         assertThat(recurrence.occurrences).isEqualTo(7)
     }

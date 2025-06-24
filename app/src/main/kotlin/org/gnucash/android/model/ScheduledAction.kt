@@ -270,9 +270,9 @@ class ScheduledAction    //all actions are enabled by default
      */
     var startTime: Long
         get() = _startDate
-        set(startDate) {
-            _startDate = startDate
-            recurrence?.periodStart = startDate
+        set(value) {
+            _startDate = value
+            recurrence?.periodStart = value
         }
 
     /**
@@ -280,9 +280,9 @@ class ScheduledAction    //all actions are enabled by default
      */
     var endTime: Long
         get() = _endDate
-        set(endDate) {
-            _endDate = endDate
-            recurrence?.setPeriodEnd(Timestamp(_endDate))
+        set(value) {
+            _endDate = value
+            recurrence?.periodEnd = value
         }
 
     /**
@@ -345,10 +345,10 @@ class ScheduledAction    //all actions are enabled by default
         /**
          * Set the template account GUID
          *
-         * @param templateAccountUID String GUID of template account
+         * @param value String GUID of template account
          */
-        set(templateAccountUID) {
-            _templateAccountUID = templateAccountUID
+        set(value) {
+            _templateAccountUID = value
         }
 
     /**
@@ -422,7 +422,7 @@ class ScheduledAction    //all actions are enabled by default
             _startDate = recurrence.periodStart
         }
         if (_endDate > 0) {
-            recurrence.setPeriodEnd(Timestamp(_endDate))
+            recurrence.periodEnd = _endDate
         } else {
             val periodEnd = recurrence.periodEnd
             if (periodEnd != null) {

@@ -305,6 +305,7 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
         }
         Price price = new Price(commodityFrom, commodityTo);
         price.setSource(Price.SOURCE_USER);
+        price.setType(Price.Type.Transaction);
         final Money convertedAmount;
         if (binding.radioExchangeRate.isChecked()) {
             final BigDecimal rate;

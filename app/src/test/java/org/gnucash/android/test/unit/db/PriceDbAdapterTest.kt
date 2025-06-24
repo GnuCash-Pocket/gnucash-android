@@ -17,8 +17,8 @@ class PriceDbAdapterTest : GnuCashTest() {
      */
     @Test
     fun shouldOnlySaveOnePricePerCommodityPair() {
-        val commodity = CommoditiesDbAdapter.getInstance()!!.getCommodity("EUR")
-        val currency = CommoditiesDbAdapter.getInstance()!!.getCommodity("USD")
+        val commodity = CommoditiesDbAdapter.getInstance()!!.getCurrency("EUR")
+        val currency = CommoditiesDbAdapter.getInstance()!!.getCurrency("USD")
         var price = Price(commodity!!, currency!!)
         price.valueNum = 134
         price.valueDenom = 100

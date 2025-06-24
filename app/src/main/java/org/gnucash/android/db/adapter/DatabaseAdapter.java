@@ -253,7 +253,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
     /**
      * Persist the model object to the database as records using the {@code updateMethod}
      *
-     * @param models    List of records
+     * @param models       List of records
      * @param updateMethod Method to use when persisting them
      * @return Number of rows affected in the database
      */
@@ -477,7 +477,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
     public Model getRecord(@NonNull String uid) throws IllegalArgumentException {
         Model model = getRecordOrNull(uid);
         if (model == null) {
-            throw new IllegalArgumentException("Record not found");
+            throw new IllegalArgumentException("Record for " + mTableName + " not found");
         }
         return model;
     }
@@ -587,8 +587,9 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
         if (TextUtils.isEmpty(uid)) {
             throw new IllegalArgumentException("UID required");
         }
-        return mDb.query(mTableName, null, CommonColumns.COLUMN_UID + "=?",
-            new String[]{uid}, null, null, null);
+        String where = CommonColumns.COLUMN_UID + "=?";
+        String[] whereArgs = new String[]{uid};
+        return mDb.query(mTableName, null, where, whereArgs, null, null, null);
     }
 
     /**
@@ -851,7 +852,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
             if (cursor.moveToFirst())
                 return cursor.getString(cursor.getColumnIndexOrThrow(columnName));
             else {
-                throw new IllegalArgumentException("Record not found in " + tableName + " with column" + columnName);
+                throw new IllegalArgumentException("Record not found in " + tableName + " with column '" + columnName + "'");
             }
         } finally {
             cursor.close();

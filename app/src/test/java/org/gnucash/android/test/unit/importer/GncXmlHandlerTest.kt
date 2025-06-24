@@ -15,18 +15,15 @@
  */
 package org.gnucash.android.test.unit.importer
 
-import android.database.DatabaseUtils.queryNumEntries
 import org.assertj.core.api.Assertions.assertThat
-import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
-import org.gnucash.android.export.xml.GncXmlHelper.formatDate
 import org.gnucash.android.export.xml.GncXmlHelper.parseDateTime
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.AccountType
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
-import org.gnucash.android.model.PeriodType
+import org.gnucash.android.model.Price
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.test.unit.BookHelperTest
 import org.junit.Ignore
@@ -221,6 +218,18 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(splitCredit.quantity.denominator).isEqualTo(100)
         assertThat(splitCredit.quantity).isEqualTo(Money("17.93", "EUR"))
         assertThat(splitCredit.isPairOf(splitDebit)).isTrue()
+
+        // Check prices
+        assertThat(pricesDbAdapter.recordsCount).isOne()
+        val price = pricesDbAdapter.getPriceForCurrencies("EUR", "USD")
+        assertThat(price).isNotNull
+        assertThat(price.commodity.currencyCode).isEqualTo("EUR")
+        assertThat(price.currency.currencyCode).isEqualTo("USD")
+        assertThat(price.source).isEqualTo("Finance::Quote")
+        assertThat(price.type).isEqualTo(Price.Type.Last)
+        assertThat(price.valueNum).isEqualTo(11153L)
+        assertThat(price.valueDenom).isEqualTo(10000L)
+        assertThat(price.date).isEqualTo(parseDateTime("2016-09-18 20:23:55 +0200"))
     }
 
     /**
@@ -233,7 +242,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         val bookUID = importGnuCashXml("simpleScheduledTransactionImport.xml")
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
 
-        assertThat(transactionsDbAdapter.templateTransactionsCount).isEqualTo(1)
+        assertThat(transactionsDbAdapter.templateTransactionsCount).isOne()
 
         val scheduledTransaction =
             transactionsDbAdapter.getRecord("b645bef06d0844aece6424ceeec03983")

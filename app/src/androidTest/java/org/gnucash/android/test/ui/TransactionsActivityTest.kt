@@ -770,7 +770,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
      */
     @Test
     fun openingAndSavingMultiCurrencyTransaction_shouldNotModifyTheSplits() {
-        val bgnCommodity = commoditiesDbAdapter.getCommodity("BGN")!!
+        val bgnCommodity = commoditiesDbAdapter.getCurrency("BGN")!!
         val account = Account("Zen Account", bgnCommodity)
 
         accountsDbAdapter.addRecord(account)
@@ -851,7 +851,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
     @Test
     fun testEditingTransferAccountOfMultiCurrencyTransaction() {
         transactionsDbAdapter.deleteAllRecords() //clean slate
-        val euroCommodity = commoditiesDbAdapter.getCommodity("EUR")!!
+        val euroCommodity = commoditiesDbAdapter.getCurrency("EUR")!!
         val euroAccount = Account("Euro Account", euroCommodity)
 
         accountsDbAdapter.addRecord(euroAccount)
@@ -932,7 +932,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
     fun editingTransferAccount_shouldKeepSplitAmountsConsistent() {
         transactionsDbAdapter.deleteAllRecords() //clean slate
         val currencyOther = if ("EUR" == COMMODITY.currencyCode) "USD" else "EUR"
-        val commodityOther = commoditiesDbAdapter.getCommodity(currencyOther)!!
+        val commodityOther = commoditiesDbAdapter.getCurrency(currencyOther)!!
         val accountOther = Account("Other Account", commodityOther)
 
         accountsDbAdapter.addRecord(accountOther)
@@ -1072,7 +1072,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
             transactionsDbAdapter = accountsDbAdapter.transactionsDbAdapter
             splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter
             commoditiesDbAdapter = accountsDbAdapter.commoditiesDbAdapter
-            COMMODITY = commoditiesDbAdapter.getCommodity(CURRENCY_CODE)!!
+            COMMODITY = commoditiesDbAdapter.getCurrency(CURRENCY_CODE)!!
         }
     }
 }

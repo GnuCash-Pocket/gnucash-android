@@ -27,7 +27,6 @@ import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence;
 import org.gnucash.android.model.PeriodType;
 import org.gnucash.android.model.Recurrence;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -107,9 +106,9 @@ public class RecurrenceParser {
         if (eventRecurrence.until != null && eventRecurrence.until.length() > 0) {
             Time endTime = new Time();
             endTime.parse(eventRecurrence.until);
-            recurrence.setPeriodEnd(new Timestamp(endTime.toMillis(false)));
+            recurrence.setPeriodEnd(endTime.toMillis(false));
         } else if (eventRecurrence.count > 0) {
-            recurrence.setPeriodEnd(eventRecurrence.count);
+            recurrence.setPeriodEndOccurrences(eventRecurrence.count);
         }
     }
 

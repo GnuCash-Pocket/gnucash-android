@@ -33,6 +33,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
 import org.gnucash.android.R;
 import org.gnucash.android.importer.CommoditiesXmlHandler;
@@ -64,20 +65,20 @@ public class MigrationHelper {
     /**
      * Imports commodities into the database from XML resource file
      */
-    static void importCommodities(@NonNull DatabaseHolder holder) throws SAXException, ParserConfigurationException, IOException {
-        SAXParserFactory spf = SAXParserFactory.newInstance();
-        SAXParser sp = spf.newSAXParser();
-        XMLReader xr = sp.getXMLReader();
+    @VisibleForTesting
+    public static void importCommodities(@NonNull DatabaseHolder holder) throws SAXException, ParserConfigurationException, IOException {
+        SAXParserFactory parserFactory = SAXParserFactory.newInstance();
+        SAXParser parser = parserFactory.newSAXParser();
+        XMLReader reader = parser.getXMLReader();
 
-        InputStream commoditiesInputStream = holder.context.getResources()
+        InputStream inputStream = holder.context.getResources()
             .openRawResource(R.raw.iso_4217_currencies);
-        BufferedInputStream bos = new BufferedInputStream(commoditiesInputStream);
 
         /* Create handler to handle XML Tags ( extends DefaultHandler ) */
         CommoditiesXmlHandler handler = new CommoditiesXmlHandler(holder);
 
-        xr.setContentHandler(handler);
-        xr.parse(new InputSource(bos));
+        reader.setContentHandler(handler);
+        reader.parse(new InputSource(inputStream));
     }
 
     public static void migrate(@NonNull Context context, @NonNull SQLiteDatabase db, int oldVersion, int newVersion) {

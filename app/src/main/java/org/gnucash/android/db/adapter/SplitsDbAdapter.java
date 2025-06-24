@@ -176,7 +176,7 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
         split.setMemo(memo);
         split.setReconcileState(reconcileState.charAt(0));
         if (!TextUtils.isEmpty(reconcileDate)) {
-            split.setReconcileDate(TimestampHelper.getTimestampFromUtcString(reconcileDate));
+            split.setReconcileDate(TimestampHelper.getTimestampFromUtcString(reconcileDate).getTime());
         }
         split.setScheduledActionAccountUID(schedxAccountUID);
 

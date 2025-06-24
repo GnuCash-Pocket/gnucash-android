@@ -94,7 +94,7 @@ public class AccountPreferencesFragment extends GnuPreferenceFragment {
         if (TextUtils.isEmpty(currencyCode)) {
             currencyCode = GnuCashApplication.getDefaultCurrencyCode();
         }
-        Commodity commodity = commoditiesDbAdapter.getCommodity(currencyCode);
+        Commodity commodity = commoditiesDbAdapter.getCurrency(currencyCode);
         if (commodity == null) {
             commodity = Commodity.DEFAULT_COMMODITY;
         }
@@ -105,7 +105,7 @@ public class AccountPreferencesFragment extends GnuPreferenceFragment {
             public boolean onPreferenceChange(@NonNull Preference preference, Object newValue) {
                 String currencyCode = newValue.toString();
                 commoditiesDbAdapter.setDefaultCurrencyCode(currencyCode);
-                String summary = commoditiesDbAdapter.getCommodity(currencyCode).formatListItem();
+                String summary = commoditiesDbAdapter.getCurrency(currencyCode).formatListItem();
                 preference.setSummary(summary);
                 return true;
             }

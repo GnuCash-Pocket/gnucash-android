@@ -34,7 +34,6 @@ import org.joda.time.ReadablePeriod
 import org.joda.time.Seconds
 import org.joda.time.Weeks
 import org.joda.time.Years
-import java.sql.Timestamp
 import java.text.DateFormat
 import java.util.Calendar
 import java.util.Date
@@ -71,7 +70,6 @@ class Recurrence(periodType: PeriodType) : BaseModel() {
      * End date of the recurrence period
      */
     var periodEnd: Long? = null
-        private set
 
     /**
      * The multiplier for the period type. The default multiplier is 1.
@@ -328,7 +326,7 @@ class Recurrence(periodType: PeriodType) : BaseModel() {
      *
      * @param numberOfOccurrences Number of occurrences from the start time
      */
-    fun setPeriodEnd(numberOfOccurrences: Int) {
+    fun setPeriodEndOccurrences(numberOfOccurrences: Int) {
         val localDate = LocalDateTime(periodStart)
         val occurrenceDuration = numberOfOccurrences * multiplier
         val endDate: LocalDateTime = when (periodType) {
@@ -345,15 +343,6 @@ class Recurrence(periodType: PeriodType) : BaseModel() {
             PeriodType.END_OF_MONTH -> localDate.plusMonths(occurrenceDuration).lastDayOfMonth()
         }
         periodEnd = endDate.toDateTime().millis
-    }
-
-    /**
-     * Set period end date
-     *
-     * @param endTimestamp End time in milliseconds
-     */
-    fun setPeriodEnd(endTimestamp: Timestamp?) {
-        periodEnd = endTimestamp?.time
     }
 
     /**

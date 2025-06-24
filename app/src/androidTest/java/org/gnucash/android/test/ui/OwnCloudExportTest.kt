@@ -96,7 +96,7 @@ class OwnCloudExportTest : GnuAndroidTest() {
 
         val currencyCode = GnuCashApplication.getDefaultCurrencyCode()
         Commodity.DEFAULT_COMMODITY =
-            CommoditiesDbAdapter.getInstance()!!.getCommodity(currencyCode)!!
+            CommoditiesDbAdapter.getInstance()!!.getCurrency(currencyCode)!!
 
         val account = Account("ownCloud")
         val transaction = Transaction("birds")

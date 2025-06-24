@@ -12,7 +12,6 @@ import androidx.annotation.Nullable;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Price;
-import org.gnucash.android.model.PriceType;
 import org.gnucash.android.util.TimestampHelper;
 
 import java.io.IOException;
@@ -87,13 +86,27 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
         Commodity commodity2 = commoditiesDbAdapter.getRecord(currencyUID);
         Price price = new Price(commodity1, commodity2);
         populateBaseModelAttributes(cursor, price);
-        price.setDate(TimestampHelper.getTimestampFromUtcString(dateString));
+        price.setDate(TimestampHelper.getTimestampFromUtcString(dateString).getTime());
         price.setSource(source);
-        price.setType(PriceType.of(type));
+        price.setType(Price.Type.of(type));
         price.setValueNum(valueNum);
         price.setValueDenom(valueDenom);
 
         return price;
+    }
+
+    /**
+     * Get the price for commodity / currency pair.
+     * The price can be used to convert from one commodity to another. The 'commodity' is the origin and the 'currency' is the target for the conversion.
+     *
+     * @param commodityCode Currency code of the commodity which is starting point for conversion
+     * @param currencyCode  Currency code of target commodity for the conversion
+     * @return The numerator/denominator pair for commodity / currency pair
+     */
+    public Price getPriceForCurrencies(@NonNull String commodityCode, @NonNull String currencyCode) {
+        Commodity commodity = commoditiesDbAdapter.getCurrency(commodityCode);
+        Commodity currency = commoditiesDbAdapter.getCurrency(currencyCode);
+        return getPrice(commodity, currency);
     }
 
     /**
@@ -143,20 +156,21 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
         Cursor cursor = mDb.query(PriceEntry.TABLE_NAME, null, where, whereArgs, null, null, ordeerBy, "1");
         try {
             if (cursor.moveToFirst()) {
-                String commodityUIDdb = cursor.getString(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_COMMODITY_UID));
-                long valueNum = cursor.getLong(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_VALUE_NUM));
-                long valueDenom = cursor.getLong(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_VALUE_DENOM));
+                Price price = buildModelInstance(cursor);
+                long valueNum = price.getValueNum();
+                long valueDenom = price.getValueDenom();
                 if (valueNum <= 0 || valueDenom <= 0) {
                     // this should not happen
                     return null;
                 }
-                if (!commodityUIDdb.equals(commodityUID)) {
-                    // swap Num and denom
-                    long t = valueNum;
-                    valueNum = valueDenom;
-                    valueDenom = t;
+                if (!price.getCommodityUID().equals(commodityUID)) {
+                    // swap numerator and denominator
+                    Price priceSwap = new Price(currency, commodity, valueDenom, valueNum);
+                    priceSwap.setDate(price.getDate());
+                    priceSwap.setSource(price.getSource());
+                    priceSwap.setType(price.getType());
+                    price = priceSwap;
                 }
-                Price price = new Price(commodity, currency, valueNum, valueDenom);
                 if (isCached) {
                     cachePair.put(key, price);
                 }
@@ -179,7 +193,7 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
             String currencyUID = currency.getUID();
             String key = commodityUID + "/" + currencyUID;
             Price price = cachePair.get(key);
-            if (price == null || price.getDate().before(model.getDate())) {
+            if (price == null || price.getDate() < model.getDate()) {
                 cachePair.put(key, model);
             }
         }

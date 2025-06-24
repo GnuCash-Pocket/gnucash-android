@@ -73,7 +73,7 @@ public class RecurrenceDbAdapter extends DatabaseAdapter<Recurrence> {
         recurrence.setMultiplier(multiplier);
         recurrence.setPeriodStart(TimestampHelper.getTimestampFromUtcString(periodStart).getTime());
         if (periodEnd != null) {
-            recurrence.setPeriodEnd(TimestampHelper.getTimestampFromUtcString(periodEnd));
+            recurrence.setPeriodEnd(TimestampHelper.getTimestampFromUtcString(periodEnd).getTime());
         }
         recurrence.setByDays(stringToByDays(byDays));
 

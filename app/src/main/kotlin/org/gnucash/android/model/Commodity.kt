@@ -141,7 +141,7 @@ class Commodity @JvmOverloads constructor(
      * @return String representation of the commodity
      */
     override fun toString(): String {
-        return "${namespace}::${mnemonic}"
+        return key
     }
 
     /**
@@ -162,6 +162,8 @@ class Commodity @JvmOverloads constructor(
     override fun hashCode(): Int {
         return mnemonic.hashCode()
     }
+
+    val key: String get() = "${namespace}::${mnemonic}"
 
     fun setQuoteTimeZone(id: String?) {
         if (id.isNullOrEmpty()) {
@@ -247,7 +249,7 @@ class Commodity @JvmOverloads constructor(
             }
 
             val adapter = CommoditiesDbAdapter.getInstance()
-            return adapter?.getCommodity(currencyCode) ?: DEFAULT_COMMODITY
+            return adapter?.getCurrency(currencyCode) ?: DEFAULT_COMMODITY
         }
 
         @JvmStatic

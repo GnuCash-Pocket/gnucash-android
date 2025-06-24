@@ -19,7 +19,101 @@ package org.gnucash.android.importer;
 
 import static org.gnucash.android.db.adapter.AccountsDbAdapter.ROOT_ACCOUNT_NAME;
 import static org.gnucash.android.db.adapter.AccountsDbAdapter.TEMPLATE_ACCOUNT_NAME;
-import static org.gnucash.android.export.xml.GncXmlHelper.*;
+import static org.gnucash.android.export.xml.GncXmlHelper.ATTR_KEY_TYPE;
+import static org.gnucash.android.export.xml.GncXmlHelper.ATTR_VALUE_FRAME;
+import static org.gnucash.android.export.xml.GncXmlHelper.ATTR_VALUE_NUMERIC;
+import static org.gnucash.android.export.xml.GncXmlHelper.ATTR_VALUE_STRING;
+import static org.gnucash.android.export.xml.GncXmlHelper.CD_TYPE_ACCOUNT;
+import static org.gnucash.android.export.xml.GncXmlHelper.CD_TYPE_BOOK;
+import static org.gnucash.android.export.xml.GncXmlHelper.CD_TYPE_BUDGET;
+import static org.gnucash.android.export.xml.GncXmlHelper.CD_TYPE_COMMODITY;
+import static org.gnucash.android.export.xml.GncXmlHelper.CD_TYPE_PRICE;
+import static org.gnucash.android.export.xml.GncXmlHelper.CD_TYPE_SCHEDXACTION;
+import static org.gnucash.android.export.xml.GncXmlHelper.CD_TYPE_TRANSACTION;
+import static org.gnucash.android.export.xml.GncXmlHelper.KEY_COLOR;
+import static org.gnucash.android.export.xml.GncXmlHelper.KEY_CREDIT_FORMULA;
+import static org.gnucash.android.export.xml.GncXmlHelper.KEY_CREDIT_NUMERIC;
+import static org.gnucash.android.export.xml.GncXmlHelper.KEY_DEBIT_FORMULA;
+import static org.gnucash.android.export.xml.GncXmlHelper.KEY_DEBIT_NUMERIC;
+import static org.gnucash.android.export.xml.GncXmlHelper.KEY_DEFAULT_TRANSFER_ACCOUNT;
+import static org.gnucash.android.export.xml.GncXmlHelper.KEY_EXPORTED;
+import static org.gnucash.android.export.xml.GncXmlHelper.KEY_FAVORITE;
+import static org.gnucash.android.export.xml.GncXmlHelper.KEY_HIDDEN;
+import static org.gnucash.android.export.xml.GncXmlHelper.KEY_NOTES;
+import static org.gnucash.android.export.xml.GncXmlHelper.KEY_PLACEHOLDER;
+import static org.gnucash.android.export.xml.GncXmlHelper.KEY_SCHED_XACTION;
+import static org.gnucash.android.export.xml.GncXmlHelper.KEY_SPLIT_ACCOUNT_SLOT;
+import static org.gnucash.android.export.xml.GncXmlHelper.NS_ACCOUNT;
+import static org.gnucash.android.export.xml.GncXmlHelper.NS_BOOK;
+import static org.gnucash.android.export.xml.GncXmlHelper.NS_BUDGET;
+import static org.gnucash.android.export.xml.GncXmlHelper.NS_CD;
+import static org.gnucash.android.export.xml.GncXmlHelper.NS_COMMODITY;
+import static org.gnucash.android.export.xml.GncXmlHelper.NS_GNUCASH;
+import static org.gnucash.android.export.xml.GncXmlHelper.NS_GNUCASH_ACCOUNT;
+import static org.gnucash.android.export.xml.GncXmlHelper.NS_PRICE;
+import static org.gnucash.android.export.xml.GncXmlHelper.NS_RECURRENCE;
+import static org.gnucash.android.export.xml.GncXmlHelper.NS_SLOT;
+import static org.gnucash.android.export.xml.GncXmlHelper.NS_SPLIT;
+import static org.gnucash.android.export.xml.GncXmlHelper.NS_SX;
+import static org.gnucash.android.export.xml.GncXmlHelper.NS_TRANSACTION;
+import static org.gnucash.android.export.xml.GncXmlHelper.NS_TS;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ACCOUNT;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ADVANCE_CREATE_DAYS;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ADVANCE_REMIND_DAYS;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_AUTO_CREATE;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_AUTO_CREATE_NOTIFY;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_BOOK;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_BUDGET;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_COMMODITY;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_COUNT_DATA;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_CURRENCY;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_DATE;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_DATE_ENTERED;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_DATE_POSTED;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_DESCRIPTION;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ENABLED;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_END;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_FRACTION;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_GDATE;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ID;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_INSTANCE_COUNT;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_KEY;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_LAST;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_MEMO;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_MULT;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_NAME;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_NUM_OCCUR;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_NUM_PERIODS;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_PARENT;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_PERIOD_TYPE;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_PRICE;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_QUANTITY;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_QUOTE_SOURCE;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_QUOTE_TZ;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_RECONCILED_DATE;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_RECURRENCE;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_RECURRENCE_PERIOD;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_REM_OCCUR;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_ROOT;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SCHEDULED_ACTION;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SLOT;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SLOTS;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SOURCE;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SPACE;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_SPLIT;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_START;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_TEMPLATE_ACCOUNT;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_TEMPLATE_TRANSACTIONS;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_TIME;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_TITLE;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_TRANSACTION;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_TYPE;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_VALUE;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_WEEKEND_ADJ;
+import static org.gnucash.android.export.xml.GncXmlHelper.TAG_XCODE;
+import static org.gnucash.android.export.xml.GncXmlHelper.parseDate;
+import static org.gnucash.android.export.xml.GncXmlHelper.parseDateTime;
+import static org.gnucash.android.export.xml.GncXmlHelper.parseSplitAmount;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -52,7 +146,6 @@ import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.PeriodType;
 import org.gnucash.android.model.Price;
-import org.gnucash.android.model.PriceType;
 import org.gnucash.android.model.Recurrence;
 import org.gnucash.android.model.ScheduledAction;
 import org.gnucash.android.model.Slot;
@@ -136,37 +229,14 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     private Split mSplit;
 
     /**
-     * (Absolute) quantity of the split, which uses split account currency
-     */
-    private BigDecimal mQuantity;
-
-    /**
-     * (Absolute) value of the split, which uses transaction currency
-     */
-    private BigDecimal mValue;
-
-    /**
      * price table entry
      */
     private Price mPrice;
-
-    private boolean mPriceCommodity;
-    private boolean mPriceCurrency;
-
-    /**
-     * Whether the quantity is negative
-     */
-    private boolean mNegativeQuantity;
 
     /**
      * The list for all added split for autobalancing
      */
     private final List<Split> mAutoBalanceSplits = new ArrayList<>();
-
-    /**
-     * Ignore certain elements in GnuCash XML file, such as "<gnc:template-transactions>"
-     */
-    private String mIgnoreElement = null;
 
     /**
      * {@link ScheduledAction} instance for each scheduled action parsed
@@ -175,24 +245,12 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
 
     private Budget mBudget;
     private Recurrence mRecurrence;
-    private BudgetAmount mBudgetAmount;
     private Commodity mCommodity;
-    private final Map<String, Map<String, Commodity>> mCommodities = new HashMap<>();
-    private String mCommoditySpace;
-    private String mCommodityId;
+    private final Map<String, Commodity> mCommodities = new HashMap<>();
 
-    private boolean mIsDatePosted = false;
-    private boolean mIsDateEntered = false;
-    private boolean mIsNote = false;
     private boolean mInTemplates = false;
-    private boolean mIsScheduledStart = false;
-    private boolean mIsScheduledEnd = false;
-    private boolean mIsLastRun = false;
-    private boolean mIsRecurrenceStart = false;
-    private boolean mInBudgetSlot = false;
 
     private final Stack<Slot> slots = new Stack<>();
-    private String slotKey = null;
 
     private Account budgetAccount = null;
     private Long budgetPeriod = null;
@@ -241,8 +299,17 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     @Nullable
     private String countDataType;
     private boolean isValidRoot = false;
+    private boolean hasBookElement = false;
+    private final Stack<ElementName> elementNames = new Stack<>();
     @NonNull
     private final CancellationSignal cancellationSignal;
+
+    /**
+     * Creates a handler for handling XML stream events when parsing the XML backup file
+     */
+    public GncXmlHandler() {
+        this(GnuCashApplication.getAppContext(), null);
+    }
 
     /**
      * Creates a handler for handling XML stream events when parsing the XML backup file
@@ -284,6 +351,12 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
         mScheduledActionsDbAdapter.deleteAllRecords();
         mTransactionsDbAdapter.deleteAllRecords();
         mAccountsDbAdapter.deleteAllRecords();
+
+        mCommodities.clear();
+        List<Commodity> commodities = mCommoditiesDbAdapter.getAllRecords();
+        for (Commodity commodity : commodities) {
+            mCommodities.put(commodity.getKey(), commodity);
+        }
     }
 
     private void maybeInitDb(@Nullable String bookUIDOld, @NonNull String bookUIDNew) {
@@ -297,665 +370,226 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     public void startElement(String uri, String localName,
                              String qualifiedName, Attributes attributes) throws SAXException {
         cancellationSignal.throwIfCanceled();
+        elementNames.push(new ElementName(uri, localName, qualifiedName));
         if (!isValidRoot) {
-            if (TAG_ROOT.equals(qualifiedName) || AccountsTemplate.TAG_ROOT.equals(qualifiedName)) {
+            if (TAG_ROOT.equals(localName) || AccountsTemplate.TAG_ROOT.equals(localName)) {
                 isValidRoot = true;
                 return;
             }
-            throw new SAXException("Expected root element " + TAG_ROOT);
+            throw new SAXException("Expected root element");
         }
 
-        switch (qualifiedName) {
+        switch (localName) {
             case TAG_BOOK:
-            case AccountsTemplate.TAG_ROOT:
+                handleStartBook(uri);
                 break;
             case TAG_ACCOUNT:
-                mAccount = new Account(""); // dummy name, will be replaced when we find name tag
+                handleStartAccount(uri);
                 break;
             case TAG_TRANSACTION:
-                mTransaction = new Transaction(""); // dummy name will be replaced
-                mTransaction.setExported(true);     // default to exported when import transactions
+                handleStartTransaction();
                 break;
-            case TAG_TRN_SPLIT:
-                mSplit = new Split(Money.createZeroInstance(mRootAccount.getCommodity()), "");
-                break;
-            case TAG_DATE_POSTED:
-                mIsDatePosted = true;
-                break;
-            case TAG_DATE_ENTERED:
-                mIsDateEntered = true;
+            case TAG_SPLIT:
+                handleStartSplit(uri);
                 break;
             case TAG_TEMPLATE_TRANSACTIONS:
-                mInTemplates = true;
+                handleStartTemplateTransactions();
                 break;
             case TAG_SCHEDULED_ACTION:
-                //default to transaction type, will be changed during parsing
-                mScheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
-                break;
-            case TAG_SX_START:
-                mIsScheduledStart = true;
-                break;
-            case TAG_SX_END:
-                mIsScheduledEnd = true;
-                break;
-            case TAG_SX_LAST:
-                mIsLastRun = true;
-                break;
-            case TAG_RX_START:
-                mIsRecurrenceStart = true;
+                handleStartScheduledAction();
                 break;
             case TAG_PRICE:
-                mPrice = new Price();
+                handleStartPrice();
                 break;
-            case TAG_PRICE_CURRENCY:
-                mPriceCurrency = true;
-                mPriceCommodity = false;
-                break;
-            case TAG_PRICE_COMMODITY:
-                mPriceCurrency = false;
-                mPriceCommodity = true;
-                break;
-            case TAG_BUDGET:
-                mBudget = new Budget();
-                break;
-            case TAG_GNC_RECURRENCE:
-            case TAG_BUDGET_RECURRENCE:
-                mRecurrence = new Recurrence(PeriodType.MONTH);
-                break;
-            case TAG_BUDGET_SLOTS:
-                mInBudgetSlot = true;
-                break;
-            case TAG_SLOT:
-            case TAG_SLOT_KEY:
-                break;
-            case TAG_SLOT_VALUE:
-                if (!TextUtils.isEmpty(slotKey)) {
-                    slots.push(new Slot(slotKey, attributes.getValue(ATTR_KEY_TYPE)));
-                }
-                slotKey = null;
+            case TAG_CURRENCY:
+                handleStartCurrency();
                 break;
             case TAG_COMMODITY:
-                mCommodity = new Commodity("", "");
+                handleStartCommodity();
+                break;
+            case TAG_BUDGET:
+                handleStartBudget(uri);
+                break;
+            case TAG_RECURRENCE:
+                handleStartRecurrence(uri);
+                break;
+            case TAG_SLOT:
+                handleStartSlot();
+                break;
+            case TAG_VALUE:
+                handleStartValue(uri, attributes);
                 break;
             case TAG_COUNT_DATA:
-                countDataType = attributes.getValue(ATTR_KEY_CD_TYPE);
+                handleStartCountData(attributes);
                 break;
         }
     }
 
+    private void handleStartTemplateTransactions() {
+        mInTemplates = true;
+    }
+
+    private void handleStartSlot() {
+        slots.push(Slot.empty());
+    }
+
     @Override
     public void endElement(String uri, String localName, String qualifiedName) throws SAXException {
-        // FIXME: 22.10.2015 First parse the number of accounts/transactions and use the number to init the array lists
-        String characterString = mContent.toString().trim();
-
-        if (mIgnoreElement != null) {
-            // Ignore everything inside
-            if (qualifiedName.equals(mIgnoreElement)) {
-                mIgnoreElement = null;
-            }
-            mContent.setLength(0);
+        ElementName elementName = elementNames.pop();
+        if (!isValidRoot) {
             return;
         }
-        Slot slot;
+        if (!uri.equals(elementName.uri) || !localName.equals(elementName.localName)) {
+            throw new SAXException("Inconsistent element: {" + uri + ", " + localName + "}"
+                + " Expected " + elementName);
+        }
 
-        switch (qualifiedName) {
-            case TAG_ACCT_NAME:
-                mAccount.setName(characterString);
-                mAccount.setFullName(characterString);
+        String characterString = mContent.toString().trim();
+        //reset the accumulated characters
+        mContent.setLength(0);
+
+        switch (localName) {
+            case TAG_NAME:
+                handleEndName(uri, characterString);
                 break;
-            case TAG_ACCT_ID:
-                mAccount.setUID(characterString);
+            case TAG_ID:
+                handleEndId(uri, characterString);
                 break;
-            case TAG_ACCT_TYPE:
-                AccountType accountType = AccountType.valueOf(characterString);
-                mAccount.setAccountType(accountType);
+            case TAG_TYPE:
+                handleEndType(uri, characterString);
                 break;
             case TAG_BOOK:
             case TAG_ROOT:
             case AccountsTemplate.TAG_ROOT:
-                booksDbAdapter.addRecord(mBook, DatabaseAdapter.UpdateMethod.replace);
-                if (listener != null) listener.onBook(mBook);
+                handleEndBook(localName);
                 break;
-            case TAG_BOOK_ID:
-                maybeInitDb(mBook.getUID(), characterString);
-                mBook.setUID(characterString);
+            case TAG_SPACE:
+                handleEndSpace(uri, characterString);
                 break;
-            case TAG_COMMODITY_SPACE:
-                mCommoditySpace = characterString;
-                if (!characterString.equals(COMMODITY_ISO4217) && !characterString.equals(COMMODITY_CURRENCY)) {
-                    // price of non-ISO4217 commodities cannot be handled
-                    mPrice = null;
-                }
-                if (mCommodity != null) {
-                    mCommodity.setNamespace(characterString);
-                }
+            case TAG_FRACTION:
+                handleEndFraction(characterString);
                 break;
-            case TAG_COMMODITY_ID:
-                mCommodityId = characterString;
-                if (mCommodity != null) {
-                    Commodity commodity = getCommodity(mCommoditySpace, mCommodityId);
-                    if (commodity != null) {
-                        mCommodity = commodity;
-                    } else {
-                        mCommodity.setMnemonic(characterString);
-                    }
-                }
-                if (mTransaction != null) {
-                    Commodity commodity = getCommodity(mCommoditySpace, mCommodityId);
-                    mTransaction.setCommodity(commodity);
-                }
-                if (mPrice != null) {
-                    Commodity commodity = getCommodity(mCommoditySpace, mCommodityId);
-                    if (commodity == null) break;
-                    if (mPriceCommodity) {
-                        mPrice.setCommodity(commodity);
-                        mPriceCommodity = false;
-                    }
-                    if (mPriceCurrency) {
-                        mPrice.setCurrency(commodity);
-                        mPriceCurrency = false;
-                    }
-                }
+            case TAG_QUOTE_SOURCE:
+                handleEndQuoteSource(characterString);
                 break;
-            case TAG_COMMODITY_FRACTION:
-                if (mCommodity != null) {
-                    mCommodity.setSmallestFraction(Integer.parseInt(characterString));
-                }
+            case TAG_QUOTE_TZ:
+                handleEndQuoteTz(characterString);
                 break;
-            case TAG_COMMODITY_NAME:
-                if (mCommodity != null) {
-                    mCommodity.setFullname(characterString);
-                }
+            case TAG_XCODE:
+                handleEndXcode(characterString);
                 break;
-            case TAG_COMMODITY_QUOTE_SOURCE:
-                if (mCommodity != null) {
-                    mCommodity.setQuoteSource(characterString);
-                }
-                break;
-            case TAG_COMMODITY_QUOTE_TZ:
-                if (mCommodity != null) {
-                    if (!TextUtils.isEmpty(characterString)) {
-                        TimeZone tz = TimeZone.getTimeZone(characterString);
-                        mCommodity.setQuoteTimeZone(tz);
-                    }
-                }
-                break;
-            case TAG_COMMODITY_XCODE:
-                if (mCommodity != null) {
-                    mCommodity.setCusip(characterString);
-                }
-                break;
-            case TAG_ACCT_DESCRIPTION:
-                mAccount.setDescription(characterString);
-                break;
-            case TAG_ACCT_COMMODITY:
-                if (mAccount != null) {
-                    Commodity commodity = getCommodity(mCommoditySpace, mCommodityId);
-                    if (commodity != null) {
-                        mAccount.setCommodity(commodity);
-                    } else {
-                        throw new SAXException("Commodity with '" + mCommoditySpace + ":" + mCommodityId
-                            + "' currency code not found in the database for account " + mAccount.getUID());
-                    }
-                    if (commodity.isCurrency()) {
-                        String currencyId = commodity.getCurrencyCode();
-                        Integer currencyCount = mCurrencyCount.get(currencyId);
-                        if (currencyCount == null) currencyCount = 0;
-                        mCurrencyCount.put(currencyId, currencyCount + 1);
-                    }
-                }
-                break;
-            case TAG_ACCT_PARENT:
-                mAccount.setParentUID(characterString);
-                break;
-            case TAG_ACCOUNT:
-                if (mInTemplates) {
-                    // check ROOT account
-                    if (mAccount.isRoot()) {
-                        if (rootTemplateAccount == null) {
-                            rootTemplateAccount = mAccount;
-                        } else {
-                            throw new SAXException("Multiple ROOT Template accounts exist in book");
-                        }
-                    } else if (rootTemplateAccount == null) {
-                        rootTemplateAccount = mAccount = new Account(TEMPLATE_ACCOUNT_NAME, Commodity.template);
-                        rootTemplateAccount.setAccountType(AccountType.ROOT);
-                    }
-                } else {
-                    // check ROOT account
-                    if (mAccount.isRoot()) {
-                        if (mRootAccount == null) {
-                            mRootAccount = mAccount;
-                            mBook.setRootAccountUID(mRootAccount.getUID());
-                        } else {
-                            throw new SAXException("Multiple ROOT accounts exist in book");
-                        }
-                    } else if (mRootAccount == null) {
-                        mRootAccount = mAccount = new Account(ROOT_ACCOUNT_NAME);
-                        mRootAccount.setAccountType(AccountType.ROOT);
-                        mBook.setRootAccountUID(mRootAccount.getUID());
-                    }
-                }
-                mAccountsDbAdapter.addRecord(mAccount, DatabaseAdapter.UpdateMethod.insert);
-                mAccountList.add(mAccount);
-                mAccountMap.put(mAccount.getUID(), mAccount);
-                if (listener != null) listener.onAccount(mAccount);
-                // prepare for next input
-                mAccount = null;
-                break;
-            case TAG_SLOT:
-                handleSlot(slots.pop());
-                if (mInBudgetSlot) {
-                    budgetPeriod = null;
-                }
-                break;
-            case TAG_SLOT_KEY:
-                slotKey = characterString;
-                switch (characterString) {
-                    case KEY_NOTES:
-                        mIsNote = true;
-                        budgetAccount = null;
-                        break;
-                    default:
-                        if (mInBudgetSlot) {
-                            if (budgetAccount == null) {
-                                String accountUID = characterString;
-                                Account account = mAccountMap.get(accountUID);
-                                if (account != null) {
-                                    budgetAccount = account;
-                                }
-                            } else {
-                                try {
-                                    budgetPeriod = Long.parseLong(characterString);
-                                } catch (NumberFormatException e) {
-                                    Timber.e(e, "Bad budget period: %s", characterString);
-                                }
-                            }
-                        }
-                        break;
-                }
-                break;
-            case TAG_SLOT_VALUE:
-                slot = slots.peek();
-                switch (slot.type) {
-                    case Slot.TYPE_GDATE:
-                    case Slot.TYPE_GUID:
-                    case Slot.TYPE_NUMERIC:
-                    case Slot.TYPE_STRING:
-                        slot.value = characterString;
-                        break;
-                }
-                if (mInBudgetSlot) {
-                    switch (slot.type) {
-                        case ATTR_VALUE_FRAME:
-                            budgetAccount = null;
-                            budgetPeriod = null;
-                            break;
-                        case ATTR_VALUE_NUMERIC:
-                            if (!mIsNote && (budgetAccount != null) && (budgetPeriod != null)) {
-                                try {
-                                    BigDecimal amount = parseSplitAmount(characterString);
-                                    mBudget.addAmount(budgetAccount, budgetPeriod, amount);
-                                } catch (ParseException e) {
-                                    Timber.e(e, "Bad budget amount: %s", characterString);
-                                }
-                            }
-                            budgetPeriod = null;
-                            break;
-                        case ATTR_VALUE_STRING:
-                            if (mIsNote && (budgetAccount != null) && (budgetPeriod != null)) {
-                                BudgetAmount budgetAmount = mBudget.getBudgetAmount(budgetAccount, budgetPeriod);
-                                if (budgetAmount == null) {
-                                    budgetAmount = mBudget.addAmount(budgetAccount, budgetPeriod, BigDecimal.ZERO);
-                                }
-                                budgetAmount.setNotes(characterString);
-                            }
-                            budgetPeriod = null;
-                            break;
-                    }
-                } else if (mIsNote && ATTR_VALUE_STRING.equals(slot.type)) {
-                    if (mTransaction != null) {
-                        mTransaction.setNote(characterString);
-                    } else if (mAccount != null) {
-                        mAccount.setNote(characterString);
-                    }
-                    mIsNote = false;
-                }
-                break;
-
-            case TAG_BUDGET_SLOTS:
-                mInBudgetSlot = false;
-                mIsNote = false;
-                slots.clear();
-                break;
-
-            //================  PROCESSING OF TRANSACTION TAGS =====================================
-            case TAG_TRX_ID:
-                mTransaction.setUID(characterString);
-                break;
-            case TAG_TRN_DESCRIPTION:
-                mTransaction.setDescription(characterString);
-                break;
-            case TAG_TS_DATE:
-                try {
-                    if (mIsDatePosted && mTransaction != null) {
-                        mTransaction.setTime(parseDateTime(characterString));
-                        mIsDatePosted = false;
-                    }
-                    if (mIsDateEntered && mTransaction != null) {
-                        Timestamp timestamp = new Timestamp(parseDateTime(characterString));
-                        mTransaction.setCreatedTimestamp(timestamp);
-                        mIsDateEntered = false;
-                    }
-                    if (mPrice != null) {
-                        mPrice.setDate(new Timestamp(parseDateTime(characterString)));
-                    }
-                } catch (ParseException e) {
-                    String message = "Unable to parse transaction time - " + characterString;
-                    throw new SAXException(message, e);
-                }
-                break;
-            case TAG_RECURRENCE_PERIOD: //for parsing of old backup files
-                mRecurrencePeriod = Long.parseLong(characterString);
-                mTransaction.setTemplate(mRecurrencePeriod > 0);
-                break;
-            case TAG_SPLIT_ID:
-                mSplit.setUID(characterString);
-                break;
-            case TAG_SPLIT_MEMO:
-                mSplit.setMemo(characterString);
-                break;
-            case TAG_SPLIT_VALUE:
-                try {
-                    // The value and quantity can have different sign for custom currency(stock).
-                    // Use the sign of value for split, as it would not be custom currency
-                    mNegativeQuantity = characterString.charAt(0) == '-';
-                    mValue = parseSplitAmount(characterString).abs(); // use sign from quantity
-                } catch (ParseException e) {
-                    String msg = "Error parsing split quantity - " + characterString;
-                    throw new SAXException(msg, e);
-                }
-                break;
-            case TAG_SPLIT_QUANTITY:
-                // delay the assignment of currency when the split account is seen
-                try {
-                    mQuantity = parseSplitAmount(characterString).abs();
-                } catch (ParseException e) {
-                    String msg = "Error parsing split quantity - " + characterString;
-                    throw new SAXException(msg, e);
-                }
-                break;
-            case TAG_SPLIT_ACCOUNT:
-                String splitAccountUID = characterString;
-                mSplit.setAccountUID(splitAccountUID);
-                if (mInTemplates) {
-                    mTemplateAccountToTransactionMap.put(splitAccountUID, mTransaction.getUID());
-                } else {
-                    //this is intentional: GnuCash XML formats split amounts, credits are negative, debits are positive.
-                    mSplit.setType(mNegativeQuantity ? TransactionType.CREDIT : TransactionType.DEBIT);
-                    //the split amount uses the account currency
-                    mSplit.setQuantity(new Money(mQuantity, getCommodityForAccount(splitAccountUID)));
-                    //the split value uses the transaction currency
-                    mSplit.setValue(new Money(mValue, mTransaction.getCommodity()));
-                }
-                break;
-            //todo: import split reconciled state and date
-            case TAG_TRN_SPLIT:
-                mTransaction.addSplit(mSplit);
-                break;
-            case TAG_TRANSACTION:
-                mTransaction.setTemplate(mInTemplates);
-                Split imbSplit = mTransaction.createAutoBalanceSplit();
-                if (imbSplit != null) {
-                    mAutoBalanceSplits.add(imbSplit);
-                }
-                if (mInTemplates) {
-                    if (!mIgnoreTemplateTransaction) {
-                        mTransactionsDbAdapter.addRecord(mTransaction, DatabaseAdapter.UpdateMethod.insert);
-                    }
-                } else {
-                    mTransactionsDbAdapter.addRecord(mTransaction, DatabaseAdapter.UpdateMethod.insert);
-                    if (listener != null) listener.onTransaction(mTransaction);
-                }
-                if (mRecurrencePeriod > 0) { //if we find an old format recurrence period, parse it
-                    mTransaction.setTemplate(true);
-                    ScheduledAction scheduledAction = ScheduledAction.parseScheduledAction(mTransaction, mRecurrencePeriod);
-                    mScheduledActionsDbAdapter.addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.insert);
-                    if (listener != null) listener.onSchedule(scheduledAction);
-                }
-                mRecurrencePeriod = 0;
-                mIgnoreTemplateTransaction = true;
-                mTransaction = null;
-                break;
-            case TAG_TEMPLATE_TRANSACTIONS:
-                mInTemplates = false;
-                break;
-
-            // ========================= PROCESSING SCHEDULED ACTIONS ==================================
-            case TAG_SX_ID:
-                // The template account name.
-                mScheduledAction.setUID(characterString);
-                break;
-            case TAG_SX_NAME:
-                if (characterString.equals(ScheduledAction.ActionType.BACKUP.name()))
-                    mScheduledAction.setActionType(ScheduledAction.ActionType.BACKUP);
-                else
-                    mScheduledAction.setActionType(ScheduledAction.ActionType.TRANSACTION);
-                break;
-            case TAG_SX_ENABLED:
-                mScheduledAction.setEnabled(characterString.equals("y"));
-                break;
-            case TAG_SX_AUTO_CREATE:
-                mScheduledAction.setAutoCreate(characterString.equals("y"));
-                break;
-            case TAG_SX_AUTO_CREATE_NOTIFY:
-                mScheduledAction.setAutoNotify(characterString.equals("y"));
-                break;
-            case TAG_SX_ADVANCE_CREATE_DAYS:
-                mScheduledAction.setAdvanceCreateDays(Integer.parseInt(characterString));
-                break;
-            case TAG_SX_ADVANCE_REMIND_DAYS:
-                mScheduledAction.setAdvanceNotifyDays(Integer.parseInt(characterString));
-                break;
-            case TAG_SX_INSTANCE_COUNT:
-                mScheduledAction.setExecutionCount(Integer.parseInt(characterString));
-                break;
-            //todo: export auto_notify, advance_create, advance_notify
-            case TAG_SX_NUM_OCCUR:
-                mScheduledAction.setTotalPlannedExecutionCount(Integer.parseInt(characterString));
-                break;
-            case TAG_SX_REM_OCCUR:
-                mScheduledAction.setTotalPlannedExecutionCount(Integer.parseInt(characterString));
-                break;
-            case TAG_RX_START:
-                mIsRecurrenceStart = false;
-                break;
-            case TAG_RX_MULT:
-                mRecurrence.setMultiplier(Integer.parseInt(characterString));
-                break;
-            case TAG_RX_PERIOD_TYPE:
-                PeriodType periodType = PeriodType.of(characterString);
-                if (periodType != PeriodType.ONCE) {
-                    mRecurrence.setPeriodType(periodType);
-                } else {
-                    Timber.e("Unsupported period: %s", characterString);
-                    mIgnoreScheduledAction = true;
-                }
-                break;
-            case TAG_RX_WEEKEND_ADJ:
-                WeekendAdjust weekendAdjust = WeekendAdjust.of(characterString);
-                mRecurrence.setWeekendAdjust(weekendAdjust);
-                break;
-            case TAG_GDATE:
-                try {
-                    long date = parseDate(characterString);
-                    if (mIsScheduledStart && mScheduledAction != null) {
-                        mScheduledAction.setCreatedTimestamp(new Timestamp(date));
-                        mIsScheduledStart = false;
-                    }
-
-                    if (mIsScheduledEnd && mScheduledAction != null) {
-                        mScheduledAction.setEndTime(date);
-                        mIsScheduledEnd = false;
-                    }
-
-                    if (mIsLastRun && mScheduledAction != null) {
-                        mScheduledAction.setLastRunTime(date);
-                        mIsLastRun = false;
-                    }
-
-                    if (mIsRecurrenceStart && mRecurrence != null) {
-                        mRecurrence.setPeriodStart(date);
-                        mIsRecurrenceStart = false;
-                    }
-                } catch (ParseException e) {
-                    String msg = "Error parsing scheduled action date " + characterString;
-                    throw new SAXException(msg, e);
-                }
-                break;
-            case TAG_SX_TEMPL_ACCOUNT:
-                if (mScheduledAction.getActionType() == ScheduledAction.ActionType.TRANSACTION) {
-                    String accountUID = characterString;
-                    mScheduledAction.setTemplateAccountUID(accountUID);
-                    String transactionUID = mTemplateAccountToTransactionMap.get(accountUID);
-                    mScheduledAction.setActionUID(transactionUID);
-                } else {
-                    mScheduledAction.setActionUID(mBook.getUID());
-                }
-                break;
-            case TAG_GNC_RECURRENCE:
-                if (mScheduledAction != null) {
-                    mScheduledAction.setRecurrence(mRecurrence);
-                }
-                break;
-
-            case TAG_SCHEDULED_ACTION:
-                if (mScheduledAction.getActionUID() != null && !mIgnoreScheduledAction) {
-                    if (mScheduledAction.getRecurrence().getPeriodType() == PeriodType.WEEK) {
-                        // TODO: implement parsing of by days for scheduled actions
-                        setMinimalScheduledActionByDays();
-                    }
-                    mScheduledActionsDbAdapter.addRecord(mScheduledAction, DatabaseAdapter.UpdateMethod.insert);
-                    if (listener != null) listener.onSchedule(mScheduledAction);
-                    if (mScheduledAction.getActionType() == ScheduledAction.ActionType.TRANSACTION) {
-                        String transactionUID = mScheduledAction.getActionUID();
-                        ContentValues txValues = new ContentValues();
-                        txValues.put(TransactionEntry.COLUMN_SCHEDX_ACTION_UID, mScheduledAction.getUID());
-                        mTransactionsDbAdapter.updateRecord(transactionUID, txValues);
-                    }
-                    mScheduledAction = null;
-                }
-                mIgnoreScheduledAction = false;
-                break;
-            // price table
-            case TAG_PRICE_ID:
-                mPrice.setUID(characterString);
-                break;
-            case TAG_PRICE_SOURCE:
-                if (mPrice != null) {
-                    mPrice.setSource(characterString);
-                }
-                break;
-            case TAG_PRICE_VALUE:
-                if (mPrice != null) {
-                    String[] parts = characterString.split("/");
-                    if (parts.length != 2) {
-                        String message = "Illegal price - " + characterString;
-                        throw new SAXException(message);
-                    } else {
-                        mPrice.setValueNum(Long.valueOf(parts[0]));
-                        mPrice.setValueDenom(Long.valueOf(parts[1]));
-                        Timber.d("price " + characterString +
-                            " .. " + mPrice.getValueNum() + "/" + mPrice.getValueDenom());
-                    }
-                }
-                break;
-            case TAG_PRICE_TYPE:
-                if (mPrice != null) {
-                    mPrice.setType(PriceType.of(characterString));
-                }
-                break;
-            case TAG_PRICE:
-                if (mPrice != null) {
-                    mPricesDbAdapter.addRecord(mPrice, DatabaseAdapter.UpdateMethod.insert);
-                    if (listener != null) listener.onPrice(mPrice);
-                    mPrice = null;
-                }
-                break;
-            case TAG_BUDGET:
-                if (mBudget != null && !mBudget.getBudgetAmounts().isEmpty()) { //ignore if no budget amounts exist for the budget
-                    //// TODO: 01.06.2016 Re-enable import of Budget stuff when the UI is complete
-                    mBudgetsDbAdapter.addRecord(mBudget, DatabaseAdapter.UpdateMethod.insert);
-                    if (listener != null) listener.onBudget(mBudget);
-                    mBudget = null;
-                }
-                break;
-            case TAG_BUDGET_ID:
-                mBudget.setUID(characterString);
-                break;
-            case TAG_BUDGET_NAME:
-                mBudget.setName(characterString);
-                break;
-            case TAG_BUDGET_DESCRIPTION:
-                mBudget.setDescription(characterString);
-                break;
-            case TAG_BUDGET_NUM_PERIODS:
-                mBudget.setNumberOfPeriods(Long.parseLong(characterString));
-                break;
-            case TAG_BUDGET_RECURRENCE:
-                mBudget.setRecurrence(mRecurrence);
+            case TAG_DESCRIPTION:
+                handleEndDescription(uri, characterString);
                 break;
             case TAG_COMMODITY:
-                if (mCommodity != null) {
-                    Commodity commodity = putCommodity(mCommodity);
-                    if (commodity != null) {
-                        Commodity commodityDb = mCommoditiesDbAdapter.getRecordOrNull(commodity.getUID());
-                        if (commodityDb == null) {
-                            mCommoditiesDbAdapter.addRecord(commodity, DatabaseAdapter.UpdateMethod.insert);
-                        }
-                    }
-                    if (listener != null) listener.onCommodity(mCommodity);
-                    mCommodity = null;
-                }
+                handleEndCommodity(uri);
+                break;
+            case TAG_CURRENCY:
+                handleEndCurrency(uri);
+                break;
+            case TAG_PARENT:
+                handleEndParent(uri, characterString);
+                break;
+            case TAG_ACCOUNT:
+                handleEndAccount(uri, characterString);
+                break;
+            case TAG_SLOT:
+                handleEndSlot();
+                break;
+            case TAG_KEY:
+                handleEndKey(uri, characterString);
+                break;
+            case TAG_VALUE:
+                handleEndValue(uri, characterString);
+                break;
+            case TAG_SLOTS:
+                handleEndSlots(uri);
+                break;
+            case TAG_DATE:
+                handleEndDate(uri, characterString);
+                break;
+            case TAG_RECURRENCE_PERIOD:
+                handleEndPeriod(uri, characterString);
+                break;
+            case TAG_MEMO:
+                handleEndMemo(uri, characterString);
+                break;
+            case TAG_QUANTITY:
+                handleEndQuantity(uri, characterString);
+                break;
+            case TAG_SPLIT:
+                handleEndSplit(uri);
+                break;
+            case TAG_TRANSACTION:
+                handleEndTransaction();
+                break;
+            case TAG_TEMPLATE_TRANSACTIONS:
+                handleEndTemplateTransactions();
+                break;
+            case TAG_ENABLED:
+                handleEndEnabled(uri, characterString);
+                break;
+            case TAG_AUTO_CREATE:
+                handleEndAutoCreate(uri, characterString);
+                break;
+            case TAG_AUTO_CREATE_NOTIFY:
+                handleEndAutoCreateNotify(uri, characterString);
+                break;
+            case TAG_ADVANCE_CREATE_DAYS:
+                handleEndAdvanceCreateDays(uri, characterString);
+                break;
+            case TAG_ADVANCE_REMIND_DAYS:
+                handleEndAdvanceRemindDays(uri, characterString);
+                break;
+            case TAG_INSTANCE_COUNT:
+                handleEndInstanceCount(uri, characterString);
+                break;
+            case TAG_NUM_OCCUR:
+                handleEndNumberOccurrence(uri, characterString);
+                break;
+            case TAG_REM_OCCUR:
+                handleEndRemainingOccurrence(uri, characterString);
+                break;
+            case TAG_MULT:
+                handleEndMultiplier(uri, characterString);
+                break;
+            case TAG_PERIOD_TYPE:
+                handleEndPeriodType(uri, characterString);
+                break;
+            case TAG_WEEKEND_ADJ:
+                handleEndWeekendAdjust(uri, characterString);
+                break;
+            case TAG_GDATE:
+                handleEndGDate(characterString);
+                break;
+            case TAG_TEMPLATE_ACCOUNT:
+                handleEndTemplateAccount(uri, characterString);
+                break;
+            case TAG_RECURRENCE:
+                handleEndRecurrence(uri);
+                break;
+            case TAG_SCHEDULED_ACTION:
+                handleEndScheduledAction();
+                break;
+            case TAG_SOURCE:
+                handleEndSource(uri, characterString);
+                break;
+            case TAG_PRICE:
+                handleEndPrice();
+                break;
+            case TAG_BUDGET:
+                handleEndBudget();
+                break;
+            case TAG_NUM_PERIODS:
+                handleEndNumPeriods(uri, characterString);
                 break;
             case TAG_COUNT_DATA:
-                if (!TextUtils.isEmpty(countDataType)) {
-                    if (!TextUtils.isEmpty(characterString)) {
-                        long count = Long.parseLong(characterString);
-                        switch (countDataType) {
-                            case CD_TYPE_ACCOUNT:
-                                if (listener != null) listener.onAccountCount(count);
-                                break;
-                            case CD_TYPE_BOOK:
-                                if (listener != null) listener.onBookCount(count);
-                                break;
-                            case CD_TYPE_BUDGET:
-                                if (listener != null) listener.onBudgetCount(count);
-                                break;
-                            case CD_TYPE_COMMODITY:
-                                if (listener != null) listener.onCommodityCount(count);
-                                break;
-                            case CD_TYPE_PRICE:
-                                if (listener != null) listener.onPriceCount(count);
-                                break;
-                            case CD_TYPE_SCHEDXACTION:
-                                if (listener != null) listener.onScheduleCount(count);
-                                break;
-                            case CD_TYPE_TRANSACTION:
-                                if (listener != null) listener.onTransactionCount(count);
-                                break;
-                        }
-                    }
-                }
-                countDataType = null;
+                handleEndCountData(characterString);
                 break;
-            case TAG_ACCT_TITLE:
-                mBook.setDisplayName(characterString);
+            case TAG_TITLE:
+                handleEndTitle(uri, characterString);
                 break;
         }
-
-        //reset the accumulated characters
-        mContent.setLength(0);
     }
 
     @Override
@@ -1080,57 +714,6 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     }
 
     /**
-     * Handles the case when we reach the end of the template numeric slot
-     *
-     * @param value Parsed characters containing split amount
-     */
-    private void handleEndOfTemplateNumericSlot(@NonNull Split split, String value, TransactionType splitType) {
-        try {
-            // HACK: Check for bug #562. If a value has already been set, ignore the one just read
-            if (split.getValue().isAmountZero()) {
-                BigDecimal splitAmount = parseSplitAmount(value);
-                String accountUID = split.getScheduledActionAccountUID();
-                if (TextUtils.isEmpty(accountUID)) {
-                    accountUID = split.getAccountUID();
-                }
-                Commodity commodity = getCommodityForAccount(accountUID);
-                Money amount = new Money(splitAmount, commodity);
-
-                split.setValue(amount);
-                split.setType(splitType);
-                mIgnoreTemplateTransaction = false; //we have successfully parsed an amount
-            }
-        } catch (NumberFormatException | ParseException e) {
-            Timber.e(e, "Error parsing template split amount %s", value);
-        }
-    }
-
-    /**
-     * Handles the case when we reach the end of the template formula slot
-     *
-     * @param value Parsed characters containing split amount
-     */
-    private void handleEndOfTemplateFormulaSlot(@NonNull Split split, String value, TransactionType splitType) {
-        try {
-            // HACK: Check for bug #562. If a value has already been set, ignore the one just read
-            if (split.getValue().isAmountZero()) {
-                String accountUID = split.getScheduledActionAccountUID();
-                if (TextUtils.isEmpty(accountUID)) {
-                    accountUID = split.getAccountUID();
-                }
-                Commodity commodity = getCommodityForAccount(accountUID);
-                Money amount = new Money(value, commodity);
-
-                split.setValue(amount);
-                split.setType(splitType);
-                mIgnoreTemplateTransaction = false; //we have successfully parsed an amount
-            }
-        } catch (NumberFormatException e) {
-            Timber.e(e, "Error parsing template split amount %s", value);
-        }
-    }
-
-    /**
      * Sets the by days of the scheduled action to the day of the week of the start time.
      *
      * <p>Until we implement parsing of days of the week for scheduled actions,
@@ -1144,45 +727,487 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
     }
 
     @Nullable
-    private Commodity getCommodity(@Nullable String space, @Nullable String id) {
-        if (TextUtils.isEmpty(space)) return null;
-        if (TextUtils.isEmpty(id)) return null;
-        Map<String, Commodity> commoditiesById = mCommodities.get(space);
-        if (commoditiesById == null) {
-            if (Commodity.COMMODITY_CURRENCY.equals(space)) {
-                commoditiesById = mCommodities.get(Commodity.COMMODITY_ISO4217);
-            } else if (Commodity.COMMODITY_ISO4217.equals(space)) {
-                commoditiesById = mCommodities.get(Commodity.COMMODITY_CURRENCY);
+    private Commodity getCommodity(@Nullable final Commodity commodity) {
+        if (commodity == null) return null;
+        String namespace = commodity.getNamespace();
+        if (TextUtils.isEmpty(namespace)) return null;
+        final String code = commodity.getMnemonic();
+        if (TextUtils.isEmpty(code)) return null;
+
+        if (Commodity.COMMODITY_ISO4217.equals(namespace)) {
+            namespace = Commodity.COMMODITY_CURRENCY;
+        }
+        String key = namespace + "::" + code;
+        return mCommodities.get(key);
+    }
+
+    private void handleEndAccount(String uri, String value) throws SAXException {
+        if (NS_GNUCASH.equals(uri)) {
+            if (mInTemplates) {
+                // check ROOT account
+                if (mAccount.isRoot()) {
+                    if (rootTemplateAccount == null) {
+                        rootTemplateAccount = mAccount;
+                    } else {
+                        throw new SAXException("Multiple ROOT Template accounts exist in book");
+                    }
+                } else if (rootTemplateAccount == null) {
+                    rootTemplateAccount = mAccount = new Account(TEMPLATE_ACCOUNT_NAME, Commodity.template);
+                    rootTemplateAccount.setAccountType(AccountType.ROOT);
+                }
+            } else {
+                // check ROOT account
+                if (mAccount.isRoot()) {
+                    if (mRootAccount == null) {
+                        mRootAccount = mAccount;
+                        mBook.setRootAccountUID(mRootAccount.getUID());
+                    } else {
+                        throw new SAXException("Multiple ROOT accounts exist in book");
+                    }
+                } else if (mRootAccount == null) {
+                    mRootAccount = mAccount = new Account(ROOT_ACCOUNT_NAME);
+                    mRootAccount.setAccountType(AccountType.ROOT);
+                    mBook.setRootAccountUID(mRootAccount.getUID());
+                }
+                mAccountList.add(mAccount);
+                if (listener != null) listener.onAccount(mAccount);
+            }
+            mAccountsDbAdapter.addRecord(mAccount, DatabaseAdapter.UpdateMethod.insert);
+            mAccountMap.put(mAccount.getUID(), mAccount);
+            // prepare for next input
+            mAccount = null;
+        } else if (NS_SPLIT.equals(uri)) {
+            String accountUID = value;
+            mSplit.setAccountUID(accountUID);
+            if (mInTemplates) {
+                mTemplateAccountToTransactionMap.put(accountUID, mTransaction.getUID());
+            } else {
+                //the split amount uses the account currency
+                mSplit.setQuantity(mSplit.getQuantity().withCommodity(getCommodityForAccount(accountUID)));
+                //the split value uses the transaction currency
+                mSplit.setValue(mSplit.getValue().withCommodity(mTransaction.getCommodity()));
             }
         }
-        if (commoditiesById != null) {
-            Commodity commodity = commoditiesById.get(id);
-            if (commodity != null) return commodity;
-        }
-        return mCommoditiesDbAdapter.getCommodity(id);
     }
 
-    @Nullable
-    private Commodity putCommodity(@NonNull Commodity commodity) {
-        //if (commodity.isTemplate()) return null;
-        String space = commodity.getNamespace();
-        if (TextUtils.isEmpty(space)) return null;
-        String id = commodity.getMnemonic();
-        if (TextUtils.isEmpty(id)) return null;
-
-        // Already a database record?
-        if (commodity.id != 0L) return null;
-
-        Map<String, Commodity> commoditiesById = mCommodities.get(space);
-        if (commoditiesById == null) {
-            commoditiesById = new HashMap<>();
-            mCommodities.put(space, commoditiesById);
+    private void handleEndAdvanceCreateDays(String uri, String value) {
+        if (NS_SX.equals(uri)) {
+            mScheduledAction.setAdvanceCreateDays(Integer.parseInt(value));
         }
-        commoditiesById.put(id, commodity);
-        return commodity;
     }
 
-    private void handleSlot(@NonNull Slot slot) {
+    private void handleEndAdvanceRemindDays(String uri, String value) {
+        if (NS_SX.equals(uri)) {
+            mScheduledAction.setAdvanceNotifyDays(Integer.parseInt(value));
+        }
+    }
+
+    private void handleEndAutoCreate(String uri, String value) {
+        if (NS_SX.equals(uri)) {
+            mScheduledAction.setAutoCreate(value.equals("y"));
+        }
+    }
+
+    private void handleEndAutoCreateNotify(String uri, String value) {
+        if (NS_SX.equals(uri)) {
+            mScheduledAction.setAutoNotify(value.equals("y"));
+        }
+    }
+
+    private void handleEndBook(String localName) {
+        if (hasBookElement) {
+            if (TAG_BOOK.equals(localName)) {
+                booksDbAdapter.addRecord(mBook, DatabaseAdapter.UpdateMethod.replace);
+                if (listener != null) listener.onBook(mBook);
+            }
+        } else {
+            booksDbAdapter.addRecord(mBook, DatabaseAdapter.UpdateMethod.replace);
+            if (listener != null) listener.onBook(mBook);
+        }
+    }
+
+    private void handleEndBudget() {
+        if (mBudget != null && !mBudget.getBudgetAmounts().isEmpty()) { //ignore if no budget amounts exist for the budget
+            //// TODO: 01.06.2016 Re-enable import of Budget stuff when the UI is complete
+            mBudgetsDbAdapter.addRecord(mBudget, DatabaseAdapter.UpdateMethod.insert);
+            if (listener != null) listener.onBudget(mBudget);
+        }
+        mBudget = null;
+    }
+
+    private void handleEndCommodity(String uri) throws SAXException {
+        if (NS_ACCOUNT.equals(uri)) {
+            if (mAccount != null) {
+                Commodity commodity = getCommodity(mCommodity);
+                if (commodity == null) {
+                    throw new SAXException("Commodity with '" + mCommodity + "' not found in the database for account");
+                }
+                mAccount.setCommodity(commodity);
+                if (commodity.isCurrency()) {
+                    String currencyId = commodity.getCurrencyCode();
+                    Integer currencyCount = mCurrencyCount.get(currencyId);
+                    if (currencyCount == null) currencyCount = 0;
+                    mCurrencyCount.put(currencyId, currencyCount + 1);
+                }
+            }
+        } else if (NS_GNUCASH.equals(uri)) {
+            Commodity commodity = getCommodity(mCommodity);
+            if (commodity == null) {
+                commodity = mCommodity;
+                mCommoditiesDbAdapter.addRecord(commodity, DatabaseAdapter.UpdateMethod.insert);
+                mCommodities.put(commodity.getKey(), commodity);
+            }
+            if (listener != null) listener.onCommodity(commodity);
+        } else if (NS_PRICE.equals(uri)) {
+            if (mPrice != null) {
+                Commodity commodity = getCommodity(mCommodity);
+                if (commodity == null) {
+                    throw new SAXException("Commodity with '" + mCommodity + "' not found in the database for price");
+                }
+                mPrice.setCommodity(commodity);
+            }
+        }
+        mCommodity = null;
+    }
+
+    private void handleEndCountData(String value) {
+        if (!TextUtils.isEmpty(countDataType) && !TextUtils.isEmpty(value)) {
+            long count = Long.parseLong(value);
+            switch (countDataType) {
+                case CD_TYPE_ACCOUNT:
+                    if (listener != null) listener.onAccountCount(count);
+                    break;
+                case CD_TYPE_BOOK:
+                    if (listener != null) listener.onBookCount(count);
+                    break;
+                case CD_TYPE_BUDGET:
+                    if (listener != null) listener.onBudgetCount(count);
+                    break;
+                case CD_TYPE_COMMODITY:
+                    if (listener != null) listener.onCommodityCount(count);
+                    break;
+                case CD_TYPE_PRICE:
+                    if (listener != null) listener.onPriceCount(count);
+                    break;
+                case CD_TYPE_SCHEDXACTION:
+                    if (listener != null) listener.onScheduleCount(count);
+                    break;
+                case CD_TYPE_TRANSACTION:
+                    if (listener != null) listener.onTransactionCount(count);
+                    break;
+            }
+        }
+        countDataType = null;
+    }
+
+    private void handleEndCurrency(String uri) throws SAXException {
+        Commodity commodity = getCommodity(mCommodity);
+        if (NS_PRICE.equals(uri)) {
+            if (commodity == null) {
+                throw new SAXException("Currency with '" + mCommodity + "' not found in the database for price");
+            }
+            if (mPrice != null) {
+                mPrice.setCurrency(commodity);
+            }
+        } else if (NS_TRANSACTION.equals(uri)) {
+            if (commodity == null) {
+                throw new SAXException("Currency with '" + mCommodity + "' not found in the database for transaction");
+            }
+            if (mTransaction != null) {
+                mTransaction.setCommodity(commodity);
+            }
+        }
+        mCommodity = null;
+    }
+
+    private void handleEndDate(String uri, String dateString) throws SAXException {
+        if (NS_TS.equals(uri)) {
+            try {
+                long date = parseDateTime(dateString);
+
+                ElementName elementParent = elementNames.peek();
+                final String uriParent = elementParent.uri;
+                final String tagParent = elementParent.localName;
+
+                if (NS_TRANSACTION.equals(uriParent)) {
+                    switch (tagParent) {
+                        case TAG_DATE_ENTERED:
+                            mTransaction.setCreatedTimestamp(new Timestamp(date));
+                            break;
+                        case TAG_DATE_POSTED:
+                            mTransaction.setTime(date);
+                            break;
+                    }
+                } else if (NS_PRICE.equals(uriParent)) {
+                    if (TAG_TIME.equals(tagParent)) {
+                        mPrice.setDate(date);
+                    }
+                } else if (NS_SPLIT.equals(uriParent)) {
+                    if (TAG_RECONCILED_DATE.equals(tagParent)) {
+                        mSplit.setReconcileDate(date);
+                    }
+                }
+            } catch (ParseException e) {
+                String message = "Unable to parse transaction date " + dateString;
+                throw new SAXException(message, e);
+            }
+        }
+    }
+
+    private void handleEndDescription(String uri, String description) {
+        if (NS_ACCOUNT.equals(uri)) {
+            mAccount.setDescription(description);
+        } else if (NS_BUDGET.equals(uri)) {
+            mBudget.setDescription(description);
+        } else if (NS_TRANSACTION.equals(uri)) {
+            mTransaction.setDescription(description);
+        }
+    }
+
+    private void handleEndEnabled(String uri, String value) {
+        if (NS_SX.equals(uri)) {
+            mScheduledAction.setEnabled(value.equals("y"));
+        }
+    }
+
+    private void handleEndFraction(String fraction) {
+        if (mCommodity != null) {
+            mCommodity.setSmallestFraction(Integer.parseInt(fraction));
+        }
+    }
+
+    private void handleEndGDate(String dateString) throws SAXException {
+        try {
+            long date = parseDate(dateString);
+
+            ElementName elementParent = elementNames.peek();
+            final String uriParent = elementParent.uri;
+            final String tagParent = elementParent.localName;
+
+            if (NS_SLOT.equals(uriParent)) {
+                Slot slot = slots.peek();
+                if (slot.type.equals(Slot.TYPE_GDATE)) {
+                    slot.value = date;
+                }
+            } else if (NS_RECURRENCE.equals(uriParent)) {
+                if (TAG_START.equals(tagParent)) {
+                    mRecurrence.setPeriodStart(date);
+                } else if (TAG_END.equals(tagParent)) {
+                    mRecurrence.setPeriodEnd(date);
+                }
+            } else if (NS_SX.equals(uriParent)) {
+                if (TAG_START.equals(tagParent)) {
+                    mScheduledAction.setStartTime(date);
+                } else if (TAG_END.equals(tagParent)) {
+                    mScheduledAction.setEndTime(date);
+                } else if (TAG_LAST.equals(tagParent)) {
+                    mScheduledAction.setLastRunTime(date);
+                }
+            }
+        } catch (ParseException e) {
+            String msg = "Invalid scheduled action date " + dateString;
+            throw new SAXException(msg, e);
+        }
+    }
+
+    private void handleEndId(String uri, String id) {
+        if (NS_ACCOUNT.equals(uri)) {
+            mAccount.setUID(id);
+        } else if (NS_BOOK.equals(uri)) {
+            maybeInitDb(mBook.getUID(), id);
+            mBook.setUID(id);
+        } else if (NS_BUDGET.equals(uri)) {
+            mBudget.setUID(id);
+        } else if (NS_COMMODITY.equals(uri)) {
+            if (mCommodity != null) {
+                mCommodity.setMnemonic(id);
+            }
+        } else if (NS_PRICE.equals(uri)) {
+            mPrice.setUID(id);
+        } else if (NS_SPLIT.equals(uri)) {
+            mSplit.setUID(id);
+        } else if (NS_SX.equals(uri)) {
+            // The template account name.
+            mScheduledAction.setUID(id);
+        } else if (NS_TRANSACTION.equals(uri)) {
+            mTransaction.setUID(id);
+        }
+    }
+
+    private void handleEndInstanceCount(String uri, String value) {
+        if (NS_SX.equals(uri)) {
+            mScheduledAction.setExecutionCount(Integer.parseInt(value));
+        }
+    }
+
+    private void handleEndKey(String uri, String key) {
+        if (NS_SLOT.equals(uri)) {
+            Slot slot = slots.peek();
+            slot.key = key;
+
+            if (mBudget != null && !KEY_NOTES.equals(key)) {
+                if (budgetAccount == null) {
+                    String accountUID = key;
+                    Account account = mAccountMap.get(accountUID);
+                    if (account != null) {
+                        budgetAccount = account;
+                    }
+                } else {
+                    try {
+                        budgetPeriod = Long.parseLong(key);
+                    } catch (NumberFormatException e) {
+                        Timber.e(e, "Invalid budget period: %s", key);
+                    }
+                }
+            }
+        }
+    }
+
+    private void handleEndMemo(String uri, String memo) {
+        if (NS_SPLIT.equals(uri)) {
+            if (mSplit != null) {
+                mSplit.setMemo(memo);
+            }
+        }
+    }
+
+    private void handleEndMultiplier(String uri, String multiplier) {
+        if (NS_RECURRENCE.equals(uri)) {
+            mRecurrence.setMultiplier(Integer.parseInt(multiplier));
+        }
+    }
+
+    private void handleEndName(String uri, String name) {
+        if (NS_ACCOUNT.equals(uri)) {
+            mAccount.setName(name);
+            mAccount.setFullName(name);
+        } else if (NS_BUDGET.equals(uri)) {
+            mBudget.setName(name);
+        } else if (NS_COMMODITY.equals(uri)) {
+            mCommodity.setFullname(name);
+        } else if (NS_SX.equals(uri)) {
+            if (name.equals(ScheduledAction.ActionType.BACKUP.name())) {
+                mScheduledAction.setActionType(ScheduledAction.ActionType.BACKUP);
+            } else {
+                mScheduledAction.setActionType(ScheduledAction.ActionType.TRANSACTION);
+            }
+        }
+    }
+
+    private void handleEndNumberOccurrence(String uri, String value) {
+        if (NS_SX.equals(uri)) {
+            mScheduledAction.setTotalPlannedExecutionCount(Integer.parseInt(value));
+        }
+    }
+
+    private void handleEndNumPeriods(String uri, String periods) {
+        if (NS_BUDGET.equals(uri)) {
+            mBudget.setNumberOfPeriods(Long.parseLong(periods));
+        }
+    }
+
+    private void handleEndParent(String uri, String parent) {
+        if (NS_ACCOUNT.equals(uri)) {
+            mAccount.setParentUID(parent);
+        }
+    }
+
+    private void handleEndPeriod(String uri, String period) {
+        if (NS_TRANSACTION.equals(uri)) {
+            //for parsing of old backup files
+            mRecurrencePeriod = Long.parseLong(period);
+            mTransaction.setTemplate(mRecurrencePeriod > 0);
+        }
+    }
+
+    private void handleEndPeriodType(String uri, String type) {
+        if (NS_RECURRENCE.equals(uri)) {
+            PeriodType periodType = PeriodType.of(type);
+            if (periodType != PeriodType.ONCE) {
+                mRecurrence.setPeriodType(periodType);
+            } else {
+                Timber.e("Invalid period: %s", type);
+                mIgnoreScheduledAction = true;
+            }
+        }
+    }
+
+    private void handleEndPrice() {
+        if (mPrice != null) {
+            mPricesDbAdapter.addRecord(mPrice, DatabaseAdapter.UpdateMethod.insert);
+            if (listener != null) listener.onPrice(mPrice);
+            mPrice = null;
+        }
+    }
+
+    private void handleEndQuantity(String uri, String value) throws SAXException {
+        if (NS_SPLIT.equals(uri)) {
+            // delay the assignment of currency when the split account is seen
+            try {
+                BigDecimal amount = parseSplitAmount(value).abs();
+                mSplit.setQuantity(new Money(amount, Commodity.DEFAULT_COMMODITY));
+            } catch (ParseException e) {
+                String msg = "Invalid split quantity " + value;
+                throw new SAXException(msg, e);
+            }
+        }
+    }
+
+    private void handleEndQuoteSource(String source) {
+        if (mCommodity != null) {
+            mCommodity.setQuoteSource(source);
+        }
+    }
+
+    private void handleEndQuoteTz(String tzId) {
+        if (!TextUtils.isEmpty(tzId)) {
+            TimeZone tz = TimeZone.getTimeZone(tzId);
+            if (mCommodity != null) {
+                mCommodity.setQuoteTimeZone(tz);
+            }
+        }
+    }
+
+    private void handleEndRecurrence(String uri) {
+        if (NS_BUDGET.equals(uri)) {
+            mBudget.setRecurrence(mRecurrence);
+        } else if (NS_GNUCASH.equals(uri)) {
+            if (mScheduledAction != null) {
+                mScheduledAction.setRecurrence(mRecurrence);
+            }
+        }
+    }
+
+    private void handleEndRemainingOccurrence(String uri, String value) {
+        if (NS_SX.equals(uri)) {
+            mScheduledAction.setTotalPlannedExecutionCount(Integer.parseInt(value));
+        }
+    }
+
+    private void handleEndScheduledAction() {
+        if (mScheduledAction.getActionUID() != null && !mIgnoreScheduledAction) {
+            if (mScheduledAction.getRecurrence().getPeriodType() == PeriodType.WEEK) {
+                // TODO: implement parsing of by days for scheduled actions
+                setMinimalScheduledActionByDays();
+            }
+            mScheduledActionsDbAdapter.addRecord(mScheduledAction, DatabaseAdapter.UpdateMethod.insert);
+            if (listener != null) listener.onSchedule(mScheduledAction);
+            if (mScheduledAction.getActionType() == ScheduledAction.ActionType.TRANSACTION) {
+                String transactionUID = mScheduledAction.getActionUID();
+                ContentValues txValues = new ContentValues();
+                txValues.put(TransactionEntry.COLUMN_SCHEDX_ACTION_UID, mScheduledAction.getUID());
+                mTransactionsDbAdapter.updateRecord(transactionUID, txValues);
+            }
+            mScheduledAction = null;
+        }
+        mIgnoreScheduledAction = false;
+    }
+
+    private void handleEndSlot() {
+        handleEndSlot(slots.pop());
+    }
+
+    private void handleEndSlot(@NonNull Slot slot) {
         switch (slot.key) {
             case KEY_PLACEHOLDER:
                 if (mAccount != null) {
@@ -1230,16 +1255,16 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                                 mSplit.setScheduledActionAccountUID(s.getAsGUID());
                                 break;
                             case KEY_CREDIT_FORMULA:
-                                handleEndOfTemplateFormulaSlot(mSplit, s.getAsString(), TransactionType.CREDIT);
+                                handleEndSlotTemplateFormula(mSplit, s.getAsString(), TransactionType.CREDIT);
                                 break;
                             case KEY_CREDIT_NUMERIC:
-                                handleEndOfTemplateNumericSlot(mSplit, s.getAsNumeric(), TransactionType.CREDIT);
+                                handleEndSlotTemplateNumeric(mSplit, s.getAsNumeric(), TransactionType.CREDIT);
                                 break;
                             case KEY_DEBIT_FORMULA:
-                                handleEndOfTemplateFormulaSlot(mSplit, s.getAsString(), TransactionType.DEBIT);
+                                handleEndSlotTemplateFormula(mSplit, s.getAsString(), TransactionType.DEBIT);
                                 break;
                             case KEY_DEBIT_NUMERIC:
-                                handleEndOfTemplateNumericSlot(mSplit, s.getAsNumeric(), TransactionType.DEBIT);
+                                handleEndSlotTemplateNumeric(mSplit, s.getAsNumeric(), TransactionType.DEBIT);
                                 break;
                         }
                     }
@@ -1253,6 +1278,317 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
                     }
                 }
                 break;
+        }
+    }
+
+    private void handleEndSlots(String uri) {
+        slots.clear();
+    }
+
+    /**
+     * Handles the case when we reach the end of the template formula slot
+     *
+     * @param value Parsed characters containing split amount
+     */
+    private void handleEndSlotTemplateFormula(@NonNull Split split, @Nullable String value, @NonNull TransactionType splitType) {
+        if (TextUtils.isEmpty(value)) return;
+        try {
+            // HACK: Check for bug #562. If a value has already been set, ignore the one just read
+            if (split.getValue().isAmountZero()) {
+                String accountUID = split.getScheduledActionAccountUID();
+                if (TextUtils.isEmpty(accountUID)) {
+                    accountUID = split.getAccountUID();
+                }
+                Commodity commodity = getCommodityForAccount(accountUID);
+                Money amount = new Money(value, commodity);
+
+                split.setValue(amount);
+                split.setType(splitType);
+                mIgnoreTemplateTransaction = false; //we have successfully parsed an amount
+            }
+        } catch (NumberFormatException e) {
+            Timber.e(e, "Error parsing template split formula [%s]", value);
+        }
+    }
+
+    /**
+     * Handles the case when we reach the end of the template numeric slot
+     *
+     * @param value Parsed characters containing split amount
+     */
+    private void handleEndSlotTemplateNumeric(@NonNull Split split, @Nullable String value, @NonNull TransactionType splitType) {
+        if (TextUtils.isEmpty(value)) return;
+        try {
+            // HACK: Check for bug #562. If a value has already been set, ignore the one just read
+            if (split.getValue().isAmountZero()) {
+                BigDecimal splitAmount = parseSplitAmount(value);
+                String accountUID = split.getScheduledActionAccountUID();
+                if (TextUtils.isEmpty(accountUID)) {
+                    accountUID = split.getAccountUID();
+                }
+                Commodity commodity = getCommodityForAccount(accountUID);
+                Money amount = new Money(splitAmount, commodity);
+
+                split.setValue(amount);
+                split.setType(splitType);
+                mIgnoreTemplateTransaction = false; //we have successfully parsed an amount
+            }
+        } catch (NumberFormatException | ParseException e) {
+            Timber.e(e, "Error parsing template split numeric [%s]", value);
+        }
+    }
+
+    private void handleEndSource(String uri, String source) {
+        if (NS_PRICE.equals(uri)) {
+            if (mPrice != null) {
+                mPrice.setSource(source);
+            }
+        }
+    }
+
+    private void handleEndSpace(String uri, String space) {
+        if (NS_COMMODITY.equals(uri)) {
+            if (mCommodity != null) {
+                mCommodity.setNamespace(space);
+            }
+        }
+    }
+
+    private void handleEndSplit(String uri) {
+        //todo: import split reconciled state and date
+        if (NS_TRANSACTION.equals(uri)) {
+            mTransaction.addSplit(mSplit);
+        }
+    }
+
+    private void handleEndTemplateAccount(String uri, String uid) {
+        if (NS_SX.equals(uri)) {
+            if (mScheduledAction.getActionType() == ScheduledAction.ActionType.TRANSACTION) {
+                mScheduledAction.setTemplateAccountUID(uid);
+                String transactionUID = mTemplateAccountToTransactionMap.get(uid);
+                mScheduledAction.setActionUID(transactionUID);
+            } else {
+                mScheduledAction.setActionUID(mBook.getUID());
+            }
+        }
+    }
+
+    private void handleEndTemplateTransactions() {
+        mInTemplates = false;
+    }
+
+    private void handleEndTitle(String uri, String title) {
+        if (NS_GNUCASH_ACCOUNT.equals(uri)) {
+            mBook.setDisplayName(title);
+        }
+    }
+
+    private void handleEndTransaction() {
+        mTransaction.setTemplate(mInTemplates);
+        Split imbSplit = mTransaction.createAutoBalanceSplit();
+        if (imbSplit != null) {
+            mAutoBalanceSplits.add(imbSplit);
+        }
+        if (mInTemplates) {
+            if (!mIgnoreTemplateTransaction) {
+                mTransactionsDbAdapter.addRecord(mTransaction, DatabaseAdapter.UpdateMethod.insert);
+            }
+        } else {
+            mTransactionsDbAdapter.addRecord(mTransaction, DatabaseAdapter.UpdateMethod.insert);
+            if (listener != null) listener.onTransaction(mTransaction);
+        }
+        if (mRecurrencePeriod > 0) { //if we find an old format recurrence period, parse it
+            mTransaction.setTemplate(true);
+            ScheduledAction scheduledAction = ScheduledAction.parseScheduledAction(mTransaction, mRecurrencePeriod);
+            mScheduledActionsDbAdapter.addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.insert);
+            if (listener != null) listener.onSchedule(scheduledAction);
+        }
+        mRecurrencePeriod = 0;
+        mIgnoreTemplateTransaction = true;
+        mTransaction = null;
+    }
+
+    private void handleEndType(String uri, String type) {
+        if (NS_ACCOUNT.equals(uri)) {
+            AccountType accountType = AccountType.valueOf(type);
+            mAccount.setAccountType(accountType);
+        } else if (NS_PRICE.equals(uri)) {
+            if (mPrice != null) {
+                mPrice.setType(Price.Type.of(type));
+            }
+        }
+    }
+
+    private void handleEndValue(String uri, String value) throws SAXException {
+        if (NS_PRICE.equals(uri)) {
+            if (mPrice != null) {
+                String[] parts = value.split("/");
+                if (parts.length != 2) {
+                    throw new SAXException("Invalid price " + value);
+                } else {
+                    mPrice.setValueNum(Long.parseLong(parts[0]));
+                    mPrice.setValueDenom(Long.parseLong(parts[1]));
+                    Timber.d("price " + value + " .. " + mPrice.getValueNum() + "/" + mPrice.getValueDenom());
+                }
+            }
+        } else if (NS_SLOT.equals(uri)) {
+            Slot slot = slots.peek();
+            switch (slot.type) {
+                case Slot.TYPE_GUID:
+                case Slot.TYPE_NUMERIC:
+                case Slot.TYPE_STRING:
+                    slot.value = value;
+                    break;
+            }
+            if (mBudget != null) {
+                boolean isNote = false;
+                if (slots.size() >= 3) {
+                    Slot parent = slots.get(slots.size() - 2);
+                    boolean isParentSlotIsFrame = parent.type.equals(Slot.TYPE_FRAME);
+                    Slot grandparent = slots.get(slots.size() - 3);
+                    boolean isGrandparentIsNotes = (grandparent.type.equals(Slot.TYPE_FRAME)) && (KEY_NOTES.equals(grandparent.key));
+                    isNote = isParentSlotIsFrame && isGrandparentIsNotes;
+                }
+
+                switch (slot.type) {
+                    case ATTR_VALUE_FRAME:
+                        budgetAccount = null;
+                        budgetPeriod = null;
+                        break;
+                    case ATTR_VALUE_NUMERIC:
+                        if (!isNote && (budgetAccount != null) && (budgetPeriod != null)) {
+                            try {
+                                BigDecimal amount = parseSplitAmount(value);
+                                mBudget.addAmount(budgetAccount, budgetPeriod, amount);
+                            } catch (ParseException e) {
+                                Timber.e(e, "Bad budget amount: %s", value);
+                            }
+                        }
+                        budgetPeriod = null;
+                        break;
+                    case ATTR_VALUE_STRING:
+                        if (isNote && (budgetAccount != null) && (budgetPeriod != null)) {
+                            BudgetAmount budgetAmount = mBudget.getBudgetAmount(budgetAccount, budgetPeriod);
+                            if (budgetAmount == null) {
+                                budgetAmount = mBudget.addAmount(budgetAccount, budgetPeriod, BigDecimal.ZERO);
+                            }
+                            budgetAmount.setNotes(value);
+                        }
+                        budgetPeriod = null;
+                        break;
+                }
+            } else if (KEY_NOTES.equals(slot.key) && ATTR_VALUE_STRING.equals(slot.type)) {
+                if (mTransaction != null) {
+                    mTransaction.setNote(value);
+                } else if (mAccount != null) {
+                    mAccount.setNote(value);
+                }
+            }
+        } else if (NS_SPLIT.equals(uri)) {
+            try {
+                // The value and quantity can have different sign for custom currency(stock).
+                // Use the sign of value for split, as it would not be custom currency
+                //this is intentional: GnuCash XML formats split amounts, credits are negative, debits are positive.
+                mSplit.setType(value.charAt(0) == '-' ? TransactionType.CREDIT : TransactionType.DEBIT);
+                BigDecimal amount = parseSplitAmount(value).abs(); // use sign from quantity
+                mSplit.setValue(new Money(amount, Commodity.DEFAULT_COMMODITY));
+            } catch (ParseException e) {
+                String msg = "Invalid split quantity " + value;
+                throw new SAXException(msg, e);
+            }
+        }
+    }
+
+    private void handleEndWeekendAdjust(String uri, String adjust) {
+        if (NS_RECURRENCE.equals(uri)) {
+            WeekendAdjust weekendAdjust = WeekendAdjust.of(adjust);
+            mRecurrence.setWeekendAdjust(weekendAdjust);
+        }
+    }
+
+    private void handleEndXcode(String xcode) {
+        if (mCommodity != null) {
+            mCommodity.setCusip(xcode);
+        }
+    }
+
+    private void handleStartAccount(String uri) {
+        if (NS_GNUCASH.equals(uri)) {
+            // dummy name, will be replaced when we find name tag
+            mAccount = new Account("");
+        }
+    }
+
+    private void handleStartBook(String uri) {
+        if (NS_GNUCASH.equals(uri)) {
+            hasBookElement = true;
+        }
+    }
+
+    private void handleStartBudget(String uri) {
+        if (NS_GNUCASH.equals(uri)) {
+            mBudget = new Budget();
+        }
+    }
+
+    private void handleStartCommodity() {
+        mCommodity = new Commodity("", "");
+    }
+
+    private void handleStartCountData(Attributes attributes) {
+        countDataType = attributes.getValue(NS_CD, ATTR_KEY_TYPE);
+    }
+
+    private void handleStartCurrency() {
+        mCommodity = new Commodity("", "");
+    }
+
+    private void handleStartPrice() {
+        mPrice = new Price();
+    }
+
+    private void handleStartRecurrence(String uri) {
+        mRecurrence = new Recurrence(PeriodType.MONTH);
+    }
+
+    private void handleStartScheduledAction() {
+        //default to transaction type, will be changed during parsing
+        mScheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
+    }
+
+    private void handleStartSplit(String uri) {
+        if (NS_TRANSACTION.equals(uri)) {
+            mSplit = new Split(Money.createZeroInstance(mRootAccount.getCommodity()), "");
+        }
+    }
+
+    private void handleStartTransaction() {
+        mTransaction = new Transaction(""); // dummy name will be replaced
+        mTransaction.setExported(true);     // default to exported when import transactions
+    }
+
+    private void handleStartValue(String uri, Attributes attributes) {
+        if (NS_SLOT.equals(uri)) {
+            Slot slot = slots.peek();
+            slot.type = attributes.getValue(ATTR_KEY_TYPE);
+        }
+    }
+
+    private static class ElementName {
+        public final String uri;
+        public final String localName;
+        public final String qualifiedName;
+
+        ElementName(String uri, String localName, String qualifiedName) {
+            this.uri = uri;
+            this.localName = localName;
+            this.qualifiedName = qualifiedName;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return "{" + uri + "," + localName + ", " + qualifiedName + "}";
         }
     }
 }

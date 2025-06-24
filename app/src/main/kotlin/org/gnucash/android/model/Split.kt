@@ -3,7 +3,6 @@ package org.gnucash.android.model
 import android.os.Parcel
 import android.os.Parcelable
 import org.gnucash.android.db.adapter.AccountsDbAdapter
-import java.sql.Timestamp
 
 /**
  * A split amount in a transaction.
@@ -62,7 +61,7 @@ class Split : BaseModel, Parcelable {
     /**
      * Date of the reconciliation. Database required non-null field
      */
-    var reconcileDate = Timestamp(System.currentTimeMillis())
+    var reconcileDate: Long = System.currentTimeMillis()
 
     /**
      * Account UID for a scheduled action.
@@ -321,7 +320,7 @@ class Split : BaseModel, Parcelable {
 
         dest.writeString(memo.orEmpty())
         dest.writeString(reconcileState.toString())
-        dest.writeString(reconcileDate.toString())
+        dest.writeLong(reconcileDate)
     }
 
     /**
@@ -341,7 +340,7 @@ class Split : BaseModel, Parcelable {
 
         memo = source.readString()
         reconcileState = source.readString()!![0]
-        reconcileDate = Timestamp.valueOf(source.readString())
+        reconcileDate = source.readLong()
     }
 
     companion object {

@@ -46,7 +46,6 @@ import org.gnucash.android.test.ui.util.DisableAnimationsRule
 import org.gnucash.android.ui.report.BaseReportFragment
 import org.gnucash.android.ui.report.ReportsActivity
 import org.gnucash.android.ui.report.piechart.PieChartFragment
-import org.gnucash.android.ui.settings.PreferenceActivity
 import org.gnucash.android.util.BookUtils
 import org.joda.time.LocalDateTime
 import org.junit.After
@@ -273,7 +272,7 @@ class PieChartReportTest : GnuAndroidTest() {
             accountsDbAdapter = AccountsDbAdapter.getInstance()
             transactionsDbAdapter = accountsDbAdapter.transactionsDbAdapter
 
-            commodity = accountsDbAdapter.commoditiesDbAdapter.getCommodity("USD")!!
+            commodity = accountsDbAdapter.commoditiesDbAdapter.getCurrency("USD")!!
 
             accountsDbAdapter.commoditiesDbAdapter.setDefaultCurrencyCode(commodity.currencyCode)
         }
