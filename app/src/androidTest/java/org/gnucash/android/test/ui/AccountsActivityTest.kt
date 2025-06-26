@@ -207,6 +207,7 @@ class AccountsActivityTest : GnuAndroidTest() {
             .perform(click())
         onView(withId(R.id.fragment_account_form))
             .check(matches(isDisplayed()))
+        sleep(500) // wait for parent accounts to load
         closeSoftKeyboard()
         onView(withId(R.id.checkbox_parent_account))
             .perform(scrollTo())

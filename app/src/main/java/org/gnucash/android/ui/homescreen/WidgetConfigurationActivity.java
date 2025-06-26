@@ -93,7 +93,7 @@ public class WidgetConfigurationActivity extends GnuCashActivity {
         booksAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.inputBooksSpinner.setAdapter(booksAdapter);
 
-        accountNameAdapter = new QualifiedAccountNameAdapter(context);
+        accountNameAdapter = new QualifiedAccountNameAdapter(context, this);
         binding.inputAccountsSpinner.setAdapter(accountNameAdapter);
 
         boolean passcodeEnabled = PasscodeHelper.isPasscodeEnabled(this);
@@ -274,7 +274,7 @@ public class WidgetConfigurationActivity extends GnuCashActivity {
         try {
             account = accountsDbAdapter.getSimpleRecord(accountUID);
         } catch (IllegalArgumentException e) {
-            Timber.e(e, "Account not found, resetting widget %s", appWidgetId);
+            Timber.e(e, "Account not found, resetting widget");
         }
         if (account == null) {
             accountsDbAdapter.closeQuietly();
