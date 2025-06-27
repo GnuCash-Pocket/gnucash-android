@@ -147,6 +147,7 @@ abstract class AsyncTaskProgressListener(context: Context) : DefaultProgressList
     protected abstract fun publishProgress(label: String, progress: Long = 0, total: Long = 0)
 
     fun showProgress(dialog: ProgressDialog, vararg values: Any) {
+        if (!dialog.isShowing) return
         val length = values.size
         if (length == 0) return
         val title = values[0] as String

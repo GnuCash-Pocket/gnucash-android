@@ -407,18 +407,25 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        getMenuInflater().inflate(R.menu.sub_account_actions, menu);
+        return true;
+    }
+
+    @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         if (account == null) {
-            return super.onPrepareOptionsMenu(menu);
+            return false;
         }
         MenuItem favoriteAccountMenuItem = menu.findItem(R.id.menu_favorite);
-
         if (favoriteAccountMenuItem == null) //when the activity is used to edit a transaction
-            return super.onPrepareOptionsMenu(menu);
+            return false;
 
         boolean isFavoriteAccount = account.isFavorite();
         @DrawableRes int favoriteIcon = isFavoriteAccount ? R.drawable.ic_favorite : R.drawable.ic_favorite_border;
         favoriteAccountMenuItem.setIcon(favoriteIcon);
+        favoriteAccountMenuItem.setChecked(isFavoriteAccount);
 
         MenuItem itemHidden = menu.findItem(R.id.menu_hidden);
         if (itemHidden != null) {
