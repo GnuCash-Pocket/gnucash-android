@@ -140,6 +140,7 @@ class Transaction : BaseModel {
     }
 
     private val _splits = mutableListOf<Split>()
+
     /**
      * The list of splits for this transaction
      */
@@ -279,6 +280,12 @@ class Transaction : BaseModel {
 
     override fun toString(): String {
         return "{description: $description, date: ${formatShortDate(timeMillis)}}"
+    }
+
+    fun getTransferSplit(accountUID: String): Split? {
+        val amount: Money? = splits.firstOrNull { it.accountUID == accountUID }?.value
+        return splits.firstOrNull { it.accountUID != accountUID && (it.value == amount) }
+            ?: splits.firstOrNull { it.accountUID != accountUID }
     }
 
     companion object {

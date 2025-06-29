@@ -45,7 +45,6 @@ import androidx.core.content.ContextCompat;
 import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHolder;
-import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
@@ -1602,5 +1601,22 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
         String[] whereArgs = new String[]{AccountType.ROOT.name()};
         return getAllRecords(where, whereArgs);
+    }
+
+    public List<Account> getDescendants(@NonNull Account account) {
+        return getDescendants(account.getUID());
+    }
+
+    public List<Account> getDescendants(@NonNull String accountUID) {
+        List<Account> result = new ArrayList<>();
+        populateDescendants(accountUID, result);
+        return result;
+    }
+
+    private void populateDescendants(@NonNull String accountUID, @NonNull List<Account> result) {
+        List<String> descendantsUIDs = getDescendantAccountUIDs(accountUID, null, null);
+        for (String descendantsUID : descendantsUIDs) {
+            result.add(getSimpleRecord(descendantsUID));
+        }
     }
 }
