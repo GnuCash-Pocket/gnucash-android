@@ -477,7 +477,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
     public Model getRecord(@NonNull String uid) throws IllegalArgumentException {
         Model model = getRecordOrNull(uid);
         if (model == null) {
-            throw new IllegalArgumentException("Record for " + mTableName + " not found");
+            throw new IllegalArgumentException("Record for " + mTableName + " not found in " + mTableName);
         }
         return model;
     }
@@ -849,11 +849,10 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
             new String[]{recordUID}, null, null, null);
 
         try {
-            if (cursor.moveToFirst())
-                return cursor.getString(cursor.getColumnIndexOrThrow(columnName));
-            else {
-                throw new IllegalArgumentException("Record not found in " + tableName + " with column '" + columnName + "'");
+            if (cursor.moveToFirst()) {
+                return cursor.getString(0);
             }
+            throw new IllegalArgumentException("Record not found in " + tableName + " with column '" + columnName + "'");
         } finally {
             cursor.close();
         }

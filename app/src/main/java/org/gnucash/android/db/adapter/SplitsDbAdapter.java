@@ -394,10 +394,9 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
 
         try {
             if (cursor.moveToFirst()) {
-                return cursor.getString(cursor.getColumnIndexOrThrow(TransactionEntry.COLUMN_UID));
-            } else {
-                throw new IllegalArgumentException("Transaction not found");
+                return cursor.getString(0);
             }
+            throw new IllegalArgumentException("Transaction not found");
         } finally {
             cursor.close();
         }

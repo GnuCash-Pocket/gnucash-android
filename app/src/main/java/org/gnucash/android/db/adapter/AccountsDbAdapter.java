@@ -515,14 +515,12 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             null, null, null, null);
         try {
             if (cursor.moveToFirst()) {
-                Timber.v("Found parent account UID, returning value");
-                return cursor.getString(cursor.getColumnIndexOrThrow(AccountEntry.COLUMN_PARENT_ACCOUNT_UID));
-            } else {
-                return null;
+                return cursor.getString(0);
             }
         } finally {
             cursor.close();
         }
+        return null;
     }
 
     /**
@@ -1650,5 +1648,22 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             }
         }
         return balances;
+    }
+
+    public List<Account> getDescendants(@NonNull Account account) {
+        return getDescendants(account.getUID());
+    }
+
+    public List<Account> getDescendants(@NonNull String accountUID) {
+        List<Account> result = new ArrayList<>();
+        populateDescendants(accountUID, result);
+        return result;
+    }
+
+    private void populateDescendants(@NonNull String accountUID, @NonNull List<Account> result) {
+        List<String> descendantsUIDs = getDescendantAccountUIDs(accountUID, null, null);
+        for (String descendantsUID : descendantsUIDs) {
+            result.add(getSimpleRecord(descendantsUID));
+        }
     }
 }

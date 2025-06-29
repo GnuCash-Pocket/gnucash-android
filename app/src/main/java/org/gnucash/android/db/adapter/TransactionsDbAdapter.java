@@ -223,16 +223,16 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      */
     public Cursor fetchAllTransactionsForAccount(String accountUID) {
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
-        queryBuilder.setTables(TransactionEntry.TABLE_NAME
-            + " INNER JOIN " + SplitEntry.TABLE_NAME + " ON "
-            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " = "
-            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID);
+        queryBuilder.setTables(TransactionEntry.TABLE_NAME + " t"
+            + " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON "
+            + "t." + TransactionEntry.COLUMN_UID + " = "
+            + "s." + SplitEntry.COLUMN_TRANSACTION_UID);
         queryBuilder.setDistinct(true);
-        String[] projectionIn = new String[]{TransactionEntry.TABLE_NAME + ".*"};
-        String selection = SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
-            + " AND " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + " = 0";
+        String[] projectionIn = new String[]{"t.*"};
+        String selection = "s." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
+            + " AND t." + TransactionEntry.COLUMN_TEMPLATE + " = 0";
         String[] selectionArgs = new String[]{accountUID};
-        String sortOrder = TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " DESC";
+        String sortOrder = "t." + TransactionEntry.COLUMN_TIMESTAMP + " DESC";
 
         return queryBuilder.query(mDb, projectionIn, selection, selectionArgs, null, null, sortOrder);
     }

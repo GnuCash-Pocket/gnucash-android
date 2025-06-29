@@ -158,11 +158,11 @@ class AccountsActivityTest : GnuAndroidTest() {
     fun testCreateAccount() {
         assertThat(accountsDbAdapter.allRecords).hasSize(1)
         onView(allOf(isDisplayed(), withId(R.id.fab_create_account))).perform(click())
+        sleep(1000)
 
         val NEW_ACCOUNT_NAME = "A New Account"
         onView(withId(R.id.input_account_name))
             .perform(typeText(NEW_ACCOUNT_NAME), closeSoftKeyboard())
-        sleep(1000)
         onView(withId(R.id.placeholder_status))
             .check(matches(isNotChecked()))
             .perform(click())
@@ -172,7 +172,7 @@ class AccountsActivityTest : GnuAndroidTest() {
         val accounts = accountsDbAdapter.allRecords
         assertThat(accounts).isNotNull()
         assertThat(accounts).hasSize(2)
-        val newestAccount = accounts[1] //because of _id sorting
+        val newestAccount = accounts[1] //because of db _id sorting
 
         assertThat(newestAccount.name).isEqualTo(NEW_ACCOUNT_NAME)
         assertThat(newestAccount.commodity).isEqualTo(Commodity.DEFAULT_COMMODITY)
