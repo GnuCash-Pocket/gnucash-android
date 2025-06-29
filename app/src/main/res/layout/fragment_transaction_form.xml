@@ -48,7 +48,7 @@
                         android:inputType="textCapSentences"
                         android:nextFocusDown="@+id/input_transaction_amount"
                         android:singleLine="true"
-                        android:textSize="22sp">
+                        android:textAppearance="?android:textAppearanceMedium">
 
                         <requestFocus />
                     </com.google.android.material.textfield.MaterialAutoCompleteTextView>
@@ -68,8 +68,8 @@
                     android:gravity="center_vertical"
                     android:minWidth="32dp"
                     android:text="USD"
-                    android:textColor="@color/debit_red"
-                    android:textSize="22sp" />
+                    android:textAppearance="?android:textAppearanceMedium"
+                    android:textColor="@color/debit_red" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="0dp"
@@ -83,7 +83,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/label_transaction_amount"
-                        android:nextFocusDown="@+id/notes"
+                        android:nextFocusDown="@+id/input_transfer_account_spinner"
                         android:textColor="@color/debit_red"
                         android:textSize="20sp" />
                 </com.google.android.material.textfield.TextInputLayout>
@@ -174,7 +174,8 @@
                         android:layout_height="wrap_content"
                         android:hint="@string/hint_notes"
                         android:inputType="textMultiLine|textCapSentences"
-                        android:singleLine="false" />
+                        android:singleLine="false"
+                        android:textAppearance="?android:textAppearanceSmall" />
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 

@@ -458,6 +458,9 @@ public class TransactionFormFragment extends MenuFragment implements
             }
         } else {
             setDoubleEntryViewsVisibility(binding, View.GONE);
+            if (mUseDoubleEntry && mSplitsList.size() >= 2) {
+                binding.btnSplitEditor.setVisibility(View.VISIBLE);
+            }
             if (mSplitValue != null) {
                 transactionType = mSplitValue.isNegative() ? TransactionType.CREDIT : TransactionType.DEBIT;
             }
