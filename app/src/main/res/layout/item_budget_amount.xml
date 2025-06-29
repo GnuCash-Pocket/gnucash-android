@@ -24,17 +24,14 @@
     app:cardPreventCornerOverlap="false"
     app:cardUseCompatPadding="true">
 
-    <LinearLayout
+    <TableLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="5dp">
+        android:layout_height="wrap_content">
 
         <TableRow
+            style="@style/FormRow"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:padding="@dimen/dialog_padding">
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/currency_symbol"
@@ -48,15 +45,14 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="3"
-                android:background="@android:color/transparent"
                 android:hint="@string/label_transaction_amount"
                 android:nextFocusDown="@+id/input_description"
-                android:textSize="20sp" />
+                android:textAppearance="?android:textAppearanceMedium" />
 
             <ImageView
                 android:id="@+id/btn_remove_item"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:paddingStart="22dp"
                 android:paddingTop="6dp"
@@ -70,10 +66,9 @@
 
         <TableRow
             android:id="@+id/layout_double_entry"
+            style="@style/FormRow"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:padding="@dimen/dialog_padding">
+            android:layout_height="wrap_content">
 
             <ImageView
                 style="@style/FormIcon"
@@ -83,7 +78,8 @@
                 android:id="@+id/input_budget_account_spinner"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="5" />
+                android:layout_weight="1"
+                android:minHeight="40dp" />
         </TableRow>
-    </LinearLayout>
+    </TableLayout>
 </androidx.cardview.widget.CardView>

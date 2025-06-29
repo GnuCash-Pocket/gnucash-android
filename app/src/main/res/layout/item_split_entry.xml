@@ -16,15 +16,13 @@ limitations under the License.
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="40dp"
         android:paddingStart="@dimen/dialog_padding"
-        android:paddingTop="4dp"
         android:paddingEnd="@dimen/dialog_padding">
 
         <TextView
@@ -33,8 +31,8 @@ limitations under the License.
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:text="USD"
-            android:textColor="@color/debit_red"
-            android:textSize="22sp" />
+            android:textAppearance="?android:textAppearanceMedium"
+            android:textColor="@color/debit_red" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="0dp"
@@ -48,9 +46,8 @@ limitations under the License.
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/label_transaction_amount"
-                android:nextFocusDown="@+id/input_split_memo"
-                android:textColor="@color/debit_red"
-                android:textSize="18sp">
+                android:nextFocusDown="@+id/input_accounts_spinner"
+                android:textColor="@color/debit_red">
 
                 <requestFocus />
             </org.gnucash.android.ui.util.widget.CalculatorEditText>
@@ -70,8 +67,8 @@ limitations under the License.
 
         <ImageView
             android:id="@+id/btn_remove_split"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:paddingStart="22dp"
             android:paddingTop="6dp"
@@ -86,9 +83,8 @@ limitations under the License.
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:minHeight="40dp"
+        android:minHeight="32dp"
         android:paddingStart="@dimen/dialog_padding"
-        android:paddingTop="4dp"
         android:paddingEnd="@dimen/dialog_padding" />
 
     <com.google.android.material.textfield.TextInputLayout
@@ -96,31 +92,27 @@ limitations under the License.
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingStart="@dimen/dialog_padding"
-        android:paddingTop="4dp"
         android:paddingEnd="@dimen/dialog_padding">
 
         <EditText
             android:id="@+id/input_split_memo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="top"
             android:hint="@string/hint_split_memo"
             android:inputType="textMultiLine|textCapSentences"
-            android:singleLine="false"
-            android:textSize="15sp" />
+            android:textAppearance="?android:textAppearanceSmall" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Only serves to store the split UID for background processing. Not relevant to user-->
     <TextView
         android:id="@+id/split_uid"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:visibility="gone" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="@dimen/dialog_padding"
         android:layout_marginBottom="@dimen/dialog_padding"
         android:background="@color/theme_primary" />
 
