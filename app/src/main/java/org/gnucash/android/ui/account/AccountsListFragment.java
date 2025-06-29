@@ -27,7 +27,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -294,14 +293,6 @@ public class AccountsListFragment extends MenuFragment implements
         contentValues.put(DatabaseSchema.AccountEntry.COLUMN_FAVORITE, isFavoriteAccount);
         mAccountsDbAdapter.updateRecord(accountUID, contentValues);
         refreshActivity();
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        if (!TextUtils.isEmpty(mParentAccountUID)) {
-            inflater.inflate(R.menu.sub_account_actions, menu);
-        }
     }
 
     @Override
