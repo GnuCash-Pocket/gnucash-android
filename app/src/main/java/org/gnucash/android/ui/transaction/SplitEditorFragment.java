@@ -48,7 +48,6 @@ import org.gnucash.android.R;
 import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.databinding.FragmentSplitEditorBinding;
 import org.gnucash.android.databinding.ItemSplitEntryBinding;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.inputmethodservice.CalculatorKeyboardView;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
@@ -72,6 +71,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 import timber.log.Timber;
 
 /**
@@ -81,9 +82,8 @@ import timber.log.Timber;
  */
 public class SplitEditorFragment extends MenuFragment {
     private QualifiedAccountNameAdapter accountNameAdapter;
-    private List<View> mSplitItemViewList;
+    private final List<SplitViewHolder> splitViewHolders = new ArrayList<>();
     private String mAccountUID;
-    private Commodity mCommodity;
 
     private BigDecimal mBaseAmount = BigDecimal.ZERO;
 
@@ -120,7 +120,7 @@ public class SplitEditorFragment extends MenuFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mBinding = FragmentSplitEditorBinding.inflate(inflater, container, false);
         colorBalanceZero = mBinding.imbalanceTextview.getCurrentTextColor();
         return mBinding.getRoot();
@@ -134,32 +134,53 @@ public class SplitEditorFragment extends MenuFragment {
         assert actionBar != null;
         actionBar.setTitle(R.string.title_split_editor);
 
-        mSplitItemViewList = new ArrayList<>();
-
         //we are editing splits for a new transaction.
         // But the user may have already created some splits before. Let's check
+
+        Bundle args = getArguments();
+        FormActivity activity = ((FormActivity) requireActivity());
+        mAccountUID = activity.getCurrentAccountUID();
+        mBaseAmount = new BigDecimal(args.getString(UxArgument.AMOUNT_STRING));
+
+        accountNameAdapter = new QualifiedAccountNameAdapter(requireContext(), getViewLifecycleOwner());
+        accountNameAdapter.load(new Function0<Unit>() {
+            @Override
+            public Unit invoke() {
+                loadSplits();
+                return null;
+            }
+        });
+        Account account = accountNameAdapter.getAccountDb(mAccountUID);
+        if (account == null) {
+            Timber.e("Account not found");
+            activity.finish();
+        }
+    }
+
+    private void loadSplits() {
+        splitViewHolders.clear();
+        mBinding.splitListLayout.removeAllViews();
 
         List<Split> splitList = getArguments().getParcelableArrayList(UxArgument.SPLIT_LIST);
         assert splitList != null;
 
-        initArgs();
         if (!splitList.isEmpty()) {
             //aha! there are some splits. Let's load those instead
             loadSplitViews(splitList);
             mImbalanceWatcher.afterTextChanged(null);
         } else {
-            Account account = accountNameAdapter.getAccount(mAccountUID);
+            Account account = accountNameAdapter.getAccountDb(mAccountUID);
             Commodity commodity = account.getCommodity();
             Split split = new Split(new Money(mBaseAmount, commodity), account.getUID());
             AccountType accountType = account.getAccountType();
             TransactionType transactionType = Transaction.getTypeForBalance(accountType, mBaseAmount.signum() < 0);
             split.setType(transactionType);
-            View splitView = addSplitView(split);
-            splitView.findViewById(R.id.input_accounts_spinner).setEnabled(false);
-            splitView.findViewById(R.id.btn_remove_split).setVisibility(View.GONE);
-            displayBalance(mBinding.imbalanceTextview, new Money(mBaseAmount.negate(), mCommodity), colorBalanceZero);
+            SplitViewHolder splitViewHolder = addSplitView(split);
+            ItemSplitEntryBinding splitViewBinding = splitViewHolder.binding;
+            splitViewBinding.inputAccountsSpinner.setEnabled(false);
+            splitViewBinding.btnRemoveSplit.setVisibility(View.GONE);
+            displayBalance(mBinding.imbalanceTextview, new Money(mBaseAmount.negate(), commodity), colorBalanceZero);
         }
-
     }
 
     @Override
@@ -169,15 +190,14 @@ public class SplitEditorFragment extends MenuFragment {
         if (view instanceof ViewGroup parent) {
             CalculatorKeyboardView keyboardView = mBinding.calculatorKeyboard.calculatorKeyboard;
             keyboardView = CalculatorKeyboard.rebind(parent, keyboardView, null);
-            for (View splitView : mSplitItemViewList) {
-                SplitViewHolder viewHolder = (SplitViewHolder) splitView.getTag();
+            for (SplitViewHolder viewHolder : splitViewHolders) {
                 viewHolder.splitAmountEditText.bindKeyboard(keyboardView);
             }
         }
     }
 
-    private void loadSplitViews(List<Split> splitList) {
-        for (Split split : splitList) {
+    private void loadSplitViews(List<Split> splits) {
+        for (Split split : splits) {
             addSplitView(split);
         }
     }
@@ -222,33 +242,21 @@ public class SplitEditorFragment extends MenuFragment {
      * @param split Split to initialize the contents to
      * @return Returns the split view which was added
      */
-    private View addSplitView(Split split) {
+    private SplitViewHolder addSplitView(Split split) {
         ItemSplitEntryBinding binding = ItemSplitEntryBinding.inflate(getLayoutInflater(), mBinding.splitListLayout, true);
         View splitView = binding.getRoot();
         SplitViewHolder viewHolder = new SplitViewHolder(binding);
         viewHolder.bind(split);
         splitView.setTag(viewHolder);
-        mSplitItemViewList.add(splitView);
-        return splitView;
-    }
-
-    /**
-     * Extracts arguments passed to the view and initializes necessary adapters and cursors
-     */
-    private void initArgs() {
-        Bundle args = getArguments();
-        mAccountUID = ((FormActivity) requireActivity()).getCurrentAccountUID();
-        mBaseAmount = new BigDecimal(args.getString(UxArgument.AMOUNT_STRING));
-
-        accountNameAdapter = new QualifiedAccountNameAdapter(requireContext());
-        Account account = accountNameAdapter.getAccount(mAccountUID);
-        mCommodity = account.getCommodity();
+        splitViewHolders.add(viewHolder);
+        return viewHolder;
     }
 
     /**
      * Holds a split item view and binds the items in it
      */
     class SplitViewHolder implements OnTransferFundsListener {
+        private final ItemSplitEntryBinding binding;
         private final View itemView;
         private final EditText splitMemoEditText;
         private final CalculatorEditText splitAmountEditText;
@@ -262,6 +270,7 @@ public class SplitEditorFragment extends MenuFragment {
 
         public SplitViewHolder(ItemSplitEntryBinding binding) {
             itemView = binding.getRoot();
+            this.binding = binding;
             this.splitMemoEditText = binding.inputSplitMemo;
             this.splitAmountEditText = binding.inputSplitAmount;
             this.removeSplitButton = binding.btnRemoveSplit;
@@ -275,8 +284,9 @@ public class SplitEditorFragment extends MenuFragment {
             removeSplitButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    SplitViewHolder viewHolder = (SplitViewHolder) itemView.getTag();
                     mBinding.splitListLayout.removeView(itemView);
-                    mSplitItemViewList.remove(itemView);
+                    splitViewHolders.remove(viewHolder);
                     mImbalanceWatcher.afterTextChanged(null);
                 }
             });
@@ -344,8 +354,17 @@ public class SplitEditorFragment extends MenuFragment {
                 splitTypeSwitch.setAccountType(account.getAccountType());
                 splitTypeSwitch.setChecked(split.getType());
             } else {
-                splitCurrencyTextView.setText(mCommodity.getSymbol());
+                Account account = accountNameAdapter.getAccountDb(mAccountUID);
+                Commodity commodity = account.getCommodity();
+                splitCurrencyTextView.setText(commodity.getSymbol());
                 splitUidTextView.setText(BaseModel.generateUID());
+
+                String transferUID = account.getDefaultTransferAccountUID();
+                Account accountTransfer = accountNameAdapter.getAccountDb(transferUID);
+                if (accountTransfer != null) {
+                    setSelectedTransferAccount(transferUID, accountsSpinner);
+                    splitTypeSwitch.setAccountType(accountTransfer.getAccountType());
+                }
                 splitTypeSwitch.setChecked(mBaseAmount.signum() > 0);
             }
         }
@@ -367,8 +386,7 @@ public class SplitEditorFragment extends MenuFragment {
      * @return {@code true} if splits can be saved, {@code false} otherwise
      */
     private boolean canSave() {
-        for (View splitView : mSplitItemViewList) {
-            SplitViewHolder viewHolder = (SplitViewHolder) splitView.getTag();
+        for (SplitViewHolder viewHolder : splitViewHolders) {
             if (!viewHolder.splitAmountEditText.isInputValid()) {
                 return false;
             }
@@ -411,13 +429,13 @@ public class SplitEditorFragment extends MenuFragment {
      */
     private ArrayList<Split> extractSplitsFromView() {
         ArrayList<Split> splitList = new ArrayList<>();
-        for (View splitView : mSplitItemViewList) {
-            SplitViewHolder viewHolder = (SplitViewHolder) splitView.getTag();
+        for (SplitViewHolder viewHolder : splitViewHolders) {
             BigDecimal enteredAmount = viewHolder.splitAmountEditText.getValue();
             if (enteredAmount == null)
                 continue;
 
-            Account account = accountNameAdapter.getAccount(mAccountUID);
+            Account account = accountNameAdapter.getAccountDb(mAccountUID);
+            if (account == null) continue;
             Money valueAmount = new Money(enteredAmount.abs(), account.getCommodity());
 
             int position = viewHolder.accountsSpinner.getSelectedItemPosition();
@@ -453,12 +471,13 @@ public class SplitEditorFragment extends MenuFragment {
         public void afterTextChanged(Editable editable) {
             BigDecimal imbalance = BigDecimal.ZERO;
 
-            for (View splitItem : mSplitItemViewList) {
-                SplitViewHolder viewHolder = (SplitViewHolder) splitItem.getTag();
+            for (SplitViewHolder viewHolder : splitViewHolders) {
                 BigDecimal amount = viewHolder.getAmountValue().abs();
-                long accountId = viewHolder.accountsSpinner.getSelectedItemId();
-                boolean hasDebitNormalBalance = AccountsDbAdapter.getInstance()
-                    .getAccountType(accountId).hasDebitNormalBalance;
+                int position = viewHolder.accountsSpinner.getSelectedItemPosition();
+                if (position < 0) return;
+                Account account = accountNameAdapter.getAccount(position);
+                if (account == null) return;
+                boolean hasDebitNormalBalance = account.getAccountType().hasDebitNormalBalance;
 
                 if (viewHolder.splitTypeSwitch.isChecked()) {
                     if (hasDebitNormalBalance)
@@ -473,7 +492,9 @@ public class SplitEditorFragment extends MenuFragment {
                 }
             }
 
-            displayBalance(mBinding.imbalanceTextview, new Money(imbalance, mCommodity), colorBalanceZero);
+            Account account = accountNameAdapter.getAccountDb(mAccountUID);
+            Commodity commodity = account.getCommodity();
+            displayBalance(mBinding.imbalanceTextview, new Money(imbalance, commodity), colorBalanceZero);
         }
     }
 
@@ -498,10 +519,10 @@ public class SplitEditorFragment extends MenuFragment {
         @Override
         public void onItemSelected(AdapterView<?> parentView, View view, int position, long id) {
             if (view == null) return;
-            Account accountFrom = accountNameAdapter.getAccount(mAccountUID);
+            Account accountFrom = accountNameAdapter.getAccountDb(mAccountUID);
             if (accountFrom == null) return;
-            Account accountTo = accountNameAdapter.getAccount(position);
 
+            Account accountTo = accountNameAdapter.getAccount(position);
             AccountType accountType = accountTo.getAccountType();
             mTypeToggleButton.setAccountType(accountType);
 
@@ -548,12 +569,11 @@ public class SplitEditorFragment extends MenuFragment {
      */
     private boolean startTransferFunds() {
         boolean result = false;
-        Account accountFrom = accountNameAdapter.getAccount(mAccountUID);
+        Account accountFrom = accountNameAdapter.getAccountDb(mAccountUID);
         Commodity fromCommodity = accountFrom.getCommodity();
         transferAttempt.clear();
 
-        for (View splitView : mSplitItemViewList) {
-            SplitViewHolder viewHolder = (SplitViewHolder) splitView.getTag();
+        for (SplitViewHolder viewHolder : splitViewHolders) {
             if (!viewHolder.splitAmountEditText.isInputModified()) continue;
             Money splitQuantity = viewHolder.quantity;
             if (splitQuantity == null) continue;
@@ -574,7 +594,7 @@ public class SplitEditorFragment extends MenuFragment {
      * @return {@code true} if multi-currency transaction, {@code false} otherwise
      */
     private boolean isMultiCurrencyTransaction() {
-        Account accountFrom = accountNameAdapter.getAccount(mAccountUID);
+        Account accountFrom = accountNameAdapter.getAccountDb(mAccountUID);
         Commodity accountCommodity = accountFrom.getCommodity();
 
         List<Split> splits = extractSplitsFromView();

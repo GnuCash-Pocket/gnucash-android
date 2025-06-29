@@ -44,7 +44,6 @@ import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFra
 import org.gnucash.android.R;
 import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.databinding.FragmentBudgetFormBinding;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.BudgetsDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.inputmethodservice.CalculatorKeyboardView;
@@ -66,6 +65,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 import timber.log.Timber;
 
 /**
@@ -83,45 +84,51 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
     private Budget mBudget;
     private final Calendar mStartDate = Calendar.getInstance();
     private ArrayList<BudgetAmount> mBudgetAmounts = new ArrayList<>();
-    private AccountsDbAdapter mAccountsDbAdapter;
     private QualifiedAccountNameAdapter accountNameAdapter;
 
     private FragmentBudgetFormBinding mBinding;
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mBinding = FragmentBudgetFormBinding.inflate(inflater, container, false);
-        View view = mBinding.getRoot();
-
-        view.findViewById(R.id.btn_remove_item).setVisibility(View.GONE);
-        mBinding.budgetAmountLayout.inputBudgetAmount.bindKeyboard(mBinding.calculatorKeyboard);
-        mBinding.inputStartDate.setText(TransactionFormFragment.DATE_FORMATTER.print(mStartDate.getTimeInMillis()));
-        mBinding.inputStartDate.setOnClickListener(this::onClickBudgetStartDate);
-        mBinding.btnAddBudgetAmount.setOnClickListener(this::onOpenBudgetAmountEditor);
-        return view;
-    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mBudgetsDbAdapter = BudgetsDbAdapter.getInstance();
         mBudgetAmounts.clear();
-        accountNameAdapter = new QualifiedAccountNameAdapter(requireContext());
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        mBinding = FragmentBudgetFormBinding.inflate(inflater, container, false);
+        return mBinding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        final FragmentBudgetFormBinding binding = mBinding;
 
-        mBinding.budgetAmountLayout.btnRemoveItem.setVisibility(View.GONE);
-        mBinding.budgetAmountLayout.inputBudgetAmount.bindKeyboard(mBinding.calculatorKeyboard);
-        mBinding.inputStartDate.setText(TransactionFormFragment.DATE_FORMATTER.print(mStartDate.getTimeInMillis()));
+        binding.budgetAmountLayout.btnRemoveItem.setVisibility(View.GONE);
+        binding.budgetAmountLayout.inputBudgetAmount.bindKeyboard(binding.calculatorKeyboard);
+        binding.inputStartDate.setText(TransactionFormFragment.DATE_FORMATTER.print(mStartDate.getTimeInMillis()));
+        binding.inputStartDate.setOnClickListener(this::onClickBudgetStartDate);
+        binding.btnAddBudgetAmount.setOnClickListener(this::onOpenBudgetAmountEditor);
 
-        mBinding.budgetAmountLayout.inputBudgetAccountSpinner.setAdapter(accountNameAdapter);
+        binding.budgetAmountLayout.btnRemoveItem.setVisibility(View.GONE);
+        binding.budgetAmountLayout.inputBudgetAmount.bindKeyboard(binding.calculatorKeyboard);
+        binding.inputStartDate.setText(TransactionFormFragment.DATE_FORMATTER.print(mStartDate.getTimeInMillis()));
+
+        accountNameAdapter = new QualifiedAccountNameAdapter(requireContext(), getViewLifecycleOwner());
+        accountNameAdapter.load(new Function0<Unit>() {
+            @Override
+            public Unit invoke() {
+                // TODO binding.budgetAmountLayout.inputBudgetAccountSpinner.setSelection();
+                return null;
+            }
+        });
+        binding.budgetAmountLayout.inputBudgetAccountSpinner.setAdapter(accountNameAdapter);
         String budgetUID = getArguments().getString(UxArgument.BUDGET_UID);
         if (budgetUID != null) { //if we are editing the budget
-            initViews(mBudget = mBudgetsDbAdapter.getRecord(budgetUID));
+            initViews(binding, mBudget = mBudgetsDbAdapter.getRecord(budgetUID));
         }
         ActionBar actionbar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
         assert actionbar != null;
@@ -130,7 +137,7 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
         else
             actionbar.setTitle(R.string.title_edit_budget);
 
-        mBinding.inputRecurrence.setOnClickListener(
+        binding.inputRecurrence.setOnClickListener(
             new RecurrenceViewClickListener((AppCompatActivity) getActivity(), mRecurrenceRule, this));
     }
 
@@ -139,18 +146,18 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
      *
      * @param budget Budget to use to initialize the views
      */
-    private void initViews(Budget budget) {
-        Context context = mBinding.inputBudgetName.getContext();
-        mBinding.inputBudgetName.setText(budget.getName());
-        mBinding.inputDescription.setText(budget.getDescription());
+    private void initViews(final FragmentBudgetFormBinding binding, Budget budget) {
+        Context context = binding.inputBudgetName.getContext();
+        binding.inputBudgetName.setText(budget.getName());
+        binding.inputDescription.setText(budget.getDescription());
 
         String recurrenceRuleString = budget.getRecurrence().getRuleString();
         mRecurrenceRule = recurrenceRuleString;
         mEventRecurrence.parse(recurrenceRuleString);
-        mBinding.inputRecurrence.setText(budget.getRecurrence().getRepeatString(context));
+        binding.inputRecurrence.setText(budget.getRecurrence().getRepeatString(context));
 
         mBudgetAmounts = new ArrayList(budget.getCompactedBudgetAmounts());
-        toggleAmountInputVisibility();
+        toggleAmountInputVisibility(binding);
     }
 
     /**
@@ -160,14 +167,14 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
      *
      * @return List of budget amounts
      */
-    private ArrayList<BudgetAmount> extractBudgetAmounts() {
-        BigDecimal value = mBinding.budgetAmountLayout.inputBudgetAmount.getValue();
+    private ArrayList<BudgetAmount> extractBudgetAmounts(FragmentBudgetFormBinding binding) {
+        BigDecimal value = binding.budgetAmountLayout.inputBudgetAmount.getValue();
         if (value == null)
             return mBudgetAmounts;
 
         if (mBudgetAmounts.isEmpty()) { //has not been set in budget amounts editor
             ArrayList<BudgetAmount> budgetAmounts = new ArrayList<>();
-            int accountPosition = mBinding.budgetAmountLayout.inputBudgetAccountSpinner.getSelectedItemPosition();
+            int accountPosition = binding.budgetAmountLayout.inputBudgetAccountSpinner.getSelectedItemPosition();
             Account account = accountNameAdapter.getAccount(accountPosition);
             if (account == null) return mBudgetAmounts;
             Money amount = new Money(value, account.getCommodity());
@@ -186,7 +193,7 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
      *
      * @return {@code true} if the budget can be saved, {@code false} otherwise
      */
-    private boolean canSave() {
+    private boolean canSave(@NonNull final FragmentBudgetFormBinding binding) {
         if (mEventRecurrence.until != null && mEventRecurrence.until.length() > 0
             || mEventRecurrence.count <= 0) {
             Toast.makeText(getActivity(),
@@ -195,21 +202,21 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
             return false;
         }
 
-        mBudgetAmounts = extractBudgetAmounts();
-        String budgetName = mBinding.inputBudgetName.getText().toString();
+        mBudgetAmounts = extractBudgetAmounts(binding);
+        String budgetName = binding.inputBudgetName.getText().toString();
         boolean canSave = mRecurrenceRule != null
             && !budgetName.isEmpty()
             && !mBudgetAmounts.isEmpty();
 
         if (!canSave) {
             if (budgetName.isEmpty()) {
-                mBinding.nameTextInputLayout.setError("A name is required");
+                binding.nameTextInputLayout.setError("A name is required");
             } else {
-                mBinding.nameTextInputLayout.setError(null);
+                binding.nameTextInputLayout.setError(null);
             }
 
             if (mBudgetAmounts.isEmpty()) {
-                mBinding.budgetAmountLayout.inputBudgetAmount.setError("Enter an amount for the budget");
+                binding.budgetAmountLayout.inputBudgetAmount.setError("Enter an amount for the budget");
                 Toast.makeText(getActivity(), "Add budget amounts in order to save the budget",
                     Toast.LENGTH_SHORT).show();
             }
@@ -227,10 +234,10 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
      * Extracts the information from the form and saves the budget
      */
     private void saveBudget() {
-        if (!canSave())
+        final FragmentBudgetFormBinding binding = mBinding;
+        if (!canSave(binding))
             return;
-        String name = mBinding.inputBudgetName.getText().toString().trim();
-
+        String name = binding.inputBudgetName.getText().toString().trim();
 
         if (mBudget == null) {
             mBudget = new Budget(name);
@@ -239,10 +246,10 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
         }
 
         // TODO: 22.10.2015 set the period num of the budget amount
-        extractBudgetAmounts();
+        extractBudgetAmounts(binding);
         mBudget.setBudgetAmounts(mBudgetAmounts);
 
-        mBudget.setDescription(mBinding.inputDescription.getText().toString().trim());
+        mBudget.setDescription(binding.inputDescription.getText().toString().trim());
 
         Recurrence recurrence = RecurrenceParser.parse(mEventRecurrence);
         recurrence.setPeriodStart(mStartDate.getTimeInMillis());
@@ -277,7 +284,7 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
     private void onOpenBudgetAmountEditor(View v) {
         Intent intent = new Intent(getActivity(), FormActivity.class);
         intent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.BUDGET_AMOUNT_EDITOR.name());
-        mBudgetAmounts = extractBudgetAmounts();
+        mBudgetAmounts = extractBudgetAmounts(mBinding);
         intent.putParcelableArrayListExtra(UxArgument.BUDGET_AMOUNT_LIST, mBudgetAmounts);
         startActivityForResult(intent, REQUEST_EDIT_BUDGET_AMOUNTS);
     }
@@ -317,7 +324,7 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
                 ArrayList<BudgetAmount> budgetAmounts = data.getParcelableArrayListExtra(UxArgument.BUDGET_AMOUNT_LIST);
                 if (budgetAmounts != null) {
                     mBudgetAmounts = budgetAmounts;
-                    toggleAmountInputVisibility();
+                    toggleAmountInputVisibility(mBinding);
                 }
                 return;
             }
@@ -328,17 +335,17 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
     /**
      * Toggles the visibility of the amount input based on {@link #mBudgetAmounts}
      */
-    private void toggleAmountInputVisibility() {
+    private void toggleAmountInputVisibility(FragmentBudgetFormBinding binding) {
         if (mBudgetAmounts.size() > 1) {
-            mBinding.budgetAmountLayout.getRoot().setVisibility(View.GONE);
-            mBinding.btnAddBudgetAmount.setText("Edit Budget Amounts");
+            binding.budgetAmountLayout.getRoot().setVisibility(View.GONE);
+            binding.btnAddBudgetAmount.setText("Edit Budget Amounts");
         } else {
-            mBinding.btnAddBudgetAmount.setText("Add Budget Amounts");
-            mBinding.budgetAmountLayout.getRoot().setVisibility(View.VISIBLE);
+            binding.btnAddBudgetAmount.setText("Add Budget Amounts");
+            binding.budgetAmountLayout.getRoot().setVisibility(View.VISIBLE);
             if (!mBudgetAmounts.isEmpty()) {
                 BudgetAmount budgetAmount = mBudgetAmounts.get(0);
-                mBinding.budgetAmountLayout.inputBudgetAmount.setValue(budgetAmount.getAmount().toBigDecimal());
-                mBinding.budgetAmountLayout.inputBudgetAccountSpinner.setSelection(accountNameAdapter.getPosition(budgetAmount.getAccountUID()));
+                binding.budgetAmountLayout.inputBudgetAmount.setValue(budgetAmount.getAmount().toBigDecimal());
+                binding.budgetAmountLayout.inputBudgetAccountSpinner.setSelection(accountNameAdapter.getPosition(budgetAmount.getAccountUID()));
             }
         }
     }

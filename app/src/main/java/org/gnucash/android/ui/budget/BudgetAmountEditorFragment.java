@@ -78,9 +78,7 @@ public class BudgetAmountEditorFragment extends MenuFragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         mBinding = FragmentBudgetAmountEditorBinding.inflate(inflater, container, false);
-        View view = mBinding.getRoot();
-        setupAccountSpinnerAdapter();
-        return view;
+        return mBinding.getRoot();
     }
 
     @Override
@@ -96,6 +94,8 @@ public class BudgetAmountEditorFragment extends MenuFragment {
         ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
         assert actionBar != null;
         actionBar.setTitle("Edit Budget Amounts");
+
+        setupAccountSpinnerAdapter();
 
         ArrayList<BudgetAmount> budgetAmounts = getArguments().getParcelableArrayList(UxArgument.BUDGET_AMOUNT_LIST);
         if (budgetAmounts != null) {
@@ -198,7 +198,7 @@ public class BudgetAmountEditorFragment extends MenuFragment {
      * Loads the accounts in the spinner
      */
     private void setupAccountSpinnerAdapter() {
-        accountNameAdapter = new QualifiedAccountNameAdapter(requireContext(), mAccountsDbAdapter);
+        accountNameAdapter = new QualifiedAccountNameAdapter(requireContext(), mAccountsDbAdapter, getViewLifecycleOwner());
     }
 
     /**

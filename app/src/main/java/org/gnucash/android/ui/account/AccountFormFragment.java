@@ -54,7 +54,8 @@ import org.gnucash.android.R;
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.databinding.FragmentAccountFormBinding;
-import org.gnucash.android.db.DatabaseSchema;
+import org.gnucash.android.db.DatabaseSchema.AccountEntry;
+import org.gnucash.android.db.DatabaseSchema.SplitEntry;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
 import org.gnucash.android.model.Account;
@@ -69,6 +70,8 @@ import org.gnucash.android.ui.common.UxArgument;
 import java.util.ArrayList;
 import java.util.List;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 import timber.log.Timber;
 
 /**
@@ -105,17 +108,14 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
     private Account mAccount = null;
 
     /**
-     * List of all descendant Account UIDs, if we are modifying an account
-     * null if creating a new account
+     * List of all descendant accounts, if we are modifying an account.
      */
-    private final List<String> descendantAccountUIDs = new ArrayList<>();
     private final List<Account> descendantAccounts = new ArrayList<>();
 
     /**
      * Adapter for the parent account spinner
      */
     private QualifiedAccountNameAdapter parentAccountNameAdapter;
-    private QualifiedAccountNameAdapter accountNameAdapter;
 
     /**
      * Adapter which binds to the spinner for default transfer account
@@ -155,10 +155,8 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         mRootAccountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
 
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-        accountNameAdapter = new QualifiedAccountNameAdapter(context, null, null, mAccountsDbAdapter);
         accountTypesAdapter = new AccountTypesAdapter(context);
-        commoditiesAdapter = new CommoditiesAdapter(context);
-        Account account = accountNameAdapter.getAccount(accountUID);
+        Account account = mAccountsDbAdapter.getSimpleRecord(accountUID);
         mAccount = account;
         if (account != null) {
             mParentAccountUID = account.getParentUID();
@@ -183,8 +181,10 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         final FragmentAccountFormBinding binding = mBinding;
+        final Context context = view.getContext();
+        final Account account = mAccount;
+
         binding.inputAccountName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -207,7 +207,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
 
         binding.inputAccountTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+            public void onItemSelected(AdapterView<?> parentView, View view, int position, long id) {
                 if (view == null) return;
                 selectedAccountType = accountTypesAdapter.getType(position);
                 loadParentAccountList(binding, selectedAccountType);
@@ -266,6 +266,16 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
             }
         });
 
+        commoditiesAdapter = new CommoditiesAdapter(context, getViewLifecycleOwner());
+        commoditiesAdapter.load(new Function0<Unit>() {
+            @Override
+            public Unit invoke() {
+                Commodity commodity = (account != null) ? account.getCommodity() : Commodity.DEFAULT_COMMODITY;
+                int position = commoditiesAdapter.getPosition(commodity);
+                binding.inputCurrencySpinner.setSelection(position);
+                return null;
+            }
+        });
         binding.inputCurrencySpinner.setAdapter(commoditiesAdapter);
         binding.inputCurrencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -285,7 +295,6 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         //need to load the cursor adapters for the spinners before initializing the views
         binding.inputAccountTypeSpinner.setAdapter(accountTypesAdapter);
 
-        Account account = mAccount;
         loadDefaultTransferAccountList(binding, account);
         if (account != null) {
             actionBar.setTitle(R.string.title_edit_account);
@@ -308,15 +317,13 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         if (account == null) {
             throw new IllegalArgumentException("Account required");
         }
+        final Context context = binding.getRoot().getContext();
 
         selectedName = account.getName();
-        List<Account> descendants = accountNameAdapter.getDescendants(account);
+
+        List<Account> descendants = mAccountsDbAdapter.getDescendants(account);
         descendantAccounts.clear();
         descendantAccounts.addAll(descendants);
-        descendantAccountUIDs.clear();
-        for (Account descendant : descendants) {
-            descendantAccountUIDs.add(descendant.getUID());
-        }
 
         setSelectedCurrency(binding, account.getCommodity());
         setAccountTypeSelection(binding, account.getAccountType());
@@ -330,7 +337,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
 
         setTextToEnd(binding.inputAccountName, account.getName());
         binding.inputAccountDescription.setText(account.getDescription());
-        mBinding.notes.setText(account.getNote());
+        binding.notes.setText(account.getNote());
 
         if (mUseDoubleEntry) {
             String defaultTransferAccountUID = account.getDefaultTransferAccountUID();
@@ -351,9 +358,9 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
             }
         }
 
-        mBinding.placeholderStatus.setChecked(account.isPlaceholder());
-        mBinding.favoriteStatus.setChecked(account.isFavorite());
-        mBinding.hiddenStatus.setChecked(account.isHidden());
+        binding.placeholderStatus.setChecked(account.isPlaceholder());
+        binding.favoriteStatus.setChecked(account.isFavorite());
+        binding.hiddenStatus.setChecked(account.isHidden());
         mSelectedColor = account.getColor();
         binding.inputColorPicker.setBackgroundTintList(ColorStateList.valueOf(mSelectedColor));
     }
@@ -363,13 +370,12 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      */
     private void initializeViews(@NonNull FragmentAccountFormBinding binding) {
         selectedName = "";
-        descendantAccountUIDs.clear();
         setSelectedCurrency(binding, Commodity.DEFAULT_COMMODITY);
         binding.inputColorPicker.setBackgroundTintList(ColorStateList.valueOf(mSelectedColor));
 
         String parentUID = mParentAccountUID;
         if (!TextUtils.isEmpty(parentUID)) {
-            Account parentAccount = accountNameAdapter.getAccount(parentUID);
+            Account parentAccount = mAccountsDbAdapter.getSimpleRecord(parentUID);
             if (parentAccount != null) {
                 setSelectedCurrency(binding, parentAccount.getCommodity());
                 AccountType parentAccountType = parentAccount.getAccountType();
@@ -416,12 +422,19 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      * @param parentAccountUID UID of parent account to be selected
      */
     private void setParentAccountSelection(@NonNull FragmentAccountFormBinding binding, @Nullable String parentAccountUID) {
-        if (TextUtils.isEmpty(parentAccountUID) || parentAccountUID.equals(mRootAccountUID)) {
-            return;
+        binding.checkboxParentAccount.setChecked(false);
+        if (parentAccountNameAdapter.isEmpty()) {
+            binding.checkboxParentAccount.setVisibility(View.GONE);
+            binding.inputParentAccount.setVisibility(View.GONE);
+        } else {
+            binding.checkboxParentAccount.setVisibility(View.VISIBLE);
+            binding.inputParentAccount.setVisibility(View.VISIBLE);
         }
 
         int position = parentAccountNameAdapter.getPosition(parentAccountUID);
         if (position >= 0) {
+            binding.checkboxParentAccount.setVisibility(View.VISIBLE);
+            binding.inputParentAccount.setVisibility(View.VISIBLE);
             binding.checkboxParentAccount.setChecked(true);
             binding.inputParentAccount.setEnabled(true);
             binding.inputParentAccount.setSelection(position, true);
@@ -507,19 +520,28 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
     /**
      * Initializes the default transfer account spinner with eligible accounts
      */
-    private void loadDefaultTransferAccountList(@NonNull FragmentAccountFormBinding binding, @Nullable Account account) {
-        String condition = DatabaseSchema.AccountEntry.COLUMN_UID + " != ?"
-            + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0"
-            + " AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + " != ?"
-            + " AND " + DatabaseSchema.AccountEntry.COLUMN_TEMPLATE + " = 0";
+    private void loadDefaultTransferAccountList(@NonNull final FragmentAccountFormBinding binding, @Nullable Account account) {
+        String condition = AccountEntry.COLUMN_UID + " != ?"
+            + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
+            + " AND " + AccountEntry.COLUMN_TYPE + " != ?"
+            + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
 
         final Context context = binding.getRoot().getContext();
         String accountUID = (account == null) ? "" : account.getUID();
-        defaultAccountNameAdapter = QualifiedAccountNameAdapter.where(
+        defaultAccountNameAdapter = new QualifiedAccountNameAdapter(
             context,
             condition,
-            new String[]{accountUID, AccountType.ROOT.name()}
+            new String[]{accountUID, AccountType.ROOT.name()},
+            mAccountsDbAdapter,
+            getViewLifecycleOwner()
         );
+        defaultAccountNameAdapter.load(new Function0<Unit>() {
+            @Override
+            public Unit invoke() {
+                setDefaultTransferAccountInputsVisible(binding, mUseDoubleEntry && (defaultAccountNameAdapter.getCount() > 0));
+                return null;
+            }
+        });
         binding.inputDefaultTransferAccount.setAdapter(defaultAccountNameAdapter);
         setDefaultTransferAccountInputsVisible(binding, mUseDoubleEntry && (defaultAccountNameAdapter.getCount() > 0));
     }
@@ -530,32 +552,39 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      *
      * @param accountType AccountType of account whose allowed parent list is to be loaded
      */
-    private void loadParentAccountList(@NonNull FragmentAccountFormBinding binding, AccountType accountType) {
-        String condition = DatabaseSchema.SplitEntry.COLUMN_TYPE + " IN (" + getAllowedParentAccountTypes(accountType) + ")"
-            + " AND " + DatabaseSchema.AccountEntry.COLUMN_TEMPLATE + " = 0";
+    private void loadParentAccountList(@NonNull final FragmentAccountFormBinding binding, AccountType accountType) {
+        String condition = SplitEntry.COLUMN_TYPE + " IN (" + getAllowedParentAccountTypes(accountType) + ")"
+            + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
 
-        Account account = mAccount;
+        final Account account = mAccount;
         if (account != null) {  //if editing an account
             // limit cyclic account hierarchies.
-            if (descendantAccountUIDs.isEmpty()) {
-                condition += " AND (" + DatabaseSchema.AccountEntry.COLUMN_UID + " NOT IN ( '" + account.getUID() + "' ) )";
+            if (descendantAccounts.isEmpty()) {
+                condition += " AND (" + AccountEntry.COLUMN_UID + " NOT IN ( '" + account.getUID() + "' ) )";
             } else {
-                condition += " AND (" + DatabaseSchema.AccountEntry.COLUMN_UID + " NOT IN ( '"
+                List<String> descendantAccountUIDs = new ArrayList<>();
+                for (Account descendant : descendantAccounts) {
+                    descendantAccountUIDs.add(descendant.getUID());
+                }
+                condition += " AND (" + AccountEntry.COLUMN_UID + " NOT IN ( '"
                     + TextUtils.join("','", descendantAccountUIDs) + "','" + account.getUID() + "' ) )";
             }
         }
 
-        parentAccountNameAdapter = QualifiedAccountNameAdapter.where(binding.getRoot().getContext(), condition);
-        binding.inputParentAccount.setAdapter(parentAccountNameAdapter);
+        binding.checkboxParentAccount.setChecked(false); //disable before hiding, else we can still read it when saving
+        binding.checkboxParentAccount.setVisibility(View.GONE);
+        binding.inputParentAccount.setVisibility(View.GONE);
 
-        if (parentAccountNameAdapter.getCount() <= 0) {
-            binding.checkboxParentAccount.setChecked(false); //disable before hiding, else we can still read it when saving
-            binding.checkboxParentAccount.setVisibility(View.GONE);
-            binding.inputParentAccount.setVisibility(View.GONE);
-        } else {
-            binding.checkboxParentAccount.setVisibility(View.VISIBLE);
-            binding.inputParentAccount.setVisibility(View.VISIBLE);
-        }
+        parentAccountNameAdapter = new QualifiedAccountNameAdapter(binding.getRoot().getContext(), condition, null, mAccountsDbAdapter, getViewLifecycleOwner());
+        parentAccountNameAdapter.load(new Function0<Unit>() {
+            @Override
+            public Unit invoke() {
+                String parentUID = (account != null) ? account.getParentUID() : mParentAccountUID;
+                setParentAccountSelection(binding, parentUID);
+                return null;
+            }
+        });
+        binding.inputParentAccount.setAdapter(parentAccountNameAdapter);
     }
 
     /**
@@ -566,13 +595,18 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      * @return String comma separated list of account types
      */
     private String getAllowedParentAccountTypes(AccountType type) {
+        List<String> names = new ArrayList<>();
+
         switch (type) {
             case EQUITY:
-                return "'" + AccountType.EQUITY.name() + "'";
+                names.add(AccountType.EQUITY.name());
+                break;
 
             case INCOME:
             case EXPENSE:
-                return "'" + AccountType.EXPENSE.name() + "', '" + AccountType.INCOME.name() + "'";
+                names.add(AccountType.EXPENSE.name());
+                names.add(AccountType.INCOME.name());
+                break;
 
             case CASH:
             case BANK:
@@ -583,24 +617,24 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
             case RECEIVABLE:
             case CURRENCY:
             case STOCK:
-            case MUTUAL: {
-                List<String> accountTypeStrings = getAccountTypeStringList();
-                accountTypeStrings.remove(AccountType.EQUITY.name());
-                accountTypeStrings.remove(AccountType.EXPENSE.name());
-                accountTypeStrings.remove(AccountType.INCOME.name());
-                accountTypeStrings.remove(AccountType.ROOT.name());
-                return "'" + TextUtils.join("','", accountTypeStrings) + "'";
-            }
+            case MUTUAL:
+                names.addAll(getAccountTypeStringList());
+                names.remove(AccountType.EQUITY.name());
+                names.remove(AccountType.EXPENSE.name());
+                names.remove(AccountType.INCOME.name());
+                names.remove(AccountType.ROOT.name());
+                break;
 
             case TRADING:
-                return "'" + AccountType.TRADING.name() + "'";
+                names.add(AccountType.TRADING.name());
+                break;
 
             case ROOT:
-            default: {
-                List<String> accountTypeStrings = getAccountTypeStringList();
-                return "'" + TextUtils.join("','", accountTypeStrings) + "'";
-            }
+            default:
+                names.addAll(getAccountTypeStringList());
+                break;
         }
+        return "'" + TextUtils.join("','", names) + "'";
     }
 
     /**

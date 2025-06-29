@@ -6,10 +6,8 @@ import androidx.annotation.LayoutRes
 import org.gnucash.android.R
 import org.gnucash.android.model.AccountType
 
-class AccountTypesAdapter @JvmOverloads constructor(
-    context: Context,
-    @LayoutRes resource: Int = android.R.layout.simple_spinner_item
-) : ArrayAdapter<AccountTypesAdapter.Label>(context, resource) {
+class AccountTypesAdapter(context: Context) :
+    ArrayAdapter<AccountTypesAdapter.Label>(context, android.R.layout.simple_spinner_item) {
 
     init {
         setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)

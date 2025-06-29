@@ -131,19 +131,20 @@ public class TransactionsListFragment extends MenuFragment implements
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
-        mBinding.list.setHasFixedSize(true);
+        final FragmentTransactionsListBinding binding = mBinding;
+        binding.list.setHasFixedSize(true);
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
-            mBinding.list.setLayoutManager(gridLayoutManager);
+            binding.list.setLayoutManager(gridLayoutManager);
         } else {
             LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-            mBinding.list.setLayoutManager(mLayoutManager);
+            binding.list.setLayoutManager(mLayoutManager);
         }
-        mBinding.list.setEmptyView(mBinding.emptyView);
-        mBinding.list.setTag("transactions");
+        binding.list.setEmptyView(binding.emptyView);
+        binding.list.setTag("transactions");
 
         mTransactionRecyclerAdapter = new TransactionRecyclerAdapter(null);
-        mBinding.list.setAdapter(mTransactionRecyclerAdapter);
+        binding.list.setAdapter(mTransactionRecyclerAdapter);
     }
 
     /**

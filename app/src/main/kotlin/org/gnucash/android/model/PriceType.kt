@@ -28,6 +28,8 @@ enum class PriceType(val value: String) {
     /** Net Asset Value (mutual fund price per share, NAV for short) */
     NetAssetValue("nav"),
 
+    Transaction("transaction"),
+
     Unknown("unknown");
 
     companion object {
@@ -35,7 +37,7 @@ enum class PriceType(val value: String) {
 
         @JvmStatic
         fun of(key: String?): PriceType {
-            val value = key?.uppercase(Locale.ROOT) ?: return Unknown
+            val value = key?.lowercase(Locale.ROOT) ?: return Unknown
             return values.firstOrNull { it.value == value } ?: Unknown
         }
     }
