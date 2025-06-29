@@ -551,7 +551,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return List of {@link Account}s in the database
      */
     public List<Account> getSimpleAccounts() {
-        return getSimpleAccounts(null, null, AccountEntry.COLUMN_FULL_NAME + " ASC");
+        return getSimpleAccounts(null, null, null);
     }
 
     /**
@@ -561,6 +561,9 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return List of {@link Account}s in the database
      */
     public List<Account> getSimpleAccounts(@Nullable String where, @Nullable String[] whereArgs, @Nullable String orderBy) {
+        if (orderBy == null) {
+            orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC";
+        }
         List<Account> accounts = new ArrayList<>();
         Cursor cursor = fetchAccounts(where, whereArgs, orderBy);
         if (cursor == null) return accounts;
@@ -977,7 +980,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      */
     public Money getAccountsBalance(@NonNull List<Account> accounts, long startTimestamp, long endTimestamp) {
         String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
-        Commodity commodity = commoditiesDbAdapter.getCommodity(currencyCode);
+        Commodity commodity = commoditiesDbAdapter.getCurrency(currencyCode);
         Money balance = Money.createZeroInstance(commodity);
         for (Account account : accounts) {
             Money accountBalance = getAccountBalance(account, startTimestamp, endTimestamp, false);
@@ -1452,7 +1455,8 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      */
     public List<Commodity> getCommoditiesInUse() {
         String[] columns = new String[]{AccountEntry.COLUMN_COMMODITY_UID};
-        Cursor cursor = mDb.query(true, mTableName, columns, null, null, null, null, null, null);
+        String where = AccountEntry.COLUMN_TEMPLATE + " = 0";
+        Cursor cursor = mDb.query(true, mTableName, columns, where, null, null, null, null, null);
         Set<Commodity> accountCommodities = new HashSet<>();
         try {
             if (cursor.moveToFirst()) {

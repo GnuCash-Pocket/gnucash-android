@@ -84,7 +84,7 @@ class ScheduledActionTest : GnuCashTest() {
 
         val endTime = getTimeInMillis(2017, 8, 26)
         val recurrence = Recurrence(PeriodType.WEEK)
-        recurrence.setPeriodEnd(Timestamp(endTime))
+        recurrence.periodEnd = endTime
         scheduledAction.setRecurrence(recurrence)
 
         assertThat(scheduledAction.endTime).isEqualTo(endTime)
