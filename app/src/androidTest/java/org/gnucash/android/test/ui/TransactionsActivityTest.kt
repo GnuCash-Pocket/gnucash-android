@@ -625,6 +625,8 @@ class TransactionsActivityTest : GnuAndroidTest() {
 
     @Test
     fun testDeleteTransaction() {
+        validateTransactionListDisplayed()
+
         onView(withId(R.id.options_menu))
             .perform(click())
         onView(withText(R.string.menu_delete))
@@ -637,6 +639,8 @@ class TransactionsActivityTest : GnuAndroidTest() {
 
     @Test
     fun testMoveTransaction() {
+        validateTransactionListDisplayed()
+
         val account = Account("Move account", COMMODITY)
         accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert)
 
@@ -715,6 +719,8 @@ class TransactionsActivityTest : GnuAndroidTest() {
 
     @Test
     fun testDuplicateTransaction() {
+        validateTransactionListDisplayed()
+
         assertThat(
             transactionsDbAdapter.getAllTransactionsForAccount(TRANSACTIONS_ACCOUNT_UID)
         ).hasSize(1)
