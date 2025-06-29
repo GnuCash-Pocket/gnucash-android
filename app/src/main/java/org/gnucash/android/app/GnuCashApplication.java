@@ -122,8 +122,6 @@ public class GnuCashApplication extends Application {
 
         initializeDatabaseAdapters(context);
         setDefaultCurrencyCode(getDefaultCurrencyCode());
-
-        StethoUtils.install(this);
     }
 
     @Override
