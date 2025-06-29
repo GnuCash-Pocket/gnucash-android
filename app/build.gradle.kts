@@ -191,9 +191,6 @@ dependencies {
         exclude(group = "commons-logging", module = "commons-logging")
     }
 
-    // Debug
-    debugImplementation("com.facebook.stetho:stetho:1.5.0")
-
     testImplementation("org.robolectric:robolectric:4.14.1")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.assertj:assertj-core:3.27.3")
