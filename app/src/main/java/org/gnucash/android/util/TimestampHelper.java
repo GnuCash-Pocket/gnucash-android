@@ -92,12 +92,11 @@ public final class TimestampHelper {
                 // In case of parsing of string without milliseconds.
                 millis = UTC_DATE_FORMAT.parseMillis(utcString);
                 return new Timestamp(millis);
-
             } catch (IllegalArgumentException secondException) {
                 // If we are here:
                 // - The utcString has an invalid format OR
                 // - We are missing some relevant pattern.
-                throw new IllegalArgumentException("Unknown utcString = '" + utcString + "'.", secondException);
+                throw new IllegalArgumentException("Unknown UTC format '" + utcString + "'", secondException);
             }
         }
     }

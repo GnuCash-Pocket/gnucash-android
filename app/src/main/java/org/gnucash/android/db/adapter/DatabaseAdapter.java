@@ -475,7 +475,7 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
     public Model getRecord(@NonNull String uid) throws IllegalArgumentException {
         Model model = getRecordOrNull(uid);
         if (model == null) {
-            throw new IllegalArgumentException("Record with " + uid + " does not exist");
+            throw new IllegalArgumentException("Record not found");
         }
         return model;
     }

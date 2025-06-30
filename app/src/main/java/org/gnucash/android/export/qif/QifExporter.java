@@ -354,7 +354,7 @@ public class QifExporter extends Exporter {
                     out = new BufferedWriter(new FileWriter(splitFile));
                 } else {
                     if (out == null) {
-                        throw new IllegalArgumentException(path + " format is not correct");
+                        throw new IllegalArgumentException("Format invalid: " + path);
                     }
                     out.append(line).append(NEW_LINE);
                 }

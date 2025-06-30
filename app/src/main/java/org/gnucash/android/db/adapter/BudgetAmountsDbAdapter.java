@@ -166,7 +166,7 @@ public class BudgetAmountsDbAdapter extends DatabaseAdapter<BudgetAmount> {
                 String commodityUID = cursor.getString(0);
                 return commoditiesDbAdapter.getRecord(commodityUID);
             } else {
-                throw new IllegalArgumentException("Account " + accountUID + " does not exist");
+                throw new IllegalArgumentException("Account not found");
             }
         } finally {
             cursor.close();

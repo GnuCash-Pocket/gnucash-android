@@ -213,7 +213,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
         if (commodity != null) {
             return commodity.getCurrencyCode();
         }
-        throw new IllegalArgumentException("guid " + guid + " not exits in commodity db");
+        throw new IllegalArgumentException("Commodity not found");
     }
 
     @Nullable

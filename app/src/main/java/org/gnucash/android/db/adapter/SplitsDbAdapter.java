@@ -355,7 +355,7 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
             if (cursor.moveToFirst()) {
                 return cursor.getString(cursor.getColumnIndexOrThrow(TransactionEntry.COLUMN_UID));
             } else {
-                throw new IllegalArgumentException("transaction " + transactionId + " does not exist");
+                throw new IllegalArgumentException("Transaction not found");
             }
         } finally {
             cursor.close();
@@ -400,7 +400,7 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
             if (c.moveToFirst()) {
                 return c.getLong(0);
             } else {
-                throw new IllegalArgumentException("transaction " + transactionUID + " does not exist");
+                throw new IllegalArgumentException("Transaction not found");
             }
         } finally {
             c.close();
@@ -440,7 +440,7 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
                 accountCommodities.put(accountUID, commodity);
                 return commodity;
             } else {
-                throw new IllegalArgumentException("Account " + accountUID + " does not exist");
+                throw new IllegalArgumentException("Account not found");
             }
         } finally {
             cursor.close();
