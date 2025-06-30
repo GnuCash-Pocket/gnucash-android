@@ -493,8 +493,11 @@ public class AccountsListFragment extends MenuFragment implements
     }
 
     public void setShowHiddenAccounts(boolean isVisible) {
-        isShowHiddenAccounts = isVisible;
-        refresh();
+        boolean wasVisible = isShowHiddenAccounts;
+        if (wasVisible != isVisible) {
+            isShowHiddenAccounts = isVisible;
+            refresh();
+        }
     }
 
     class AccountRecyclerAdapter extends CursorRecyclerAdapter<AccountRecyclerAdapter.AccountViewHolder> {
