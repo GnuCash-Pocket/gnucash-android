@@ -86,8 +86,6 @@ public class GncXmlExporter extends Exporter {
      */
     private Account mRootTemplateAccount;
     private final Map<String, Account> mTransactionToTemplateAccountMap = new TreeMap<>();
-    @Nullable
-    private final GncProgressListener listener;
 
     /**
      * Creates an exporter with an already open database instance.
@@ -108,14 +106,13 @@ public class GncXmlExporter extends Exporter {
      * @param context  The context.
      * @param params   Parameters for the export
      * @param bookUID  The book UID.
-     * @param listener the listener to receive events.
+     * @param listener The listener to receive events.
      */
     public GncXmlExporter(@NonNull Context context,
                           @NonNull ExportParams params,
                           @NonNull String bookUID,
                           @Nullable GncProgressListener listener) {
-        super(context, params, bookUID);
-        this.listener = listener;
+        super(context, params, bookUID, listener);
     }
 
     private void writeCounts(XmlSerializer xmlSerializer) throws IOException {
@@ -213,6 +210,7 @@ public class GncXmlExporter extends Exporter {
     }
 
     private void writeAccount(XmlSerializer xmlSerializer, @NonNull Account account) throws IOException {
+        cancellationSignal.throwIfCanceled();
         if (listener != null && !account.isTemplate()) listener.onAccount(account);
         // write account
         xmlSerializer.startTag(null, TAG_ACCOUNT);
@@ -361,6 +359,7 @@ public class GncXmlExporter extends Exporter {
             //FIXME: Retrieve the template account GUIDs from the scheduled action table and create accounts with that
             //this will allow use to maintain the template account GUID when we import from the desktop and also use the same for the splits
             do {
+                cancellationSignal.throwIfCanceled();
                 String txUID = cursor.getString(cursor.getColumnIndexOrThrow("trans_uid"));
                 Account account = new Account(BaseModel.generateUID(), Commodity.template);
                 account.setAccountType(AccountType.BANK);
@@ -378,6 +377,8 @@ public class GncXmlExporter extends Exporter {
         Commodity trnCommodity = null;
         Transaction transaction;
         do {
+            cancellationSignal.throwIfCanceled();
+
             String curTrxUID = cursor.getString(cursor.getColumnIndexOrThrow("trans_uid"));
             // new transaction starts
             if (!lastTrxUID.equals(curTrxUID)) {
@@ -881,6 +882,7 @@ public class GncXmlExporter extends Exporter {
         Timber.i("write budgets");
         Cursor cursor = mBudgetsDbAdapter.fetchAllRecords();
         while (cursor.moveToNext()) {
+            cancellationSignal.throwIfCanceled();
             Budget budget = mBudgetsDbAdapter.buildModelInstance(cursor);
             writeBudget(xmlSerializer, budget);
         }

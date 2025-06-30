@@ -19,6 +19,7 @@ package org.gnucash.android.importer;
 import static java.util.zip.GZIPInputStream.GZIP_MAGIC;
 
 import android.content.Context;
+import android.os.CancellationSignal;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -70,29 +71,12 @@ public class GncXmlImporter {
      * Parse GnuCash XML input and populates the database
      *
      * @param gncXmlInputStream InputStream source of the GnuCash XML file
-     * @param listener the listener to receive events.
+     * @param listener          the listener to receive events.
      * @return the book into which the XML was imported
      */
     public static Book parseBook(@NonNull Context context, @NonNull InputStream gncXmlInputStream, @Nullable GncProgressListener listener) throws ParserConfigurationException, SAXException, IOException {
-        //TODO: Set an error handler which can log errors
-        Timber.d("Start import");
-        InputStream input = getInputStream(gncXmlInputStream);
-        GncXmlHandler handler = new GncXmlHandler(context, listener);
-        XMLReader reader = createXMLReader(handler);
-
-        long startTime = System.nanoTime();
-        reader.parse(new InputSource(input));
-        long endTime = System.nanoTime();
-        Timber.d("%d ns spent on importing the file", endTime - startTime);
-
-        Book book = handler.getImportedBook();
-        String bookUID = book.getUID();
-        PreferencesHelper.setLastExportTime(
-            TransactionsDbAdapter.getInstance().getTimestampOfLastModification(),
-            bookUID
-        );
-
-        return book;
+        GncXmlImporter importer = new GncXmlImporter(context, gncXmlInputStream, listener);
+        return importer.parse();
     }
 
     @NonNull
@@ -133,5 +117,46 @@ public class GncXmlImporter {
         XMLReader xr = sp.getXMLReader();
         xr.setContentHandler(handler);
         return xr;
+    }
+
+    @NonNull
+    private final Context context;
+    @NonNull
+    private final InputStream inputStream;
+    @Nullable
+    private final GncProgressListener listener;
+    @NonNull
+    private final CancellationSignal cancellationSignal = new CancellationSignal();
+
+    public GncXmlImporter(@NonNull Context context, @NonNull InputStream inputStream, @Nullable GncProgressListener listener) {
+        this.context = context;
+        this.inputStream = inputStream;
+        this.listener = listener;
+    }
+
+    public Book parse() throws IOException, ParserConfigurationException, SAXException {
+        //TODO: Set an error handler which can log errors
+        Timber.d("Start import");
+        InputStream input = getInputStream(inputStream);
+        GncXmlHandler handler = new GncXmlHandler(context, listener, cancellationSignal);
+        XMLReader reader = createXMLReader(handler);
+
+        long startTime = System.nanoTime();
+        reader.parse(new InputSource(input));
+        long endTime = System.nanoTime();
+        Timber.d("%d ns spent on importing the file", endTime - startTime);
+
+        Book book = handler.getImportedBook();
+        String bookUID = book.getUID();
+        PreferencesHelper.setLastExportTime(
+            TransactionsDbAdapter.getInstance().getTimestampOfLastModification(),
+            bookUID
+        );
+
+        return book;
+    }
+
+    public void cancel() {
+        cancellationSignal.cancel();
     }
 }

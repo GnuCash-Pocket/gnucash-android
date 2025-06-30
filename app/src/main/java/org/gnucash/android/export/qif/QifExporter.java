@@ -42,14 +42,17 @@ import static org.gnucash.android.math.MathExtKt.isZero;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.os.OperationCanceledException;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.Exporter;
+import org.gnucash.android.gnc.GncProgressListener;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
@@ -86,14 +89,33 @@ public class QifExporter extends Exporter {
     /**
      * Initialize the exporter
      *
+     * @param context  The context.
+     * @param params   Parameters for the export
+     * @param bookUID  The book UID.
+     * @param listener The listener to receive events.
+     */
+    public QifExporter(
+        @NonNull Context context,
+        @NonNull ExportParams params,
+        @NonNull String bookUID,
+        @Nullable GncProgressListener listener
+    ) {
+        super(context, params, bookUID, listener);
+    }
+
+    /**
+     * Initialize the exporter
+     *
      * @param context The context.
      * @param params  Parameters for the export
      * @param bookUID The book UID.
      */
-    public QifExporter(@NonNull Context context,
-                       @NonNull ExportParams params,
-                       @NonNull String bookUID) {
-        super(context, params, bookUID);
+    public QifExporter(
+        @NonNull Context context,
+        @NonNull ExportParams params,
+        @NonNull String bookUID
+    ) {
+        this(context, params, bookUID, null);
     }
 
     @Override
@@ -171,6 +193,7 @@ public class QifExporter extends Exporter {
             BigDecimal txTotal = BigDecimal.ZERO;
 
             while (cursor.moveToNext()) {
+                cancellationSignal.throwIfCanceled();
                 String accountUID = cursor.getString(cursor.getColumnIndexOrThrow("acct1_uid"));
                 Account account1 = accounts.get(accountUID);
                 assert account1 != null;
@@ -313,7 +336,7 @@ public class QifExporter extends Exporter {
 
             /// export successful
             PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow(), getBookUID());
-        } catch (IOException e) {
+        } catch (IOException | OperationCanceledException e) {
             throw new ExporterException(exportParams, e);
         } finally {
             if (cursor != null) cursor.close();

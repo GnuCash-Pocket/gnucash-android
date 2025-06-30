@@ -21,10 +21,10 @@ import static org.gnucash.android.util.BackupManager.getBackupFolder;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.ResolveInfo;
 import android.database.SQLException;
 import android.net.Uri;
+import android.os.CancellationSignal;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
@@ -60,6 +60,7 @@ import org.gnucash.android.db.adapter.RecurrenceDbAdapter;
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
 import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
+import org.gnucash.android.gnc.GncProgressListener;
 import org.gnucash.android.model.Transaction;
 import org.gnucash.android.ui.settings.OwnCloudPreferences;
 import org.gnucash.android.util.BackupManager;
@@ -139,14 +140,21 @@ public abstract class Exporter {
      */
     @NonNull
     private final String mBookUID;
+    @Nullable
+    protected final GncProgressListener listener;
+    @NonNull
+    protected final CancellationSignal cancellationSignal = new CancellationSignal();
 
     protected Exporter(@NonNull Context context,
                        @NonNull ExportParams params,
-                       @NonNull String bookUID) {
+                       @NonNull String bookUID,
+                       @Nullable GncProgressListener listener
+    ) {
         super();
         mContext = context;
         mExportParams = params;
         mBookUID = bookUID;
+        this.listener = listener;
         mBooksDbADapter = BooksDbAdapter.getInstance();
 
         DatabaseHelper dbHelper = new DatabaseHelper(context, bookUID);
@@ -602,6 +610,10 @@ public abstract class Exporter {
         if (preserveOpeningBalances && !openingBalances.isEmpty()) {
             transactionsDbAdapter.bulkAddRecords(openingBalances, DatabaseAdapter.UpdateMethod.insert);
         }
+    }
+
+    public void cancel() {
+        cancellationSignal.cancel();
     }
 
     public static class ExporterException extends RuntimeException {

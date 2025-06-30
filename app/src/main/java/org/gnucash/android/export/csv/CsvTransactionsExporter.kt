@@ -22,6 +22,7 @@ import com.opencsv.ICSVWriter.RFC4180_LINE_END
 import org.gnucash.android.R
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
+import org.gnucash.android.gnc.GncProgressListener
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Split
@@ -31,7 +32,6 @@ import org.gnucash.android.util.PreferencesHelper
 import org.gnucash.android.util.TimestampHelper
 import org.joda.time.format.ISODateTimeFormat
 import timber.log.Timber
-import java.io.IOException
 import java.io.Writer
 import java.text.DecimalFormat
 import kotlin.math.max
@@ -44,8 +44,9 @@ import kotlin.math.max
 class CsvTransactionsExporter(
     context: Context,
     params: ExportParams,
-    bookUID: String
-) : Exporter(context, params, bookUID) {
+    bookUID: String,
+    listener: GncProgressListener? = null
+) : Exporter(context, params, bookUID, listener) {
     // TODO add option in export form for date format: US, UK, Europe, ISO, Locale
     private val dateFormat = ISODateTimeFormat.date()
     private val accountCache = mutableMapOf<String, Account>()
@@ -107,12 +108,18 @@ class CsvTransactionsExporter(
             mTransactionsDbAdapter.fetchTransactionsModifiedSince(mExportParams.exportStartTime)
         Timber.d("Exporting %d transactions to CSV", cursor.count)
         val fields = Array(headers.size) { "" }
-        while (cursor.moveToNext()) {
-            val transaction = mTransactionsDbAdapter.buildModelInstance(cursor)
-            writeTransaction(writer, fields, transaction)
+        try {
+            if (cursor.moveToFirst()) {
+                do {
+                    cancellationSignal.throwIfCanceled()
+                    val transaction = mTransactionsDbAdapter.buildModelInstance(cursor)
+                    writeTransaction(writer, fields, transaction)
+                } while (cursor.moveToNext());
+            }
+            PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow(), bookUID)
+        } finally {
+            cursor.close()
         }
-        cursor.close()
-        PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow(), bookUID)
     }
 
     private fun writeTransaction(
@@ -131,6 +138,8 @@ class CsvTransactionsExporter(
         fields[6] = ""  // Void Reason
         fields[7] = ""  // Action
         writeSplitsToCsv(writer, fields, transaction.splits)
+
+        listener?.onTransaction(transaction)
     }
 
     private fun formatRate(value: Money, quantity: Money): String {

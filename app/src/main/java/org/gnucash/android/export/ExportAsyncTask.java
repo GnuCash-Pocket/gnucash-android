@@ -22,6 +22,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.OperationCanceledException;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -56,6 +57,8 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Object, Uri> {
     @NonNull
     private ExportParams mExportParams;
     @Nullable
+    private Exporter exporter;
+    @Nullable
     private final AsyncTaskProgressListener listener;
 
     public ExportAsyncTask(@NonNull Context context, @NonNull String bookUID) {
@@ -63,12 +66,17 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Object, Uri> {
         this.mContext = context;
         this.mBookUID = bookUID;
         if (context instanceof Activity) {
+            this.listener = new ProgressListener(context);
             ProgressDialog progressDialog = new GnucashProgressDialog((Activity) context);
             progressDialog.setTitle(R.string.nav_menu_export);
             progressDialog.setCancelable(true);
-            progressDialog.setOnCancelListener(dialogInterface -> cancel(true));
+            progressDialog.setOnCancelListener(dialog -> {
+                cancel(true);
+                if (exporter != null) {
+                    exporter.cancel();
+                }
+            });
             this.progressDialog = progressDialog;
-            this.listener = new ProgressListener(context);
         } else {
             progressDialog = null;
             this.listener = null;
@@ -88,11 +96,19 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Object, Uri> {
         final ExportParams exportParams = params[0];
         mExportParams = exportParams;
         Exporter exporter = createExporter(mContext, exportParams, mBookUID, listener);
+        this.exporter = exporter;
         final Uri exportedFile;
 
         try {
             exportedFile = exporter.export();
-        } catch (Throwable e) {
+        } catch (OperationCanceledException ce) {
+            Timber.i(ce);
+            return null;
+        } catch (final Throwable e) {
+            if (e.getCause() instanceof OperationCanceledException) {
+                Timber.i(e.getCause());
+                return null;
+            }
             Timber.e(e, "Error exporting: %s", e.getMessage());
             return null;
         }
@@ -159,13 +175,13 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Object, Uri> {
     ) {
         switch (exportParams.getExportFormat()) {
             case QIF:
-                return new QifExporter(context, exportParams, bookUID);
+                return new QifExporter(context, exportParams, bookUID, listener);
             case OFX:
-                return new OfxExporter(context, exportParams, bookUID);
+                return new OfxExporter(context, exportParams, bookUID, listener);
             case CSVA:
-                return new CsvAccountExporter(context, exportParams, bookUID);
+                return new CsvAccountExporter(context, exportParams, bookUID, listener);
             case CSVT:
-                return new CsvTransactionsExporter(context, exportParams, bookUID);
+                return new CsvTransactionsExporter(context, exportParams, bookUID, listener);
             case XML:
             default:
                 return new GncXmlExporter(context, exportParams, bookUID, listener);
