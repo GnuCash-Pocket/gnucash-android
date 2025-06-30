@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -150,11 +151,6 @@ public class SplitEditorFragment extends MenuFragment {
                 return null;
             }
         });
-        Account account = accountNameAdapter.getAccountDb(mAccountUID);
-        if (account == null) {
-            Timber.e("Account not found");
-            activity.finish();
-        }
     }
 
     private void loadSplits() {
@@ -169,7 +165,7 @@ public class SplitEditorFragment extends MenuFragment {
             loadSplitViews(splitList);
             mImbalanceWatcher.afterTextChanged(null);
         } else {
-            Account account = accountNameAdapter.getAccountDb(mAccountUID);
+            Account account = getTransactionAccount();
             Commodity commodity = account.getCommodity();
             Split split = new Split(new Money(mBaseAmount, commodity), account.getUID());
             AccountType accountType = account.getAccountType();
@@ -354,13 +350,13 @@ public class SplitEditorFragment extends MenuFragment {
                 splitTypeSwitch.setAccountType(account.getAccountType());
                 splitTypeSwitch.setChecked(split.getType());
             } else {
-                Account account = accountNameAdapter.getAccountDb(mAccountUID);
+                Account account = getTransactionAccount();
                 Commodity commodity = account.getCommodity();
                 splitCurrencyTextView.setText(commodity.getSymbol());
                 splitUidTextView.setText(BaseModel.generateUID());
 
                 String transferUID = account.getDefaultTransferAccountUID();
-                Account accountTransfer = accountNameAdapter.getAccountDb(transferUID);
+                Account accountTransfer = TextUtils.isEmpty(transferUID) ? null : accountNameAdapter.getAccountDb(transferUID);
                 if (accountTransfer != null) {
                     setSelectedTransferAccount(transferUID, accountsSpinner);
                     splitTypeSwitch.setAccountType(accountTransfer.getAccountType());
@@ -434,8 +430,7 @@ public class SplitEditorFragment extends MenuFragment {
             if (enteredAmount == null)
                 continue;
 
-            Account account = accountNameAdapter.getAccountDb(mAccountUID);
-            if (account == null) continue;
+            Account account = getTransactionAccount();
             Money valueAmount = new Money(enteredAmount.abs(), account.getCommodity());
 
             int position = viewHolder.accountsSpinner.getSelectedItemPosition();
@@ -492,7 +487,7 @@ public class SplitEditorFragment extends MenuFragment {
                 }
             }
 
-            Account account = accountNameAdapter.getAccountDb(mAccountUID);
+            Account account = getTransactionAccount();
             Commodity commodity = account.getCommodity();
             displayBalance(mBinding.imbalanceTextview, new Money(imbalance, commodity), colorBalanceZero);
         }
@@ -519,10 +514,10 @@ public class SplitEditorFragment extends MenuFragment {
         @Override
         public void onItemSelected(AdapterView<?> parentView, View view, int position, long id) {
             if (view == null) return;
-            Account accountFrom = accountNameAdapter.getAccountDb(mAccountUID);
-            if (accountFrom == null) return;
+            Account accountFrom = getTransactionAccount();
 
             Account accountTo = accountNameAdapter.getAccount(position);
+            if (accountTo == null) return;
             AccountType accountType = accountTo.getAccountType();
             mTypeToggleButton.setAccountType(accountType);
 
@@ -569,7 +564,7 @@ public class SplitEditorFragment extends MenuFragment {
      */
     private boolean startTransferFunds() {
         boolean result = false;
-        Account accountFrom = accountNameAdapter.getAccountDb(mAccountUID);
+        Account accountFrom = getTransactionAccount();
         Commodity fromCommodity = accountFrom.getCommodity();
         transferAttempt.clear();
 
@@ -594,7 +589,7 @@ public class SplitEditorFragment extends MenuFragment {
      * @return {@code true} if multi-currency transaction, {@code false} otherwise
      */
     private boolean isMultiCurrencyTransaction() {
-        Account accountFrom = accountNameAdapter.getAccountDb(mAccountUID);
+        Account accountFrom = getTransactionAccount();
         Commodity accountCommodity = accountFrom.getCommodity();
 
         List<Split> splits = extractSplitsFromView();
@@ -606,5 +601,15 @@ public class SplitEditorFragment extends MenuFragment {
         }
 
         return false;
+    }
+
+    @NonNull
+    private Account getTransactionAccount() {
+        Account account = accountNameAdapter.getAccountDb(mAccountUID);
+        if (account == null) {
+            Timber.e("Account not found!");
+            requireActivity().finish();
+        }
+        return account;
     }
 }
