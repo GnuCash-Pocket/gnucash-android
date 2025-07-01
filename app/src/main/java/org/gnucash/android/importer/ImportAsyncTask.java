@@ -23,6 +23,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.OperationCanceledException;
 import android.text.TextUtils;
 import android.widget.Toast;
 
@@ -56,6 +57,8 @@ public class ImportAsyncTask extends AsyncTask<Uri, Object, String> {
     private final ProgressDialog progressDialog;
     @NonNull
     private final AsyncTaskProgressListener listener;
+    @Nullable
+    private GncXmlImporter importer;
 
     public ImportAsyncTask(@NonNull Activity context) {
         this(context, null);
@@ -66,13 +69,18 @@ public class ImportAsyncTask extends AsyncTask<Uri, Object, String> {
     }
 
     public ImportAsyncTask(@NonNull Activity context, @Nullable ImportBookCallback callback, boolean backup) {
+        this.listener = new ProgressListener(context);
         this.bookCallback = callback;
         this.mBackup = backup;
         progressDialog = new GnucashProgressDialog(context);
         progressDialog.setTitle(R.string.title_import_accounts);
         progressDialog.setCancelable(true);
-        progressDialog.setOnCancelListener(dialogInterface -> cancel(true));
-        this.listener = new ProgressListener(context);
+        progressDialog.setOnCancelListener(dialog -> {
+            cancel(true);
+            if (importer != null) {
+                importer.cancel();
+            }
+        });
     }
 
     private class ProgressListener extends AsyncTaskProgressListener {
@@ -108,12 +116,16 @@ public class ImportAsyncTask extends AsyncTask<Uri, Object, String> {
         String bookUID;
         try {
             final InputStream accountInputStream = openStream(uri, context);
-            book = GncXmlImporter.parseBook(context, accountInputStream, listener);
+            GncXmlImporter importer = new GncXmlImporter(context, accountInputStream, listener);
+            this.importer = importer;
+            book = importer.parse();
             book.setSourceUri(uri);
             bookUID = book.getUID();
+        } catch (OperationCanceledException ce) {
+            Timber.i(ce);
+            return null;
         } catch (final Throwable e) {
             Timber.e(e, "Error importing: %s", uri);
-            //TODO delete the partial book at `uri`
             return null;
         }
 
