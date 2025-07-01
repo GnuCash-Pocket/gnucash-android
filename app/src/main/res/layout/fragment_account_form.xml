@@ -36,7 +36,10 @@
                 android:layout_height="wrap_content"
                 android:ems="15"
                 android:hint="@string/label_account_name"
-                android:inputType="textCapWords" />
+                android:inputType="textCapWords">
+
+                <requestFocus />
+            </EditText>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
