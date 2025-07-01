@@ -31,7 +31,6 @@ import org.gnucash.android.util.PreferencesHelper
 import org.gnucash.android.util.TimestampHelper
 import org.joda.time.format.ISODateTimeFormat
 import timber.log.Timber
-import java.io.IOException
 import java.io.Writer
 import java.text.DecimalFormat
 import kotlin.math.max

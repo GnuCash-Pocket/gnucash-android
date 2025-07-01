@@ -172,7 +172,9 @@ class Transaction : BaseModel {
     fun addSplit(split: Split) {
         //sets the currency of the split to the currency of the transaction
         split.transactionUID = uid
-        _splits.add(split)
+        if (splits.none { it.uid == split.uid || it == split }) {
+            _splits.add(split)
+        }
     }
 
     /**

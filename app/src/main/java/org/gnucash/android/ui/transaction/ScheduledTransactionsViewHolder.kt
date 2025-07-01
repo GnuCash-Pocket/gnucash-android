@@ -42,10 +42,10 @@ internal class ScheduledTransactionsViewHolder(
 
         var text = ""
         val slitsSize = splits.size
+        val first = splits.firstOrNull()
         if (slitsSize == 2) {
-            val first = splits[0]
             for (split in splits) {
-                if ((first !== split) && first.isPairOf(split)) {
+                if ((first != null) && (first !== split) && first.isPairOf(split)) {
                     text = first.value.formattedString()
                     break
                 }
@@ -57,7 +57,7 @@ internal class ScheduledTransactionsViewHolder(
         amountTextView.text = text
 
         val accountUID =
-            if (slitsSize > 0) splits[0].scheduledActionAccountUID ?: splits[0].accountUID else null
+            if (slitsSize > 0) first!!.scheduledActionAccountUID ?: first.accountUID else null
         itemView.setOnClickListener {
             if (accountUID != null) {
                 editTransaction(scheduledAction, accountUID, transactionUID)

@@ -382,12 +382,12 @@ public class TransactionFormFragment extends MenuFragment implements
                 //we check here because next method will modify it and we want to catch user-modification
                 boolean amountEntered = binding.inputTransactionAmount.isInputModified();
                 initializeViewsWithTransaction(binding, transaction);
-                List<Split> splitList = transaction.getSplits();
-                boolean isSplitPair = splitList.size() == 2 && splitList.get(0).isPairOf(splitList.get(1));
+                List<Split> splits = transaction.getSplits();
+                boolean isSplitPair = splits.size() == 2 && splits.get(0).isPairOf(splits.get(1));
                 if (isSplitPair) {
                     mSplitsList.clear();
                     if (!amountEntered) //if user already entered an amount
-                        binding.inputTransactionAmount.setValue(splitList.get(0).getValue().toBigDecimal());
+                        binding.inputTransactionAmount.setValue(splits.get(0).getValue().toBigDecimal());
                 } else {
                     if (amountEntered) { //if user entered own amount, clear loaded splits and use the user value
                         mSplitsList.clear();
