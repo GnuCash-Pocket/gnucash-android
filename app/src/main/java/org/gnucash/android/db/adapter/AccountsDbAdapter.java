@@ -529,9 +529,15 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @param accountUID UID of the account
      * @return String color code of account or null if none
      */
+    @ColorInt
     public int getAccountColor(String accountUID) {
-        Account account = getSimpleRecord(accountUID);
-        return (account != null) ? account.getColor() : Account.DEFAULT_COLOR;
+        try {
+            Account account = getSimpleRecord(accountUID);
+            return (account != null) ? account.getColor() : Account.DEFAULT_COLOR;
+        } catch (IllegalArgumentException e) {
+            Timber.e(e);
+            return Account.DEFAULT_COLOR;
+        }
     }
 
     /**
