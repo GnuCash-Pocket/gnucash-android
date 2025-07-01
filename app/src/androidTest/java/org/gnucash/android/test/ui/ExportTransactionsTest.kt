@@ -67,7 +67,7 @@ class ExportTransactionsTest : GnuAndroidTest() {
         //this call initializes the static variables like DEFAULT_COMMODITY which are used implicitly by accounts/transactions
         @Suppress("unused") val currencyCode = GnuCashApplication.getDefaultCurrencyCode()
         Commodity.DEFAULT_COMMODITY =
-            CommoditiesDbAdapter.getInstance()!!.getCommodity(currencyCode)!!
+            CommoditiesDbAdapter.getInstance()!!.getCurrency(currencyCode)!!
 
         val account = Account("Exportable")
         val transaction = Transaction("Pizza")

@@ -284,7 +284,7 @@ class MoneyTest : GnuCashTest() {
         val commodity = Commodity("scale-10", "S10", smallestFraction = 10)
         val money = Money(123.456, commodity)
         assertThat(money.commodity.smallestFraction).isEqualTo(10)
-        assertThat(money.commodity.smallestFractionDigits).isEqualTo(1)
+        assertThat(money.commodity.smallestFractionDigits).isOne()
         assertThat(money.numerator).isEqualTo(1235L)
         assertThat(money.denominator).isEqualTo(10L)
     }
