@@ -23,6 +23,7 @@ import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
 import org.gnucash.android.export.ofx.OfxHelper.*
+import org.gnucash.android.gnc.GncProgressListener
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Transaction
@@ -50,8 +51,12 @@ import javax.xml.transform.stream.StreamResult
  * @author Ngewi Fet <ngewi.fet@gmail.com>
  * @author Yongxin Wang <fefe.wyx@gmail.com>
  */
-class OfxExporter(private val context: Context, params: ExportParams, bookUID: String) :
-    Exporter(context, params, bookUID) {
+class OfxExporter(
+    private val context: Context,
+    params: ExportParams,
+    bookUID: String,
+    listener: GncProgressListener? = null
+) : Exporter(context, params, bookUID, listener) {
     /**
      * Converts all expenses into OFX XML format and adds them to the XML document.
      *
@@ -72,6 +77,7 @@ class OfxExporter(private val context: Context, params: ExportParams, bookUID: S
         val isDoubleEntryEnabled = GnuCashApplication.isDoubleEntryEnabled(context)
         val nameImbalance = mContext.getString(R.string.imbalance_account_name)
         accounts
+            .filter { !cancellationSignal.isCanceled }
             .filter { it.transactionCount > 0 }
             .filter {
                 // TODO: investigate whether skipping the imbalance accounts makes sense.
@@ -79,6 +85,7 @@ class OfxExporter(private val context: Context, params: ExportParams, bookUID: S
                 isDoubleEntryEnabled || !it.name.contains(nameImbalance)
             }
             .forEach { account ->
+                cancellationSignal.throwIfCanceled()
                 // Add account details (transactions) to the XML document.
                 writeAccount(
                     doc,
@@ -226,6 +233,7 @@ class OfxExporter(private val context: Context, params: ExportParams, bookUID: S
         for (transaction in account.transactions) {
             if (transaction.modifiedTimestamp.before(exportStartTime)) continue
             bankTransactionsList.appendChild(toOFX(transaction, doc, account.uid))
+            listener?.onTransaction(transaction)
         }
         //================= END TRANSACTIONS LIST =================================
         val statementTransactions = doc.createElement(TAG_STATEMENT_TRANSACTIONS)
@@ -234,6 +242,8 @@ class OfxExporter(private val context: Context, params: ExportParams, bookUID: S
         statementTransactions.appendChild(bankTransactionsList)
         statementTransactions.appendChild(ledgerBalance)
         parent.appendChild(statementTransactions)
+
+        listener?.onAccount(account)
     }
 
     /**
