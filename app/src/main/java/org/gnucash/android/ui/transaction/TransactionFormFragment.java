@@ -94,6 +94,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
 import timber.log.Timber;
 
 /**
@@ -120,7 +122,6 @@ public class TransactionFormFragment extends MenuFragment implements
     private PricesDbAdapter pricesDbAdapter;
     private ScheduledActionDbAdapter scheduledActionDbAdapter;
 
-    private QualifiedAccountNameAdapter accountNameAdapter;
     /**
      * Adapter for transfer account spinner
      */
@@ -209,9 +210,10 @@ public class TransactionFormFragment extends MenuFragment implements
 
         FragmentTransactionFormBinding binding = mBinding;
         setListeners(binding);
-        //updateTransferAccountsList must only be called after initializing mAccountsDbAdapter
-        updateTransferAccountsList(binding);
-        initializeViews(binding);
+
+        final Account account = this.account;
+        updateTransferAccountsList(binding, account);
+        initializeViews(binding, account);
 
         if (mTransaction == null) {
             initTransactionNameAutocomplete(binding);
@@ -271,7 +273,7 @@ public class TransactionFormFragment extends MenuFragment implements
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Bundle args = getArguments();
+        final Bundle args = getArguments();
         final Context context = requireContext();
 
         mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled(context);
@@ -279,19 +281,18 @@ public class TransactionFormFragment extends MenuFragment implements
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
         pricesDbAdapter = PricesDbAdapter.getInstance();
         scheduledActionDbAdapter = ScheduledActionDbAdapter.getInstance();
-        accountNameAdapter = new QualifiedAccountNameAdapter(context, mAccountsDbAdapter);
 
         rootAccountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
         String accountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID, rootAccountUID);
         assert !TextUtils.isEmpty(accountUID);
         try {
-            account = accountNameAdapter.getAccount(accountUID);
+            account = mAccountsDbAdapter.getSimpleRecord(accountUID);
         } catch (IllegalArgumentException e) {
             Timber.e(e);
             account = null;
         }
         if (account == null) {
-            Timber.e("Account not found %s", accountUID);
+            Timber.e("Account not found");
             finish(Activity.RESULT_CANCELED);
             return;
         }
@@ -502,9 +503,8 @@ public class TransactionFormFragment extends MenuFragment implements
     /**
      * Initialize views with default data for new transactions
      */
-    private void initializeViews(final FragmentTransactionFormBinding binding) {
+    private void initializeViews(@NonNull final FragmentTransactionFormBinding binding, Account account) {
         final Context context = binding.getRoot().getContext();
-        final Account account = this.account;
 
         long now = System.currentTimeMillis();
         binding.inputDate.setText(DATE_FORMATTER.print(now));
@@ -539,7 +539,7 @@ public class TransactionFormFragment extends MenuFragment implements
      * Updates the list of possible transfer accounts.
      * Only accounts with the same currency can be transferred to
      */
-    private void updateTransferAccountsList(FragmentTransactionFormBinding binding) {
+    private void updateTransferAccountsList(@NonNull final FragmentTransactionFormBinding binding, @NonNull Account account) {
         final String accountUID = account.getUID();
         String conditions = AccountEntry.COLUMN_UID + " != ?"
             + " AND " + AccountEntry.COLUMN_TYPE + " != ?"
@@ -550,8 +550,23 @@ public class TransactionFormFragment extends MenuFragment implements
             binding.getRoot().getContext(),
             conditions,
             new String[]{accountUID, AccountType.ROOT.name()},
-            mAccountsDbAdapter
+            mAccountsDbAdapter,
+            getViewLifecycleOwner()
         );
+        accountTransferNameAdapter.load(new Function0<Unit>() {
+            @Override
+            public Unit invoke() {
+                String transferUID = account.getDefaultTransferAccountUID();
+                if (mTransaction != null) {
+                    Split split = mTransaction.getTransferSplit(accountUID);
+                    if (split != null) {
+                        transferUID = split.getAccountUID();
+                    }
+                }
+                setSelectedTransferAccount(binding, transferUID);
+                return null;
+            }
+        });
         binding.inputTransferAccountSpinner.setAdapter(accountTransferNameAdapter);
     }
 
@@ -677,7 +692,7 @@ public class TransactionFormFragment extends MenuFragment implements
      *
      * @param accountUID UID of the transfer account
      */
-    private void setSelectedTransferAccount(FragmentTransactionFormBinding binding, @Nullable String accountUID) {
+    private void setSelectedTransferAccount(@NonNull FragmentTransactionFormBinding binding, @Nullable String accountUID) {
         int position = accountTransferNameAdapter.getPosition(accountUID);
         binding.inputTransferAccountSpinner.setSelection(position);
     }
@@ -754,7 +769,7 @@ public class TransactionFormFragment extends MenuFragment implements
      * @return GUID of transfer account
      */
     @Nullable
-    private Account getTransferAccount(FragmentTransactionFormBinding binding) {
+    private Account getTransferAccount(@NonNull FragmentTransactionFormBinding binding) {
         if (mUseDoubleEntry) {
             int position = binding.inputTransferAccountSpinner.getSelectedItemPosition();
             return accountTransferNameAdapter.getAccount(position);
@@ -944,7 +959,9 @@ public class TransactionFormFragment extends MenuFragment implements
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         //hide the keyboard if it is visible
         final FragmentTransactionFormBinding binding = mBinding;
-        if (binding == null) return super.onOptionsItemSelected(item);
+        if (binding == null) {
+            return super.onOptionsItemSelected(item);
+        }
         View view = binding.getRoot();
         Context context = view.getContext();
         InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);

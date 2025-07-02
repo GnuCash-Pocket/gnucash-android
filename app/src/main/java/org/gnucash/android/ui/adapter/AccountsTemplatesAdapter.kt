@@ -8,10 +8,12 @@ import android.widget.TextView
 import androidx.annotation.LayoutRes
 import org.gnucash.android.importer.AccountsTemplate
 
-class AccountsTemplatesAdapter @JvmOverloads constructor(
-    context: Context,
-    @LayoutRes resource: Int = android.R.layout.simple_list_item_2
-) : ArrayAdapter<AccountsTemplate.Header>(context, resource, android.R.id.text1) {
+class AccountsTemplatesAdapter(context: Context) :
+    ArrayAdapter<AccountsTemplate.Header>(
+        context,
+        android.R.layout.simple_list_item_2,
+        android.R.id.text1
+    ) {
 
     init {
         clear()

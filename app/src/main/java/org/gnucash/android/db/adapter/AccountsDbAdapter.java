@@ -513,14 +513,12 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             null, null, null, null);
         try {
             if (cursor.moveToFirst()) {
-                Timber.v("Found parent account UID, returning value");
-                return cursor.getString(cursor.getColumnIndexOrThrow(AccountEntry.COLUMN_PARENT_ACCOUNT_UID));
-            } else {
-                return null;
+                return cursor.getString(0);
             }
         } finally {
             cursor.close();
         }
+        return null;
     }
 
     /**
@@ -529,9 +527,15 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @param accountUID UID of the account
      * @return String color code of account or null if none
      */
+    @ColorInt
     public int getAccountColor(String accountUID) {
-        Account account = getSimpleRecord(accountUID);
-        return (account != null) ? account.getColor() : Account.DEFAULT_COLOR;
+        try {
+            Account account = getSimpleRecord(accountUID);
+            return (account != null) ? account.getColor() : Account.DEFAULT_COLOR;
+        } catch (IllegalArgumentException e) {
+            Timber.e(e);
+            return Account.DEFAULT_COLOR;
+        }
     }
 
     /**
@@ -1601,5 +1605,22 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
         String[] whereArgs = new String[]{AccountType.ROOT.name()};
         return getAllRecords(where, whereArgs);
+    }
+
+    public List<Account> getDescendants(@NonNull Account account) {
+        return getDescendants(account.getUID());
+    }
+
+    public List<Account> getDescendants(@NonNull String accountUID) {
+        List<Account> result = new ArrayList<>();
+        populateDescendants(accountUID, result);
+        return result;
+    }
+
+    private void populateDescendants(@NonNull String accountUID, @NonNull List<Account> result) {
+        List<String> descendantsUIDs = getDescendantAccountUIDs(accountUID, null, null);
+        for (String descendantsUID : descendantsUIDs) {
+            result.add(getSimpleRecord(descendantsUID));
+        }
     }
 }
