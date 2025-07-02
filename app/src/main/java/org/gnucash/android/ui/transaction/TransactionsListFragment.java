@@ -55,10 +55,8 @@ import org.gnucash.android.app.MenuFragment;
 import org.gnucash.android.databinding.CardviewTransactionBinding;
 import org.gnucash.android.databinding.FragmentTransactionsListBinding;
 import org.gnucash.android.db.DatabaseCursorLoader;
-import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.db.adapter.AccountsDbAdapter;
 import org.gnucash.android.db.adapter.DatabaseAdapter;
-import org.gnucash.android.db.adapter.SplitsDbAdapter;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.Split;
@@ -286,7 +284,8 @@ public class TransactionsListFragment extends MenuFragment implements
             private final TextView transactionDate;
             private final ImageView editTransaction;
 
-            private String transactionUID;
+            @Nullable
+            private Transaction transaction;
             @ColorInt
             private final int colorBalanceZero;
 
@@ -316,13 +315,18 @@ public class TransactionsListFragment extends MenuFragment implements
                 itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        onListItemClick(transactionUID);
+                        if (transaction != null) {
+                            onListItemClick(transaction.getUID());
+                        }
                     }
                 });
             }
 
             @Override
             public boolean onMenuItemClick(@NonNull MenuItem item) {
+                if (transaction == null) return false;
+                final String transactionUID = transaction.getUID();
+
                 switch (item.getItemId()) {
                     case R.id.menu_delete:
                         deleteTransaction(transactionUID);
@@ -346,16 +350,16 @@ public class TransactionsListFragment extends MenuFragment implements
             }
 
             public void bind(@NonNull Cursor cursor) {
-                transactionUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_UID));
+                final Context context = itemView.getContext();
+                transaction = mTransactionsDbAdapter.buildModelInstance(cursor);
+                final String transactionUID = transaction.getUID();
 
-                String description = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_DESCRIPTION));
-                primaryText.setText(description);
+                primaryText.setText(transaction.getDescription());
 
-                Money amount = mTransactionsDbAdapter.getBalance(transactionUID, mAccountUID);
+                Money amount = transaction.getBalance(mAccountUID);
                 displayBalance(transactionAmount, amount, colorBalanceZero);
 
-                long dateMillis = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseSchema.TransactionEntry.COLUMN_TIMESTAMP));
-                String dateText = TransactionsActivity.getPrettyDateFormat(getActivity(), dateMillis);
+                String dateText = TransactionsActivity.getPrettyDateFormat(context, transaction.getTimeMillis());
                 transactionDate.setText(dateText);
 
                 if (mUseCompactView || !mUseDoubleEntry) {
@@ -365,7 +369,7 @@ public class TransactionsListFragment extends MenuFragment implements
                     secondaryText.setVisibility(View.VISIBLE);
                     editTransaction.setVisibility(View.VISIBLE);
 
-                    List<Split> splits = SplitsDbAdapter.getInstance().getSplitsForTransaction(transactionUID);
+                    List<Split> splits = transaction.getSplits();
                     String text = "";
                     String error = null;
 
@@ -382,8 +386,7 @@ public class TransactionsListFragment extends MenuFragment implements
                             text = getString(R.string.label_split_count, splits.size());
                             error = getString(R.string.imbalance_account_name);
                         }
-                    }
-                    if (splits.size() > 2) {
+                    } else if (splits.size() > 2) {
                         text = getString(R.string.label_split_count, splits.size());
                     }
                     secondaryText.setText(text);
