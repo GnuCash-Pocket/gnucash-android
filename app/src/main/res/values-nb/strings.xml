@@ -384,10 +384,6 @@
         <item quantity="one">%d transaksjon</item>
         <item quantity="other">%d transaksjoner</item>
     </plurals>
-    <string-array name="report_account_types">
-        <item>UTGIFT</item>
-        <item>INNTEKT</item>
-    </string-array>
     <string name="toast_connected_to_google_drive">Koblet til Google Drive</string>
     <string name="toast_unable_to_connect_to_google_drive">Kan ikke koble til Google Drive</string>
     <string name="toast_enter_amount_to_split">Please enter an amount to split</string>

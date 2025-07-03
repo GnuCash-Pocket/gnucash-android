@@ -17,10 +17,8 @@
 
 package org.gnucash.android.ui.report;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
-
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
@@ -31,6 +29,7 @@ import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
@@ -43,12 +42,15 @@ import org.gnucash.android.databinding.ActivityReportsBinding;
 import org.gnucash.android.db.adapter.TransactionsDbAdapter;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
+import org.gnucash.android.ui.adapter.AccountTypesAdapter;
 import org.gnucash.android.ui.common.BaseDrawerActivity;
 import org.gnucash.android.ui.common.Refreshable;
 import org.gnucash.android.ui.util.dialog.DateRangePickerDialogFragment;
+import org.gnucash.android.util.DateExtKt;
+import org.jetbrains.annotations.NotNull;
 import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
 
-import java.util.Date;
 import java.util.List;
 
 import timber.log.Timber;
@@ -77,8 +79,8 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
     public enum GroupInterval {WEEK, MONTH, QUARTER, YEAR, ALL}
 
     // default time range is the last 3 months
-    private LocalDate mReportPeriodStart = LocalDate.now().minusMonths(2).dayOfMonth().withMinimumValue();
-    private LocalDate mReportPeriodEnd = LocalDate.now().plusDays(1);
+    private LocalDateTime mReportPeriodStart = LocalDateTime.now().minusMonths(3);
+    private LocalDateTime mReportPeriodEnd = LocalDateTime.now();
 
     private GroupInterval mReportGroupInterval = GroupInterval.MONTH;
 
@@ -119,42 +121,33 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        final Context context = this;
         mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
 
         ActionBar actionBar = getSupportActionBar();
         assert actionBar != null;
         ArrayAdapter<String> typesAdapter = new ArrayAdapter<>(actionBar.getThemedContext(),
             android.R.layout.simple_list_item_1,
-            ReportType.getReportNames(this));
+            ReportType.getReportNames(context));
         mBinding.toolbarLayout.toolbarSpinner.setAdapter(typesAdapter);
         mBinding.toolbarLayout.toolbarSpinner.setOnItemSelectedListener(mReportTypeSelectedListener);
 
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.report_time_range,
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(context, R.array.report_time_range,
             android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mBinding.timeRangeSpinner.setAdapter(adapter);
         mBinding.timeRangeSpinner.setOnItemSelectedListener(this);
         mBinding.timeRangeSpinner.setSelection(1);
 
-        ArrayAdapter<CharSequence> dataAdapter = ArrayAdapter.createFromResource(this,
-            R.array.report_account_types, android.R.layout.simple_spinner_item);
-        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mBinding.reportAccountTypeSpinner.setAdapter(dataAdapter);
+        AccountTypesAdapter accountTypeAdapter = AccountTypesAdapter.expenseAndIncome(context);
+        mBinding.reportAccountTypeSpinner.setAdapter(accountTypeAdapter);
         mBinding.reportAccountTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
                 if (view == null) return;
-                final AccountType accountType;
-                switch (position) {
-                    case 1:
-                        accountType = AccountType.INCOME;
-                        break;
-                    case 0:
-                    default:
-                        accountType = AccountType.EXPENSE;
-                        break;
-                }
-                updateAccountTypeOnFragments(accountType);
+                if (position < 0) return;
+                AccountTypesAdapter.Label label = accountTypeAdapter.getItem(position);
+                updateAccountTypeOnFragments(label.value);
             }
 
             @Override
@@ -171,8 +164,8 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
             } else {
                 mReportType = (ReportType) savedInstanceState.getSerializable(STATE_REPORT_TYPE);
             }
-            mReportPeriodStart = LocalDate.fromDateFields(new Date(savedInstanceState.getLong(STATE_REPORT_START)));
-            mReportPeriodEnd = LocalDate.fromDateFields(new Date(savedInstanceState.getLong(STATE_REPORT_END)));
+            mReportPeriodStart = new LocalDateTime(savedInstanceState.getLong(STATE_REPORT_START));
+            mReportPeriodEnd = new LocalDateTime(savedInstanceState.getLong(STATE_REPORT_END));
         }
     }
 
@@ -249,9 +242,7 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
         List<Fragment> fragments = getSupportFragmentManager().getFragments();
         for (Fragment fragment : fragments) {
             if (fragment instanceof ReportOptionsListener) {
-                long startTime = mReportPeriodStart.toDate().getTime();
-                long endTime = mReportPeriodEnd.toDate().getTime();
-                ((ReportOptionsListener) fragment).onTimeRangeUpdated(startTime, endTime);
+                ((ReportOptionsListener) fragment).onTimeRangeUpdated(mReportPeriodStart, mReportPeriodEnd);
             }
         }
     }
@@ -321,41 +312,38 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         if (view == null) return;
-        LocalDate now = LocalDate.now();
-        mReportPeriodEnd = now.plusDays(1);
+        LocalDateTime now = LocalDateTime.now();
+        mReportPeriodEnd = now;
         switch (position) {
             case 0: //current month
                 mReportPeriodStart = now.dayOfMonth().withMinimumValue();
                 break;
-            case 1: // last 3 months. x-2, x-1, x
-                mReportPeriodStart = now.minusMonths(2).dayOfMonth().withMinimumValue();
+            case 1: // last 3 months.
+                mReportPeriodStart = now.minusMonths(3);
                 break;
             case 2: // last 6 months
-                mReportPeriodStart = now.minusMonths(5).dayOfMonth().withMinimumValue();
+                mReportPeriodStart = now.minusMonths(6);
                 break;
             case 3: // last year
-                mReportPeriodStart = now.minusMonths(11).dayOfMonth().withMinimumValue();
+                mReportPeriodStart = now.minusYears(1);
                 break;
             case 4: //ALL TIME
-                mReportPeriodStart = new LocalDate(-1L);
-                mReportPeriodEnd = new LocalDate(-1L);
+                mReportPeriodStart = null;
+                mReportPeriodEnd = null;
                 break;
             case 5: // custom range
                 String commodityUID = Commodity.DEFAULT_COMMODITY.getUID();
                 long earliest = mTransactionsDbAdapter.getTimestampOfEarliestTransaction(mAccountType, commodityUID);
-                long latest = mTransactionsDbAdapter.getTimestampOfLatestTransaction(mAccountType, commodityUID);
-                long today = now.toDate().getTime();
-                long tomorrow = now.plusDays(1).toDate().getTime();
                 DialogFragment rangeFragment = DateRangePickerDialogFragment.newInstance(
-                    min(earliest, today),
-                    max(latest, tomorrow),
-                    this);
+                    new LocalDate(earliest),
+                    now.toLocalDate(),
+                    this
+                );
                 rangeFragment.show(getSupportFragmentManager(), "range_dialog");
-                break;
+                return;
         }
-        if (position != 5) { //the date picker will trigger the update itself
-            updateDateRangeOnFragment();
-        }
+        //the date picker will trigger the update itself
+        updateDateRangeOnFragment();
     }
 
     @Override
@@ -365,14 +353,14 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
 
     @Override
     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-        mReportPeriodStart = new LocalDate(year, monthOfYear, dayOfMonth);
+        mReportPeriodStart = new LocalDateTime(year, monthOfYear, dayOfMonth, 0, 0);
         updateDateRangeOnFragment();
     }
 
     @Override
     public void onDateRangeSet(LocalDate startDate, LocalDate endDate) {
-        mReportPeriodStart = startDate;
-        mReportPeriodEnd = endDate;
+        mReportPeriodStart = startDate.toDateTimeAtStartOfDay().toLocalDateTime();
+        mReportPeriodEnd = endDate.toDateTimeAtCurrentTime().toLocalDateTime();
         updateDateRangeOnFragment();
     }
 
@@ -385,8 +373,9 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
      *
      * @return Time in millis
      */
-    public long getReportPeriodEnd() {
-        return mReportPeriodEnd.toDate().getTime();
+    @Nullable
+    public LocalDateTime getReportPeriodEnd() {
+        return mReportPeriodEnd;
     }
 
     /**
@@ -394,8 +383,9 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
      *
      * @return Time in millis
      */
-    public long getReportPeriodStart() {
-        return mReportPeriodStart.toDate().getTime();
+    @Nullable
+    public LocalDateTime getReportPeriodStart() {
+        return mReportPeriodStart;
     }
 
     @Override
@@ -417,11 +407,11 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NotNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
         outState.putSerializable(STATE_REPORT_TYPE, mReportType);
-        outState.putLong(STATE_REPORT_START, mReportPeriodStart.toDate().getTime());
-        outState.putLong(STATE_REPORT_END, mReportPeriodEnd.toDate().getTime());
+        outState.putLong(STATE_REPORT_START, DateExtKt.toMillis(mReportPeriodStart));
+        outState.putLong(STATE_REPORT_END, DateExtKt.toMillis(mReportPeriodEnd));
     }
 }

@@ -369,10 +369,6 @@
         <item quantity="many">%d עסקאות</item>
         <item quantity="other">%d עסקאות</item>
     </plurals>
-    <string-array name="report_account_types">
-        <item>הוצאה</item>
-        <item>הכנסה</item>
-    </string-array>
     <string name="toast_connected_to_google_drive">Connected to Google Drive</string>
     <string name="toast_unable_to_connect_to_google_drive">Unable to connect to Google Drive</string>
     <string name="toast_enter_amount_to_split">אנא הזן סכום לפיצול</string>

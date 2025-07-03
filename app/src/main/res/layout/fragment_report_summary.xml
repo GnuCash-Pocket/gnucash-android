@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -23,8 +22,7 @@ limitations under the License.
 
     <TableLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/edge_padding">
+        android:layout_height="wrap_content">
 
         <TableRow>
 
@@ -34,7 +32,8 @@ limitations under the License.
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:drawableStart="@drawable/ic_pie_chart"
-                android:text="@string/title_pie_chart" />
+                android:text="@string/title_pie_chart"
+                android:backgroundTint="@color/report_orange" />
 
             <Button
                 android:id="@+id/btn_bar_chart"
@@ -42,7 +41,8 @@ limitations under the License.
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:drawableStart="@drawable/ic_bar_chart"
-                android:text="@string/title_bar_chart" />
+                android:text="@string/title_bar_chart"
+                android:backgroundTint="@color/report_red" />
         </TableRow>
 
         <TableRow>
@@ -53,7 +53,8 @@ limitations under the License.
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:drawableStart="@drawable/ic_line_chart"
-                android:text="@string/title_line_chart" />
+                android:text="@string/title_line_chart"
+                android:backgroundTint="@color/report_blue" />
 
             <Button
                 android:id="@+id/btn_balance_sheet"
@@ -61,17 +62,18 @@ limitations under the License.
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:drawableStart="@drawable/ic_balance"
-                android:text="@string/title_report_sheet" />
+                android:text="@string/title_report_sheet"
+                android:backgroundTint="@color/report_purple" />
 
         </TableRow>
     </TableLayout>
 
-
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/edge_padding"
         android:text="@string/label_last_3_months_expenses"
-        android:textSize="16sp" />
+        android:textAppearance="?android:textAppearanceMedium" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/card_report_summary_chart"
@@ -91,8 +93,7 @@ limitations under the License.
         android:id="@+id/card_total"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/edge_padding"
-        app:elevation="10dp">
+        android:layout_marginTop="@dimen/edge_padding">
 
         <TableLayout
             android:layout_width="match_parent"
@@ -106,15 +107,14 @@ limitations under the License.
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/label_total_assets"
-                    android:textSize="18sp" />
+                    android:textAppearance="?android:textAppearanceMedium" />
 
                 <TextView
                     android:id="@+id/total_assets"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:gravity="right"
-                    android:textSize="18sp"
+                    android:textAppearance="?android:textAppearanceMedium"
                     tools:text="$ 2,500" />
             </TableRow>
 
@@ -125,15 +125,14 @@ limitations under the License.
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/label_total_liabilities"
-                    android:textSize="18sp" />
+                    android:textAppearance="?android:textAppearanceMedium" />
 
                 <TextView
                     android:id="@+id/total_liabilities"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:gravity="right"
-                    android:textSize="18sp"
+                    android:textAppearance="?android:textAppearanceMedium"
                     tools:text="$ 2,700" />
             </TableRow>
 
@@ -144,15 +143,16 @@ limitations under the License.
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/label_net_worth"
-                    android:textSize="18sp" />
+                    android:textAppearance="?android:textAppearanceMedium"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/net_worth"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:gravity="right"
-                    android:textSize="18sp"
+                    android:textAppearance="?android:textAppearanceMedium"
+                    android:textStyle="bold"
                     tools:text="$ -200" />
             </TableRow>
         </TableLayout>

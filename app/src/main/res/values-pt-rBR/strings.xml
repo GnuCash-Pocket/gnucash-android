@@ -384,10 +384,6 @@
         <item quantity="one">%d transação</item>
         <item quantity="other">%d transações</item>
     </plurals>
-    <string-array name="report_account_types">
-        <item>DESPESA</item>
-        <item>RENDIMENTO</item>
-    </string-array>
     <string name="toast_connected_to_google_drive">Conectado ao Google Drive</string>
     <string name="toast_unable_to_connect_to_google_drive">Impossível conectar ao Google Drive</string>
     <string name="toast_enter_amount_to_split">Por favor insira uma quantidade para dividir</string>

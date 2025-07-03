@@ -19,22 +19,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="@dimen/dialog_padding">
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/selected_chart_slice"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:textSize="16sp"
+        android:padding="8dp"
+        android:textAppearance="?android:textAppearanceMedium"
         tools:text="Nothing selected" />
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_margin="4dp"
         android:layout_weight="1"
-        android:padding="@dimen/dialog_padding">
+        android:padding="8dp">
 
         <com.github.mikephil.charting.charts.PieChart
             android:id="@+id/pie_chart"

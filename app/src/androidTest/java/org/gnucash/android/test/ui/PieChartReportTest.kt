@@ -16,6 +16,7 @@
 package org.gnucash.android.test.ui
 
 import android.Manifest
+import android.text.format.DateUtils
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.GeneralClickAction
@@ -36,16 +37,15 @@ import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.DatabaseAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.importer.GncXmlImporter
-import org.gnucash.android.model.AccountType
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.test.ui.util.DisableAnimationsRule
+import org.gnucash.android.ui.adapter.AccountTypesAdapter
 import org.gnucash.android.ui.report.BaseReportFragment
 import org.gnucash.android.ui.report.ReportsActivity
-import org.gnucash.android.ui.report.piechart.PieChartFragment
 import org.gnucash.android.util.BookUtils
 import org.joda.time.LocalDateTime
 import org.junit.After
@@ -87,7 +87,7 @@ class PieChartReportTest : GnuAndroidTest() {
      */
     private fun addTransactionForCurrentMonth() {
         val transaction = Transaction(TRANSACTION_NAME)
-        transaction.setTime(System.currentTimeMillis())
+        transaction.setTime(System.currentTimeMillis() - DateUtils.HOUR_IN_MILLIS)
 
         val split = Split(
             Money(BigDecimal.valueOf(TRANSACTION_AMOUNT), commodity), DINING_EXPENSE_ACCOUNT_UID
@@ -107,7 +107,7 @@ class PieChartReportTest : GnuAndroidTest() {
      */
     private fun addTransactionForPreviousMonth(minusMonths: Int) {
         val transaction = Transaction(TRANSACTION2_NAME)
-        transaction.setTime(LocalDateTime().minusMonths(minusMonths).toDateTime().millis)
+        transaction.setTime(LocalDateTime.now().minusMonths(minusMonths).toDateTime().millis)
 
         val split = Split(
             Money(BigDecimal.valueOf(TRANSACTION2_AMOUNT), commodity), BOOKS_EXPENSE_ACCOUNT_UID
@@ -134,14 +134,15 @@ class PieChartReportTest : GnuAndroidTest() {
         assertThat(transactionsDbAdapter.recordsCount).isGreaterThan(1)
         refreshReport()
 
-        onView(withId(R.id.pie_chart)).perform(clickXY(Position.BEGIN, Position.MIDDLE))
+        onView(withId(R.id.pie_chart))
+            .perform(clickXY(Position.BEGIN, Position.MIDDLE))
         val percent =
             ((TRANSACTION_AMOUNT * 100) / (TRANSACTION_AMOUNT + TRANSACTION2_AMOUNT)).toFloat()
-        val selectedText = String.format(
-            Locale.US,
-            BaseReportFragment.SELECTED_VALUE_PATTERN,
+        val selectedText = BaseReportFragment.formatSelectedValue(
+            Locale.getDefault(),
             DINING_EXPENSE_ACCOUNT_NAME,
-            TRANSACTION_AMOUNT,
+            TRANSACTION_AMOUNT.toFloat(),
+            commodity,
             percent
         )
         onView(withId(R.id.selected_chart_slice))
@@ -150,11 +151,13 @@ class PieChartReportTest : GnuAndroidTest() {
 
     @Test
     fun testSpinner() {
+        val accountTypeAdapter = AccountTypesAdapter.expenseAndIncome(context)
         val split = Split(
             Money(BigDecimal.valueOf(TRANSACTION3_AMOUNT), commodity),
             GIFTS_RECEIVED_INCOME_ACCOUNT_UID
         )
         val transaction = Transaction(TRANSACTION3_NAME)
+        transaction.setTime(System.currentTimeMillis() - DateUtils.HOUR_IN_MILLIS);
         transaction.addSplit(split)
         transaction.addSplit(split.createPair(CASH_IN_WALLET_ASSET_ACCOUNT_UID))
 
@@ -162,17 +165,17 @@ class PieChartReportTest : GnuAndroidTest() {
 
         refreshReport()
 
-        Thread.sleep(1000)
-
         onView(withId(R.id.report_account_type_spinner))
             .perform(click())
-        onView(withText(AccountType.INCOME.name)).perform(click())
+        onView(withText(accountTypeAdapter.getItem(1)!!.label))
+            .perform(click())
         onView(withId(R.id.pie_chart))
             .perform(clickXY(Position.BEGIN, Position.MIDDLE))
-        val selectedText = String.format(
-            PieChartFragment.SELECTED_VALUE_PATTERN,
+        val selectedText = BaseReportFragment.formatSelectedValue(
+            Locale.getDefault(),
             GIFTS_RECEIVED_INCOME_ACCOUNT_NAME,
-            TRANSACTION3_AMOUNT,
+            TRANSACTION3_AMOUNT.toFloat(),
+            commodity,
             100f
         )
         onView(withId(R.id.selected_chart_slice))
@@ -180,7 +183,7 @@ class PieChartReportTest : GnuAndroidTest() {
 
         onView(withId(R.id.report_account_type_spinner))
             .perform(click())
-        onView(withText(AccountType.EXPENSE.name))
+        onView(withText(accountTypeAdapter.getItem(0)!!.label))
             .perform(click())
 
         onView(withId(R.id.pie_chart)).perform(click())
@@ -214,8 +217,10 @@ class PieChartReportTest : GnuAndroidTest() {
      */
     private fun refreshReport() {
         try {
-            activityRule.runOnUiThread { reportsActivity.refresh() }
-            sleep(1000)
+            activityRule.runOnUiThread {
+                reportsActivity.refresh()
+            }
+            sleep(5000)
         } catch (t: Throwable) {
             System.err.println("Failed to refresh reports")
         }

@@ -92,6 +92,8 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     public static final String ROOT_ACCOUNT_NAME = "Root Account";
     public static final String TEMPLATE_ACCOUNT_NAME = "Template Root";
 
+    public static final long ALWAYS = -1L;
+
     /**
      * Transactions database adapter for manipulating transactions associated with accounts
      */
@@ -773,7 +775,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return Account Balance of an account including sub-accounts
      */
     public Money getAccountBalance(String accountUID) {
-        return computeBalance(accountUID, -1, -1, true);
+        return computeBalance(accountUID, ALWAYS, ALWAYS, true);
     }
 
     /**
@@ -782,7 +784,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return Account Balance of an account including sub-accounts
      */
     public Money getAccountBalance(Account account) {
-        return getAccountBalance(account, -1, -1);
+        return getAccountBalance(account, ALWAYS, ALWAYS);
     }
 
     /**
@@ -791,7 +793,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return Account Balance of an account including sub-accounts
      */
     public Money getCurrentAccountBalance(Account account) {
-        return getAccountBalance(account, -1, System.currentTimeMillis());
+        return getAccountBalance(account, ALWAYS, System.currentTimeMillis());
     }
 
     /**
@@ -840,6 +842,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @param includeSubAccounts include the sub-accounts' balances?
      * @return the balance of an account within the specified range including sub-accounts
      */
+    @NonNull
     public Money getAccountBalance(Account account, long startTimestamp, long endTimestamp, boolean includeSubAccounts) {
         return computeBalance(account, startTimestamp, endTimestamp, includeSubAccounts);
     }
@@ -854,10 +857,11 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return Account balance
      */
     public Money getAccountsBalance(AccountType accountType, Commodity currency, long startTimestamp, long endTimestamp) {
-        String where = AccountEntry.COLUMN_TYPE + "= ?";
+        String where = AccountEntry.COLUMN_TYPE + " = ?"
+            + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
         String[] whereArgs = new String[]{accountType.name()};
         List<Account> accounts = getSimpleAccounts(where, whereArgs, null);
-        return getAccountsBalance(accounts, startTimestamp, endTimestamp);
+        return getAccountsBalance(accounts, currency, startTimestamp, endTimestamp);
     }
 
     /**
@@ -886,7 +890,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      * @return Money balance of the account type
      */
     public Money getCurrentAccountsBalance(List<AccountType> accountTypes, Commodity currency) {
-        return getBalancesByType(accountTypes, currency, -1, System.currentTimeMillis());
+        return getBalancesByType(accountTypes, currency, ALWAYS, System.currentTimeMillis());
     }
 
     private Money computeBalance(@NonNull String accountUID, long startTimestamp, long endTimestamp, boolean includeSubAccounts) {
@@ -894,15 +898,16 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         return computeBalance(account, startTimestamp, endTimestamp, includeSubAccounts);
     }
 
+    @NonNull
     private Money computeBalance(@NonNull Account account, long startTimestamp, long endTimestamp, boolean includeSubAccounts) {
-        Timber.d("Computing account balance for account %s", account);
+        Timber.d("Computing account balance for [%s]", account);
         String accountUID = account.getUID();
         String[] columns = new String[]{AccountEntry.COLUMN_BALANCE};
         String selection = AccountEntry.COLUMN_UID + "=?";
         String[] selectionArgs = new String[]{accountUID};
 
         // Is the value cached?
-        boolean useCachedValue = (startTimestamp == -1L) && (endTimestamp == -1L);
+        boolean useCachedValue = (startTimestamp == ALWAYS) && (endTimestamp == ALWAYS);
         if (useCachedValue) {
             Cursor cursor = mDb.query(mTableName, columns, selection, selectionArgs, null, null, null);
             try {
@@ -945,6 +950,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         return balance;
     }
 
+    @NonNull
     private Money computeSplitsBalance(Account account, long startTimestamp, long endTimestamp) {
         AccountType accountType = account.getAccountType();
         SplitsDbAdapter splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter;
@@ -981,14 +987,40 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
     public Money getAccountsBalance(@NonNull List<Account> accounts, long startTimestamp, long endTimestamp) {
         String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
         Commodity commodity = commoditiesDbAdapter.getCurrency(currencyCode);
-        Money balance = Money.createZeroInstance(commodity);
-        for (Account account : accounts) {
-            Money accountBalance = getAccountBalance(account, startTimestamp, endTimestamp, false);
-            if (accountBalance.isAmountZero()) continue;
-            Price price = pricesDbAdapter.getPrice(accountBalance.getCommodity(), commodity);
-            if (price == null) continue;
-            accountBalance = accountBalance.times(price);
-            balance = balance.plus(accountBalance);
+        return getAccountsBalance(accounts, commodity, startTimestamp, endTimestamp);
+    }
+
+    /**
+     * Returns the balance of account list within the specified time range. The default currency
+     * takes as base currency.
+     *
+     * @param accounts       list of accounts
+     * @param currency       The target currency
+     * @param startTimestamp the start timestamp of the time range
+     * @param endTimestamp   the end timestamp of the time range
+     * @return Money balance of account list
+     */
+    public Money getAccountsBalance(@NonNull List<Account> accounts, Commodity currency, long startTimestamp, long endTimestamp) {
+        Money balance = Money.createZeroInstance(currency);
+        if ((startTimestamp == ALWAYS) && (endTimestamp == ALWAYS)) { // Use cached balances.
+            for (Account account : accounts) {
+                Money accountBalance = getAccountBalance(account, startTimestamp, endTimestamp, false);
+                if (accountBalance.isAmountZero()) continue;
+                Price price = pricesDbAdapter.getPrice(accountBalance.getCommodity(), currency);
+                if (price == null) continue;
+                accountBalance = accountBalance.times(price);
+                balance = balance.plus(accountBalance);
+            }
+        } else {
+            Map<String, Money> balances = getAccountsBalances(accounts, startTimestamp, endTimestamp);
+            for (Account account : accounts) {
+                Money accountBalance = balances.get(account.getUID());
+                if ((accountBalance == null) || accountBalance.isAmountZero()) continue;
+                Price price = pricesDbAdapter.getPrice(accountBalance.getCommodity(), currency);
+                if (price == null) continue;
+                accountBalance = accountBalance.times(price);
+                balance = balance.plus(accountBalance);
+            }
         }
         return balance;
     }
@@ -1372,7 +1404,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         List<Account> accounts = getSimpleAccounts();
         List<Transaction> openingTransactions = new ArrayList<>();
         for (Account account : accounts) {
-            Money balance = getAccountBalance(account, -1, -1, false);
+            Money balance = getAccountBalance(account, ALWAYS, ALWAYS, false);
             if (balance.isAmountZero())
                 continue;
 
@@ -1605,5 +1637,18 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
         String[] whereArgs = new String[]{AccountType.ROOT.name()};
         return getAllRecords(where, whereArgs);
+    }
+
+    public Map<String, Money> getAccountsBalances(List<Account> accounts, long startTime, long endTime) {
+        SplitsDbAdapter splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter;
+        Map<String, Money> balances = splitsDbAdapter.computeSplitBalances(accounts, startTime, endTime);
+        for (Account account : accounts) {
+            Money balance = balances.get(account.getUID());
+            if (balance == null) continue;
+            if (!account.getAccountType().hasDebitNormalBalance) {
+                balances.put(account.getUID(), balance.unaryMinus());
+            }
+        }
+        return balances;
     }
 }

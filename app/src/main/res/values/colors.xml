@@ -29,6 +29,11 @@
     <color name="account_purple">#B304AD</color>
     <color name="account_default">#EDECEB</color>
     <color name="action_mode_background">#616161</color>
+    <color name="report_green">#43A047</color>
+    <color name="report_red">#E53935</color>
+    <color name="report_orange">#FB8C00</color>
+    <color name="report_blue">#1E88E5</color>
+    <color name="report_purple">#8E24AA</color>
     <color name="row_even">@color/transparent</color>
     <color name="row_odd">#11FFC107</color>
 

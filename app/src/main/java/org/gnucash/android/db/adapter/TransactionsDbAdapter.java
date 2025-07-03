@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2012 - 2015 Ngewi Fet <ngewif@gmail.com>
  * Copyright (c) 2014 Yongxin Wang <fefe.wyx@gmail.com>
@@ -59,6 +60,8 @@ import timber.log.Timber;
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
 public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
+
+    public static final long INVALID_DATE = Long.MIN_VALUE;
 
     @NonNull
     public final SplitsDbAdapter splitsDbAdapter;
@@ -550,9 +553,9 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      *
      * @param type         the account type
      * @param commodityUID the currency UID
-     * @return the earliest transaction's timestamp. Returns 1970-01-01 00:00:00.000 if no transaction found
+     * @return the earliest transaction's timestamp. Returns {@code #INVALID_DATE} if no transaction found
      */
-    public long getTimestampOfEarliestTransaction(AccountType type, String commodityUID) {
+    public long getTimestampOfEarliestTransaction(@NonNull AccountType type, @NonNull String commodityUID) {
         return getTimestamp("MIN", type, commodityUID);
     }
 
@@ -561,9 +564,9 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      *
      * @param type         the account type
      * @param commodityUID the currency UID
-     * @return the latest transaction's timestamp. Returns 1970-01-01 00:00:00.000 if no transaction found
+     * @return the latest transaction's timestamp. Returns {@code #INVALID_DATE} if no transaction found
      */
-    public long getTimestampOfLatestTransaction(AccountType type, String commodityUID) {
+    public long getTimestampOfLatestTransaction(@NonNull AccountType type, @NonNull String commodityUID) {
         return getTimestamp("MAX", type, commodityUID);
     }
 
@@ -597,24 +600,22 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
      * @param mod          Mode (either MAX or MIN)
      * @param type         AccountType
      * @param commodityUID the currency UID
-     * @return earliest or latest timestamp of transactions
+     * @return earliest or latest timestamp of transactions - {@code #INVALID_DATE} otherwise.
      * @see #getTimestampOfLatestTransaction(AccountType, String)
      * @see #getTimestampOfEarliestTransaction(AccountType, String)
      */
     private long getTimestamp(String mod, AccountType type, String commodityUID) {
-        String sql = "SELECT " + mod + "(" + TransactionEntry.COLUMN_TIMESTAMP + ")"
-            + " FROM " + TransactionEntry.TABLE_NAME
-            + " INNER JOIN " + SplitEntry.TABLE_NAME + " ON "
-            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID + " = "
-            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID
-            + " INNER JOIN " + AccountEntry.TABLE_NAME + " ON "
-            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_UID + " = "
-            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID
-            + " WHERE " + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_TYPE + " = ? AND "
-            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_COMMODITY_UID + " = ? AND "
-            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + " = 0";
+        String sql = "SELECT " + mod + "(t." + TransactionEntry.COLUMN_TIMESTAMP + ")"
+            + " FROM " + TransactionEntry.TABLE_NAME + " t"
+            + " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON"
+            + " s." + SplitEntry.COLUMN_TRANSACTION_UID + " = t." + TransactionEntry.COLUMN_UID
+            + " INNER JOIN " + AccountEntry.TABLE_NAME + " a ON"
+            + " a." + AccountEntry.COLUMN_UID + " = s." + SplitEntry.COLUMN_ACCOUNT_UID
+            + " WHERE a." + AccountEntry.COLUMN_TYPE + " = ?"
+            + " AND a." + AccountEntry.COLUMN_COMMODITY_UID + " = ?"
+            + " AND t." + TransactionEntry.COLUMN_TEMPLATE + " = 0";
         Cursor cursor = mDb.rawQuery(sql, new String[]{type.name(), commodityUID});
-        long timestamp = 0;
+        long timestamp = INVALID_DATE;
         try {
             if (cursor.moveToFirst()) {
                 timestamp = cursor.getLong(0);
@@ -629,9 +630,9 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         queryBuilder.setTables(
             TransactionEntry.TABLE_NAME + " t "
-                + " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON "
-                + "t." + TransactionEntry.COLUMN_UID + " = "
-                + "s." + SplitEntry.COLUMN_TRANSACTION_UID
+                + " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON"
+                + " t." + TransactionEntry.COLUMN_UID + " ="
+                + " s." + SplitEntry.COLUMN_TRANSACTION_UID
         );
         String[] projectionIn = new String[]{"COUNT(*)"};
         String selection = "s." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?";

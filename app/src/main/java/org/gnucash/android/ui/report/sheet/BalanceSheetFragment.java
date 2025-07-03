@@ -35,7 +35,7 @@ import org.gnucash.android.R;
 import org.gnucash.android.databinding.FragmentTextReportBinding;
 import org.gnucash.android.databinding.RowBalanceSheetBinding;
 import org.gnucash.android.databinding.TotalBalanceSheetBinding;
-import org.gnucash.android.db.DatabaseSchema;
+import org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
@@ -106,7 +106,7 @@ public class BalanceSheetFragment extends BaseReportFragment {
     @Override
     protected void generateReport(@NonNull Context context) {
         mAssetsBalance = mAccountsDbAdapter.getCurrentAccountsBalance(mAssetAccountTypes, mCommodity);
-        mLiabilitiesBalance = mAccountsDbAdapter.getCurrentAccountsBalance(mLiabilityAccountTypes, mCommodity);
+        mLiabilitiesBalance = mAccountsDbAdapter.getCurrentAccountsBalance(mLiabilityAccountTypes, mCommodity).unaryMinus();
     }
 
     @Override
@@ -115,7 +115,7 @@ public class BalanceSheetFragment extends BaseReportFragment {
         loadAccountViews(mLiabilityAccountTypes, mBinding.tableLiabilities);
         loadAccountViews(mEquityAccountTypes, mBinding.tableEquity);
 
-        displayBalance(mBinding.totalLiabilityAndEquity, mAssetsBalance.minus(mLiabilitiesBalance), colorBalanceZero);
+        displayBalance(mBinding.totalLiabilityAndEquity, mAssetsBalance.plus(mLiabilitiesBalance), colorBalanceZero);
     }
 
     @Override
@@ -136,10 +136,10 @@ public class BalanceSheetFragment extends BaseReportFragment {
         tableLayout.removeAllViews();
 
         // FIXME move this to generateReport
-        String where = DatabaseSchema.AccountEntry.COLUMN_TYPE
-            + " IN ('" + TextUtils.join("','", accountTypes) + "') AND "
-            + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0";
-        String orderBy = DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC";
+        String where = AccountEntry.COLUMN_TYPE + " IN ('" + TextUtils.join("','", accountTypes) + "')"
+            + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
+            + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
+        String orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC";
         List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, null, orderBy);
         Money total = Money.createZeroInstance(Commodity.DEFAULT_COMMODITY);
         boolean isRowEven = true;
@@ -148,7 +148,7 @@ public class BalanceSheetFragment extends BaseReportFragment {
             Money balance = mAccountsDbAdapter.getAccountBalance(account.getUID());
             if (balance.isAmountZero()) continue;
             AccountType accountType = account.getAccountType();
-            balance = (accountType.hasDebitDisplayBalance) ? balance : balance.unaryMinus();
+            balance = (accountType.hasDebitNormalBalance) ? balance : balance.unaryMinus();
             RowBalanceSheetBinding binding = RowBalanceSheetBinding.inflate(inflater, tableLayout, true);
             // alternate light and dark rows
             if (isRowEven) {

@@ -384,10 +384,6 @@
         <item quantity="one">%d笔交易</item>
         <item quantity="other">%d笔交易</item>
     </plurals>
-    <string-array name="report_account_types">
-        <item>支出</item>
-        <item>收入</item>
-    </string-array>
     <string name="toast_connected_to_google_drive">已连接到Google Drive</string>
     <string name="toast_unable_to_connect_to_google_drive">无法连接到Google Drive</string>
     <string name="toast_enter_amount_to_split">请输入拆分金额</string>

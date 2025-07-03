@@ -33,7 +33,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
 import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.components.LegendEntry;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
@@ -44,15 +43,15 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 
 import org.gnucash.android.R;
 import org.gnucash.android.databinding.FragmentBarChartBinding;
-import org.gnucash.android.db.DatabaseSchema;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
+import org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.Price;
-import org.gnucash.android.ui.report.BaseReportFragment;
+import org.gnucash.android.ui.report.IntervalReportFragment;
 import org.gnucash.android.ui.report.ReportType;
-import org.joda.time.LocalDate;
+import org.gnucash.android.ui.report.ReportsActivity;
+import org.gnucash.android.util.DateExtKt;
 import org.joda.time.LocalDateTime;
 
 import java.util.ArrayList;
@@ -68,13 +67,12 @@ import timber.log.Timber;
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class StackedBarChartFragment extends BaseReportFragment {
+public class StackedBarChartFragment extends IntervalReportFragment {
 
     private static final int ANIMATION_DURATION = (int) DateUtils.SECOND_IN_MILLIS;
     private static final int NO_DATA_BAR_COUNTS = 3;
 
     private boolean mTotalPercentageMode = true;
-    private boolean mChartDataPresent = true;
 
     private FragmentBarChartBinding mBinding;
 
@@ -120,46 +118,64 @@ public class StackedBarChartFragment extends BaseReportFragment {
         List<String> stackLabels = new ArrayList<>();
         List<Integer> colors = new ArrayList<>();
         Map<String, Integer> accountToColorMap = new LinkedHashMap<>();
+        ReportsActivity.GroupInterval groupInterval = mGroupInterval;
         AccountType accountType = mAccountType;
-        LocalDateTime tmpDate = new LocalDateTime(getStartDate(accountType).toDate().getTime());
-        int count = getDateDiff(new LocalDateTime(getStartDate(accountType).toDate().getTime()),
-            new LocalDateTime(getEndDate(accountType).toDate().getTime()));
-        for (int i = 0; i <= count; i++) {
-            long start = 0;
-            long end = 0;
-            switch (mGroupInterval) {
-                case MONTH:
-                    start = tmpDate.dayOfMonth().withMinimumValue().millisOfDay().withMinimumValue().toDateTime().getMillis();
-                    end = tmpDate.dayOfMonth().withMaximumValue().millisOfDay().withMaximumValue().toDateTime().getMillis();
 
-                    tmpDate = tmpDate.plusMonths(1);
-                    break;
-                case QUARTER:
-                    int quarter = getQuarter(tmpDate);
-                    start = tmpDate.withMonthOfYear(quarter * 3 - 2).dayOfMonth().withMinimumValue().millisOfDay().withMinimumValue().toDateTime().getMillis();
-                    end = tmpDate.withMonthOfYear(quarter * 3).dayOfMonth().withMaximumValue().millisOfDay().withMaximumValue().toDateTime().getMillis();
-
-                    tmpDate = tmpDate.plusMonths(3);
-                    break;
-                case YEAR:
-                    start = tmpDate.dayOfYear().withMinimumValue().millisOfDay().withMinimumValue().toDateTime().getMillis();
-                    end = tmpDate.dayOfYear().withMaximumValue().millisOfDay().withMaximumValue().toDateTime().getMillis();
-
-                    tmpDate = tmpDate.plusYears(1);
-                    break;
+        calculateEarliestAndLatestTimestamps(accountTypes);
+        LocalDateTime startDate = mReportPeriodStart;
+        if (startDate == null) {
+            Long startTime = earliestTimestamps.get(accountType);
+            if (startTime != null) {
+                startDate = new LocalDateTime(startTime);
+            } else {
+                isChartDataPresent = false;
+                return getEmptyData(context);
             }
+        }
+        LocalDateTime endDate = mReportPeriodEnd;
+        if (endDate == null) {
+            Long endTime = latestTimestamps.get(accountType);
+            if (endTime != null) {
+                endDate = new LocalDateTime(endTime);
+            } else {
+                endDate = LocalDateTime.now();
+            }
+        }
+
+        LocalDateTime startPeriod = startDate;
+        LocalDateTime endPeriod = endDate;
+        switch (groupInterval) {
+            case MONTH:
+                endPeriod = startPeriod.plusMonths(1);
+                break;
+            case QUARTER:
+                startPeriod = startPeriod.withMonthOfYear(DateExtKt.getFirstQuarterMonth(startPeriod)).dayOfMonth().withMinimumValue();
+                endPeriod = startPeriod.plusMonths(3);
+                break;
+            case YEAR:
+                endPeriod = startPeriod.plusYears(1);
+                break;
+        }
+        int count = getDateDiff(groupInterval, startDate, endDate);
+
+        final String where = AccountEntry.COLUMN_TYPE + "=?"
+            + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
+            + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
+        final String[] whereArgs = new String[]{accountType.name()};
+        final String orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC";
+        List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, whereArgs, orderBy);
+
+        for (int i = 0; i < count; i++) {
+            long startTime = DateExtKt.toMillis(startPeriod);
+            long endTime = DateExtKt.toMillis(endPeriod);
             List<Float> stack = new ArrayList<>();
             List<String> labels = new ArrayList<>();
-            String where = DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND "
-                + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?";
-            String[] whereArgs = new String[]{accountType.name()};
-            String orderBy = DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC";
-            List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, whereArgs, orderBy);
-            @ColorInt int color;
+            Map<String, Money> balances = mAccountsDbAdapter.getAccountsBalances(accounts, startTime, endTime);
+
             for (Account account : accounts) {
-                String accountUID = account.getUID();
-                Money balance = mAccountsDbAdapter.getAccountBalance(account, start, end, false);
-                if (balance.isAmountZero()) continue;
+                Money balance = balances.get(account.getUID());
+                if ((balance == null) || balance.isAmountZero()) continue;
+                Timber.d("%s %s [%s] %s - %s %s", accountType, groupInterval, account, startPeriod, endPeriod, balance);
                 Price price = pricesDbAdapter.getPrice(balance.getCommodity(), mCommodity);
                 if (price == null) continue;
                 balance = balance.times(price);
@@ -170,6 +186,8 @@ public class StackedBarChartFragment extends BaseReportFragment {
                     String accountName = account.getName();
                     labels.add(accountName);
 
+                    String accountUID = account.getUID();
+                    @ColorInt final int color;
                     if (accountToColorMap.containsKey(accountUID)) {
                         color = accountToColorMap.get(accountUID);
                     } else {
@@ -177,28 +195,42 @@ public class StackedBarChartFragment extends BaseReportFragment {
                         accountToColorMap.put(accountUID, color);
                     }
                     colors.add(color);
-
-                    Timber.d(accountType + tmpDate.toString(" MMMM yyyy ") + account.getName() + " = " + stack.get(stack.size() - 1));
                 }
+            }
+
+            startPeriod = endPeriod;
+            switch (groupInterval) {
+                case MONTH:
+                    endPeriod = endPeriod.plusMonths(1);
+                    break;
+                case QUARTER:
+                    endPeriod = endPeriod.plusMonths(3);
+                    break;
+                case YEAR:
+                    endPeriod = endPeriod.plusYears(1);
+                    break;
             }
 
             if (stack.isEmpty()) {
                 stack.add(0f);
             }
+            if (labels.isEmpty()) {
+                labels.add("");
+            }
             entries.add(new BarEntry(i, toFloatArray(stack), labels));
             stackLabels.addAll(labels);
         }
 
-        BarDataSet dataSet = new BarDataSet(entries, accountType.name());
+        BarDataSet dataSet = new BarDataSet(entries, getLabel(context, accountType));
         dataSet.setDrawValues(false);
         dataSet.setStackLabels(stackLabels.toArray(new String[0]));
         dataSet.setColors(colors);
 
         if ((dataSet.getEntryCount() == 0) || (getYValueSum(dataSet) == 0)) {
-            mChartDataPresent = false;
+            isChartDataPresent = false;
             return getEmptyData(context);
         }
-        mChartDataPresent = true;
+        isChartDataPresent = true;
         return new BarData(dataSet);
     }
 
@@ -220,46 +252,6 @@ public class StackedBarChartFragment extends BaseReportFragment {
     }
 
     /**
-     * Returns the start data of x-axis for the specified account type
-     *
-     * @param accountType account type
-     * @return the start data
-     */
-    private LocalDate getStartDate(AccountType accountType) {
-        LocalDate startDate;
-        if (mReportPeriodStart == -1) {
-            TransactionsDbAdapter adapter = TransactionsDbAdapter.getInstance();
-            String commodityUID = mCommodity.getUID();
-            startDate = new LocalDate(adapter.getTimestampOfEarliestTransaction(accountType, commodityUID));
-        } else {
-            startDate = new LocalDate(mReportPeriodStart);
-        }
-        startDate = startDate.withDayOfMonth(1);
-        Timber.d(accountType + " X-axis start date: " + startDate.toString("dd MM yyyy"));
-        return startDate;
-    }
-
-    /**
-     * Returns the end data of x-axis for the specified account type
-     *
-     * @param accountType account type
-     * @return the end data
-     */
-    private LocalDate getEndDate(AccountType accountType) {
-        LocalDate endDate;
-        if (mReportPeriodEnd == -1) {
-            TransactionsDbAdapter adapter = TransactionsDbAdapter.getInstance();
-            String commodityUID = mCommodity.getUID();
-            endDate = new LocalDate(adapter.getTimestampOfLatestTransaction(accountType, commodityUID));
-        } else {
-            endDate = new LocalDate(mReportPeriodEnd);
-        }
-        endDate = endDate.withDayOfMonth(1);
-        Timber.d(accountType + " X-axis end date: " + endDate.toString("dd MM yyyy"));
-        return endDate;
-    }
-
-    /**
      * Converts the specified list of floats to an array
      *
      * @param list a list of floats
@@ -277,18 +269,16 @@ public class StackedBarChartFragment extends BaseReportFragment {
     @Override
     public void generateReport(@NonNull Context context) {
         mBinding.barChart.setData(getData(context));
-        setCustomLegend();
-
-        mBinding.barChart.getAxisLeft().setDrawLabels(mChartDataPresent);
-        mBinding.barChart.getXAxis().setDrawLabels(mChartDataPresent);
-        mBinding.barChart.setTouchEnabled(mChartDataPresent);
+        mBinding.barChart.getAxisLeft().setDrawLabels(isChartDataPresent);
+        mBinding.barChart.getXAxis().setDrawLabels(isChartDataPresent);
+        mBinding.barChart.setTouchEnabled(isChartDataPresent);
     }
 
     @Override
     protected void displayReport() {
         mBinding.barChart.notifyDataSetChanged();
         mBinding.barChart.highlightValues(null);
-        if (mChartDataPresent) {
+        if (isChartDataPresent) {
             mBinding.barChart.animateY(ANIMATION_DURATION);
         } else {
             mBinding.barChart.clearAnimation();
@@ -298,35 +288,10 @@ public class StackedBarChartFragment extends BaseReportFragment {
         mBinding.barChart.invalidate();
     }
 
-    /**
-     * Sets custom legend. Disable legend if its items count greater than {@code COLORS} array size.
-     */
-    private void setCustomLegend() {
-        Legend legend = mBinding.barChart.getLegend();
-        IBarDataSet dataSet = mBinding.barChart.getData().getDataSetByIndex(0);
-
-        List<Integer> colors = dataSet.getColors();
-        String[] labels = dataSet.getStackLabels();
-
-        final int length = colors.size();
-        if (length == labels.length) {
-            LegendEntry[] entries = new LegendEntry[length];
-            for (int i = 0; i < length; i++) {
-                LegendEntry entry = new LegendEntry();
-                entry.formColor = colors.get(i);
-                entry.label = labels[i];
-                entries[i] = entry;
-            }
-            legend.setCustom(entries);
-            return;
-        }
-        legend.setEnabled(false);
-    }
-
     @Override
     public void onPrepareOptionsMenu(@NonNull Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        menu.findItem(R.id.menu_percentage_mode).setVisible(mChartDataPresent);
+        menu.findItem(R.id.menu_percentage_mode).setVisible(isChartDataPresent);
         // hide pie/line chart specific menu items
         menu.findItem(R.id.menu_order_by_size).setVisible(false);
         menu.findItem(R.id.menu_toggle_labels).setVisible(false);
@@ -370,7 +335,9 @@ public class StackedBarChartFragment extends BaseReportFragment {
         if (e == null) return;
         BarEntry entry = (BarEntry) e;
         int index = h.getStackIndex();
-        if (index < 0) return;
+        if ((index < 0) && (entry.getYVals().length > 0)) {
+            index = 0;
+        }
         float value = entry.getYVals()[index];
         List<String> labels = (List<String>) entry.getData();
         if (labels.isEmpty()) return;
@@ -386,6 +353,6 @@ public class StackedBarChartFragment extends BaseReportFragment {
             total = entry.getNegativeSum() + entry.getPositiveSum();
         }
         final float percentage = (total != 0f) ? ((value * 100) / total) : 0f;
-        mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label.trim(), value, percentage));
+        mSelectedValueTextView.setText(formatSelectedValue(label, value, percentage));
     }
 }

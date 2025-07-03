@@ -1,6 +1,8 @@
 package org.gnucash.android.util
 
+import androidx.annotation.IntRange
 import org.joda.time.DateTime
+import org.joda.time.DateTimeConstants
 import org.joda.time.LocalDateTime
 import org.joda.time.Weeks
 import org.joda.time.format.DateTimeFormat
@@ -155,4 +157,41 @@ fun formatShortDateTime(millis: Long): String {
     } catch (e: IllegalArgumentException) {
         DateFormat.getDateInstance(DateFormat.SHORT).format(Date(millis))
     }
+}
+
+private val quarters = intArrayOf(1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4)
+
+/**
+ * Returns a quarter of the specified date.
+ * January, February, March = 1
+ * April, May, June = 2
+ * July, August, September = 3
+ * October, November, December = 4
+ *
+ * @return a quarter
+ */
+@IntRange(from = 1, to = 4)
+fun LocalDateTime.getQuarter(): Int {
+    return quarters[monthOfYear - 1]
+}
+
+@IntRange(from = 1, to = 12)
+fun LocalDateTime.getFirstQuarterMonth(): Int {
+    val m = monthOfYear
+
+    return when (m) {
+        DateTimeConstants.FEBRUARY -> DateTimeConstants.JANUARY
+        DateTimeConstants.MARCH -> DateTimeConstants.JANUARY
+        DateTimeConstants.MAY -> DateTimeConstants.APRIL
+        DateTimeConstants.JUNE -> DateTimeConstants.APRIL
+        DateTimeConstants.AUGUST -> DateTimeConstants.JULY
+        DateTimeConstants.SEPTEMBER -> DateTimeConstants.JULY
+        DateTimeConstants.NOVEMBER -> DateTimeConstants.OCTOBER
+        DateTimeConstants.DECEMBER -> DateTimeConstants.OCTOBER
+        else -> m
+    }
+}
+
+fun LocalDateTime.toMillis(): Long {
+    return toDateTime().getMillis()
 }

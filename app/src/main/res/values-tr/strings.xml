@@ -384,10 +384,6 @@
         <item quantity="one">%d işlem</item>
         <item quantity="other">%d işlem</item>
     </plurals>
-    <string-array name="report_account_types">
-        <item>GİDER</item>
-        <item>GELİR</item>
-    </string-array>
     <string name="toast_connected_to_google_drive">Google Drive\'a bağlandı</string>
     <string name="toast_unable_to_connect_to_google_drive">Google Drive\'a bağlanılamadı</string>
     <string name="toast_enter_amount_to_split">Lütfen bölme için bir tutar girin</string>
