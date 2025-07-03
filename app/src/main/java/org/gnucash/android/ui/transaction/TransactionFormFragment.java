@@ -104,7 +104,8 @@ import timber.log.Timber;
 public class TransactionFormFragment extends MenuFragment implements
     DatePickerDialog.OnDateSetListener,
     TimePickerDialog.OnTimeSetListener,
-    RecurrencePickerDialogFragment.OnRecurrenceSetListener, OnTransferFundsListener {
+    RecurrencePickerDialogFragment.OnRecurrenceSetListener,
+    OnTransferFundsListener {
 
     private static final int REQUEST_SPLIT_EDITOR = 0x11;
 

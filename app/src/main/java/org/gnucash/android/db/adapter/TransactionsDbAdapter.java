@@ -524,8 +524,9 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         SQLiteQueryBuilder queryBuilder2 = new SQLiteQueryBuilder();
         queryBuilder2.setTables("(" + subquery + ")");
         String groupBy = TransactionEntry.COLUMN_DESCRIPTION;
-        String limit = Integer.toString(5);
-        return queryBuilder2.query(mDb, null, null, selectionArgs, groupBy, null, null, limit);
+        String sortBy = TransactionEntry.COLUMN_TIMESTAMP + " DESC";
+        String limit = Integer.toString(10);
+        return queryBuilder2.query(mDb, null, null, selectionArgs, groupBy, null, sortBy, limit);
     }
 
     /**
