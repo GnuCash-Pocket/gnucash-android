@@ -35,7 +35,7 @@ import org.gnucash.android.R;
 import org.gnucash.android.databinding.FragmentTextReportBinding;
 import org.gnucash.android.databinding.RowBalanceSheetBinding;
 import org.gnucash.android.databinding.TotalBalanceSheetBinding;
-import org.gnucash.android.db.DatabaseSchema;
+import org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
@@ -136,10 +136,10 @@ public class BalanceSheetFragment extends BaseReportFragment {
         tableLayout.removeAllViews();
 
         // FIXME move this to generateReport
-        String where = DatabaseSchema.AccountEntry.COLUMN_TYPE
+        String where = AccountEntry.COLUMN_TYPE
             + " IN ('" + TextUtils.join("','", accountTypes) + "') AND "
-            + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0";
-        String orderBy = DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC";
+            + AccountEntry.COLUMN_PLACEHOLDER + " = 0";
+        String orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC";
         List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, null, orderBy);
         Money total = Money.createZeroInstance(Commodity.DEFAULT_COMMODITY);
         boolean isRowEven = true;

@@ -91,7 +91,7 @@ public class DateRangePickerDialogFragment extends VolatileDialogFragment {
                     if (length > 0) {
                         Date startDate = selectedDates.get(0);
                         // If only one day is selected (no interval) start and end should be the same (the selected one)
-                        Date endDate = length > 1 ? selectedDates.get(length - 1) : new Date(startDate.getTime());
+                        Date endDate = length > 1 ? selectedDates.get(length - 1) : startDate;
                         // CalendarPicker returns the start of the selected day but we want all transactions of that day to be included.
                         // Therefore we have to add 24 hours to the endDate.
                         endDate.setTime(endDate.getTime() + ONE_DAY_IN_MILLIS);

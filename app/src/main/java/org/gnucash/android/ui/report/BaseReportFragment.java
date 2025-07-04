@@ -53,13 +53,12 @@ import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.ui.common.BaseDrawerActivity;
 import org.gnucash.android.ui.common.Refreshable;
+import org.gnucash.android.util.DateExtKt;
 import org.joda.time.LocalDateTime;
 import org.joda.time.Months;
 import org.joda.time.Years;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Base class for report fragments.
@@ -94,11 +93,13 @@ public abstract class BaseReportFragment extends MenuFragment implements
     /**
      * Reporting period start time
      */
-    protected long mReportPeriodStart = -1;
+    @Nullable
+    protected LocalDateTime mReportPeriodStart = null;
     /**
      * Reporting period end time
      */
-    protected long mReportPeriodEnd = -1;
+    @Nullable
+    protected LocalDateTime mReportPeriodEnd = null;
 
     /**
      * Account type for which to display reports
@@ -257,11 +258,15 @@ public abstract class BaseReportFragment extends MenuFragment implements
      * @param end   end date
      * @return difference between two dates or {@code -1}
      */
-    protected int getDateDiff(LocalDateTime start, LocalDateTime end) {
-        switch (mGroupInterval) {
+    protected int getDateDiff(
+        @NonNull ReportsActivity.GroupInterval groupInterval,
+        @NonNull LocalDateTime start,
+        @NonNull LocalDateTime end
+    ) {
+        switch (groupInterval) {
             case QUARTER:
                 int y = Years.yearsBetween(start.withDayOfYear(1).withMillisOfDay(0), end.withDayOfYear(1).withMillisOfDay(0)).getYears();
-                return getQuarter(end) - getQuarter(start) + y * 4;
+                return DateExtKt.getQuarter(end) - DateExtKt.getQuarter(start) + y * 4;
             case MONTH:
                 return Months.monthsBetween(start.withDayOfMonth(1).withMillisOfDay(0), end.withDayOfMonth(1).withMillisOfDay(0)).getMonths();
             case YEAR:
@@ -270,18 +275,6 @@ public abstract class BaseReportFragment extends MenuFragment implements
                 return -1;
         }
     }
-
-
-    /**
-     * Returns a quarter of the specified date
-     *
-     * @param date date
-     * @return a quarter
-     */
-    protected int getQuarter(LocalDateTime date) {
-        return (date.getMonthOfYear() - 1) / 3 + 1;
-    }
-
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
@@ -310,7 +303,7 @@ public abstract class BaseReportFragment extends MenuFragment implements
     }
 
     @Override
-    public void onGroupingUpdated(ReportsActivity.GroupInterval groupInterval) {
+    public void onGroupingUpdated(@NonNull ReportsActivity.GroupInterval groupInterval) {
         if (mGroupInterval != groupInterval) {
             mGroupInterval = groupInterval;
             refresh();
@@ -318,16 +311,14 @@ public abstract class BaseReportFragment extends MenuFragment implements
     }
 
     @Override
-    public void onTimeRangeUpdated(long start, long end) {
-        if (mReportPeriodStart != start || mReportPeriodEnd != end) {
-            mReportPeriodStart = start;
-            mReportPeriodEnd = end;
-            refresh();
-        }
+    public void onTimeRangeUpdated(@Nullable LocalDateTime start, @Nullable LocalDateTime end) {
+        mReportPeriodStart = start;
+        mReportPeriodEnd = end;
+        refresh();
     }
 
     @Override
-    public void onAccountTypeUpdated(AccountType accountType) {
+    public void onAccountTypeUpdated(@NonNull AccountType accountType) {
         if (mAccountType != accountType) {
             mAccountType = accountType;
             refresh();

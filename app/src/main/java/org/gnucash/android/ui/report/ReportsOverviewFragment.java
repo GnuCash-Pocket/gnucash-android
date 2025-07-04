@@ -41,12 +41,13 @@ import com.github.mikephil.charting.data.PieEntry;
 
 import org.gnucash.android.R;
 import org.gnucash.android.databinding.FragmentReportSummaryBinding;
-import org.gnucash.android.db.DatabaseSchema;
+import org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import org.gnucash.android.model.Account;
 import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.Price;
 import org.gnucash.android.ui.report.piechart.PieChartFragment;
+import org.gnucash.android.util.DateExtKt;
 import org.joda.time.LocalDateTime;
 
 import java.util.ArrayList;
@@ -164,14 +165,16 @@ public class ReportsOverviewFragment extends BaseReportFragment {
         PieDataSet dataSet = new PieDataSet(null, "");
         List<Integer> colors = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
-        long start = now.minusMonths(2).dayOfMonth().withMinimumValue().toDateTime().getMillis();
-        long end = now.toDateTime().getMillis();
+        long startTime = DateExtKt.toMillis(now.minusMonths(3));
+        long endTime = DateExtKt.toMillis(now);
 
-        String where = DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?";
+        String where = AccountEntry.COLUMN_PLACEHOLDER + "=0 AND " + AccountEntry.COLUMN_TYPE + "=?";
         String[] whereArgs = new String[]{mAccountType.name()};
-        List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, whereArgs, DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC");
+        String orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC";
+        List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, whereArgs, orderBy);
+
         for (Account account : accounts) {
-            Money balance = mAccountsDbAdapter.getAccountBalance(account.getUID(), start, end, false);
+            Money balance = mAccountsDbAdapter.getAccountBalance(account, startTime, endTime, false);
             if (balance.isAmountZero()) continue;
             Price price = pricesDbAdapter.getPrice(balance.getCommodity(), mCommodity);
             if (price == null) continue;
