@@ -122,7 +122,7 @@ class MultiBookTest : GnuAndroidTest() {
         assertThat(booksDbAdapter.recordsCount).isEqualTo(bookCount + 1)
     }
 
-    //TODO: Finish implementation of this test
+    //@Test TODO: Finish implementation of this test
     fun testDeleteBook() {
         val bookCount = booksDbAdapter.recordsCount
 

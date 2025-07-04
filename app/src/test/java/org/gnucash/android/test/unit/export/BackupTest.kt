@@ -15,6 +15,7 @@
  */
 package org.gnucash.android.test.unit.export
 
+import android.content.Context
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
@@ -40,7 +41,7 @@ import javax.xml.parsers.ParserConfigurationException
 class BackupTest : GnuCashTest() {
     @Before
     fun setUp() {
-        loadDefaultAccounts()
+        loadDefaultAccounts(context)
     }
 
     @Test
@@ -60,27 +61,35 @@ class BackupTest : GnuCashTest() {
             .hasExtension(ExportFormat.XML.extension.substring(1))
     }
 
-    /**
-     * Loads the default accounts from file resource
-     */
-    private fun loadDefaultAccounts() {
-        try {
-            val bookUID = GncXmlImporter.parse(
-                context,
-                context.resources.openRawResource(R.raw.default_accounts)
-            )
-            BooksDbAdapter.getInstance().setActive(bookUID)
-            assertThat(BooksDbAdapter.getInstance().activeBookUID).isEqualTo(bookUID)
-            assertThat(GnuCashApplication.getActiveBookUID()).isEqualTo(bookUID)
-        } catch (e: ParserConfigurationException) {
-            Timber.e(e)
-            throw RuntimeException("Could not create default accounts")
-        } catch (e: SAXException) {
-            Timber.e(e)
-            throw RuntimeException("Could not create default accounts")
-        } catch (e: IOException) {
-            Timber.e(e)
-            throw RuntimeException("Could not create default accounts")
+    companion object {
+        /**
+         * Loads the default accounts from file resource
+         */
+        fun loadDefaultAccounts(context: Context, activate: Boolean = true): String {
+            try {
+                val bookUID = GncXmlImporter.parse(
+                    context,
+                    context.resources.openRawResource(R.raw.default_accounts)
+                )
+                if (activate) {
+                    val booksDbAdapter = BooksDbAdapter.getInstance()
+                    booksDbAdapter.setActive(bookUID)
+                    assertThat(booksDbAdapter.activeBookUID).isEqualTo(bookUID)
+                    assertThat(GnuCashApplication.getActiveBookUID()).isEqualTo(bookUID)
+                }
+                return bookUID
+            } catch (e: ParserConfigurationException) {
+                Timber.e(e)
+                throw RuntimeException("Could not create default accounts")
+            } catch (e: SAXException) {
+                Timber.e(e)
+                throw RuntimeException("Could not create default accounts")
+            } catch (e: IOException) {
+                Timber.e(e)
+                throw RuntimeException("Could not create default accounts")
+            }
         }
     }
+
+
 }

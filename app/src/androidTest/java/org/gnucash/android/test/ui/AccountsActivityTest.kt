@@ -172,7 +172,7 @@ class AccountsActivityTest : GnuAndroidTest() {
         val accounts = accountsDbAdapter.allRecords
         assertThat(accounts).isNotNull()
         assertThat(accounts).hasSize(2)
-        val newestAccount = accounts[0] //because of alphabetical sorting
+        val newestAccount = accounts[1] //because of _id sorting
 
         assertThat(newestAccount.name).isEqualTo(NEW_ACCOUNT_NAME)
         assertThat(newestAccount.commodity).isEqualTo(Commodity.DEFAULT_COMMODITY)

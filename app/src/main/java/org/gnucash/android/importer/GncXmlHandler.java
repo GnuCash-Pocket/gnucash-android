@@ -1019,7 +1019,7 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
      */
     private void saveToDatabase() {
         mAccountsDbAdapter.enableForeignKey(true);
-        maybeClose();
+        maybeClose(); //close it after import
     }
 
     @Override
@@ -1034,8 +1034,8 @@ public class GncXmlHandler extends DefaultHandler implements Closeable {
         } catch (BooksDbAdapter.NoActiveBookFoundException ignore) {
         }
         String newBookUID = mBook.getUID();
-        if (activeBookUID != null && !activeBookUID.equals(newBookUID)) {
-            close(); //close it after import
+        if (activeBookUID == null || !activeBookUID.equals(newBookUID)) {
+            close();
         }
     }
 

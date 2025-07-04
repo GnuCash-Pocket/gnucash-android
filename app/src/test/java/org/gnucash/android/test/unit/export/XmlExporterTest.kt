@@ -33,11 +33,10 @@ class XmlExporterTest : BookHelperTest() {
 
         val writer = StringWriter()
         exporter.export(bookUID, writer)
-        val actual = writer.toString()
+        val actual = writer.toString().replace("\r\n", "\n")
         val actualIgnoreRoot = actual.substring(actual.indexOf('>', actual.indexOf("<gnc-v2")))
-            .replace("\r\n", "\n")
 
-        val expected = readFile("expected.acctchrt_common.gnucash")
+        val expected = readFile("expected.acctchrt_common.gnucash").replace("\r\n", "\n")
         val expectedIgnoreRoot = expected.substring(expected.indexOf('>', expected.indexOf("<gnc-v2")))
         assertThat(actualIgnoreRoot).isEqualTo(expectedIgnoreRoot)
     }
