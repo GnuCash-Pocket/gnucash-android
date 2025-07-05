@@ -18,20 +18,15 @@ package org.gnucash.android.test.unit.db
 import junit.framework.TestCase.fail
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.R
-import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter.NoActiveBookFoundException
 import org.gnucash.android.db.adapter.DatabaseAdapter
-import org.gnucash.android.importer.GncXmlImporter
 import org.gnucash.android.model.BaseModel.Companion.generateUID
 import org.gnucash.android.model.Book
 import org.gnucash.android.test.unit.GnuCashTest
+import org.gnucash.android.test.unit.export.BackupTest
 import org.junit.Before
 import org.junit.Test
-import org.xml.sax.SAXException
-import timber.log.Timber
-import java.io.IOException
-import javax.xml.parsers.ParserConfigurationException
 
 /**
  * Test the book database adapter
@@ -121,7 +116,8 @@ class BooksDbAdapterTest : GnuCashTest() {
         assertThat(booksDbAdapter.getRecord(bookUID)).isNotNull()
 
         val booksCount = booksDbAdapter.recordsCount
-        booksDbAdapter.deleteBook(context, bookUID)
+        assertThat(booksCount).isOne()
+        assertThat(booksDbAdapter.deleteBook(context, bookUID)).isTrue()
         assertThat(dbPath).doesNotExist()
         assertThat(booksDbAdapter.recordsCount).isEqualTo(booksCount - 1)
     }
@@ -203,20 +199,6 @@ class BooksDbAdapterTest : GnuCashTest() {
      * @throws RuntimeException if the new books could not be created
      */
     private fun createNewBookWithDefaultAccounts(): String {
-        try {
-            return GncXmlImporter.parse(
-                context,
-                context.resources.openRawResource(R.raw.default_accounts)
-            )
-        } catch (e: ParserConfigurationException) {
-            Timber.e(e)
-            throw RuntimeException("Could not create default accounts")
-        } catch (e: SAXException) {
-            Timber.e(e)
-            throw RuntimeException("Could not create default accounts")
-        } catch (e: IOException) {
-            Timber.e(e)
-            throw RuntimeException("Could not create default accounts")
-        }
+        return BackupTest.loadDefaultAccounts(context, false)
     }
 }
