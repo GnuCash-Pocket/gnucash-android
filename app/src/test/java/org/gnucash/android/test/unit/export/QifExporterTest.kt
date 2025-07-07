@@ -17,7 +17,6 @@ package org.gnucash.android.test.unit.export
 
 import android.database.sqlite.SQLiteDatabase
 import org.assertj.core.api.Assertions.assertThat
-import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.adapter.AccountsDbAdapter

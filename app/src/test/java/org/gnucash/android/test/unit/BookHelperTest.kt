@@ -34,7 +34,7 @@ abstract class BookHelperTest : GnuCashTest() {
     protected lateinit var budgetsDbAdapter: BudgetsDbAdapter
 
     protected fun importGnuCashXml(filename: String): String {
-        val handler = GncXmlHandler()
+        val handler = GncXmlHandler(context, null)
         try {
             val parser: SAXParser = SAXParserFactory.newInstance().newSAXParser()
             val reader = parser.xmlReader
