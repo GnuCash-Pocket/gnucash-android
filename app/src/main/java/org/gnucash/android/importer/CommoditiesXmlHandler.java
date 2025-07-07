@@ -74,8 +74,8 @@ public class CommoditiesXmlHandler extends DefaultHandler {
     }
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        if (qName.equals(TAG_CURRENCY)) {
+    public void startElement(String uri, String localName, String qualifiedName, Attributes attributes) throws SAXException {
+        if (qualifiedName.equals(TAG_CURRENCY)) {
             String isoCode = attributes.getValue(ATTR_ISO_CODE);
             String fullname = attributes.getValue(ATTR_FULL_NAME);
             String namespace = attributes.getValue(ATTR_NAMESPACE);
@@ -103,13 +103,12 @@ public class CommoditiesXmlHandler extends DefaultHandler {
             commodity.setCusip(cusip);
             commodity.setLocalSymbol(localSymbol);
             commodity.setQuoteSource(SOURCE_CURRENCY);
+            mCommoditiesDbAdapter.addRecord(commodity, DatabaseAdapter.UpdateMethod.replace);
         }
     }
 
     @Override
     public void endDocument() {
-        List<Commodity> records = new ArrayList<>(commodities.values());
-        mCommoditiesDbAdapter.bulkAddRecords(records, DatabaseAdapter.UpdateMethod.replace);
         mCommoditiesDbAdapter.initCommon();
     }
 }

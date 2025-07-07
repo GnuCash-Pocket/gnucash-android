@@ -1,6 +1,5 @@
 package org.gnucash.android.db.adapter;
 
-import static org.gnucash.android.app.GnuCashApplication.getDefaultLocale;
 import static org.gnucash.android.db.DatabaseSchema.CommodityEntry;
 import static org.gnucash.android.model.Commodity.USD;
 import static org.gnucash.android.model.Commodity.getLocaleCurrencyCode;
@@ -19,8 +18,6 @@ import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHolder;
 import org.gnucash.android.model.Commodity;
 
-import java.util.Currency;
-import java.util.Locale;
 import java.util.Objects;
 
 import timber.log.Timber;
@@ -69,13 +66,13 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
      * initialize commonly used commodities
      */
     public void initCommon() {
-        Commodity.AUD = Objects.requireNonNull(getCommodity("AUD"));
-        Commodity.CAD = Objects.requireNonNull(getCommodity("CAD"));
-        Commodity.CHF = Objects.requireNonNull(getCommodity("CHF"));
-        Commodity.EUR = Objects.requireNonNull(getCommodity("EUR"));
-        Commodity.GBP = Objects.requireNonNull(getCommodity("GBP"));
-        Commodity.JPY = Objects.requireNonNull(getCommodity("JPY"));
-        USD = Objects.requireNonNull(getCommodity("USD"));
+        Commodity.AUD = Objects.requireNonNull(getCurrency("AUD"));
+        Commodity.CAD = Objects.requireNonNull(getCurrency("CAD"));
+        Commodity.CHF = Objects.requireNonNull(getCurrency("CHF"));
+        Commodity.EUR = Objects.requireNonNull(getCurrency("EUR"));
+        Commodity.GBP = Objects.requireNonNull(getCurrency("GBP"));
+        Commodity.JPY = Objects.requireNonNull(getCurrency("JPY"));
+        USD = Objects.requireNonNull(getCurrency("USD"));
 
         defaultCommodity = Commodity.DEFAULT_COMMODITY = getDefaultCommodity();
     }
@@ -153,7 +150,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
      * @return Commodity associated with code or null if none is found
      */
     @Nullable
-    public Commodity getCommodity(@Nullable String currencyCode) {
+    public Commodity getCurrency(@Nullable String currencyCode) {
         if (TextUtils.isEmpty(currencyCode)) {
             return null;
         }
@@ -204,7 +201,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
     }
 
     public String getCommodityUID(String currencyCode) {
-        Commodity commodity = getCommodity(currencyCode);
+        Commodity commodity = getCurrency(currencyCode);
         return (commodity != null) ? commodity.getUID() : null;
     }
 
@@ -225,7 +222,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
             commodity = getRecord(commodity.getUID());
         } catch (Exception e) {
             // Commodity not found.
-            commodity = getCommodity(commodity.getCurrencyCode());
+            commodity = getCurrency(commodity.getCurrencyCode());
         }
         return commodity;
     }
@@ -244,7 +241,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
         if (currencyCode == null) {
             currencyCode = getLocaleCurrencyCode();
         }
-        defaultCommodity = commodity = getCommodity(currencyCode);
+        defaultCommodity = commodity = getCurrency(currencyCode);
         return (commodity != null) ? commodity : Commodity.DEFAULT_COMMODITY;
     }
 
@@ -254,7 +251,7 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
         String prefKey = context.getString(R.string.key_default_currency);
         preferences.edit().putString(prefKey, currencyCode).apply();
 
-        Commodity commodity = getCommodity(currencyCode);
+        Commodity commodity = getCurrency(currencyCode);
         if (commodity != null) {
             defaultCommodity = commodity;
             Commodity.DEFAULT_COMMODITY = commodity;

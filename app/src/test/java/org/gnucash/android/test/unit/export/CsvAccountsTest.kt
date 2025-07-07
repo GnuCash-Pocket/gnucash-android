@@ -20,8 +20,7 @@ class CsvAccountsTest : BookHelperTest() {
             exportTarget = ExportParams.ExportTarget.SD_CARD
         }
 
-        val exportedFile = CsvAccountExporter(context, exportParameters, bookUID)
-            .export()
+        val exportedFile = CsvAccountExporter(context, exportParameters, bookUID).export()
 
         assertThat(exportedFile).isNotNull()
         val file = exportedFile!!.toFile()

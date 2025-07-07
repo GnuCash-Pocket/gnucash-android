@@ -64,7 +64,7 @@ public class AccountCreator extends BroadcastReceiver {
         final Commodity commodity;
         if (TextUtils.isEmpty(currencyUID)) {
             String currencyCode = args.getString(Account.EXTRA_CURRENCY_CODE);
-            commodity = CommoditiesDbAdapter.getInstance().getCommodity(currencyCode);
+            commodity = CommoditiesDbAdapter.getInstance().getCurrency(currencyCode);
         } else {
             commodity = CommoditiesDbAdapter.getInstance().getRecord(currencyUID);
         }

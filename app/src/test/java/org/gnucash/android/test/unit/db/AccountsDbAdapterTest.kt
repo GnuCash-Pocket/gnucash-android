@@ -98,7 +98,10 @@ class AccountsDbAdapterTest : GnuCashTest() {
             splitsDbAdapter = SplitsDbAdapter(commoditiesDbAdapter)
             transactionsDbAdapter = TransactionsDbAdapter(splitsDbAdapter)
             accountsDbAdapter = AccountsDbAdapter(transactionsDbAdapter)
-            BooksDbAdapter.getInstance().setActive(bookUID)
+            val b1 = GnuCashApplication.getBooksDbAdapter()
+            val b2 = BooksDbAdapter.getInstance()
+            assertThat(b1).isEqualTo(b2)
+            b2.setActive(bookUID)
         }
     }
 
@@ -240,7 +243,7 @@ class AccountsDbAdapterTest : GnuCashTest() {
         child = accountsDbAdapter.getRecord(child.uid)
         parent = accountsDbAdapter.getRecord(parent.uid)
 
-        assertThat(accountsDbAdapter.getSubAccountCount(parent.uid)).isEqualTo(1)
+        assertThat(accountsDbAdapter.getSubAccountCount(parent.uid)).isOne()
         assertThat(parent.uid).isEqualTo(child.parentUID)
 
         assertThat(child.fullName).isEqualTo("Test:Child")
@@ -446,7 +449,7 @@ class AccountsDbAdapterTest : GnuCashTest() {
     fun shouldCreateImbalanceAccountOnDemand() {
         assertThat(accountsDbAdapter.recordsCount).isEqualTo(1L)
 
-        val usd = commoditiesDbAdapter.getCommodity("USD")!!
+        val usd = commoditiesDbAdapter.getCurrency("USD")!!
         var imbalanceUID = accountsDbAdapter.getImbalanceAccountUID(context, usd)
         assertThat(imbalanceUID).isNull()
         assertThat(accountsDbAdapter.recordsCount).isEqualTo(1L)
@@ -533,15 +536,18 @@ class AccountsDbAdapterTest : GnuCashTest() {
     fun importingXml_shouldSetDefaultCurrencyFromXml() {
         GnuCashApplication.setDefaultCurrencyCode("JPY")
 
-        assertThat(GnuCashApplication.getDefaultCurrencyCode()).isEqualTo("JPY")
+        var defaultCurrency = GnuCashApplication.getDefaultCurrencyCode()
+        assertThat(defaultCurrency).isEqualTo("JPY")
         assertThat(Commodity.DEFAULT_COMMODITY).isEqualTo(Commodity.JPY)
 
         accountsDbAdapter.deleteAllRecords()
-        loadDefaultAccounts()
+        val bookUID = loadDefaultAccounts()
+        val activeBookUID = GnuCashApplication.getActiveBookUID()
+        assertThat(activeBookUID).isEqualTo(bookUID)
 
-        assertThat(GnuCashApplication.getDefaultCurrencyCode()).isNotEqualTo("JPY")
-        //the book has USD occuring most often and this will be used as the default currency
-        assertThat(GnuCashApplication.getDefaultCurrencyCode()).isEqualTo("USD")
+        //the book has USD occurring most often and this will be used as the default currency
+        defaultCurrency = GnuCashApplication.getDefaultCurrencyCode()
+        assertThat(defaultCurrency).isEqualTo("USD")
         assertThat(Commodity.DEFAULT_COMMODITY).isEqualTo(Commodity.USD)
 
         println("Default currency is now: " + Commodity.DEFAULT_COMMODITY)
@@ -587,13 +593,14 @@ class AccountsDbAdapterTest : GnuCashTest() {
     /**
      * Loads the default accounts from file resource
      */
-    private fun loadDefaultAccounts() {
+    private fun loadDefaultAccounts(): String {
         try {
             val bookUID = GncXmlImporter.parse(
                 context,
                 context.resources.openRawResource(R.raw.default_accounts)
             )
             initAdapters(bookUID)
+            return bookUID
         } catch (e: ParserConfigurationException) {
             Timber.e(e)
             throw RuntimeException("Could not create default accounts")

@@ -30,7 +30,7 @@ class CsvTransactionsExporterTest : BookHelperTest() {
 
     @Test
     fun `generate export in US locale`() {
-        Locale.setDefault(Locale.US)
+        val context = context.applyLocale(Locale.US)
 
         val bookUID = importGnuCashXml("multipleTransactionImport.xml")
         val exportParameters = ExportParams(ExportFormat.CSVT).apply {

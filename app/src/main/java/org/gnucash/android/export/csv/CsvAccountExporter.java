@@ -29,6 +29,7 @@ import com.opencsv.CSVWriterBuilder;
 import com.opencsv.ICSVWriter;
 
 import org.gnucash.android.R;
+import org.gnucash.android.db.DatabaseSchema;
 import org.gnucash.android.export.ExportParams;
 import org.gnucash.android.export.Exporter;
 import org.gnucash.android.model.Account;
@@ -74,9 +75,10 @@ public class CsvAccountExporter extends Exporter {
      * @param writer Destination for the CSV export
      */
     public void writeExport(@NonNull ICSVWriter writer) {
-        String[] names = mContext.getResources().getStringArray(R.array.csv_account_headers);
-        List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts();
+        String where = DatabaseSchema.AccountEntry.COLUMN_TEMPLATE + " = 0";
+        List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, null, null);
 
+        String[] names = mContext.getResources().getStringArray(R.array.csv_account_headers);
         writer.writeNext(names);
 
         final String[] fields = new String[names.length];
