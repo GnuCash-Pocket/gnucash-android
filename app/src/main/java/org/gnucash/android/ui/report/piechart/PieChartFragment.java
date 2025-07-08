@@ -17,6 +17,8 @@
 
 package org.gnucash.android.ui.report.piechart;
 
+import static org.gnucash.android.db.adapter.AccountsDbAdapter.ALWAYS;
+
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -39,17 +41,20 @@ import com.github.mikephil.charting.highlight.Highlight;
 
 import org.gnucash.android.R;
 import org.gnucash.android.databinding.FragmentPieChartBinding;
-import org.gnucash.android.db.DatabaseSchema;
+import org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import org.gnucash.android.model.Account;
-import org.gnucash.android.model.AccountType;
+import org.gnucash.android.model.Commodity;
 import org.gnucash.android.model.Money;
 import org.gnucash.android.model.Price;
 import org.gnucash.android.ui.report.BaseReportFragment;
 import org.gnucash.android.ui.report.ReportType;
+import org.gnucash.android.util.DateExtKt;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * Activity used for drawing a pie chart
@@ -59,7 +64,6 @@ import java.util.List;
  */
 public class PieChartFragment extends BaseReportFragment {
 
-    public static final String TOTAL_VALUE_LABEL_PATTERN = "%s\n%.2f %s";
     private static final int ANIMATION_DURATION = 1800;
     public static final int CENTER_TEXT_SIZE = 18;
     /**
@@ -110,9 +114,7 @@ public class PieChartFragment extends BaseReportFragment {
             mChartDataPresent = true;
             mBinding.pieChart.setData(mGroupSmallerSlices ? groupSmallerSlices(context, pieData) : pieData);
             float sum = mBinding.pieChart.getData().getYValueSum();
-            String total = context.getString(R.string.label_chart_total);
-            String currencySymbol = mCommodity.getSymbol();
-            mBinding.pieChart.setCenterText(String.format(TOTAL_VALUE_LABEL_PATTERN, total, sum, currencySymbol));
+            mBinding.pieChart.setCenterText(formatTotalValue(sum));
         } else {
             mChartDataPresent = false;
             mBinding.pieChart.setCenterText(context.getString(R.string.label_chart_no_data));
@@ -141,16 +143,22 @@ public class PieChartFragment extends BaseReportFragment {
     private PieData getData() {
         PieDataSet dataSet = new PieDataSet(null, "");
         List<Integer> colors = new ArrayList<>();
-        AccountType accountType = mAccountType;
-        String where = DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + "=0 AND "
-            + DatabaseSchema.AccountEntry.COLUMN_TYPE + "=?";
-        String[] whereArgs = new String[]{accountType.name()};
-        String orderBy = DatabaseSchema.AccountEntry.COLUMN_FULL_NAME + " ASC";
+        long startTime = (mReportPeriodStart != null) ? DateExtKt.toMillis(mReportPeriodStart) : ALWAYS;
+        long endTime = (mReportPeriodEnd != null) ? DateExtKt.toMillis(mReportPeriodEnd) : ALWAYS;
+        final Commodity commodity = mCommodity;
+
+        String where = AccountEntry.COLUMN_TYPE + "=?"
+            + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
+            + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
+        String[] whereArgs = new String[]{mAccountType.name()};
+        String orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC";
         List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, whereArgs, orderBy);
+        Map<String, Money> balances = mAccountsDbAdapter.getAccountsBalances(accounts, startTime, endTime);
+
         for (Account account : accounts) {
-            Money balance = mAccountsDbAdapter.getAccountBalance(account, mReportPeriodStart, mReportPeriodEnd, false);
-            if (balance.isAmountZero()) continue;
-            Price price = pricesDbAdapter.getPrice(balance.getCommodity(), mCommodity);
+            Money balance = balances.get(account.getUID());
+            if ((balance == null) || balance.isAmountZero()) continue;
+            Price price = pricesDbAdapter.getPrice(balance.getCommodity(), commodity);
             if (price == null) continue;
             balance = balance.times(price);
             float value = balance.toFloat();
@@ -186,7 +194,7 @@ public class PieChartFragment extends BaseReportFragment {
         PieData data = mBinding.pieChart.getData();
         PieDataSet dataSet = (PieDataSet) data.getDataSetByIndex(0);
         final int size = dataSet.getEntryCount();
-        List<PieChartEntry> entries = new ArrayList<>();
+        List<PieChartEntry> entries = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             entries.add(new PieChartEntry(dataSet.getEntryForIndex(i), dataSet.getColor(i)));
         }
@@ -301,6 +309,6 @@ public class PieChartFragment extends BaseReportFragment {
         PieData data = mBinding.pieChart.getData();
         float total = data.getYValueSum();
         float percent = (total != 0f) ? ((value * 100) / total) : 0f;
-        mSelectedValueTextView.setText(String.format(SELECTED_VALUE_PATTERN, label, value, percent));
+        mSelectedValueTextView.setText(formatSelectedValue(label, value, percent));
     }
 }

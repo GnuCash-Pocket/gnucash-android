@@ -387,10 +387,6 @@
         <item quantity="few">%d transakcije</item>
         <item quantity="other">%d transakcija</item>
     </plurals>
-    <string-array name="report_account_types">
-        <item>RASHOD</item>
-        <item>PRIHOD</item>
-    </string-array>
     <string name="toast_connected_to_google_drive">Spoji se s Google Drive</string>
     <string name="toast_unable_to_connect_to_google_drive">Spajanje s Google Drive nije moguće</string>
     <string name="toast_enter_amount_to_split">Unesi iznos u podjelu</string>

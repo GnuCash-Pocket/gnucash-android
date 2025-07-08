@@ -17,6 +17,7 @@ package org.gnucash.android.ui.report;
 
 import static org.gnucash.android.util.ColorExtKt.getTextColorPrimary;
 import static org.gnucash.android.util.ColorExtKt.parseColor;
+import static java.lang.Math.max;
 
 import android.app.Activity;
 import android.content.Context;
@@ -35,6 +36,7 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -53,13 +55,14 @@ import org.gnucash.android.model.AccountType;
 import org.gnucash.android.model.Commodity;
 import org.gnucash.android.ui.common.BaseDrawerActivity;
 import org.gnucash.android.ui.common.Refreshable;
+import org.gnucash.android.util.DateExtKt;
 import org.joda.time.LocalDateTime;
 import org.joda.time.Months;
 import org.joda.time.Years;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 /**
  * Base class for report fragments.
@@ -94,18 +97,20 @@ public abstract class BaseReportFragment extends MenuFragment implements
     /**
      * Reporting period start time
      */
-    protected long mReportPeriodStart = -1;
+    @Nullable
+    protected LocalDateTime mReportPeriodStart = null;
     /**
      * Reporting period end time
      */
-    protected long mReportPeriodEnd = -1;
+    @Nullable
+    protected LocalDateTime mReportPeriodEnd = null;
 
     /**
      * Account type for which to display reports
      */
     protected AccountType mAccountType = AccountType.EXPENSE;
     protected AccountsDbAdapter mAccountsDbAdapter;
-    protected PricesDbAdapter pricesDbAdapter;
+    protected PricesDbAdapter pricesDbAdapter = PricesDbAdapter.getInstance();
     protected boolean mUseAccountColor = true;
 
     /**
@@ -121,12 +126,14 @@ public abstract class BaseReportFragment extends MenuFragment implements
     /**
      * Pattern to use to display selected chart values
      */
-    public static final String SELECTED_VALUE_PATTERN = "%s - %.2f (%.2f %%)";
+    private static final String SELECTED_VALUE_PATTERN = "%s — %s %s (%.2f%%)";
+    private static final String TOTAL_VALUE_LABEL_PATTERN = "%s\n%s %s";
 
     protected ReportsActivity mReportsActivity;
 
     protected TextView mSelectedValueTextView;
 
+    @Nullable
     private GeneratorTask mReportGenerator;
 
     /**
@@ -202,9 +209,14 @@ public abstract class BaseReportFragment extends MenuFragment implements
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-        pricesDbAdapter = PricesDbAdapter.getInstance();
         mUseAccountColor = PreferenceManager.getDefaultSharedPreferences(requireContext())
             .getBoolean(getString(R.string.key_use_account_color), false);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        pricesDbAdapter = PricesDbAdapter.getInstance();
     }
 
     @Override
@@ -240,13 +252,20 @@ public abstract class BaseReportFragment extends MenuFragment implements
             mReportGenerator.cancel(true);
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mReportGenerator != null) {
+            mReportGenerator.cancel(true);
+            mReportGenerator = null;
+        }
+    }
+
     private void toggleBaseReportingOptionsVisibility(ReportsActivity activity) {
         View timeRangeLayout = activity.findViewById(R.id.time_range_layout);
-        View dateRangeDivider = activity.findViewById(R.id.date_range_divider);
-        if (timeRangeLayout != null && dateRangeDivider != null) {
+        if (timeRangeLayout != null) {
             int visibility = requiresTimeRangeOptions() ? View.VISIBLE : View.GONE;
             timeRangeLayout.setVisibility(visibility);
-            dateRangeDivider.setVisibility(visibility);
         }
     }
 
@@ -257,31 +276,28 @@ public abstract class BaseReportFragment extends MenuFragment implements
      * @param end   end date
      * @return difference between two dates or {@code -1}
      */
-    protected int getDateDiff(LocalDateTime start, LocalDateTime end) {
-        switch (mGroupInterval) {
-            case QUARTER:
-                int y = Years.yearsBetween(start.withDayOfYear(1).withMillisOfDay(0), end.withDayOfYear(1).withMillisOfDay(0)).getYears();
-                return getQuarter(end) - getQuarter(start) + y * 4;
+    protected int getDateDiff(
+        @NonNull ReportsActivity.GroupInterval groupInterval,
+        @NonNull LocalDateTime start,
+        @NonNull LocalDateTime end
+    ) {
+        start = start.withMillisOfDay(0);
+        end = end.withMillisOfDay(0);
+        switch (groupInterval) {
             case MONTH:
-                return Months.monthsBetween(start.withDayOfMonth(1).withMillisOfDay(0), end.withDayOfMonth(1).withMillisOfDay(0)).getMonths();
+                return max(1, Months.monthsBetween(start, end).getMonths());
+            case QUARTER:
+                start = start.withMonthOfYear(DateExtKt.getFirstQuarterMonth(start)).dayOfMonth().withMinimumValue();
+                int m = Months.monthsBetween(start, end).getMonths();
+                int q = m / 3;
+                if (m % 3 > 0) q++;
+                return max(1, q);
             case YEAR:
-                return Years.yearsBetween(start.withDayOfYear(1).withMillisOfDay(0), end.withDayOfYear(1).withMillisOfDay(0)).getYears();
+                return max(1, Years.yearsBetween(start, end).getYears());
             default:
                 return -1;
         }
     }
-
-
-    /**
-     * Returns a quarter of the specified date
-     *
-     * @param date date
-     * @return a quarter
-     */
-    protected int getQuarter(LocalDateTime date) {
-        return (date.getMonthOfYear() - 1) / 3 + 1;
-    }
-
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
@@ -310,7 +326,7 @@ public abstract class BaseReportFragment extends MenuFragment implements
     }
 
     @Override
-    public void onGroupingUpdated(ReportsActivity.GroupInterval groupInterval) {
+    public void onGroupingUpdated(@NonNull ReportsActivity.GroupInterval groupInterval) {
         if (mGroupInterval != groupInterval) {
             mGroupInterval = groupInterval;
             refresh();
@@ -318,16 +334,14 @@ public abstract class BaseReportFragment extends MenuFragment implements
     }
 
     @Override
-    public void onTimeRangeUpdated(long start, long end) {
-        if (mReportPeriodStart != start || mReportPeriodEnd != end) {
-            mReportPeriodStart = start;
-            mReportPeriodEnd = end;
-            refresh();
-        }
+    public void onTimeRangeUpdated(@Nullable LocalDateTime start, @Nullable LocalDateTime end) {
+        mReportPeriodStart = start;
+        mReportPeriodEnd = end;
+        refresh();
     }
 
     @Override
-    public void onAccountTypeUpdated(AccountType accountType) {
+    public void onAccountTypeUpdated(@NonNull AccountType accountType) {
         if (mAccountType != accountType) {
             mAccountType = accountType;
             refresh();
@@ -343,6 +357,39 @@ public abstract class BaseReportFragment extends MenuFragment implements
     public void onNothingSelected() {
         if (mSelectedValueTextView != null)
             mSelectedValueTextView.setText(R.string.select_chart_to_view_details);
+    }
+
+    protected String formatSelectedValue(String label, float value, float percentage) {
+        return formatSelectedValue(Locale.getDefault(), label.trim(), value, mCommodity, percentage);
+    }
+
+    @VisibleForTesting
+    public static String formatSelectedValue(Locale locale, String label, float value, Commodity commodity, float percentage) {
+        NumberFormat formatter = NumberFormat.getNumberInstance(locale);
+        formatter.setMinimumFractionDigits(0);
+        formatter.setMaximumFractionDigits(commodity.getSmallestFractionDigits());
+        String currencySymbol = commodity.getSymbol();
+        return String.format(locale, SELECTED_VALUE_PATTERN, label.trim(), formatter.format(value), currencySymbol, percentage);
+    }
+
+    protected String formatTotalValue(float value) {
+        return formatTotalValue(requireContext(), Locale.getDefault(), value, mCommodity);
+    }
+
+    protected String getLabel(@NonNull Context context, @NonNull AccountType accountType) {
+        String[] labels = context.getResources().getStringArray(R.array.account_type_entry_values);
+        return labels[accountType.labelIndex];
+    }
+
+    @VisibleForTesting
+    //TODO get locale from context.
+    public static String formatTotalValue(Context context, Locale locale, float value, Commodity commodity) {
+        String label = context.getString(R.string.label_chart_total);
+        NumberFormat formatter = NumberFormat.getNumberInstance(locale);
+        formatter.setMinimumFractionDigits(0);
+        formatter.setMaximumFractionDigits(commodity.getSmallestFractionDigits());
+        String currencySymbol = commodity.getSymbol();
+        return String.format(locale, TOTAL_VALUE_LABEL_PATTERN, label, formatter.format(value), currencySymbol);
     }
 
     protected static <E extends Entry, T extends IDataSet<E>> float getYValueSum(ChartData<T> data) {

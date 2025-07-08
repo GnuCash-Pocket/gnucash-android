@@ -381,10 +381,6 @@
     <plurals name="book_transaction_stats">
         <item quantity="other">%d 取引</item>
     </plurals>
-    <string-array name="report_account_types">
-        <item>支出</item>
-        <item>収入</item>
-    </string-array>
     <string name="toast_connected_to_google_drive">Google ドライブに接続されています</string>
     <string name="toast_unable_to_connect_to_google_drive">Google ドライブに接続できません</string>
     <string name="toast_enter_amount_to_split">分割する金額を入力してください</string>

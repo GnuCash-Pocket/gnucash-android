@@ -328,7 +328,8 @@ class Money(
      * @throws CurrencyMismatchException if the `Money` objects to be added have different Currencies
      */
     @Throws(CurrencyMismatchException::class)
-    operator fun plus(addend: Money): Money {
+    operator fun plus(addend: Money?): Money {
+        if (addend == null) return this
         if (isAmountZero) return addend
         if (addend.isAmountZero) return this
         if (commodity != addend.commodity) throw CurrencyMismatchException(
@@ -365,7 +366,8 @@ class Money(
      * @throws CurrencyMismatchException if the `Money` objects to be added have different Currencies
      */
     @Throws(CurrencyMismatchException::class)
-    operator fun minus(subtrahend: Money): Money {
+    operator fun minus(subtrahend: Money?): Money {
+        if (subtrahend == null) return this
         if (isAmountZero) return -subtrahend
         if (subtrahend.isAmountZero) return this
         if (commodity != subtrahend.commodity) throw CurrencyMismatchException(

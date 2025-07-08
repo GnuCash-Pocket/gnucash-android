@@ -390,10 +390,6 @@
         <item quantity="many">%d транзакций</item>
         <item quantity="other">%d транзакций</item>
     </plurals>
-    <string-array name="report_account_types">
-        <item>РАСХОДЫ</item>
-        <item>ДОХОДЫ</item>
-    </string-array>
     <string name="toast_connected_to_google_drive">Подключен к Google диску</string>
     <string name="toast_unable_to_connect_to_google_drive">Не удалось подключиться к Google диску</string>
     <string name="toast_enter_amount_to_split">Пожалуйста, введите сумму для отправки</string>

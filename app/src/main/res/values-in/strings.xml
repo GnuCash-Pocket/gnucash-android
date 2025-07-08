@@ -381,10 +381,6 @@
     <plurals name="book_transaction_stats">
         <item quantity="other">transaksi%d</item>
     </plurals>
-    <string-array name="report_account_types">
-        <item>PENGELUARAN</item>
-        <item>PENDAPATAN</item>
-    </string-array>
     <string name="toast_connected_to_google_drive">Hubungakan ke Google play</string>
     <string name="toast_unable_to_connect_to_google_drive">Tidak dapat tersambung ke server</string>
     <string name="toast_enter_amount_to_split">Masukkan jumlah</string>
