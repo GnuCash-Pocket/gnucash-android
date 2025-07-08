@@ -930,13 +930,13 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
             Timber.d("compute account children : %d", children.size());
             for (String childUID : children) {
                 Account child = getSimpleRecord(childUID);
-                final Commodity childCurrency = child.getCommodity();
-                Money balanceChild = computeBalance(child, startTimestamp, endTimestamp, true);
-                if (balanceChild.isAmountZero()) continue;
-                Price price = pricesDbAdapter.getPrice(childCurrency, commodity);
+                final Commodity childCommodity = child.getCommodity();
+                Money childBalance = computeBalance(child, startTimestamp, endTimestamp, true);
+                if (childBalance.isAmountZero()) continue;
+                Price price = pricesDbAdapter.getPrice(childCommodity, commodity);
                 if (price == null) continue;
-                balanceChild = balanceChild.times(price);
-                balance = balance.plus(balanceChild);
+                childBalance = childBalance.times(price);
+                balance = balance.plus(childBalance);
             }
         }
 

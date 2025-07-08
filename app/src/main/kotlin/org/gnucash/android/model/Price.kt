@@ -3,6 +3,7 @@ package org.gnucash.android.model
 import org.gnucash.android.math.numberOfTrailingZeros
 import java.math.BigDecimal
 import java.math.MathContext
+import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.util.Locale
@@ -152,8 +153,9 @@ class Price : BaseModel {
 
     fun setExchangeRate(rate: BigDecimal) {
         // Store 0.1234 as 1234/10000
-        valueNum = rate.unscaledValue().toLong()
-        valueDenom = BigDecimal.ONE.scaleByPowerOfTen(rate.scale()).toLong()
+        val scale = MathContext.DECIMAL64.precision
+        valueNum = rate.setScale(scale, RoundingMode.HALF_UP).unscaledValue().toLong()
+        valueDenom = BigDecimal.ONE.scaleByPowerOfTen(scale).toLong()
     }
 
     fun setExchangeRate(numerator: Long, denominator: Long) {
@@ -165,10 +167,20 @@ class Price : BaseModel {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Price) return false
-        return this.commodity.equals(other.commodity)
-                && this.currency.equals(other.currency)
-                && this.valueNum.equals(other.valueNum)
-                && this.valueDenom.equals(other.valueDenom)
+        return this.commodity == other.commodity
+                && this.currency == other.currency
+                && this.valueNum == other.valueNum
+                && this.valueDenom == other.valueDenom
+    }
+
+    fun inverse(): Price {
+        // swap numerator and denominator
+        val priceOld = this
+        return Price(currency, commodity, valueDenom, valueNum).apply {
+            date = priceOld.date
+            source = priceOld.source
+            type = priceOld.type
+        }
     }
 
     /**
