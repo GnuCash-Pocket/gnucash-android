@@ -79,7 +79,9 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
     public enum GroupInterval {WEEK, MONTH, QUARTER, YEAR, ALL}
 
     // default time range is the last 3 months
+    @Nullable
     private LocalDateTime mReportPeriodStart = LocalDateTime.now().minusMonths(3);
+    @Nullable
     private LocalDateTime mReportPeriodEnd = LocalDateTime.now();
 
     private GroupInterval mReportGroupInterval = GroupInterval.MONTH;
@@ -164,8 +166,8 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
             } else {
                 mReportType = (ReportType) savedInstanceState.getSerializable(STATE_REPORT_TYPE);
             }
-            mReportPeriodStart = new LocalDateTime(savedInstanceState.getLong(STATE_REPORT_START));
-            mReportPeriodEnd = new LocalDateTime(savedInstanceState.getLong(STATE_REPORT_END));
+            mReportPeriodStart = DateExtKt.toLocalDateTime(savedInstanceState.getLong(STATE_REPORT_START));
+            mReportPeriodEnd = DateExtKt.toLocalDateTime(savedInstanceState.getLong(STATE_REPORT_END));
         }
     }
 

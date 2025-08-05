@@ -192,6 +192,12 @@ fun LocalDateTime.getFirstQuarterMonth(): Int {
     }
 }
 
-fun LocalDateTime.toMillis(): Long {
-    return toDateTime().getMillis()
+private const val NEVER = Long.MIN_VALUE
+
+fun LocalDateTime?.toMillis(): Long {
+    return this?.toDateTime()?.millis ?: NEVER
+}
+
+fun Long?.toLocalDateTime(): LocalDateTime? {
+    return if (this == NEVER) null else LocalDateTime(this)
 }
