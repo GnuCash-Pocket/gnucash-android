@@ -8,16 +8,17 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.annotation.DrawableRes
-import androidx.annotation.LayoutRes
-import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.gnucash.android.R
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.lang.VoidCallback
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.AccountType
 
@@ -25,24 +26,63 @@ class QualifiedAccountNameAdapter @JvmOverloads constructor(
     context: Context,
     private val where: String? = null,
     private val whereArgs: Array<String>? = null,
-    private var adapter: AccountsDbAdapter = AccountsDbAdapter.getInstance(),
-    @LayoutRes resource: Int = android.R.layout.simple_spinner_item
-) : ArrayAdapter<QualifiedAccountNameAdapter.Label>(context, resource) {
+    var adapter: AccountsDbAdapter = AccountsDbAdapter.getInstance(),
+    private val scope: CoroutineScope
+) : ArrayAdapter<QualifiedAccountNameAdapter.Label>(context, android.R.layout.simple_spinner_item) {
 
     private var loadJob: Job? = null
 
     constructor(
         context: Context,
-        adapter: AccountsDbAdapter
+        adapter: AccountsDbAdapter,
+        scope: CoroutineScope
     ) : this(
         context = context,
+        where = null,
+        whereArgs = null,
         adapter = adapter,
-        where = null
+        scope = scope
+    )
+
+    constructor(
+        context: Context,
+        adapter: AccountsDbAdapter,
+        lifecycleOwner: LifecycleOwner
+    ) : this(
+        context = context,
+        where = null,
+        whereArgs = null,
+        adapter = adapter,
+        lifecycleOwner = lifecycleOwner
+    )
+
+    constructor(
+        context: Context,
+        where: String?,
+        whereArgs: Array<String>?,
+        adapter: AccountsDbAdapter,
+        lifecycleOwner: LifecycleOwner
+    ) : this(
+        context = context,
+        where = where,
+        whereArgs = whereArgs,
+        adapter = adapter,
+        scope = lifecycleOwner.lifecycleScope
+    )
+
+    constructor(
+        context: Context,
+        lifecycleOwner: LifecycleOwner
+    ) : this(
+        context = context,
+        where = null,
+        whereArgs = null,
+        adapter = AccountsDbAdapter.getInstance(),
+        lifecycleOwner = lifecycleOwner
     )
 
     init {
         setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        load()
     }
 
     override fun hasStableIds(): Boolean {
@@ -108,45 +148,13 @@ class QualifiedAccountNameAdapter @JvmOverloads constructor(
         load()
     }
 
-    fun getDescendants(account: Account): List<Account> {
-        return getDescendants(account.uid)
-    }
-
-    private fun getDescendants(parentUID: String): List<Account> {
-        val result = mutableListOf<Account>()
-        populateDescendants(parentUID, result)
-        return result
-    }
-
-    private fun populateDescendants(parentUID: String, result: MutableList<Account>) {
-        val count = count
-        for (i in 0 until count) {
-            val account = getAccount(i) ?: continue
-            if (parentUID == account.parentUID) {
-                result.add(account)
-                populateDescendants(account.uid, result)
-            }
-        }
-    }
-
-    private fun load() {
-        val records = loadData(adapter)
-        val labels = records.map { Label(it) }
-        clear()
-        addAll(labels)
-    }
-
     @JvmOverloads
-    fun load(lifecycleOwner: LifecycleOwner, callback: (() -> Unit)? = null) {
-        load(lifecycleOwner.lifecycleScope, callback)
-    }
-
-    fun load(lifecycleScope: LifecycleCoroutineScope, callback: (() -> Unit)? = null) {
+    fun load(callback: VoidCallback? = null) {
         loadJob?.cancel()
-        loadJob = lifecycleScope.launch(Dispatchers.IO) {
+        loadJob = scope.launch(Dispatchers.IO) {
             val records = loadData(adapter)
             val labels = records.map { Label(it) }
-            lifecycleScope.launch(Dispatchers.Main) {
+            scope.launch(Dispatchers.Main) {
                 clear()
                 addAll(labels)
                 callback?.invoke()
@@ -156,8 +164,13 @@ class QualifiedAccountNameAdapter @JvmOverloads constructor(
 
     private fun loadData(adapter: AccountsDbAdapter): List<Account> {
         val where = where ?: WHERE_NO_ROOT
+        val whereArgs = whereArgs
         val orderBy = ORDER_BY_FAVORITE_THEN_FULL_NAME
         return adapter.getSimpleAccounts(where, whereArgs, orderBy)
+    }
+
+    fun getAccountDb(uid: String): Account? {
+        return getAccount(uid) ?: adapter.getSimpleRecord(uid)
     }
 
     data class Label(val account: Account) {
@@ -173,17 +186,5 @@ class QualifiedAccountNameAdapter @JvmOverloads constructor(
 
         private const val ORDER_BY_FAVORITE_THEN_FULL_NAME =
             AccountEntry.COLUMN_FAVORITE + " DESC, " + AccountEntry.COLUMN_FULL_NAME + " ASC"
-
-        @JvmStatic
-        @JvmOverloads
-        fun where(
-            context: Context,
-            where: String,
-            whereArgs: Array<String>? = null
-        ): QualifiedAccountNameAdapter = QualifiedAccountNameAdapter(
-            context = context,
-            where = where,
-            whereArgs = whereArgs
-        )
     }
 }
