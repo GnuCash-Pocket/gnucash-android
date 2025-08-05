@@ -509,24 +509,17 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         queryBuilder.setTables(
             TransactionEntry.TABLE_NAME + " t"
             + " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON "
-            + "t." + TransactionEntry.COLUMN_UID + " = "
-            + "s." + SplitEntry.COLUMN_TRANSACTION_UID);
-        queryBuilder.setDistinct(true);
-        String[] projectionIn = new String[]{"t.*"};
+            + "t." + TransactionEntry.COLUMN_UID + " = s." + SplitEntry.COLUMN_TRANSACTION_UID
+        );
+        String[] projectionIn = new String[]{"t.*", "MAX(t." + TransactionEntry.COLUMN_TIMESTAMP + ")"};
         String selection = "s." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
             + " AND t." + TransactionEntry.COLUMN_TEMPLATE + " = 0"
             + " AND t." + TransactionEntry.COLUMN_DESCRIPTION + " LIKE " + sqlEscapeLike(prefix);
         String[] selectionArgs = new String[]{accountUID};
-        String sortOrder = "t." + TransactionEntry.COLUMN_TIMESTAMP + " DESC";
-        String subquery = queryBuilder.buildQuery(projectionIn, selection, null, null, sortOrder, null);
-
-        // Need to use inner subquery because ORDER BY must be before GROUP BY!
-        SQLiteQueryBuilder queryBuilder2 = new SQLiteQueryBuilder();
-        queryBuilder2.setTables("(" + subquery + ")");
         String groupBy = TransactionEntry.COLUMN_DESCRIPTION;
-        String sortBy = TransactionEntry.COLUMN_TIMESTAMP + " DESC";
+        String sortOrder = "t." + TransactionEntry.COLUMN_TIMESTAMP + " DESC";
         String limit = Integer.toString(10);
-        return queryBuilder2.query(mDb, null, null, selectionArgs, groupBy, null, sortBy, limit);
+        return queryBuilder.query(mDb, projectionIn, selection, selectionArgs, groupBy, null, sortOrder, limit);
     }
 
     /**
