@@ -390,10 +390,6 @@
         <item quantity="many">%d transakcji</item>
         <item quantity="other">%d transakcji</item>
     </plurals>
-    <string-array name="report_account_types">
-        <item>WYDATEK</item>
-        <item>PRZYCHÓD</item>
-    </string-array>
     <string name="toast_connected_to_google_drive">Połączono z Dyskiem Google</string>
     <string name="toast_unable_to_connect_to_google_drive">Nie można połączyć się z Google Drive</string>
     <string name="toast_enter_amount_to_split">Proszę wprowadzić kwotę do podziału</string>

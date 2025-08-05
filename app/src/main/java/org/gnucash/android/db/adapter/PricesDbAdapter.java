@@ -123,8 +123,11 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
         String commodityUID = commodity.getUID();
         String currencyUID = currency.getUID();
         String key = commodityUID + "/" + currencyUID;
+        String keyInverse = currencyUID + "/" + commodityUID;
         if (isCached) {
             Price price = cachePair.get(key);
+            if (price != null) return price;
+            price = cachePair.get(keyInverse);
             if (price != null) return price;
         }
         if (commodity.equals(currency)) {
@@ -135,32 +138,35 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
             return price;
         }
         // the commodity and currency can be swapped
-        String where = "( " + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " + PriceEntry.COLUMN_CURRENCY_UID + " = ? ) OR ( "
-            + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " + PriceEntry.COLUMN_CURRENCY_UID + " = ? )";
+        String where = "(" + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " + PriceEntry.COLUMN_CURRENCY_UID + " = ?)"
+            + " OR (" + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " + PriceEntry.COLUMN_CURRENCY_UID + " = ?)";
         String[] whereArgs = new String[]{commodityUID, currencyUID, currencyUID, commodityUID};
         // only get the latest price
-        String ordeerBy = PriceEntry.COLUMN_DATE + " DESC";
-        Cursor cursor = mDb.query(PriceEntry.TABLE_NAME, null, where, whereArgs, null, null, ordeerBy, "1");
+        String orderBy = PriceEntry.COLUMN_DATE + " DESC";
+        Cursor cursor = mDb.query(PriceEntry.TABLE_NAME, null, where, whereArgs, null, null, orderBy, "1");
         try {
             if (cursor.moveToFirst()) {
-                String commodityUIDdb = cursor.getString(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_COMMODITY_UID));
-                long valueNum = cursor.getLong(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_VALUE_NUM));
-                long valueDenom = cursor.getLong(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_VALUE_DENOM));
+                Price price = buildModelInstance(cursor);
+                long valueNum = price.getValueNum();
+                long valueDenom = price.getValueDenom();
                 if (valueNum <= 0 || valueDenom <= 0) {
                     // this should not happen
                     return null;
                 }
-                if (!commodityUIDdb.equals(commodityUID)) {
-                    // swap Num and denom
-                    long t = valueNum;
-                    valueNum = valueDenom;
-                    valueDenom = t;
+                // swap numerator and denominator
+                Price priceInverse = price.inverse();
+                if (price.getCurrencyUID().equals(currencyUID)) {
+                    if (isCached) {
+                        cachePair.put(key, price);
+                        cachePair.put(keyInverse, priceInverse);
+                    }
+                    return price;
                 }
-                Price price = new Price(commodity, currency, valueNum, valueDenom);
                 if (isCached) {
-                    cachePair.put(key, price);
+                    cachePair.put(keyInverse, price);
+                    cachePair.put(key, priceInverse);
                 }
-                return price;
+                return priceInverse;
             }
         } finally {
             cursor.close();
@@ -178,9 +184,11 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
             String commodityUID = commodity.getUID();
             String currencyUID = currency.getUID();
             String key = commodityUID + "/" + currencyUID;
+            String keyInverse = currencyUID + "/" + commodityUID;
             Price price = cachePair.get(key);
             if (price == null || price.getDate().before(model.getDate())) {
                 cachePair.put(key, model);
+                cachePair.put(keyInverse, model.inverse());
             }
         }
     }

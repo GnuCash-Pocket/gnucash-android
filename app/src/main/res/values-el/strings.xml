@@ -384,10 +384,6 @@
         <item quantity="one">%d συναλλαγή</item>
         <item quantity="other">%d συναλλαγές</item>
     </plurals>
-    <string-array name="report_account_types">
-        <item>ΈΞΟΔΟ</item>
-        <item>ΈΣΟΔΟ</item>
-    </string-array>
     <string name="toast_connected_to_google_drive">Συνδεδεμένο με το Google Drive</string>
     <string name="toast_unable_to_connect_to_google_drive">Αδυναμία σύνδεσης με το Google Drive</string>
     <string name="toast_enter_amount_to_split">Παρακαλώ εισάγετε ένα ποσό για διαχωρισμό</string>

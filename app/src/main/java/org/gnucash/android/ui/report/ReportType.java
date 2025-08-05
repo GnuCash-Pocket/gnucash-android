@@ -40,11 +40,11 @@ import timber.log.Timber;
  * in the system. When adding a new report, make sure to add a mapping in the constructor</p>
  */
 public enum ReportType {
-    PIE_CHART(R.string.title_pie_chart, R.color.account_green, R.layout.fragment_pie_chart, PieChartFragment.class),
-    BAR_CHART(R.string.title_bar_chart, R.color.account_red, R.layout.fragment_bar_chart, StackedBarChartFragment.class),
-    LINE_CHART(R.string.title_line_chart, R.color.account_blue, R.layout.fragment_line_chart, CashFlowLineChartFragment.class),
-    SHEET(R.string.title_balance_sheet_report, R.color.account_purple, R.layout.fragment_text_report, BalanceSheetFragment.class),
-    NONE(R.string.title_reports, R.color.theme_primary, R.layout.fragment_report_summary, ReportsOverviewFragment.class);
+    PIE_CHART(R.string.title_pie_chart, R.color.report_orange, R.layout.fragment_pie_chart, PieChartFragment.class),
+    BAR_CHART(R.string.title_bar_chart, R.color.report_red, R.layout.fragment_bar_chart, StackedBarChartFragment.class),
+    LINE_CHART(R.string.title_line_chart, R.color.report_blue, R.layout.fragment_line_chart, CashFlowLineChartFragment.class),
+    SHEET(R.string.title_balance_sheet_report, R.color.report_purple, R.layout.fragment_text_report, BalanceSheetFragment.class),
+    NONE(R.string.title_reports, R.color.report_green, R.layout.fragment_report_summary, ReportsOverviewFragment.class);
 
     @StringRes
     final int titleId;

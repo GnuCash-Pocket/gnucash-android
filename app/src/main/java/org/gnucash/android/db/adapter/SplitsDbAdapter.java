@@ -21,15 +21,16 @@ import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
 import static org.gnucash.android.db.DatabaseSchema.CommonColumns;
 import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
 import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
+import static org.gnucash.android.db.adapter.AccountsDbAdapter.ALWAYS;
 import static org.gnucash.android.math.MathExtKt.toBigDecimal;
 
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.db.DatabaseHolder;
@@ -42,6 +43,8 @@ import org.gnucash.android.util.TimestampHelper;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -183,16 +186,36 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
         return split;
     }
 
-    public Money computeSplitBalance(Account account, long startTimestamp, long endTimestamp) {
-        Commodity currency = account.getCommodity();
-        BigDecimal total = BigDecimal.ZERO;
+    @NonNull
+    public Money computeSplitBalance(@NonNull Account account, long startTimestamp, long endTimestamp) {
+        List<Account> accounts = Collections.singletonList(account);
+        Map<String, Money> balances = computeSplitBalances(accounts, startTimestamp, endTimestamp);
+        Money balance = balances.get(account.getUID());
+        return (balance != null) ? balance : Money.createZeroInstance(account.getCommodity());
+    }
 
-        String selection = "a." + CommonColumns.COLUMN_UID + " = ?"
-            + " AND t." + TransactionEntry.COLUMN_TEMPLATE + " = 0"
-            + " AND s." + SplitEntry.COLUMN_QUANTITY_DENOM + " >= 1";
+    @NonNull
+    public Map<String, Money> computeSplitBalances(@NonNull List<Account> accounts, long startTimestamp, long endTimestamp) {
+        final int length = accounts.size();
+        String[] selectionArgs = new String[length];
+        for (int i = 0; i < length; i++) {
+            selectionArgs[i] = accounts.get(i).getUID();
+        }
+        String selection = "a." + CommonColumns.COLUMN_UID + " IN ('" + TextUtils.join("','", selectionArgs) + "')";
 
-        boolean validStart = startTimestamp != -1;
-        boolean validEnd = endTimestamp != -1;
+        return computeSplitBalances(selection, null, startTimestamp, endTimestamp);
+    }
+
+    public Map<String, Money> computeSplitBalances(@Nullable String accountsWhere, @Nullable String[] accountsWhereArgs, long startTimestamp, long endTimestamp) {
+        String selection = "t." + TransactionEntry.COLUMN_TEMPLATE + " = 0"
+            + " AND s." + SplitEntry.COLUMN_QUANTITY_DENOM + " > 0";
+
+        if (!TextUtils.isEmpty(accountsWhere)) {
+            selection += " AND (" + accountsWhere + ")";
+        }
+
+        boolean validStart = startTimestamp != ALWAYS;
+        boolean validEnd = endTimestamp != ALWAYS;
         if (validStart && validEnd) {
             selection += " AND t." + TransactionEntry.COLUMN_TIMESTAMP + " BETWEEN " + startTimestamp + " AND " + endTimestamp;
         } else if (validEnd) {
@@ -200,35 +223,53 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
         } else if (validStart) {
             selection += " AND t." + TransactionEntry.COLUMN_TIMESTAMP + " >= " + startTimestamp;
         }
-        String[] selectionArgs = new String[]{account.getUID()};
 
         String sql = "SELECT SUM(s." + SplitEntry.COLUMN_QUANTITY_NUM + ")"
             + ", s." + SplitEntry.COLUMN_QUANTITY_DENOM
             + ", s." + SplitEntry.COLUMN_TYPE
-            + " FROM " + TransactionEntry.TABLE_NAME + " t, "
-            + SplitEntry.TABLE_NAME + " s ON t." + TransactionEntry.COLUMN_UID + " = s." + SplitEntry.COLUMN_TRANSACTION_UID + ", "
-            + AccountEntry.TABLE_NAME + " a ON s." + SplitEntry.COLUMN_ACCOUNT_UID + " = a." + AccountEntry.COLUMN_UID
+            + ", a." + AccountEntry.COLUMN_UID
+            + ", a." + AccountEntry.COLUMN_COMMODITY_UID
+            + " FROM " + TransactionEntry.TABLE_NAME + " t"
+            + " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON t." + TransactionEntry.COLUMN_UID + " = s." + SplitEntry.COLUMN_TRANSACTION_UID
+            + " INNER JOIN " + AccountEntry.TABLE_NAME + " a ON s." + SplitEntry.COLUMN_ACCOUNT_UID + " = a." + AccountEntry.COLUMN_UID
             + " WHERE " + selection
-            + " GROUP BY a.commodity_uid, s.type, s.quantity_denom";
-        Cursor cursor = mDb.rawQuery(sql, selectionArgs);
+            + " GROUP BY a." + AccountEntry.COLUMN_UID
+            + ", s." + SplitEntry.COLUMN_TYPE
+            + ", s." + SplitEntry.COLUMN_QUANTITY_DENOM;
+        Cursor cursor = mDb.rawQuery(sql, accountsWhereArgs);
 
+        Map<String, Money> totals = new HashMap<>();
         try {
-            while (cursor.moveToNext()) {
+            if (!cursor.moveToFirst()) {
+                return totals;
+            }
+            do {
                 //FIXME beware of 64-bit overflow - get as BigInteger
                 long amount_num = cursor.getLong(0);
                 long amount_denom = cursor.getLong(1);
                 String splitType = cursor.getString(2);
+                String accountUID = cursor.getString(3);
+                String commodityUID = cursor.getString(4);
 
                 if (credit.equals(splitType)) {
                     amount_num = -amount_num;
                 }
                 BigDecimal amount = toBigDecimal(amount_num, amount_denom);
-                total = total.add(amount);
-            }
-            return new Money(total, currency);
+                Commodity commodity = commoditiesDbAdapter.getRecord(commodityUID);
+                Money balance = new Money(amount, commodity);
+                Money total = totals.get(accountUID);
+                if (total == null) {
+                    total = balance;
+                } else {
+                    total = total.plus(balance);
+                }
+                totals.put(accountUID, total);
+            } while (cursor.moveToNext());
         } finally {
             cursor.close();
         }
+
+        return totals;
     }
 
     /**

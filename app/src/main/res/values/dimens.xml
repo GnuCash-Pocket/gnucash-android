@@ -18,7 +18,7 @@
     <dimen name="dialog_padding">10dp</dimen>
     <dimen name="hint_margin">8dp</dimen>
     <dimen name="text_size_medium">16sp</dimen>
-    <dimen name="edge_padding">12dp</dimen>
+    <dimen name="edge_padding">8dp</dimen>
     <dimen name="widget_margin">2dp</dimen>
     <dimen name="widget_button_size">@dimen/bp_material_button_height</dimen>
     <dimen name="form_row_bottom_margin">8dp</dimen>

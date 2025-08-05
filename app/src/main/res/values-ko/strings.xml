@@ -381,10 +381,6 @@
     <plurals name="book_transaction_stats">
         <item quantity="other">%d transactions</item>
     </plurals>
-    <string-array name="report_account_types">
-        <item>지출</item>
-        <item>소득</item>
-    </string-array>
     <string name="toast_connected_to_google_drive">구글 드라이브에 연결</string>
     <string name="toast_unable_to_connect_to_google_drive">구글 드라이브에 연결할 수 없습니다</string>
     <string name="toast_enter_amount_to_split">Please enter an amount to split</string>
