@@ -85,6 +85,14 @@ In order to generate a `google-services.json` configuration file follow these st
 
 You can also follow [these instructions](https://firebase.google.com/docs/android/setup).
 
+### With nektos act
+
+Using `act` allows to test and build app without installing any of JDK / Gradle / Android SDK directly.
+It is running gihub action locally. The whole build is done in the docker.
+
+1. Install act from: https://nektosact.com/
+2. Run: `act --artifact-server-path ./outputDirectory`
+
 ## Support
 
 GitHub [Issues](https://github.com/GnuCash-Pocket/gnucash-android/issues)
@@ -93,8 +101,8 @@ GitHub [Issues](https://github.com/GnuCash-Pocket/gnucash-android/issues)
 
 There are several ways you could contribute to the development.
 
-* Pull requests are always welcome! You could contribute code by fixing bugs, adding new features or automated tests. Take a look at the [bug tracker](https://github.com/GnuCash-Pocket/gnucash-android/issues?state=open) for ideas where to start. It is also preferable to target issues in the current [milestone](https://github.com/GnuCash-Pocket/gnucash-android/milestones). 
-* Make sure to read our [contribution guidelines](https://github.com/GnuCash-Pocket/gnucash-android/blob/master/.github/CONTRIBUTING.md) before starting to code. 
+* Pull requests are always welcome! You could contribute code by fixing bugs, adding new features or automated tests. Take a look at the [bug tracker](https://github.com/GnuCash-Pocket/gnucash-android/issues?state=open) for ideas where to start. It is also preferable to target issues in the current [milestone](https://github.com/GnuCash-Pocket/gnucash-android/milestones).
+* Make sure to read our [contribution guidelines](https://github.com/GnuCash-Pocket/gnucash-android/blob/master/.github/CONTRIBUTING.md) before starting to code.
 
 * Another way to contribute is by providing translations for languages, or improving translations. The original app by [codinguser](https://github.com/codinguser/) was translated on [CrowdIn](https://crowdin.com/project/gnucash-android)
 

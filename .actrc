@@ -1,0 +1,3 @@
+--env ACTIONS_RUNTIME_URL=http://host.docker.internal:8080/
+--env ACTIONS_RUNTIME_TOKEN=foo
+--env ACTIONS_CACHE_URL=http://host.docker.internal:8080/
