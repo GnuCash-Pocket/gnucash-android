@@ -88,6 +88,10 @@ jobs:
         with:
           java-version: "21"
           distribution: temurin
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          log-accepted-android-sdk-licenses: false
       - name: Prepare Gradle
         uses: gradle/actions/setup-gradle@v3
       - name: Prepare Google Services
@@ -116,6 +120,10 @@ jobs:
         with:
           java-version: "21"
           distribution: temurin
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          log-accepted-android-sdk-licenses: false
       - name: Prepare Gradle
         uses: gradle/actions/setup-gradle@v3
       - name: Prepare Google Services
@@ -147,6 +155,10 @@ jobs:
         with:
           java-version: "21"
           distribution: temurin
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          log-accepted-android-sdk-licenses: false
       - name: Prepare Gradle
         uses: gradle/actions/setup-gradle@v3
       - name: Prepare Google Services
@@ -166,6 +178,10 @@ jobs:
         with:
           java-version: "21"
           distribution: temurin
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          log-accepted-android-sdk-licenses: false
       - name: Prepare Gradle
         uses: gradle/actions/setup-gradle@v3
       - name: Prepare Google Services
