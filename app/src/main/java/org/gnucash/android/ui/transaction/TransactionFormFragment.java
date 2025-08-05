@@ -873,8 +873,6 @@ public class TransactionFormFragment extends MenuFragment implements
         mTransaction = transaction;
 
         try {
-            mTransactionsDbAdapter.beginTransaction();
-
             if (isTemplate) { //template is automatically checked when a transaction is scheduled
                 if (mEditMode && wasScheduled) {
                     transaction.setScheduledActionUID(scheduledActionUID);
@@ -896,16 +894,12 @@ public class TransactionFormFragment extends MenuFragment implements
                 scheduledActionDbAdapter.deleteRecord(scheduledActionUID);
             }
 
-            mTransactionsDbAdapter.setTransactionSuccessful();
-
             finish(Activity.RESULT_OK);
         } catch (ArithmeticException ae) {
             Timber.e(ae);
             binding.inputTransactionAmount.setError(getString(R.string.error_invalid_amount));
         } catch (Throwable e) {
             Timber.e(e);
-        } finally {
-            mTransactionsDbAdapter.endTransaction();
         }
     }
 
