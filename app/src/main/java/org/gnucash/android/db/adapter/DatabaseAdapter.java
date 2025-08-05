@@ -782,7 +782,12 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      */
     public boolean deleteRecord(@NonNull String uid) throws SQLException {
         if (isCached) cache.remove(uid);
-        return deleteRecord(getID(uid));
+        try {
+            return deleteRecord(getID(uid));
+        } catch (IllegalArgumentException e) {
+            Timber.e(e);
+            return false;
+        }
     }
 
     public boolean deleteRecord(@NonNull Model model) throws SQLException {
