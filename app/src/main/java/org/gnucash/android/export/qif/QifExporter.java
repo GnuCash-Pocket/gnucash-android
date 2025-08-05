@@ -135,6 +135,8 @@ public class QifExporter extends Exporter {
             TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " AS trans_time",
             TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_DESCRIPTION + " AS trans_desc",
             TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_NOTES + " AS trans_notes",
+            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_ID + " AS split_id",
+            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_UID + " AS split_uid",
             SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_NUM + " AS split_quantity_num",
             SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_DENOM + " AS split_quantity_denom",
             SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_TYPE + " AS split_type",
@@ -145,16 +147,15 @@ public class QifExporter extends Exporter {
             AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID + " AS acct2_uid"
         };
         // no recurrence transactions
-        final String where = TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TEMPLATE + " == 0 AND " +
+        final String where = TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TEMPLATE + " == 0 AND "
             // in qif, split from the one account entry is not recorded (will be auto balanced)
-            "( " + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID + " != account1." + AccountEntry.COLUMN_UID + " OR " +
+            + "(" + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID + " != account1." + AccountEntry.COLUMN_UID + " OR "
             // or if the transaction has only one split (the whole transaction would be lost if it is not selected)
-            "trans_split_count == 1 )" +
-
-            " AND " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " >= ?";
+            + "trans_split_count == 1)"
+            + " AND " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " >= ?";
         // trans_time ASC : put transactions in time order
         // trans_uid ASC  : put splits from the same transaction together
-        final String orderBy = "acct1_uid ASC, trans_uid ASC, trans_time ASC";
+        final String orderBy = "acct1_uid ASC, trans_uid ASC, trans_time ASC, split_id ASC";
 
         Cursor cursor = null;
         try {
@@ -164,13 +165,14 @@ public class QifExporter extends Exporter {
                 new String[]{lastExportTimeStamp},
                 orderBy
             );
+            if ((cursor == null) || !cursor.moveToFirst()) return;
 
             String currentCommodityUID = "";
             String currentAccountUID = "";
             String currentTransactionUID = "";
             BigDecimal txTotal = BigDecimal.ZERO;
 
-            while (cursor.moveToNext()) {
+            do {
                 String accountUID = cursor.getString(cursor.getColumnIndexOrThrow("acct1_uid"));
                 Account account1 = accounts.get(accountUID);
                 assert account1 != null;
@@ -295,7 +297,7 @@ public class QifExporter extends Exporter {
                 writer.append(SPLIT_AMOUNT_PREFIX).append(quantityFormatter.format(quantity))
                     .append(NEW_LINE);
                 txTotal = txTotal.add(quantity);
-            }
+            } while (cursor.moveToNext());
             if (!TextUtils.isEmpty(currentTransactionUID)) {
                 // end last transaction
                 writer.append(TOTAL_AMOUNT_PREFIX)

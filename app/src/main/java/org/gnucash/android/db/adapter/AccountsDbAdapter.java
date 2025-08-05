@@ -283,16 +283,16 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
         return mDb.update(
             TransactionEntry.TABLE_NAME,
             contentValues,
-            TransactionEntry.COLUMN_UID + " IN ( " +
-                "SELECT DISTINCT " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID +
-                " FROM " + TransactionEntry.TABLE_NAME + " , " + SplitEntry.TABLE_NAME + " ON " +
-                TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " = " +
-                SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID + " , " +
-                AccountEntry.TABLE_NAME + " ON " + SplitEntry.TABLE_NAME + "." +
-                SplitEntry.COLUMN_ACCOUNT_UID + " = " + AccountEntry.TABLE_NAME + "." +
-                AccountEntry.COLUMN_UID + " WHERE " + AccountEntry.TABLE_NAME + "." +
-                AccountEntry.COLUMN_UID + " = ? "
-                + " ) ",
+            TransactionEntry.COLUMN_UID + " IN ("
+                + "SELECT DISTINCT " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID
+                + " FROM " + TransactionEntry.TABLE_NAME + ", " + SplitEntry.TABLE_NAME + " ON "
+                + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " = "
+                + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID + ", "
+                + AccountEntry.TABLE_NAME + " ON " + SplitEntry.TABLE_NAME + "."
+                + SplitEntry.COLUMN_ACCOUNT_UID + " = " + AccountEntry.TABLE_NAME + "."
+                + AccountEntry.COLUMN_UID + " WHERE " + AccountEntry.TABLE_NAME + "."
+                + AccountEntry.COLUMN_UID + " = ?"
+                + ")",
             new String[]{accountUID}
         );
     }
@@ -589,9 +589,9 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
      */
     public List<Account> getExportableAccounts(Timestamp lastExportTimeStamp) {
         Cursor cursor = mDb.query(
-            TransactionEntry.TABLE_NAME + " , " + SplitEntry.TABLE_NAME +
+            TransactionEntry.TABLE_NAME + ", " + SplitEntry.TABLE_NAME +
                 " ON " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " = " +
-                SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID + " , " +
+                SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID + ", " +
                 AccountEntry.TABLE_NAME + " ON " + AccountEntry.TABLE_NAME + "." +
                 AccountEntry.COLUMN_UID + " = " + SplitEntry.TABLE_NAME + "." +
                 SplitEntry.COLUMN_ACCOUNT_UID,
@@ -1123,7 +1123,7 @@ public class AccountsDbAdapter extends DatabaseAdapter<Account> {
                 + " LEFT OUTER JOIN " + SplitEntry.TABLE_NAME + " ON "
                 + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " = "
                 + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID
-                + " , " + AccountEntry.TABLE_NAME + " ON " + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID
+                + ", " + AccountEntry.TABLE_NAME + " ON " + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID
                 + " = " + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_UID,
             new String[]{AccountEntry.TABLE_NAME + ".*"},
             selection,

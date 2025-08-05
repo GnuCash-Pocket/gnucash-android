@@ -351,7 +351,7 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
 
     public Cursor fetchTransactionsWithSplitsWithTransactionAccount(String[] columns, String where, String[] whereArgs, String orderBy) {
         // table is :
-        // trans_split_acct , trans_extra_info ON trans_extra_info.trans_acct_t_uid = transactions_uid ,
+        // trans_split_acct, trans_extra_info ON trans_extra_info.trans_acct_t_uid = transactions_uid ,
         // accounts AS account1 ON account1.uid = trans_extra_info.trans_acct_a_uid
         //
         // views effectively simplified this query
@@ -361,8 +361,8 @@ public class TransactionsDbAdapter extends DatabaseAdapter<Transaction> {
         //
         // Account, transaction and split Information can be retrieve in a single query.
         return mDb.query(
-            "trans_split_acct , trans_extra_info ON trans_extra_info.trans_acct_t_uid = trans_split_acct." +
-                TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID + " , " +
+            "trans_split_acct, trans_extra_info ON trans_extra_info.trans_acct_t_uid = trans_split_acct." +
+                TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID + ", " +
                 AccountEntry.TABLE_NAME + " AS account1 ON account1." + AccountEntry.COLUMN_UID +
                 " = trans_extra_info.trans_acct_a_uid",
             columns, where, whereArgs, null, null, orderBy);
