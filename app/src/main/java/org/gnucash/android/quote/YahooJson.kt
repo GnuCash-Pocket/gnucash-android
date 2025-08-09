@@ -8,7 +8,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Price
-import org.gnucash.android.model.PriceType
 import org.json.JSONException
 import org.json.JSONObject
 import timber.log.Timber
@@ -54,9 +53,9 @@ class YahooJson : QuoteProvider {
 
                     val rate = BigDecimal.valueOf(regularMarketPrice)
                     val price = Price(fromCommodity, targetCommodity, rate).apply {
-                        date = Timestamp(regularMarketTime * DateUtils.SECOND_IN_MILLIS)
+                        date = regularMarketTime * DateUtils.SECOND_IN_MILLIS
                         source = Price.SOURCE_QUOTE
-                        type = PriceType.Last
+                        type = Price.Type.Last
                     }
                     launch(Dispatchers.Main) {
                         callback.onQuote(price)

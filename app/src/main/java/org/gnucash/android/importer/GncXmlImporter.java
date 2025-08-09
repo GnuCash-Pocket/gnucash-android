@@ -129,6 +129,7 @@ public class GncXmlImporter {
 
     private static XMLReader createXMLReader(GncXmlHandler handler) throws ParserConfigurationException, SAXException {
         SAXParserFactory spf = SAXParserFactory.newInstance();
+        spf.setNamespaceAware(true);
         SAXParser sp = spf.newSAXParser();
         XMLReader xr = sp.getXMLReader();
         xr.setContentHandler(handler);

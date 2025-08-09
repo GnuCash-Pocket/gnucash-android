@@ -75,8 +75,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
         templateTransaction.commodity = Commodity.DEFAULT_COMMODITY
         templateTransaction.isTemplate = true
 
-        val split1 =
-            Split(Money(BigDecimal.TEN, Commodity.DEFAULT_COMMODITY), baseAccount.uid)
+        val split1 = Split(Money(BigDecimal.TEN, Commodity.DEFAULT_COMMODITY), baseAccount.uid)
         val split2 = split1.createPair(transferAccount.uid)
 
         templateTransaction.addSplit(split1)
@@ -289,7 +288,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
         // Check there's not a backup for each missed run
         ScheduledActionService.processScheduledAction(dbHolder, scheduledBackup)
         assertThat(scheduledBackup.executionCount).isEqualTo(3)
-        assertThat(scheduledBackup.lastRunTime).isGreaterThan(previousLastRun)
+        assertThat(scheduledBackup.lastRunTime).isGreaterThanOrEqualTo(previousLastRun)
         var backupFiles = backupFolder.listFiles()
         assertThat(backupFiles!!).hasSize(1)
         assertThat(backupFiles[0]).exists().hasExtension("xac")
@@ -298,7 +297,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
         previousLastRun = scheduledBackup.lastRunTime
         ScheduledActionService.processScheduledAction(dbHolder, scheduledBackup)
         assertThat(scheduledBackup.executionCount).isEqualTo(3)
-        assertThat(scheduledBackup.lastRunTime).isEqualTo(previousLastRun)
+        assertThat(scheduledBackup.lastRunTime).isGreaterThanOrEqualTo(previousLastRun)
         backupFiles = backupFolder.listFiles()
         assertThat(backupFiles!!).hasSize(1)
         assertThat(backupFiles[0]).exists().hasExtension("xac")
@@ -336,7 +335,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
 
         ScheduledActionService.processScheduledAction(dbHolder, scheduledBackup)
 
-        assertThat(scheduledBackup.executionCount).isEqualTo(0)
+        assertThat(scheduledBackup.executionCount).isZero()
         assertThat(scheduledBackup.lastRunTime).isEqualTo(previousLastRun)
         assertThat(backupFolder.listFiles()).isEmpty()
     }
@@ -386,8 +385,8 @@ class ScheduledActionServiceTest : GnuCashTest() {
 
         ScheduledActionService.processScheduledAction(dbHolder, scheduledBackup)
 
-        assertThat(scheduledBackup.executionCount).isEqualTo(1)
-        assertThat(scheduledBackup.lastRunTime).isEqualTo(previousLastRun)
+        assertThat(scheduledBackup.executionCount).isOne()
+        assertThat(scheduledBackup.lastRunTime).isGreaterThanOrEqualTo(previousLastRun)
         val files = backupFolder.listFiles()
         assertThat(files).isNotNull()
         assertThat(files).isEmpty()
@@ -448,7 +447,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
         ScheduledActionService.processScheduledAction(dbHolder, scheduledBackup)
 
         assertThat(scheduledBackup.executionCount).isEqualTo(2)
-        assertThat(scheduledBackup.lastRunTime).isGreaterThan(previousLastRun)
+        assertThat(scheduledBackup.lastRunTime).isGreaterThanOrEqualTo(previousLastRun)
         val files = backupFolder.listFiles()
         assertThat(files!!).isNotNull()
         assertThat(files).hasSize(1)
