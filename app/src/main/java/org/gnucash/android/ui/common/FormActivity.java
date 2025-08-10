@@ -16,8 +16,6 @@
 
 package org.gnucash.android.ui.common;
 
-import android.content.Intent;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -40,6 +38,8 @@ import org.gnucash.android.ui.passcode.PasscodeLockActivity;
 import org.gnucash.android.ui.transaction.SplitEditorFragment;
 import org.gnucash.android.ui.transaction.TransactionFormFragment;
 import org.gnucash.android.util.BookUtils;
+
+import timber.log.Timber;
 
 /**
  * Activity for displaying forms in the application.
@@ -69,10 +69,15 @@ public class FormActivity extends PasscodeLockActivity {
         binding = ActivityFormBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        final Intent intent = getIntent();
+        final Bundle args = getIntent().getExtras();
+        if (args == null) {
+            Timber.e("Arguments required");
+            finish();
+            return;
+        }
 
         //if a parameter was passed to open an account within a specific book, then switch
-        String bookUID = intent.getStringExtra(UxArgument.BOOK_UID);
+        String bookUID = args.getString(UxArgument.BOOK_UID);
         if (bookUID != null && !bookUID.equals(GnuCashApplication.getActiveBookUID())) {
             BookUtils.activateBook(this, bookUID);
         }
@@ -84,9 +89,6 @@ public class FormActivity extends PasscodeLockActivity {
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
-        Bundle args = intent.getExtras();
-        if (args == null) args = new Bundle();
-
         mAccountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID);
         if (TextUtils.isEmpty(mAccountUID)) {
             mAccountUID = args.getString(UxArgument.PARENT_ACCOUNT_UID);
@@ -97,6 +99,11 @@ public class FormActivity extends PasscodeLockActivity {
         }
 
         String formtypeString = args.getString(UxArgument.FORM_TYPE);
+        if (TextUtils.isEmpty(formtypeString)) {
+            Timber.e("No form display type specified");
+            finish();
+            return;
+        }
         FormType formType = FormType.valueOf(formtypeString);
         switch (formType) {
             case ACCOUNT:
