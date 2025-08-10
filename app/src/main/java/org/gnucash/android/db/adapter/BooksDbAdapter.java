@@ -317,7 +317,7 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
             null, null, null, null);
         try {
             if (cursor.moveToFirst()) {
-                return cursor.getString(cursor.getColumnIndexOrThrow(BookEntry.COLUMN_DISPLAY_NAME));
+                return cursor.getString(0);
             }
         } finally {
             cursor.close();

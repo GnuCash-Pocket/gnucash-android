@@ -16,13 +16,10 @@
 
 package org.gnucash.android.ui.transaction.dialog;
 
-import static android.database.DatabaseUtils.sqlEscapeString;
-
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -71,9 +68,8 @@ public class BulkMoveDialogFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        DialogBulkMoveBinding binding = DialogBulkMoveBinding.inflate(getLayoutInflater());
+        final DialogBulkMoveBinding binding = DialogBulkMoveBinding.inflate(getLayoutInflater());
         final Context context = binding.getRoot().getContext();
-        final Spinner accountSpinner = binding.accountsListSpinner;
         AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
 
         Bundle args = getArguments();
@@ -84,13 +80,14 @@ public class BulkMoveDialogFragment extends DialogFragment {
 
         String where = DatabaseSchema.AccountEntry.COLUMN_UID + " != ?"
             + " AND " + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + " = ?"
-            + " AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + " != " + sqlEscapeString(AccountType.ROOT.name())
+            + " AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + " != ?"
             + " AND " + DatabaseSchema.AccountEntry.COLUMN_TEMPLATE + " = 0"
             + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0";
-        String[] whereArgs = new String[]{originAccountUID, originCommodity.getUID()};
+        String[] whereArgs = new String[]{originAccountUID, originCommodity.getUID(), AccountType.ROOT.name()};
 
-        final QualifiedAccountNameAdapter accountNameAdapter = new QualifiedAccountNameAdapter(context, where, whereArgs, accountsDbAdapter);
-        accountSpinner.setAdapter(accountNameAdapter);
+        final QualifiedAccountNameAdapter accountNameAdapter = new QualifiedAccountNameAdapter(context, where, whereArgs, accountsDbAdapter, this);
+        accountNameAdapter.load();
+        binding.accountsListSpinner.setAdapter(accountNameAdapter);
 
         String title = context.getString(R.string.title_move_transactions, transactionUIDs.length);
 
@@ -106,10 +103,7 @@ public class BulkMoveDialogFragment extends DialogFragment {
             .setPositiveButton(R.string.btn_move, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    int position = accountSpinner.getSelectedItemPosition();
-                    if (position < 0) {
-                        return;
-                    }
+                    int position = binding.accountsListSpinner.getSelectedItemPosition();
                     Account account = accountNameAdapter.getAccount(position);
                     if (account == null) {
                         return;

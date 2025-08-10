@@ -17,6 +17,8 @@
 
 package org.gnucash.android.ui.transaction;
 
+import static org.apache.commons.lang3.math.NumberUtils.min;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -32,6 +34,7 @@ import android.widget.AdapterView;
 import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -111,37 +114,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
             Account account = accountNameAdapter.getAccount(position);
-            if (account != null) {
-                TransactionsActivity.this.account = account;
-                String accountUID = account.getUID();
-                getIntent().putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID); //update the intent in case the account gets rotated
-                if (account.isPlaceholder()) {
-                    if (mBinding.tabLayout.getTabCount() > 1) {
-                        mPagerAdapter.notifyDataSetChanged();
-                        mBinding.tabLayout.removeTabAt(1);
-                    }
-                } else {
-                    if (mBinding.tabLayout.getTabCount() < 2) {
-                        mPagerAdapter.notifyDataSetChanged();
-                        mBinding.tabLayout.addTab(mBinding.tabLayout.newTab().setText(R.string.section_header_transactions));
-                    }
-                }
-                //refresh any fragments in the tab with the new account UID
-                refresh(accountUID);
-
-                //if there are no transactions, and there are sub-accounts, show the sub-accounts
-                long txCount = transactionsDbAdapter.getTransactionsCount(accountUID);
-                long subCount = mAccountsDbAdapter.getSubAccountCount(accountUID);
-                if (txCount == 0 && subCount > 0) {
-                    mBinding.pager.setCurrentItem(INDEX_SUB_ACCOUNTS_FRAGMENT);
-                } else {
-                    mBinding.pager.setCurrentItem(INDEX_TRANSACTIONS_FRAGMENT);
-                }
-            } else {
-                //refresh any fragments in the tab with the new account UID
-                refresh();
-            }
-            supportInvalidateOptionsMenu();
+            swapAccount(account);
         }
 
         @Override
@@ -174,7 +147,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         @NonNull
         @Override
         public Fragment getItem(int position) {
-            if (account.isPlaceholder()) {
+            if (account != null && account.isPlaceholder()) {
                 Fragment transactionsListFragment = prepareSubAccountsListFragment();
                 mFragmentPageReferenceMap.put(position, (Refreshable) transactionsListFragment);
                 return transactionsListFragment;
@@ -219,10 +192,10 @@ public class TransactionsActivity extends BaseDrawerActivity implements
 
         @Override
         public int getCount() {
-            if (account.isPlaceholder())
-                return 1;
-            else
+            if (account != null && !account.isPlaceholder()) {
                 return DEFAULT_NUM_PAGES;
+            }
+            return 1;
         }
 
         /**
@@ -231,7 +204,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
          * @return {@link AccountsListFragment} initialized with the sub-accounts
          */
         private AccountsListFragment prepareSubAccountsListFragment() {
-            String accountUID = (account != null) ? account.getUID() : null;
+            String accountUID = getAccountUID();
             Bundle args = new Bundle();
             args.putString(UxArgument.PARENT_ACCOUNT_UID, accountUID);
             args.putBoolean(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts);
@@ -246,7 +219,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
          * @return {@link TransactionsListFragment} initialized with the current account transactions
          */
         private TransactionsListFragment prepareTransactionsListFragment() {
-            String accountUID = (account != null) ? account.getUID() : null;
+            String accountUID = getAccountUID();
             Bundle args = new Bundle();
             args.putString(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
             Timber.i("Opening transactions for account: %s", accountUID);
@@ -260,8 +233,9 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      * Refreshes the fragments currently in the transactions activity
      */
     @Override
-    public void refresh(String accountUID) {
-        setTitleIndicatorColor();
+    public void refresh(final String accountUID) {
+        final ActivityTransactionsBinding binding = mBinding;
+        setTitleIndicatorColor(binding, accountUID);
 
         for (int i = 0; i < mFragmentPageReferenceMap.size(); i++) {
             mFragmentPageReferenceMap.valueAt(i).refresh(accountUID);
@@ -271,33 +245,23 @@ public class TransactionsActivity extends BaseDrawerActivity implements
             mPagerAdapter.notifyDataSetChanged();
         }
 
-        mBinding.toolbarLayout.toolbarSpinner.setEnabled(false);
-        accountNameAdapter.load(this, new Function0<Unit>() {
-                @Override
-                public Unit invoke() {
-                    updateNavigationSelection();
-                    setTitleIndicatorColor();
-                    mBinding.toolbarLayout.toolbarSpinner.setEnabled(true);
-                    return null;
-                }
-            }
-        );
+        binding.toolbarLayout.toolbarSpinner.setEnabled(!accountNameAdapter.isEmpty());
     }
 
     @Override
     public void refresh() {
-        String accountUID = (account != null) ? account.getUID() : null;
+        String accountUID = getAccountUID();
         refresh(accountUID);
     }
 
     @Override
     public void inflateView() {
-        mBinding = ActivityTransactionsBinding.inflate(getLayoutInflater());
-        setContentView(mBinding.getRoot());
-        mDrawerLayout = mBinding.drawerLayout;
-        mNavigationView = mBinding.navView;
-        mToolbar = mBinding.toolbarLayout.toolbar;
-        mToolbarProgress = mBinding.toolbarLayout.toolbarProgress.progress;
+        final ActivityTransactionsBinding binding = mBinding = ActivityTransactionsBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        mDrawerLayout = binding.drawerLayout;
+        mNavigationView = binding.navView;
+        mToolbar = binding.toolbarLayout.toolbar;
+        mToolbarProgress = binding.toolbarLayout.toolbarProgress.progress;
     }
 
     @Override
@@ -316,34 +280,34 @@ public class TransactionsActivity extends BaseDrawerActivity implements
 
         isShowHiddenAccounts = getIntent().getBooleanExtra(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts);
 
-        final Context contextWithTheme = mBinding.toolbarLayout.toolbar.getContext();
-        accountNameAdapter = new QualifiedAccountNameAdapter(contextWithTheme, null, null, mAccountsDbAdapter);
+        final ActivityTransactionsBinding binding = mBinding;
         String accountUID = getIntent().getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
         if (TextUtils.isEmpty(accountUID)) {
             accountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
         }
-        account = accountNameAdapter.getAccount(accountUID);
+        account = mAccountsDbAdapter.getSimpleRecord(accountUID);
         if (account == null) {
-            Timber.e("Account not found %s", accountUID);
+            Timber.e("Account not found");
             finish();
             return;
         }
 
-        mBinding.tabLayout.addTab(mBinding.tabLayout.newTab().setText(R.string.section_header_subaccounts));
+        binding.tabLayout.addTab(binding.tabLayout.newTab().setText(R.string.section_header_subaccounts));
         if (!account.isPlaceholder()) {
-            mBinding.tabLayout.addTab(mBinding.tabLayout.newTab().setText(R.string.section_header_transactions));
+            binding.tabLayout.addTab(binding.tabLayout.newTab().setText(R.string.section_header_transactions));
         }
 
-        setupActionBarNavigation();
+        setupActionBarNavigation(binding, accountUID);
 
         mPagerAdapter = new AccountViewPagerAdapter(getSupportFragmentManager());
-        mBinding.pager.setAdapter(mPagerAdapter);
-        mBinding.pager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(mBinding.tabLayout));
+        binding.pager.setAdapter(mPagerAdapter);
+        binding.pager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(binding.tabLayout));
 
-        mBinding.tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+        binding.tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                mBinding.pager.setCurrentItem(tab.getPosition());
+                int position = tab.getPosition();
+                binding.pager.setCurrentItem(min(position, binding.pager.getChildCount()));
             }
 
             @Override
@@ -357,10 +321,10 @@ public class TransactionsActivity extends BaseDrawerActivity implements
             }
         });
 
-        mBinding.fabCreateTransaction.setOnClickListener(new View.OnClickListener() {
+        binding.fabCreateTransaction.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                switch (mBinding.pager.getCurrentItem()) {
+                switch (binding.pager.getCurrentItem()) {
                     case INDEX_SUB_ACCOUNTS_FRAGMENT:
                         createNewAccount(account.getUID());
                         break;
@@ -391,37 +355,55 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     /**
      * Sets the color for the ViewPager title indicator to match the account color
      */
-    private void setTitleIndicatorColor() {
-        @ColorInt int accountColor = mAccountsDbAdapter.getActiveAccountColor(this, account.getUID());
+    private void setTitleIndicatorColor(ActivityTransactionsBinding binding, String accountUID) {
+        Account account = this.account;
+        if (account == null) return;
+        @ColorInt int accountColor = account.getColor();
+        if (accountColor == Account.DEFAULT_COLOR) {
+            accountColor = mAccountsDbAdapter.getActiveAccountColor(this, account.getUID());
+        }
         setTitlesColor(accountColor);
-        mBinding.tabLayout.setBackgroundColor(accountColor);
+        binding.tabLayout.setBackgroundColor(accountColor);
     }
 
     /**
      * Set up action bar navigation list and listener callbacks
      */
-    private void setupActionBarNavigation() {
-        mBinding.toolbarLayout.toolbarSpinner.setAdapter(accountNameAdapter);
-        mBinding.toolbarLayout.toolbarSpinner.setOnItemSelectedListener(accountSpinnerListener);
-        updateNavigationSelection();
+    private void setupActionBarNavigation(ActivityTransactionsBinding binding, final String accountUID) {
+        if (accountNameAdapter == null) {
+            final Context contextWithTheme = binding.toolbarLayout.toolbarSpinner.getContext();
+            accountNameAdapter = new QualifiedAccountNameAdapter(contextWithTheme, mAccountsDbAdapter, this);
+            accountNameAdapter.load(new Function0<Unit>() {
+                @Override
+                public Unit invoke() {
+                    int position = accountNameAdapter.getPosition(accountUID);
+                    binding.toolbarLayout.toolbarSpinner.setSelection(position);
+                    return null;
+                }
+            });
+        }
+        binding.toolbarLayout.toolbarSpinner.setAdapter(accountNameAdapter);
+        binding.toolbarLayout.toolbarSpinner.setOnItemSelectedListener(accountSpinnerListener);
+        updateNavigationSelection(binding, accountUID);
+        setTitleIndicatorColor(binding, accountUID);
     }
 
     /**
      * Updates the action bar navigation list selection to that of the current account
      * whose transactions are being displayed/manipulated
      */
-    private void updateNavigationSelection() {
-        Account account = this.account;
-        String accountUID = (account != null) ? account.getUID() : null;
+    private void updateNavigationSelection(ActivityTransactionsBinding binding, String accountUID) {
+        if (accountNameAdapter.isEmpty()) return;
         int position = accountNameAdapter.getPosition(accountUID);
         // In case the account was deleted.
-        if (position == AdapterView.INVALID_POSITION) {
+        Account account = this.account;
+        if (position == AdapterView.INVALID_POSITION && account != null) {
             accountUID = account.getParentUID();
             position = accountNameAdapter.getPosition(accountUID);
             account = accountNameAdapter.getAccount(position);
             this.account = account;
         }
-        mBinding.toolbarLayout.toolbarSpinner.setSelection(position);
+        binding.toolbarLayout.toolbarSpinner.setSelection(position);
     }
 
     @Override
@@ -608,5 +590,49 @@ public class TransactionsActivity extends BaseDrawerActivity implements
                 fragment.setShowHiddenAccounts(isVisible);
             }
         }
+    }
+
+    private String getAccountUID() {
+        return (account != null) ? account.getUID() : getIntent().getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
+    }
+
+    private void swapAccount(@Nullable Account account) {
+        final ActivityTransactionsBinding binding = mBinding;
+        if (account != null) {
+            this.account = account;
+            String accountUID = account.getUID();
+            //update the intent in case the account gets rotated
+            getIntent().putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
+            mPagerAdapter.notifyDataSetChanged();
+            if (account.isPlaceholder()) {
+                if (binding.tabLayout.getTabCount() > 1) {
+                    binding.tabLayout.removeTabAt(INDEX_TRANSACTIONS_FRAGMENT);
+                }
+            } else {
+                if (binding.tabLayout.getTabCount() < 2) {
+                    binding.tabLayout.addTab(binding.tabLayout.newTab().setText(R.string.section_header_transactions));
+                }
+            }
+
+            //if there are no transactions, and there are sub-accounts, show the sub-accounts
+            long txCount = transactionsDbAdapter.getTransactionsCount(accountUID);
+            if (txCount == 0) {
+                long subCount = mAccountsDbAdapter.getSubAccountCount(accountUID);
+                if ((subCount > 0) || (binding.tabLayout.getTabCount() < 2)) {
+                    binding.pager.setCurrentItem(INDEX_SUB_ACCOUNTS_FRAGMENT);
+                } else {
+                    binding.pager.setCurrentItem(INDEX_TRANSACTIONS_FRAGMENT);
+                }
+            } else {
+                binding.pager.setCurrentItem(INDEX_TRANSACTIONS_FRAGMENT);
+            }
+
+            //refresh any fragments in the tab with the new account UID
+            refresh(accountUID);
+        } else {
+            //refresh any fragments in the tab with the new account UID
+            refresh();
+        }
+        supportInvalidateOptionsMenu();
     }
 }

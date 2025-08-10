@@ -2,31 +2,35 @@ package org.gnucash.android.ui.adapter
 
 import android.content.Context
 import android.widget.ArrayAdapter
-import androidx.annotation.LayoutRes
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import org.gnucash.android.db.DatabaseSchema
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
+import org.gnucash.android.lang.VoidCallback
 import org.gnucash.android.model.Commodity
 
-class CommoditiesAdapter(
+class CommoditiesAdapter @JvmOverloads constructor(
     context: Context,
-    adapter: CommoditiesDbAdapter,
-    @LayoutRes resource: Int = android.R.layout.simple_spinner_item
-) : ArrayAdapter<CommoditiesAdapter.Label>(context, resource) {
+    private val adapter: CommoditiesDbAdapter = CommoditiesDbAdapter.getInstance()!!,
+    private val scope: CoroutineScope
+) : ArrayAdapter<CommoditiesAdapter.Label>(context, android.R.layout.simple_spinner_item) {
 
-    @JvmOverloads
+    private var loadJob: Job? = null
+
     constructor(
         context: Context,
-        @LayoutRes resource: Int = android.R.layout.simple_spinner_item
+        lifecycleOwner: LifecycleOwner
     ) : this(
-        context,
-        CommoditiesDbAdapter.getInstance()!!,
-        resource
+        context = context,
+        scope = lifecycleOwner.lifecycleScope
     )
 
     init {
         setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        val records = adapter.allRecords
-        clear()
-        addAll(records.map { Label(it) })
     }
 
     override fun hasStableIds(): Boolean {
@@ -54,6 +58,26 @@ class CommoditiesAdapter(
             }
         }
         return -1
+    }
+
+    fun load(callback: VoidCallback? = null) {
+        loadJob?.cancel()
+        loadJob = scope.launch(Dispatchers.IO) {
+            val records = loadData(adapter)
+            val labels = records.map { Label(it) }
+            scope.launch(Dispatchers.Main) {
+                clear()
+                addAll(labels)
+                callback?.invoke()
+            }
+        }
+    }
+
+    private fun loadData(adapter: CommoditiesDbAdapter): List<Commodity> {
+        val where = DatabaseSchema.CommodityEntry.COLUMN_MNEMONIC + " <> ?" +
+                " AND " + DatabaseSchema.CommodityEntry.COLUMN_NAMESPACE + " <> ?";
+        val whereArgs = arrayOf(Commodity.TEMPLATE, Commodity.TEMPLATE)
+        return adapter.getAllRecords(where, whereArgs)
     }
 
     data class Label(val commodity: Commodity) {
