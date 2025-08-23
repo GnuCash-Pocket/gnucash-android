@@ -106,7 +106,7 @@
         <activity android:name=".ui.transaction.ScheduledActionsActivity" />
         <activity
             android:name=".ui.passcode.PasscodePreferenceActivity"
-            android:theme="@style/Theme.GnuCash" />
+            android:theme="@style/Theme.GnuCash.NoActionBar" />
         <activity android:name=".ui.transaction.TransactionsActivity" />
         <activity
             android:name=".ui.homescreen.WidgetConfigurationActivity"
