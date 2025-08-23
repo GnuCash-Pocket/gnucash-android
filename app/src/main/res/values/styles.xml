@@ -100,15 +100,18 @@
     </style>
 
     <style name="PasscodeEditText" parent="Widget.AppCompat.EditText">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_width">24sp</item>
+        <item name="android:layout_height">24sp</item>
         <item name="android:cursorVisible">false</item>
         <item name="android:focusableInTouchMode">false</item>
         <item name="android:inputType">textPassword|number</item>
         <item name="android:password">true</item>
         <item name="android:maxLength">1</item>
         <item name="android:hint">*</item>
-        <item name="android:textSize">23sp</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/numeric_button</item>
+        <item name="android:padding">0dp</item>
     </style>
 
     <style name="Divider">

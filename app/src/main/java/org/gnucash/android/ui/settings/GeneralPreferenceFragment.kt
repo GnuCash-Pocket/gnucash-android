@@ -23,6 +23,7 @@ import androidx.preference.Preference
 import androidx.preference.TwoStatePreference
 import org.gnucash.android.R
 import org.gnucash.android.app.restart
+import org.gnucash.android.ui.passcode.PasscodeHelper
 import org.gnucash.android.ui.passcode.PasscodePreferenceActivity
 
 /**
@@ -45,10 +46,11 @@ class GeneralPreferenceFragment : GnuPreferenceFragment() {
         }
 
         preferencePasscode =
-            findPreference<TwoStatePreference>(getString(R.string.key_enable_passcode))!!
+            findPreference(getString(R.string.key_enable_passcode))!!
+        preferencePasscode.isChecked = PasscodeHelper.isPasscodeEnabled(preferencePasscode.context)
         preferencePasscode.setOnPreferenceChangeListener { preference, newValue ->
             val context = preference.context
-            if (newValue is Boolean) {
+            if (newValue as Boolean) {
                 val intent = Intent(context, PasscodePreferenceActivity::class.java)
                 startActivityForResult(intent, PASSCODE_REQUEST_CODE)
             } else {
@@ -71,16 +73,12 @@ class GeneralPreferenceFragment : GnuPreferenceFragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         val context = requireContext()
+        preferencePasscode.isChecked = PasscodeHelper.isPasscodeEnabled(context)
 
         when (requestCode) {
             PASSCODE_REQUEST_CODE -> if (resultCode == Activity.RESULT_OK) {
                 Toast.makeText(context, R.string.toast_passcode_set, Toast.LENGTH_SHORT).show()
-            } else {
-                preferencePasscode.isChecked = false
             }
-
-            REQUEST_DISABLE_PASSCODE ->
-                preferencePasscode.isChecked = resultCode != Activity.RESULT_OK
 
             REQUEST_CHANGE_PASSCODE -> if (resultCode == Activity.RESULT_OK) {
                 Toast.makeText(context, R.string.toast_passcode_set, Toast.LENGTH_SHORT).show()
