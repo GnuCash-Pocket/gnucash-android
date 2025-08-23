@@ -21,7 +21,6 @@ import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.export.xml.GncXmlHelper.parseDateTime
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.AccountType
-import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Price
 import org.gnucash.android.model.TransactionType
@@ -98,7 +97,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(transaction.scheduledActionUID).isNull()
         assertThat(transaction.isExported).isTrue()
         assertThat(transaction.isTemplate).isFalse()
-        assertThat(transaction.timeMillis).isEqualTo(parseDateTime("2016-08-23 10:00:00 +0200"))
+        assertThat(transaction.time).isEqualTo(parseDateTime("2016-08-23 10:00:00 +0200"))
         assertThat(transaction.createdTimestamp.time).isEqualTo(parseDateTime("2016-08-23 12:44:19 +0200"))
 
         // Check splits
@@ -222,7 +221,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         // Check prices
         assertThat(pricesDbAdapter.recordsCount).isOne()
         val price = pricesDbAdapter.getPriceForCurrencies("EUR", "USD")
-        assertThat(price).isNotNull
+        assertThat(price!!).isNotNull()
         assertThat(price.commodity.currencyCode).isEqualTo("EUR")
         assertThat(price.currency.currencyCode).isEqualTo("USD")
         assertThat(price.source).isEqualTo("Finance::Quote")
@@ -254,7 +253,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(scheduledTransaction.scheduledActionUID).isNull()
         assertThat(scheduledTransaction.isExported).isTrue()
         assertThat(scheduledTransaction.isTemplate).isTrue()
-        assertThat(scheduledTransaction.timeMillis).isEqualTo(parseDateTime("2016-08-24 10:00:00 +0200"))
+        assertThat(scheduledTransaction.time).isEqualTo(parseDateTime("2016-08-24 10:00:00 +0200"))
         assertThat(scheduledTransaction.createdTimestamp.time).isEqualTo(parseDateTime("2016-08-24 19:50:15 +0200"))
 
         // Check splits
@@ -362,10 +361,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(commodities).isNotNull()
         assertThat(commodities.size).isGreaterThanOrEqualTo(3)
 
-        val commodity1 = commodities.stream()
-            .filter { c: Commodity -> c.currencyCode == "APPS" }
-            .findFirst()
-            .get()
+        val commodity1 = commodities.first { it.currencyCode == "APPS" }
         assertThat(commodity1).isNotNull()
         assertThat(commodity1.namespace).isEqualTo("NASDAQ")
         assertThat(commodity1.fullname).isEqualTo("Digital Turbine")
@@ -374,10 +370,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(commodity1.quoteSource).isNull()
         assertThat(commodity1.quoteTimeZone).isNull()
 
-        val commodity2 = commodities.stream()
-            .filter { c: Commodity -> c.currencyCode == "QUAN_ELSS_TAX_KBGFAS" }
-            .findFirst()
-            .get()
+        val commodity2 = commodities.first { it.currencyCode == "QUAN_ELSS_TAX_KBGFAS" }
         assertThat(commodity2).isNotNull()
         assertThat(commodity2.namespace).isEqualTo("MF")
         assertThat(commodity2.fullname).isEqualTo("Quant ELSS Growth")

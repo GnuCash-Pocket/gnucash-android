@@ -1,39 +1,27 @@
-package org.gnucash.android.db.adapter;
+package org.gnucash.android.db.adapter
 
-import static org.gnucash.android.db.DatabaseSchema.PriceEntry;
-
-import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteStatement;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Price;
-import org.gnucash.android.util.TimestampHelper;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
+import android.database.Cursor
+import android.database.SQLException
+import android.database.sqlite.SQLiteStatement
+import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.db.DatabaseSchema.PriceEntry
+import org.gnucash.android.db.getLong
+import org.gnucash.android.db.getString
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.model.Price
+import org.gnucash.android.util.TimestampHelper.getTimestampFromUtcString
+import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
+import java.io.IOException
+import java.math.BigDecimal
 
 /**
  * Database adapter for prices
  */
-public class PricesDbAdapter extends DatabaseAdapter<Price> {
-    @NonNull
-    public final CommoditiesDbAdapter commoditiesDbAdapter;
-    private final Map<String, Price> cachePair = new HashMap<>();
-
-    /**
-     * Opens the database adapter with an existing database
-     *
-     * @param commoditiesDbAdapter the commodities database adapter.
-     */
-    public PricesDbAdapter(@NonNull CommoditiesDbAdapter commoditiesDbAdapter) {
-        super(commoditiesDbAdapter.holder, PriceEntry.TABLE_NAME, new String[]{
+class PricesDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
+    DatabaseAdapter<Price>(
+        commoditiesDbAdapter.holder,
+        PriceEntry.TABLE_NAME,
+        arrayOf<String>(
             PriceEntry.COLUMN_COMMODITY_UID,
             PriceEntry.COLUMN_CURRENCY_UID,
             PriceEntry.COLUMN_DATE,
@@ -41,58 +29,53 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
             PriceEntry.COLUMN_TYPE,
             PriceEntry.COLUMN_VALUE_NUM,
             PriceEntry.COLUMN_VALUE_DENOM
-        }, true);
-        this.commoditiesDbAdapter = commoditiesDbAdapter;
+        ),
+        true
+    ) {
+    private val cachePair = mutableMapOf<String, Price>()
+
+    @Throws(IOException::class)
+    override fun close() {
+        commoditiesDbAdapter.close()
+        cachePair.clear()
+        super.close()
     }
 
-    public static PricesDbAdapter getInstance() {
-        return GnuCashApplication.getPricesDbAdapter();
-    }
-
-    @Override
-    public void close() throws IOException {
-        commoditiesDbAdapter.close();
-        cachePair.clear();
-        super.close();
-    }
-
-    @Override
-    protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final Price price) {
-        bindBaseModel(stmt, price);
-        stmt.bindString(1, price.getCommodityUID());
-        stmt.bindString(2, price.getCurrencyUID());
-        stmt.bindString(3, TimestampHelper.getUtcStringFromTimestamp(price.getDate()));
-        if (price.getSource() != null) {
-            stmt.bindString(4, price.getSource());
+    override fun bind(stmt: SQLiteStatement, price: Price): SQLiteStatement {
+        bindBaseModel(stmt, price)
+        stmt.bindString(1, price.commodityUID)
+        stmt.bindString(2, price.currencyUID)
+        stmt.bindString(3, getUtcStringFromTimestamp(price.date))
+        if (price.source != null) {
+            stmt.bindString(4, price.source)
         }
-        stmt.bindString(5, price.getType().getValue());
-        stmt.bindLong(6, price.getValueNum());
-        stmt.bindLong(7, price.getValueDenom());
+        stmt.bindString(5, price.type.value)
+        stmt.bindLong(6, price.valueNum)
+        stmt.bindLong(7, price.valueDenom)
 
-        return stmt;
+        return stmt
     }
 
-    @Override
-    public Price buildModelInstance(@NonNull final Cursor cursor) {
-        String commodityUID = cursor.getString(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_COMMODITY_UID));
-        String currencyUID = cursor.getString(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_CURRENCY_UID));
-        String dateString = cursor.getString(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_DATE));
-        String source = cursor.getString(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_SOURCE));
-        String type = cursor.getString(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_TYPE));
-        long valueNum = cursor.getLong(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_VALUE_NUM));
-        long valueDenom = cursor.getLong(cursor.getColumnIndexOrThrow(PriceEntry.COLUMN_VALUE_DENOM));
+    override fun buildModelInstance(cursor: Cursor): Price {
+        val commodityUID = cursor.getString(PriceEntry.COLUMN_COMMODITY_UID)!!
+        val currencyUID = cursor.getString(PriceEntry.COLUMN_CURRENCY_UID)!!
+        val dateString = cursor.getString(PriceEntry.COLUMN_DATE)!!
+        val source = cursor.getString(PriceEntry.COLUMN_SOURCE)
+        val type = cursor.getString(PriceEntry.COLUMN_TYPE)
+        val valueNum = cursor.getLong(PriceEntry.COLUMN_VALUE_NUM)
+        val valueDenom = cursor.getLong(PriceEntry.COLUMN_VALUE_DENOM)
 
-        Commodity commodity1 = commoditiesDbAdapter.getRecord(commodityUID);
-        Commodity commodity2 = commoditiesDbAdapter.getRecord(currencyUID);
-        Price price = new Price(commodity1, commodity2);
-        populateBaseModelAttributes(cursor, price);
-        price.setDate(TimestampHelper.getTimestampFromUtcString(dateString).getTime());
-        price.setSource(source);
-        price.setType(Price.Type.of(type));
-        price.setValueNum(valueNum);
-        price.setValueDenom(valueDenom);
+        val commodity1 = commoditiesDbAdapter.getRecord(commodityUID)
+        val commodity2 = commoditiesDbAdapter.getRecord(currencyUID)
+        val price = Price(commodity1, commodity2)
+        populateBaseModelAttributes(cursor, price)
+        price.date = getTimestampFromUtcString(dateString).getTime()
+        price.source = source
+        price.type = Price.Type.of(type)
+        price.valueNum = valueNum
+        price.valueDenom = valueDenom
 
-        return price;
+        return price
     }
 
     /**
@@ -103,10 +86,10 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
      * @param currencyCode  Currency code of target commodity for the conversion
      * @return The numerator/denominator pair for commodity / currency pair
      */
-    public Price getPriceForCurrencies(@NonNull String commodityCode, @NonNull String currencyCode) {
-        Commodity commodity = commoditiesDbAdapter.getCurrency(commodityCode);
-        Commodity currency = commoditiesDbAdapter.getCurrency(currencyCode);
-        return getPrice(commodity, currency);
+    fun getPriceForCurrencies(commodityCode: String, currencyCode: String): Price? {
+        val commodity = commoditiesDbAdapter.getCurrency(commodityCode)!!
+        val currency = commoditiesDbAdapter.getCurrency(currencyCode)!!
+        return getPrice(commodity, currency)
     }
 
     /**
@@ -117,10 +100,10 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
      * @param currencyUID  GUID of target commodity for the conversion
      * @return The numerator/denominator pair for commodity / currency pair
      */
-    public Price getPrice(@NonNull String commodityUID, @NonNull String currencyUID) {
-        Commodity commodity = commoditiesDbAdapter.getRecord(commodityUID);
-        Commodity currency = commoditiesDbAdapter.getRecord(currencyUID);
-        return getPrice(commodity, currency);
+    fun getPrice(commodityUID: String, currencyUID: String): Price? {
+        val commodity = commoditiesDbAdapter.getRecord(commodityUID)
+        val currency = commoditiesDbAdapter.getRecord(currencyUID)
+        return getPrice(commodity, currency)
     }
 
     /**
@@ -131,78 +114,83 @@ public class PricesDbAdapter extends DatabaseAdapter<Price> {
      * @param currency  the target commodity for the conversion
      * @return The numerator/denominator pair for commodity / currency pair
      */
-    @Nullable
-    public Price getPrice(@NonNull Commodity commodity, @NonNull Commodity currency) {
-        String commodityUID = commodity.getUID();
-        String currencyUID = currency.getUID();
-        String key = commodityUID + "/" + currencyUID;
-        String keyInverse = currencyUID + "/" + commodityUID;
+    fun getPrice(commodity: Commodity, currency: Commodity): Price? {
+        val commodityUID = commodity.uid
+        val currencyUID = currency.uid
+        val key = "$commodityUID/$currencyUID"
+        val keyInverse = "$currencyUID/$commodityUID"
         if (isCached) {
-            Price price = cachePair.get(key);
-            if (price != null) return price;
-            price = cachePair.get(keyInverse);
-            if (price != null) return price;
+            var price = cachePair[key]
+            if (price != null) return price
+            price = cachePair[keyInverse]
+            if (price != null) return price
         }
-        if (commodity.equals(currency)) {
-            Price price = new Price(commodity, currency, BigDecimal.ONE);
+        if (commodity == currency) {
+            val price = Price(commodity, currency, BigDecimal.ONE)
             if (isCached) {
-                cachePair.put(key, price);
+                cachePair[key] = price
             }
-            return price;
+            return price
         }
         // the commodity and currency can be swapped
-        String where = "(" + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " + PriceEntry.COLUMN_CURRENCY_UID + " = ?)"
-            + " OR (" + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " + PriceEntry.COLUMN_CURRENCY_UID + " = ?)";
-        String[] whereArgs = new String[]{commodityUID, currencyUID, currencyUID, commodityUID};
+        val where = ("(" + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " +
+                PriceEntry.COLUMN_CURRENCY_UID + " = ?)" +
+                " OR (" + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " +
+                PriceEntry.COLUMN_CURRENCY_UID + " = ?)")
+        val whereArgs = arrayOf<String?>(commodityUID, currencyUID, currencyUID, commodityUID)
         // only get the latest price
-        String orderBy = PriceEntry.COLUMN_DATE + " DESC";
-        Cursor cursor = mDb.query(PriceEntry.TABLE_NAME, null, where, whereArgs, null, null, orderBy, "1");
+        val orderBy = PriceEntry.COLUMN_DATE + " DESC"
+        val cursor = db.query(tableName, null, where, whereArgs, null, null, orderBy, "1")
         try {
             if (cursor.moveToFirst()) {
-                Price price = buildModelInstance(cursor);
-                long valueNum = price.getValueNum();
-                long valueDenom = price.getValueDenom();
+                val price = buildModelInstance(cursor)
+                val valueNum = price.valueNum
+                val valueDenom = price.valueDenom
                 if (valueNum <= 0 || valueDenom <= 0) {
                     // this should not happen
-                    return null;
+                    return null
                 }
                 // swap numerator and denominator
-                Price priceInverse = price.inverse();
-                if (price.getCurrencyUID().equals(currencyUID)) {
+                val priceInverse = price.inverse()
+                if (price.currencyUID == currencyUID) {
                     if (isCached) {
-                        cachePair.put(key, price);
-                        cachePair.put(keyInverse, priceInverse);
+                        cachePair[key] = price
+                        cachePair[keyInverse] = priceInverse
                     }
-                    return price;
+                    return price
                 }
                 if (isCached) {
-                    cachePair.put(keyInverse, price);
-                    cachePair.put(key, priceInverse);
+                    cachePair[keyInverse] = price
+                    cachePair[key] = priceInverse
                 }
-                return priceInverse;
+                return priceInverse
             }
         } finally {
-            cursor.close();
+            cursor.close()
         }
         // TODO Try with intermediate currency, e.g. EUR -> ETB -> ILS
-        return null;
+        return null
     }
 
-    @Override
-    public void addRecord(@NonNull Price model, UpdateMethod updateMethod) throws SQLException {
-        super.addRecord(model, updateMethod);
+    @Throws(SQLException::class)
+    override fun addRecord(model: Price, updateMethod: UpdateMethod) {
+        super.addRecord(model, updateMethod)
         if (isCached) {
-            Commodity commodity = model.getCommodity();
-            Commodity currency = model.getCurrency();
-            String commodityUID = commodity.getUID();
-            String currencyUID = currency.getUID();
-            String key = commodityUID + "/" + currencyUID;
-            String keyInverse = currencyUID + "/" + commodityUID;
-            Price price = cachePair.get(key);
-            if (price == null || price.getDate() < model.getDate()) {
-                cachePair.put(key, model);
-                cachePair.put(keyInverse, model.inverse());
+            val commodity = model.commodity
+            val currency = model.currency
+            val commodityUID = commodity.uid
+            val currencyUID = currency.uid
+            val key = "$commodityUID/$currencyUID"
+            val keyInverse = "$currencyUID/$commodityUID"
+            val price = cachePair[key]
+            if (price == null || price.date < model.date) {
+                cachePair[key] = model
+                cachePair[keyInverse] = model.inverse()
             }
         }
+    }
+
+    companion object {
+        val instance: PricesDbAdapter get() = GnuCashApplication.pricesDbAdapter!!
     }
 }

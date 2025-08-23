@@ -13,227 +13,209 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.ui.report;
+package org.gnucash.android.ui.report
 
-import static org.gnucash.android.ui.util.TextViewExtKt.displayBalance;
-
-import android.content.Context;
-import android.graphics.Color;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.View;
-import android.view.ViewGroup;
-
-import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.data.PieData;
-import com.github.mikephil.charting.data.PieDataSet;
-import com.github.mikephil.charting.data.PieEntry;
-
-import org.gnucash.android.R;
-import org.gnucash.android.databinding.FragmentReportSummaryBinding;
-import org.gnucash.android.db.DatabaseSchema.AccountEntry;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.AccountType;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.model.Price;
-import org.gnucash.android.ui.report.piechart.PieChartFragment;
-import org.gnucash.android.util.DateExtKt;
-import org.joda.time.LocalDateTime;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import android.content.Context
+import android.graphics.Color
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.View
+import android.view.ViewGroup
+import androidx.annotation.ColorInt
+import com.github.mikephil.charting.data.PieData
+import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.data.PieEntry
+import org.gnucash.android.R
+import org.gnucash.android.databinding.FragmentReportSummaryBinding
+import org.gnucash.android.db.DatabaseSchema.AccountEntry
+import org.gnucash.android.model.AccountType
+import org.gnucash.android.model.Money
+import org.gnucash.android.model.isNullOrZero
+import org.gnucash.android.ui.report.piechart.PieChartFragment
+import org.gnucash.android.ui.util.displayBalance
+import org.gnucash.android.util.toMillis
+import org.joda.time.LocalDateTime
 
 /**
  * Shows a summary of reports
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class ReportsOverviewFragment extends BaseReportFragment {
+class ReportsOverviewFragment : BaseReportFragment() {
+    private var assetsBalance: Money = Money.createZeroInstance(commodity)
+    private var liabilitiesBalance: Money = Money.createZeroInstance(commodity)
 
-    private Money mAssetsBalance;
-    private Money mLiabilitiesBalance;
+    private var chartHasData = false
 
-    private boolean mChartHasData = false;
+    private var binding: FragmentReportSummaryBinding? = null
 
-    private FragmentReportSummaryBinding mBinding;
     @ColorInt
-    private int colorBalanceZero;
+    private var colorBalanceZero = 0
 
-    @Override
-    public View inflateView(LayoutInflater inflater, ViewGroup container) {
-        mBinding = FragmentReportSummaryBinding.inflate(inflater, container, false);
-        mBinding.btnBarChart.setOnClickListener(this::onClickChartTypeButton);
-        mBinding.btnPieChart.setOnClickListener(this::onClickChartTypeButton);
-        mBinding.btnLineChart.setOnClickListener(this::onClickChartTypeButton);
-        mBinding.btnBalanceSheet.setOnClickListener(this::onClickChartTypeButton);
-        colorBalanceZero = mBinding.totalAssets.getCurrentTextColor();
-        return mBinding.getRoot();
+    override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): View {
+        val binding = FragmentReportSummaryBinding.inflate(inflater, container, false)
+        this.binding = binding
+        return binding.root
     }
 
-    @Override
-    public ReportType getReportType() {
-        return ReportType.NONE;
+    override val reportType: ReportType = ReportType.NONE
+
+    override fun requiresAccountTypeOptions(): Boolean {
+        return false
     }
 
-    @Override
-    public boolean requiresAccountTypeOptions() {
-        return false;
+    override fun requiresTimeRangeOptions(): Boolean {
+        return false
     }
 
-    @Override
-    public boolean requiresTimeRangeOptions() {
-        return false;
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val context = view.context
+        val binding = binding!!
+
+        setHasOptionsMenu(false)
+
+        colorBalanceZero = binding.totalAssets.currentTextColor
+        @ColorInt val textColorPrimary = getTextColor(context)
+
+        binding.btnBarChart.setOnClickListener(this::onClickChartTypeButton)
+        binding.btnPieChart.setOnClickListener(this::onClickChartTypeButton)
+        binding.btnLineChart.setOnClickListener(this::onClickChartTypeButton)
+        binding.btnBalanceSheet.setOnClickListener(this::onClickChartTypeButton)
+        binding.pieChart.apply {
+            setCenterTextSize(PieChartFragment.CENTER_TEXT_SIZE.toFloat())
+            setDrawSliceText(false)
+            setCenterTextColor(textColorPrimary)
+            setHoleColor(Color.TRANSPARENT)
+            legend.apply {
+                isWordWrapEnabled = true
+                textColor = textColorPrimary
+            }
+        }
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        final Context context = view.getContext();
-
-        setHasOptionsMenu(false);
-
-        @ColorInt int textColorPrimary = getTextColor(context);
-        mBinding.pieChart.setCenterTextSize(PieChartFragment.CENTER_TEXT_SIZE);
-        mBinding.pieChart.setDrawSliceText(false);
-        mBinding.pieChart.setCenterTextColor(textColorPrimary);
-        mBinding.pieChart.setHoleColor(Color.TRANSPARENT);
-        Legend legend = mBinding.pieChart.getLegend();
-        legend.setWordWrapEnabled(true);
-        legend.setTextColor(textColorPrimary);
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        super.onPrepareOptionsMenu(menu)
+        menu.findItem(R.id.menu_group_reports_by).isVisible = false
     }
 
-    @Override
-    public void onPrepareOptionsMenu(@NonNull Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-        menu.findItem(R.id.menu_group_reports_by).setVisible(false);
-    }
-
-    @Override
-    protected void generateReport(@NonNull Context context) {
-        PieData pieData = PieChartFragment.groupSmallerSlices(context, getData());
-        if (pieData.getDataSetCount() > 0 && pieData.getDataSet().getEntryCount() > 0) {
-            mBinding.pieChart.setData(pieData);
-            float sum = mBinding.pieChart.getData().getYValueSum();
-            mBinding.pieChart.setCenterText(formatTotalValue(sum));
-            mChartHasData = true;
+    override fun generateReport(context: Context) {
+        val binding = binding ?: return
+        val pieData = PieChartFragment.groupSmallerSlices(context, this.data)
+        if (pieData.dataSetCount > 0 && pieData.dataSet.entryCount > 0) {
+            binding.pieChart.data = pieData
+            val sum = binding.pieChart.data.yValueSum
+            binding.pieChart.centerText = formatTotalValue(sum)
+            binding.pieChart.legend.isEnabled = true
+            chartHasData = true
         } else {
-            mBinding.pieChart.setData(getEmptyData(context));
-            mBinding.pieChart.setCenterText(context.getString(R.string.label_chart_no_data));
-            mBinding.pieChart.getLegend().setEnabled(false);
-            mChartHasData = false;
+            binding.pieChart.data = getEmptyData(context)
+            binding.pieChart.centerText = context.getString(R.string.label_chart_no_data)
+            binding.pieChart.legend.isEnabled = false
+            chartHasData = false
         }
 
-        List<AccountType> accountTypes = new ArrayList<>();
-        accountTypes.add(AccountType.ASSET);
-        accountTypes.add(AccountType.CASH);
-        accountTypes.add(AccountType.BANK);
-        mAssetsBalance = mAccountsDbAdapter.getCurrentAccountsBalance(accountTypes, mCommodity);
-
-        accountTypes.clear();
-        accountTypes.add(AccountType.LIABILITY);
-        accountTypes.add(AccountType.CREDIT);
-        mLiabilitiesBalance = mAccountsDbAdapter.getCurrentAccountsBalance(accountTypes, mCommodity);
+        assetsBalance = accountsDbAdapter.getCurrentAccountsBalance(assetTypes, commodity)
+        liabilitiesBalance = accountsDbAdapter.getCurrentAccountsBalance(liabilityTypes, commodity)
     }
 
     /**
-     * Returns {@code PieData} instance with data entries, colors and labels
+     * Returns `PieData` instance with data entries, colors and labels
      *
-     * @return {@code PieData} instance
+     * @return `PieData` instance
      */
-    private PieData getData() {
-        PieDataSet dataSet = new PieDataSet(null, "");
-        List<Integer> colors = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
-        long startTime = DateExtKt.toMillis(now.minusMonths(3));
-        long endTime = DateExtKt.toMillis(now);
-        final Commodity commodity = mCommodity;
+    private val data: PieData
+        get() {
+            val dataSet = PieDataSet(null, "")
+            val colors = mutableListOf<Int>()
+            val now = LocalDateTime.now()
+            val startTime = now.minusMonths(3).toMillis()
+            val endTime = now.toMillis()
+            val commodity = this.commodity
 
-        String where = AccountEntry.COLUMN_TYPE + "=?"
-            + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
-            + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
-        String[] whereArgs = new String[]{mAccountType.name()};
-        String orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC";
-        List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, whereArgs, orderBy);
-        Map<String, Money> balances = mAccountsDbAdapter.getAccountsBalances(accounts, startTime, endTime);
+            val where = (AccountEntry.COLUMN_TYPE + "=?"
+                    + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
+                    + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
+            val whereArgs = arrayOf<String?>(accountType.name)
+            val orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC"
+            val accounts = accountsDbAdapter.getSimpleAccounts(where, whereArgs, orderBy)
+            val balances = accountsDbAdapter.getAccountsBalances(accounts, startTime, endTime)
 
-        for (Account account : accounts) {
-            Money balance = balances.get(account.getUID());
-            if ((balance == null) || balance.isAmountZero()) continue;
-            Price price = pricesDbAdapter.getPrice(balance.getCommodity(), commodity);
-            if (price == null) continue;
-            balance = balance.times(price);
-            float value = balance.toFloat();
-            if (value > 0f) {
-                int count = dataSet.getEntryCount();
-                dataSet.addEntry(new PieEntry(value, account.getName()));
-                @ColorInt int color = getAccountColor(account, count);
-                colors.add(color);
+            for (account in accounts) {
+                var balance = balances[account.uid]
+                if (balance.isNullOrZero()) continue
+                val price = pricesDbAdapter.getPrice(balance.commodity, commodity)
+                if (price == null) continue
+                balance *= price
+                val value = balance.toFloat()
+                if (value > 0f) {
+                    val count = dataSet.entryCount
+                    dataSet.addEntry(PieEntry(value, account.name))
+                    @ColorInt val color = getAccountColor(account, count)
+                    colors.add(color)
+                }
             }
+            dataSet.colors = colors
+            dataSet.setSliceSpace(PieChartFragment.SPACE_BETWEEN_SLICES)
+            return PieData(dataSet)
         }
-        dataSet.setColors(colors);
-        dataSet.setSliceSpace(PieChartFragment.SPACE_BETWEEN_SLICES);
-        return new PieData(dataSet);
-    }
 
-    @Override
-    protected void displayReport() {
-        if (mChartHasData) {
-            mBinding.pieChart.animateXY(1500, 1500);
-            mBinding.pieChart.setTouchEnabled(true);
-        } else {
-            mBinding.pieChart.setTouchEnabled(false);
+    override fun displayReport() {
+        val binding = binding ?: return
+        binding.pieChart.apply {
+            if (chartHasData) {
+                animateXY(1500, 1500)
+                setTouchEnabled(true)
+            } else {
+                setTouchEnabled(false)
+            }
+            highlightValues(null)
+            invalidate()
         }
-        mBinding.pieChart.highlightValues(null);
-        mBinding.pieChart.invalidate();
 
-        Money totalAssets = mAssetsBalance;
-        Money totalLiabilities = (mLiabilitiesBalance != null) ? mLiabilitiesBalance.unaryMinus() : null;
-        Money netWorth = (totalAssets != null) ? totalAssets.plus(totalLiabilities) : null;
-        displayBalance(mBinding.totalAssets, totalAssets, colorBalanceZero);
-        displayBalance(mBinding.totalLiabilities, totalLiabilities, colorBalanceZero);
-        displayBalance(mBinding.netWorth, netWorth, colorBalanceZero);
+        val totalAssets = assetsBalance
+        val totalLiabilities = -liabilitiesBalance
+        val netWorth = totalAssets + totalLiabilities
+        binding.totalAssets.displayBalance(totalAssets, colorBalanceZero)
+        binding.totalLiabilities.displayBalance(totalLiabilities, colorBalanceZero)
+        binding.netWorth.displayBalance(netWorth, colorBalanceZero)
     }
 
     /**
      * Returns a data object that represents situation when no user data available
      *
-     * @return a {@code PieData} instance for situation when no user data available
+     * @return a `PieData` instance for situation when no user data available
      */
-    private PieData getEmptyData(@NonNull Context context) {
-        PieDataSet dataSet = new PieDataSet(null, context.getString(R.string.label_chart_no_data));
-        dataSet.addEntry(new PieEntry(1, 0));
-        dataSet.setColor(PieChartFragment.NO_DATA_COLOR);
-        dataSet.setDrawValues(false);
-        return new PieData(dataSet);
+    private fun getEmptyData(context: Context): PieData {
+        val dataSet = PieDataSet(null, context.getString(R.string.label_chart_no_data))
+        dataSet.addEntry(PieEntry(1f, 0))
+        dataSet.setColor(NO_DATA_COLOR)
+        dataSet.setDrawValues(false)
+        return PieData(dataSet)
     }
 
-    public void onClickChartTypeButton(View view) {
-        ReportType reportType;
-        switch (view.getId()) {
-            case R.id.btn_pie_chart:
-                reportType = ReportType.PIE_CHART;
-                break;
-            case R.id.btn_bar_chart:
-                reportType = ReportType.BAR_CHART;
-                break;
-            case R.id.btn_line_chart:
-                reportType = ReportType.LINE_CHART;
-                break;
-            case R.id.btn_balance_sheet:
-                reportType = ReportType.SHEET;
-                break;
-            default:
-                reportType = ReportType.NONE;
-                break;
+    fun onClickChartTypeButton(view: View) {
+        val reportType = when (view.id) {
+            R.id.btn_pie_chart -> ReportType.PIE_CHART
+            R.id.btn_bar_chart -> ReportType.BAR_CHART
+            R.id.btn_line_chart -> ReportType.LINE_CHART
+            R.id.btn_balance_sheet -> ReportType.SHEET
+            else -> ReportType.NONE
         }
 
-        mReportsActivity.showReport(reportType);
+        reportsActivity.showReport(reportType)
+    }
+
+    companion object {
+        private val assetTypes = listOf<AccountType>(
+            AccountType.ASSET,
+            AccountType.CASH,
+            AccountType.BANK
+        )
+        private val liabilityTypes = listOf<AccountType>(
+            AccountType.LIABILITY,
+            AccountType.CREDIT
+        )
     }
 }

@@ -1,41 +1,42 @@
-package org.gnucash.android.db.adapter;
+package org.gnucash.android.db.adapter
 
-import static org.gnucash.android.db.DatabaseSchema.CommodityEntry;
-import static org.gnucash.android.model.Commodity.USD;
-import static org.gnucash.android.model.Commodity.getLocaleCurrencyCode;
-
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteStatement;
-import android.text.TextUtils;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseHolder;
-import org.gnucash.android.model.Commodity;
-
-import java.util.Objects;
-
-import timber.log.Timber;
+import android.database.Cursor
+import android.database.sqlite.SQLiteStatement
+import androidx.core.content.edit
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.db.DatabaseHolder
+import org.gnucash.android.db.DatabaseSchema.CommodityEntry
+import org.gnucash.android.db.bindBoolean
+import org.gnucash.android.db.getInt
+import org.gnucash.android.db.getString
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.model.Commodity.Companion.getLocaleCurrencyCode
+import timber.log.Timber
 
 /**
- * Database adapter for {@link Commodity}
+ * Database adapter for [Commodity]
  */
-public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
-    private Commodity defaultCommodity;
-
-    /**
-     * Opens the database adapter with an existing database
-     *
-     * @param holder Database holder
-     */
-    public CommoditiesDbAdapter(@NonNull DatabaseHolder holder) {
-        this(holder, true);
-    }
+class CommoditiesDbAdapter(
+    holder: DatabaseHolder,
+    initCommon: Boolean = true
+) : DatabaseAdapter<Commodity>(
+    holder,
+    CommodityEntry.TABLE_NAME,
+    arrayOf<String>(
+        CommodityEntry.COLUMN_FULLNAME,
+        CommodityEntry.COLUMN_NAMESPACE,
+        CommodityEntry.COLUMN_MNEMONIC,
+        CommodityEntry.COLUMN_LOCAL_SYMBOL,
+        CommodityEntry.COLUMN_CUSIP,
+        CommodityEntry.COLUMN_SMALLEST_FRACTION,
+        CommodityEntry.COLUMN_QUOTE_FLAG,
+        CommodityEntry.COLUMN_QUOTE_SOURCE,
+        CommodityEntry.COLUMN_QUOTE_TZ
+    ),
+    true
+) {
+    private var defaultCommodity: Commodity? = null
 
     /**
      * Opens the database adapter with an existing database
@@ -43,94 +44,81 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
      * @param holder     Database holder
      * @param initCommon initialize commonly used commodities?
      */
-    public CommoditiesDbAdapter(@NonNull DatabaseHolder holder, boolean initCommon) {
-        super(holder, CommodityEntry.TABLE_NAME, new String[]{
-            CommodityEntry.COLUMN_FULLNAME,
-            CommodityEntry.COLUMN_NAMESPACE,
-            CommodityEntry.COLUMN_MNEMONIC,
-            CommodityEntry.COLUMN_LOCAL_SYMBOL,
-            CommodityEntry.COLUMN_CUSIP,
-            CommodityEntry.COLUMN_SMALLEST_FRACTION,
-            CommodityEntry.COLUMN_QUOTE_FLAG,
-            CommodityEntry.COLUMN_QUOTE_SOURCE,
-            CommodityEntry.COLUMN_QUOTE_TZ
-        }, true);
+    /**
+     * Opens the database adapter with an existing database
+     *
+     * @param holder Database holder
+     */
+    init {
         if (initCommon) {
-            initCommon();
+            initCommon()
         } else {
-            defaultCommodity = getDefaultCommodity();
+            defaultCommodity = getDefaultCommodity()
         }
     }
 
     /**
      * initialize commonly used commodities
      */
-    public void initCommon() {
-        Commodity.AUD = Objects.requireNonNull(getCurrency("AUD"));
-        Commodity.CAD = Objects.requireNonNull(getCurrency("CAD"));
-        Commodity.CHF = Objects.requireNonNull(getCurrency("CHF"));
-        Commodity.EUR = Objects.requireNonNull(getCurrency("EUR"));
-        Commodity.GBP = Objects.requireNonNull(getCurrency("GBP"));
-        Commodity.JPY = Objects.requireNonNull(getCurrency("JPY"));
-        USD = Objects.requireNonNull(getCurrency("USD"));
+    fun initCommon() {
+        Commodity.AUD = getCurrency("AUD")!!
+        Commodity.CAD = getCurrency("CAD")!!
+        Commodity.CHF = getCurrency("CHF")!!
+        Commodity.EUR = getCurrency("EUR")!!
+        Commodity.GBP = getCurrency("GBP")!!
+        Commodity.JPY = getCurrency("JPY")!!
+        Commodity.USD = getCurrency("USD")!!
 
-        defaultCommodity = Commodity.DEFAULT_COMMODITY = getDefaultCommodity();
+        Commodity.DEFAULT_COMMODITY = getDefaultCommodity()
+        defaultCommodity = Commodity.DEFAULT_COMMODITY
     }
 
-    @Nullable
-    public static CommoditiesDbAdapter getInstance() {
-        return GnuCashApplication.getCommoditiesDbAdapter();
-    }
-
-    @Override
-    protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final Commodity commodity) {
-        bindBaseModel(stmt, commodity);
-        stmt.bindString(1, commodity.getFullname());
-        stmt.bindString(2, commodity.getNamespace());
-        stmt.bindString(3, commodity.getMnemonic());
-        if (commodity.getLocalSymbol() != null) {
-            stmt.bindString(4, commodity.getLocalSymbol());
+    override fun bind(stmt: SQLiteStatement, commodity: Commodity): SQLiteStatement {
+        bindBaseModel(stmt, commodity)
+        stmt.bindString(1, commodity.fullname)
+        stmt.bindString(2, commodity.namespace)
+        stmt.bindString(3, commodity.mnemonic)
+        if (commodity.localSymbol != null) {
+            stmt.bindString(4, commodity.localSymbol)
         }
-        if (commodity.getCusip() != null) {
-            stmt.bindString(5, commodity.getCusip());
+        if (commodity.cusip != null) {
+            stmt.bindString(5, commodity.cusip)
         }
-        stmt.bindLong(6, commodity.getSmallestFraction());
-        stmt.bindLong(7, commodity.getQuoteFlag() ? 1 : 0);
-        if (commodity.getQuoteSource() != null) {
-            stmt.bindString(8, commodity.getQuoteSource());
+        stmt.bindLong(6, commodity.smallestFraction.toLong())
+        stmt.bindBoolean(7, commodity.quoteFlag)
+        if (commodity.quoteSource != null) {
+            stmt.bindString(8, commodity.quoteSource)
         }
         if (commodity.getQuoteTimeZoneId() != null) {
-            stmt.bindString(9, commodity.getQuoteTimeZoneId());
+            stmt.bindString(9, commodity.getQuoteTimeZoneId())
         }
 
-        return stmt;
+        return stmt
     }
 
-    @Override
-    public Commodity buildModelInstance(@NonNull final Cursor cursor) {
-        String fullname = cursor.getString(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_FULLNAME));
-        String mnemonic = cursor.getString(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_MNEMONIC));
-        String namespace = cursor.getString(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_NAMESPACE));
-        String cusip = cursor.getString(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_CUSIP));
-        String localSymbol = cursor.getString(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_LOCAL_SYMBOL));
+    override fun buildModelInstance(cursor: Cursor): Commodity {
+        val fullname = cursor.getString(CommodityEntry.COLUMN_FULLNAME)
+        val mnemonic = cursor.getString(CommodityEntry.COLUMN_MNEMONIC)!!
+        val namespace = cursor.getString(CommodityEntry.COLUMN_NAMESPACE)!!
+        val cusip = cursor.getString(CommodityEntry.COLUMN_CUSIP)
+        val localSymbol = cursor.getString(CommodityEntry.COLUMN_LOCAL_SYMBOL)
 
-        int fraction = cursor.getInt(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_SMALLEST_FRACTION));
-        String quoteSource = cursor.getString(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_QUOTE_SOURCE));
-        String quoteTZ = cursor.getString(cursor.getColumnIndexOrThrow(CommodityEntry.COLUMN_QUOTE_TZ));
+        val fraction = cursor.getInt(CommodityEntry.COLUMN_SMALLEST_FRACTION)
+        val quoteSource = cursor.getString(CommodityEntry.COLUMN_QUOTE_SOURCE)
+        val quoteTZ = cursor.getString(CommodityEntry.COLUMN_QUOTE_TZ)
 
-        Commodity commodity = new Commodity(fullname, mnemonic, namespace, fraction);
-        populateBaseModelAttributes(cursor, commodity);
-        commodity.setCusip(cusip);
-        commodity.setQuoteSource(quoteSource);
-        commodity.setQuoteTimeZone(quoteTZ);
-        commodity.setLocalSymbol(localSymbol);
+        val commodity = Commodity(fullname, mnemonic, namespace, fraction)
+        populateBaseModelAttributes(cursor, commodity)
+        commodity.cusip = cusip
+        commodity.quoteSource = quoteSource
+        commodity.setQuoteTimeZone(quoteTZ)
+        commodity.localSymbol = localSymbol
 
-        return commodity;
+        return commodity
     }
 
-    @Override
-    public Cursor fetchAllRecords() {
-        return fetchAllRecords(CommodityEntry.COLUMN_MNEMONIC + " ASC");
+    override fun fetchAllRecords(): Cursor? {
+        return fetchAllRecords(CommodityEntry.COLUMN_MNEMONIC + " ASC")
     }
 
     /**
@@ -139,8 +127,8 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
      * @param orderBy SQL statement for orderBy without the ORDER_BY itself
      * @return Cursor holding all commodity records
      */
-    public Cursor fetchAllRecords(String orderBy) {
-        return mDb.query(mTableName, null, null, null, null, null, orderBy);
+    fun fetchAllRecords(orderBy: String?): Cursor? {
+        return db.query(tableName, null, null, null, null, null, orderBy)
     }
 
     /**
@@ -149,112 +137,107 @@ public class CommoditiesDbAdapter extends DatabaseAdapter<Commodity> {
      * @param currencyCode 3-letter currency code
      * @return Commodity associated with code or null if none is found
      */
-    @Nullable
-    public Commodity getCurrency(@Nullable String currencyCode) {
-        if (TextUtils.isEmpty(currencyCode)) {
-            return null;
+    fun getCurrency(currencyCode: String?): Commodity? {
+        if (currencyCode.isNullOrEmpty()) {
+            return null
         }
         if (isCached) {
-            for (Commodity commodity : cache.values()) {
-                if (commodity.isCurrency() && commodity.getCurrencyCode().equals(currencyCode)) {
-                    return commodity;
+            for (commodity in cache.values) {
+                if (commodity.isCurrency && commodity.currencyCode == currencyCode) {
+                    return commodity
                 }
             }
         }
-        String where = CommodityEntry.COLUMN_MNEMONIC + "=?"
-            + " AND " + CommodityEntry.COLUMN_NAMESPACE + " IN ('" + Commodity.COMMODITY_CURRENCY + "','" + Commodity.COMMODITY_ISO4217 + "')";
-        String[] whereArgs = new String[]{currencyCode};
-        Cursor cursor = fetchAllRecords(where, whereArgs, null);
+        val where = (CommodityEntry.COLUMN_MNEMONIC + "=?"
+                + " AND " + CommodityEntry.COLUMN_NAMESPACE
+                + " IN ('" + Commodity.COMMODITY_CURRENCY + "','" + Commodity.COMMODITY_ISO4217 + "')")
+        val whereArgs = arrayOf<String?>(currencyCode)
+        val cursor = fetchAllRecords(where, whereArgs, null) ?: return null
         try {
             if (cursor.moveToFirst()) {
-                Commodity commodity = buildModelInstance(cursor);
+                val commodity = buildModelInstance(cursor)
                 if (isCached) {
-                    cache.put(commodity.getUID(), commodity);
+                    cache[commodity.uid] = commodity
                 }
-                return commodity;
+                return commodity
             } else {
-                String msg = "Commodity not found in the database: " + currencyCode;
-                Timber.e(msg);
+                val msg = "Commodity not found in the database: $currencyCode"
+                Timber.e(msg)
             }
         } finally {
-            cursor.close();
+            cursor.close()
         }
 
-        switch (currencyCode) {
-            case "AUD":
-                return Commodity.AUD;
-            case "CAD":
-                return Commodity.CAD;
-            case "CHF":
-                return Commodity.CHF;
-            case "EUR":
-                return Commodity.EUR;
-            case "GBP":
-                return Commodity.GBP;
-            case "JPY":
-                return Commodity.JPY;
-            case "USD":
-                return USD;
-            default:
-                return null;
+        when (currencyCode) {
+            "AUD" -> return Commodity.AUD
+            "CAD" -> return Commodity.CAD
+            "CHF" -> return Commodity.CHF
+            "EUR" -> return Commodity.EUR
+            "GBP" -> return Commodity.GBP
+            "JPY" -> return Commodity.JPY
+            "USD" -> return Commodity.USD
+            else -> return null
         }
     }
 
-    public String getCommodityUID(String currencyCode) {
-        Commodity commodity = getCurrency(currencyCode);
-        return (commodity != null) ? commodity.getUID() : null;
+    fun getCommodityUID(currencyCode: String): String? {
+        val commodity = getCurrency(currencyCode)
+        return commodity?.uid
     }
 
-    public String getCurrencyCode(@NonNull String guid) {
-        Commodity commodity = getRecord(guid);
-        if (commodity != null) {
-            return commodity.getCurrencyCode();
-        }
-        throw new IllegalArgumentException("Commodity not found");
+    @Throws(IllegalArgumentException::class)
+    fun getCurrencyCode(guid: String): String {
+        val commodity =
+            getRecordOrNull(guid) ?: throw IllegalArgumentException("Commodity not found")
+        return commodity.currencyCode
     }
 
-    @Nullable
-    public Commodity loadCommodity(@NonNull Commodity commodity) {
-        if (commodity.id != 0) {
-            return commodity;
+    fun loadCommodity(commodity: Commodity): Commodity {
+        var commodity = commodity
+        if (commodity.id != 0L) {
+            return commodity
         }
         try {
-            commodity = getRecord(commodity.getUID());
-        } catch (Exception e) {
+            commodity = getRecord(commodity.uid)
+        } catch (_: Exception) {
             // Commodity not found.
-            commodity = getCurrency(commodity.getCurrencyCode());
+            commodity = getCurrency(commodity.currencyCode)!!
         }
-        return commodity;
+        return commodity
     }
 
-    @NonNull
-    public Commodity getDefaultCommodity() {
-        Commodity commodity = defaultCommodity;
+    fun getDefaultCommodity(): Commodity {
+        var commodity: Commodity? = defaultCommodity
         if (commodity != null) {
-            return commodity;
+            return commodity
         }
 
-        Context context = holder.context;
-        String prefKey = context.getString(R.string.key_default_currency);
-        SharedPreferences preferences = getBookPreferences();
-        String currencyCode = preferences.getString(prefKey, null);
+        val context = holder.context
+        val prefKey = context.getString(R.string.key_default_currency)
+        val preferences = bookPreferences
+        var currencyCode = preferences.getString(prefKey, null)
         if (currencyCode == null) {
-            currencyCode = getLocaleCurrencyCode();
+            currencyCode = getLocaleCurrencyCode()
         }
-        defaultCommodity = commodity = getCurrency(currencyCode);
-        return (commodity != null) ? commodity : Commodity.DEFAULT_COMMODITY;
+        commodity = getCurrency(currencyCode) ?: Commodity.DEFAULT_COMMODITY
+        defaultCommodity = commodity
+        return commodity
     }
 
-    public void setDefaultCurrencyCode(@Nullable String currencyCode) {
-        Context context = holder.context;
-        SharedPreferences preferences = getBookPreferences();
-        String prefKey = context.getString(R.string.key_default_currency);
-        preferences.edit().putString(prefKey, currencyCode).apply();
+    fun setDefaultCurrencyCode(currencyCode: String?) {
+        val context = holder.context
+        val preferences = bookPreferences
+        val prefKey = context.getString(R.string.key_default_currency)
+        preferences.edit { putString(prefKey, currencyCode) }
 
-        Commodity commodity = getCurrency(currencyCode);
+        val commodity = getCurrency(currencyCode)
         if (commodity != null) {
-            defaultCommodity = commodity;
-            Commodity.DEFAULT_COMMODITY = commodity;
+            defaultCommodity = commodity
+            Commodity.DEFAULT_COMMODITY = commodity
         }
+    }
+
+    companion object {
+        val instance: CommoditiesDbAdapter get() = GnuCashApplication.commoditiesDbAdapter!!
     }
 }

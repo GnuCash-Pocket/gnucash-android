@@ -13,71 +13,65 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.passcode
 
-package org.gnucash.android.ui.passcode;
-
-import android.content.Intent;
-import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.WindowManager.LayoutParams;
-
-import androidx.annotation.Nullable;
-
-import org.gnucash.android.app.GnuCashActivity;
-import org.gnucash.android.ui.settings.ThemeHelper;
-
-import timber.log.Timber;
+import android.content.Intent
+import android.os.Bundle
+import android.os.SystemClock
+import android.view.WindowManager
+import org.gnucash.android.app.GnuCashActivity
+import org.gnucash.android.ui.passcode.PasscodeHelper.getPasscode
+import org.gnucash.android.ui.passcode.PasscodeHelper.isPasscodeEnabled
+import org.gnucash.android.ui.passcode.PasscodeHelper.isSessionActive
+import org.gnucash.android.ui.passcode.PasscodeHelper.isSkipPasscodeScreen
+import org.gnucash.android.ui.settings.ThemeHelper
+import timber.log.Timber
 
 /**
  * This activity used as the parent class for enabling passcode lock
  *
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
-public class PasscodeLockActivity extends GnuCashActivity {
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        ThemeHelper.apply(this);
+open class PasscodeLockActivity : GnuCashActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        ThemeHelper.apply(this)
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+    override fun onResume() {
+        super.onResume()
 
-        boolean isPassEnabled = PasscodeHelper.isPasscodeEnabled(this);
-        String passCode = PasscodeHelper.getPasscode(this);
+        val isPassEnabled = isPasscodeEnabled(this)
+        val passCode = getPasscode(this)
         // see ExportFormFragment.onPause()
-        boolean skipPasscode = PasscodeHelper.isSkipPasscodeScreen(this);
+        val skipPasscode = isSkipPasscodeScreen(this)
 
         if (isPassEnabled) {
-            getWindow().addFlags(LayoutParams.FLAG_SECURE);
+            window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         } else {
-            getWindow().clearFlags(LayoutParams.FLAG_SECURE);
+            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
 
         // Only for Android Lollipop that brings a few changes to the recent apps feature
-        if ((getIntent().getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0) {
-            PasscodeHelper.PASSCODE_SESSION_INIT_TIME = 0;
+        if ((intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0) {
+            PasscodeHelper.passcodeSessionTime = 0
         }
 
-        if (isPassEnabled && !skipPasscode && !PasscodeHelper.isSessionActive() && !TextUtils.isEmpty(passCode)) {
-            Timber.v("Show passcode screen");
-            Bundle args = getIntent().getExtras();
-            if (args == null) args = new Bundle();
-            Intent intent = new Intent(this, PasscodeLockScreenActivity.class)
-                .setAction(getIntent().getAction())
-                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                .putExtra(PasscodeFragment.PASSCODE_CLASS_CALLER, this.getClass().getName())
-                .putExtras(args);
-            startActivity(intent);
+        if (isPassEnabled && !skipPasscode && !isSessionActive() && !passCode.isNullOrEmpty()) {
+            Timber.v("Show passcode screen")
+            var args = intent.extras ?: Bundle()
+            val intent = Intent(this, PasscodeLockScreenActivity::class.java)
+                .setAction(intent.action)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                .putExtra(PasscodeFragment.PASSCODE_CLASS_CALLER, this.javaClass.getName())
+                .putExtras(args)
+            startActivity(intent)
         }
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        PasscodeHelper.PASSCODE_SESSION_INIT_TIME = System.currentTimeMillis();
+    override fun onPause() {
+        super.onPause()
+        PasscodeHelper.passcodeSessionTime = SystemClock.elapsedRealtime()
     }
-
 }

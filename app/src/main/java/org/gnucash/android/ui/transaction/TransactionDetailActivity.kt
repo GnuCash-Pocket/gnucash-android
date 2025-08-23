@@ -1,277 +1,277 @@
-package org.gnucash.android.ui.transaction;
+package org.gnucash.android.ui.transaction
 
-import static org.gnucash.android.ui.util.TextViewExtKt.displayBalance;
-
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.database.SQLException;
-import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.TextView;
-
-import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentResultListener;
-
-import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.databinding.ActivityTransactionDetailBinding;
-import org.gnucash.android.databinding.ItemSplitAmountInfoBinding;
-import org.gnucash.android.databinding.RowBalanceBinding;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.DatabaseAdapter;
-import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.model.ScheduledAction;
-import org.gnucash.android.model.Split;
-import org.gnucash.android.model.Transaction;
-import org.gnucash.android.model.TransactionType;
-import org.gnucash.android.ui.common.FormActivity;
-import org.gnucash.android.ui.common.Refreshable;
-import org.gnucash.android.ui.common.UxArgument;
-import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity;
-import org.gnucash.android.ui.passcode.PasscodeLockActivity;
-import org.gnucash.android.ui.transaction.dialog.BulkMoveDialogFragment;
-import org.gnucash.android.util.BackupManager;
-import org.gnucash.android.util.DateExtKt;
-
-import java.util.MissingFormatArgumentException;
-
-import timber.log.Timber;
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.database.SQLException
+import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
+import androidx.annotation.ColorInt
+import androidx.appcompat.app.ActionBar
+import androidx.core.view.isVisible
+import androidx.fragment.app.FragmentResultListener
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication.Companion.isDoubleEntryEnabled
+import org.gnucash.android.app.GnuCashApplication.Companion.shouldBackupTransactions
+import org.gnucash.android.databinding.ActivityTransactionDetailBinding
+import org.gnucash.android.databinding.ItemSplitAmountInfoBinding
+import org.gnucash.android.databinding.RowBalanceBinding
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.AccountsDbAdapter.Companion.ALWAYS
+import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
+import org.gnucash.android.db.adapter.TransactionsDbAdapter
+import org.gnucash.android.model.Split
+import org.gnucash.android.model.Transaction
+import org.gnucash.android.model.TransactionType
+import org.gnucash.android.ui.common.FormActivity
+import org.gnucash.android.ui.common.Refreshable
+import org.gnucash.android.ui.common.UxArgument
+import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity.Companion.updateAllWidgets
+import org.gnucash.android.ui.passcode.PasscodeLockActivity
+import org.gnucash.android.ui.transaction.dialog.BulkMoveDialogFragment
+import org.gnucash.android.ui.util.displayBalance
+import org.gnucash.android.util.BackupManager.backupActiveBookAsync
+import org.gnucash.android.util.formatFullDate
+import timber.log.Timber
+import java.util.MissingFormatArgumentException
 
 /**
  * Activity for displaying transaction information
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class TransactionDetailActivity extends PasscodeLockActivity implements FragmentResultListener, Refreshable {
-    private String mTransactionUID;
-    private String mAccountUID;
+class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener, Refreshable {
+    private var transactionUID: String? = null
+    private var accountUID: String? = null
 
-    public static final int REQUEST_EDIT_TRANSACTION = 0x10;
+    private lateinit var binding: ActivityTransactionDetailBinding
+    private var transactionsDbAdapter = TransactionsDbAdapter.instance
 
-    private ActivityTransactionDetailBinding mBinding;
-    private final TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
+    private val accountsDbAdapter = AccountsDbAdapter.instance
 
-    private final AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        binding = ActivityTransactionDetailBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        mBinding = ActivityTransactionDetailBinding.inflate(getLayoutInflater());
-        setContentView(mBinding.getRoot());
+        transactionsDbAdapter = TransactionsDbAdapter.instance
+        transactionUID = intent.getStringExtra(UxArgument.SELECTED_TRANSACTION_UID)
+        accountUID = intent.getStringExtra(UxArgument.SELECTED_ACCOUNT_UID)
 
-        mTransactionUID = getIntent().getStringExtra(UxArgument.SELECTED_TRANSACTION_UID);
-        mAccountUID = getIntent().getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
-
-        if (TextUtils.isEmpty(mTransactionUID) || TextUtils.isEmpty(mAccountUID)) {
-            throw new MissingFormatArgumentException("You must specify both the transaction and account GUID");
+        if (transactionUID.isNullOrEmpty() || accountUID.isNullOrEmpty()) {
+            throw MissingFormatArgumentException("You must specify both the transaction and account GUID")
         }
 
-        setSupportActionBar(mBinding.toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setHomeButtonEnabled(true);
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setDisplayShowTitleEnabled(false);
+        setSupportActionBar(binding.toolbar)
+        val actionBar: ActionBar? = supportActionBar
+        actionBar?.setHomeButtonEnabled(true)
+        actionBar?.setDisplayHomeAsUpEnabled(true)
+        actionBar?.setDisplayShowTitleEnabled(false)
 
-        @ColorInt int accountColor = accountsDbAdapter.getActiveAccountColor(this, mAccountUID);
-        setTitlesColor(accountColor);
-        mBinding.toolbar.setBackgroundColor(accountColor);
+        @ColorInt val accountColor = accountsDbAdapter.getActiveAccountColor(this, accountUID)
+        setTitlesColor(accountColor)
+        binding.toolbar.setBackgroundColor(accountColor)
 
-        bindViews();
-
-        mBinding.fabEditTransaction.setOnClickListener(v -> editTransaction());
+        bindViews(binding)
     }
 
-    @Override
-    public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
-        if (BulkMoveDialogFragment.TAG.equals(requestKey)) {
-            String accountrUID = result.getString(UxArgument.SELECTED_ACCOUNT_UID);
-            if (!TextUtils.isEmpty(accountrUID)) {
-                mAccountUID = accountrUID;
+    override fun onFragmentResult(requestKey: String, result: Bundle) {
+        if (BulkMoveDialogFragment.TAG == requestKey) {
+            val accountUID = result.getString(UxArgument.SELECTED_ACCOUNT_UID)
+            if (!accountUID.isNullOrEmpty()) {
+                this.accountUID = accountUID
             }
-            boolean refresh = result.getBoolean(Refreshable.EXTRA_REFRESH);
-            if (refresh) refresh();
+            val refresh = result.getBoolean(Refreshable.EXTRA_REFRESH)
+            if (refresh) refresh()
         }
     }
 
-    private void bind(ItemSplitAmountInfoBinding binding, Split split) {
-        Account account = accountsDbAdapter.getSimpleRecord(split.getAccountUID());
-        binding.splitAccountName.setText(account.getFullName());
-        TextView balanceView = split.getType() == TransactionType.DEBIT ? binding.splitDebit : binding.splitCredit;
-        @ColorInt int colorBalanceZero = balanceView.getCurrentTextColor();
-        displayBalance(balanceView, split.getFormattedQuantity(account), colorBalanceZero);
+    private fun bind(binding: ItemSplitAmountInfoBinding, split: Split) {
+        val account = accountsDbAdapter.getSimpleRecord(split.accountUID)
+        binding.splitAccountName.text = account!!.fullName
+        val balanceView =
+            if (split.type == TransactionType.DEBIT) binding.splitDebit else binding.splitCredit
+        @ColorInt val colorBalanceZero = balanceView.currentTextColor
+        balanceView.displayBalance(split.getFormattedQuantity(account), colorBalanceZero)
     }
 
-    private void bind(RowBalanceBinding binding, String accountUID, long timeMillis) {
-        Account account = accountsDbAdapter.getSimpleRecord(accountUID);
-        Money accountBalance = accountsDbAdapter.getAccountBalance(accountUID, -1, timeMillis, true);
-        TextView balanceTextView = account.getAccountType().hasDebitDisplayBalance ? binding.balanceDebit : binding.balanceCredit;
-        displayBalance(balanceTextView, accountBalance, balanceTextView.getCurrentTextColor());
+    private fun bind(binding: RowBalanceBinding, accountUID: String, timeMillis: Long) {
+        val account = accountsDbAdapter.getSimpleRecord(accountUID)!!
+        val accountBalance = accountsDbAdapter.getAccountBalance(accountUID, ALWAYS, timeMillis, true)
+        val balanceTextView =
+            if (account.accountType.hasDebitDisplayBalance) binding.balanceDebit else binding.balanceCredit
+        balanceTextView.displayBalance(accountBalance, balanceTextView.currentTextColor)
     }
 
     /**
      * Reads the transaction information from the database and binds it to the views
      */
-    private void bindViews() {
-        ActivityTransactionDetailBinding binding = mBinding;
-        if (binding == null) return;
+    private fun bindViews(binding: ActivityTransactionDetailBinding) {
         // Remove all rows that are not special.
-        binding.transactionItems.removeAllViews();
+        binding.transactionItems.removeAllViews()
 
-        Transaction transaction = transactionsDbAdapter.getRecord(mTransactionUID);
+        val transaction = transactionsDbAdapter.getRecord(transactionUID!!)
 
-        binding.trnDescription.setText(transaction.getDescription());
-        binding.transactionAccount.setText(getString(R.string.label_inside_account_with_name, accountsDbAdapter.getAccountFullName(mAccountUID)));
+        binding.trnDescription.text = transaction.description
+        binding.transactionAccount.text = getString(
+            R.string.label_inside_account_with_name,
+            accountsDbAdapter.getAccountFullName(accountUID!!)
+        )
 
-        boolean useDoubleEntry = GnuCashApplication.isDoubleEntryEnabled(this);
-        Context context = this;
-        LayoutInflater inflater = LayoutInflater.from(context);
-        for (Split split : transaction.getSplits()) {
-            if (!useDoubleEntry && split.getAccountUID().equals(
-                accountsDbAdapter.getImbalanceAccountUID(context, split.getValue().getCommodity()))) {
+        val useDoubleEntry = isDoubleEntryEnabled(this)
+        val context: Context = this
+        val inflater = layoutInflater
+        for (split in transaction.splits) {
+            if (!useDoubleEntry) {
                 //do now show imbalance accounts for single entry use case
-                continue;
+                continue
             }
-            ItemSplitAmountInfoBinding splitBinding = ItemSplitAmountInfoBinding.inflate(inflater, binding.transactionItems, true);
-            bind(splitBinding, split);
+            val imbalanceUID =
+                accountsDbAdapter.getImbalanceAccountUID(context, split.value.commodity)
+            if (split.accountUID == imbalanceUID) {
+                //do now show imbalance accounts for single entry use case
+                continue
+            }
+            val splitBinding =
+                ItemSplitAmountInfoBinding.inflate(inflater, binding.transactionItems, true)
+            bind(splitBinding, split)
         }
 
-        RowBalanceBinding balanceBinding = RowBalanceBinding.inflate(inflater, binding.transactionItems, true);
-        bind(balanceBinding, mAccountUID, transaction.getTimeMillis());
+        val balanceBinding = RowBalanceBinding.inflate(inflater, binding.transactionItems, true)
+        bind(balanceBinding, accountUID!!, transaction.time)
 
-        String timeAndDate = DateExtKt.formatFullDate(transaction.getTimeMillis());
-        binding.trnTimeAndDate.setText(timeAndDate);
+        val timeAndDate = formatFullDate(transaction.time)
+        binding.trnTimeAndDate.text = timeAndDate
 
-        if (!TextUtils.isEmpty(transaction.getNote())) {
-            binding.notes.setText(transaction.getNote());
-            binding.rowTrnNotes.setVisibility(View.VISIBLE);
+        if (!transaction.note.isNullOrEmpty()) {
+            binding.notes.text = transaction.note
+            binding.rowTrnNotes.isVisible = true
         } else {
-            binding.rowTrnNotes.setVisibility(View.GONE);
+            binding.rowTrnNotes.isVisible = false
         }
 
-        if (transaction.getScheduledActionUID() != null) {
-            ScheduledAction scheduledAction = ScheduledActionDbAdapter.getInstance().getRecord(transaction.getScheduledActionUID());
-            binding.trnRecurrence.setText(scheduledAction.getRepeatString(context));
-            binding.rowTrnRecurrence.setVisibility(View.VISIBLE);
+        val actionUID = transaction.scheduledActionUID
+        if (actionUID != null) {
+            val scheduledAction =
+                ScheduledActionDbAdapter.instance.getRecord(actionUID)
+            binding.trnRecurrence.text = scheduledAction.getRepeatString(context)
+            binding.rowTrnRecurrence.isVisible = true
         } else {
-            binding.rowTrnRecurrence.setVisibility(View.GONE);
+            binding.rowTrnRecurrence.isVisible = false
         }
+
+        binding.fabEditTransaction.setOnClickListener { editTransaction() }
     }
 
-    @Override
-    public void refresh() {
-        bindViews();
+    override fun refresh() {
+        refresh(transactionUID)
     }
 
-    @Override
-    public void refresh(String uid) {
-        mTransactionUID = uid;
-        refresh();
+    override fun refresh(uid: String?) {
+        transactionUID = uid
+        bindViews(binding)
     }
 
-    private void editTransaction() {
-        Intent intent = new Intent(this, FormActivity.class)
+    private fun editTransaction() {
+        val intent = Intent(this, FormActivity::class.java)
             .setAction(Intent.ACTION_INSERT_OR_EDIT)
-            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID)
-            .putExtra(UxArgument.SELECTED_TRANSACTION_UID, mTransactionUID)
-            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name());
-        startActivityForResult(intent, REQUEST_EDIT_TRANSACTION);
+            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+            .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
+            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
+        startActivityForResult(intent, REQUEST_REFRESH)
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(@NonNull Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.transactions_context_menu, menu);
-        return true;
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        super.onCreateOptionsMenu(menu)
+        menuInflater.inflate(R.menu.transactions_context_menu, menu)
+        return true
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                return true;
-            case R.id.menu_move:
-                moveTransaction(mTransactionUID);
-                return true;
-            case R.id.menu_duplicate:
-                duplicateTransaction(mTransactionUID);
-                return true;
-            case R.id.menu_delete:
-                deleteTransaction(mTransactionUID);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                finish()
+                return true
+            }
+
+            R.id.menu_move -> {
+                moveTransaction(transactionUID)
+                return true
+            }
+
+            R.id.menu_duplicate -> {
+                duplicateTransaction(transactionUID)
+                return true
+            }
+
+            R.id.menu_delete -> {
+                deleteTransaction(transactionUID)
+                return true
+            }
+
+            else -> return super.onOptionsItemSelected(item)
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK) {
-            refresh();
-            return;
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (resultCode == RESULT_OK) {
+            refresh()
+            return
         }
-        super.onActivityResult(requestCode, resultCode, data);
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
-    private void moveTransaction(@Nullable String transactionUID) {
-        if (TextUtils.isEmpty(transactionUID)) return;
-        String[] uids = new String[]{transactionUID};
-        BulkMoveDialogFragment fragment = BulkMoveDialogFragment.newInstance(uids, mAccountUID);
-        FragmentManager fm = getSupportFragmentManager();
-        fm.setFragmentResultListener(BulkMoveDialogFragment.TAG, this, this);
-        fragment.show(fm, BulkMoveDialogFragment.TAG);
+    private fun moveTransaction(transactionUID: String?) {
+        if (transactionUID.isNullOrEmpty()) return
+        val uids = arrayOf<String>(transactionUID)
+        val fragment = BulkMoveDialogFragment.newInstance(uids, accountUID!!)
+        val fm = supportFragmentManager
+        fm.setFragmentResultListener(BulkMoveDialogFragment.TAG, this, this)
+        fragment.show(fm, BulkMoveDialogFragment.TAG)
     }
 
-    private void deleteTransaction(@Nullable final String transactionUID) {
-        if (TextUtils.isEmpty(transactionUID)) return;
+    private fun deleteTransaction(transactionUID: String?) {
+        if (transactionUID.isNullOrEmpty()) return
 
-        final Activity activity = this;
-        if (GnuCashApplication.shouldBackupTransactions(activity)) {
-            BackupManager.backupActiveBookAsync(activity, result -> {
-                transactionsDbAdapter.deleteRecord(transactionUID);
-                WidgetConfigurationActivity.updateAllWidgets(activity);
-                finish();
-                return null;
-            });
+        val activity: Activity = this
+        if (shouldBackupTransactions(activity)) {
+            backupActiveBookAsync(activity) { result ->
+                transactionsDbAdapter.deleteRecord(transactionUID)
+                updateAllWidgets(activity)
+                finish()
+            }
         } else {
-            transactionsDbAdapter.deleteRecord(transactionUID);
-            WidgetConfigurationActivity.updateAllWidgets(activity);
-            finish();
+            transactionsDbAdapter.deleteRecord(transactionUID)
+            updateAllWidgets(activity)
+            finish()
         }
     }
 
-    private void duplicateTransaction(@Nullable String transactionUID) {
-        if (TextUtils.isEmpty(transactionUID)) return;
+    private fun duplicateTransaction(transactionUID: String?) {
+        if (transactionUID.isNullOrEmpty()) return
 
-        Transaction transaction = transactionsDbAdapter.getRecord(transactionUID);
-        Transaction duplicate = new Transaction(transaction);
-        duplicate.setTime(System.currentTimeMillis());
+        val transaction = transactionsDbAdapter.getRecord(transactionUID)
+        val duplicate = Transaction(transaction)
+        duplicate.time = System.currentTimeMillis()
         try {
-            transactionsDbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.insert);
-            if (duplicate.id <= 0) return;
-        } catch (SQLException e) {
-            Timber.e(e);
-            return;
+            transactionsDbAdapter.insert(duplicate)
+            if (duplicate.id <= 0) return
+        } catch (e: SQLException) {
+            Timber.e(e)
+            return
         }
 
         // Show the new transaction
-        Intent intent = new Intent(getIntent())
-            .putExtra(UxArgument.SELECTED_TRANSACTION_UID, duplicate.getUID())
-            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
-        startActivity(intent);
+        val intent = Intent(intent)
+            .putExtra(UxArgument.SELECTED_TRANSACTION_UID, duplicate.uid)
+            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+        startActivity(intent)
+    }
+
+    companion object {
+        // "ForResult" to force refresh afterwards.
+        private const val REQUEST_REFRESH = 0x0000
     }
 }

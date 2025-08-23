@@ -13,29 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.util.dialog
 
-package org.gnucash.android.ui.util.dialog;
-
-import static java.lang.Math.max;
-import static java.lang.Math.min;
-
-import android.app.Dialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-
-import com.squareup.timessquare.CalendarPickerView;
-
-import org.gnucash.android.R;
-import org.gnucash.android.databinding.DialogDateRangePickerBinding;
-import org.joda.time.LocalDate;
-
-import java.util.Date;
-import java.util.List;
+import android.app.Dialog
+import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
+import com.squareup.timessquare.CalendarPickerView
+import org.gnucash.android.R
+import org.gnucash.android.databinding.DialogDateRangePickerBinding
+import org.joda.time.LocalDate
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Dialog for picking date ranges in terms of months.
@@ -43,85 +31,86 @@ import java.util.List;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class DateRangePickerDialogFragment extends VolatileDialogFragment {
-    private LocalDate mStartRange = LocalDate.now().minusMonths(1);
-    private LocalDate mEndRange = LocalDate.now();
-    private OnDateRangeSetListener mDateRangeSetListener;
+class DateRangePickerDialogFragment : VolatileDialogFragment() {
+    private var startRange: LocalDate = LocalDate.now().minusMonths(1)
+    private var endRange: LocalDate = LocalDate.now()
+    private var dateRangeSetListener: OnDateRangeSetListener? = null
 
-    public static DateRangePickerDialogFragment newInstance(OnDateRangeSetListener dateRangeSetListener) {
-        DateRangePickerDialogFragment fragment = new DateRangePickerDialogFragment();
-        fragment.mDateRangeSetListener = dateRangeSetListener;
-        return fragment;
-    }
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val binding = DialogDateRangePickerBinding.inflate(layoutInflater)
 
-    public static DateRangePickerDialogFragment newInstance(
-        long startRange,
-        long endRange,
-        @Nullable OnDateRangeSetListener dateRangeSetListener
-    ) {
-        return newInstance(
-            new LocalDate(min(startRange, endRange)),
-            new LocalDate(max(startRange, endRange)),
-            dateRangeSetListener
-        );
-    }
-
-    public static DateRangePickerDialogFragment newInstance(
-        @Nullable LocalDate startRange,
-        @Nullable LocalDate endRange,
-        @Nullable OnDateRangeSetListener dateRangeSetListener
-    ) {
-        DateRangePickerDialogFragment fragment = new DateRangePickerDialogFragment();
-        // FIXME persist these fields in case dialog is rebuilt.
-        fragment.mStartRange = (startRange != null) ? startRange : LocalDate.now().minusMonths(1);
-        fragment.mEndRange = (endRange != null) ? endRange : LocalDate.now();
-        fragment.mDateRangeSetListener = dateRangeSetListener;
-        return fragment;
-    }
-
-    @NonNull
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final DialogDateRangePickerBinding binding = DialogDateRangePickerBinding.inflate(getLayoutInflater());
-
-        Date startDate = mStartRange.toDate();
-        Date endDate = mEndRange.plusDays(1).toDate();
-        Date date = mEndRange.toDateTimeAtStartOfDay().toDate();
+        val startDate = startRange.toDate()
+        val endDate = endRange.plusDays(1).toDate()
+        val date = endRange.toDateTimeAtStartOfDay().toDate()
         binding.calendarView.init(startDate, endDate)
-            .inMode(CalendarPickerView.SelectionMode.RANGE);
-        binding.calendarView.selectDate(date);
+            .inMode(CalendarPickerView.SelectionMode.RANGE)
+        binding.calendarView.selectDate(date)
 
-        final Context context = requireContext();
-        return new AlertDialog.Builder(context, getTheme())
+        val context = requireContext()
+        return AlertDialog.Builder(context, theme)
             .setTitle(R.string.report_time_range_picker_title)
-            .setView(binding.getRoot())
-            .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    // Dismisses itself.
-                }
-            })
-            .setPositiveButton(R.string.done_label, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    List<Date> selectedDates = binding.calendarView.getSelectedDates();
-                    int length = selectedDates.size();
-                    if (length > 0) {
-                        Date startDateSelected = selectedDates.get(0);
-                        // If only one day is selected (no interval) start and end should be the same (the selected one)
-                        Date endDateSelected = length > 1 ? selectedDates.get(length - 1) : startDateSelected;
-                        LocalDate startDate = LocalDate.fromDateFields(startDateSelected).toDateTimeAtStartOfDay().toLocalDate();
-                        // CalendarPicker returns the start of the selected day but we want all transactions of that day to be included.
-                        // Therefore we have to add 24 hours to the endDate.
-                        LocalDate endDate = LocalDate.fromDateFields(endDateSelected).toDateTimeAtCurrentTime().toLocalDate();
-                        mDateRangeSetListener.onDateRangeSet(startDate, endDate);
-                    }
-                }
-            })
-            .create();
+            .setView(binding.root)
+            .setNegativeButton(R.string.btn_cancel) { _, _ ->
+                // Dismisses itself
+            }
+            .setPositiveButton(R.string.done_label) { _, _ ->
+                onRangeSelected(binding)
+            }
+            .create()
     }
 
-    public interface OnDateRangeSetListener {
-        void onDateRangeSet(LocalDate startDate, LocalDate endDate);
+    private fun onRangeSelected(binding: DialogDateRangePickerBinding) {
+        val selectedDates = binding.calendarView.getSelectedDates()
+        val length = selectedDates.size
+        if (length > 0) {
+            val startDateSelected = selectedDates[0]
+            // If only one day is selected (no interval) start and end should be the same (the selected one)
+            val endDateSelected = if (length > 1) selectedDates[length - 1] else startDateSelected
+            val startDate = LocalDate.fromDateFields(startDateSelected)
+                .toDateTimeAtStartOfDay()
+                .toLocalDate()
+            // CalendarPicker returns the start of the selected day but we want all transactions of that day to be included.
+            // Therefore we have to add 24 hours to the endDate.
+            val endDate = LocalDate.fromDateFields(endDateSelected)
+                .toDateTimeAtCurrentTime()
+                .toLocalDate()
+            dateRangeSetListener?.onDateRangeSet(startDate, endDate)
+        }
+    }
+
+    interface OnDateRangeSetListener {
+        fun onDateRangeSet(startDate: LocalDate, endDate: LocalDate)
+    }
+
+    companion object {
+        fun newInstance(dateRangeSetListener: OnDateRangeSetListener): DateRangePickerDialogFragment {
+            val fragment = DateRangePickerDialogFragment()
+            fragment.dateRangeSetListener = dateRangeSetListener
+            return fragment
+        }
+
+        fun newInstance(
+            startRange: Long,
+            endRange: Long,
+            dateRangeSetListener: OnDateRangeSetListener
+        ): DateRangePickerDialogFragment {
+            return newInstance(
+                LocalDate(min(startRange, endRange)),
+                LocalDate(max(startRange, endRange)),
+                dateRangeSetListener
+            )
+        }
+
+        fun newInstance(
+            startRange: LocalDate?,
+            endRange: LocalDate?,
+            dateRangeSetListener: OnDateRangeSetListener
+        ): DateRangePickerDialogFragment {
+            val fragment = DateRangePickerDialogFragment()
+            fragment.startRange = startRange ?: LocalDate.now().minusMonths(1)
+            fragment.endRange = endRange ?: LocalDate.now()
+            fragment.dateRangeSetListener = dateRangeSetListener
+            return fragment
+        }
     }
 }

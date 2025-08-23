@@ -13,42 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.passcode
 
-package org.gnucash.android.ui.passcode;
-
-import android.content.Intent;
-import android.os.Bundle;
-
-import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashActivity;
-import org.gnucash.android.ui.settings.ThemeHelper;
+import android.os.Bundle
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashActivity
+import org.gnucash.android.ui.settings.ThemeHelper
 
 /**
  * Activity for entering and confirming passcode
  *
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
-public class PasscodePreferenceActivity extends GnuCashActivity {
+class PasscodePreferenceActivity : GnuCashActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        ThemeHelper.apply(this)
+        setContentView(R.layout.passcode_lockscreen)
 
-    public static final String DISABLE_PASSCODE = PasscodeModifyFragment.DISABLE_PASSCODE;
+        val args = Bundle()
+        args.putAll(intent.extras ?: Bundle())
+        val fragment = PasscodeModifyFragment()
+        fragment.arguments = args
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        ThemeHelper.apply(this);
-        setContentView(R.layout.passcode_lockscreen);
-
-        Intent intent = getIntent();
-        Bundle extras = intent.getExtras();
-
-        Bundle args = new Bundle();
-        args.putAll((extras != null) ? extras : new Bundle());
-        PasscodeModifyFragment fragment = new PasscodeModifyFragment();
-        fragment.setArguments(args);
-
-        getSupportFragmentManager()
+        supportFragmentManager
             .beginTransaction()
             .replace(R.id.fragment_container, fragment)
-            .commit();
+            .commit()
+    }
+
+    companion object {
+        const val DISABLE_PASSCODE: String = PasscodeModifyFragment.DISABLE_PASSCODE
     }
 }

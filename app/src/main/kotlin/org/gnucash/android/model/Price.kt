@@ -216,7 +216,6 @@ class Price : BaseModel {
         companion object {
             private val values = Type.values()
 
-            @JvmStatic
             fun of(key: String?): Type {
                 val value = key?.lowercase(Locale.ROOT) ?: return Unknown
                 return values.firstOrNull { it.value == value } ?: Unknown

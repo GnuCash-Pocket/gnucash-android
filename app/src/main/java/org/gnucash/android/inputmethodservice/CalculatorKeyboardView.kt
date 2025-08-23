@@ -10,10 +10,8 @@ import org.gnucash.android.R
 import java.text.DecimalFormatSymbols
 import java.text.NumberFormat
 
-class CalculatorKeyboardView @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null
-) : TableLayout(context, attrs) {
+class CalculatorKeyboardView(context: Context, attrs: AttributeSet? = null) :
+    TableLayout(context, attrs) {
 
     var onKeyboardActionListener: KeyboardView.OnKeyboardActionListener? = null
 

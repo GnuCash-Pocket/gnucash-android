@@ -6,7 +6,7 @@ import androidx.annotation.LayoutRes
 import org.gnucash.android.R
 import org.gnucash.android.model.AccountType
 
-class AccountTypesAdapter @JvmOverloads constructor(
+class AccountTypesAdapter(
     context: Context,
     @LayoutRes resource: Int = android.R.layout.simple_spinner_item,
     types: List<AccountType> = AccountType.entries
@@ -41,12 +41,11 @@ class AccountTypesAdapter @JvmOverloads constructor(
         return -1
     }
 
-    data class Label(@JvmField val value: AccountType, @JvmField val label: String) {
+    data class Label(val value: AccountType, val label: String) {
         override fun toString(): String = label
     }
 
     companion object {
-        @JvmStatic
         fun expenseAndIncome(context: Context): AccountTypesAdapter {
             return AccountTypesAdapter(
                 context = context,

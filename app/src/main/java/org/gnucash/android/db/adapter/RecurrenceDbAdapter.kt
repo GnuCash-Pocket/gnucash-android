@@ -13,171 +13,124 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.db.adapter
 
-package org.gnucash.android.db.adapter;
-
-import static org.gnucash.android.db.DatabaseSchema.RecurrenceEntry;
-
-import android.database.Cursor;
-import android.database.sqlite.SQLiteStatement;
-import android.text.TextUtils;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseHolder;
-import org.gnucash.android.model.PeriodType;
-import org.gnucash.android.model.Recurrence;
-import org.gnucash.android.util.TimestampHelper;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
+import android.database.Cursor
+import android.database.sqlite.SQLiteStatement
+import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.db.DatabaseHolder
+import org.gnucash.android.db.DatabaseSchema.RecurrenceEntry
+import org.gnucash.android.db.getInt
+import org.gnucash.android.db.getString
+import org.gnucash.android.model.PeriodType
+import org.gnucash.android.model.Recurrence
+import org.gnucash.android.util.TimestampHelper.getTimestampFromUtcString
+import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
+import java.util.Calendar
 
 /**
- * Database adapter for {@link Recurrence} entries
+ * Database adapter for [Recurrence] entries
  */
-public class RecurrenceDbAdapter extends DatabaseAdapter<Recurrence> {
-    /**
-     * Opens the database adapter with an existing database
-     *
-     * @param holder Database holder
-     */
-    public RecurrenceDbAdapter(@NonNull DatabaseHolder holder) {
-        super(holder, RecurrenceEntry.TABLE_NAME, new String[]{
-            RecurrenceEntry.COLUMN_MULTIPLIER,
-            RecurrenceEntry.COLUMN_PERIOD_TYPE,
-            RecurrenceEntry.COLUMN_BYDAY,
-            RecurrenceEntry.COLUMN_PERIOD_START,
-            RecurrenceEntry.COLUMN_PERIOD_END
-        });
-    }
+class RecurrenceDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Recurrence>(
+    holder,
+    RecurrenceEntry.TABLE_NAME,
+    arrayOf<String>(
+        RecurrenceEntry.COLUMN_MULTIPLIER,
+        RecurrenceEntry.COLUMN_PERIOD_TYPE,
+        RecurrenceEntry.COLUMN_BYDAY,
+        RecurrenceEntry.COLUMN_PERIOD_START,
+        RecurrenceEntry.COLUMN_PERIOD_END
+    )
+) {
+    override fun buildModelInstance(cursor: Cursor): Recurrence {
+        val type = cursor.getString(RecurrenceEntry.COLUMN_PERIOD_TYPE)!!
+        val multiplier = cursor.getInt(RecurrenceEntry.COLUMN_MULTIPLIER)
+        val periodStart = cursor.getString(RecurrenceEntry.COLUMN_PERIOD_START)!!
+        val periodEnd = cursor.getString(RecurrenceEntry.COLUMN_PERIOD_END)
+        val byDays = cursor.getString(RecurrenceEntry.COLUMN_BYDAY)
 
-    public static RecurrenceDbAdapter getInstance() {
-        return GnuCashApplication.getRecurrenceDbAdapter();
-    }
-
-    @Override
-    public Recurrence buildModelInstance(@NonNull Cursor cursor) {
-        String type = cursor.getString(cursor.getColumnIndexOrThrow(RecurrenceEntry.COLUMN_PERIOD_TYPE));
-        int multiplier = cursor.getInt(cursor.getColumnIndexOrThrow(RecurrenceEntry.COLUMN_MULTIPLIER));
-        String periodStart = cursor.getString(cursor.getColumnIndexOrThrow(RecurrenceEntry.COLUMN_PERIOD_START));
-        String periodEnd = cursor.getString(cursor.getColumnIndexOrThrow(RecurrenceEntry.COLUMN_PERIOD_END));
-        String byDays = cursor.getString(cursor.getColumnIndexOrThrow(RecurrenceEntry.COLUMN_BYDAY));
-
-        PeriodType periodType = PeriodType.valueOf(type);
-        Recurrence recurrence = new Recurrence(periodType);
-        populateBaseModelAttributes(cursor, recurrence);
-        recurrence.setMultiplier(multiplier);
-        recurrence.setPeriodStart(TimestampHelper.getTimestampFromUtcString(periodStart).getTime());
+        val periodType = PeriodType.valueOf(type)
+        val recurrence = Recurrence(periodType)
+        populateBaseModelAttributes(cursor, recurrence)
+        recurrence.multiplier = multiplier
+        recurrence.periodStart = getTimestampFromUtcString(periodStart).time
         if (periodEnd != null) {
-            recurrence.setPeriodEnd(TimestampHelper.getTimestampFromUtcString(periodEnd).getTime());
+            recurrence.periodEnd = getTimestampFromUtcString(periodEnd).time
         }
-        recurrence.setByDays(stringToByDays(byDays));
+        recurrence.byDays = stringToByDays(byDays)
 
-        return recurrence;
+        return recurrence
     }
 
-    @Override
-    protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final Recurrence recurrence) {
-        bindBaseModel(stmt, recurrence);
-        stmt.bindLong(1, recurrence.getMultiplier());
-        stmt.bindString(2, recurrence.getPeriodType().name());
-        if (!recurrence.getByDays().isEmpty()) {
-            stmt.bindString(3, byDaysToString(recurrence.getByDays()));
+    override fun bind(stmt: SQLiteStatement, recurrence: Recurrence): SQLiteStatement {
+        bindBaseModel(stmt, recurrence)
+        stmt.bindLong(1, recurrence.multiplier.toLong())
+        stmt.bindString(2, recurrence.periodType.name)
+        if (!recurrence.byDays.isEmpty()) {
+            stmt.bindString(3, byDaysToString(recurrence.byDays))
         }
         //recurrence should always have a start date
-        stmt.bindString(4, TimestampHelper.getUtcStringFromTimestamp(recurrence.getPeriodStart()));
-        if (recurrence.getPeriodEnd() != null) {
-            stmt.bindString(5, TimestampHelper.getUtcStringFromTimestamp(recurrence.getPeriodEnd()));
+        stmt.bindString(4, getUtcStringFromTimestamp(recurrence.periodStart))
+        if (recurrence.periodEnd != null) {
+            stmt.bindString(5, getUtcStringFromTimestamp(recurrence.periodEnd!!))
         }
 
-        return stmt;
+        return stmt
     }
 
-    /**
-     * Converts a list of days of week as Calendar constants to an String for
-     * storing in the database.
-     *
-     * @param byDays list of days of week constants from Calendar
-     * @return String of days of the week or null if {@code byDays} was empty
-     */
-    private static @NonNull String byDaysToString(@NonNull List<Integer> byDays) {
-        StringBuilder builder = new StringBuilder();
-        for (int day : byDays) {
-            switch (day) {
-                case Calendar.MONDAY:
-                    builder.append("MO");
-                    break;
-                case Calendar.TUESDAY:
-                    builder.append("TU");
-                    break;
-                case Calendar.WEDNESDAY:
-                    builder.append("WE");
-                    break;
-                case Calendar.THURSDAY:
-                    builder.append("TH");
-                    break;
-                case Calendar.FRIDAY:
-                    builder.append("FR");
-                    break;
-                case Calendar.SATURDAY:
-                    builder.append("SA");
-                    break;
-                case Calendar.SUNDAY:
-                    builder.append("SU");
-                    break;
-                default:
-                    throw new RuntimeException("bad day of week: " + day);
-            }
-            builder.append(",");
-        }
-        builder.deleteCharAt(builder.length() - 1);
-        return builder.toString();
-    }
+    companion object {
+        val instance: RecurrenceDbAdapter get() = GnuCashApplication.recurrenceDbAdapter!!
 
-    /**
-     * Converts a String with the comma-separated days of the week into a
-     * list of Calendar constants.
-     *
-     * @param byDaysString String with comma-separated days fo the week
-     * @return list of days of the week as Calendar constants.
-     */
-    private static @NonNull List<Integer> stringToByDays(@Nullable String byDaysString) {
-        if (TextUtils.isEmpty(byDaysString))
-            return Collections.emptyList();
-
-        List<Integer> byDaysList = new ArrayList<>();
-        for (String day : byDaysString.split(",")) {
-            switch (day) {
-                case "MO":
-                    byDaysList.add(Calendar.MONDAY);
-                    break;
-                case "TU":
-                    byDaysList.add(Calendar.TUESDAY);
-                    break;
-                case "WE":
-                    byDaysList.add(Calendar.WEDNESDAY);
-                    break;
-                case "TH":
-                    byDaysList.add(Calendar.THURSDAY);
-                    break;
-                case "FR":
-                    byDaysList.add(Calendar.FRIDAY);
-                    break;
-                case "SA":
-                    byDaysList.add(Calendar.SATURDAY);
-                    break;
-                case "SU":
-                    byDaysList.add(Calendar.SUNDAY);
-                    break;
-                default:
-                    // Issue #172 - "LU" is Latin
-                    //throw new RuntimeException("bad day of week: " + day);
+        /**
+         * Converts a list of days of week as Calendar constants to an String for
+         * storing in the database.
+         *
+         * @param byDays list of days of week constants from Calendar
+         * @return String of days of the week or null if `byDays` was empty
+         */
+        private fun byDaysToString(byDays: List<Int>): String {
+            val builder = StringBuilder()
+            for (day in byDays) {
+                when (day) {
+                    Calendar.MONDAY -> builder.append("MO")
+                    Calendar.TUESDAY -> builder.append("TU")
+                    Calendar.WEDNESDAY -> builder.append("WE")
+                    Calendar.THURSDAY -> builder.append("TH")
+                    Calendar.FRIDAY -> builder.append("FR")
+                    Calendar.SATURDAY -> builder.append("SA")
+                    Calendar.SUNDAY -> builder.append("SU")
+                    else -> throw RuntimeException("bad day of week: $day")
+                }
+                builder.append(",")
             }
+            builder.deleteCharAt(builder.length - 1)
+            return builder.toString()
         }
-        return byDaysList;
+
+        /**
+         * Converts a String with the comma-separated days of the week into a
+         * list of Calendar constants.
+         *
+         * @param byDaysString String with comma-separated days fo the week
+         * @return list of days of the week as Calendar constants.
+         */
+        private fun stringToByDays(byDaysString: String?): List<Int> {
+            if (byDaysString.isNullOrEmpty()) return emptyList<Int>()
+
+            val byDaysList = mutableListOf<Int>()
+            for (day in byDaysString.split(",".toRegex()).dropLastWhile { it.isEmpty() }
+                .toTypedArray()) {
+                when (day) {
+                    "MO" -> byDaysList.add(Calendar.MONDAY)
+                    "TU" -> byDaysList.add(Calendar.TUESDAY)
+                    "WE" -> byDaysList.add(Calendar.WEDNESDAY)
+                    "TH" -> byDaysList.add(Calendar.THURSDAY)
+                    "FR" -> byDaysList.add(Calendar.FRIDAY)
+                    "SA" -> byDaysList.add(Calendar.SATURDAY)
+                    "SU" -> byDaysList.add(Calendar.SUNDAY)
+                }
+            }
+            return byDaysList
+        }
     }
 }

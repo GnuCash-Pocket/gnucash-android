@@ -13,444 +13,446 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.ui.report;
+package org.gnucash.android.ui.report
 
-import static org.gnucash.android.util.ColorExtKt.getTextColorPrimary;
-import static org.gnucash.android.util.ColorExtKt.parseColor;
-import static java.lang.Math.max;
-
-import android.app.Activity;
-import android.content.Context;
-import android.graphics.Color;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-
-import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
-import androidx.annotation.VisibleForTesting;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-
-import com.github.mikephil.charting.data.ChartData;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.highlight.Highlight;
-import com.github.mikephil.charting.interfaces.datasets.IDataSet;
-import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
-
-import org.gnucash.android.R;
-import org.gnucash.android.app.MenuFragment;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.PricesDbAdapter;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.AccountType;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.ui.common.BaseDrawerActivity;
-import org.gnucash.android.ui.common.Refreshable;
-import org.gnucash.android.util.DateExtKt;
-import org.joda.time.LocalDateTime;
-import org.joda.time.Months;
-import org.joda.time.Years;
-
-import java.lang.ref.WeakReference;
-import java.text.NumberFormat;
-import java.util.Locale;
+import android.app.Activity
+import android.content.Context
+import android.graphics.Color
+import android.os.AsyncTask
+import android.os.Bundle
+import android.preference.PreferenceManager
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.annotation.ColorInt
+import androidx.annotation.StringRes
+import androidx.annotation.VisibleForTesting
+import androidx.appcompat.app.ActionBar
+import androidx.core.view.isVisible
+import com.github.mikephil.charting.data.ChartData
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.highlight.Highlight
+import com.github.mikephil.charting.interfaces.datasets.IDataSet
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener
+import org.gnucash.android.R
+import org.gnucash.android.app.MenuFragment
+import org.gnucash.android.app.actionBar
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.PricesDbAdapter
+import org.gnucash.android.model.Account
+import org.gnucash.android.model.AccountType
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.ui.common.BaseDrawerActivity
+import org.gnucash.android.ui.common.Refreshable
+import org.gnucash.android.ui.report.ReportsActivity.GroupInterval
+import org.gnucash.android.util.getFirstQuarterMonth
+import org.gnucash.android.util.parseColor
+import org.gnucash.android.util.textColorPrimary
+import org.joda.time.LocalDateTime
+import org.joda.time.Months
+import org.joda.time.Years
+import java.lang.ref.WeakReference
+import java.text.NumberFormat
+import java.util.Locale
+import kotlin.math.max
 
 /**
  * Base class for report fragments.
- * <p>All report fragments should extend this class. At the minimum, reports must implement
- * {@link #getReportType()}, {@link #generateReport(Context)}, {@link #displayReport()} and {@link #getTitle()}</p>
- * <p>Implementing classes should create their own XML layouts and inflate it in {@link #inflateView(LayoutInflater, ViewGroup)}.
- * </p>
- * <p>Any custom information to be initialized for the report should be done in {@link #onActivityCreated(Bundle)} in implementing classes.
- * The report is then generated in {@link #onStart()}
- * </p>
+ *
+ * All report fragments should extend this class. At the minimum, reports must implement
+ * [.getReportType], [.generateReport], [.displayReport] and [.getTitle]
+ *
+ * Implementing classes should create their own XML layouts and inflate it in [.inflateView].
+ *
+ *
+ * Any custom information to be initialized for the report should be done in [.onActivityCreated] in implementing classes.
+ * The report is then generated in [.onStart]
+ *
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public abstract class BaseReportFragment extends MenuFragment implements
-    OnChartValueSelectedListener, ReportOptionsListener, Refreshable {
-
-    /**
-     * Color for chart with no data
-     */
-    public static final int NO_DATA_COLOR = Color.LTGRAY;
-
-    protected static final int[] COLORS = {
-        parseColor("#17ee4e"), parseColor("#cc1f09"), parseColor("#3940f7"),
-        parseColor("#f9cd04"), parseColor("#5f33a8"), parseColor("#e005b6"),
-        parseColor("#17d6ed"), parseColor("#e4a9a2"), parseColor("#8fe6cd"),
-        parseColor("#8b48fb"), parseColor("#343a36"), parseColor("#6decb1"),
-        parseColor("#f0f8ff"), parseColor("#5c3378"), parseColor("#a6dcfd"),
-        parseColor("#ba037c"), parseColor("#708809"), parseColor("#32072c"),
-        parseColor("#fddef8"), parseColor("#fa0e6e"), parseColor("#d9e7b5")
-    };
-
+abstract class BaseReportFragment : MenuFragment(),
+    OnChartValueSelectedListener,
+    ReportOptionsListener,
+    Refreshable {
     /**
      * Reporting period start time
      */
-    @Nullable
-    protected LocalDateTime mReportPeriodStart = null;
+    protected var reportPeriodStart: LocalDateTime? = null
+
     /**
      * Reporting period end time
      */
-    @Nullable
-    protected LocalDateTime mReportPeriodEnd = null;
+    protected var reportPeriodEnd: LocalDateTime? = null
 
     /**
      * Account type for which to display reports
      */
-    protected AccountType mAccountType = AccountType.EXPENSE;
-    protected AccountsDbAdapter mAccountsDbAdapter;
-    protected PricesDbAdapter pricesDbAdapter = PricesDbAdapter.getInstance();
-    protected boolean mUseAccountColor = true;
+    protected var accountType: AccountType = AccountType.EXPENSE
+    protected var accountsDbAdapter: AccountsDbAdapter = AccountsDbAdapter.instance
+    protected var pricesDbAdapter: PricesDbAdapter = PricesDbAdapter.instance
+    protected var useAccountColor: Boolean = true
 
     /**
      * Commodity for which to display reports
      */
-    protected Commodity mCommodity = Commodity.DEFAULT_COMMODITY;
+    protected var commodity: Commodity = Commodity.DEFAULT_COMMODITY
 
     /**
      * Intervals in which to group reports
      */
-    protected ReportsActivity.GroupInterval mGroupInterval = ReportsActivity.GroupInterval.MONTH;
+    protected var groupInterval: GroupInterval = GroupInterval.MONTH
 
-    /**
-     * Pattern to use to display selected chart values
-     */
-    private static final String SELECTED_VALUE_PATTERN = "%s — %s %s (%.2f%%)";
-    private static final String TOTAL_VALUE_LABEL_PATTERN = "%s\n%s %s";
+    protected lateinit var reportsActivity: ReportsActivity
 
-    protected ReportsActivity mReportsActivity;
+    protected var selectedValueTextView: TextView? = null
 
-    protected TextView mSelectedValueTextView;
-
-    @Nullable
-    private GeneratorTask mReportGenerator;
-
-    /**
-     * Return the title of this report
-     *
-     * @return Title string identifier
-     */
-    @StringRes
-    public int getTitle() {
-        return getReportType().titleId;
-    }
+    private var generatorTask: GeneratorTask? = null
 
     /**
      * Returns what kind of report this is
      *
      * @return Type of report
      */
-    public abstract ReportType getReportType();
+    abstract val reportType: ReportType
 
     /**
-     * Return {@code true} if this report fragment requires account type options.
-     * <p>Sub-classes should implement this method. The base implementation returns {@code true}</p>
+     * Return the title of this report
      *
-     * @return {@code true} if the fragment makes use of account type options, {@code false} otherwise
+     * @return Title string identifier
      */
-    public boolean requiresAccountTypeOptions() {
-        return true;
+    @get:StringRes
+    val title: Int
+        get() = this.reportType.titleId
+
+    /**
+     * Return `true` if this report fragment requires account type options.
+     *
+     * Sub-classes should implement this method. The base implementation returns `true`
+     *
+     * @return `true` if the fragment makes use of account type options, `false` otherwise
+     */
+    open fun requiresAccountTypeOptions(): Boolean {
+        return true
     }
 
     /**
-     * Return {@code true} if this report fragment requires time range options.
-     * <p>Base implementation returns true</p>
+     * Return `true` if this report fragment requires time range options.
      *
-     * @return {@code true} if the report fragment requires time range options, {@code false} otherwise
+     * Base implementation returns true
+     *
+     * @return `true` if the report fragment requires time range options, `false` otherwise
      */
-    public boolean requiresTimeRangeOptions() {
-        return true;
+    open fun requiresTimeRangeOptions(): Boolean {
+        return true
     }
 
     /**
      * Generates the data for the report
-     * <p>This method should not call any methods which modify the UI as it will be run in a background thread
-     * <br>Put any code to update the UI in {@link #displayReport()}
-     * </p>
+     *
+     * This method should not call any methods which modify the UI as it will be run in a background thread
+     * <br></br>Put any code to update the UI in [.displayReport]
+     *
      */
-    protected abstract void generateReport(@NonNull Context context);
+    protected abstract fun generateReport(context: Context)
 
     /**
-     * Update the view after the report chart has been generated <br/>
+     * Update the view after the report chart has been generated <br></br>
      * Sub-classes should call to the base method
      */
-    protected abstract void displayReport();
+    protected abstract fun displayReport()
 
-    protected abstract View inflateView(LayoutInflater inflater, ViewGroup container);
+    protected abstract fun inflateView(inflater: LayoutInflater, container: ViewGroup?): View
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflateView(inflater, container);
-        mSelectedValueTextView = view.findViewById(R.id.selected_chart_slice);
-        return view;
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflateView(inflater, container)
+        selectedValueTextView = view.findViewById<TextView>(R.id.selected_chart_slice)
+        return view
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setTitle(getTitle());
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val actionBar: ActionBar? = this.actionBar
+        actionBar?.setTitle(this.title)
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-        mUseAccountColor = PreferenceManager.getDefaultSharedPreferences(requireContext())
-            .getBoolean(getString(R.string.key_use_account_color), false);
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        accountsDbAdapter = AccountsDbAdapter.instance
+        useAccountColor = PreferenceManager.getDefaultSharedPreferences(requireContext())
+            .getBoolean(getString(R.string.key_use_account_color), false)
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        pricesDbAdapter = PricesDbAdapter.getInstance();
+    override fun onStart() {
+        super.onStart()
+        pricesDbAdapter = PricesDbAdapter.instance
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
 
-        ReportsActivity reportsActivity = (ReportsActivity) requireActivity();
-        mReportPeriodStart = reportsActivity.getReportPeriodStart();
-        mReportPeriodEnd = reportsActivity.getReportPeriodEnd();
-        mAccountType = reportsActivity.getAccountType();
+        val reportsActivity = requireActivity() as ReportsActivity
+        reportPeriodStart = reportsActivity.reportPeriodStart
+        reportPeriodEnd = reportsActivity.reportPeriodEnd
+        accountType = reportsActivity.accountType
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
+    override fun onResume() {
+        super.onResume()
 
-        Activity activity = getActivity();
-        if (activity instanceof ReportsActivity) {
-            mReportsActivity = (ReportsActivity) activity;
+        val activity: Activity? = activity
+        if (activity is ReportsActivity) {
+            reportsActivity = activity
         } else {
-            throw new RuntimeException("Report fragments can only be used with the ReportsActivity");
+            throw RuntimeException("Report fragments can only be used with the ReportsActivity")
         }
-        mReportsActivity.onFragmentResumed(this);
-        toggleBaseReportingOptionsVisibility(mReportsActivity);
-        mCommodity = Commodity.DEFAULT_COMMODITY;
-        refresh();
+        reportsActivity.onFragmentResumed(this)
+        toggleBaseReportingOptionsVisibility(reportsActivity)
+        commodity = Commodity.DEFAULT_COMMODITY
+        refresh()
     }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        if (mReportGenerator != null)
-            mReportGenerator.cancel(true);
+    override fun onDetach() {
+        super.onDetach()
+        if (generatorTask != null) generatorTask!!.cancel(true)
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (mReportGenerator != null) {
-            mReportGenerator.cancel(true);
-            mReportGenerator = null;
+    override fun onDestroy() {
+        super.onDestroy()
+        if (generatorTask != null) {
+            generatorTask!!.cancel(true)
+            generatorTask = null
         }
     }
 
-    private void toggleBaseReportingOptionsVisibility(ReportsActivity activity) {
-        View timeRangeLayout = activity.findViewById(R.id.time_range_layout);
-        if (timeRangeLayout != null) {
-            int visibility = requiresTimeRangeOptions() ? View.VISIBLE : View.GONE;
-            timeRangeLayout.setVisibility(visibility);
-        }
+    private fun toggleBaseReportingOptionsVisibility(activity: ReportsActivity) {
+        val timeRangeLayout = activity.findViewById<View?>(R.id.time_range_layout)
+        timeRangeLayout?.isVisible = requiresTimeRangeOptions()
     }
 
     /**
-     * Calculates difference between two date values accordingly to {@code mGroupInterval}
+     * Calculates difference between two date values accordingly to `mGroupInterval`
      *
      * @param start start date
      * @param end   end date
-     * @return difference between two dates or {@code -1}
+     * @return difference between two dates or `-1`
      */
-    protected int getDateDiff(
-        @NonNull ReportsActivity.GroupInterval groupInterval,
-        @NonNull LocalDateTime start,
-        @NonNull LocalDateTime end
-    ) {
-        start = start.withMillisOfDay(0);
-        end = end.withMillisOfDay(0);
-        switch (groupInterval) {
-            case MONTH:
-                return max(1, Months.monthsBetween(start, end).getMonths());
-            case QUARTER:
-                start = start.withMonthOfYear(DateExtKt.getFirstQuarterMonth(start)).dayOfMonth().withMinimumValue();
-                int m = Months.monthsBetween(start, end).getMonths();
-                int q = m / 3;
-                if (m % 3 > 0) q++;
-                return max(1, q);
-            case YEAR:
-                return max(1, Years.yearsBetween(start, end).getYears());
-            default:
-                return -1;
+    protected fun getDateDiff(
+        groupInterval: GroupInterval,
+        start: LocalDateTime,
+        end: LocalDateTime
+    ): Int {
+        var start = start
+        var end = end
+        start = start.withMillisOfDay(0)
+        end = end.withMillisOfDay(0)
+        when (groupInterval) {
+            GroupInterval.MONTH -> return max(1, Months.monthsBetween(start, end).months)
+
+            GroupInterval.QUARTER -> {
+                start = start.withMonthOfYear(start.getFirstQuarterMonth())
+                    .dayOfMonth().withMinimumValue()
+                val m = Months.monthsBetween(start, end).months
+                var q = m / 3
+                if (m % 3 > 0) q++
+                return max(1, q)
+            }
+
+            GroupInterval.YEAR -> return max(1, Years.yearsBetween(start, end).years)
+
+            else -> return -1
         }
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.chart_actions, menu);
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.chart_actions, menu)
     }
 
-    @Override
-    public void refresh() {
-        if (mReportGenerator != null) {
-            mReportGenerator.cancel(true);
-        }
-        mReportGenerator = new GeneratorTask(mReportsActivity);
-        mReportGenerator.execute();
+    override fun refresh() {
+        generatorTask?.cancel(true)
+        generatorTask = GeneratorTask(reportsActivity)
+        generatorTask!!.execute()
     }
 
     /**
      * Charts do not support account specific refreshes in general.
-     * So we provide a base implementation which just calls {@link #refresh()}
+     * So we provide a base implementation which just calls [.refresh]
      *
      * @param uid GUID of relevant item to be refreshed
      */
-    @Override
-    public void refresh(String uid) {
-        refresh();
+    override fun refresh(uid: String?) {
+        refresh()
     }
 
-    @Override
-    public void onGroupingUpdated(@NonNull ReportsActivity.GroupInterval groupInterval) {
-        if (mGroupInterval != groupInterval) {
-            mGroupInterval = groupInterval;
-            refresh();
+    override fun onGroupingUpdated(groupInterval: GroupInterval) {
+        if (this.groupInterval != groupInterval) {
+            this.groupInterval = groupInterval
+            refresh()
         }
     }
 
-    @Override
-    public void onTimeRangeUpdated(@Nullable LocalDateTime start, @Nullable LocalDateTime end) {
-        mReportPeriodStart = start;
-        mReportPeriodEnd = end;
-        refresh();
+    override fun onTimeRangeUpdated(start: LocalDateTime?, end: LocalDateTime?) {
+        reportPeriodStart = start
+        reportPeriodEnd = end
+        refresh()
     }
 
-    @Override
-    public void onAccountTypeUpdated(@NonNull AccountType accountType) {
-        if (mAccountType != accountType) {
-            mAccountType = accountType;
-            refresh();
+    override fun onAccountTypeUpdated(accountType: AccountType) {
+        if (this.accountType != accountType) {
+            this.accountType = accountType
+            refresh()
         }
     }
 
-    @Override
-    public void onValueSelected(Entry e, Highlight h) {
+    override fun onValueSelected(e: Entry?, h: Highlight) {
         //nothing to see here, move along
     }
 
-    @Override
-    public void onNothingSelected() {
-        if (mSelectedValueTextView != null)
-            mSelectedValueTextView.setText(R.string.select_chart_to_view_details);
+    override fun onNothingSelected() {
+        selectedValueTextView?.setText(R.string.select_chart_to_view_details)
     }
 
-    protected String formatSelectedValue(String label, float value, float percentage) {
-        return formatSelectedValue(Locale.getDefault(), label.trim(), value, mCommodity, percentage);
+    protected fun formatSelectedValue(label: String, value: Float, percentage: Float): String {
+        return formatSelectedValue(
+            Locale.getDefault(),
+            label.trim(),
+            value,
+            commodity,
+            percentage
+        )
     }
 
-    @VisibleForTesting
-    public static String formatSelectedValue(Locale locale, String label, float value, Commodity commodity, float percentage) {
-        NumberFormat formatter = NumberFormat.getNumberInstance(locale);
-        formatter.setMinimumFractionDigits(0);
-        formatter.setMaximumFractionDigits(commodity.getSmallestFractionDigits());
-        String currencySymbol = commodity.getSymbol();
-        return String.format(locale, SELECTED_VALUE_PATTERN, label.trim(), formatter.format(value), currencySymbol, percentage);
+    protected fun formatTotalValue(value: Float): String {
+        return formatTotalValue(requireContext(), Locale.getDefault(), value, commodity)
     }
 
-    protected String formatTotalValue(float value) {
-        return formatTotalValue(requireContext(), Locale.getDefault(), value, mCommodity);
-    }
-
-    protected String getLabel(@NonNull Context context, @NonNull AccountType accountType) {
-        String[] labels = context.getResources().getStringArray(R.array.account_type_entry_values);
-        return labels[accountType.labelIndex];
-    }
-
-    @VisibleForTesting
-    //TODO get locale from context.
-    public static String formatTotalValue(Context context, Locale locale, float value, Commodity commodity) {
-        String label = context.getString(R.string.label_chart_total);
-        NumberFormat formatter = NumberFormat.getNumberInstance(locale);
-        formatter.setMinimumFractionDigits(0);
-        formatter.setMaximumFractionDigits(commodity.getSmallestFractionDigits());
-        String currencySymbol = commodity.getSymbol();
-        return String.format(locale, TOTAL_VALUE_LABEL_PATTERN, label, formatter.format(value), currencySymbol);
-    }
-
-    protected static <E extends Entry, T extends IDataSet<E>> float getYValueSum(ChartData<T> data) {
-        return data.getYMax() - data.getYMin();
-    }
-
-    protected static <E extends Entry> float getYValueSum(IDataSet<E> dataSet) {
-        return dataSet.getYMax() - dataSet.getYMin();
+    protected fun getLabel(context: Context, accountType: AccountType): String? {
+        val labels = context.resources.getStringArray(R.array.account_type_entry_values)
+        return labels[accountType.labelIndex]
     }
 
     @ColorInt
-    protected int getTextColor(@NonNull Context context) {
-        return getTextColorPrimary(context);
+    protected fun getTextColor(context: Context): Int {
+        return context.textColorPrimary
     }
 
     @ColorInt
-    protected int getAccountColor(@NonNull Account account, int count) {
-        @ColorInt int color;
-        if (mUseAccountColor) {
-            color = (account.getColor() != Account.DEFAULT_COLOR)
-                ? account.getColor()
-                : COLORS[count % COLORS.length];
+    protected fun getAccountColor(account: Account, count: Int): Int {
+        @ColorInt val color: Int = if (useAccountColor) {
+            if (account.color != Account.DEFAULT_COLOR)
+                account.color
+            else
+                COLORS[count % COLORS.size]
         } else {
-            color = COLORS[count % COLORS.length];
+            COLORS[count % COLORS.size]
         }
-        return color;
+        return color
     }
 
-    private class GeneratorTask extends AsyncTask<Void, Void, Void> {
+    private inner class GeneratorTask(activity: ReportsActivity) :
+        AsyncTask<Any, Any, Any>() {
+        private val activityRef: WeakReference<ReportsActivity> =
+            WeakReference<ReportsActivity>(activity)
 
-        private final WeakReference<ReportsActivity> activityRef;
-
-        private GeneratorTask(ReportsActivity activity) {
-            this.activityRef = new WeakReference<>(activity);
+        override fun onPreExecute() {
+            val activity: BaseDrawerActivity = activityRef.get() ?: return
+            activity.showProgressBar(true)
         }
 
-        @Override
-        protected void onPreExecute() {
-            BaseDrawerActivity activity = this.activityRef.get();
-            assert activity != null;
-            activity.showProgressBar(true);
+        override fun doInBackground(vararg params: Any?): Any? {
+            val activity: BaseDrawerActivity = activityRef.get() ?: return null
+            // FIXME return data to be displayed.
+            generateReport(activity)
+            return Unit
         }
 
-        @Override
-        protected Void doInBackground(Void... params) {
-            BaseDrawerActivity activity = this.activityRef.get();
-            if (activity != null) {
-                // FIXME return data to be displayed.
-                generateReport(activity);
-            }
-            return null;
+        override fun onPostExecute(result: Any?) {
+            val activity: BaseDrawerActivity = activityRef.get() ?: return
+            // FIXME display the result data that was generated.
+            displayReport()
+            activity.showProgressBar(false)
+        }
+    }
+
+    companion object {
+        /**
+         * Color for chart with no data
+         */
+        const val NO_DATA_COLOR: Int = Color.LTGRAY
+
+        protected val COLORS: IntArray = intArrayOf(
+            parseColor("#17ee4e")!!, parseColor("#cc1f09")!!, parseColor("#3940f7")!!,
+            parseColor("#f9cd04")!!, parseColor("#5f33a8")!!, parseColor("#e005b6")!!,
+            parseColor("#17d6ed")!!, parseColor("#e4a9a2")!!, parseColor("#8fe6cd")!!,
+            parseColor("#8b48fb")!!, parseColor("#343a36")!!, parseColor("#6decb1")!!,
+            parseColor("#f0f8ff")!!, parseColor("#5c3378")!!, parseColor("#a6dcfd")!!,
+            parseColor("#ba037c")!!, parseColor("#708809")!!, parseColor("#32072c")!!,
+            parseColor("#fddef8")!!, parseColor("#fa0e6e")!!, parseColor("#d9e7b5")!!
+        )
+
+        /**
+         * Pattern to use to display selected chart values
+         */
+        private const val SELECTED_VALUE_PATTERN = "%s — %s %s (%.2f%%)"
+        private const val TOTAL_VALUE_LABEL_PATTERN = "%s\n%s %s"
+
+        @VisibleForTesting
+        fun formatSelectedValue(
+            locale: Locale,
+            label: String,
+            value: Float,
+            commodity: Commodity,
+            percentage: Float
+        ): String {
+            val formatter = NumberFormat.getNumberInstance(locale)
+            formatter.setMinimumFractionDigits(0)
+            formatter.setMaximumFractionDigits(commodity.smallestFractionDigits)
+            val currencySymbol = commodity.symbol
+            return String.format(
+                locale,
+                SELECTED_VALUE_PATTERN,
+                label.trim(),
+                formatter.format(value.toDouble()),
+                currencySymbol,
+                percentage
+            )
         }
 
-        @Override
-        protected void onPostExecute(Void result) {
-            BaseDrawerActivity activity = this.activityRef.get();
-            if (activity != null) {
-                // FIXME display the result data that was generated.
-                displayReport();
-                activity.showProgressBar(false);
-            }
+        @VisibleForTesting //TODO get locale from context.
+        fun formatTotalValue(
+            context: Context,
+            locale: Locale,
+            value: Float,
+            commodity: Commodity
+        ): String {
+            val label = context.getString(R.string.label_chart_total)
+            val formatter = NumberFormat.getNumberInstance(locale)
+            formatter.setMinimumFractionDigits(0)
+            formatter.setMaximumFractionDigits(commodity.smallestFractionDigits)
+            val currencySymbol = commodity.symbol
+            return String.format(
+                locale,
+                TOTAL_VALUE_LABEL_PATTERN,
+                label,
+                formatter.format(value.toDouble()),
+                currencySymbol
+            )
+        }
+
+        fun <E : Entry, T : IDataSet<E>> getYValueSum(data: ChartData<T>): Float {
+            return data.yMax - data.yMin
+        }
+
+        fun <E : Entry> getYValueSum(dataSet: IDataSet<E>): Float {
+            return dataSet.yMax - dataSet.yMin
         }
     }
 }

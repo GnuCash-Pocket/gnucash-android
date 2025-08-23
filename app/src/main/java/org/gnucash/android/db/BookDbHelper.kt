@@ -13,27 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.db
 
-package org.gnucash.android.db;
-
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.text.TextUtils;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseSchema.BookEntry;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
-import org.gnucash.android.model.Book;
-import org.gnucash.android.model.Commodity;
-
-import java.io.File;
+import android.content.Context
+import android.content.SharedPreferences
+import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteOpenHelper
+import org.gnucash.android.app.GnuCashApplication.Companion.appContext
+import org.gnucash.android.db.DatabaseSchema.BookEntry
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.BooksDbAdapter
+import org.gnucash.android.db.adapter.CommoditiesDbAdapter
+import org.gnucash.android.model.Book
+import org.gnucash.android.model.Commodity
+import java.io.File
 
 /**
  * Database helper for managing database which stores information about the books in the application
@@ -41,101 +34,56 @@ import java.io.File;
  * there are multiple accounts/transactions databases in the system and this one will be used to
  * switch between them.
  */
-public class BookDbHelper extends SQLiteOpenHelper {
+class BookDbHelper(private val context: Context) : SQLiteOpenHelper(
+    context,
+    DatabaseSchema.BOOK_DATABASE_NAME,
+    null,
+    DatabaseSchema.BOOK_DATABASE_VERSION
+) {
+    private var holder: DatabaseHolder? = null
 
-    /**
-     * Create the books table
-     */
-    private static final String BOOKS_TABLE_CREATE = "CREATE TABLE " + BookEntry.TABLE_NAME + " ("
-        + BookEntry._ID + " integer primary key autoincrement, "
-        + BookEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
-        + BookEntry.COLUMN_DISPLAY_NAME + " varchar(255) not null, "
-        + BookEntry.COLUMN_ROOT_GUID + " varchar(255) not null, "
-        + BookEntry.COLUMN_TEMPLATE_GUID + " varchar(255), "
-        + BookEntry.COLUMN_ACTIVE + " tinyint default 0, "
-        + BookEntry.COLUMN_SOURCE_URI + " varchar(255), "
-        + BookEntry.COLUMN_LAST_SYNC + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-        + BookEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-        + BookEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP "
-        + ");"
-        + DatabaseHelper.createUpdatedAtTrigger(BookEntry.TABLE_NAME);
-
-    @NonNull
-    private final Context context;
-    @Nullable
-    private DatabaseHolder holder;
-
-    public BookDbHelper(@NonNull Context context) {
-        super(context, DatabaseSchema.BOOK_DATABASE_NAME, null, DatabaseSchema.BOOK_DATABASE_VERSION);
-        this.context = context;
-    }
-
-    @NonNull
-    public DatabaseHolder getHolder() {
-        DatabaseHolder holder = this.holder;
+    fun getHolder(): DatabaseHolder {
+        var holder: DatabaseHolder? = this.holder
         if (holder == null) {
-            this.holder = holder = new DatabaseHolder(context, getWritableDatabase());
+            holder = DatabaseHolder(context, writableDatabase)
+            this.holder = holder
         }
-        return holder;
+        return holder
     }
 
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-        db.execSQL(BOOKS_TABLE_CREATE);
-        Context context = GnuCashApplication.getAppContext();
-        insertBlankBook(context, db);
+    override fun onCreate(db: SQLiteDatabase) {
+        db.execSQL(BOOKS_TABLE_CREATE)
+        insertBlankBook(appContext, db)
     }
 
-    @NonNull
-    public Book insertBlankBook() {
-        DatabaseHolder holder = getHolder();
-        return insertBlankBook(holder.context, holder.db);
+    fun insertBlankBook(): Book {
+        return insertBlankBook(getHolder())
     }
 
-    @NonNull
-    public Book insertBlankBook(@NonNull Context context, @NonNull SQLiteDatabase db) {
-        DatabaseHolder bookHolder = new DatabaseHolder(context, db);
+    fun insertBlankBook(context: Context, db: SQLiteDatabase): Book {
+        return insertBlankBook(DatabaseHolder(context, db))
+    }
+
+    fun insertBlankBook(bookHolder : DatabaseHolder): Book {
         if (this.holder == null) {
-            this.holder = bookHolder;
+            this.holder = bookHolder
         }
-        Book book = new Book();
-        DatabaseHelper dbHelper = new DatabaseHelper(context, book.getUID());
-        DatabaseHolder dbHolder = dbHelper.getHolder();
-        CommoditiesDbAdapter commoditiesDbAdapter = new CommoditiesDbAdapter(dbHolder);
-        Commodity.DEFAULT_COMMODITY = commoditiesDbAdapter.getDefaultCommodity();
+        val book = Book()
+        val dbHelper = DatabaseHelper(context, book.uid)
+        val dbHolder = dbHelper.holder
+        val commoditiesDbAdapter = CommoditiesDbAdapter(dbHolder)
+        Commodity.DEFAULT_COMMODITY = commoditiesDbAdapter.getDefaultCommodity()
 
-        AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(dbHolder);
-        String rootAccountUID = accountsDbAdapter.getOrCreateRootAccountUID();
+        val accountsDbAdapter = AccountsDbAdapter(dbHolder)
+        val rootAccountUID = accountsDbAdapter.rootAccountUID
         try {
-            dbHelper.close();
-        } catch (Exception ignore) {
+            dbHelper.close()
+        } catch (_: Exception) {
         }
-        book.setRootAccountUID(rootAccountUID);
-        book.setActive(true);
-        insertBook(bookHolder, book);
-        return book;
-    }
-
-    /**
-     * Returns the database for the book
-     *
-     * @param bookUID GUID of the book
-     * @return SQLiteDatabase of the book
-     */
-    public static SQLiteDatabase getDatabase(String bookUID) {
-        return getDatabase(GnuCashApplication.getAppContext(), bookUID);
-    }
-
-    /**
-     * Returns the database for the book
-     *
-     * @param context The application context.
-     * @param bookUID GUID of the book
-     * @return SQLiteDatabase of the book
-     */
-    public static SQLiteDatabase getDatabase(@NonNull Context context, String bookUID) {
-        DatabaseHelper dbHelper = new DatabaseHelper(context, bookUID);
-        return dbHelper.getWritableDatabase();
+        book.rootAccountUID = rootAccountUID
+        book.isActive = true
+        insertBook(bookHolder, book)
+        return book
     }
 
     /**
@@ -144,48 +92,87 @@ public class BookDbHelper extends SQLiteOpenHelper {
      * @param holder Database holder
      * @param book       Book to insert
      */
-    private void insertBook(@NonNull DatabaseHolder holder, Book book) {
-        BooksDbAdapter booksDbAdapter = new BooksDbAdapter(holder);
-        String name = book.getDisplayName();
-        if (TextUtils.isEmpty(name)) {
-            name = booksDbAdapter.generateDefaultBookName();
-            book.setDisplayName(name);
+    private fun insertBook(holder: DatabaseHolder, book: Book) {
+        val booksDbAdapter = BooksDbAdapter(holder)
+        var name = book.displayName
+        if (name.isNullOrEmpty()) {
+            name = booksDbAdapter.generateDefaultBookName()
+            book.displayName = name
         }
-        booksDbAdapter.addRecord(book);
+        booksDbAdapter.addRecord(book)
     }
 
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
         //nothing to see here yet, move along
     }
 
-    public static String getBookUID(@NonNull SQLiteDatabase db) {
-        String path = db.getPath();
-        File file = new File(path);
-        return file.getName();
-    }
+    companion object {
+        /**
+         * Create the books table
+         */
+        private val BOOKS_TABLE_CREATE = ("CREATE TABLE " + BookEntry.TABLE_NAME + " ("
+                + BookEntry.COLUMN_ID + " integer primary key autoincrement, "
+                + BookEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
+                + BookEntry.COLUMN_DISPLAY_NAME + " varchar(255) not null, "
+                + BookEntry.COLUMN_ROOT_GUID + " varchar(255) not null, "
+                + BookEntry.COLUMN_TEMPLATE_GUID + " varchar(255), "
+                + BookEntry.COLUMN_ACTIVE + " tinyint default 0, "
+                + BookEntry.COLUMN_SOURCE_URI + " varchar(255), "
+                + BookEntry.COLUMN_LAST_SYNC + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                + BookEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                + BookEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP "
+                + ");"
+                + DatabaseHelper.createUpdatedAtTrigger(BookEntry.TABLE_NAME))
 
-    /**
-     * Return the {@link SharedPreferences} for a specific book
-     *
-     * @param context the application context.
-     * @param db      the book database.
-     * @return Shared preferences
-     */
-    public static SharedPreferences getBookPreferences(@NonNull Context context, @NonNull SQLiteDatabase db) {
-        String bookUID = getBookUID(db);
-        return context.getSharedPreferences(bookUID, Context.MODE_PRIVATE);
-    }
+        /**
+         * Returns the database for the book
+         *
+         * @param bookUID GUID of the book
+         * @return SQLiteDatabase of the book
+         */
+        fun getDatabase(bookUID: String): SQLiteDatabase {
+            return getDatabase(appContext, bookUID)
+        }
 
-    /**
-     * Return the {@link SharedPreferences} for a specific book
-     *
-     * @param holder Database holder
-     * @return Shared preferences
-     */
-    public static SharedPreferences getBookPreferences(@NonNull DatabaseHolder holder) {
-        Context context = holder.context;
-        String bookUID = holder.name;
-        return context.getSharedPreferences(bookUID, Context.MODE_PRIVATE);
+        /**
+         * Returns the database for the book
+         *
+         * @param context The application context.
+         * @param bookUID GUID of the book
+         * @return SQLiteDatabase of the book
+         */
+        fun getDatabase(context: Context, bookUID: String): SQLiteDatabase {
+            val dbHelper = DatabaseHelper(context, bookUID)
+            return dbHelper.writableDatabase
+        }
+
+        fun getBookUID(db: SQLiteDatabase): String {
+            val file = File(db.path)
+            return file.name
+        }
+
+        /**
+         * Return the [SharedPreferences] for a specific book
+         *
+         * @param context the application context.
+         * @param db      the book database.
+         * @return Shared preferences
+         */
+        fun getBookPreferences(context: Context, db: SQLiteDatabase): SharedPreferences {
+            val bookUID: String = getBookUID(db)
+            return context.getSharedPreferences(bookUID, Context.MODE_PRIVATE)
+        }
+
+        /**
+         * Return the [SharedPreferences] for a specific book
+         *
+         * @param holder Database holder
+         * @return Shared preferences
+         */
+        fun getBookPreferences(holder: DatabaseHolder): SharedPreferences {
+            val context = holder.context
+            val bookUID = holder.name
+            return context.getSharedPreferences(bookUID, Context.MODE_PRIVATE)
+        }
     }
 }

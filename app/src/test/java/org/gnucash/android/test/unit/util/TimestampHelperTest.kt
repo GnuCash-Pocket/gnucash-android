@@ -46,7 +46,7 @@ class TimestampHelperTest : GnuCashTest() {
 
     @Test
     fun shouldGetTimestampFromEpochZero() {
-        val epochZero = TimestampHelper.getTimestampFromEpochZero()
+        val epochZero = TimestampHelper.timestampFromEpochZero
         assertThat(epochZero.time).isZero()
     }
 
@@ -79,7 +79,7 @@ class TimestampHelperTest : GnuCashTest() {
     @Test
     fun shouldGetTimestampFromNow() {
         val before = System.currentTimeMillis()
-        val now = TimestampHelper.getTimestampFromNow().time
+        val now = TimestampHelper.timestampFromNow.time
         val after = System.currentTimeMillis()
         assertThat(now).isGreaterThanOrEqualTo(before)
             .isLessThanOrEqualTo(after)

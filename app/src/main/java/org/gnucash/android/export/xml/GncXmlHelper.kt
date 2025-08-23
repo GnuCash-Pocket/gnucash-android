@@ -14,25 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.export.xml
 
-package org.gnucash.android.export.xml;
-
-import static org.gnucash.android.math.MathExtKt.toBigDecimal;
-
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.ui.transaction.TransactionFormFragment;
-import org.joda.time.DateTimeZone;
-import org.joda.time.Instant;
-import org.joda.time.LocalDate;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-
-import java.math.BigDecimal;
-import java.text.NumberFormat;
-import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
+import org.gnucash.android.math.toBigDecimal
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.model.Money
+import org.gnucash.android.ui.transaction.TransactionFormFragment
+import org.joda.time.DateTimeZone
+import org.joda.time.Instant
+import org.joda.time.LocalDate
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.DateTimeFormatter
+import java.math.BigDecimal
+import java.text.NumberFormat
+import java.text.ParseException
+import java.util.Calendar
+import java.util.Date
 
 /**
  * Collection of helper tags and methods for Gnc XML export
@@ -40,202 +37,201 @@ import java.util.Date;
  * @author Ngewi Fet <ngewif@gmail.com>
  * @author Yongxin Wang <fefe.wyx@gmail.com>
  */
-public abstract class GncXmlHelper {
+object GncXmlHelper {
+    const val NS_GNUCASH_PREFIX: String = "gnc"
+    const val NS_GNUCASH: String = "http://www.gnucash.org/XML/gnc"
+    const val NS_GNUCASH_ACCOUNT_PREFIX: String = "gnc-act"
+    const val NS_GNUCASH_ACCOUNT: String = "http://www.gnucash.org/XML/gnc-act"
+    const val NS_ACCOUNT_PREFIX: String = "act"
+    const val NS_ACCOUNT: String = "http://www.gnucash.org/XML/act"
+    const val NS_BOOK_PREFIX: String = "book"
+    const val NS_BOOK: String = "http://www.gnucash.org/XML/book"
+    const val NS_CD_PREFIX: String = "cd"
+    const val NS_CD: String = "http://www.gnucash.org/XML/cd"
+    const val NS_COMMODITY_PREFIX: String = "cmdty"
+    const val NS_COMMODITY: String = "http://www.gnucash.org/XML/cmdty"
+    const val NS_PRICE_PREFIX: String = "price"
+    const val NS_PRICE: String = "http://www.gnucash.org/XML/price"
+    const val NS_SLOT_PREFIX: String = "slot"
+    const val NS_SLOT: String = "http://www.gnucash.org/XML/slot"
+    const val NS_SPLIT_PREFIX: String = "split"
+    const val NS_SPLIT: String = "http://www.gnucash.org/XML/split"
+    const val NS_SX_PREFIX: String = "sx"
+    const val NS_SX: String = "http://www.gnucash.org/XML/sx"
+    const val NS_TRANSACTION_PREFIX: String = "trn"
+    const val NS_TRANSACTION: String = "http://www.gnucash.org/XML/trn"
+    const val NS_TS_PREFIX: String = "ts"
+    const val NS_TS: String = "http://www.gnucash.org/XML/ts"
+    const val NS_FS_PREFIX: String = "fs"
+    const val NS_FS: String = "http://www.gnucash.org/XML/fs"
+    const val NS_BUDGET_PREFIX: String = "bgt"
+    const val NS_BUDGET: String = "http://www.gnucash.org/XML/bgt"
+    const val NS_RECURRENCE_PREFIX: String = "recurrence"
+    const val NS_RECURRENCE: String = "http://www.gnucash.org/XML/recurrence"
+    const val NS_LOT_PREFIX: String = "lot"
+    const val NS_LOT: String = "http://www.gnucash.org/XML/lot"
+    const val NS_ADDRESS_PREFIX: String = "addr"
+    const val NS_ADDRESS: String = "http://www.gnucash.org/XML/addr"
+    const val NS_BILLTERM_PREFIX: String = "billterm"
+    const val NS_BILLTERM: String = "http://www.gnucash.org/XML/billterm"
+    const val NS_BT_DAYS_PREFIX: String = "bt-days"
+    const val NS_BT_DAYS: String = "http://www.gnucash.org/XML/bt-days"
+    const val NS_BT_PROX_PREFIX: String = "bt-prox"
+    const val NS_BT_PROX: String = "http://www.gnucash.org/XML/bt-prox"
+    const val NS_CUSTOMER_PREFIX: String = "cust"
+    const val NS_CUSTOMER: String = "http://www.gnucash.org/XML/cust"
+    const val NS_EMPLOYEE_PREFIX: String = "employee"
+    const val NS_EMPLOYEE: String = "http://www.gnucash.org/XML/employee"
+    const val NS_ENTRY_PREFIX: String = "entry"
+    const val NS_ENTRY: String = "http://www.gnucash.org/XML/entry"
+    const val NS_INVOICE_PREFIX: String = "invoice"
+    const val NS_INVOICE: String = "http://www.gnucash.org/XML/invoice"
+    const val NS_JOB_PREFIX: String = "job"
+    const val NS_JOB: String = "http://www.gnucash.org/XML/job"
+    const val NS_ORDER_PREFIX: String = "order"
+    const val NS_ORDER: String = "http://www.gnucash.org/XML/order"
+    const val NS_OWNER_PREFIX: String = "owner"
+    const val NS_OWNER: String = "http://www.gnucash.org/XML/owner"
+    const val NS_TAXTABLE_PREFIX: String = "taxtable"
+    const val NS_TAXTABLE: String = "http://www.gnucash.org/XML/taxtable"
+    const val NS_TTE_PREFIX: String = "tte"
+    const val NS_TTE: String = "http://www.gnucash.org/XML/tte"
+    const val NS_VENDOR_PREFIX: String = "vendor"
+    const val NS_VENDOR: String = "http://www.gnucash.org/XML/vendor"
 
-    public static final String NS_GNUCASH_PREFIX = "gnc";
-    public static final String NS_GNUCASH = "http://www.gnucash.org/XML/gnc";
-    public static final String NS_GNUCASH_ACCOUNT_PREFIX = "gnc-act";
-    public static final String NS_GNUCASH_ACCOUNT = "http://www.gnucash.org/XML/gnc-act";
-    public static final String NS_ACCOUNT_PREFIX = "act";
-    public static final String NS_ACCOUNT = "http://www.gnucash.org/XML/act";
-    public static final String NS_BOOK_PREFIX = "book";
-    public static final String NS_BOOK = "http://www.gnucash.org/XML/book";
-    public static final String NS_CD_PREFIX = "cd";
-    public static final String NS_CD = "http://www.gnucash.org/XML/cd";
-    public static final String NS_COMMODITY_PREFIX = "cmdty";
-    public static final String NS_COMMODITY = "http://www.gnucash.org/XML/cmdty";
-    public static final String NS_PRICE_PREFIX = "price";
-    public static final String NS_PRICE = "http://www.gnucash.org/XML/price";
-    public static final String NS_SLOT_PREFIX = "slot";
-    public static final String NS_SLOT = "http://www.gnucash.org/XML/slot";
-    public static final String NS_SPLIT_PREFIX = "split";
-    public static final String NS_SPLIT = "http://www.gnucash.org/XML/split";
-    public static final String NS_SX_PREFIX = "sx";
-    public static final String NS_SX = "http://www.gnucash.org/XML/sx";
-    public static final String NS_TRANSACTION_PREFIX = "trn";
-    public static final String NS_TRANSACTION = "http://www.gnucash.org/XML/trn";
-    public static final String NS_TS_PREFIX = "ts";
-    public static final String NS_TS = "http://www.gnucash.org/XML/ts";
-    public static final String NS_FS_PREFIX = "fs";
-    public static final String NS_FS = "http://www.gnucash.org/XML/fs";
-    public static final String NS_BUDGET_PREFIX = "bgt";
-    public static final String NS_BUDGET = "http://www.gnucash.org/XML/bgt";
-    public static final String NS_RECURRENCE_PREFIX = "recurrence";
-    public static final String NS_RECURRENCE = "http://www.gnucash.org/XML/recurrence";
-    public static final String NS_LOT_PREFIX = "lot";
-    public static final String NS_LOT = "http://www.gnucash.org/XML/lot";
-    public static final String NS_ADDRESS_PREFIX = "addr";
-    public static final String NS_ADDRESS = "http://www.gnucash.org/XML/addr";
-    public static final String NS_BILLTERM_PREFIX = "billterm";
-    public static final String NS_BILLTERM = "http://www.gnucash.org/XML/billterm";
-    public static final String NS_BT_DAYS_PREFIX = "bt-days";
-    public static final String NS_BT_DAYS = "http://www.gnucash.org/XML/bt-days";
-    public static final String NS_BT_PROX_PREFIX = "bt-prox";
-    public static final String NS_BT_PROX = "http://www.gnucash.org/XML/bt-prox";
-    public static final String NS_CUSTOMER_PREFIX = "cust";
-    public static final String NS_CUSTOMER = "http://www.gnucash.org/XML/cust";
-    public static final String NS_EMPLOYEE_PREFIX = "employee";
-    public static final String NS_EMPLOYEE = "http://www.gnucash.org/XML/employee";
-    public static final String NS_ENTRY_PREFIX = "entry";
-    public static final String NS_ENTRY = "http://www.gnucash.org/XML/entry";
-    public static final String NS_INVOICE_PREFIX = "invoice";
-    public static final String NS_INVOICE = "http://www.gnucash.org/XML/invoice";
-    public static final String NS_JOB_PREFIX = "job";
-    public static final String NS_JOB = "http://www.gnucash.org/XML/job";
-    public static final String NS_ORDER_PREFIX = "order";
-    public static final String NS_ORDER = "http://www.gnucash.org/XML/order";
-    public static final String NS_OWNER_PREFIX = "owner";
-    public static final String NS_OWNER = "http://www.gnucash.org/XML/owner";
-    public static final String NS_TAXTABLE_PREFIX = "taxtable";
-    public static final String NS_TAXTABLE = "http://www.gnucash.org/XML/taxtable";
-    public static final String NS_TTE_PREFIX = "tte";
-    public static final String NS_TTE = "http://www.gnucash.org/XML/tte";
-    public static final String NS_VENDOR_PREFIX = "vendor";
-    public static final String NS_VENDOR = "http://www.gnucash.org/XML/vendor";
-
-    public static final String ATTR_KEY_TYPE = "type";
-    public static final String ATTR_KEY_DATE_POSTED = "date-posted";
-    public static final String ATTR_KEY_VERSION = "version";
-    public static final String ATTR_VALUE_STRING = "string";
-    public static final String ATTR_VALUE_NUMERIC = "numeric";
-    public static final String ATTR_VALUE_GUID = "guid";
-    public static final String ATTR_VALUE_BOOK = "book";
-    public static final String ATTR_VALUE_FRAME = "frame";
-    public static final String ATTR_VALUE_GDATE = "gdate";
-    public static final String TAG_GDATE = "gdate";
+    const val ATTR_KEY_TYPE: String = "type"
+    const val ATTR_KEY_DATE_POSTED: String = "date-posted"
+    const val ATTR_KEY_VERSION: String = "version"
+    const val ATTR_VALUE_STRING: String = "string"
+    const val ATTR_VALUE_NUMERIC: String = "numeric"
+    const val ATTR_VALUE_GUID: String = "guid"
+    const val ATTR_VALUE_BOOK: String = "book"
+    const val ATTR_VALUE_FRAME: String = "frame"
+    const val ATTR_VALUE_GDATE: String = "gdate"
+    const val TAG_GDATE: String = "gdate"
 
     /*
     Qualified GnuCash XML tag names
      */
-    public static final String TAG_ROOT = "gnc-v2";
-    public static final String TAG_BOOK = "book";
-    public static final String TAG_ID = "id";
-    public static final String TAG_COUNT_DATA = "count-data";
+    const val TAG_ROOT: String = "gnc-v2"
+    const val TAG_BOOK: String = "book"
+    const val TAG_ID: String = "id"
+    const val TAG_COUNT_DATA: String = "count-data"
 
-    public static final String TAG_COMMODITY = "commodity";
-    public static final String TAG_FRACTION = "fraction";
-    public static final String TAG_GET_QUOTES = "get_quotes";
-    public static final String TAG_NAME = "name";
-    public static final String TAG_QUOTE_SOURCE = "quote_source";
-    public static final String TAG_QUOTE_TZ = "quote_tz";
-    public static final String TAG_SPACE = "space";
-    public static final String TAG_XCODE = "xcode";
-    public static final String COMMODITY_CURRENCY = Commodity.COMMODITY_CURRENCY;
-    public static final String COMMODITY_ISO4217 = Commodity.COMMODITY_ISO4217;
-    public static final String COMMODITY_TEMPLATE = Commodity.COMMODITY_CURRENCY;
+    const val TAG_COMMODITY: String = "commodity"
+    const val TAG_FRACTION: String = "fraction"
+    const val TAG_GET_QUOTES: String = "get_quotes"
+    const val TAG_NAME: String = "name"
+    const val TAG_QUOTE_SOURCE: String = "quote_source"
+    const val TAG_QUOTE_TZ: String = "quote_tz"
+    const val TAG_SPACE: String = "space"
+    const val TAG_XCODE: String = "xcode"
+    const val COMMODITY_CURRENCY: String = Commodity.COMMODITY_CURRENCY
+    const val COMMODITY_ISO4217: String = Commodity.COMMODITY_ISO4217
+    const val COMMODITY_TEMPLATE: String = Commodity.COMMODITY_CURRENCY
 
-    public static final String TAG_ACCOUNT = "account";
-    public static final String TAG_TYPE = "type";
-    public static final String TAG_COMMODITY_SCU = "commodity-scu";
-    public static final String TAG_PARENT = "parent";
-    public static final String TAG_DESCRIPTION = "description";
-    public static final String TAG_TITLE = "title";
-    public static final String TAG_LOTS = "lots";
+    const val TAG_ACCOUNT: String = "account"
+    const val TAG_TYPE: String = "type"
+    const val TAG_COMMODITY_SCU: String = "commodity-scu"
+    const val TAG_PARENT: String = "parent"
+    const val TAG_DESCRIPTION: String = "description"
+    const val TAG_TITLE: String = "title"
+    const val TAG_LOTS: String = "lots"
 
-    public static final String TAG_KEY = "key";
-    public static final String TAG_VALUE = "value";
-    public static final String TAG_SLOTS = "slots";
-    public static final String TAG_SLOT = "slot";
+    const val TAG_KEY: String = "key"
+    const val TAG_VALUE: String = "value"
+    const val TAG_SLOTS: String = "slots"
+    const val TAG_SLOT: String = "slot"
 
-    public static final String TAG_TRANSACTION = "transaction";
-    public static final String TAG_CURRENCY = "currency";
-    public static final String TAG_DATE_POSTED = "date-posted";
-    public static final String TAG_DATE = "date";
-    public static final String TAG_DATE_ENTERED = "date-entered";
-    public static final String TAG_SPLITS = "splits";
-    public static final String TAG_SPLIT = "split";
-    public static final String TAG_TEMPLATE_TRANSACTIONS = "template-transactions";
+    const val TAG_TRANSACTION: String = "transaction"
+    const val TAG_CURRENCY: String = "currency"
+    const val TAG_DATE_POSTED: String = "date-posted"
+    const val TAG_DATE: String = "date"
+    const val TAG_DATE_ENTERED: String = "date-entered"
+    const val TAG_SPLITS: String = "splits"
+    const val TAG_SPLIT: String = "split"
+    const val TAG_TEMPLATE_TRANSACTIONS: String = "template-transactions"
 
-    public static final String TAG_MEMO = "memo";
-    public static final String TAG_RECONCILED_STATE = "reconciled-state";
-    public static final String TAG_RECONCILED_DATE = "reconciled-date";
-    public static final String TAG_QUANTITY = "quantity";
-    public static final String TAG_LOT = "lot";
+    const val TAG_MEMO: String = "memo"
+    const val TAG_RECONCILED_STATE: String = "reconciled-state"
+    const val TAG_RECONCILED_DATE: String = "reconciled-date"
+    const val TAG_QUANTITY: String = "quantity"
+    const val TAG_LOT: String = "lot"
 
-    public static final String TAG_PRICEDB = "pricedb";
-    public static final String TAG_PRICE = "price";
-    public static final String TAG_TIME = "time";
-    public static final String TAG_SOURCE = "source";
+    const val TAG_PRICEDB: String = "pricedb"
+    const val TAG_PRICE: String = "price"
+    const val TAG_TIME: String = "time"
+    const val TAG_SOURCE: String = "source"
 
     /**
      * Periodicity of the recurrence.
-     * <p>Only currently used for reading old backup files. May be removed in the future. </p>
      *
-     * @deprecated Use {@link #TAG_RECURRENCE} instead
+     * Only currently used for reading old backup files. May be removed in the future.
+     *
      */
-    @Deprecated
-    public static final String TAG_RECURRENCE_PERIOD = "recurrence_period";
+    @Deprecated("Use {@link #TAG_RECURRENCE} instead")
+    const val TAG_RECURRENCE_PERIOD: String = "recurrence_period"
 
-    public static final String TAG_SCHEDULED_ACTION = "schedxaction";
-    public static final String TAG_ENABLED = "enabled";
-    public static final String TAG_AUTO_CREATE = "autoCreate";
-    public static final String TAG_AUTO_CREATE_NOTIFY = "autoCreateNotify";
-    public static final String TAG_ADVANCE_CREATE_DAYS = "advanceCreateDays";
-    public static final String TAG_ADVANCE_REMIND_DAYS = "advanceRemindDays";
-    public static final String TAG_INSTANCE_COUNT = "instanceCount";
-    public static final String TAG_START = "start";
-    public static final String TAG_LAST = "last";
-    public static final String TAG_END = "end";
-    public static final String TAG_NUM_OCCUR = "num-occur";
-    public static final String TAG_REM_OCCUR = "rem-occur";
-    public static final String TAG_TAG = "tag";
-    public static final String TAG_TEMPLATE_ACCOUNT = "templ-acct";
-    public static final String TAG_SCHEDULE = "schedule";
+    const val TAG_SCHEDULED_ACTION: String = "schedxaction"
+    const val TAG_ENABLED: String = "enabled"
+    const val TAG_AUTO_CREATE: String = "autoCreate"
+    const val TAG_AUTO_CREATE_NOTIFY: String = "autoCreateNotify"
+    const val TAG_ADVANCE_CREATE_DAYS: String = "advanceCreateDays"
+    const val TAG_ADVANCE_REMIND_DAYS: String = "advanceRemindDays"
+    const val TAG_INSTANCE_COUNT: String = "instanceCount"
+    const val TAG_START: String = "start"
+    const val TAG_LAST: String = "last"
+    const val TAG_END: String = "end"
+    const val TAG_NUM_OCCUR: String = "num-occur"
+    const val TAG_REM_OCCUR: String = "rem-occur"
+    const val TAG_TAG: String = "tag"
+    const val TAG_TEMPLATE_ACCOUNT: String = "templ-acct"
+    const val TAG_SCHEDULE: String = "schedule"
 
-    public static final String TAG_RECURRENCE = "recurrence";
-    public static final String TAG_MULT = "mult";
-    public static final String TAG_PERIOD_TYPE = "period_type";
-    public static final String TAG_WEEKEND_ADJ = "weekend_adj";
+    const val TAG_RECURRENCE: String = "recurrence"
+    const val TAG_MULT: String = "mult"
+    const val TAG_PERIOD_TYPE: String = "period_type"
+    const val TAG_WEEKEND_ADJ: String = "weekend_adj"
 
-    public static final String TAG_BUDGET = "budget";
-    public static final String TAG_NUM_PERIODS = "num-periods";
+    const val TAG_BUDGET: String = "budget"
+    const val TAG_NUM_PERIODS: String = "num-periods"
 
+    const val RECURRENCE_VERSION: String = "1.0.0"
+    const val BOOK_VERSION: String = "2.0.0"
+    private val TIME_FORMATTER: DateTimeFormatter =
+        DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss Z").withZoneUTC()
+    private val DATE_FORMATTER: DateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd")
 
-    public static final String RECURRENCE_VERSION = "1.0.0";
-    public static final String BOOK_VERSION = "2.0.0";
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss Z").withZoneUTC();
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd");
+    const val KEY_PLACEHOLDER: String = "placeholder"
+    const val KEY_COLOR: String = "color"
+    const val KEY_FAVORITE: String = "favorite"
+    const val KEY_HIDDEN: String = "hidden"
+    const val KEY_NOTES: String = "notes"
+    const val KEY_EXPORTED: String = "exported"
+    const val KEY_SCHED_XACTION: String = "sched-xaction"
+    const val KEY_SPLIT_ACCOUNT_SLOT: String = "account"
+    const val KEY_DEBIT_FORMULA: String = "debit-formula"
+    const val KEY_CREDIT_FORMULA: String = "credit-formula"
+    const val KEY_DEBIT_NUMERIC: String = "debit-numeric"
+    const val KEY_CREDIT_NUMERIC: String = "credit-numeric"
+    const val KEY_FROM_SCHED_ACTION: String = "from-sched-xaction"
+    const val KEY_DEFAULT_TRANSFER_ACCOUNT: String = "default_transfer_account"
 
-    public static final String KEY_PLACEHOLDER = "placeholder";
-    public static final String KEY_COLOR = "color";
-    public static final String KEY_FAVORITE = "favorite";
-    public static final String KEY_HIDDEN = "hidden";
-    public static final String KEY_NOTES = "notes";
-    public static final String KEY_EXPORTED = "exported";
-    public static final String KEY_SCHED_XACTION = "sched-xaction";
-    public static final String KEY_SPLIT_ACCOUNT_SLOT = "account";
-    public static final String KEY_DEBIT_FORMULA = "debit-formula";
-    public static final String KEY_CREDIT_FORMULA = "credit-formula";
-    public static final String KEY_DEBIT_NUMERIC = "debit-numeric";
-    public static final String KEY_CREDIT_NUMERIC = "credit-numeric";
-    public static final String KEY_FROM_SCHED_ACTION = "from-sched-xaction";
-    public static final String KEY_DEFAULT_TRANSFER_ACCOUNT = "default_transfer_account";
-
-    public static final String CD_TYPE_BOOK = "book";
-    public static final String CD_TYPE_BUDGET = "budget";
-    public static final String CD_TYPE_COMMODITY = "commodity";
-    public static final String CD_TYPE_ACCOUNT = "account";
-    public static final String CD_TYPE_TRANSACTION = "transaction";
-    public static final String CD_TYPE_SCHEDXACTION = "schedxaction";
-    public static final String CD_TYPE_PRICE = "price";
+    const val CD_TYPE_BOOK: String = "book"
+    const val CD_TYPE_BUDGET: String = "budget"
+    const val CD_TYPE_COMMODITY: String = "commodity"
+    const val CD_TYPE_ACCOUNT: String = "account"
+    const val CD_TYPE_TRANSACTION: String = "transaction"
+    const val CD_TYPE_SCHEDXACTION: String = "schedxaction"
+    const val CD_TYPE_PRICE: String = "price"
 
     /**
      * Formats dates for the GnuCash XML format
      *
      * @param milliseconds Milliseconds since epoch
      */
-    public static String formatDate(long milliseconds) {
-        return DATE_FORMATTER.print(milliseconds);
+    fun formatDate(milliseconds: Long): String {
+        return DATE_FORMATTER.print(milliseconds)
     }
 
     /**
@@ -243,8 +239,8 @@ public abstract class GncXmlHelper {
      *
      * @param date the date to format
      */
-    public static String formatDate(LocalDate date) {
-        return DATE_FORMATTER.print(date);
+    fun formatDate(date: LocalDate): String {
+        return DATE_FORMATTER.print(date)
     }
 
     /**
@@ -252,9 +248,10 @@ public abstract class GncXmlHelper {
      *
      * @param calendar the calendar to format
      */
-    public static String formatDate(Calendar calendar) {
-        Instant instant = new Instant(calendar);
-        return DATE_FORMATTER.withZone(DateTimeZone.forTimeZone(calendar.getTimeZone())).print(instant);
+    fun formatDate(calendar: Calendar): String {
+        val instant = Instant(calendar)
+        return DATE_FORMATTER.withZone(DateTimeZone.forTimeZone(calendar.timeZone))
+            .print(instant)
     }
 
     /**
@@ -262,8 +259,8 @@ public abstract class GncXmlHelper {
      *
      * @param milliseconds Milliseconds since epoch
      */
-    public static String formatDateTime(long milliseconds) {
-        return TIME_FORMATTER.print(milliseconds);
+    fun formatDateTime(milliseconds: Long): String {
+        return TIME_FORMATTER.print(milliseconds)
     }
 
     /**
@@ -271,9 +268,9 @@ public abstract class GncXmlHelper {
      *
      * @param date the date to format
      */
-    public static String formatDateTime(Date date) {
-        Instant instant = new Instant(date);
-        return TIME_FORMATTER.print(instant);
+    fun formatDateTime(date: Date): String {
+        val instant = Instant(date)
+        return TIME_FORMATTER.print(instant)
     }
 
     /**
@@ -281,8 +278,8 @@ public abstract class GncXmlHelper {
      *
      * @param date the date to format
      */
-    public static String formatDateTime(LocalDate date) {
-        return TIME_FORMATTER.print(date);
+    fun formatDateTime(date: LocalDate): String {
+        return TIME_FORMATTER.print(date)
     }
 
     /**
@@ -290,9 +287,10 @@ public abstract class GncXmlHelper {
      *
      * @param calendar the calendar to format
      */
-    public static String formatDateTime(Calendar calendar) {
-        Instant instant = new Instant(calendar);
-        return TIME_FORMATTER.withZone(DateTimeZone.forTimeZone(calendar.getTimeZone())).print(instant);
+    fun formatDateTime(calendar: Calendar): String {
+        val instant = Instant(calendar)
+        return TIME_FORMATTER.withZone(DateTimeZone.forTimeZone(calendar.timeZone))
+            .print(instant)
     }
 
     /**
@@ -302,8 +300,9 @@ public abstract class GncXmlHelper {
      * @return Time in milliseconds since epoch
      * @throws ParseException if the date string could not be parsed e.g. because of different format
      */
-    public static long parseDate(String dateString) throws ParseException {
-        return DATE_FORMATTER.parseMillis(dateString);
+    @Throws(ParseException::class)
+    fun parseDate(dateString: String?): Long {
+        return DATE_FORMATTER.parseMillis(dateString)
     }
 
     /**
@@ -313,27 +312,31 @@ public abstract class GncXmlHelper {
      * @return Time in milliseconds since epoch
      * @throws ParseException if the date string could not be parsed e.g. because of different format
      */
-    public static long parseDateTime(String dateString) throws ParseException {
-        return TIME_FORMATTER.parseMillis(dateString);
+    @Throws(ParseException::class)
+    fun parseDateTime(dateString: String?): Long {
+        return TIME_FORMATTER.parseMillis(dateString)
     }
 
     /**
-     * Parses amount strings from GnuCash XML into {@link java.math.BigDecimal}s.
+     * Parses amount strings from GnuCash XML into [BigDecimal]s.
      * The amounts are formatted as 12345/100
      *
      * @param amountString String containing the amount
      * @return BigDecimal with numerical value
      * @throws ParseException if the amount could not be parsed
      */
-    public static BigDecimal parseSplitAmount(String amountString) throws ParseException {
-        int index = amountString.indexOf('/');
+    @Throws(ParseException::class)
+    fun parseSplitAmount(amountString: String): BigDecimal {
+        val index = amountString.indexOf('/')
         if (index < 0) {
-            throw new ParseException("Cannot parse money string : " + amountString, 0);
+            throw ParseException("Cannot parse money string : $amountString", 0)
         }
 
-        String numerator = TransactionFormFragment.stripCurrencyFormatting(amountString.substring(0, index));
-        String denominator = TransactionFormFragment.stripCurrencyFormatting(amountString.substring(index + 1));
-        return toBigDecimal(Long.parseLong(numerator), Long.parseLong(denominator));
+        val numerator =
+            TransactionFormFragment.stripCurrencyFormatting(amountString.substring(0, index))
+        val denominator =
+            TransactionFormFragment.stripCurrencyFormatting(amountString.substring(index + 1))
+        return toBigDecimal(numerator.toLong(), denominator.toLong())
     }
 
     /**
@@ -342,60 +345,62 @@ public abstract class GncXmlHelper {
      * @param amount    Split amount as BigDecimal
      * @param commodity Commodity of the transaction
      * @return Formatted split amount
-     * @deprecated Just use the values for numerator and denominator which are saved in the database
      */
-    @Deprecated
-    public static String formatSplitAmount(BigDecimal amount, Commodity commodity) {
-        int denomInt = commodity.getSmallestFraction();
-        BigDecimal denom = new BigDecimal(denomInt);
-        String denomString = Integer.toString(denomInt);
+    @Deprecated("Just use the values for numerator and denominator which are saved in the database")
+    fun formatSplitAmount(amount: BigDecimal, commodity: Commodity): String {
+        val denomInt = commodity.smallestFraction
+        val denom = BigDecimal(denomInt)
+        val denomString = denomInt.toString()
 
-        String numerator = TransactionFormFragment.stripCurrencyFormatting(amount.multiply(denom).stripTrailingZeros().toPlainString());
-        return numerator + "/" + denomString;
+        val numerator = TransactionFormFragment.stripCurrencyFormatting(
+            (amount * denom).stripTrailingZeros().toPlainString()
+        )
+        return "$numerator/$denomString"
     }
 
     /**
      * Format the amount in template transaction splits.
-     * <p>GnuCash desktop always formats with a locale dependent format, and that varies per user.<br>
-     * So we will use the device locale here and hope that the user has the same locale on the desktop GnuCash</p>
+     *
+     * GnuCash desktop always formats with a locale dependent format, and that varies per user.<br></br>
+     * So we will use the device locale here and hope that the user has the same locale on the desktop GnuCash
      *
      * @param amount Amount to be formatted
      * @return String representation of amount
      */
-    @Deprecated
-    public static String formatTemplateSplitAmount(BigDecimal amount) {
+    @Deprecated("")
+    fun formatTemplateSplitAmount(amount: BigDecimal?): String {
         //TODO: If we ever implement an application-specific locale setting, use it here as well
-        return NumberFormat.getNumberInstance().format(amount);
+        return NumberFormat.getNumberInstance().format(amount)
     }
 
-    public static String formatFormula(BigDecimal amount, Commodity commodity) {
-        Money money = new Money(amount, commodity);
-        return formatFormula(money);
+    fun formatFormula(amount: BigDecimal, commodity: Commodity): String {
+        val money = Money(amount, commodity)
+        return formatFormula(money)
     }
 
-    public static String formatFormula(Money money) {
-        return money.formattedStringWithoutSymbol();
+    fun formatFormula(money: Money): String {
+        return money.formattedStringWithoutSymbol()
     }
 
-    public static String formatNumeric(long numerator, long denominator) {
-        if (denominator == 0) return "1/0";
-        if (numerator == 0) return "0/1";
-        long n = numerator;
-        long d = denominator;
+    fun formatNumeric(numerator: Long, denominator: Long): String {
+        if (denominator == 0L) return "1/0"
+        if (numerator == 0L) return "0/1"
+        var n = numerator
+        var d = denominator
         if ((n >= 10) && (d >= 10)) {
-            long n10 = n % 10L;
-            long d10 = d % 10L;
-            while ((n10 == 0) && (d10 == 0) && (n >= 10) && (d >= 10)) {
-                n /= 10;
-                d /= 10;
-                n10 = n % 10L;
-                d10 = d % 10L;
+            var n10 = n % 10L
+            var d10 = d % 10L
+            while ((n10 == 0L) && (d10 == 0L) && (n >= 10) && (d >= 10)) {
+                n /= 10
+                d /= 10
+                n10 = n % 10L
+                d10 = d % 10L
             }
         }
-        return n + "/" + d;
+        return "$n/$d"
     }
 
-    public static String formatNumeric(Money money) {
-        return formatNumeric(money.getNumerator(), money.getDenominator());
+    fun formatNumeric(money: Money): String {
+        return formatNumeric(money.numerator, money.denominator)
     }
 }

@@ -13,87 +13,65 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.colorpicker
 
-package org.gnucash.android.ui.colorpicker;
+import android.content.Context
+import android.graphics.drawable.ShapeDrawable
+import android.graphics.drawable.shapes.OvalShape
+import android.view.LayoutInflater
+import android.widget.FrameLayout
+import android.widget.ImageView
+import androidx.annotation.ColorInt
+import androidx.core.view.isVisible
+import org.gnucash.android.R
 
-
-import android.content.Context;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.OvalShape;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-
-import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import org.gnucash.android.R;
 
 /**
  * Creates a circular swatch of a specified color.  Adds a checkmark if marked as checked.
  */
-public class ColorPickerSwatch extends FrameLayout implements View.OnClickListener {
-    @ColorInt
-    public final int color;
-    @NonNull
-    private final ImageView mCheckmarkImage;
-    @NonNull
-    private final ImageView mSwatchImage;
-    @Nullable
-    private final OnColorSelectedListener mOnColorSelectedListener;
+class ColorPickerSwatch(
+    context: Context,
+    @ColorInt val color: Int,
+    checked: Boolean,
+    private val onColorSelectedListener: OnColorSelectedListener?
+) : FrameLayout(context) {
+    private val checkmarkImage: ImageView
+    private val swatchImage: ImageView
 
     /**
      * Interface for a callback when a color square is selected.
      */
-    public interface OnColorSelectedListener {
-
+    interface OnColorSelectedListener {
         /**
          * Called when a specific color square has been selected.
          */
-        void onColorSelected(@ColorInt int color);
+        fun onColorSelected(@ColorInt color: Int)
     }
 
-    public ColorPickerSwatch(
-        @NonNull Context context,
-        @ColorInt int color,
-        boolean checked,
-        @Nullable OnColorSelectedListener listener
-    ) {
-        super(context);
-        this.color = color;
-        mOnColorSelectedListener = listener;
+    var isChecked: Boolean
+        get() = checkmarkImage.isVisible
+        set(value) {
+            checkmarkImage.isVisible = value
+        }
 
-        LayoutInflater.from(context).inflate(R.layout.color_picker_swatch, this);
-        mSwatchImage = findViewById(R.id.color_picker_swatch);
-        mCheckmarkImage = findViewById(R.id.color_picker_checkmark);
-        mCheckmarkImage.setImageTintList(null);// Reset to white.
-        setColor(color);
-        setChecked(checked);
-        setOnClickListener(this);
-    }
-
-    protected void setColor(@ColorInt int color) {
-        ShapeDrawable drawable = new ShapeDrawable(new OvalShape());
-        drawable.getPaint().setColor(color);
-        drawable.setIntrinsicWidth(1);
-        drawable.setIntrinsicHeight(1);
-        mSwatchImage.setImageDrawable(drawable);
-    }
-
-    public void setChecked(boolean checked) {
-        if (checked) {
-            mCheckmarkImage.setVisibility(View.VISIBLE);
-        } else {
-            mCheckmarkImage.setVisibility(View.GONE);
+    init {
+        LayoutInflater.from(context).inflate(R.layout.color_picker_swatch, this)
+        swatchImage = findViewById<ImageView>(R.id.color_picker_swatch)
+        checkmarkImage = findViewById<ImageView>(R.id.color_picker_checkmark)
+        checkmarkImage.imageTintList = null // Reset to white.
+        setColor(color)
+        isChecked = checked
+        setOnClickListener {
+            onColorSelectedListener?.onColorSelected(color)
         }
     }
 
-    @Override
-    public void onClick(View v) {
-        if (mOnColorSelectedListener != null) {
-            mOnColorSelectedListener.onColorSelected(color);
+    fun setColor(@ColorInt color: Int) {
+        val drawable = ShapeDrawable(OvalShape()).apply {
+            paint.color = color
+            intrinsicWidth = 1
+            intrinsicHeight = 1
         }
+        swatchImage.setImageDrawable(drawable)
     }
 }

@@ -2,12 +2,9 @@ package org.gnucash.android.model
 
 import org.gnucash.android.export.xml.GncXmlHelper.formatNumeric
 
-data class Slot @JvmOverloads constructor(
-    @JvmField
+data class Slot(
     var key: String,
-    @JvmField
     var type: String,
-    @JvmField
     var value: Any? = null
 ) {
     val isDate: Boolean get() = (type == TYPE_GDATE) && (value is Long)
@@ -61,30 +58,22 @@ data class Slot @JvmOverloads constructor(
         const val TYPE_NUMERIC = "numeric"
         const val TYPE_STRING = "string"
 
-        @JvmStatic
         fun frame(key: String, slots: List<Slot>): Slot = Slot(key, TYPE_FRAME, slots)
 
-        @JvmStatic
         fun gdate(key: String, date: Long): Slot = Slot(key, TYPE_GDATE, date)
 
-        @JvmStatic
         fun guid(key: String, guid: String): Slot = Slot(key, TYPE_GUID, guid)
 
-        @JvmStatic
         fun numeric(key: String, numerator: Long, denominator: Long): Slot =
             Slot(key, TYPE_NUMERIC, formatNumeric(numerator, denominator))
 
-        @JvmStatic
         fun numeric(key: String, numerator: String, denominator: String): Slot =
             numeric(key, numerator.toLong(), denominator.toLong())
 
-        @JvmStatic
         fun string(key: String, value: String): Slot = Slot(key, TYPE_STRING, value)
 
-        @JvmStatic
         fun numeric(key: String, value: Money) = Slot(key, TYPE_NUMERIC, formatNumeric(value))
 
-        @JvmStatic
         fun empty() = Slot("", TYPE_STRING)
     }
 }

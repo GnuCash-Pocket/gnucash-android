@@ -6,7 +6,6 @@ import timber.log.Timber
 import java.io.IOException
 
 object SoftwareKeyboard {
-    @JvmStatic
     val isKeyboardOpen: Boolean
         get() {
             val command = "dumpsys input_method | grep mInputShown"

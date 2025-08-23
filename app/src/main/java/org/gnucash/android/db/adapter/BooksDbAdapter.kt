@@ -13,102 +13,82 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.db.adapter
 
-package org.gnucash.android.db.adapter;
-
-import static java.lang.Math.max;
-
-import android.content.ContentValues;
-import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteStatement;
-import android.net.Uri;
-import android.provider.BaseColumns;
-import android.text.TextUtils;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
-
-import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseHelper;
-import org.gnucash.android.db.DatabaseHolder;
-import org.gnucash.android.db.DatabaseSchema.BookEntry;
-import org.gnucash.android.model.Book;
-import org.gnucash.android.util.TimestampHelper;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import timber.log.Timber;
+import android.content.ContentValues
+import android.content.Context
+import android.database.Cursor
+import android.database.sqlite.SQLiteStatement
+import android.provider.BaseColumns
+import androidx.annotation.VisibleForTesting
+import androidx.core.content.edit
+import androidx.core.net.toUri
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.app.GnuCashApplication.Companion.appContext
+import org.gnucash.android.app.GnuCashApplication.Companion.getBookPreferences
+import org.gnucash.android.db.DatabaseHelper
+import org.gnucash.android.db.DatabaseHolder
+import org.gnucash.android.db.DatabaseSchema.BookEntry
+import org.gnucash.android.db.bindBoolean
+import org.gnucash.android.db.getInt
+import org.gnucash.android.db.getString
+import org.gnucash.android.model.Book
+import org.gnucash.android.util.TimestampHelper
+import org.gnucash.android.util.TimestampHelper.getTimestampFromUtcString
+import org.gnucash.android.util.set
+import timber.log.Timber
+import kotlin.math.max
 
 /**
  * Database adapter for creating/modifying book entries
  */
-public class BooksDbAdapter extends DatabaseAdapter<Book> {
+class BooksDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Book>(
+    holder,
+    BookEntry.TABLE_NAME,
+    arrayOf<String>(
+        BookEntry.COLUMN_DISPLAY_NAME,
+        BookEntry.COLUMN_ROOT_GUID,
+        BookEntry.COLUMN_TEMPLATE_GUID,
+        BookEntry.COLUMN_SOURCE_URI,
+        BookEntry.COLUMN_ACTIVE,
+        BookEntry.COLUMN_LAST_SYNC
+    )
+) {
+    override fun buildModelInstance(cursor: Cursor): Book {
+        val rootAccountGUID = cursor.getString(BookEntry.COLUMN_ROOT_GUID)
+        val rootTemplateGUID = cursor.getString(BookEntry.COLUMN_TEMPLATE_GUID)
+        val uriString = cursor.getString(BookEntry.COLUMN_SOURCE_URI)
+        val displayName = cursor.getString(BookEntry.COLUMN_DISPLAY_NAME)
+        val active = cursor.getInt(BookEntry.COLUMN_ACTIVE)
+        val lastSync = cursor.getString(BookEntry.COLUMN_LAST_SYNC)!!
 
-    /**
-     * Opens the database adapter with an existing database
-     *
-     * @param holder Database holder
-     */
-    public BooksDbAdapter(@NonNull DatabaseHolder holder) {
-        super(holder, BookEntry.TABLE_NAME, new String[]{
-            BookEntry.COLUMN_DISPLAY_NAME,
-            BookEntry.COLUMN_ROOT_GUID,
-            BookEntry.COLUMN_TEMPLATE_GUID,
-            BookEntry.COLUMN_SOURCE_URI,
-            BookEntry.COLUMN_ACTIVE,
-            BookEntry.COLUMN_LAST_SYNC
-        });
+        val book = Book(rootAccountGUID)
+        populateBaseModelAttributes(cursor, book)
+        book.displayName = displayName
+        book.rootTemplateUID = rootTemplateGUID
+        book.sourceUri = uriString?.toUri()
+        book.isActive = active != 0
+        book.lastSync = getTimestampFromUtcString(lastSync)
+
+        return book
     }
 
-    /**
-     * Return the application instance of the books database adapter
-     *
-     * @return Books database adapter
-     */
-    public static BooksDbAdapter getInstance() {
-        return GnuCashApplication.getBooksDbAdapter();
-    }
-
-    @Override
-    public Book buildModelInstance(@NonNull Cursor cursor) {
-        String rootAccountGUID = cursor.getString(cursor.getColumnIndexOrThrow(BookEntry.COLUMN_ROOT_GUID));
-        String rootTemplateGUID = cursor.getString(cursor.getColumnIndexOrThrow(BookEntry.COLUMN_TEMPLATE_GUID));
-        String uriString = cursor.getString(cursor.getColumnIndexOrThrow(BookEntry.COLUMN_SOURCE_URI));
-        String displayName = cursor.getString(cursor.getColumnIndexOrThrow(BookEntry.COLUMN_DISPLAY_NAME));
-        int active = cursor.getInt(cursor.getColumnIndexOrThrow(BookEntry.COLUMN_ACTIVE));
-        String lastSync = cursor.getString(cursor.getColumnIndexOrThrow(BookEntry.COLUMN_LAST_SYNC));
-
-        Book book = new Book(rootAccountGUID);
-        populateBaseModelAttributes(cursor, book);
-        book.setDisplayName(displayName);
-        book.setRootTemplateUID(rootTemplateGUID);
-        book.setSourceUri(uriString == null ? null : Uri.parse(uriString));
-        book.setActive(active != 0);
-        book.setLastSync(TimestampHelper.getTimestampFromUtcString(lastSync));
-
-        return book;
-    }
-
-    @Override
-    protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final Book book) {
-        if (TextUtils.isEmpty(book.getDisplayName())) {
-            book.setDisplayName(generateDefaultBookName());
+    override fun bind(stmt: SQLiteStatement, book: Book): SQLiteStatement {
+        if (book.displayName.isNullOrEmpty()) {
+            book.displayName = generateDefaultBookName()
         }
-        bindBaseModel(stmt, book);
-        stmt.bindString(1, book.getDisplayName());
-        stmt.bindString(2, book.getRootAccountUID());
-        stmt.bindString(3, book.getRootTemplateUID());
-        if (book.getSourceUri() != null) {
-            stmt.bindString(4, book.getSourceUri().toString());
+        bindBaseModel(stmt, book)
+        stmt.bindString(1, book.displayName)
+        stmt.bindString(2, book.rootAccountUID)
+        stmt.bindString(3, book.rootTemplateUID)
+        if (book.sourceUri != null) {
+            stmt.bindString(4, book.sourceUri.toString())
         }
-        stmt.bindLong(5, book.isActive() ? 1 : 0);
-        stmt.bindString(6, TimestampHelper.getUtcStringFromTimestamp(book.getLastSync()));
+        stmt.bindBoolean(5, book.isActive)
+        stmt.bindString(6, TimestampHelper.getUtcStringFromTimestamp(book.lastSync!!))
 
-        return stmt;
+        return stmt
     }
 
 
@@ -116,50 +96,55 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
      * Deletes a book - removes the book record from the database and deletes the database file from the disk
      *
      * @param bookUID GUID of the book
-     * @return <code>true</code> if deletion was successful, <code>false</code> otherwise
-     * @see #deleteRecord(String)
+     * @return `true` if deletion was successful, `false` otherwise
+     * @see .deleteRecord
      */
-    public boolean deleteBook(@NonNull Context context, @NonNull String bookUID) {
-        boolean result = context.deleteDatabase(bookUID);
-        if (result) //delete the db entry only if the file deletion was successful
-            result &= deleteRecord(bookUID);
+    fun deleteBook(context: Context, bookUID: String): Boolean {
+        var result = context.deleteDatabase(bookUID)
+        if (result)  //delete the db entry only if the file deletion was successful
+            result = result && deleteRecord(bookUID)
 
-        GnuCashApplication.getBookPreferences(context, bookUID).edit().clear().apply();
+        getBookPreferences(context, bookUID).edit { clear() }
 
-        return result;
+        return result
     }
 
     /**
-     * Sets the book with unique identifier {@code uid} as active and all others as inactive
-     * <p>If the parameter is null, then the currently active book is not changed</p>
+     * Sets the book with unique identifier `uid` as active and all others as inactive
+     *
+     * If the parameter is null, then the currently active book is not changed
      *
      * @param bookUID Unique identifier of the book
      * @return GUID of the currently active book
      */
-    public String setActive(@NonNull String bookUID) {
-        if (bookUID == null)
-            return getActiveBookUID();
+    fun setActive(bookUID: String): String {
+        if (bookUID.isEmpty()) return this.activeBookUID
 
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(BookEntry.COLUMN_ACTIVE, 0);
-        mDb.update(mTableName, contentValues, null, null); //disable all
+        val contentValues = ContentValues()
+        contentValues[BookEntry.COLUMN_ACTIVE] = 0
+        db.update(tableName, contentValues, null, null) //disable all
 
-        contentValues.clear();
-        contentValues.put(BookEntry.COLUMN_ACTIVE, 1);
-        mDb.update(mTableName, contentValues, BookEntry.COLUMN_UID + " = ?", new String[]{bookUID});
+        contentValues.clear()
+        contentValues[BookEntry.COLUMN_ACTIVE] = 1
+        db.update(
+            tableName,
+            contentValues,
+            BookEntry.COLUMN_UID + " = ?",
+            arrayOf<String?>(bookUID)
+        )
 
-        return bookUID;
+        return bookUID
     }
 
     /**
      * Checks if the book is active or not
      *
      * @param bookUID GUID of the book
-     * @return {@code true} if the book is active, {@code false} otherwise
+     * @return `true` if the book is active, `false` otherwise
      */
-    public boolean isActive(String bookUID) {
-        String isActive = getAttribute(bookUID, BookEntry.COLUMN_ACTIVE);
-        return Integer.parseInt(isActive) > 0;
+    fun isActive(bookUID: String): Boolean {
+        val isActive = getAttribute(bookUID, BookEntry.COLUMN_ACTIVE)
+        return isActive.toInt() > 0
     }
 
     /**
@@ -168,92 +153,97 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
      * @return GUID of the active book
      * @throws NoActiveBookFoundException
      */
-    public @NonNull String getActiveBookUID() throws NoActiveBookFoundException {
-        try (Cursor cursor = mDb.query(mTableName,
-            new String[]{BookEntry.COLUMN_UID},
-            BookEntry.COLUMN_ACTIVE + " = 1",
-            null,
-            null,
-            null,
-            null,
-            "1")) {
-            if (cursor.moveToFirst()) {
-                return cursor.getString(0);
+    @get:Throws(NoActiveBookFoundException::class)
+    val activeBookUID: String
+        get() {
+            db.query(
+                tableName,
+                arrayOf<String?>(BookEntry.COLUMN_UID),
+                BookEntry.COLUMN_ACTIVE + " = 1",
+                null,
+                null,
+                null,
+                null,
+                "1"
+            ).use { cursor ->
+                if (cursor.moveToFirst()) {
+                    return cursor.getString(0)
+                }
+                val e = NoActiveBookFoundException(
+                    ("There is no active book in the app.\n"
+                            + "This should NEVER happen - fix your bugs!\n"
+                            + this.noActiveBookFoundExceptionInfo)
+                )
+                // Timber.e(e);
+                throw e
             }
-            NoActiveBookFoundException e = new NoActiveBookFoundException(
-                "There is no active book in the app.\n"
-                    + "This should NEVER happen - fix your bugs!\n"
-                    + getNoActiveBookFoundExceptionInfo());
-            // Timber.e(e);
-            throw e;
         }
-    }
 
-    private String getNoActiveBookFoundExceptionInfo() {
-        StringBuilder info = new StringBuilder("UID, created, source\n");
-        for (Book book : getAllRecords()) {
-            info.append(String.format("%s, %s, %s\n",
-                book.getUID(),
-                book.getCreatedTimestamp(),
-                book.getSourceUri()));
+    private val noActiveBookFoundExceptionInfo: String
+        get() {
+            val info = StringBuilder("UID, created, source\n")
+            for (book in allRecords) {
+                info.append(
+                    String.format(
+                        "%s, %s, %s\n",
+                        book.uid,
+                        book.createdTimestamp,
+                        book.sourceUri
+                    )
+                )
+            }
+            return info.toString()
         }
-        return info.toString();
-    }
 
-    public Book getActiveBook() {
-        return getRecord(getActiveBookUID());
-    }
+    val activeBook: Book
+        get() = getRecord(this.activeBookUID)
 
-    public class NoActiveBookFoundException extends RuntimeException {
-        public NoActiveBookFoundException(String message) {
-            super(message);
-        }
-    }
+    inner class NoActiveBookFoundException(message: String?) : RuntimeException(message)
 
     /**
      * Tries to fix the books database.
      *
      * @return the active book UID.
      */
-    @Nullable
-    public String fixBooksDatabase() {
-        Timber.v("Looking for books to set as active...");
-        if (getRecordsCount() <= 0) {
-            Timber.w("No books found in the database. Recovering books records...");
-            recoverBookRecords();
-            if (getRecordsCount() <= 0) {
-                return null;
+    fun fixBooksDatabase(): String? {
+        Timber.v("Looking for books to set as active...")
+        if (recordsCount <= 0) {
+            Timber.w("No books found in the database. Recovering books records...")
+            recoverBookRecords()
+            if (recordsCount <= 0) {
+                return null
             }
         }
-        return setFirstBookAsActive();
+        return setFirstBookAsActive()
     }
 
     /**
      * Restores the records in the book database.
-     * <p>
+     *
+     *
      * Does so by looking for database files from books.
      */
-    private void recoverBookRecords() {
-        for (String dbName : getBookDatabases()) {
-            Book book = new Book(getRootAccountUID(dbName));
-            book.setUID(dbName);
-            book.setDisplayName(generateDefaultBookName());
-            addRecord(book);
-            Timber.i("Recovered book record: %s", book.getUID());
+    private fun recoverBookRecords() {
+        for (dbName in this.bookDatabases) {
+            val book = Book(getRootAccountUID(dbName))
+            book.setUID(dbName)
+            book.displayName = generateDefaultBookName()
+            addRecord(book)
+            Timber.i("Recovered book record: %s", book.uid)
         }
     }
 
     /**
      * Returns the root account UID from the database with name dbName.
      */
-    private String getRootAccountUID(String dbName) {
-        Context context = holder.context;
-        DatabaseHelper databaseHelper = new DatabaseHelper(context, dbName);
-        DatabaseHolder holder = databaseHelper.getHolder();
-        AccountsDbAdapter accountsDbAdapter = new AccountsDbAdapter(holder);
-        String uid = accountsDbAdapter.getOrCreateRootAccountUID();
-        databaseHelper.close();
-        return uid;
+    private fun getRootAccountUID(dbName: String): String {
+        val context = holder.context
+        val databaseHelper = DatabaseHelper(context, dbName)
+        val holder = databaseHelper.holder
+        val accountsDbAdapter = AccountsDbAdapter(holder)
+        val uid = accountsDbAdapter.rootAccountUID
+        databaseHelper.close()
+        return uid
     }
 
     /**
@@ -261,49 +251,46 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
      *
      * @return the book UID.
      */
-    @Nullable
-    private String setFirstBookAsActive() {
-        List<Book> books = getAllRecords();
+    private fun setFirstBookAsActive(): String? {
+        val books = allRecords
         if (books.isEmpty()) {
-            Timber.w("No books.");
-            return null;
+            Timber.w("No books.")
+            return null
         }
-        Book firstBook = books.get(0);
-        firstBook.setActive(true);
-        addRecord(firstBook);
-        Timber.i("Book " + firstBook.getUID() + " set as active.");
-        return firstBook.getUID();
+        val firstBook = books[0]
+        firstBook.isActive = true
+        addRecord(firstBook)
+        Timber.i("Book %s set as active.", firstBook.uid)
+        return firstBook.uid
     }
 
     /**
      * Returns a list of database names corresponding to book databases.
      */
-    private List<String> getBookDatabases() {
-        List<String> bookDatabases = new ArrayList<>();
-        for (String database : GnuCashApplication.getAppContext().databaseList()) {
-            if (isBookDatabase(database)) {
-                bookDatabases.add(database);
+    private val bookDatabases: List<String>
+        get() {
+            val bookDatabases = mutableListOf<String>()
+            for (database in appContext.databaseList()) {
+                if (isBookDatabase(database)) {
+                    bookDatabases.add(database)
+                }
             }
-        }
-        return bookDatabases;
-    }
-
-    @VisibleForTesting
-    public static boolean isBookDatabase(String databaseName) {
-        return databaseName.matches("[a-z0-9]{32}"); // UID regex
-    }
-
-    public @NonNull List<String> getAllBookUIDs() {
-        List<String> bookUIDs = new ArrayList<>();
-        try (Cursor cursor = mDb.query(true, mTableName, new String[]{BookEntry.COLUMN_UID},
-            null, null, null, null, null, null)) {
-            while (cursor.moveToNext()) {
-                bookUIDs.add(cursor.getString(cursor.getColumnIndexOrThrow(BookEntry.COLUMN_UID)));
-            }
+            return bookDatabases
         }
 
-        return bookUIDs;
-    }
+    val allBookUIDs: List<String>
+        get() {
+            val bookUIDs = mutableListOf<String>()
+            db.query(
+                true, tableName, arrayOf<String?>(BookEntry.COLUMN_UID),
+                null, null, null, null, null, null
+            ).use { cursor ->
+                while (cursor.moveToNext()) {
+                    bookUIDs.add(cursor.getString(0))
+                }
+            }
+            return bookUIDs
+        }
 
     /**
      * Return the name of the currently active book.
@@ -311,46 +298,68 @@ public class BooksDbAdapter extends DatabaseAdapter<Book> {
      *
      * @return Display name of the book
      */
-    public @NonNull String getActiveBookDisplayName() {
-        Cursor cursor = mDb.query(mTableName,
-            new String[]{BookEntry.COLUMN_DISPLAY_NAME}, BookEntry.COLUMN_ACTIVE + " = 1",
-            null, null, null, null);
-        try {
-            if (cursor.moveToFirst()) {
-                return cursor.getString(0);
+    val activeBookDisplayName: String
+        get() {
+            val cursor = db.query(
+                tableName,
+                arrayOf<String?>(BookEntry.COLUMN_DISPLAY_NAME),
+                BookEntry.COLUMN_ACTIVE + " = 1",
+                null,
+                null,
+                null,
+                null
+            )
+            try {
+                if (cursor.moveToFirst()) {
+                    return cursor.getString(0)
+                }
+            } finally {
+                cursor.close()
             }
-        } finally {
-            cursor.close();
+            return "Book1"
         }
-        return "Book1";
-    }
 
     /**
      * Generates a new default name for a new book
      *
      * @return String with default name
      */
-    public @NonNull String generateDefaultBookName() {
-        String sqlMax = "SELECT MAX(" + BaseColumns._ID +") FROM " + mTableName;
-        SQLiteStatement statementMax = mDb.compileStatement(sqlMax);
-        long bookCount = max(statementMax.simpleQueryForLong(), 1);
+    fun generateDefaultBookName(): String {
+        val sqlMax = "SELECT MAX(" + BaseColumns._ID + ") FROM " + tableName
+        val statementMax = db.compileStatement(sqlMax)
+        var bookCount = max(statementMax.simpleQueryForLong(), 1L)
 
-        String sql = "SELECT COUNT(*) FROM " + mTableName + " WHERE " + BookEntry.COLUMN_DISPLAY_NAME + " = ?";
-        SQLiteStatement statement = mDb.compileStatement(sql);
-        Context context = GnuCashApplication.getAppContext();
+        val sql =
+            "SELECT COUNT(*) FROM " + tableName + " WHERE " + BookEntry.COLUMN_DISPLAY_NAME + " = ?"
+        val statement = db.compileStatement(sql)
+        val context = appContext
 
         while (true) {
-            String name = context.getString(R.string.book_default_name, bookCount);
+            val name = context.getString(R.string.book_default_name, bookCount)
 
-            statement.bindString(1, name);
-            long nameCount = statement.simpleQueryForLong();
+            statement.bindString(1, name)
+            val nameCount = statement.simpleQueryForLong()
 
-            if (nameCount == 0) {
-                statement.close();
-                return name;
+            if (nameCount == 0L) {
+                statement.close()
+                return name
             }
 
-            bookCount++;
+            bookCount++
+        }
+    }
+
+    companion object {
+        /**
+         * Return the application instance of the books database adapter
+         *
+         * @return Books database adapter
+         */
+        val instance: BooksDbAdapter get() = GnuCashApplication.booksDbAdapter!!
+
+        @VisibleForTesting
+        fun isBookDatabase(databaseName: String): Boolean {
+            return databaseName.matches("[a-z0-9]{32}".toRegex()) // UID regex
         }
     }
 }

@@ -14,218 +14,210 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.export
 
-package org.gnucash.android.export;
-
-import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.OperationCanceledException;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import org.gnucash.android.R;
-import org.gnucash.android.export.csv.CsvAccountExporter;
-import org.gnucash.android.export.csv.CsvTransactionsExporter;
-import org.gnucash.android.export.ofx.OfxExporter;
-import org.gnucash.android.export.qif.QifExporter;
-import org.gnucash.android.export.xml.GncXmlExporter;
-import org.gnucash.android.gnc.AsyncTaskProgressListener;
-import org.gnucash.android.gnc.GncProgressListener;
-import org.gnucash.android.ui.common.GnucashProgressDialog;
-import org.gnucash.android.ui.common.Refreshable;
-import org.gnucash.android.ui.settings.OwnCloudPreferences;
-
-import timber.log.Timber;
+import android.app.Activity
+import android.app.ProgressDialog
+import android.content.Context
+import android.content.DialogInterface
+import android.net.Uri
+import android.os.AsyncTask
+import android.os.OperationCanceledException
+import android.widget.Toast
+import org.gnucash.android.R
+import org.gnucash.android.export.ExportParams.ExportTarget
+import org.gnucash.android.export.csv.CsvAccountExporter
+import org.gnucash.android.export.csv.CsvTransactionsExporter
+import org.gnucash.android.export.ofx.OfxExporter
+import org.gnucash.android.export.qif.QifExporter
+import org.gnucash.android.export.xml.GncXmlExporter
+import org.gnucash.android.gnc.AsyncTaskProgressListener
+import org.gnucash.android.gnc.GncProgressListener
+import org.gnucash.android.importer.ExportBookCallback
+import org.gnucash.android.ui.common.GnucashProgressDialog
+import org.gnucash.android.ui.common.Refreshable
+import org.gnucash.android.ui.settings.OwnCloudPreferences
+import timber.log.Timber
 
 /**
  * Asynchronous task for exporting transactions.
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class ExportAsyncTask extends AsyncTask<ExportParams, Object, Uri> {
-    @NonNull
-    private final Context mContext;
-    @Nullable
-    private final ProgressDialog progressDialog;
-    @NonNull
-    private final String mBookUID;
-    @NonNull
-    private ExportParams mExportParams;
-    @Nullable
-    private Exporter exporter;
-    @Nullable
-    private final AsyncTaskProgressListener listener;
+class ExportAsyncTask(
+    context: Context,
+    private val bookUID: String,
+    private val bookCallback: ExportBookCallback? = null
+) : AsyncTask<ExportParams, Any, Uri>() {
+    private val progressDialog: ProgressDialog?
+    private var exportParams: ExportParams? = null
+    private var exporter: Exporter? = null
+    private val listener: AsyncTaskProgressListener?
 
-    public ExportAsyncTask(@NonNull Context context, @NonNull String bookUID) {
-        super();
-        this.mContext = context;
-        this.mBookUID = bookUID;
-        if (context instanceof Activity) {
-            this.listener = new ProgressListener(context);
-            ProgressDialog progressDialog = new GnucashProgressDialog((Activity) context);
-            progressDialog.setTitle(R.string.nav_menu_export);
-            progressDialog.setCancelable(true);
-            progressDialog.setOnCancelListener(dialog -> {
-                cancel(true);
-                if (exporter != null) {
-                    exporter.cancel();
-                }
-            });
-            this.progressDialog = progressDialog;
+    init {
+        if (context is Activity) {
+            progressDialog = GnucashProgressDialog(context).apply {
+                setTitle(R.string.nav_menu_export)
+                setCancelable(true)
+                setOnCancelListener(DialogInterface.OnCancelListener { dialog: DialogInterface ->
+                    cancel(true)
+                    exporter?.cancel()
+                })
+            }
+            listener = ProgressListener(context)
         } else {
-            progressDialog = null;
-            this.listener = null;
+            progressDialog = null
+            listener = null
         }
     }
 
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-        if (progressDialog != null) {
-            progressDialog.show();
-        }
+    @Deprecated("Deprecated in Java")
+    override fun onPreExecute() {
+        super.onPreExecute()
+        progressDialog?.show()
     }
 
-    @Override
-    protected Uri doInBackground(ExportParams... params) {
-        final ExportParams exportParams = params[0];
-        mExportParams = exportParams;
-        Exporter exporter = createExporter(mContext, exportParams, mBookUID, listener);
-        this.exporter = exporter;
-        final Uri exportedFile;
+    @Deprecated("Deprecated in Java")
+    override fun doInBackground(vararg params: ExportParams): Uri? {
+        val exportParams: ExportParams = params[0]
+        this.exportParams = exportParams
+        val context = progressDialog?.context ?: return null
+        val exporter: Exporter = createExporter(context, exportParams, bookUID, listener)
+        this.exporter = exporter
+        val exportedFile: Uri?
 
         try {
-            exportedFile = exporter.export();
-        } catch (OperationCanceledException ce) {
-            Timber.i(ce);
-            return null;
-        } catch (final Throwable e) {
-            if (e.getCause() instanceof OperationCanceledException) {
-                Timber.i(e.getCause());
-                return null;
+            exportedFile = exporter.export()
+        } catch (ce: OperationCanceledException) {
+            Timber.i(ce)
+            return null
+        } catch (e: Throwable) {
+            if (e.cause is OperationCanceledException) {
+                Timber.i(e.cause)
+                return null
             }
-            Timber.e(e, "Error exporting: %s", e.getMessage());
-            return null;
+            Timber.e(e, "Error exporting: %s", e.message)
+            return null
         }
         if (exportedFile == null) {
-            Timber.e("Nothing exported");
-            return null;
+            Timber.e("Nothing exported")
+            return null
         }
-        return exportedFile;
+        return exportedFile
     }
 
-    @Override
-    protected void onProgressUpdate(Object... values) {
-        if (progressDialog != null && progressDialog.isShowing()) {
-            listener.showProgress(progressDialog, values);
+    @Deprecated("Deprecated in Java")
+    override fun onProgressUpdate(vararg values: Any) {
+        if (progressDialog?.isShowing == true) {
+            listener?.showProgress(progressDialog, *values)
         }
     }
 
-    @Override
-    protected void onPostExecute(@Nullable Uri exportSuccessful) {
-        dismissProgressDialog();
+    @Deprecated("Deprecated in Java")
+    override fun onPostExecute(exportLocation: Uri?) {
+        dismissProgressDialog()
 
-        final ExportParams exportParams = mExportParams;
-        if (exportSuccessful != null) {
-            if (mContext instanceof Activity) {
-                reportSuccess(exportParams);
+        val context = progressDialog?.context ?: return
+        val exportParams = this.exportParams ?: return
+        if (exportLocation != null) {
+            if (context is Activity) {
+                reportSuccess(context, exportParams)
             }
-            if (exportParams.shouldDeleteTransactionsAfterExport()) {
-                refreshViews();
+            if (exportParams.deleteTransactionsAfterExport) {
+                refreshViews(context)
             }
+
         } else {
-            if (mContext instanceof Activity) {
-                Toast.makeText(mContext,
-                    mContext.getString(R.string.toast_export_error, exportParams.getExportFormat().name()),
-                    Toast.LENGTH_LONG).show();
+            if (context is Activity) {
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.toast_export_error, exportParams.exportFormat.name),
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
+        bookCallback?.invoke(exportLocation)
     }
 
-    private void dismissProgressDialog() {
-        final ProgressDialog progressDialog = this.progressDialog;
+    private fun dismissProgressDialog() {
+        val progressDialog = this.progressDialog
         try {
-            if (progressDialog != null && progressDialog.isShowing()) {
-                progressDialog.dismiss();
+            if (progressDialog?.isShowing == true) {
+                progressDialog.dismiss()
             }
-        } catch (IllegalArgumentException ex) {
+        } catch (_: IllegalArgumentException) {
             //TODO: This is a hack to catch "View not attached to window" exceptions
             //FIXME by moving the creation and display of the progress dialog to the Fragment
         }
-        if (mContext instanceof Activity) {
-            ((Activity) mContext).finish();
+        val context = progressDialog?.context
+        if (context is Activity) {
+            context.finish()
         }
     }
 
-    /**
-     * Returns an exporter corresponding to the user settings.
-     *
-     * @return Object of one of {@link QifExporter}, {@link OfxExporter} or {@link GncXmlExporter}, {@Link CsvAccountExporter} or {@Link CsvTransactionsExporter}
-     */
-    private Exporter createExporter(
-        @NonNull Context context,
-        @NonNull ExportParams exportParams,
-        @NonNull String bookUID,
-        @Nullable GncProgressListener listener
-    ) {
-        switch (exportParams.getExportFormat()) {
-            case QIF:
-                return new QifExporter(context, exportParams, bookUID, listener);
-            case OFX:
-                return new OfxExporter(context, exportParams, bookUID, listener);
-            case CSVA:
-                return new CsvAccountExporter(context, exportParams, bookUID, listener);
-            case CSVT:
-                return new CsvTransactionsExporter(context, exportParams, bookUID, listener);
-            case XML:
-            default:
-                return new GncXmlExporter(context, exportParams, bookUID, listener);
-        }
-    }
-
-    private void reportSuccess(ExportParams exportParams) {
-        String targetLocation;
-        switch (exportParams.getExportTarget()) {
-            case SD_CARD:
-                targetLocation = "SD card";
-                break;
-            case DROPBOX:
-                targetLocation = "DropBox -> Apps -> GnuCash";
-                break;
-            case OWNCLOUD: {
-                final OwnCloudPreferences preferences = new OwnCloudPreferences(mContext);
-                targetLocation = preferences.isSync() ?
-                    "ownCloud -> " + preferences.getDir() : "ownCloud sync not enabled";
+    private fun reportSuccess(context: Context, exportParams: ExportParams) {
+        val targetLocation: String
+        when (exportParams.exportTarget) {
+            ExportTarget.SD_CARD -> targetLocation = "SD card"
+            ExportTarget.DROPBOX -> targetLocation = "DropBox -> Apps -> GnuCash"
+            ExportTarget.OWNCLOUD -> {
+                val preferences = OwnCloudPreferences(context)
+                targetLocation =
+                    if (preferences.isSync) "ownCloud -> " + preferences.dir else "ownCloud sync not enabled"
             }
-            break;
-            default:
-                targetLocation = mContext.getString(R.string.label_export_target_external_service);
+
+            else -> targetLocation =
+                context.getString(R.string.label_export_target_external_service)
         }
-        Toast.makeText(mContext,
-            String.format(mContext.getString(R.string.toast_exported_to), targetLocation),
-            Toast.LENGTH_LONG).show();
+        Toast.makeText(
+            context,
+            String.format(context.getString(R.string.toast_exported_to), targetLocation),
+            Toast.LENGTH_LONG
+        ).show()
     }
 
-    private void refreshViews() {
-        if (mContext instanceof Refreshable) {
-            ((Refreshable) mContext).refresh();
+    private fun refreshViews(context: Context) {
+        (context as? Refreshable)?.refresh()
+        (listener as? Refreshable)?.refresh()
+    }
+
+    private inner class ProgressListener(context: Context) : AsyncTaskProgressListener(context) {
+        override fun publishProgress(label: String, progress: Long, total: Long) {
+            this@ExportAsyncTask.publishProgress(label, progress, total)
         }
     }
 
-    private class ProgressListener extends AsyncTaskProgressListener {
+    companion object {
+        /**
+         * Returns an exporter corresponding to the user settings.
+         *
+         * @return Object of one of [QifExporter], [OfxExporter] or [GncXmlExporter], {@Link CsvAccountExporter} or {@Link CsvTransactionsExporter}
+         */
+        fun createExporter(
+            context: Context,
+            exportParams: ExportParams,
+            bookUID: String,
+            listener: GncProgressListener?
+        ): Exporter {
+            when (exportParams.exportFormat) {
+                ExportFormat.QIF -> return QifExporter(context, exportParams, bookUID, listener)
+                ExportFormat.OFX -> return OfxExporter(context, exportParams, bookUID, listener)
+                ExportFormat.CSVA -> return CsvAccountExporter(
+                    context,
+                    exportParams,
+                    bookUID,
+                    listener
+                )
 
-        ProgressListener(Context context) {
-            super(context);
-        }
+                ExportFormat.CSVT -> return CsvTransactionsExporter(
+                    context,
+                    exportParams,
+                    bookUID,
+                    listener
+                )
 
-        @Override
-        protected void publishProgress(@NonNull String label, long progress, long total) {
-            ExportAsyncTask.this.publishProgress(label, progress, total);
+                else -> return GncXmlExporter(context, exportParams, bookUID, listener)
+            }
         }
     }
 }

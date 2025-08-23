@@ -74,7 +74,7 @@ private val RegexHSLA = PatternHSLA.toRegex()
 fun parseColor(spec: String?): Int? {
     return try {
         parseColorImpl(spec)
-    } catch (e: IllegalArgumentException) {
+    } catch (_: IllegalArgumentException) {
         null
     }
 }
@@ -288,3 +288,13 @@ val Context.textColorPrimary: Int
         return ContextCompat.getColor(this, colorRes)
     }
 
+/**
+ * Returns darker version of specified `color`.
+ * Use for theming the status bar color when setting the color of the actionBar
+ */
+fun darken(color: Int): Int {
+    val hsv = FloatArray(3)
+    Color.colorToHSV(color, hsv)
+    hsv[2] *= 0.8f // value component
+    return Color.HSVToColor(hsv)
+}

@@ -13,371 +13,321 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.transaction.dialog
 
-package org.gnucash.android.ui.transaction.dialog;
-
-import static org.gnucash.android.ui.util.TextViewExtKt.displayBalance;
-
-import android.app.Dialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.database.SQLException;
-import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.CompoundButton;
-
-import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-
-import org.gnucash.android.R;
-import org.gnucash.android.databinding.DialogTransferFundsBinding;
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
-import org.gnucash.android.db.adapter.DatabaseAdapter;
-import org.gnucash.android.db.adapter.PricesDbAdapter;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.model.Price;
-import org.gnucash.android.quote.QuoteCallback;
-import org.gnucash.android.quote.QuoteProvider;
-import org.gnucash.android.quote.YahooJson;
-import org.gnucash.android.ui.transaction.OnTransferFundsListener;
-import org.gnucash.android.ui.util.TextInputResetError;
-import org.gnucash.android.ui.util.dialog.VolatileDialogFragment;
-import org.gnucash.android.util.AmountParser;
-
-import java.math.BigDecimal;
-import java.text.NumberFormat;
-import java.text.ParseException;
-
-import timber.log.Timber;
+import android.app.Dialog
+import android.database.SQLException
+import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.LayoutInflater
+import androidx.annotation.ColorInt
+import androidx.appcompat.app.AlertDialog
+import org.gnucash.android.R
+import org.gnucash.android.databinding.DialogTransferFundsBinding
+import org.gnucash.android.db.adapter.PricesDbAdapter
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.model.Money
+import org.gnucash.android.model.Price
+import org.gnucash.android.quote.QuoteCallback
+import org.gnucash.android.quote.QuoteProvider
+import org.gnucash.android.quote.YahooJson
+import org.gnucash.android.ui.transaction.OnTransferFundsListener
+import org.gnucash.android.ui.util.TextInputResetError
+import org.gnucash.android.ui.util.dialog.VolatileDialogFragment
+import org.gnucash.android.ui.util.displayBalance
+import org.gnucash.android.util.AmountParser.parse
+import timber.log.Timber
+import java.math.BigDecimal
+import java.text.NumberFormat
+import java.text.ParseException
 
 /**
  * Dialog fragment for handling currency conversions when inputting transactions.
- * <p>This is used whenever a multi-currency transaction is being created.</p>
+ *
+ * This is used whenever a multi-currency transaction is being created.
  */
-public class TransferFundsDialogFragment extends VolatileDialogFragment {
+class TransferFundsDialogFragment : VolatileDialogFragment() {
     // FIXME these fields must be persisted for when dialog is changed, e.g. rotated.
-    private Money mOriginAmount;
-    // FIXME these fields must be persisted for when dialog is changed, e.g. rotated.
-    private Commodity mTargetCommodity;
+    private var originAmount: Money? = null
 
     // FIXME these fields must be persisted for when dialog is changed, e.g. rotated.
-    private OnTransferFundsListener mOnTransferFundsListener;
+    private var targetCommodity: Commodity? = null
 
-    private PricesDbAdapter pricesDbAdapter = PricesDbAdapter.getInstance();
-    private Price priceQuoted;
+    // FIXME these fields must be persisted for when dialog is changed, e.g. rotated.
+    private var onTransferFundsListener: OnTransferFundsListener? = null
 
-    private static final int SCALE_RATE = 6;
+    private var pricesDbAdapter = PricesDbAdapter.instance
+    private var priceQuoted: Price? = null
 
-    public static TransferFundsDialogFragment getInstance(
-        @NonNull Money transactionAmount,
-        @NonNull Commodity targetCommodity,
-        @Nullable OnTransferFundsListener transferFundsListener
-    ) {
-        TransferFundsDialogFragment fragment = new TransferFundsDialogFragment();
-        fragment.mOriginAmount = transactionAmount;
-        fragment.mTargetCommodity = targetCommodity;
-        fragment.mOnTransferFundsListener = transferFundsListener;
-        return fragment;
+    override fun onStart() {
+        super.onStart()
+        pricesDbAdapter = PricesDbAdapter.instance
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        pricesDbAdapter = PricesDbAdapter.getInstance();
-    }
+    private fun onCreateBinding(inflater: LayoutInflater): DialogTransferFundsBinding {
+        val binding = DialogTransferFundsBinding.inflate(inflater, null, false)
 
-    @NonNull
-    private DialogTransferFundsBinding onCreateBinding(LayoutInflater inflater) {
-        final DialogTransferFundsBinding binding = DialogTransferFundsBinding.inflate(inflater, null, false);
+        val fromAmount = originAmount!!
+        val fromDecimal = fromAmount.toBigDecimal()
+        @ColorInt val colorBalanceZero = binding.amountToConvert.currentTextColor
+        binding.amountToConvert.displayBalance(fromAmount, colorBalanceZero)
 
-        final Money fromAmount = mOriginAmount;
-        final BigDecimal fromDecimal = fromAmount.toBigDecimal();
-        @ColorInt int colorBalanceZero = binding.amountToConvert.getCurrentTextColor();
-        displayBalance(binding.amountToConvert, fromAmount, colorBalanceZero);
+        val fromCommodity = fromAmount.commodity
+        val targetCommodity = this.targetCommodity!!
+        val formatterAmount = NumberFormat.getNumberInstance()
+        formatterAmount.minimumFractionDigits = targetCommodity.smallestFractionDigits
+        formatterAmount.maximumFractionDigits = targetCommodity.smallestFractionDigits
+        val formatterRate = NumberFormat.getNumberInstance()
+        formatterRate.minimumFractionDigits = SCALE_RATE
+        formatterRate.maximumFractionDigits = SCALE_RATE
 
-        final Commodity fromCommodity = fromAmount.getCommodity();
-        final Commodity targetCommodity = mTargetCommodity;
-        final NumberFormat formatterAmount = NumberFormat.getNumberInstance();
-        formatterAmount.setMinimumFractionDigits(targetCommodity.getSmallestFractionDigits());
-        formatterAmount.setMaximumFractionDigits(targetCommodity.getSmallestFractionDigits());
-        final NumberFormat formatterRate = NumberFormat.getNumberInstance();
-        formatterRate.setMinimumFractionDigits(SCALE_RATE);
-        formatterRate.setMaximumFractionDigits(SCALE_RATE);
+        val fromCurrencyCode = fromCommodity.currencyCode
+        val targetCurrencyCode = targetCommodity.currencyCode
+        binding.fromCurrency.text = fromCommodity.formatListItem()
+        binding.toCurrency.text = targetCommodity.formatListItem()
 
-        final String fromCurrencyCode = fromCommodity.getCurrencyCode();
-        final String targetCurrencyCode = targetCommodity.getCurrencyCode();
-        binding.fromCurrency.setText(fromCommodity.formatListItem());
-        binding.toCurrency.setText(targetCommodity.formatListItem());
-
-        binding.exchangeRateExample.setText(R.string.sample_exchange_rate);
-        binding.exchangeRateInverse.setText(null);
-        final TextInputResetError textChangeListener = new TextInputResetError(
+        binding.exchangeRateExample.setText(R.string.sample_exchange_rate)
+        binding.exchangeRateInverse.text = null
+        val textChangeListener = TextInputResetError(
             binding.convertedAmountTextInputLayout,
             binding.exchangeRateTextInputLayout
-        );
+        )
 
-        binding.inputExchangeRate.addTextChangedListener(textChangeListener);
-        binding.inputConvertedAmount.addTextChangedListener(textChangeListener);
+        binding.inputExchangeRate.addTextChangedListener(textChangeListener)
+        binding.inputConvertedAmount.addTextChangedListener(textChangeListener)
 
-        binding.radioConvertedAmount.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                binding.inputConvertedAmount.setEnabled(isChecked);
-                binding.convertedAmountTextInputLayout.setErrorEnabled(isChecked);
-                binding.radioExchangeRate.setChecked(!isChecked);
-                if (isChecked) {
-                    binding.inputConvertedAmount.requestFocus();
-                }
+        binding.radioConvertedAmount.setOnCheckedChangeListener { _, isChecked ->
+            binding.inputConvertedAmount.isEnabled = isChecked
+            binding.convertedAmountTextInputLayout.isErrorEnabled = isChecked
+            binding.radioExchangeRate.isChecked = !isChecked
+            if (isChecked) {
+                binding.inputConvertedAmount.requestFocus()
             }
-        });
+        }
 
-        binding.radioExchangeRate.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                binding.inputExchangeRate.setEnabled(isChecked);
-                binding.exchangeRateTextInputLayout.setErrorEnabled(isChecked);
-                binding.btnFetchExchangeRate.setEnabled(isChecked && fromCommodity.isCurrency() && targetCommodity.isCurrency());
-                binding.radioConvertedAmount.setChecked(!isChecked);
-                if (isChecked) {
-                    binding.inputExchangeRate.requestFocus();
-                }
+        binding.radioExchangeRate.setOnCheckedChangeListener { _, isChecked ->
+            binding.inputExchangeRate.isEnabled = isChecked
+            binding.exchangeRateTextInputLayout.isErrorEnabled = isChecked
+            binding.btnFetchExchangeRate.isEnabled =
+                (isChecked && fromCommodity.isCurrency && targetCommodity.isCurrency)
+            binding.radioConvertedAmount.isChecked = !isChecked
+            if (isChecked) {
+                binding.inputExchangeRate.requestFocus()
             }
-        });
+        }
 
-        binding.btnFetchExchangeRate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                binding.btnFetchExchangeRate.setEnabled(false);
-                fetchQuote(binding, fromCommodity, targetCommodity);
-            }
-        });
+        binding.btnFetchExchangeRate.setOnClickListener {
+            binding.btnFetchExchangeRate.isEnabled = false
+            fetchQuote(binding, fromCommodity, targetCommodity)
+        }
 
-        binding.inputExchangeRate.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (!binding.radioExchangeRate.isChecked()) return;
-                String value = s.toString();
+        binding.inputExchangeRate.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable) {
+                if (!binding.radioExchangeRate.isChecked) return
+                val value = s.toString()
                 try {
-                    BigDecimal rateDecimal = AmountParser.parse(value);
-                    float rate = rateDecimal.floatValue();
-                    binding.exchangeRateExample.setText(
-                        getString(
+                    val rateDecimal = parse(value)
+                    val rate = rateDecimal.toDouble()
+                    binding.exchangeRateExample.text = getString(
+                        R.string.exchange_rate_example,
+                        fromCurrencyCode,
+                        formatterRate.format(rate),
+                        targetCurrencyCode
+                    )
+                    if (rate > 0f) {
+                        binding.exchangeRateInverse.text = getString(
+                            R.string.exchange_rate_example,
+                            targetCurrencyCode,
+                            formatterRate.format(1 / rate),
+                            fromCurrencyCode
+                        )
+                        val price = fromDecimal * rateDecimal
+                        binding.inputConvertedAmount.setText(formatterAmount.format(price))
+                    } else {
+                        binding.exchangeRateInverse.text = null
+                    }
+                } catch (_: ParseException) {
+                }
+            }
+
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) =
+                Unit
+
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) = Unit
+        })
+
+        binding.inputConvertedAmount.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable) {
+                if (!binding.radioConvertedAmount.isChecked) return
+                val value = s.toString()
+                try {
+                    val amount = parse(value)
+                    if (amount > BigDecimal.ZERO) {
+                        val rate = amount.toDouble() / fromDecimal.toDouble()
+                        binding.exchangeRateExample.text = getString(
                             R.string.exchange_rate_example,
                             fromCurrencyCode,
                             formatterRate.format(rate),
                             targetCurrencyCode
                         )
-                    );
-                    if (rate > 0f) {
-                        binding.exchangeRateInverse.setText(
-                            getString(
-                                R.string.exchange_rate_example,
-                                targetCurrencyCode,
-                                formatterRate.format(1 / rate),
-                                fromCurrencyCode
-                            )
-                        );
-                        BigDecimal price = fromDecimal.multiply(rateDecimal);
-                        binding.inputConvertedAmount.setText(formatterAmount.format(price));
+                        binding.exchangeRateInverse.text = getString(
+                            R.string.exchange_rate_example,
+                            targetCurrencyCode,
+                            formatterRate.format(1 / rate),
+                            fromCurrencyCode
+                        )
+                        binding.inputExchangeRate.setText(formatterRate.format(rate))
                     } else {
-                        binding.exchangeRateInverse.setText(null);
+                        binding.exchangeRateExample.text = null
+                        binding.exchangeRateInverse.text = null
                     }
-                } catch (ParseException ignore) {
+                } catch (_: ParseException) {
                 }
             }
 
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) =
+                Unit
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-        });
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) = Unit
+        })
 
-        binding.inputConvertedAmount.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (!binding.radioConvertedAmount.isChecked()) return;
-                String value = s.toString();
-                try {
-                    BigDecimal amount = AmountParser.parse(value);
-                    if (amount.compareTo(BigDecimal.ZERO) > 0) {
-                        float rate = amount.floatValue() / fromDecimal.floatValue();
-                        binding.exchangeRateExample.setText(
-                            getString(
-                                R.string.exchange_rate_example,
-                                fromCurrencyCode,
-                                formatterRate.format(rate),
-                                targetCurrencyCode
-                            )
-                        );
-                        binding.exchangeRateInverse.setText(
-                            getString(
-                                R.string.exchange_rate_example,
-                                targetCurrencyCode,
-                                formatterRate.format(1 / rate),
-                                fromCurrencyCode
-                            )
-                        );
-                        binding.inputExchangeRate.setText(formatterRate.format(rate));
-                    } else {
-                        binding.exchangeRateExample.setText(null);
-                        binding.exchangeRateInverse.setText(null);
-                    }
-                } catch (ParseException ignore) {
-                }
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-        });
-
-        Price price = pricesDbAdapter.getPrice(fromCommodity, targetCommodity);
+        val price = pricesDbAdapter.getPrice(fromCommodity, targetCommodity)
         if (price != null) {
             // a valid price exists
-            BigDecimal priceDecimal = price.toBigDecimal(SCALE_RATE);
+            val priceDecimal = price.toBigDecimal(SCALE_RATE)
 
-            binding.radioExchangeRate.setChecked(true);
-            binding.inputExchangeRate.setText(formatterRate.format(priceDecimal));
-            binding.btnFetchExchangeRate.setEnabled(fromCommodity.isCurrency() && targetCommodity.isCurrency());
+            binding.radioExchangeRate.isChecked = true
+            binding.inputExchangeRate.setText(formatterRate.format(priceDecimal))
+            binding.btnFetchExchangeRate.isEnabled =
+                fromCommodity.isCurrency && targetCommodity.isCurrency
 
             // convertedAmount = fromAmount * numerator / denominator
-            BigDecimal convertedAmount = fromDecimal.multiply(priceDecimal);
-            binding.inputConvertedAmount.setText(formatterAmount.format(convertedAmount));
+            val convertedAmount = fromDecimal * priceDecimal
+            binding.inputConvertedAmount.setText(formatterAmount.format(convertedAmount))
         }
 
-        return binding;
+        return binding
     }
 
-    @NonNull
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final DialogTransferFundsBinding binding = onCreateBinding(getLayoutInflater());
-        final Context context = binding.getRoot().getContext();
-        return new AlertDialog.Builder(context, getTheme())
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val binding = onCreateBinding(layoutInflater)
+        val context = binding.root.context
+        return AlertDialog.Builder(context, theme)
             .setTitle(R.string.title_transfer_funds)
-            .setView(binding.getRoot())
-            .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    // Dismisses itself.
-                }
-            })
-            .setPositiveButton(R.string.btn_save, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    transferFunds(mOriginAmount.getCommodity(), mTargetCommodity, binding);
-                }
-            })
-            .create();
+            .setView(binding.root)
+            .setNegativeButton(R.string.btn_cancel) { _, _ ->
+                // Dismisses itself.
+            }
+            .setPositiveButton(R.string.btn_save) { _, _ ->
+                transferFunds(originAmount!!.commodity, targetCommodity!!, binding)
+            }
+            .create()
     }
 
     /**
      * Converts the currency amount with the given exchange rate and saves the price to the db
      */
-    private void transferFunds(
-        @NonNull Commodity originCommodity,
-        @NonNull Commodity targetCommodity,
-        @NonNull DialogTransferFundsBinding binding
+    private fun transferFunds(
+        originCommodity: Commodity,
+        targetCommodity: Commodity,
+        binding: DialogTransferFundsBinding
     ) {
-        CommoditiesDbAdapter commoditiesDbAdapter = pricesDbAdapter.commoditiesDbAdapter;
-        Commodity commodityFrom = commoditiesDbAdapter.loadCommodity(originCommodity);
-        if (commodityFrom == null) {
-            Timber.e("Origin commodity not found in db!");
-            return;
-        }
-        Commodity commodityTo = commoditiesDbAdapter.loadCommodity(targetCommodity);
-        if (commodityTo == null) {
-            Timber.e("Target commodity not found in db!");
-            return;
-        }
-        Price price = new Price(commodityFrom, commodityTo);
-        price.setSource(Price.SOURCE_USER);
-        price.setType(Price.Type.Transaction);
-        final Money convertedAmount;
-        if (binding.radioExchangeRate.isChecked()) {
-            final BigDecimal rate;
+        val commoditiesDbAdapter = pricesDbAdapter.commoditiesDbAdapter
+        val commodityFrom = commoditiesDbAdapter.loadCommodity(originCommodity)
+        val commodityTo = commoditiesDbAdapter.loadCommodity(targetCommodity)
+        var price = Price(commodityFrom, commodityTo)
+        price.source = Price.SOURCE_USER
+        price.type = Price.Type.Transaction
+        val originAmount = originAmount!!
+        val convertedAmount: Money
+        if (binding.radioExchangeRate.isChecked) {
+            val rate: BigDecimal
             try {
-                rate = AmountParser.parse(binding.inputExchangeRate.getText().toString());
-            } catch (ParseException e) {
-                binding.exchangeRateTextInputLayout.setError(getString(R.string.error_invalid_exchange_rate));
-                return;
+                rate = parse(binding.inputExchangeRate.text.toString())
+            } catch (e: ParseException) {
+                binding.exchangeRateTextInputLayout.setError(getString(R.string.error_invalid_exchange_rate))
+                return
             }
-            if (rate.compareTo(BigDecimal.ZERO) <= 0) {
-                binding.exchangeRateTextInputLayout.setError(getString(R.string.error_invalid_exchange_rate));
-                return;
+            if (rate <= BigDecimal.ZERO) {
+                binding.exchangeRateTextInputLayout.setError(getString(R.string.error_invalid_exchange_rate))
+                return
             }
-            convertedAmount = mOriginAmount.times(rate).withCommodity(targetCommodity);
+            convertedAmount = (originAmount * rate).withCommodity(targetCommodity)
 
-            price.setExchangeRate(rate);
+            price.setExchangeRate(rate)
         } else {
-            final BigDecimal amount;
+            val amount: BigDecimal
             try {
-                amount = AmountParser.parse(binding.inputConvertedAmount.getText().toString());
-            } catch (ParseException e) {
-                binding.convertedAmountTextInputLayout.setError(getString(R.string.error_invalid_amount));
-                return;
+                amount = parse(binding.inputConvertedAmount.text.toString())
+            } catch (_: ParseException) {
+                binding.convertedAmountTextInputLayout.setError(getString(R.string.error_invalid_amount))
+                return
             }
-            if (amount.compareTo(BigDecimal.ZERO) < 0) {
-                binding.convertedAmountTextInputLayout.setError(getString(R.string.error_invalid_amount));
-                return;
+            if (amount < BigDecimal.ZERO) {
+                binding.convertedAmountTextInputLayout.setError(getString(R.string.error_invalid_amount))
+                return
             }
-            convertedAmount = new Money(amount, targetCommodity);
+            convertedAmount = Money(amount, targetCommodity)
 
             // fractions cannot be exactly represented by BigDecimal.
-            price.setValueNum(convertedAmount.getNumerator() * mOriginAmount.getDenominator());
-            price.setValueDenom(mOriginAmount.getNumerator() * convertedAmount.getDenominator());
+            price.valueNum = convertedAmount.numerator * originAmount.denominator
+            price.valueDenom = originAmount.numerator * convertedAmount.denominator
         }
-        if (priceQuoted != null && priceQuoted.equals(price)) {
-            price = priceQuoted;
+        if (priceQuoted != null && priceQuoted == price) {
+            price = priceQuoted!!
         }
         try {
-            pricesDbAdapter.addRecord(price, DatabaseAdapter.UpdateMethod.insert);
+            pricesDbAdapter.insert(price)
 
-            if (mOnTransferFundsListener != null) {
-                mOnTransferFundsListener.transferComplete(mOriginAmount, convertedAmount);
-            }
-        } catch (SQLException e) {
-            Timber.e(e);
+            onTransferFundsListener?.transferComplete(originAmount, convertedAmount)
+        } catch (e: SQLException) {
+            Timber.e(e)
         }
     }
 
-    private void fetchQuote(final DialogTransferFundsBinding binding, Commodity fromCommodity, Commodity targetCommodity) {
-        binding.exchangeRateTextInputLayout.setError(null);
-        if (!fromCommodity.isCurrency()) {
-            binding.exchangeRateTextInputLayout.setError("Currency expected");
-            return;
+    private fun fetchQuote(
+        binding: DialogTransferFundsBinding,
+        fromCommodity: Commodity,
+        targetCommodity: Commodity
+    ) {
+        binding.exchangeRateTextInputLayout.setError(null)
+        if (!fromCommodity.isCurrency) {
+            binding.exchangeRateTextInputLayout.setError("Currency expected")
+            return
         }
-        if (!targetCommodity.isCurrency()) {
-            binding.exchangeRateTextInputLayout.setError("Currency expected");
-            return;
+        if (!targetCommodity.isCurrency) {
+            binding.exchangeRateTextInputLayout.setError("Currency expected")
+            return
         }
-        final NumberFormat formatterRate = NumberFormat.getNumberInstance();
-        formatterRate.setMinimumFractionDigits(SCALE_RATE);
-        formatterRate.setMaximumFractionDigits(SCALE_RATE);
+        val formatterRate = NumberFormat.getNumberInstance()
+        formatterRate.minimumFractionDigits = SCALE_RATE
+        formatterRate.maximumFractionDigits = SCALE_RATE
 
-        QuoteProvider provider = new YahooJson();
-        provider.get(fromCommodity, targetCommodity, this, new QuoteCallback() {
-
-            @Override
-            public void onQuote(@NonNull Price price) {
-                priceQuoted = price;
-                BigDecimal rate = price.toBigDecimal(SCALE_RATE);
-                binding.inputExchangeRate.setText(formatterRate.format(rate));
-                binding.btnFetchExchangeRate.setEnabled(true);
+        val provider: QuoteProvider = YahooJson()
+        provider.get(fromCommodity, targetCommodity, this, object : QuoteCallback {
+            override fun onQuote(price: Price) {
+                priceQuoted = price
+                val rate = price.toBigDecimal(SCALE_RATE)
+                binding.inputExchangeRate.setText(formatterRate.format(rate))
+                binding.btnFetchExchangeRate.isEnabled = true
             }
-        });
+        })
+    }
+
+    companion object {
+        private const val SCALE_RATE = 6
+
+        fun getInstance(
+            transactionAmount: Money,
+            targetCommodity: Commodity,
+            transferFundsListener: OnTransferFundsListener
+        ): TransferFundsDialogFragment {
+            val fragment = TransferFundsDialogFragment()
+            fragment.originAmount = transactionAmount
+            fragment.targetCommodity = targetCommodity
+            fragment.onTransferFundsListener = transferFundsListener
+            return fragment
+        }
     }
 }

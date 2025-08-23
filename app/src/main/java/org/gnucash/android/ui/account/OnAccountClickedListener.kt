@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.gnucash.android.ui.account;
+package org.gnucash.android.ui.account
 
 /**
  * Interface for implemented by activities which wish to be notified when
@@ -23,13 +22,11 @@ package org.gnucash.android.ui.account;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public interface OnAccountClickedListener {
-
+interface OnAccountClickedListener {
     /**
      * Callback when an account is selected (clicked) from in a list of accounts
      *
      * @param accountUID GUID of the selected account
      */
-    void accountSelected(String accountUID);
-
+    fun accountSelected(accountUID: String)
 }

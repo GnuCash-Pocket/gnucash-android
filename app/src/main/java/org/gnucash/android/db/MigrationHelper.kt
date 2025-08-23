@@ -13,95 +13,77 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.db
 
-package org.gnucash.android.db;
-
-import static android.database.DatabaseUtils.sqlEscapeString;
-import static org.gnucash.android.db.DatabaseHelper.createResetBalancesTriggers;
-import static org.gnucash.android.db.DatabaseHelper.hasTableColumn;
-import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
-import static org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry;
-import static org.gnucash.android.db.DatabaseSchema.CommodityEntry;
-import static org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry;
-import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
-import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
-
-import android.content.Context;
-import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.VisibleForTesting;
-
-import org.gnucash.android.R;
-import org.gnucash.android.importer.CommoditiesXmlHandler;
-import org.gnucash.android.model.Commodity;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
-import timber.log.Timber;
+import android.content.Context
+import android.database.DatabaseUtils.sqlEscapeString
+import android.database.SQLException
+import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteException
+import androidx.annotation.VisibleForTesting
+import org.gnucash.android.R
+import org.gnucash.android.db.DatabaseSchema.AccountEntry
+import org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry
+import org.gnucash.android.db.DatabaseSchema.CommodityEntry
+import org.gnucash.android.db.DatabaseSchema.SplitEntry
+import org.gnucash.android.db.DatabaseSchema.TransactionEntry
+import org.gnucash.android.importer.CommoditiesXmlHandler
+import org.gnucash.android.model.Commodity
+import org.xml.sax.InputSource
+import org.xml.sax.SAXException
+import timber.log.Timber
+import java.io.IOException
+import java.io.InputStream
+import javax.xml.parsers.ParserConfigurationException
+import javax.xml.parsers.SAXParserFactory
 
 /**
  * Collection of helper methods which are used during database migrations
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-@SuppressWarnings("unused")
-public class MigrationHelper {
-
+object MigrationHelper {
     /**
      * Imports commodities into the database from XML resource file
      */
     @VisibleForTesting
-    public static void importCommodities(@NonNull DatabaseHolder holder) throws SAXException, ParserConfigurationException, IOException {
-        SAXParserFactory parserFactory = SAXParserFactory.newInstance();
-        SAXParser parser = parserFactory.newSAXParser();
-        XMLReader reader = parser.getXMLReader();
+    @Throws(SAXException::class, ParserConfigurationException::class, IOException::class)
+    fun importCommodities(holder: DatabaseHolder) {
+        val parserFactory = SAXParserFactory.newInstance()
+        val parser = parserFactory.newSAXParser()
+        val reader = parser.xmlReader
 
-        InputStream inputStream = holder.context.getResources()
-            .openRawResource(R.raw.iso_4217_currencies);
+        val inputStream: InputStream = holder.context.resources
+            .openRawResource(R.raw.iso_4217_currencies)
 
         /* Create handler to handle XML Tags ( extends DefaultHandler ) */
-        CommoditiesXmlHandler handler = new CommoditiesXmlHandler(holder);
+        val handler = CommoditiesXmlHandler(holder)
 
-        reader.setContentHandler(handler);
-        reader.parse(new InputSource(inputStream));
+        reader.contentHandler = handler
+        reader.parse(InputSource(inputStream))
     }
 
-    public static void migrate(@NonNull Context context, @NonNull SQLiteDatabase db, int oldVersion, int newVersion) {
+    fun migrate(context: Context, db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         if (oldVersion < 16) {
-            migrateTo16(db);
+            migrateTo16(db)
         }
         if (oldVersion < 17) {
-            migrateTo17(db);
+            migrateTo17(db)
         }
         if (oldVersion < 18) {
-            migrateTo18(db);
+            migrateTo18(db)
         }
         if (oldVersion < 19) {
-            migrateTo19(db);
+            migrateTo19(db)
         }
         if ((oldVersion >= 19) && (oldVersion < 21)) {
-            migrateTo21(db);
+            migrateTo21(db)
         }
         if (oldVersion < 23) {
-            migrateTo23(context, db);
+            migrateTo23(context, db)
         }
         if (oldVersion < 24) {
-            migrateTo24(db);
+            migrateTo24(db)
         }
     }
 
@@ -110,16 +92,16 @@ public class MigrationHelper {
      *
      * @param db the database.
      */
-    private static void migrateTo16(SQLiteDatabase db) {
-        Timber.i("Upgrading database to version 16");
+    private fun migrateTo16(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 16")
 
-        String sqlAddQuoteSource = "ALTER TABLE " + CommodityEntry.TABLE_NAME +
-            " ADD COLUMN " + CommodityEntry.COLUMN_QUOTE_SOURCE + " varchar(255)";
-        String sqlAddQuoteTZ = "ALTER TABLE " + CommodityEntry.TABLE_NAME +
-            " ADD COLUMN " + CommodityEntry.COLUMN_QUOTE_TZ + " varchar(100)";
+        val sqlAddQuoteSource = "ALTER TABLE " + CommodityEntry.TABLE_NAME +
+                " ADD COLUMN " + CommodityEntry.COLUMN_QUOTE_SOURCE + " varchar(255)"
+        val sqlAddQuoteTZ = "ALTER TABLE " + CommodityEntry.TABLE_NAME +
+                " ADD COLUMN " + CommodityEntry.COLUMN_QUOTE_TZ + " varchar(100)"
 
-        db.execSQL(sqlAddQuoteSource);
-        db.execSQL(sqlAddQuoteTZ);
+        db.execSQL(sqlAddQuoteSource)
+        db.execSQL(sqlAddQuoteTZ)
     }
 
     /**
@@ -127,13 +109,13 @@ public class MigrationHelper {
      *
      * @param db the database.
      */
-    private static void migrateTo17(SQLiteDatabase db) {
-        Timber.i("Upgrading database to version 17");
+    private fun migrateTo17(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 17")
 
-        String sqlAddBudgetNotes = "ALTER TABLE " + BudgetAmountEntry.TABLE_NAME +
-            " ADD COLUMN " + BudgetAmountEntry.COLUMN_NOTES + " text";
+        val sqlAddBudgetNotes = "ALTER TABLE " + BudgetAmountEntry.TABLE_NAME +
+                " ADD COLUMN " + BudgetAmountEntry.COLUMN_NOTES + " text"
 
-        db.execSQL(sqlAddBudgetNotes);
+        db.execSQL(sqlAddBudgetNotes)
     }
 
     /**
@@ -141,26 +123,26 @@ public class MigrationHelper {
      *
      * @param db the database.
      */
-    private static void migrateTo18(SQLiteDatabase db) {
-        Timber.i("Upgrading database to version 18");
+    private fun migrateTo18(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 18")
 
-        String sqlAddNotes = "ALTER TABLE " + AccountEntry.TABLE_NAME
-            + " ADD COLUMN " + AccountEntry.COLUMN_NOTES + " text";
-        String sqlAddBalance = "ALTER TABLE " + AccountEntry.TABLE_NAME
-            + " ADD COLUMN " + AccountEntry.COLUMN_BALANCE + " varchar(255)";
-        String sqlAddClearedBalance = "ALTER TABLE " + AccountEntry.TABLE_NAME
-            + " ADD COLUMN " + AccountEntry.COLUMN_CLEARED_BALANCE + " varchar(255)";
-        String sqlAddNoClosingBalance = "ALTER TABLE " + AccountEntry.TABLE_NAME
-            + " ADD COLUMN " + AccountEntry.COLUMN_NOCLOSING_BALANCE + " varchar(255)";
-        String sqlAddReconciledBalance = "ALTER TABLE " + AccountEntry.TABLE_NAME
-            + " ADD COLUMN " + AccountEntry.COLUMN_RECONCILED_BALANCE + " varchar(255)";
+        val sqlAddNotes = ("ALTER TABLE " + AccountEntry.TABLE_NAME
+                + " ADD COLUMN " + AccountEntry.COLUMN_NOTES + " text")
+        val sqlAddBalance = ("ALTER TABLE " + AccountEntry.TABLE_NAME
+                + " ADD COLUMN " + AccountEntry.COLUMN_BALANCE + " varchar(255)")
+        val sqlAddClearedBalance = ("ALTER TABLE " + AccountEntry.TABLE_NAME
+                + " ADD COLUMN " + AccountEntry.COLUMN_CLEARED_BALANCE + " varchar(255)")
+        val sqlAddNoClosingBalance = ("ALTER TABLE " + AccountEntry.TABLE_NAME
+                + " ADD COLUMN " + AccountEntry.COLUMN_NOCLOSING_BALANCE + " varchar(255)")
+        val sqlAddReconciledBalance = ("ALTER TABLE " + AccountEntry.TABLE_NAME
+                + " ADD COLUMN " + AccountEntry.COLUMN_RECONCILED_BALANCE + " varchar(255)")
 
-        db.execSQL(sqlAddNotes);
-        db.execSQL(sqlAddBalance);
-        db.execSQL(sqlAddClearedBalance);
-        db.execSQL(sqlAddNoClosingBalance);
-        db.execSQL(sqlAddReconciledBalance);
-        createResetBalancesTriggers(db);
+        db.execSQL(sqlAddNotes)
+        db.execSQL(sqlAddBalance)
+        db.execSQL(sqlAddClearedBalance)
+        db.execSQL(sqlAddNoClosingBalance)
+        db.execSQL(sqlAddReconciledBalance)
+        DatabaseHelper.createResetBalancesTriggers(db)
     }
 
     /**
@@ -168,53 +150,36 @@ public class MigrationHelper {
      *
      * @param db the database.
      */
-    private static void migrateTo19(SQLiteDatabase db) {
-        Timber.i("Upgrading database to version 19");
+    private fun migrateTo19(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 19")
 
         // Fetch list of accounts with mismatched currencies.
-        String sqlAccountCurrencyWrong = "SELECT DISTINCT a." + AccountEntry.COLUMN_CURRENCY + ", a." + AccountEntry.COLUMN_COMMODITY_UID + ", c." + CommodityEntry.COLUMN_UID
-            + " FROM " + AccountEntry.TABLE_NAME + " a, " + CommodityEntry.TABLE_NAME + " c"
-            + " WHERE a." + AccountEntry.COLUMN_CURRENCY + " = c." + CommodityEntry.COLUMN_MNEMONIC
-            + " AND (c." + CommodityEntry.COLUMN_NAMESPACE + " = " + sqlEscapeString(Commodity.COMMODITY_CURRENCY)
-            + " OR c." + CommodityEntry.COLUMN_NAMESPACE + " = " + sqlEscapeString(Commodity.COMMODITY_ISO4217) + ")"
-            + " AND a." + AccountEntry.COLUMN_COMMODITY_UID + " != c." + CommodityEntry.COLUMN_UID;
-        Cursor cursor = db.rawQuery(sqlAccountCurrencyWrong, null);
-        List<AccountCurrency> accountsWrong = new ArrayList<>();
+        val sqlAccountCurrencyWrong =
+            "SELECT DISTINCT a." + AccountEntry.COLUMN_CURRENCY + ", a." + AccountEntry.COLUMN_COMMODITY_UID + ", c." + CommodityEntry.COLUMN_UID +
+                    " FROM " + AccountEntry.TABLE_NAME + " a, " + CommodityEntry.TABLE_NAME + " c" +
+                    " WHERE a." + AccountEntry.COLUMN_CURRENCY + " = c." + CommodityEntry.COLUMN_MNEMONIC +
+                    " AND (c." + CommodityEntry.COLUMN_NAMESPACE + " = " + sqlEscapeString(Commodity.COMMODITY_CURRENCY) +
+                    " OR c." + CommodityEntry.COLUMN_NAMESPACE + " = " + sqlEscapeString(Commodity.COMMODITY_ISO4217) + ")" +
+                    " AND a." + AccountEntry.COLUMN_COMMODITY_UID + " != c." + CommodityEntry.COLUMN_UID
+        val cursor = db.rawQuery(sqlAccountCurrencyWrong, null)
+        val accountsWrong = mutableListOf<AccountCurrency>()
         if (cursor.moveToFirst()) {
             do {
-                String currencyCode = cursor.getString(0);
-                String commodityUIDOld = cursor.getString(1);
-                String commodityUIDNew = cursor.getString(2);
-                accountsWrong.add(new AccountCurrency(currencyCode, commodityUIDOld, commodityUIDNew));
-            } while (cursor.moveToNext());
+                val currencyCode = cursor.getString(0)
+                val commodityUIDOld = cursor.getString(1)
+                val commodityUIDNew = cursor.getString(2)
+                accountsWrong.add(AccountCurrency(currencyCode, commodityUIDOld, commodityUIDNew))
+            } while (cursor.moveToNext())
         }
-        cursor.close();
+        cursor.close()
 
         // Update with correct commodities.
-        for (AccountCurrency accountWrong : accountsWrong) {
-            String sql = "UPDATE " + AccountEntry.TABLE_NAME
-                + " SET " + AccountEntry.COLUMN_COMMODITY_UID + " = " + sqlEscapeString(accountWrong.commodityUIDNew)
-                + " WHERE " + AccountEntry.COLUMN_CURRENCY + " = " + sqlEscapeString(accountWrong.currencyCode)
-                + " AND " + AccountEntry.COLUMN_COMMODITY_UID + " = " + sqlEscapeString(accountWrong.commodityUIDOld);
-            db.execSQL(sql);
-        }
-    }
-
-    private static class AccountCurrency {
-        @NonNull
-        public final String currencyCode;
-        @NonNull
-        public final String commodityUIDOld;
-        @NonNull
-        public final String commodityUIDNew;
-
-        private AccountCurrency(
-            @NonNull String currencyCode,
-            @NonNull String commodityUIDOld,
-            @NonNull String commodityUIDNew) {
-            this.currencyCode = currencyCode;
-            this.commodityUIDOld = commodityUIDOld;
-            this.commodityUIDNew = commodityUIDNew;
+        for (accountWrong in accountsWrong) {
+            val sql = "UPDATE " + AccountEntry.TABLE_NAME +
+                    " SET " + AccountEntry.COLUMN_COMMODITY_UID + " = ${sqlEscapeString(accountWrong.commodityUIDNew)}" +
+                    " WHERE " + AccountEntry.COLUMN_CURRENCY + " = ${sqlEscapeString(accountWrong.currencyCode)}" +
+                    " AND " + AccountEntry.COLUMN_COMMODITY_UID + " = ${sqlEscapeString(accountWrong.commodityUIDOld)}"
+            db.execSQL(sql)
         }
     }
 
@@ -223,30 +188,34 @@ public class MigrationHelper {
      *
      * @param db the database.
      */
-    private static void migrateTo21(SQLiteDatabase db) {
-        Timber.i("Upgrading database to version 21");
+    private fun migrateTo21(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 21")
 
-        boolean hasColumnCurrency = hasTableColumn(db, AccountEntry.TABLE_NAME, AccountEntry.COLUMN_CURRENCY);
-        if (hasColumnCurrency) {
-            return;
+        if (DatabaseHelper.hasTableColumn(
+                db,
+                AccountEntry.TABLE_NAME,
+                AccountEntry.COLUMN_CURRENCY
+            )
+        ) {
+            return
         }
 
         // Restore the currency code column that was deleted in v19.
-        String sqlAccountCurrency = "ALTER TABLE " + AccountEntry.TABLE_NAME
-            + " ADD COLUMN " + AccountEntry.COLUMN_CURRENCY + " varchar(255)";
+        val sqlAccountCurrency =
+            "ALTER TABLE " + AccountEntry.TABLE_NAME + " ADD COLUMN " + AccountEntry.COLUMN_CURRENCY + " varchar(255)"
         try {
-            db.execSQL(sqlAccountCurrency);
-        } catch (SQLException e) {
-            Timber.e(e);
+            db.execSQL(sqlAccountCurrency)
+        } catch (e: SQLException) {
+            Timber.e(e)
         }
 
         // Restore the currency code column.
-        String sqlTransactionCurrency = "ALTER TABLE " + TransactionEntry.TABLE_NAME
-            + " ADD COLUMN " + TransactionEntry.COLUMN_CURRENCY + " varchar(255)";
+        val sqlTransactionCurrency =
+            "ALTER TABLE " + TransactionEntry.TABLE_NAME + " ADD COLUMN " + TransactionEntry.COLUMN_CURRENCY + " varchar(255)"
         try {
-            db.execSQL(sqlTransactionCurrency);
-        } catch (SQLException e) {
-            Timber.e(e);
+            db.execSQL(sqlTransactionCurrency)
+        } catch (e: SQLException) {
+            Timber.e(e)
         }
     }
 
@@ -256,28 +225,40 @@ public class MigrationHelper {
      * @param context the context.
      * @param db      the database.
      */
-    private static void migrateTo23(@NonNull Context context, @NonNull SQLiteDatabase db) {
-        Timber.i("Upgrading database to version 23");
+    private fun migrateTo23(context: Context, db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 23")
 
-        boolean hasColumnQuoteFlag = hasTableColumn(db, CommodityEntry.TABLE_NAME, CommodityEntry.COLUMN_QUOTE_FLAG);
+        val hasColumnQuoteFlag = DatabaseHelper.hasTableColumn(
+            db,
+            CommodityEntry.TABLE_NAME,
+            CommodityEntry.COLUMN_QUOTE_FLAG
+        )
         if (!hasColumnQuoteFlag) {
             // Restore the currency code column that was deleted in v19.
-            String sqlCommodityFlag = "ALTER TABLE " + CommodityEntry.TABLE_NAME
-                + " ADD COLUMN " + CommodityEntry.COLUMN_QUOTE_FLAG + " tinyint default 0";
+            val sqlCommodityFlag =
+                "ALTER TABLE " + CommodityEntry.TABLE_NAME + " ADD COLUMN " + CommodityEntry.COLUMN_QUOTE_FLAG + " tinyint default 0"
             try {
-                db.execSQL(sqlCommodityFlag);
-            } catch (SQLException e) {
-                Timber.e(e);
+                db.execSQL(sqlCommodityFlag)
+            } catch (e: SQLException) {
+                Timber.e(e)
             }
         }
 
         try {
-            DatabaseHolder holder = new DatabaseHolder(context, db);
-            importCommodities(holder);
-        } catch (SAXException | ParserConfigurationException | IOException e) {
-            String msg = "Error loading currencies into the database";
-            Timber.e(e, msg);
-            throw new SQLiteException(msg, e);
+            val holder = DatabaseHolder(context, db)
+            importCommodities(holder)
+        } catch (e: SAXException) {
+            val msg = "Error loading currencies into the database"
+            Timber.e(e, msg)
+            throw SQLiteException(msg, e)
+        } catch (e: ParserConfigurationException) {
+            val msg = "Error loading currencies into the database"
+            Timber.e(e, msg)
+            throw SQLiteException(msg, e)
+        } catch (e: IOException) {
+            val msg = "Error loading currencies into the database"
+            Timber.e(e, msg)
+            throw SQLiteException(msg, e)
         }
     }
 
@@ -286,19 +267,35 @@ public class MigrationHelper {
      *
      * @param db the database.
      */
-    private static void migrateTo24(@NonNull SQLiteDatabase db) {
-        Timber.i("Upgrading database to version 24");
+    private fun migrateTo24(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 24")
 
-        if (!hasTableColumn(db, AccountEntry.TABLE_NAME, AccountEntry.COLUMN_TEMPLATE)) {
-            String sqlAccountTemplate = "ALTER TABLE " + AccountEntry.TABLE_NAME +
-                " ADD COLUMN " + AccountEntry.COLUMN_TEMPLATE + " tinyint default 0";
-            db.execSQL(sqlAccountTemplate);
+        if (!DatabaseHelper.hasTableColumn(
+                db,
+                AccountEntry.TABLE_NAME,
+                AccountEntry.COLUMN_TEMPLATE
+            )
+        ) {
+            val sqlAccountTemplate = "ALTER TABLE " + AccountEntry.TABLE_NAME +
+                    " ADD COLUMN " + AccountEntry.COLUMN_TEMPLATE + " tinyint default 0"
+            db.execSQL(sqlAccountTemplate)
         }
 
-        if (!hasTableColumn(db, SplitEntry.TABLE_NAME, SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID)) {
-            String sqlAddSchedxActionAccount = "ALTER TABLE " + SplitEntry.TABLE_NAME +
-                " ADD COLUMN " + SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID + " varchar(255)";
-            db.execSQL(sqlAddSchedxActionAccount);
+        if (!DatabaseHelper.hasTableColumn(
+                db,
+                SplitEntry.TABLE_NAME,
+                SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID
+            )
+        ) {
+            val sqlAddSchedxActionAccount = "ALTER TABLE " + SplitEntry.TABLE_NAME +
+                    " ADD COLUMN " + SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID + " varchar(255)"
+            db.execSQL(sqlAddSchedxActionAccount)
         }
     }
+
+    private class AccountCurrency(
+        val currencyCode: String,
+        val commodityUIDOld: String,
+        val commodityUIDNew: String
+    )
 }

@@ -3,8 +3,9 @@ package org.gnucash.android.ui.settings
 import android.os.Bundle
 import android.view.View
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.ActionBar
 import androidx.preference.PreferenceFragmentCompat
+import org.gnucash.android.app.actionBar
 
 abstract class GnuPreferenceFragment : PreferenceFragmentCompat() {
 
@@ -15,7 +16,7 @@ abstract class GnuPreferenceFragment : PreferenceFragmentCompat() {
         super.onViewCreated(view, savedInstanceState)
         val titleId = this.titleId
         if (titleId == 0) return
-        val actionBar = checkNotNull((requireActivity() as AppCompatActivity).supportActionBar)
-        actionBar.setTitle(titleId)
+        val actionBar: ActionBar? = this.actionBar
+        actionBar?.setTitle(titleId)
     }
 }

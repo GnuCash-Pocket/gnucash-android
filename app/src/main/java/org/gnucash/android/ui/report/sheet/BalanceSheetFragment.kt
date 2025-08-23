@@ -13,115 +13,80 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.ui.report.sheet;
+package org.gnucash.android.ui.report.sheet
 
-import static org.gnucash.android.ui.util.TextViewExtKt.displayBalance;
-
-import android.content.Context;
-import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TableLayout;
-import android.widget.TextView;
-
-import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import org.gnucash.android.R;
-import org.gnucash.android.databinding.FragmentTextReportBinding;
-import org.gnucash.android.databinding.RowBalanceSheetBinding;
-import org.gnucash.android.databinding.TotalBalanceSheetBinding;
-import org.gnucash.android.db.DatabaseSchema.AccountEntry;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.AccountType;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.model.Price;
-import org.gnucash.android.ui.report.BaseReportFragment;
-import org.gnucash.android.ui.report.ReportType;
-
-import java.util.ArrayList;
-import java.util.List;
+import android.content.Context
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TableLayout
+import androidx.annotation.ColorInt
+import org.gnucash.android.R
+import org.gnucash.android.databinding.FragmentTextReportBinding
+import org.gnucash.android.databinding.RowBalanceSheetBinding
+import org.gnucash.android.databinding.TotalBalanceSheetBinding
+import org.gnucash.android.db.DatabaseSchema.AccountEntry
+import org.gnucash.android.db.joinIn
+import org.gnucash.android.model.AccountType
+import org.gnucash.android.model.Money.Companion.createZeroInstance
+import org.gnucash.android.model.isNullOrZero
+import org.gnucash.android.ui.report.BaseReportFragment
+import org.gnucash.android.ui.report.ReportType
+import org.gnucash.android.ui.util.displayBalance
 
 /**
  * Balance sheet report fragment
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class BalanceSheetFragment extends BaseReportFragment {
+class BalanceSheetFragment : BaseReportFragment() {
+    private var assetsBalance = createZeroInstance(commodity)
+    private var liabilitiesBalance = createZeroInstance(commodity)
 
-    private Money mAssetsBalance;
-    private Money mLiabilitiesBalance;
-    private final List<AccountType> mAssetAccountTypes = new ArrayList<>();
-    private final List<AccountType> mLiabilityAccountTypes = new ArrayList<>();
-    private final List<AccountType> mEquityAccountTypes = new ArrayList<>();
+    private var binding: FragmentTextReportBinding? = null
 
-    private FragmentTextReportBinding mBinding;
     @ColorInt
-    private int colorBalanceZero;
+    private var colorBalanceZero = 0
 
-    @Override
-    public View inflateView(LayoutInflater inflater, ViewGroup container) {
-        mBinding = FragmentTextReportBinding.inflate(inflater, container, false);
-        colorBalanceZero = mBinding.totalLiabilityAndEquity.getCurrentTextColor();
-        return mBinding.getRoot();
+    override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): View {
+        val binding = FragmentTextReportBinding.inflate(inflater, container, false)
+        this.binding = binding
+        colorBalanceZero = binding.totalLiabilityAndEquity.currentTextColor
+        return binding.root
     }
 
-    @Override
-    public ReportType getReportType() {
-        return ReportType.SHEET;
+    override val reportType: ReportType = ReportType.SHEET
+
+    override fun requiresAccountTypeOptions(): Boolean {
+        return false
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        mAssetAccountTypes.clear();
-        mAssetAccountTypes.add(AccountType.ASSET);
-        mAssetAccountTypes.add(AccountType.CASH);
-        mAssetAccountTypes.add(AccountType.BANK);
-
-        mLiabilityAccountTypes.clear();
-        mLiabilityAccountTypes.add(AccountType.LIABILITY);
-        mLiabilityAccountTypes.add(AccountType.CREDIT);
-
-        mEquityAccountTypes.clear();
-        mEquityAccountTypes.add(AccountType.EQUITY);
+    override fun requiresTimeRangeOptions(): Boolean {
+        return false
     }
 
-    @Override
-    public boolean requiresAccountTypeOptions() {
-        return false;
+    override fun generateReport(context: Context) {
+        assetsBalance = accountsDbAdapter.getCurrentAccountsBalance(assetAccountTypes, commodity)
+        liabilitiesBalance =
+            -accountsDbAdapter.getCurrentAccountsBalance(liabilityAccountTypes, commodity)
     }
 
-    @Override
-    public boolean requiresTimeRangeOptions() {
-        return false;
+    override fun displayReport() {
+        val binding = binding ?: return
+        loadAccountViews(assetAccountTypes, binding.tableAssets)
+        loadAccountViews(liabilityAccountTypes, binding.tableLiabilities)
+        loadAccountViews(equityAccountTypes, binding.tableEquity)
+
+        binding.totalLiabilityAndEquity.displayBalance(
+            assetsBalance + liabilitiesBalance,
+            colorBalanceZero
+        )
     }
 
-    @Override
-    protected void generateReport(@NonNull Context context) {
-        mAssetsBalance = mAccountsDbAdapter.getCurrentAccountsBalance(mAssetAccountTypes, mCommodity);
-        mLiabilitiesBalance = mAccountsDbAdapter.getCurrentAccountsBalance(mLiabilityAccountTypes, mCommodity).unaryMinus();
-    }
-
-    @Override
-    protected void displayReport() {
-        loadAccountViews(mAssetAccountTypes, mBinding.tableAssets);
-        loadAccountViews(mLiabilityAccountTypes, mBinding.tableLiabilities);
-        loadAccountViews(mEquityAccountTypes, mBinding.tableEquity);
-
-        displayBalance(mBinding.totalLiabilityAndEquity, mAssetsBalance.plus(mLiabilitiesBalance), colorBalanceZero);
-    }
-
-    @Override
-    public void onPrepareOptionsMenu(@NonNull Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-        menu.findItem(R.id.menu_group_reports_by).setVisible(false);
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        super.onPrepareOptionsMenu(menu)
+        menu.findItem(R.id.menu_group_reports_by).isVisible = false
     }
 
     /**
@@ -130,51 +95,68 @@ public class BalanceSheetFragment extends BaseReportFragment {
      * @param accountTypes Account types for which to load balances
      * @param tableLayout  Table layout into which to load the rows
      */
-    private void loadAccountViews(List<AccountType> accountTypes, TableLayout tableLayout) {
-        Context context = tableLayout.getContext();
-        LayoutInflater inflater = LayoutInflater.from(context);
-        tableLayout.removeAllViews();
+    private fun loadAccountViews(
+        accountTypes: List<AccountType>,
+        tableLayout: TableLayout
+    ) {
+        val context = tableLayout.context
+        val inflater = LayoutInflater.from(context)
+        tableLayout.removeAllViews()
 
         // FIXME move this to generateReport
-        String where = AccountEntry.COLUMN_TYPE + " IN ('" + TextUtils.join("','", accountTypes) + "')"
-            + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
-            + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
-        String orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC";
-        List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, null, orderBy);
-        Money total = Money.createZeroInstance(Commodity.DEFAULT_COMMODITY);
-        boolean isRowEven = true;
+        val accountTypesList = accountTypes.map { it.name }.joinIn()
+        val where = (AccountEntry.COLUMN_TYPE + " IN " + accountTypesList
+                + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
+                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
+        val orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC"
+        val accounts = accountsDbAdapter.getSimpleAccounts(where, null, orderBy)
+        var total = createZeroInstance(commodity)
+        var isRowEven = true
 
-        for (Account account : accounts) {
-            Money balance = mAccountsDbAdapter.getAccountBalance(account.getUID());
-            if (balance.isAmountZero()) continue;
-            AccountType accountType = account.getAccountType();
-            balance = (accountType.hasDebitNormalBalance) ? balance : balance.unaryMinus();
-            RowBalanceSheetBinding binding = RowBalanceSheetBinding.inflate(inflater, tableLayout, true);
+        for (account in accounts) {
+            var balance = accountsDbAdapter.getAccountBalance(account.uid)
+            if (balance.isNullOrZero()) continue
+            val accountType = account.accountType
+            balance = if (accountType.hasDebitNormalBalance) balance else -balance
+            val binding = RowBalanceSheetBinding.inflate(inflater, tableLayout, true)
             // alternate light and dark rows
             if (isRowEven) {
-                binding.getRoot().setBackgroundResource(R.color.row_even);
-                isRowEven = false;
+                binding.root.setBackgroundResource(R.color.row_even)
+                isRowEven = false
             } else {
-                binding.getRoot().setBackgroundResource(R.color.row_odd);
-                isRowEven = true;
+                binding.root.setBackgroundResource(R.color.row_odd)
+                isRowEven = true
             }
-            binding.accountName.setText(account.getName());
-            TextView balanceTextView = binding.accountBalance;
-            @ColorInt int colorBalanceZero = balanceTextView.getCurrentTextColor();
-            displayBalance(balanceTextView, balance, colorBalanceZero);
+            binding.accountName.text = account.name
+            val balanceTextView = binding.accountBalance
+            @ColorInt val colorBalanceZero = balanceTextView.currentTextColor
+            balanceTextView.displayBalance(balance, colorBalanceZero)
 
             // Price conversion.
-            Price price = pricesDbAdapter.getPrice(balance.getCommodity(), total.getCommodity());
-            if (price == null) continue;
-            balance = balance.times(price);
-            total = total.plus(balance);
+            val price = pricesDbAdapter.getPrice(balance.commodity, total.commodity)
+            if (price == null) continue
+            balance *= price
+            total += balance
         }
 
-        TotalBalanceSheetBinding binding = TotalBalanceSheetBinding.inflate(inflater, tableLayout, true);
-
-        TextView accountBalance = binding.accountBalance;
-        @ColorInt int colorBalanceZero = accountBalance.getCurrentTextColor();
-        displayBalance(accountBalance, total, colorBalanceZero);
+        val binding = TotalBalanceSheetBinding.inflate(inflater, tableLayout, true)
+        val accountBalance = binding.accountBalance
+        @ColorInt val colorBalanceZero = accountBalance.currentTextColor
+        accountBalance.displayBalance(total, colorBalanceZero)
     }
 
+    companion object {
+        private val assetAccountTypes = listOf<AccountType>(
+            AccountType.ASSET,
+            AccountType.CASH,
+            AccountType.BANK
+        )
+        private val liabilityAccountTypes = listOf<AccountType>(
+            AccountType.LIABILITY,
+            AccountType.CREDIT
+        )
+        private val equityAccountTypes = listOf<AccountType>(
+            AccountType.EQUITY
+        )
+    }
 }

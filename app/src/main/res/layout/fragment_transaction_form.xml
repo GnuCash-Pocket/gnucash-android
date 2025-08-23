@@ -93,7 +93,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
-                    android:checked="false"
                     android:gravity="center_vertical"
                     android:textOff="@string/label_debit"
                     android:textOn="@string/label_credit"

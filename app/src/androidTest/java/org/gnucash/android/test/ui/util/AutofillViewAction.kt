@@ -33,7 +33,6 @@ class AutofillViewAction(private val mode: Int) : ViewAction {
     }
 
     companion object {
-        @JvmStatic
         fun disableAutofill(): ViewAction {
             return actionWithAssertions(AutofillViewAction(View.IMPORTANT_FOR_AUTOFILL_NO))
         }

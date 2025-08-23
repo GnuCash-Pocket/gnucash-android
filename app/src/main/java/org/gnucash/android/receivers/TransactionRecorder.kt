@@ -13,127 +13,119 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.receivers
 
-package org.gnucash.android.receivers;
-
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Build;
-import android.os.Bundle;
-import android.text.TextUtils;
-
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
-import org.gnucash.android.db.adapter.DatabaseAdapter;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.model.Split;
-import org.gnucash.android.model.Transaction;
-import org.gnucash.android.model.TransactionType;
-import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
-
-import timber.log.Timber;
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import org.gnucash.android.app.getSerializableCompat
+import org.gnucash.android.app.isNullOrEmpty
+import org.gnucash.android.db.adapter.TransactionsDbAdapter
+import org.gnucash.android.model.Account
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.model.Money
+import org.gnucash.android.model.Split
+import org.gnucash.android.model.Split.Companion.parseSplit
+import org.gnucash.android.model.Transaction
+import org.gnucash.android.model.TransactionType
+import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity
+import timber.log.Timber
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.StringReader
+import java.math.BigDecimal
+import java.math.MathContext
+import java.math.RoundingMode
 
 /**
- * Broadcast receiver responsible for creating transactions received through {@link Intent}s
+ * Broadcast receiver responsible for creating transactions received through [Intent]s
  * In order to create a transaction through Intents, broadcast an intent with the arguments needed to
- * create the transaction. Transactions are strongly bound to {@link Account}s and it is recommended to
+ * create the transaction. Transactions are strongly bound to [Account]s and it is recommended to
  * create an Account for your transaction splits.
- * <p>Remember to declare the appropriate permissions in order to create transactions with Intents.
- * The required permission is "org.gnucash.android.permission.RECORD_TRANSACTION"</p>
+ *
+ * Remember to declare the appropriate permissions in order to create transactions with Intents.
+ * The required permission is "org.gnucash.android.permission.RECORD_TRANSACTION"
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  * @see AccountCreator
- * @see org.gnucash.android.model.Transaction#createIntent(org.gnucash.android.model.Transaction)
+ *
+ * @see Transaction.createIntent
  */
-public class TransactionRecorder extends BroadcastReceiver {
-
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        Timber.i("Received transaction recording intent");
-        Bundle args = intent.getExtras();
-        if (args == null) {
-            Timber.w("Transaction arguments required");
-            return;
+class TransactionRecorder : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        Timber.i("Received transaction recording intent")
+        val args = intent.extras
+        if (args.isNullOrEmpty()) {
+            Timber.w("Transaction arguments required")
+            return
         }
 
-        String name = args.getString(Intent.EXTRA_TITLE);
-        if (TextUtils.isEmpty(name)) {
-            Timber.w("Transaction name required");
-            return;
+        val name = args.getString(Intent.EXTRA_TITLE)
+        if (name.isNullOrEmpty()) {
+            Timber.w("Transaction name required")
+            return
         }
-        TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
-        CommoditiesDbAdapter commoditiesDbAdapter = transactionsDbAdapter.commoditiesDbAdapter;
+        val transactionsDbAdapter = TransactionsDbAdapter.instance
+        val commoditiesDbAdapter = transactionsDbAdapter.commoditiesDbAdapter
 
-        String note = args.getString(Intent.EXTRA_TEXT);
+        val note = args.getString(Intent.EXTRA_TEXT)
 
-        String currencyUID = args.getString(Account.EXTRA_CURRENCY_UID);
-        final Commodity commodity;
-        if (TextUtils.isEmpty(currencyUID)) {
-            String currencyCode = args.getString(Account.EXTRA_CURRENCY_CODE);
-            commodity = CommoditiesDbAdapter.getInstance().getCurrency(currencyCode);
+        val currencyUID = args.getString(Account.EXTRA_CURRENCY_UID)
+        val commodity: Commodity?
+        if (currencyUID.isNullOrEmpty()) {
+            val currencyCode = args.getString(Account.EXTRA_CURRENCY_CODE)
+            commodity = commoditiesDbAdapter.getCurrency(currencyCode)
         } else {
-            commodity = CommoditiesDbAdapter.getInstance().getRecord(currencyUID);
+            commodity = commoditiesDbAdapter.getRecord(currencyUID)
         }
         if (commodity == null) {
-            Timber.w("Commodity required");
-            return;
+            Timber.w("Commodity required")
+            return
         }
 
-        Transaction transaction = new Transaction(name);
-        transaction.setTime(System.currentTimeMillis());
-        transaction.setNote(note);
-        transaction.setCommodity(commodity);
+        val transaction = Transaction(name)
+        transaction.time = System.currentTimeMillis()
+        transaction.note = note
+        transaction.commodity = commodity
 
         //Parse deprecated args for compatibility. Transactions were bound to accounts, now only splits are
-        String accountUID = args.getString(Transaction.EXTRA_ACCOUNT_UID);
+        val accountUID = args.getString(Transaction.EXTRA_ACCOUNT_UID)
         if (accountUID != null) {
-            TransactionType type = TransactionType.valueOf(args.getString(Transaction.EXTRA_TRANSACTION_TYPE));
-            BigDecimal amountBigDecimal;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                amountBigDecimal = args.getSerializable(Transaction.EXTRA_AMOUNT, BigDecimal.class);
-            } else {
-                amountBigDecimal = (BigDecimal) args.getSerializable(Transaction.EXTRA_AMOUNT);
-            }
-            amountBigDecimal = amountBigDecimal.setScale(commodity.getSmallestFractionDigits(), RoundingMode.HALF_EVEN).round(MathContext.DECIMAL128);
-            Money amount = new Money(amountBigDecimal, commodity);
-            Split split = new Split(amount, accountUID);
-            split.setType(type);
-            transaction.addSplit(split);
+            val type = TransactionType.valueOf(args.getString(Transaction.EXTRA_TRANSACTION_TYPE)!!)
+            var amountBigDecimal: BigDecimal = args.getSerializableCompat(Transaction.EXTRA_AMOUNT, BigDecimal::class.java)!!
+            amountBigDecimal =
+                amountBigDecimal.setScale(commodity.smallestFractionDigits, RoundingMode.HALF_EVEN)
+                    .round(MathContext.DECIMAL128)
+            val amount = Money(amountBigDecimal, commodity)
+            val split = Split(amount, accountUID)
+            split.type = type
+            transaction.addSplit(split)
 
-            String transferAccountUID = args.getString(Transaction.EXTRA_DOUBLE_ACCOUNT_UID);
-            if (transferAccountUID != null) {
-                transaction.addSplit(split.createPair(transferAccountUID));
+            val transferAccountUID = args.getString(Transaction.EXTRA_DOUBLE_ACCOUNT_UID)
+            if (!transferAccountUID.isNullOrEmpty()) {
+                transaction.addSplit(split.createPair(transferAccountUID))
             }
         }
 
-        String splits = args.getString(Transaction.EXTRA_SPLITS);
+        val splits = args.getString(Transaction.EXTRA_SPLITS)
         if (splits != null) {
-            StringReader stringReader = new StringReader(splits);
-            BufferedReader bufferedReader = new BufferedReader(stringReader);
-            String line;
+            val stringReader = StringReader(splits)
+            val bufferedReader = BufferedReader(stringReader)
+            var line: String?
             try {
-                while ((line = bufferedReader.readLine()) != null) {
-                    Split split = Split.parseSplit(line);
-                    transaction.addSplit(split);
+                line = bufferedReader.readLine()
+                while (line != null) {
+                    val split = parseSplit(line)
+                    transaction.addSplit(split)
+                    line = bufferedReader.readLine()
                 }
-            } catch (IOException e) {
-                Timber.e(e);
+            } catch (e: IOException) {
+                Timber.e(e)
             }
         }
 
-        transactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.insert);
+        transactionsDbAdapter.insert(transaction)
 
-        WidgetConfigurationActivity.updateAllWidgets(context);
+        WidgetConfigurationActivity.updateAllWidgets(context)
     }
-
 }

@@ -186,25 +186,12 @@ class Commodity @JvmOverloads constructor(
          */
         const val NO_CURRENCY_CODE = "XXX"
 
-        @JvmField
         var USD = Commodity("US Dollar", "USD")
-
-        @JvmField
         var EUR = Commodity("Euro", "EUR")
-
-        @JvmField
         var GBP = Commodity("Pound Sterling", "GBP")
-
-        @JvmField
         var CHF = Commodity("Swiss Franc", "CHF")
-
-        @JvmField
         var CAD = Commodity("Canadian Dollar", "CAD")
-
-        @JvmField
         var JPY = Commodity("Yen", "JPY", smallestFraction = 1)
-
-        @JvmField
         var AUD = Commodity("Australian Dollar", "AUD")
 
         /**
@@ -213,7 +200,6 @@ class Commodity @JvmOverloads constructor(
          * This value is set when a new application instance is created in [GnuCashApplication.onCreate].
          * The value initialized here is just a placeholder for unit tests
          */
-        @JvmField
         var DEFAULT_COMMODITY = Commodity(
             USD.fullname,
             USD.mnemonic,
@@ -221,7 +207,6 @@ class Commodity @JvmOverloads constructor(
             USD.smallestFraction
         ) //this value is a stub. Will be overwritten when the app is launched
 
-        @JvmField
         val template = Commodity(TEMPLATE, TEMPLATE, TEMPLATE, 1).apply {
             cusip = TEMPLATE
             localSymbol = TEMPLATE
@@ -233,7 +218,6 @@ class Commodity @JvmOverloads constructor(
          * @param currencyCode ISO 4217 currency code (3-letter)
          * @return the commodity, or default commodity.
          */
-        @JvmStatic
         fun getInstance(currencyCode: String?): Commodity {
             if (currencyCode.isNullOrEmpty()) {
                 return DEFAULT_COMMODITY
@@ -248,11 +232,10 @@ class Commodity @JvmOverloads constructor(
                 "USD" -> return USD
             }
 
-            val adapter = CommoditiesDbAdapter.getInstance()
+            val adapter = CommoditiesDbAdapter.instance
             return adapter?.getCurrency(currencyCode) ?: DEFAULT_COMMODITY
         }
 
-        @JvmStatic
         fun formatListItem(currencyCode: String, name: String?): String {
             if (name.isNullOrEmpty()) {
                 return currencyCode
@@ -260,10 +243,9 @@ class Commodity @JvmOverloads constructor(
             return "$currencyCode ($name)"
         }
 
-        @JvmStatic
         fun getLocaleCurrencyCode(): String? {
             return try {
-                val locale = GnuCashApplication.getDefaultLocale()
+                val locale = GnuCashApplication.defaultLocale
                 Currency.getInstance(locale).currencyCode
             } catch (e: Throwable) {
                 Timber.e(e)

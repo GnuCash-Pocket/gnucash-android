@@ -13,171 +13,149 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.colorpicker
 
-package org.gnucash.android.ui.colorpicker;
-
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
-import android.graphics.Color;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-
-import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
-
-import org.gnucash.android.R;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.ui.colorpicker.ColorPickerSwatch.OnColorSelectedListener;
+import android.app.Activity
+import android.app.AlertDialog
+import android.app.Dialog
+import android.graphics.Color
+import android.os.Bundle
+import androidx.annotation.ColorInt
+import androidx.annotation.StringRes
+import androidx.core.view.isVisible
+import androidx.fragment.app.DialogFragment
+import org.gnucash.android.R
+import org.gnucash.android.model.Account
+import org.gnucash.android.ui.colorpicker.ColorPickerSwatch.OnColorSelectedListener
 
 /**
  * A dialog which takes in as input an array of colors and creates a palette allowing the user to
  * select a specific color swatch, which invokes a listener.
  */
-public class ColorPickerDialog extends DialogFragment implements OnColorSelectedListener {
+class ColorPickerDialog : DialogFragment(), OnColorSelectedListener {
+    @StringRes
+    private var titleResId = R.string.color_picker_default_title
+    private var colors = IntArray(0)
 
-    /**
-     * Tag for the color picker dialog fragment
-     */
-    public static final String COLOR_PICKER_DIALOG_TAG = "color_picker_dialog";
-
-    public static final String EXTRA_COLOR = "color";
-
-    public static final int SIZE_LARGE = ColorPickerPalette.SIZE_LARGE;
-    public static final int SIZE_SMALL = ColorPickerPalette.SIZE_SMALL;
-
-    private static final String KEY_TITLE_ID = "title_id";
-    private static final String KEY_COLORS = "colors";
-    private static final String KEY_SELECTED_COLOR = "selected_color";
-    private static final String KEY_COLUMNS = "columns";
-    private static final String KEY_SIZE = "size";
-
-    private int mTitleResId = R.string.color_picker_default_title;
-    @NonNull
-    private int[] mColors = new int[0];
     @ColorInt
-    private int mSelectedColor = Color.TRANSPARENT;
-    private int mColumns;
-    private int mSize = ColorPickerPalette.SIZE_LARGE;
+    private var selectedColor = Color.TRANSPARENT
+    private var columns = 0
+    private var size = ColorPickerPalette.SIZE_LARGE
 
-    @Nullable
-    private ColorPickerPalette mPalette;
-    @Nullable
-    private OnColorSelectedListener mListener;
+    private var palette: ColorPickerPalette? = null
+    private var listener: OnColorSelectedListener? = null
 
-    public static ColorPickerDialog newInstance(int titleResId, int[] colors, int selectedColor,
-                                                int columns, int size) {
-        ColorPickerDialog dialog = new ColorPickerDialog();
-        dialog.setArguments(titleResId, columns, size, colors, selectedColor);
-        return dialog;
+    private fun setArguments(
+        titleResId: Int,
+        columns: Int,
+        size: Int,
+        colors: IntArray?,
+        @ColorInt selectedColor: Int
+    ) {
+        arguments = Bundle().apply {
+            putInt(KEY_TITLE_ID, titleResId)
+            putInt(KEY_COLUMNS, columns)
+            putInt(KEY_SIZE, size)
+            putIntArray(KEY_COLORS, colors)
+            putInt(KEY_SELECTED_COLOR, selectedColor)
+        }
     }
 
-    private void setArguments(int titleResId, int columns, int size, int[] colors, @ColorInt int selectedColor) {
-        Bundle bundle = new Bundle();
-        bundle.putInt(KEY_TITLE_ID, titleResId);
-        bundle.putInt(KEY_COLUMNS, columns);
-        bundle.putInt(KEY_SIZE, size);
-        bundle.putIntArray(KEY_COLORS, colors);
-        bundle.putInt(KEY_SELECTED_COLOR, selectedColor);
-        setArguments(bundle);
-    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-    @Deprecated
-    public void setOnColorSelectedListener(OnColorSelectedListener listener) {
-        mListener = listener;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        Bundle args = getArguments();
+        val args = arguments
         if (args != null) {
-            mTitleResId = args.getInt(KEY_TITLE_ID, mTitleResId);
-            mColumns = args.getInt(KEY_COLUMNS, mColumns);
-            mSize = args.getInt(KEY_SIZE, mSize);
-            mColors = args.getIntArray(KEY_COLORS);
-            mSelectedColor = args.getInt(KEY_SELECTED_COLOR, mSelectedColor);
+            titleResId = args.getInt(KEY_TITLE_ID, titleResId)
+            columns = args.getInt(KEY_COLUMNS, columns)
+            size = args.getInt(KEY_SIZE, size)
+            colors = args.getIntArray(KEY_COLORS) ?: IntArray(0)
+            selectedColor = args.getInt(KEY_SELECTED_COLOR, selectedColor)
         }
 
         if (savedInstanceState != null) {
-            mColors = savedInstanceState.getIntArray(KEY_COLORS);
-            mSelectedColor = savedInstanceState.getInt(KEY_SELECTED_COLOR, mSelectedColor);
+            colors = savedInstanceState.getIntArray(KEY_COLORS) ?: IntArray(0)
+            selectedColor = savedInstanceState.getInt(KEY_SELECTED_COLOR, selectedColor)
         }
     }
 
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final Activity activity = requireActivity();
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val activity: Activity = requireActivity()
 
-        View view = LayoutInflater.from(activity).inflate(R.layout.color_picker_dialog, null);
-        ColorPickerPalette palette = view.findViewById(R.id.color_picker);
-        palette.init(mSize, mColumns, this);
-        if (mColors != null) {
-            palette.drawPalette(mColors, mSelectedColor);
-            palette.setVisibility(View.VISIBLE);
+        val view = layoutInflater.inflate(R.layout.color_picker_dialog, null)
+        val palette = view.findViewById<ColorPickerPalette>(R.id.color_picker)
+        palette.init(size, columns, this)
+        if (colors.isNotEmpty()) {
+            palette.drawPalette(colors, selectedColor)
+            palette.isVisible = true
         }
-        mPalette = palette;
+        this.palette = palette
 
-        return new AlertDialog.Builder(activity)
-            .setTitle(mTitleResId)
+        return AlertDialog.Builder(activity, theme)
+            .setTitle(titleResId)
             .setView(view)
-            .setNeutralButton(R.string.default_color, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    onColorSelected(Account.DEFAULT_COLOR);
-                }
+            .setNeutralButton(R.string.default_color, { _, _ ->
+                onColorSelected(Account.DEFAULT_COLOR)
             })
-            .setNegativeButton(R.string.alert_dialog_cancel, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            })
-            .create();
+            .setNegativeButton(R.string.alert_dialog_cancel) { _, _ ->
+                // Dismisses itself
+            }
+            .create()
     }
 
-    @Override
-    public void onColorSelected(@ColorInt final int color) {
-        if (mListener != null) {
-            mListener.onColorSelected(color);
-        }
+    override fun onColorSelected(@ColorInt color: Int) {
+        listener?.onColorSelected(color)
 
-        Bundle result = new Bundle();
-        result.putInt(EXTRA_COLOR, color);
-        getParentFragmentManager().setFragmentResult(COLOR_PICKER_DIALOG_TAG, result);
+        val result = Bundle()
+        result.putInt(EXTRA_COLOR, color)
+        parentFragmentManager.setFragmentResult(COLOR_PICKER_DIALOG_TAG, result)
 
-        if (mPalette != null && color != mSelectedColor) {
-            mPalette.setSelected(color);
+        val palette = palette
+        if (palette != null && color != selectedColor) {
+            palette.setSelected(color)
             // Redraw palette to show checkmark on newly selected color before dismissing.
-            mPalette.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    dismiss();
-                }
-            }, 300L);
+            palette.postDelayed({
+                dismiss()
+            }, 300L)
         } else {
-            dismiss();
+            dismiss()
         }
-        mSelectedColor = color;
+        selectedColor = color
     }
 
-    public int[] getColors() {
-        return mColors;
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putIntArray(KEY_COLORS, colors)
+        outState.putInt(KEY_SELECTED_COLOR, selectedColor)
     }
 
-    public int getSelectedColor() {
-        return mSelectedColor;
-    }
+    companion object {
+        /**
+         * Tag for the color picker dialog fragment
+         */
+        const val COLOR_PICKER_DIALOG_TAG: String = "color_picker_dialog"
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putIntArray(KEY_COLORS, mColors);
-        outState.putInt(KEY_SELECTED_COLOR, mSelectedColor);
+        const val EXTRA_COLOR: String = "color"
+
+        const val SIZE_LARGE: Int = ColorPickerPalette.SIZE_LARGE
+        const val SIZE_SMALL: Int = ColorPickerPalette.SIZE_SMALL
+
+        private const val KEY_TITLE_ID = "title_id"
+        private const val KEY_COLORS = "colors"
+        private const val KEY_SELECTED_COLOR = "selected_color"
+        private const val KEY_COLUMNS = "columns"
+        private const val KEY_SIZE = "size"
+
+        fun newInstance(
+            titleResId: Int,
+            colors: IntArray?,
+            selectedColor: Int,
+            columns: Int,
+            size: Int
+        ): ColorPickerDialog {
+            val dialog = ColorPickerDialog()
+            dialog.setArguments(titleResId, columns, size, colors, selectedColor)
+            return dialog
+        }
     }
 }

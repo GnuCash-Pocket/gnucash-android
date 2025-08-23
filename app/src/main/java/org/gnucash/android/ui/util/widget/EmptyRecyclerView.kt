@@ -13,94 +13,70 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.ui.util.widget;
+package org.gnucash.android.ui.util.widget
 
-import android.content.Context;
-import android.util.AttributeSet;
-import android.view.View;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
-
+import android.content.Context
+import android.util.AttributeSet
+import android.view.View
+import androidx.core.view.isVisible
+import androidx.recyclerview.widget.RecyclerView
 
 /**
- * Code from <a href="https://gist.github.com/AnirudhaAgashe/61e523dadbaaf064b9a0">AnirudhaAgashe</a>
+ * Code from [AnirudhaAgashe](https://gist.github.com/AnirudhaAgashe/61e523dadbaaf064b9a0)
  *
  * @author Anirudha Agashe <anirudhaagashe@gmail.com>
  */
-public class EmptyRecyclerView extends RecyclerView {
-    @Nullable
-    private View emptyView;
+class EmptyRecyclerView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null
+) : RecyclerView(context, attrs) {
+    var emptyView: View? = null
+        set(value) {
+            field = value
+            checkIfEmpty()
+        }
 
-    public EmptyRecyclerView(Context context) {
-        super(context);
-    }
-
-    public EmptyRecyclerView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    public EmptyRecyclerView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-    }
-
-    private void checkIfEmpty() {
+    private fun checkIfEmpty() {
+        val emptyView = emptyView
         if (emptyView != null) {
-            Adapter adapter = getAdapter();
-            int count = (adapter != null) ? adapter.getItemCount() : 0;
-            setVisibility(count > 0 ? VISIBLE : INVISIBLE);
-            emptyView.setVisibility(count > 0 ? GONE : VISIBLE);
+            val count = adapter?.itemCount ?: 0
+            val hasData = (count > 0)
+            isVisible = hasData
+            emptyView.isVisible = !hasData
         }
     }
 
-    final @NonNull AdapterDataObserver observer = new AdapterDataObserver() {
-
-        @Override
-        public void onChanged() {
-            super.onChanged();
-            checkIfEmpty();
+    val observer: AdapterDataObserver = object : AdapterDataObserver() {
+        override fun onChanged() {
+            super.onChanged()
+            checkIfEmpty()
         }
 
-        @Override
-        public void onItemRangeChanged(int positionStart, int itemCount) {
-            super.onItemRangeChanged(positionStart, itemCount);
-            checkIfEmpty();
+        override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
+            super.onItemRangeChanged(positionStart, itemCount)
+            checkIfEmpty()
         }
 
-        @Override
-        public void onItemRangeInserted(int positionStart, int itemCount) {
-            super.onItemRangeInserted(positionStart, itemCount);
-            checkIfEmpty();
+        override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+            super.onItemRangeInserted(positionStart, itemCount)
+            checkIfEmpty()
         }
 
-        @Override
-        public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
-            super.onItemRangeMoved(fromPosition, toPosition, itemCount);
-            checkIfEmpty();
+        override fun onItemRangeMoved(fromPosition: Int, toPosition: Int, itemCount: Int) {
+            super.onItemRangeMoved(fromPosition, toPosition, itemCount)
+            checkIfEmpty()
         }
 
-        @Override
-        public void onItemRangeRemoved(int positionStart, int itemCount) {
-            super.onItemRangeRemoved(positionStart, itemCount);
-            checkIfEmpty();
-        }
-    };
-
-    @Override
-    public void setAdapter(@Nullable Adapter adapter) {
-        final Adapter oldAdapter = getAdapter();
-        if (oldAdapter != null) {
-            oldAdapter.unregisterAdapterDataObserver(observer);
-        }
-        super.setAdapter(adapter);
-        if (adapter != null) {
-            adapter.registerAdapterDataObserver(observer);
+        override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) {
+            super.onItemRangeRemoved(positionStart, itemCount)
+            checkIfEmpty()
         }
     }
 
-    public void setEmptyView(@Nullable View emptyView) {
-        this.emptyView = emptyView;
-        checkIfEmpty();
+    override fun setAdapter(adapter: Adapter<*>?) {
+        val oldAdapter = this.adapter
+        oldAdapter?.unregisterAdapterDataObserver(observer)
+        super.setAdapter(adapter)
+        adapter?.registerAdapterDataObserver(observer)
     }
 }

@@ -14,65 +14,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.account
 
-package org.gnucash.android.ui.account;
-
-import static org.gnucash.android.ui.colorpicker.ColorPickerDialog.COLOR_PICKER_DIALOG_TAG;
-import static org.gnucash.android.ui.util.widget.ViewExtKt.setTextToEnd;
-
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.content.res.Resources;
-import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextUtils;
-import android.text.TextWatcher;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.Spinner;
-
-import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentResultListener;
-
-import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.app.MenuFragment;
-import org.gnucash.android.databinding.FragmentAccountFormBinding;
-import org.gnucash.android.db.DatabaseSchema.AccountEntry;
-import org.gnucash.android.db.DatabaseSchema.SplitEntry;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.DatabaseAdapter;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.AccountType;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.ui.adapter.AccountTypesAdapter;
-import org.gnucash.android.ui.adapter.CommoditiesAdapter;
-import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter;
-import org.gnucash.android.ui.colorpicker.ColorPickerDialog;
-import org.gnucash.android.ui.common.UxArgument;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import kotlin.Unit;
-import kotlin.jvm.functions.Function0;
-import timber.log.Timber;
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.content.res.ColorStateList
+import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
+import android.widget.AdapterView
+import android.widget.Spinner
+import androidx.annotation.ColorInt
+import androidx.appcompat.app.ActionBar
+import androidx.core.view.isVisible
+import androidx.fragment.app.FragmentResultListener
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication.Companion.isDoubleEntryEnabled
+import org.gnucash.android.app.MenuFragment
+import org.gnucash.android.app.actionBar
+import org.gnucash.android.databinding.FragmentAccountFormBinding
+import org.gnucash.android.db.DatabaseSchema.AccountEntry
+import org.gnucash.android.db.DatabaseSchema.SplitEntry
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.DatabaseAdapter
+import org.gnucash.android.db.joinIn
+import org.gnucash.android.model.Account
+import org.gnucash.android.model.AccountType
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.ui.adapter.AccountTypesAdapter
+import org.gnucash.android.ui.adapter.CommoditiesAdapter
+import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
+import org.gnucash.android.ui.colorpicker.ColorPickerDialog
+import org.gnucash.android.ui.common.UxArgument
+import org.gnucash.android.ui.util.widget.setTextToEnd
+import timber.log.Timber
 
 /**
  * Fragment used for creating and editing accounts
@@ -80,308 +64,286 @@ import timber.log.Timber;
  * @author Ngewi Fet <ngewif@gmail.com>
  * @author Yongxin Wang <fefe.wyx@gmail.com>
  */
-public class AccountFormFragment extends MenuFragment implements FragmentResultListener {
-
+class AccountFormFragment : MenuFragment(), FragmentResultListener {
     /**
      * Accounts database adapter
      */
-    private AccountsDbAdapter mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-    private AccountTypesAdapter accountTypesAdapter;
-    private CommoditiesAdapter commoditiesAdapter;
+    private var accountsDbAdapter = AccountsDbAdapter.instance
+    private var accountTypesAdapter: AccountTypesAdapter? = null
+    private var commoditiesAdapter: CommoditiesAdapter? = null
 
     /**
      * GUID of the parent account
      * This value is set to the parent account of the transaction being edited or
      * the account in which a new sub-account is being created
      */
-    private String mParentAccountUID = null;
-    private String selectedParentAccountUID = null;
+    private var parentAccountUID: String? = null
+    private var selectedParentAccountUID: String? = null
 
     /**
      * Account UID of the root account
      */
-    private String mRootAccountUID = null;
+    private var rootAccountUID: String? = null
 
     /**
      * Reference to account object which will be created at end of dialog
      */
-    private Account mAccount = null;
+    private var account: Account? = null
 
     /**
      * List of all descendant accounts, if we are modifying an account.
      */
-    private final List<Account> descendantAccounts = new ArrayList<>();
+    private val descendantAccounts = mutableListOf<Account>()
 
     /**
      * Adapter for the parent account spinner
      */
-    private QualifiedAccountNameAdapter parentAccountNameAdapter;
+    private var parentAccountNameAdapter: QualifiedAccountNameAdapter? = null
 
     /**
      * Adapter which binds to the spinner for default transfer account
      */
-    private QualifiedAccountNameAdapter defaultAccountNameAdapter;
+    private var defaultAccountNameAdapter: QualifiedAccountNameAdapter? = null
 
     /**
      * Flag indicating if double entry transactions are enabled
      */
-    private boolean mUseDoubleEntry;
+    private var useDoubleEntry = false
 
     @ColorInt
-    private int mSelectedColor = Account.DEFAULT_COLOR;
-    private Account selectedDefaultTransferAccount;
-    private String selectedName = "";
-    private AccountType selectedAccountType = AccountType.ROOT;
-    private Commodity selectedCommodity = Commodity.DEFAULT_COMMODITY;
+    private var selectedColor = Account.DEFAULT_COLOR
+    private var selectedDefaultTransferAccount: Account? = null
+    private var selectedName = ""
+    private var selectedAccountType: AccountType = AccountType.ROOT
+    private var selectedCommodity: Commodity = Commodity.DEFAULT_COMMODITY
 
-    private FragmentAccountFormBinding mBinding;
+    private var binding: FragmentAccountFormBinding? = null
 
-    /**
-     * Construct a new instance of the dialog
-     *
-     * @return New instance of the dialog fragment
-     */
-    static public AccountFormFragment newInstance() {
-        return new AccountFormFragment();
-    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val context = requireContext()
+        useDoubleEntry = isDoubleEntryEnabled(context)
+        val args = requireArguments()
+        val accountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID)
+        parentAccountUID = args.getString(UxArgument.PARENT_ACCOUNT_UID)
+        rootAccountUID = accountsDbAdapter.rootAccountUID
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        final Context context = requireContext();
-        mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled(context);
-        String accountUID = getArguments().getString(UxArgument.SELECTED_ACCOUNT_UID);
-        mParentAccountUID = getArguments().getString(UxArgument.PARENT_ACCOUNT_UID);
-        mRootAccountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
-
-        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-        accountTypesAdapter = new AccountTypesAdapter(context);
-        Account account = mAccountsDbAdapter.getSimpleRecord(accountUID);
-        mAccount = account;
+        accountsDbAdapter = AccountsDbAdapter.instance
+        accountTypesAdapter = AccountTypesAdapter(context)
+        val account = accountsDbAdapter.getSimpleRecord(accountUID)
+        this.account = account
         if (account != null) {
-            mParentAccountUID = account.getParentUID();
+            parentAccountUID = account.parentUID
         }
-        if (TextUtils.isEmpty(mParentAccountUID)) {
-            // null parent, set Parent as root
-            mParentAccountUID = mRootAccountUID;
+        if (parentAccountUID.isNullOrEmpty()) {
+            // null parent, set parent as root
+            parentAccountUID = rootAccountUID
         }
-        selectedParentAccountUID = mParentAccountUID;
+        selectedParentAccountUID = parentAccountUID
     }
 
     /**
      * Inflates the dialog view and retrieves references to the dialog elements
      */
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        mBinding = FragmentAccountFormBinding.inflate(inflater, container, false);
-        return mBinding.getRoot();
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val binding = FragmentAccountFormBinding.inflate(inflater, container, false)
+        this.binding = binding
+        return binding.root
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        final FragmentAccountFormBinding binding = mBinding;
-        final Context context = view.getContext();
-        final Account account = mAccount;
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val binding = this.binding!!
+        val context = view.context
+        val account = this.account
 
-        binding.inputAccountName.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                //nothing to see here, move along
-            }
+        binding.inputAccountName.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) =
+                Unit
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                //nothing to see here, move along
-            }
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) = Unit
 
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (!TextUtils.isEmpty(s)) {
-                    binding.nameTextInputLayout.setError(null);
+            override fun afterTextChanged(s: Editable) {
+                if (s.isNotEmpty()) {
+                    binding.nameTextInputLayout.setError(null)
                 }
-                selectedName = s.toString();
+                selectedName = s.toString()
             }
-        });
+        })
 
-        binding.inputAccountTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parentView, View view, int position, long id) {
-                if (view == null) return;
-                selectedAccountType = accountTypesAdapter.getType(position);
-                loadParentAccountList(binding, selectedAccountType);
-                setParentAccountSelection(binding, mParentAccountUID);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-                //nothing to see here, move along
-            }
-        });
-
-        binding.inputParentAccount.setEnabled(false);
-        binding.inputParentAccount.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (view == null) return;
-                selectedParentAccountUID = parentAccountNameAdapter.getUID(position);
+        binding.inputAccountTypeSpinner.onItemSelectedListener = object :
+            AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                if (view == null) return
+                val accountType = accountTypesAdapter!!.getType(position) ?: return
+                selectedAccountType = accountType
+                loadParentAccountList(binding, accountType)
+                setParentAccountSelection(binding, parentAccountUID)
             }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
+            override fun onNothingSelected(parent: AdapterView<*>) = Unit
+        }
 
-        binding.checkboxParentAccount.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                binding.inputParentAccount.setEnabled(isChecked);
-            }
-        });
+        binding.inputParentAccount.isEnabled = false
+        binding.inputParentAccount.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    if (view == null) return
+                    selectedParentAccountUID = parentAccountNameAdapter!!.getUID(position)
+                }
 
-        binding.inputDefaultTransferAccount.setEnabled(false);
-        binding.inputDefaultTransferAccount.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (view == null) return;
-                selectedDefaultTransferAccount = defaultAccountNameAdapter.getAccount(position);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-        binding.checkboxDefaultTransferAccount.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                binding.inputDefaultTransferAccount.setEnabled(isChecked);
-            }
-        });
-
-        binding.inputColorPicker.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showColorPickerDialog();
-            }
-        });
-
-        commoditiesAdapter = new CommoditiesAdapter(context, getViewLifecycleOwner());
-        commoditiesAdapter.load(new Function0<Unit>() {
-            @Override
-            public Unit invoke() {
-                Commodity commodity = (account != null) ? account.getCommodity() : Commodity.DEFAULT_COMMODITY;
-                int position = commoditiesAdapter.getPosition(commodity);
-                binding.inputCurrencySpinner.setSelection(position);
-                return null;
-            }
-        });
-        binding.inputCurrencySpinner.setAdapter(commoditiesAdapter);
-        binding.inputCurrencySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (view == null) return;
-                selectedCommodity = commoditiesAdapter.getCommodity(position);
+                override fun onNothingSelected(parent: AdapterView<*>) = Unit
             }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+        binding.checkboxParentAccount.setOnCheckedChangeListener { _, isChecked ->
+            binding.inputParentAccount.isEnabled = isChecked
+        }
+
+        binding.inputDefaultTransferAccount.isEnabled = false
+        binding.inputDefaultTransferAccount.onItemSelectedListener = object :
+            AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                if (view == null) return
+                selectedDefaultTransferAccount = defaultAccountNameAdapter!!.getAccount(position)
             }
-        });
 
-        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-        assert actionBar != null;
+            override fun onNothingSelected(parent: AdapterView<*>) = Unit
+        }
+        binding.checkboxDefaultTransferAccount.setOnCheckedChangeListener { _, isChecked ->
+            binding.inputDefaultTransferAccount.isEnabled = isChecked
+        }
 
+        binding.inputColorPicker.setOnClickListener {
+            showColorPickerDialog()
+        }
+
+        commoditiesAdapter = CommoditiesAdapter(context, viewLifecycleOwner).load { adapter ->
+            val commodity = account?.commodity ?: Commodity.DEFAULT_COMMODITY
+            val position = adapter.getPosition(commodity)
+            binding.inputCurrencySpinner.setSelection(position)
+        }
+        binding.inputCurrencySpinner.adapter = commoditiesAdapter
+        binding.inputCurrencySpinner.onItemSelectedListener = object :
+            AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                if (view == null) return
+                selectedCommodity = commoditiesAdapter!!.getCommodity(position) ?: selectedCommodity
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) = Unit
+        }
+
+        val actionBar: ActionBar? = this.actionBar
         //need to load the cursor adapters for the spinners before initializing the views
-        binding.inputAccountTypeSpinner.setAdapter(accountTypesAdapter);
+        binding.inputAccountTypeSpinner.adapter = accountTypesAdapter
 
-        loadDefaultTransferAccountList(binding, account);
+        loadDefaultTransferAccountList(binding, account)
         if (account != null) {
-            actionBar.setTitle(R.string.title_edit_account);
-            initializeViewsWithAccount(binding, account);
+            actionBar?.setTitle(R.string.title_edit_account)
+            initializeViewsWithAccount(binding, account)
             //do not immediately open the keyboard when editing an account
-            requireActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+            requireActivity().window
+                .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
         } else {
-            actionBar.setTitle(R.string.title_create_account);
-            initializeViews(binding);
+            actionBar?.setTitle(R.string.title_create_account)
+            initializeViews(binding)
         }
     }
 
     /**
-     * Initialize view with the properties of <code>account</code>.
+     * Initialize view with the properties of `account`.
      * This is applicable when editing an account
      *
      * @param account Account whose fields are used to populate the form
      */
-    private void initializeViewsWithAccount(@NonNull FragmentAccountFormBinding binding, @NonNull Account account) {
-        if (account == null) {
-            throw new IllegalArgumentException("Account required");
-        }
-        final Context context = binding.getRoot().getContext();
+    private fun initializeViewsWithAccount(binding: FragmentAccountFormBinding, account: Account) {
+        selectedName = account.name
 
-        selectedName = account.getName();
+        val descendants = accountsDbAdapter.getDescendants(account)
+        descendantAccounts.clear()
+        descendantAccounts.addAll(descendants)
 
-        List<Account> descendants = mAccountsDbAdapter.getDescendants(account);
-        descendantAccounts.clear();
-        descendantAccounts.addAll(descendants);
+        setSelectedCurrency(binding, account.commodity)
+        setAccountTypeSelection(binding, account.accountType)
+        loadParentAccountList(binding, account.accountType)
+        setParentAccountSelection(binding, account.parentUID)
 
-        setSelectedCurrency(binding, account.getCommodity());
-        setAccountTypeSelection(binding, account.getAccountType());
-        loadParentAccountList(binding, account.getAccountType());
-        setParentAccountSelection(binding, account.getParentUID());
-
-        if (mAccountsDbAdapter.getTransactionMaxSplitNum(account.getUID()) > 1) {
+        if (accountsDbAdapter.getTransactionMaxSplitNum(account.uid) > 1) {
             //TODO: Allow changing the currency and effecting the change for all transactions without any currency exchange (purely cosmetic change)
-            binding.inputCurrencySpinner.setEnabled(false);
+            binding.inputCurrencySpinner.isEnabled = false
         }
 
-        setTextToEnd(binding.inputAccountName, account.getName());
-        binding.inputAccountDescription.setText(account.getDescription());
-        binding.notes.setText(account.getNote());
+        binding.inputAccountName.setTextToEnd(account.name)
+        binding.inputAccountDescription.setText(account.description)
+        binding.notes.setText(account.note)
 
-        if (mUseDoubleEntry) {
-            String defaultTransferAccountUID = account.getDefaultTransferAccountUID();
-            if (!TextUtils.isEmpty(defaultTransferAccountUID)) {
-                setDefaultTransferAccountSelection(binding, defaultTransferAccountUID, true);
+        if (useDoubleEntry) {
+            var defaultTransferAccountUID = account.defaultTransferAccountUID
+            if (!defaultTransferAccountUID.isNullOrEmpty()) {
+                setDefaultTransferAccountSelection(binding, defaultTransferAccountUID, true)
             } else {
-                String parentUID = account.getParentUID();
-                while (!TextUtils.isEmpty(parentUID)) {
-                    Account parentAccount = defaultAccountNameAdapter.getAccount(parentUID);
-                    if (parentAccount == null) break;
-                    defaultTransferAccountUID = parentAccount.getDefaultTransferAccountUID();
-                    if (!TextUtils.isEmpty(defaultTransferAccountUID)) {
-                        setDefaultTransferAccountSelection(binding, parentUID, false);
-                        break; //we found a parent with default transfer setting
+                var parentUID = account.parentUID
+                while (!parentUID.isNullOrEmpty()) {
+                    val parentAccount = defaultAccountNameAdapter!!.getAccount(parentUID)
+                    if (parentAccount == null) break
+                    defaultTransferAccountUID = parentAccount.defaultTransferAccountUID
+                    if (!defaultTransferAccountUID.isNullOrEmpty()) {
+                        setDefaultTransferAccountSelection(binding, parentUID, false)
+                        break //we found a parent with default transfer setting
                     }
-                    parentUID = parentAccount.getParentUID();
+                    parentUID = parentAccount.parentUID
                 }
             }
         }
 
-        binding.placeholderStatus.setChecked(account.isPlaceholder());
-        binding.favoriteStatus.setChecked(account.isFavorite());
-        binding.hiddenStatus.setChecked(account.isHidden());
-        mSelectedColor = account.getColor();
-        binding.inputColorPicker.setBackgroundTintList(ColorStateList.valueOf(mSelectedColor));
+        binding.placeholderStatus.isChecked = account.isPlaceholder
+        binding.favoriteStatus.isChecked = account.isFavorite
+        binding.hiddenStatus.isChecked = account.isHidden
+        selectedColor = account.color
+        binding.inputColorPicker.setBackgroundTintList(ColorStateList.valueOf(selectedColor))
     }
 
     /**
      * Initialize views with defaults for new account
      */
-    private void initializeViews(@NonNull FragmentAccountFormBinding binding) {
-        selectedName = "";
-        setSelectedCurrency(binding, Commodity.DEFAULT_COMMODITY);
-        binding.inputColorPicker.setBackgroundTintList(ColorStateList.valueOf(mSelectedColor));
+    private fun initializeViews(binding: FragmentAccountFormBinding) {
+        selectedName = ""
+        setSelectedCurrency(binding, Commodity.DEFAULT_COMMODITY)
+        binding.inputColorPicker.setBackgroundTintList(ColorStateList.valueOf(selectedColor))
 
-        String parentUID = mParentAccountUID;
-        if (!TextUtils.isEmpty(parentUID)) {
-            Account parentAccount = mAccountsDbAdapter.getSimpleRecord(parentUID);
+        val parentUID = parentAccountUID
+        if (!parentUID.isNullOrEmpty()) {
+            val parentAccount = accountsDbAdapter.getSimpleRecord(parentUID)
             if (parentAccount != null) {
-                setSelectedCurrency(binding, parentAccount.getCommodity());
-                AccountType parentAccountType = parentAccount.getAccountType();
-                setAccountTypeSelection(binding, parentAccountType);
-                loadParentAccountList(binding, parentAccountType);
-                setParentAccountSelection(binding, parentUID);
+                setSelectedCurrency(binding, parentAccount.commodity)
+                val parentAccountType = parentAccount.accountType
+                setAccountTypeSelection(binding, parentAccountType)
+                loadParentAccountList(binding, parentAccountType)
+                setParentAccountSelection(binding, parentUID)
             }
         }
     }
@@ -391,19 +353,24 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      *
      * @param accountType the account type
      */
-    private void setAccountTypeSelection(@NonNull FragmentAccountFormBinding binding, AccountType accountType) {
-        int position = accountTypesAdapter.getPosition(accountType);
-        binding.inputAccountTypeSpinner.setSelection(position);
+    private fun setAccountTypeSelection(
+        binding: FragmentAccountFormBinding,
+        accountType: AccountType
+    ) {
+        val position = accountTypesAdapter!!.getPosition(accountType)
+        binding.inputAccountTypeSpinner.setSelection(position)
     }
 
     /**
      * Toggles the visibility of the default transfer account input fields.
      * This field is irrelevant for users who do not use double accounting
      */
-    private void setDefaultTransferAccountInputsVisible(@NonNull FragmentAccountFormBinding binding, boolean visible) {
-        final int visibility = visible ? View.VISIBLE : View.GONE;
-        binding.checkboxDefaultTransferAccount.setVisibility(visibility);
-        binding.inputDefaultTransferAccount.setVisibility(visibility);
+    private fun setDefaultTransferAccountInputsVisible(
+        binding: FragmentAccountFormBinding,
+        visible: Boolean
+    ) {
+        binding.checkboxDefaultTransferAccount.isVisible = visible
+        binding.inputDefaultTransferAccount.isVisible = visible
     }
 
     /**
@@ -411,9 +378,9 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      *
      * @param commodity the selected commodity
      */
-    private void setSelectedCurrency(@NonNull FragmentAccountFormBinding binding, Commodity commodity) {
-        int position = commoditiesAdapter.getPosition(commodity);
-        binding.inputCurrencySpinner.setSelection(position);
+    private fun setSelectedCurrency(binding: FragmentAccountFormBinding, commodity: Commodity) {
+        val position = commoditiesAdapter!!.getPosition(commodity)
+        binding.inputCurrencySpinner.setSelection(position)
     }
 
     /**
@@ -421,131 +388,139 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      *
      * @param parentAccountUID UID of parent account to be selected
      */
-    private void setParentAccountSelection(@NonNull FragmentAccountFormBinding binding, @Nullable String parentAccountUID) {
-        binding.checkboxParentAccount.setChecked(false);
-        if (parentAccountNameAdapter.isEmpty()) {
-            binding.checkboxParentAccount.setVisibility(View.GONE);
-            binding.inputParentAccount.setVisibility(View.GONE);
+    private fun setParentAccountSelection(
+        binding: FragmentAccountFormBinding,
+        parentAccountUID: String?
+    ) {
+        val parentAdapter = parentAccountNameAdapter!!
+        binding.checkboxParentAccount.isChecked = false
+        if (parentAdapter.isEmpty) {
+            binding.checkboxParentAccount.isVisible = false
+            binding.inputParentAccount.isVisible = false
         } else {
-            binding.checkboxParentAccount.setVisibility(View.VISIBLE);
-            binding.inputParentAccount.setVisibility(View.VISIBLE);
+            binding.checkboxParentAccount.isVisible = true
+            binding.inputParentAccount.isVisible = true
         }
 
-        int position = parentAccountNameAdapter.getPosition(parentAccountUID);
+        val position = parentAdapter.getPosition(parentAccountUID)
         if (position >= 0) {
-            binding.checkboxParentAccount.setVisibility(View.VISIBLE);
-            binding.inputParentAccount.setVisibility(View.VISIBLE);
-            binding.checkboxParentAccount.setChecked(true);
-            binding.inputParentAccount.setEnabled(true);
-            binding.inputParentAccount.setSelection(position, true);
+            binding.checkboxParentAccount.isVisible = true
+            binding.inputParentAccount.isVisible = true
+            binding.checkboxParentAccount.isChecked = true
+            binding.inputParentAccount.isEnabled = true
+            binding.inputParentAccount.setSelection(position, true)
         }
     }
 
     /**
-     * Selects the account with UID <code>parentAccountId</code> in the default transfer account spinner
+     * Selects the account with UID `parentAccountId` in the default transfer account spinner
      *
      * @param defaultTransferAccountUID UID of parent account to be selected
      */
-    private void setDefaultTransferAccountSelection(@NonNull FragmentAccountFormBinding binding, @Nullable String defaultTransferAccountUID, boolean enableTransferAccount) {
-        if (TextUtils.isEmpty(defaultTransferAccountUID)) {
-            return;
+    private fun setDefaultTransferAccountSelection(
+        binding: FragmentAccountFormBinding,
+        defaultTransferAccountUID: String?,
+        enableTransferAccount: Boolean
+    ) {
+        setDefaultTransferAccountInputsVisible(binding, enableTransferAccount)
+        binding.checkboxDefaultTransferAccount.isChecked = enableTransferAccount
+        binding.inputDefaultTransferAccount.isEnabled = enableTransferAccount
+
+        if (defaultTransferAccountUID.isNullOrEmpty()) {
+            binding.checkboxDefaultTransferAccount.isChecked = false
+            binding.inputDefaultTransferAccount.isEnabled = false
+            return
         }
-        setDefaultTransferAccountInputsVisible(binding, enableTransferAccount);
-        binding.checkboxDefaultTransferAccount.setChecked(enableTransferAccount);
-        binding.inputDefaultTransferAccount.setEnabled(enableTransferAccount);
-
-        int defaultAccountPosition = defaultAccountNameAdapter.getPosition(defaultTransferAccountUID);
-        binding.inputDefaultTransferAccount.setSelection(defaultAccountPosition);
-    }
-
-    /**
-     * Returns an array of colors used for accounts.
-     * The array returned has the actual color values and not the resource ID.
-     *
-     * @return Integer array of colors used for accounts
-     */
-    private int[] getAccountColorOptions() {
-        Context context = requireContext();
-        Resources res = context.getResources();
-        return res.getIntArray(R.array.account_colors);
+        val defaultAccountPosition =
+            defaultAccountNameAdapter!!.getPosition(defaultTransferAccountUID)
+        binding.inputDefaultTransferAccount.setSelection(defaultAccountPosition)
     }
 
     /**
      * Shows the color picker dialog
      */
-    private void showColorPickerDialog() {
-        FragmentManager fragmentManager = getParentFragmentManager();
-        @ColorInt int currentColor = mSelectedColor;
+    private fun showColorPickerDialog() {
+        val fragmentManager = parentFragmentManager
+        @ColorInt val currentColor = selectedColor
 
-        ColorPickerDialog colorPickerDialogFragment = ColorPickerDialog.newInstance(
+        val context = requireContext()
+        val accountColorOptions = context.resources.getIntArray(R.array.account_colors)
+
+        val colorPickerDialogFragment = ColorPickerDialog.newInstance(
             R.string.color_picker_default_title,
-            getAccountColorOptions(),
-            currentColor, -1, ColorPickerDialog.SIZE_SMALL);
-        fragmentManager.setFragmentResultListener(COLOR_PICKER_DIALOG_TAG, this, this);
-        colorPickerDialogFragment.show(fragmentManager, COLOR_PICKER_DIALOG_TAG);
+            accountColorOptions,
+            currentColor, -1, ColorPickerDialog.SIZE_SMALL
+        )
+        fragmentManager.setFragmentResultListener(
+            ColorPickerDialog.COLOR_PICKER_DIALOG_TAG,
+            this,
+            this
+        )
+        colorPickerDialogFragment.show(
+            fragmentManager,
+            ColorPickerDialog.COLOR_PICKER_DIALOG_TAG
+        )
     }
 
-    @Override
-    public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
-        if (COLOR_PICKER_DIALOG_TAG.equals(requestKey)) {
-            @ColorInt int color = result.getInt(ColorPickerDialog.EXTRA_COLOR);
-            FragmentAccountFormBinding binding = mBinding;
-            if (binding != null) {
-                binding.inputColorPicker.setBackgroundTintList(ColorStateList.valueOf(color));
+    override fun onFragmentResult(requestKey: String, result: Bundle) {
+        if (ColorPickerDialog.COLOR_PICKER_DIALOG_TAG == requestKey) {
+            @ColorInt val color = result.getInt(ColorPickerDialog.EXTRA_COLOR)
+            val binding = this.binding
+            binding?.inputColorPicker?.setBackgroundTintList(ColorStateList.valueOf(color))
+            selectedColor = color
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.default_save_actions, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menu_save -> {
+                saveAccount()
+                return true
             }
-            mSelectedColor = color;
-        }
-    }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.default_save_actions, menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_save:
-                saveAccount();
-                return true;
-
-            case android.R.id.home:
-                finishFragment();
-                return true;
+            android.R.id.home -> {
+                finishFragment()
+                return true
+            }
         }
 
-        return super.onOptionsItemSelected(item);
+        return super.onOptionsItemSelected(item)
     }
 
     /**
      * Initializes the default transfer account spinner with eligible accounts
      */
-    private void loadDefaultTransferAccountList(@NonNull final FragmentAccountFormBinding binding, @Nullable Account account) {
-        String condition = AccountEntry.COLUMN_UID + " != ?"
-            + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
-            + " AND " + AccountEntry.COLUMN_TYPE + " != ?"
-            + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
+    private fun loadDefaultTransferAccountList(
+        binding: FragmentAccountFormBinding,
+        account: Account?
+    ) {
+        val condition = (AccountEntry.COLUMN_UID + " != ?"
+                + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
+                + " AND " + AccountEntry.COLUMN_TYPE + " != ?"
+                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
 
-        final Context context = binding.getRoot().getContext();
-        String accountUID = (account == null) ? "" : account.getUID();
-        defaultAccountNameAdapter = new QualifiedAccountNameAdapter(
+        val context = binding.root.context
+        val accountUID = account?.uid.orEmpty()
+        defaultAccountNameAdapter = QualifiedAccountNameAdapter(
             context,
             condition,
-            new String[]{accountUID, AccountType.ROOT.name()},
-            mAccountsDbAdapter,
-            getViewLifecycleOwner()
-        );
-        defaultAccountNameAdapter.load(new Function0<Unit>() {
-            @Override
-            public Unit invoke() {
-                String accountUID = (account != null) ? account.getDefaultTransferAccountUID() : null;
-                setDefaultTransferAccountSelection(binding, accountUID, mUseDoubleEntry && (defaultAccountNameAdapter.getCount() > 0));
-                return null;
-            }
-        });
-        binding.inputDefaultTransferAccount.setAdapter(defaultAccountNameAdapter);
-        setDefaultTransferAccountInputsVisible(binding, mUseDoubleEntry);
+            arrayOf(accountUID, AccountType.ROOT.name),
+            accountsDbAdapter,
+            viewLifecycleOwner
+        ).load { adapter ->
+            setDefaultTransferAccountSelection(
+                binding,
+                account?.defaultTransferAccountUID,
+                useDoubleEntry && (adapter.count > 0)
+            )
+        }
+        binding.inputDefaultTransferAccount.adapter = defaultAccountNameAdapter
+        setDefaultTransferAccountInputsVisible(binding, useDoubleEntry)
     }
 
     /**
@@ -554,191 +529,189 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      *
      * @param accountType AccountType of account whose allowed parent list is to be loaded
      */
-    private void loadParentAccountList(@NonNull final FragmentAccountFormBinding binding, AccountType accountType) {
-        String condition = SplitEntry.COLUMN_TYPE + " IN (" + getAllowedParentAccountTypes(accountType) + ")"
-            + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
+    private fun loadParentAccountList(
+        binding: FragmentAccountFormBinding,
+        accountType: AccountType
+    ) {
+        var condition =
+            (SplitEntry.COLUMN_TYPE + " IN " + getAllowedParentAccountTypes(accountType)
+                    + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
 
-        final Account account = mAccount;
+        val account = this.account
         if (account != null) {  //if editing an account
             // limit cyclic account hierarchies.
             if (descendantAccounts.isEmpty()) {
-                condition += " AND (" + AccountEntry.COLUMN_UID + " NOT IN ( '" + account.getUID() + "' ) )";
+                condition += " AND (" + AccountEntry.COLUMN_UID + " NOT IN ( '" + account.uid + "' ) )"
             } else {
-                List<String> descendantAccountUIDs = new ArrayList<>();
-                for (Account descendant : descendantAccounts) {
-                    descendantAccountUIDs.add(descendant.getUID());
+                val descendantAccountUIDs = mutableListOf<String>()
+                descendantAccountUIDs.add(account.uid)
+                for (descendant in descendantAccounts) {
+                    descendantAccountUIDs.add(descendant.uid)
                 }
-                condition += " AND (" + AccountEntry.COLUMN_UID + " NOT IN ( '"
-                    + TextUtils.join("','", descendantAccountUIDs) + "','" + account.getUID() + "' ) )";
+                val descendantAccounts = descendantAccountUIDs.joinIn()
+                condition += (" AND (" + AccountEntry.COLUMN_UID + " NOT IN " + descendantAccounts + ")")
             }
         }
+        //disable before hiding, else we can still read it when saving
+        binding.checkboxParentAccount.isChecked = false
+        binding.checkboxParentAccount.isVisible = false
+        binding.inputParentAccount.isVisible = false
 
-        binding.checkboxParentAccount.setChecked(false); //disable before hiding, else we can still read it when saving
-        binding.checkboxParentAccount.setVisibility(View.GONE);
-        binding.inputParentAccount.setVisibility(View.GONE);
-
-        parentAccountNameAdapter = new QualifiedAccountNameAdapter(binding.getRoot().getContext(), condition, null, mAccountsDbAdapter, getViewLifecycleOwner());
-        parentAccountNameAdapter.load(new Function0<Unit>() {
-            @Override
-            public Unit invoke() {
-                String parentUID = (account != null) ? account.getParentUID() : mParentAccountUID;
-                setParentAccountSelection(binding, parentUID);
-                return null;
-            }
-        });
-        binding.inputParentAccount.setAdapter(parentAccountNameAdapter);
+        parentAccountNameAdapter = QualifiedAccountNameAdapter(
+            binding.root.context,
+            condition,
+            null,
+            accountsDbAdapter,
+            viewLifecycleOwner
+        )
+        parentAccountNameAdapter!!.load {
+            val parentUID = account?.parentUID ?: parentAccountUID
+            setParentAccountSelection(binding, parentUID)
+        }
+        binding.inputParentAccount.adapter = parentAccountNameAdapter
     }
 
     /**
-     * Returns a comma separated list of account types which can be parent accounts for the specified <code>type</code>.
-     * The strings in the list are the {@link org.gnucash.android.model.AccountType#name()}s of the different types.
+     * Returns a comma separated list of account types which can be parent accounts for the specified `type`.
+     * The strings in the list are the [AccountType.name]s of the different types.
      *
-     * @param type {@link org.gnucash.android.model.AccountType}
+     * @param type [AccountType]
      * @return String comma separated list of account types
      */
-    private String getAllowedParentAccountTypes(AccountType type) {
-        List<String> names = new ArrayList<>();
+    private fun getAllowedParentAccountTypes(type: AccountType): String {
+        val names = mutableListOf<String>()
 
-        switch (type) {
-            case EQUITY:
-                names.add(AccountType.EQUITY.name());
-                break;
+        when (type) {
+            AccountType.EQUITY -> names.add(AccountType.EQUITY.name)
 
-            case INCOME:
-            case EXPENSE:
-                names.add(AccountType.EXPENSE.name());
-                names.add(AccountType.INCOME.name());
-                break;
+            AccountType.INCOME,
+            AccountType.EXPENSE -> {
+                names.add(AccountType.EXPENSE.name)
+                names.add(AccountType.INCOME.name)
+            }
 
-            case CASH:
-            case BANK:
-            case CREDIT:
-            case ASSET:
-            case LIABILITY:
-            case PAYABLE:
-            case RECEIVABLE:
-            case CURRENCY:
-            case STOCK:
-            case MUTUAL:
-                names.addAll(getAccountTypeStringList());
-                names.remove(AccountType.EQUITY.name());
-                names.remove(AccountType.EXPENSE.name());
-                names.remove(AccountType.INCOME.name());
-                names.remove(AccountType.ROOT.name());
-                break;
+            AccountType.CASH,
+            AccountType.BANK,
+            AccountType.CREDIT,
+            AccountType.ASSET,
+            AccountType.LIABILITY,
+            AccountType.PAYABLE,
+            AccountType.RECEIVABLE,
+            AccountType.CURRENCY,
+            AccountType.STOCK,
+            AccountType.MUTUAL -> {
+                names.addAll(accountTypeStringList)
+                names.remove(AccountType.EQUITY.name)
+                names.remove(AccountType.EXPENSE.name)
+                names.remove(AccountType.INCOME.name)
+                names.remove(AccountType.ROOT.name)
+            }
 
-            case TRADING:
-                names.add(AccountType.TRADING.name());
-                break;
+            AccountType.TRADING -> names.add(AccountType.TRADING.name)
 
-            case ROOT:
-            default:
-                names.addAll(getAccountTypeStringList());
-                break;
+            AccountType.ROOT -> names.addAll(this.accountTypeStringList)
+
+            else -> names.addAll(accountTypeStringList)
         }
-        return "'" + TextUtils.join("','", names) + "'";
+        return names.joinIn()
     }
 
     /**
-     * Returns a list of all the available {@link org.gnucash.android.model.AccountType}s as strings
+     * Returns a list of all the available [AccountType]s as strings
      *
      * @return String list of all account types
      */
-    private List<String> getAccountTypeStringList() {
-        List<String> accountTypesList = new ArrayList<>();
-        for (AccountType accountType : AccountType.values()) {
-            accountTypesList.add(accountType.name());
-        }
-        return accountTypesList;
-    }
+    private val accountTypeStringList: List<String>
+        get() = AccountType.values().map { it.name }
 
     /**
      * Finishes the fragment appropriately.
      * Depends on how the fragment was loaded, it might have a backstack or not
      */
-    private void finishFragment() {
-        AppCompatActivity activity = (AppCompatActivity) getActivity();
+    private fun finishFragment() {
+        val activity = activity
         if (activity == null) {
-            Timber.w("Activity required");
-            return;
+            Timber.w("Activity required")
+            return
         }
-        FragmentAccountFormBinding binding = mBinding;
+        val binding = this.binding
         if (binding != null) {
-            InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(binding.getRoot().getWindowToken(), 0);
+            val imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
         }
 
-        final String action = activity.getIntent().getAction();
-        if (action != null && action.equals(Intent.ACTION_INSERT_OR_EDIT)) {
-            activity.setResult(Activity.RESULT_OK);
-            activity.finish();
+        val action = activity.intent.action
+        if (action == Intent.ACTION_INSERT_OR_EDIT) {
+            activity.setResult(Activity.RESULT_OK)
+            activity.finish()
         } else {
-            activity.getSupportFragmentManager().popBackStack();
+            activity.supportFragmentManager.popBackStack()
         }
     }
 
     /**
      * Reads the fields from the account form and saves as a new account
      */
-    private void saveAccount() {
-        Timber.i("Saving account");
-        @NonNull FragmentAccountFormBinding binding = mBinding;
-        if (binding == null) return;
+    private fun saveAccount() {
+        Timber.i("Saving account")
+        val binding = this.binding ?: return
 
         // accounts to update, in case we're updating full names of a sub account tree
-        String newName = selectedName.trim();
-        if (TextUtils.isEmpty(newName)) {
-            binding.nameTextInputLayout.setError(getString(R.string.toast_no_account_name_entered));
-            return;
+        val newName = selectedName.trim()
+        if (newName.isEmpty()) {
+            binding.nameTextInputLayout.setError(getString(R.string.toast_no_account_name_entered))
+            return
         }
-        binding.nameTextInputLayout.setError(null);
+        binding.nameTextInputLayout.setError(null)
 
-        Account account = mAccount;
+        var account = this.account
         if (account == null) {
-            account = new Account(newName, selectedCommodity);
+            account = Account(newName, selectedCommodity)
             //new account, insert it
-            mAccountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert);
+            accountsDbAdapter.insert(account)
         } else {
-            account.setName(newName);
-            account.setCommodity(selectedCommodity);
+            account.name = newName
+            account.commodity = selectedCommodity
         }
 
-        account.setAccountType(selectedAccountType);
-        account.setDescription(binding.inputAccountDescription.getText().toString().trim());
-        account.setNote(binding.notes.getText().toString().trim());
-        account.setPlaceholder(binding.placeholderStatus.isChecked());
-        account.setFavorite(binding.favoriteStatus.isChecked());
-        account.setHidden(binding.hiddenStatus.isChecked());
-        account.setColor(mSelectedColor);
-
-        final String newParentAccountUID;
-        if (binding.checkboxParentAccount.isChecked()) {
-            newParentAccountUID = TextUtils.isEmpty(selectedParentAccountUID) ? mRootAccountUID : selectedParentAccountUID;
+        account.accountType = selectedAccountType
+        account.description = binding.inputAccountDescription.getText().toString().trim()
+        account.note = binding.notes.getText().toString().trim()
+        account.isPlaceholder = binding.placeholderStatus.isChecked
+        account.isFavorite = binding.favoriteStatus.isChecked
+        account.isHidden = binding.hiddenStatus.isChecked
+        account.color = selectedColor
+        val newParentAccountUID = if (binding.checkboxParentAccount.isChecked) {
+            if (selectedParentAccountUID.isNullOrEmpty()) {
+                rootAccountUID
+            } else {
+                selectedParentAccountUID
+            }
         } else {
             //need to do this explicitly in case user removes parent account
-            newParentAccountUID = mRootAccountUID;
+            rootAccountUID
         }
 
-        List<Account> accountsToUpdate = new ArrayList<>();
-        accountsToUpdate.add(account);
+        val accountsToUpdate = mutableListOf<Account>()
+        accountsToUpdate.add(account)
         // update full names?
-        if (!newParentAccountUID.equals(account.getParentUID())) {
-            accountsToUpdate.addAll(descendantAccounts);
+        if (newParentAccountUID != account.parentUID) {
+            accountsToUpdate.addAll(descendantAccounts)
         }
-        account.setParentUID(newParentAccountUID);
+        account.parentUID = newParentAccountUID
 
-        if (binding.checkboxDefaultTransferAccount.isChecked()
-            && binding.inputDefaultTransferAccount.getSelectedItemPosition() != Spinner.INVALID_POSITION) {
-            String transferUID = (selectedDefaultTransferAccount != null) ? selectedDefaultTransferAccount.getUID() : null;
-            account.setDefaultTransferAccountUID(transferUID);
+        if (binding.checkboxDefaultTransferAccount.isChecked
+            && binding.inputDefaultTransferAccount.selectedItemPosition != Spinner.INVALID_POSITION
+        ) {
+            account.defaultTransferAccountUID = selectedDefaultTransferAccount?.uid
         } else {
             //explicitly set in case of removal of default account
-            account.setDefaultTransferAccountUID(null);
+            account.defaultTransferAccountUID = null
         }
 
         // bulk update, will not update transactions
-        mAccountsDbAdapter.bulkAddRecords(accountsToUpdate, DatabaseAdapter.UpdateMethod.update);
+        accountsDbAdapter.bulkAddRecords(accountsToUpdate, DatabaseAdapter.UpdateMethod.Update)
 
-        finishFragment();
+        finishFragment()
     }
 }

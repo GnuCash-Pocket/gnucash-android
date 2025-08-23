@@ -13,53 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.passcode
 
-package org.gnucash.android.ui.passcode;
-
-import android.content.Intent;
-import android.os.Bundle;
-
-import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashActivity;
-import org.gnucash.android.ui.settings.ThemeHelper;
+import android.annotation.SuppressLint
+import android.content.Intent
+import android.os.Bundle
+import android.os.SystemClock
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashActivity
+import org.gnucash.android.ui.settings.ThemeHelper
 
 /**
  * Activity for displaying and managing the passcode lock screen.
  *
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
-public class PasscodeLockScreenActivity extends GnuCashActivity {
+class PasscodeLockScreenActivity : GnuCashActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        ThemeHelper.apply(this)
+        setContentView(R.layout.passcode_lockscreen)
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        ThemeHelper.apply(this);
-        setContentView(R.layout.passcode_lockscreen);
+        val args = Bundle()
+        args.putAll(intent.extras ?: Bundle())
+        args.putString(PasscodeFragment.EXTRA_ACTION, intent.action)
+        val fragment = PasscodeFragment()
+        fragment.arguments = args
 
-        Intent intent = getIntent();
-        Bundle extras = intent.getExtras();
-
-        Bundle args = new Bundle();
-        args.putAll((extras != null) ? extras : new Bundle());
-        args.putString(PasscodeFragment.EXTRA_ACTION, intent.getAction());
-        PasscodeFragment fragment = new PasscodeFragment();
-        fragment.setArguments(args);
-
-        getSupportFragmentManager()
+        supportFragmentManager
             .beginTransaction()
             .replace(R.id.fragment_container, fragment)
-            .commit();
+            .commit()
     }
 
-    @Override
-    public void onBackPressed() {
-        PasscodeHelper.PASSCODE_SESSION_INIT_TIME = System.currentTimeMillis() - PasscodeHelper.SESSION_TIMEOUT;
+    @SuppressLint("MissingSuperCall")
+    override fun onBackPressed() {
+        PasscodeHelper.passcodeSessionTime =
+            SystemClock.elapsedRealtime() - PasscodeHelper.SESSION_TIMEOUT
 
-        Intent intent = new Intent(Intent.ACTION_MAIN)
+        val intent = Intent(Intent.ACTION_MAIN)
             .addCategory(Intent.CATEGORY_HOME)
-            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-        finish();
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
+        finish()
     }
-
 }

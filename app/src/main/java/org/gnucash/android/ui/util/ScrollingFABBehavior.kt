@@ -13,58 +13,60 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.util
 
-package org.gnucash.android.ui.util;
-
-import android.content.Context;
-import android.util.AttributeSet;
-import android.util.TypedValue;
-import android.view.View;
-
-import androidx.annotation.NonNull;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-
-import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import org.gnucash.android.R;
+import android.content.Context
+import android.util.AttributeSet
+import android.util.TypedValue
+import android.view.View
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import org.gnucash.android.R
 
 /**
  * Behavior for floating action button when list is scrolled
- * Courtesy: <a href="https://mzgreen.github.io/2015/06/23/How-to-hideshow-Toolbar-when-list-is-scrolling(part3)/">mzgreen</a>
+ * Courtesy: [mzgreen](https://mzgreen.github.io/2015/06/23/How-to-hideshow-Toolbar-when-list-is-scrolling(part3)/)
  */
-public class ScrollingFABBehavior extends CoordinatorLayout.Behavior<FloatingActionButton> {
-    private final int toolbarHeight;
+class ScrollingFABBehavior @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null
+) : CoordinatorLayout.Behavior<FloatingActionButton>(context, attrs) {
+    private val toolbarHeight = getToolbarHeight(context)
 
-    public ScrollingFABBehavior(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        this.toolbarHeight = getToolbarHeight(context);
+    override fun layoutDependsOn(
+        parent: CoordinatorLayout,
+        fab: FloatingActionButton,
+        dependency: View
+    ): Boolean {
+        return dependency is AppBarLayout
     }
 
-    @Override
-    public boolean layoutDependsOn(@NonNull CoordinatorLayout parent, @NonNull FloatingActionButton fab, @NonNull View dependency) {
-        return dependency instanceof AppBarLayout;
-    }
-
-    @Override
-    public boolean onDependentViewChanged(@NonNull CoordinatorLayout parent, @NonNull FloatingActionButton fab, @NonNull View dependency) {
-        if (dependency instanceof AppBarLayout) {
-            CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) fab.getLayoutParams();
-            int fabBottomMargin = lp.bottomMargin;
-            int distanceToScroll = fab.getHeight() + fabBottomMargin;
-            float ratio = dependency.getY() / (float) toolbarHeight;
-            fab.setTranslationY(-distanceToScroll * ratio);
+    override fun onDependentViewChanged(
+        parent: CoordinatorLayout,
+        fab: FloatingActionButton,
+        dependency: View
+    ): Boolean {
+        if (dependency is AppBarLayout) {
+            val lp = fab.layoutParams as CoordinatorLayout.LayoutParams
+            val fabBottomMargin = lp.bottomMargin
+            val distanceToScroll = fab.height + fabBottomMargin
+            val ratio = dependency.y / toolbarHeight
+            fab.setTranslationY(-distanceToScroll * ratio)
         }
-        return true;
+        return true
     }
 
-    private int getToolbarHeight(@NonNull Context context) {
-        TypedValue tv = new TypedValue();
-        int actionBarHeight = R.attr.actionBarSize;
-        if (context.getTheme().resolveAttribute(R.attr.actionBarSize, tv, true)) {
-            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, context.getResources().getDisplayMetrics());
+    private fun getToolbarHeight(context: Context): Float {
+        val tv = TypedValue()
+        var actionBarHeight = 0f
+        if (context.theme.resolveAttribute(R.attr.actionBarSize, tv, true)) {
+            actionBarHeight = TypedValue.complexToDimension(
+                tv.data,
+                context.resources.displayMetrics
+            )
         }
 
-        return actionBarHeight;
+        return actionBarHeight.toFloat()
     }
 }

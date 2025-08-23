@@ -13,75 +13,62 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.settings.dialog
 
-package org.gnucash.android.ui.settings.dialog;
-
-import android.app.Activity;
-import android.app.Dialog;
-import android.content.DialogInterface;
-import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentManager;
-
-import org.gnucash.android.R;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.ui.common.Refreshable;
-import org.gnucash.android.util.BackupManager;
+import android.app.Activity
+import android.app.Dialog
+import android.os.Bundle
+import org.gnucash.android.R
+import org.gnucash.android.db.adapter.BooksDbAdapter
+import org.gnucash.android.ui.common.Refreshable
+import org.gnucash.android.util.BackupManager.backupBookAsync
 
 /**
  * Confirmation dialog for deleting a book.
  *
  * @author Àlex Magaz <alexandre.magaz@gmail.com>
  */
-public class DeleteBookConfirmationDialog extends DoubleConfirmationDialog {
+class DeleteBookConfirmationDialog : DoubleConfirmationDialog() {
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val args = requireArguments()
+        val bookUID: String = args.getString(EXTRA_BOOK_ID)!!
+        val requestKey: String = args.getString(EXTRA_REQUEST_KEY)!!
+        val activity: Activity = requireActivity()
 
-    public static final String TAG = "delete_book_confirm";
-
-    private static final String EXTRA_BOOK_ID = "book_uid";
-    private static final String EXTRA_REQUEST_KEY = "request_key";
-
-    @NonNull
-    public static DeleteBookConfirmationDialog newInstance(String bookUID) {
-        return newInstance(bookUID, TAG);
-    }
-
-    @NonNull
-    public static DeleteBookConfirmationDialog newInstance(String bookUID, @NonNull String requestKey) {
-        Bundle args = new Bundle();
-        args.putString(EXTRA_BOOK_ID, bookUID);
-        args.putString(EXTRA_REQUEST_KEY, requestKey);
-        DeleteBookConfirmationDialog fragment = new DeleteBookConfirmationDialog();
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @NonNull
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Bundle args = getArguments();
-        final String bookUID = args.getString(EXTRA_BOOK_ID);
-        final String requestKey = args.getString(EXTRA_REQUEST_KEY);
-        final FragmentManager fm = getParentFragmentManager();
-        final Activity activity = requireActivity();
-
-        return getDialogBuilder()
+        return dialogBuilder
             .setTitle(R.string.title_confirm_delete_book)
             .setIcon(R.drawable.ic_warning)
             .setMessage(R.string.msg_all_book_data_will_be_deleted)
-            .setPositiveButton(R.string.btn_delete_book, new DialogInterface.OnClickListener() {
-                @SuppressWarnings("ConstantConditions")
-                @Override
-                public void onClick(DialogInterface dialogInterface, int which) {
-                    BackupManager.backupBookAsync(activity, bookUID, backed -> {
-                        boolean deleted = BooksDbAdapter.getInstance().deleteBook(activity, bookUID);
-                        Bundle result = new Bundle();
-                        result.putBoolean(Refreshable.EXTRA_REFRESH, deleted);
-                        fm.setFragmentResult(requestKey, result);
-                        return null;
-                    });
-                }
-            })
-            .create();
+            .setPositiveButton(R.string.btn_delete_book) { _, _ ->
+                deleteBook(activity, bookUID, requestKey)
+            }
+            .create()
+    }
+
+    private fun deleteBook(activity: Activity, bookUID: String, requestKey: String) {
+        backupBookAsync(activity, bookUID) {
+            val deleted = BooksDbAdapter.instance.deleteBook(activity, bookUID)
+            val result = Bundle()
+            result.putBoolean(Refreshable.EXTRA_REFRESH, deleted)
+            val fm = parentFragmentManager
+            fm.setFragmentResult(requestKey, result)
+        }
+    }
+
+    companion object {
+        const val TAG: String = "delete_book_confirm"
+
+        private const val EXTRA_BOOK_ID = "book_uid"
+        private const val EXTRA_REQUEST_KEY = "request_key"
+
+        fun newInstance(bookUID: String, requestKey: String = TAG): DeleteBookConfirmationDialog {
+            val args = Bundle().apply {
+                putString(EXTRA_BOOK_ID, bookUID)
+                putString(EXTRA_REQUEST_KEY, requestKey)
+            }
+            val fragment = DeleteBookConfirmationDialog()
+            fragment.arguments = args
+            return fragment
+        }
     }
 }

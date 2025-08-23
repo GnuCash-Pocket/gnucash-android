@@ -16,7 +16,7 @@ import org.junit.runners.MethodSorters
 abstract class GnuAndroidTest {
 
     @JvmField
-    protected val context = GnuCashApplication.getAppContext()
+    protected val context = GnuCashApplication.appContext
 
     /**
      * Sleep the thread for a specified period
@@ -58,7 +58,7 @@ abstract class GnuAndroidTest {
          */
         @JvmStatic
         fun preventFirstRunDialogs() {
-            val context = GnuCashApplication.getAppContext()
+            val context = GnuCashApplication.appContext
             preventFirstRunDialogs(context)
         }
     }

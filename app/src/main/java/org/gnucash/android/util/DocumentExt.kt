@@ -7,7 +7,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import org.gnucash.android.R
 import org.gnucash.android.importer.ImportBookCallback
-import org.gnucash.android.ui.account.AccountsActivity.importXmlFileFromIntent
+import org.gnucash.android.ui.account.AccountsActivity.Companion.importXmlFileFromIntent
 import timber.log.Timber
 
 private const val contentMimeType = "*/*"
@@ -67,7 +67,6 @@ fun Fragment.chooseDocument(requestCode: Int) {
     }
 }
 
-@JvmOverloads
 fun openBook(activity: Activity, data: Intent?, onFinishTask: ImportBookCallback? = null) {
     val uri = data?.data
     if (uri == null) {

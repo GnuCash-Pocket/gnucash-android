@@ -13,119 +13,91 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.ui.transaction;
+package org.gnucash.android.ui.transaction
 
-import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentStatePagerAdapter;
-import androidx.viewpager.widget.PagerAdapter;
-import androidx.viewpager.widget.ViewPager;
-
-import com.google.android.material.tabs.TabLayout;
-
-import org.gnucash.android.R;
-import org.gnucash.android.databinding.ActivityScheduledEventsBinding;
-import org.gnucash.android.ui.common.BaseDrawerActivity;
+import android.os.Bundle
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentStatePagerAdapter
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
+import com.google.android.material.tabs.TabLayout.TabLayoutOnPageChangeListener
+import org.gnucash.android.R
+import org.gnucash.android.databinding.ActivityScheduledEventsBinding
+import org.gnucash.android.ui.common.BaseDrawerActivity
 
 /**
  * Activity for displaying scheduled actions
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class ScheduledActionsActivity extends BaseDrawerActivity {
+class ScheduledActionsActivity : BaseDrawerActivity() {
+    private lateinit var binding: ActivityScheduledEventsBinding
 
-    private static final int INDEX_SCHEDULED_TRANSACTIONS = 0;
-    private static final int INDEX_SCHEDULED_EXPORTS = 1;
+    override val titleRes: Int = R.string.nav_menu_scheduled_actions
 
-    private ActivityScheduledEventsBinding binding;
-
-    @Override
-    public void inflateView() {
-        binding = ActivityScheduledEventsBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-        mDrawerLayout = binding.drawerLayout;
-        mNavigationView = binding.navView;
-        mToolbar = binding.toolbarLayout.toolbar;
-        mToolbarProgress = binding.toolbarLayout.toolbarProgress.progress;
+    override fun inflateView() {
+        binding = ActivityScheduledEventsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        drawerLayout = binding.drawerLayout
+        navigationView = binding.navView
+        toolbar = binding.toolbarLayout.toolbar
+        toolbarProgress = binding.toolbarLayout.toolbarProgress.progress
     }
 
-    @Override
-    public int getTitleRes() {
-        return R.string.nav_menu_scheduled_actions;
-    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        val tabLayout = binding.tabLayout
+        tabLayout.addTab(tabLayout.newTab().setText(R.string.title_scheduled_transactions))
+        tabLayout.addTab(tabLayout.newTab().setText(R.string.title_scheduled_exports))
+        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL)
 
-        TabLayout tabLayout = binding.tabLayout;
-        tabLayout.addTab(tabLayout.newTab().setText(R.string.title_scheduled_transactions));
-        tabLayout.addTab(tabLayout.newTab().setText(R.string.title_scheduled_exports));
-        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
-
-        ViewPager viewPager = binding.pager;
+        val viewPager = binding.pager
 
         //show the simple accounts list
-        PagerAdapter mPagerAdapter = new ScheduledActionsViewPager(getSupportFragmentManager());
-        viewPager.setAdapter(mPagerAdapter);
-
-        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                viewPager.setCurrentItem(tab.getPosition());
+        viewPager.adapter = ScheduledActionsViewPager(supportFragmentManager)
+        viewPager.addOnPageChangeListener(TabLayoutOnPageChangeListener(tabLayout))
+        tabLayout.addOnTabSelectedListener(object : OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                viewPager.currentItem = tab.position
             }
 
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-                //nothing to see here, move along
-            }
+            override fun onTabUnselected(tab: TabLayout.Tab) = Unit
 
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-                //nothing to see here, move along
-            }
-        });
+            override fun onTabReselected(tab: TabLayout.Tab) = Unit
+        })
     }
 
 
     /**
      * View pager adapter for managing the scheduled action views
      */
-    private class ScheduledActionsViewPager extends FragmentStatePagerAdapter {
-
-        public ScheduledActionsViewPager(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case INDEX_SCHEDULED_TRANSACTIONS:
-                    return getString(R.string.title_scheduled_transactions);
-                case INDEX_SCHEDULED_EXPORTS:
-                    return getString(R.string.title_scheduled_exports);
-                default:
-                    return super.getPageTitle(position);
+    private inner class ScheduledActionsViewPager(fm: FragmentManager) :
+        FragmentStatePagerAdapter(fm) {
+        override fun getPageTitle(position: Int): CharSequence? {
+            return when (position) {
+                INDEX_SCHEDULED_TRANSACTIONS -> getString(R.string.title_scheduled_transactions)
+                INDEX_SCHEDULED_EXPORTS -> getString(R.string.title_scheduled_exports)
+                else -> super.getPageTitle(position)
             }
         }
 
-        @Override
-        public Fragment getItem(int position) {
-            switch (position) {
-                case INDEX_SCHEDULED_TRANSACTIONS:
-                    return new ScheduledTransactionsListFragment();
-                case INDEX_SCHEDULED_EXPORTS:
-                    return new ScheduledExportsListFragment();
+        override fun getItem(position: Int): Fragment {
+            when (position) {
+                INDEX_SCHEDULED_TRANSACTIONS -> return ScheduledTransactionsListFragment()
+                INDEX_SCHEDULED_EXPORTS -> return ScheduledExportsListFragment()
             }
-            return null;
+            throw IndexOutOfBoundsException()
         }
 
-        @Override
-        public int getCount() {
-            return 2;
+        override fun getCount(): Int {
+            return 2
         }
+    }
+
+    companion object {
+        private const val INDEX_SCHEDULED_TRANSACTIONS = 0
+        private const val INDEX_SCHEDULED_EXPORTS = 1
     }
 }

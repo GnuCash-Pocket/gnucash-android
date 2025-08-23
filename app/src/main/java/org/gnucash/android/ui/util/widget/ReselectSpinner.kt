@@ -1,46 +1,38 @@
-package org.gnucash.android.ui.util.widget;
+package org.gnucash.android.ui.util.widget
 
-import android.content.Context;
-import android.util.AttributeSet;
-import android.view.View;
-import android.widget.AdapterView;
-
-import androidx.appcompat.widget.AppCompatSpinner;
-
-import org.gnucash.android.ui.export.ExportFormFragment;
+import android.content.Context
+import android.util.AttributeSet
+import androidx.appcompat.widget.AppCompatSpinner
 
 /**
  * Spinner which fires OnItemSelectedListener even when an item is reselected.
  * Normal Spinners only fire item selected notifications when the selected item changes.
- * <p>This is used in {@code ReportsActivity} for the time range and in the {@link ExportFormFragment}</p>
- * <p>It could happen that the selected item is fired twice especially if the item is the first in the list.
+ *
+ * This is used in `ReportsActivity` for the time range and in the [ExportFormFragment]
+ *
+ * It could happen that the selected item is fired twice especially if the item is the first in the list.
  * The Android system does this internally. In order to capture the first one, check whether the view parameter
- * of {@link android.widget.AdapterView.OnItemSelectedListener#onItemSelected(AdapterView, View, int, long)} is null.
+ * of [OnItemSelectedListener.onItemSelected] is null.
  * That would represent the first call during initialization of the views. This call can be ignored.
- * See {@link ExportFormFragment#bindViewListeners()} for an example
- * </p>
+ * See [ExportFormFragment.bindViewListeners] for an example
+ *
  */
-public class ReselectSpinner extends AppCompatSpinner {
-    public ReselectSpinner(Context context) {
-        super(context);
-    }
+class ReselectSpinner @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null
+) : AppCompatSpinner(context, attrs) {
 
-    public ReselectSpinner(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    public ReselectSpinner(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-    }
-
-    @Override
-    public void setSelection(int position) {
-        boolean sameSelected = getSelectedItemPosition() == position;
-        super.setSelection(position);
+    override fun setSelection(position: Int) {
+        val sameSelected = selectedItemPosition == position
+        super.setSelection(position)
         if (sameSelected) {
-            OnItemSelectedListener listener = getOnItemSelectedListener();
-            if (listener != null)
-                listener.onItemSelected(this, getSelectedView(), position, getSelectedItemId());
+            val listener = onItemSelectedListener
+            listener?.onItemSelected(
+                this,
+                selectedView,
+                position,
+                selectedItemId
+            )
         }
     }
 }

@@ -13,7 +13,6 @@ class AccountsSelectPage(callbacks: ModelCallbacks, title: String) :
 
     private val _accounts = mutableMapOf<String, String>()
 
-    @JvmField
     val accountsByLabel: Map<String, String> = _accounts
     private val templates = AccountsTemplate()
 
@@ -35,7 +34,7 @@ class AccountsSelectPage(callbacks: ModelCallbacks, title: String) :
         if (!description.isNullOrEmpty()) {
             label += "\n" + description
         }
-        _accounts.put(label, header.assetId)
+        _accounts[label] = header.assetId
         return label
     }
 

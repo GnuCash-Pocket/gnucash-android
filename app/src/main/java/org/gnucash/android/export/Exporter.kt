@@ -14,75 +14,64 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.export
 
-package org.gnucash.android.export;
-
-import static org.gnucash.android.util.BackupManager.getBackupFolder;
-
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.ResolveInfo;
-import android.database.SQLException;
-import android.net.Uri;
-import android.os.CancellationSignal;
-import android.os.Environment;
-import android.preference.PreferenceManager;
-import android.text.TextUtils;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.FileProvider;
-
-import com.dropbox.core.DbxException;
-import com.dropbox.core.v2.DbxClientV2;
-import com.dropbox.core.v2.files.FileMetadata;
-import com.owncloud.android.lib.common.OwnCloudClient;
-import com.owncloud.android.lib.common.OwnCloudClientFactory;
-import com.owncloud.android.lib.common.OwnCloudCredentialsFactory;
-import com.owncloud.android.lib.common.operations.RemoteOperationResult;
-import com.owncloud.android.lib.resources.files.CreateRemoteFolderOperation;
-import com.owncloud.android.lib.resources.files.UploadRemoteFileOperation;
-
-import org.gnucash.android.BuildConfig;
-import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseHelper;
-import org.gnucash.android.db.DatabaseHolder;
-import org.gnucash.android.db.DatabaseSchema;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.db.adapter.BudgetsDbAdapter;
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
-import org.gnucash.android.db.adapter.DatabaseAdapter;
-import org.gnucash.android.db.adapter.PricesDbAdapter;
-import org.gnucash.android.db.adapter.RecurrenceDbAdapter;
-import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
-import org.gnucash.android.db.adapter.SplitsDbAdapter;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
-import org.gnucash.android.gnc.GncProgressListener;
-import org.gnucash.android.model.Transaction;
-import org.gnucash.android.ui.settings.OwnCloudPreferences;
-import org.gnucash.android.util.BackupManager;
-import org.gnucash.android.util.DateExtKt;
-import org.gnucash.android.util.FileUtils;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.zip.GZIPOutputStream;
-
-import timber.log.Timber;
+import android.content.Context
+import android.content.Intent
+import android.content.pm.ResolveInfo
+import android.database.SQLException
+import android.net.Uri
+import android.os.CancellationSignal
+import android.preference.PreferenceManager
+import android.text.format.DateUtils
+import android.widget.Toast
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
+import com.dropbox.core.DbxException
+import com.owncloud.android.lib.common.OwnCloudClientFactory
+import com.owncloud.android.lib.common.OwnCloudCredentialsFactory
+import com.owncloud.android.lib.resources.files.CreateRemoteFolderOperation
+import com.owncloud.android.lib.resources.files.FileUtils
+import com.owncloud.android.lib.resources.files.UploadRemoteFileOperation
+import org.gnucash.android.BuildConfig
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
+import org.gnucash.android.app.GnuCashApplication.Companion.shouldSaveOpeningBalances
+import org.gnucash.android.db.DatabaseHelper
+import org.gnucash.android.db.DatabaseHolder
+import org.gnucash.android.db.DatabaseSchema
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.BooksDbAdapter
+import org.gnucash.android.db.adapter.BudgetsDbAdapter
+import org.gnucash.android.db.adapter.CommoditiesDbAdapter
+import org.gnucash.android.db.adapter.DatabaseAdapter
+import org.gnucash.android.db.adapter.PricesDbAdapter
+import org.gnucash.android.db.adapter.RecurrenceDbAdapter
+import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
+import org.gnucash.android.db.adapter.SplitsDbAdapter
+import org.gnucash.android.db.adapter.TransactionsDbAdapter
+import org.gnucash.android.export.DropboxHelper.getClient
+import org.gnucash.android.export.ExportParams.ExportTarget
+import org.gnucash.android.gnc.GncProgressListener
+import org.gnucash.android.model.Transaction
+import org.gnucash.android.ui.settings.OwnCloudPreferences
+import org.gnucash.android.util.BackupManager
+import org.gnucash.android.util.BackupManager.getBackupFolder
+import org.gnucash.android.util.FileUtils.moveFile
+import org.gnucash.android.util.formatFullDateTime
+import org.joda.time.format.DateTimeFormat
+import timber.log.Timber
+import java.io.BufferedWriter
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.OutputStream
+import java.io.OutputStreamWriter
+import java.io.Writer
+import java.nio.charset.StandardCharsets
+import java.util.zip.GZIPOutputStream
 
 /**
  * Base class for the different exporters
@@ -90,164 +79,66 @@ import timber.log.Timber;
  * @author Ngewi Fet <ngewif@gmail.com>
  * @author Yongxin Wang <fefe.wyx@gmail.com>
  */
-public abstract class Exporter {
-
-    /**
-     * Application folder on external storage
-     */
-    @Deprecated
-    public static final String LEGACY_BASE_FOLDER_PATH = Environment.getExternalStorageDirectory() + File.separator + BuildConfig.APPLICATION_ID;
-
+abstract class Exporter protected constructor(
+    protected val context: Context,
     /**
      * Export options
      */
-    @NonNull
-    protected final ExportParams mExportParams;
-
+    protected val exportParams: ExportParams,
+    /**
+     * GUID of the book being exported
+     */
+    val bookUID: String,
+    protected val listener: GncProgressListener?
+) {
     /**
      * Cache directory to which files will be first exported before moved to final destination.
-     * <p>There is a different cache dir per export format, which has the name of the export format.<br/>
-     * The cache dir is cleared every time a new {@link Exporter} is instantiated.
+     *
+     * There is a different cache dir per export format, which has the name of the export format.<br></br>
+     * The cache dir is cleared every time a new [Exporter] is instantiated.
      * The files created here are only accessible within this application, and should be copied to SD card before they can be shared
-     * </p>
+     *
      */
-    private final File mCacheDir;
+    private val cacheDir: File
 
-    private static final String EXPORT_FILENAME_DATE_PATTERN = "yyyyMMddHHmmss";
+    protected val booksDbAdapter: BooksDbAdapter = BooksDbAdapter.instance
 
-    protected final BooksDbAdapter mBooksDbADapter;
     /**
      * Adapter for retrieving accounts to export
      * Subclasses should close this object when they are done with exporting
      */
-    protected final AccountsDbAdapter mAccountsDbAdapter;
-    protected final TransactionsDbAdapter mTransactionsDbAdapter;
-    protected final SplitsDbAdapter mSplitsDbAdapter;
-    protected final ScheduledActionDbAdapter mScheduledActionDbAdapter;
-    protected final PricesDbAdapter mPricesDbAdapter;
-    protected final CommoditiesDbAdapter mCommoditiesDbAdapter;
-    protected final BudgetsDbAdapter mBudgetsDbAdapter;
-    protected final Context mContext;
-    private File exportCacheFile;
+    protected val accountsDbAdapter: AccountsDbAdapter
+    protected val transactionsDbAdapter: TransactionsDbAdapter
+    protected val splitsDbAdapter: SplitsDbAdapter
+    protected val scheduledActionDbAdapter: ScheduledActionDbAdapter
+    protected val pricesDbAdapter: PricesDbAdapter
+    protected val commoditiesDbAdapter: CommoditiesDbAdapter
+    protected val budgetsDbAdapter: BudgetsDbAdapter
+    private var exportCacheFile: File?
 
     /**
      * Database being currently exported
      */
-    protected final DatabaseHolder holder;
+    protected val holder: DatabaseHolder
 
-    /**
-     * GUID of the book being exported
-     */
-    @NonNull
-    private final String mBookUID;
-    @Nullable
-    protected final GncProgressListener listener;
-    @NonNull
-    protected final CancellationSignal cancellationSignal = new CancellationSignal();
+    protected val cancellationSignal: CancellationSignal = CancellationSignal()
 
-    protected Exporter(@NonNull Context context,
-                       @NonNull ExportParams params,
-                       @NonNull String bookUID,
-                       @Nullable GncProgressListener listener
-    ) {
-        super();
-        mContext = context;
-        mExportParams = params;
-        mBookUID = bookUID;
-        this.listener = listener;
-        mBooksDbADapter = BooksDbAdapter.getInstance();
+    init {
+        val dbHelper = DatabaseHelper(context, bookUID)
+        holder = dbHelper.readableHolder
+        commoditiesDbAdapter = CommoditiesDbAdapter(holder)
+        pricesDbAdapter = PricesDbAdapter(commoditiesDbAdapter)
+        splitsDbAdapter = SplitsDbAdapter(commoditiesDbAdapter)
+        transactionsDbAdapter = TransactionsDbAdapter(splitsDbAdapter)
+        accountsDbAdapter = AccountsDbAdapter(transactionsDbAdapter, pricesDbAdapter)
+        val recurrenceDbAdapter = RecurrenceDbAdapter(holder)
+        budgetsDbAdapter = BudgetsDbAdapter(recurrenceDbAdapter)
+        scheduledActionDbAdapter = ScheduledActionDbAdapter(recurrenceDbAdapter)
 
-        DatabaseHelper dbHelper = new DatabaseHelper(context, bookUID);
-        holder = dbHelper.getReadableHolder();
-        mCommoditiesDbAdapter = new CommoditiesDbAdapter(holder);
-        mPricesDbAdapter = new PricesDbAdapter(mCommoditiesDbAdapter);
-        mSplitsDbAdapter = new SplitsDbAdapter(mCommoditiesDbAdapter);
-        mTransactionsDbAdapter = new TransactionsDbAdapter(mSplitsDbAdapter);
-        mAccountsDbAdapter = new AccountsDbAdapter(mTransactionsDbAdapter, mPricesDbAdapter);
-        RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(holder);
-        mBudgetsDbAdapter = new BudgetsDbAdapter(recurrenceDbAdapter);
-        mScheduledActionDbAdapter = new ScheduledActionDbAdapter(recurrenceDbAdapter);
-
-        exportCacheFile = null;
-        mCacheDir = new File(context.getCacheDir(), params.getExportFormat().name());
-        mCacheDir.mkdirs();
-        purgeDirectory(mCacheDir);
-    }
-
-    @NonNull
-    public String getBookUID() {
-        return mBookUID;
-    }
-
-    /**
-     * Strings a string of any characters not allowed in a file name.
-     * All unallowed characters are replaced with an underscore
-     *
-     * @param inputName Raw file name input
-     * @return Sanitized file name
-     */
-    public static String sanitizeFilename(String inputName) {
-        return inputName.replaceAll("[^a-zA-Z0-9-_\\.]", "_");
-    }
-
-    /**
-     * Builds a file name based on the current time stamp for the exported file
-     *
-     * @param exportParams Parameters to use when exporting
-     * @param bookName     Name of the book being exported. This name will be included in the generated file name
-     * @return String containing the file name
-     */
-    @NonNull
-    public static String buildExportFilename(@Nullable ExportParams exportParams, String bookName) {
-        ExportFormat format = ExportFormat.XML;
-        boolean isCompressed = false;
-        if (exportParams != null) {
-            format = exportParams.getExportFormat();
-            isCompressed = exportParams.isCompressed;
-        }
-        return buildExportFilename(format, isCompressed, bookName);
-    }
-
-    /**
-     * Builds a file name based on the current time stamp for the exported file
-     *
-     * @param format       Format to use when exporting
-     * @param isCompressed is the file compressed?
-     * @param bookName     Name of the book being exported. This name will be included in the generated file name
-     * @return String containing the file name
-     */
-    @NonNull
-    public static String buildExportFilename(@NonNull ExportFormat format, boolean isCompressed, String bookName) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(EXPORT_FILENAME_DATE_PATTERN);
-        StringBuilder name = new StringBuilder(sanitizeFilename(bookName));
-        if (format == ExportFormat.CSVA) name.append(".accounts");
-        if (format == ExportFormat.CSVT) name.append(".transactions");
-        name.append(".")
-            .append(formatter.print(System.currentTimeMillis()))
-            .append(format.extension);
-        if (isCompressed && format != ExportFormat.XML) name.append(".gz");
-        return name.toString();
-    }
-
-    /**
-     * Parses the name of an export file and returns the date of export
-     *
-     * @param filename Export file name generated by {@link #buildExportFilename(ExportFormat, boolean, String)}
-     * @return Date in milliseconds
-     */
-    public static long getExportTime(String filename) {
-        String[] tokens = filename.split("_");
-        long timeMillis = 0;
-        if (tokens.length < 2) {
-            return timeMillis;
-        }
-        try {
-            DateTimeFormatter formatter = DateTimeFormat.forPattern(EXPORT_FILENAME_DATE_PATTERN);
-            timeMillis = formatter.parseMillis(tokens[0] + "_" + tokens[1]);
-        } catch (IllegalArgumentException e) {
-            Timber.e(e, "Error parsing time from file name: %s", e.getMessage());
-        }
-        return timeMillis;
+        exportCacheFile = null
+        cacheDir = File(context.cacheDir, exportParams.exportFormat.name)
+        cacheDir.mkdirs()
+        purgeDirectory(cacheDir)
     }
 
     /**
@@ -256,108 +147,102 @@ public abstract class Exporter {
      * @return the export location.
      * @throws ExporterException if an error occurs during export
      */
-    @Nullable
-    public Uri export() throws ExporterException {
-        Timber.i("generate export");
-        final ExportParams exportParams = mExportParams;
-        final Uri result;
+    @Throws(ExporterException::class)
+    fun export(): Uri? {
+        Timber.i("generate export")
+        val exportParams = this.exportParams
+        val result: Uri?
         try {
-            File file = writeToFile(exportParams);
-            if (file == null) return null;
-            result = moveToTarget(exportParams, file);
-        } catch (ExporterException ee) {
-            throw ee;
-        } catch (Throwable e) {
-            throw new ExporterException(exportParams, e);
+            val file = writeToFile(exportParams)
+            if (file == null) return null
+            result = moveToTarget(exportParams, file)
+        } catch (ee: ExporterException) {
+            throw ee
+        } catch (e: Throwable) {
+            throw ExporterException(exportParams, e)
         }
 
-        if (result != null && exportParams.shouldDeleteTransactionsAfterExport()) {
+        if (result != null && exportParams.deleteTransactionsAfterExport) {
             // Avoid recursion - Don't do a backup if just did a backup already!
-            Context context = mContext;
-            String bookUID = GnuCashApplication.getActiveBookUID();
-            File backupFolder = getBackupFolder(context, bookUID);
-            Uri backupUri = exportParams.getExportLocation();
-            File backupFile = new File(backupUri.getPath());
-            File backupFileParent = backupFile.getParentFile();
-            final boolean isBackupParams = exportParams.getExportFormat() == ExportFormat.XML
-                && exportParams.getExportTarget() == ExportParams.ExportTarget.URI
-                && exportParams.isCompressed
-                && backupFolder.equals(backupFileParent);
+            val context = this.context
+            val bookUID = activeBookUID
+            val backupFolder = getBackupFolder(context, bookUID!!)
+            val backupUri = exportParams.exportLocation
+            val backupFile = File(backupUri!!.path!!)
+            val backupFileParent = backupFile.parentFile
+            val isBackupParams = exportParams.exportFormat == ExportFormat.XML
+                    && exportParams.exportTarget == ExportTarget.URI
+                    && exportParams.isCompressed
+                    && backupFolder == backupFileParent
 
             if (!isBackupParams) {
-                BackupManager.backupBook(context, bookUID); //create backup before deleting everything
+                //create backup before deleting everything
+                BackupManager.backupBook(context, bookUID)
             }
 
-            deleteTransactions();
+            deleteTransactions()
         }
         try {
-            close();
-        } catch (Exception ignore) {
+            close()
+        } catch (_: Exception) {
         }
-        return result;
+        return result
     }
 
-    @Nullable
-    protected File writeToFile(@NonNull ExportParams exportParams) throws ExporterException, IOException {
-        File cacheFile = getExportCacheFile(exportParams);
-        try (Writer writer = createWriter(cacheFile)) {
-            writeExport(writer, exportParams);
-        } catch (ExporterException ee) {
-            throw ee;
-        } catch (Exception e) {
-            throw new ExporterException(exportParams, e);
+    @Throws(ExporterException::class)
+    protected open fun writeToFile(exportParams: ExportParams): File? {
+        val cacheFile = getExportCacheFile(exportParams)
+        try {
+            createWriter(cacheFile).use { writer ->
+                writeExport(writer, exportParams)
+            }
+        } catch (ee: ExporterException) {
+            throw ee
+        } catch (e: Exception) {
+            throw ExporterException(exportParams, e)
         }
-        return cacheFile;
+        return cacheFile
     }
 
-    protected abstract void writeExport(@NonNull Writer writer, @NonNull ExportParams exportParams) throws ExporterException, IOException;
+    @Throws(ExporterException::class, IOException::class)
+    protected abstract fun writeExport(writer: Writer, exportParams: ExportParams)
 
     /**
      * Recursively delete all files in a directory
      *
      * @param directory File descriptor for directory
      */
-    private void purgeDirectory(@NonNull File directory) {
-        for (File file : directory.listFiles()) {
-            if (file.isDirectory())
-                purgeDirectory(file);
-            else
-                file.delete();
+    private fun purgeDirectory(directory: File) {
+        val files = directory.listFiles() ?: return
+        for (file in files) {
+            if (file.isDirectory) {
+                purgeDirectory(file)
+            } else {
+                file.delete()
+            }
         }
     }
 
     /**
      * Returns the path to the file where the exporter should save the export during generation
-     * <p>This path is a temporary cache file whose file extension matches the export format.<br>
-     * This file is deleted every time a new export is started</p>
+     *
+     * This path is a temporary cache file whose file extension matches the export format.<br></br>
+     * This file is deleted every time a new export is started
      *
      * @return Absolute path to file
      */
-    protected File getExportCacheFile(ExportParams exportParams) {
+    protected fun getExportCacheFile(exportParams: ExportParams): File {
         // The file name contains a timestamp, so ensure it doesn't change with multiple calls to
         // avoid issues like #448
+        var exportCacheFile = exportCacheFile
         if (exportCacheFile == null) {
-            String bookName = mBooksDbADapter.getAttribute(mBookUID, DatabaseSchema.BookEntry.COLUMN_DISPLAY_NAME);
-            exportCacheFile = new File(mCacheDir, buildExportFilename(exportParams.getExportFormat(), exportParams.isCompressed, bookName));
+            val bookName =
+                booksDbAdapter.getAttribute(bookUID, DatabaseSchema.BookEntry.COLUMN_DISPLAY_NAME)
+            val name =
+                buildExportFilename(exportParams.exportFormat, exportParams.isCompressed, bookName)
+            exportCacheFile = File(cacheDir, name)
         }
-        return exportCacheFile;
-    }
-
-    /**
-     * Returns that path to the export folder for the book with GUID {@code bookUID}.
-     * This is the folder where exports like QIF and OFX will be saved for access by external programs
-     *
-     * @param bookUID GUID of the book being exported. Each book has its own export path
-     * @return Absolute path to export folder for active book
-     */
-    @NonNull
-    public static String getExportFolderPath(Context context, String bookUID) {
-        File external = context.getExternalFilesDir(null);
-        File file = new File(new File(external, bookUID), "exports");
-        if (!file.exists()) {
-            file.mkdirs();
-        }
-        return file.getAbsolutePath();
+        return exportCacheFile
     }
 
     /**
@@ -365,28 +250,28 @@ public abstract class Exporter {
      *
      * @return MIME type as string
      */
-    @NonNull
-    public String getExportMimeType() {
-        return mExportParams.getExportFormat().mimeType;
+    val exportMimeType: String
+        get() = exportParams.exportFormat.mimeType
+
+    @Throws(IOException::class, SQLException::class)
+    protected fun close() {
+        accountsDbAdapter.close()
+        budgetsDbAdapter.close()
+        commoditiesDbAdapter.close()
+        pricesDbAdapter.close()
+        scheduledActionDbAdapter.close()
+        splitsDbAdapter.close()
+        transactionsDbAdapter.close()
+        holder.close()
     }
 
-    protected void close() throws IOException, SQLException {
-        mAccountsDbAdapter.close();
-        mBudgetsDbAdapter.close();
-        mCommoditiesDbAdapter.close();
-        mPricesDbAdapter.close();
-        mScheduledActionDbAdapter.close();
-        mSplitsDbAdapter.close();
-        mTransactionsDbAdapter.close();
-        holder.close();
-    }
-
-    protected Writer createWriter(@NonNull File file) throws IOException {
-        OutputStream output = new FileOutputStream(file);
-        if (mExportParams.isCompressed) {
-            output = new GZIPOutputStream(output);
+    @Throws(IOException::class)
+    protected fun createWriter(file: File): Writer {
+        var output: OutputStream = FileOutputStream(file)
+        if (exportParams.isCompressed) {
+            output = GZIPOutputStream(output)
         }
-        return new BufferedWriter(new OutputStreamWriter(output, StandardCharsets.UTF_8));
+        return BufferedWriter(OutputStreamWriter(output, StandardCharsets.UTF_8))
     }
 
     /**
@@ -395,25 +280,18 @@ public abstract class Exporter {
      * @param cacheFile the cached file to read from.
      * @throws Exporter.ExporterException if the move fails
      */
-    private Uri moveToTarget(@NonNull ExportParams exportParams, @NonNull File cacheFile) throws Exporter.ExporterException {
-        switch (exportParams.getExportTarget()) {
-            case SHARING:
-                return shareFiles(exportParams, cacheFile);
+    @Throws(ExporterException::class)
+    private fun moveToTarget(exportParams: ExportParams, cacheFile: File): Uri? {
+        when (exportParams.exportTarget) {
+            ExportTarget.SHARING -> return shareFiles(exportParams, cacheFile)
 
-            case DROPBOX:
-                return moveExportToDropbox(exportParams, cacheFile);
+            ExportTarget.DROPBOX -> return moveExportToDropbox(exportParams, cacheFile)
 
-            case OWNCLOUD:
-                return moveExportToOwnCloud(exportParams, cacheFile);
+            ExportTarget.OWNCLOUD -> return moveExportToOwnCloud(exportParams, cacheFile)
 
-            case SD_CARD:
-                return moveExportToSDCard(exportParams, cacheFile);
+            ExportTarget.SD_CARD -> return moveExportToSDCard(exportParams, cacheFile)
 
-            case URI:
-                return moveExportToUri(exportParams, cacheFile);
-
-            default:
-                throw new Exporter.ExporterException(exportParams, "Invalid target");
+            ExportTarget.URI -> return moveExportToUri(exportParams, cacheFile)
         }
     }
 
@@ -423,111 +301,112 @@ public abstract class Exporter {
      *
      * @throws Exporter.ExporterException if something failed while moving the exported file
      */
-    private Uri moveExportToUri(ExportParams exportParams, File exportedFile) throws Exporter.ExporterException {
-        Context context = mContext;
-        Uri exportUri = exportParams.getExportLocation();
+    @Throws(ExporterException::class)
+    private fun moveExportToUri(exportParams: ExportParams, exportedFile: File): Uri? {
+        val context = this.context
+        val exportUri = exportParams.exportLocation
         if (exportUri == null) {
-            Timber.w("No URI found for export destination");
-            return null;
+            Timber.w("No URI found for export destination")
+            return null
         }
 
         try {
-            OutputStream outputStream = context.getContentResolver().openOutputStream(exportUri);
+            val outputStream: OutputStream =
+                context.contentResolver.openOutputStream(exportUri)!!
             // Now we always get just one file exported (multi-currency QIFs are zipped)
-            FileUtils.moveFile(exportedFile, outputStream);
-            return exportUri;
-        } catch (IOException e) {
-            throw new Exporter.ExporterException(exportParams, e);
+            moveFile(exportedFile, outputStream)
+            return exportUri
+        } catch (e: IOException) {
+            throw ExporterException(exportParams, e)
         }
     }
 
     /**
      * Move the exported files (in the cache directory) to Dropbox
      */
-    private Uri moveExportToDropbox(ExportParams exportParams, File exportedFile) {
-        Timber.i("Uploading exported files to DropBox");
-        Context context = mContext;
-        DbxClientV2 dbxClient = DropboxHelper.getClient(context);
+    private fun moveExportToDropbox(exportParams: ExportParams, exportedFile: File): Uri? {
+        Timber.i("Uploading exported files to DropBox")
+        val context = this.context
+        val dbxClient = getClient(context)
         if (dbxClient == null) {
-            throw new Exporter.ExporterException(exportParams, "Dropbox client required");
+            throw ExporterException(exportParams, "Dropbox client required")
         }
 
         try {
-            FileInputStream inputStream = new FileInputStream(exportedFile);
-            FileMetadata metadata = dbxClient.files()
+            val inputStream = FileInputStream(exportedFile)
+            val metadata = dbxClient.files()
                 .uploadBuilder("/" + exportedFile.getName())
-                .uploadAndFinish(inputStream);
-            Timber.i("Successfully uploaded file " + metadata.getName() + " to DropBox");
-            inputStream.close();
-            exportedFile.delete(); //delete file to prevent cache accumulation
+                .uploadAndFinish(inputStream)
+            Timber.i("Successfully uploaded file %s to DropBox", metadata.getName())
+            inputStream.close()
+            exportedFile.delete() //delete file to prevent cache accumulation
 
-            return new Uri.Builder()
+            return Uri.Builder()
                 .scheme("dropbox")
                 .authority(BuildConfig.APPLICATION_ID)
                 .appendPath("Apps")
                 .appendPath("GnuCash Pocket")
                 .appendPath(metadata.getName())
-                .build();
-        } catch (IOException | DbxException e) {
-            Timber.e(e);
-            throw new ExporterException(exportParams, e);
+                .build()
+        } catch (e: IOException) {
+            Timber.e(e)
+            throw ExporterException(exportParams, e)
+        } catch (e: DbxException) {
+            Timber.e(e)
+            throw ExporterException(exportParams, e)
         }
     }
 
-    private Uri moveExportToOwnCloud(ExportParams exportParams, File exportedFile) throws Exporter.ExporterException {
-        Timber.i("Copying exported file to ownCloud");
-        final Context context = mContext;
-        final OwnCloudPreferences preferences = new OwnCloudPreferences(context);
+    @Throws(ExporterException::class)
+    private fun moveExportToOwnCloud(exportParams: ExportParams, exportedFile: File): Uri? {
+        Timber.i("Copying exported file to ownCloud")
+        val context = this.context
+        val preferences = OwnCloudPreferences(context)
 
-        boolean ocSync = preferences.isSync();
+        val ocSync = preferences.isSync
 
         if (!ocSync) {
-            throw new Exporter.ExporterException(exportParams, "ownCloud not enabled.");
+            throw ExporterException(exportParams, "ownCloud not enabled.")
         }
 
-        String ocServer = preferences.getServer();
-        String ocUsername = preferences.getUsername();
-        String ocPassword = preferences.getPassword();
-        String ocDir = preferences.getDir();
+        val ocServer = preferences.server!!
+        val ocUsername = preferences.username
+        val ocPassword = preferences.password
+        val ocDir = preferences.dir
 
-        Uri serverUri = Uri.parse(ocServer);
-        OwnCloudClient client = OwnCloudClientFactory.createOwnCloudClient(serverUri, context, true);
-        client.setCredentials(
-            OwnCloudCredentialsFactory.newBasicCredentials(ocUsername, ocPassword)
-        );
+        val serverUri = ocServer.toUri()
+        val client = OwnCloudClientFactory.createOwnCloudClient(serverUri, context, true)
+        client.credentials = OwnCloudCredentialsFactory.newBasicCredentials(ocUsername, ocPassword)
 
-        if (!TextUtils.isEmpty(ocDir)) {
-            RemoteOperationResult dirResult = new CreateRemoteFolderOperation(
-                ocDir, true).execute(client);
-            if (!dirResult.isSuccess()) {
-                Timber.w("Error creating folder (it may happen if it already exists): %s", dirResult.getLogMessage());
+        if (!ocDir.isNullOrEmpty()) {
+            val dirResult = CreateRemoteFolderOperation(ocDir, true).execute(client)
+            if (!dirResult.isSuccess) {
+                Timber.w(
+                    "Error creating folder (it may happen if it already exists): %s",
+                    dirResult.logMessage
+                )
             }
         }
 
-        String remotePath = ocDir + com.owncloud.android.lib.resources.files.FileUtils.PATH_SEPARATOR + exportedFile.getName();
-        String mimeType = getExportMimeType();
+        val remotePath = ocDir + FileUtils.PATH_SEPARATOR + exportedFile.name
+        val mimeType = this.exportMimeType
 
-        RemoteOperationResult result = new UploadRemoteFileOperation(
-            exportedFile.getAbsolutePath(),
+        val result = UploadRemoteFileOperation(
+            exportedFile.absolutePath,
             remotePath,
             mimeType,
             getFileLastModifiedTimestamp(exportedFile)
-        ).execute(client);
-        if (!result.isSuccess()) {
-            throw new Exporter.ExporterException(exportParams, result.getLogMessage());
+        ).execute(client)
+        if (!result.isSuccess) {
+            throw ExporterException(exportParams, result.logMessage)
         }
 
-        exportedFile.delete();
+        exportedFile.delete()
 
         return serverUri.buildUpon()
             .appendPath(ocDir)
-            .appendPath(exportedFile.getName())
-            .build();
-    }
-
-    private static String getFileLastModifiedTimestamp(File file) {
-        long timeStampLong = file.lastModified() / 1000;
-        return Long.toString(timeStampLong);
+            .appendPath(exportedFile.name)
+            .build()
     }
 
     /**
@@ -535,23 +414,24 @@ public abstract class Exporter {
      * external storage, which is accessible to the user.
      *
      * @return The list of files moved to the SD card.
-     * @deprecated Use the Storage Access Framework to save to SD card. See {@link #moveExportToUri(ExportParams, File)}
      */
-    private Uri moveExportToSDCard(ExportParams exportParams, File exportedFile) throws Exporter.ExporterException {
-        Timber.i("Moving exported file to external storage");
-        Context context = mContext;
-        File dst = new File(Exporter.getExportFolderPath(context, getBookUID()), exportedFile.getName());
+    @Deprecated("Use the Storage Access Framework to save to SD card. See {@link #moveExportToUri(ExportParams, File)}")
+    @Throws(ExporterException::class)
+    private fun moveExportToSDCard(exportParams: ExportParams, exportedFile: File): Uri? {
+        Timber.i("Moving exported file to external storage")
+        val context = this.context
+        val dst = File(
+            getExportFolderPath(
+                context,
+                this.bookUID
+            ), exportedFile.getName()
+        )
         try {
-            FileUtils.moveFile(exportedFile, dst);
-            return Uri.fromFile(dst);
-        } catch (IOException e) {
-            throw new Exporter.ExporterException(exportParams, e);
+            moveFile(exportedFile, dst)
+            return dst.toUri()
+        } catch (e: IOException) {
+            throw ExporterException(exportParams, e)
         }
-    }
-
-    // "/some/path/filename.ext" -> "filename.ext"
-    private String stripPathPart(String fullPathName) {
-        return (new File(fullPathName)).getName();
     }
 
     /**
@@ -560,75 +440,188 @@ public abstract class Exporter {
      *
      * @param exportedFile the file to share.
      */
-    private Uri shareFiles(ExportParams exportParams, File exportedFile) {
-        Context context = mContext;
-        Uri exportFile = FileProvider.getUriForFile(context, GnuCashApplication.FILE_PROVIDER_AUTHORITY, exportedFile);
-        Intent shareIntent = new Intent(Intent.ACTION_SEND)
-            .setType(exportParams.getExportFormat().mimeType)
+    private fun shareFiles(exportParams: ExportParams, exportedFile: File): Uri? {
+        val context = this.context
+        val exportFile = FileProvider.getUriForFile(
+            context,
+            GnuCashApplication.FILE_PROVIDER_AUTHORITY,
+            exportedFile
+        )
+        val shareIntent = Intent(Intent.ACTION_SEND)
+            .setType(exportParams.exportFormat.mimeType)
             .putExtra(Intent.EXTRA_STREAM, exportFile)
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            .putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.title_export_email,
-                exportParams.getExportFormat().name()));
+            .putExtra(
+                Intent.EXTRA_SUBJECT, context.getString(
+                    R.string.title_export_email,
+                    exportParams.exportFormat.name
+                )
+            )
 
-        String defaultEmail = PreferenceManager.getDefaultSharedPreferences(context)
-            .getString(context.getString(R.string.key_default_export_email), null);
-        if (!TextUtils.isEmpty(defaultEmail))
-            shareIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{defaultEmail});
-
-        String extraText = context.getString(R.string.description_export_email)
-            + " " + DateExtKt.formatFullDateTime(System.currentTimeMillis());
-        shareIntent.putExtra(Intent.EXTRA_TEXT, extraText);
-
-        List<ResolveInfo> activities = context.getPackageManager().queryIntentActivities(shareIntent, 0);
-        if (activities != null && !activities.isEmpty()) {
-            context.startActivity(Intent.createChooser(shareIntent,
-                context.getString(R.string.title_select_export_destination)));
-            return exportFile;
-        } else {
-            Toast.makeText(context, R.string.toast_no_compatible_apps_to_receive_export,
-                Toast.LENGTH_LONG).show();
+        val defaultEmail = PreferenceManager.getDefaultSharedPreferences(context)
+            .getString(context.getString(R.string.key_default_export_email), null)
+        if (!defaultEmail.isNullOrEmpty()) {
+            shareIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf<String>(defaultEmail))
         }
 
-        return null;
+        val extraText = (context.getString(R.string.description_export_email)
+                + " " + formatFullDateTime(System.currentTimeMillis()))
+        shareIntent.putExtra(Intent.EXTRA_TEXT, extraText)
+
+        val activities: MutableList<ResolveInfo?>? =
+            context.packageManager.queryIntentActivities(shareIntent, 0)
+        if (activities != null && !activities.isEmpty()) {
+            context.startActivity(
+                Intent.createChooser(
+                    shareIntent,
+                    context.getString(R.string.title_select_export_destination)
+                )
+            )
+            return exportFile
+        } else {
+            Toast.makeText(
+                context, R.string.toast_no_compatible_apps_to_receive_export,
+                Toast.LENGTH_LONG
+            ).show()
+        }
+
+        return null
     }
 
     /**
      * Saves opening balances (if necessary)
      * and deletes all non-template transactions in the database.
      */
-    private void deleteTransactions() {
-        Timber.i("Deleting transactions after export");
-        List<Transaction> openingBalances = new ArrayList<>();
-        boolean preserveOpeningBalances = GnuCashApplication.shouldSaveOpeningBalances(false);
+    private fun deleteTransactions() {
+        Timber.i("Deleting transactions after export")
+        var openingBalances = emptyList<Transaction>()
+        val preserveOpeningBalances = shouldSaveOpeningBalances(false)
 
-        TransactionsDbAdapter transactionsDbAdapter = mTransactionsDbAdapter;
+        val transactionsDbAdapter = this.transactionsDbAdapter
         if (preserveOpeningBalances) {
-            openingBalances = mAccountsDbAdapter.getAllOpeningBalanceTransactions();
+            openingBalances = accountsDbAdapter.allOpeningBalanceTransactions
         }
-        transactionsDbAdapter.deleteAllNonTemplateTransactions();
+        transactionsDbAdapter.deleteAllNonTemplateTransactions()
 
         if (preserveOpeningBalances && !openingBalances.isEmpty()) {
-            transactionsDbAdapter.bulkAddRecords(openingBalances, DatabaseAdapter.UpdateMethod.insert);
+            transactionsDbAdapter.bulkAddRecords(
+                openingBalances,
+                DatabaseAdapter.UpdateMethod.Insert
+            )
         }
     }
 
-    public void cancel() {
-        cancellationSignal.cancel();
+    fun cancel() {
+        cancellationSignal.cancel()
     }
 
-    public static class ExporterException extends RuntimeException {
+    class ExporterException : RuntimeException {
+        constructor(params: ExportParams, msg: String) :
+                super("Failed to generate export with parameters: $params - $msg")
 
-        public ExporterException(@NonNull ExportParams params) {
-            super("Failed to generate export with parameters: " + params);
+        constructor(params: ExportParams, throwable: Throwable) :
+                super(
+                    "Failed to generate export ${params.exportFormat} - ${throwable.message}",
+                    throwable
+                )
+    }
+
+    companion object {
+        private const val EXPORT_FILENAME_DATE_PATTERN = "yyyyMMddHHmmss"
+
+        /**
+         * Strings a string of any characters not allowed in a file name.
+         * All unallowed characters are replaced with an underscore
+         *
+         * @param inputName Raw file name input
+         * @return Sanitized file name
+         */
+        fun sanitizeFilename(inputName: String): String {
+            return inputName.replace("[^a-zA-Z0-9-_\\.]".toRegex(), "_")
         }
 
-        public ExporterException(@NonNull ExportParams params, @NonNull String msg) {
-            super("Failed to generate export with parameters: " + params + " - " + msg);
+        /**
+         * Builds a file name based on the current time stamp for the exported file
+         *
+         * @param exportParams Parameters to use when exporting
+         * @param bookName     Name of the book being exported. This name will be included in the generated file name
+         * @return String containing the file name
+         */
+        fun buildExportFilename(exportParams: ExportParams?, bookName: String): String {
+            var format = ExportFormat.XML
+            var isCompressed = false
+            if (exportParams != null) {
+                format = exportParams.exportFormat
+                isCompressed = exportParams.isCompressed
+            }
+            return buildExportFilename(format, isCompressed, bookName)
         }
 
-        public ExporterException(@NonNull ExportParams params, @NonNull Throwable throwable) {
-            super("Failed to generate export " + params.getExportFormat() + " - " + throwable.getMessage(),
-                throwable);
+        /**
+         * Builds a file name based on the current time stamp for the exported file
+         *
+         * @param format       Format to use when exporting
+         * @param isCompressed is the file compressed?
+         * @param bookName     Name of the book being exported. This name will be included in the generated file name
+         * @return String containing the file name
+         */
+        fun buildExportFilename(
+            format: ExportFormat,
+            isCompressed: Boolean,
+            bookName: String
+        ): String {
+            val formatter = DateTimeFormat.forPattern(EXPORT_FILENAME_DATE_PATTERN)
+            val name: StringBuilder = StringBuilder(sanitizeFilename(bookName))
+            if (format == ExportFormat.CSVA) name.append(".accounts")
+            if (format == ExportFormat.CSVT) name.append(".transactions")
+            name.append(".")
+                .append(formatter.print(System.currentTimeMillis()))
+                .append(format.extension)
+            if (isCompressed && format != ExportFormat.XML) name.append(".gz")
+            return name.toString()
+        }
+
+        /**
+         * Parses the name of an export file and returns the date of export
+         *
+         * @param filename Export file name generated by [.buildExportFilename]
+         * @return Date in milliseconds
+         */
+        fun getExportTime(filename: String): Long {
+            val tokens =
+                filename.split("_".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            if (tokens.size < 2) {
+                return 0
+            }
+            var timeMillis: Long = 0
+            try {
+                val formatter = DateTimeFormat.forPattern(EXPORT_FILENAME_DATE_PATTERN)
+                timeMillis = formatter.parseMillis(tokens[0] + "_" + tokens[1])
+            } catch (e: IllegalArgumentException) {
+                Timber.e(e, "Error parsing time from file name: %s", e.message)
+            }
+            return timeMillis
+        }
+
+        /**
+         * Returns that path to the export folder for the book with GUID `bookUID`.
+         * This is the folder where exports like QIF and OFX will be saved for access by external programs
+         *
+         * @param bookUID GUID of the book being exported. Each book has its own export path
+         * @return Absolute path to export folder for active book
+         */
+        fun getExportFolderPath(context: Context, bookUID: String): String {
+            val external = context.getExternalFilesDir(null)
+            val file = File(File(external, bookUID), "exports")
+            if (!file.exists()) {
+                file.mkdirs()
+            }
+            return file.absolutePath
+        }
+
+        private fun getFileLastModifiedTimestamp(file: File): String {
+            val timeStampLong = file.lastModified() / DateUtils.SECOND_IN_MILLIS
+            return timeStampLong.toString()
         }
     }
 }

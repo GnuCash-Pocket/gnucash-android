@@ -13,67 +13,62 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.ui.util.dialog;
+package org.gnucash.android.ui.util.dialog
 
-import android.app.Dialog;
-import android.app.TimePickerDialog;
-import android.app.TimePickerDialog.OnTimeSetListener;
-import android.content.Context;
-import android.os.Bundle;
-import android.text.format.DateFormat;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
-
-import java.util.Calendar;
+import android.app.Dialog
+import android.app.TimePickerDialog
+import android.os.Bundle
+import android.text.format.DateFormat
+import androidx.fragment.app.DialogFragment
+import java.util.Calendar
 
 /**
  * Fragment for displaying a time picker dialog
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class TimePickerDialogFragment extends DialogFragment {
+class TimePickerDialogFragment : DialogFragment() {
     /**
      * Listener to notify when the time is set.
      */
-    @Nullable
-    private OnTimeSetListener listener;
+    private var listener: TimePickerDialog.OnTimeSetListener? = null
 
     /**
      * Current time to initialize the dialog to, or to notify the listener of.
      */
-    @NonNull
-    private final Calendar time = Calendar.getInstance();
+    private val time: Calendar = Calendar.getInstance()
 
     /**
-     * Create a new instance.
-     *
-     * @param listener   {@link OnTimeSetListener} to notify when the time has been set
-     * @param timeMillis Time in milliseconds to initialize the dialog to
+     * Creates and returns an Android [TimePickerDialog]
      */
-    public static TimePickerDialogFragment newInstance(@Nullable OnTimeSetListener listener, long timeMillis) {
-        TimePickerDialogFragment fragment = new TimePickerDialogFragment();
-        fragment.listener = listener;
-        if (timeMillis > 0) {
-            fragment.time.setTimeInMillis(timeMillis);
-        }
-        return fragment;
-    }
-
-    /**
-     * Creates and returns an Android {@link TimePickerDialog}
-     */
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final Context context = requireContext();
-        return new TimePickerDialog(
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val context = requireContext()
+        return TimePickerDialog(
             context,
             listener,
             time.get(Calendar.HOUR_OF_DAY),
             time.get(Calendar.MINUTE),
             DateFormat.is24HourFormat(context)
-        );
+        )
     }
 
+    companion object {
+        /**
+         * Create a new instance.
+         *
+         * @param listener   [OnTimeSetListener] to notify when the time has been set
+         * @param timeMillis Time in milliseconds to initialize the dialog to
+         */
+        fun newInstance(
+            listener: TimePickerDialog.OnTimeSetListener,
+            timeMillis: Long
+        ): TimePickerDialogFragment {
+            val fragment = TimePickerDialogFragment()
+            fragment.listener = listener
+            if (timeMillis > 0) {
+                fragment.time.timeInMillis = timeMillis
+            }
+            return fragment
+        }
+    }
 }

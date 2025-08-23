@@ -47,7 +47,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end|bottom"
             android:layout_margin="20dp"
-            android:onClick="onCreateBudgetClick"
             android:src="@drawable/ic_add"
             app:elevation="10dp" />
 

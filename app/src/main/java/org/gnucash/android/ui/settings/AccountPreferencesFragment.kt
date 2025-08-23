@@ -13,45 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.settings
 
-package org.gnucash.android.ui.settings;
-
-import static org.gnucash.android.util.DocumentExtKt.openBook;
-
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.ActivityNotFoundException;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.View;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.preference.ListPreference;
-import androidx.preference.Preference;
-
-import com.google.android.material.snackbar.Snackbar;
-
-import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter;
-import org.gnucash.android.export.ExportAsyncTask;
-import org.gnucash.android.export.ExportFormat;
-import org.gnucash.android.export.ExportParams;
-import org.gnucash.android.export.Exporter;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.ui.account.AccountsActivity;
-import org.gnucash.android.ui.settings.dialog.DeleteAllAccountsConfirmationDialog;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-
-import timber.log.Timber;
+import android.app.Activity
+import android.app.AlertDialog
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.os.Bundle
+import android.widget.Toast
+import androidx.preference.ListPreference
+import androidx.preference.Preference
+import com.google.android.material.snackbar.Snackbar
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
+import org.gnucash.android.app.GnuCashApplication.Companion.defaultCurrencyCode
+import org.gnucash.android.db.adapter.BooksDbAdapter
+import org.gnucash.android.db.adapter.CommoditiesDbAdapter
+import org.gnucash.android.export.ExportAsyncTask
+import org.gnucash.android.export.ExportFormat
+import org.gnucash.android.export.ExportParams
+import org.gnucash.android.export.Exporter.Companion.buildExportFilename
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.ui.account.AccountsActivity
+import org.gnucash.android.ui.settings.dialog.DeleteAllAccountsConfirmationDialog
+import org.gnucash.android.util.openBook
+import timber.log.Timber
+import java.util.concurrent.ExecutionException
 
 /**
  * Account settings fragment inside the Settings activity
@@ -59,137 +46,112 @@ import timber.log.Timber;
  * @author Ngewi Fet <ngewi.fet@gmail.com>
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
-public class AccountPreferencesFragment extends GnuPreferenceFragment {
+class AccountPreferencesFragment : GnuPreferenceFragment() {
+    private var commoditiesDbAdapter = CommoditiesDbAdapter.instance
+    private val currencyEntries = mutableListOf<CharSequence>()
+    private val currencyEntryValues = mutableListOf<String>()
 
-    private static final int REQUEST_EXPORT_FILE = 0xC5;
+    override val titleId: Int = R.string.title_account_preferences
 
-    private CommoditiesDbAdapter commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
-    private final List<CharSequence> currencyEntries = new ArrayList<>();
-    private final List<CharSequence> currencyEntryValues = new ArrayList<>();
-
-    @Override
-    protected int getTitleId() {
-        return R.string.title_account_preferences;
+    override fun onStart() {
+        super.onStart()
+        commoditiesDbAdapter = CommoditiesDbAdapter.instance
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        commoditiesDbAdapter = CommoditiesDbAdapter.getInstance();
-    }
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        preferenceManager.setSharedPreferencesName(activeBookUID)
+        addPreferencesFromResource(R.xml.fragment_account_preferences)
 
-    public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
-        getPreferenceManager().setSharedPreferencesName(GnuCashApplication.getActiveBookUID());
-        addPreferencesFromResource(R.xml.fragment_account_preferences);
-
-        currencyEntries.clear();
-        currencyEntryValues.clear();
-        List<Commodity> commodities = commoditiesDbAdapter.getAllRecords();
-        for (Commodity commodity : commodities) {
-            currencyEntries.add(commodity.formatListItem());
-            currencyEntryValues.add(commodity.getCurrencyCode());
+        currencyEntries.clear()
+        currencyEntryValues.clear()
+        val commodities = commoditiesDbAdapter.allRecords
+        for (commodity in commodities) {
+            currencyEntries.add(commodity.formatListItem())
+            currencyEntryValues.add(commodity.currencyCode)
         }
-        ListPreference listPreference = findPreference(getString(R.string.key_default_currency));
-        String currencyCode = listPreference.getValue();
-        if (TextUtils.isEmpty(currencyCode)) {
-            currencyCode = GnuCashApplication.getDefaultCurrencyCode();
+        val listPreference =
+            findPreference<ListPreference>(getString(R.string.key_default_currency))!!
+        var currencyCode = listPreference.value
+        if (currencyCode.isNullOrEmpty()) {
+            currencyCode = defaultCurrencyCode
         }
-        Commodity commodity = commoditiesDbAdapter.getCurrency(currencyCode);
-        if (commodity == null) {
-            commodity = Commodity.DEFAULT_COMMODITY;
+        var commodity =
+            commoditiesDbAdapter.getCurrency(currencyCode) ?: Commodity.DEFAULT_COMMODITY
+        val currencyName = commodity.formatListItem()
+        listPreference.summary = currencyName
+        listPreference.setOnPreferenceChangeListener { preference, newValue ->
+            val currencyCode = newValue.toString()
+            commoditiesDbAdapter.setDefaultCurrencyCode(currencyCode)
+            val summary = commoditiesDbAdapter.getCurrency(currencyCode)!!.formatListItem()
+            preference.setSummary(summary)
+            true
         }
-        String currencyName = commodity.formatListItem();
-        listPreference.setSummary(currencyName);
-        listPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(@NonNull Preference preference, Object newValue) {
-                String currencyCode = newValue.toString();
-                commoditiesDbAdapter.setDefaultCurrencyCode(currencyCode);
-                String summary = commoditiesDbAdapter.getCurrency(currencyCode).formatListItem();
-                preference.setSummary(summary);
-                return true;
-            }
-        });
-        listPreference.setEntries(currencyEntries.toArray(new CharSequence[0]));
-        listPreference.setEntryValues(currencyEntryValues.toArray(new CharSequence[0]));
+        listPreference.entries = currencyEntries.toTypedArray()
+        listPreference.entryValues = currencyEntryValues.toTypedArray()
 
-        Preference preference = findPreference(getString(R.string.key_import_accounts));
-        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(@NonNull Preference preference) {
-                AccountsActivity.startXmlFileChooser(AccountPreferencesFragment.this);
-                return true;
-            }
-        });
+        var preference = findPreference<Preference>(getString(R.string.key_import_accounts))!!
+        preference.setOnPreferenceClickListener { preference ->
+            AccountsActivity.startXmlFileChooser(this@AccountPreferencesFragment)
+            true
+        }
 
-        preference = findPreference(getString(R.string.key_export_accounts_csv));
-        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(@NonNull Preference preference) {
-                selectExportFile();
-                return true;
-            }
-        });
+        preference = findPreference<Preference>(getString(R.string.key_export_accounts_csv))!!
+        preference.setOnPreferenceClickListener { preference ->
+            selectExportFile()
+            true
+        }
 
-        preference = findPreference(getString(R.string.key_delete_all_accounts));
-        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(@NonNull Preference preference) {
-                showDeleteAccountsDialog();
-                return true;
-            }
-        });
+        preference = findPreference<Preference>(getString(R.string.key_delete_all_accounts))!!
+        preference.setOnPreferenceClickListener { preference ->
+            showDeleteAccountsDialog()
+            true
+        }
 
-        preference = findPreference(getString(R.string.key_create_default_accounts));
-        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(@NonNull Preference preference) {
-                final Activity activity = requireActivity();
-                new AlertDialog.Builder(activity)
-                    .setTitle(R.string.title_create_default_accounts)
-                    .setMessage(R.string.msg_confirm_create_default_accounts_setting)
-                    .setIcon(R.drawable.ic_warning)
-                    .setPositiveButton(R.string.btn_create_accounts, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int which) {
-                            String currencyCode = GnuCashApplication.getDefaultCurrencyCode();
-                            AccountsActivity.createDefaultAccounts(activity, currencyCode);
-                        }
-                    })
-                    .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    })
-                    .show();
+        preference = findPreference<Preference>(getString(R.string.key_create_default_accounts))!!
+        preference.setOnPreferenceClickListener { preference ->
+            val activity: Activity = requireActivity()
+            AlertDialog.Builder(activity)
+                .setTitle(R.string.title_create_default_accounts)
+                .setMessage(R.string.msg_confirm_create_default_accounts_setting)
+                .setIcon(R.drawable.ic_warning)
+                .setNegativeButton(R.string.btn_cancel) { _, _ ->
+                    // Dismisses itself
+                }
+                .setPositiveButton(R.string.btn_create_accounts) { _, _ ->
+                    val currencyCode = defaultCurrencyCode
+                    AccountsActivity.createDefaultAccounts(activity, currencyCode)
+                }
+                .show()
 
-                return true;
-            }
-        });
+            true
+        }
     }
 
     /**
      * Open a chooser for user to pick a file to export to
      */
-    private void selectExportFile() {
-        String bookName = BooksDbAdapter.getInstance().getActiveBookDisplayName();
-        String filename = Exporter.buildExportFilename(ExportFormat.CSVA, false, bookName);
+    private fun selectExportFile() {
+        val bookName = BooksDbAdapter.instance.activeBookDisplayName
+        val filename = buildExportFilename(ExportFormat.CSVA, false, bookName)
 
-        Intent createIntent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
+        val createIntent = Intent(Intent.ACTION_CREATE_DOCUMENT)
             .setType(ExportFormat.CSVA.mimeType)
             .addCategory(Intent.CATEGORY_OPENABLE)
-            .putExtra(Intent.EXTRA_TITLE, filename);
+            .putExtra(Intent.EXTRA_TITLE, filename)
         try {
-            startActivityForResult(createIntent, REQUEST_EXPORT_FILE);
-        } catch (ActivityNotFoundException e) {
-            Timber.e(e, "Cannot create document for export");
-            if (isVisible()) {
-                View view = getView();
-                assert view != null;
-                Snackbar.make(view, R.string.toast_install_file_manager, Snackbar.LENGTH_LONG).show();
+            startActivityForResult(createIntent, REQUEST_EXPORT_FILE)
+        } catch (e: ActivityNotFoundException) {
+            Timber.e(e, "Cannot create document for export")
+            if (isVisible) {
+                val view = requireView()
+                Snackbar.make(view, R.string.toast_install_file_manager, Snackbar.LENGTH_LONG)
+                    .show()
             } else {
-                Toast.makeText(requireContext(), R.string.toast_install_file_manager, Toast.LENGTH_LONG).show();
+                Toast.makeText(
+                    requireContext(),
+                    R.string.toast_install_file_manager,
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
@@ -197,42 +159,51 @@ public class AccountPreferencesFragment extends GnuPreferenceFragment {
     /**
      * Show the dialog for deleting accounts
      */
-    public void showDeleteAccountsDialog() {
-        DeleteAllAccountsConfirmationDialog deleteConfirmationDialog = DeleteAllAccountsConfirmationDialog.newInstance();
-        deleteConfirmationDialog.show(getParentFragmentManager(), "dslete_accounts");
+    fun showDeleteAccountsDialog() {
+        DeleteAllAccountsConfirmationDialog()
+            .show(parentFragmentManager, "delete_accounts")
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Activity activity = requireActivity();
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        val activity = requireActivity()
 
-        switch (requestCode) {
-            case AccountsActivity.REQUEST_PICK_ACCOUNTS_FILE:
+        when (requestCode) {
+            AccountsActivity.REQUEST_PICK_ACCOUNTS_FILE ->
                 if (resultCode == Activity.RESULT_OK && data != null) {
-                    openBook(activity, data);
+                    openBook(activity, data)
                 }
-                break;
 
-            case REQUEST_EXPORT_FILE:
-                if (resultCode == Activity.RESULT_OK && data != null) {
-                    ExportParams exportParams = new ExportParams(ExportFormat.CSVA);
-                    exportParams.setExportTarget(ExportParams.ExportTarget.URI);
-                    exportParams.setExportLocation(data.getData());
-                    ExportAsyncTask exportTask = new ExportAsyncTask(activity, GnuCashApplication.getActiveBookUID());
-
-                    try {
-                        exportTask.execute(exportParams).get();
-                    } catch (InterruptedException | ExecutionException e) {
-                        Timber.e(e);
-                        Toast.makeText(activity, "An error occurred during the Accounts CSV export",
-                            Toast.LENGTH_LONG).show();
-                    }
+            REQUEST_EXPORT_FILE -> if (resultCode == Activity.RESULT_OK && data != null) {
+                val exportParams = ExportParams(ExportFormat.CSVA).apply {
+                    exportTarget = ExportParams.ExportTarget.URI
+                    exportLocation = data.data
                 }
-                break;
+                val exportTask = ExportAsyncTask(activity, activeBookUID!!)
 
-            default:
-                super.onActivityResult(requestCode, resultCode, data);
-                break;
+                try {
+                    exportTask.execute(exportParams)//.get()
+                } catch (e: InterruptedException) {
+                    Timber.e(e)
+                    Toast.makeText(
+                        activity,
+                        "An error occurred during the Accounts CSV export",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } catch (e: ExecutionException) {
+                    Timber.e(e)
+                    Toast.makeText(
+                        activity,
+                        "An error occurred during the Accounts CSV export",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+
+            else -> super.onActivityResult(requestCode, resultCode, data)
         }
+    }
+
+    companion object {
+        private const val REQUEST_EXPORT_FILE = 0xC5
     }
 }

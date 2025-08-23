@@ -13,98 +13,85 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.util;
+package org.gnucash.android.util
 
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-
-import java.sql.Timestamp;
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.DateTimeFormatter
+import java.sql.Timestamp
 
 /**
- * A utility class to deal with {@link Timestamp} operations in a centralized way.
+ * A utility class to deal with [Timestamp] operations in a centralized way.
  */
-public final class TimestampHelper {
-
-    public static final Timestamp EPOCH_ZERO_TIMESTAMP = new Timestamp(0);
-
+object TimestampHelper {
     /**
-     * Should be not instantiated.
+     * @return A [Timestamp] with time in milliseconds equals to zero.
      */
-    private TimestampHelper() {
-    }
+    val timestampFromEpochZero: Timestamp = Timestamp(0)
 
     /**
      * We are using Joda Time classes because they are thread-safe.
      */
-    private static final DateTimeFormatter UTC_DATE_FORMAT =
-        DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZoneUTC();
-    private static final DateTimeFormatter UTC_DATE_WITH_MILLISECONDS_FORMAT =
-        DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").withZoneUTC();
+    private val UTC_DATE_FORMAT: DateTimeFormatter =
+        DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZoneUTC()
+
+    private val UTC_DATE_WITH_MILLISECONDS_FORMAT: DateTimeFormatter =
+        DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").withZoneUTC()
 
     /**
-     * Get a {@link String} representing the {@link Timestamp}
+     * Get a [String] representing the [Timestamp]
      * in UTC time zone and 'yyyy-MM-dd HH:mm:ss.SSS' format.
      *
-     * @param timestamp The {@link Timestamp} to format.
-     * @return The formatted {@link String}.
+     * @param timestamp The [Timestamp] to format.
+     * @return The formatted [String].
      */
-    public static String getUtcStringFromTimestamp(Timestamp timestamp) {
-        return getUtcStringFromTimestamp(timestamp.getTime());
+    fun getUtcStringFromTimestamp(timestamp: Timestamp): String {
+        return getUtcStringFromTimestamp(timestamp.time)
     }
 
     /**
-     * Get a {@link String} representing the {@link Timestamp}
+     * Get a [String] representing the [Timestamp]
      * in UTC time zone and 'yyyy-MM-dd HH:mm:ss.SSS' format.
      *
      * @param timestamp The timestamp to format.
-     * @return The formatted {@link String}.
+     * @return The formatted [String].
      */
-    public static String getUtcStringFromTimestamp(Long timestamp) {
-        return UTC_DATE_WITH_MILLISECONDS_FORMAT.print(timestamp);
+    fun getUtcStringFromTimestamp(timestamp: Long): String {
+        return UTC_DATE_WITH_MILLISECONDS_FORMAT.print(timestamp)
     }
 
     /**
-     * @return A {@link Timestamp} with time in milliseconds equals to zero.
-     */
-    public static Timestamp getTimestampFromEpochZero() {
-        return EPOCH_ZERO_TIMESTAMP;
-    }
-
-    /**
-     * Get the {@link Timestamp} with the value of given UTC {@link String}.
-     * The {@link String} should be a representation in UTC time zone with the following format
+     * Get the [Timestamp] with the value of given UTC [String].
+     * The [String] should be a representation in UTC time zone with the following format
      * 'yyyy-MM-dd HH:mm:ss.SSS' OR 'yyyy-MM-dd HH:mm:ss' otherwise an IllegalArgumentException
      * will be throw.
      *
-     * @param utcString A {@link String} in UTC.
-     * @return A {@link Timestamp} for given utcString.
+     * @param utcString A [String] in UTC.
+     * @return A [Timestamp] for given utcString.
      */
-    public static Timestamp getTimestampFromUtcString(String utcString) {
+    @Throws(IllegalArgumentException::class)
+    fun getTimestampFromUtcString(utcString: String): Timestamp {
         // NB: `Timestamp.valueOf(utcString)` uses current time zone, and *not* UTC.
-        long millis;
+        var millis: Long
         try {
-
-            millis = UTC_DATE_WITH_MILLISECONDS_FORMAT.parseMillis(utcString);
-            return new Timestamp(millis);
-
-        } catch (IllegalArgumentException firstException) {
+            millis = UTC_DATE_WITH_MILLISECONDS_FORMAT.parseMillis(utcString)
+            return Timestamp(millis)
+        } catch (firstException: IllegalArgumentException) {
             try {
                 // In case of parsing of string without milliseconds.
-                millis = UTC_DATE_FORMAT.parseMillis(utcString);
-                return new Timestamp(millis);
-            } catch (IllegalArgumentException secondException) {
+                millis = UTC_DATE_FORMAT.parseMillis(utcString)
+                return Timestamp(millis)
+            } catch (secondException: IllegalArgumentException) {
                 // If we are here:
                 // - The utcString has an invalid format OR
                 // - We are missing some relevant pattern.
-                throw new IllegalArgumentException("Unknown UTC format '" + utcString + "'", secondException);
+                throw IllegalArgumentException("Unknown UTC format '$utcString'", secondException)
             }
         }
     }
 
     /**
-     * @return A {@link Timestamp} initialized with the system current time.
+     * @return A [Timestamp] initialized with the system current time.
      */
-    public static Timestamp getTimestampFromNow() {
-        return new Timestamp(System.currentTimeMillis());
-    }
+    val timestampFromNow: Timestamp
+        get() = Timestamp(System.currentTimeMillis())
 }

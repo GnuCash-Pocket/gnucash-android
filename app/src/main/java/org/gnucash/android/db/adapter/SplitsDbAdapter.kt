@@ -14,42 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.db.adapter
 
-package org.gnucash.android.db.adapter;
-
-import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
-import static org.gnucash.android.db.DatabaseSchema.CommonColumns;
-import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
-import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
-import static org.gnucash.android.db.adapter.AccountsDbAdapter.ALWAYS;
-import static org.gnucash.android.math.MathExtKt.toBigDecimal;
-
-import android.database.Cursor;
-import android.database.sqlite.SQLiteQueryBuilder;
-import android.database.sqlite.SQLiteStatement;
-import android.text.TextUtils;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseHolder;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.model.Split;
-import org.gnucash.android.model.TransactionType;
-import org.gnucash.android.util.TimestampHelper;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import timber.log.Timber;
+import android.database.Cursor
+import android.database.sqlite.SQLiteQueryBuilder
+import android.database.sqlite.SQLiteStatement
+import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.db.DatabaseHolder
+import org.gnucash.android.db.DatabaseSchema.AccountEntry
+import org.gnucash.android.db.DatabaseSchema.SplitEntry
+import org.gnucash.android.db.DatabaseSchema.TransactionEntry
+import org.gnucash.android.db.getLong
+import org.gnucash.android.db.getString
+import org.gnucash.android.db.joinIn
+import org.gnucash.android.math.toBigDecimal
+import org.gnucash.android.model.Account
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.model.Money
+import org.gnucash.android.model.Money.Companion.createZeroInstance
+import org.gnucash.android.model.Split
+import org.gnucash.android.model.Split.Companion.FLAG_NOT_RECONCILED
+import org.gnucash.android.model.TransactionType
+import org.gnucash.android.util.TimestampHelper.getTimestampFromUtcString
+import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
+import org.gnucash.android.util.TimestampHelper.timestampFromNow
+import timber.log.Timber
+import java.io.IOException
 
 /**
  * Database adapter for managing transaction splits in the database
@@ -58,241 +48,250 @@ import timber.log.Timber;
  * @author Yongxin Wang <fefe.wyx@gmail.com>
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
-public class SplitsDbAdapter extends DatabaseAdapter<Split> {
+class SplitsDbAdapter(
+    val commoditiesDbAdapter: CommoditiesDbAdapter
+) : DatabaseAdapter<Split>(
+    commoditiesDbAdapter.holder,
+    SplitEntry.TABLE_NAME,
+    arrayOf<String>(
+        SplitEntry.COLUMN_MEMO,
+        SplitEntry.COLUMN_TYPE,
+        SplitEntry.COLUMN_VALUE_NUM,
+        SplitEntry.COLUMN_VALUE_DENOM,
+        SplitEntry.COLUMN_QUANTITY_NUM,
+        SplitEntry.COLUMN_QUANTITY_DENOM,
+        SplitEntry.COLUMN_CREATED_AT,
+        SplitEntry.COLUMN_RECONCILE_STATE,
+        SplitEntry.COLUMN_RECONCILE_DATE,
+        SplitEntry.COLUMN_ACCOUNT_UID,
+        SplitEntry.COLUMN_TRANSACTION_UID,
+        SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID
+    )
+) {
+    private val accountCommodities = mutableMapOf<String, Commodity>()
 
-    @NonNull
-    final CommoditiesDbAdapter commoditiesDbAdapter;
-    private final Map<String, Commodity> accountCommodities = new HashMap<>();
+    constructor(holder: DatabaseHolder) : this(CommoditiesDbAdapter(holder))
 
-    private static final String credit = TransactionType.CREDIT.value;
-
-    public SplitsDbAdapter(@NonNull DatabaseHolder holder) {
-        this(new CommoditiesDbAdapter(holder));
-    }
-
-    public SplitsDbAdapter(@NonNull CommoditiesDbAdapter commoditiesDbAdapter) {
-        super(commoditiesDbAdapter.holder, SplitEntry.TABLE_NAME, new String[]{
-            SplitEntry.COLUMN_MEMO,
-            SplitEntry.COLUMN_TYPE,
-            SplitEntry.COLUMN_VALUE_NUM,
-            SplitEntry.COLUMN_VALUE_DENOM,
-            SplitEntry.COLUMN_QUANTITY_NUM,
-            SplitEntry.COLUMN_QUANTITY_DENOM,
-            SplitEntry.COLUMN_CREATED_AT,
-            SplitEntry.COLUMN_RECONCILE_STATE,
-            SplitEntry.COLUMN_RECONCILE_DATE,
-            SplitEntry.COLUMN_ACCOUNT_UID,
-            SplitEntry.COLUMN_TRANSACTION_UID,
-            SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID
-        });
-        this.commoditiesDbAdapter = commoditiesDbAdapter;
-    }
-
-    /**
-     * Returns application-wide instance of the database adapter
-     *
-     * @return SplitsDbAdapter instance
-     */
-    public static SplitsDbAdapter getInstance() {
-        return GnuCashApplication.getSplitsDbAdapter();
-    }
-
-    @Override
-    public void close() throws IOException {
-        commoditiesDbAdapter.close();
-        super.close();
+    @Throws(IOException::class)
+    override fun close() {
+        commoditiesDbAdapter.close()
+        super.close()
     }
 
     /**
      * Adds a split to the database.
      * The transactions belonging to the split are marked as exported
      *
-     * @param split {@link org.gnucash.android.model.Split} to be recorded in DB
+     * @param split [Split] to be recorded in DB
      */
-    public void addRecord(@NonNull final Split split, UpdateMethod updateMethod) {
-        super.addRecord(split, updateMethod);
+    override fun addRecord(split: Split, updateMethod: UpdateMethod) {
+        super.addRecord(split, updateMethod)
 
-        if (updateMethod != UpdateMethod.insert) {
-            long transactionId = getTransactionID(split.getTransactionUID());
+        if (updateMethod != UpdateMethod.Insert) {
+            val transactionUID = split.transactionUID ?: return
+            val transactionId = getTransactionID(transactionUID)
             //when a split is updated, we want mark the transaction as not exported
-            updateRecord(TransactionEntry.TABLE_NAME, transactionId, TransactionEntry.COLUMN_EXPORTED, "0");
+            updateRecord(
+                TransactionEntry.TABLE_NAME,
+                transactionId,
+                TransactionEntry.COLUMN_EXPORTED,
+                "0"
+            )
 
             //modifying a split means modifying the accompanying transaction as well
-            updateRecord(TransactionEntry.TABLE_NAME, transactionId, TransactionEntry.COLUMN_MODIFIED_AT, TimestampHelper.getUtcStringFromTimestamp(TimestampHelper.getTimestampFromNow()));
+            updateRecord(
+                TransactionEntry.TABLE_NAME,
+                transactionId,
+                TransactionEntry.COLUMN_MODIFIED_AT,
+                getUtcStringFromTimestamp(
+                    timestampFromNow
+                )
+            )
         }
     }
 
-    @Override
-    protected @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final Split split) {
-        bindBaseModel(stmt, split);
-        if (split.getMemo() != null) {
-            stmt.bindString(1, split.getMemo());
+    override fun bind(stmt: SQLiteStatement, split: Split): SQLiteStatement {
+        bindBaseModel(stmt, split)
+        if (split.memo != null) {
+            stmt.bindString(1, split.memo)
         }
-        stmt.bindString(2, split.getType().name());
-        stmt.bindLong(3, split.getValue().getNumerator());
-        stmt.bindLong(4, split.getValue().getDenominator());
-        stmt.bindLong(5, split.getQuantity().getNumerator());
-        stmt.bindLong(6, split.getQuantity().getDenominator());
-        stmt.bindString(7, TimestampHelper.getUtcStringFromTimestamp(split.getCreatedTimestamp()));
-        stmt.bindString(8, String.valueOf(split.getReconcileState()));
-        stmt.bindString(9, TimestampHelper.getUtcStringFromTimestamp(split.getReconcileDate()));
-        stmt.bindString(10, split.getAccountUID());
-        stmt.bindString(11, split.getTransactionUID());
-        if (split.getScheduledActionAccountUID() != null) {
-            stmt.bindString(12, split.getScheduledActionAccountUID());
+        stmt.bindString(2, split.type.name)
+        stmt.bindLong(3, split.value.numerator)
+        stmt.bindLong(4, split.value.denominator)
+        stmt.bindLong(5, split.quantity.numerator)
+        stmt.bindLong(6, split.quantity.denominator)
+        stmt.bindString(7, getUtcStringFromTimestamp(split.createdTimestamp))
+        stmt.bindString(8, split.reconcileState.toString())
+        stmt.bindString(9, getUtcStringFromTimestamp(split.reconcileDate))
+        stmt.bindString(10, split.accountUID)
+        stmt.bindString(11, split.transactionUID)
+        if (split.scheduledActionAccountUID != null) {
+            stmt.bindString(12, split.scheduledActionAccountUID)
         }
 
-        return stmt;
+        return stmt
     }
 
     /**
      * Builds a split instance from the data pointed to by the cursor provided
-     * <p>This method will not move the cursor in any way. So the cursor should already by pointing to the correct entry</p>
+     *
+     * This method will not move the cursor in any way. So the cursor should already by pointing to the correct entry
      *
      * @param cursor Cursor pointing to transaction record in database
-     * @return {@link org.gnucash.android.model.Split} instance
+     * @return [Split] instance
      */
-    public Split buildModelInstance(@NonNull final Cursor cursor) {
-        long valueNum = cursor.getLong(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_VALUE_NUM));
-        long valueDenom = cursor.getLong(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_VALUE_DENOM));
-        long quantityNum = cursor.getLong(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_QUANTITY_NUM));
-        long quantityDenom = cursor.getLong(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_QUANTITY_DENOM));
-        String typeName = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_TYPE));
-        String accountUID = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_ACCOUNT_UID));
-        String transxUID = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_TRANSACTION_UID));
-        String memo = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_MEMO));
-        String reconcileState = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_RECONCILE_STATE));
-        String reconcileDate = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_RECONCILE_DATE));
-        String schedxAccountUID = cursor.getString(cursor.getColumnIndexOrThrow(SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID));
+    override fun buildModelInstance(cursor: Cursor): Split {
+        val valueNum = cursor.getLong(SplitEntry.COLUMN_VALUE_NUM)
+        val valueDenom = cursor.getLong(SplitEntry.COLUMN_VALUE_DENOM)
+        val quantityNum = cursor.getLong(SplitEntry.COLUMN_QUANTITY_NUM)
+        val quantityDenom = cursor.getLong(SplitEntry.COLUMN_QUANTITY_DENOM)
+        val typeName = cursor.getString(SplitEntry.COLUMN_TYPE)!!
+        val accountUID = cursor.getString(SplitEntry.COLUMN_ACCOUNT_UID)!!
+        val transxUID = cursor.getString(SplitEntry.COLUMN_TRANSACTION_UID)!!
+        val memo = cursor.getString(SplitEntry.COLUMN_MEMO)
+        val reconcileState = cursor.getString(SplitEntry.COLUMN_RECONCILE_STATE)
+        val reconcileDate = cursor.getString(SplitEntry.COLUMN_RECONCILE_DATE)
+        val schedxAccountUID = cursor.getString(SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID)
 
-        String transactionCurrencyUID = getAttribute(TransactionEntry.TABLE_NAME, transxUID, TransactionEntry.COLUMN_COMMODITY_UID);
-        Commodity transactionCurrency = commoditiesDbAdapter.getRecord(transactionCurrencyUID);
-        Money value = new Money(valueNum, valueDenom, transactionCurrency);
-        Commodity commodity = TextUtils.isEmpty(schedxAccountUID) ? getAccountCommodity(accountUID) : getAccountCommodity(schedxAccountUID);
-        Money quantity = new Money(quantityNum, quantityDenom, commodity);
-
-        Split split = new Split(value, accountUID);
-        populateBaseModelAttributes(cursor, split);
-        split.setQuantity(quantity);
-        split.setTransactionUID(transxUID);
-        split.setType(TransactionType.valueOf(typeName));
-        split.setMemo(memo);
-        split.setReconcileState(reconcileState.charAt(0));
-        if (!TextUtils.isEmpty(reconcileDate)) {
-            split.setReconcileDate(TimestampHelper.getTimestampFromUtcString(reconcileDate).getTime());
+        val transactionCurrencyUID = getAttribute(
+            TransactionEntry.TABLE_NAME,
+            transxUID,
+            TransactionEntry.COLUMN_COMMODITY_UID
+        )
+        val transactionCurrency = commoditiesDbAdapter.getRecord(transactionCurrencyUID)
+        val value = Money(valueNum, valueDenom, transactionCurrency)
+        val commodity = if (schedxAccountUID.isNullOrEmpty()) {
+            getAccountCommodity(accountUID)
+        } else {
+            getAccountCommodity(schedxAccountUID)
         }
-        split.setScheduledActionAccountUID(schedxAccountUID);
+        val quantity = Money(quantityNum, quantityDenom, commodity)
 
-        return split;
+        val split = Split(value, accountUID)
+        populateBaseModelAttributes(cursor, split)
+        split.quantity = quantity
+        split.transactionUID = transxUID
+        split.type = TransactionType.valueOf(typeName)
+        split.memo = memo
+        split.reconcileState = reconcileState?.get(0) ?: FLAG_NOT_RECONCILED
+        if (!reconcileDate.isNullOrEmpty()) {
+            split.reconcileDate = getTimestampFromUtcString(reconcileDate).getTime()
+        }
+        split.scheduledActionAccountUID = schedxAccountUID
+
+        return split
     }
 
-    @NonNull
-    public Money computeSplitBalance(@NonNull Account account, long startTimestamp, long endTimestamp) {
-        List<Account> accounts = Collections.singletonList(account);
-        Map<String, Money> balances = computeSplitBalances(accounts, startTimestamp, endTimestamp);
-        Money balance = balances.get(account.getUID());
-        return (balance != null) ? balance : Money.createZeroInstance(account.getCommodity());
+    fun computeSplitBalance(account: Account, startTimestamp: Long, endTimestamp: Long): Money {
+        val accounts = mutableListOf<Account>(account)
+        val balances = computeSplitBalances(accounts, startTimestamp, endTimestamp)
+        val balance = balances[account.uid]
+        return balance ?: createZeroInstance(account.commodity)
     }
 
-    @NonNull
-    public Map<String, Money> computeSplitBalances(@NonNull List<Account> accounts, long startTimestamp, long endTimestamp) {
-        final int length = accounts.size();
-        String[] selectionArgs = new String[length];
-        for (int i = 0; i < length; i++) {
-            selectionArgs[i] = accounts.get(i).getUID();
-        }
-        String selection = "a." + CommonColumns.COLUMN_UID + " IN ('" + TextUtils.join("','", selectionArgs) + "')";
+    fun computeSplitBalances(
+        accounts: List<Account>,
+        startTimestamp: Long,
+        endTimestamp: Long
+    ): Map<String, Money> {
+        val accountUIDs = accounts.map { it.uid }
+        val selection = "a." + AccountEntry.COLUMN_UID + " IN " + accountUIDs.joinIn()
 
-        return computeSplitBalances(selection, null, startTimestamp, endTimestamp);
+        return computeSplitBalances(selection, null, startTimestamp, endTimestamp)
     }
 
-    public Map<String, Money> computeSplitBalances(@Nullable String accountsWhere, @Nullable String[] accountsWhereArgs, long startTimestamp, long endTimestamp) {
-        String selection = "t." + TransactionEntry.COLUMN_TEMPLATE + " = 0"
-            + " AND s." + SplitEntry.COLUMN_QUANTITY_DENOM + " > 0";
+    fun computeSplitBalances(
+        accountsWhere: String?,
+        accountsWhereArgs: Array<String?>?,
+        startTimestamp: Long,
+        endTimestamp: Long
+    ): Map<String, Money> {
+        var selection = ("t." + TransactionEntry.COLUMN_TEMPLATE + " = 0"
+                + " AND s." + SplitEntry.COLUMN_QUANTITY_DENOM + " > 0")
 
-        if (!TextUtils.isEmpty(accountsWhere)) {
-            selection += " AND (" + accountsWhere + ")";
+        if (!accountsWhere.isNullOrEmpty()) {
+            selection += " AND ($accountsWhere)"
         }
 
-        boolean validStart = startTimestamp != ALWAYS;
-        boolean validEnd = endTimestamp != ALWAYS;
+        val validStart = startTimestamp != AccountsDbAdapter.ALWAYS
+        val validEnd = endTimestamp != AccountsDbAdapter.ALWAYS
         if (validStart && validEnd) {
-            selection += " AND t." + TransactionEntry.COLUMN_TIMESTAMP + " BETWEEN " + startTimestamp + " AND " + endTimestamp;
+            selection += " AND t." + TransactionEntry.COLUMN_TIMESTAMP + " BETWEEN " + startTimestamp + " AND " + endTimestamp
         } else if (validEnd) {
-            selection += " AND t." + TransactionEntry.COLUMN_TIMESTAMP + " <= " + endTimestamp;
+            selection += " AND t." + TransactionEntry.COLUMN_TIMESTAMP + " <= " + endTimestamp
         } else if (validStart) {
-            selection += " AND t." + TransactionEntry.COLUMN_TIMESTAMP + " >= " + startTimestamp;
+            selection += " AND t." + TransactionEntry.COLUMN_TIMESTAMP + " >= " + startTimestamp
         }
 
-        String sql = "SELECT SUM(s." + SplitEntry.COLUMN_QUANTITY_NUM + ")"
-            + ", s." + SplitEntry.COLUMN_QUANTITY_DENOM
-            + ", s." + SplitEntry.COLUMN_TYPE
-            + ", a." + AccountEntry.COLUMN_UID
-            + ", a." + AccountEntry.COLUMN_COMMODITY_UID
-            + " FROM " + TransactionEntry.TABLE_NAME + " t"
-            + " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON t." + TransactionEntry.COLUMN_UID + " = s." + SplitEntry.COLUMN_TRANSACTION_UID
-            + " INNER JOIN " + AccountEntry.TABLE_NAME + " a ON s." + SplitEntry.COLUMN_ACCOUNT_UID + " = a." + AccountEntry.COLUMN_UID
-            + " WHERE " + selection
-            + " GROUP BY a." + AccountEntry.COLUMN_UID
-            + ", s." + SplitEntry.COLUMN_TYPE
-            + ", s." + SplitEntry.COLUMN_QUANTITY_DENOM;
-        Cursor cursor = mDb.rawQuery(sql, accountsWhereArgs);
+        val sql = ("SELECT SUM(s." + SplitEntry.COLUMN_QUANTITY_NUM + ")"
+                + ", s." + SplitEntry.COLUMN_QUANTITY_DENOM
+                + ", s." + SplitEntry.COLUMN_TYPE
+                + ", a." + AccountEntry.COLUMN_UID
+                + ", a." + AccountEntry.COLUMN_COMMODITY_UID
+                + " FROM " + TransactionEntry.TABLE_NAME + " t"
+                + " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON t." + TransactionEntry.COLUMN_UID + " = s." + SplitEntry.COLUMN_TRANSACTION_UID
+                + " INNER JOIN " + AccountEntry.TABLE_NAME + " a ON s." + SplitEntry.COLUMN_ACCOUNT_UID + " = a." + AccountEntry.COLUMN_UID
+                + " WHERE " + selection
+                + " GROUP BY a." + AccountEntry.COLUMN_UID
+                + ", s." + SplitEntry.COLUMN_TYPE
+                + ", s." + SplitEntry.COLUMN_QUANTITY_DENOM)
+        val cursor = db.rawQuery(sql, accountsWhereArgs)
 
-        Map<String, Money> totals = new HashMap<>();
+        val totals = mutableMapOf<String, Money>()
         try {
             if (!cursor.moveToFirst()) {
-                return totals;
+                return totals
             }
             do {
                 //FIXME beware of 64-bit overflow - get as BigInteger
-                long amount_num = cursor.getLong(0);
-                long amount_denom = cursor.getLong(1);
-                String splitType = cursor.getString(2);
-                String accountUID = cursor.getString(3);
-                String commodityUID = cursor.getString(4);
+                var amount_num = cursor.getLong(0)
+                val amount_denom = cursor.getLong(1)
+                val splitType = cursor.getString(2)
+                val accountUID = cursor.getString(3)
+                val commodityUID = cursor.getString(4)
 
-                if (credit.equals(splitType)) {
-                    amount_num = -amount_num;
+                if (credit == splitType) {
+                    amount_num = -amount_num
                 }
-                BigDecimal amount = toBigDecimal(amount_num, amount_denom);
-                Commodity commodity = commoditiesDbAdapter.getRecord(commodityUID);
-                Money balance = new Money(amount, commodity);
-                Money total = totals.get(accountUID);
+                val amount = toBigDecimal(amount_num, amount_denom)
+                val commodity = commoditiesDbAdapter.getRecord(commodityUID)
+                val balance = Money(amount, commodity)
+                var total = totals[accountUID]
                 if (total == null) {
-                    total = balance;
+                    total = balance
                 } else {
-                    total = total.plus(balance);
+                    total += balance
                 }
-                totals.put(accountUID, total);
-            } while (cursor.moveToNext());
+                totals[accountUID] = total
+            } while (cursor.moveToNext())
         } finally {
-            cursor.close();
+            cursor.close()
         }
 
-        return totals;
+        return totals
     }
 
     /**
      * Returns the list of splits for a transaction
      *
      * @param transactionUID String unique ID of transaction
-     * @return List of {@link org.gnucash.android.model.Split}s
+     * @return List of [Split]s
      */
-    public List<Split> getSplitsForTransaction(String transactionUID) {
-        Cursor cursor = fetchSplitsForTransaction(transactionUID);
-        return getRecords(cursor);
+    fun getSplitsForTransaction(transactionUID: String): List<Split> {
+        val cursor = fetchSplitsForTransaction(transactionUID)
+        return getRecords(cursor)
     }
 
     /**
      * Returns the list of splits for a transaction
      *
      * @param transactionID DB record ID of the transaction
-     * @return List of {@link org.gnucash.android.model.Split}s
-     * @see #getSplitsForTransaction(String)
-     * @see #getTransactionUID(long)
+     * @return List of [Split]s
+     * @see .getSplitsForTransaction
+     * @see .getTransactionUID
      */
-    public List<Split> getSplitsForTransaction(long transactionID) {
-        return getSplitsForTransaction(getTransactionUID(transactionID));
+    fun getSplitsForTransaction(transactionID: Long): List<Split> {
+        return getSplitsForTransaction(getTransactionUID(transactionID))
     }
 
     /**
@@ -302,21 +301,24 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
      * @param accountUID     String unique ID of account
      * @return List of splits
      */
-    public List<Split> getSplitsForTransactionInAccount(String transactionUID, String accountUID) {
-        Cursor cursor = fetchSplitsForTransactionAndAccount(transactionUID, accountUID);
-        return getRecords(cursor);
+    fun getSplitsForTransactionInAccount(
+        transactionUID: String,
+        accountUID: String
+    ): List<Split> {
+        val cursor = fetchSplitsForTransactionAndAccount(transactionUID, accountUID)
+        return getRecords(cursor)
     }
 
     /**
-     * Fetches a collection of splits for a given condition and sorted by <code>sortOrder</code>
+     * Fetches a collection of splits for a given condition and sorted by `sortOrder`
      *
      * @param where     String condition, formatted as SQL WHERE clause
      * @param whereArgs where args
      * @param sortOrder Sort order for the returned records
      * @return Cursor to split records
      */
-    public Cursor fetchSplits(String where, String[] whereArgs, String sortOrder) {
-        return mDb.query(SplitEntry.TABLE_NAME, null, where, whereArgs, null, null, sortOrder);
+    fun fetchSplits(where: String?, whereArgs: Array<String?>?, sortOrder: String?): Cursor? {
+        return db.query(tableName, null, where, whereArgs, null, null, sortOrder)
     }
 
     /**
@@ -325,12 +327,12 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
      * @param transactionUID Unique idendtifier of the transaction
      * @return Cursor to splits
      */
-    public Cursor fetchSplitsForTransaction(String transactionUID) {
-        Timber.v("Fetching all splits for transaction UID %s", transactionUID);
-        String where = SplitEntry.COLUMN_TRANSACTION_UID + " = ?";
-        String[] whereArgs = new String[]{transactionUID};
-        String orderBy = SplitEntry.COLUMN_ID + " ASC";
-        return mDb.query(mTableName, null, where, whereArgs, null, null, orderBy);
+    fun fetchSplitsForTransaction(transactionUID: String): Cursor? {
+        Timber.v("Fetching all splits for transaction UID %s", transactionUID)
+        val where = SplitEntry.COLUMN_TRANSACTION_UID + " = ?"
+        val whereArgs = arrayOf<String?>(transactionUID)
+        val orderBy = SplitEntry.COLUMN_ID + " ASC"
+        return db.query(tableName, null, where, whereArgs, null, null, orderBy)
     }
 
     /**
@@ -339,25 +341,35 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
      * @param accountUID String unique ID of account
      * @return Cursor containing splits dataset
      */
-    public Cursor fetchSplitsForAccount(String accountUID) {
-        Timber.d("Fetching all splits for account UID %s", accountUID);
+    fun fetchSplitsForAccount(accountUID: String): Cursor? {
+        Timber.d("Fetching all splits for account UID %s", accountUID)
 
         //This is more complicated than a simple "where account_uid=?" query because
         // we need to *not* return any splits which belong to recurring transactions
-        SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
-        queryBuilder.setTables(TransactionEntry.TABLE_NAME
-            + " INNER JOIN " + SplitEntry.TABLE_NAME + " ON "
-            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " = "
-            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID);
-        queryBuilder.setDistinct(true);
-        String[] projectionIn = new String[]{SplitEntry.TABLE_NAME + ".*"};
-        String selection = SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
-            + " AND " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + " = 0";
-        String[] selectionArgs = new String[]{accountUID};
-        String sortOrder = TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " DESC";
+        val queryBuilder = SQLiteQueryBuilder()
+        queryBuilder.setTables(
+            (TransactionEntry.TABLE_NAME
+                    + " INNER JOIN " + SplitEntry.TABLE_NAME + " ON "
+                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " = "
+                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID)
+        )
+        queryBuilder.isDistinct = true
+        val projectionIn = arrayOf<String?>(SplitEntry.TABLE_NAME + ".*")
+        val selection = (SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
+                + " AND " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + " = 0")
+        val selectionArgs = arrayOf<String?>(accountUID)
+        val sortOrder =
+            TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " DESC"
 
-        return queryBuilder.query(mDb, projectionIn, selection, selectionArgs, null, null, sortOrder);
-
+        return queryBuilder.query(
+            db,
+            projectionIn,
+            selection,
+            selectionArgs,
+            null,
+            null,
+            sortOrder
+        )
     }
 
     /**
@@ -367,17 +379,20 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
      * @param accountUID     String unique ID of account
      * @return Cursor to splits data set
      */
-    public Cursor fetchSplitsForTransactionAndAccount(String transactionUID, String accountUID) {
-        if (transactionUID == null || accountUID == null)
-            return null;
+    fun fetchSplitsForTransactionAndAccount(transactionUID: String?, accountUID: String?): Cursor? {
+        if (transactionUID.isNullOrEmpty() || accountUID.isNullOrEmpty()) return null
 
-        Timber.v("Fetching all splits for transaction ID " + transactionUID
-            + "and account ID " + accountUID);
-        return mDb.query(SplitEntry.TABLE_NAME,
-            null, SplitEntry.COLUMN_TRANSACTION_UID + " = ? AND "
-                + SplitEntry.COLUMN_ACCOUNT_UID + " = ?",
-            new String[]{transactionUID, accountUID},
-            null, null, SplitEntry.COLUMN_VALUE_NUM + " ASC");
+        Timber.v(
+            "Fetching all splits for transaction ID %s and account ID %s",
+            transactionUID, accountUID
+        )
+        return db.query(
+            tableName,
+            null, (SplitEntry.COLUMN_TRANSACTION_UID + " = ? AND "
+                    + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"),
+            arrayOf<String?>(transactionUID, accountUID),
+            null, null, SplitEntry.COLUMN_VALUE_NUM + " ASC"
+        )
     }
 
     /**
@@ -386,104 +401,125 @@ public class SplitsDbAdapter extends DatabaseAdapter<Split> {
      * @param transactionId Database record ID of the transaction
      * @return String unique ID of the transaction or null if transaction with the ID cannot be found.
      */
-    public String getTransactionUID(long transactionId) {
-        Cursor cursor = mDb.query(TransactionEntry.TABLE_NAME,
-            new String[]{TransactionEntry.COLUMN_UID},
-            TransactionEntry._ID + " = " + transactionId,
-            null, null, null, null);
+    @Throws(IllegalArgumentException::class)
+    fun getTransactionUID(transactionId: Long): String {
+        val cursor = db.query(
+            TransactionEntry.TABLE_NAME,
+            arrayOf<String>(TransactionEntry.COLUMN_UID),
+            TransactionEntry.COLUMN_ID + " = " + transactionId,
+            null, null, null, null
+        )
 
         try {
             if (cursor.moveToFirst()) {
-                return cursor.getString(0);
+                return cursor.getString(0)
             }
-            throw new IllegalArgumentException("Transaction not found");
+            throw IllegalArgumentException("Transaction not found")
         } finally {
-            cursor.close();
+            cursor.close()
         }
     }
 
-    @Override
-    public boolean deleteRecord(long rowId) {
-        Split split = getRecord(rowId);
-        String transactionUID = split.getTransactionUID();
-        boolean result = super.deleteRecord(rowId);
+    override fun deleteRecord(rowId: Long): Boolean {
+        val split = getRecord(rowId)
+        val transactionUID = split.transactionUID
+        var result = super.deleteRecord(rowId)
 
-        if (!result) //we didn't delete for whatever reason, invalid rowId etc
-            return false;
+        if (!result)  //we didn't delete for whatever reason, invalid rowId etc
+            return false
 
         //if we just deleted the last split, then remove the transaction from db
-        Cursor cursor = fetchSplitsForTransaction(transactionUID);
-        try {
-            if (cursor.getCount() > 0) {
-                long transactionID = getTransactionID(transactionUID);
-                result = mDb.delete(TransactionEntry.TABLE_NAME,
-                    TransactionEntry._ID + "=" + transactionID, null) > 0;
+        if (!transactionUID.isNullOrEmpty()) {
+            val cursor = fetchSplitsForTransaction(transactionUID) ?: return false
+            try {
+                if (cursor.count > 0) {
+                    val transactionID = getTransactionID(transactionUID)
+                    result = db.delete(
+                        TransactionEntry.TABLE_NAME,
+                        TransactionEntry.COLUMN_ID + "=" + transactionID, null
+                    ) > 0
+                }
+            } finally {
+                cursor.close()
             }
-        } finally {
-            cursor.close();
         }
-        return result;
+        return result
     }
 
     /**
      * Returns the database record ID for the specified transaction UID
      *
-     * @param transactionUID Unique idendtifier of the transaction
+     * @param transactionUID Unique identifier of the transaction
      * @return Database record ID for the transaction
      */
-    public long getTransactionID(String transactionUID) {
-        Cursor c = mDb.query(TransactionEntry.TABLE_NAME,
-            new String[]{TransactionEntry._ID},
+    @Throws(IllegalArgumentException::class)
+    fun getTransactionID(transactionUID: String): Long {
+        val c = db.query(
+            TransactionEntry.TABLE_NAME,
+            arrayOf<String>(TransactionEntry.COLUMN_ID),
             TransactionEntry.COLUMN_UID + "=?",
-            new String[]{transactionUID}, null, null, null);
+            arrayOf<String?>(transactionUID), null, null, null
+        )
         try {
             if (c.moveToFirst()) {
-                return c.getLong(0);
-            } else {
-                throw new IllegalArgumentException("Transaction not found");
+                return c.getLong(0)
             }
+            throw IllegalArgumentException("Transaction not found")
         } finally {
-            c.close();
+            c.close()
         }
     }
 
-    public void reassignAccount(@NonNull String oldAccountUID, @NonNull String newAccountUID) {
+    fun reassignAccount(oldAccountUID: String, newAccountUID: String) {
         updateRecords(
             SplitEntry.COLUMN_ACCOUNT_UID + " = ?",
-            new String[]{oldAccountUID},
+            arrayOf<String?>(oldAccountUID),
             SplitEntry.COLUMN_ACCOUNT_UID,
             newAccountUID
-        );
+        )
     }
 
     /**
      * Returns the commodity of the account
-     * with unique Identifier <code>accountUID</code>
+     * with unique Identifier `accountUID`
      *
      * @param accountUID Unique Identifier of the account
      * @return Commodity of the account.
      */
-    public Commodity getAccountCommodity(@NonNull String accountUID) {
-        Commodity commodity = accountCommodities.get(accountUID);
+    @Throws(IllegalArgumentException::class)
+    fun getAccountCommodity(accountUID: String): Commodity {
+        var commodity = accountCommodities[accountUID]
         if (commodity != null) {
-            return commodity;
+            return commodity
         }
-        Cursor cursor = mDb.query(
+        val cursor = db.query(
             AccountEntry.TABLE_NAME,
-            new String[]{AccountEntry.COLUMN_COMMODITY_UID},
+            arrayOf<String?>(AccountEntry.COLUMN_COMMODITY_UID),
             AccountEntry.COLUMN_UID + "= ?",
-            new String[]{accountUID}, null, null, null);
+            arrayOf<String?>(accountUID),
+            null, null, null
+        )
         try {
             if (cursor.moveToFirst()) {
-                String commodityUID = cursor.getString(0);
-                commodity = commoditiesDbAdapter.getRecord(commodityUID);
-                accountCommodities.put(accountUID, commodity);
-                return commodity;
-            } else {
-                throw new IllegalArgumentException("Account not found");
+                val commodityUID = cursor.getString(0)
+                commodity = commoditiesDbAdapter.getRecord(commodityUID)
+                accountCommodities[accountUID] = commodity
+                return commodity
             }
+            throw IllegalArgumentException("Account not found")
         } finally {
-            cursor.close();
+            cursor.close()
         }
+    }
+
+    companion object {
+        private val credit = TransactionType.CREDIT.value
+
+        /**
+         * Returns application-wide instance of the database adapter
+         *
+         * @return SplitsDbAdapter instance
+         */
+        val instance: SplitsDbAdapter get() = GnuCashApplication.splitsDbAdapter!!
     }
 }

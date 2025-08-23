@@ -13,226 +13,211 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.ui.budget;
+package org.gnucash.android.ui.budget
 
-import android.app.Activity;
-import android.content.Intent;
-import android.content.res.Configuration;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ImageView;
-import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-
-import org.gnucash.android.R;
-import org.gnucash.android.app.MenuFragment;
-import org.gnucash.android.databinding.FragmentBudgetAmountEditorBinding;
-import org.gnucash.android.databinding.ItemBudgetAmountBinding;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.inputmethodservice.CalculatorKeyboardView;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.BudgetAmount;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter;
-import org.gnucash.android.ui.common.UxArgument;
-import org.gnucash.android.ui.util.widget.CalculatorEditText;
-import org.gnucash.android.ui.util.widget.CalculatorKeyboard;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
+import android.app.Activity
+import android.content.Intent
+import android.content.res.Configuration
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ImageView
+import android.widget.Spinner
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.ActionBar
+import androidx.core.view.isVisible
+import org.gnucash.android.R
+import org.gnucash.android.app.MenuFragment
+import org.gnucash.android.app.actionBar
+import org.gnucash.android.app.finish
+import org.gnucash.android.app.getParcelableArrayListCompat
+import org.gnucash.android.databinding.FragmentBudgetAmountEditorBinding
+import org.gnucash.android.databinding.ItemBudgetAmountBinding
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.model.BudgetAmount
+import org.gnucash.android.model.Money
+import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
+import org.gnucash.android.ui.common.UxArgument
+import org.gnucash.android.ui.util.widget.CalculatorEditText
+import org.gnucash.android.ui.util.widget.CalculatorKeyboard.Companion.rebind
 
 /**
  * Fragment for editing budgeting amounts
  */
-public class BudgetAmountEditorFragment extends MenuFragment {
+class BudgetAmountEditorFragment : MenuFragment() {
+    private var accountsDbAdapter: AccountsDbAdapter = AccountsDbAdapter.instance
+    private var accountNameAdapter: QualifiedAccountNameAdapter? = null
+    private val budgetAmountViews = mutableListOf<View>()
+    private var binding: FragmentBudgetAmountEditorBinding? = null
 
-    private QualifiedAccountNameAdapter accountNameAdapter;
-    private final List<View> mBudgetAmountViews = new ArrayList<>();
-    private AccountsDbAdapter mAccountsDbAdapter;
-
-    private FragmentBudgetAmountEditorBinding mBinding;
-
-    public static BudgetAmountEditorFragment newInstance(Bundle args) {
-        BudgetAmountEditorFragment fragment = new BudgetAmountEditorFragment();
-        fragment.setArguments(args);
-        return fragment;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        accountsDbAdapter = AccountsDbAdapter.instance
+        val context = requireContext()
+        accountNameAdapter =
+            QualifiedAccountNameAdapter(context, accountsDbAdapter, viewLifecycleOwner)
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        mBinding = FragmentBudgetAmountEditorBinding.inflate(inflater, container, false);
-        return mBinding.getRoot();
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val binding = FragmentBudgetAmountEditorBinding.inflate(inflater, container, false)
+        this.binding = binding
+        return binding.root
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+        val actionBar: ActionBar? = this.actionBar
+        actionBar?.title = "Edit Budget Amounts"
 
-        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setTitle("Edit Budget Amounts");
-
-        setupAccountSpinnerAdapter();
-
-        ArrayList<BudgetAmount> budgetAmounts = getArguments().getParcelableArrayList(UxArgument.BUDGET_AMOUNT_LIST);
+        val budgetAmounts = arguments?.getParcelableArrayListCompat(
+            UxArgument.BUDGET_AMOUNT_LIST,
+            BudgetAmount::class.java
+        )
         if (budgetAmounts != null) {
             if (budgetAmounts.isEmpty()) {
-                BudgetAmountViewHolder viewHolder = (BudgetAmountViewHolder) addBudgetAmountView(null).getTag();
-                viewHolder.removeItemBtn.setVisibility(View.GONE); //there should always be at least one
+                val viewHolder = addBudgetAmountView(null).tag as BudgetAmountViewHolder
+                viewHolder.removeItemBtn.isVisible = false //there should always be at least one
             } else {
-                loadBudgetAmountViews(budgetAmounts);
+                loadBudgetAmountViews(budgetAmounts)
             }
         } else {
-            BudgetAmountViewHolder viewHolder = (BudgetAmountViewHolder) addBudgetAmountView(null).getTag();
-            viewHolder.removeItemBtn.setVisibility(View.GONE); //there should always be at least one
+            val viewHolder = addBudgetAmountView(null).tag as BudgetAmountViewHolder
+            viewHolder.removeItemBtn.isVisible = false //there should always be at least one
         }
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.budget_amount_editor_actions, menu);
+    @Deprecated("Deprecated in Java")
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.budget_amount_editor_actions, menu)
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_add:
-                addBudgetAmountView(null);
-                return true;
+    @Deprecated("Deprecated in Java")
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menu_add -> {
+                addBudgetAmountView(null)
+                return true
+            }
 
-            case R.id.menu_save:
-                saveBudgetAmounts();
-                return true;
+            R.id.menu_save -> {
+                saveBudgetAmounts()
+                return true
+            }
 
-            default:
-                return super.onOptionsItemSelected(item);
+            else -> return super.onOptionsItemSelected(item)
         }
     }
 
     /**
      * Checks if the budget amounts can be saved
      *
-     * @return {@code true} if all amounts a properly entered, {@code false} otherwise
+     * @return `true` if all amounts a properly entered, `false` otherwise
      */
-    private boolean canSave() {
-        for (View budgetAmountView : mBudgetAmountViews) {
-            BudgetAmountViewHolder viewHolder = (BudgetAmountViewHolder) budgetAmountView.getTag();
-            if (!viewHolder.amountEditText.isInputValid()) {
-                return false;
+    private fun canSave(): Boolean {
+        for (budgetAmountView in budgetAmountViews) {
+            val viewHolder = budgetAmountView.tag as BudgetAmountViewHolder
+            if (!viewHolder.amountEditText.isInputValid) {
+                return false
             }
             //at least one account should be loaded (don't create budget with empty account tree
-            if (viewHolder.budgetAccountSpinner.getCount() == 0) {
-                Toast.makeText(getActivity(), "You need an account hierarchy to create a budget!",
-                    Toast.LENGTH_SHORT).show();
-                return false;
+            if (viewHolder.budgetAccountSpinner.count == 0) {
+                val context = viewHolder.itemView.context
+                Toast.makeText(
+                    context,
+                    "You need an account hierarchy to create a budget!",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return false
             }
         }
-        return true;
+        return true
     }
 
-    private void saveBudgetAmounts() {
+    private fun saveBudgetAmounts() {
         if (canSave()) {
-            ArrayList<BudgetAmount> budgetAmounts = (ArrayList<BudgetAmount>) extractBudgetAmounts();
-            Intent data = new Intent();
-            data.putParcelableArrayListExtra(UxArgument.BUDGET_AMOUNT_LIST, budgetAmounts);
-            getActivity().setResult(Activity.RESULT_OK, data);
-            getActivity().finish();
+            val budgetAmounts = ArrayList<BudgetAmount>(extractBudgetAmounts())
+            val data = Intent()
+                .putParcelableArrayListExtra(UxArgument.BUDGET_AMOUNT_LIST, budgetAmounts)
+            requireActivity().setResult(Activity.RESULT_OK, data)
+            finish()
         }
     }
 
     /**
      * Load views for the budget amounts
      *
-     * @param budgetAmounts List of {@link BudgetAmount}s
+     * @param budgetAmounts List of [BudgetAmount]s
      */
-    private void loadBudgetAmountViews(List<BudgetAmount> budgetAmounts) {
-        for (BudgetAmount budgetAmount : budgetAmounts) {
-            addBudgetAmountView(budgetAmount);
+    private fun loadBudgetAmountViews(budgetAmounts: List<BudgetAmount>) {
+        for (budgetAmount in budgetAmounts) {
+            addBudgetAmountView(budgetAmount)
         }
     }
 
     /**
      * Inflates a new BudgetAmount item view and adds it to the UI.
-     * <p>If the {@code budgetAmount} is not null, then it is used to initialize the view</p>
+     *
+     * If the `budgetAmount` is not null, then it is used to initialize the view
      *
      * @param budgetAmount Budget amount
      */
-    private View addBudgetAmountView(BudgetAmount budgetAmount) {
-        ItemBudgetAmountBinding binding = ItemBudgetAmountBinding.inflate(getActivity().getLayoutInflater(), mBinding.budgetAmountLayout, false);
-        BudgetAmountViewHolder viewHolder = new BudgetAmountViewHolder(binding);
+    private fun addBudgetAmountView(budgetAmount: BudgetAmount?): View {
+        val binding = ItemBudgetAmountBinding.inflate(
+            layoutInflater,
+            this.binding!!.budgetAmountLayout,
+            false
+        )
         if (budgetAmount != null) {
-            viewHolder.bindViews(budgetAmount);
+            val viewHolder = BudgetAmountViewHolder(binding)
+            viewHolder.bindViews(budgetAmount)
         }
-        View view = binding.getRoot();
-        mBinding.budgetAmountLayout.addView(view, 0);
-        mBudgetAmountViews.add(view);
-//        mScrollView.fullScroll(ScrollView.FOCUS_DOWN);
-        return view;
+        val view: View = binding.root
+        this.binding!!.budgetAmountLayout.addView(view, 0)
+        budgetAmountViews.add(view)
+        return view
     }
 
     /**
-     * Loads the accounts in the spinner
-     */
-    private void setupAccountSpinnerAdapter() {
-        accountNameAdapter = new QualifiedAccountNameAdapter(requireContext(), mAccountsDbAdapter, getViewLifecycleOwner());
-    }
-
-    /**
-     * Extract {@link BudgetAmount}s from the views
+     * Extract [BudgetAmount]s from the views
      *
      * @return List of budget amounts
      */
-    private List<BudgetAmount> extractBudgetAmounts() {
-        List<BudgetAmount> budgetAmounts = new ArrayList<>();
-        for (View view : mBudgetAmountViews) {
-            BudgetAmountViewHolder viewHolder = (BudgetAmountViewHolder) view.getTag();
-            BigDecimal amountValue = viewHolder.amountEditText.getValue();
-            if (amountValue == null)
-                continue;
-            int accountPosition = viewHolder.budgetAccountSpinner.getSelectedItemPosition();
-            Account account = accountNameAdapter.getAccount(accountPosition);
-            if (account == null) continue;
-            Money amount = new Money(amountValue, account.getCommodity());
-            BudgetAmount budgetAmount = new BudgetAmount(amount, account.getUID());
-            budgetAmounts.add(budgetAmount);
+    private fun extractBudgetAmounts(): List<BudgetAmount> {
+        val budgetAmounts = mutableListOf<BudgetAmount>()
+        for (view in budgetAmountViews) {
+            val viewHolder = view.tag as BudgetAmountViewHolder
+            val amountValue = viewHolder.amountEditText.value
+            if (amountValue == null) continue
+            val accountPosition = viewHolder.budgetAccountSpinner.selectedItemPosition
+            val account = accountNameAdapter!!.getAccount(accountPosition)
+            if (account == null) continue
+            val amount = Money(amountValue, account.commodity)
+            val budgetAmount = BudgetAmount(amount, account.uid)
+            budgetAmounts.add(budgetAmount)
         }
-        return budgetAmounts;
+        return budgetAmounts
     }
 
-    @Override
-    public void onConfigurationChanged(@NonNull Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        View view = getView();
-        if (view instanceof ViewGroup parent) {
-            CalculatorKeyboardView keyboardView = mBinding.calculatorKeyboard.calculatorKeyboard;
-            keyboardView = CalculatorKeyboard.rebind(parent, keyboardView, null);
-            for (View budgetAmountView : mBudgetAmountViews) {
-                BudgetAmountViewHolder viewHolder = (BudgetAmountViewHolder) budgetAmountView.getTag();
-                viewHolder.amountEditText.bindKeyboard(keyboardView);
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val binding = binding ?: return
+        if (view is ViewGroup) {
+            var keyboardView = binding.calculatorKeyboard.calculatorKeyboard
+            keyboardView = rebind(binding.root, keyboardView, null)
+            for (budgetAmountView in budgetAmountViews) {
+                val viewHolder = budgetAmountView.tag as BudgetAmountViewHolder
+                viewHolder.amountEditText.bindKeyboard(keyboardView)
             }
         }
     }
@@ -240,51 +225,45 @@ public class BudgetAmountEditorFragment extends MenuFragment {
     /**
      * View holder for budget amounts
      */
-    class BudgetAmountViewHolder {
-        final View itemView;
-        private final TextView currencySymbolTextView;
-        private final CalculatorEditText amountEditText;
-        private final ImageView removeItemBtn;
-        private final Spinner budgetAccountSpinner;
+    internal inner class BudgetAmountViewHolder(binding: ItemBudgetAmountBinding) {
+        val itemView = binding.root
+        val currencySymbolTextView: TextView = binding.currencySymbol
+        val amountEditText: CalculatorEditText = binding.inputBudgetAmount
+        val removeItemBtn: ImageView = binding.btnRemoveItem
+        val budgetAccountSpinner: Spinner = binding.inputBudgetAccountSpinner
 
-        public BudgetAmountViewHolder(final ItemBudgetAmountBinding binding) {
-            this.currencySymbolTextView = binding.currencySymbol;
-            this.amountEditText = binding.inputBudgetAmount;
-            this.removeItemBtn = binding.btnRemoveItem;
-            this.budgetAccountSpinner = binding.inputBudgetAccountSpinner;
-            itemView = binding.getRoot();
-            itemView.setTag(this);
+        init {
+            itemView.tag = this
 
-            amountEditText.bindKeyboard(mBinding.calculatorKeyboard);
-            budgetAccountSpinner.setAdapter(accountNameAdapter);
+            amountEditText.bindKeyboard(this@BudgetAmountEditorFragment.binding!!.calculatorKeyboard)
+            budgetAccountSpinner.adapter = accountNameAdapter
 
-            budgetAccountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    if (view == null) return;
-                    Account account = accountNameAdapter.getAccount(position);
-                    Commodity commodity = account.getCommodity();
-                    currencySymbolTextView.setText(commodity.getSymbol());
+            budgetAccountSpinner.onItemSelectedListener =
+                object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(
+                        parent: AdapterView<*>,
+                        view: View?,
+                        position: Int,
+                        id: Long
+                    ) {
+                        if (view == null) return
+                        val account = accountNameAdapter!!.getAccount(position)!!
+                        val commodity = account.commodity
+                        currencySymbolTextView.text = commodity.symbol
+                    }
+
+                    override fun onNothingSelected(parent: AdapterView<*>) = Unit
                 }
 
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {
-                    //nothing to see here, move along
-                }
-            });
-
-            removeItemBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mBinding.budgetAmountLayout.removeView(itemView);
-                    mBudgetAmountViews.remove(itemView);
-                }
-            });
+            removeItemBtn.setOnClickListener {
+                this@BudgetAmountEditorFragment.binding!!.budgetAmountLayout.removeView(itemView)
+                budgetAmountViews.remove(itemView)
+            }
         }
 
-        public void bindViews(BudgetAmount budgetAmount) {
-            amountEditText.setValue(budgetAmount.getAmount().toBigDecimal());
-            budgetAccountSpinner.setSelection(accountNameAdapter.getPosition(budgetAmount.getAccountUID()));
+        fun bindViews(budgetAmount: BudgetAmount) {
+            amountEditText.value = budgetAmount.amount.toBigDecimal()
+            budgetAccountSpinner.setSelection(accountNameAdapter!!.getPosition(budgetAmount.accountUID))
         }
     }
 }

@@ -13,50 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.export
 
-package org.gnucash.android.export;
-
-import android.app.Activity;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.text.TextUtils;
-
-import androidx.preference.PreferenceManager;
-
-import com.dropbox.core.DbxRequestConfig;
-import com.dropbox.core.android.Auth;
-import com.dropbox.core.v2.DbxClientV2;
-
-import org.gnucash.android.BuildConfig;
-import org.gnucash.android.R;
+import android.content.Context
+import androidx.core.content.edit
+import androidx.preference.PreferenceManager
+import com.dropbox.core.DbxRequestConfig
+import com.dropbox.core.android.Auth
+import com.dropbox.core.v2.DbxClientV2
+import org.gnucash.android.BuildConfig
+import org.gnucash.android.R
 
 /**
  * Helper class for commonly used DropBox methods
  */
-public class DropboxHelper {
-
-    private static final String DROPBOX_APP_KEY = BuildConfig.DROPBOX_APP_KEY;
+object DropboxHelper {
+    private val DROPBOX_APP_KEY = BuildConfig.DROPBOX_APP_KEY
 
     /**
      * DropBox API v2 client for making requests to DropBox
      */
-    private static DbxClientV2 sDbxClient;
+    private var client: DbxClientV2? = null
 
     /**
      * Retrieves the access token after DropBox OAuth authentication and saves it to preferences file
-     * <p>This method should typically by called in the {@link Activity#onResume()} method of the
-     * Activity or Fragment which called {@link Auth#startOAuth2Authentication(Context, String)}
-     * </p>
+     *
+     * This method should typically by called in the [Activity.onResume] method of the
+     * Activity or Fragment which called [Auth.startOAuth2Authentication]
+     *
      *
      * @return Retrieved access token. Could be null if authentication failed or was canceled.
      */
-    public static String retrieveAndSaveToken(Context context) {
-        String accessToken = Auth.getOAuth2Token();
-        if (TextUtils.isEmpty(accessToken)) {
-            return accessToken;
+    fun retrieveAndSaveToken(context: Context): String? {
+        val accessToken: String? = Auth.getOAuth2Token()
+        if (accessToken.isNullOrEmpty()) {
+            return accessToken
         }
-        setAccessToken(context, accessToken);
-        return accessToken;
+        setAccessToken(context, accessToken)
+        return accessToken
     }
 
     /**
@@ -64,60 +58,60 @@ public class DropboxHelper {
      *
      * @return DropBox client for API v2
      */
-    public static DbxClientV2 getClient(Context context) {
-        if (sDbxClient != null) {
-            return sDbxClient;
+    fun getClient(context: Context): DbxClientV2? {
+        if (client != null) {
+            return client
         }
 
-        String accessToken = getAccessToken(context);
-        if (TextUtils.isEmpty(accessToken)) {
-            authenticate(context);
-            return null;
+        val accessToken = getAccessToken(context)
+        if (accessToken.isNullOrEmpty()) {
+            authenticate(context)
+            return null
         }
 
-        DbxRequestConfig config = new DbxRequestConfig(BuildConfig.APPLICATION_ID);
-        sDbxClient = new DbxClientV2(config, accessToken);
+        val config = DbxRequestConfig(BuildConfig.APPLICATION_ID)
+        client = DbxClientV2(config, accessToken)
 
-        return sDbxClient;
+        return client
     }
 
     /**
      * Checks if the app holds an access token for dropbox
      *
-     * @return {@code true} if token exists, {@code false} otherwise
+     * @return `true` if token exists, `false` otherwise
      */
-    public static boolean hasToken(Context context) {
-        String accessToken = getAccessToken(context);
-        return !TextUtils.isEmpty(accessToken);
+    fun hasToken(context: Context): Boolean {
+        val accessToken = getAccessToken(context)
+        return !accessToken.isNullOrEmpty()
     }
 
-    public static String getAccessToken(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String keyAccessToken = context.getString(R.string.key_dropbox_access_token);
-        String accessToken = prefs.getString(keyAccessToken, null);
-        if (TextUtils.isEmpty(accessToken)) {
-            accessToken = Auth.getOAuth2Token();
+    fun getAccessToken(context: Context): String? {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        val keyAccessToken = context.getString(R.string.key_dropbox_access_token)
+        var accessToken = prefs.getString(keyAccessToken, null)
+        if (accessToken.isNullOrEmpty()) {
+            accessToken = Auth.getOAuth2Token()
         }
-        return accessToken;
+        return accessToken
     }
 
-    private static void setAccessToken(Context context, String accessToken) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String keyAccessToken = context.getString(R.string.key_dropbox_access_token);
-        prefs.edit()
-            .putString(keyAccessToken, accessToken)
-            .apply();
+    private fun setAccessToken(context: Context, accessToken: String?) {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        val keyAccessToken = context.getString(R.string.key_dropbox_access_token)
+        prefs.edit {
+            putString(keyAccessToken, accessToken)
+        }
     }
 
-    public static void deleteAccessToken(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String keyAccessToken = context.getString(R.string.key_dropbox_access_token);
-        prefs.edit()
-            .remove(keyAccessToken)
-            .apply();
+    fun deleteAccessToken(context: Context) {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        val keyAccessToken = context.getString(R.string.key_dropbox_access_token)
+        prefs.edit {
+            remove(keyAccessToken)
+        }
     }
 
-    public static void authenticate(Context context) {
-        Auth.startOAuth2Authentication(context, DROPBOX_APP_KEY);
+    fun authenticate(context: Context) {
+        Auth.startOAuth2Authentication(context, DROPBOX_APP_KEY)
     }
 }

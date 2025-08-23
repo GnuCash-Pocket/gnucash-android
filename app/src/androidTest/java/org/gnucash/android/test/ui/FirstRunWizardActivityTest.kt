@@ -106,13 +106,13 @@ class FirstRunWizardActivityTest : GnuAndroidTest() {
             .perform(click())
 
         //default accounts should be created
-        val actualCount = GnuCashApplication.getAccountsDbAdapter()!!.recordsCount
+        val actualCount = GnuCashApplication.accountsDbAdapter!!.recordsCount
         assertThat(actualCount).isGreaterThan(60L)
 
-        val enableCrashlytics = GnuCashApplication.isCrashlyticsEnabled()
+        val enableCrashlytics = GnuCashApplication.isCrashlyticsEnabled
         assertThat(enableCrashlytics).isTrue()
 
-        val defaultCurrencyCode = GnuCashApplication.getDefaultCurrencyCode()
+        val defaultCurrencyCode = GnuCashApplication.defaultCurrencyCode
         assertThat(defaultCurrencyCode).isEqualTo("EUR")
     }
 
@@ -149,10 +149,10 @@ class FirstRunWizardActivityTest : GnuAndroidTest() {
         //default accounts should not be created
         assertThat(accountsDbAdapter.recordsCount).isZero()
 
-        val enableCrashlytics = GnuCashApplication.isCrashlyticsEnabled()
+        val enableCrashlytics = GnuCashApplication.isCrashlyticsEnabled
         assertThat(enableCrashlytics).isFalse()
 
-        val defaultCurrencyCode = GnuCashApplication.getDefaultCurrencyCode()
+        val defaultCurrencyCode = GnuCashApplication.defaultCurrencyCode
         assertThat(defaultCurrencyCode).isEqualTo("AFA")
     }
 }

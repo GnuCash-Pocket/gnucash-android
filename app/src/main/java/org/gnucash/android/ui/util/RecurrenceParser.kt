@@ -13,124 +13,96 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.util
 
-package org.gnucash.android.ui.util;
-
-import android.text.format.DateUtils;
-import android.text.format.Time;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence;
-
-import org.gnucash.android.model.PeriodType;
-import org.gnucash.android.model.Recurrence;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
+import android.text.format.DateUtils
+import android.text.format.Time
+import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence
+import org.gnucash.android.model.PeriodType
+import org.gnucash.android.model.Recurrence
 
 /**
- * Parses {@link EventRecurrence}s to generate
- * {@link org.gnucash.android.model.ScheduledAction}s
+ * Parses [EventRecurrence]s to generate
+ * [org.gnucash.android.model.ScheduledAction]s
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class RecurrenceParser {
+object RecurrenceParser {
     //these are time millisecond constants which are used for scheduled actions.
     //they may not be calendar accurate, but they serve the purpose for scheduling approximate time for background service execution
-    public static final long SECOND_MILLIS = DateUtils.SECOND_IN_MILLIS;
-    public static final long MINUTE_MILLIS = DateUtils.MINUTE_IN_MILLIS;
-    public static final long HOUR_MILLIS = DateUtils.HOUR_IN_MILLIS;
-    public static final long DAY_MILLIS = DateUtils.DAY_IN_MILLIS;
-    public static final long WEEK_MILLIS = DateUtils.WEEK_IN_MILLIS;
-    public static final long MONTH_MILLIS = 30 * DAY_MILLIS;
-    public static final long YEAR_MILLIS = DateUtils.YEAR_IN_MILLIS;
+    const val HOUR_MILLIS: Long = DateUtils.HOUR_IN_MILLIS
+    const val DAY_MILLIS: Long = DateUtils.DAY_IN_MILLIS
+    const val WEEK_MILLIS: Long = DateUtils.WEEK_IN_MILLIS
+    const val MONTH_MILLIS: Long = 30 * DAY_MILLIS
+    const val YEAR_MILLIS: Long = DateUtils.YEAR_IN_MILLIS
 
     /**
-     * Parse an {@link EventRecurrence} into a {@link Recurrence} object
+     * Parse an [EventRecurrence] into a [Recurrence] object
      *
      * @param eventRecurrence EventRecurrence object
      * @return Recurrence object
      */
-    @Nullable
-    public static Recurrence parse(EventRecurrence eventRecurrence) {
-        if (eventRecurrence == null)
-            return null;
-
-        final PeriodType periodType;
-        switch (eventRecurrence.freq) {
-            case EventRecurrence.HOURLY:
-                periodType = PeriodType.HOUR;
-                break;
-
-            case EventRecurrence.DAILY:
-                periodType = PeriodType.DAY;
-                break;
-
-            case EventRecurrence.WEEKLY:
-                periodType = PeriodType.WEEK;
-                break;
-
-            case EventRecurrence.YEARLY:
-                periodType = PeriodType.YEAR;
-                break;
-
-            case EventRecurrence.MONTHLY:
-            default:
-                periodType = PeriodType.MONTH;
-                break;
+    fun parse(eventRecurrence: EventRecurrence?): Recurrence? {
+        if (eventRecurrence == null) return null
+        val periodType: PeriodType = when (eventRecurrence.freq) {
+            EventRecurrence.HOURLY -> PeriodType.HOUR
+            EventRecurrence.DAILY -> PeriodType.DAY
+            EventRecurrence.WEEKLY -> PeriodType.WEEK
+            EventRecurrence.YEARLY -> PeriodType.YEAR
+            EventRecurrence.MONTHLY -> PeriodType.MONTH
+            else -> PeriodType.MONTH
         }
 
-        int interval = eventRecurrence.interval == 0 ? 1 : eventRecurrence.interval; //bug from betterpickers library sometimes returns 0 as the interval
-        Recurrence recurrence = new Recurrence(periodType);
-        recurrence.setMultiplier(interval);
-        parseEndTime(eventRecurrence, recurrence);
-        recurrence.setByDays(parseByDay(eventRecurrence.byday));
-        if (eventRecurrence.startDate != null)
-            recurrence.setPeriodStart(eventRecurrence.startDate.toMillis(false));
+        //bug from betterpickers library sometimes returns 0 as the interval
+        val interval = if (eventRecurrence.interval == 0) 1 else eventRecurrence.interval
+        val recurrence = Recurrence(periodType)
+        recurrence.multiplier = interval
+        parseEndTime(eventRecurrence, recurrence)
+        recurrence.byDays = parseByDay(eventRecurrence.byday)
+        if (eventRecurrence.startDate != null) {
+            recurrence.periodStart = eventRecurrence.startDate.toMillis(false)
+        }
 
-        return recurrence;
+        return recurrence
     }
 
     /**
-     * Parses the end time from an EventRecurrence object and sets it to the <code>scheduledEvent</code>.
+     * Parses the end time from an EventRecurrence object and sets it to the `scheduledEvent`.
      * The end time is specified in the dialog either by number of occurrences or a date.
      *
      * @param eventRecurrence Event recurrence pattern obtained from dialog
      * @param recurrence      Recurrence event to set the end period to
      */
-    private static void parseEndTime(EventRecurrence eventRecurrence, Recurrence recurrence) {
-        if (eventRecurrence.until != null && eventRecurrence.until.length() > 0) {
-            Time endTime = new Time();
-            endTime.parse(eventRecurrence.until);
-            recurrence.setPeriodEnd(endTime.toMillis(false));
+    private fun parseEndTime(eventRecurrence: EventRecurrence, recurrence: Recurrence) {
+        if (eventRecurrence.until != null && !eventRecurrence.until.isEmpty()) {
+            val endTime = Time()
+            endTime.parse(eventRecurrence.until)
+            recurrence.periodEnd = endTime.toMillis(false)
         } else if (eventRecurrence.count > 0) {
-            recurrence.setPeriodEndOccurrences(eventRecurrence.count);
+            recurrence.setPeriodEndOccurrences(eventRecurrence.count)
         }
     }
 
     /**
      * Parses an array of byDay values to return a list of days of week
-     * constants from {@link Calendar}.
+     * constants from [Calendar].
      *
-     * <p>Currently only supports byDay values for weeks.</p>
+     *
+     * Currently only supports byDay values for weeks.
      *
      * @param byDay Array of byDay values
      * @return list of days of week constants from Calendar.
      */
-    private static @NonNull List<Integer> parseByDay(@Nullable int[] byDay) {
+    private fun parseByDay(byDay: IntArray?): List<Int> {
         if (byDay == null) {
-            return Collections.emptyList();
+            return emptyList<Int>()
         }
 
-        List<Integer> byDaysList = new ArrayList<>(byDay.length);
-        for (int day : byDay) {
-            byDaysList.add(EventRecurrence.day2CalendarDay(day));
+        val byDaysList = mutableListOf<Int>()
+        for (day in byDay) {
+            byDaysList.add(EventRecurrence.day2CalendarDay(day))
         }
 
-        return byDaysList;
+        return byDaysList
     }
 }

@@ -13,76 +13,74 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.report
 
-package org.gnucash.android.ui.report;
-
-import android.content.Context;
-
-import androidx.annotation.ColorRes;
-import androidx.annotation.LayoutRes;
-import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
-
-import org.gnucash.android.R;
-import org.gnucash.android.ui.report.barchart.StackedBarChartFragment;
-import org.gnucash.android.ui.report.linechart.CashFlowLineChartFragment;
-import org.gnucash.android.ui.report.piechart.PieChartFragment;
-import org.gnucash.android.ui.report.sheet.BalanceSheetFragment;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import timber.log.Timber;
+import android.content.Context
+import androidx.annotation.ColorRes
+import androidx.annotation.LayoutRes
+import androidx.annotation.StringRes
+import org.gnucash.android.R
+import org.gnucash.android.ui.report.barchart.StackedBarChartFragment
+import org.gnucash.android.ui.report.linechart.CashFlowLineChartFragment
+import org.gnucash.android.ui.report.piechart.PieChartFragment
+import org.gnucash.android.ui.report.sheet.BalanceSheetFragment
 
 /**
  * Different types of reports
- * <p>This class also contains mappings for the reports of the different types which are available
- * in the system. When adding a new report, make sure to add a mapping in the constructor</p>
+ *
+ * This class also contains mappings for the reports of the different types which are available
+ * in the system. When adding a new report, make sure to add a mapping in the constructor
  */
-public enum ReportType {
-    PIE_CHART(R.string.title_pie_chart, R.color.report_orange, R.layout.fragment_pie_chart, PieChartFragment.class),
-    BAR_CHART(R.string.title_bar_chart, R.color.report_red, R.layout.fragment_bar_chart, StackedBarChartFragment.class),
-    LINE_CHART(R.string.title_line_chart, R.color.report_blue, R.layout.fragment_line_chart, CashFlowLineChartFragment.class),
-    SHEET(R.string.title_balance_sheet_report, R.color.report_purple, R.layout.fragment_text_report, BalanceSheetFragment.class),
-    NONE(R.string.title_reports, R.color.report_green, R.layout.fragment_report_summary, ReportsOverviewFragment.class);
+enum class ReportType(
+    @StringRes val titleId: Int,
+    @ColorRes val colorId: Int,
+    @LayoutRes val layoutId: Int,
+    val fragmentClass: Class<out BaseReportFragment>
+) {
+    PIE_CHART(
+        R.string.title_pie_chart,
+        R.color.report_orange,
+        R.layout.fragment_pie_chart,
+        PieChartFragment::class.java
+    ),
+    BAR_CHART(
+        R.string.title_bar_chart,
+        R.color.report_red,
+        R.layout.fragment_bar_chart,
+        StackedBarChartFragment::class.java
+    ),
+    LINE_CHART(
+        R.string.title_line_chart,
+        R.color.report_blue,
+        R.layout.fragment_line_chart,
+        CashFlowLineChartFragment::class.java
+    ),
+    SHEET(
+        R.string.title_balance_sheet_report,
+        R.color.report_purple,
+        R.layout.fragment_text_report,
+        BalanceSheetFragment::class.java
+    ),
+    NONE(
+        R.string.title_reports,
+        R.color.report_green,
+        R.layout.fragment_report_summary,
+        ReportsOverviewFragment::class.java
+    );
 
-    @StringRes
-    final int titleId;
-    @ColorRes
-    final int colorId;
-    @LayoutRes
-    final int layoutId;
-    @Nullable
-    final Class<? extends BaseReportFragment> fragmentClass;
+    val fragment: BaseReportFragment
+        get() = fragmentClass.newInstance()
 
-    ReportType(@StringRes int titleId,
-               @ColorRes int colorId,
-               @LayoutRes int layoutId,
-               @Nullable Class<? extends BaseReportFragment> fragmentClass) {
-        this.titleId = titleId;
-        this.colorId = colorId;
-        this.layoutId = layoutId;
-        this.fragmentClass = fragmentClass;
-    }
+    companion object {
+        private val _values = values()
 
-    @Nullable
-    public BaseReportFragment getFragment() {
-        BaseReportFragment fragment = null;
-        try {
-            fragment = fragmentClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            Timber.e(e);
+        fun getReportNames(context: Context): List<String> {
+            val names = mutableListOf<String>()
+            for (value in _values) {
+                if (value == NONE) continue
+                names.add(context.getString(value.titleId))
+            }
+            return names
         }
-        return fragment;
-    }
-
-    public static List<String> getReportNames(Context context) {
-        ReportType[] values = ReportType.values();
-        List<String> names = new ArrayList<>(values.length);
-        for (ReportType value : values) {
-            if (value == ReportType.NONE) continue;
-            names.add(context.getString(value.titleId));
-        }
-        return names;
     }
 }

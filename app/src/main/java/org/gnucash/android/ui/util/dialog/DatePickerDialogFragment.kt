@@ -13,63 +13,59 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.ui.util.dialog;
+package org.gnucash.android.ui.util.dialog
 
-import android.app.DatePickerDialog;
-import android.app.DatePickerDialog.OnDateSetListener;
-import android.app.Dialog;
-import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import java.util.Calendar;
+import android.app.DatePickerDialog
+import android.app.Dialog
+import android.os.Bundle
+import java.util.Calendar
 
 /**
  * Fragment for displaying a date picker dialog
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class DatePickerDialogFragment extends VolatileDialogFragment {
-
+class DatePickerDialogFragment : VolatileDialogFragment() {
     /**
      * Listener to notify when the date is set.
      */
-    @Nullable
-    private OnDateSetListener listener;
+    private var listener: DatePickerDialog.OnDateSetListener? = null
 
     /**
      * Date selected in the dialog or to which the dialog is initialized
      */
-    @NonNull
-    private final Calendar date = Calendar.getInstance();
+    private val date: Calendar = Calendar.getInstance()
 
     /**
-     * Create a new instance.
-     *
-     * @param listener   Listener to notify when the date is set and the dialog is closed
-     * @param dateMillis Date in milliseconds to which to initialize the dialog
+     * Creates and returns an Android [DatePickerDialog]
      */
-    public static DatePickerDialogFragment newInstance(@Nullable OnDateSetListener listener, long dateMillis) {
-        DatePickerDialogFragment fragment = new DatePickerDialogFragment();
-        fragment.listener = listener;
-        if (dateMillis > 0) {
-            fragment.date.setTimeInMillis(dateMillis);
-        }
-        return fragment;
-    }
-
-    /**
-     * Creates and returns an Android {@link DatePickerDialog}
-     */
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        return new DatePickerDialog(requireContext(),
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        return DatePickerDialog(
+            requireContext(),
             listener,
             date.get(Calendar.YEAR),
             date.get(Calendar.MONTH),
             date.get(Calendar.DAY_OF_MONTH)
-        );
+        )
     }
 
+    companion object {
+        /**
+         * Create a new instance.
+         *
+         * @param listener   Listener to notify when the date is set and the dialog is closed
+         * @param dateMillis Date in milliseconds to which to initialize the dialog
+         */
+        fun newInstance(
+            listener: DatePickerDialog.OnDateSetListener,
+            dateMillis: Long
+        ): DatePickerDialogFragment {
+            val fragment = DatePickerDialogFragment()
+            fragment.listener = listener
+            if (dateMillis > 0) {
+                fragment.date.timeInMillis = dateMillis
+            }
+            return fragment
+        }
+    }
 }

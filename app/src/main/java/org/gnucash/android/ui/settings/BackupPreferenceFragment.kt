@@ -13,199 +13,170 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.settings
 
-package org.gnucash.android.ui.settings;
-
-import static org.gnucash.android.app.IntentExtKt.takePersistableUriPermission;
-import static org.gnucash.android.util.ContentExtKt.getDocumentName;
-
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.ActivityNotFoundException;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.preference.EditTextPreference;
-import androidx.preference.ListPreference;
-import androidx.preference.Preference;
-import androidx.preference.SwitchPreference;
-import androidx.preference.TwoStatePreference;
-
-import com.google.android.material.snackbar.Snackbar;
-
-import org.gnucash.android.BuildConfig;
-import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.export.DropboxHelper;
-import org.gnucash.android.export.ExportFormat;
-import org.gnucash.android.export.Exporter;
-import org.gnucash.android.importer.ImportAsyncTask;
-import org.gnucash.android.ui.settings.dialog.OwnCloudDialogFragment;
-import org.gnucash.android.util.BackupManager;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-
-import java.io.File;
-
-import timber.log.Timber;
+import android.app.Activity
+import android.app.AlertDialog
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
+import android.widget.ArrayAdapter
+import android.widget.Toast
+import androidx.core.content.edit
+import androidx.fragment.app.Fragment
+import androidx.preference.EditTextPreference
+import androidx.preference.ListPreference
+import androidx.preference.Preference
+import androidx.preference.SwitchPreference
+import androidx.preference.TwoStatePreference
+import com.google.android.material.snackbar.Snackbar
+import org.gnucash.android.BuildConfig
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
+import org.gnucash.android.app.GnuCashApplication.Companion.getBookPreferences
+import org.gnucash.android.app.takePersistableUriPermission
+import org.gnucash.android.db.adapter.BooksDbAdapter
+import org.gnucash.android.export.DropboxHelper.authenticate
+import org.gnucash.android.export.DropboxHelper.deleteAccessToken
+import org.gnucash.android.export.DropboxHelper.hasToken
+import org.gnucash.android.export.ExportFormat
+import org.gnucash.android.export.Exporter.Companion.getExportTime
+import org.gnucash.android.export.Exporter.Companion.sanitizeFilename
+import org.gnucash.android.importer.ImportAsyncTask
+import org.gnucash.android.ui.settings.dialog.OwnCloudDialogFragment
+import org.gnucash.android.util.BackupManager
+import org.gnucash.android.util.BackupManager.backupActiveBookAsync
+import org.gnucash.android.util.getDocumentName
+import org.joda.time.format.DateTimeFormat
+import timber.log.Timber
 
 /**
  * Fragment for displaying general preferences
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class BackupPreferenceFragment extends GnuPreferenceFragment {
+class BackupPreferenceFragment : GnuPreferenceFragment() {
+    override val titleId: Int = R.string.title_backup_prefs
 
-    /**
-     * Collects references to the UI elements and binds click listeners
-     */
-    private static final int REQUEST_LINK_TO_DBX = 0x11;
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        addPreferencesFromResource(R.xml.fragment_backup_preferences)
 
-    /**
-     * Request code for the backup file where to save backups
-     */
-    private static final int REQUEST_BACKUP_FILE = 0x13;
-
-    @Override
-    protected int getTitleId() {
-        return R.string.title_backup_prefs;
-    }
-
-    @Override
-    public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
-        addPreferencesFromResource(R.xml.fragment_backup_preferences);
-
-        final Context context = requireContext();
+        val context = requireContext()
 
         if (BuildConfig.DEBUG) {
-            SwitchPreference delete_transaction_backup = findPreference(getString(R.string.key_delete_transaction_backup));
-            delete_transaction_backup.setChecked(false);
+            val deleteTransactionBackup =
+                findPreference<SwitchPreference>(getString(R.string.key_delete_transaction_backup))!!
+            deleteTransactionBackup.isChecked = false
 
-            SwitchPreference import_book_backup = findPreference(getString(R.string.key_import_book_backup));
-            import_book_backup.setChecked(false);
+            val importBookBackup =
+                findPreference<SwitchPreference>(getString(R.string.key_import_book_backup))!!
+            importBookBackup.isChecked = false
         }
 
         //if we are returning from DropBox authentication, save the key which was generated
-
-        String keyDefaultEmail = getString(R.string.key_default_export_email);
-        Preference preference = findPreference(keyDefaultEmail);
-        if (preference.getSummaryProvider() == null) {
-            preference.setSummaryProvider(p -> {
-                EditTextPreference textPreference = (EditTextPreference) p;
-                String email = textPreference.getText();
-                if (TextUtils.isEmpty(email) || email.trim().isEmpty()) {
-                    return getString(R.string.summary_default_export_email);
+        var preference = findPreference<Preference>(getString(R.string.key_default_export_email))!!
+        if (preference.summaryProvider == null) {
+            preference.setSummaryProvider { preference ->
+                val textPreference = preference as EditTextPreference
+                val email = textPreference.text
+                if (email.isNullOrEmpty() || email.trim().isEmpty()) {
+                    return@setSummaryProvider getString(R.string.summary_default_export_email)
                 }
-                return email;
-            });
+                email
+            }
         }
 
-        String keyDefaultExportFormat = getString(R.string.key_default_export_format);
-        preference = findPreference(keyDefaultExportFormat);
-        if (preference.getSummaryProvider() == null) {
-            preference.setSummaryProvider(p -> {
-                ListPreference listPreference = (ListPreference) p;
-                String value = listPreference.getValue();
-                if (TextUtils.isEmpty(value)) {
-                    return getString(R.string.summary_default_export_format);
+        val keyDefaultExportFormat = getString(R.string.key_default_export_format)
+        preference = findPreference<Preference>(keyDefaultExportFormat)!!
+        if (preference.summaryProvider == null) {
+            preference.setSummaryProvider { preference ->
+                val listPreference = preference as ListPreference
+                val value = listPreference.value
+                if (value.isNullOrEmpty()) {
+                    return@setSummaryProvider getString(R.string.summary_default_export_format)
                 }
-                ExportFormat format = ExportFormat.of(value);
-                return getString(format.labelId);
-            });
+                val format = ExportFormat.of(value)
+                getString(format.labelId)
+            }
         }
 
-        preference = findPreference(getString(R.string.key_restore_backup));
-        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(@NonNull Preference preference) {
-                restoreBackup();
-                return true;
-            }
-        });
+        preference = findPreference<Preference>(getString(R.string.key_restore_backup))!!
+        preference.setOnPreferenceClickListener { preference ->
+            restoreBackup()
+            true
+        }
 
-        preference = findPreference(getString(R.string.key_create_backup));
-        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(@NonNull Preference preference) {
-                final Fragment fragment = BackupPreferenceFragment.this;
-                final Activity activity = requireActivity();
-                BackupManager.backupActiveBookAsync(activity, result -> {
-                    int msg = result ? R.string.toast_backup_successful : R.string.toast_backup_failed;
-                    if (fragment.isVisible()) {
-                        View view = fragment.getView();
-                        Snackbar.make(view, msg, Snackbar.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(activity, msg, Toast.LENGTH_LONG).show();
-                    }
-                    return null;
-                });
-                return true;
-            }
-        });
-
-        preference = findPreference(getString(R.string.key_backup_location));
-        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(@NonNull Preference preference) {
-                String bookName = BooksDbAdapter.getInstance().getActiveBookDisplayName();
-                String fileName = Exporter.sanitizeFilename(bookName) + "_" + getString(R.string.label_backup_filename);
-
-                Intent createIntent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
-                    .setType(BackupManager.MIME_TYPE)
-                    .addCategory(Intent.CATEGORY_OPENABLE)
-                    .putExtra(Intent.EXTRA_TITLE, fileName);
-                try {
-                    startActivityForResult(createIntent, REQUEST_BACKUP_FILE);
-                } catch (ActivityNotFoundException e) {
-                    Timber.e(e, "Cannot create document for backup");
-                    if (isVisible()) {
-                        View view = getView();
-                        assert view != null;
-                        Snackbar.make(view, R.string.toast_install_file_manager, Snackbar.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(requireContext(), R.string.toast_install_file_manager, Toast.LENGTH_LONG).show();
-                    }
+        preference = findPreference<Preference>(getString(R.string.key_create_backup))!!
+        preference.setOnPreferenceClickListener { preference ->
+            val fragment: Fragment = this@BackupPreferenceFragment
+            val activity: Activity = requireActivity()
+            backupActiveBookAsync(activity) { result: Boolean ->
+                val msg =
+                    if (result) R.string.toast_backup_successful else R.string.toast_backup_failed
+                if (fragment.isVisible) {
+                    val view = fragment.view ?: return@backupActiveBookAsync
+                    Snackbar.make(view, msg, Snackbar.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(activity, msg, Toast.LENGTH_LONG).show()
                 }
-                return true;
             }
-        });
-        Uri defaultBackupLocation = BackupManager.getBookBackupFileUri(context, GnuCashApplication.getActiveBookUID());
+            true
+        }
+
+        preference = findPreference<Preference>(getString(R.string.key_backup_location))!!
+        preference.setOnPreferenceClickListener { preference ->
+            val context = preference.context
+            val bookName = BooksDbAdapter.instance.activeBookDisplayName
+            val fileName =
+                sanitizeFilename(bookName) + "_" + getString(R.string.label_backup_filename)
+
+            val createIntent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+                .setType(BackupManager.MIME_TYPE)
+                .addCategory(Intent.CATEGORY_OPENABLE)
+                .putExtra(Intent.EXTRA_TITLE, fileName)
+            try {
+                startActivityForResult(createIntent, REQUEST_BACKUP_FILE)
+            } catch (e: ActivityNotFoundException) {
+                Timber.e(e, "Cannot create document for backup")
+                if (isVisible) {
+                    val view = requireView()
+                    Snackbar.make(
+                        view,
+                        R.string.toast_install_file_manager,
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        context,
+                        R.string.toast_install_file_manager,
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+            true
+        }
+
+        val defaultBackupLocation = BackupManager.getBookBackupFileUri(context, activeBookUID!!)
         if (defaultBackupLocation != null) {
-            preference.setSummary(getDocumentName(defaultBackupLocation, context));
+            preference.summary = defaultBackupLocation.getDocumentName(context)
         }
 
-        preference = findPreference(getString(R.string.key_dropbox_sync));
-        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(@NonNull Preference preference) {
-                toggleDropboxSync(preference);
-                toggleDropboxPreference(preference);
-                return false;
-            }
-        });
-        toggleDropboxPreference(preference);
+        var switch = findPreference<TwoStatePreference>(getString(R.string.key_dropbox_sync))!!
+        switch.setOnPreferenceClickListener { preference ->
+            toggleDropboxSync(switch)
+            toggleDropboxPreference(switch)
+            false
+        }
+        toggleDropboxPreference(switch)
 
-        preference = findPreference(getString(R.string.key_owncloud_sync));
-        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(@NonNull Preference preference) {
-                toggleOwnCloudSync(preference);
-                toggleOwnCloudPreference(preference);
-                return false;
-            }
-        });
-        toggleOwnCloudPreference(preference);
+        switch = findPreference(getString(R.string.key_owncloud_sync))!!
+        switch.setOnPreferenceClickListener { preference ->
+            toggleOwnCloudSync(switch)
+            toggleOwnCloudPreference(switch)
+            false
+        }
+        toggleOwnCloudPreference(switch)
     }
 
     /**
@@ -213,9 +184,9 @@ public class BackupPreferenceFragment extends GnuPreferenceFragment {
      *
      * @param preference DropBox Sync preference
      */
-    public void toggleDropboxPreference(Preference preference) {
-        Context context = preference.getContext();
-        ((TwoStatePreference) preference).setChecked(DropboxHelper.hasToken(context));
+    fun toggleDropboxPreference(preference: TwoStatePreference) {
+        val context = preference.context
+        preference.isChecked = hasToken(context)
     }
 
     /**
@@ -223,140 +194,133 @@ public class BackupPreferenceFragment extends GnuPreferenceFragment {
      *
      * @param preference ownCloud Sync preference
      */
-    public void toggleOwnCloudPreference(Preference preference) {
-        Context context = preference.getContext();
-        final OwnCloudPreferences preferences = new OwnCloudPreferences(context);
-        ((TwoStatePreference) preference).setChecked(preferences.isSync());
+    fun toggleOwnCloudPreference(preference: TwoStatePreference) {
+        val context = preference.context
+        val preferences = OwnCloudPreferences(context)
+        preference.isChecked = preferences.isSync
     }
 
     /**
      * Toggles the authorization state of a DropBox account.
      * If a link exists, it is removed else DropBox authorization is started
      */
-    private void toggleDropboxSync(Preference preference) {
-        Context context = preference.getContext();
-        if (!DropboxHelper.hasToken(context)) {
-            DropboxHelper.authenticate(context);
+    private fun toggleDropboxSync(preference: TwoStatePreference) {
+        val context = preference.context
+        if (!hasToken(context)) {
+            authenticate(context)
         } else {
-            DropboxHelper.deleteAccessToken(context);
+            deleteAccessToken(context)
         }
     }
 
     /**
      * Toggles synchronization with ownCloud on or off
      */
-    private void toggleOwnCloudSync(Preference preference) {
-        Context context = preference.getContext();
-        final OwnCloudPreferences preferences = new OwnCloudPreferences(context);
+    private fun toggleOwnCloudSync(preference: TwoStatePreference) {
+        val context = preference.context
+        val preferences = OwnCloudPreferences(context)
 
-        if (preferences.isSync())
-            preferences.setSync(false);
-        else {
-            OwnCloudDialogFragment ocDialog = OwnCloudDialogFragment.newInstance(preference);
-            ocDialog.show(getParentFragmentManager(), "owncloud_dialog");
+        if (preferences.isSync) {
+            preferences.isSync = false
+        } else {
+            OwnCloudDialogFragment.newInstance(preference)
+                .show(parentFragmentManager, "owncloud_dialog")
         }
     }
 
     /**
      * Opens a dialog for a user to select a backup to restore and then restores the backup
      */
-    private void restoreBackup() {
-        Timber.i("Opening GnuCash XML backups for restore");
-        final Activity activity = requireActivity();
-        final String bookUID = GnuCashApplication.getActiveBookUID();
+    private fun restoreBackup() {
+        Timber.i("Opening GnuCash XML backups for restore")
+        val activity: Activity = requireActivity()
+        val bookUID = activeBookUID
 
-        final Uri defaultBackupFile = BackupManager.getBookBackupFileUri(activity, bookUID);
+        val defaultBackupFile = BackupManager.getBookBackupFileUri(activity, bookUID!!)
         if (defaultBackupFile != null) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(activity)
+            AlertDialog.Builder(activity)
                 .setTitle(R.string.title_confirm_restore_backup)
                 .setMessage(R.string.msg_confirm_restore_backup_into_new_book)
-                .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                })
-                .setPositiveButton(R.string.btn_restore, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        new ImportAsyncTask(activity).execute(defaultBackupFile);
-                    }
-                });
-            builder.create().show();
-            return; //stop here if the default backup file exists
+                .setNegativeButton(R.string.btn_cancel) { _, _ ->
+                    // Dismisses itself
+                }
+                .setPositiveButton(R.string.btn_restore) { _, _ ->
+                    ImportAsyncTask(activity).execute(defaultBackupFile)
+                }
+                .show()
+            return  //stop here if the default backup file exists
         }
 
         //If no default location was set, look in the internal SD card location
         if (BackupManager.getBackupList(activity, bookUID).isEmpty()) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(activity)
+            AlertDialog.Builder(activity)
                 .setTitle(R.string.title_no_backups_found)
                 .setMessage(R.string.msg_no_backups_to_restore_from)
-                .setNegativeButton(R.string.btn_cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-            builder.create().show();
-            return;
-        }
-
-        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(activity, android.R.layout.select_dialog_singlechoice);
-        final DateTimeFormatter dateFormatter = DateTimeFormat.longDateTime();
-        for (File backupFile : BackupManager.getBackupList(activity, bookUID)) {
-            long time = Exporter.getExportTime(backupFile.getName());
-            if (time > 0)
-                arrayAdapter.add(dateFormatter.print(time));
-            else //if no timestamp was found in the filename, just use the name
-                arrayAdapter.add(backupFile.getName());
-        }
-
-        AlertDialog.Builder restoreDialogBuilder = new AlertDialog.Builder(activity);
-        restoreDialogBuilder.setTitle(R.string.title_select_backup_to_restore);
-        restoreDialogBuilder.setNegativeButton(R.string.alert_dialog_cancel,
-            new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
+                .setNegativeButton(R.string.btn_cancel) { _, _ ->
+                    // Dismisses itself
                 }
-            });
-        restoreDialogBuilder.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                File backupFile = BackupManager.getBackupList(activity, bookUID).get(which);
-                new ImportAsyncTask(activity).execute(Uri.fromFile(backupFile));
-            }
-        });
+                .show()
+            return
+        }
 
-        restoreDialogBuilder.create().show();
+        val adapter = ArrayAdapter<String>(activity, android.R.layout.select_dialog_singlechoice)
+        val dateFormatter = DateTimeFormat.longDateTime()
+        for (backupFile in BackupManager.getBackupList(activity, bookUID)) {
+            val time = getExportTime(backupFile.name)
+            if (time > 0) adapter.add(dateFormatter.print(time))
+            else  //if no timestamp was found in the filename, just use the name
+                adapter.add(backupFile.name)
+        }
+
+        AlertDialog.Builder(activity)
+            .setTitle(R.string.title_select_backup_to_restore)
+            .setNegativeButton(R.string.alert_dialog_cancel) { _, _ ->
+                // Dismisses itself
+            }
+            .setAdapter(adapter) { _, which ->
+                val backupFile = BackupManager.getBackupList(activity, bookUID)[which]
+                ImportAsyncTask(activity).execute(Uri.fromFile(backupFile))
+            }
+            .show()
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (requestCode) {
+            REQUEST_LINK_TO_DBX -> {
+                // if we are in a preference header fragment, this may return null
+                val preference =
+                    findPreference<TwoStatePreference>(getString(R.string.key_dropbox_sync))
+                        ?: return
+                toggleDropboxPreference(preference)
+            }
 
-            case REQUEST_LINK_TO_DBX:
-                Preference preference = findPreference(getString(R.string.key_dropbox_sync));
-                if (preference == null) //if we are in a preference header fragment, this may return null
-                    break;
-                toggleDropboxPreference(preference);
-                break;
+            REQUEST_BACKUP_FILE -> if (resultCode == Activity.RESULT_OK) {
+                val backupFileUri: Uri = data?.data ?: return
+                val context = requireContext()
+                context.takePersistableUriPermission(data)
 
-            case REQUEST_BACKUP_FILE:
-                if (resultCode == Activity.RESULT_OK) {
-                    Uri backupFileUri = data.getData();
-                    Context context = requireContext();
-                    takePersistableUriPermission(context, data);
-
-                    GnuCashApplication.getBookPreferences(context)
-                        .edit()
-                        .putString(BackupManager.KEY_BACKUP_FILE, backupFileUri.toString())
-                        .apply();
-
-                    Preference pref = findPreference(getString(R.string.key_backup_location));
-                    pref.setSummary(getDocumentName(backupFileUri, pref.getContext()));
+                getBookPreferences(context).edit {
+                    putString(BackupManager.KEY_BACKUP_FILE, backupFileUri.toString())
                 }
-                break;
+
+                val preference =
+                    findPreference<Preference>(getString(R.string.key_backup_location))!!
+                preference.summary = backupFileUri.getDocumentName(preference.context)
+            }
+
+            else -> super.onActivityResult(requestCode, resultCode, data)
         }
+    }
+
+    companion object {
+        /**
+         * Collects references to the UI elements and binds click listeners
+         */
+        private const val REQUEST_LINK_TO_DBX = 0x11
+
+        /**
+         * Request code for the backup file where to save backups
+         */
+        private const val REQUEST_BACKUP_FILE = 0x13
     }
 }

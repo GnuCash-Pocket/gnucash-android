@@ -14,69 +14,61 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.export.qif;
+package org.gnucash.android.export.qif
 
-import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
-import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
-import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
-import static org.gnucash.android.export.qif.QifHelper.ACCOUNT_DESCRIPTION_PREFIX;
-import static org.gnucash.android.export.qif.QifHelper.ACCOUNT_NAME_PREFIX;
-import static org.gnucash.android.export.qif.QifHelper.ACCOUNT_SECTION;
-import static org.gnucash.android.export.qif.QifHelper.CATEGORY_PREFIX;
-import static org.gnucash.android.export.qif.QifHelper.DATE_PREFIX;
-import static org.gnucash.android.export.qif.QifHelper.ENTRY_TERMINATOR;
-import static org.gnucash.android.export.qif.QifHelper.INTERNAL_CURRENCY_PREFIX;
-import static org.gnucash.android.export.qif.QifHelper.MEMO_PREFIX;
-import static org.gnucash.android.export.qif.QifHelper.NEW_LINE;
-import static org.gnucash.android.export.qif.QifHelper.PAYEE_PREFIX;
-import static org.gnucash.android.export.qif.QifHelper.SPLIT_AMOUNT_PREFIX;
-import static org.gnucash.android.export.qif.QifHelper.SPLIT_CATEGORY_PREFIX;
-import static org.gnucash.android.export.qif.QifHelper.SPLIT_MEMO_PREFIX;
-import static org.gnucash.android.export.qif.QifHelper.TOTAL_AMOUNT_PREFIX;
-import static org.gnucash.android.export.qif.QifHelper.TRANSACTION_TYPE_PREFIX;
-import static org.gnucash.android.export.qif.QifHelper.TYPE_PREFIX;
-import static org.gnucash.android.export.qif.QifHelper.formatDate;
-import static org.gnucash.android.export.qif.QifHelper.getQifAccountType;
-import static org.gnucash.android.math.MathExtKt.isZero;
-
-import android.content.ContentValues;
-import android.content.Context;
-import android.database.Cursor;
-import android.os.OperationCanceledException;
-import android.text.TextUtils;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
-import org.gnucash.android.export.ExportParams;
-import org.gnucash.android.export.Exporter;
-import org.gnucash.android.gnc.GncProgressListener;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.AccountType;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.TransactionType;
-import org.gnucash.android.util.FileUtils;
-import org.gnucash.android.util.PreferencesHelper;
-import org.gnucash.android.util.TimestampHelper;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import android.content.ContentValues
+import android.content.Context
+import android.database.Cursor
+import android.os.OperationCanceledException
+import org.gnucash.android.db.DatabaseSchema.AccountEntry
+import org.gnucash.android.db.DatabaseSchema.SplitEntry
+import org.gnucash.android.db.DatabaseSchema.TransactionEntry
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.getDouble
+import org.gnucash.android.db.getInt
+import org.gnucash.android.db.getLong
+import org.gnucash.android.db.getString
+import org.gnucash.android.export.ExportParams
+import org.gnucash.android.export.Exporter
+import org.gnucash.android.export.qif.QifHelper.ACCOUNT_DESCRIPTION_PREFIX
+import org.gnucash.android.export.qif.QifHelper.ACCOUNT_NAME_PREFIX
+import org.gnucash.android.export.qif.QifHelper.ACCOUNT_SECTION
+import org.gnucash.android.export.qif.QifHelper.CATEGORY_PREFIX
+import org.gnucash.android.export.qif.QifHelper.DATE_PREFIX
+import org.gnucash.android.export.qif.QifHelper.ENTRY_TERMINATOR
+import org.gnucash.android.export.qif.QifHelper.INTERNAL_CURRENCY_PREFIX
+import org.gnucash.android.export.qif.QifHelper.MEMO_PREFIX
+import org.gnucash.android.export.qif.QifHelper.NEW_LINE
+import org.gnucash.android.export.qif.QifHelper.PAYEE_PREFIX
+import org.gnucash.android.export.qif.QifHelper.SPLIT_AMOUNT_PREFIX
+import org.gnucash.android.export.qif.QifHelper.SPLIT_CATEGORY_PREFIX
+import org.gnucash.android.export.qif.QifHelper.SPLIT_MEMO_PREFIX
+import org.gnucash.android.export.qif.QifHelper.TOTAL_AMOUNT_PREFIX
+import org.gnucash.android.export.qif.QifHelper.TRANSACTION_TYPE_PREFIX
+import org.gnucash.android.export.qif.QifHelper.TYPE_PREFIX
+import org.gnucash.android.export.qif.QifHelper.formatDate
+import org.gnucash.android.export.qif.QifHelper.getQifAccountType
+import org.gnucash.android.gnc.GncProgressListener
+import org.gnucash.android.math.isZero
+import org.gnucash.android.model.Account
+import org.gnucash.android.model.Money
+import org.gnucash.android.model.TransactionType
+import org.gnucash.android.util.FileUtils
+import org.gnucash.android.util.PreferencesHelper
+import org.gnucash.android.util.TimestampHelper
+import org.gnucash.android.util.set
+import java.io.BufferedReader
+import java.io.BufferedWriter
+import java.io.File
+import java.io.FileReader
+import java.io.FileWriter
+import java.io.IOException
+import java.io.Writer
+import java.math.BigDecimal
+import java.math.RoundingMode
+import java.text.DecimalFormat
+import java.text.NumberFormat
+import java.util.Locale
 
 /**
  * Exports the accounts and transactions in the database to the QIF format
@@ -84,75 +76,47 @@ import java.util.Map;
  * @author Ngewi Fet <ngewif@gmail.com>
  * @author Yongxin Wang <fefe.wyx@gmail.com>
  */
-public class QifExporter extends Exporter {
-
-    /**
-     * Initialize the exporter
-     *
-     * @param context  The context.
-     * @param params   Parameters for the export
-     * @param bookUID  The book UID.
-     * @param listener The listener to receive events.
-     */
-    public QifExporter(
-        @NonNull Context context,
-        @NonNull ExportParams params,
-        @NonNull String bookUID,
-        @Nullable GncProgressListener listener
-    ) {
-        super(context, params, bookUID, listener);
-    }
-
-    /**
-     * Initialize the exporter
-     *
-     * @param context The context.
-     * @param params  Parameters for the export
-     * @param bookUID The book UID.
-     */
-    public QifExporter(
-        @NonNull Context context,
-        @NonNull ExportParams params,
-        @NonNull String bookUID
-    ) {
-        this(context, params, bookUID, null);
-    }
-
-    @Override
-    protected File writeToFile(@NonNull ExportParams exportParams) throws ExporterException, IOException {
-        final boolean isCompressed = exportParams.isCompressed;
+class QifExporter(
+    context: Context,
+    params: ExportParams,
+    bookUID: String,
+    listener: GncProgressListener? = null
+) : Exporter(context, params, bookUID, listener) {
+    @Throws(ExporterException::class, IOException::class)
+    override fun writeToFile(exportParams: ExportParams): File? {
+        val isCompressed = exportParams.isCompressed
         // Disable compression for files that will be zipped afterwards.
-        exportParams.isCompressed = false;
-        File cacheFile = super.writeToFile(exportParams);
-        exportParams.isCompressed = isCompressed;
+        exportParams.isCompressed = false
+        val cacheFile = super.writeToFile(exportParams)!!
+        exportParams.isCompressed = isCompressed
 
-        List<File> splitByCurrency = splitByCurrency(cacheFile);
+        val splitByCurrency = splitByCurrency(cacheFile)
         if (splitByCurrency.isEmpty()) {
-            return null;
+            return null
         }
-        if (isCompressed || (splitByCurrency.size() > 1)) {
-            File zipFile = new File(cacheFile.getPath() + ".zip");
-            return zipQifs(splitByCurrency, zipFile);
+        if (isCompressed || (splitByCurrency.size > 1)) {
+            val zipFile = File(cacheFile.path + ".zip")
+            return zipFiles(splitByCurrency, zipFile)
         }
-        return splitByCurrency.get(0);
+        return splitByCurrency[0]
     }
 
-    @Override
+    @Throws(ExporterException::class, IOException::class)
     // TODO write each commodity to separate file here, instead of splitting the file afterwards.
-    protected void writeExport(@NonNull Writer writer, @NonNull ExportParams exportParams) throws ExporterException, IOException {
-        String lastExportTimeStamp = Long.toString(mExportParams.getExportStartTime().getTime());
-        TransactionsDbAdapter transactionsDbAdapter = mTransactionsDbAdapter;
+    override fun writeExport(writer: Writer, exportParams: ExportParams) {
+        val lastExportTimeStamp = exportParams.exportStartTime.time.toString()
+        val transactionsDbAdapter = transactionsDbAdapter
 
-        final List<Account> accountsList = mAccountsDbAdapter.getSimpleAccounts();
-        final Map<String, Account> accounts = new HashMap<>();
-        for (Account account : accountsList) {
-            accounts.put(account.getUID(), account);
+        val accountsList = accountsDbAdapter.simpleAccounts
+        val accounts = mutableMapOf<String, Account>()
+        for (account in accountsList) {
+            accounts[account.uid] = account
         }
 
-        DecimalFormat quantityFormatter = (DecimalFormat) NumberFormat.getNumberInstance(Locale.ROOT);
-        quantityFormatter.setGroupingUsed(false);
+        val quantityFormatter = NumberFormat.getNumberInstance(Locale.ROOT) as DecimalFormat
+        quantityFormatter.isGroupingUsed = false
 
-        final String[] projection = new String[]{
+        val projection = arrayOf<String?>(
             TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID + " AS trans_uid",
             TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " AS trans_time",
             TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_DESCRIPTION + " AS trans_desc",
@@ -167,73 +131,73 @@ public class QifExporter extends Exporter {
             "trans_extra_info.trans_split_count AS trans_split_count",
             "account1." + AccountEntry.COLUMN_UID + " AS acct1_uid",
             AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID + " AS acct2_uid"
-        };
+        )
         // no recurrence transactions
-        final String where = TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TEMPLATE + " == 0 AND "
-            // in qif, split from the one account entry is not recorded (will be auto balanced)
-            + "(" + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID + " != account1." + AccountEntry.COLUMN_UID + " OR "
-            // or if the transaction has only one split (the whole transaction would be lost if it is not selected)
-            + "trans_split_count == 1)"
-            + " AND " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " >= ?";
+        val where =
+            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TEMPLATE + " == 0 AND " +
+                    // in qif, split from the one account entry is not recorded (will be auto balanced)
+                    "(" + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID + " != account1." + AccountEntry.COLUMN_UID + " OR " +
+                    // or if the transaction has only one split (the whole transaction would be lost if it is not selected)
+                    "trans_split_count == 1)" +
+                    " AND " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " >= ?"
         // trans_time ASC : put transactions in time order
         // trans_uid ASC  : put splits from the same transaction together
-        final String orderBy = "acct1_uid ASC, trans_uid ASC, trans_time ASC, split_id ASC";
+        val orderBy = "acct1_uid ASC, trans_uid ASC, trans_time ASC, split_id ASC"
 
-        Cursor cursor = null;
+        var cursor: Cursor? = null
         try {
             cursor = transactionsDbAdapter.fetchTransactionsWithSplitsWithTransactionAccount(
                 projection,
                 where,
-                new String[]{lastExportTimeStamp},
+                arrayOf<String?>(lastExportTimeStamp),
                 orderBy
-            );
-            if ((cursor == null) || !cursor.moveToFirst()) return;
+            )
+            if ((cursor == null) || !cursor.moveToFirst()) return
 
-            String currentCommodityUID = "";
-            String currentAccountUID = "";
-            String currentTransactionUID = "";
-            BigDecimal txTotal = BigDecimal.ZERO;
+            var currentCommodityUID = ""
+            var currentAccountUID = ""
+            var currentTransactionUID = ""
+            var txTotal = BigDecimal.ZERO
 
             do {
-                cancellationSignal.throwIfCanceled();
-                String accountUID = cursor.getString(cursor.getColumnIndexOrThrow("acct1_uid"));
-                Account account1 = accounts.get(accountUID);
-                assert account1 != null;
-                String transactionUID = cursor.getString(cursor.getColumnIndexOrThrow("trans_uid"));
-                long time = cursor.getLong(cursor.getColumnIndexOrThrow("trans_time"));
-                String description = cursor.getString(cursor.getColumnIndexOrThrow("trans_desc"));
-                String notes = cursor.getString(cursor.getColumnIndexOrThrow("trans_notes"));
-                double imbalance = cursor.getDouble(cursor.getColumnIndexOrThrow("trans_acct_balance"));
-                int splitCount = cursor.getInt(cursor.getColumnIndexOrThrow("trans_split_count"));
+                cancellationSignal.throwIfCanceled()
+                val accountUID = cursor.getString("acct1_uid") ?: continue
+                val transactionUID = cursor.getString("trans_uid") ?: continue
+                val description = cursor.getString("trans_desc") ?: continue
+                val time = cursor.getLong("trans_time")
+                val notes = cursor.getString("trans_notes")
+                val imbalance = cursor.getDouble("trans_acct_balance")
+                val splitCount = cursor.getInt("trans_split_count")
 
-                String accountFullName = account1.getFullName();
-                String accountDescription = account1.getDescription();
-                AccountType accountType = account1.getAccountType();
-                Commodity commodity = account1.getCommodity();
-                String commodityUID = commodity.getUID();
-                quantityFormatter.setMaximumFractionDigits(commodity.getSmallestFractionDigits());
-                quantityFormatter.setMinimumFractionDigits(commodity.getSmallestFractionDigits());
+                val account1: Account = accounts[accountUID]!!
+                val accountFullName = account1.fullName
+                val accountDescription = account1.description
+                val accountType = account1.accountType
+                val commodity = account1.commodity
+                val commodityUID = commodity.uid
+                quantityFormatter.maximumFractionDigits = commodity.smallestFractionDigits
+                quantityFormatter.minimumFractionDigits = commodity.smallestFractionDigits
 
                 // Starting new transaction - finished with splits from previous transaction.
-                if (!transactionUID.equals(currentTransactionUID)) {
-                    if (!TextUtils.isEmpty(currentTransactionUID)) {
+                if (transactionUID != currentTransactionUID) {
+                    if (currentTransactionUID.isNotEmpty()) {
                         // end last transaction
                         writer.append(TOTAL_AMOUNT_PREFIX)
                             .append(quantityFormatter.format(txTotal))
                             .append(NEW_LINE)
                             .append(ENTRY_TERMINATOR)
-                            .append(NEW_LINE);
-                        txTotal = BigDecimal.ZERO;
+                            .append(NEW_LINE)
+                        txTotal = BigDecimal.ZERO
                     }
-                    if (!accountUID.equals(currentAccountUID)) {
-                        if (!commodityUID.equals(currentCommodityUID)) {
-                            currentCommodityUID = commodityUID;
+                    if (accountUID != currentAccountUID) {
+                        if (commodityUID != currentCommodityUID) {
+                            currentCommodityUID = commodityUID
                             writer.append(INTERNAL_CURRENCY_PREFIX)
-                                .append(commodity.getCurrencyCode())
-                                .append(NEW_LINE);
+                                .append(commodity.currencyCode)
+                                .append(NEW_LINE)
                         }
                         // start new account
-                        currentAccountUID = accountUID;
+                        currentAccountUID = accountUID
                         writer.append(ACCOUNT_SECTION)
                             .append(NEW_LINE)
                             .append(ACCOUNT_NAME_PREFIX)
@@ -241,17 +205,17 @@ public class QifExporter extends Exporter {
                             .append(NEW_LINE)
                             .append(TYPE_PREFIX)
                             .append(getQifAccountType(accountType))
-                            .append(NEW_LINE);
-                        if (!TextUtils.isEmpty(accountDescription)) {
+                            .append(NEW_LINE)
+                        if (!accountDescription.isNullOrEmpty()) {
                             writer.append(ACCOUNT_DESCRIPTION_PREFIX)
                                 .append(accountDescription)
-                                .append(NEW_LINE);
+                                .append(NEW_LINE)
                         }
                         writer.append(ENTRY_TERMINATOR)
-                            .append(NEW_LINE);
+                            .append(NEW_LINE)
                     }
                     // start new transaction
-                    currentTransactionUID = transactionUID;
+                    currentTransactionUID = transactionUID
                     writer.append(TRANSACTION_TYPE_PREFIX)
                         .append(getQifAccountType(accountType))
                         .append(NEW_LINE)
@@ -262,93 +226,97 @@ public class QifExporter extends Exporter {
                         .append('[')
                         .append(accountFullName)
                         .append(']')
-                        .append(NEW_LINE);
+                        .append(NEW_LINE)
                     // Payee / description
                     writer.append(PAYEE_PREFIX)
                         .append(description.trim())
-                        .append(NEW_LINE);
+                        .append(NEW_LINE)
                     // Notes, memo
-                    if (!TextUtils.isEmpty(notes)) {
+                    if (!notes.isNullOrEmpty()) {
                         writer.append(MEMO_PREFIX)
                             .append(notes.replace('\n', ' ').trim())
-                            .append(NEW_LINE);
+                            .append(NEW_LINE)
                     }
                     // deal with imbalance first
-                    BigDecimal decimalImbalance = BigDecimal.valueOf(imbalance).setScale(2, RoundingMode.HALF_UP);
-                    if (!isZero(decimalImbalance)) {
+                    val decimalImbalance =
+                        BigDecimal.valueOf(imbalance).setScale(2, RoundingMode.HALF_UP)
+                    if (!decimalImbalance.isZero) {
                         writer.append(SPLIT_CATEGORY_PREFIX)
                             .append('[')
-                            .append(AccountsDbAdapter.getImbalanceAccountName(
-                                mContext, commodity))
+                            .append(
+                                AccountsDbAdapter.getImbalanceAccountName(context, commodity)
+                            )
                             .append(']')
                             .append(NEW_LINE)
                             .append(SPLIT_AMOUNT_PREFIX)
                             .append(decimalImbalance.toPlainString())
-                            .append(NEW_LINE);
-                        txTotal = txTotal.add(decimalImbalance);
+                            .append(NEW_LINE)
+                        txTotal += decimalImbalance
                     }
                 }
                 if (splitCount == 1) {
                     // No other splits should be recorded if this is the only split.
-                    continue;
+                    continue
                 }
                 // all splits
-                String account2UID = cursor.getString(cursor.getColumnIndexOrThrow("acct2_uid"));
-                Account account2 = accounts.get(account2UID);
-                assert account2 != null;
-                String account2FullName = account2.getFullName();
-                String splitMemo = cursor.getString(cursor.getColumnIndexOrThrow("split_memo"));
-                String splitType = cursor.getString(cursor.getColumnIndexOrThrow("split_type"));
-                double quantity_num = cursor.getDouble(cursor.getColumnIndexOrThrow("split_quantity_num"));
-                double quantity_denom = cursor.getDouble(cursor.getColumnIndexOrThrow("split_quantity_denom"));
+                val account2UID = cursor.getString("acct2_uid")
+                val account2: Account = accounts[account2UID]!!
+                val account2FullName = account2.fullName
+                val splitMemo = cursor.getString("split_memo")
+                val splitType = cursor.getString("split_type")
+                val splitQuantityNum = cursor.getLong("split_quantity_num")
+                val splitQuantityDenom = cursor.getLong("split_quantity_denom")
                 // amount associated with the header account will not be exported.
                 // It can be auto balanced when importing to GnuCash
                 writer.append(SPLIT_CATEGORY_PREFIX)
                     .append('[')
                     .append(account2FullName)
                     .append(']')
-                    .append(NEW_LINE);
-                if (!TextUtils.isEmpty(splitMemo)) {
+                    .append(NEW_LINE)
+                if (!splitMemo.isNullOrEmpty()) {
                     writer.append(SPLIT_MEMO_PREFIX)
                         .append(splitMemo.replace('\n', ' ').trim())
-                        .append(NEW_LINE);
+                        .append(NEW_LINE)
                 }
-                BigDecimal quantity = (quantity_denom != 0) ? (BigDecimal.valueOf(quantity_num).divide(BigDecimal.valueOf(quantity_denom))) : BigDecimal.ZERO;
-                if (splitType.equals(TransactionType.DEBIT.value)) {
-                    quantity = quantity.negate();
+                var quantity = Money(splitQuantityNum, splitQuantityDenom, account2.commodity)
+                if (splitType == TransactionType.DEBIT.value) {
+                    quantity = -quantity
                 }
-                writer.append(SPLIT_AMOUNT_PREFIX).append(quantityFormatter.format(quantity))
-                    .append(NEW_LINE);
-                txTotal = txTotal.add(quantity);
-            } while (cursor.moveToNext());
-            if (!TextUtils.isEmpty(currentTransactionUID)) {
+                writer.append(SPLIT_AMOUNT_PREFIX)
+                    .append(quantityFormatter.format(quantity))
+                    .append(NEW_LINE)
+                txTotal += quantity.toBigDecimal()
+            } while (cursor.moveToNext())
+            if (!currentTransactionUID.isNullOrEmpty()) {
                 // end last transaction
                 writer.append(TOTAL_AMOUNT_PREFIX)
                     .append(quantityFormatter.format(txTotal))
                     .append(NEW_LINE)
                     .append(ENTRY_TERMINATOR)
-                    .append(NEW_LINE);
+                    .append(NEW_LINE)
             }
-            writer.flush();
-            writer.close();
+            writer.flush()
+            writer.close()
 
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(TransactionEntry.COLUMN_EXPORTED, 1);
-            transactionsDbAdapter.updateTransaction(contentValues, null, null);
+            val contentValues = ContentValues()
+            contentValues[TransactionEntry.COLUMN_EXPORTED] = 1
+            transactionsDbAdapter.updateTransaction(contentValues, null, null)
 
-            /// export successful
-            PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow(), getBookUID());
-        } catch (IOException | OperationCanceledException e) {
-            throw new ExporterException(exportParams, e);
+            /** export successful */
+            PreferencesHelper.setLastExportTime(TimestampHelper.timestampFromNow, bookUID)
+        } catch (e: IOException) {
+            throw ExporterException(exportParams, e)
+        } catch (e: OperationCanceledException) {
+            throw ExporterException(exportParams, e)
         } finally {
-            if (cursor != null) cursor.close();
+            cursor?.close()
         }
     }
 
-    @NonNull
-    private File zipQifs(List<File> exportedFiles, File zipFile) throws IOException {
-        FileUtils.zipFiles(exportedFiles, zipFile);
-        return zipFile;
+    @Throws(IOException::class)
+    private fun zipFiles(exportedFiles: List<File>, zipFile: File): File {
+        FileUtils.zipFiles(exportedFiles, zipFile)
+        return zipFile
     }
 
     /**
@@ -358,38 +326,36 @@ public class QifExporter extends Exporter {
      * @return a list of paths of the newly created Qif files.
      * @throws IOException if something went wrong while splitting the file.
      */
-    private List<File> splitByCurrency(File file) throws IOException {
+    @Throws(IOException::class)
+    private fun splitByCurrency(file: File): List<File> {
         // split only at the last dot
-        String path = file.getPath();
-        String[] pathParts = path.split("(?=\\.[^\\.]+$)");
-        List<File> splitFiles = new ArrayList<>();
-        String line;
-        BufferedReader in = new BufferedReader(new FileReader(file));
-        BufferedWriter out = null;
+        val path = file.path
+        val pathParts: Array<String> =
+            path.split("(?=\\.[^\\.]+$)".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        val splitFiles = mutableListOf<File>()
+        var line: String?
+        val reader = BufferedReader(FileReader(file))
+        var out: BufferedWriter? = null
         try {
-            while ((line = in.readLine()) != null) {
+            line = reader.readLine()
+            while (line != null) {
                 if (line.startsWith(INTERNAL_CURRENCY_PREFIX)) {
-                    String currencyCode = line.substring(1);
-                    if (out != null) {
-                        out.close();
-                    }
-                    String newFileName = pathParts[0] + "_" + currencyCode + pathParts[1];
-                    File splitFile = new File(newFileName);
-                    splitFiles.add(splitFile);
-                    out = new BufferedWriter(new FileWriter(splitFile));
+                    val currencyCode = line.substring(1)
+                    out?.close()
+                    val newFileName = pathParts[0] + "_" + currencyCode + pathParts[1]
+                    val splitFile = File(newFileName)
+                    splitFiles.add(splitFile)
+                    out = BufferedWriter(FileWriter(splitFile))
                 } else {
-                    if (out == null) {
-                        throw new IllegalArgumentException("Format invalid: " + path);
-                    }
-                    out.append(line).append(NEW_LINE);
+                    requireNotNull(out) { "Format invalid: $path" }
+                    out.append(line).append(NEW_LINE)
                 }
+                line = reader.readLine()
             }
         } finally {
-            in.close();
-            if (out != null) {
-                out.close();
-            }
+            reader.close()
+            out?.close()
         }
-        return splitFiles;
+        return splitFiles
     }
 }

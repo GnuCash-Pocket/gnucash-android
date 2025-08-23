@@ -13,88 +13,74 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.settings
 
-package org.gnucash.android.ui.settings;
-
-import android.content.Context;
-import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.preference.Preference;
-
-import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseSchema;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.ui.settings.dialog.DeleteAllTransactionsConfirmationDialog;
-
-import java.util.List;
+import android.content.Context
+import android.os.Bundle
+import androidx.preference.Preference
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
+import org.gnucash.android.app.GnuCashApplication.Companion.shouldBackupTransactions
+import org.gnucash.android.db.DatabaseSchema
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.ui.settings.dialog.DeleteAllTransactionsConfirmationDialog
 
 /**
  * Fragment for displaying transaction preferences
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class TransactionsPreferenceFragment extends GnuPreferenceFragment {
+class TransactionsPreferenceFragment : GnuPreferenceFragment() {
+    override val titleId: Int = R.string.title_transaction_preferences
 
-    @Override
-    protected int getTitleId() {
-        return R.string.title_transaction_preferences;
-    }
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        preferenceManager.setSharedPreferencesName(activeBookUID)
+        addPreferencesFromResource(R.xml.fragment_transaction_preferences)
 
-    @Override
-    public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
-        getPreferenceManager().setSharedPreferencesName(GnuCashApplication.getActiveBookUID());
-        addPreferencesFromResource(R.xml.fragment_transaction_preferences);
+        val preferenceDouble =
+            findPreference<Preference>(getString(R.string.key_use_double_entry))!!
+        preferenceDouble.setOnPreferenceChangeListener { preference, newValue ->
+            val useDoubleEntry = newValue as Boolean
+            setImbalanceAccountsHidden(preference.context, useDoubleEntry)
+            true
+        }
 
-        Preference preferenceDouble = findPreference(getString(R.string.key_use_double_entry));
-        preferenceDouble.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(@NonNull Preference preference, Object newValue) {
-                boolean useDoubleEntry = (Boolean) newValue;
-                setImbalanceAccountsHidden(preference.getContext(), useDoubleEntry);
-                return true;
-            }
-        });
-
-        Preference preferenceDelete = findPreference(getString(R.string.key_delete_all_transactions));
-        preferenceDelete.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(@NonNull Preference preference) {
-                showDeleteTransactionsDialog(preference.getContext());
-                return true;
-            }
-        });
+        val preferenceDelete = findPreference<Preference?>(getString(R.string.key_delete_all_transactions))!!
+        preferenceDelete.setOnPreferenceClickListener { preference ->
+            showDeleteTransactionsDialog(preference.context)
+            true
+        }
     }
 
     /**
      * Deletes all transactions in the system
      */
-    public void showDeleteTransactionsDialog(@NonNull Context context) {
-        DeleteAllTransactionsConfirmationDialog deleteTransactionsConfirmationDialog =
-            DeleteAllTransactionsConfirmationDialog.newInstance();
-        if (GnuCashApplication.shouldBackupTransactions(context)) {
-            deleteTransactionsConfirmationDialog.show(getParentFragmentManager(), "transaction_settings");
+    fun showDeleteTransactionsDialog(context: Context) {
+        val dialog = DeleteAllTransactionsConfirmationDialog()
+        if (shouldBackupTransactions(context)) {
+            dialog.show(parentFragmentManager, "transaction_settings")
         } else {
-            deleteTransactionsConfirmationDialog.deleteAll(context);
+            dialog.deleteAll(context)
         }
     }
 
     /**
      * Hide all imbalance accounts when double-entry mode is disabled
      *
-     * @param useDoubleEntry flag if double entry is enabled or not
+     * @param isDoubleEntry flag if double entry is enabled or not
      */
-    private void setImbalanceAccountsHidden(@NonNull Context context, boolean useDoubleEntry) {
-        String isHidden = useDoubleEntry ? "0" : "1";
-        AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
-        List<Commodity> commodities = accountsDbAdapter.getCommoditiesInUse();
-        for (Commodity commodity : commodities) {
-            String uid = accountsDbAdapter.getImbalanceAccountUID(context, commodity);
+    private fun setImbalanceAccountsHidden(context: Context, isDoubleEntry: Boolean) {
+        val isHidden = if (isDoubleEntry) "0" else "1"
+        val accountsDbAdapter = AccountsDbAdapter.instance
+        val commodities = accountsDbAdapter.commoditiesInUse
+        for (commodity in commodities) {
+            val uid = accountsDbAdapter.getImbalanceAccountUID(context, commodity)
             if (uid != null) {
-                accountsDbAdapter.updateRecord(uid, DatabaseSchema.AccountEntry.COLUMN_HIDDEN, isHidden);
+                accountsDbAdapter.updateRecord(
+                    uid,
+                    DatabaseSchema.AccountEntry.COLUMN_HIDDEN,
+                    isHidden
+                )
             }
         }
     }

@@ -13,40 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.db.adapter
 
-package org.gnucash.android.db.adapter;
-
-import android.content.ContentValues;
-import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.database.DatabaseUtils;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteStatement;
-import android.text.TextUtils;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import org.gnucash.android.db.BookDbHelper;
-import org.gnucash.android.db.DatabaseHolder;
-import org.gnucash.android.db.DatabaseSchema;
-import org.gnucash.android.db.DatabaseSchema.AccountEntry;
-import org.gnucash.android.db.DatabaseSchema.CommonColumns;
-import org.gnucash.android.db.DatabaseSchema.SplitEntry;
-import org.gnucash.android.db.DatabaseSchema.TransactionEntry;
-import org.gnucash.android.model.BaseModel;
-import org.gnucash.android.util.TimestampHelper;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import timber.log.Timber;
+import android.content.ContentValues
+import android.content.SharedPreferences
+import android.database.Cursor
+import android.database.DatabaseUtils
+import android.database.SQLException
+import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteStatement
+import org.gnucash.android.db.BookDbHelper.Companion.getBookPreferences
+import org.gnucash.android.db.DatabaseHolder
+import org.gnucash.android.db.DatabaseSchema.AccountEntry
+import org.gnucash.android.db.DatabaseSchema.CommonColumns
+import org.gnucash.android.db.DatabaseSchema.SplitEntry
+import org.gnucash.android.db.DatabaseSchema.TransactionEntry
+import org.gnucash.android.db.getLong
+import org.gnucash.android.db.getString
+import org.gnucash.android.model.BaseModel
+import org.gnucash.android.util.TimestampHelper.getTimestampFromUtcString
+import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
+import org.gnucash.android.util.set
+import timber.log.Timber
+import java.io.Closeable
+import java.io.IOException
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Adapter to be used for creating and opening the database for read/write operations.
@@ -55,29 +46,32 @@ import timber.log.Timber;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public abstract class DatabaseAdapter<Model extends BaseModel> implements Closeable {
-
+abstract class DatabaseAdapter<Model : BaseModel>(
     /**
      * SQLite database
      */
-    protected final DatabaseHolder holder;
-    protected final SQLiteDatabase mDb;
+    val holder: DatabaseHolder,
+    protected val tableName: String,
+    protected val columns: Array<String>,
+    protected val isCached: Boolean = false
+) : Closeable {
+    protected val db: SQLiteDatabase
 
-    protected final String mTableName;
+    @Volatile
+    private var _replaceStatement: SQLiteStatement? = null
 
-    protected final String[] mColumns;
+    @Volatile
+    private var _updateStatement: SQLiteStatement? = null
 
-    private volatile SQLiteStatement mReplaceStatement;
+    @Volatile
+    private var _insertStatement: SQLiteStatement? = null
 
-    private volatile SQLiteStatement mUpdateStatement;
+    protected val cache: MutableMap<String, Model> = ConcurrentHashMap<String, Model>()
 
-    private volatile SQLiteStatement mInsertStatement;
-
-    protected final Map<String, Model> cache = new ConcurrentHashMap<>();
-    protected final boolean isCached;
-
-    public enum UpdateMethod {
-        insert, update, replace
+    enum class UpdateMethod {
+        Insert,
+        Update,
+        Replace
     }
 
     /**
@@ -85,35 +79,18 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      *
      * @param holder Database holder
      */
-    public DatabaseAdapter(@NonNull DatabaseHolder holder, @NonNull String tableName, @NonNull String[] columns) {
-        this(holder, tableName, columns, false);
-    }
+    init {
+        val db = holder.db
+        this.db = db
+        require(db.isOpen) { "Database not open." }
+        require(!db.isReadOnly) { "Database read-only. Writeable database required!" }
 
-    /**
-     * Opens the database adapter with an existing database
-     *
-     * @param holder Database holder
-     */
-    public DatabaseAdapter(@NonNull DatabaseHolder holder, @NonNull String tableName, @NonNull String[] columns, boolean isCached) {
-        this.holder = holder;
-        this.mTableName = tableName;
-        this.mColumns = columns;
-        this.isCached = isCached;
-        SQLiteDatabase db = holder.db;
-        this.mDb = db;
-        if (!db.isOpen()) {
-            throw new IllegalArgumentException("Database not open.");
-        }
-        if (db.isReadOnly()) {
-            throw new IllegalArgumentException("Database read-only. Writeable database required!");
-        }
-
-        if (db.getVersion() >= 9) {
-            createTempView();
+        if (db.version >= 9) {
+            createTempView()
         }
     }
 
-    private void createTempView() {
+    private fun createTempView() {
         //the multiplication by 1.0 is to cause sqlite to handle the value as REAL and not to round off
 
         // Create some temporary views. Temporary views only exists in one DB session, and will not
@@ -125,308 +102,334 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
         // in the queries
 
         //todo: would it be useful to add the split reconciled_state and reconciled_date to this view?
-        mDb.execSQL("CREATE TEMP VIEW IF NOT EXISTS trans_split_acct AS SELECT "
-            + TransactionEntry.TABLE_NAME + "." + CommonColumns.COLUMN_MODIFIED_AT + " AS "
-            + TransactionEntry.TABLE_NAME + "_" + CommonColumns.COLUMN_MODIFIED_AT + ", "
-            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " AS "
-            + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID + ", "
-            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_DESCRIPTION + " AS "
-            + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_DESCRIPTION + ", "
-            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_NOTES + " AS "
-            + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_NOTES + ", "
-            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " AS "
-            + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + ", "
-            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_EXPORTED + " AS "
-            + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_EXPORTED + ", "
-            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + " AS "
-            + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TEMPLATE + ", "
-            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ID + " AS "
-            + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_ID + ", "
-            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_UID + " AS "
-            + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_UID + ", "
-            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TYPE + " AS "
-            + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_TYPE + ", "
-            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_VALUE_NUM + " AS "
-            + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_VALUE_NUM + ", "
-            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_VALUE_DENOM + " AS "
-            + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_VALUE_DENOM + ", "
-            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_QUANTITY_NUM + " AS "
-            + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_NUM + ", "
-            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_QUANTITY_DENOM + " AS "
-            + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_DENOM + ", "
-            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_MEMO + " AS "
-            + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_MEMO + ", "
-            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_UID + " AS "
-            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID + ", "
-            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_NAME + " AS "
-            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_NAME + ", "
-            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_COMMODITY_UID + " AS "
-            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_COMMODITY_UID + ", "
-            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " AS "
-            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + ", "
-            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_PLACEHOLDER + " AS "
-            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_PLACEHOLDER + ", "
-            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_COLOR_CODE + " AS "
-            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_COLOR_CODE + ", "
-            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_FAVORITE + " AS "
-            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_FAVORITE + ", "
-            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_FULL_NAME + " AS "
-            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_FULL_NAME + ", "
-            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_TYPE + " AS "
-            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_TYPE + ", "
-            + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID + " AS "
-            + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID
-            + " FROM " + TransactionEntry.TABLE_NAME + ", " + SplitEntry.TABLE_NAME + " ON "
-            + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + "=" + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID
-            + ", " + AccountEntry.TABLE_NAME + " ON "
-            + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID + "=" + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_UID
-        );
 
-        mDb.execSQL("CREATE TEMP VIEW IF NOT EXISTS trans_extra_info AS SELECT " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID +
-            " AS trans_acct_t_uid, SUBSTR ( MIN ( ( CASE WHEN IFNULL ( " + SplitEntry.TABLE_NAME + "_" +
-            SplitEntry.COLUMN_MEMO + ", '' ) == '' THEN 'a' ELSE 'b' END ) || " +
-            AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID +
-            " ), 2 ) AS trans_acct_a_uid, TOTAL ( CASE WHEN " + SplitEntry.TABLE_NAME + "_" +
-            SplitEntry.COLUMN_TYPE + " = 'DEBIT' THEN " + SplitEntry.TABLE_NAME + "_" +
-            SplitEntry.COLUMN_VALUE_NUM + " ELSE - " + SplitEntry.TABLE_NAME + "_" +
-            SplitEntry.COLUMN_VALUE_NUM + " END ) * 1.0 / " + SplitEntry.TABLE_NAME + "_" +
-            SplitEntry.COLUMN_VALUE_DENOM + " AS trans_acct_balance, COUNT ( DISTINCT " +
-            AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_COMMODITY_UID +
-            " ) AS trans_currency_count, COUNT (*) AS trans_split_count FROM trans_split_acct " +
-            " GROUP BY " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID
-        );
+        db.execSQL(
+            ("CREATE TEMP VIEW IF NOT EXISTS trans_split_acct AS SELECT "
+                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_MODIFIED_AT + " AS "
+                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_MODIFIED_AT + ", "
+                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " AS "
+                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID + ", "
+                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_DESCRIPTION + " AS "
+                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_DESCRIPTION + ", "
+                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_NOTES + " AS "
+                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_NOTES + ", "
+                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " AS "
+                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + ", "
+                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_EXPORTED + " AS "
+                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_EXPORTED + ", "
+                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + " AS "
+                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TEMPLATE + ", "
+                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ID + " AS "
+                    + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_ID + ", "
+                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_UID + " AS "
+                    + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_UID + ", "
+                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TYPE + " AS "
+                    + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_TYPE + ", "
+                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_VALUE_NUM + " AS "
+                    + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_VALUE_NUM + ", "
+                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_VALUE_DENOM + " AS "
+                    + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_VALUE_DENOM + ", "
+                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_QUANTITY_NUM + " AS "
+                    + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_NUM + ", "
+                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_QUANTITY_DENOM + " AS "
+                    + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_DENOM + ", "
+                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_MEMO + " AS "
+                    + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_MEMO + ", "
+                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_UID + " AS "
+                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID + ", "
+                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_NAME + " AS "
+                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_NAME + ", "
+                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_COMMODITY_UID + " AS "
+                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_COMMODITY_UID + ", "
+                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " AS "
+                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + ", "
+                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_PLACEHOLDER + " AS "
+                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_PLACEHOLDER + ", "
+                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_COLOR_CODE + " AS "
+                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_COLOR_CODE + ", "
+                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_FAVORITE + " AS "
+                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_FAVORITE + ", "
+                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_FULL_NAME + " AS "
+                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_FULL_NAME + ", "
+                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_TYPE + " AS "
+                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_TYPE + ", "
+                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID + " AS "
+                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID
+                    + " FROM " + TransactionEntry.TABLE_NAME + ", " + SplitEntry.TABLE_NAME + " ON "
+                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + "=" + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID
+                    + ", " + AccountEntry.TABLE_NAME + " ON "
+                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID + "=" + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_UID)
+        )
+
+        db.execSQL(
+            "CREATE TEMP VIEW IF NOT EXISTS trans_extra_info AS SELECT " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID +
+                    " AS trans_acct_t_uid, SUBSTR ( MIN ( ( CASE WHEN IFNULL ( " + SplitEntry.TABLE_NAME + "_" +
+                    SplitEntry.COLUMN_MEMO + ", '' ) == '' THEN 'a' ELSE 'b' END ) || " +
+                    AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID +
+                    " ), 2 ) AS trans_acct_a_uid, TOTAL ( CASE WHEN " + SplitEntry.TABLE_NAME + "_" +
+                    SplitEntry.COLUMN_TYPE + " = 'DEBIT' THEN " + SplitEntry.TABLE_NAME + "_" +
+                    SplitEntry.COLUMN_VALUE_NUM + " ELSE - " + SplitEntry.TABLE_NAME + "_" +
+                    SplitEntry.COLUMN_VALUE_NUM + " END ) * 1.0 / " + SplitEntry.TABLE_NAME + "_" +
+                    SplitEntry.COLUMN_VALUE_DENOM + " AS trans_acct_balance, COUNT ( DISTINCT " +
+                    AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_COMMODITY_UID +
+                    " ) AS trans_currency_count, COUNT (*) AS trans_split_count FROM trans_split_acct " +
+                    " GROUP BY " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID
+        )
     }
 
     /**
      * Checks if the database is open
      *
-     * @return <code>true</code> if the database is open, <code>false</code> otherwise
+     * @return `true` if the database is open, `false` otherwise
      */
-    public boolean isOpen() {
-        return mDb.isOpen();
-    }
+    val isOpen: Boolean
+        get() = db.isOpen()
 
     /**
      * Adds a record to the database with the data contained in the model.
-     * <p>This method uses the SQL REPLACE instructions to replace any record with a matching GUID.
-     * So beware of any foreign keys with cascade dependencies which might need to be re-added</p>
+     *
+     * This method uses the SQL REPLACE instructions to replace any record with a matching GUID.
+     * So beware of any foreign keys with cascade dependencies which might need to be re-added
      *
      * @param model Model to be saved to the database
      */
-    public void addRecord(@NonNull final Model model) throws SQLException {
-        addRecord(model, UpdateMethod.replace);
+    @Throws(SQLException::class)
+    fun addRecord(model: Model) {
+        addRecord(model, UpdateMethod.Replace)
     }
 
     /**
      * Add a model record to the database.
-     * <p>If unsure about which {@code updateMethod} to use, use {@link UpdateMethod#replace}</p>
      *
-     * @param model        Subclass of {@link BaseModel} to be added
+     * If unsure about which `updateMethod` to use, use [UpdateMethod.Replace]
+     *
+     * @param model        Subclass of [BaseModel] to be added
      * @param updateMethod Method to use for adding the record
      */
-    public void addRecord(@NonNull final Model model, UpdateMethod updateMethod) throws SQLException {
-        Timber.d("Adding record to database: %s %s", model.getClass().getSimpleName(), model.getUID());
-        final SQLiteStatement statement;
-        switch (updateMethod) {
-            case insert:
-                statement = getInsertStatement();
-                synchronized (statement) {
-                    model.id = bind(statement, model).executeInsert();
+    @Throws(SQLException::class)
+    open fun addRecord(model: Model, updateMethod: UpdateMethod) {
+        Timber.d(
+            "Adding record to database: %s %s",
+            model.javaClass.getSimpleName(),
+            model.uid
+        )
+        val statement: SQLiteStatement
+        when (updateMethod) {
+            UpdateMethod.Insert -> {
+                statement = insertStatement
+                synchronized(statement) {
+                    model.id = bind(statement, model).executeInsert()
                 }
-                break;
-            case update:
-                statement = getUpdateStatement();
-                synchronized (statement) {
-                    bind(statement, model).execute();
+            }
+
+            UpdateMethod.Update -> {
+                statement = updateStatement
+                synchronized(statement) {
+                    bind(statement, model).execute()
                 }
-                break;
-            default:
-                statement = getReplaceStatement();
-                synchronized (statement) {
-                    model.id = bind(statement, model).executeInsert();
+            }
+
+            else -> {
+                statement = replaceStatement
+                synchronized(statement) {
+                    model.id = bind(statement, model).executeInsert()
                 }
-                break;
+            }
         }
-        if (isCached) cache.put(model.getUID(), model);
+        if (isCached) cache[model.uid] = model
     }
 
     /**
-     * Persist the model object to the database as records using the {@code updateMethod}
+     * Persist the model object to the database as records using the `updateMethod`
      *
      * @param models       List of records
      * @param updateMethod Method to use when persisting them
      * @return Number of rows affected in the database
      */
-    private long doAddModels(@NonNull final List<Model> models, UpdateMethod updateMethod) throws SQLException {
-        long nRow = 0;
-        final SQLiteStatement statement;
-        switch (updateMethod) {
-            case update:
-                statement = getUpdateStatement();
-                synchronized (statement) {
-                    for (Model model : models) {
-                        bind(statement, model).execute();
-                        nRow++;
+    @Throws(SQLException::class)
+    private fun doAddModels(models: List<Model>, updateMethod: UpdateMethod): Long {
+        var nRow: Long = 0
+        val statement: SQLiteStatement
+        when (updateMethod) {
+            UpdateMethod.Update -> {
+                statement = updateStatement
+                synchronized(statement) {
+                    for (model in models) {
+                        bind(statement, model).execute()
+                        nRow++
                     }
                 }
-                break;
-            case insert:
-                statement = getInsertStatement();
-                synchronized (statement) {
-                    for (Model model : models) {
-                        model.id = bind(statement, model).executeInsert();
-                        nRow++;
+            }
+
+            UpdateMethod.Insert -> {
+                statement = insertStatement
+                synchronized(statement) {
+                    for (model in models) {
+                        model.id = bind(statement, model).executeInsert()
+                        nRow++
                     }
                 }
-                break;
-            default:
-                statement = getReplaceStatement();
-                synchronized (statement) {
-                    for (Model model : models) {
-                        model.id = bind(statement, model).executeInsert();
-                        nRow++;
+            }
+
+            else -> {
+                statement = replaceStatement
+                synchronized(statement) {
+                    for (model in models) {
+                        model.id = bind(statement, model).executeInsert()
+                        nRow++
                     }
                 }
-                break;
+            }
         }
-        return nRow;
+        return nRow
     }
 
     /**
      * Add multiple records to the database at once
-     * <p>Either all or none of the records will be inserted/updated into the database.</p>
      *
-     * @param modelList List of model records
+     * Either all or none of the records will be inserted/updated into the database.
+     *
+     * @param models List of model records
      * @return Number of rows inserted
      */
-    public long bulkAddRecords(@NonNull List<Model> modelList) {
-        return bulkAddRecords(modelList, UpdateMethod.replace);
+    fun bulkAddRecords(models: List<Model>): Long {
+        return bulkAddRecords(models, UpdateMethod.Replace)
     }
 
-    public long bulkAddRecords(@NonNull List<Model> modelList, UpdateMethod updateMethod) throws SQLException {
-        if (modelList.isEmpty()) {
-            Timber.w("Empty model list. Cannot bulk add records, returning 0");
-            return 0;
+    @Throws(SQLException::class)
+    open fun bulkAddRecords(models: List<Model>, updateMethod: UpdateMethod): Long {
+        if (models.isEmpty()) {
+            Timber.w("Empty model list. Cannot bulk add records, returning 0")
+            return 0
         }
 
-        Timber.i("Bulk adding %d %s records to the database", modelList.size(),
-            modelList.get(0).getClass().getSimpleName());
-        long nRow;
+        Timber.i(
+            "Bulk adding %d %s records to the database",
+            models.size,
+            models[0].javaClass.getSimpleName()
+        )
+        var nRow: Long
         try {
-            beginTransaction();
-            nRow = doAddModels(modelList, updateMethod);
-            setTransactionSuccessful();
+            beginTransaction()
+            nRow = doAddModels(models, updateMethod)
+            setTransactionSuccessful()
             if (isCached) {
-                cache.clear();
+                cache.clear()
             }
         } finally {
-            endTransaction();
+            endTransaction()
         }
 
-        return nRow;
+        return nRow
     }
 
     /**
      * Builds an instance of the model from the database record entry
-     * <p>When implementing this method, remember to call {@link #populateBaseModelAttributes(Cursor, BaseModel)}</p>
+     *
+     * When implementing this method, remember to call [.populateBaseModelAttributes]
      *
      * @param cursor Cursor pointing to the record
      * @return New instance of the model from database record
      */
-    public abstract Model buildModelInstance(@NonNull final Cursor cursor);
+    abstract fun buildModelInstance(cursor: Cursor): Model
 
     /**
-     * Generates an {@link SQLiteStatement} with values from the {@code model}.
+     * Generates an [SQLiteStatement] with values from the `model`.
      * This statement can be executed to replace a record in the database.
-     * <p>If the {@link #mReplaceStatement} is null, subclasses should create a new statement and return.<br/>
-     * If it is not null, the previous bindings will be cleared and replaced with those from the model</p>
+     *
+     * If the [.mReplaceStatement] is null, subclasses should create a new statement and return.<br></br>
+     * If it is not null, the previous bindings will be cleared and replaced with those from the model
      *
      * @return SQLiteStatement for replacing a record in the database
      */
-    protected final @NonNull SQLiteStatement getReplaceStatement() {
-        SQLiteStatement stmt = mReplaceStatement;
-        if (stmt == null) {
-            synchronized (this) {
-                stmt = mReplaceStatement;
-                if (stmt == null) {
-                    String sql = buildReplaceStatement();
-                    mReplaceStatement = stmt = mDb.compileStatement(sql);
+    protected val replaceStatement: SQLiteStatement
+        get() {
+            var stmt = _replaceStatement
+            if (stmt == null) {
+                synchronized(this) {
+                    stmt = _replaceStatement
+                    if (stmt == null) {
+                        val sql = buildReplaceStatement()
+                        stmt = db.compileStatement(sql)
+                        _replaceStatement = stmt
+                    }
                 }
             }
+            return stmt!!
         }
-        return stmt;
-    }
 
-    private String buildReplaceStatement() {
-        final int columnsCount = mColumns.length;
-        StringBuilder sql = new StringBuilder()
-            .append("REPLACE INTO ").append(mTableName).append(" (");
-        for (int i = 0; i < columnsCount; i++) {
-            sql.append(mColumns[i]).append(",");
+    private fun buildReplaceStatement(): String {
+        val columnsCount = columns.size
+        val sql = StringBuilder("REPLACE INTO ").append(tableName).append(" (")
+        for (i in 0 until columnsCount) {
+            sql.append(columns[i]).append(",")
         }
         sql.append(CommonColumns.COLUMN_UID)
-            .append(") VALUES (");
-        for (int i = 0; i < columnsCount; i++) {
-            sql.append("?,");
+            .append(") VALUES (")
+        for (i in 0 until columnsCount) {
+            sql.append("?,")
         }
-        sql.append("?)");
-        return sql.toString();
+        sql.append("?)")
+        return sql.toString()
     }
 
-    protected final @NonNull SQLiteStatement getUpdateStatement() {
-        SQLiteStatement stmt = mUpdateStatement;
-        if (stmt == null) {
-            synchronized (this) {
-                stmt = mUpdateStatement;
-                if (stmt == null) {
-                    String sql = buildUpdateStatement();
-                    mUpdateStatement = stmt = mDb.compileStatement(sql);
+    protected val updateStatement: SQLiteStatement
+        get() {
+            var stmt = _updateStatement
+            if (stmt == null) {
+                synchronized(this) {
+                    stmt = _updateStatement
+                    if (stmt == null) {
+                        val sql = buildUpdateStatement()
+                        stmt = db.compileStatement(sql)
+                        _updateStatement = stmt
+                    }
                 }
             }
+            return stmt!!
         }
-        return stmt;
+
+    private fun buildUpdateStatement(): String {
+        val columnsCount = columns.size
+        val sql = StringBuilder()
+            .append("UPDATE ").append(tableName).append(" SET ")
+        for (i in 0 until columnsCount) {
+            sql.append(columns[i]).append("=?,")
+        }
+        sql.deleteCharAt(sql.length - 1) //delete the last ","
+        sql.append(" WHERE ").append(CommonColumns.COLUMN_UID).append("=?")
+        return sql.toString()
     }
 
-    private String buildUpdateStatement() {
-        final int columnsCount = mColumns.length;
-        StringBuilder sql = new StringBuilder()
-            .append("UPDATE ").append(mTableName).append(" SET ");
-        for (int i = 0; i < columnsCount; i++) {
-            sql.append(mColumns[i]).append("=?,");
-        }
-        sql.deleteCharAt(sql.length() - 1);//delete the last ","
-        sql.append(" WHERE ").append(CommonColumns.COLUMN_UID).append("=?");
-        return sql.toString();
-    }
-
-    protected final @NonNull SQLiteStatement getInsertStatement() {
-        SQLiteStatement stmt = mInsertStatement;
-        if (stmt == null) {
-            synchronized (this) {
-                stmt = mInsertStatement;
-                if (stmt == null) {
-                    String sql = buildInsertStatement();
-                    mInsertStatement = stmt = mDb.compileStatement(sql);
+    protected val insertStatement: SQLiteStatement
+        get() {
+            var stmt = _insertStatement
+            if (stmt == null) {
+                synchronized(this) {
+                    stmt = _insertStatement
+                    if (stmt == null) {
+                        val sql = buildInsertStatement()
+                        stmt = db.compileStatement(sql)
+                        _insertStatement = stmt
+                    }
                 }
             }
+            return stmt!!
         }
-        return stmt;
-    }
 
-    private String buildInsertStatement() {
-        final int columnsCount = mColumns.length;
-        StringBuilder sql = new StringBuilder()
-            .append("INSERT INTO ").append(mTableName).append(" (");
-        for (int i = 0; i < columnsCount; i++) {
-            sql.append(mColumns[i]).append(",");
+    private fun buildInsertStatement(): String {
+        val columnsCount = columns.size
+        val sql = StringBuilder("INSERT INTO ").append(tableName).append(" (")
+        for (i in 0 until columnsCount) {
+            sql.append(columns[i]).append(",")
         }
         sql.append(CommonColumns.COLUMN_UID)
-            .append(") VALUES (");
-        for (int i = 0; i < columnsCount; i++) {
-            sql.append("?,");
+            .append(") VALUES (")
+        for (i in 0 until columnsCount) {
+            sql.append("?,")
         }
-        sql.append("?)");
-        return sql.toString();
+        sql.append("?)")
+        return sql.toString()
     }
 
     /**
@@ -436,62 +439,61 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @param model Model from which to read bind attributes
      * @return SQL statement ready for execution
      */
-    protected abstract @NonNull SQLiteStatement bind(@NonNull SQLiteStatement stmt, @NonNull final Model model) throws SQLException;
+    @Throws(SQLException::class)
+    protected abstract fun bind(stmt: SQLiteStatement, model: Model): SQLiteStatement
 
-    protected void bindBaseModel(@NonNull SQLiteStatement stmt, @NonNull final Model model) {
-        stmt.clearBindings();
-        stmt.bindString(1 + mColumns.length, model.getUID());
+    protected fun bindBaseModel(stmt: SQLiteStatement, model: Model) {
+        stmt.clearBindings()
+        stmt.bindString(1 + columns.size, model.uid)
     }
 
-    @Nullable
-    public Model getRecordOrNull(String uid) {
+    fun getRecordOrNull(uid: String): Model? {
         if (isCached) {
-            Model model = cache.get(uid);
-            if (model != null) return model;
+            val model = cache[uid]
+            if (model != null) return model
         }
-        Timber.v("Fetching record from %s with UID %s", mTableName, uid);
-        Cursor cursor = fetchRecord(uid);
+        Timber.v("Fetching record from %s with UID %s", tableName, uid)
+        val cursor = fetchRecord(uid) ?: return null
         try {
             if (cursor.moveToFirst()) {
-                Model model = buildModelInstance(cursor);
+                val model = buildModelInstance(cursor)
                 if (isCached) {
-                    cache.put(uid, model);
+                    cache[uid] = model
                 }
-                return model;
+                return model
             }
         } finally {
-            cursor.close();
+            cursor.close()
         }
-        return null;
+        return null
     }
 
     /**
-     * Returns a model instance populated with data from the record with GUID {@code uid}
-     * <p>Sub-classes which require special handling should override this method</p>
+     * Returns a model instance populated with data from the record with GUID `uid`
+     *
+     * Sub-classes which require special handling should override this method
      *
      * @param uid GUID of the record
      * @return BaseModel instance of the record
      * @throws IllegalArgumentException if the record UID does not exist in thd database
      */
-    @NonNull
-    public Model getRecord(@NonNull String uid) throws IllegalArgumentException {
-        Model model = getRecordOrNull(uid);
-        if (model == null) {
-            throw new IllegalArgumentException("Record for " + mTableName + " not found in " + mTableName);
-        }
-        return model;
+    @Throws(IllegalArgumentException::class)
+    fun getRecord(uid: String): Model {
+        val model = getRecordOrNull(uid)
+        requireNotNull(model) { "Record for $tableName not found in $tableName" }
+        return model
     }
 
     /**
-     * Overload of {@link #getRecord(String)}
-     * Simply converts the record ID to a GUID and calls {@link #getRecord(String)}
+     * Overload of [.getRecord]
+     * Simply converts the record ID to a GUID and calls [.getRecord]
      *
      * @param id Database record ID
-     * @return Subclass of {@link BaseModel} containing record info
+     * @return Subclass of [BaseModel] containing record info
      */
-    @NonNull
-    public Model getRecord(long id) throws IllegalArgumentException {
-        return getRecord(getUID(id));
+    @Throws(IllegalArgumentException::class)
+    fun getRecord(id: Long): Model {
+        return getRecord(getUID(id))
     }
 
     /**
@@ -499,64 +501,64 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      *
      * @return List of records in the database
      */
-    @NonNull
-    public List<Model> getAllRecords() {
-        return getAllRecords(null, null);
-    }
+    open val allRecords: List<Model>
+        get() = getAllRecords(null, null)
 
-    @NonNull
-    public List<Model> getAllRecords(@Nullable String where, @Nullable String[] whereArgs) {
-        List<Model> modelRecords = new ArrayList<>();
-        Cursor cursor = fetchAllRecords(where, whereArgs, null);
+    fun getAllRecords(where: String?, whereArgs: Array<String?>?): List<Model> {
+        val cursor = fetchAllRecords(where, whereArgs, null) ?: return emptyList()
+        val records = mutableListOf<Model>()
         try {
             if (cursor.moveToFirst()) {
                 do {
-                    modelRecords.add(buildModelInstance(cursor));
-                } while (cursor.moveToNext());
+                    records.add(buildModelInstance(cursor))
+                } while (cursor.moveToNext())
             }
         } finally {
-            cursor.close();
+            cursor.close()
         }
-        return modelRecords;
+        return records
     }
 
-    @NonNull
-    protected List<Model> getRecords(@Nullable Cursor cursor) {
-        List<Model> records = new ArrayList<>();
-        if (cursor == null) return records;
+    protected fun getRecords(cursor: Cursor?): List<Model> {
+        if (cursor == null) return emptyList()
 
+        val records = mutableListOf<Model>()
         try {
             if (cursor.moveToFirst()) {
                 do {
-                    Model model = buildModelInstance(cursor);
-                    records.add(model);
+                    val model = buildModelInstance(cursor)
+                    records.add(model)
                     if (isCached) {
-                        cache.put(model.getUID(), model);
+                        cache[model.uid] = model
                     }
-                } while (cursor.moveToNext());
+                } while (cursor.moveToNext())
             }
         } finally {
-            cursor.close();
+            cursor.close()
         }
-        return records;
+        return records
     }
 
     /**
      * Extracts the attributes of the base model and adds them to the ContentValues object provided
      *
      * @param contentValues Content values to which to add attributes
-     * @param model         {@link org.gnucash.android.model.BaseModel} from which to extract values
-     * @return {@link android.content.ContentValues} with the data to be inserted into the db
+     * @param model         [BaseModel] from which to extract values
+     * @return [ContentValues] with the data to be inserted into the db
      */
-    protected ContentValues extractBaseModelAttributes(@NonNull ContentValues contentValues, @NonNull Model model) {
-        contentValues.put(CommonColumns.COLUMN_UID, model.getUID());
-        contentValues.put(CommonColumns.COLUMN_CREATED_AT, TimestampHelper.getUtcStringFromTimestamp(model.getCreatedTimestamp()));
+    protected fun extractBaseModelAttributes(
+        contentValues: ContentValues,
+        model: Model
+    ): ContentValues {
+        contentValues[CommonColumns.COLUMN_UID] = model.uid
+        contentValues[CommonColumns.COLUMN_CREATED_AT] =
+            getUtcStringFromTimestamp(model.createdTimestamp)
         //there is a trigger in the database for updated the modified_at column
         /* Due to the use of SQL REPLACE syntax, we insert the created_at values each time
          * (maintain the original creation time and not the time of creation of the replacement)
          * The updated_at column has a trigger in the database which will update the column
          */
-        return contentValues;
+        return contentValues
     }
 
     /**
@@ -565,40 +567,38 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @param cursor Cursor pointing to database record
      * @param model  Model instance to be initialized
      */
-    protected void populateBaseModelAttributes(Cursor cursor, BaseModel model) {
-        long id = cursor.getLong(cursor.getColumnIndexOrThrow(CommonColumns.COLUMN_ID));
-        String uid = cursor.getString(cursor.getColumnIndexOrThrow(CommonColumns.COLUMN_UID));
-        String created = cursor.getString(cursor.getColumnIndexOrThrow(CommonColumns.COLUMN_CREATED_AT));
-        String modified = cursor.getString(cursor.getColumnIndexOrThrow(CommonColumns.COLUMN_MODIFIED_AT));
+    protected fun populateBaseModelAttributes(cursor: Cursor, model: BaseModel) {
+        val id = cursor.getLong(CommonColumns.COLUMN_ID)
+        val uid = cursor.getString(CommonColumns.COLUMN_UID)!!
+        val created = cursor.getString(CommonColumns.COLUMN_CREATED_AT)!!
+        val modified = cursor.getString(CommonColumns.COLUMN_MODIFIED_AT)!!
 
-        model.id = id;
-        model.setUID(uid);
-        model.setCreatedTimestamp(TimestampHelper.getTimestampFromUtcString(created));
-        model.setModifiedTimestamp(TimestampHelper.getTimestampFromUtcString(modified));
+        model.id = id
+        model.setUID(uid)
+        model.createdTimestamp = getTimestampFromUtcString(created)
+        model.modifiedTimestamp = getTimestampFromUtcString(modified)
     }
 
     /**
-     * Retrieves record with GUID {@code uid} from database table
+     * Retrieves record with GUID `uid` from database table
      *
      * @param uid GUID of record to be retrieved
-     * @return {@link Cursor} to record retrieved
+     * @return [Cursor] to record retrieved
      */
-    public Cursor fetchRecord(@NonNull String uid) {
-        if (TextUtils.isEmpty(uid)) {
-            throw new IllegalArgumentException("UID required");
-        }
-        String where = CommonColumns.COLUMN_UID + "=?";
-        String[] whereArgs = new String[]{uid};
-        return mDb.query(mTableName, null, where, whereArgs, null, null, null);
+    fun fetchRecord(uid: String): Cursor? {
+        require(!uid.isEmpty()) { "UID required" }
+        val where = CommonColumns.COLUMN_UID + "=?"
+        val whereArgs = arrayOf<String?>(uid)
+        return db.query(tableName, null, where, whereArgs, null, null, null)
     }
 
     /**
      * Retrieves all records from database table
      *
-     * @return {@link Cursor} to all records in table <code>tableName</code>
+     * @return [Cursor] to all records in table `tableName`
      */
-    public Cursor fetchAllRecords() {
-        return fetchAllRecords(null, null, null);
+    open fun fetchAllRecords(): Cursor? {
+        return fetchAllRecords(null, null, null)
     }
 
     /**
@@ -609,20 +609,30 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @param orderBy   SQL orderby clause
      * @return Cursor to records matching conditions
      */
-    public Cursor fetchAllRecords(String where, String[] whereArgs, String orderBy) {
-        Timber.v("Fetching all accounts from db where " + where + "/" + Arrays.toString(whereArgs) + " order by " + orderBy);
-        return mDb.query(mTableName, null, where, whereArgs, null, null, orderBy);
+    fun fetchAllRecords(where: String?, whereArgs: Array<String?>?, orderBy: String?): Cursor? {
+        Timber.v(
+            "Fetching all accounts from db where %s/%s order by %s",
+            where,
+            whereArgs.contentToString(),
+            orderBy
+        )
+        return db.query(tableName, null, where, whereArgs, null, null, orderBy)
     }
 
     /**
-     * Deletes record with ID <code>rowID</code> from database table.
+     * Deletes record with ID `rowID` from database table.
      *
      * @param rowId ID of record to be deleted
-     * @return <code>true</code> if deletion was successful, <code>false</code> otherwise
+     * @return `true` if deletion was successful, `false` otherwise
      */
-    public boolean deleteRecord(long rowId) throws SQLException {
-        Timber.d("Deleting record with id " + rowId + " from " + mTableName);
-        return mDb.delete(mTableName, DatabaseSchema.CommonColumns._ID + "=" + rowId, null) > 0;
+    @Throws(SQLException::class)
+    open fun deleteRecord(rowId: Long): Boolean {
+        Timber.d("Deleting record with id %d from %s", rowId, tableName)
+        return db.delete(
+            tableName,
+            CommonColumns.COLUMN_ID + "=" + rowId,
+            null
+        ) > 0
     }
 
     /**
@@ -630,9 +640,9 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      *
      * @return Number of deleted records
      */
-    public int deleteAllRecords() {
-        cache.clear();
-        return mDb.delete(mTableName, null, null);
+    open fun deleteAllRecords(): Int {
+        cache.clear()
+        return db.delete(tableName, null, null)
     }
 
     /**
@@ -642,27 +652,30 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @return Long record ID
      * @throws IllegalArgumentException if the GUID does not exist in the database
      */
-    public long getID(@NonNull String uid) {
+    @Throws(IllegalArgumentException::class)
+    fun getID(uid: String): Long {
         if (isCached) {
-            Model model = cache.get(uid);
-            if (model != null) return model.id;
+            val model = cache[uid]
+            if (model != null) return model.id
         }
-        Cursor cursor = mDb.query(mTableName,
-            new String[]{DatabaseSchema.CommonColumns._ID},
-            DatabaseSchema.CommonColumns.COLUMN_UID + " = ?",
-            new String[]{uid},
-            null, null, null);
-        final long result;
+        val cursor = db.query(
+            tableName,
+            arrayOf<String?>(CommonColumns.COLUMN_ID),
+            CommonColumns.COLUMN_UID + " = ?",
+            arrayOf<String?>(uid),
+            null, null, null
+        )
+        val result: Long
         try {
             if (cursor.moveToFirst()) {
-                result = cursor.getLong(0);
+                result = cursor.getLong(0)
             } else {
-                throw new IllegalArgumentException("Record not found in " + mTableName);
+                throw IllegalArgumentException("Record not found in $tableName")
             }
         } finally {
-            cursor.close();
+            cursor.close()
         }
-        return result;
+        return result
     }
 
     /**
@@ -672,27 +685,29 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @return GUID of the record
      * @throws IllegalArgumentException if the record ID does not exist in the database
      */
-    public String getUID(long id) {
+    @Throws(IllegalArgumentException::class)
+    fun getUID(id: Long): String {
         if (isCached) {
-            for (Model model : cache.values()) {
+            for (model in cache.values) {
                 if (model.id == id) {
-                    return model.getUID();
+                    return model.uid
                 }
             }
         }
-        Cursor cursor = mDb.query(mTableName,
-            new String[]{DatabaseSchema.CommonColumns.COLUMN_UID},
-            DatabaseSchema.CommonColumns._ID + " = " + id,
-            null, null, null, null);
+        val cursor = db.query(
+            tableName,
+            arrayOf<String?>(CommonColumns.COLUMN_UID),
+            CommonColumns.COLUMN_ID + " = " + id,
+            null, null, null, null
+        )
 
         try {
             if (cursor.moveToFirst()) {
-                return cursor.getString(0);
-            } else {
-                throw new IllegalArgumentException("Record not found in " + mTableName);
+                return cursor.getString(0)
             }
+            throw IllegalArgumentException("Record not found in $tableName")
         } finally {
-            cursor.close();
+            cursor.close()
         }
     }
 
@@ -704,25 +719,34 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @param newValue  New value to be assigned to the columnKey
      * @return Number of records affected
      */
-    protected int updateRecord(String tableName, long recordId, String columnKey, String newValue) {
+    protected fun updateRecord(
+        tableName: String,
+        recordId: Long,
+        columnKey: String,
+        newValue: String?
+    ): Int {
         if (isCached) {
-            String uid = null;
-            for (Model model : cache.values()) {
+            var uid: String? = null
+            for (model in cache.values) {
                 if (model.id == recordId) {
-                    uid = model.getUID();
-                    break;
+                    uid = model.uid
+                    break
                 }
             }
-            if (uid != null) cache.remove(uid);
+            if (uid != null) cache.remove(uid)
         }
-        ContentValues contentValues = new ContentValues();
+        val contentValues = ContentValues()
         if (newValue == null) {
-            contentValues.putNull(columnKey);
+            contentValues.putNull(columnKey)
         } else {
-            contentValues.put(columnKey, newValue);
+            contentValues[columnKey] = newValue
         }
-        return mDb.update(tableName, contentValues,
-            DatabaseSchema.CommonColumns._ID + "=" + recordId, null);
+        return db.update(
+            tableName,
+            contentValues,
+            CommonColumns.COLUMN_ID + "=" + recordId,
+            null
+        )
     }
 
     /**
@@ -733,29 +757,50 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @param newValue  New value to be assigned to the columnKey
      * @return Number of records affected
      */
-    public int updateRecord(@NonNull String uid, @NonNull String columnKey, String newValue) {
-        if (isCached) cache.remove(uid);
-        return updateRecords(CommonColumns.COLUMN_UID + "=?", new String[]{uid}, columnKey, newValue);
+    fun updateRecord(uid: String, columnKey: String, newValue: String?): Int {
+        if (isCached) cache.remove(uid)
+        return updateRecords(
+            CommonColumns.COLUMN_UID + "=?",
+            arrayOf<String?>(uid),
+            columnKey,
+            newValue
+        )
     }
 
     /**
-     * Overloaded method. Updates the record with GUID {@code uid} with the content values
+     * Overloaded method. Updates the record with GUID `uid` with the content values
      *
      * @param uid           GUID of the record
      * @param contentValues Content values to update
      * @return Number of records updated
      */
-    public int updateRecord(@NonNull String uid, @NonNull ContentValues contentValues) {
-        if (isCached) cache.remove(uid);
-        return mDb.update(mTableName, contentValues, CommonColumns.COLUMN_UID + "=?", new String[]{uid});
+    fun updateRecord(uid: String, contentValues: ContentValues): Int {
+        if (isCached) cache.remove(uid)
+        return db.update(
+            tableName,
+            contentValues,
+            CommonColumns.COLUMN_UID + "=?",
+            arrayOf<String?>(uid)
+        )
     }
 
-    public void updateRecord(Model model) throws SQLException {
-        addRecord(model, UpdateMethod.update);
+    @Throws(SQLException::class)
+    fun insert(model: Model) {
+        addRecord(model, UpdateMethod.Insert)
+    }
+
+    @Throws(SQLException::class)
+    fun replace(model: Model) {
+        addRecord(model, UpdateMethod.Replace)
+    }
+
+    @Throws(SQLException::class)
+    fun update(model: Model) {
+        addRecord(model, UpdateMethod.Update)
     }
 
     /**
-     * Updates all records which match the {@code where} clause with the {@code newValue} for the column
+     * Updates all records which match the `where` clause with the `newValue` for the column
      *
      * @param where     SQL where clause
      * @param whereArgs String arguments for where clause
@@ -763,98 +808,113 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @param newValue  New value to be assigned to the columnKey
      * @return Number of records affected
      */
-    public int updateRecords(String where, String[] whereArgs, @NonNull String columnKey, String newValue) {
-        ContentValues contentValues = new ContentValues();
+    fun updateRecords(
+        where: String?,
+        whereArgs: Array<String?>?,
+        columnKey: String,
+        newValue: String?
+    ): Int {
+        val contentValues = ContentValues()
         if (newValue == null) {
-            contentValues.putNull(columnKey);
+            contentValues.putNull(columnKey)
         } else {
-            contentValues.put(columnKey, newValue);
+            contentValues[columnKey] = newValue
         }
-        return mDb.update(mTableName, contentValues, where, whereArgs);
+        return db.update(tableName, contentValues, where, whereArgs)
     }
 
     /**
      * Deletes a record from the database given its unique identifier.
-     * <p>Overload of the method {@link #deleteRecord(long)}</p>
+     *
+     * Overload of the method [.deleteRecord]
      *
      * @param uid GUID of the record
-     * @return <code>true</code> if deletion was successful, <code>false</code> otherwise
-     * @see #deleteRecord(long)
+     * @return `true` if deletion was successful, `false` otherwise
+     * @see .deleteRecord
      */
-    public boolean deleteRecord(@NonNull String uid) throws SQLException {
-        if (isCached) cache.remove(uid);
+    @Throws(SQLException::class)
+    open fun deleteRecord(uid: String): Boolean {
+        if (isCached) cache.remove(uid)
         try {
-            return deleteRecord(getID(uid));
-        } catch (IllegalArgumentException e) {
-            Timber.e(e);
-            return false;
+            return deleteRecord(getID(uid))
+        } catch (e: IllegalArgumentException) {
+            Timber.e(e)
+            return false
         }
     }
 
-    public boolean deleteRecord(@NonNull Model model) throws SQLException {
+    @Throws(SQLException::class)
+    fun deleteRecord(model: Model): Boolean {
         if (deleteRecord(model.id)) {
-            if (isCached) cache.remove(model.getUID());
-            model.id = 0L;
-            return true;
+            if (isCached) cache.remove(model.uid)
+            model.id = 0L
+            return true
         }
-        return false;
+        return false
     }
 
     /**
      * Returns an attribute from a specific column in the database for a specific record.
-     * <p>The attribute is returned as a string which can then be converted to another type if
-     * the caller was expecting something other type </p>
+     *
+     * The attribute is returned as a string which can then be converted to another type if
+     * the caller was expecting something other type
      *
      * @param recordUID  GUID of the record
      * @param columnName Name of the column to be retrieved
      * @return String value of the column entry
-     * @throws IllegalArgumentException if either the {@code recordUID} or {@code columnName} do not exist in the database
+     * @throws IllegalArgumentException if either the `recordUID` or `columnName` do not exist in the database
      */
-    public String getAttribute(@NonNull String recordUID, @NonNull String columnName) {
-        return getAttribute(mTableName, recordUID, columnName);
+    fun getAttribute(recordUID: String, columnName: String): String {
+        return getAttribute(tableName, recordUID, columnName)
     }
 
     /**
      * Returns an attribute from a specific column in the database for a specific record.
-     * <p>The attribute is returned as a string which can then be converted to another type if
-     * the caller was expecting something other type </p>
+     *
+     * The attribute is returned as a string which can then be converted to another type if
+     * the caller was expecting something other type
      *
      * @param model      the record with a GUID.
      * @param columnName Name of the column to be retrieved
      * @return String value of the column entry
-     * @throws IllegalArgumentException if either the {@code recordUID} or {@code columnName} do not exist in the database
+     * @throws IllegalArgumentException if either the `recordUID` or `columnName` do not exist in the database
      */
-    public String getAttribute(@NonNull Model model, @NonNull String columnName) {
-        return getAttribute(mTableName, getUID(model), columnName);
+    fun getAttribute(model: Model, columnName: String): String {
+        return getAttribute(tableName, getUID(model), columnName)
     }
 
     /**
      * Returns an attribute from a specific column in the database for a specific record and specific table.
-     * <p>The attribute is returned as a string which can then be converted to another type if
-     * the caller was expecting something other type </p>
-     * <p>This method is an override of {@link #getAttribute(String, String)} which allows to select a value from a
-     * different table than the one of current adapter instance
-     * </p>
      *
-     * @param tableName  Database table name. See {@link DatabaseSchema}
+     * The attribute is returned as a string which can then be converted to another type if
+     * the caller was expecting something other type
+     *
+     * This method is an override of [.getAttribute] which allows to select a value from a
+     * different table than the one of current adapter instance
+     *
+     *
+     * @param tableName  Database table name. See [DatabaseSchema]
      * @param recordUID  GUID of the record
      * @param columnName Name of the column to be retrieved
      * @return String value of the column entry
-     * @throws IllegalArgumentException if either the {@code recordUID} or {@code columnName} do not exist in the database
+     * @throws IllegalArgumentException if either the `recordUID` or `columnName` do not exist in the database
      */
-    protected String getAttribute(@NonNull String tableName, @NonNull String recordUID, @NonNull String columnName) {
-        Cursor cursor = mDb.query(tableName,
-            new String[]{columnName},
-            AccountEntry.COLUMN_UID + " = ?",
-            new String[]{recordUID}, null, null, null);
+    @Throws(IllegalArgumentException::class)
+    protected fun getAttribute(tableName: String, recordUID: String, columnName: String): String {
+        val cursor = db.query(
+            tableName,
+            arrayOf<String?>(columnName),
+            CommonColumns.COLUMN_UID + " = ?",
+            arrayOf<String?>(recordUID), null, null, null
+        )
 
         try {
             if (cursor.moveToFirst()) {
-                return cursor.getString(0);
+                return cursor.getString(0)
             }
-            throw new IllegalArgumentException("Record not found in " + tableName + " with column '" + columnName + "'");
+            throw IllegalArgumentException("Record not found in $tableName with column '$columnName'")
         } finally {
-            cursor.close();
+            cursor.close()
         }
     }
 
@@ -863,9 +923,8 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      *
      * @return Total number of records in the database
      */
-    public long getRecordsCount() {
-        return getRecordsCount(null, null);
-    }
+    open val recordsCount: Long
+        get() = getRecordsCount(null, null)
 
     /**
      * Returns the number of transactions in the database which fulfill the conditions
@@ -874,86 +933,85 @@ public abstract class DatabaseAdapter<Model extends BaseModel> implements Closea
      * @param whereArgs Arguments to substitute question marks for
      * @return Number of records in the databases
      */
-    public long getRecordsCount(@Nullable String where, @Nullable String[] whereArgs) {
-        return DatabaseUtils.queryNumEntries(mDb, mTableName, where, whereArgs);
+    open fun getRecordsCount(where: String?, whereArgs: Array<String?>?): Long {
+        return DatabaseUtils.queryNumEntries(db, tableName, where, whereArgs)
     }
 
     /**
      * Expose mDb.beginTransaction()
      */
-    public void beginTransaction() {
-        mDb.beginTransaction();
+    fun beginTransaction() {
+        db.beginTransaction()
     }
 
     /**
      * Expose mDb.setTransactionSuccessful()
      */
-    public void setTransactionSuccessful() {
-        mDb.setTransactionSuccessful();
+    fun setTransactionSuccessful() {
+        db.setTransactionSuccessful()
     }
 
-    /// Foreign key constraits should be enabled in general.
-    /// But if it affects speed (check constraints takes time)
-    /// and the constrained can be assured by the program,
-    /// or if some SQL exec will cause deletion of records
-    /// (like use replace in accounts update will delete all transactions)
-    /// that need not be deleted, then it can be disabled temporarily
-    public void enableForeignKey(boolean enable) {
+    /** Foreign key constraits should be enabled in general.
+     * But if it affects speed (check constraints takes time)
+     * and the constrained can be assured by the program,
+     * or if some SQL exec will cause deletion of records
+     * (like use replace in accounts update will delete all transactions)
+     * that need not be deleted, then it can be disabled temporarily */
+    fun enableForeignKey(enable: Boolean) {
         if (enable) {
-            mDb.execSQL("PRAGMA foreign_keys=ON;");
+            db.execSQL("PRAGMA foreign_keys=ON;")
         } else {
-            mDb.execSQL("PRAGMA foreign_keys=OFF;");
+            db.execSQL("PRAGMA foreign_keys=OFF;")
         }
     }
 
     /**
      * Expose mDb.endTransaction()
      */
-    public void endTransaction() {
+    fun endTransaction() {
         try {
-            mDb.endTransaction();
-        } catch (Exception e) {
-            Timber.e(e);
+            db.endTransaction()
+        } catch (e: Exception) {
+            Timber.e(e)
         }
     }
 
-    @Override
-    public void close() throws IOException {
-        if (mInsertStatement != null) {
-            mInsertStatement.close();
-            mInsertStatement = null;
+    @Throws(IOException::class)
+    override fun close() {
+        if (_insertStatement != null) {
+            _insertStatement!!.close()
+            _insertStatement = null
         }
-        if (mReplaceStatement != null) {
-            mReplaceStatement.close();
-            mReplaceStatement = null;
+        if (_replaceStatement != null) {
+            _replaceStatement!!.close()
+            _replaceStatement = null
         }
-        if (mUpdateStatement != null) {
-            mUpdateStatement.close();
-            mUpdateStatement = null;
+        if (_updateStatement != null) {
+            _updateStatement!!.close()
+            _updateStatement = null
         }
-        if (mDb.isOpen()) {
-            mDb.close();
+        if (db.isOpen) {
+            db.close()
         }
-        cache.clear();
+        cache.clear()
     }
 
-    public void closeQuietly() {
+    fun closeQuietly() {
         try {
-            close();
-        } catch (IOException ignore) {
+            close()
+        } catch (_: Exception) {
         }
     }
 
-    public String getUID(Model model) {
-        return model.getUID();
+    fun getUID(model: Model): String {
+        return model.uid
     }
 
     /**
-     * Return the {@link SharedPreferences} for a specific book
+     * Return the [SharedPreferences] for a specific book
      *
      * @return Shared preferences
      */
-    public SharedPreferences getBookPreferences() {
-        return BookDbHelper.getBookPreferences(holder);
-    }
+    val bookPreferences: SharedPreferences
+        get() = getBookPreferences(holder)
 }

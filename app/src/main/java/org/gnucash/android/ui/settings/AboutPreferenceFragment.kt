@@ -13,29 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.settings
 
-package org.gnucash.android.ui.settings;
-
-import android.os.Bundle;
-
-import androidx.annotation.Nullable;
-
-import org.gnucash.android.R;
+import android.os.Bundle
+import org.gnucash.android.R
 
 /**
  * Fragment for displaying information about the application
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class AboutPreferenceFragment extends GnuPreferenceFragment {
+class AboutPreferenceFragment : GnuPreferenceFragment() {
+    override val titleId: Int = R.string.title_about_gnucash
 
-    @Override
-    protected int getTitleId() {
-        return R.string.title_about_gnucash;
-    }
-
-    @Override
-    public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
-        addPreferencesFromResource(R.xml.fragment_about_preferences);
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        addPreferencesFromResource(R.xml.fragment_about_preferences)
     }
 }

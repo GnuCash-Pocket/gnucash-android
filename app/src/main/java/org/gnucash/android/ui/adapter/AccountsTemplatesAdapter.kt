@@ -5,7 +5,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import androidx.annotation.LayoutRes
 import org.gnucash.android.importer.AccountsTemplate
 
 class AccountsTemplatesAdapter(context: Context) :
@@ -37,7 +36,7 @@ class AccountsTemplatesAdapter(context: Context) :
 
     fun getPosition(header: AccountsTemplate.Header): Int {
         for (i in 0 until count) {
-            val item = getItem(i)!!
+            val item = getItem(i)
             if (item == header) {
                 return i
             }

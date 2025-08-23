@@ -20,7 +20,7 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.swipeUp
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.contrib.DrawerActions
+import androidx.test.espresso.contrib.DrawerActions.open
 import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.intent.matcher.IntentMatchers
 import androidx.test.espresso.intent.rule.IntentsTestRule
@@ -59,7 +59,7 @@ class MultiBookTest : GnuAndroidTest() {
 
     @Test
     fun shouldOpenBookManager() {
-        onView(withId(R.id.drawer_layout)).perform(DrawerActions.open())
+        onView(withId(R.id.drawer_layout)).perform(open())
         onView(withId(R.id.book_name))
             .check(matches(isDisplayed())).perform(click())
 
@@ -71,12 +71,12 @@ class MultiBookTest : GnuAndroidTest() {
     fun testLoadBookFromBookManager() {
         val book = Book()
         book.displayName = "Launch Codes"
-        BooksDbAdapter.getInstance().addRecord(book)
+        BooksDbAdapter.instance.addRecord(book)
 
         shouldOpenBookManager()
         onView(withText(book.displayName)).perform(click())
 
-        assertThat(GnuCashApplication.getActiveBookUID()).isEqualTo(book.uid)
+        assertThat(GnuCashApplication.activeBookUID).isEqualTo(book.uid)
     }
 
     @Test
@@ -84,7 +84,7 @@ class MultiBookTest : GnuAndroidTest() {
         val bookCount = booksDbAdapter.recordsCount
         assertThat(bookCount).isOne()
 
-        onView(withId(R.id.drawer_layout)).perform(DrawerActions.open())
+        onView(withId(R.id.drawer_layout)).perform(open())
         onView(withId(R.id.drawer_layout)).perform(swipeUp())
         onView(withText(R.string.title_settings)).perform(click())
 
@@ -159,7 +159,7 @@ class MultiBookTest : GnuAndroidTest() {
         @JvmStatic
         fun prepTestCase() {
             preventFirstRunDialogs()
-            booksDbAdapter = BooksDbAdapter.getInstance()
+            booksDbAdapter = BooksDbAdapter.instance
         }
     }
 }

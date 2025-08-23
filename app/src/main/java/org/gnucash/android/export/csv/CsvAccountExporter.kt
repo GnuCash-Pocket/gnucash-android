@@ -13,79 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.export.csv
 
-package org.gnucash.android.export.csv;
-
-import static com.opencsv.ICSVWriter.RFC4180_LINE_END;
-import static org.gnucash.android.util.ColorExtKt.formatRGB;
-
-import android.content.Context;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.opencsv.CSVWriterBuilder;
-import com.opencsv.ICSVWriter;
-
-import org.gnucash.android.R;
-import org.gnucash.android.db.DatabaseSchema;
-import org.gnucash.android.export.ExportParams;
-import org.gnucash.android.export.Exporter;
-import org.gnucash.android.gnc.GncProgressListener;
-import org.gnucash.android.model.Account;
-
-import java.io.IOException;
-import java.io.Writer;
-import java.util.List;
+import android.content.Context
+import com.opencsv.CSVWriterBuilder
+import com.opencsv.ICSVWriter
+import org.gnucash.android.R
+import org.gnucash.android.db.DatabaseSchema
+import org.gnucash.android.export.ExportParams
+import org.gnucash.android.export.Exporter
+import org.gnucash.android.gnc.GncProgressListener
+import org.gnucash.android.model.Account
+import org.gnucash.android.util.formatRGB
+import java.io.IOException
+import java.io.Writer
 
 /**
  * Creates a GnuCash CSV account representation of the accounts and transactions
  *
  * @author Semyannikov Gleb <nightdevgame@gmail.com>
  */
-public class CsvAccountExporter extends Exporter {
-
-    /**
-     * Overloaded constructor.
-     * Creates an exporter with an already open database instance.
-     *
-     * @param context The context.
-     * @param params  Parameters for the export
-     * @param bookUID The book UID.
-     */
-    public CsvAccountExporter(
-        @NonNull Context context,
-        @NonNull ExportParams params,
-        @NonNull String bookUID,
-        @Nullable GncProgressListener listener
-    ) {
-        super(context, params, bookUID, listener);
-    }
-
-    /**
-     * Overloaded constructor.
-     * Creates an exporter with an already open database instance.
-     *
-     * @param context The context.
-     * @param params  Parameters for the export
-     * @param bookUID The book UID.
-     */
-    public CsvAccountExporter(
-        @NonNull Context context,
-        @NonNull ExportParams params,
-        @NonNull String bookUID
-    ) {
-        this(context, params, bookUID, null);
-    }
-
-    @Override
-    protected void writeExport(@NonNull Writer writer, @NonNull ExportParams exportParams) throws ExporterException, IOException {
-        ICSVWriter csvWriter = new CSVWriterBuilder(writer)
-            .withSeparator(exportParams.getCsvSeparator())
-            .withLineEnd(RFC4180_LINE_END)
-            .build();
-        writeExport(csvWriter);
-        csvWriter.close();
+class CsvAccountExporter(
+    context: Context,
+    params: ExportParams,
+    bookUID: String,
+    listener: GncProgressListener? = null
+) : Exporter(context, params, bookUID, listener) {
+    @Throws(ExporterException::class, IOException::class)
+    override fun writeExport(writer: Writer, exportParams: ExportParams) {
+        val csvWriter = CSVWriterBuilder(writer)
+            .withSeparator(exportParams.csvSeparator)
+            .withLineEnd(ICSVWriter.RFC4180_LINE_END)
+            .build()
+        writeExport(csvWriter)
+        csvWriter.close()
     }
 
     /**
@@ -93,54 +54,45 @@ public class CsvAccountExporter extends Exporter {
      *
      * @param writer Destination for the CSV export
      */
-    public void writeExport(@NonNull ICSVWriter writer) {
-        String where = DatabaseSchema.AccountEntry.COLUMN_TEMPLATE + " = 0";
-        List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, null, null);
-        if (listener != null) {
-            listener.onAccountCount(accounts.size());
-        }
+    fun writeExport(writer: ICSVWriter) {
+        val where = DatabaseSchema.AccountEntry.COLUMN_TEMPLATE + " = 0"
+        val accounts = accountsDbAdapter.getSimpleAccounts(where, null, null)
+        listener?.onAccountCount(accounts.size.toLong())
 
-        String[] names = mContext.getResources().getStringArray(R.array.csv_account_headers);
-        writer.writeNext(names);
+        val names = context.resources.getStringArray(R.array.csv_account_headers)
+        writer.writeNext(names)
 
-        final String[] fields = new String[names.length];
-        for (Account account : accounts) {
-            if (account.isRoot()) continue;
-            if (account.isTemplate()) continue;
-            cancellationSignal.throwIfCanceled();
+        val fields = arrayOfNulls<String>(names.size)
+        for (account in accounts) {
+            if (account.isRoot) continue
+            if (account.isTemplate) continue
+            cancellationSignal.throwIfCanceled()
 
-            writeAccount(fields, account);
-            writer.writeNext(fields);
+            writeAccount(fields, account)
+            writer.writeNext(fields)
         }
     }
 
-    private void writeAccount(@NonNull String[] fields, @NonNull Account account) {
-        fields[0] = account.getAccountType().name();
-        fields[1] = account.getFullName();
-        fields[2] = account.getName();
+    private fun writeAccount(fields: Array<String?>, account: Account) {
+        fields[0] = account.accountType.name
+        fields[1] = account.fullName
+        fields[2] = account.name
 
-        fields[3] = ""; //Account code
-        fields[4] = account.getDescription();
-        fields[5] = formatRGB(account.getColor());
-        fields[6] = orEmpty(account.getNote());
+        fields[3] = "" //Account code
+        fields[4] = account.description
+        fields[5] = formatRGB(account.color)
+        fields[6] = account.note.orEmpty()
 
-        fields[7] = account.getCommodity().getCurrencyCode();
-        fields[8] = account.getCommodity().getNamespace();
-        fields[9] = format(account.isHidden());
-        fields[10] = format(false); //Tax
-        fields[11] = format(account.isPlaceholder());
+        fields[7] = account.commodity.currencyCode
+        fields[8] = account.commodity.namespace
+        fields[9] = format(account.isHidden)
+        fields[10] = format(false) //Tax
+        fields[11] = format(account.isPlaceholder)
 
-        if (listener != null) {
-            listener.onAccount(account);
-        }
+        listener?.onAccount(account)
     }
 
-    @NonNull
-    private String orEmpty(@Nullable String s) {
-        return (s != null) ? s : "";
-    }
-
-    private String format(boolean value) {
-        return value ? "T" : "F";
+    private fun format(value: Boolean): String {
+        return if (value) "T" else "F"
     }
 }

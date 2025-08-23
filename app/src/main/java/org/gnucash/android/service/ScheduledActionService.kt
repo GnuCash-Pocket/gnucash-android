@@ -13,303 +13,325 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.service
 
-package org.gnucash.android.service;
-
-import android.content.ContentValues;
-import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
-import android.text.TextUtils;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.VisibleForTesting;
-import androidx.work.PeriodicWorkRequest;
-import androidx.work.WorkManager;
-import androidx.work.WorkRequest;
-
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.db.DatabaseHelper;
-import org.gnucash.android.db.DatabaseHolder;
-import org.gnucash.android.db.DatabaseSchema;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.db.adapter.DatabaseAdapter;
-import org.gnucash.android.db.adapter.RecurrenceDbAdapter;
-import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
-import org.gnucash.android.export.ExportAsyncTask;
-import org.gnucash.android.export.ExportParams;
-import org.gnucash.android.model.Book;
-import org.gnucash.android.model.ScheduledAction;
-import org.gnucash.android.model.Transaction;
-import org.gnucash.android.util.BackupManager;
-import org.gnucash.android.util.DateExtKt;
-import org.gnucash.android.work.ActionWorker;
-
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
-import timber.log.Timber;
+import android.content.ContentValues
+import android.content.Context
+import android.net.Uri
+import androidx.annotation.VisibleForTesting
+import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkManager
+import androidx.work.WorkRequest
+import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.db.DatabaseHelper
+import org.gnucash.android.db.DatabaseHolder
+import org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry
+import org.gnucash.android.db.adapter.BooksDbAdapter
+import org.gnucash.android.db.adapter.DatabaseAdapter
+import org.gnucash.android.db.adapter.RecurrenceDbAdapter
+import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
+import org.gnucash.android.db.adapter.TransactionsDbAdapter
+import org.gnucash.android.export.ExportAsyncTask
+import org.gnucash.android.export.ExportParams
+import org.gnucash.android.model.Book
+import org.gnucash.android.model.ScheduledAction
+import org.gnucash.android.model.Transaction
+import org.gnucash.android.util.BackupManager.schedulePeriodicBackups
+import org.gnucash.android.util.formatLongDateTime
+import org.gnucash.android.util.set
+import org.gnucash.android.work.ActionWorker
+import timber.log.Timber
+import java.sql.Timestamp
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
+import kotlin.math.min
 
 /**
  * Service for running scheduled events.
  *
- * <p>It's run every time the <code>enqueueWork</code> is called. It goes
- * through all scheduled event entries in the the database and executes them.</p>
+ *
+ * It's run every time the `enqueueWork` is called. It goes
+ * through all scheduled event entries in the the database and executes them.
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class ScheduledActionService {
-
-    public static void schedulePeriodic(@NonNull Context context) {
-        WorkManager.getInstance(context)
-            .cancelAllWork();
-
-        schedulePeriodicActions(context);
-        BackupManager.schedulePeriodicBackups(context);
-    }
-
-    /**
-     * Starts the service for scheduled events and schedules an alarm to call the service twice daily.
-     * <p>If the alarm already exists, this method does nothing. If not, the alarm will be created
-     * Hence, there is no harm in calling the method repeatedly</p>
-     *
-     * @param context Application context
-     */
-    public static void schedulePeriodicActions(@NonNull Context context) {
-        Timber.i("Scheduling actions");
-        WorkRequest request = new PeriodicWorkRequest.Builder(ActionWorker.class, 1, TimeUnit.HOURS)
-            .setInitialDelay(15, TimeUnit.SECONDS)
-            .build();
-
-        WorkManager.getInstance(context)
-            .enqueue(request);
-    }
-
-    public void doWork(@NonNull Context context) {
-        Timber.i("Starting scheduled action service");
+class ScheduledActionService {
+    fun doWork(context: Context) {
+        Timber.i("Starting scheduled action service")
         try {
-            processScheduledBooks(context);
-            Timber.i("Completed service @ %s", DateExtKt.formatLongDateTime(System.currentTimeMillis()));
-        } catch (Throwable e) {
-            Timber.e(e, "Scheduled service error: %s", e.getMessage());
+            processScheduledBooks(context)
+            Timber.i("Completed service @ %s", formatLongDateTime(System.currentTimeMillis()))
+        } catch (e: Throwable) {
+            Timber.e(e, "Scheduled service error: %s", e.message)
         }
     }
 
-    private void processScheduledBooks(@NonNull Context context) {
-        BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
-        List<Book> books = booksDbAdapter.getAllRecords();
-        for (Book book : books) {
-            processScheduledBook(context, book);
+    private fun processScheduledBooks(context: Context) {
+        val booksDbAdapter = BooksDbAdapter.instance
+        val books = booksDbAdapter.allRecords
+        for (book in books) {
+            processScheduledBook(context, book)
         }
     }
 
-    private void processScheduledBook(@NonNull Context context, @NonNull Book book) {
-        final String activeBookUID = GnuCashApplication.getActiveBookUID();
-        DatabaseHelper dbHelper = new DatabaseHelper(context, book.getUID());
-        DatabaseHolder dbHolder = dbHelper.getHolder();
-        RecurrenceDbAdapter recurrenceDbAdapter = new RecurrenceDbAdapter(dbHolder);
-        ScheduledActionDbAdapter scheduledActionDbAdapter = new ScheduledActionDbAdapter(recurrenceDbAdapter);
+    private fun processScheduledBook(context: Context, book: Book) {
+        val activeBookUID = GnuCashApplication.activeBookUID
+        val dbHelper = DatabaseHelper(context, book.uid)
+        val dbHolder = dbHelper.holder
+        val recurrenceDbAdapter = RecurrenceDbAdapter(dbHolder)
+        val scheduledActionDbAdapter = ScheduledActionDbAdapter(recurrenceDbAdapter)
 
-        List<ScheduledAction> scheduledActions = scheduledActionDbAdapter.getAllEnabledScheduledActions();
-        Timber.i("Processing %d total scheduled actions for Book: %s",
-            scheduledActions.size(), book.getDisplayName());
-        processScheduledActions(dbHolder, scheduledActions);
+        val scheduledActions = scheduledActionDbAdapter.allEnabledScheduledActions
+        Timber.i(
+            "Processing %d total scheduled actions for Book: %s",
+            scheduledActions.size, book.displayName
+        )
+        processScheduledActions(dbHolder, scheduledActions)
 
         //close all databases except the currently active database
-        if (!book.getUID().equals(activeBookUID)) {
-            dbHelper.close();
+        if (book.uid != activeBookUID) {
+            dbHelper.close()
         }
     }
 
-    /**
-     * Process scheduled actions and execute any pending actions
-     *
-     * @param dbHolder         Database holder
-     * @param scheduledActions List of scheduled actions
-     */
-    //made public static for testing. Do not call these methods directly
-    @VisibleForTesting
-    static void processScheduledActions(@NonNull DatabaseHolder dbHolder, List<ScheduledAction> scheduledActions) {
-        for (ScheduledAction scheduledAction : scheduledActions) {
-            processScheduledAction(dbHolder, scheduledAction);
-        }
-    }
+    companion object {
+        fun schedulePeriodic(context: Context) {
+            WorkManager.getInstance(context)
+                .cancelAllWork()
 
-    /**
-     * Process scheduled action and execute any pending actions
-     *
-     * @param dbHolder        Database holder
-     * @param scheduledAction The scheduled action.
-     */
-    //made public static for testing. Do not call these methods directly
-    @VisibleForTesting
-    static void processScheduledAction(@NonNull DatabaseHolder dbHolder, @NonNull ScheduledAction scheduledAction) {
-        long now = System.currentTimeMillis();
-        int totalPlannedExecutions = scheduledAction.getTotalPlannedExecutionCount();
-        int executionCount = scheduledAction.getExecutionCount();
-
-        //the end time of the ScheduledAction is not handled here because
-        //it is handled differently for transactions and backups. See the individual methods.
-        if (scheduledAction.getStartTime() > now    //if schedule begins in the future
-            || !scheduledAction.isEnabled()     // of if schedule is disabled
-            || (totalPlannedExecutions > 0 && executionCount >= totalPlannedExecutions)) { //limit was set and we reached or exceeded it
-            Timber.i("Skipping scheduled action: %s", scheduledAction.toString());
-            return;
+            schedulePeriodicActions(context)
+            schedulePeriodicBackups(context)
         }
 
-        executeScheduledEvent(dbHolder, scheduledAction);
-    }
+        /**
+         * Starts the service for scheduled events and schedules an alarm to call the service twice daily.
+         *
+         * If the alarm already exists, this method does nothing. If not, the alarm will be created
+         * Hence, there is no harm in calling the method repeatedly
+         *
+         * @param context Application context
+         */
+        fun schedulePeriodicActions(context: Context) {
+            Timber.i("Scheduling actions")
+            val request: WorkRequest =
+                PeriodicWorkRequest.Builder(ActionWorker::class.java, 1, TimeUnit.HOURS)
+                    .setInitialDelay(15, TimeUnit.SECONDS)
+                    .build()
 
-    /**
-     * Executes a scheduled event according to the specified parameters
-     *
-     * @param dbHolder        Database holder
-     * @param scheduledAction ScheduledEvent to be executed
-     */
-    private static void executeScheduledEvent(@NonNull DatabaseHolder dbHolder, @NonNull ScheduledAction scheduledAction) {
-        Timber.i("Executing scheduled action: %s", scheduledAction.toString());
-        int executionCount = 0;
-
-        switch (scheduledAction.getActionType()) {
-            case TRANSACTION:
-                executionCount += executeTransactions(dbHolder, scheduledAction);
-                break;
-
-            case BACKUP:
-                executionCount += executeBackup(dbHolder, scheduledAction);
-                break;
+            WorkManager.getInstance(context)
+                .enqueue(request)
         }
 
-        if (executionCount > 0) {
-            scheduledAction.setLastRunTime(System.currentTimeMillis());
-            // Set the execution count in the object because it will be checked
-            // for the next iteration in the calling loop.
-            // This call is important, do not remove!!
-            scheduledAction.setExecutionCount(scheduledAction.getExecutionCount() + executionCount);
-            // Update the last run time and execution count
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(DatabaseSchema.ScheduledActionEntry.COLUMN_LAST_RUN,
-                scheduledAction.getLastRunTime());
-            contentValues.put(DatabaseSchema.ScheduledActionEntry.COLUMN_EXECUTION_COUNT,
-                scheduledAction.getExecutionCount());
-            SQLiteDatabase db = dbHolder.db;
-            db.update(DatabaseSchema.ScheduledActionEntry.TABLE_NAME, contentValues,
-                DatabaseSchema.ScheduledActionEntry.COLUMN_UID + "=?", new String[]{scheduledAction.getUID()});
-        }
-    }
-
-    /**
-     * Executes scheduled backups for a given scheduled action.
-     * The backup will be executed only once, even if multiple schedules were missed
-     *
-     * @param dbHolder Databas holder
-     * @param scheduledAction Scheduled action referencing the backup
-     * @return Number of times backup is executed. This should either be 1 or 0
-     */
-    private static int executeBackup(@NonNull DatabaseHolder dbHolder, @NonNull ScheduledAction scheduledAction) {
-        if (!shouldExecuteScheduledBackup(scheduledAction))
-            return 0;
-
-        Context context = dbHolder.context;
-        String bookUID = scheduledAction.getActionUID();
-        ExportParams params = ExportParams.parseTag(scheduledAction.getTag());
-        // HACK: the tag isn't updated with the new date, so set the correct by hand
-        params.setExportStartTime(new Timestamp(scheduledAction.getLastRunTime()));
-        Uri result = null;
-        try {
-            //wait for async task to finish before we proceed (we are holding a wake lock)
-            result = new ExportAsyncTask(context, bookUID).execute(params).get();
-        } catch (InterruptedException | ExecutionException e) {
-            Timber.e(e);
-        }
-        if (result == null) {
-            Timber.w("Backup/export did not occur." +
-                " There might have been no new transactions to export");
-            return 0;
-        }
-        return 1;
-    }
-
-    /**
-     * Check if a scheduled action is due for execution
-     *
-     * @param scheduledAction Scheduled action
-     * @return {@code true} if execution is due, {@code false} otherwise
-     */
-    @SuppressWarnings("RedundantIfStatement")
-    private static boolean shouldExecuteScheduledBackup(ScheduledAction scheduledAction) {
-        if (scheduledAction.getActionType() != ScheduledAction.ActionType.BACKUP) {
-            return false;
-        }
-        long now = System.currentTimeMillis();
-        long endTime = scheduledAction.getEndTime();
-
-        if (endTime > 0 && endTime < now) {
-            return false;
-        }
-        if (scheduledAction.computeNextTimeBasedScheduledExecutionTime() > now) {
-            return false;
+        /**
+         * Process scheduled actions and execute any pending actions
+         *
+         * @param dbHolder         Database holder
+         * @param scheduledActions List of scheduled actions
+         */
+        //made public static for testing. Do not call these methods directly
+        @VisibleForTesting
+        fun processScheduledActions(
+            dbHolder: DatabaseHolder,
+            scheduledActions: List<ScheduledAction>
+        ) {
+            for (scheduledAction in scheduledActions) {
+                processScheduledAction(dbHolder, scheduledAction)
+            }
         }
 
-        return true;
-    }
+        /**
+         * Process scheduled action and execute any pending actions
+         *
+         * @param dbHolder        Database holder
+         * @param scheduledAction The scheduled action.
+         */
+        //made public static for testing. Do not call these methods directly
+        @VisibleForTesting
+        fun processScheduledAction(dbHolder: DatabaseHolder, scheduledAction: ScheduledAction) {
+            val now = System.currentTimeMillis()
+            val totalPlannedExecutions = scheduledAction.totalPlannedExecutionCount
+            val executionCount = scheduledAction.executionCount
 
-    /**
-     * Executes scheduled transactions which are to be added to the database.
-     * <p>If a schedule was missed, all the intervening transactions will be generated, even if
-     * the end time of the transaction was already reached</p>
-     *
-     * @param dbHolder        Database holder
-     * @param scheduledAction Scheduled action which references the transaction
-     * @return Number of transactions created as a result of this action
-     */
-    private static int executeTransactions(@NonNull DatabaseHolder dbHolder, @NonNull ScheduledAction scheduledAction) {
-        int executionCount = 0;
-        String actionUID = scheduledAction.getActionUID();
-        if (TextUtils.isEmpty(actionUID)) {
-            Timber.w("Scheduled transaction without action");
-            return executionCount;
-        }
-        TransactionsDbAdapter transactionsDbAdapter = new TransactionsDbAdapter(dbHolder);
-        Transaction trxnTemplate;
-        try {
-            trxnTemplate = transactionsDbAdapter.getRecord(actionUID);
-        } catch (IllegalArgumentException ex) { //if the record could not be found, abort
-            Timber.e(ex, "Scheduled transaction with action " + actionUID + " could not be found in the db with path " + dbHolder.db.getPath());
-            return executionCount;
+            //the end time of the ScheduledAction is not handled here because
+            //it is handled differently for transactions and backups. See the individual methods.
+            if (scheduledAction.startTime > now //if schedule begins in the future
+                || !scheduledAction.isEnabled // of if schedule is disabled
+                || (totalPlannedExecutions > 0 && executionCount >= totalPlannedExecutions)
+            ) { //limit was set and we reached or exceeded it
+                Timber.i("Skipping scheduled action: %s", scheduledAction)
+                return
+            }
+
+            executeScheduledEvent(dbHolder, scheduledAction)
         }
 
-        long now = System.currentTimeMillis();
-        //if there is an end time in the past, we execute all schedules up to the end time.
-        //if the end time is in the future, we execute all schedules until now (current time)
-        //if there is no end time, we execute all schedules until now
-        long endTime = scheduledAction.getEndTime() > 0 ? Math.min(scheduledAction.getEndTime(), now) : now;
-        int totalPlannedExecutions = scheduledAction.getTotalPlannedExecutionCount();
-        List<Transaction> transactions = new ArrayList<>();
+        /**
+         * Executes a scheduled event according to the specified parameters
+         *
+         * @param dbHolder        Database holder
+         * @param scheduledAction ScheduledEvent to be executed
+         */
+        private fun executeScheduledEvent(
+            dbHolder: DatabaseHolder,
+            scheduledAction: ScheduledAction
+        ) {
+            Timber.i("Executing scheduled action: %s", scheduledAction)
+            var executionCount = 0
 
-        int previousExecutionCount = scheduledAction.getExecutionCount(); // We'll modify it
-        //we may be executing scheduled action significantly after scheduled time (depending on when Android fires the alarm)
-        //so compute the actual transaction time from pre-known values
-        long transactionTime = scheduledAction.computeNextCountBasedScheduledExecutionTime();
-        while (transactionTime <= endTime) {
-            Transaction recurringTrxn = new Transaction(trxnTemplate, true);
-            recurringTrxn.setTime(transactionTime);
-            transactions.add(recurringTrxn);
-            recurringTrxn.setScheduledActionUID(scheduledAction.getUID());
-            scheduledAction.setExecutionCount(++executionCount); //required for computingNextScheduledExecutionTime
+            executionCount += when (scheduledAction.actionType) {
+                ScheduledAction.ActionType.TRANSACTION ->
+                    executeTransactions(dbHolder, scheduledAction)
 
-            if (totalPlannedExecutions > 0 && executionCount >= totalPlannedExecutions)
-                break; //if we hit the total planned executions set, then abort
-            transactionTime = scheduledAction.computeNextCountBasedScheduledExecutionTime();
+                ScheduledAction.ActionType.BACKUP ->
+                    executeBackup(dbHolder, scheduledAction)
+            }
+
+            if (executionCount > 0) {
+                scheduledAction.lastRunTime = System.currentTimeMillis()
+                // Set the execution count in the object because it will be checked
+                // for the next iteration in the calling loop.
+                // This call is important, do not remove!!
+                scheduledAction.executionCount = scheduledAction.executionCount + executionCount
+                // Update the last run time and execution count
+                val contentValues = ContentValues()
+                contentValues[ScheduledActionEntry.COLUMN_LAST_RUN] = scheduledAction.lastRunTime
+                contentValues[ScheduledActionEntry.COLUMN_EXECUTION_COUNT] =
+                    scheduledAction.executionCount
+
+                val db = dbHolder.db
+                db.update(
+                    ScheduledActionEntry.TABLE_NAME,
+                    contentValues,
+                    ScheduledActionEntry.COLUMN_UID + "=?",
+                    arrayOf<String>(scheduledAction.uid)
+                )
+            }
         }
 
-        transactionsDbAdapter.bulkAddRecords(transactions, DatabaseAdapter.UpdateMethod.insert);
-        // Be nice and restore the parameter's original state to avoid confusing the callers
-        scheduledAction.setExecutionCount(previousExecutionCount);
-        return executionCount;
+        /**
+         * Executes scheduled backups for a given scheduled action.
+         * The backup will be executed only once, even if multiple schedules were missed
+         *
+         * @param dbHolder Databas holder
+         * @param scheduledAction Scheduled action referencing the backup
+         * @return Number of times backup is executed. This should either be 1 or 0
+         */
+        private fun executeBackup(dbHolder: DatabaseHolder, scheduledAction: ScheduledAction): Int {
+            if (!shouldExecuteScheduledBackup(scheduledAction)) return 0
+
+            val context = dbHolder.context
+            val bookUID = scheduledAction.actionUID ?: dbHolder.name
+            val params = ExportParams.parseTag(scheduledAction.tag!!)
+            // HACK: the tag isn't updated with the new date, so set the correct by hand
+            params.exportStartTime = Timestamp(scheduledAction.lastRunTime)
+            var result: Uri? = null
+            try {
+                //wait for async task to finish before we proceed (we are holding a wake lock)
+                val exporter = ExportAsyncTask.createExporter(context, params, bookUID, null)
+                result = exporter.export()
+            } catch (e: InterruptedException) {
+                Timber.e(e)
+            } catch (e: ExecutionException) {
+                Timber.e(e)
+            }
+            if (result == null) {
+                Timber.w("Backup/export did not occur. There might have been no new transactions to export")
+                return 0
+            }
+            return 1
+        }
+
+        /**
+         * Check if a scheduled action is due for execution
+         *
+         * @param scheduledAction Scheduled action
+         * @return `true` if execution is due, `false` otherwise
+         */
+        private fun shouldExecuteScheduledBackup(scheduledAction: ScheduledAction): Boolean {
+            if (scheduledAction.actionType != ScheduledAction.ActionType.BACKUP) {
+                return false
+            }
+            val now = System.currentTimeMillis()
+            val endTime = scheduledAction.endTime
+
+            if (endTime > 0 && endTime < now) {
+                return false
+            }
+            if (scheduledAction.computeNextTimeBasedScheduledExecutionTime() > now) {
+                return false
+            }
+
+            return true
+        }
+
+        /**
+         * Executes scheduled transactions which are to be added to the database.
+         *
+         * If a schedule was missed, all the intervening transactions will be generated, even if
+         * the end time of the transaction was already reached
+         *
+         * @param dbHolder        Database holder
+         * @param scheduledAction Scheduled action which references the transaction
+         * @return Number of transactions created as a result of this action
+         */
+        private fun executeTransactions(
+            dbHolder: DatabaseHolder,
+            scheduledAction: ScheduledAction
+        ): Int {
+            val actionUID = scheduledAction.actionUID
+            if (actionUID.isNullOrEmpty()) {
+                Timber.w("Scheduled transaction without action")
+                return 0
+            }
+            val transactionsDbAdapter = TransactionsDbAdapter(dbHolder)
+            val trxnTemplate: Transaction?
+            try {
+                trxnTemplate = transactionsDbAdapter.getRecord(actionUID)
+            } catch (ex: IllegalArgumentException) { //if the record could not be found, abort
+                Timber.e(
+                    ex,
+                    "Scheduled transaction with action %s could not be found in the db with path %s",
+                    actionUID, dbHolder.db.path
+                )
+                return 0
+            }
+
+            val now = System.currentTimeMillis()
+            //if there is an end time in the past, we execute all schedules up to the end time.
+            //if the end time is in the future, we execute all schedules until now (current time)
+            //if there is no end time, we execute all schedules until now
+            val endTime = if (scheduledAction.endTime > 0) {
+                min(scheduledAction.endTime, now).toLong()
+            } else {
+                now
+            }
+            val totalPlannedExecutions = scheduledAction.totalPlannedExecutionCount
+            val transactions = mutableListOf<Transaction>()
+
+            var executionCount = 0
+            val previousExecutionCount = scheduledAction.executionCount // We'll modify it
+            //we may be executing scheduled action significantly after scheduled time (depending on when Android fires the alarm)
+            //so compute the actual transaction time from pre-known values
+            var transactionTime = scheduledAction.computeNextCountBasedScheduledExecutionTime()
+            while (transactionTime <= endTime) {
+                val recurringTrxn = Transaction(trxnTemplate, true)
+                recurringTrxn.time = transactionTime
+                transactions.add(recurringTrxn)
+                recurringTrxn.scheduledActionUID = scheduledAction.uid
+                scheduledAction.executionCount =
+                    ++executionCount //required for computingNextScheduledExecutionTime
+
+                if (totalPlannedExecutions > 0 && executionCount >= totalPlannedExecutions) {
+                    break //if we hit the total planned executions set, then abort
+                }
+
+                transactionTime = scheduledAction.computeNextCountBasedScheduledExecutionTime()
+            }
+
+            transactionsDbAdapter.bulkAddRecords(transactions, DatabaseAdapter.UpdateMethod.Insert)
+            // Be nice and restore the parameter's original state to avoid confusing the callers
+            scheduledAction.executionCount = previousExecutionCount
+            return executionCount
+        }
     }
 }

@@ -14,370 +14,60 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.report
 
-package org.gnucash.android.ui.report;
-
-import android.app.DatePickerDialog;
-import android.content.Context;
-import android.os.Build;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.DatePicker;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-
-import org.gnucash.android.R;
-import org.gnucash.android.databinding.ActivityReportsBinding;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
-import org.gnucash.android.model.AccountType;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.ui.adapter.AccountTypesAdapter;
-import org.gnucash.android.ui.common.BaseDrawerActivity;
-import org.gnucash.android.ui.common.Refreshable;
-import org.gnucash.android.ui.util.dialog.DateRangePickerDialogFragment;
-import org.gnucash.android.util.DateExtKt;
-import org.jetbrains.annotations.NotNull;
-import org.joda.time.LocalDate;
-import org.joda.time.LocalDateTime;
-
-import java.util.List;
-
-import timber.log.Timber;
+import android.app.DatePickerDialog
+import android.content.Context
+import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.DatePicker
+import androidx.appcompat.app.ActionBar
+import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
+import org.gnucash.android.R
+import org.gnucash.android.app.getSerializableCompat
+import org.gnucash.android.databinding.ActivityReportsBinding
+import org.gnucash.android.db.adapter.TransactionsDbAdapter
+import org.gnucash.android.model.AccountType
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.ui.adapter.AccountTypesAdapter.Companion.expenseAndIncome
+import org.gnucash.android.ui.common.BaseDrawerActivity
+import org.gnucash.android.ui.common.Refreshable
+import org.gnucash.android.ui.get
+import org.gnucash.android.ui.report.ReportType.Companion.getReportNames
+import org.gnucash.android.ui.util.dialog.DateRangePickerDialogFragment
+import org.gnucash.android.ui.util.dialog.DateRangePickerDialogFragment.OnDateRangeSetListener
+import org.gnucash.android.util.toLocalDateTime
+import org.gnucash.android.util.toMillis
+import org.joda.time.LocalDate
+import org.joda.time.LocalDateTime
 
 /**
- * Activity for displaying report fragments (which must implement {@link BaseReportFragment})
- * <p>In order to add new reports, extend the {@link BaseReportFragment} class to provide the view
- * for the report. Then add the report mapping in {@link ReportType} constructor depending on what
- * kind of report it is. The report will be dynamically included at runtime.</p>
+ * Activity for displaying report fragments (which must implement [BaseReportFragment])
+ *
+ * In order to add new reports, extend the [BaseReportFragment] class to provide the view
+ * for the report. Then add the report mapping in [ReportType] constructor depending on what
+ * kind of report it is. The report will be dynamically included at runtime.
  *
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class ReportsActivity extends BaseDrawerActivity implements AdapterView.OnItemSelectedListener,
-    DatePickerDialog.OnDateSetListener, DateRangePickerDialogFragment.OnDateRangeSetListener,
+class ReportsActivity : BaseDrawerActivity(),
+    DatePickerDialog.OnDateSetListener,
+    OnDateRangeSetListener,
     Refreshable {
+    private var transactionsDbAdapter: TransactionsDbAdapter = TransactionsDbAdapter.instance
+    var accountType: AccountType = AccountType.EXPENSE
+        private set
+    private var reportType: ReportType = ReportType.NONE
 
-    private static final String STATE_REPORT_TYPE = "report_type";
-    private static final String STATE_REPORT_START = "report_start";
-    private static final String STATE_REPORT_END = "report_end";
-
-    private TransactionsDbAdapter mTransactionsDbAdapter;
-    private AccountType mAccountType = AccountType.EXPENSE;
-    private ReportType mReportType = ReportType.NONE;
-
-    public enum GroupInterval {WEEK, MONTH, QUARTER, YEAR, ALL}
-
-    // default time range is the last 3 months
-    @Nullable
-    private LocalDateTime mReportPeriodStart = LocalDateTime.now().minusMonths(3);
-    @Nullable
-    private LocalDateTime mReportPeriodEnd = LocalDateTime.now();
-
-    private GroupInterval mReportGroupInterval = GroupInterval.MONTH;
-
-    private ActivityReportsBinding mBinding;
-
-    AdapterView.OnItemSelectedListener mReportTypeSelectedListener = new AdapterView.OnItemSelectedListener() {
-
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            if (view == null) return;
-            ReportType reportType = ReportType.values()[position];
-            if (mReportType != reportType) {
-                showReport(reportType);
-            }
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-            //nothing to see here, move along
-        }
-    };
-
-    @Override
-    public void inflateView() {
-        mBinding = ActivityReportsBinding.inflate(getLayoutInflater());
-        setContentView(mBinding.getRoot());
-        mDrawerLayout = mBinding.drawerLayout;
-        mNavigationView = mBinding.navView;
-        mToolbar = mBinding.toolbarLayout.toolbar;
-        mToolbarProgress = mBinding.toolbarLayout.toolbarProgress.progress;
-    }
-
-    @Override
-    public int getTitleRes() {
-        return R.string.title_reports;
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        final Context context = this;
-        mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
-
-        ActionBar actionBar = getSupportActionBar();
-        assert actionBar != null;
-        ArrayAdapter<String> typesAdapter = new ArrayAdapter<>(actionBar.getThemedContext(),
-            android.R.layout.simple_list_item_1,
-            ReportType.getReportNames(context));
-        mBinding.toolbarLayout.toolbarSpinner.setAdapter(typesAdapter);
-        mBinding.toolbarLayout.toolbarSpinner.setOnItemSelectedListener(mReportTypeSelectedListener);
-
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(context, R.array.report_time_range,
-            android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mBinding.timeRangeSpinner.setAdapter(adapter);
-        mBinding.timeRangeSpinner.setOnItemSelectedListener(this);
-        mBinding.timeRangeSpinner.setSelection(1);
-
-        AccountTypesAdapter accountTypeAdapter = AccountTypesAdapter.expenseAndIncome(context);
-        mBinding.reportAccountTypeSpinner.setAdapter(accountTypeAdapter);
-        mBinding.reportAccountTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-                if (view == null) return;
-                if (position < 0) return;
-                AccountTypesAdapter.Label label = accountTypeAdapter.getItem(position);
-                updateAccountTypeOnFragments(label.value);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-                //nothing to see here, move along
-            }
-        });
-
-        if (savedInstanceState == null) {
-            showOverview();
-        } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                mReportType = savedInstanceState.getSerializable(STATE_REPORT_TYPE, ReportType.class);
-            } else {
-                mReportType = (ReportType) savedInstanceState.getSerializable(STATE_REPORT_TYPE);
-            }
-            mReportPeriodStart = DateExtKt.toLocalDateTime(savedInstanceState.getLong(STATE_REPORT_START));
-            mReportPeriodEnd = DateExtKt.toLocalDateTime(savedInstanceState.getLong(STATE_REPORT_END));
-        }
-    }
-
-    void onFragmentResumed(@NonNull Fragment fragment) {
-        ReportType reportType = ReportType.NONE;
-        if (fragment instanceof BaseReportFragment reportFragment) {
-            reportType = reportFragment.getReportType();
-
-            int visibility = reportFragment.requiresAccountTypeOptions() ? View.VISIBLE : View.GONE;
-            mBinding.reportAccountTypeSpinner.setVisibility(visibility);
-        }
-
-        setTitlesColor(ContextCompat.getColor(this, reportType.colorId));
-        updateReportTypeSpinner(reportType);
-        toggleToolbarTitleVisibility(reportType);
-    }
-
-    /**
-     * Show the overview.
-     */
-    private void showOverview() {
-        showReport(ReportType.NONE);
-    }
-
-    /**
-     * Show the report.
-     *
-     * @param reportType the report type.
-     */
-    void showReport(@NonNull ReportType reportType) {
-        BaseReportFragment fragment = reportType.getFragment();
-        if (fragment == null) {
-            Timber.w("Report fragment required");
-            return;
-        }
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        // First, remove the current report to replace it.
-        if (fragmentManager.getBackStackEntryCount() > 0) {
-            fragmentManager.popBackStack();
-        }
-        FragmentTransaction tx = fragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment);
-        if (reportType != ReportType.NONE) {
-            String stackName = getString(reportType.titleId);
-            tx.addToBackStack(stackName);
-        }
-        tx.commit();
-    }
-
-    /**
-     * Update the report type spinner
-     */
-    public void updateReportTypeSpinner(@NonNull ReportType reportType) {
-        mReportType = reportType;
-        mBinding.toolbarLayout.toolbarSpinner.setSelection(reportType.ordinal());
-    }
-
-    private void toggleToolbarTitleVisibility(ReportType reportType) {
-        ActionBar actionBar = getSupportActionBar();
-        assert actionBar != null;
-
-        if (reportType == ReportType.NONE) {
-            mBinding.toolbarLayout.toolbarSpinner.setVisibility(View.GONE);
-        } else {
-            mBinding.toolbarLayout.toolbarSpinner.setVisibility(View.VISIBLE);
-        }
-        actionBar.setDisplayShowTitleEnabled(reportType == ReportType.NONE);
-    }
-
-    /**
-     * Updates the reporting time range for all listening fragments
-     */
-    private void updateDateRangeOnFragment() {
-        List<Fragment> fragments = getSupportFragmentManager().getFragments();
-        for (Fragment fragment : fragments) {
-            if (fragment instanceof ReportOptionsListener) {
-                ((ReportOptionsListener) fragment).onTimeRangeUpdated(mReportPeriodStart, mReportPeriodEnd);
-            }
-        }
-    }
-
-    /**
-     * Updates the account type for all attached fragments which are listening
-     */
-    private void updateAccountTypeOnFragments(AccountType accountType) {
-        mAccountType = accountType;
-        List<Fragment> fragments = getSupportFragmentManager().getFragments();
-        for (Fragment fragment : fragments) {
-            if (fragment instanceof ReportOptionsListener) {
-                ((ReportOptionsListener) fragment).onAccountTypeUpdated(accountType);
-            }
-        }
-    }
-
-    /**
-     * Updates the report grouping interval on all attached fragments which are listening
-     */
-    private void updateGroupingOnFragments() {
-        List<Fragment> fragments = getSupportFragmentManager().getFragments();
-        for (Fragment fragment : fragments) {
-            if (fragment instanceof ReportOptionsListener) {
-                ((ReportOptionsListener) fragment).onGroupingUpdated(mReportGroupInterval);
-            }
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(@NonNull Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.report_actions, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_group_reports_by:
-                return true;
-
-            case R.id.group_by_month:
-                item.setChecked(true);
-                mReportGroupInterval = GroupInterval.MONTH;
-                updateGroupingOnFragments();
-                return true;
-
-            case R.id.group_by_quarter:
-                item.setChecked(true);
-                mReportGroupInterval = GroupInterval.QUARTER;
-                updateGroupingOnFragments();
-                return true;
-
-            case R.id.group_by_year:
-                item.setChecked(true);
-                mReportGroupInterval = GroupInterval.YEAR;
-                updateGroupingOnFragments();
-                return true;
-
-            case android.R.id.home:
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        if (view == null) return;
-        LocalDateTime now = LocalDateTime.now();
-        mReportPeriodEnd = now;
-        switch (position) {
-            case 0: //current month
-                mReportPeriodStart = now.dayOfMonth().withMinimumValue();
-                break;
-            case 1: // last 3 months.
-                mReportPeriodStart = now.minusMonths(3);
-                break;
-            case 2: // last 6 months
-                mReportPeriodStart = now.minusMonths(6);
-                break;
-            case 3: // last year
-                mReportPeriodStart = now.minusYears(1);
-                break;
-            case 4: //ALL TIME
-                mReportPeriodStart = null;
-                mReportPeriodEnd = null;
-                break;
-            case 5: // custom range
-                String commodityUID = Commodity.DEFAULT_COMMODITY.getUID();
-                long earliest = mTransactionsDbAdapter.getTimestampOfEarliestTransaction(mAccountType, commodityUID);
-                DialogFragment rangeFragment = DateRangePickerDialogFragment.newInstance(
-                    new LocalDate(earliest),
-                    now.toLocalDate(),
-                    this
-                );
-                rangeFragment.show(getSupportFragmentManager(), "range_dialog");
-                return;
-        }
-        //the date picker will trigger the update itself
-        updateDateRangeOnFragment();
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
-        //nothing to see here, move along
-    }
-
-    @Override
-    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-        mReportPeriodStart = new LocalDateTime(year, monthOfYear, dayOfMonth, 0, 0);
-        updateDateRangeOnFragment();
-    }
-
-    @Override
-    public void onDateRangeSet(LocalDate startDate, LocalDate endDate) {
-        mReportPeriodStart = startDate.toDateTimeAtStartOfDay().toLocalDateTime();
-        mReportPeriodEnd = endDate.toDateTimeAtCurrentTime().toLocalDateTime();
-        updateDateRangeOnFragment();
-    }
-
-    public AccountType getAccountType() {
-        return mAccountType;
-    }
-
-    /**
-     * Return the end time of the reporting period
-     *
-     * @return Time in millis
-     */
-    @Nullable
-    public LocalDateTime getReportPeriodEnd() {
-        return mReportPeriodEnd;
+    enum class GroupInterval {
+        WEEK, MONTH, QUARTER, YEAR, ALL
     }
 
     /**
@@ -385,35 +75,314 @@ public class ReportsActivity extends BaseDrawerActivity implements AdapterView.O
      *
      * @return Time in millis
      */
-    @Nullable
-    public LocalDateTime getReportPeriodStart() {
-        return mReportPeriodStart;
+    // default time range is the last 3 months
+    var reportPeriodStart: LocalDateTime? = LocalDateTime.now().minusMonths(3)
+        private set
+
+    /**
+     * Return the end time of the reporting period
+     *
+     * @return Time in millis
+     */
+    var reportPeriodEnd: LocalDateTime? = LocalDateTime.now()
+        private set
+
+    private var reportGroupInterval = GroupInterval.MONTH
+
+    private var binding: ActivityReportsBinding? = null
+
+    var reportTypeSelectedListener: AdapterView.OnItemSelectedListener =
+        object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                if (view == null) return
+                val reportType = ReportType.values()[position]
+                if (this@ReportsActivity.reportType != reportType) {
+                    showReport(reportType)
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) = Unit
+        }
+
+    override fun inflateView() {
+        val binding = ActivityReportsBinding.inflate(layoutInflater)
+        this.binding = binding
+        setContentView(binding.root)
+        drawerLayout = binding.drawerLayout
+        navigationView = binding.navView
+        toolbar = binding.toolbarLayout.toolbar
+        toolbarProgress = binding.toolbarLayout.toolbarProgress.progress
     }
 
-    @Override
-    public void refresh() {
-        List<Fragment> fragments = getSupportFragmentManager().getFragments();
-        for (Fragment fragment : fragments) {
-            if (fragment instanceof Refreshable) {
-                ((Refreshable) fragment).refresh();
+    override val titleRes: Int = R.string.title_reports
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val context: Context = this
+        transactionsDbAdapter = TransactionsDbAdapter.instance
+        val binding = this.binding!!
+
+        val actionBar: ActionBar = supportActionBar!!
+        val typesAdapter = ArrayAdapter<String?>(
+            actionBar.themedContext,
+            android.R.layout.simple_list_item_1,
+            getReportNames(context)
+        )
+        binding.toolbarLayout.toolbarSpinner.adapter = typesAdapter
+        binding.toolbarLayout.toolbarSpinner.onItemSelectedListener = reportTypeSelectedListener
+
+        val adapter = ArrayAdapter.createFromResource(
+            context, R.array.report_time_range,
+            android.R.layout.simple_spinner_item
+        )
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.timeRangeSpinner.adapter = adapter
+        binding.timeRangeSpinner.onItemSelectedListener = object :
+            AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                if (view == null) return
+                val now = LocalDateTime.now()
+                reportPeriodEnd = now
+                when (position) {
+                    0 -> reportPeriodStart = now.dayOfMonth().withMinimumValue()
+                    1 -> reportPeriodStart = now.minusMonths(3)
+                    2 -> reportPeriodStart = now.minusMonths(6)
+                    3 -> reportPeriodStart = now.minusYears(1)
+                    4 -> {
+                        reportPeriodStart = null
+                        reportPeriodEnd = null
+                    }
+
+                    5 -> {
+                        val commodityUID = Commodity.DEFAULT_COMMODITY.uid
+                        val earliest = transactionsDbAdapter!!.getTimestampOfEarliestTransaction(
+                            accountType,
+                            commodityUID
+                        )
+                        DateRangePickerDialogFragment.newInstance(
+                            LocalDate(earliest),
+                            now.toLocalDate(),
+                            this@ReportsActivity
+                        ).show(supportFragmentManager, "range_dialog")
+                        return
+                    }
+                }
+                //the date picker will trigger the update itself
+                updateDateRangeOnFragment()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) = Unit
+        }
+        binding.timeRangeSpinner.setSelection(1)
+
+        val accountTypeAdapter = expenseAndIncome(context)
+        binding.reportAccountTypeSpinner.adapter = accountTypeAdapter
+        binding.reportAccountTypeSpinner.onItemSelectedListener = object :
+            AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                if (view == null) return
+                if (position < 0) return
+                val label = accountTypeAdapter[position]
+                updateAccountTypeOnFragments(label.value)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) = Unit
+        }
+
+        if (savedInstanceState == null) {
+            showOverview()
+        } else {
+            reportType =
+                savedInstanceState.getSerializableCompat(STATE_REPORT_TYPE, ReportType::class.java)
+                    ?: ReportType.NONE
+            reportPeriodStart = savedInstanceState.getLong(STATE_REPORT_START).toLocalDateTime()
+            reportPeriodEnd = savedInstanceState.getLong(STATE_REPORT_END).toLocalDateTime()
+        }
+    }
+
+    fun onFragmentResumed(fragment: Fragment) {
+        val binding = this.binding!!
+        var reportType = ReportType.NONE
+        if (fragment is BaseReportFragment) {
+            reportType = fragment.reportType
+            binding.reportAccountTypeSpinner.isVisible = fragment.requiresAccountTypeOptions()
+        }
+
+        setTitlesColor(ContextCompat.getColor(this, reportType.colorId))
+        updateReportTypeSpinner(binding, reportType)
+        toggleToolbarTitleVisibility(binding, reportType)
+    }
+
+    /**
+     * Show the overview.
+     */
+    private fun showOverview() {
+        showReport(ReportType.NONE)
+    }
+
+    /**
+     * Show the report.
+     *
+     * @param reportType the report type.
+     */
+    fun showReport(reportType: ReportType) {
+        val fragmentManager = supportFragmentManager
+        // First, remove the current report to replace it.
+        if (fragmentManager.backStackEntryCount > 0) {
+            fragmentManager.popBackStack()
+        }
+        val fragment = reportType.fragment
+        val tx = fragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+        if (reportType != ReportType.NONE) {
+            val stackName = getString(reportType.titleId)
+            tx.addToBackStack(stackName)
+        }
+        tx.commit()
+    }
+
+    /**
+     * Update the report type spinner
+     */
+    fun updateReportTypeSpinner(binding: ActivityReportsBinding, reportType: ReportType) {
+        this.reportType = reportType
+        binding.toolbarLayout.toolbarSpinner.setSelection(reportType.ordinal)
+    }
+
+    private fun toggleToolbarTitleVisibility(
+        binding: ActivityReportsBinding,
+        reportType: ReportType
+    ) {
+        val actionBar: ActionBar = supportActionBar!!
+        actionBar.setDisplayShowTitleEnabled(reportType == ReportType.NONE)
+        binding.toolbarLayout.toolbarSpinner.isVisible = reportType != ReportType.NONE
+    }
+
+    /**
+     * Updates the reporting time range for all listening fragments
+     */
+    private fun updateDateRangeOnFragment() {
+        val fragments = supportFragmentManager.fragments
+        for (fragment in fragments) {
+            if (fragment is ReportOptionsListener) {
+                fragment.onTimeRangeUpdated(reportPeriodStart, reportPeriodEnd)
             }
         }
     }
 
-    @Override
+    /**
+     * Updates the account type for all attached fragments which are listening
+     */
+    private fun updateAccountTypeOnFragments(accountType: AccountType) {
+        this.accountType = accountType
+        val fragments = supportFragmentManager.fragments
+        for (fragment in fragments) {
+            if (fragment is ReportOptionsListener) {
+                fragment.onAccountTypeUpdated(accountType)
+            }
+        }
+    }
+
+    /**
+     * Updates the report grouping interval on all attached fragments which are listening
+     */
+    private fun updateGroupingOnFragments() {
+        val fragments = supportFragmentManager.fragments
+        for (fragment in fragments) {
+            if (fragment is ReportOptionsListener) {
+                fragment.onGroupingUpdated(reportGroupInterval)
+            }
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        super.onCreateOptionsMenu(menu)
+        menuInflater.inflate(R.menu.report_actions, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menu_group_reports_by -> return true
+
+            R.id.group_by_month -> {
+                item.isChecked = true
+                reportGroupInterval = GroupInterval.MONTH
+                updateGroupingOnFragments()
+                return true
+            }
+
+            R.id.group_by_quarter -> {
+                item.isChecked = true
+                reportGroupInterval = GroupInterval.QUARTER
+                updateGroupingOnFragments()
+                return true
+            }
+
+            R.id.group_by_year -> {
+                item.isChecked = true
+                reportGroupInterval = GroupInterval.YEAR
+                updateGroupingOnFragments()
+                return true
+            }
+
+            else -> return super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onDateSet(view: DatePicker, year: Int, monthOfYear: Int, dayOfMonth: Int) {
+        reportPeriodStart = LocalDateTime(year, monthOfYear, dayOfMonth, 0, 0)
+        updateDateRangeOnFragment()
+    }
+
+    override fun onDateRangeSet(startDate: LocalDate, endDate: LocalDate) {
+        reportPeriodStart = startDate.toDateTimeAtStartOfDay().toLocalDateTime()
+        reportPeriodEnd = endDate.toDateTimeAtCurrentTime().toLocalDateTime()
+        updateDateRangeOnFragment()
+    }
+
+    override fun refresh() {
+        val fragments = supportFragmentManager.fragments
+        for (fragment in fragments) {
+            if (fragment is Refreshable) {
+                fragment.refresh()
+            }
+        }
+    }
+
     /**
      * Just another call to refresh
      */
-    public void refresh(String uid) {
-        refresh();
+    override fun refresh(uid: String?) {
+        refresh()
     }
 
-    @Override
-    protected void onSaveInstanceState(@NotNull Bundle outState) {
-        super.onSaveInstanceState(outState);
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putSerializable(STATE_REPORT_TYPE, reportType)
+        outState.putLong(STATE_REPORT_START, reportPeriodStart.toMillis())
+        outState.putLong(STATE_REPORT_END, reportPeriodEnd.toMillis())
+    }
 
-        outState.putSerializable(STATE_REPORT_TYPE, mReportType);
-        outState.putLong(STATE_REPORT_START, DateExtKt.toMillis(mReportPeriodStart));
-        outState.putLong(STATE_REPORT_END, DateExtKt.toMillis(mReportPeriodEnd));
+    companion object {
+        private const val STATE_REPORT_TYPE = "report_type"
+        private const val STATE_REPORT_START = "report_start"
+        private const val STATE_REPORT_END = "report_end"
     }
 }

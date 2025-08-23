@@ -13,43 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.receivers;
+package org.gnucash.android.receivers
 
-import android.appwidget.AppWidgetManager;
-import android.appwidget.AppWidgetProvider;
-import android.content.Context;
-
-import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity;
+import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProvider
+import android.content.Context
+import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity
 
 /**
- * {@link AppWidgetProvider} which is responsible for managing widgets on the homescreen
+ * [AppWidgetProvider] which is responsible for managing widgets on the homescreen
  * It receives broadcasts related to updating and deleting widgets
- * Widgets can also be updated manually by calling {@link WidgetConfigurationActivity#updateAllWidgets(Context)}
+ * Widgets can also be updated manually by calling [WidgetConfigurationActivity.updateAllWidgets]
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class TransactionAppWidgetProvider extends AppWidgetProvider {
-
-    @Override
-    public void onUpdate(Context context, AppWidgetManager appWidgetManager,
-                         int[] appWidgetIds) {
-        super.onUpdate(context, appWidgetManager, appWidgetIds);
-        for (int appWidgetId : appWidgetIds) {
-            WidgetConfigurationActivity.updateWidget(context, appWidgetId);
+class TransactionAppWidgetProvider : AppWidgetProvider() {
+    override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray
+    ) {
+        super.onUpdate(context, appWidgetManager, appWidgetIds)
+        for (appWidgetId in appWidgetIds) {
+            WidgetConfigurationActivity.updateWidget(context, appWidgetId)
         }
     }
 
-    @Override
-    public void onEnabled(Context context) {
-        super.onEnabled(context);
-        WidgetConfigurationActivity.updateAllWidgets(context);
+    override fun onEnabled(context: Context) {
+        super.onEnabled(context)
+        WidgetConfigurationActivity.updateAllWidgets(context)
     }
 
-    @Override
-    public void onDeleted(Context context, int[] appWidgetIds) {
-        super.onDeleted(context, appWidgetIds);
-        for (int appWidgetId : appWidgetIds) {
-            WidgetConfigurationActivity.removeWidgetConfiguration(context, appWidgetId);
+    override fun onDeleted(context: Context, appWidgetIds: IntArray) {
+        super.onDeleted(context, appWidgetIds)
+        for (appWidgetId in appWidgetIds) {
+            WidgetConfigurationActivity.removeWidgetConfiguration(context, appWidgetId)
         }
     }
 }

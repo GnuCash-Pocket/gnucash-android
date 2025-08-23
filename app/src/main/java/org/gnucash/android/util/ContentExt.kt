@@ -1,6 +1,7 @@
 package org.gnucash.android.util
 
 import android.content.ContentResolver
+import android.content.ContentValues
 import android.content.Context
 import android.content.res.AssetManager
 import android.content.res.Resources
@@ -9,6 +10,7 @@ import android.provider.DocumentsContract
 import timber.log.Timber
 import java.io.FileNotFoundException
 import java.io.InputStream
+import java.math.BigDecimal
 import java.util.Locale
 
 private val PROJECTION_DOCUMENT_NAME = arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
@@ -18,7 +20,7 @@ fun Uri.getDocumentName(context: Context?): String {
     if (ContentResolver.SCHEME_ANDROID_RESOURCE == scheme) {
         return ""
     }
-    var name: String = this.authority ?: this.host ?: ""
+    var name: String = this.authority ?: this.host.orEmpty()
     val lastPath = this.lastPathSegment
     if (!lastPath.isNullOrEmpty()) {
         name = lastPath
@@ -80,4 +82,36 @@ fun Uri.openStream(context: Context): InputStream? {
     }
     val contentResolver: ContentResolver = context.getContentResolver()
     return contentResolver.openInputStream(this)
+}
+
+operator fun ContentValues.set(key: String, value: Boolean) {
+    put(key, value)
+}
+
+operator fun ContentValues.set(key: String, value: Double) {
+    put(key, value)
+}
+
+operator fun ContentValues.set(key: String, value: Float) {
+    put(key, value)
+}
+
+operator fun ContentValues.set(key: String, value: Int) {
+    put(key, value)
+}
+
+operator fun ContentValues.set(key: String, value: Long) {
+    put(key, value)
+}
+
+operator fun ContentValues.set(key: String, value: String?) {
+    if (value == null) {
+        putNull(key)
+    } else {
+        put(key, value)
+    }
+}
+
+operator fun ContentValues.set(key: String, value: BigDecimal) {
+    put(key, value.toString())
 }

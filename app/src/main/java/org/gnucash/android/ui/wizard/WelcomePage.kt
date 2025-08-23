@@ -13,35 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.wizard
 
-package org.gnucash.android.ui.wizard;
-
-import androidx.fragment.app.Fragment;
-
-import com.tech.freak.wizardpager.model.ModelCallbacks;
-import com.tech.freak.wizardpager.model.Page;
-import com.tech.freak.wizardpager.model.ReviewItem;
-
-import java.util.ArrayList;
+import androidx.fragment.app.Fragment
+import com.tech.freak.wizardpager.model.ModelCallbacks
+import com.tech.freak.wizardpager.model.Page
+import com.tech.freak.wizardpager.model.ReviewItem
 
 /**
  * Welcome page for the first run wizard
  *
  * @author Ngewi Fet
  */
-public class WelcomePage extends Page {
-
-    protected WelcomePage(ModelCallbacks callbacks, String title) {
-        super(callbacks, title);
+class WelcomePage(callbacks: ModelCallbacks, title: String) : Page(callbacks, title) {
+    override fun createFragment(): Fragment {
+        return WelcomePageFragment()
     }
 
-    @Override
-    public Fragment createFragment() {
-        return new WelcomePageFragment();
-    }
-
-    @Override
-    public void getReviewItems(ArrayList<ReviewItem> arrayList) {
+    override fun getReviewItems(dest: ArrayList<ReviewItem>?) {
         //nothing to see here, move along
     }
 }

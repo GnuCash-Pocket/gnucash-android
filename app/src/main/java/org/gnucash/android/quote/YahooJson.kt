@@ -12,7 +12,6 @@ import org.json.JSONException
 import org.json.JSONObject
 import timber.log.Timber
 import java.math.BigDecimal
-import java.sql.Timestamp
 import java.util.Locale
 
 class YahooJson : QuoteProvider {

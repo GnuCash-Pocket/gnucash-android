@@ -14,528 +14,428 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.transaction
 
-package org.gnucash.android.ui.transaction;
-
-import static org.apache.commons.lang3.math.NumberUtils.min;
-
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.text.TextUtils;
-import android.text.format.DateUtils;
-import android.util.SparseArray;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-
-import androidx.annotation.ColorInt;
-import androidx.annotation.DrawableRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentResultListener;
-import androidx.fragment.app.FragmentStatePagerAdapter;
-
-import com.google.android.material.tabs.TabLayout;
-
-import org.gnucash.android.R;
-import org.gnucash.android.databinding.ActivityTransactionsBinding;
-import org.gnucash.android.db.DatabaseSchema;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.ui.account.AccountsListFragment;
-import org.gnucash.android.ui.account.DeleteAccountDialogFragment;
-import org.gnucash.android.ui.account.OnAccountClickedListener;
-import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter;
-import org.gnucash.android.ui.common.BaseDrawerActivity;
-import org.gnucash.android.ui.common.FormActivity;
-import org.gnucash.android.ui.common.Refreshable;
-import org.gnucash.android.ui.common.UxArgument;
-import org.gnucash.android.util.BackupManager;
-import org.joda.time.LocalDate;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-
-import java.util.List;
-
-import kotlin.Unit;
-import kotlin.jvm.functions.Function0;
-import timber.log.Timber;
+import android.content.Intent
+import android.os.Bundle
+import android.util.SparseArray
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.widget.AdapterView
+import androidx.annotation.ColorInt
+import androidx.annotation.DrawableRes
+import androidx.appcompat.app.ActionBar
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentResultListener
+import androidx.fragment.app.FragmentStatePagerAdapter
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
+import com.google.android.material.tabs.TabLayout.TabLayoutOnPageChangeListener
+import org.gnucash.android.R
+import org.gnucash.android.databinding.ActivityTransactionsBinding
+import org.gnucash.android.db.DatabaseSchema.AccountEntry
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.TransactionsDbAdapter
+import org.gnucash.android.lang.iterator
+import org.gnucash.android.model.Account
+import org.gnucash.android.ui.account.AccountsListFragment
+import org.gnucash.android.ui.account.DeleteAccountDialogFragment
+import org.gnucash.android.ui.account.OnAccountClickedListener
+import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
+import org.gnucash.android.ui.common.BaseDrawerActivity
+import org.gnucash.android.ui.common.FormActivity
+import org.gnucash.android.ui.common.Refreshable
+import org.gnucash.android.ui.common.UxArgument
+import org.gnucash.android.util.BackupManager.backupActiveBookAsync
+import timber.log.Timber
+import kotlin.math.min
 
 /**
  * Activity for displaying, creating and editing transactions
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class TransactionsActivity extends BaseDrawerActivity implements
-    Refreshable, OnAccountClickedListener, FragmentResultListener {
-
+class TransactionsActivity : BaseDrawerActivity(),
+    Refreshable,
+    OnAccountClickedListener,
+    FragmentResultListener {
     /**
-     * ViewPager index for sub-accounts fragment
+     * GUID of [Account] whose transactions are displayed
      */
-    private static final int INDEX_SUB_ACCOUNTS_FRAGMENT = 0;
-
-    /**
-     * ViewPager index for transactions fragment
-     */
-    private static final int INDEX_TRANSACTIONS_FRAGMENT = 1;
-
-    /**
-     * Number of pages to show
-     */
-    private static final int DEFAULT_NUM_PAGES = 2;
-    private static final DateTimeFormatter dayMonthFormatter = DateTimeFormat.forPattern("EEE, d MMM");
-
-    /**
-     * GUID of {@link Account} whose transactions are displayed
-     */
-    private Account account = null;
+    private var account: Account? = null
 
     /**
      * Account database adapter for manipulating the accounts list in navigation
      */
-    private final AccountsDbAdapter mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-    private final TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
-    private QualifiedAccountNameAdapter accountNameAdapter;
+    private var accountsDbAdapter = AccountsDbAdapter.instance
+    private var transactionsDbAdapter = TransactionsDbAdapter.instance
+    private var accountNameAdapter: QualifiedAccountNameAdapter? = null
 
-    private final SparseArray<Refreshable> mFragmentPageReferenceMap = new SparseArray<>();
-    private boolean isShowHiddenAccounts = false;
+    private val fragmentPages = SparseArray<Refreshable>()
+    private var isShowHiddenAccounts = false
 
-    private ActivityTransactionsBinding mBinding;
+    private lateinit var binding: ActivityTransactionsBinding
 
-    private final AdapterView.OnItemSelectedListener accountSpinnerListener = new AdapterView.OnItemSelectedListener() {
-
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            Account account = accountNameAdapter.getAccount(position);
-            swapAccount(account);
-        }
-
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-            //nothing to see here, move along
-        }
-    };
-
-    private AccountViewPagerAdapter mPagerAdapter;
-
-    @Override
-    public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
-        if (DeleteAccountDialogFragment.TAG.equals(requestKey)) {
-            boolean refresh = result.getBoolean(Refreshable.EXTRA_REFRESH);
-            if (refresh) {
-                finish();
+    private val accountSpinnerListener: AdapterView.OnItemSelectedListener =
+        object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                val account = accountNameAdapter?.getAccount(position)
+                swapAccount(account)
             }
+
+            override fun onNothingSelected(parent: AdapterView<*>) = Unit
         }
-    }
+
+    private var pagerAdapter: AccountViewPagerAdapter? = null
 
     /**
      * Adapter for managing the sub-account and transaction fragment pages in the accounts view
      */
-    private class AccountViewPagerAdapter extends FragmentStatePagerAdapter {
-
-        public AccountViewPagerAdapter(FragmentManager fm) {
-            super(fm);
+    private inner class AccountViewPagerAdapter(fm: FragmentManager) :
+        FragmentStatePagerAdapter(fm) {
+        override fun getItem(position: Int): Fragment {
+            val account = requireAccount()
+            val accountUID = account.uid
+            val fragment = if (account.isPlaceholder || position == INDEX_SUB_ACCOUNTS_FRAGMENT) {
+                prepareSubAccountsListFragment(accountUID)
+            } else {
+                prepareTransactionsListFragment(accountUID)
+            }
+            fragmentPages[position] = fragment
+            return fragment
         }
 
-        @NonNull
-        @Override
-        public Fragment getItem(int position) {
-            if (account != null && account.isPlaceholder()) {
-                Fragment transactionsListFragment = prepareSubAccountsListFragment();
-                mFragmentPageReferenceMap.put(position, (Refreshable) transactionsListFragment);
-                return transactionsListFragment;
-            }
-
-            Fragment currentFragment;
-            switch (position) {
-                case INDEX_SUB_ACCOUNTS_FRAGMENT:
-                    currentFragment = prepareSubAccountsListFragment();
-                    break;
-
-                case INDEX_TRANSACTIONS_FRAGMENT:
-                default:
-                    currentFragment = prepareTransactionsListFragment();
-                    break;
-            }
-
-            mFragmentPageReferenceMap.put(position, (Refreshable) currentFragment);
-            return currentFragment;
+        override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
+            super.destroyItem(container, position, `object`)
+            fragmentPages.remove(position)
         }
 
-        @Override
-        public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
-            super.destroyItem(container, position, object);
-            mFragmentPageReferenceMap.remove(position);
+        override fun getPageTitle(position: Int): CharSequence? {
+            val account = requireAccount()
+            if (account.isPlaceholder || position == INDEX_SUB_ACCOUNTS_FRAGMENT) {
+                return getText(R.string.section_header_subaccounts)
+            }
+
+            return getText(R.string.section_header_transactions)
         }
 
-        @Override
-        public CharSequence getPageTitle(int position) {
-            if (account.isPlaceholder())
-                return getString(R.string.section_header_subaccounts);
-
-            switch (position) {
-                case INDEX_SUB_ACCOUNTS_FRAGMENT:
-                    return getString(R.string.section_header_subaccounts);
-
-                case INDEX_TRANSACTIONS_FRAGMENT:
-                default:
-                    return getString(R.string.section_header_transactions);
+        override fun getCount(): Int {
+            val account = requireAccount()
+            if (!account.isPlaceholder) {
+                return DEFAULT_NUM_PAGES
             }
-        }
-
-        @Override
-        public int getCount() {
-            if (account != null && !account.isPlaceholder()) {
-                return DEFAULT_NUM_PAGES;
-            }
-            return 1;
+            return 1
         }
 
         /**
          * Creates and initializes the fragment for displaying sub-account list
          *
-         * @return {@link AccountsListFragment} initialized with the sub-accounts
+         * @return [AccountsListFragment] initialized with the sub-accounts
          */
-        private AccountsListFragment prepareSubAccountsListFragment() {
-            String accountUID = getAccountUID();
-            Bundle args = new Bundle();
-            args.putString(UxArgument.PARENT_ACCOUNT_UID, accountUID);
-            args.putBoolean(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts);
-            AccountsListFragment fragment = new AccountsListFragment();
-            fragment.setArguments(args);
-            return fragment;
+        fun prepareSubAccountsListFragment(accountUID: String): AccountsListFragment {
+            val args = Bundle()
+            args.putString(UxArgument.PARENT_ACCOUNT_UID, accountUID)
+            args.putBoolean(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts)
+            val fragment = AccountsListFragment()
+            fragment.arguments = args
+            return fragment
         }
 
         /**
          * Creates and initializes fragment for displaying transactions
          *
-         * @return {@link TransactionsListFragment} initialized with the current account transactions
+         * @return [TransactionsListFragment] initialized with the current account transactions
          */
-        private TransactionsListFragment prepareTransactionsListFragment() {
-            String accountUID = getAccountUID();
-            Bundle args = new Bundle();
-            args.putString(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
-            Timber.i("Opening transactions for account: %s", accountUID);
-            TransactionsListFragment fragment = new TransactionsListFragment();
-            fragment.setArguments(args);
-            return fragment;
+        fun prepareTransactionsListFragment(accountUID: String): TransactionsListFragment {
+            Timber.i("Opening transactions for account: %s", accountUID)
+            val args = Bundle()
+            args.putString(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+            val fragment = TransactionsListFragment()
+            fragment.arguments = args
+            return fragment
+        }
+    }
+
+    override val titleRes: Int = R.string.title_transactions
+
+    override fun onFragmentResult(requestKey: String, result: Bundle) {
+        if (DeleteAccountDialogFragment.TAG == requestKey) {
+            val refresh = result.getBoolean(Refreshable.EXTRA_REFRESH)
+            if (refresh) {
+                finish()
+            }
         }
     }
 
     /**
      * Refreshes the fragments currently in the transactions activity
      */
-    @Override
-    public void refresh(final String accountUID) {
-        final ActivityTransactionsBinding binding = mBinding;
-        setTitleIndicatorColor(binding, accountUID);
+    override fun refresh(uid: String?) {
+        val binding = this.binding
+        setTitleIndicatorColor(binding)
 
-        for (int i = 0; i < mFragmentPageReferenceMap.size(); i++) {
-            mFragmentPageReferenceMap.valueAt(i).refresh(accountUID);
+        for (fragment in fragmentPages.iterator()) {
+            fragment.refresh(uid)
         }
 
-        if (mPagerAdapter != null) {
-            mPagerAdapter.notifyDataSetChanged();
-        }
+        pagerAdapter?.notifyDataSetChanged()
 
-        binding.toolbarLayout.toolbarSpinner.setEnabled(!accountNameAdapter.isEmpty());
+        binding.toolbarLayout.toolbarSpinner.setEnabled(!accountNameAdapter!!.isEmpty)
     }
 
-    @Override
-    public void refresh() {
-        String accountUID = getAccountUID();
-        refresh(accountUID);
+    override fun refresh() {
+        val accountUID = account?.uid ?: intent.getStringExtra(UxArgument.SELECTED_ACCOUNT_UID)
+        refresh(accountUID)
     }
 
-    @Override
-    public void inflateView() {
-        final ActivityTransactionsBinding binding = mBinding = ActivityTransactionsBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-        mDrawerLayout = binding.drawerLayout;
-        mNavigationView = binding.navView;
-        mToolbar = binding.toolbarLayout.toolbar;
-        mToolbarProgress = binding.toolbarLayout.toolbarProgress.progress;
+    override fun inflateView() {
+        this.binding = ActivityTransactionsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        drawerLayout = binding.drawerLayout
+        navigationView = binding.navView
+        toolbar = binding.toolbarLayout.toolbar
+        toolbarProgress = binding.toolbarLayout.toolbarProgress.progress
     }
 
-    @Override
-    public int getTitleRes() {
-        return R.string.title_transactions;
-    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        val actionBar: ActionBar? = supportActionBar
+        actionBar?.setDisplayShowTitleEnabled(false)
+        actionBar?.setDisplayHomeAsUpEnabled(true)
 
-        ActionBar actionBar = getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setDisplayShowTitleEnabled(false);
-        actionBar.setDisplayHomeAsUpEnabled(true);
+        accountsDbAdapter = AccountsDbAdapter.instance
+        transactionsDbAdapter = TransactionsDbAdapter.instance
 
-        isShowHiddenAccounts = getIntent().getBooleanExtra(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts);
+        isShowHiddenAccounts =
+            intent.getBooleanExtra(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts)
 
-        final ActivityTransactionsBinding binding = mBinding;
-        String accountUID = getIntent().getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
-        if (TextUtils.isEmpty(accountUID)) {
-            accountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
-        }
-        account = mAccountsDbAdapter.getSimpleRecord(accountUID);
-        if (account == null) {
-            Timber.e("Account not found");
-            finish();
-            return;
+        var accountUID = intent.getStringExtra(UxArgument.SELECTED_ACCOUNT_UID)
+        if (accountUID.isNullOrEmpty()) {
+            accountUID = accountsDbAdapter.rootAccountUID
         }
 
-        binding.tabLayout.addTab(binding.tabLayout.newTab().setText(R.string.section_header_subaccounts));
-        if (!account.isPlaceholder()) {
-            binding.tabLayout.addTab(binding.tabLayout.newTab().setText(R.string.section_header_transactions));
+        binding.tabLayout.addTab(
+            binding.tabLayout.newTab().setText(R.string.section_header_subaccounts)
+        )
+
+        setupActionBarNavigation(binding, accountUID)
+
+        pagerAdapter = AccountViewPagerAdapter(supportFragmentManager)
+        binding.pager.adapter = pagerAdapter
+        binding.pager.addOnPageChangeListener(TabLayoutOnPageChangeListener(binding.tabLayout))
+
+        binding.tabLayout.addOnTabSelectedListener(object : OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                val position = tab.position
+                binding.pager.currentItem = min(position, binding.pager.childCount)
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab) = Unit
+
+            override fun onTabReselected(tab: TabLayout.Tab) = Unit
+        })
+
+        binding.fabCreateTransaction.setOnClickListener {
+            val accountUID = account?.uid ?: return@setOnClickListener
+            when (binding.pager.currentItem) {
+                INDEX_SUB_ACCOUNTS_FRAGMENT -> createNewAccount(accountUID)
+                INDEX_TRANSACTIONS_FRAGMENT -> createNewTransaction(accountUID)
+            }
         }
 
-        setupActionBarNavigation(binding, accountUID);
-
-        mPagerAdapter = new AccountViewPagerAdapter(getSupportFragmentManager());
-        binding.pager.setAdapter(mPagerAdapter);
-        binding.pager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(binding.tabLayout));
-
-        binding.tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                int position = tab.getPosition();
-                binding.pager.setCurrentItem(min(position, binding.pager.getChildCount()));
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-                //nothing to see here, move along
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-                //nothing to see here, move along
-            }
-        });
-
-        binding.fabCreateTransaction.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (binding.pager.getCurrentItem()) {
-                    case INDEX_SUB_ACCOUNTS_FRAGMENT:
-                        createNewAccount(account.getUID());
-                        break;
-
-                    case INDEX_TRANSACTIONS_FRAGMENT:
-                        createNewTransaction(account.getUID());
-                        break;
-                }
-            }
-        });
-
-        List<Fragment> fragments = getSupportFragmentManager().getFragments();
-        for (Fragment fragment : fragments) {
-            if (fragment instanceof AccountsListFragment) {
-                mFragmentPageReferenceMap.put(INDEX_SUB_ACCOUNTS_FRAGMENT, (AccountsListFragment) fragment);
-            } else if (fragment instanceof TransactionsListFragment) {
-                mFragmentPageReferenceMap.put(INDEX_TRANSACTIONS_FRAGMENT, (TransactionsListFragment) fragment);
+        val fragments = supportFragmentManager.fragments
+        for (fragment in fragments) {
+            if (fragment is AccountsListFragment) {
+                fragmentPages[INDEX_SUB_ACCOUNTS_FRAGMENT] = fragment
+            } else if (fragment is TransactionsListFragment) {
+                fragmentPages[INDEX_TRANSACTIONS_FRAGMENT] = fragment
             }
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        refresh();
+    override fun onResume() {
+        super.onResume()
+        refresh()
     }
 
     /**
      * Sets the color for the ViewPager title indicator to match the account color
      */
-    private void setTitleIndicatorColor(ActivityTransactionsBinding binding, String accountUID) {
-        Account account = this.account;
-        if (account == null) return;
-        @ColorInt int accountColor = account.getColor();
+    private fun setTitleIndicatorColor(binding: ActivityTransactionsBinding) {
+        val account = this.account ?: return
+        @ColorInt var accountColor = account.color
         if (accountColor == Account.DEFAULT_COLOR) {
-            accountColor = mAccountsDbAdapter.getActiveAccountColor(this, account.getUID());
+            accountColor = accountsDbAdapter.getActiveAccountColor(this, account.uid)
         }
-        setTitlesColor(accountColor);
-        binding.tabLayout.setBackgroundColor(accountColor);
+        setTitlesColor(accountColor)
+        binding.tabLayout.setBackgroundColor(accountColor)
     }
 
     /**
      * Set up action bar navigation list and listener callbacks
      */
-    private void setupActionBarNavigation(ActivityTransactionsBinding binding, final String accountUID) {
+    private fun setupActionBarNavigation(
+        binding: ActivityTransactionsBinding,
+        accountUID: String
+    ) {
+        var accountNameAdapter = accountNameAdapter
         if (accountNameAdapter == null) {
-            final Context contextWithTheme = binding.toolbarLayout.toolbarSpinner.getContext();
-            accountNameAdapter = new QualifiedAccountNameAdapter(contextWithTheme, mAccountsDbAdapter, this);
-            accountNameAdapter.load(new Function0<Unit>() {
-                @Override
-                public Unit invoke() {
-                    int position = accountNameAdapter.getPosition(accountUID);
-                    binding.toolbarLayout.toolbarSpinner.setSelection(position);
-                    return null;
-                }
-            });
+            val contextWithTheme = binding.toolbarLayout.toolbarSpinner.context
+            accountNameAdapter =
+                QualifiedAccountNameAdapter(contextWithTheme, accountsDbAdapter, this)
+                    .load { adapter ->
+                        val position = adapter.getPosition(accountUID)
+                        binding.toolbarLayout.toolbarSpinner.setSelection(position)
+                    }
+            this.accountNameAdapter = accountNameAdapter
         }
-        binding.toolbarLayout.toolbarSpinner.setAdapter(accountNameAdapter);
-        binding.toolbarLayout.toolbarSpinner.setOnItemSelectedListener(accountSpinnerListener);
-        updateNavigationSelection(binding, accountUID);
-        setTitleIndicatorColor(binding, accountUID);
+        binding.toolbarLayout.toolbarSpinner.adapter = accountNameAdapter
+        binding.toolbarLayout.toolbarSpinner.onItemSelectedListener = accountSpinnerListener
+        updateNavigationSelection(binding, accountUID)
+        setTitleIndicatorColor(binding)
     }
 
     /**
      * Updates the action bar navigation list selection to that of the current account
      * whose transactions are being displayed/manipulated
      */
-    private void updateNavigationSelection(ActivityTransactionsBinding binding, String accountUID) {
-        if (accountNameAdapter.isEmpty()) return;
-        int position = accountNameAdapter.getPosition(accountUID);
+    private fun updateNavigationSelection(
+        binding: ActivityTransactionsBinding,
+        accountUID: String
+    ) {
+        val accountNameAdapter = accountNameAdapter ?: return
+        if (accountNameAdapter.isEmpty) return
+        var account = accountsDbAdapter.getSimpleRecord(accountUID)
         // In case the account was deleted.
-        Account account = this.account;
+        var position = accountNameAdapter.getPosition(accountUID)
         if (position == AdapterView.INVALID_POSITION && account != null) {
-            accountUID = account.getParentUID();
-            position = accountNameAdapter.getPosition(accountUID);
-            account = accountNameAdapter.getAccount(position);
-            this.account = account;
+            val parentUID = account.parentUID
+            if (!parentUID.isNullOrEmpty()) {
+                position = accountNameAdapter.getPosition(parentUID)
+                account = accountNameAdapter.getAccount(position)
+            }
         }
-        binding.toolbarLayout.toolbarSpinner.setSelection(position);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.sub_account_actions, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
         if (account == null) {
-            return false;
+            Timber.e("Account not found")
+            finish()
+            return
         }
-        MenuItem favoriteAccountMenuItem = menu.findItem(R.id.menu_favorite);
-        if (favoriteAccountMenuItem == null) //when the activity is used to edit a transaction
-            return false;
+        this.account = account
+        // Spinner will call `swapAccount` in its listener.
+        binding.toolbarLayout.toolbarSpinner.setSelection(position)
+    }
 
-        boolean isFavoriteAccount = account.isFavorite();
-        @DrawableRes int favoriteIcon = isFavoriteAccount ? R.drawable.ic_favorite : R.drawable.ic_favorite_border;
-        favoriteAccountMenuItem.setIcon(favoriteIcon);
-        favoriteAccountMenuItem.setChecked(isFavoriteAccount);
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        super.onCreateOptionsMenu(menu)
+        menuInflater.inflate(R.menu.sub_account_actions, menu)
+        return true
+    }
 
-        MenuItem itemHidden = menu.findItem(R.id.menu_hidden);
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        val account = account ?: return false
+        val favoriteAccountMenuItem = menu.findItem(R.id.menu_favorite)
+        if (favoriteAccountMenuItem == null)  //when the activity is used to edit a transaction
+            return false
+
+        val isFavoriteAccount = account.isFavorite
+        @DrawableRes val favoriteIcon =
+            if (isFavoriteAccount) R.drawable.ic_favorite else R.drawable.ic_favorite_border
+        favoriteAccountMenuItem.setIcon(favoriteIcon)
+        favoriteAccountMenuItem.isChecked = isFavoriteAccount
+
+        val itemHidden = menu.findItem(R.id.menu_hidden)
         if (itemHidden != null) {
-            showHiddenAccounts(itemHidden, isShowHiddenAccounts);
+            showHiddenAccounts(itemHidden, isShowHiddenAccounts)
         }
 
-        return super.onPrepareOptionsMenu(menu);
+        return super.onPrepareOptionsMenu(menu)
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                return super.onOptionsItemSelected(item);
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menu_favorite -> {
+                val account = account ?: return false
+                toggleFavorite(account)
+                return true
+            }
 
-            case R.id.menu_favorite:
-                toggleFavorite(account);
-                return true;
+            R.id.menu_edit -> {
+                val account = account ?: return false
+                editAccount(account.uid)
+                return true
+            }
 
-            case R.id.menu_edit:
-                editAccount(account.getUID());
-                return true;
+            R.id.menu_delete -> {
+                val account = account ?: return false
+                deleteAccount(account.uid)
+                return true
+            }
 
-            case R.id.menu_delete:
-                deleteAccount(account.getUID());
-                return true;
+            R.id.menu_hidden -> {
+                toggleHidden(item)
+                return true
+            }
 
-            case R.id.menu_hidden:
-                toggleHidden(item);
-                return true;
-
-            default:
-                return false;
+            else -> return super.onOptionsItemSelected(item)
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == RESULT_CANCELED) {
-            super.onActivityResult(requestCode, resultCode, data);
-            return;
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (resultCode == RESULT_OK) {
+            refresh()
+            return
         }
-        refresh();
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
-    /**
-     * Formats the date to show the the day of the week if the {@code dateMillis} is within 7 days
-     * of today. Else it shows the actual date formatted as short string. <br>
-     * It also shows "today", "yesterday" or "tomorrow" if the date is on any of those days
-     *
-     * @param dateMillis
-     * @return
-     */
-    @NonNull
-    public static String getPrettyDateFormat(Context context, long dateMillis) {
-        LocalDate transactionTime = new LocalDate(dateMillis);
-        LocalDate today = new LocalDate();
-        final String prettyDateText;
-        if (transactionTime.compareTo(today.minusDays(1)) >= 0 && transactionTime.compareTo(today.plusDays(1)) <= 0) {
-            prettyDateText = DateUtils.getRelativeTimeSpanString(dateMillis, System.currentTimeMillis(), DateUtils.DAY_IN_MILLIS).toString();
-        } else if (transactionTime.getYear() == today.getYear()) {
-            prettyDateText = dayMonthFormatter.print(dateMillis);
-        } else {
-            prettyDateText = DateUtils.formatDateTime(context, dateMillis, DateUtils.FORMAT_ABBREV_MONTH | DateUtils.FORMAT_SHOW_YEAR);
-        }
-
-        return prettyDateText;
-    }
-
-    private void createNewAccount(String accountUID) {
-        Intent intent = new Intent(this, FormActivity.class)
+    private fun createNewAccount(parentAccountUID: String) {
+        val intent = Intent(this, FormActivity::class.java)
             .setAction(Intent.ACTION_INSERT_OR_EDIT)
-            .putExtra(UxArgument.PARENT_ACCOUNT_UID, account.getUID())
-            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name());
-        startActivityForResult(intent, 0);
+            .putExtra(UxArgument.PARENT_ACCOUNT_UID, parentAccountUID)
+            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name)
+        startActivityForResult(intent, REQUEST_REFRESH)
     }
 
-    private void createNewTransaction(String accountUID) {
-        Intent intent = new Intent(this, FormActivity.class)
+    private fun createNewTransaction(accountUID: String) {
+        val intent = Intent(this, FormActivity::class.java)
             .setAction(Intent.ACTION_INSERT_OR_EDIT)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
-            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name());
-        startActivityForResult(intent, 0);
+            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
+        startActivityForResult(intent, REQUEST_REFRESH)
     }
 
-    @Override
-    public void accountSelected(String accountUID) {
-        Intent intent = new Intent(this, TransactionsActivity.class)
+    override fun accountSelected(accountUID: String) {
+        val intent = Intent(this, TransactionsActivity::class.java)
             .setAction(Intent.ACTION_VIEW)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
-            .putExtra(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts);
-        startActivity(intent);
+            .putExtra(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts)
+        startActivity(intent)
     }
 
-    private void toggleFavorite(Account account) {
-        AccountsDbAdapter accountsDbAdapter = mAccountsDbAdapter;
-        long accountId = account.id;
-        boolean isFavorite = !account.isFavorite();
+    private fun toggleFavorite(account: Account) {
+        val accountId = account.id
+        val isFavorite = !account.isFavorite
         //toggle favorite preference
-        account.setFavorite(isFavorite);
-        accountsDbAdapter.updateAccount(accountId, DatabaseSchema.AccountEntry.COLUMN_FAVORITE, isFavorite ? "1" : "0");
-        supportInvalidateOptionsMenu();
+        account.isFavorite = isFavorite
+        accountsDbAdapter.updateAccount(accountId, AccountEntry.COLUMN_FAVORITE, isFavorite)
+        supportInvalidateOptionsMenu()
     }
 
-    private void editAccount(String accountUID) {
-        Intent editAccountIntent = new Intent(this, FormActivity.class)
+    private fun editAccount(accountUID: String?) {
+        val editAccountIntent = Intent(this, FormActivity::class.java)
             .setAction(Intent.ACTION_INSERT_OR_EDIT)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
-            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name());
-        startActivity(editAccountIntent);
+            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name)
+        startActivityForResult(editAccountIntent, REQUEST_REFRESH)
     }
 
     /**
@@ -545,17 +445,18 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      *
      * @param accountUID The UID of the account
      */
-    private void deleteAccount(final String accountUID) {
-        if (mAccountsDbAdapter.getTransactionCount(accountUID) > 0 || mAccountsDbAdapter.getSubAccountCount(accountUID) > 0) {
-            showConfirmationDialog(accountUID);
+    private fun deleteAccount(accountUID: String) {
+        if (accountsDbAdapter.getTransactionCount(accountUID) > 0
+            || accountsDbAdapter.getSubAccountCount(accountUID) > 0
+        ) {
+            showConfirmationDialog(accountUID)
         } else {
-            BackupManager.backupActiveBookAsync(this, result -> {
+            backupActiveBookAsync(this) { result ->
                 // Avoid calling AccountsDbAdapter.deleteRecord(long). See #654
-                if (mAccountsDbAdapter.deleteRecord(accountUID)) {
-                    finish();
+                if (accountsDbAdapter.deleteRecord(accountUID)) {
+                    finish()
                 }
-                return null;
-            });
+            }
         }
     }
 
@@ -564,75 +465,110 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      *
      * @param accountUID Unique ID of account to be deleted after confirmation
      */
-    private void showConfirmationDialog(String accountUID) {
-        FragmentManager fm = getSupportFragmentManager();
-        DeleteAccountDialogFragment alertFragment =
-            DeleteAccountDialogFragment.newInstance(accountUID);
-        fm.setFragmentResultListener(DeleteAccountDialogFragment.TAG, this, this);
-        alertFragment.show(fm, DeleteAccountDialogFragment.TAG);
+    private fun showConfirmationDialog(accountUID: String) {
+        val fm = supportFragmentManager
+        val fragment = DeleteAccountDialogFragment.newInstance(accountUID)
+        fm.setFragmentResultListener(DeleteAccountDialogFragment.TAG, this, this)
+        fragment.show(fm, DeleteAccountDialogFragment.TAG)
     }
 
-    private void toggleHidden(@NonNull MenuItem item) {
-        showHiddenAccounts(item, !item.isChecked());
+    private fun toggleHidden(item: MenuItem) {
+        showHiddenAccounts(item, !item.isChecked)
     }
 
-    private void showHiddenAccounts(@NonNull MenuItem item, boolean isVisible) {
-        item.setChecked(isVisible);
-        @DrawableRes int visibilityIcon = isVisible ? R.drawable.ic_visibility_off : R.drawable.ic_visibility;
-        item.setIcon(visibilityIcon);
-        isShowHiddenAccounts = isVisible;
+    private fun showHiddenAccounts(item: MenuItem, isVisible: Boolean) {
+        item.isChecked = isVisible
+        @DrawableRes val visibilityIcon =
+            if (isVisible) R.drawable.ic_visibility_off else R.drawable.ic_visibility
+        item.setIcon(visibilityIcon)
+        isShowHiddenAccounts = isVisible
         // apply to each page
-        final int count = mFragmentPageReferenceMap.size();
-        for (int i = 0; i < count; i++) {
-            Refreshable refreshable = mFragmentPageReferenceMap.valueAt(i);
-            if (refreshable instanceof AccountsListFragment) {
-                AccountsListFragment fragment = (AccountsListFragment) refreshable;
-                fragment.setShowHiddenAccounts(isVisible);
+        for (fragment in fragmentPages.iterator()) {
+            if (fragment is AccountsListFragment) {
+                fragment.setShowHiddenAccounts(isVisible)
             }
         }
     }
 
-    private String getAccountUID() {
-        return (account != null) ? account.getUID() : getIntent().getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
-    }
-
-    private void swapAccount(@Nullable Account account) {
-        final ActivityTransactionsBinding binding = mBinding;
+    private fun swapAccount(account: Account?) {
+        val binding = this.binding
+        this.account = account
         if (account != null) {
-            this.account = account;
-            String accountUID = account.getUID();
+            val accountUID = account.uid
             //update the intent in case the account gets rotated
-            getIntent().putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
-            mPagerAdapter.notifyDataSetChanged();
-            if (account.isPlaceholder()) {
-                if (binding.tabLayout.getTabCount() > 1) {
-                    binding.tabLayout.removeTabAt(INDEX_TRANSACTIONS_FRAGMENT);
+            intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+            pagerAdapter?.notifyDataSetChanged()
+            if (account.isPlaceholder) {
+                if (binding.tabLayout.tabCount > 1) {
+                    binding.tabLayout.removeTabAt(INDEX_TRANSACTIONS_FRAGMENT)
                 }
             } else {
-                if (binding.tabLayout.getTabCount() < 2) {
-                    binding.tabLayout.addTab(binding.tabLayout.newTab().setText(R.string.section_header_transactions));
+                if (binding.tabLayout.tabCount < 2) {
+                    binding.tabLayout.addTab(
+                        binding.tabLayout.newTab().setText(R.string.section_header_transactions)
+                    )
                 }
             }
 
             //if there are no transactions, and there are sub-accounts, show the sub-accounts
-            long txCount = transactionsDbAdapter.getTransactionsCount(accountUID);
+            val txCount = transactionsDbAdapter.getTransactionsCount(accountUID)
             if (txCount == 0) {
-                long subCount = mAccountsDbAdapter.getSubAccountCount(accountUID);
-                if ((subCount > 0) || (binding.tabLayout.getTabCount() < 2)) {
-                    binding.pager.setCurrentItem(INDEX_SUB_ACCOUNTS_FRAGMENT);
+                val subCount = accountsDbAdapter.getSubAccountCount(accountUID)
+                if ((subCount > 0) || (binding.tabLayout.tabCount < 2)) {
+                    binding.pager.currentItem = INDEX_SUB_ACCOUNTS_FRAGMENT
                 } else {
-                    binding.pager.setCurrentItem(INDEX_TRANSACTIONS_FRAGMENT);
+                    binding.pager.currentItem = INDEX_TRANSACTIONS_FRAGMENT
                 }
             } else {
-                binding.pager.setCurrentItem(INDEX_TRANSACTIONS_FRAGMENT);
+                binding.pager.currentItem = INDEX_TRANSACTIONS_FRAGMENT
             }
 
             //refresh any fragments in the tab with the new account UID
-            refresh(accountUID);
+            refresh(accountUID)
         } else {
             //refresh any fragments in the tab with the new account UID
-            refresh();
+            refresh()
         }
-        supportInvalidateOptionsMenu();
+        supportInvalidateOptionsMenu()
+    }
+
+    private fun requireAccount(): Account {
+        var account = this.account
+        if (account != null) {
+            return account
+        }
+        val args: Bundle = intent.extras!!
+        val accountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID)!!
+        try {
+            account = accountsDbAdapter.getRecord(accountUID)
+            this.account = account
+        } catch (e: IllegalArgumentException) {
+            Timber.e(e)
+        }
+        if (account == null) {
+            Timber.e("Account not found")
+            finish()
+            throw NullPointerException("Account required")
+        }
+        return account
+    }
+
+    companion object {
+        /**
+         * ViewPager index for sub-accounts fragment
+         */
+        private const val INDEX_SUB_ACCOUNTS_FRAGMENT = 0
+
+        /**
+         * ViewPager index for transactions fragment
+         */
+        private const val INDEX_TRANSACTIONS_FRAGMENT = 1
+
+        /**
+         * Number of pages to show
+         */
+        private const val DEFAULT_NUM_PAGES = 2
+
+        private const val REQUEST_REFRESH = 0x0000
     }
 }

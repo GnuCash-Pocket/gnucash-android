@@ -13,115 +13,97 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.settings
 
-package org.gnucash.android.ui.settings;
-
-import static org.gnucash.android.app.ActivityExtKt.restart;
-
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.preference.Preference;
-import androidx.preference.TwoStatePreference;
-
-import org.gnucash.android.R;
-import org.gnucash.android.ui.passcode.PasscodePreferenceActivity;
+import android.app.Activity
+import android.content.Intent
+import android.os.Bundle
+import android.widget.Toast
+import androidx.preference.Preference
+import androidx.preference.TwoStatePreference
+import org.gnucash.android.R
+import org.gnucash.android.app.restart
+import org.gnucash.android.ui.passcode.PasscodePreferenceActivity
 
 /**
  * Fragment for general preferences. Currently caters to the passcode and reporting preferences
  *
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  */
-public class GeneralPreferenceFragment extends GnuPreferenceFragment {
+class GeneralPreferenceFragment : GnuPreferenceFragment() {
+    private lateinit var preferencePasscode: TwoStatePreference
 
-    /**
-     * Request code for retrieving passcode to store
-     */
-    public static final int PASSCODE_REQUEST_CODE = 0x2;
-    /**
-     * Request code for disabling passcode
-     */
-    public static final int REQUEST_DISABLE_PASSCODE = 0x3;
-    /**
-     * Request code for changing passcode
-     */
-    public static final int REQUEST_CHANGE_PASSCODE = 0x4;
+    override val titleId: Int = R.string.title_general_prefs
 
-    private TwoStatePreference preferencePasscode;
+    override fun onCreatePreferences(bundle: Bundle?, rootKey: String?) {
+        addPreferencesFromResource(R.xml.fragment_general_preferences)
 
-    @Override
-    protected int getTitleId() {
-        return R.string.title_general_prefs;
-    }
+        val preferenceTheme = findPreference<Preference>(getString(R.string.key_theme))!!
+        preferenceTheme.setOnPreferenceChangeListener { preference, newValue ->
+            requireActivity().restart()
+            true
+        }
 
-    @Override
-    public void onCreatePreferences(Bundle bundle, String rootKey) {
-        addPreferencesFromResource(R.xml.fragment_general_preferences);
-
-        findPreference(getString(R.string.key_theme)).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(@NonNull Preference preference, Object newValue) {
-                restart(requireActivity());
-                return true;
+        preferencePasscode =
+            findPreference<TwoStatePreference>(getString(R.string.key_enable_passcode))!!
+        preferencePasscode.setOnPreferenceChangeListener { preference, newValue ->
+            val context = preference.context
+            if (newValue is Boolean) {
+                val intent = Intent(context, PasscodePreferenceActivity::class.java)
+                startActivityForResult(intent, PASSCODE_REQUEST_CODE)
+            } else {
+                val intent = Intent(context, PasscodePreferenceActivity::class.java)
+                    .putExtra(PasscodePreferenceActivity.DISABLE_PASSCODE, true)
+                startActivityForResult(intent, REQUEST_DISABLE_PASSCODE)
             }
-        });
+            true
+        }
 
-        preferencePasscode = findPreference(getString(R.string.key_enable_passcode));
-        preferencePasscode.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(@NonNull Preference preference, Object newValue) {
-                Context context = preference.getContext();
-                if ((Boolean) newValue) {
-                    Intent intent = new Intent(context, PasscodePreferenceActivity.class);
-                    startActivityForResult(intent, PASSCODE_REQUEST_CODE);
-                } else {
-                    Intent intent = new Intent(context, PasscodePreferenceActivity.class)
-                        .putExtra(PasscodePreferenceActivity.DISABLE_PASSCODE, true);
-                    startActivityForResult(intent, REQUEST_DISABLE_PASSCODE);
-                }
-                return true;
-            }
-        });
-
-        Preference preferencePasscodeChange = findPreference(getString(R.string.key_change_passcode));
-        preferencePasscodeChange.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(@NonNull Preference preference) {
-                Context context = preference.getContext();
-                Intent intent = new Intent(context, PasscodePreferenceActivity.class);
-                startActivityForResult(intent, REQUEST_CHANGE_PASSCODE);
-                return true;
-            }
-        });
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        Context context = requireContext();
-
-        switch (requestCode) {
-            case PASSCODE_REQUEST_CODE:
-                if (resultCode == Activity.RESULT_OK) {
-                    Toast.makeText(context, R.string.toast_passcode_set, Toast.LENGTH_SHORT).show();
-                } else {
-                    preferencePasscode.setChecked(false);
-                }
-                break;
-            case REQUEST_DISABLE_PASSCODE:
-                preferencePasscode.setChecked(resultCode != Activity.RESULT_OK);
-                break;
-            case REQUEST_CHANGE_PASSCODE:
-                if (resultCode == Activity.RESULT_OK) {
-                    Toast.makeText(context, R.string.toast_passcode_set, Toast.LENGTH_SHORT).show();
-                }
-                break;
+        val preferencePasscodeChange =
+            findPreference<Preference>(getString(R.string.key_change_passcode))!!
+        preferencePasscodeChange.setOnPreferenceClickListener { preference ->
+            val context = preference.context
+            val intent = Intent(context, PasscodePreferenceActivity::class.java)
+            startActivityForResult(intent, REQUEST_CHANGE_PASSCODE)
+            true
         }
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        val context = requireContext()
+
+        when (requestCode) {
+            PASSCODE_REQUEST_CODE -> if (resultCode == Activity.RESULT_OK) {
+                Toast.makeText(context, R.string.toast_passcode_set, Toast.LENGTH_SHORT).show()
+            } else {
+                preferencePasscode.isChecked = false
+            }
+
+            REQUEST_DISABLE_PASSCODE ->
+                preferencePasscode.isChecked = resultCode != Activity.RESULT_OK
+
+            REQUEST_CHANGE_PASSCODE -> if (resultCode == Activity.RESULT_OK) {
+                Toast.makeText(context, R.string.toast_passcode_set, Toast.LENGTH_SHORT).show()
+            }
+
+            else -> super.onActivityResult(requestCode, resultCode, data)
+        }
+    }
+
+    companion object {
+        /**
+         * Request code for retrieving passcode to store
+         */
+        const val PASSCODE_REQUEST_CODE = 2
+
+        /**
+         * Request code for disabling passcode
+         */
+        const val REQUEST_DISABLE_PASSCODE = 3
+
+        /**
+         * Request code for changing passcode
+         */
+        const val REQUEST_CHANGE_PASSCODE = 4
+    }
 }

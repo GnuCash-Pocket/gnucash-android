@@ -19,8 +19,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.Assertions.within
 import org.gnucash.android.model.Commodity
-import org.gnucash.android.model.Commodity.Companion.USD
-import org.gnucash.android.model.Commodity.Companion.getInstance
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Money.Companion.createZeroInstance
 import org.gnucash.android.model.Money.CurrencyMismatchException
@@ -42,7 +40,7 @@ class MoneyTest : GnuCashTest() {
 
     @Before
     fun setUp() {
-        moneyInEur = Money(BigDecimal(amountString), getInstance(CURRENCY_EUR))
+        moneyInEur = Money(BigDecimal(amountString), Commodity.getInstance(CURRENCY_EUR))
         moneyHashcode = moneyInEur.hashCode()
     }
 
@@ -56,17 +54,17 @@ class MoneyTest : GnuCashTest() {
         assertThat(temp.numerator).isEqualTo(1225L)
         assertThat(temp.denominator).isEqualTo(100L)
 
-        val commodity = getInstance(CURRENCY_EUR)
+        val commodity = Commodity.getInstance(CURRENCY_EUR)
         temp = Money(BigDecimal.TEN, commodity)
-
-        assertThat(temp.toBigDecimal().toPlainString()).isEqualTo("10.00") //decimal places for EUR currency
+        //decimal places for EUR currency
+        assertThat(temp.toBigDecimal().toPlainString()).isEqualTo("10.00")
         assertThat(temp.commodity).isEqualTo(commodity)
         assertThat(temp.toBigDecimal().toPlainString()).isNotEqualTo("10")
     }
 
     @Test
     fun testAddition() {
-        val result = moneyInEur.plus(Money("5", CURRENCY_EUR))
+        val result = moneyInEur + Money("5", CURRENCY_EUR)
         assertThat(result.toPlainString()).isEqualTo("20.75")
         assertNotSame(result, moneyInEur)
         validateImmutability()
@@ -75,12 +73,12 @@ class MoneyTest : GnuCashTest() {
     @Test(expected = CurrencyMismatchException::class)
     fun testAdditionWithIncompatibleCurrency() {
         val addend = Money("4", "USD")
-        moneyInEur.plus(addend)
+        moneyInEur + addend
     }
 
     @Test
     fun testSubtraction() {
-        val result = moneyInEur.minus(Money("2", CURRENCY_EUR))
+        val result = moneyInEur - Money("2", CURRENCY_EUR)
         assertThat(result.toBigDecimal()).isEqualTo(BigDecimal("13.75"))
         assertNotSame(result, moneyInEur)
         validateImmutability()
@@ -89,12 +87,12 @@ class MoneyTest : GnuCashTest() {
     @Test(expected = CurrencyMismatchException::class)
     fun testSubtractionWithDifferentCurrency() {
         val other = Money("4", "USD")
-        moneyInEur.minus(other)
+        moneyInEur - other
     }
 
     @Test
     fun testMultiplication() {
-        val result = moneyInEur.times(Money(BigDecimal.TEN, getInstance(CURRENCY_EUR)))
+        val result = moneyInEur * Money(BigDecimal.TEN, Commodity.getInstance(CURRENCY_EUR))
         assertThat("157.50").isEqualTo(result.toPlainString())
         assertThat(result).isNotEqualTo(moneyInEur)
         validateImmutability()
@@ -108,7 +106,7 @@ class MoneyTest : GnuCashTest() {
 
     @Test
     fun testDivision() {
-        val result = moneyInEur.div(2)
+        val result = moneyInEur / 2
         assertThat(result.toPlainString()).isEqualTo("7.88")
         assertThat(result).isNotEqualTo(moneyInEur)
         validateImmutability()
@@ -117,12 +115,12 @@ class MoneyTest : GnuCashTest() {
     @Test(expected = CurrencyMismatchException::class)
     fun testDivisionWithDifferentCurrency() {
         val other = Money("4", "USD")
-        moneyInEur.div(other)
+        moneyInEur / other
     }
 
     @Test
     fun testNegation() {
-        val result = moneyInEur.unaryMinus()
+        val result = -moneyInEur
         assertThat(result.toPlainString()).startsWith("-")
         validateImmutability()
     }
@@ -208,26 +206,26 @@ class MoneyTest : GnuCashTest() {
         Commodity.DEFAULT_COMMODITY = Commodity.USD
         val money = createZeroInstance(Commodity.DEFAULT_COMMODITY)
         var addend = Money(0.0, Commodity.USD)
-        var sum = money.plus(addend)
+        var sum = money + addend
         assertThat(sum.isAmountZero).isTrue()
         assertThat(sum.toDouble()).isEqualTo(0.0)
         assertThat(sum.commodity).isEqualTo(Commodity.USD)
 
         addend = Money(123.45, Commodity.USD)
-        sum = money.plus(addend)
+        sum = money + addend
         assertThat(sum.isAmountZero).isFalse()
         assertThat(sum.toDouble()).isEqualTo(123.45)
         assertThat(sum.commodity).isEqualTo(Commodity.USD)
 
         addend = Money(0.0, Commodity.EUR)
-        sum = money.plus(addend)
+        sum = money + addend
         assertThat(sum.isAmountZero).isTrue()
         assertThat(sum.toDouble()).isEqualTo(0.0)
         assertThat(sum.commodity).isEqualTo(Commodity.EUR)
 
         val money1 = Money(100.00, Commodity.USD)
         val money2 = Money(123.45, Commodity.EUR)
-        assertThrows(CurrencyMismatchException::class.java) { money1.plus(money2) }
+        assertThrows(CurrencyMismatchException::class.java) { money1 + money2 }
     }
 
     @Test
@@ -316,15 +314,15 @@ class MoneyTest : GnuCashTest() {
 
     @Test
     fun money_BigDecimal() {
-        val money1 = Money(123.45, USD)
-        val money2 = Money("123.45", USD)
-        val money3 = Money(12345, 100, USD)
+        val money1 = Money(123.45, Commodity.USD)
+        val money2 = Money("123.45", Commodity.USD)
+        val money3 = Money(12345, 100, Commodity.USD)
         assertThat(money1).isEqualTo(money2)
         assertThat(money1).isEqualTo(money3)
         assertThat(money2).isEqualTo(money3)
 
-        val money4 = Money(123, 1, USD)
-        val money5 = Money("123", USD)
+        val money4 = Money(123, 1, Commodity.USD)
+        val money5 = Money("123", Commodity.USD)
         assertThat(money4).isEqualTo(money5)
     }
 

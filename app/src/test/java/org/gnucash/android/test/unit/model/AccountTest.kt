@@ -73,9 +73,9 @@ class AccountTest : GnuCashTest() {
         val fullName = "Full name "
         val account = Account(fullName)
         assertThat(account.name)
-            .isEqualTo(fullName.trim { it <= ' ' }) //names are trimmed
+            .isEqualTo(fullName.trim()) //names are trimmed
         assertThat(account.fullName)
-            .isEqualTo(fullName.trim { it <= ' ' }) //names are trimmed
+            .isEqualTo(fullName.trim()) //names are trimmed
     }
 
     @Test

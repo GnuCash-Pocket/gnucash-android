@@ -9,13 +9,14 @@ import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
+import org.gnucash.android.lang.set
 
 abstract class FragmentStateAdapter(activity: FragmentActivity) :
     RecyclerView.Adapter<FragmentViewHolder>() {
 
     private val fragmentManager: FragmentManager = activity.supportFragmentManager
     private val fragmentsById = LongSparseArray<Fragment>()
-    private val fragments = SparseArray<Fragment?>()
+    private val fragments = SparseArray<Fragment>()
 
     private var pager: ViewPager2? = null
     var selectedPosition: Int = RecyclerView.NO_POSITION
@@ -52,10 +53,10 @@ abstract class FragmentStateAdapter(activity: FragmentActivity) :
 
     override fun onBindViewHolder(holder: FragmentViewHolder, position: Int) {
         val itemId = getItemId(position)
-        var fragment = fragmentsById.get(itemId)
+        var fragment = fragmentsById[itemId]
         if (fragment == null) {
             fragment = createFragment(position)
-            fragmentsById.put(itemId, fragment)
+            fragmentsById[itemId] = fragment
             fragments[position] = fragment
         }
         holder.bind(fragment, fragmentManager)

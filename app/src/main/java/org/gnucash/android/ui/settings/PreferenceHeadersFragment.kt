@@ -13,30 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.settings
 
-package org.gnucash.android.ui.settings;
-
-import android.os.Bundle;
-
-import androidx.annotation.Nullable;
-
-import org.gnucash.android.R;
+import android.os.Bundle
+import androidx.annotation.StringRes
+import org.gnucash.android.R
 
 /**
  * Fragment for displaying preference headers
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class PreferenceHeadersFragment extends GnuPreferenceFragment {
+class PreferenceHeadersFragment : GnuPreferenceFragment() {
+    @StringRes
+    override var titleId: Int = 0
 
-    @Override
-    protected int getTitleId() {
-        return 0;
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        addPreferencesFromResource(R.xml.preference_fragment_headers)
     }
-
-    @Override
-    public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
-        addPreferencesFromResource(R.xml.preference_fragment_headers);
-    }
-
 }

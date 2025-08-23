@@ -21,7 +21,7 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.contrib.DrawerActions
+import androidx.test.espresso.contrib.DrawerActions.open
 import androidx.test.espresso.matcher.RootMatchers.withDecorView
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
@@ -32,7 +32,6 @@ import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
-import org.gnucash.android.db.adapter.DatabaseAdapter
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
@@ -61,18 +60,18 @@ class ExportTransactionsTest : GnuAndroidTest() {
 
     @Before
     fun setUp() {
-        accountsDbAdapter = AccountsDbAdapter.getInstance()
+        accountsDbAdapter = AccountsDbAdapter.instance
         accountsDbAdapter.deleteAllRecords()
 
         //this call initializes the static variables like DEFAULT_COMMODITY which are used implicitly by accounts/transactions
-        @Suppress("unused") val currencyCode = GnuCashApplication.getDefaultCurrencyCode()
+        @Suppress("unused") val currencyCode = GnuCashApplication.defaultCurrencyCode
         Commodity.DEFAULT_COMMODITY =
-            CommoditiesDbAdapter.getInstance()!!.getCurrency(currencyCode)!!
+            CommoditiesDbAdapter.instance!!.getCurrency(currencyCode)!!
 
         val account = Account("Exportable")
         val transaction = Transaction("Pizza")
         transaction.note = "What up?"
-        transaction.setTime(System.currentTimeMillis())
+        transaction.time = System.currentTimeMillis()
         val split = Split(Money("8.99", currencyCode), account.uid)
         split.memo = "Hawaii is the best!"
         transaction.addSplit(split)
@@ -86,13 +85,13 @@ class ExportTransactionsTest : GnuAndroidTest() {
         )
         account.addTransaction(transaction)
 
-        accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert)
+        accountsDbAdapter.insert(account)
     }
 
     @Test
     fun testCreateBackup() {
         rule.activity
-        onView(withId(R.id.drawer_layout)).perform(DrawerActions.open())
+        onView(withId(R.id.drawer_layout)).perform(open())
         onView(withText(R.string.title_settings))
             .perform(scrollTo())
         onView(withText(R.string.title_settings)).perform(click())

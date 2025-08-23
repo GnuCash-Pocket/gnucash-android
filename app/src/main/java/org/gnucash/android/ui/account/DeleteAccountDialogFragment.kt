@@ -13,48 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.ui.account;
+package org.gnucash.android.ui.account
 
-import static android.widget.AdapterView.INVALID_POSITION;
-
-import android.app.Activity;
-import android.app.Dialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.CompoundButton;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.FragmentManager;
-
-import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.databinding.DialogAccountDeleteBinding;
-import org.gnucash.android.databinding.RadioGroupDeleteOrMoveBinding;
-import org.gnucash.android.db.DatabaseSchema.AccountEntry;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.SplitsDbAdapter;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.AccountType;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter;
-import org.gnucash.android.ui.common.Refreshable;
-import org.gnucash.android.ui.common.UxArgument;
-import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity;
-import org.gnucash.android.ui.settings.dialog.DoubleConfirmationDialog;
-import org.gnucash.android.util.BackupManager;
-
-import java.util.List;
-
-import kotlin.Unit;
-import kotlin.jvm.functions.Function0;
-import timber.log.Timber;
+import android.app.Activity
+import android.app.Dialog
+import android.content.Context
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.AdapterView
+import androidx.core.view.isVisible
+import androidx.fragment.app.FragmentManager
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication.Companion.isDoubleEntryEnabled
+import org.gnucash.android.databinding.DialogAccountDeleteBinding
+import org.gnucash.android.db.DatabaseSchema.AccountEntry
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.joinIn
+import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
+import org.gnucash.android.ui.common.Refreshable
+import org.gnucash.android.ui.common.UxArgument
+import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity
+import org.gnucash.android.ui.settings.dialog.DoubleConfirmationDialog
+import org.gnucash.android.util.BackupManager.backupActiveBookAsync
+import timber.log.Timber
 
 /**
  * Delete confirmation dialog for accounts.
@@ -64,238 +47,241 @@ import timber.log.Timber;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
-
-    public static final String TAG = "delete_account_dialog";
-
+class DeleteAccountDialogFragment : DoubleConfirmationDialog() {
     /**
      * GUID of account from which to move the transactions
      */
-    private String mOriginAccountUID = null;
+    private var originAccountUID: String? = null
 
-    private DialogAccountDeleteBinding binding;
+    private var binding: DialogAccountDeleteBinding? = null
 
-    private int mTransactionCount;
-    private int mSubAccountCount;
-    private final AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
-    private final TransactionsDbAdapter transactionsDbAdapter = accountsDbAdapter.transactionsDbAdapter;
-    private final SplitsDbAdapter splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter;
-    private QualifiedAccountNameAdapter accountNameAdapterTransactionsDestination;
-    private QualifiedAccountNameAdapter accountNameAdapterAccountsDestination;
+    private var transactionCount: Long = 0
+    private var subAccountCount: Long = 0
+    private val accountsDbAdapter = AccountsDbAdapter.instance
+    private val transactionsDbAdapter = accountsDbAdapter.transactionsDbAdapter
+    private val splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter
+    private var accountNameAdapterTransactionsDestination: QualifiedAccountNameAdapter? = null
+    private var accountNameAdapterAccountsDestination: QualifiedAccountNameAdapter? = null
 
-    /**
-     * Creates new instance of the delete confirmation dialog and provides parameters for it
-     *
-     * @param accountUID GUID of the account to be deleted
-     * @return New instance of the delete confirmation dialog
-     */
-    public static DeleteAccountDialogFragment newInstance(String accountUID) {
-        Bundle args = new Bundle();
-        args.putString(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
-        DeleteAccountDialogFragment fragment = new DeleteAccountDialogFragment();
-        fragment.setArguments(args);
-        return fragment;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val accountUID = requireArguments().getString(UxArgument.SELECTED_ACCOUNT_UID)!!
+        originAccountUID = accountUID
+        subAccountCount = accountsDbAdapter.getSubAccountCount(accountUID)
+        transactionCount = transactionsDbAdapter.getTransactionsCount(accountUID).toLong()
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        String accountUID = getArguments().getString(UxArgument.SELECTED_ACCOUNT_UID);
-        assert accountUID != null;
-        mOriginAccountUID = accountUID;
-        mSubAccountCount = accountsDbAdapter.getSubAccountCount(accountUID);
-        mTransactionCount = transactionsDbAdapter.getTransactionsCount(accountUID);
-    }
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val accountUID = originAccountUID!!
+        val account = accountsDbAdapter.getSimpleRecord(accountUID)!!
+        val binding = createView(layoutInflater)
 
-    @NonNull
-    private View createView(@NonNull LayoutInflater inflater) {
-        DialogAccountDeleteBinding binding = DialogAccountDeleteBinding.inflate(inflater);
-        this.binding = binding;
-        return binding.getRoot();
-    }
-
-    @NonNull
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final String accountUID = mOriginAccountUID;
-        Account account = accountsDbAdapter.getSimpleRecord(accountUID);
-        assert account != null;
-
-        return getDialogBuilder()
-            .setTitle(getString(R.string.alert_dialog_ok_delete) + ": " + account.getName())
+        return dialogBuilder
+            .setTitle(getString(R.string.alert_dialog_ok_delete) + ": " + account.name)
             .setIcon(R.drawable.ic_warning)
-            .setView(createView(getLayoutInflater()))
-            .setPositiveButton(R.string.alert_dialog_ok_delete, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    maybeDelete();
-                }
-            })
-            .create();
+            .setView(binding.root)
+            .setPositiveButton(R.string.alert_dialog_ok_delete) { _, _ ->
+                maybeDelete(binding)
+            }
+            .create()
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return binding.getRoot();
+    private fun createView(inflater: LayoutInflater): DialogAccountDeleteBinding {
+        val binding = DialogAccountDeleteBinding.inflate(inflater)
+        this.binding = binding
+        return binding
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        final String accountUID = mOriginAccountUID;
-        final DialogAccountDeleteBinding binding = this.binding;
-        final Context context = view.getContext();
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return binding!!.root
+    }
 
-        final RadioGroupDeleteOrMoveBinding accountOptions = binding.accountsOptions;
-        accountOptions.titleContent.setText(R.string.section_header_subaccounts);
-        accountOptions.description.setText(R.string.label_delete_account_subaccounts_description);
-        accountOptions.radioDelete.setText(R.string.label_delete_sub_accounts);
-        accountOptions.radioMove.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(@NonNull CompoundButton buttonView, boolean isChecked) {
-                accountOptions.targetAccountsSpinner.setEnabled(isChecked);
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val accountUID = originAccountUID!!
+        val binding = this.binding!!
+        val context = view.context
+
+        val accountsOptions = binding.accountsOptions.apply {
+            titleContent.setText(R.string.section_header_subaccounts)
+            description.setText(R.string.label_delete_account_subaccounts_description)
+            radioDelete.setText(R.string.label_delete_sub_accounts)
+            radioMove.setOnCheckedChangeListener { _, isChecked ->
+                targetAccountsSpinner.isEnabled = isChecked
             }
-        });
-        accountOptions.radioDelete.setChecked(true);
-        accountOptions.radioMove.setChecked(false);
-        accountOptions.radioMove.setEnabled(false);
-        accountOptions.targetAccountsSpinner.setVisibility(View.GONE);
-        accountOptions.getRoot().setVisibility(mSubAccountCount > 0 ? View.VISIBLE : View.GONE);
+            radioDelete.isChecked = true
+            radioMove.isChecked = false
+            radioMove.isEnabled = false
+            targetAccountsSpinner.isVisible = false
+            root.isVisible = subAccountCount > 0
+        }
 
-        final RadioGroupDeleteOrMoveBinding transactionOptions = binding.transactionsOptions;
-        transactionOptions.titleContent.setText(R.string.section_header_transactions);
-        transactionOptions.description.setText(R.string.label_delete_account_transactions_description);
-        transactionOptions.radioDelete.setText(R.string.label_delete_transactions);
-        transactionOptions.radioMove.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(@NonNull CompoundButton buttonView, boolean isChecked) {
-                transactionOptions.targetAccountsSpinner.setEnabled(isChecked);
+        val transactionsOptions = binding.transactionsOptions.apply {
+            titleContent.setText(R.string.section_header_transactions)
+            description.setText(R.string.label_delete_account_transactions_description)
+            radioDelete.setText(R.string.label_delete_transactions)
+            radioMove.setOnCheckedChangeListener { _, isChecked ->
+                targetAccountsSpinner.isEnabled = isChecked
             }
-        });
-        transactionOptions.radioDelete.setChecked(true);
-        transactionOptions.radioMove.setChecked(false);
-        transactionOptions.radioMove.setEnabled(false);
-        transactionOptions.targetAccountsSpinner.setVisibility(View.GONE);
-        transactionOptions.getRoot().setVisibility(mTransactionCount > 0 ? View.VISIBLE : View.GONE);
+            radioDelete.isChecked = true
+            radioMove.isChecked = false
+            radioMove.isEnabled = false
+            targetAccountsSpinner.isVisible = false
+            root.isVisible = transactionCount > 0
+        }
 
-        Account account = accountsDbAdapter.getSimpleRecord(accountUID);
-        Commodity commodity = account.getCommodity();
-        AccountType accountType = account.getAccountType();
-        List<String> descendantAccountUIDs = accountsDbAdapter.getDescendantAccountUIDs(accountUID, null, null);
-        String joinedUIDs = "('" + TextUtils.join("','", descendantAccountUIDs) + "')";
+        val account = accountsDbAdapter.getSimpleRecord(accountUID)!!
+        val commodity = account.commodity
+        val accountType = account.accountType
+        val descendantAccountUIDs =
+            accountsDbAdapter.getDescendantAccountUIDs(accountUID, null, null)
+        val joinedUIDs = descendantAccountUIDs.joinIn()
 
         //target accounts for transactions and accounts have different conditions
-        String accountMoveConditions = AccountEntry.COLUMN_UID + " != ?"
-            + " AND " + AccountEntry.COLUMN_COMMODITY_UID + " = ?"
-            + " AND " + AccountEntry.COLUMN_TYPE + " = ?"
-            + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0"
-            + " AND " + AccountEntry.COLUMN_UID + " NOT IN " + joinedUIDs;
-        String[] accountMoveConditionsArgs = new String[]{account.getUID(), commodity.getUID(), accountType.name()};
-        accountNameAdapterAccountsDestination = new QualifiedAccountNameAdapter(context, accountMoveConditions, accountMoveConditionsArgs, accountsDbAdapter, this);
-        accountNameAdapterAccountsDestination.load(new Function0<Unit>() {
-            @Override
-            public Unit invoke() {
-                boolean isEmpty = accountNameAdapterAccountsDestination.isEmpty();
-                accountOptions.radioMove.setChecked(!isEmpty);
-                accountOptions.radioMove.setEnabled(!isEmpty);
-                accountOptions.targetAccountsSpinner.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
-                return null;
-            }
-        });
-        accountOptions.targetAccountsSpinner.setAdapter(accountNameAdapterAccountsDestination);
+        val accountMoveConditions = (AccountEntry.COLUMN_UID + " != ?"
+                + " AND " + AccountEntry.COLUMN_COMMODITY_UID + " = ?"
+                + " AND " + AccountEntry.COLUMN_TYPE + " = ?"
+                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0"
+                + " AND " + AccountEntry.COLUMN_UID + " NOT IN " + joinedUIDs)
+        val accountMoveArgs = arrayOf<String?>(accountUID, commodity.uid, accountType.name)
+        accountNameAdapterAccountsDestination = QualifiedAccountNameAdapter(
+            context,
+            accountMoveConditions,
+            accountMoveArgs,
+            accountsDbAdapter,
+            this
+        ).load { adapter ->
+            val hasData = !adapter.isEmpty
+            accountsOptions.radioMove.isChecked = hasData
+            accountsOptions.radioMove.isEnabled = hasData
+            accountsOptions.targetAccountsSpinner.isVisible = hasData
+        }
+        accountsOptions.targetAccountsSpinner.adapter = accountNameAdapterAccountsDestination
 
-        String transactionDeleteConditions = AccountEntry.COLUMN_UID + " != ?"
-            + " AND " + AccountEntry.COLUMN_COMMODITY_UID + " = ?"
-            + " AND " + AccountEntry.COLUMN_TYPE + " = ?"
-            + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0"
-            + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
-            + " AND " + AccountEntry.COLUMN_UID + " NOT IN " + joinedUIDs;
-        String[] transactionDeleteConditionsArgs = new String[]{account.getUID(), commodity.getUID(), accountType.name()};
+        val transactionDeleteConditions = (AccountEntry.COLUMN_UID + " != ?"
+                + " AND " + AccountEntry.COLUMN_COMMODITY_UID + " = ?"
+                + " AND " + AccountEntry.COLUMN_TYPE + " = ?"
+                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0"
+                + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
+                + " AND " + AccountEntry.COLUMN_UID + " NOT IN " + joinedUIDs)
+        val transactionDeleteArgs = arrayOf<String?>(accountUID, commodity.uid, accountType.name)
 
-        accountNameAdapterTransactionsDestination = new QualifiedAccountNameAdapter(context, transactionDeleteConditions, transactionDeleteConditionsArgs, accountsDbAdapter, this);
-        accountNameAdapterTransactionsDestination.load(new Function0<Unit>() {
-            @Override
-            public Unit invoke() {
-                boolean isEmpty = accountNameAdapterTransactionsDestination.isEmpty();
-                transactionOptions.radioMove.setChecked(!isEmpty);
-                transactionOptions.radioMove.setEnabled(!isEmpty);
-                transactionOptions.targetAccountsSpinner.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
-                return null;
-            }
-        });
-        transactionOptions.targetAccountsSpinner.setAdapter(accountNameAdapterTransactionsDestination);
+        accountNameAdapterTransactionsDestination = QualifiedAccountNameAdapter(
+            context,
+            transactionDeleteConditions,
+            transactionDeleteArgs,
+            accountsDbAdapter,
+            this
+        ).load { adapter ->
+            val hasData = !adapter.isEmpty
+            transactionsOptions.radioMove.isChecked = hasData
+            transactionsOptions.radioMove.isEnabled = hasData
+            transactionsOptions.targetAccountsSpinner.isVisible = hasData
+        }
+        transactionsOptions.targetAccountsSpinner.adapter =
+            accountNameAdapterTransactionsDestination
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        this.binding = null;
+    override fun onDestroyView() {
+        super.onDestroyView()
+        this.binding = null
     }
 
-    private void maybeDelete() {
-        final String accountUID = mOriginAccountUID;
-        final DialogAccountDeleteBinding binding = this.binding;
+    private fun maybeDelete(binding: DialogAccountDeleteBinding) {
+        val accountUID = originAccountUID!!
 
-        final RadioGroupDeleteOrMoveBinding accountOptions = binding.accountsOptions;
-        final RadioGroupDeleteOrMoveBinding transactionOptions = binding.transactionsOptions;
+        val accountsOptions = binding.accountsOptions
+        val transactionsOptions = binding.transactionsOptions
 
-        final boolean canDeleteAccount = accountOptions.radioDelete.isEnabled() || accountOptions.radioMove.isEnabled();
-        final boolean canDeleteTransactions = transactionOptions.radioDelete.isEnabled() || transactionOptions.radioMove.isEnabled();
+        val canDeleteAccount =
+            accountsOptions.radioDelete.isEnabled || accountsOptions.radioMove.isEnabled
+        val canDeleteTransactions =
+            transactionsOptions.radioDelete.isEnabled || transactionsOptions.radioMove.isEnabled
         if (!canDeleteAccount && !canDeleteTransactions) {
-            Timber.w("Cannot delete account");
-            return;
+            Timber.w("Cannot delete account")
+            return
         }
 
-        final int moveAccountsIndex = accountOptions.radioMove.isChecked() ? accountOptions.targetAccountsSpinner.getSelectedItemPosition() : INVALID_POSITION;
-        final int moveTransactionsIndex = transactionOptions.radioMove.isChecked() ? transactionOptions.targetAccountsSpinner.getSelectedItemPosition() : INVALID_POSITION;
+        val moveAccountsIndex = if (accountsOptions.radioMove.isChecked) {
+            accountsOptions.targetAccountsSpinner.selectedItemPosition
+        } else {
+            AdapterView.INVALID_POSITION
+        }
+        val moveTransactionsIndex = if (transactionsOptions.radioMove.isChecked) {
+            transactionsOptions.targetAccountsSpinner.selectedItemPosition
+        } else {
+            AdapterView.INVALID_POSITION
+        }
 
-        final Activity activity = requireActivity();
-        final FragmentManager fm = getParentFragmentManager();
-        BackupManager.backupActiveBookAsync(activity, result -> {
-            deleteAccount(activity, fm, accountUID, moveAccountsIndex, moveTransactionsIndex);
-            return null;
-        });
+        val activity: Activity = requireActivity()
+        val fm = parentFragmentManager
+        backupActiveBookAsync(activity) { result ->
+            deleteAccount(activity, fm, accountUID, moveAccountsIndex, moveTransactionsIndex)
+        }
     }
 
-    private void deleteAccount(
-        @NonNull Context context,
-        @NonNull FragmentManager fm,
-        @NonNull String accountUID,
-        int moveAccountsAccountIndex,
-        int moveTransactionsAccountIndex
+    private fun deleteAccount(
+        context: Context,
+        fm: FragmentManager,
+        accountUID: String,
+        moveAccountsAccountIndex: Int,
+        moveTransactionsAccountIndex: Int
     ) {
-        if (TextUtils.isEmpty(accountUID)) {
-            return;
+        if (accountUID.isNullOrEmpty()) {
+            return
         }
-        if ((mSubAccountCount > 0) && (moveAccountsAccountIndex >= 0)) {
-            String targetAccountUID = accountNameAdapterAccountsDestination.getUID(moveAccountsAccountIndex);
-            if (TextUtils.isEmpty(targetAccountUID)) {
-                return;
+        if ((subAccountCount > 0) && (moveAccountsAccountIndex >= 0)) {
+            val targetAccountUID =
+                accountNameAdapterAccountsDestination!!.getUID(moveAccountsAccountIndex)
+            if (targetAccountUID.isNullOrEmpty()) {
+                return
             }
-            accountsDbAdapter.reassignDescendantAccounts(accountUID, targetAccountUID);
+            accountsDbAdapter.reassignDescendantAccounts(accountUID, targetAccountUID)
         }
 
-        if ((mTransactionCount > 0) && (moveTransactionsAccountIndex >= 0)) {
-            String targetAccountUID = accountNameAdapterTransactionsDestination.getUID(moveTransactionsAccountIndex);
-            if (TextUtils.isEmpty(targetAccountUID)) {
-                return;
+        if ((transactionCount > 0) && (moveTransactionsAccountIndex >= 0)) {
+            val targetAccountUID =
+                accountNameAdapterTransactionsDestination!!.getUID(moveTransactionsAccountIndex)
+            if (targetAccountUID.isNullOrEmpty()) {
+                return
             }
             //move all the splits
-            splitsDbAdapter.reassignAccount(accountUID, targetAccountUID);
+            splitsDbAdapter.reassignAccount(accountUID, targetAccountUID)
         }
 
-        if (GnuCashApplication.isDoubleEntryEnabled(context)) { //reassign splits to imbalance
-            transactionsDbAdapter.deleteTransactionsForAccount(accountUID);
+        if (isDoubleEntryEnabled(context)) { //reassign splits to imbalance
+            transactionsDbAdapter.deleteTransactionsForAccount(accountUID)
         }
 
         //now kill them all!!
-        accountsDbAdapter.recursiveDeleteAccount(accountUID);
+        accountsDbAdapter.recursiveDeleteAccount(accountUID)
 
-        WidgetConfigurationActivity.updateAllWidgets(context);
+        WidgetConfigurationActivity.updateAllWidgets(context)
 
-        Bundle result = new Bundle();
-        result.putBoolean(Refreshable.EXTRA_REFRESH, true);
-        fm.setFragmentResult(TAG, result);
+        val result = Bundle()
+        result.putBoolean(Refreshable.EXTRA_REFRESH, true)
+        fm.setFragmentResult(TAG, result)
+    }
+
+    companion object {
+        const val TAG: String = "delete_account_dialog"
+
+        /**
+         * Creates new instance of the delete confirmation dialog and provides parameters for it
+         *
+         * @param accountUID GUID of the account to be deleted
+         * @return New instance of the delete confirmation dialog
+         */
+        fun newInstance(accountUID: String): DeleteAccountDialogFragment {
+            val args = Bundle()
+            args.putString(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+            val fragment = DeleteAccountDialogFragment()
+            fragment.arguments = args
+            return fragment
+        }
     }
 }

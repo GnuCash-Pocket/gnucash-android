@@ -13,750 +13,671 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.export
 
-package org.gnucash.android.ui.export;
-
-import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
-import static org.gnucash.android.app.IntentExtKt.takePersistableUriPermission;
-import static org.gnucash.android.export.ExportParams.CSV_COLON;
-import static org.gnucash.android.export.ExportParams.CSV_COMMA;
-import static org.gnucash.android.export.ExportParams.CSV_SEMICOLON;
-import static org.gnucash.android.util.ContentExtKt.getDocumentName;
-
-import android.app.Activity;
-import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
-import android.content.ActivityNotFoundException;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.Uri;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.text.TextUtils;
-import android.text.format.DateUtils;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.Transformation;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.CompoundButton;
-import android.widget.DatePicker;
-import android.widget.TimePicker;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-
-import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence;
-import com.codetroopers.betterpickers.recurrencepicker.EventRecurrenceFormatter;
-import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment;
-import com.google.android.material.snackbar.Snackbar;
-
-import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.app.MenuFragment;
-import org.gnucash.android.databinding.FragmentExportFormBinding;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.db.adapter.DatabaseAdapter;
-import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
-import org.gnucash.android.export.DropboxHelper;
-import org.gnucash.android.export.ExportAsyncTask;
-import org.gnucash.android.export.ExportFormat;
-import org.gnucash.android.export.ExportParams;
-import org.gnucash.android.export.Exporter;
-import org.gnucash.android.model.BaseModel;
-import org.gnucash.android.model.ScheduledAction;
-import org.gnucash.android.ui.common.UxArgument;
-import org.gnucash.android.ui.passcode.PasscodeHelper;
-import org.gnucash.android.ui.settings.dialog.OwnCloudDialogFragment;
-import org.gnucash.android.ui.transaction.TransactionFormFragment;
-import org.gnucash.android.ui.util.RecurrenceParser;
-import org.gnucash.android.ui.util.RecurrenceViewClickListener;
-import org.gnucash.android.ui.util.dialog.DatePickerDialogFragment;
-import org.gnucash.android.ui.util.dialog.TimePickerDialogFragment;
-import org.gnucash.android.util.PreferencesHelper;
-import org.gnucash.android.util.TimestampHelper;
-
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-
-import timber.log.Timber;
+import android.app.Activity
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
+import android.preference.PreferenceManager
+import android.text.format.DateUtils
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.DatePicker
+import android.widget.TimePicker
+import android.widget.Toast
+import androidx.appcompat.app.ActionBar
+import androidx.core.content.edit
+import androidx.core.view.isVisible
+import androidx.recyclerview.widget.RecyclerView
+import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence
+import com.codetroopers.betterpickers.recurrencepicker.EventRecurrenceFormatter
+import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment.OnRecurrenceSetListener
+import com.google.android.material.snackbar.Snackbar
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
+import org.gnucash.android.app.GnuCashApplication.Companion.isDoubleEntryEnabled
+import org.gnucash.android.app.MenuFragment
+import org.gnucash.android.app.actionBar
+import org.gnucash.android.app.finish
+import org.gnucash.android.app.isNullOrEmpty
+import org.gnucash.android.app.takePersistableUriPermission
+import org.gnucash.android.databinding.FragmentExportFormBinding
+import org.gnucash.android.db.adapter.BooksDbAdapter
+import org.gnucash.android.db.adapter.DatabaseAdapter
+import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
+import org.gnucash.android.export.DropboxHelper.authenticate
+import org.gnucash.android.export.DropboxHelper.hasToken
+import org.gnucash.android.export.DropboxHelper.retrieveAndSaveToken
+import org.gnucash.android.export.ExportAsyncTask
+import org.gnucash.android.export.ExportFormat
+import org.gnucash.android.export.ExportParams
+import org.gnucash.android.export.ExportParams.ExportTarget
+import org.gnucash.android.export.Exporter
+import org.gnucash.android.export.Exporter.Companion.buildExportFilename
+import org.gnucash.android.model.ScheduledAction
+import org.gnucash.android.ui.common.UxArgument
+import org.gnucash.android.ui.export.OptionsViewAnimationUtils.collapse
+import org.gnucash.android.ui.export.OptionsViewAnimationUtils.expand
+import org.gnucash.android.ui.get
+import org.gnucash.android.ui.passcode.PasscodeHelper.skipPasscodeScreen
+import org.gnucash.android.ui.settings.dialog.OwnCloudDialogFragment
+import org.gnucash.android.ui.transaction.TransactionFormFragment
+import org.gnucash.android.ui.util.RecurrenceParser
+import org.gnucash.android.ui.util.RecurrenceViewClickListener
+import org.gnucash.android.ui.util.dialog.DatePickerDialogFragment
+import org.gnucash.android.ui.util.dialog.TimePickerDialogFragment
+import org.gnucash.android.util.PreferencesHelper.getLastExportTime
+import org.gnucash.android.util.TimestampHelper
+import org.gnucash.android.util.getDocumentName
+import timber.log.Timber
+import java.sql.Timestamp
+import java.util.Calendar
 
 /**
  * Dialog fragment for exporting accounts and transactions in various formats
- * <p>The dialog is used for collecting information on the export options and then passing them
- * to the {@link org.gnucash.android.export.Exporter} responsible for exporting</p>
+ *
+ * The dialog is used for collecting information on the export options and then passing them
+ * to the [Exporter] responsible for exporting
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class ExportFormFragment extends MenuFragment implements
-    RecurrencePickerDialogFragment.OnRecurrenceSetListener,
+class ExportFormFragment : MenuFragment(),
+    OnRecurrenceSetListener,
     DatePickerDialog.OnDateSetListener,
     TimePickerDialog.OnTimeSetListener {
-
-    /**
-     * Request code for intent to pick export file destination
-     */
-    private static final int REQUEST_EXPORT_FILE = 0x14;
-
-    //Save As..
-    private static final int TARGET_URI = 0;
-    //DROPBOX
-    private static final int TARGET_DROPBOX = 1;
-    //OwnCloud
-    private static final int TARGET_OWNCLOUD = 2;
-    //Share File
-    private static final int TARGET_SHARE = 3;
-
     /**
      * Event recurrence options
      */
-    private final EventRecurrence mEventRecurrence = new EventRecurrence();
+    private val eventRecurrence = EventRecurrence()
 
     /**
      * Recurrence rule
      */
-    private String mRecurrenceRule;
+    private var recurrenceRule: String? = null
 
-    private final Calendar mExportStartCalendar = Calendar.getInstance();
+    private val exportStartCalendar: Calendar = Calendar.getInstance()
 
-    private final ExportParams mExportParams = new ExportParams();
-    private ScheduledAction mScheduledAction;
+    private val exportParams = ExportParams()
+    private var scheduledAction: ScheduledAction? = null
 
     /**
      * Flag to determine if export has been started.
      * Used to continue export after user has picked a destination file
      */
-    private boolean mExportStarted = false;
+    private var exportStarted = false
 
-    private FragmentExportFormBinding mBinding;
-    private boolean isDoubleEntry = true;
-    private final List<ExportFormatItem> formatItems = new ArrayList<>();
+    private var binding: FragmentExportFormBinding? = null
+    private var isDoubleEntry = true
+    private val formatItems = mutableListOf<ExportFormatItem>()
 
-    private void onFormatSelected(@NonNull FragmentExportFormBinding binding, @NonNull ExportFormat exportFormat) {
-        mExportParams.setExportFormat(exportFormat);
-        mBinding.exportWarning.setVisibility(View.GONE);
+    private fun onFormatSelected(binding: FragmentExportFormBinding, exportFormat: ExportFormat) {
+        exportParams.exportFormat = exportFormat
+        binding.exportWarning.isVisible = false
 
-        switch (exportFormat) {
-            case OFX:
-                binding.exportWarning.setText(R.string.export_warning_ofx);
-                binding.exportWarning.setVisibility(View.VISIBLE);
-                OptionsViewAnimationUtils.expand(mBinding.exportDateLayout);
-                OptionsViewAnimationUtils.collapse(mBinding.layoutCsvOptions);
-                break;
+        when (exportFormat) {
+            ExportFormat.OFX -> {
+                binding.exportWarning.setText(R.string.export_warning_ofx)
+                binding.exportWarning.isVisible = true
+                expand(binding.exportDateLayout)
+                collapse(binding.layoutCsvOptions)
+            }
 
-            case QIF:
+            ExportFormat.QIF -> {
                 //TODO: Also check that there exist transactions with multiple currencies before displaying warning
-                binding.exportWarning.setText(R.string.export_warning_qif);
-                binding.exportWarning.setVisibility(View.VISIBLE);
-                OptionsViewAnimationUtils.expand(mBinding.exportDateLayout);
-                OptionsViewAnimationUtils.collapse(mBinding.layoutCsvOptions);
-                break;
+                binding.exportWarning.setText(R.string.export_warning_qif)
+                binding.exportWarning.isVisible = true
+                expand(binding.exportDateLayout)
+                collapse(binding.layoutCsvOptions)
+            }
 
-            case XML:
-                binding.exportWarning.setText(R.string.export_warning_xml);
-                binding.exportWarning.setVisibility(View.VISIBLE);
-                OptionsViewAnimationUtils.collapse(mBinding.exportDateLayout);
-                OptionsViewAnimationUtils.collapse(mBinding.layoutCsvOptions);
-                break;
+            ExportFormat.XML -> {
+                binding.exportWarning.setText(R.string.export_warning_xml)
+                binding.exportWarning.isVisible = true
+                collapse(binding.exportDateLayout)
+                collapse(binding.layoutCsvOptions)
+            }
 
-            case CSVA:
-            case CSVT:
-                binding.exportWarning.setText(R.string.export_notice_csv);
-                binding.exportWarning.setVisibility(View.VISIBLE);
-                OptionsViewAnimationUtils.expand(mBinding.exportDateLayout);
-                OptionsViewAnimationUtils.expand(mBinding.layoutCsvOptions);
-                break;
+            ExportFormat.CSVA, ExportFormat.CSVT -> {
+                binding.exportWarning.setText(R.string.export_notice_csv)
+                binding.exportWarning.isVisible = true
+                expand(binding.exportDateLayout)
+                expand(binding.layoutCsvOptions)
+            }
         }
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        isDoubleEntry = GnuCashApplication.isDoubleEntryEnabled(requireContext());
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        isDoubleEntry = isDoubleEntryEnabled(requireContext())
     }
 
-    @Override
-    public View onCreateView(
-        @NonNull LayoutInflater inflater,
-        @NonNull ViewGroup container,
-        @Nullable Bundle savedInstanceState
-    ) {
-        mBinding = FragmentExportFormBinding.inflate(inflater, container, false);
-        return mBinding.getRoot();
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val binding = FragmentExportFormBinding.inflate(inflater, container, false)
+        this.binding = binding
+        return binding.root
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        mBinding = null;
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        AppCompatActivity activity = (AppCompatActivity) requireActivity();
-        ActionBar actionBar = activity.getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setTitle(R.string.title_export_dialog);
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val actionBar: ActionBar? = this.actionBar
+        actionBar?.setTitle(R.string.title_export_dialog)
 
-        Bundle args = getArguments();
-        if ((args == null) || args.isEmpty()) {
-            return;
+        val args = arguments
+        if (args.isNullOrEmpty()) {
+            return
         }
-        final FragmentExportFormBinding binding = mBinding;
-        bindViewListeners(binding);
+        val binding = this.binding!!
+        bindViewListeners(binding)
 
-        String scheduledUID = args.getString(UxArgument.SCHEDULED_ACTION_UID);
-        if (TextUtils.isEmpty(scheduledUID)) {
-            return;
+        val scheduledUID = args.getString(UxArgument.SCHEDULED_ACTION_UID)
+        if (scheduledUID.isNullOrEmpty()) {
+            return
         }
-        ScheduledActionDbAdapter scheduledActionDbAdapter = ScheduledActionDbAdapter.getInstance();
-        ScheduledAction scheduledAction = scheduledActionDbAdapter.getRecord(scheduledUID);
+        val scheduledActionDbAdapter = ScheduledActionDbAdapter.instance
+        val scheduledAction = scheduledActionDbAdapter.getRecordOrNull(scheduledUID)
         if (scheduledAction != null) {
-            bindForm(binding, scheduledAction);
+            bindForm(binding, scheduledAction)
         }
     }
 
-    private void bindForm(@NonNull FragmentExportFormBinding binding, @NonNull ScheduledAction scheduledAction) {
-        mScheduledAction = scheduledAction;
-        String tag = scheduledAction.getTag();
-        if (TextUtils.isEmpty(tag)) {
-            return;
-        }
-        ExportParams exportParams = ExportParams.parseTag(tag);
-        Uri uri = exportParams.getExportLocation();
-        ExportParams.ExportTarget exportTarget = exportParams.getExportTarget();
-        char csvSeparator = exportParams.getCsvSeparator();
-        Timestamp startTime = exportParams.getExportStartTime();
+    private fun bindForm(binding: FragmentExportFormBinding, scheduledAction: ScheduledAction) {
+        this.scheduledAction = scheduledAction
+        val tag = scheduledAction.tag ?: return
+        val exportParams = ExportParams.parseTag(tag)
+        val uri = exportParams.exportLocation
+        val exportTarget = exportParams.exportTarget
+        val csvSeparator = exportParams.csvSeparator
+        val startTime = exportParams.exportStartTime
 
-        switch (exportTarget) {
-            case DROPBOX:
-                binding.spinnerExportDestination.setSelection(TARGET_DROPBOX);
-                break;
-            case OWNCLOUD:
-                binding.spinnerExportDestination.setSelection(TARGET_OWNCLOUD);
-                break;
-            case SD_CARD, URI:
-                binding.spinnerExportDestination.setSelection(TARGET_URI);
-                break;
-            case SHARING:
-                binding.spinnerExportDestination.setSelection(TARGET_SHARE);
-                break;
+        when (exportTarget) {
+            ExportTarget.DROPBOX -> binding.spinnerExportDestination.setSelection(TARGET_DROPBOX)
+
+            ExportTarget.OWNCLOUD -> binding.spinnerExportDestination.setSelection(TARGET_OWNCLOUD)
+
+            ExportTarget.SD_CARD,
+            ExportTarget.URI -> binding.spinnerExportDestination.setSelection(TARGET_URI)
+
+            ExportTarget.SHARING -> binding.spinnerExportDestination.setSelection(TARGET_SHARE)
         }
 
-        setExportUri(uri);
+        setExportUri(uri)
 
         // select relevant format
-        ExportFormat exportFormat = exportParams.getExportFormat();
-        int formatIndex = NO_POSITION;
-        for (int i = 0; i < formatItems.size(); i++) {
-            ExportFormatItem item = formatItems.get(i);
+        val exportFormat = exportParams.exportFormat
+        var formatIndex = RecyclerView.NO_POSITION
+        for (i in formatItems.indices) {
+            val item = formatItems[i]
             if (item.value == exportFormat) {
-                formatIndex = i;
-                break;
+                formatIndex = i
+                break
             }
         }
-        binding.valueExportFormat.setSelection(formatIndex);
+        binding.valueExportFormat.setSelection(formatIndex)
 
-        switch (csvSeparator) {
-            case CSV_COMMA:
-                binding.radioSeparatorCommaFormat.setChecked(true);
-                break;
-            case CSV_COLON:
-                binding.radioSeparatorColonFormat.setChecked(true);
-                break;
-            case CSV_SEMICOLON:
-                binding.radioSeparatorSemicolonFormat.setChecked(true);
-                break;
+        when (csvSeparator) {
+            ExportParams.CSV_COMMA -> binding.radioSeparatorCommaFormat.isChecked = true
+            ExportParams.CSV_COLON -> binding.radioSeparatorColonFormat.isChecked = true
+            ExportParams.CSV_SEMICOLON -> binding.radioSeparatorSemicolonFormat.isChecked = true
         }
 
-        long startTimeMills = startTime.getTime();
+        val startTimeMills = startTime.time
         if (startTimeMills > 0L) {
-            mExportStartCalendar.setTimeInMillis(startTimeMills);
-            binding.exportStartDate.setText(TransactionFormFragment.DATE_FORMATTER.print(startTimeMills));
-            binding.exportStartTime.setText(TransactionFormFragment.TIME_FORMATTER.print(startTimeMills));
-            binding.switchExportAll.setChecked(false);
+            exportStartCalendar.timeInMillis = startTimeMills
+            binding.exportStartDate.text =
+                TransactionFormFragment.DATE_FORMATTER.print(startTimeMills)
+            binding.exportStartTime.text =
+                TransactionFormFragment.TIME_FORMATTER.print(startTimeMills)
+            binding.switchExportAll.isChecked = false
         } else {
-            binding.switchExportAll.setChecked(true);
+            binding.switchExportAll.isChecked = true
         }
 
-        binding.checkboxPostExportDelete.setChecked(exportParams.shouldDeleteTransactionsAfterExport());
-        binding.compression.setChecked(exportParams.isCompressed);
+        binding.checkboxPostExportDelete.isChecked = exportParams.deleteTransactionsAfterExport
+        binding.compression.isChecked = exportParams.isCompressed
 
-        String rrule = scheduledAction.getRuleString();
-        onRecurrenceSet(rrule);
+        val rrule = scheduledAction.ruleString
+        onRecurrenceSet(rrule)
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.export_actions, menu);
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.export_actions, menu)
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_save:
-                startExport();
-                return true;
-
-            case android.R.id.home: {
-                Activity activity = getActivity();
-                if (activity == null) {
-                    Timber.w("Activity expected");
-                    return false;
-                }
-                activity.finish();
-                return true;
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menu_save -> {
+                startExport()
+                return true
             }
 
-            default:
-                return super.onOptionsItemSelected(item);
+            android.R.id.home -> {
+                finish()
+                return true
+            }
+
+            else -> return super.onOptionsItemSelected(item)
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        DropboxHelper.retrieveAndSaveToken(requireContext());
+    override fun onResume() {
+        super.onResume()
+        retrieveAndSaveToken(requireContext())
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
+    override fun onPause() {
+        super.onPause()
         // When the user try to export sharing to 3rd party service like DropBox
         // then pausing all activities. That cause passcode screen appearing happened.
         // We use a disposable flag to skip this unnecessary passcode screen.
-        PasscodeHelper.skipPasscodeScreen(requireContext());
+        skipPasscodeScreen(requireContext())
     }
 
     /**
      * Starts the export of transactions with the specified parameters
      */
-    private void startExport() {
-        final Activity activity = requireActivity();
-        final ExportParams exportParameters = mExportParams;
+    private fun startExport() {
+        val exportParameters = exportParams
 
-        if (exportParameters.getExportTarget() == ExportParams.ExportTarget.URI && exportParameters.getExportLocation() == null) {
-            mExportStarted = true;
-            selectExportFile();
-            return;
+        if (exportParameters.exportTarget == ExportTarget.URI && exportParameters.exportLocation == null) {
+            exportStarted = true
+            selectExportFile()
+            return
         }
 
-        if (mBinding.switchExportAll.isChecked()) {
-            exportParameters.setExportStartTime(TimestampHelper.getTimestampFromEpochZero());
+        val binding = binding ?: return
+        if (binding.switchExportAll.isChecked) {
+            exportParameters.exportStartTime = TimestampHelper.timestampFromEpochZero
         } else {
-            exportParameters.setExportStartTime(new Timestamp(mExportStartCalendar.getTimeInMillis()));
+            exportParameters.exportStartTime = Timestamp(exportStartCalendar.timeInMillis)
         }
 
-        Timber.i("Commencing async export of transactions");
-        final String bookUID = GnuCashApplication.getActiveBookUID();
-        new ExportAsyncTask(activity, bookUID).execute(exportParameters);
+        Timber.i("Commencing async export of transactions")
+        val bookUID = activeBookUID ?: return
+        val position = binding.spinnerExportDestination.selectedItemPosition
 
-        if (mRecurrenceRule != null) {
-            DatabaseAdapter.UpdateMethod updateMethod = DatabaseAdapter.UpdateMethod.replace;
-            ScheduledAction scheduledAction = mScheduledAction;
-            if (scheduledAction == null) {
-                scheduledAction = new ScheduledAction(ScheduledAction.ActionType.BACKUP);
-                scheduledAction.setActionUID(bookUID);
-                updateMethod = DatabaseAdapter.UpdateMethod.insert;
+        ExportAsyncTask(requireActivity(), bookUID) { bookUri ->
+            if (bookUri != null) {
+                PreferenceManager.getDefaultSharedPreferences(activity).edit {
+                    putInt(getString(R.string.key_last_export_destination), position)
+                }
+                bookExported(bookUID, exportParameters)
             }
-            scheduledAction.setRecurrence(RecurrenceParser.parse(mEventRecurrence));
-            scheduledAction.setTag(exportParameters.toTag());
-            ScheduledActionDbAdapter.getInstance().addRecord(scheduledAction, updateMethod);
-            mScheduledAction = scheduledAction;
+        }.execute(exportParameters)
+    }
+
+    private fun bookExported(bookUID: String, exportParameters: ExportParams) {
+        if (recurrenceRule != null) {
+            var updateMethod = DatabaseAdapter.UpdateMethod.Replace
+            var scheduledAction = this.scheduledAction
+            if (scheduledAction == null) {
+                scheduledAction = ScheduledAction(ScheduledAction.ActionType.BACKUP)
+                scheduledAction.actionUID = bookUID
+                updateMethod = DatabaseAdapter.UpdateMethod.Insert
+            }
+            scheduledAction.setRecurrence(RecurrenceParser.parse(eventRecurrence))
+            scheduledAction.tag = exportParameters.toTag()
+            ScheduledActionDbAdapter.instance.addRecord(scheduledAction, updateMethod)
+            this.scheduledAction = scheduledAction
         }
 
-        int position = mBinding.spinnerExportDestination.getSelectedItemPosition();
-        PreferenceManager.getDefaultSharedPreferences(activity)
-            .edit()
-            .putInt(getString(R.string.key_last_export_destination), position)
-            .apply();
-
-        // finish the activity will cause the progress dialog to be leaked
-        // which would throw an exception
-        //getActivity().finish();
+        finish()
     }
 
     /**
      * Bind views to actions when initializing the export form
      */
-    private void bindViewListeners(@NonNull final FragmentExportFormBinding binding) {
-        final Context context = binding.getRoot().getContext();
-        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+    private fun bindViewListeners(binding: FragmentExportFormBinding) {
+        val context = binding.root.context
+        val preferences = PreferenceManager.getDefaultSharedPreferences(context)
         // export destination bindings
-        ArrayAdapter<CharSequence> destinationAdapter = ArrayAdapter.createFromResource(context,
-            R.array.export_destinations, android.R.layout.simple_spinner_item);
-        destinationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.spinnerExportDestination.setAdapter(destinationAdapter);
-        binding.spinnerExportDestination.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (view == null) //the item selection is fired twice by the Android framework. Ignore the first one
-                    return;
-                switch (position) {
-                    case TARGET_URI:
-                        mExportParams.setExportTarget(ExportParams.ExportTarget.URI);
-                        binding.recurrenceOptions.setVisibility(View.VISIBLE);
-                        Uri exportUri = mExportParams.getExportLocation();
-                        setExportUri(exportUri);
-                        break;
-                    case TARGET_DROPBOX:
-                        setExportUriText(getString(R.string.label_dropbox_export_destination));
-                        binding.recurrenceOptions.setVisibility(View.VISIBLE);
-                        mExportParams.setExportTarget(ExportParams.ExportTarget.DROPBOX);
+        val destinationAdapter = ArrayAdapter.createFromResource(
+            context,
+            R.array.export_destinations, android.R.layout.simple_spinner_item
+        )
+        destinationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerExportDestination.adapter = destinationAdapter
+        binding.spinnerExportDestination.onItemSelectedListener = object :
+            AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                //the item selection is fired twice by the Android framework. Ignore the first one
+                if (view == null) return
+                when (position) {
+                    TARGET_URI -> {
+                        exportParams.exportTarget = ExportTarget.URI
+                        binding.recurrenceOptions.isVisible = true
+                        val exportUri = exportParams.exportLocation
+                        setExportUri(exportUri)
+                    }
 
-                        if (!DropboxHelper.hasToken(context)) {
-                            DropboxHelper.authenticate(context);
+                    TARGET_DROPBOX -> {
+                        setExportUriText(getString(R.string.label_dropbox_export_destination))
+                        binding.recurrenceOptions.isVisible = true
+                        exportParams.exportTarget = ExportTarget.DROPBOX
+
+                        if (!hasToken(context)) {
+                            authenticate(context)
                         }
-                        break;
-                    case TARGET_OWNCLOUD:
-                        setExportUri(null);
-                        binding.recurrenceOptions.setVisibility(View.VISIBLE);
-                        mExportParams.setExportTarget(ExportParams.ExportTarget.OWNCLOUD);
+                    }
+
+                    TARGET_OWNCLOUD -> {
+                        setExportUri(null)
+                        binding.recurrenceOptions.isVisible = true
+                        exportParams.exportTarget = ExportTarget.OWNCLOUD
                         if (!preferences.getBoolean(getString(R.string.key_owncloud_sync), false)) {
-                            OwnCloudDialogFragment ocDialog = OwnCloudDialogFragment.newInstance(null);
-                            ocDialog.show(getParentFragmentManager(), "ownCloud dialog");
+                            val ocDialog = OwnCloudDialogFragment.newInstance(null)
+                            ocDialog.show(parentFragmentManager, "ownCloud dialog")
                         }
-                        break;
-                    case TARGET_SHARE:
-                        setExportUriText(getString(R.string.label_select_destination_after_export));
-                        mExportParams.setExportTarget(ExportParams.ExportTarget.SHARING);
-                        binding.recurrenceOptions.setVisibility(View.GONE);
-                        break;
+                    }
 
-                    default:
-                        mExportParams.setExportTarget(ExportParams.ExportTarget.SD_CARD);
-                        break;
+                    TARGET_SHARE -> {
+                        setExportUriText(getString(R.string.label_select_destination_after_export))
+                        exportParams.exportTarget = ExportTarget.SHARING
+                        binding.recurrenceOptions.isVisible = false
+                    }
+
+                    else -> exportParams.exportTarget = ExportTarget.SD_CARD
                 }
             }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                //nothing to see here, move along
-            }
-        });
+            override fun onNothingSelected(parent: AdapterView<*>) = Unit
+        }
 
-        int position = preferences.getInt(getString(R.string.key_last_export_destination), 0);
-        binding.spinnerExportDestination.setSelection(position);
+        val position = preferences.getInt(getString(R.string.key_last_export_destination), 0)
+        binding.spinnerExportDestination.setSelection(position)
 
         //**************** export start time bindings ******************
-        Timestamp timestamp = PreferencesHelper.getLastExportTime(context);
-        final long date = timestamp.getTime() - DateUtils.WEEK_IN_MILLIS;
-        mExportStartCalendar.setTimeInMillis(date);
+        val timestamp = getLastExportTime(context)
+        val date = timestamp.time - DateUtils.WEEK_IN_MILLIS
+        exportStartCalendar.timeInMillis = date
 
-        binding.exportStartDate.setOnClickListener(new View.OnClickListener() {
+        binding.exportStartDate.setOnClickListener {
+            val dateMillis = exportStartCalendar.timeInMillis
+            DatePickerDialogFragment.newInstance(this@ExportFormFragment, dateMillis)
+                .show(parentFragmentManager, "date_picker_fragment")
+        }
+        binding.exportStartDate.text = TransactionFormFragment.DATE_FORMATTER.print(date)
 
-            @Override
-            public void onClick(View v) {
-                long dateMillis = mExportStartCalendar.getTimeInMillis();
-                DatePickerDialogFragment.newInstance(ExportFormFragment.this, dateMillis)
-                    .show(getParentFragmentManager(), "date_picker_fragment");
-            }
-        });
-        binding.exportStartDate.setText(TransactionFormFragment.DATE_FORMATTER.print(date));
+        binding.exportStartTime.setOnClickListener {
+            val timeMillis = exportStartCalendar.timeInMillis
+            TimePickerDialogFragment.newInstance(this@ExportFormFragment, timeMillis)
+                .show(parentFragmentManager, "time_picker_dialog_fragment")
+        }
+        binding.exportStartTime.text = TransactionFormFragment.TIME_FORMATTER.print(date)
 
-        binding.exportStartTime.setOnClickListener(new View.OnClickListener() {
+        binding.switchExportAll.setOnCheckedChangeListener { _, isChecked ->
+            binding.exportStartDate.isEnabled = !isChecked
+            binding.exportStartTime.isEnabled = !isChecked
+        }
+        binding.switchExportAll.isChecked =
+            preferences.getBoolean(getString(R.string.key_export_all_transactions), false)
 
-            @Override
-            public void onClick(View v) {
-                long timeMillis = mExportStartCalendar.getTimeInMillis();
-                TimePickerDialogFragment.newInstance(ExportFormFragment.this, timeMillis)
-                    .show(getParentFragmentManager(), "time_picker_dialog_fragment");
-            }
-        });
-        binding.exportStartTime.setText(TransactionFormFragment.TIME_FORMATTER.print(date));
+        binding.checkboxPostExportDelete.setOnCheckedChangeListener { _, isChecked ->
+            exportParams.deleteTransactionsAfterExport = isChecked
+        }
+        binding.checkboxPostExportDelete.isChecked =
+            preferences.getBoolean(getString(R.string.key_delete_transactions_after_export), false)
+        binding.compression.setOnCheckedChangeListener { _, isChecked ->
+            exportParams.isCompressed = isChecked
+        }
 
-        binding.switchExportAll.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                binding.exportStartDate.setEnabled(!isChecked);
-                binding.exportStartTime.setEnabled(!isChecked);
-            }
-        });
-        binding.switchExportAll.setChecked(preferences.getBoolean(getString(R.string.key_export_all_transactions), false));
+        binding.compression.isChecked =
+            preferences.getBoolean(getString(R.string.key_compress_export), true)
 
-        binding.checkboxPostExportDelete.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mExportParams.setDeleteTransactionsAfterExport(isChecked);
-            }
-        });
-        binding.checkboxPostExportDelete.setChecked(preferences.getBoolean(getString(R.string.key_delete_transactions_after_export), false));
-
-        binding.compression.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mExportParams.isCompressed = isChecked;
-            }
-        });
-        binding.compression.setChecked(preferences.getBoolean(getString(R.string.key_compress_export), true));
-
-        binding.inputRecurrence.setOnClickListener(new RecurrenceViewClickListener(requireActivity(), mRecurrenceRule, this));
+        binding.inputRecurrence.setOnClickListener(
+            RecurrenceViewClickListener(parentFragmentManager, recurrenceRule, this)
+        )
 
         //this part (setting the export format) must come after the recurrence view bindings above
-        String keyDefaultExportFormat = getString(R.string.key_default_export_format);
-        String defaultExportFormat = preferences.getString(keyDefaultExportFormat, ExportFormat.XML.value);
-        ExportFormat defaultFormat = ExportFormat.of(defaultExportFormat);
+        val keyDefaultExportFormat = getString(R.string.key_default_export_format)
+        val defaultExportFormat =
+            preferences.getString(keyDefaultExportFormat, ExportFormat.XML.value)
+        var defaultFormat = ExportFormat.of(defaultExportFormat)
 
-        List<ExportFormatItem> formatItems = this.formatItems;
-        formatItems.clear();
-        formatItems.add(new ExportFormatItem(ExportFormat.CSVT, context.getString(ExportFormat.CSVT.labelId)));
-        formatItems.add(new ExportFormatItem(ExportFormat.QIF, context.getString(ExportFormat.QIF.labelId)));
+        val formatItems = this.formatItems
+        formatItems.clear()
+        formatItems.add(
+            ExportFormatItem(ExportFormat.CSVT, context.getString(ExportFormat.CSVT.labelId))
+        )
+        formatItems.add(
+            ExportFormatItem(ExportFormat.QIF, context.getString(ExportFormat.QIF.labelId))
+        )
         if (isDoubleEntry) {
-            formatItems.add(new ExportFormatItem(ExportFormat.XML, context.getString(ExportFormat.XML.labelId)));
+            formatItems.add(
+                ExportFormatItem(ExportFormat.XML, context.getString(ExportFormat.XML.labelId))
+            )
             if (defaultFormat == ExportFormat.OFX) {
-                defaultFormat = ExportFormat.XML;
+                defaultFormat = ExportFormat.XML
             }
         } else {
-            formatItems.add(new ExportFormatItem(ExportFormat.OFX, context.getString(ExportFormat.OFX.labelId)));
+            formatItems.add(
+                ExportFormatItem(ExportFormat.OFX, context.getString(ExportFormat.OFX.labelId))
+            )
             if (defaultFormat == ExportFormat.XML) {
-                defaultFormat = ExportFormat.OFX;
+                defaultFormat = ExportFormat.OFX
             }
         }
-        final ArrayAdapter<ExportFormatItem> formatAdapter = new ArrayAdapter(context, android.R.layout.simple_spinner_item, formatItems);
-        formatAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.valueExportFormat.setAdapter(formatAdapter);
-        binding.valueExportFormat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (view == null) //the item selection is fired twice by the Android framework. Ignore the first one
-                    return;
-                ExportFormatItem item = formatAdapter.getItem(position);
-                onFormatSelected(binding, item.value);
+        val formatAdapter = ArrayAdapter<ExportFormatItem>(
+            context,
+            android.R.layout.simple_spinner_item,
+            formatItems
+        )
+        formatAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.valueExportFormat.adapter = formatAdapter
+        binding.valueExportFormat.onItemSelectedListener = object :
+            AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                if (view == null)  //the item selection is fired twice by the Android framework. Ignore the first one
+                    return
+                val item: ExportFormatItem = formatAdapter[position]
+                onFormatSelected(binding, item.value)
             }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                //nothing to see here, move along
-            }
-        });
-        int formatIndex = NO_POSITION;
-        for (int i = 0; i < formatItems.size(); i++) {
-            ExportFormatItem item = formatItems.get(i);
+            override fun onNothingSelected(parent: AdapterView<*>) = Unit
+        }
+        var formatIndex = RecyclerView.NO_POSITION
+        for (i in formatItems.indices) {
+            val item = formatItems[i]
             if (item.value == defaultFormat) {
-                formatIndex = i;
-                break;
+                formatIndex = i
+                break
             }
         }
-        binding.valueExportFormat.setSelection(formatIndex);
+        binding.valueExportFormat.setSelection(formatIndex)
 
-        binding.radioSeparatorCommaFormat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    mExportParams.setCsvSeparator(CSV_COMMA);
-                }
+        binding.radioSeparatorCommaFormat.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                exportParams.csvSeparator = ExportParams.CSV_COMMA
             }
-        });
-        binding.radioSeparatorColonFormat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    mExportParams.setCsvSeparator(CSV_COLON);
-                }
+        }
+        binding.radioSeparatorColonFormat.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                exportParams.csvSeparator = ExportParams.CSV_COLON
             }
-        });
-        binding.radioSeparatorSemicolonFormat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    mExportParams.setCsvSeparator(CSV_SEMICOLON);
-                }
+        }
+        binding.radioSeparatorSemicolonFormat.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                exportParams.csvSeparator = ExportParams.CSV_SEMICOLON
             }
-        });
+        }
     }
 
     /**
      * Display the file path of the file where the export will be saved
      *
-     * @param filepath Path to export file. If {@code null}, the view will be hidden and nothing displayed
+     * @param filepath Path to export file. If `null`, the view will be hidden and nothing displayed
      */
-    private void setExportUriText(String filepath) {
-        if (TextUtils.isEmpty(filepath)) {
-            mBinding.targetUri.setVisibility(View.GONE);
-            mBinding.targetUri.setText("");
+    private fun setExportUriText(filepath: String?) {
+        val binding = binding ?: return
+        if (filepath.isNullOrEmpty()) {
+            binding.targetUri.isVisible = false
+            binding.targetUri.text = ""
         } else {
-            mBinding.targetUri.setText(filepath);
-            mBinding.targetUri.setVisibility(View.VISIBLE);
+            binding.targetUri.text = filepath
+            binding.targetUri.isVisible = true
         }
     }
 
     /**
      * Display the file path of the file where the export will be saved
      *
-     * @param uri URI to export file. If {@code null}, the view will be hidden and nothing displayed
+     * @param uri URI to export file. If `null`, the view will be hidden and nothing displayed
      */
-    private void setExportUri(@Nullable Uri uri) {
-        mExportParams.setExportLocation(uri);
+    private fun setExportUri(uri: Uri?) {
+        exportParams.exportLocation = uri
         if (uri == null) {
-            setExportUriText("");
+            setExportUriText("")
         } else {
-            setExportUriText(getDocumentName(uri, getContext()));
+            setExportUriText(uri.getDocumentName(context))
         }
     }
 
     /**
      * Open a chooser for user to pick a file to export to
      */
-    private void selectExportFile() {
-        String bookName = BooksDbAdapter.getInstance().getActiveBookDisplayName();
-        String filename = Exporter.buildExportFilename(mExportParams.getExportFormat(), mExportParams.isCompressed, bookName);
+    private fun selectExportFile() {
+        val bookName = BooksDbAdapter.instance.activeBookDisplayName
+        val filename =
+            buildExportFilename(exportParams.exportFormat, exportParams.isCompressed, bookName)
 
-        Intent createIntent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
+        val createIntent = Intent(Intent.ACTION_CREATE_DOCUMENT)
             .setType("*/*")
             .addCategory(Intent.CATEGORY_OPENABLE)
-            .putExtra(Intent.EXTRA_TITLE, filename);
+            .putExtra(Intent.EXTRA_TITLE, filename)
         try {
-            startActivityForResult(createIntent, REQUEST_EXPORT_FILE);
-        } catch (ActivityNotFoundException e) {
-            Timber.e(e, "Cannot create document for export");
-            if (isVisible()) {
-                View view = getView();
-                assert view != null;
-                Snackbar.make(view, R.string.toast_install_file_manager, Snackbar.LENGTH_LONG).show();
+            startActivityForResult(createIntent, REQUEST_EXPORT_FILE)
+        } catch (e: ActivityNotFoundException) {
+            Timber.e(e, "Cannot create document for export")
+            if (isVisible) {
+                val view = requireView()
+                Snackbar.make(view, R.string.toast_install_file_manager, Snackbar.LENGTH_LONG)
+                    .show()
             } else {
-                Toast.makeText(requireContext(), R.string.toast_install_file_manager, Toast.LENGTH_LONG).show();
+                Toast.makeText(
+                    requireContext(),
+                    R.string.toast_install_file_manager,
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
 
-    @Override
-    public void onRecurrenceSet(String rrule) {
-        Timber.i("Export reoccurs: %s", rrule);
-        Context context = mBinding.inputRecurrence.getContext();
-        String repeatString = null;
-        if (!TextUtils.isEmpty(rrule)) {
+    override fun onRecurrenceSet(rrule: String?) {
+        Timber.i("Export reoccurs: %s", rrule)
+        val binding = binding ?: return
+        val context = binding.inputRecurrence.context
+        var repeatString: String? = null
+        if (!rrule.isNullOrEmpty()) {
             try {
-                mEventRecurrence.parse(rrule);
-                mRecurrenceRule = rrule;
-                repeatString = EventRecurrenceFormatter.getRepeatString(context, context.getResources(), mEventRecurrence, true);
-            } catch (Exception e) {
-                Timber.e(e, "Bad recurrence for [%s]", rrule);
+                eventRecurrence.parse(rrule)
+                recurrenceRule = rrule
+                repeatString = EventRecurrenceFormatter.getRepeatString(
+                    context,
+                    context.resources,
+                    eventRecurrence,
+                    true
+                )
+            } catch (e: Exception) {
+                Timber.e(e, "Bad recurrence for [%s]", rrule)
             }
         }
-        if (TextUtils.isEmpty(repeatString)) {
-            repeatString = context.getString(R.string.label_tap_to_create_schedule);
+        if (repeatString.isNullOrEmpty()) {
+            repeatString = context.getString(R.string.label_tap_to_create_schedule)
         }
-        mBinding.inputRecurrence.setText(repeatString);
+        binding.inputRecurrence.text = repeatString
     }
 
     /**
      * Callback for when the activity chooser dialog is completed
      */
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case REQUEST_EXPORT_FILE:
-                if (resultCode == Activity.RESULT_OK) {
-                    if (data != null) {
-                        takePersistableUriPermission(requireContext(), data);
-                        Uri location = data.getData();
-                        setExportUri(location);
-                    } else {
-                        setExportUri(null);
-                    }
-
-                    if (mExportStarted) {
-                        startExport();
-                    }
-                }
-                break;
-        }
-    }
-
-    @Override
-    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-        mExportStartCalendar.set(Calendar.YEAR, year);
-        mExportStartCalendar.set(Calendar.MONTH, month);
-        mExportStartCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-        mBinding.exportStartDate.setText(TransactionFormFragment.DATE_FORMATTER.print(mExportStartCalendar.getTimeInMillis()));
-    }
-
-    @Override
-    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        mExportStartCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-        mExportStartCalendar.set(Calendar.MINUTE, minute);
-        mBinding.exportStartTime.setText(TransactionFormFragment.TIME_FORMATTER.print(mExportStartCalendar.getTimeInMillis()));
-    }
-
-    private static class ExportFormatItem {
-        public final ExportFormat value;
-        public final String label;
-
-        private ExportFormatItem(ExportFormat value, String label) {
-            this.value = value;
-            this.label = label;
-        }
-
-        @NonNull
-        @Override
-        public String toString() {
-            return label;
-        }
-    }
-}
-
-// Gotten from: https://stackoverflow.com/a/31720191
-class OptionsViewAnimationUtils {
-
-    public static void expand(final View v) {
-        v.measure(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        final int targetHeight = v.getMeasuredHeight();
-
-        v.getLayoutParams().height = 0;
-        v.setVisibility(View.VISIBLE);
-        Animation a = new Animation() {
-            @Override
-            protected void applyTransformation(float interpolatedTime, Transformation t) {
-                v.getLayoutParams().height = interpolatedTime == 1
-                    ? ViewGroup.LayoutParams.WRAP_CONTENT
-                    : (int) (targetHeight * interpolatedTime);
-                v.requestLayout();
-            }
-
-            @Override
-            public boolean willChangeBounds() {
-                return true;
-            }
-        };
-
-        a.setDuration((int) (3 * targetHeight / v.getContext().getResources().getDisplayMetrics().density));
-        v.startAnimation(a);
-    }
-
-    public static void collapse(final View v) {
-        final int initialHeight = v.getMeasuredHeight();
-
-        Animation a = new Animation() {
-            @Override
-            protected void applyTransformation(float interpolatedTime, Transformation t) {
-                if (interpolatedTime == 1) {
-                    v.setVisibility(View.GONE);
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (requestCode) {
+            REQUEST_EXPORT_FILE -> if (resultCode == Activity.RESULT_OK) {
+                if (data != null) {
+                    requireContext().takePersistableUriPermission(data)
+                    val location = data.data
+                    setExportUri(location)
                 } else {
-                    v.getLayoutParams().height = initialHeight - (int) (initialHeight * interpolatedTime);
-                    v.requestLayout();
+                    setExportUri(null)
+                }
+
+                if (exportStarted) {
+                    startExport()
                 }
             }
 
-            @Override
-            public boolean willChangeBounds() {
-                return true;
-            }
-        };
+            else -> super.onActivityResult(requestCode, resultCode, data)
+        }
+    }
 
-        a.setDuration((int) (3 * initialHeight / v.getContext().getResources().getDisplayMetrics().density));
-        v.startAnimation(a);
+    override fun onDateSet(view: DatePicker, year: Int, month: Int, dayOfMonth: Int) {
+        val binding = binding ?: return
+        exportStartCalendar.set(Calendar.YEAR, year)
+        exportStartCalendar.set(Calendar.MONTH, month)
+        exportStartCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+        binding.exportStartDate.text = TransactionFormFragment.DATE_FORMATTER
+            .print(exportStartCalendar.timeInMillis)
+    }
+
+    override fun onTimeSet(view: TimePicker, hourOfDay: Int, minute: Int) {
+        val binding = binding ?: return
+        exportStartCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+        exportStartCalendar.set(Calendar.MINUTE, minute)
+        binding.exportStartTime.text = TransactionFormFragment.TIME_FORMATTER
+            .print(exportStartCalendar.timeInMillis)
+    }
+
+    private data class ExportFormatItem(val value: ExportFormat, val label: String) {
+        override fun toString(): String {
+            return label
+        }
+    }
+
+    companion object {
+        /**
+         * Request code for intent to pick export file destination
+         */
+        private const val REQUEST_EXPORT_FILE = 0x14
+
+        //Save As..
+        private const val TARGET_URI = 0
+
+        //DROPBOX
+        private const val TARGET_DROPBOX = 1
+
+        //OwnCloud
+        private const val TARGET_OWNCLOUD = 2
+
+        //Share File
+        private const val TARGET_SHARE = 3
     }
 }

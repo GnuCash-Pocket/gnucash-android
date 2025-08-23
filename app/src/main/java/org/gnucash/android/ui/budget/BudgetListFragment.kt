@@ -13,147 +13,127 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.budget
 
-package org.gnucash.android.ui.budget;
-
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.content.res.Configuration;
-import android.database.Cursor;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.PopupMenu;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.content.Loader;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import org.gnucash.android.R;
-import org.gnucash.android.databinding.CardviewBudgetBinding;
-import org.gnucash.android.databinding.FragmentBudgetListBinding;
-import org.gnucash.android.db.DatabaseCursorLoader;
-import org.gnucash.android.db.DatabaseSchema;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.BudgetsDbAdapter;
-import org.gnucash.android.model.Budget;
-import org.gnucash.android.model.BudgetAmount;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.ui.common.FormActivity;
-import org.gnucash.android.ui.common.Refreshable;
-import org.gnucash.android.ui.common.UxArgument;
-import org.gnucash.android.ui.util.CursorRecyclerAdapter;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
-import timber.log.Timber;
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.content.res.Configuration
+import android.database.Cursor
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.ProgressBar
+import android.widget.TextView
+import androidx.appcompat.app.ActionBar
+import androidx.appcompat.widget.PopupMenu
+import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
+import androidx.loader.app.LoaderManager
+import androidx.loader.content.Loader
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import org.gnucash.android.R
+import org.gnucash.android.app.actionBar
+import org.gnucash.android.databinding.CardviewBudgetBinding
+import org.gnucash.android.databinding.FragmentBudgetListBinding
+import org.gnucash.android.db.DatabaseCursorLoader
+import org.gnucash.android.db.DatabaseSchema
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.BudgetsDbAdapter
+import org.gnucash.android.model.Budget
+import org.gnucash.android.ui.budget.BudgetListFragment.BudgetRecyclerAdapter.BudgetViewHolder
+import org.gnucash.android.ui.budget.BudgetsActivity.Companion.getBudgetProgressColor
+import org.gnucash.android.ui.common.FormActivity
+import org.gnucash.android.ui.common.Refreshable
+import org.gnucash.android.ui.common.UxArgument
+import org.gnucash.android.ui.util.CursorRecyclerAdapter
+import timber.log.Timber
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 /**
  * Budget list fragment
  */
-public class BudgetListFragment extends Fragment implements Refreshable,
-    LoaderManager.LoaderCallbacks<Cursor> {
+class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallbacks<Cursor> {
+    private var budgetsDbAdapter: BudgetsDbAdapter = BudgetsDbAdapter.instance
+    private var budgetRecyclerAdapter: BudgetRecyclerAdapter? = null
+    private var binding: FragmentBudgetListBinding? = null
 
-    private static final int REQUEST_EDIT_BUDGET = 0xB;
-    private static final int REQUEST_OPEN_ACCOUNT = 0xC;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        budgetsDbAdapter = BudgetsDbAdapter.instance
+    }
 
-    private BudgetRecyclerAdapter mBudgetRecyclerAdapter;
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val binding = FragmentBudgetListBinding.inflate(inflater, container, false)
+        this.binding = binding
+        return binding.root
+    }
 
-    private BudgetsDbAdapter mBudgetsDbAdapter;
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val binding = binding!!
 
-    private FragmentBudgetListBinding mBinding;
+        budgetRecyclerAdapter = BudgetRecyclerAdapter(null)
 
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mBinding = FragmentBudgetListBinding.inflate(inflater, container, false);
-        View view = mBinding.getRoot();
-
-        mBinding.list.setHasFixedSize(true);
-        mBinding.list.setEmptyView(mBinding.emptyView);
-
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
-            mBinding.list.setLayoutManager(gridLayoutManager);
+        val context = binding.list.context
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            binding.list.layoutManager = GridLayoutManager(context, 2)
         } else {
-            LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-            mBinding.list.setLayoutManager(mLayoutManager);
+            binding.list.layoutManager = LinearLayoutManager(context)
         }
-        return view;
+        binding.list.setHasFixedSize(true)
+        binding.list.emptyView = binding.empty
+        binding.list.adapter = budgetRecyclerAdapter
+
+        loaderManager.initLoader<Cursor>(0, null, this)
     }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        mBudgetsDbAdapter = BudgetsDbAdapter.getInstance();
-        mBudgetRecyclerAdapter = new BudgetRecyclerAdapter(null);
-
-        mBinding.list.setAdapter(mBudgetRecyclerAdapter);
-
-        getLoaderManager().initLoader(0, null, this);
+    override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor?> {
+        Timber.d("Creating the accounts loader")
+        return BudgetsCursorLoader(requireContext())
     }
 
-    @NonNull
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Timber.d("Creating the accounts loader");
-        return new BudgetsCursorLoader(getActivity());
+    override fun onLoadFinished(loaderCursor: Loader<Cursor?>, cursor: Cursor?) {
+        Timber.d("Budget loader finished. Swapping in cursor")
+        budgetRecyclerAdapter?.changeCursor(cursor)
     }
 
-    @Override
-    public void onLoadFinished(@NonNull Loader<Cursor> loaderCursor, Cursor cursor) {
-        Timber.d("Budget loader finished. Swapping in cursor");
-        mBudgetRecyclerAdapter.changeCursor(cursor);
+    override fun onLoaderReset(arg0: Loader<Cursor?>) {
+        Timber.d("Resetting the accounts loader")
+        budgetRecyclerAdapter?.changeCursor(null)
     }
 
-    @Override
-    public void onLoaderReset(@NonNull Loader<Cursor> arg0) {
-        Timber.d("Resetting the accounts loader");
-        mBudgetRecyclerAdapter.changeCursor(null);
+    override fun onResume() {
+        super.onResume()
+        refresh()
+        requireActivity().findViewById<View?>(R.id.fab_create_budget)?.isVisible = true
+        val actionBar: ActionBar? = this.actionBar
+        actionBar?.title = "Budgets"
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        refresh();
-        requireActivity().findViewById(R.id.fab_create_budget).setVisibility(View.VISIBLE);
-        ActionBar actionbar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-        actionbar.setTitle("Budgets");
-    }
-
-    @Override
-    public void refresh() {
-        if (isDetached() || getFragmentManager() == null) return;
-        getLoaderManager().restartLoader(0, null, this);
+    override fun refresh() {
+        if (isDetached) return
+        loaderManager.restartLoader<Cursor>(0, null, this)
     }
 
     /**
      * This method does nothing with the GUID.
-     * Is equivalent to calling {@link #refresh()}
+     * Is equivalent to calling [.refresh]
      *
      * @param uid GUID of relevant item to be refreshed
      */
-    @Override
-    public void refresh(String uid) {
-        refresh();
+    override fun refresh(uid: String?) {
+        refresh()
     }
 
     /**
@@ -161,12 +141,12 @@ public class BudgetListFragment extends Fragment implements Refreshable,
      *
      * @param budgetUID GUID of budget
      */
-    public void onClickBudget(String budgetUID) {
-        FragmentManager fragmentManager = getParentFragmentManager();
+    fun onClickBudget(budgetUID: String) {
+        val fragmentManager = parentFragmentManager
         fragmentManager.beginTransaction()
             .replace(R.id.fragment_container, BudgetDetailFragment.newInstance(budgetUID))
             .addToBackStack(null)
-            .commit();
+            .commit()
     }
 
     /**
@@ -174,12 +154,12 @@ public class BudgetListFragment extends Fragment implements Refreshable,
      *
      * @param budgetUID Db record UID of the budget
      */
-    private void editBudget(String budgetUID) {
-        Intent addAccountIntent = new Intent(getActivity(), FormActivity.class);
-        addAccountIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
-        addAccountIntent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.BUDGET.name());
-        addAccountIntent.putExtra(UxArgument.BUDGET_UID, budgetUID);
-        startActivityForResult(addAccountIntent, REQUEST_EDIT_BUDGET);
+    private fun editBudget(budgetUID: String?) {
+        val intent = Intent(requireContext(), FormActivity::class.java)
+            .setAction(Intent.ACTION_INSERT_OR_EDIT)
+            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.BUDGET.name)
+            .putExtra(UxArgument.BUDGET_UID, budgetUID)
+        startActivityForResult(intent, REQUEST_REFRESH)
     }
 
     /**
@@ -187,128 +167,114 @@ public class BudgetListFragment extends Fragment implements Refreshable,
      *
      * @param budgetUID Database record UID
      */
-    private void deleteBudget(String budgetUID) {
-        BudgetsDbAdapter.getInstance().deleteRecord(budgetUID);
-        refresh();
+    private fun deleteBudget(budgetUID: String) {
+        BudgetsDbAdapter.instance.deleteRecord(budgetUID)
+        refresh()
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == Activity.RESULT_OK) {
-            refresh();
+            refresh()
         }
     }
 
-    class BudgetRecyclerAdapter extends CursorRecyclerAdapter<BudgetRecyclerAdapter.BudgetViewHolder> {
-
-        public BudgetRecyclerAdapter(Cursor cursor) {
-            super(cursor);
+    internal inner class BudgetRecyclerAdapter(cursor: Cursor?) :
+        CursorRecyclerAdapter<BudgetViewHolder>(cursor) {
+        override fun onBindViewHolderCursor(holder: BudgetViewHolder, cursor: Cursor) {
+            val budget = budgetsDbAdapter.buildModelInstance(cursor)
+            holder.bind(budget)
         }
 
-        @Override
-        public void onBindViewHolderCursor(BudgetViewHolder holder, Cursor cursor) {
-            Context context = holder.itemView.getContext();
-            final Budget budget = mBudgetsDbAdapter.buildModelInstance(cursor);
-            holder.bind(budget);
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BudgetViewHolder {
+            val binding = CardviewBudgetBinding.inflate(layoutInflater, parent, false)
+            return BudgetViewHolder(binding)
         }
 
-        @Override
-        public BudgetViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            CardviewBudgetBinding binding = CardviewBudgetBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
-            return new BudgetViewHolder(binding);
-        }
+        internal inner class BudgetViewHolder(binding: CardviewBudgetBinding) :
+            RecyclerView.ViewHolder(binding.root), PopupMenu.OnMenuItemClickListener {
+            private val budgetName: TextView = binding.listItem2Lines.primaryText
+            private val accountName: TextView = binding.listItem2Lines.secondaryText
+            private val budgetAmount: TextView = binding.budgetAmount
+            private val optionsMenu: ImageView = binding.optionsMenu
+            private val budgetIndicator: ProgressBar = binding.budgetIndicator
+            private val budgetRecurrence: TextView = binding.budgetRecurrence
+            private var budgetUID: String? = null
 
-        class BudgetViewHolder extends RecyclerView.ViewHolder implements PopupMenu.OnMenuItemClickListener {
-            private final TextView budgetName;
-            private final TextView accountName;
-            private final TextView budgetAmount;
-            private final ImageView optionsMenu;
-            private final ProgressBar budgetIndicator;
-            private final TextView budgetRecurrence;
-            private String budgetUID;
-
-            public BudgetViewHolder(CardviewBudgetBinding binding) {
-                super(binding.getRoot());
-                this.budgetName = binding.listItem2Lines.primaryText;
-                this.accountName = binding.listItem2Lines.secondaryText;
-                this.budgetAmount = binding.budgetAmount;
-                this.optionsMenu = binding.optionsMenu;
-                this.budgetIndicator = binding.budgetIndicator;
-                this.budgetRecurrence = binding.budgetRecurrence;
-
-                optionsMenu.setOnClickListener(v -> {
-                    PopupMenu popup = new PopupMenu(getActivity(), v);
-                    popup.setOnMenuItemClickListener(BudgetViewHolder.this);
-                    MenuInflater inflater = popup.getMenuInflater();
-                    inflater.inflate(R.menu.budget_context_menu, popup.getMenu());
-                    popup.show();
-                });
-            }
-
-            @Override
-            public boolean onMenuItemClick(@NonNull MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.menu_edit:
-                        editBudget(budgetUID);
-                        return true;
-
-                    case R.id.menu_delete:
-                        deleteBudget(budgetUID);
-                        return true;
-
-                    default:
-                        return false;
+            init {
+                optionsMenu.setOnClickListener { v ->
+                    val popup = PopupMenu(v.context, v)
+                    popup.setOnMenuItemClickListener(this@BudgetViewHolder)
+                    val inflater = popup.menuInflater
+                    inflater.inflate(R.menu.budget_context_menu, popup.menu)
+                    popup.show()
                 }
             }
 
-            public void bind(final Budget budget) {
-                Context context = itemView.getContext();
-                this.budgetUID = budget.getUID();
-
-                budgetName.setText(budget.getName());
-
-                AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
-                String accountString;
-                int numberOfAccounts = budget.getNumberOfAccounts();
-                if (numberOfAccounts == 1) {
-                    accountString = accountsDbAdapter.getAccountFullName(budget.getBudgetAmounts().get(0).getAccountUID());
-                } else {
-                    accountString = numberOfAccounts + " budgeted accounts";
-                }
-                accountName.setText(accountString);
-
-                budgetRecurrence.setText(budget.getRecurrence().getRepeatString(context) + " - "
-                    + budget.getRecurrence().getDaysLeftInCurrentPeriod() + " days left");
-
-                BigDecimal spentAmountValue = BigDecimal.ZERO;
-                for (BudgetAmount budgetAmount : budget.getCompactedBudgetAmounts()) {
-                    Money balance = accountsDbAdapter.getAccountBalance(
-                        budgetAmount.getAccountUID(),
-                        budget.getStartOfCurrentPeriod(),
-                        budget.getEndOfCurrentPeriod()
-                    );
-                    spentAmountValue = spentAmountValue.add(balance.toBigDecimal());
-                }
-
-                Money budgetTotal = budget.getAmountSum();
-                Commodity commodity = budgetTotal.getCommodity();
-                String usedAmount = commodity.getSymbol() + spentAmountValue + " of "
-                    + budgetTotal.formattedString();
-                budgetAmount.setText(usedAmount);
-
-                double budgetProgress = budgetTotal.isAmountZero() ? 0.0 : spentAmountValue.divide(budgetTotal.toBigDecimal(),
-                        commodity.getSmallestFractionDigits(), RoundingMode.HALF_UP)
-                    .doubleValue();
-                budgetIndicator.setProgress((int) (budgetProgress * 100));
-
-                budgetAmount.setTextColor(BudgetsActivity.getBudgetProgressColor(1 - budgetProgress));
-
-                itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        onClickBudget(budget.getUID());
+            override fun onMenuItemClick(item: MenuItem): Boolean {
+                when (item.itemId) {
+                    R.id.menu_edit -> {
+                        editBudget(budgetUID)
+                        return true
                     }
-                });
+
+                    R.id.menu_delete -> {
+                        deleteBudget(budgetUID!!)
+                        return true
+                    }
+
+                    else -> return false
+                }
+            }
+
+            fun bind(budget: Budget) {
+                val context = itemView.context
+                this.budgetUID = budget.uid
+
+                budgetName.text = budget.name
+
+                val accountsDbAdapter = AccountsDbAdapter.instance
+                val numberOfAccounts = budget.numberOfAccounts
+                val accountString = if (numberOfAccounts == 1) {
+                    accountsDbAdapter.getAccountFullName(budget.budgetAmounts[0].accountUID!!)
+                } else {
+                    "$numberOfAccounts budgeted accounts"
+                }
+                accountName.text = accountString
+
+                budgetRecurrence.setText(
+                    (budget.recurrence!!.getRepeatString(context) + " - "
+                            + budget.recurrence!!.daysLeftInCurrentPeriod + " days left")
+                )
+
+                var spentAmountValue = BigDecimal.ZERO
+                for (budgetAmount in budget.compactedBudgetAmounts) {
+                    val balance = accountsDbAdapter.getAccountBalance(
+                        budgetAmount.accountUID!!,
+                        budget.startOfCurrentPeriod,
+                        budget.endOfCurrentPeriod
+                    )
+                    spentAmountValue += balance.toBigDecimal()
+                }
+
+                val budgetTotal = budget.amountSum
+                val commodity = budgetTotal.commodity
+                val usedAmount =
+                    (commodity.symbol + spentAmountValue + " of " + budgetTotal.formattedString())
+                budgetAmount.text = usedAmount
+
+                val budgetProgress = if (budgetTotal.isAmountZero) 0f else spentAmountValue.divide(
+                    budgetTotal.toBigDecimal(),
+                    commodity.smallestFractionDigits,
+                    RoundingMode.HALF_UP
+                ).toFloat()
+                budgetIndicator.progress = (budgetProgress * 100).toInt()
+
+                budgetAmount.setTextColor(getBudgetProgressColor(1 - budgetProgress))
+
+                itemView.setOnClickListener {
+                    onClickBudget(budget.uid)
+                }
             }
         }
     }
@@ -316,23 +282,19 @@ public class BudgetListFragment extends Fragment implements Refreshable,
     /**
      * Loads Budgets asynchronously from the database
      */
-    private static class BudgetsCursorLoader extends DatabaseCursorLoader<BudgetsDbAdapter> {
-
-        /**
-         * Constructor
-         * Initializes the content observer
-         *
-         * @param context Application context
-         */
-        public BudgetsCursorLoader(Context context) {
-            super(context);
+    private class BudgetsCursorLoader(context: Context) : DatabaseCursorLoader<BudgetsDbAdapter>(context) {
+        override fun loadInBackground(): Cursor? {
+            databaseAdapter = BudgetsDbAdapter.instance
+            return databaseAdapter!!.fetchAllRecords(
+                null,
+                null,
+                DatabaseSchema.BudgetEntry.COLUMN_NAME + " ASC"
+            )
         }
+    }
 
-        @Override
-        public Cursor loadInBackground() {
-            databaseAdapter = BudgetsDbAdapter.getInstance();
-            if (databaseAdapter == null) return null;
-            return databaseAdapter.fetchAllRecords(null, null, DatabaseSchema.BudgetEntry.COLUMN_NAME + " ASC");
-        }
+    companion object {
+        // "ForResult" to force refresh afterwards.
+        private const val REQUEST_REFRESH = 0x0000
     }
 }

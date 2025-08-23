@@ -3,6 +3,8 @@ package org.gnucash.android.model
 import android.os.Parcel
 import android.os.Parcelable
 import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.model.Split.Companion.CREATOR
+import org.gnucash.android.model.Split.Companion.getFormattedAmount
 
 /**
  * A split amount in a transaction.
@@ -25,12 +27,14 @@ class Split : BaseModel, Parcelable {
      * @see quantity
      */
     var value: Money = Money.createZeroInstance(Commodity.DEFAULT_COMMODITY)
-        private set
+        set(value) {
+            field = value.abs()
+        }
 
     /**
      * Transaction UID which this split belongs to
      */
-    var transactionUID: String? = ""
+    var transactionUID: String? = null
 
     /**
      * Account UID which this split belongs to
@@ -79,8 +83,8 @@ class Split : BaseModel, Parcelable {
      * @param accountUID String UID of transfer account
      */
     constructor(value: Money, quantity: Money, accountUID: String?) {
+        this.value = value
         this.quantity = quantity
-        setValue(value)
         this.accountUID = accountUID
     }
 
@@ -104,7 +108,6 @@ class Split : BaseModel, Parcelable {
      * @param generateUID Determines if the clone should have a new UID or should
      * maintain the one from source
      */
-    @JvmOverloads
     constructor(sourceSplit: Split, generateUID: Boolean = true) {
         if (!generateUID) {
             setUID(sourceSplit.uid)
@@ -116,20 +119,6 @@ class Split : BaseModel, Parcelable {
         value = sourceSplit.value
         quantity = sourceSplit.quantity
         scheduledActionAccountUID = sourceSplit.scheduledActionAccountUID
-    }
-
-    /**
-     * Sets the value amount of the split.
-     *
-     *
-     * The value is in the currency of the containing transaction.
-     * It's stored unsigned.
-     *
-     * @param value Money value of this split
-     * @see quantity
-     */
-    fun setValue(value: Money) {
-        this.value = value.abs()
     }
 
     /**
@@ -378,7 +367,7 @@ class Split : BaseModel, Parcelable {
             splitType: TransactionType
         ): Money {
             val accountUID = accountGUID ?: return Money.createZeroInstance(amount.commodity)
-            val account = AccountsDbAdapter.getInstance().getSimpleRecord(accountUID)
+            val account = AccountsDbAdapter.instance.getSimpleRecord(accountUID)
                 ?: return Money.createZeroInstance(amount.commodity)
             return getFormattedAmount(amount, account, splitType)
         }
@@ -421,7 +410,6 @@ class Split : BaseModel, Parcelable {
          * @param splitCsvString String containing formatted split
          * @return Split instance parsed from the string
          */
-        @JvmStatic
         fun parseSplit(splitCsvString: String): Split {
             //TODO: parse reconciled state and date
             val tokens =

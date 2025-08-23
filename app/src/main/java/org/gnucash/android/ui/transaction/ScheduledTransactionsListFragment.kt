@@ -2,6 +2,7 @@ package org.gnucash.android.ui.transaction
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.isVisible
 import org.gnucash.android.R
 
 class ScheduledTransactionsListFragment : ScheduledActionsListFragment() {
@@ -14,7 +15,7 @@ class ScheduledTransactionsListFragment : ScheduledActionsListFragment() {
         super.onViewCreated(view, savedInstanceState)
         val binding = binding!!
         binding.empty.setText(R.string.label_no_recurring_transactions)
-        binding.fabCreateTransaction.visibility = View.GONE
+        binding.fabCreateTransaction.isVisible = false
     }
 
 }

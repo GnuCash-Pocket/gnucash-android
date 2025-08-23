@@ -13,20 +13,18 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.gnucash.android.R
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
-import org.gnucash.android.lang.VoidCallback
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.AccountType
 
-class QualifiedAccountNameAdapter @JvmOverloads constructor(
+class QualifiedAccountNameAdapter(
     context: Context,
     private val where: String? = null,
-    private val whereArgs: Array<String>? = null,
-    var adapter: AccountsDbAdapter = AccountsDbAdapter.getInstance(),
+    private val whereArgs: Array<String?>? = null,
+    var adapter: AccountsDbAdapter = AccountsDbAdapter.instance,
     private val scope: CoroutineScope
 ) : ArrayAdapter<QualifiedAccountNameAdapter.Label>(context, android.R.layout.simple_spinner_item) {
 
@@ -59,7 +57,7 @@ class QualifiedAccountNameAdapter @JvmOverloads constructor(
     constructor(
         context: Context,
         where: String?,
-        whereArgs: Array<String>?,
+        whereArgs: Array<String?>?,
         adapter: AccountsDbAdapter,
         lifecycleOwner: LifecycleOwner
     ) : this(
@@ -77,7 +75,7 @@ class QualifiedAccountNameAdapter @JvmOverloads constructor(
         context = context,
         where = null,
         whereArgs = null,
-        adapter = AccountsDbAdapter.getInstance(),
+        adapter = AccountsDbAdapter.instance,
         lifecycleOwner = lifecycleOwner
     )
 
@@ -148,8 +146,7 @@ class QualifiedAccountNameAdapter @JvmOverloads constructor(
         load()
     }
 
-    @JvmOverloads
-    fun load(callback: VoidCallback? = null) {
+    fun load(callback: ((QualifiedAccountNameAdapter) -> Unit)? = null): QualifiedAccountNameAdapter {
         loadJob?.cancel()
         loadJob = scope.launch(Dispatchers.IO) {
             val records = loadData(adapter)
@@ -157,9 +154,10 @@ class QualifiedAccountNameAdapter @JvmOverloads constructor(
             scope.launch(Dispatchers.Main) {
                 clear()
                 addAll(labels)
-                callback?.invoke()
+                callback?.invoke(this@QualifiedAccountNameAdapter)
             }
         }
+        return this
     }
 
     private fun loadData(adapter: AccountsDbAdapter): List<Account> {

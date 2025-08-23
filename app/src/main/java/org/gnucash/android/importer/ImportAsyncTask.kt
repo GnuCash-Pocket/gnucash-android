@@ -13,183 +13,154 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.importer;
+package org.gnucash.android.importer
 
-import static org.gnucash.android.util.ContentExtKt.openStream;
-
-import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.ContentValues;
-import android.content.Context;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.OperationCanceledException;
-import android.text.TextUtils;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import org.gnucash.android.R;
-import org.gnucash.android.db.DatabaseSchema;
-import org.gnucash.android.db.adapter.BooksDbAdapter;
-import org.gnucash.android.gnc.AsyncTaskProgressListener;
-import org.gnucash.android.model.Book;
-import org.gnucash.android.service.ScheduledActionService;
-import org.gnucash.android.ui.common.GnucashProgressDialog;
-import org.gnucash.android.util.BackupManager;
-import org.gnucash.android.util.BookUtils;
-import org.gnucash.android.util.ContentExtKt;
-
-import java.io.InputStream;
-
-import timber.log.Timber;
+import android.app.Activity
+import android.app.ProgressDialog
+import android.content.ContentValues
+import android.content.Context
+import android.content.DialogInterface
+import android.net.Uri
+import android.os.AsyncTask
+import android.os.OperationCanceledException
+import android.widget.Toast
+import org.gnucash.android.R
+import org.gnucash.android.db.DatabaseSchema.BookEntry
+import org.gnucash.android.db.adapter.BooksDbAdapter
+import org.gnucash.android.gnc.AsyncTaskProgressListener
+import org.gnucash.android.model.Book
+import org.gnucash.android.service.ScheduledActionService.Companion.schedulePeriodic
+import org.gnucash.android.ui.common.GnucashProgressDialog
+import org.gnucash.android.util.BackupManager.backupActiveBook
+import org.gnucash.android.util.BookUtils
+import org.gnucash.android.util.getDocumentName
+import org.gnucash.android.util.openStream
+import org.gnucash.android.util.set
+import timber.log.Timber
 
 /**
  * Imports a GnuCash (desktop) account file and displays a progress dialog.
  * The AccountsActivity is opened when importing is done.
  */
-public class ImportAsyncTask extends AsyncTask<Uri, Object, String> {
-    @Nullable
-    private final ImportBookCallback bookCallback;
-    private final boolean mBackup;
-    @NonNull
-    private final ProgressDialog progressDialog;
-    @NonNull
-    private final AsyncTaskProgressListener listener;
-    @Nullable
-    private GncXmlImporter importer;
+class ImportAsyncTask(
+    activity: Activity,
+    private val backup: Boolean = false,
+    private val bookCallback: ImportBookCallback? = null
+) : AsyncTask<Uri, Any, String>() {
+    private val progressDialog: ProgressDialog
+    private val listener: AsyncTaskProgressListener = ProgressListener(activity)
+    private var importer: GncXmlImporter? = null
 
-    public ImportAsyncTask(@NonNull Activity context) {
-        this(context, null);
-    }
-
-    public ImportAsyncTask(@NonNull Activity context, @Nullable ImportBookCallback callback) {
-        this(context, callback, false);
-    }
-
-    public ImportAsyncTask(@NonNull Activity context, @Nullable ImportBookCallback callback, boolean backup) {
-        this.listener = new ProgressListener(context);
-        this.bookCallback = callback;
-        this.mBackup = backup;
-        progressDialog = new GnucashProgressDialog(context);
-        progressDialog.setTitle(R.string.title_import_accounts);
-        progressDialog.setCancelable(true);
-        progressDialog.setOnCancelListener(dialog -> {
-            cancel(true);
-            if (importer != null) {
-                importer.cancel();
-            }
-        });
-    }
-
-    private class ProgressListener extends AsyncTaskProgressListener {
-
-        ProgressListener(Context context) {
-            super(context);
-        }
-
-        @Override
-        protected void publishProgress(@NonNull String label, long progress, long total) {
-            ImportAsyncTask.this.publishProgress(label, progress, total);
+    init {
+        progressDialog = GnucashProgressDialog(activity).apply {
+            setTitle(R.string.title_import_accounts)
+            setCancelable(true)
+            setOnCancelListener(DialogInterface.OnCancelListener { dialog: DialogInterface ->
+                cancel(true)
+                importer?.cancel()
+            })
         }
     }
 
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-        progressDialog.show();
+    private inner class ProgressListener(context: Context) : AsyncTaskProgressListener(context) {
+        override fun publishProgress(label: String, progress: Long, total: Long) {
+            this@ImportAsyncTask.publishProgress(label, progress, total)
+        }
     }
 
-    @Override
-    protected String doInBackground(Uri... uris) {
-        if (mBackup) {
-            BackupManager.backupActiveBook();
+    @Deprecated("Deprecated in Java")
+    override fun onPreExecute() {
+        super.onPreExecute()
+        progressDialog.show()
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun doInBackground(vararg uris: Uri): String? {
+        if (backup) {
+            backupActiveBook()
         }
-        if (isCancelled()) {
-            return null;
+        if (isCancelled) {
+            return null
         }
 
-        Uri uri = uris[0];
-        final Context context = progressDialog.getContext();
-        Book book;
-        String bookUID;
+        val uri: Uri = uris[0]
+        val context = progressDialog.context
+        val book: Book?
+        val bookUID: String?
         try {
-            final InputStream accountInputStream = openStream(uri, context);
-            GncXmlImporter importer = new GncXmlImporter(context, accountInputStream, listener);
-            this.importer = importer;
-            book = importer.parse();
-            book.setSourceUri(uri);
-            bookUID = book.getUID();
-        } catch (OperationCanceledException ce) {
-            Timber.i(ce);
-            return null;
-        } catch (final Throwable e) {
-            Timber.e(e, "Error importing: %s", uri);
-            return null;
+            val accountInputStream = uri.openStream(context)!!
+            val importer = GncXmlImporter(context, accountInputStream, listener)
+            this.importer = importer
+            book = importer.parse()
+            book.sourceUri = uri
+            bookUID = book.uid
+        } catch (ce: OperationCanceledException) {
+            Timber.i(ce)
+            return null
+        } catch (e: Throwable) {
+            Timber.e(e, "Error importing: %s", uri)
+            return null
         }
 
-        BooksDbAdapter booksDbAdapter = BooksDbAdapter.getInstance();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put(DatabaseSchema.BookEntry.COLUMN_SOURCE_URI, uri.toString());
+        val booksDbAdapter = BooksDbAdapter.instance
+        val contentValues = ContentValues()
+        contentValues[BookEntry.COLUMN_SOURCE_URI] = uri.toString()
 
-        String displayName = book.getDisplayName();
-        if (TextUtils.isEmpty(displayName)) {
-            String name = ContentExtKt.getDocumentName(uri, context);
-            if (!TextUtils.isEmpty(name)) {
+        var displayName = book.displayName
+        if (displayName.isNullOrEmpty()) {
+            var name = uri.getDocumentName(context)
+            if (name.isNotEmpty()) {
                 // Remove short file type extension, e.g. ".xml" or ".gnucash" or ".gnca.gz"
-                int indexFileType = name.indexOf('.');
+                val indexFileType = name.indexOf('.')
                 if (indexFileType > 0) {
-                    name = name.substring(0, indexFileType);
+                    name = name.substring(0, indexFileType)
                 }
-                displayName = name;
+                displayName = name
             }
-            if (TextUtils.isEmpty(displayName)) {
-                displayName = booksDbAdapter.generateDefaultBookName();
+            if (displayName.isNullOrEmpty()) {
+                displayName = booksDbAdapter.generateDefaultBookName()
             }
-            book.setDisplayName(displayName);
+            book.displayName = displayName
         }
-        contentValues.put(DatabaseSchema.BookEntry.COLUMN_DISPLAY_NAME, displayName);
-        booksDbAdapter.updateRecord(bookUID, contentValues);
+        contentValues[BookEntry.COLUMN_DISPLAY_NAME] = displayName
+        booksDbAdapter.updateRecord(bookUID, contentValues)
 
-        return bookUID;
+        return bookUID
     }
 
-    @Override
-    protected void onProgressUpdate(Object... values) {
-        if (progressDialog.isShowing()) {
-            listener.showProgress(progressDialog, values);
+    @Deprecated("Deprecated in Java")
+    override fun onProgressUpdate(vararg values: Any) {
+        if (progressDialog.isShowing) {
+            listener.showProgress(progressDialog, *values)
         }
     }
 
-    @Override
-    protected void onPostExecute(String bookUID) {
-        final Context context = progressDialog.getContext();
-        dismissProgressDialog();
+    @Deprecated("Deprecated in Java")
+    override fun onPostExecute(bookUID: String?) {
+        dismissProgressDialog()
+        val context = progressDialog.context
 
-        if (!TextUtils.isEmpty(bookUID)) {
-            int message = R.string.toast_success_importing_accounts;
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
-            BookUtils.loadBook(context, bookUID);
+        if (!bookUID.isNullOrEmpty()) {
+            val message = R.string.toast_success_importing_accounts
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            BookUtils.loadBook(context, bookUID)
         } else {
-            int message = R.string.toast_error_importing_accounts;
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+            val message = R.string.toast_error_importing_accounts
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
 
-        ScheduledActionService.schedulePeriodic(context);
+        schedulePeriodic(context)
 
-        if (bookCallback != null) {
-            bookCallback.onBookImported(bookUID);
-        }
+        bookCallback?.invoke(bookUID)
     }
 
-    private void dismissProgressDialog() {
-        final ProgressDialog progressDialog = this.progressDialog;
+    private fun dismissProgressDialog() {
+        val progressDialog = this.progressDialog
         try {
-            if (progressDialog.isShowing()) {
-                progressDialog.dismiss();
+            if (progressDialog.isShowing) {
+                progressDialog.dismiss()
             }
-        } catch (IllegalArgumentException ex) {
+        } catch (_: IllegalArgumentException) {
             //TODO: This is a hack to catch "View not attached to window" exceptions
             //FIXME by moving the creation and display of the progress dialog to the Fragment
         }

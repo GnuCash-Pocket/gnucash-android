@@ -14,51 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.report.linechart
 
-package org.gnucash.android.ui.report.linechart;
-
-import static org.gnucash.android.util.ColorExtKt.parseColor;
-
-import android.content.Context;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-
-import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.components.LimitLine;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.formatter.LargeValueFormatter;
-import com.github.mikephil.charting.highlight.Highlight;
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
-
-import org.gnucash.android.R;
-import org.gnucash.android.databinding.FragmentLineChartBinding;
-import org.gnucash.android.db.DatabaseSchema.AccountEntry;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.AccountType;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.model.Price;
-import org.gnucash.android.ui.report.IntervalReportFragment;
-import org.gnucash.android.ui.report.ReportType;
-import org.gnucash.android.ui.report.ReportsActivity;
-import org.gnucash.android.util.DateExtKt;
-import org.joda.time.LocalDateTime;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import timber.log.Timber;
+import android.content.Context
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import androidx.annotation.ColorInt
+import com.github.mikephil.charting.components.LimitLine
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.formatter.LargeValueFormatter
+import com.github.mikephil.charting.highlight.Highlight
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
+import org.gnucash.android.R
+import org.gnucash.android.databinding.FragmentLineChartBinding
+import org.gnucash.android.db.DatabaseSchema.AccountEntry
+import org.gnucash.android.model.AccountType
+import org.gnucash.android.model.Money.Companion.createZeroInstance
+import org.gnucash.android.ui.report.IntervalReportFragment
+import org.gnucash.android.ui.report.ReportType
+import org.gnucash.android.ui.report.ReportsActivity.GroupInterval
+import org.gnucash.android.util.getFirstQuarterMonth
+import org.gnucash.android.util.parseColor
+import org.gnucash.android.util.toMillis
+import org.joda.time.LocalDateTime
+import timber.log.Timber
 
 /**
  * Fragment for line chart reports
@@ -66,104 +51,88 @@ import timber.log.Timber;
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class CashFlowLineChartFragment extends IntervalReportFragment {
+class CashFlowLineChartFragment : IntervalReportFragment() {
+    private var binding: FragmentLineChartBinding? = null
 
-    private static final int ANIMATION_DURATION = 3000;
-    private static final int NO_DATA_BAR_COUNTS = 5;
-    private static final int[] LINE_COLORS = {
-        parseColor("#68F1AF"), parseColor("#cc1f09"), parseColor("#EE8600"),
-        parseColor("#1469EB"), parseColor("#B304AD"),
-    };
-    private static final int[] FILL_COLORS = {
-        parseColor("#008000"), parseColor("#FF0000"), parseColor("#BE6B00"),
-        parseColor("#0065FF"), parseColor("#8F038A"),
-    };
-
-    private FragmentLineChartBinding mBinding;
-
-    @Override
-    public View inflateView(LayoutInflater inflater, ViewGroup container) {
-        mBinding = FragmentLineChartBinding.inflate(inflater, container, false);
-        return mBinding.getRoot();
+    override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): View {
+        val binding = FragmentLineChartBinding.inflate(inflater, container, false)
+        this.binding = binding
+        return binding.root
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        final Context context = view.getContext();
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val context = view.context
+        val binding = binding!!
 
-        @ColorInt int textColorPrimary = getTextColor(context);
+        @ColorInt val textColorPrimary = getTextColor(context)
 
-        mBinding.lineChart.setOnChartValueSelectedListener(this);
-        mBinding.lineChart.getXAxis().setDrawGridLines(false);
-        mBinding.lineChart.getXAxis().setTextColor(textColorPrimary);
-        mBinding.lineChart.getAxisRight().setEnabled(false);
-        mBinding.lineChart.getAxisLeft().enableGridDashedLine(4.0f, 4.0f, 0);
-        mBinding.lineChart.getAxisLeft().setValueFormatter(new LargeValueFormatter(mCommodity.getSymbol()));
-        mBinding.lineChart.getAxisLeft().setTextColor(textColorPrimary);
-        Legend legend = mBinding.lineChart.getLegend();
-        legend.setTextColor(textColorPrimary);
+        binding.lineChart.apply {
+            setOnChartValueSelectedListener(this@CashFlowLineChartFragment)
+            xAxis.setDrawGridLines(false)
+            xAxis.textColor = textColorPrimary
+            axisRight.isEnabled = false
+            axisLeft.enableGridDashedLine(4.0f, 4.0f, 0f)
+            axisLeft.valueFormatter = LargeValueFormatter(commodity.symbol)
+            axisLeft.textColor = textColorPrimary
+            legend.textColor = textColorPrimary
+        }
     }
 
-    @Override
-    public ReportType getReportType() {
-        return ReportType.LINE_CHART;
-    }
+    override val reportType: ReportType = ReportType.LINE_CHART
 
     /**
      * Returns a data object that represents a user data of the specified account types
      *
      * @param accountTypes account's types which will be displayed
-     * @return a {@code LineData} instance that represents a user data
+     * @return a `LineData` instance that represents a user data
      */
-    @NonNull
-    private LineData getData(@NonNull Context context, List<AccountType> accountTypes) {
-        Timber.i("getData for %s", accountTypes);
-        calculateEarliestAndLatestTimestamps(accountTypes);
-        ReportsActivity.GroupInterval groupInterval = mGroupInterval;
-        LocalDateTime startDate = mReportPeriodStart;
-        LocalDateTime endDate = mReportPeriodEnd;
+    private fun getData(context: Context, accountTypes: List<AccountType>): LineData {
+        Timber.i("getData for %s", accountTypes)
+        calculateEarliestAndLatestTimestamps(accountTypes)
+        val groupInterval = this.groupInterval
+        val startDate = reportPeriodStart
+        val endDate = reportPeriodEnd
 
-        List<ILineDataSet> dataSets = new ArrayList<>();
-        for (AccountType accountType : accountTypes) {
-            List<Entry> entries = getEntryList(accountType, groupInterval, startDate, endDate);
-            LineDataSet dataSet = new LineDataSet(entries, getLabel(context, accountType));
-            dataSet.setDrawFilled(true);
-            dataSet.setLineWidth(2);
-            dataSet.setColor(LINE_COLORS[dataSets.size()]);
-            dataSet.setFillColor(FILL_COLORS[dataSets.size()]);
-
-            dataSets.add(dataSet);
+        val dataSets = mutableListOf<ILineDataSet>()
+        for (accountType in accountTypes) {
+            val entries = getEntryList(accountType, groupInterval, startDate, endDate)
+            val dataSet = LineDataSet(entries, getLabel(context, accountType))
+            dataSet.setDrawFilled(true)
+            dataSet.lineWidth = 2f
+            dataSet.color = LINE_COLORS[dataSets.size]
+            dataSet.fillColor = FILL_COLORS[dataSets.size]
+            dataSets.add(dataSet)
         }
 
-        LineData lineData = new LineData(dataSets);
-        if (getYValueSum(lineData) == 0) {
-            isChartDataPresent = false;
-            return getEmptyData(context);
+        val lineData = LineData(dataSets)
+        if (getYValueSum<Entry, ILineDataSet>(lineData) == 0f) {
+            isChartDataPresent = false
+            return getEmptyData(context)
         }
-        lineData.setValueTextColor(getTextColor(context));
-        return lineData;
+        lineData.setValueTextColor(getTextColor(context))
+        return lineData
     }
 
     /**
      * Returns a data object that represents situation when no user data available
      *
-     * @return a {@code LineData} instance for situation when no user data available
+     * @return a `LineData` instance for situation when no user data available
      */
-    private LineData getEmptyData(@NonNull Context context) {
-        List<Entry> yValues = new ArrayList<>();
-        boolean isEven = true;
-        for (int i = 0; i < NO_DATA_BAR_COUNTS; i++) {
-            yValues.add(new Entry(i, isEven ? 5f : 4.5f));
-            isEven = !isEven;
+    private fun getEmptyData(context: Context): LineData {
+        val yValues = mutableListOf<Entry>()
+        var isEven = true
+        for (i in 0 until NO_DATA_BAR_COUNTS) {
+            yValues.add(Entry(i.toFloat(), if (isEven) 5f else 4.5f))
+            isEven = !isEven
         }
-        LineDataSet dataSet = new LineDataSet(yValues, context.getString(R.string.label_chart_no_data));
-        dataSet.setDrawFilled(true);
-        dataSet.setDrawValues(false);
-        dataSet.setColor(NO_DATA_COLOR);
-        dataSet.setFillColor(NO_DATA_COLOR);
+        val dataSet = LineDataSet(yValues, context.getString(R.string.label_chart_no_data))
+        dataSet.setDrawFilled(true)
+        dataSet.setDrawValues(false)
+        dataSet.color = NO_DATA_COLOR
+        dataSet.fillColor = NO_DATA_COLOR
 
-        return new LineData(dataSet);
+        return LineData(dataSet)
     }
 
     /**
@@ -173,185 +142,211 @@ public class CashFlowLineChartFragment extends IntervalReportFragment {
      * @param groupInterval
      * @return entries which represent a user data
      */
-    private List<Entry> getEntryList(
-        @NonNull AccountType accountType,
-        @NonNull ReportsActivity.GroupInterval groupInterval,
-        @Nullable LocalDateTime startEntries,
-        @Nullable LocalDateTime endEntries
-    ) {
-        final Commodity commodity = mCommodity;
-        List<Entry> entries = new ArrayList<>();
+    private fun getEntryList(
+        accountType: AccountType,
+        groupInterval: GroupInterval,
+        startEntries: LocalDateTime?,
+        endEntries: LocalDateTime?
+    ): List<Entry> {
+        val commodity = this.commodity
+        val entries = mutableListOf<Entry>()
 
-        LocalDateTime startDate = startEntries;
+        var startDate = startEntries
         if (startDate == null) {
-            Long startTime = earliestTimestamps.get(accountType);
+            val startTime = earliestTimestamps[accountType]
             if (startTime != null) {
-                startDate = new LocalDateTime(startTime);
+                startDate = LocalDateTime(startTime)
             } else {
-                return entries;
+                return entries
             }
         }
-        LocalDateTime endDate = endEntries;
+        var endDate = endEntries
         if (endDate == null) {
-            Long endTime = latestTimestamps.get(accountType);
-            if (endTime != null) {
-                endDate = new LocalDateTime(endTime);
+            val endTime = latestTimestamps[accountType]
+            endDate = if (endTime != null) {
+                LocalDateTime(endTime)
             } else {
-                endDate = LocalDateTime.now();
+                LocalDateTime.now()
             }
         }
-        final LocalDateTime earliestDate = earliestTransactionTimestamp;
-        int xAxisOffset = getDateDiff(groupInterval, earliestDate, startDate);
-        int count = getDateDiff(groupInterval, startDate, endDate);
-        LocalDateTime startPeriod = startDate;
-        LocalDateTime endPeriod = endDate;
-        switch (groupInterval) {
-            case MONTH:
-                endPeriod = startPeriod.plusMonths(1);
-                break;
-            case QUARTER:
-                startPeriod = startPeriod.withMonthOfYear(DateExtKt.getFirstQuarterMonth(startPeriod)).dayOfMonth().withMinimumValue();
-                endPeriod = startPeriod.plusMonths(3);
-                break;
-            case YEAR:
-                endPeriod = startPeriod.plusYears(1);
-                break;
-        }
-
-        String where = AccountEntry.COLUMN_TYPE + "=?"
-            + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
-            + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
-        String[] whereArgs = new String[]{accountType.name()};
-        List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, whereArgs, null);
-
-        for (int i = 0, x = xAxisOffset; i < count; i++, x++) {
-            long startTime = DateExtKt.toMillis(startPeriod);
-            long endTime = DateExtKt.toMillis(endPeriod);
-            Money balance = Money.createZeroInstance(commodity);
-            Map<String, Money> balances = mAccountsDbAdapter.getAccountsBalances(accounts, startTime, endTime);
-            for (Money accountBalance : balances.values()) {
-                Price price = pricesDbAdapter.getPrice(accountBalance.getCommodity(), commodity);
-                if (price == null) continue;
-                accountBalance = accountBalance.times(price);
-                balance = balance.plus(accountBalance);
-            }
-            Timber.d("%s %s %s - %s %s", accountType, groupInterval, startPeriod, endPeriod, balance);
-
-            startPeriod = endPeriod;
-            switch (groupInterval) {
-                case MONTH:
-                    endPeriod = endPeriod.plusMonths(1);
-                    break;
-                case QUARTER:
-                    endPeriod = endPeriod.plusMonths(3);
-                    break;
-                case YEAR:
-                    endPeriod = endPeriod.plusYears(1);
-                    break;
+        val earliestDate = earliestTransactionTimestamp!!
+        val xAxisOffset = getDateDiff(groupInterval, earliestDate, startDate)
+        val count = getDateDiff(groupInterval, startDate, endDate)
+        var startPeriod: LocalDateTime = startDate
+        var endPeriod = endDate!!
+        when (groupInterval) {
+            GroupInterval.MONTH -> endPeriod = startPeriod.plusMonths(1)
+            GroupInterval.QUARTER -> {
+                startPeriod = startPeriod.withMonthOfYear(startPeriod.getFirstQuarterMonth())
+                    .dayOfMonth()
+                    .withMinimumValue()
+                endPeriod = startPeriod.plusMonths(3)
             }
 
-            if (balance.isAmountZero()) continue;
-            float value = balance.toFloat();
-            entries.add(new Entry(x, value));
+            GroupInterval.YEAR -> endPeriod = startPeriod.plusYears(1)
+            else -> Unit
         }
 
-        return entries;
+        val where = (AccountEntry.COLUMN_TYPE + "=?"
+                + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
+                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
+        val whereArgs = arrayOf<String?>(accountType.name)
+        val accounts = accountsDbAdapter.getSimpleAccounts(where, whereArgs, null)
+
+        var i = 0
+        var x = xAxisOffset
+        while (i < count) {
+            val startTime = startPeriod.toMillis()
+            val endTime = endPeriod.toMillis()
+            var balance = createZeroInstance(commodity)
+            val balances = accountsDbAdapter.getAccountsBalances(accounts, startTime, endTime)
+            for (accountBalance in balances.values) {
+                var accountBalance = accountBalance
+                val price = pricesDbAdapter.getPrice(accountBalance.commodity, commodity)
+                if (price == null) continue
+                accountBalance *= price
+                balance += accountBalance
+            }
+            Timber.d(
+                "%s %s %s - %s %s",
+                accountType,
+                groupInterval,
+                startPeriod,
+                endPeriod,
+                balance
+            )
+
+            startPeriod = endPeriod
+            when (groupInterval) {
+                GroupInterval.MONTH -> endPeriod = endPeriod.plusMonths(1)
+                GroupInterval.QUARTER -> endPeriod = endPeriod.plusMonths(3)
+                GroupInterval.YEAR -> endPeriod = endPeriod.plusYears(1)
+                else -> Unit
+            }
+
+            if (balance.isAmountZero) {
+                i++
+                x++
+                continue
+            }
+            val value = balance.toFloat()
+            entries.add(Entry(x.toFloat(), value))
+            i++
+            x++
+        }
+
+        return entries
     }
 
-    @Override
-    public boolean requiresAccountTypeOptions() {
-        return false;
+    override fun requiresAccountTypeOptions(): Boolean {
+        return false
     }
 
-    @Override
-    protected void generateReport(@NonNull Context context) {
-        LineData lineData = getData(context, accountTypes);
-        mBinding.lineChart.setData(lineData);
-        isChartDataPresent = true;
+    override fun generateReport(context: Context) {
+        val binding = binding ?: return
+        binding.lineChart.data = getData(context, accountTypes)
+        isChartDataPresent = true
     }
 
-    @Override
-    protected void displayReport() {
-        if (!isChartDataPresent) {
-            final Context context = mBinding.lineChart.getContext();
-            mBinding.lineChart.getAxisLeft().setAxisMaxValue(10);
-            mBinding.lineChart.getAxisLeft().setDrawLabels(false);
-            mBinding.lineChart.getXAxis().setDrawLabels(false);
-            mBinding.lineChart.setTouchEnabled(false);
-            mSelectedValueTextView.setText(context.getString(R.string.label_chart_no_data));
+    override fun displayReport() {
+        val binding = binding ?: return
+        binding.lineChart.apply {
+            if (isChartDataPresent) {
+                animateX(ANIMATION_DURATION)
+            } else {
+                axisLeft.setAxisMaxValue(10f)
+                axisLeft.setDrawLabels(false)
+                xAxis.setDrawLabels(false)
+                setTouchEnabled(false)
+            }
+            invalidate()
+        }
+        if (isChartDataPresent) {
+            selectedValueTextView?.text = null
         } else {
-            mBinding.lineChart.animateX(ANIMATION_DURATION);
+            selectedValueTextView?.setText(R.string.label_chart_no_data)
         }
-        mBinding.lineChart.invalidate();
     }
 
-    @Override
-    public void onPrepareOptionsMenu(@NonNull Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-        menu.findItem(R.id.menu_toggle_average_lines).setVisible(isChartDataPresent);
-        showLegend(menu.findItem(R.id.menu_toggle_legend).isChecked());
-        showAverageLines(menu.findItem(R.id.menu_toggle_average_lines).isChecked());
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        super.onPrepareOptionsMenu(menu)
+        menu.findItem(R.id.menu_toggle_average_lines).isVisible = isChartDataPresent
+        showLegend(menu.findItem(R.id.menu_toggle_legend).isChecked)
+        showAverageLines(menu.findItem(R.id.menu_toggle_average_lines).isChecked)
         // hide pie/bar chart specific menu items
-        menu.findItem(R.id.menu_order_by_size).setVisible(false);
-        menu.findItem(R.id.menu_toggle_labels).setVisible(false);
-        menu.findItem(R.id.menu_percentage_mode).setVisible(false);
-        menu.findItem(R.id.menu_group_other_slice).setVisible(false);
+        menu.findItem(R.id.menu_order_by_size).isVisible = false
+        menu.findItem(R.id.menu_toggle_labels).isVisible = false
+        menu.findItem(R.id.menu_percentage_mode).isVisible = false
+        menu.findItem(R.id.menu_group_other_slice).isVisible = false
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_toggle_legend: {
-                item.setChecked(!item.isChecked());
-                showLegend(item.isChecked());
-                return true;
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menu_toggle_legend -> {
+                item.isChecked = !item.isChecked
+                showLegend(item.isChecked)
+                return true
             }
 
-            case R.id.menu_toggle_average_lines:
-                item.setChecked(!item.isChecked());
-                showAverageLines(item.isChecked());
-                return true;
+            R.id.menu_toggle_average_lines -> {
+                item.isChecked = !item.isChecked
+                showAverageLines(item.isChecked)
+                return true
+            }
 
-            default:
-                return super.onOptionsItemSelected(item);
+            else -> return super.onOptionsItemSelected(item)
         }
     }
 
-    @Override
-    public void onValueSelected(Entry e, Highlight h) {
-        if (e == null) return;
-        float value = e.getY();
-        int dataSetIndex = h.getDataSetIndex();
-        LineData data = mBinding.lineChart.getData();
-        ILineDataSet dataSet = data.getDataSetByIndex(dataSetIndex);
-        if (dataSet == null) return;
-        String label = dataSet.getLabel();
-        float total = getYValueSum(dataSet);
-        float percent = (total != 0f) ? ((value * 100) / total) : 0f;
-        mSelectedValueTextView.setText(formatSelectedValue(label, value, percent));
+    override fun onValueSelected(e: Entry?, h: Highlight) {
+        val binding = binding ?: return
+        if (e == null) return
+        val value = e.y
+        val dataSetIndex = h.dataSetIndex
+        val data = binding.lineChart.data
+        val dataSet = data.getDataSetByIndex(dataSetIndex)
+        if (dataSet == null) return
+        val label = dataSet.label
+        val total = getYValueSum<Entry>(dataSet)
+        val percent = if (total != 0f) ((value * 100) / total) else 0f
+        selectedValueTextView?.text = formatSelectedValue(label, value, percent)
     }
 
-    private void showLegend(boolean isVisible) {
-        mBinding.lineChart.getLegend().setEnabled(isVisible);
-        mBinding.lineChart.invalidate();
+    private fun showLegend(isVisible: Boolean) {
+        val binding = binding ?: return
+        binding.lineChart.legend.isEnabled = isVisible
+        binding.lineChart.invalidate()
     }
 
-    private void showAverageLines(boolean isVisible) {
-        mBinding.lineChart.getAxisLeft().removeAllLimitLines();
+    private fun showAverageLines(isVisible: Boolean) {
+        val binding = binding ?: return
+        binding.lineChart.axisLeft.removeAllLimitLines()
         if (isVisible) {
-            for (ILineDataSet dataSet : mBinding.lineChart.getData().getDataSets()) {
-                int entryCount = dataSet.getEntryCount();
-                float limit = 0f;
+            for (dataSet in binding.lineChart.data.dataSets) {
+                val entryCount = dataSet.entryCount
+                var limit = 0f
                 if (entryCount > 0) {
-                    limit = dataSet.getYMin() + (getYValueSum(dataSet) / entryCount);
+                    limit = dataSet.yMin + (getYValueSum<Entry>(dataSet) / entryCount)
                 }
-                LimitLine line = new LimitLine(limit, dataSet.getLabel());
-                line.enableDashedLine(10, 5, 0);
-                line.setLineColor(dataSet.getColor());
-                mBinding.lineChart.getAxisLeft().addLimitLine(line);
+                val line = LimitLine(limit, dataSet.label)
+                line.enableDashedLine(10f, 5f, 0f)
+                line.lineColor = dataSet.color
+                binding.lineChart.axisLeft.addLimitLine(line)
             }
         }
-        mBinding.lineChart.invalidate();
+        binding.lineChart.invalidate()
     }
 
+    companion object {
+        private const val ANIMATION_DURATION = 3000
+        private const val NO_DATA_BAR_COUNTS = 5
+        private val LINE_COLORS = intArrayOf(
+            parseColor("#68F1AF")!!, parseColor("#cc1f09")!!, parseColor("#EE8600")!!,
+            parseColor("#1469EB")!!, parseColor("#B304AD")!!,
+        )
+        private val FILL_COLORS = intArrayOf(
+            parseColor("#008000")!!, parseColor("#FF0000")!!, parseColor("#BE6B00")!!,
+            parseColor("#0065FF")!!, parseColor("#8F038A")!!,
+        )
+    }
 }

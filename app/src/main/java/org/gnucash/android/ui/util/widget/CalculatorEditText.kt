@@ -13,166 +13,138 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.ui.util.widget;
+package org.gnucash.android.ui.util.widget
 
-import static org.gnucash.android.app.ContextExtKt.getActivity;
-import static org.gnucash.android.ui.util.widget.ViewExtKt.addFilter;
-import static org.gnucash.android.ui.util.widget.ViewExtKt.setTextToEnd;
-
-import android.app.Activity;
-import android.content.Context;
-import android.text.Editable;
-import android.text.InputType;
-import android.text.TextUtils;
-import android.text.TextWatcher;
-import android.util.AttributeSet;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.widget.TextView;
-
-import androidx.activity.ComponentActivity;
-import androidx.activity.OnBackPressedCallback;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatEditText;
-
-import org.gnucash.android.R;
-import org.gnucash.android.databinding.KbdCalculatorBinding;
-import org.gnucash.android.inputmethodservice.CalculatorKeyboardView;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.util.AmountParser;
-
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.ParseException;
-import java.util.Locale;
-
-import timber.log.Timber;
+import android.annotation.SuppressLint
+import android.content.Context
+import android.text.Editable
+import android.text.InputType
+import android.text.TextWatcher
+import android.util.AttributeSet
+import android.view.KeyEvent
+import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.widget.TextView
+import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.widget.AppCompatEditText
+import androidx.core.view.isVisible
+import org.gnucash.android.R
+import org.gnucash.android.app.getActivity
+import org.gnucash.android.databinding.KbdCalculatorBinding
+import org.gnucash.android.inputmethodservice.CalculatorKeyboardView
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.model.Money
+import org.gnucash.android.ui.util.widget.CalculatorKeyboard.Companion.filter
+import org.gnucash.android.util.AmountParser
+import timber.log.Timber
+import java.math.BigDecimal
+import java.text.DecimalFormat
+import java.text.NumberFormat
+import java.text.ParseException
+import java.util.Locale
 
 /**
  * A custom EditText which supports computations and uses a custom calculator keyboard.
- * <p>After the view is inflated, make sure to call {@link #bindKeyboard(CalculatorKeyboardView)}
- * with the view from your layout where the calculator keyboard should be displayed.</p>
+ *
+ * After the view is inflated, make sure to call [.bindKeyboard]
+ * with the view from your layout where the calculator keyboard should be displayed.
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class CalculatorEditText extends AppCompatEditText {
-
-    @Nullable
-    private CalculatorKeyboard mCalculatorKeyboard;
-
-    private Commodity mCommodity = Commodity.DEFAULT_COMMODITY;
+class CalculatorEditText @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null
+) : AppCompatEditText(context, attrs) {
+    private var keyboard: CalculatorKeyboard? = null
 
     /**
      * Flag which is set if the contents of this view have been modified
      */
-    private boolean isContentModified = false;
-    private String originalText = "";
+    private var isContentModified = false
+    private var originalText: String? = ""
+    private val formatter = NumberFormat.getInstance(Locale.getDefault()) as DecimalFormat
+    private var onBackPressedCallback: OnBackPressedCallback? = null
 
-    private final DecimalFormat formatter = (DecimalFormat) NumberFormat.getInstance(Locale.getDefault());
-    private OnBackPressedCallback onBackPressedCallback = null;
+    /**
+     * Returns the currency used for computations
+     *
+     * @return ISO 4217 currency
+     */
+    var commodity: Commodity = Commodity.DEFAULT_COMMODITY
 
-    public CalculatorEditText(Context context) {
-        super(context, null);
-        init();
-    }
-
-    public CalculatorEditText(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
-    }
-
-    public CalculatorEditText(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init();
-    }
+    val isInputModified: Boolean get() = isContentModified
 
     /**
      * Initialize.
      */
-    private void init() {
-        setBackground(null);
-        setSingleLine(true);
+    init {
+        background = null
+        isSingleLine = true
 
         // Disable spell check (hex strings look like words to Android)
-        setInputType(InputType.TYPE_NULL);
-        setRawInputType(InputType.TYPE_CLASS_NUMBER);
+        setInputType(InputType.TYPE_NULL)
+        setRawInputType(InputType.TYPE_CLASS_NUMBER)
 
-        addFilter(this, CalculatorKeyboard.getFilter());
+        addFilter(filter)
 
         // Disable system keyboard appearing on long-press, but for some reason, this prevents the text selection from working.
-        setShowSoftInputOnFocus(false);
+        setShowSoftInputOnFocus(false)
 
-        addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) =
+                Unit
+
+            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) = Unit
+
+            override fun afterTextChanged(s: Editable) {
+                isContentModified = originalText != s.toString()
             }
+        })
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                isContentModified = !TextUtils.equals(originalText, s);
-            }
-        });
-
-        setOnEditorActionListener(new OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if ((actionId & EditorInfo.IME_MASK_ACTION) > EditorInfo.IME_ACTION_NONE) {
-                    evaluate();
-                    return true;
+        setOnEditorActionListener(object : OnEditorActionListener {
+            override fun onEditorAction(v: TextView, actionId: Int, event: KeyEvent?): Boolean {
+                if ((actionId and EditorInfo.IME_MASK_ACTION) > EditorInfo.IME_ACTION_NONE) {
+                    evaluate()
+                    return true
                 }
-                return false;
+                return false
             }
-        });
+        })
 
-        setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (v != CalculatorEditText.this) return;
+        onFocusChangeListener = object : OnFocusChangeListener {
+            override fun onFocusChange(v: View?, hasFocus: Boolean) {
+                if (v !== this@CalculatorEditText) return
                 if (hasFocus) {
-                    setSelection(getText().length());
-                    showKeyboard();
+                    setSelection(getText()!!.length)
+                    showKeyboard()
                 } else {
-                    hideKeyboard();
-                    evaluate();
+                    hideKeyboard()
+                    evaluate()
                 }
             }
-        });
+        }
 
-        setOnClickListener(new OnClickListener() {
-            // NOTE By setting the on click listener we can show the custom keyboard again,
-            // by tapping on an edit box that already had focus (but that had the keyboard hidden).
-            @Override
-            public void onClick(View v) {
-                if (v != CalculatorEditText.this) return;
-                showKeyboard();
-            }
-        });
+        // NOTE By setting the on click listener we can show the custom keyboard again,
+        // by tapping on an edit box that already had focus (but that had the keyboard hidden).
+        setOnClickListener { v ->
+            if (v !== this@CalculatorEditText) return@setOnClickListener
+            showKeyboard()
+        }
 
-        registerBackPressed();
+        registerBackPressed()
     }
 
-    private void bindKeyboard(@Nullable final CalculatorKeyboard calculatorKeyboard) {
-        mCalculatorKeyboard = calculatorKeyboard;
+    private fun bindKeyboard(calculatorKeyboard: CalculatorKeyboard?) {
+        keyboard = calculatorKeyboard
 
         // Although this handler doesn't make sense, if removed, the standard keyboard
         // shows up in addition to the calculator one when the EditText gets a touch event.
-        setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                // XXX: Use dispatchTouchEvent()?
-                onTouchEvent(event);
-                return false;
-            }
-        });
+        @SuppressLint("ClickableViewAccessibility")
+        setOnTouchListener { _, event ->
+            onTouchEvent(event)
+            return@setOnTouchListener false
+        }
     }
 
     /**
@@ -180,8 +152,8 @@ public class CalculatorEditText extends AppCompatEditText {
      *
      * @param keyboardView the calculator keyboard view.
      */
-    public void bindKeyboard(@NonNull CalculatorKeyboardView keyboardView) {
-        bindKeyboard(new CalculatorKeyboard(keyboardView));
+    fun bindKeyboard(keyboardView: CalculatorKeyboardView) {
+        bindKeyboard(CalculatorKeyboard(keyboardView))
     }
 
     /**
@@ -189,36 +161,16 @@ public class CalculatorEditText extends AppCompatEditText {
      *
      * @param keyboardBinding the calculator keyboard binding.
      */
-    public void bindKeyboard(@NonNull KbdCalculatorBinding keyboardBinding) {
-        bindKeyboard(keyboardBinding.calculatorKeyboard);
+    fun bindKeyboard(keyboardBinding: KbdCalculatorBinding) {
+        bindKeyboard(keyboardBinding.calculatorKeyboard)
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         if (CalculatorKeyboard.onKeyDown(keyCode, event)) {
-            evaluate();
-            return true;
+            evaluate()
+            return true
         }
-        return super.onKeyDown(keyCode, event);
-    }
-
-    /**
-     * Returns the currency used for computations
-     *
-     * @return ISO 4217 currency
-     */
-    public Commodity getCommodity() {
-        return mCommodity;
-    }
-
-    /**
-     * Sets the commodity to use for calculations
-     * The commodity determines the number of decimal places used
-     *
-     * @param commodity ISO 4217 currency
-     */
-    public void setCommodity(Commodity commodity) {
-        this.mCommodity = commodity;
+        return super.onKeyDown(keyCode, event)
     }
 
     /**
@@ -226,40 +178,41 @@ public class CalculatorEditText extends AppCompatEditText {
      *
      * @return Result of arithmetic evaluation which is same as text displayed in EditText
      */
-    public String evaluate() {
-        String amountString = getCleanString();
-        if (TextUtils.isEmpty(amountString)) {
-            return "";
+    fun evaluate(): String {
+        val amountString = cleanString
+        if (amountString.isEmpty()) {
+            return ""
         }
 
-        BigDecimal amount = AmountParser.evaluate(amountString);
+        val amount = AmountParser.evaluate(amountString)
         if (amount != null) {
             try {
-                Money money = new Money(amount, getCommodity());
+                val money = Money(amount, commodity)
                 // Currently the numerator has a limit of 64 bits.
-                money.getNumerator();
-            } catch (ArithmeticException e) {
-                setError(getContext().getString(R.string.label_error_invalid_expression));
-                Timber.w(e, "Invalid amount: %s", amountString);
-                return "";
+                money.numerator
+            } catch (e: ArithmeticException) {
+                error = context.getString(R.string.label_error_invalid_expression)
+                Timber.w(e, "Invalid amount: %s", amountString)
+                return ""
             }
-            setValue(amount);
+            this.value = amount
         } else {
-            setError(getContext().getString(R.string.label_error_invalid_expression));
-            Timber.w("Invalid amount: %s", amountString);
+            error = context.getString(R.string.label_error_invalid_expression)
+            Timber.w("Invalid amount: %s", amountString)
         }
-        return getText().toString();
+        return getText().toString()
     }
 
     /**
      * Evaluates the expression in the text and returns true if the result is valid
      *
-     * @return @{code true} if the input is valid, {@code false} otherwise
+     * @return @{code true} if the input is valid, `false` otherwise
      */
-    public boolean isInputValid() {
-        String text = evaluate();
-        return !text.isEmpty() && getError() == null;
-    }
+    val isInputValid: Boolean
+        get() {
+            val text = evaluate()
+            return !text.isEmpty() && error == null
+        }
 
     /**
      * Returns the amount string formatted as a decimal in Locale.US and trimmed.
@@ -267,122 +220,108 @@ public class CalculatorEditText extends AppCompatEditText {
      *
      * @return String with the amount in the EditText or empty string if there is no input
      */
-    @NonNull
-    public String getCleanString() {
+    val cleanString: String
         //convert "ARABIC DECIMAL SEPARATOR" U+066B into period
         //convert "ARABIC-INDIC DIGIT ZERO" U+0660 into western zero and do the same for all digits
-        return getText().toString()
-            .replaceAll("[,\u066B]", ".")
-            .replaceAll("\u0660", "0")
-            .replaceAll("\u0661", "1")
-            .replaceAll("\u0662", "2")
-            .replaceAll("\u0662", "2")
-            .replaceAll("\u0663", "3")
-            .replaceAll("\u0664", "4")
-            .replaceAll("\u0665", "5")
-            .replaceAll("\u0666", "6")
-            .replaceAll("\u0667", "7")
-            .replaceAll("\u0668", "8")
-            .replaceAll("\u0669", "9")
-            .trim();
-    }
+        get() = getText().toString()
+            .replace("[,\u066B]".toRegex(), ".")
+            .replace("\u0660".toRegex(), "0")
+            .replace("\u0661".toRegex(), "1")
+            .replace("\u0662".toRegex(), "2")
+            .replace("\u0662".toRegex(), "2")
+            .replace("\u0663".toRegex(), "3")
+            .replace("\u0664".toRegex(), "4")
+            .replace("\u0665".toRegex(), "5")
+            .replace("\u0666".toRegex(), "6")
+            .replace("\u0667".toRegex(), "7")
+            .replace("\u0668".toRegex(), "8")
+            .replace("\u0669".toRegex(), "9")
+            .trim()
 
-    /**
-     * Returns true if the content of this view has been modified
-     *
-     * @return {@code true} if content has changed, {@code false} otherwise
-     */
-    public boolean isInputModified() {
-        return this.isContentModified;
-    }
-
-    /**
-     * Returns the value of the amount in the edit text or null if the field is empty.
-     * Performs an evaluation of the expression first
-     *
-     * @return BigDecimal value
-     */
-    public @Nullable BigDecimal getValue() {
-        String text = evaluate();
-        if (text.isEmpty()) {
-            return null;
+    var value: BigDecimal?
+        /**
+         * Returns the value of the amount in the edit text or null if the field is empty.
+         * Performs an evaluation of the expression first
+         *
+         * @return BigDecimal value
+         */
+        get() {
+            val text = evaluate()
+            if (text.isEmpty()) {
+                return null
+            }
+            try { //catch any exceptions in the conversion e.g. if a string with only "-" is entered
+                return AmountParser.parse(text)
+            } catch (e: ParseException) {
+                val msg = "Error parsing amount string \"$text\" from CalculatorEditText"
+                Timber.i(e, msg)
+                return null
+            }
         }
-        try { //catch any exceptions in the conversion e.g. if a string with only "-" is entered
-            return AmountParser.parse(text);
-        } catch (ParseException e) {
-            String msg = "Error parsing amount string \"" + text + "\" from CalculatorEditText";
-            Timber.i(e, msg);
-            return null;
+        /**
+         * Set the text to the value of `amount` formatted according to the locale.
+         *
+         * The number of decimal places are determined by the currency set to the view, and the
+         * decimal separator is determined by the device locale. There are no thousandths separators.
+         *
+         * @param amount BigDecimal amount
+         */
+        set(amount) {
+            setValue(amount, false)
         }
-    }
 
-    /**
-     * Set the text to the value of {@code amount} formatted according to the locale.
-     * <p>The number of decimal places are determined by the currency set to the view, and the
-     * decimal separator is determined by the device locale. There are no thousandths separators.</p>
-     *
-     * @param amount BigDecimal amount
-     */
-    public void setValue(@Nullable BigDecimal amount) {
-        setValue(amount, false);
-    }
-
-    public void setValue(@Nullable BigDecimal amount, boolean isOriginal) {
-        formatter.setMinimumFractionDigits(0);
-        formatter.setMaximumFractionDigits(mCommodity.getSmallestFractionDigits());
-        formatter.setGroupingUsed(false);
-        String resultString = (amount != null) ? formatter.format(amount) : "";
+    fun setValue(amount: BigDecimal?, isOriginal: Boolean) {
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = commodity.smallestFractionDigits
+        formatter.isGroupingUsed = false
+        val resultString = if (amount != null) formatter.format(amount) else ""
 
         if (isOriginal) {
-            originalText = resultString;
+            originalText = resultString
         }
 
-        setTextToEnd(this, resultString);
+        setTextToEnd(resultString)
     }
 
-    @Override
-    protected void onVisibilityChanged(View changedView, int visibility) {
-        super.onVisibilityChanged(changedView, visibility);
-        if (visibility == VISIBLE && isFocused()) {
-            showKeyboard();
+    override fun onVisibilityChanged(changedView: View, visibility: Int) {
+        super.onVisibilityChanged(changedView, visibility)
+        if (isVisible && isFocused) {
+            showKeyboard()
         }
     }
 
-    private void registerBackPressed() {
-        OnBackPressedCallback callback = onBackPressedCallback;
+    private fun registerBackPressed() {
+        var callback = onBackPressedCallback
         if (callback == null) {
-            Activity activity = getActivity(this);
-            if (!(activity instanceof ComponentActivity owner)) {
-                return;
-            }
-            onBackPressedCallback = callback = new OnBackPressedCallback(true) {
-                @Override
-                public void handleOnBackPressed() {
+            val activity = (getActivity() as? ComponentActivity) ?: return
+            callback = object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
                     if (!hideKeyboard()) {
-                        setEnabled(false);
-                        activity.onBackPressed();
+                        isEnabled = false
+                        activity.onBackPressed()
                     }
                 }
-            };
-            owner.getOnBackPressedDispatcher().addCallback(callback);
+            }
+            onBackPressedCallback = callback
+            activity.onBackPressedDispatcher.addCallback(callback)
         }
     }
 
-    public boolean showKeyboard() {
-        CalculatorKeyboard calculatorKeyboard = mCalculatorKeyboard;
-        if (calculatorKeyboard != null && !calculatorKeyboard.isVisible()) {
-            calculatorKeyboard.show(this);
-            return true;
+    fun showKeyboard(): Boolean {
+        val calculatorKeyboard = keyboard
+        if (calculatorKeyboard != null && !calculatorKeyboard.isVisible) {
+            calculatorKeyboard.show(this)
+            return true
         }
-        return false;
+        return false
     }
 
-    public boolean hideKeyboard() {
-        CalculatorKeyboard calculatorKeyboard = mCalculatorKeyboard;
-        if (calculatorKeyboard != null && calculatorKeyboard.isVisible()) {
-            calculatorKeyboard.hide();
-            return true;
+    fun hideKeyboard(): Boolean {
+        val calculatorKeyboard = keyboard
+        if (calculatorKeyboard != null && calculatorKeyboard.isVisible) {
+            calculatorKeyboard.hide()
+            return true
         }
-        return false;
+        return false
     }
 }

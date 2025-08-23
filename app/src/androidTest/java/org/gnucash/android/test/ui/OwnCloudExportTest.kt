@@ -28,7 +28,7 @@ import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.contrib.DrawerActions
+import androidx.test.espresso.contrib.DrawerActions.open
 import androidx.test.espresso.matcher.RootMatchers.withDecorView
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
@@ -39,7 +39,6 @@ import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
-import org.gnucash.android.db.adapter.DatabaseAdapter
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
@@ -91,26 +90,29 @@ class OwnCloudExportTest : GnuAndroidTest() {
 
         GnuCashApplication.initializeDatabaseAdapters(context)
 
-        val accountsDbAdapter = AccountsDbAdapter.getInstance()
+        val accountsDbAdapter = AccountsDbAdapter.instance
         accountsDbAdapter.deleteAllRecords()
 
-        val currencyCode = GnuCashApplication.getDefaultCurrencyCode()
+        val currencyCode = GnuCashApplication.defaultCurrencyCode
         Commodity.DEFAULT_COMMODITY =
-            CommoditiesDbAdapter.getInstance()!!.getCurrency(currencyCode)!!
+            CommoditiesDbAdapter.instance!!.getCurrency(currencyCode)!!
 
         val account = Account("ownCloud")
         val transaction = Transaction("birds")
-        transaction.setTime(System.currentTimeMillis())
+        transaction.time = System.currentTimeMillis()
         val split = Split(Money("11.11", currencyCode), account.uid)
         transaction.addSplit(split)
         transaction.addSplit(
             split.createPair(
-                accountsDbAdapter.getOrCreateImbalanceAccountUID(context, Commodity.DEFAULT_COMMODITY)
+                accountsDbAdapter.getOrCreateImbalanceAccountUID(
+                    context,
+                    Commodity.DEFAULT_COMMODITY
+                )
             )
         )
         account.addTransaction(transaction)
 
-        accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert)
+        accountsDbAdapter.insert(account)
 
         prefs.edit()
             .putBoolean(context.getString(R.string.key_owncloud_sync), false)
@@ -124,7 +126,7 @@ class OwnCloudExportTest : GnuAndroidTest() {
     @Test
     fun ownCloudCredentials() {
         Assume.assumeTrue(hasActiveInternetConnection(context))
-        onView(withId(R.id.drawer_layout)).perform(DrawerActions.open())
+        onView(withId(R.id.drawer_layout)).perform(open())
         onView(withText(R.string.title_settings))
             .perform(scrollTo(), click())
         onView(withText(R.string.header_backup_and_export_settings))
@@ -183,7 +185,7 @@ class OwnCloudExportTest : GnuAndroidTest() {
         Assume.assumeTrue(hasActiveInternetConnection(context))
         prefs.edit().putBoolean(context.getString(R.string.key_owncloud_sync), true).commit()
 
-        onView(withId(R.id.drawer_layout)).perform(DrawerActions.open())
+        onView(withId(R.id.drawer_layout)).perform(open())
         onView(withText(R.string.nav_menu_export))
             .perform(click())
         closeSoftKeyboard()

@@ -13,360 +13,333 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.ui.transaction;
+package org.gnucash.android.ui.transaction
 
-import static org.gnucash.android.ui.util.TextViewExtKt.displayBalance;
-
-import android.app.Activity;
-import android.content.Intent;
-import android.content.res.Configuration;
-import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextUtils;
-import android.text.TextWatcher;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.CompoundButton;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.Spinner;
-import android.widget.TextView;
-
-import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-
-import com.google.android.material.snackbar.Snackbar;
-
-import org.gnucash.android.R;
-import org.gnucash.android.app.MenuFragment;
-import org.gnucash.android.databinding.FragmentSplitEditorBinding;
-import org.gnucash.android.databinding.ItemSplitEntryBinding;
-import org.gnucash.android.inputmethodservice.CalculatorKeyboardView;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.AccountType;
-import org.gnucash.android.model.BaseModel;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.model.Split;
-import org.gnucash.android.model.Transaction;
-import org.gnucash.android.model.TransactionType;
-import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter;
-import org.gnucash.android.ui.common.FormActivity;
-import org.gnucash.android.ui.common.UxArgument;
-import org.gnucash.android.ui.transaction.dialog.TransferFundsDialogFragment;
-import org.gnucash.android.ui.util.widget.CalculatorEditText;
-import org.gnucash.android.ui.util.widget.CalculatorKeyboard;
-import org.gnucash.android.ui.util.widget.TransactionTypeSwitch;
-import org.gnucash.android.util.AmountParser;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import kotlin.Unit;
-import kotlin.jvm.functions.Function0;
-import timber.log.Timber;
+import android.app.Activity
+import android.content.Intent
+import android.content.res.Configuration
+import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.Spinner
+import android.widget.TextView
+import androidx.annotation.ColorInt
+import androidx.appcompat.app.ActionBar
+import androidx.core.view.isVisible
+import com.google.android.material.snackbar.Snackbar
+import org.gnucash.android.R
+import org.gnucash.android.app.MenuFragment
+import org.gnucash.android.app.actionBar
+import org.gnucash.android.app.finish
+import org.gnucash.android.app.getParcelableArrayListCompat
+import org.gnucash.android.databinding.FragmentSplitEditorBinding
+import org.gnucash.android.databinding.ItemSplitEntryBinding
+import org.gnucash.android.model.Account
+import org.gnucash.android.model.BaseModel.Companion.generateUID
+import org.gnucash.android.model.Commodity
+import org.gnucash.android.model.Money
+import org.gnucash.android.model.Split
+import org.gnucash.android.model.Transaction.Companion.getTypeForBalance
+import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
+import org.gnucash.android.ui.common.UxArgument
+import org.gnucash.android.ui.transaction.dialog.TransferFundsDialogFragment.Companion.getInstance
+import org.gnucash.android.ui.util.displayBalance
+import org.gnucash.android.ui.util.widget.CalculatorEditText
+import org.gnucash.android.ui.util.widget.CalculatorKeyboard.Companion.rebind
+import org.gnucash.android.ui.util.widget.TransactionTypeSwitch
+import org.gnucash.android.util.AmountParser.evaluate
+import timber.log.Timber
+import java.math.BigDecimal
 
 /**
  * Dialog for editing the splits in a transaction
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class SplitEditorFragment extends MenuFragment {
-    private QualifiedAccountNameAdapter accountNameAdapter;
-    private final List<SplitViewHolder> splitViewHolders = new ArrayList<>();
-    private Account account;
+class SplitEditorFragment : MenuFragment() {
+    private var accountNameAdapter: QualifiedAccountNameAdapter? = null
+    private val splitViewHolders = mutableListOf<SplitViewHolder>()
+    private var account: Account? = null
 
-    private BigDecimal mBaseAmount = BigDecimal.ZERO;
+    private var baseAmount: BigDecimal = BigDecimal.ZERO
 
-    private final BalanceTextWatcher mImbalanceWatcher = new BalanceTextWatcher();
+    private var imbalanceWatcher: BalanceTextWatcher? = null
 
     /**
      * Flag for checking where the TransferFunds dialog has already been displayed to the user
      */
-    private boolean mCurrencyConversionDone = false;
+    private var currencyConversionDone = false
 
     /**
-     * Flag which is set if another action is triggered during a transaction save (which interrrupts the save process).
+     * Flag which is set if another action is triggered during a transaction save (which interrupts the save process).
      * Allows the fragment to check and resume the save operation.
      * Primarily used for multi-currency transactions when the currency transfer dialog is opened during save
      */
-    private boolean onSaveAttempt = false;
-    private final Collection<SplitViewHolder> transferAttempt = new ArrayList<>();
+    private var onSaveAttempt = false
+    private val transferAttempt = mutableListOf<SplitViewHolder>()
 
-    private FragmentSplitEditorBinding mBinding;
+    private var binding: FragmentSplitEditorBinding? = null
+
     @ColorInt
-    private int colorBalanceZero;
+    private var colorBalanceZero = 0
 
-    /**
-     * Create and return a new instance of the fragment with the appropriate paramenters
-     *
-     * @param args Arguments to be set to the fragment. <br>
-     *             See {@link UxArgument#AMOUNT_STRING} and {@link UxArgument#SPLIT_LIST}
-     * @return New instance of SplitEditorFragment
-     */
-    public static SplitEditorFragment newInstance(Bundle args) {
-        SplitEditorFragment fragment = new SplitEditorFragment();
-        fragment.setArguments(args);
-        return fragment;
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val binding = FragmentSplitEditorBinding.inflate(inflater, container, false)
+        this.binding = binding
+        return binding.root
     }
 
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mBinding = FragmentSplitEditorBinding.inflate(inflater, container, false);
-        colorBalanceZero = mBinding.imbalanceTextview.getCurrentTextColor();
-        return mBinding.getRoot();
-    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val context = view.context
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setTitle(R.string.title_split_editor);
+        val actionBar: ActionBar? = this.actionBar
+        actionBar?.setTitle(R.string.title_split_editor)
 
         //we are editing splits for a new transaction.
         // But the user may have already created some splits before. Let's check
+        val args = requireArguments()
+        baseAmount = BigDecimal(args.getString(UxArgument.AMOUNT_STRING))
+        var accountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID)
+        if (accountUID.isNullOrEmpty()) {
+            accountUID = args.getString(UxArgument.PARENT_ACCOUNT_UID)
+            if (accountUID.isNullOrEmpty()) {
+                Timber.e("Account expected!")
+                finish()
+                return
+            }
+        }
 
-        Bundle args = getArguments();
-        FormActivity activity = ((FormActivity) requireActivity());
-        mBaseAmount = new BigDecimal(args.getString(UxArgument.AMOUNT_STRING));
+        val binding = binding!!
+        imbalanceWatcher = BalanceTextWatcher(binding)
+        colorBalanceZero = binding.imbalanceTextview.currentTextColor
 
-        accountNameAdapter = new QualifiedAccountNameAdapter(requireContext(), getViewLifecycleOwner());
-        accountNameAdapter.load(new Function0<Unit>() {
-            @Override
-            public Unit invoke() {
-                account = accountNameAdapter.getAccountDb(activity.getCurrentAccountUID());
+        accountNameAdapter = QualifiedAccountNameAdapter(context, viewLifecycleOwner)
+            .load { adapter ->
+                account = adapter.getAccountDb(accountUID)
                 if (account == null) {
-                    Timber.e("Account not found!");
-                    activity.finish();
-                    return null;
+                    Timber.e("Account not found!")
+                    finish()
+                    return@load
                 }
-                loadSplits();
-                return null;
+                loadSplits(binding)
             }
-        });
     }
 
-    private void loadSplits() {
-        splitViewHolders.clear();
-        mBinding.splitListLayout.removeAllViews();
+    private fun loadSplits(binding: FragmentSplitEditorBinding) {
+        splitViewHolders.clear()
+        binding.splitListLayout.removeAllViews()
 
-        List<Split> splitList = getArguments().getParcelableArrayList(UxArgument.SPLIT_LIST);
-        assert splitList != null;
-
-        if (!splitList.isEmpty()) {
-            //aha! there are some splits. Let's load those instead
-            loadSplitViews(splitList);
-            mImbalanceWatcher.afterTextChanged(null);
+        val splitList: List<Split>? = requireArguments().getParcelableArrayListCompat(
+            UxArgument.SPLIT_LIST,
+            Split::class.java
+        )
+        if (splitList.isNullOrEmpty()) {
+            val account = this.account!!
+            val commodity = account.commodity
+            val split = Split(Money(baseAmount, commodity), account.uid)
+            val accountType = account.accountType
+            val transactionType = getTypeForBalance(accountType, baseAmount.signum() < 0)
+            split.type = transactionType
+            val splitViewHolder = addSplitView(split)
+            val splitViewBinding = splitViewHolder.binding
+            splitViewBinding.inputAccountsSpinner.isEnabled = false
+            splitViewBinding.btnRemoveSplit.isVisible = false
+            binding.imbalanceTextview.displayBalance(
+                Money(-baseAmount, commodity),
+                colorBalanceZero
+            )
         } else {
-            Account account = this.account;
-            Commodity commodity = account.getCommodity();
-            Split split = new Split(new Money(mBaseAmount, commodity), account.getUID());
-            AccountType accountType = account.getAccountType();
-            TransactionType transactionType = Transaction.getTypeForBalance(accountType, mBaseAmount.signum() < 0);
-            split.setType(transactionType);
-            SplitViewHolder splitViewHolder = addSplitView(split);
-            ItemSplitEntryBinding splitViewBinding = splitViewHolder.binding;
-            splitViewBinding.inputAccountsSpinner.setEnabled(false);
-            splitViewBinding.btnRemoveSplit.setVisibility(View.GONE);
-            displayBalance(mBinding.imbalanceTextview, new Money(mBaseAmount.negate(), commodity), colorBalanceZero);
+            //aha! there are some splits. Let's load those instead
+            loadSplitViews(splitList)
+            imbalanceWatcher?.notifyChanged()
         }
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        View view = getView();
-        if (view instanceof ViewGroup parent) {
-            CalculatorKeyboardView keyboardView = mBinding.calculatorKeyboard.calculatorKeyboard;
-            keyboardView = CalculatorKeyboard.rebind(parent, keyboardView, null);
-            for (SplitViewHolder viewHolder : splitViewHolders) {
-                viewHolder.splitAmountEditText.bindKeyboard(keyboardView);
-            }
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val binding = binding ?: return
+        var keyboardView = binding.calculatorKeyboard.calculatorKeyboard
+        keyboardView = rebind(binding.root, keyboardView, null)
+        for (viewHolder in splitViewHolders) {
+            viewHolder.splitAmountEditText.bindKeyboard(keyboardView)
         }
     }
 
-    private void loadSplitViews(List<Split> splits) {
-        for (Split split : splits) {
-            addSplitView(split);
+    private fun loadSplitViews(splits: List<Split>) {
+        for (split in splits) {
+            addSplitView(split)
         }
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.split_editor_actions, menu);
+    @Deprecated("Deprecated in Java")
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.split_editor_actions, menu)
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-        switch (item.getItemId()) {
-            case android.R.id.home: {
-                Activity activity = getActivity();
+    @Deprecated("Deprecated in Java")
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            android.R.id.home -> {
+                val activity = activity
                 if (activity == null) {
-                    Timber.w("Activity required");
-                    return false;
+                    Timber.w("Activity required")
+                    return false
                 }
-                activity.setResult(Activity.RESULT_CANCELED);
-                activity.finish();
-                return true;
+                activity.setResult(Activity.RESULT_CANCELED)
+                activity.finish()
+                return true
             }
 
-            case R.id.menu_save:
-                saveSplits();
-                return true;
+            R.id.menu_save -> {
+                saveSplits()
+                return true
+            }
 
-            case R.id.menu_add:
-                addSplitView(null);
-                return true;
+            R.id.menu_add -> {
+                addSplitView(null)
+                return true
+            }
 
-            default:
-                return super.onOptionsItemSelected(item);
+            else -> return super.onOptionsItemSelected(item)
         }
     }
 
     /**
-     * Add a split view and initialize it with <code>split</code>
+     * Add a split view and initialize it with `split`
      *
      * @param split Split to initialize the contents to
      * @return Returns the split view which was added
      */
-    private SplitViewHolder addSplitView(Split split) {
-        ItemSplitEntryBinding binding = ItemSplitEntryBinding.inflate(getLayoutInflater(), mBinding.splitListLayout, true);
-        View splitView = binding.getRoot();
-        SplitViewHolder viewHolder = new SplitViewHolder(binding);
-        viewHolder.bind(split);
-        splitView.setTag(viewHolder);
-        splitViewHolders.add(viewHolder);
-        return viewHolder;
+    private fun addSplitView(split: Split?): SplitViewHolder {
+        val binding =
+            ItemSplitEntryBinding.inflate(layoutInflater, binding!!.splitListLayout, true)
+        val splitView = binding.root
+        val viewHolder = SplitViewHolder(binding)
+        viewHolder.bind(split)
+        splitView.tag = viewHolder
+        splitViewHolders.add(viewHolder)
+        return viewHolder
     }
 
     /**
      * Holds a split item view and binds the items in it
      */
-    class SplitViewHolder implements OnTransferFundsListener {
-        private final ItemSplitEntryBinding binding;
-        private final View itemView;
-        private final EditText splitMemoEditText;
-        private final CalculatorEditText splitAmountEditText;
-        private final ImageView removeSplitButton;
-        private final Spinner accountsSpinner;
-        private final TextView splitCurrencyTextView;
-        private final TextView splitUidTextView;
-        private final TransactionTypeSwitch splitTypeSwitch;
+    internal inner class SplitViewHolder(val binding: ItemSplitEntryBinding) :
+        OnTransferFundsListener {
+        val itemView = binding.root
+        val splitMemoEditText: EditText = binding.inputSplitMemo
+        val splitAmountEditText: CalculatorEditText = binding.inputSplitAmount
+        val removeSplitButton: ImageView = binding.btnRemoveSplit
+        val accountsSpinner: Spinner = binding.inputAccountsSpinner
+        val splitCurrencyTextView: TextView = binding.splitCurrencySymbol
+        val splitUidTextView: TextView = binding.splitUid
+        val splitTypeSwitch: TransactionTypeSwitch = binding.btnSplitType
 
-        private Money quantity;
+        var quantity: Money? = null
+            private set
 
-        public SplitViewHolder(ItemSplitEntryBinding binding) {
-            itemView = binding.getRoot();
-            this.binding = binding;
-            this.splitMemoEditText = binding.inputSplitMemo;
-            this.splitAmountEditText = binding.inputSplitAmount;
-            this.removeSplitButton = binding.btnRemoveSplit;
-            this.accountsSpinner = binding.inputAccountsSpinner;
-            this.splitCurrencyTextView = binding.splitCurrencySymbol;
-            this.splitUidTextView = binding.splitUid;
-            this.splitTypeSwitch = binding.btnSplitType;
+        init {
+            splitAmountEditText.bindKeyboard(this@SplitEditorFragment.binding!!.calculatorKeyboard)
 
-            splitAmountEditText.bindKeyboard(mBinding.calculatorKeyboard);
+            removeSplitButton.setOnClickListener {
+                val viewHolder = itemView.tag as SplitViewHolder
+                this@SplitEditorFragment.binding!!.splitListLayout.removeView(itemView)
+                splitViewHolders.remove(viewHolder)
+                imbalanceWatcher?.notifyChanged()
+            }
 
-            removeSplitButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    SplitViewHolder viewHolder = (SplitViewHolder) itemView.getTag();
-                    mBinding.splitListLayout.removeView(itemView);
-                    splitViewHolders.remove(viewHolder);
-                    mImbalanceWatcher.afterTextChanged(null);
-                }
-            });
-
-            accountsSpinner.setOnItemSelectedListener(new SplitAccountListener(splitTypeSwitch, this));
-            splitTypeSwitch.setAmountFormattingListener(splitAmountEditText, splitCurrencyTextView);
-            splitTypeSwitch.addOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    mImbalanceWatcher.afterTextChanged(null);
-                }
-            });
-            splitAmountEditText.addTextChangedListener(mImbalanceWatcher);
+            accountsSpinner.onItemSelectedListener = SplitAccountListener(splitTypeSwitch, this)
+            splitTypeSwitch.setAmountFormattingListener(splitAmountEditText, splitCurrencyTextView)
+            splitTypeSwitch.addOnCheckedChangeListener { _, _ ->
+                imbalanceWatcher?.notifyChanged()
+            }
+            splitAmountEditText.addTextChangedListener(imbalanceWatcher)
         }
 
-        @Override
-        public void transferComplete(Money value, Money amount) {
-            mCurrencyConversionDone = true;
-            quantity = amount;
+        override fun transferComplete(value: Money, amount: Money) {
+            currencyConversionDone = true
+            quantity = amount
 
             //The transfer dialog was called while attempting to save. So try saving again
-            SplitViewHolder viewHolder = this;
-            transferAttempt.remove(viewHolder);
+            val viewHolder = this
+            transferAttempt.remove(viewHolder)
             if (onSaveAttempt && transferAttempt.isEmpty()) {
-                onSaveAttempt = false;
-                saveSplits();
+                onSaveAttempt = false
+                saveSplits()
             }
         }
 
         /**
          * Returns the value of the amount in the binding.inputSplitAmount field without setting the value to the view
-         * <p>If the expression in the view is currently incomplete or invalid, null is returned.
-         * This method is used primarily for computing the imbalance</p>
          *
-         * @return Value in the split item amount field, or {@link BigDecimal#ZERO} if the expression is empty or invalid
+         * If the expression in the view is currently incomplete or invalid, null is returned.
+         * This method is used primarily for computing the imbalance
+         *
+         * @return Value in the split item amount field, or [BigDecimal.ZERO] if the expression is empty or invalid
          */
-        public BigDecimal getAmountValue() {
-            String amountString = splitAmountEditText.getCleanString();
-            BigDecimal amount = AmountParser.evaluate(amountString);
-            return (amount != null) ? amount : BigDecimal.ZERO;
-        }
-
-        public void bind(@Nullable final Split split) {
-            if (split != null && !split.getQuantity().equals(split.getValue())) {
-                this.quantity = split.getQuantity();
+        val amountValue: BigDecimal
+            get() {
+                val amountString = splitAmountEditText.cleanString
+                val amount = evaluate(amountString)
+                return amount ?: BigDecimal.ZERO
             }
 
-            accountsSpinner.setAdapter(accountNameAdapter);
+        fun bind(split: Split?) {
+            if (split != null && split.quantity != split.value) {
+                this.quantity = split.quantity
+            }
+
+            val accountNameAdapter = accountNameAdapter!!
+            accountsSpinner.adapter = accountNameAdapter
 
             if (split != null) {
-                Commodity valueCommodity = split.getValue().getCommodity();
-                splitAmountEditText.setCommodity(valueCommodity);
-                String splitAccountUID = split.getAccountUID();
-                Account account = accountNameAdapter.getAccount(splitAccountUID);
+                val valueCommodity = split.value.commodity
+                splitAmountEditText.commodity = valueCommodity
+                val splitAccountUID = split.accountUID
+                val account = accountNameAdapter.getAccount(splitAccountUID)
                 if (account == null) {
-                    Timber.e("Account for split not found");
-                    bind(null);
-                    return;
+                    Timber.e("Account for split not found")
+                    bind(null)
+                    return
                 }
-                splitAmountEditText.setValue(split.getFormattedValue(account).toBigDecimal(), true /* isOriginal */);
-                splitCurrencyTextView.setText(valueCommodity.getSymbol());
-                splitMemoEditText.setText(split.getMemo());
-                splitUidTextView.setText(split.getUID());
-                setSelectedTransferAccount(splitAccountUID, accountsSpinner);
-                splitTypeSwitch.setAccountType(account.getAccountType());
-                splitTypeSwitch.setChecked(split.getType());
+                splitAmountEditText.setValue(
+                    split.getFormattedValue(account).toBigDecimal(),
+                    true /* isOriginal */
+                )
+                splitCurrencyTextView.text = valueCommodity.symbol
+                splitMemoEditText.setText(split.memo)
+                splitUidTextView.text = split.uid
+                setSelectedTransferAccount(splitAccountUID, accountsSpinner)
+                splitTypeSwitch.accountType = account.accountType
+                splitTypeSwitch.setChecked(split.type)
             } else {
-                Account account = SplitEditorFragment.this.account;
-                Commodity commodity = account.getCommodity();
-                splitCurrencyTextView.setText(commodity.getSymbol());
-                splitUidTextView.setText(BaseModel.generateUID());
+                val account = this@SplitEditorFragment.account
+                val commodity = account!!.commodity
+                splitCurrencyTextView.text = commodity.symbol
+                splitUidTextView.text = generateUID()
 
-                String transferUID = account.getDefaultTransferAccountUID();
-                Account accountTransfer = TextUtils.isEmpty(transferUID) ? null : accountNameAdapter.getAccountDb(transferUID);
+                val transferUID = account.defaultTransferAccountUID
+                val accountTransfer = transferUID?.let { accountNameAdapter.getAccountDb(it) }
                 if (accountTransfer != null) {
-                    setSelectedTransferAccount(transferUID, accountsSpinner);
-                    splitTypeSwitch.setAccountType(accountTransfer.getAccountType());
+                    setSelectedTransferAccount(transferUID, accountsSpinner)
+                    splitTypeSwitch.accountType = accountTransfer.accountType
                 }
-                splitTypeSwitch.setChecked(mBaseAmount.signum() > 0);
+                splitTypeSwitch.isChecked = baseAmount.signum() > 0
             }
         }
     }
@@ -376,125 +349,123 @@ public class SplitEditorFragment extends MenuFragment {
      *
      * @param accountUID Database ID of the transfer account
      */
-    private void setSelectedTransferAccount(@Nullable String accountUID, final Spinner inputAccountsSpinner) {
-        int pos = accountNameAdapter.getPosition(accountUID);
-        inputAccountsSpinner.setSelection(pos);
+    private fun setSelectedTransferAccount(accountUID: String?, inputAccountsSpinner: Spinner) {
+        val position = accountNameAdapter?.getPosition(accountUID) ?: Spinner.INVALID_POSITION
+        inputAccountsSpinner.setSelection(position)
     }
 
     /**
      * Check if all the split amounts have valid values that can be saved
      *
-     * @return {@code true} if splits can be saved, {@code false} otherwise
+     * @return `true` if splits can be saved, `false` otherwise
      */
-    private boolean canSave() {
-        for (SplitViewHolder viewHolder : splitViewHolders) {
-            if (!viewHolder.splitAmountEditText.isInputValid()) {
-                return false;
+    private fun canSave(): Boolean {
+        for (viewHolder in splitViewHolders) {
+            if (!viewHolder.splitAmountEditText.isInputValid) {
+                return false
             }
             //TODO: also check that multi-currency splits have a conversion amount present
         }
-        return true;
+        return true
     }
 
     /**
      * Save all the splits from the split editor
      */
-    private void saveSplits() {
+    private fun saveSplits() {
         if (!canSave()) {
-            Snackbar.make(getView(), R.string.toast_error_check_split_amounts, Snackbar.LENGTH_SHORT).show();
-            return;
+            Snackbar.make(
+                requireView(),
+                R.string.toast_error_check_split_amounts,
+                Snackbar.LENGTH_SHORT
+            ).show()
+            return
         }
 
-        if (isMultiCurrencyTransaction() && !mCurrencyConversionDone) {
-            onSaveAttempt = true;
+        if (isMultiCurrencyTransaction && !currencyConversionDone) {
+            onSaveAttempt = true
             if (startTransferFunds()) {
-                return;
+                return
             }
         }
 
-        Activity activity = getActivity();
+        val activity: Activity? = activity
         if (activity == null) {
-            Timber.w("Activity required");
-            return;
+            Timber.w("Activity required")
+            return
         }
-        Intent data = new Intent()
-            .putParcelableArrayListExtra(UxArgument.SPLIT_LIST, extractSplitsFromView());
-        activity.setResult(Activity.RESULT_OK, data);
-        activity.finish();
+        val splits = ArrayList(extractSplitsFromView())
+        val data = Intent()
+            .putParcelableArrayListExtra(UxArgument.SPLIT_LIST, splits)
+        activity.setResult(Activity.RESULT_OK, data)
+        activity.finish()
     }
 
     /**
-     * Extracts the input from the views and builds {@link org.gnucash.android.model.Split}s to correspond to the input.
+     * Extracts the input from the views and builds [Split]s to correspond to the input.
      *
-     * @return List of {@link org.gnucash.android.model.Split}s represented in the view
+     * @return List of [Split]s represented in the view
      */
-    private ArrayList<Split> extractSplitsFromView() {
-        ArrayList<Split> splitList = new ArrayList<>();
-        for (SplitViewHolder viewHolder : splitViewHolders) {
-            BigDecimal enteredAmount = viewHolder.splitAmountEditText.getValue();
-            if (enteredAmount == null)
-                continue;
+    private fun extractSplitsFromView(): List<Split> {
+        val accountNameAdapter = accountNameAdapter!!
+        val splits = mutableListOf<Split>()
+        for (viewHolder in splitViewHolders) {
+            val enteredAmount = viewHolder.splitAmountEditText.value
+            if (enteredAmount == null) continue
 
-            Account account = this.account;
-            Money valueAmount = new Money(enteredAmount.abs(), account.getCommodity());
+            var account = this.account
+            val valueAmount = Money(enteredAmount.abs(), account!!.commodity)
 
-            int position = viewHolder.accountsSpinner.getSelectedItemPosition();
-            account = accountNameAdapter.getAccount(position);
-            if (account == null) continue;
-            Split split = new Split(valueAmount, account.getUID());
-            split.setMemo(viewHolder.splitMemoEditText.getText().toString());
-            split.setType(viewHolder.splitTypeSwitch.getTransactionType());
-            split.setUID(viewHolder.splitUidTextView.getText().toString().trim());
-            if (viewHolder.quantity != null)
-                split.setQuantity(viewHolder.quantity.abs());
-            splitList.add(split);
+            val position = viewHolder.accountsSpinner.selectedItemPosition
+            account = accountNameAdapter.getAccount(position)
+            if (account == null) continue
+            val split = Split(valueAmount, account.uid)
+            split.memo = viewHolder.splitMemoEditText.getText().toString()
+            split.type = viewHolder.splitTypeSwitch.transactionType
+            split.setUID(viewHolder.splitUidTextView.getText().toString().trim())
+            splits.add(split)
         }
-        return splitList;
+        return splits
     }
 
     /**
      * Updates the displayed balance of the accounts when the amount of a split is changed
      */
-    private class BalanceTextWatcher implements TextWatcher {
+    private inner class BalanceTextWatcher(private val binding: FragmentSplitEditorBinding) :
+        TextWatcher {
+        override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) = Unit
 
-        @Override
-        public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-            //nothing to see here, move along
+        override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) = Unit
+
+        override fun afterTextChanged(editable: Editable) {
+            notifyChanged()
         }
 
-        @Override
-        public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-            //nothing to see here, move along
-        }
+        fun notifyChanged() {
+            val accountNameAdapter = accountNameAdapter!!
+            var imbalance = BigDecimal.ZERO
 
-        @Override
-        public void afterTextChanged(Editable editable) {
-            BigDecimal imbalance = BigDecimal.ZERO;
+            for (viewHolder in splitViewHolders) {
+                val amount = viewHolder.amountValue.abs()
+                val position = viewHolder.accountsSpinner.selectedItemPosition
+                if (position < 0) return
+                val account = accountNameAdapter.getAccount(position)
+                if (account == null) return
+                val hasDebitNormalBalance = account.accountType.hasDebitNormalBalance
 
-            for (SplitViewHolder viewHolder : splitViewHolders) {
-                BigDecimal amount = viewHolder.getAmountValue().abs();
-                int position = viewHolder.accountsSpinner.getSelectedItemPosition();
-                if (position < 0) return;
-                Account account = accountNameAdapter.getAccount(position);
-                if (account == null) return;
-                boolean hasDebitNormalBalance = account.getAccountType().hasDebitNormalBalance;
-
-                if (viewHolder.splitTypeSwitch.isChecked()) {
-                    if (hasDebitNormalBalance)
-                        imbalance = imbalance.add(amount);
-                    else
-                        imbalance = imbalance.subtract(amount);
+                imbalance += if (viewHolder.splitTypeSwitch.isChecked) {
+                    if (hasDebitNormalBalance) amount else -amount
                 } else {
-                    if (hasDebitNormalBalance)
-                        imbalance = imbalance.subtract(amount);
-                    else
-                        imbalance = imbalance.add(amount);
+                    if (hasDebitNormalBalance) -amount else amount
                 }
             }
 
-            Account account = SplitEditorFragment.this.account;
-            Commodity commodity = account.getCommodity();
-            displayBalance(mBinding.imbalanceTextview, new Money(imbalance, commodity), colorBalanceZero);
+            val account = this@SplitEditorFragment.account!!
+            val commodity = account.commodity
+            binding.imbalanceTextview.displayBalance(
+                Money(imbalance, commodity),
+                colorBalanceZero
+            )
         }
     }
 
@@ -502,48 +473,46 @@ public class SplitEditorFragment extends MenuFragment {
      * Listens to changes in the transfer account and updates the currency symbol, the label of the
      * transaction type and if necessary
      */
-    private class SplitAccountListener implements AdapterView.OnItemSelectedListener {
-        private final TransactionTypeSwitch mTypeToggleButton;
-        private final SplitViewHolder mSplitViewHolder;
-
+    private inner class SplitAccountListener(
+        private val typeToggleButton: TransactionTypeSwitch,
+        private val splitViewHolder: SplitViewHolder
+    ) : AdapterView.OnItemSelectedListener {
         /**
          * Flag to know when account spinner callback is due to user interaction or layout of components
          */
-        boolean userInteraction = false;
+        var userInteraction: Boolean = false
 
-        public SplitAccountListener(TransactionTypeSwitch typeToggleButton, SplitViewHolder viewHolder) {
-            this.mTypeToggleButton = typeToggleButton;
-            this.mSplitViewHolder = viewHolder;
-        }
+        override fun onItemSelected(
+            parentView: AdapterView<*>,
+            view: View?,
+            position: Int,
+            id: Long
+        ) {
+            if (view == null) return
+            val accountFrom = this@SplitEditorFragment.account!!
 
-        @Override
-        public void onItemSelected(AdapterView<?> parentView, View view, int position, long id) {
-            if (view == null) return;
-            Account accountFrom = SplitEditorFragment.this.account;
-
-            Account accountTo = accountNameAdapter.getAccount(position);
-            if (accountTo == null) return;
-            AccountType accountType = accountTo.getAccountType();
-            mTypeToggleButton.setAccountType(accountType);
+            val accountTo = accountNameAdapter!!.getAccount(position)
+            if (accountTo == null) return
+            val accountType = accountTo.accountType
+            typeToggleButton.accountType = accountType
 
             //refresh the imbalance amount if we change the account
-            mImbalanceWatcher.afterTextChanged(null);
+            imbalanceWatcher?.notifyChanged()
 
-            Commodity fromCommodity = accountFrom.getCommodity();
-            Commodity targetCommodity = accountTo.getCommodity();
+            val fromCommodity = accountFrom.commodity
+            val targetCommodity = accountTo.commodity
 
-            if (!userInteraction || fromCommodity.equals(targetCommodity)) {
+            if (!userInteraction || fromCommodity == targetCommodity) {
                 //first call is on layout, subsequent calls will be true and transfer will work as usual
-                userInteraction = true;
-                return;
+                userInteraction = true
+                return
             }
 
-            transferAttempt.clear();
-            startTransferFunds(fromCommodity, targetCommodity, mSplitViewHolder);
+            transferAttempt.clear()
+            startTransferFunds(fromCommodity, targetCommodity, splitViewHolder)
         }
 
-        @Override
-        public void onNothingSelected(AdapterView<?> adapterView) {
+        override fun onNothingSelected(adapterView: AdapterView<*>?) {
             //nothing to see here, move along
         }
     }
@@ -551,60 +520,67 @@ public class SplitEditorFragment extends MenuFragment {
     /**
      * Starts the transfer of funds from one currency to another
      */
-    private void startTransferFunds(Commodity fromCommodity, Commodity targetCommodity, SplitViewHolder splitViewHolder) {
-        BigDecimal enteredAmount = splitViewHolder.splitAmountEditText.getValue();
-        if ((enteredAmount == null) || enteredAmount.equals(BigDecimal.ZERO))
-            return;
+    private fun startTransferFunds(
+        fromCommodity: Commodity,
+        targetCommodity: Commodity,
+        splitViewHolder: SplitViewHolder
+    ) {
+        val enteredAmount = splitViewHolder.splitAmountEditText.value
+        if ((enteredAmount == null) || enteredAmount == BigDecimal.ZERO) return
 
-        transferAttempt.add(splitViewHolder);
+        transferAttempt.add(splitViewHolder)
 
-        Money amount = new Money(enteredAmount, fromCommodity).abs();
-        TransferFundsDialogFragment fragment
-            = TransferFundsDialogFragment.getInstance(amount, targetCommodity, splitViewHolder);
-        fragment.show(getParentFragmentManager(), "transfer_funds_editor;" + fromCommodity + ";" + targetCommodity + ";" + amount.toPlainString());
+        val amount = Money(enteredAmount, fromCommodity).abs()
+        val fragment = getInstance(amount, targetCommodity, splitViewHolder)
+        fragment.show(
+            parentFragmentManager,
+            "transfer_funds_editor;" + fromCommodity + ";" + targetCommodity + ";" + amount.toPlainString()
+        )
     }
 
     /**
      * Starts the transfer of funds from one currency to another
      */
-    private boolean startTransferFunds() {
-        boolean result = false;
-        Account accountFrom = this.account;
-        Commodity fromCommodity = accountFrom.getCommodity();
-        transferAttempt.clear();
+    private fun startTransferFunds(): Boolean {
+        var result = false
+        val accountFrom = this.account
+        val fromCommodity = accountFrom!!.commodity
+        transferAttempt.clear()
 
-        for (SplitViewHolder viewHolder : splitViewHolders) {
-            if (!viewHolder.splitAmountEditText.isInputModified()) continue;
-            Money splitQuantity = viewHolder.quantity;
-            if (splitQuantity == null) continue;
-            Commodity splitCommodity = splitQuantity.getCommodity();
-            if (fromCommodity.equals(splitCommodity)) continue;
-            startTransferFunds(fromCommodity, splitCommodity, viewHolder);
-            result = true;
+        for (viewHolder in splitViewHolders) {
+            if (!viewHolder.splitAmountEditText.isInputModified) continue
+            val splitQuantity = viewHolder.quantity
+            if (splitQuantity == null) continue
+            val splitCommodity = splitQuantity.commodity
+            if (fromCommodity == splitCommodity) continue
+            startTransferFunds(fromCommodity, splitCommodity, viewHolder)
+            result = true
         }
 
-        return result;
+        return result
     }
 
     /**
      * Checks if this is a multi-currency transaction being created/edited
-     * <p>A multi-currency transaction is one in which the main account and transfer account have different currencies. <br>
-     * Single-entry transactions cannot be multi-currency</p>
      *
-     * @return {@code true} if multi-currency transaction, {@code false} otherwise
+     * A multi-currency transaction is one in which the main account and transfer account have different currencies. <br></br>
+     * Single-entry transactions cannot be multi-currency
+     *
+     * @return `true` if multi-currency transaction, `false` otherwise
      */
-    private boolean isMultiCurrencyTransaction() {
-        Account accountFrom = this.account;
-        Commodity accountCommodity = accountFrom.getCommodity();
+    private val isMultiCurrencyTransaction: Boolean
+        get() {
+            val accountFrom = this.account
+            val accountCommodity = accountFrom!!.commodity
 
-        List<Split> splits = extractSplitsFromView();
-        for (Split split : splits) {
-            Commodity splitCommodity = split.getQuantity().getCommodity();
-            if (!accountCommodity.equals(splitCommodity)) {
-                return true;
+            val splits: List<Split> = extractSplitsFromView()
+            for (split in splits) {
+                val splitCommodity = split.quantity.commodity
+                if (accountCommodity != splitCommodity) {
+                    return true
+                }
             }
-        }
 
-        return false;
-    }
+            return false
+        }
 }

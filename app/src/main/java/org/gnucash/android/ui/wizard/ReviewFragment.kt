@@ -1,7 +1,6 @@
 package org.gnucash.android.ui.wizard
 
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -136,7 +135,7 @@ class ReviewFragment : Fragment(), ModelCallbacks, AdapterView.OnItemClickListen
 
             val reviewItem: ReviewItem = reviewItems[position]
             var value = reviewItem.displayValue
-            if (TextUtils.isEmpty(value)) {
+            if (value.isNullOrEmpty()) {
                 value = "(None)"
             }
             (rootView.findViewById<TextView>(android.R.id.text1)!!).text = reviewItem.title

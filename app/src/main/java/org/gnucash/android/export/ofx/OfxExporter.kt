@@ -22,7 +22,36 @@ import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
-import org.gnucash.android.export.ofx.OfxHelper.*
+import org.gnucash.android.export.ofx.OfxHelper.APP_ID
+import org.gnucash.android.export.ofx.OfxHelper.OFX_HEADER
+import org.gnucash.android.export.ofx.OfxHelper.OFX_SGML_HEADER
+import org.gnucash.android.export.ofx.OfxHelper.TAG_ACCOUNT_ID
+import org.gnucash.android.export.ofx.OfxHelper.TAG_ACCOUNT_TYPE
+import org.gnucash.android.export.ofx.OfxHelper.TAG_BALANCE_AMOUNT
+import org.gnucash.android.export.ofx.OfxHelper.TAG_BANK_ACCOUNT_FROM
+import org.gnucash.android.export.ofx.OfxHelper.TAG_BANK_ACCOUNT_TO
+import org.gnucash.android.export.ofx.OfxHelper.TAG_BANK_ID
+import org.gnucash.android.export.ofx.OfxHelper.TAG_BANK_MESSAGES_V1
+import org.gnucash.android.export.ofx.OfxHelper.TAG_BANK_TRANSACTION_LIST
+import org.gnucash.android.export.ofx.OfxHelper.TAG_CURRENCY_DEF
+import org.gnucash.android.export.ofx.OfxHelper.TAG_DATE_AS_OF
+import org.gnucash.android.export.ofx.OfxHelper.TAG_DATE_END
+import org.gnucash.android.export.ofx.OfxHelper.TAG_DATE_POSTED
+import org.gnucash.android.export.ofx.OfxHelper.TAG_DATE_START
+import org.gnucash.android.export.ofx.OfxHelper.TAG_DATE_USER
+import org.gnucash.android.export.ofx.OfxHelper.TAG_LEDGER_BALANCE
+import org.gnucash.android.export.ofx.OfxHelper.TAG_MEMO
+import org.gnucash.android.export.ofx.OfxHelper.TAG_NAME
+import org.gnucash.android.export.ofx.OfxHelper.TAG_STATEMENT_TRANSACTION
+import org.gnucash.android.export.ofx.OfxHelper.TAG_STATEMENT_TRANSACTIONS
+import org.gnucash.android.export.ofx.OfxHelper.TAG_STATEMENT_TRANSACTION_RESPONSE
+import org.gnucash.android.export.ofx.OfxHelper.TAG_TRANSACTION_AMOUNT
+import org.gnucash.android.export.ofx.OfxHelper.TAG_TRANSACTION_FITID
+import org.gnucash.android.export.ofx.OfxHelper.TAG_TRANSACTION_TYPE
+import org.gnucash.android.export.ofx.OfxHelper.TAG_TRANSACTION_UID
+import org.gnucash.android.export.ofx.OfxHelper.UNSOLICITED_TRANSACTION_ID
+import org.gnucash.android.export.ofx.OfxHelper.formattedCurrentTime
+import org.gnucash.android.export.ofx.OfxHelper.getOfxFormattedTime
 import org.gnucash.android.gnc.GncProgressListener
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.Money
@@ -52,7 +81,7 @@ import javax.xml.transform.stream.StreamResult
  * @author Yongxin Wang <fefe.wyx@gmail.com>
  */
 class OfxExporter(
-    private val context: Context,
+    context: Context,
     params: ExportParams,
     bookUID: String,
     listener: GncProgressListener? = null
@@ -75,7 +104,7 @@ class OfxExporter(
         bankmsgs.appendChild(statementTransactionResponse)
         parent.appendChild(bankmsgs)
         val isDoubleEntryEnabled = GnuCashApplication.isDoubleEntryEnabled(context)
-        val nameImbalance = mContext.getString(R.string.imbalance_account_name)
+        val nameImbalance = context.getString(R.string.imbalance_account_name)
         accounts
             .filter { !cancellationSignal.isCanceled }
             .filter { it.transactionCount > 0 }
@@ -91,10 +120,10 @@ class OfxExporter(
                     doc,
                     statementTransactionResponse,
                     account,
-                    mExportParams.exportStartTime
+                    exportParams.exportStartTime
                 )
                 // Mark as exported.
-                mAccountsDbAdapter.markAsExported(account.uid)
+                accountsDbAdapter.markAsExported(account.uid)
             }
     }
 
@@ -113,9 +142,9 @@ class OfxExporter(
         document.appendChild(pi)
         document.appendChild(root)
         writeOFX(document, root, accounts)
-        val useXmlHeader = PreferenceManager.getDefaultSharedPreferences(mContext)
-            .getBoolean(mContext.getString(R.string.key_xml_ofx_header), false)
-        PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow(), bookUID)
+        val useXmlHeader = PreferenceManager.getDefaultSharedPreferences(context)
+            .getBoolean(context.getString(R.string.key_xml_ofx_header), false)
+        PreferencesHelper.setLastExportTime(TimestampHelper.timestampFromNow, bookUID)
         if (useXmlHeader) {
             write(writer, document, false)
         } else {
@@ -133,12 +162,12 @@ class OfxExporter(
         try {
             return docFactory.newDocumentBuilder()
         } catch (e: ParserConfigurationException) {
-            throw ExporterException(mExportParams, e)
+            throw ExporterException(exportParams, e)
         }
     }
 
     override fun writeExport(writer: Writer, exportParams: ExportParams) {
-        val accounts = mAccountsDbAdapter.getExportableAccounts(exportParams.exportStartTime)
+        val accounts = accountsDbAdapter.getExportableAccounts(exportParams.exportStartTime)
         if (accounts.isEmpty()) {
             throw ExporterException(exportParams, "No accounts to export")
         }
@@ -166,7 +195,7 @@ class OfxExporter(
             transformer.transform(source, result)
         } catch (e: TransformerException) {
             Timber.e(e)
-            throw ExporterException(mExportParams, e)
+            throw ExporterException(exportParams, e)
         }
     }
 
@@ -205,7 +234,7 @@ class OfxExporter(
 
         //================= BEGIN ACCOUNT BALANCE INFO =================================
         val balance = getAccountBalance(account).toPlainString()
-        val formattedCurrentTimeString = getFormattedCurrentTime()
+        val formattedCurrentTimeString = formattedCurrentTime
         val balanceAmount = doc.createElement(TAG_BALANCE_AMOUNT)
         balanceAmount.appendChild(doc.createTextNode(balance))
         val dtasof = doc.createElement(TAG_DATE_AS_OF)
@@ -269,7 +298,7 @@ class OfxExporter(
      * @param accountUID Unique Identifier of the account which called the method.  @return Element in DOM corresponding to transaction
      */
     private fun toOFX(transaction: Transaction, doc: Document, accountUID: String): Element {
-        val acctDbAdapter = AccountsDbAdapter.getInstance()
+        val acctDbAdapter = AccountsDbAdapter.instance
         val balance = transaction.getBalance(accountUID)
         val transactionType = if (balance.isNegative) {
             TransactionType.DEBIT
@@ -283,11 +312,11 @@ class OfxExporter(
         transactionNode.appendChild(typeNode)
 
         val datePosted = doc.createElement(TAG_DATE_POSTED)
-        datePosted.appendChild(doc.createTextNode(getOfxFormattedTime(transaction.timeMillis)))
+        datePosted.appendChild(doc.createTextNode(getOfxFormattedTime(transaction.time)))
         transactionNode.appendChild(datePosted)
 
         val dateUser = doc.createElement(TAG_DATE_USER)
-        dateUser.appendChild(doc.createTextNode(getOfxFormattedTime(transaction.timeMillis)))
+        dateUser.appendChild(doc.createTextNode(getOfxFormattedTime(transaction.time)))
         transactionNode.appendChild(dateUser)
 
         val amount = doc.createElement(TAG_TRANSACTION_AMOUNT)

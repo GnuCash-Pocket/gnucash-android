@@ -13,38 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.ui.report;
+package org.gnucash.android.ui.report
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import org.gnucash.android.model.AccountType;
-import org.joda.time.LocalDateTime;
+import org.gnucash.android.model.AccountType
+import org.gnucash.android.ui.report.ReportsActivity.GroupInterval
+import org.joda.time.LocalDateTime
 
 /**
  * Listener interface for passing reporting options from activity to the report fragments
  */
-public interface ReportOptionsListener {
-
+interface ReportOptionsListener {
     /**
      * Notify the implementing class of the selected date range
      *
      * @param start Start date in milliseconds since epoch
      * @param end   End date in milliseconds since epoch
      */
-    void onTimeRangeUpdated(@Nullable LocalDateTime start, @Nullable LocalDateTime end);
+    fun onTimeRangeUpdated(start: LocalDateTime?, end: LocalDateTime?)
 
     /**
      * Updates the listener on a change of the grouping for the report
      *
      * @param groupInterval Group interval
      */
-    void onGroupingUpdated(@NonNull ReportsActivity.GroupInterval groupInterval);
+    fun onGroupingUpdated(groupInterval: GroupInterval)
 
     /**
      * Update to the account type for the report
      *
      * @param accountType Account type
      */
-    void onAccountTypeUpdated(@NonNull AccountType accountType);
+    fun onAccountTypeUpdated(accountType: AccountType)
 }

@@ -62,10 +62,10 @@ class CalculatorEditTextTest : GnuAndroidTest() {
 
     @Before
     fun setUp() {
-        accountsDbAdapter = AccountsDbAdapter.getInstance()
+        accountsDbAdapter = AccountsDbAdapter.instance
         accountsDbAdapter.deleteAllRecords()
 
-        val commoditiesDbAdapter = CommoditiesDbAdapter.getInstance()!!
+        val commoditiesDbAdapter = CommoditiesDbAdapter.instance!!
         val commodity = commoditiesDbAdapter.getCurrency(CURRENCY_CODE)!!
 
         val account = Account(DUMMY_ACCOUNT_NAME, commodity)

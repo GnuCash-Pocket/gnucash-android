@@ -13,37 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.db
 
-package org.gnucash.android.db;
-
-import static android.database.DatabaseUtils.appendEscapedSQLString;
-import static org.gnucash.android.db.DatabaseSchema.AccountEntry;
-import static org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry;
-import static org.gnucash.android.db.DatabaseSchema.BudgetEntry;
-import static org.gnucash.android.db.DatabaseSchema.CommodityEntry;
-import static org.gnucash.android.db.DatabaseSchema.CommonColumns;
-import static org.gnucash.android.db.DatabaseSchema.PriceEntry;
-import static org.gnucash.android.db.DatabaseSchema.RecurrenceEntry;
-import static org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry;
-import static org.gnucash.android.db.DatabaseSchema.SplitEntry;
-import static org.gnucash.android.db.DatabaseSchema.TransactionEntry;
-
-import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
-import android.database.sqlite.SQLiteOpenHelper;
-
-import androidx.annotation.NonNull;
-
-import org.gnucash.android.model.Commodity;
-import org.xml.sax.SAXException;
-
-import java.io.IOException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import timber.log.Timber;
+import android.content.Context
+import android.database.DatabaseUtils
+import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteException
+import android.database.sqlite.SQLiteOpenHelper
+import org.gnucash.android.db.DatabaseSchema.AccountEntry
+import org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry
+import org.gnucash.android.db.DatabaseSchema.BudgetEntry
+import org.gnucash.android.db.DatabaseSchema.CommodityEntry
+import org.gnucash.android.db.DatabaseSchema.CommonColumns
+import org.gnucash.android.db.DatabaseSchema.PriceEntry
+import org.gnucash.android.db.DatabaseSchema.RecurrenceEntry
+import org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry
+import org.gnucash.android.db.DatabaseSchema.SplitEntry
+import org.gnucash.android.db.DatabaseSchema.TransactionEntry
+import org.gnucash.android.db.MigrationHelper.importCommodities
+import org.gnucash.android.db.MigrationHelper.migrate
+import org.gnucash.android.model.Commodity
+import org.xml.sax.SAXException
+import timber.log.Timber
+import java.io.IOException
+import javax.xml.parsers.ParserConfigurationException
 
 /**
  * Helper class for managing the SQLite database.
@@ -51,234 +44,20 @@ import timber.log.Timber;
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class DatabaseHelper extends SQLiteOpenHelper {
-
-    /**
-     * SQL statement to create the accounts table in the database
-     */
-    private static final String ACCOUNTS_TABLE_CREATE = "create table " + AccountEntry.TABLE_NAME + " ("
-        + AccountEntry._ID + " integer primary key autoincrement, "
-        + AccountEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
-        + AccountEntry.COLUMN_NAME + " varchar(255) not null, "
-        + AccountEntry.COLUMN_TYPE + " varchar(255) not null, "
-        + AccountEntry.COLUMN_CURRENCY + " varchar(255), "
-        + AccountEntry.COLUMN_COMMODITY_UID + " varchar(255) not null, "
-        + AccountEntry.COLUMN_DESCRIPTION + " varchar(255), "
-        + AccountEntry.COLUMN_COLOR_CODE + " varchar(255), "
-        + AccountEntry.COLUMN_FAVORITE + " tinyint default 0, "
-        + AccountEntry.COLUMN_HIDDEN + " tinyint default 0, "
-        + AccountEntry.COLUMN_FULL_NAME + " varchar(255), "
-        + AccountEntry.COLUMN_PLACEHOLDER + " tinyint default 0, "
-        + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " varchar(255), "
-        + AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID + " varchar(255), "
-        + AccountEntry.COLUMN_NOTES + " text, "
-        + AccountEntry.COLUMN_BALANCE + " varchar(255), "
-        + AccountEntry.COLUMN_CLEARED_BALANCE + " varchar(255), "
-        + AccountEntry.COLUMN_NOCLOSING_BALANCE + " varchar(255), "
-        + AccountEntry.COLUMN_RECONCILED_BALANCE + " varchar(255), "
-        + AccountEntry.COLUMN_TEMPLATE + " tinyint default 0, "
-        + AccountEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-        + AccountEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-        + "FOREIGN KEY (" + AccountEntry.COLUMN_COMMODITY_UID + ") REFERENCES " + CommodityEntry.TABLE_NAME + " (" + CommodityEntry.COLUMN_UID + ") "
-        + ");"
-        + createUpdatedAtTrigger(AccountEntry.TABLE_NAME);
-
-    /**
-     * SQL statement to create the transactions table in the database
-     */
-    private static final String TRANSACTIONS_TABLE_CREATE = "create table " + TransactionEntry.TABLE_NAME + " ("
-        + TransactionEntry._ID + " integer primary key autoincrement, "
-        + TransactionEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
-        + TransactionEntry.COLUMN_DESCRIPTION + " varchar(255), "
-        + TransactionEntry.COLUMN_NOTES + " text, "
-        + TransactionEntry.COLUMN_TIMESTAMP + " integer not null, "
-        + TransactionEntry.COLUMN_EXPORTED + " tinyint default 0, "
-        + TransactionEntry.COLUMN_TEMPLATE + " tinyint default 0, "
-        + TransactionEntry.COLUMN_CURRENCY + " varchar(255), "
-        + TransactionEntry.COLUMN_COMMODITY_UID + " varchar(255) not null, "
-        + TransactionEntry.COLUMN_SCHEDX_ACTION_UID + " varchar(255), "
-        + TransactionEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-        + TransactionEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-        + "FOREIGN KEY (" + TransactionEntry.COLUMN_SCHEDX_ACTION_UID + ") REFERENCES " + ScheduledActionEntry.TABLE_NAME + " (" + ScheduledActionEntry.COLUMN_UID + ") ON DELETE SET NULL, "
-        + "FOREIGN KEY (" + TransactionEntry.COLUMN_COMMODITY_UID + ") REFERENCES " + CommodityEntry.TABLE_NAME + " (" + CommodityEntry.COLUMN_UID + ") "
-        + ");"
-        + createUpdatedAtTrigger(TransactionEntry.TABLE_NAME);
-
-    /**
-     * SQL statement to create the transaction splits table
-     */
-    private static final String SPLITS_TABLE_CREATE = "CREATE TABLE " + SplitEntry.TABLE_NAME + " ("
-        + SplitEntry._ID + " integer primary key autoincrement, "
-        + SplitEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
-        + SplitEntry.COLUMN_MEMO + " text, "
-        + SplitEntry.COLUMN_TYPE + " varchar(255) not null, "
-        + SplitEntry.COLUMN_VALUE_NUM + " integer not null, "
-        + SplitEntry.COLUMN_VALUE_DENOM + " integer not null, "
-        + SplitEntry.COLUMN_QUANTITY_NUM + " integer not null, "
-        + SplitEntry.COLUMN_QUANTITY_DENOM + " integer not null, "
-        + SplitEntry.COLUMN_ACCOUNT_UID + " varchar(255) not null, "
-        + SplitEntry.COLUMN_TRANSACTION_UID + " varchar(255) not null, "
-        + SplitEntry.COLUMN_RECONCILE_STATE + " varchar(1) not null default 'n', "
-        + SplitEntry.COLUMN_RECONCILE_DATE + " timestamp not null default current_timestamp, "
-        + SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID + " varchar(255), "
-        + SplitEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-        + SplitEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-        + "FOREIGN KEY (" + SplitEntry.COLUMN_ACCOUNT_UID + ") REFERENCES " + AccountEntry.TABLE_NAME + " (" + AccountEntry.COLUMN_UID + ") ON DELETE CASCADE, "
-        + "FOREIGN KEY (" + SplitEntry.COLUMN_TRANSACTION_UID + ") REFERENCES " + TransactionEntry.TABLE_NAME + " (" + TransactionEntry.COLUMN_UID + ") ON DELETE CASCADE "
-        + ");"
-        + createUpdatedAtTrigger(SplitEntry.TABLE_NAME);
-
-
-    private static final String SCHEDULED_ACTIONS_TABLE_CREATE = "CREATE TABLE " + ScheduledActionEntry.TABLE_NAME + " ("
-        + ScheduledActionEntry._ID + " integer primary key autoincrement, "
-        + ScheduledActionEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
-        + ScheduledActionEntry.COLUMN_ACTION_UID + " varchar(255) not null, "
-        + ScheduledActionEntry.COLUMN_TYPE + " varchar(255) not null, "
-        + ScheduledActionEntry.COLUMN_RECURRENCE_UID + " varchar(255) not null, "
-        + ScheduledActionEntry.COLUMN_TEMPLATE_ACCT_UID + " varchar(255) not null, "
-        + ScheduledActionEntry.COLUMN_LAST_RUN + " integer default 0, "
-        + ScheduledActionEntry.COLUMN_START_TIME + " integer not null, "
-        + ScheduledActionEntry.COLUMN_END_TIME + " integer default 0, "
-        + ScheduledActionEntry.COLUMN_TAG + " text, "
-        + ScheduledActionEntry.COLUMN_ENABLED + " tinyint default 1, " //enabled by default
-        + ScheduledActionEntry.COLUMN_AUTO_CREATE + " tinyint default 1, "
-        + ScheduledActionEntry.COLUMN_AUTO_NOTIFY + " tinyint default 0, "
-        + ScheduledActionEntry.COLUMN_ADVANCE_CREATION + " integer default 0, "
-        + ScheduledActionEntry.COLUMN_ADVANCE_NOTIFY + " integer default 0, "
-        + ScheduledActionEntry.COLUMN_TOTAL_FREQUENCY + " integer default 0, "
-        + ScheduledActionEntry.COLUMN_EXECUTION_COUNT + " integer default 0, "
-        + ScheduledActionEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-        + ScheduledActionEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-        + "FOREIGN KEY (" + ScheduledActionEntry.COLUMN_RECURRENCE_UID + ") REFERENCES " + RecurrenceEntry.TABLE_NAME + " (" + RecurrenceEntry.COLUMN_UID + ") "
-        + ");"
-        + createUpdatedAtTrigger(ScheduledActionEntry.TABLE_NAME);
-
-    private static final String COMMODITIES_TABLE_CREATE = "CREATE TABLE " + DatabaseSchema.CommodityEntry.TABLE_NAME + " ("
-        + CommodityEntry._ID + " integer primary key autoincrement, "
-        + CommodityEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
-        + CommodityEntry.COLUMN_NAMESPACE + " varchar(255) not null default '" + Commodity.COMMODITY_CURRENCY + "', "
-        + CommodityEntry.COLUMN_FULLNAME + " varchar(255) not null, "
-        + CommodityEntry.COLUMN_MNEMONIC + " varchar(255) not null, "
-        + CommodityEntry.COLUMN_LOCAL_SYMBOL + " varchar(255) not null default '', "
-        + CommodityEntry.COLUMN_CUSIP + " varchar(255), "
-        + CommodityEntry.COLUMN_SMALLEST_FRACTION + " integer not null, "
-        + CommodityEntry.COLUMN_QUOTE_FLAG + " tinyint not null default 0, "
-        + CommodityEntry.COLUMN_QUOTE_SOURCE + " varchar(255), "
-        + CommodityEntry.COLUMN_QUOTE_TZ + " varchar(100), "
-        + CommodityEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-        + CommodityEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP "
-        + ");"
-        + createUpdatedAtTrigger(CommodityEntry.TABLE_NAME);
-
-    /**
-     * SQL statement to create the commodity prices table
-     */
-    private static final String PRICES_TABLE_CREATE = "CREATE TABLE " + PriceEntry.TABLE_NAME + " ("
-        + PriceEntry._ID + " integer primary key autoincrement, "
-        + PriceEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
-        + PriceEntry.COLUMN_COMMODITY_UID + " varchar(255) not null, "
-        + PriceEntry.COLUMN_CURRENCY_UID + " varchar(255) not null, "
-        + PriceEntry.COLUMN_TYPE + " varchar(255), "
-        + PriceEntry.COLUMN_DATE + " TIMESTAMP not null, "
-        + PriceEntry.COLUMN_SOURCE + " text, "
-        + PriceEntry.COLUMN_VALUE_NUM + " integer not null, "
-        + PriceEntry.COLUMN_VALUE_DENOM + " integer not null, "
-        + PriceEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-        + PriceEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-        + "UNIQUE (" + PriceEntry.COLUMN_COMMODITY_UID + ", " + PriceEntry.COLUMN_CURRENCY_UID + ") ON CONFLICT REPLACE, "
-        + "FOREIGN KEY (" + PriceEntry.COLUMN_COMMODITY_UID + ") REFERENCES " + CommodityEntry.TABLE_NAME + " (" + CommodityEntry.COLUMN_UID + ") ON DELETE CASCADE, "
-        + "FOREIGN KEY (" + PriceEntry.COLUMN_CURRENCY_UID + ") REFERENCES " + CommodityEntry.TABLE_NAME + " (" + CommodityEntry.COLUMN_UID + ") ON DELETE CASCADE "
-        + ");"
-        + createUpdatedAtTrigger(PriceEntry.TABLE_NAME);
-
-
-    private static final String BUDGETS_TABLE_CREATE = "CREATE TABLE " + BudgetEntry.TABLE_NAME + " ("
-        + BudgetEntry._ID + " integer primary key autoincrement, "
-        + BudgetEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
-        + BudgetEntry.COLUMN_NAME + " varchar(255) not null, "
-        + BudgetEntry.COLUMN_DESCRIPTION + " varchar(255), "
-        + BudgetEntry.COLUMN_RECURRENCE_UID + " varchar(255) not null, "
-        + BudgetEntry.COLUMN_NUM_PERIODS + " integer, "
-        + BudgetEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-        + BudgetEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-        + "FOREIGN KEY (" + BudgetEntry.COLUMN_RECURRENCE_UID + ") REFERENCES " + RecurrenceEntry.TABLE_NAME + " (" + RecurrenceEntry.COLUMN_UID + ") "
-        + ");"
-        + createUpdatedAtTrigger(BudgetEntry.TABLE_NAME);
-
-    private static final String BUDGET_AMOUNTS_TABLE_CREATE = "CREATE TABLE " + BudgetAmountEntry.TABLE_NAME + " ("
-        + BudgetAmountEntry._ID + " integer primary key autoincrement, "
-        + BudgetAmountEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
-        + BudgetAmountEntry.COLUMN_BUDGET_UID + " varchar(255) not null, "
-        + BudgetAmountEntry.COLUMN_ACCOUNT_UID + " varchar(255) not null, "
-        + BudgetAmountEntry.COLUMN_AMOUNT_NUM + " integer not null, "
-        + BudgetAmountEntry.COLUMN_AMOUNT_DENOM + " integer not null, "
-        + BudgetAmountEntry.COLUMN_PERIOD_NUM + " integer not null, "
-        + BudgetAmountEntry.COLUMN_NOTES + " text, "
-        + BudgetAmountEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-        + BudgetAmountEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-        + "FOREIGN KEY (" + BudgetAmountEntry.COLUMN_ACCOUNT_UID + ") REFERENCES " + AccountEntry.TABLE_NAME + " (" + AccountEntry.COLUMN_UID + ") ON DELETE CASCADE, "
-        + "FOREIGN KEY (" + BudgetAmountEntry.COLUMN_BUDGET_UID + ") REFERENCES " + BudgetEntry.TABLE_NAME + " (" + BudgetEntry.COLUMN_UID + ") ON DELETE CASCADE "
-        + ");"
-        + createUpdatedAtTrigger(BudgetAmountEntry.TABLE_NAME);
-
-
-    private static final String RECURRENCE_TABLE_CREATE = "CREATE TABLE " + RecurrenceEntry.TABLE_NAME + " ("
-        + RecurrenceEntry._ID + " integer primary key autoincrement, "
-        + RecurrenceEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
-        + RecurrenceEntry.COLUMN_MULTIPLIER + " integer not null default 1, "
-        + RecurrenceEntry.COLUMN_PERIOD_TYPE + " varchar(255) not null, "
-        + RecurrenceEntry.COLUMN_BYDAY + " varchar(255), "
-        + RecurrenceEntry.COLUMN_PERIOD_START + " timestamp not null, "
-        + RecurrenceEntry.COLUMN_PERIOD_END + " timestamp, "
-        + RecurrenceEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-        + RecurrenceEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP); "
-        + createUpdatedAtTrigger(RecurrenceEntry.TABLE_NAME);
-
-    @NonNull
-    private final Context context;
-
-    /**
-     * Constructor
-     *
-     * @param context      Application context
-     * @param databaseName Name of the database
-     */
-    public DatabaseHelper(@NonNull Context context, String databaseName) {
-        super(context, databaseName, null, DatabaseSchema.DATABASE_VERSION);
-        this.context = context;
+class DatabaseHelper(private val context: Context, databaseName: String) :
+    SQLiteOpenHelper(context, databaseName, null, DatabaseSchema.DATABASE_VERSION) {
+    override fun onCreate(db: SQLiteDatabase) {
+        val holder = DatabaseHolder(context, db)
+        createDatabaseTables(holder)
     }
 
-    /**
-     * Creates an update trigger to update the updated_at column for all records in the database.
-     * This has to be run per table, and is currently appended to the create table statement.
-     *
-     * @param tableName Name of table on which to create trigger
-     * @return SQL statement for creating trigger
-     */
-    static String createUpdatedAtTrigger(String tableName) {
-        return "CREATE TRIGGER update_time_trigger "
-            + "  AFTER UPDATE ON " + tableName + " FOR EACH ROW"
-            + "  BEGIN " + "UPDATE " + tableName
-            + "  SET " + CommonColumns.COLUMN_MODIFIED_AT + " = CURRENT_TIMESTAMP"
-            + "  WHERE OLD." + CommonColumns.COLUMN_UID + " = NEW." + CommonColumns.COLUMN_UID + ";"
-            + "  END;";
+    override fun onOpen(db: SQLiteDatabase) {
+        super.onOpen(db)
+        db.execSQL("PRAGMA foreign_keys=ON")
     }
 
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-        DatabaseHolder holder = new DatabaseHolder(context, db);
-        createDatabaseTables(holder);
-    }
-
-    @Override
-    public void onOpen(SQLiteDatabase db) {
-        super.onOpen(db);
-        db.execSQL("PRAGMA foreign_keys=ON");
-    }
-
-    @Override
-    public void onUpgrade(@NonNull SQLiteDatabase db, int oldVersion, int newVersion) {
-        MigrationHelper.migrate(context, db, oldVersion, newVersion);
+    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        migrate(context, db, oldVersion, newVersion)
     }
 
     /**
@@ -286,159 +65,371 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      *
      * @param holder Database holder
      */
-    private void createDatabaseTables(@NonNull DatabaseHolder holder) {
-        Timber.i("Creating database tables");
-        SQLiteDatabase db = holder.db;
-        db.execSQL(ACCOUNTS_TABLE_CREATE);
-        db.execSQL(TRANSACTIONS_TABLE_CREATE);
-        db.execSQL(SPLITS_TABLE_CREATE);
-        db.execSQL(SCHEDULED_ACTIONS_TABLE_CREATE);
-        db.execSQL(COMMODITIES_TABLE_CREATE);
-        db.execSQL(PRICES_TABLE_CREATE);
-        db.execSQL(RECURRENCE_TABLE_CREATE);
-        db.execSQL(BUDGETS_TABLE_CREATE);
-        db.execSQL(BUDGET_AMOUNTS_TABLE_CREATE);
+    private fun createDatabaseTables(holder: DatabaseHolder) {
+        Timber.i("Creating database tables")
+        val db = holder.db
+        db.execSQL(ACCOUNTS_TABLE_CREATE)
+        db.execSQL(TRANSACTIONS_TABLE_CREATE)
+        db.execSQL(SPLITS_TABLE_CREATE)
+        db.execSQL(SCHEDULED_ACTIONS_TABLE_CREATE)
+        db.execSQL(COMMODITIES_TABLE_CREATE)
+        db.execSQL(PRICES_TABLE_CREATE)
+        db.execSQL(RECURRENCE_TABLE_CREATE)
+        db.execSQL(BUDGETS_TABLE_CREATE)
+        db.execSQL(BUDGET_AMOUNTS_TABLE_CREATE)
 
-        String createAccountUidIndex = "CREATE UNIQUE INDEX '" + AccountEntry.INDEX_UID + "' ON "
-            + AccountEntry.TABLE_NAME + "(" + AccountEntry.COLUMN_UID + ")";
+        val createAccountUidIndex = ("CREATE UNIQUE INDEX '" + AccountEntry.INDEX_UID + "' ON "
+                + AccountEntry.TABLE_NAME + "(" + AccountEntry.COLUMN_UID + ")")
 
-        String createTransactionUidIndex = "CREATE UNIQUE INDEX '" + TransactionEntry.INDEX_UID + "' ON "
-            + TransactionEntry.TABLE_NAME + "(" + TransactionEntry.COLUMN_UID + ")";
+        val createTransactionUidIndex =
+            ("CREATE UNIQUE INDEX '" + TransactionEntry.INDEX_UID + "' ON "
+                    + TransactionEntry.TABLE_NAME + "(" + TransactionEntry.COLUMN_UID + ")")
 
-        String createSplitUidIndex = "CREATE UNIQUE INDEX '" + SplitEntry.INDEX_UID + "' ON "
-            + SplitEntry.TABLE_NAME + "(" + SplitEntry.COLUMN_UID + ")";
+        val createSplitUidIndex = ("CREATE UNIQUE INDEX '" + SplitEntry.INDEX_UID + "' ON "
+                + SplitEntry.TABLE_NAME + "(" + SplitEntry.COLUMN_UID + ")")
 
-        String createScheduledEventUidIndex = "CREATE UNIQUE INDEX '" + ScheduledActionEntry.INDEX_UID
-            + "' ON " + ScheduledActionEntry.TABLE_NAME + "(" + ScheduledActionEntry.COLUMN_UID + ")";
+        val createScheduledEventUidIndex = ("CREATE UNIQUE INDEX '" + ScheduledActionEntry.INDEX_UID
+                + "' ON " + ScheduledActionEntry.TABLE_NAME + "(" + ScheduledActionEntry.COLUMN_UID + ")")
 
-        String createCommodityUidIndex = "CREATE UNIQUE INDEX '" + CommodityEntry.INDEX_UID
-            + "' ON " + CommodityEntry.TABLE_NAME + "(" + CommodityEntry.COLUMN_UID + ")";
+        val createCommodityUidIndex = ("CREATE UNIQUE INDEX '" + CommodityEntry.INDEX_UID
+                + "' ON " + CommodityEntry.TABLE_NAME + "(" + CommodityEntry.COLUMN_UID + ")")
 
-        String createPriceUidIndex = "CREATE UNIQUE INDEX '" + PriceEntry.INDEX_UID
-            + "' ON " + PriceEntry.TABLE_NAME + "(" + PriceEntry.COLUMN_UID + ")";
+        val createPriceUidIndex = ("CREATE UNIQUE INDEX '" + PriceEntry.INDEX_UID
+                + "' ON " + PriceEntry.TABLE_NAME + "(" + PriceEntry.COLUMN_UID + ")")
 
-        String createBudgetUidIndex = "CREATE UNIQUE INDEX '" + BudgetEntry.INDEX_UID
-            + "' ON " + BudgetEntry.TABLE_NAME + "(" + BudgetEntry.COLUMN_UID + ")";
+        val createBudgetUidIndex = ("CREATE UNIQUE INDEX '" + BudgetEntry.INDEX_UID
+                + "' ON " + BudgetEntry.TABLE_NAME + "(" + BudgetEntry.COLUMN_UID + ")")
 
-        String createBudgetAmountUidIndex = "CREATE UNIQUE INDEX '" + BudgetAmountEntry.INDEX_UID
-            + "' ON " + BudgetAmountEntry.TABLE_NAME + "(" + BudgetAmountEntry.COLUMN_UID + ")";
+        val createBudgetAmountUidIndex = ("CREATE UNIQUE INDEX '" + BudgetAmountEntry.INDEX_UID
+                + "' ON " + BudgetAmountEntry.TABLE_NAME + "(" + BudgetAmountEntry.COLUMN_UID + ")")
 
-        String createRecurrenceUidIndex = "CREATE UNIQUE INDEX '" + RecurrenceEntry.INDEX_UID
-            + "' ON " + RecurrenceEntry.TABLE_NAME + "(" + RecurrenceEntry.COLUMN_UID + ")";
+        val createRecurrenceUidIndex = ("CREATE UNIQUE INDEX '" + RecurrenceEntry.INDEX_UID
+                + "' ON " + RecurrenceEntry.TABLE_NAME + "(" + RecurrenceEntry.COLUMN_UID + ")")
 
-        db.execSQL(createAccountUidIndex);
-        db.execSQL(createTransactionUidIndex);
-        db.execSQL(createSplitUidIndex);
-        db.execSQL(createScheduledEventUidIndex);
-        db.execSQL(createCommodityUidIndex);
-        db.execSQL(createPriceUidIndex);
-        db.execSQL(createBudgetUidIndex);
-        db.execSQL(createRecurrenceUidIndex);
-        db.execSQL(createBudgetAmountUidIndex);
-        createResetBalancesTriggers(db);
+        db.execSQL(createAccountUidIndex)
+        db.execSQL(createTransactionUidIndex)
+        db.execSQL(createSplitUidIndex)
+        db.execSQL(createScheduledEventUidIndex)
+        db.execSQL(createCommodityUidIndex)
+        db.execSQL(createPriceUidIndex)
+        db.execSQL(createBudgetUidIndex)
+        db.execSQL(createRecurrenceUidIndex)
+        db.execSQL(createBudgetAmountUidIndex)
+        createResetBalancesTriggers(db)
 
         try {
-            MigrationHelper.importCommodities(holder);
-        } catch (SAXException | ParserConfigurationException | IOException e) {
-            String msg = "Error loading currencies into the database";
-            Timber.e(e, msg);
-            throw new SQLiteException(msg, e);
+            importCommodities(holder)
+        } catch (e: SAXException) {
+            val msg = "Error loading currencies into the database"
+            Timber.e(e, msg)
+            throw SQLiteException(msg, e)
+        } catch (e: ParserConfigurationException) {
+            val msg = "Error loading currencies into the database"
+            Timber.e(e, msg)
+            throw SQLiteException(msg, e)
+        } catch (e: IOException) {
+            val msg = "Error loading currencies into the database"
+            Timber.e(e, msg)
+            throw SQLiteException(msg, e)
         }
     }
 
-    /**
-     * Escape the given argument for use in a {@code LIKE} statement.
-     *
-     * @param value the value to escape.
-     */
-    public static String sqlEscapeLike(String value) {
-        StringBuilder escaper = new StringBuilder();
-        appendEscapedSQLString(escaper, value);
-        boolean escape = false;
-        int length = escaper.length();
-        for (int i = length - 1; i > 0; i--) {
-            char c = escaper.charAt(i);
-            if ((c == '%') || (c == '_')) {
-                escape = true;
-                escaper.insert(i, '_');
+    val holder: DatabaseHolder
+        get() = DatabaseHolder(context, writableDatabase, databaseName)
+
+    val readableHolder: DatabaseHolder
+        get() = DatabaseHolder(context, readableDatabase, databaseName)
+
+    companion object {
+        /**
+         * SQL statement to create the accounts table in the database
+         */
+        private val ACCOUNTS_TABLE_CREATE = ("create table " + AccountEntry.TABLE_NAME + " ("
+                + AccountEntry.COLUMN_ID + " integer primary key autoincrement, "
+                + AccountEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
+                + AccountEntry.COLUMN_NAME + " varchar(255) not null, "
+                + AccountEntry.COLUMN_TYPE + " varchar(255) not null, "
+                + AccountEntry.COLUMN_CURRENCY + " varchar(255), "
+                + AccountEntry.COLUMN_COMMODITY_UID + " varchar(255) not null, "
+                + AccountEntry.COLUMN_DESCRIPTION + " varchar(255), "
+                + AccountEntry.COLUMN_COLOR_CODE + " varchar(255), "
+                + AccountEntry.COLUMN_FAVORITE + " tinyint default 0, "
+                + AccountEntry.COLUMN_HIDDEN + " tinyint default 0, "
+                + AccountEntry.COLUMN_FULL_NAME + " varchar(255), "
+                + AccountEntry.COLUMN_PLACEHOLDER + " tinyint default 0, "
+                + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " varchar(255), "
+                + AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID + " varchar(255), "
+                + AccountEntry.COLUMN_NOTES + " text, "
+                + AccountEntry.COLUMN_BALANCE + " varchar(255), "
+                + AccountEntry.COLUMN_CLEARED_BALANCE + " varchar(255), "
+                + AccountEntry.COLUMN_NOCLOSING_BALANCE + " varchar(255), "
+                + AccountEntry.COLUMN_RECONCILED_BALANCE + " varchar(255), "
+                + AccountEntry.COLUMN_TEMPLATE + " tinyint default 0, "
+                + AccountEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                + AccountEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                + "FOREIGN KEY (" + AccountEntry.COLUMN_COMMODITY_UID + ") REFERENCES " + CommodityEntry.TABLE_NAME + " (" + CommodityEntry.COLUMN_UID + ") "
+                + ");"
+                + createUpdatedAtTrigger(AccountEntry.TABLE_NAME))
+
+        /**
+         * SQL statement to create the transactions table in the database
+         */
+        private val TRANSACTIONS_TABLE_CREATE =
+            ("create table " + TransactionEntry.TABLE_NAME + " ("
+                    + TransactionEntry.COLUMN_ID + " integer primary key autoincrement, "
+                    + TransactionEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
+                    + TransactionEntry.COLUMN_DESCRIPTION + " varchar(255), "
+                    + TransactionEntry.COLUMN_NOTES + " text, "
+                    + TransactionEntry.COLUMN_TIMESTAMP + " integer not null, "
+                    + TransactionEntry.COLUMN_EXPORTED + " tinyint default 0, "
+                    + TransactionEntry.COLUMN_TEMPLATE + " tinyint default 0, "
+                    + TransactionEntry.COLUMN_CURRENCY + " varchar(255), "
+                    + TransactionEntry.COLUMN_COMMODITY_UID + " varchar(255) not null, "
+                    + TransactionEntry.COLUMN_SCHEDX_ACTION_UID + " varchar(255), "
+                    + TransactionEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                    + TransactionEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                    + "FOREIGN KEY (" + TransactionEntry.COLUMN_SCHEDX_ACTION_UID + ") REFERENCES " + ScheduledActionEntry.TABLE_NAME + " (" + ScheduledActionEntry.COLUMN_UID + ") ON DELETE SET NULL, "
+                    + "FOREIGN KEY (" + TransactionEntry.COLUMN_COMMODITY_UID + ") REFERENCES " + CommodityEntry.TABLE_NAME + " (" + CommodityEntry.COLUMN_UID + ") "
+                    + ");"
+                    + createUpdatedAtTrigger(TransactionEntry.TABLE_NAME))
+
+        /**
+         * SQL statement to create the transaction splits table
+         */
+        private val SPLITS_TABLE_CREATE = ("CREATE TABLE " + SplitEntry.TABLE_NAME + " ("
+                + SplitEntry.COLUMN_ID + " integer primary key autoincrement, "
+                + SplitEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
+                + SplitEntry.COLUMN_MEMO + " text, "
+                + SplitEntry.COLUMN_TYPE + " varchar(255) not null, "
+                + SplitEntry.COLUMN_VALUE_NUM + " integer not null, "
+                + SplitEntry.COLUMN_VALUE_DENOM + " integer not null, "
+                + SplitEntry.COLUMN_QUANTITY_NUM + " integer not null, "
+                + SplitEntry.COLUMN_QUANTITY_DENOM + " integer not null, "
+                + SplitEntry.COLUMN_ACCOUNT_UID + " varchar(255) not null, "
+                + SplitEntry.COLUMN_TRANSACTION_UID + " varchar(255) not null, "
+                + SplitEntry.COLUMN_RECONCILE_STATE + " varchar(1) not null default 'n', "
+                + SplitEntry.COLUMN_RECONCILE_DATE + " timestamp not null default current_timestamp, "
+                + SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID + " varchar(255), "
+                + SplitEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                + SplitEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                + "FOREIGN KEY (" + SplitEntry.COLUMN_ACCOUNT_UID + ") REFERENCES " + AccountEntry.TABLE_NAME + " (" + AccountEntry.COLUMN_UID + ") ON DELETE CASCADE, "
+                + "FOREIGN KEY (" + SplitEntry.COLUMN_TRANSACTION_UID + ") REFERENCES " + TransactionEntry.TABLE_NAME + " (" + TransactionEntry.COLUMN_UID + ") ON DELETE CASCADE "
+                + ");"
+                + createUpdatedAtTrigger(SplitEntry.TABLE_NAME))
+
+
+        private val SCHEDULED_ACTIONS_TABLE_CREATE =
+            ("CREATE TABLE " + ScheduledActionEntry.TABLE_NAME + " ("
+                    + ScheduledActionEntry.COLUMN_ID + " integer primary key autoincrement, "
+                    + ScheduledActionEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
+                    + ScheduledActionEntry.COLUMN_ACTION_UID + " varchar(255) not null, "
+                    + ScheduledActionEntry.COLUMN_TYPE + " varchar(255) not null, "
+                    + ScheduledActionEntry.COLUMN_RECURRENCE_UID + " varchar(255) not null, "
+                    + ScheduledActionEntry.COLUMN_TEMPLATE_ACCT_UID + " varchar(255) not null, "
+                    + ScheduledActionEntry.COLUMN_LAST_RUN + " integer default 0, "
+                    + ScheduledActionEntry.COLUMN_START_TIME + " integer not null, "
+                    + ScheduledActionEntry.COLUMN_END_TIME + " integer default 0, "
+                    + ScheduledActionEntry.COLUMN_TAG + " text, "
+                    + ScheduledActionEntry.COLUMN_ENABLED + " tinyint default 1, " //enabled by default
+                    + ScheduledActionEntry.COLUMN_AUTO_CREATE + " tinyint default 1, "
+                    + ScheduledActionEntry.COLUMN_AUTO_NOTIFY + " tinyint default 0, "
+                    + ScheduledActionEntry.COLUMN_ADVANCE_CREATION + " integer default 0, "
+                    + ScheduledActionEntry.COLUMN_ADVANCE_NOTIFY + " integer default 0, "
+                    + ScheduledActionEntry.COLUMN_TOTAL_FREQUENCY + " integer default 0, "
+                    + ScheduledActionEntry.COLUMN_EXECUTION_COUNT + " integer default 0, "
+                    + ScheduledActionEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                    + ScheduledActionEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                    + "FOREIGN KEY (" + ScheduledActionEntry.COLUMN_RECURRENCE_UID + ") REFERENCES " + RecurrenceEntry.TABLE_NAME + " (" + RecurrenceEntry.COLUMN_UID + ") "
+                    + ");"
+                    + createUpdatedAtTrigger(ScheduledActionEntry.TABLE_NAME))
+
+        private val COMMODITIES_TABLE_CREATE = ("CREATE TABLE " + CommodityEntry.TABLE_NAME + " ("
+                + CommodityEntry.COLUMN_ID + " integer primary key autoincrement, "
+                + CommodityEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
+                + CommodityEntry.COLUMN_NAMESPACE + " varchar(255) not null default '" + Commodity.COMMODITY_CURRENCY + "', "
+                + CommodityEntry.COLUMN_FULLNAME + " varchar(255) not null, "
+                + CommodityEntry.COLUMN_MNEMONIC + " varchar(255) not null, "
+                + CommodityEntry.COLUMN_LOCAL_SYMBOL + " varchar(255) not null default '', "
+                + CommodityEntry.COLUMN_CUSIP + " varchar(255), "
+                + CommodityEntry.COLUMN_SMALLEST_FRACTION + " integer not null, "
+                + CommodityEntry.COLUMN_QUOTE_FLAG + " tinyint not null default 0, "
+                + CommodityEntry.COLUMN_QUOTE_SOURCE + " varchar(255), "
+                + CommodityEntry.COLUMN_QUOTE_TZ + " varchar(100), "
+                + CommodityEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                + CommodityEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP "
+                + ");"
+                + createUpdatedAtTrigger(CommodityEntry.TABLE_NAME))
+
+        /**
+         * SQL statement to create the commodity prices table
+         */
+        private val PRICES_TABLE_CREATE = ("CREATE TABLE " + PriceEntry.TABLE_NAME + " ("
+                + PriceEntry.COLUMN_ID + " integer primary key autoincrement, "
+                + PriceEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
+                + PriceEntry.COLUMN_COMMODITY_UID + " varchar(255) not null, "
+                + PriceEntry.COLUMN_CURRENCY_UID + " varchar(255) not null, "
+                + PriceEntry.COLUMN_TYPE + " varchar(255), "
+                + PriceEntry.COLUMN_DATE + " TIMESTAMP not null, "
+                + PriceEntry.COLUMN_SOURCE + " text, "
+                + PriceEntry.COLUMN_VALUE_NUM + " integer not null, "
+                + PriceEntry.COLUMN_VALUE_DENOM + " integer not null, "
+                + PriceEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                + PriceEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                + "UNIQUE (" + PriceEntry.COLUMN_COMMODITY_UID + ", " + PriceEntry.COLUMN_CURRENCY_UID + ") ON CONFLICT REPLACE, "
+                + "FOREIGN KEY (" + PriceEntry.COLUMN_COMMODITY_UID + ") REFERENCES " + CommodityEntry.TABLE_NAME + " (" + CommodityEntry.COLUMN_UID + ") ON DELETE CASCADE, "
+                + "FOREIGN KEY (" + PriceEntry.COLUMN_CURRENCY_UID + ") REFERENCES " + CommodityEntry.TABLE_NAME + " (" + CommodityEntry.COLUMN_UID + ") ON DELETE CASCADE "
+                + ");"
+                + createUpdatedAtTrigger(PriceEntry.TABLE_NAME))
+
+
+        private val BUDGETS_TABLE_CREATE = ("CREATE TABLE " + BudgetEntry.TABLE_NAME + " ("
+                + BudgetEntry.COLUMN_ID + " integer primary key autoincrement, "
+                + BudgetEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
+                + BudgetEntry.COLUMN_NAME + " varchar(255) not null, "
+                + BudgetEntry.COLUMN_DESCRIPTION + " varchar(255), "
+                + BudgetEntry.COLUMN_RECURRENCE_UID + " varchar(255) not null, "
+                + BudgetEntry.COLUMN_NUM_PERIODS + " integer, "
+                + BudgetEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                + BudgetEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                + "FOREIGN KEY (" + BudgetEntry.COLUMN_RECURRENCE_UID + ") REFERENCES " + RecurrenceEntry.TABLE_NAME + " (" + RecurrenceEntry.COLUMN_UID + ") "
+                + ");"
+                + createUpdatedAtTrigger(BudgetEntry.TABLE_NAME))
+
+        private val BUDGET_AMOUNTS_TABLE_CREATE =
+            ("CREATE TABLE " + BudgetAmountEntry.TABLE_NAME + " ("
+                    + BudgetAmountEntry.COLUMN_ID + " integer primary key autoincrement, "
+                    + BudgetAmountEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
+                    + BudgetAmountEntry.COLUMN_BUDGET_UID + " varchar(255) not null, "
+                    + BudgetAmountEntry.COLUMN_ACCOUNT_UID + " varchar(255) not null, "
+                    + BudgetAmountEntry.COLUMN_AMOUNT_NUM + " integer not null, "
+                    + BudgetAmountEntry.COLUMN_AMOUNT_DENOM + " integer not null, "
+                    + BudgetAmountEntry.COLUMN_PERIOD_NUM + " integer not null, "
+                    + BudgetAmountEntry.COLUMN_NOTES + " text, "
+                    + BudgetAmountEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                    + BudgetAmountEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                    + "FOREIGN KEY (" + BudgetAmountEntry.COLUMN_ACCOUNT_UID + ") REFERENCES " + AccountEntry.TABLE_NAME + " (" + AccountEntry.COLUMN_UID + ") ON DELETE CASCADE, "
+                    + "FOREIGN KEY (" + BudgetAmountEntry.COLUMN_BUDGET_UID + ") REFERENCES " + BudgetEntry.TABLE_NAME + " (" + BudgetEntry.COLUMN_UID + ") ON DELETE CASCADE "
+                    + ");"
+                    + createUpdatedAtTrigger(BudgetAmountEntry.TABLE_NAME))
+
+
+        private val RECURRENCE_TABLE_CREATE = ("CREATE TABLE " + RecurrenceEntry.TABLE_NAME + " ("
+                + RecurrenceEntry.COLUMN_ID + " integer primary key autoincrement, "
+                + RecurrenceEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
+                + RecurrenceEntry.COLUMN_MULTIPLIER + " integer not null default 1, "
+                + RecurrenceEntry.COLUMN_PERIOD_TYPE + " varchar(255) not null, "
+                + RecurrenceEntry.COLUMN_BYDAY + " varchar(255), "
+                + RecurrenceEntry.COLUMN_PERIOD_START + " timestamp not null, "
+                + RecurrenceEntry.COLUMN_PERIOD_END + " timestamp, "
+                + RecurrenceEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                + RecurrenceEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP); "
+                + createUpdatedAtTrigger(RecurrenceEntry.TABLE_NAME))
+
+        /**
+         * Creates an update trigger to update the updated_at column for all records in the database.
+         * This has to be run per table, and is currently appended to the create table statement.
+         *
+         * @param tableName Name of table on which to create trigger
+         * @return SQL statement for creating trigger
+         */
+        fun createUpdatedAtTrigger(tableName: String): String {
+            return ("CREATE TRIGGER update_time_trigger "
+                    + "  AFTER UPDATE ON " + tableName + " FOR EACH ROW"
+                    + "  BEGIN " + "UPDATE " + tableName
+                    + "  SET " + CommonColumns.COLUMN_MODIFIED_AT + " = CURRENT_TIMESTAMP"
+                    + "  WHERE OLD." + CommonColumns.COLUMN_UID + " = NEW." + CommonColumns.COLUMN_UID + ";"
+                    + "  END;")
+        }
+
+        /**
+         * Escape the given argument for use in a `LIKE` statement.
+         *
+         * @param value the value to escape.
+         */
+        fun sqlEscapeLike(value: String?): String {
+            val escaper = StringBuilder()
+            DatabaseUtils.appendEscapedSQLString(escaper, value)
+            var escape = false
+            val length = escaper.length
+            for (i in length - 1 downTo 1) {
+                val c = escaper[i]
+                if ((c == '%') || (c == '_')) {
+                    escape = true
+                    escaper.insert(i, '_')
+                }
             }
-        }
-        escaper.insert(1, '%');
-        escaper.insert(escaper.length() - 1, '%');
-        if (escape) {
-            escaper.append(" ESCAPE '_'");
-        }
-        return escaper.toString();
-    }
-
-    static void createResetBalancesTriggers(SQLiteDatabase db) {
-        String sqlReset = "UPDATE " + AccountEntry.TABLE_NAME + " SET "
-            + AccountEntry.COLUMN_BALANCE + " = NULL, "
-            + AccountEntry.COLUMN_CLEARED_BALANCE + " = NULL, "
-            + AccountEntry.COLUMN_NOCLOSING_BALANCE + " = NULL, "
-            + AccountEntry.COLUMN_RECONCILED_BALANCE + " = NULL";
-
-        String sqlWhenDelete = "CREATE TRIGGER reset_balances_delete_" + SplitEntry.TABLE_NAME
-            + " AFTER DELETE ON " + SplitEntry.TABLE_NAME
-            + " BEGIN " + sqlReset + "; END;";
-        db.execSQL(sqlWhenDelete);
-
-        String sqlWhenInsert = "CREATE TRIGGER reset_balances_insert_" + SplitEntry.TABLE_NAME
-            + " AFTER INSERT ON " + SplitEntry.TABLE_NAME
-            + " BEGIN " + sqlReset + "; END;";
-        db.execSQL(sqlWhenInsert);
-
-        String sqlWhenUpdate = "CREATE TRIGGER reset_balances_update_" + SplitEntry.TABLE_NAME
-            + " AFTER UPDATE ON " + SplitEntry.TABLE_NAME
-            + " BEGIN " + sqlReset + "; END;";
-        db.execSQL(sqlWhenUpdate);
-
-        // Expect that `reset_balances_delete_splits` trigger would be called
-        // *but*
-        // 'Triggers are not activated by foreign key actions.'
-        String sqlWhenDeleteTx = "CREATE TRIGGER reset_balances_delete_" + TransactionEntry.TABLE_NAME
-            + " AFTER DELETE ON " + TransactionEntry.TABLE_NAME
-            + " BEGIN " + sqlReset + "; END;";
-        db.execSQL(sqlWhenDeleteTx);
-
-        String sqlWhenDeleteAccount = "CREATE TRIGGER reset_balances_delete_" + AccountEntry.TABLE_NAME
-            + " AFTER DELETE ON " + AccountEntry.TABLE_NAME
-            + " BEGIN " + sqlReset + "; END;";
-        db.execSQL(sqlWhenDeleteAccount);
-
-        String sqlWhenUpdateAccount = "CREATE TRIGGER reset_balances_update_" + AccountEntry.TABLE_NAME
-            + " AFTER UPDATE OF "
-            + AccountEntry.COLUMN_COMMODITY_UID + ", "
-            + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + ", "
-            + AccountEntry.COLUMN_TYPE
-            + " ON " + AccountEntry.TABLE_NAME
-            + " BEGIN " + sqlReset + "; END;";
-        db.execSQL(sqlWhenUpdateAccount);
-    }
-
-    public DatabaseHolder getHolder() {
-        return new DatabaseHolder(context, getWritableDatabase(), getDatabaseName());
-    }
-
-    public DatabaseHolder getReadableHolder() {
-        return new DatabaseHolder(context, getReadableDatabase(), getDatabaseName());
-    }
-
-    public static boolean hasTableColumn(@NonNull SQLiteDatabase db, @NonNull String tableName, @NonNull String columnName) {
-        Cursor cursor = db.rawQuery("PRAGMA table_info(" + tableName + ")", null);
-        try {
-            if (cursor.moveToFirst()) {
-                final int indexName = cursor.getColumnIndexOrThrow("name");
-                do {
-                    String name = cursor.getString(indexName);
-                    if (columnName.equals(name)) {
-                        return true;
-                    }
-                } while (cursor.moveToNext());
+            escaper.insert(1, '%')
+            escaper.insert(escaper.length - 1, '%')
+            if (escape) {
+                escaper.append(" ESCAPE '_'")
             }
-        } finally {
-            cursor.close();
+            return escaper.toString()
         }
-        return false;
+
+        fun createResetBalancesTriggers(db: SQLiteDatabase) {
+            val sqlReset = ("UPDATE " + AccountEntry.TABLE_NAME + " SET "
+                    + AccountEntry.COLUMN_BALANCE + " = NULL, "
+                    + AccountEntry.COLUMN_CLEARED_BALANCE + " = NULL, "
+                    + AccountEntry.COLUMN_NOCLOSING_BALANCE + " = NULL, "
+                    + AccountEntry.COLUMN_RECONCILED_BALANCE + " = NULL")
+
+            val sqlWhenDelete = ("CREATE TRIGGER reset_balances_delete_" + SplitEntry.TABLE_NAME
+                    + " AFTER DELETE ON " + SplitEntry.TABLE_NAME
+                    + " BEGIN " + sqlReset + "; END;")
+            db.execSQL(sqlWhenDelete)
+
+            val sqlWhenInsert = ("CREATE TRIGGER reset_balances_insert_" + SplitEntry.TABLE_NAME
+                    + " AFTER INSERT ON " + SplitEntry.TABLE_NAME
+                    + " BEGIN " + sqlReset + "; END;")
+            db.execSQL(sqlWhenInsert)
+
+            val sqlWhenUpdate = ("CREATE TRIGGER reset_balances_update_" + SplitEntry.TABLE_NAME
+                    + " AFTER UPDATE ON " + SplitEntry.TABLE_NAME
+                    + " BEGIN " + sqlReset + "; END;")
+            db.execSQL(sqlWhenUpdate)
+
+            // Expect that `reset_balances_delete_splits` trigger would be called
+            // *but*
+            // 'Triggers are not activated by foreign key actions.'
+            val sqlWhenDeleteTx =
+                ("CREATE TRIGGER reset_balances_delete_" + TransactionEntry.TABLE_NAME
+                        + " AFTER DELETE ON " + TransactionEntry.TABLE_NAME
+                        + " BEGIN " + sqlReset + "; END;")
+            db.execSQL(sqlWhenDeleteTx)
+
+            val sqlWhenDeleteAccount =
+                ("CREATE TRIGGER reset_balances_delete_" + AccountEntry.TABLE_NAME
+                        + " AFTER DELETE ON " + AccountEntry.TABLE_NAME
+                        + " BEGIN " + sqlReset + "; END;")
+            db.execSQL(sqlWhenDeleteAccount)
+
+            val sqlWhenUpdateAccount =
+                ("CREATE TRIGGER reset_balances_update_" + AccountEntry.TABLE_NAME
+                        + " AFTER UPDATE OF "
+                        + AccountEntry.COLUMN_COMMODITY_UID + ", "
+                        + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + ", "
+                        + AccountEntry.COLUMN_TYPE
+                        + " ON " + AccountEntry.TABLE_NAME
+                        + " BEGIN " + sqlReset + "; END;")
+            db.execSQL(sqlWhenUpdateAccount)
+        }
+
+        fun hasTableColumn(db: SQLiteDatabase, tableName: String, columnName: String): Boolean {
+            val cursor = db.rawQuery("PRAGMA table_info($tableName)", null)
+            try {
+                if (cursor.moveToFirst()) {
+                    val indexName = cursor.getColumnIndexOrThrow("name")
+                    do {
+                        val name = cursor.getString(indexName)
+                        if (columnName == name) {
+                            return true
+                        }
+                    } while (cursor.moveToNext())
+                }
+            } finally {
+                cursor.close()
+            }
+            return false
+        }
     }
 }

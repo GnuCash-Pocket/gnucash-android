@@ -21,7 +21,6 @@ class ThemeHelper(private val context: Context) {
     }
 
     companion object {
-        @JvmStatic
         fun apply(context: Context) {
             ThemeHelper(context).apply()
         }

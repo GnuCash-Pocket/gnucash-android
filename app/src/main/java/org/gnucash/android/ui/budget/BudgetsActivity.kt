@@ -13,54 +13,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.ui.budget;
+package org.gnucash.android.ui.budget
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.View;
-
-import androidx.fragment.app.FragmentManager;
-
-import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.databinding.ActivityBudgetsBinding;
-import org.gnucash.android.ui.common.BaseDrawerActivity;
-import org.gnucash.android.ui.common.FormActivity;
-import org.gnucash.android.ui.common.UxArgument;
+import android.content.Intent
+import android.graphics.Color
+import android.os.Bundle
+import android.view.View
+import androidx.annotation.ColorInt
+import org.gnucash.android.R
+import org.gnucash.android.databinding.ActivityBudgetsBinding
+import org.gnucash.android.ui.common.BaseDrawerActivity
+import org.gnucash.android.ui.common.FormActivity
+import org.gnucash.android.ui.common.UxArgument
 
 /**
  * Activity for managing display and editing of budgets
  */
-public class BudgetsActivity extends BaseDrawerActivity {
+class BudgetsActivity : BaseDrawerActivity() {
+    private lateinit var binding: ActivityBudgetsBinding
 
-    public static final int REQUEST_CREATE_BUDGET = 0xA;
-
-    private ActivityBudgetsBinding binding;
-
-    @Override
-    public void inflateView() {
-        binding = ActivityBudgetsBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-        mDrawerLayout = binding.drawerLayout;
-        mNavigationView = binding.navView;
-        mToolbar = binding.toolbarLayout.toolbar;
-        mToolbarProgress = binding.toolbarLayout.toolbarProgress.progress;
+    override fun inflateView() {
+        val binding = ActivityBudgetsBinding.inflate(layoutInflater)
+        this.binding = binding
+        setContentView(binding.root)
+        drawerLayout = binding.drawerLayout
+        navigationView = binding.navView
+        toolbar = binding.toolbarLayout.toolbar
+        toolbarProgress = binding.toolbarLayout.toolbarProgress.progress
     }
 
-    @Override
-    public int getTitleRes() {
-        return R.string.title_budgets;
-    }
+    override val titleRes: Int = R.string.title_budgets
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
         if (savedInstanceState == null) {
-            FragmentManager fragmentManager = getSupportFragmentManager();
+            val fragmentManager = supportFragmentManager
             fragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, new BudgetListFragment())
-                .commit();
+                .replace(R.id.fragment_container, BudgetListFragment())
+                .commit()
+        }
+
+        binding.fabCreateBudget.setOnClickListener { v ->
+            onCreateBudgetClick(v)
         }
     }
 
@@ -69,20 +64,23 @@ public class BudgetsActivity extends BaseDrawerActivity {
      *
      * @param view View which was clicked
      */
-    public void onCreateBudgetClick(View view) {
-        Intent addAccountIntent = new Intent(BudgetsActivity.this, FormActivity.class);
-        addAccountIntent.setAction(Intent.ACTION_INSERT_OR_EDIT);
-        addAccountIntent.putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.BUDGET.name());
-        startActivityForResult(addAccountIntent, REQUEST_CREATE_BUDGET);
+    private fun onCreateBudgetClick(view: View) {
+        val intent = Intent(view.context, FormActivity::class.java)
+            .setAction(Intent.ACTION_INSERT_OR_EDIT)
+            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.BUDGET.name)
+        startActivity(intent)
     }
 
-    /**
-     * Returns a color between red and green depending on the value parameter
-     *
-     * @param value Value between 0 and 1 indicating the red to green ratio
-     * @return Color between red and green
-     */
-    public static int getBudgetProgressColor(double value) {
-        return GnuCashApplication.darken(android.graphics.Color.HSVToColor(new float[]{(float) value * 120f, 1f, 1f}));
+    companion object {
+        /**
+         * Returns a color between red and green depending on the value parameter
+         *
+         * @param value Value between 0 and 1 indicating the red to green ratio
+         * @return Color between red and green
+         */
+        @ColorInt
+        fun getBudgetProgressColor(value: Float): Int {
+            return Color.HSVToColor(floatArrayOf(value * 120f, 1f, 0.8f))
+        }
     }
 }

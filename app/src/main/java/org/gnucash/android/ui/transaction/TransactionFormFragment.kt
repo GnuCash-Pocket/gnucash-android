@@ -13,519 +13,495 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.transaction
 
-package org.gnucash.android.ui.transaction;
-
-import static org.gnucash.android.ui.util.widget.ViewExtKt.setTextToEnd;
-
-import android.app.Activity;
-import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
-import android.content.Context;
-import android.content.Intent;
-import android.content.res.Configuration;
-import android.database.Cursor;
-import android.os.Bundle;
-import android.text.TextUtils;
-import android.text.format.DateUtils;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.DatePicker;
-import android.widget.FilterQueryProvider;
-import android.widget.TextView;
-import android.widget.TimePicker;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.cursoradapter.widget.SimpleCursorAdapter;
-import androidx.fragment.app.FragmentActivity;
-
-import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence;
-import com.codetroopers.betterpickers.recurrencepicker.EventRecurrenceFormatter;
-import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment;
-import com.google.android.material.snackbar.Snackbar;
-
-import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
-import org.gnucash.android.app.MenuFragment;
-import org.gnucash.android.databinding.FragmentTransactionFormBinding;
-import org.gnucash.android.db.DatabaseSchema.AccountEntry;
-import org.gnucash.android.db.DatabaseSchema.TransactionEntry;
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.db.adapter.DatabaseAdapter;
-import org.gnucash.android.db.adapter.PricesDbAdapter;
-import org.gnucash.android.db.adapter.ScheduledActionDbAdapter;
-import org.gnucash.android.db.adapter.TransactionsDbAdapter;
-import org.gnucash.android.inputmethodservice.CalculatorKeyboardView;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.AccountType;
-import org.gnucash.android.model.Commodity;
-import org.gnucash.android.model.Money;
-import org.gnucash.android.model.Price;
-import org.gnucash.android.model.Recurrence;
-import org.gnucash.android.model.ScheduledAction;
-import org.gnucash.android.model.Split;
-import org.gnucash.android.model.Transaction;
-import org.gnucash.android.model.TransactionType;
-import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter;
-import org.gnucash.android.ui.common.FormActivity;
-import org.gnucash.android.ui.common.UxArgument;
-import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity;
-import org.gnucash.android.ui.transaction.dialog.TransferFundsDialogFragment;
-import org.gnucash.android.ui.util.RecurrenceParser;
-import org.gnucash.android.ui.util.RecurrenceViewClickListener;
-import org.gnucash.android.ui.util.dialog.DatePickerDialogFragment;
-import org.gnucash.android.ui.util.dialog.TimePickerDialogFragment;
-import org.gnucash.android.ui.util.widget.CalculatorKeyboard;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-
-import kotlin.Unit;
-import kotlin.jvm.functions.Function0;
-import timber.log.Timber;
+import android.app.Activity
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.content.Context
+import android.content.Intent
+import android.content.res.Configuration
+import android.database.Cursor
+import android.os.Bundle
+import android.text.format.DateUtils
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
+import android.widget.AdapterView
+import android.widget.AdapterView.OnItemClickListener
+import android.widget.DatePicker
+import android.widget.TextView
+import android.widget.TimePicker
+import androidx.appcompat.app.ActionBar
+import androidx.core.view.isVisible
+import androidx.cursoradapter.widget.SimpleCursorAdapter
+import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence
+import com.codetroopers.betterpickers.recurrencepicker.EventRecurrenceFormatter
+import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment.OnRecurrenceSetListener
+import com.google.android.material.snackbar.Snackbar
+import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication.Companion.getDefaultTransactionType
+import org.gnucash.android.app.GnuCashApplication.Companion.isDoubleEntryEnabled
+import org.gnucash.android.app.MenuFragment
+import org.gnucash.android.app.actionBar
+import org.gnucash.android.app.getParcelableArrayListCompat
+import org.gnucash.android.databinding.FragmentTransactionFormBinding
+import org.gnucash.android.db.DatabaseSchema.AccountEntry
+import org.gnucash.android.db.DatabaseSchema.TransactionEntry
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.PricesDbAdapter
+import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
+import org.gnucash.android.db.adapter.TransactionsDbAdapter
+import org.gnucash.android.db.getString
+import org.gnucash.android.model.Account
+import org.gnucash.android.model.AccountType
+import org.gnucash.android.model.Money
+import org.gnucash.android.model.ScheduledAction
+import org.gnucash.android.model.Split
+import org.gnucash.android.model.Transaction
+import org.gnucash.android.model.TransactionType
+import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
+import org.gnucash.android.ui.common.FormActivity
+import org.gnucash.android.ui.common.UxArgument
+import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity.Companion.updateAllWidgets
+import org.gnucash.android.ui.transaction.dialog.TransferFundsDialogFragment.Companion.getInstance
+import org.gnucash.android.ui.util.RecurrenceParser.parse
+import org.gnucash.android.ui.util.RecurrenceViewClickListener
+import org.gnucash.android.ui.util.dialog.DatePickerDialogFragment
+import org.gnucash.android.ui.util.dialog.TimePickerDialogFragment
+import org.gnucash.android.ui.util.widget.CalculatorKeyboard.Companion.rebind
+import org.gnucash.android.ui.util.widget.setTextToEnd
+import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.DateTimeFormatter
+import timber.log.Timber
+import java.math.BigDecimal
+import java.util.Calendar
 
 /**
  * Fragment for creating or editing transactions
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-public class TransactionFormFragment extends MenuFragment implements
+class TransactionFormFragment : MenuFragment(),
     DatePickerDialog.OnDateSetListener,
     TimePickerDialog.OnTimeSetListener,
-    RecurrencePickerDialogFragment.OnRecurrenceSetListener,
+    OnRecurrenceSetListener,
     OnTransferFundsListener {
-
-    private static final int REQUEST_SPLIT_EDITOR = 0x11;
-
     /**
      * Transactions database adapter
      */
-    private TransactionsDbAdapter mTransactionsDbAdapter;
+    private var transactionsDbAdapter = TransactionsDbAdapter.instance
 
     /**
      * Accounts database adapter
      */
-    private AccountsDbAdapter mAccountsDbAdapter;
-    private PricesDbAdapter pricesDbAdapter;
-    private ScheduledActionDbAdapter scheduledActionDbAdapter;
+    private var accountsDbAdapter = AccountsDbAdapter.instance
+    private var pricesDbAdapter = PricesDbAdapter.instance
+    private var scheduledActionDbAdapter = ScheduledActionDbAdapter.instance
 
     /**
      * Adapter for transfer account spinner
      */
-    private QualifiedAccountNameAdapter accountTransferNameAdapter;
+    private var accountTransferNameAdapter: QualifiedAccountNameAdapter? = null
 
     /**
      * Transaction to be created/updated
      */
-    private Transaction mTransaction;
-
-    /**
-     * Formats milliseconds into a date string of the format "dd MMM yyyy" e.g. 18 July 2012
-     */
-    public final static DateTimeFormatter DATE_FORMATTER = DateTimeFormat.mediumDate();
-
-    /**
-     * Formats milliseconds to time string of format "HH:mm" e.g. 15:25
-     */
-    public final static DateTimeFormatter TIME_FORMATTER = DateTimeFormat.mediumTime();
+    private var transaction: Transaction? = null
 
     /**
      * Flag to note if double entry accounting is in use or not
      */
-    private boolean mUseDoubleEntry;
+    private var useDoubleEntry = false
 
     /**
-     * {@link Calendar} for holding the set date
+     * [Calendar] for holding the set date
      */
-    private Calendar mDate = Calendar.getInstance();
+    private var date: Calendar = Calendar.getInstance()
 
     /**
      * The Account of the account to which this transaction belongs.
      * Used for determining the accounting rules for credits and debits
      */
-    private Account account;
+    private var account: Account? = null
 
-    private RecurrenceViewClickListener mRecurrenceViewClickListener;
-    private String mRecurrenceRule;
-    private final EventRecurrence mEventRecurrence = new EventRecurrence();
+    private var recurrenceViewClickListener: RecurrenceViewClickListener? = null
+    private var recurrenceRule: String? = null
+    private val eventRecurrence = EventRecurrence()
 
-    private String rootAccountUID;
+    private var rootAccountUID: String? = null
 
-    private final List<Split> mSplitsList = new ArrayList<>();
+    private val splitsList = mutableListOf<Split>()
 
-    private boolean mEditMode = false;
+    private var editMode = false
 
     /**
      * Flag which is set if another action is triggered during a transaction save (which interrrupts the save process).
      * Allows the fragment to check and resume the save operation.
      * Primarily used for multi-currency transactions when the currency transfer dialog is opened during save
      */
-    private boolean onSaveAttempt = false;
+    private var onSaveAttempt = false
 
     /**
      * Split value for the current account.
      */
-    private Money mSplitValue;
+    private var splitValue: Money? = null
+
     /**
      * Split quantity for the transfer account.
      */
-    private Money mSplitQuantity;
+    private var splitQuantity: Money? = null
 
-    @Nullable
-    private FragmentTransactionFormBinding mBinding;
+    private var binding: FragmentTransactionFormBinding? = null
 
     /**
      * Create the view and retrieve references to the UI elements
      */
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        mBinding = FragmentTransactionFormBinding.inflate(inflater, container, false);
-        return mBinding.getRoot();
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val binding = FragmentTransactionFormBinding.inflate(inflater, container, false)
+        this.binding = binding
+        return binding.root
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
-        assert actionBar != null;
-        if (mEditMode) {
-            actionBar.setTitle(R.string.title_edit_transaction);
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val actionBar: ActionBar? = this.actionBar
+        if (editMode) {
+            actionBar?.setTitle(R.string.title_edit_transaction)
         } else {
-            actionBar.setTitle(R.string.title_add_transaction);
+            actionBar?.setTitle(R.string.title_add_transaction)
         }
 
-        FragmentTransactionFormBinding binding = mBinding;
-        setListeners(binding);
+        val binding = this.binding!!
+        setListeners(binding)
 
-        final Account account = requireAccount();
-        //updateTransferAccountsList must only be called after initializing mAccountsDbAdapter
-        updateTransferAccountsList(binding, account);
-        initializeViews(binding, account);
+        val account = requireAccount()
+        //updateTransferAccountsList must only be called after initializing accountsDbAdapter
+        updateTransferAccountsList(binding, account)
+        initializeViews(binding, account)
 
-        if (mTransaction == null) {
-            initTransactionNameAutocomplete(binding);
+        if (transaction == null) {
+            initTransactionNameAutocomplete(binding)
         } else {
-            initializeViewsWithTransaction(binding, mTransaction);
+            initializeViewsWithTransaction(binding, transaction!!)
         }
     }
 
     /**
      * Starts the transfer of funds from one currency to another
      */
-    private void startTransferFunds(FragmentTransactionFormBinding binding) {
-        final Account accountFrom = requireAccount();
-        Commodity fromCommodity = accountFrom.getCommodity();
-        int position = binding.inputTransferAccountSpinner.getSelectedItemPosition();
-        Account accountTarget = accountTransferNameAdapter.getAccount(position);
-        if (accountTarget == null) return;
-        Commodity targetCommodity = accountTarget.getCommodity();
+    private fun startTransferFunds(binding: FragmentTransactionFormBinding) {
+        val accountFrom = requireAccount()
+        val fromCommodity = accountFrom.commodity
+        val position = binding.inputTransferAccountSpinner.selectedItemPosition
+        val accountTarget = accountTransferNameAdapter!!.getAccount(position)
+        if (accountTarget == null) return
+        val targetCommodity = accountTarget.commodity
 
-        BigDecimal enteredAmount = binding.inputTransactionAmount.getValue();
-        if ((enteredAmount == null) || enteredAmount.equals(BigDecimal.ZERO)) {
-            return;
+        val enteredAmount = binding.inputTransactionAmount.value
+        if ((enteredAmount == null) || enteredAmount == BigDecimal.ZERO) {
+            return
         }
-        Money amount = new Money(enteredAmount, fromCommodity).abs();
+        val amount = Money(enteredAmount, fromCommodity).abs()
 
         //if both accounts have same currency
-        if (fromCommodity.equals(targetCommodity)) {
-            transferComplete(amount, amount);
-            return;
+        if (fromCommodity == targetCommodity) {
+            transferComplete(amount, amount)
+            return
         }
 
-        if (amount.equals(mSplitValue)
-            && (mSplitQuantity != null)
-            && !amount.equals(mSplitQuantity)
+        if (amount == splitValue
+            && (splitQuantity != null)
+            && amount != splitQuantity
         ) {
-            transferComplete(amount, mSplitQuantity);
-            return;
+            transferComplete(amount, splitQuantity!!)
+            return
         }
-        mSplitValue = null;
-        mSplitQuantity = null;
+        splitValue = null
+        splitQuantity = null
 
-        TransferFundsDialogFragment fragment
-            = TransferFundsDialogFragment.getInstance(amount, targetCommodity, this);
-        fragment.show(getParentFragmentManager(), "transfer_funds_editor;" + fromCommodity + ";" + targetCommodity + ";" + amount.toPlainString());
+        val fragment = getInstance(amount, targetCommodity, this)
+        fragment.show(
+            parentFragmentManager,
+            "transfer_funds_editor;" + fromCommodity + ";" + targetCommodity + ";" + amount.toPlainString()
+        )
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        final FragmentTransactionFormBinding binding = mBinding;
-        if (binding == null) return;
-        ViewGroup parent = binding.getRoot();
-        CalculatorKeyboardView keyboardView = binding.calculatorKeyboard.calculatorKeyboard;
-        CalculatorKeyboard.rebind(parent, keyboardView, binding.inputTransactionAmount);
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val binding = this.binding ?: return
+        val parent: ViewGroup = binding.root
+        val keyboardView = binding.calculatorKeyboard.calculatorKeyboard
+        rebind(parent, keyboardView, binding.inputTransactionAmount)
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        final Bundle args = getArguments();
-        final Context context = requireContext();
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val args = requireArguments()
+        val context = requireContext()
 
-        mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled(context);
+        useDoubleEntry = isDoubleEntryEnabled(context)
 
-        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-        pricesDbAdapter = PricesDbAdapter.getInstance();
-        scheduledActionDbAdapter = ScheduledActionDbAdapter.getInstance();
+        accountsDbAdapter = AccountsDbAdapter.instance
+        pricesDbAdapter = PricesDbAdapter.instance
+        scheduledActionDbAdapter = ScheduledActionDbAdapter.instance
 
-        rootAccountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
-        this.account = requireAccount();
-        if (account == null) {
-            Timber.e("Account not found");
-            finish(Activity.RESULT_CANCELED);
-            return;
-        }
+        rootAccountUID = accountsDbAdapter.rootAccountUID
+        this.account = requireAccount()
 
-        mEditMode = false;
+        editMode = false
 
-        String transactionUID = args.getString(UxArgument.SELECTED_TRANSACTION_UID);
-        mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
-        Transaction transaction = null;
-        if (!TextUtils.isEmpty(transactionUID)) {
-            transaction = mTransactionsDbAdapter.getRecord(transactionUID);
+        val transactionUID = args.getString(UxArgument.SELECTED_TRANSACTION_UID)
+        transactionsDbAdapter = TransactionsDbAdapter.instance
+        var transaction: Transaction? = null
+        if (!transactionUID.isNullOrEmpty()) {
+            transaction = transactionsDbAdapter.getRecordOrNull(transactionUID)
             if (transaction != null) {
-                String scheduledActionUID = args.getString(UxArgument.SCHEDULED_ACTION_UID);
-                if (!TextUtils.isEmpty(scheduledActionUID)) {
-                    transaction.setScheduledActionUID(scheduledActionUID);
+                val scheduledActionUID = args.getString(UxArgument.SCHEDULED_ACTION_UID)
+                if (!scheduledActionUID.isNullOrEmpty()) {
+                    transaction.scheduledActionUID = scheduledActionUID
                 }
             }
         }
-        mEditMode = transaction != null;
-        mTransaction = transaction;
+        editMode = transaction != null
+        this.transaction = transaction
     }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    @Deprecated("Deprecated in Java")
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
 
-        requireActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        requireActivity().window
+            .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
     }
 
     /**
      * Extension of SimpleCursorAdapter which is used to populate the fields for the list items
      * in the transactions suggestions (auto-complete transaction description).
      */
-    private class DropDownCursorAdapter extends SimpleCursorAdapter {
+    private inner class DropDownCursorAdapter(
+        context: Context,
+        layout: Int,
+        c: Cursor?,
+        from: Array<String?>?,
+        to: IntArray?
+    ) : SimpleCursorAdapter(context, layout, c, from, to, 0) {
+        override fun bindView(view: View, context: Context?, cursor: Cursor) {
+            super.bindView(view, context, cursor)
+            val account = requireAccount()
+            val accountUID = account.uid
+            val transactionUID =
+                cursor.getString(cursor.getColumnIndexOrThrow(TransactionEntry.COLUMN_UID))
+            val balance = transactionsDbAdapter.getBalance(transactionUID, accountUID)
 
-        public DropDownCursorAdapter(Context context, int layout, Cursor c, String[] from, int[] to) {
-            super(context, layout, c, from, to, 0);
-        }
+            val timestamp =
+                cursor.getLong(cursor.getColumnIndexOrThrow(TransactionEntry.COLUMN_TIMESTAMP))
+            val dateString = DateUtils.formatDateTime(
+                view.context,
+                timestamp,
+                DateUtils.FORMAT_SHOW_WEEKDAY or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_SHOW_YEAR
+            )
 
-        @Override
-        public void bindView(View view, Context context, Cursor cursor) {
-            super.bindView(view, context, cursor);
-            final Account account = requireAccount();
-            String accountUID = account.getUID();
-            String transactionUID = cursor.getString(cursor.getColumnIndexOrThrow(TransactionEntry.COLUMN_UID));
-            Money balance = mTransactionsDbAdapter.getBalance(transactionUID, accountUID);
-
-            long timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(TransactionEntry.COLUMN_TIMESTAMP));
-            String dateString = DateUtils.formatDateTime(view.getContext(), timestamp,
-                DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_YEAR);
-
-            TextView secondaryTextView = view.findViewById(R.id.secondary_text);
-            secondaryTextView.setText(balance.formattedString() + " on " + dateString); //TODO: Extract string
+            val secondaryTextView = view.findViewById<TextView>(R.id.secondary_text)
+            secondaryTextView.text = "${balance.formattedString()} on $dateString" //TODO: Extract string
         }
     }
 
     /**
      * Initializes the transaction name field for autocompletion with existing transaction names in the database
      */
-    private void initTransactionNameAutocomplete(final FragmentTransactionFormBinding binding) {
-        final String[] from = new String[]{TransactionEntry.COLUMN_DESCRIPTION};
-        final int[] to = new int[]{R.id.primary_text};
+    private fun initTransactionNameAutocomplete(binding: FragmentTransactionFormBinding) {
+        val from = arrayOf<String?>(TransactionEntry.COLUMN_DESCRIPTION)
+        val to = intArrayOf(R.id.primary_text)
 
-        Context context = binding.inputTransactionName.getContext();
-        SimpleCursorAdapter adapter = new DropDownCursorAdapter(
-            context, R.layout.dropdown_item_2lines, null, from, to);
+        val context = binding.inputTransactionName.context
+        val adapter: SimpleCursorAdapter = DropDownCursorAdapter(
+            context, R.layout.dropdown_item_2lines, null, from, to
+        )
 
-        adapter.setCursorToStringConverter(new SimpleCursorAdapter.CursorToStringConverter() {
-            @Override
-            public CharSequence convertToString(Cursor cursor) {
-                final int colIndex = cursor.getColumnIndexOrThrow(TransactionEntry.COLUMN_DESCRIPTION);
-                return cursor.getString(colIndex);
-            }
-        });
+        adapter.setCursorToStringConverter { cursor ->
+            cursor.getString(TransactionEntry.COLUMN_DESCRIPTION)
+        }
 
-        adapter.setFilterQueryProvider(new FilterQueryProvider() {
-            @Override
-            public Cursor runQuery(CharSequence name) {
-                final Account account = requireAccount();
-                String accountUID = account.getUID();
-                return mTransactionsDbAdapter.fetchTransactionSuggestions(name == null ? "" : name.toString(), accountUID);
-            }
-        });
+        adapter.setFilterQueryProvider { name ->
+            val account = requireAccount()
+            val accountUID = account.uid
+            transactionsDbAdapter.fetchTransactionSuggestions(
+                name?.toString().orEmpty(),
+                accountUID
+            )
+        }
 
-        binding.inputTransactionName.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                Transaction transaction = new Transaction(mTransactionsDbAdapter.getRecord(id), true);
-                transaction.setTime(System.currentTimeMillis());
+        binding.inputTransactionName.onItemClickListener =
+            OnItemClickListener { adapterView, view, position, id ->
+                val transaction = Transaction(transactionsDbAdapter.getRecord(id), true)
+                transaction.time = System.currentTimeMillis()
                 //we check here because next method will modify it and we want to catch user-modification
-                boolean amountEntered = binding.inputTransactionAmount.isInputModified();
-                initializeViewsWithTransaction(binding, transaction);
-                List<Split> splits = transaction.getSplits();
-                boolean isSplitPair = splits.size() == 2 && splits.get(0).isPairOf(splits.get(1));
+                val amountEntered = binding.inputTransactionAmount.isInputModified
+                initializeViewsWithTransaction(binding, transaction)
+                val splits: List<Split> = transaction.splits
+                val isSplitPair = splits.size == 2 && splits[0].isPairOf(splits[1])
                 if (isSplitPair) {
-                    mSplitsList.clear();
-                    if (!amountEntered) //if user already entered an amount
-                        binding.inputTransactionAmount.setValue(splits.get(0).getValue().toBigDecimal());
+                    splitsList.clear()
+                    if (!amountEntered) { //if user already entered an amount
+                        binding.inputTransactionAmount.value = splits[0].value.toBigDecimal()
+                    }
                 } else {
                     // if user entered own amount, clear loaded splits and use the user value
                     if (amountEntered) {
-                        mSplitsList.clear();
-                        setDoubleEntryViewsVisibility(binding, View.VISIBLE);
+                        splitsList.clear()
+                        setDoubleEntryViewsVisibility(binding, true)
                     } else {
                         // don't hide the view in single entry mode
-                        if (mUseDoubleEntry) {
-                            setDoubleEntryViewsVisibility(binding, View.GONE);
-                            binding.btnSplitEditor.setVisibility(View.VISIBLE);
+                        if (useDoubleEntry) {
+                            setDoubleEntryViewsVisibility(binding, false)
+                            binding.btnSplitEditor.isVisible = true
                         }
                     }
                 }
-                mTransaction = null; //we are creating a new transaction after all
+                //we are creating a new transaction after all
+                this@TransactionFormFragment.transaction = null
             }
-        });
 
-        binding.inputTransactionName.setAdapter(adapter);
-        mRecurrenceRule = null;
+        binding.inputTransactionName.setAdapter<SimpleCursorAdapter?>(adapter)
+        recurrenceRule = null
     }
 
     /**
      * Initialize views in the fragment with information from a transaction.
      * This method is called if the fragment is used for editing a transaction
      */
-    private void initializeViewsWithTransaction(@NonNull final FragmentTransactionFormBinding binding, @NonNull Transaction transaction) {
-        final Context context = binding.getRoot().getContext();
-        final Account account = requireAccount();
-        final String accountUID = account.getUID();
-        setTextToEnd(binding.inputTransactionName, transaction.getDescription());
+    private fun initializeViewsWithTransaction(
+        binding: FragmentTransactionFormBinding,
+        transaction: Transaction
+    ) {
+        val context = binding.root.context
+        val account = requireAccount()
+        val accountUID = account.uid
+        binding.inputTransactionName.setTextToEnd(transaction.description)
 
-        TransactionType transactionType = GnuCashApplication.getDefaultTransactionType(context);
-        binding.inputTransactionType.setAccountType(account.getAccountType());
-        binding.inputTransactionType.setChecked(transactionType);
+        var transactionType = getDefaultTransactionType(context)
+        binding.inputTransactionType.accountType = account.accountType
+        binding.inputTransactionType.setChecked(transactionType)
 
         //when autocompleting, only change the amount if the user has not manually changed it already
-        binding.inputTransactionAmount.setValue(transaction.getBalance(account).toBigDecimal(), !binding.inputTransactionAmount.isInputModified());
-        binding.currencySymbol.setText(transaction.getCommodity().getSymbol());
-        binding.notes.setText(transaction.getNote());
-        binding.inputDate.setText(DATE_FORMATTER.print(transaction.getTimeMillis()));
-        binding.inputTime.setText(TIME_FORMATTER.print(transaction.getTimeMillis()));
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(transaction.getTimeMillis());
-        mDate = cal;
+        binding.inputTransactionAmount.setValue(
+            transaction.getBalance(account).toBigDecimal(),
+            !binding.inputTransactionAmount.isInputModified
+        )
+        binding.currencySymbol.text = transaction.commodity.symbol
+        binding.notes.setText(transaction.note)
+        binding.inputDate.text = DATE_FORMATTER.print(transaction.time)
+        binding.inputTime.text = TIME_FORMATTER.print(transaction.time)
+        date = Calendar.getInstance().apply { timeInMillis = transaction.time }
 
         //TODO: deep copy the split list. We need a copy so we can modify with impunity
-        mSplitsList.clear();
-        mSplitsList.addAll(transaction.getSplits());
-        toggleAmountInputEntryMode(binding, mSplitsList.size() <= 2);
+        splitsList.clear()
+        splitsList.addAll(transaction.splits)
+        toggleAmountInputEntryMode(binding, splitsList.size <= 2)
 
-        mSplitValue = null;
-        mSplitQuantity = null;
-        if (mSplitsList.size() == 2) {
-            for (Split split : mSplitsList) {
-                if (split.getAccountUID().equals(accountUID)) {
-                    mSplitValue = split.getValue();
-                    transactionType = split.getType();
-                } else if (!split.getQuantity().getCommodity().equals(transaction.getCommodity())) {
-                    mSplitQuantity = split.getQuantity();
+        splitValue = null
+        splitQuantity = null
+        if (splitsList.size == 2) {
+            for (split in splitsList) {
+                if (split.accountUID == accountUID) {
+                    splitValue = split.value
+                    transactionType = split.type
+                } else if (split.quantity.commodity != transaction.commodity) {
+                    splitQuantity = split.quantity
                 }
             }
         }
         //if there are more than two splits (which is the default for one entry), then
         //disable editing of the transfer account. User should open editor
-        if (mSplitsList.size() == 2 && mSplitsList.get(0).isPairOf(mSplitsList.get(1))) {
-            for (Split split : transaction.getSplits()) {
+        if (splitsList.size == 2 && splitsList[0].isPairOf(splitsList[1])) {
+            for (split in transaction.splits) {
                 //two splits, one belongs to this account and the other to another account
-                if (mUseDoubleEntry && !split.getAccountUID().equals(accountUID)) {
-                    setSelectedTransferAccount(binding, split.getAccountUID());
+                if (useDoubleEntry && split.accountUID != accountUID) {
+                    setSelectedTransferAccount(binding, split.accountUID)
                 }
             }
         } else {
-            setDoubleEntryViewsVisibility(binding, View.GONE);
-            if (mUseDoubleEntry && mSplitsList.size() >= 2) {
-                binding.btnSplitEditor.setVisibility(View.VISIBLE);
+            setDoubleEntryViewsVisibility(binding, false)
+            if (useDoubleEntry && splitsList.size >= 2) {
+                binding.btnSplitEditor.isVisible = true
             }
-            if (mSplitValue != null) {
-                transactionType = mSplitValue.isNegative() ? TransactionType.CREDIT : TransactionType.DEBIT;
+            if (splitValue != null) {
+                transactionType =
+                    if (splitValue!!.isNegative) TransactionType.CREDIT else TransactionType.DEBIT
             }
         }
 
-        Commodity accountCommodity = account.getCommodity();
-        binding.currencySymbol.setText(accountCommodity.getSymbol());
-        binding.inputTransactionAmount.setCommodity(accountCommodity);
-        binding.inputTransactionType.setChecked(transactionType);
+        val accountCommodity = account.commodity
+        binding.currencySymbol.text = accountCommodity.symbol
+        binding.inputTransactionAmount.commodity = accountCommodity
+        binding.inputTransactionType.setChecked(transactionType)
 
-        binding.checkboxSaveTemplate.setChecked(transaction.isTemplate());
-        String scheduledActionUID = transaction.getScheduledActionUID();
-        if (!TextUtils.isEmpty(scheduledActionUID)) {
-            ScheduledAction scheduledAction = scheduledActionDbAdapter.getRecord(scheduledActionUID);
-            onRecurrenceSet(scheduledAction.getRuleString());
+        binding.checkboxSaveTemplate.isChecked = transaction.isTemplate
+        val scheduledActionUID = transaction.scheduledActionUID
+        if (!scheduledActionUID.isNullOrEmpty()) {
+            val scheduledAction = scheduledActionDbAdapter.getRecord(scheduledActionUID)
+            onRecurrenceSet(scheduledAction.ruleString)
         }
     }
 
-    private void setDoubleEntryViewsVisibility(FragmentTransactionFormBinding binding, int visibility) {
-        binding.layoutDoubleEntry.setVisibility(visibility);
-        binding.inputTransactionType.setVisibility(visibility);
-        binding.btnSplitEditor.setVisibility(visibility);
+    private fun setDoubleEntryViewsVisibility(
+        binding: FragmentTransactionFormBinding,
+        visible: Boolean
+    ) {
+        binding.layoutDoubleEntry.isVisible = visible
+        binding.inputTransactionType.isVisible = visible
+        binding.btnSplitEditor.isVisible = visible
     }
 
-    private void toggleAmountInputEntryMode(FragmentTransactionFormBinding binding, boolean enabled) {
+    private fun toggleAmountInputEntryMode(
+        binding: FragmentTransactionFormBinding,
+        enabled: Boolean
+    ) {
         if (enabled) {
-            binding.inputTransactionAmount.setFocusable(true);
-            binding.inputTransactionAmount.setOnClickListener(null);
+            binding.inputTransactionAmount.isFocusable = true
+            binding.inputTransactionAmount.setOnClickListener(null)
         } else {
-            binding.inputTransactionAmount.setFocusable(false);
-            binding.inputTransactionAmount.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    openSplitEditor(binding);
-                }
-            });
+            binding.inputTransactionAmount.isFocusable = false
+            binding.inputTransactionAmount.setOnClickListener { openSplitEditor(binding) }
         }
     }
 
     /**
      * Initialize views with default data for new transactions
      */
-    private void initializeViews(@NonNull final FragmentTransactionFormBinding binding, @NonNull Account account) {
-        final Context context = binding.getRoot().getContext();
+    private fun initializeViews(binding: FragmentTransactionFormBinding, account: Account) {
+        val context = binding.root.context
 
-        long now = System.currentTimeMillis();
-        binding.inputDate.setText(DATE_FORMATTER.print(now));
-        binding.inputTime.setText(TIME_FORMATTER.print(now));
-        mDate = Calendar.getInstance();
+        val now = Calendar.getInstance()
+        binding.inputDate.text = DATE_FORMATTER.print(now.timeInMillis)
+        binding.inputTime.text = TIME_FORMATTER.print(now.timeInMillis)
+        date = now
 
-        TransactionType transactionType = GnuCashApplication.getDefaultTransactionType(context);
-        binding.inputTransactionType.setAccountType(account.getAccountType());
-        binding.inputTransactionType.setChecked(transactionType);
+        val transactionType = getDefaultTransactionType(context)
+        binding.inputTransactionType.accountType = account.accountType
+        binding.inputTransactionType.setChecked(transactionType)
 
-        final Commodity commodity = account.getCommodity();
-        binding.currencySymbol.setText(commodity.getSymbol());
-        binding.inputTransactionAmount.setCommodity(commodity);
-        binding.inputTransactionAmount.bindKeyboard(binding.calculatorKeyboard);
+        val commodity = account.commodity
+        binding.currencySymbol.text = commodity.symbol
+        binding.inputTransactionAmount.commodity = commodity
+        binding.inputTransactionAmount.bindKeyboard(binding.calculatorKeyboard)
 
-        if (mUseDoubleEntry) {
-            setSelectedTransferAccount(binding, account.getDefaultTransferAccountUID());
+        if (useDoubleEntry) {
+            setSelectedTransferAccount(binding, account.defaultTransferAccountUID)
         } else {
-            binding.layoutDoubleEntry.setVisibility(View.GONE);
-            binding.btnSplitEditor.setVisibility(View.GONE);
+            binding.layoutDoubleEntry.isVisible = false
+            binding.btnSplitEditor.isVisible = false
         }
     }
 
@@ -533,154 +509,154 @@ public class TransactionFormFragment extends MenuFragment implements
      * Updates the list of possible transfer accounts.
      * Only accounts with the same currency can be transferred to
      */
-    private void updateTransferAccountsList(@NonNull final FragmentTransactionFormBinding binding, @NonNull Account account) {
-        final String accountUID = account.getUID();
-        String conditions = AccountEntry.COLUMN_UID + " != ?"
-            + " AND " + AccountEntry.COLUMN_TYPE + " != ?"
-            + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0"
-            + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0";
+    private fun updateTransferAccountsList(
+        binding: FragmentTransactionFormBinding,
+        account: Account
+    ) {
+        val accountUID = account.uid
+        val conditions = (AccountEntry.COLUMN_UID + " != ?"
+                + " AND " + AccountEntry.COLUMN_TYPE + " != ?"
+                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0"
+                + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0")
 
-        accountTransferNameAdapter = new QualifiedAccountNameAdapter(
-            binding.getRoot().getContext(),
+        accountTransferNameAdapter = QualifiedAccountNameAdapter(
+            binding.root.context,
             conditions,
-            new String[]{accountUID, AccountType.ROOT.name()},
-            mAccountsDbAdapter,
-            getViewLifecycleOwner()
-        );
-        accountTransferNameAdapter.load(new Function0<Unit>() {
-            @Override
-            public Unit invoke() {
-                String transferUID = account.getDefaultTransferAccountUID();
-                if (mTransaction != null) {
-                    Split split = mTransaction.getTransferSplit(accountUID);
-                    if (split != null) {
-                        transferUID = split.getAccountUID();
-                    }
+            arrayOf(accountUID, AccountType.ROOT.name),
+            accountsDbAdapter,
+            viewLifecycleOwner
+        ).load { adapter: QualifiedAccountNameAdapter? ->
+            var transferUID = account.defaultTransferAccountUID
+            if (transaction != null) {
+                val split = transaction!!.getTransferSplit(accountUID)
+                if (split != null) {
+                    transferUID = split.accountUID
                 }
-                setSelectedTransferAccount(binding, transferUID);
-                return null;
             }
-        });
-        binding.inputTransferAccountSpinner.setAdapter(accountTransferNameAdapter);
+            setSelectedTransferAccount(binding, transferUID)
+            null
+        }
+        binding.inputTransferAccountSpinner.adapter = accountTransferNameAdapter
     }
 
     /**
      * Opens the split editor dialog
      */
-    private void openSplitEditor(FragmentTransactionFormBinding binding) {
-        BigDecimal enteredAmount = binding.inputTransactionAmount.getValue();
+    private fun openSplitEditor(binding: FragmentTransactionFormBinding) {
+        val enteredAmount = binding.inputTransactionAmount.value
         if (enteredAmount == null) {
-            Snackbar.make(binding.getRoot(), R.string.toast_enter_amount_to_split, Snackbar.LENGTH_SHORT).show();
-            binding.inputTransactionAmount.requestFocus();
-            binding.inputTransactionAmount.setError(getString(R.string.toast_enter_amount_to_split));
-            return;
+            Snackbar.make(
+                binding.root,
+                R.string.toast_enter_amount_to_split,
+                Snackbar.LENGTH_SHORT
+            ).show()
+            binding.inputTransactionAmount.requestFocus()
+            binding.inputTransactionAmount.error = getString(R.string.toast_enter_amount_to_split)
+            return
         } else {
-            binding.inputTransactionAmount.setError(null);
+            binding.inputTransactionAmount.error = null
         }
 
-        final String baseAmountString;
+        val baseAmountString: String?
 
-        if (mTransaction == null) { //if we are creating a new transaction (not editing an existing one)
-            baseAmountString = enteredAmount.toPlainString();
+        val transaction = this.transaction
+        if (transaction == null) { //if we are creating a new transaction (not editing an existing one)
+            baseAmountString = enteredAmount.toPlainString()
         } else {
-            Money biggestAmount = Money.createZeroInstance(mTransaction.getCurrencyCode());
-            for (Split split : mTransaction.getSplits()) {
-                if (split.getValue().toBigDecimal().compareTo(biggestAmount.toBigDecimal()) > 0)
-                    biggestAmount = split.getValue();
+            var biggestAmount = BigDecimal.ZERO
+            for (split in transaction.splits) {
+                val splitValue = split.value.toBigDecimal()
+                if (splitValue > biggestAmount) {
+                    biggestAmount = splitValue
+                }
             }
-            baseAmountString = biggestAmount.toPlainString();
+            baseAmountString = biggestAmount.toPlainString()
         }
 
-        Context context = binding.getRoot().getContext();
-        final Account account = requireAccount();
-        final String accountUID = account.getUID();
-        Intent intent = new Intent(context, FormActivity.class)
-            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.SPLIT_EDITOR.name())
+        val context = binding.root.context
+        val account = requireAccount()
+        val accountUID = account.uid
+        val intent = Intent(context, FormActivity::class.java)
+            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.SPLIT_EDITOR.name)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
             .putExtra(UxArgument.AMOUNT_STRING, baseAmountString)
-            .putParcelableArrayListExtra(UxArgument.SPLIT_LIST, (ArrayList<Split>) extractSplitsFromView(binding));
+            .putParcelableArrayListExtra(
+                UxArgument.SPLIT_LIST,
+                ArrayList(extractSplitsFromView(binding))
+            )
 
-        startActivityForResult(intent, REQUEST_SPLIT_EDITOR);
+        startActivityForResult(intent, REQUEST_SPLIT_EDITOR)
     }
 
     /**
      * Sets click listeners for the dialog buttons
      */
-    private void setListeners(final FragmentTransactionFormBinding binding) {
-        binding.btnSplitEditor.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openSplitEditor(binding);
-            }
-        });
+    private fun setListeners(binding: FragmentTransactionFormBinding) {
+        binding.btnSplitEditor.setOnClickListener { openSplitEditor(binding) }
 
-        binding.inputTransactionType.setAmountFormattingListener(binding.inputTransactionAmount, binding.currencySymbol);
+        binding.inputTransactionType.setAmountFormattingListener(
+            binding.inputTransactionAmount,
+            binding.currencySymbol
+        )
 
-        binding.inputDate.setOnClickListener(new View.OnClickListener() {
+        binding.inputDate.setOnClickListener {
+            val dateMillis = date.timeInMillis
+            DatePickerDialogFragment.newInstance(this@TransactionFormFragment, dateMillis)
+                .show(parentFragmentManager, "date_picker_fragment")
+        }
 
-            @Override
-            public void onClick(View v) {
-                long dateMillis = mDate.getTimeInMillis();
-                DatePickerDialogFragment.newInstance(TransactionFormFragment.this, dateMillis)
-                    .show(getParentFragmentManager(), "date_picker_fragment");
-            }
-        });
+        binding.inputTime.setOnClickListener {
+            val timeMillis = date.timeInMillis
+            TimePickerDialogFragment.newInstance(this@TransactionFormFragment, timeMillis)
+                .show(parentFragmentManager, "time_picker_dialog_fragment")
+        }
 
-        binding.inputTime.setOnClickListener(new View.OnClickListener() {
+        recurrenceViewClickListener =
+            RecurrenceViewClickListener(parentFragmentManager, recurrenceRule, this)
+        binding.inputRecurrence.setOnClickListener(recurrenceViewClickListener)
 
-            @Override
-            public void onClick(View v) {
-                long timeMillis = mDate.getTimeInMillis();
-                TimePickerDialogFragment.newInstance(TransactionFormFragment.this, timeMillis)
-                    .show(getParentFragmentManager(), "time_picker_dialog_fragment");
-            }
-        });
-
-        mRecurrenceViewClickListener = new RecurrenceViewClickListener((AppCompatActivity) requireActivity(), mRecurrenceRule, this);
-        binding.inputRecurrence.setOnClickListener(mRecurrenceViewClickListener);
-
-        binding.inputTransferAccountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        binding.inputTransferAccountSpinner.onItemSelectedListener = object :
+            AdapterView.OnItemSelectedListener {
             /**
              * Flag for ignoring first call to this listener.
              * The first call is during layout, but we want it called only in response to user interaction
              */
-            boolean userInteraction = false;
+            var userInteraction: Boolean = false
 
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
-                if (view == null) return;
-                removeFavoriteIconFromSelectedView((TextView) view);
-                final String transferAccountUID = accountTransferNameAdapter.getUID(position);
+            override fun onItemSelected(
+                adapterView: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                if (view == null) return
+                removeFavoriteIconFromSelectedView(view as TextView)
+                val transferAccountUID = accountTransferNameAdapter!!.getUID(position)
 
-                if (mSplitsList.size() == 2) { //when handling simple transfer to one account
-                    final Account account = requireAccount();
-                    final String accountUID = account.getUID();
-                    for (Split split : mSplitsList) {
-                        if (!split.getAccountUID().equals(accountUID)) {
-                            split.setAccountUID(transferAccountUID);
+                if (splitsList.size == 2) { //when handling simple transfer to one account
+                    val account = requireAccount()
+                    val accountUID = account.uid
+                    for (split in splitsList) {
+                        if (split.accountUID != accountUID) {
+                            split.accountUID = transferAccountUID
                         }
                         // else case is handled when saving the transactions
                     }
                 }
                 if (!userInteraction) {
-                    userInteraction = true;
-                    return;
+                    userInteraction = true
+                    return
                 }
-                startTransferFunds(binding);
+                startTransferFunds(binding)
             }
 
             // Removes the icon from view to avoid visual clutter
-            private void removeFavoriteIconFromSelectedView(TextView view) {
-                if (view != null) {
-                    view.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
-                }
+            fun removeFavoriteIconFromSelectedView(view: TextView) {
+                view.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
             }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-                //nothing to see here, move along
-            }
-        });
+            override fun onNothingSelected(adapterView: AdapterView<*>) = Unit
+        }
     }
 
     /**
@@ -688,75 +664,74 @@ public class TransactionFormFragment extends MenuFragment implements
      *
      * @param accountUID UID of the transfer account
      */
-    private void setSelectedTransferAccount(@NonNull FragmentTransactionFormBinding binding, @Nullable String accountUID) {
-        int position = accountTransferNameAdapter.getPosition(accountUID);
-        binding.inputTransferAccountSpinner.setSelection(position);
+    private fun setSelectedTransferAccount(
+        binding: FragmentTransactionFormBinding,
+        accountUID: String?
+    ) {
+        val position = accountTransferNameAdapter!!.getPosition(accountUID)
+        binding.inputTransferAccountSpinner.setSelection(position)
     }
 
     /**
      * Returns a list of splits based on the input in the transaction form.
      * This only gets the splits from the simple view, and not those from the Split Editor.
-     * If the Split Editor has been used and there is more than one split, then it returns {@link #mSplitsList}
+     * If the Split Editor has been used and there is more than one split, then it returns [.splitsList]
      *
-     * @return List of splits in the view or {@link #mSplitsList} is there are more than 2 splits in the transaction
+     * @return List of splits in the view or [.splitsList] is there are more than 2 splits in the transaction
      */
-    private List<Split> extractSplitsFromView(FragmentTransactionFormBinding binding) {
-        if (binding.inputTransactionType.getVisibility() != View.VISIBLE) {
-            return mSplitsList;
+    private fun extractSplitsFromView(binding: FragmentTransactionFormBinding): List<Split> {
+        if (splitEditorUsed(binding)) {
+            return splitsList
         }
 
-        BigDecimal enteredAmount = binding.inputTransactionAmount.getValue();
-        if (enteredAmount == null) enteredAmount = BigDecimal.ZERO;
-        final Account account = requireAccount();
-        final String accountUID = account.getUID();
-        final Commodity accountCommodity = account.getCommodity();
-        Money value = new Money(enteredAmount, accountCommodity);
-        Money quantity = new Money(value);
+        var enteredAmount = binding.inputTransactionAmount.value
+        if (enteredAmount == null) enteredAmount = BigDecimal.ZERO
+        val account = requireAccount()
+        val accountUID = account.uid
+        val accountCommodity = account.commodity
+        val value = Money(enteredAmount, accountCommodity)
+        var quantity = Money(value)
 
-        final Account transferAccount = getTransferAccount(binding);
+        val transferAccount = getTransferAccount(binding)
         if (transferAccount == null) {
-            return mSplitsList;
+            return splitsList
         }
-        final String transferAccountUID = transferAccount.getUID();
+        val transferAccountUID = transferAccount.uid
 
         if (isMultiCurrencyTransaction(binding)) { //if multi-currency transaction
-            final Commodity targetCommodity = transferAccount.getCommodity();
+            val targetCommodity = transferAccount.commodity
 
-            if ((value.equals(mSplitValue)) && mSplitQuantity != null) {
-                quantity = mSplitQuantity;
+            if (splitQuantity != null && (value == splitValue)) {
+                quantity = splitQuantity!!
             } else {
-                Price price = pricesDbAdapter.getPrice(accountCommodity, targetCommodity);
+                val price = pricesDbAdapter.getPrice(accountCommodity, targetCommodity)
                 if (price != null) {
-                    quantity = quantity.times(price);
+                    quantity *= price
                 }
             }
         }
 
-        Split split1;
-        Split split2;
+        val split1: Split
+        val split2: Split
         // Try to preserve the other split attributes.
-        if (mSplitsList.size() >= 2) {
-            split1 = mSplitsList.get(0);
-            split1.setValue(value);
-            split1.setQuantity(value);
-            split1.setAccountUID(accountUID);
+        if (splitsList.size >= 2) {
+            split1 = splitsList[0]
+            split1.value = value
+            split1.quantity = value
+            split1.accountUID = accountUID
 
-            split2 = mSplitsList.get(1);
-            split2.setValue(value);
-            split2.setQuantity(quantity);
-            split2.setAccountUID(transferAccountUID);
+            split2 = splitsList[1]
+            split2.value = value
+            split2.quantity = quantity
+            split2.accountUID = transferAccountUID
         } else {
-            split1 = new Split(value, accountUID);
-            split2 = new Split(value, quantity, transferAccountUID);
+            split1 = Split(value, accountUID)
+            split2 = Split(value, quantity, transferAccountUID)
         }
-        split1.setType(binding.inputTransactionType.getTransactionType());
-        split2.setType(binding.inputTransactionType.getTransactionType().invert());
+        split1.type = binding.inputTransactionType.transactionType
+        split2.type = binding.inputTransactionType.transactionType.invert()
 
-        List<Split> splitList = new ArrayList<>();
-        splitList.add(split1);
-        splitList.add(split2);
-
-        return splitList;
+        return listOf(split1, split2)
     }
 
     /**
@@ -765,16 +740,15 @@ public class TransactionFormFragment extends MenuFragment implements
      *
      * @return GUID of transfer account
      */
-    @Nullable
-    private Account getTransferAccount(@NonNull FragmentTransactionFormBinding binding) {
-        if (mUseDoubleEntry) {
-            int position = binding.inputTransferAccountSpinner.getSelectedItemPosition();
-            return accountTransferNameAdapter.getAccount(position);
+    private fun getTransferAccount(binding: FragmentTransactionFormBinding): Account? {
+        if (useDoubleEntry) {
+            val position = binding.inputTransferAccountSpinner.selectedItemPosition
+            return accountTransferNameAdapter!!.getAccount(position)
         }
-        Context context = binding.getRoot().getContext();
-        final Account account = requireAccount();
-        final Commodity accountCommodity = account.getCommodity();
-        return mAccountsDbAdapter.getOrCreateImbalanceAccount(context, accountCommodity);
+        val context = binding.root.context
+        val account = requireAccount()
+        val accountCommodity = account.commodity
+        return accountsDbAdapter.getOrCreateImbalanceAccount(context, accountCommodity)
     }
 
     /**
@@ -782,222 +756,242 @@ public class TransactionFormFragment extends MenuFragment implements
      *
      * @return New transaction object containing all info in the form
      */
-    @NonNull
-    private Transaction extractTransactionFromView(FragmentTransactionFormBinding binding) {
-        String description = binding.inputTransactionName.getText().toString();
-        String notes = binding.notes.getText().toString();
-        final Account account = requireAccount();
-        final Commodity accountCommodity = account.getCommodity();
+    private fun extractTransactionFromView(binding: FragmentTransactionFormBinding): Transaction {
+        val description = binding.inputTransactionName.getText().toString()
+        val notes = binding.notes.getText().toString()
+        val account = requireAccount()
+        val accountCommodity = account.commodity
 
-        List<Split> splits = extractSplitsFromView(binding);
+        val splits = extractSplitsFromView(binding)
 
-        Transaction transaction = new Transaction(description);
-        transaction.setTime(mDate.getTimeInMillis());
-        transaction.setCommodity(accountCommodity);
-        transaction.setNote(notes);
-        transaction.setSplits(splits);
-        transaction.setExported(false); //not necessary as exports use timestamps now. Because, legacy
-        transaction.setTemplate(account.isTemplate() || !TextUtils.isEmpty(mRecurrenceRule));
-
-        return transaction;
+        val transaction = Transaction(description).apply {
+            time = date.timeInMillis
+            commodity = accountCommodity
+            note = notes
+            this.splits = splits
+            isExported = false //not necessary as exports use timestamps now. Because, legacy
+            isTemplate = account.isTemplate || !recurrenceRule.isNullOrEmpty()
+        }
+        return transaction
     }
 
     /**
      * Checks whether the split editor has been used for editing this transaction.
-     * <p>The Split Editor is considered to have been used if the transaction type switch is not visible</p>
      *
-     * @return {@code true} if split editor was used, {@code false} otherwise
+     * The Split Editor is considered to have been used if the transaction type switch is not visible
+     *
+     * @return `true` if split editor was used, `false` otherwise
      */
-    private boolean splitEditorUsed(FragmentTransactionFormBinding binding) {
-        return binding.inputTransactionType.getVisibility() != View.VISIBLE;
+    private fun splitEditorUsed(binding: FragmentTransactionFormBinding): Boolean {
+        return !binding.inputTransactionType.isVisible
     }
 
     /**
      * Checks if this is a multi-currency transaction being created/edited
-     * <p>A multi-currency transaction is one in which the main account and transfer account have different currencies. <br>
-     * Single-entry transactions cannot be multi-currency</p>
      *
-     * @return {@code true} if multi-currency transaction, {@code false} otherwise
+     * A multi-currency transaction is one in which the main account and transfer account have different currencies. <br></br>
+     * Single-entry transactions cannot be multi-currency
+     *
+     * @return `true` if multi-currency transaction, `false` otherwise
      */
-    private boolean isMultiCurrencyTransaction(FragmentTransactionFormBinding binding) {
-        if (!mUseDoubleEntry)
-            return false;
+    private fun isMultiCurrencyTransaction(binding: FragmentTransactionFormBinding): Boolean {
+        if (!useDoubleEntry) return false
 
-        final Account account = requireAccount();
-        final Commodity accountCommodity = account.getCommodity();
+        val account = requireAccount()
+        val accountCommodity = account.commodity
 
-        List<Split> splits = mSplitsList;
-        for (Split split : splits) {
-            Commodity splitCommodity = split.getQuantity().getCommodity();
-            if (!accountCommodity.equals(splitCommodity)) {
-                return true;
+        val splits = splitsList
+        for (split in splits) {
+            val splitCommodity = split.quantity.commodity
+            if (accountCommodity != splitCommodity) {
+                return true
             }
         }
 
-        int position = binding.inputTransferAccountSpinner.getSelectedItemPosition();
-        Account transferAccount = accountTransferNameAdapter.getAccount(position);
-        if (transferAccount == null) return false;
-        Commodity transferCommodity = transferAccount.getCommodity();
+        val position = binding.inputTransferAccountSpinner.selectedItemPosition
+        val transferAccount = accountTransferNameAdapter!!.getAccount(position)
+        if (transferAccount == null) return false
+        val transferCommodity = transferAccount.commodity
 
-        return !accountCommodity.equals(transferCommodity);
+        return accountCommodity != transferCommodity
     }
 
     /**
      * Collects information from the fragment views and uses it to create
      * and save a transaction
      */
-    private void saveNewTransaction(FragmentTransactionFormBinding binding) {
-        binding.inputTransactionAmount.setError(null);
+    private fun saveNewTransaction(binding: FragmentTransactionFormBinding) {
+        binding.inputTransactionAmount.error = null
 
         //determine whether we need to do currency conversion
         if (isMultiCurrencyTransaction(binding) && !splitEditorUsed(binding) && !onSaveAttempt) {
-            onSaveAttempt = true;
-            startTransferFunds(binding);
-            return;
+            onSaveAttempt = true
+            startTransferFunds(binding)
+            return
         }
 
-        boolean isTemplate = binding.checkboxSaveTemplate.isChecked();
-        Transaction transactionOld = mTransaction;
-        Transaction transaction = extractTransactionFromView(binding);
-        String scheduledActionUID = null;
+        val isTemplate = binding.checkboxSaveTemplate.isChecked
+        val transactionOld = transaction
+        val transaction = extractTransactionFromView(binding)
+        var scheduledActionUID: String? = null
 
         if (transactionOld != null) { //if editing an existing transaction
-            transaction.setUID(transactionOld.getUID());
-            transaction.setTemplate(transactionOld.isTemplate());
-            scheduledActionUID = transactionOld.getScheduledActionUID();
+            transaction.setUID(transactionOld.uid)
+            transaction.isTemplate = transactionOld.isTemplate
+            scheduledActionUID = transactionOld.scheduledActionUID
         }
-        boolean wasScheduled = !TextUtils.isEmpty(scheduledActionUID);
+        val wasScheduled = !scheduledActionUID.isNullOrEmpty()
 
-        mTransaction = transaction;
+        this.transaction = transaction
 
         try {
             if (isTemplate) { //template is automatically checked when a transaction is scheduled
-                if (mEditMode && wasScheduled) {
-                    transaction.setScheduledActionUID(scheduledActionUID);
-                    scheduleRecurringTransaction(transaction);
+                if (editMode && wasScheduled) {
+                    transaction.scheduledActionUID = scheduledActionUID
+                    scheduleRecurringTransaction(transaction)
                 } else { //means it was new transaction, so a new template
-                    Transaction templateTransaction = new Transaction(transaction);
-                    templateTransaction.setTemplate(true);
-                    mTransactionsDbAdapter.addRecord(templateTransaction, DatabaseAdapter.UpdateMethod.insert);
-                    scheduleRecurringTransaction(templateTransaction);
+                    val templateTransaction = Transaction(transaction)
+                    templateTransaction.isTemplate = true
+                    transactionsDbAdapter.insert(templateTransaction)
+                    scheduleRecurringTransaction(templateTransaction)
                 }
             }
 
             // 1) Transactions may be existing or non-existing
             // 2) when transaction exists in the db, the splits may exist or not exist in the db
             // So replace is chosen.
-            mTransactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.replace);
+            transactionsDbAdapter.replace(transaction)
 
             if (!isTemplate && wasScheduled) { //we were editing a schedule and it was turned off
-                scheduledActionDbAdapter.deleteRecord(scheduledActionUID);
+                scheduledActionDbAdapter.deleteRecord(scheduledActionUID)
             }
 
-            finish(Activity.RESULT_OK);
-        } catch (ArithmeticException ae) {
-            Timber.e(ae);
-            binding.inputTransactionAmount.setError(getString(R.string.error_invalid_amount));
-        } catch (Throwable e) {
-            Timber.e(e);
+            finish(Activity.RESULT_OK)
+        } catch (ae: ArithmeticException) {
+            Timber.e(ae)
+            binding.inputTransactionAmount.error = getString(R.string.error_invalid_amount)
+        } catch (e: Throwable) {
+            Timber.e(e)
+        }
+    }
+
+    private fun maybeSaveTransaction(binding: FragmentTransactionFormBinding) {
+        val view = binding.root
+        if (canSave(binding)) {
+            saveNewTransaction(binding)
+        } else {
+            if (binding.inputTransactionAmount.value == null) {
+                Snackbar.make(
+                    view,
+                    R.string.toast_transaction_amount_required,
+                    Snackbar.LENGTH_LONG
+                ).show()
+                binding.inputTransactionAmount.requestFocus()
+                binding.inputTransactionAmount.error =
+                    getString(R.string.toast_transaction_amount_required)
+            } else {
+                binding.inputTransactionAmount.error = null
+            }
+            if (useDoubleEntry && binding.inputTransferAccountSpinner.count == 0) {
+                Snackbar.make(
+                    view,
+                    R.string.toast_disable_double_entry_to_save_transaction,
+                    Snackbar.LENGTH_LONG
+                ).show()
+            }
         }
     }
 
     /**
      * Schedules a recurring transaction (if necessary) after the transaction has been saved
      *
-     * @see #saveNewTransaction(FragmentTransactionFormBinding)
+     * @see .saveNewTransaction
      */
-    private void scheduleRecurringTransaction(@NonNull Transaction transaction) {
-        String transactionUID = transaction.getUID();
+    private fun scheduleRecurringTransaction(transaction: Transaction) {
+        val transactionUID = transaction.uid
 
-        Recurrence recurrence = RecurrenceParser.parse(mEventRecurrence);
+        val recurrence = parse(eventRecurrence)
 
-        ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
-        scheduledAction.setRecurrence(recurrence);
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
+        scheduledAction.setRecurrence(recurrence)
 
-        String scheduledActionUID = transaction.getScheduledActionUID();
+        var scheduledActionUID = transaction.scheduledActionUID
 
-        if (!TextUtils.isEmpty(scheduledActionUID)) { //if we are editing an existing schedule
+        if (!scheduledActionUID.isNullOrEmpty()) { //if we are editing an existing schedule
             if (recurrence == null) {
-                scheduledActionDbAdapter.deleteRecord(scheduledActionUID);
-                transaction.setScheduledActionUID(null);
+                scheduledActionDbAdapter.deleteRecord(scheduledActionUID)
+                transaction.scheduledActionUID = null
             } else {
-                scheduledAction.setUID(scheduledActionUID);
-                scheduledActionDbAdapter.updateRecurrenceAttributes(scheduledAction);
-                Snackbar.make(getView(), R.string.toast_updated_transaction_recurring_schedule, Snackbar.LENGTH_SHORT).show();
+                scheduledAction.setUID(scheduledActionUID)
+                scheduledActionDbAdapter.updateRecurrenceAttributes(scheduledAction)
+                Snackbar.make(
+                    requireView(),
+                    R.string.toast_updated_transaction_recurring_schedule,
+                    Snackbar.LENGTH_SHORT
+                ).show()
             }
         } else {
             if (recurrence != null) {
-                scheduledAction.setActionUID(transactionUID);
-                scheduledActionDbAdapter.addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.replace);
-                scheduledActionUID = scheduledAction.getUID();
-                transaction.setScheduledActionUID(scheduledActionUID);
-                Snackbar.make(getView(), R.string.toast_scheduled_recurring_transaction, Snackbar.LENGTH_SHORT).show();
+                scheduledAction.actionUID = transactionUID
+                scheduledActionDbAdapter.replace(scheduledAction)
+                scheduledActionUID = scheduledAction.uid
+                transaction.scheduledActionUID = scheduledActionUID
+                Snackbar.make(
+                    requireView(),
+                    R.string.toast_scheduled_recurring_transaction,
+                    Snackbar.LENGTH_SHORT
+                ).show()
             }
         }
     }
 
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        mBinding = null;
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.default_save_actions, menu);
+    @Deprecated("Deprecated in Java")
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.default_save_actions, menu)
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    @Deprecated("Deprecated in Java")
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
         //hide the keyboard if it is visible
-        final FragmentTransactionFormBinding binding = mBinding;
-        if (binding == null) {
-            return super.onOptionsItemSelected(item);
-        }
-        View view = binding.getRoot();
-        Context context = view.getContext();
-        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        val binding = this.binding ?: return false
+        val view: View = binding.root
+        val context = view.context
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
 
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish(Activity.RESULT_CANCELED);
-                return true;
+        when (item.itemId) {
+            android.R.id.home -> {
+                finish(Activity.RESULT_CANCELED)
+                return true
+            }
 
-            case R.id.menu_save:
-                if (canSave(binding)) {
-                    saveNewTransaction(binding);
-                } else {
-                    if (binding.inputTransactionAmount.getValue() == null) {
-                        Snackbar.make(view, R.string.toast_transaction_amount_required, Snackbar.LENGTH_LONG).show();
-                        binding.inputTransactionAmount.requestFocus();
-                        binding.inputTransactionAmount.setError(getString(R.string.toast_transaction_amount_required));
-                    } else {
-                        binding.inputTransactionAmount.setError(null);
-                    }
-                    if (mUseDoubleEntry && binding.inputTransferAccountSpinner.getCount() == 0) {
-                        Snackbar.make(view, R.string.toast_disable_double_entry_to_save_transaction, Snackbar.LENGTH_LONG).show();
-                    }
-                }
-                return true;
+            R.id.menu_save -> {
+                maybeSaveTransaction(binding)
+                return true
+            }
 
-            default:
-                return super.onOptionsItemSelected(item);
+            else -> return super.onOptionsItemSelected(item)
         }
     }
 
     /**
      * Checks if the pre-requisites for saving the transaction are fulfilled
-     * <p>The conditions checked are that a valid amount is entered and that a transfer account is set (where applicable)</p>
      *
-     * @return {@code true} if the transaction can be saved, {@code false} otherwise
+     * The conditions checked are that a valid amount is entered and that a transfer account is set (where applicable)
+     *
+     * @return `true` if the transaction can be saved, `false` otherwise
      */
-    private boolean canSave(FragmentTransactionFormBinding binding) {
-        return (mUseDoubleEntry && binding.inputTransactionAmount.isInputValid()
-            && binding.inputTransferAccountSpinner.getCount() > 0)
-            || (!mUseDoubleEntry && binding.inputTransactionAmount.isInputValid());
+    private fun canSave(binding: FragmentTransactionFormBinding): Boolean {
+        return (useDoubleEntry && binding.inputTransactionAmount.isInputValid
+                && binding.inputTransferAccountSpinner.count > 0)
+                || (!useDoubleEntry && binding.inputTransactionAmount.isInputValid)
     }
 
     /**
@@ -1005,160 +999,166 @@ public class TransactionFormFragment extends MenuFragment implements
      *
      * @param splits List of splits produced in the fragment
      */
-    private void setSplits(FragmentTransactionFormBinding binding, List<Split> splits) {
-        mSplitsList.clear();
-        mSplitsList.addAll(splits);
-        Money balance = Transaction.computeBalance(account, splits);
-        binding.inputTransactionAmount.setValue(balance.toBigDecimal());
-        binding.inputTransactionType.setChecked(balance.isNegative());
+    private fun setSplits(binding: FragmentTransactionFormBinding, splits: List<Split>) {
+        val account = requireAccount()
+        splitsList.clear()
+        splitsList.addAll(splits)
+        val balance = Transaction.computeBalance(account, splits)
+        binding.inputTransactionAmount.value = balance.toBigDecimal()
+        binding.inputTransactionType.isChecked = balance.isNegative
     }
 
     /**
      * Finishes the fragment appropriately.
      * Depends on how the fragment was loaded, it might have a backstack or not
      */
-    private void finish(int resultCode) {
-        final FragmentActivity activity = requireActivity();
+    private fun finish(resultCode: Int) {
+        val activity = requireActivity()
 
         if (resultCode == Activity.RESULT_OK) {
             //update widgets, if any
-            WidgetConfigurationActivity.updateAllWidgets(activity);
+            updateAllWidgets(activity)
         }
 
-        if (activity.getSupportFragmentManager().getBackStackEntryCount() == 0) {
-            activity.setResult(resultCode);
+        val fm = activity.supportFragmentManager
+        if (fm.backStackEntryCount == 0) {
+            activity.setResult(resultCode)
             //means we got here directly from the accounts list activity, need to finish
-            activity.finish();
+            activity.finish()
         } else {
             //go back to transactions list
-            activity.getSupportFragmentManager().popBackStack();
+            fm.popBackStack()
         }
     }
 
-    @Override
-    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-        mDate.set(Calendar.YEAR, year);
-        mDate.set(Calendar.MONTH, month);
-        mDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-        final FragmentTransactionFormBinding binding = mBinding;
-        if (binding == null) return;
-        binding.inputDate.setText(DATE_FORMATTER.print(mDate.getTimeInMillis()));
+    override fun onDateSet(view: DatePicker, year: Int, month: Int, dayOfMonth: Int) {
+        date.set(Calendar.YEAR, year)
+        date.set(Calendar.MONTH, month)
+        date.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+        val binding = this.binding ?: return
+        binding.inputDate.text = DATE_FORMATTER.print(date.timeInMillis)
     }
 
-    @Override
-    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        mDate.set(Calendar.HOUR_OF_DAY, hourOfDay);
-        mDate.set(Calendar.MINUTE, minute);
-        final FragmentTransactionFormBinding binding = mBinding;
-        if (binding == null) return;
-        binding.inputTime.setText(TIME_FORMATTER.print(mDate.getTimeInMillis()));
+    override fun onTimeSet(view: TimePicker, hourOfDay: Int, minute: Int) {
+        date.set(Calendar.HOUR_OF_DAY, hourOfDay)
+        date.set(Calendar.MINUTE, minute)
+        val binding = this.binding ?: return
+        binding.inputTime.text = TIME_FORMATTER.print(date.timeInMillis)
     }
 
-    /**
-     * Strips formatting from a currency string.
-     * All non-digit information is removed, but the sign is preserved.
-     *
-     * @param s String to be stripped
-     * @return Stripped string with all non-digits removed
-     */
-    public static String stripCurrencyFormatting(String s) {
-        if (TextUtils.isEmpty(s))
-            return s;
-        //remove all currency formatting and anything else which is not a number
-        String sign = s.trim().substring(0, 1);
-        String stripped = s.trim().replaceAll("\\D*", "");
-        if (TextUtils.isEmpty(stripped))
-            return "";
-        if (sign.equals("+") || sign.equals("-")) {
-            stripped = sign + stripped;
-        }
-        return stripped;
-    }
-
-    @Override
-    public void transferComplete(Money value, Money amount) {
-        mSplitValue = value;
-        mSplitQuantity = amount;
+    override fun transferComplete(value: Money, amount: Money) {
+        splitValue = value
+        splitQuantity = amount
 
         //The transfer dialog was called while attempting to save. So try saving again
         if (onSaveAttempt) {
-            final FragmentTransactionFormBinding binding = mBinding;
-            if (binding == null) return;
-            saveNewTransaction(binding);
+            val binding = this.binding ?: return
+            saveNewTransaction(binding)
         }
-        onSaveAttempt = false;
+        onSaveAttempt = false
     }
 
-    @Override
-    public void onRecurrenceSet(String rrule) {
-        Timber.i("TX reoccurs: %s", rrule);
-        final FragmentTransactionFormBinding binding = mBinding;
-        if (binding == null) return;
-        Context context = binding.inputRecurrence.getContext();
-        String repeatString = null;
-        if (!TextUtils.isEmpty(rrule)) {
+    override fun onRecurrenceSet(rrule: String?) {
+        Timber.i("TX reoccurs: %s", rrule)
+        val binding = this.binding ?: return
+        val context = binding.inputRecurrence.context
+        var repeatString: String? = null
+        if (!rrule.isNullOrEmpty()) {
             try {
-                mEventRecurrence.parse(rrule);
-                repeatString = EventRecurrenceFormatter.getRepeatString(context, context.getResources(), mEventRecurrence, true);
-            } catch (Exception e) {
-                Timber.e(e, "Bad recurrence for [%s]", rrule);
-                return;
+                eventRecurrence.parse(rrule)
+                repeatString = EventRecurrenceFormatter.getRepeatString(
+                    context,
+                    context.resources,
+                    eventRecurrence,
+                    true
+                )
+            } catch (e: Exception) {
+                Timber.e(e, "Bad recurrence for [%s]", rrule)
+                return
             }
 
             //when recurrence is set, we will definitely be saving a template
-            binding.checkboxSaveTemplate.setChecked(true);
-            binding.checkboxSaveTemplate.setEnabled(false);
+            binding.checkboxSaveTemplate.isChecked = true
+            binding.checkboxSaveTemplate.setEnabled(false)
         } else {
-            binding.checkboxSaveTemplate.setEnabled(true);
-            binding.checkboxSaveTemplate.setChecked(false);
+            binding.checkboxSaveTemplate.setEnabled(true)
+            binding.checkboxSaveTemplate.isChecked = false
         }
-        if (TextUtils.isEmpty(repeatString)) {
-            repeatString = context.getString(R.string.label_tap_to_create_schedule);
+        if (repeatString.isNullOrEmpty()) {
+            repeatString = context.getString(R.string.label_tap_to_create_schedule)
         }
 
-        binding.inputRecurrence.setText(repeatString);
-        mRecurrenceRule = rrule;
-        if (mRecurrenceViewClickListener != null) {
-            mRecurrenceViewClickListener.setRecurrence(rrule);
-        }
+        binding.inputRecurrence.text = repeatString
+        recurrenceRule = rrule
+        recurrenceViewClickListener?.setRecurrence(rrule)
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == Activity.RESULT_OK) {
-            FragmentTransactionFormBinding binding = mBinding;
-            if (binding == null) return;
-            List<Split> splits = data.getParcelableArrayListExtra(UxArgument.SPLIT_LIST);
-            setSplits(binding, splits);
+            val binding = this.binding ?: return
+            val splits =
+                data?.getParcelableArrayListCompat(UxArgument.SPLIT_LIST, Split::class.java)
+                    ?: return
+            setSplits(binding, splits)
 
             //once split editor has been used and saved, only allow editing through it
-            toggleAmountInputEntryMode(binding, false);
-            setDoubleEntryViewsVisibility(binding, View.GONE);
-            binding.btnSplitEditor.setVisibility(View.VISIBLE);
+            toggleAmountInputEntryMode(binding, false)
+            setDoubleEntryViewsVisibility(binding, false)
+            binding.btnSplitEditor.isVisible = true
         }
     }
 
-    @NonNull
-    private Account requireAccount() {
-        Account account = this.account;
+    private fun requireAccount(): Account {
+        var account = this.account
         if (account != null) {
-            return account;
+            return account
         }
-        final Bundle args = getArguments();
-        assert args != null;
-        final String accountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID, rootAccountUID);
-        assert !TextUtils.isEmpty(accountUID);
+        val args: Bundle = requireArguments()
+        val accountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID, rootAccountUID)!!
         try {
-            account = mAccountsDbAdapter.getRecord(accountUID);
-            this.account = account;
-        } catch (IllegalArgumentException e) {
-            Timber.e(e);
+            account = accountsDbAdapter.getRecord(accountUID)
+            this.account = account
+        } catch (e: IllegalArgumentException) {
+            Timber.e(e)
         }
         if (account == null) {
-            Timber.e("Account not found");
-            finish(Activity.RESULT_CANCELED);
-            throw new NullPointerException("Account required");
+            Timber.e("Account not found")
+            finish(Activity.RESULT_CANCELED)
+            throw NullPointerException("Account required")
         }
-        return account;
+        return account
+    }
+
+    companion object {
+        private const val REQUEST_SPLIT_EDITOR = 0x11
+
+        /**
+         * Formats milliseconds into a date string of the format "dd MMM yyyy" e.g. 18 July 2012
+         */
+        val DATE_FORMATTER: DateTimeFormatter = DateTimeFormat.mediumDate()
+
+        /**
+         * Formats milliseconds to time string of format "HH:mm" e.g. 15:25
+         */
+        val TIME_FORMATTER: DateTimeFormatter = DateTimeFormat.mediumTime()
+
+        /**
+         * Strips formatting from a currency string.
+         * All non-digit information is removed, but the sign is preserved.
+         *
+         * @param s String to be stripped
+         * @return Stripped string with all non-digits removed
+         */
+        fun stripCurrencyFormatting(s: String): String {
+            if (s.isEmpty()) return s
+            //remove all currency formatting and anything else which is not a number
+            val sign = s.trim()[0]
+            var stripped = s.trim().replace("\\D*".toRegex(), "")
+            if (stripped.isEmpty()) return ""
+            if (sign == '+' || sign == '-') {
+                stripped = sign + stripped
+            }
+            return stripped
+        }
     }
 }

@@ -66,7 +66,6 @@ class FragmentViewHolder private constructor(
     }
 
     companion object {
-        @JvmStatic
         fun create(parent: ViewGroup, pager: ViewPager2): FragmentViewHolder {
             val container = FrameLayout(parent.context).apply {
                 layoutParams = ViewGroup.LayoutParams(

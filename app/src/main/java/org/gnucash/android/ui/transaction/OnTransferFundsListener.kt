@@ -13,21 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.transaction
 
-package org.gnucash.android.ui.transaction;
-
-import org.gnucash.android.model.Money;
+import org.gnucash.android.model.Money
 
 /**
  * Interface to be implemented by classes which start the transfer funds fragment
  */
-public interface OnTransferFundsListener {
-
+interface OnTransferFundsListener {
     /**
      * Method called after the funds have been converted to the desired currency
      *
      * @param value  Funds in old currency
      * @param amount Funds in new currency
      */
-    void transferComplete(Money value, Money amount);
+    fun transferComplete(value: Money, amount: Money)
 }

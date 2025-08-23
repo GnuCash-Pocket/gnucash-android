@@ -14,70 +14,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.util
 
-package org.gnucash.android.ui.util;
-
-import static org.gnucash.android.ui.util.TextViewExtKt.displayBalance;
-
-import android.os.AsyncTask;
-import android.widget.TextView;
-
-import androidx.annotation.ColorInt;
-import androidx.annotation.Nullable;
-
-import org.gnucash.android.db.adapter.AccountsDbAdapter;
-import org.gnucash.android.model.Account;
-import org.gnucash.android.model.AccountType;
-import org.gnucash.android.model.Money;
-
-import java.lang.ref.WeakReference;
-
-import timber.log.Timber;
+import android.os.AsyncTask
+import android.widget.TextView
+import androidx.annotation.ColorInt
+import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.model.Money
+import timber.log.Timber
+import java.lang.ref.WeakReference
 
 /**
  * An asynchronous task for computing the account balance of an account.
  * This is done asynchronously because in cases of deeply nested accounts,
  * it can take some time and would block the UI thread otherwise.
  */
-public class AccountBalanceTask extends AsyncTask<String, Void, Money> {
+class AccountBalanceTask(
+    private val accountsDbAdapter: AccountsDbAdapter,
+    balanceTextView: TextView?,
+    @ColorInt private val colorBalanceZero: Int
+) : AsyncTask<String, Any, Money>() {
+    private val accountBalanceTextViewReference = WeakReference<TextView>(balanceTextView)
 
-    private final WeakReference<TextView> accountBalanceTextViewReference;
-    private final AccountsDbAdapter accountsDbAdapter;
-    @ColorInt
-    private final int colorBalanceZero;
-
-    public AccountBalanceTask(AccountsDbAdapter accountsDbAdapter, TextView balanceTextView, @ColorInt int colorZero) {
-        super();
-        this.accountsDbAdapter = accountsDbAdapter;
-        accountBalanceTextViewReference = new WeakReference<>(balanceTextView);
-        colorBalanceZero = colorZero;
-    }
-
-    @Override
-    protected Money doInBackground(String... params) {
-        String accountUID = params[0];
+    @Deprecated("Deprecated in Java")
+    override fun doInBackground(vararg params: String): Money? {
+        val accountUID = params[0]
         //if the view for which we are doing this job is dead, kill the job as well
         if (accountBalanceTextViewReference.get() == null) {
-            cancel(true);
-            return null;
+            cancel(true)
+            return null
         }
 
         try {
-            Account account = accountsDbAdapter.getSimpleRecord(accountUID);
-            Money balance = accountsDbAdapter.getAccountBalance(account);
-            AccountType accountType = account.getAccountType();
-            return (accountType.hasDebitNormalBalance != accountType.hasDebitDisplayBalance) ? balance.unaryMinus() : balance;
-        } catch (Exception e) {
-            Timber.e(e, "Error computing account balance");
+            val account = accountsDbAdapter.getSimpleRecord(accountUID)!!
+            val balance = accountsDbAdapter.getAccountBalance(account)
+            val accountType = account.accountType
+            return if (accountType.hasDebitNormalBalance != accountType.hasDebitDisplayBalance) {
+                -balance
+            } else {
+                balance
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error computing account balance")
         }
-        return null;
+        return null
     }
 
-    @Override
-    protected void onPostExecute(@Nullable Money balance) {
-        final TextView balanceTextView = accountBalanceTextViewReference.get();
-        if (balanceTextView != null) {
-            displayBalance(balanceTextView, balance, colorBalanceZero);
-        }
+    override fun onPostExecute(balance: Money?) {
+        val balanceTextView = accountBalanceTextViewReference.get()
+        balanceTextView?.displayBalance(balance, colorBalanceZero)
     }
 }

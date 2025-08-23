@@ -13,98 +13,79 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.colorpicker
 
-package org.gnucash.android.ui.colorpicker;
-
-
-import static java.lang.Math.max;
-
-import android.content.Context;
-import android.content.res.Resources;
-import android.util.AttributeSet;
-import android.view.View;
-import android.widget.GridLayout;
-
-import androidx.annotation.ColorInt;
-
-import org.gnucash.android.R;
-import org.gnucash.android.ui.colorpicker.ColorPickerSwatch.OnColorSelectedListener;
-
-import java.util.ArrayList;
-import java.util.List;
+import android.content.Context
+import android.util.AttributeSet
+import android.view.View
+import android.widget.GridLayout
+import androidx.annotation.ColorInt
+import androidx.core.view.size
+import org.gnucash.android.R
+import org.gnucash.android.ui.colorpicker.ColorPickerSwatch.OnColorSelectedListener
+import kotlin.math.max
 
 /**
  * A color picker custom view which creates an grid of color squares.  The number of squares per
  * row (and the padding between the squares) is determined by the user.
  */
-public class ColorPickerPalette extends GridLayout {
+class ColorPickerPalette @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
+    GridLayout(context, attrs) {
+    private var onColorSelectedListener: OnColorSelectedListener? = null
 
-    public static final int SIZE_LARGE = 1;
-    public static final int SIZE_SMALL = 2;
+    private var description: String = ""
+    private var descriptionSelected: String = ""
 
-    private OnColorSelectedListener mOnColorSelectedListener;
-
-    private String mDescription;
-    private String mDescriptionSelected;
-
-    private int mSwatchLength;
-    private int mMarginSize;
-    private int mNumColumns = UNDEFINED;
-    private final List<ColorPickerSwatch> swatches = new ArrayList<>();
-
-    public ColorPickerPalette(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    public ColorPickerPalette(Context context) {
-        super(context);
-    }
+    private var swatchLength = 0
+    private var marginSize = 0
+    private var columnCount = UNDEFINED
+    private val swatches = mutableListOf<ColorPickerSwatch>()
 
     /**
      * Initialize the size, columns, and listener.  Size should be a pre-defined size (SIZE_LARGE
      * or SIZE_SMALL) from ColorPickerDialogFragment.
      */
-    public void init(int size, int columns, OnColorSelectedListener listener) {
-        if (columns > 0) {
-            mNumColumns = columns;
-            setColumnCount(columns);
+    fun init(size: Int, columnCount: Int, listener: OnColorSelectedListener?) {
+        if (columnCount > 0) {
+            this.columnCount = columnCount
+            setColumnCount(columnCount)
         }
 
-        Resources res = getResources();
+        val res = resources
         if (size == SIZE_LARGE) {
-            mSwatchLength = res.getDimensionPixelSize(R.dimen.color_swatch_large);
-            mMarginSize = res.getDimensionPixelSize(R.dimen.color_swatch_margins_large);
+            swatchLength = res.getDimensionPixelSize(R.dimen.color_swatch_large)
+            marginSize = res.getDimensionPixelSize(R.dimen.color_swatch_margins_large)
         } else {
-            mSwatchLength = res.getDimensionPixelSize(R.dimen.color_swatch_small);
-            mMarginSize = res.getDimensionPixelSize(R.dimen.color_swatch_margins_small);
+            swatchLength = res.getDimensionPixelSize(R.dimen.color_swatch_small)
+            marginSize = res.getDimensionPixelSize(R.dimen.color_swatch_margins_small)
         }
-        mOnColorSelectedListener = listener;
+        onColorSelectedListener = listener
 
-        mDescription = res.getString(R.string.color_swatch_description);
-        mDescriptionSelected = res.getString(R.string.color_swatch_description_selected);
+        description = res.getString(R.string.color_swatch_description)
+        descriptionSelected = res.getString(R.string.color_swatch_description_selected)
     }
 
     /**
      * Adds swatches to table in a serpentine format.
      */
-    public void drawPalette(int[] colors, int selectedColor) {
+    fun drawPalette(colors: IntArray?, @ColorInt selectedColor: Int) {
         if (colors == null) {
-            return;
+            return
         }
 
-        swatches.clear();
-        removeAllViews();
+        swatches.clear()
+        removeAllViews()
 
-        int tableElements = 0;
+        var tableElements = 0
 
         // Fills the table with swatches based on the array of colors.
-        for (int color : colors) {
-            tableElements++;
+        for (color in colors) {
+            tableElements++
 
-            ColorPickerSwatch colorSwatch = createColorSwatch(color, selectedColor);
-            swatches.add(colorSwatch);
-            setSwatchDescription(tableElements, color == selectedColor, colorSwatch);
-            addView(colorSwatch);
+            val colorSwatch = createColorSwatch(color, selectedColor)
+            swatches.add(colorSwatch)
+            setSwatchDescription(tableElements, color == selectedColor, colorSwatch)
+            addView(colorSwatch)
         }
     }
 
@@ -114,56 +95,65 @@ public class ColorPickerPalette extends GridLayout {
      * in an opposite direction from their left->right/top->bottom order, which is how the system
      * will arrange them for accessibility purposes.
      */
-    private void setSwatchDescription(int index, boolean selected, View swatch) {
-        final String description;
-        if (selected) {
-            description = String.format(mDescriptionSelected, index);
+    private fun setSwatchDescription(index: Int, selected: Boolean, swatch: View) {
+        val description = if (selected) {
+            String.format(descriptionSelected, index)
         } else {
-            description = String.format(mDescription, index);
+            String.format(description, index)
         }
-        swatch.setContentDescription(description);
+        swatch.setContentDescription(description)
     }
 
     /**
      * Creates a color swatch.
      */
-    private ColorPickerSwatch createColorSwatch(@ColorInt int color, @ColorInt int selectedColor) {
-        ColorPickerSwatch view = new ColorPickerSwatch(getContext(), color,
-            color == selectedColor, mOnColorSelectedListener);
-        view.setLayoutParams(generateSwatchParams());
-        return view;
+    private fun createColorSwatch(
+        @ColorInt color: Int,
+        @ColorInt selectedColor: Int
+    ): ColorPickerSwatch {
+        val view = ColorPickerSwatch(
+            context,
+            color,
+            color == selectedColor,
+            onColorSelectedListener
+        )
+        view.setLayoutParams(generateSwatchParams())
+        return view
     }
 
-    private LayoutParams generateSwatchParams() {
-        LayoutParams params = generateDefaultLayoutParams();
-        params.width = mSwatchLength;
-        params.height = mSwatchLength;
-        params.setMargins(mMarginSize, mMarginSize, mMarginSize, mMarginSize);
-        return params;
-    }
-
-    public void setSelected(@ColorInt int color) {
-        for (ColorPickerSwatch swatch : swatches) {
-            swatch.setChecked(swatch.color == color);
+    private fun generateSwatchParams(): LayoutParams {
+        return generateDefaultLayoutParams().apply {
+            width = swatchLength
+            height = swatchLength
+            setMargins(marginSize, marginSize, marginSize, marginSize)
         }
     }
 
-    @Override
-    protected void onMeasure(int widthSpec, int heightSpec) {
-        super.onMeasure(widthSpec, heightSpec);
+    fun setSelected(@ColorInt color: Int) {
+        for (swatch in swatches) {
+            swatch.isChecked = swatch.color == color
+        }
+    }
 
-        if (mNumColumns < 0) {
-            int hPadding = getPaddingLeft() + getPaddingRight();
-            final int widthSansPadding = getMeasuredWidth() - hPadding;
-            int widthSwatch = mMarginSize + mSwatchLength + mMarginSize;
-            int columnCount = max(1, widthSansPadding / widthSwatch);
-            int count = getChildCount();
+    override fun onMeasure(widthSpec: Int, heightSpec: Int) {
+        super.onMeasure(widthSpec, heightSpec)
+
+        if (columnCount < 0) {
+            val hPadding = paddingLeft + paddingRight
+            val widthSansPadding = measuredWidth - hPadding
+            val widthSwatch = marginSize + swatchLength + marginSize
+            val columnCount = max(1, (widthSansPadding / widthSwatch))
             // Reset the layout params to recalculate their spans.
-            for (int i = 0; i < count; i++) {
-                View child = getChildAt(i);
-                child.setLayoutParams(generateSwatchParams());
+            for (i in 0 until size) {
+                val child = getChildAt(i)
+                child.setLayoutParams(generateSwatchParams())
             }
-            setColumnCount(columnCount);
+            setColumnCount(columnCount)
         }
+    }
+
+    companion object {
+        const val SIZE_LARGE: Int = 1
+        const val SIZE_SMALL: Int = 2
     }
 }
