@@ -291,7 +291,7 @@ public class ExportFormFragment extends MenuFragment implements
             binding.switchExportAll.setChecked(true);
         }
 
-        binding.checkboxPostExportDelete.setChecked(exportParams.shouldDeleteTransactionsAfterExport());
+        binding.checkboxPostExportDelete.setChecked(exportParams.getDeleteTransactionsAfterExport());
         binding.compression.setChecked(exportParams.isCompressed);
 
         String rrule = scheduledAction.getRuleString();
@@ -355,7 +355,7 @@ public class ExportFormFragment extends MenuFragment implements
         }
 
         if (mBinding.switchExportAll.isChecked()) {
-            exportParameters.setExportStartTime(TimestampHelper.getTimestampFromEpochZero());
+            exportParameters.setExportStartTime(TimestampHelper.timestampFromEpochZero);
         } else {
             exportParameters.setExportStartTime(new Timestamp(mExportStartCalendar.getTimeInMillis()));
         }

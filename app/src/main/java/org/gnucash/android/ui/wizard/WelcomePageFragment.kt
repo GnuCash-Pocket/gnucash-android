@@ -13,27 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.gnucash.android.ui.wizard
 
-package org.gnucash.android.ui.wizard;
-
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
-import org.gnucash.android.R;
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import org.gnucash.android.R
 
 /**
  * Welcome page fragment is the first fragment that will be displayed to the user
  */
-public class WelcomePageFragment extends Fragment {
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_wizard_welcome_page, container, false);
+class WelcomePageFragment : Fragment() {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        return inflater.inflate(R.layout.fragment_wizard_welcome_page, container, false)
     }
 }

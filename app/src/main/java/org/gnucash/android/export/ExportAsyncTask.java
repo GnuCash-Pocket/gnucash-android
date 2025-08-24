@@ -135,7 +135,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Object, Uri> {
             if (mContext instanceof Activity) {
                 reportSuccess(exportParams);
             }
-            if (exportParams.shouldDeleteTransactionsAfterExport()) {
+            if (exportParams.getDeleteTransactionsAfterExport()) {
                 refreshViews();
             }
         } else {
@@ -167,7 +167,7 @@ public class ExportAsyncTask extends AsyncTask<ExportParams, Object, Uri> {
      *
      * @return Object of one of {@link QifExporter}, {@link OfxExporter} or {@link GncXmlExporter}, {@Link CsvAccountExporter} or {@Link CsvTransactionsExporter}
      */
-    private Exporter createExporter(
+    public static Exporter createExporter(
         @NonNull Context context,
         @NonNull ExportParams exportParams,
         @NonNull String bookUID,

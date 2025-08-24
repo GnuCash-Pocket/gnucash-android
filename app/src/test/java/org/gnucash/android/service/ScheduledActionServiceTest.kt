@@ -346,19 +346,22 @@ class ScheduledActionServiceTest : GnuCashTest() {
      */
     @Test
     fun scheduledBackups_shouldNotIncludeTransactionsPreviousToTheLastRun() {
-        val scheduledBackup = ScheduledAction(ScheduledAction.ActionType.BACKUP)
-        scheduledBackup.startTime = LocalDateTime.now().minusDays(15).toDate().time
-        scheduledBackup.lastRunTime = LocalDateTime.now().minusDays(8).toDate().time
+        val scheduledBackup = ScheduledAction(ScheduledAction.ActionType.BACKUP).apply {
+            startTime = LocalDateTime.now().minusDays(15).toDate().time
+            lastRunTime = LocalDateTime.now().minusDays(8).toDate().time
+            executionCount = 1
+            val recurrence = Recurrence(PeriodType.WEEK).apply {
+                multiplier = 1
+                byDays = listOf(Calendar.WEDNESDAY)
+            }
+            setRecurrence(recurrence)
+            val backupParams = ExportParams(ExportFormat.QIF).apply {
+                exportTarget = ExportParams.ExportTarget.SD_CARD
+                exportStartTime = Timestamp(startTime)
+            }
+            tag = backupParams.toTag()
+        }
         val previousLastRun = scheduledBackup.lastRunTime
-        scheduledBackup.executionCount = 1
-        val recurrence = Recurrence(PeriodType.WEEK)
-        recurrence.multiplier = 1
-        recurrence.byDays = listOf(Calendar.WEDNESDAY)
-        scheduledBackup.setRecurrence(recurrence)
-        val backupParams = ExportParams(ExportFormat.QIF)
-        backupParams.exportTarget = ExportParams.ExportTarget.SD_CARD
-        backupParams.exportStartTime = Timestamp(scheduledBackup.startTime)
-        scheduledBackup.tag = backupParams.toTag()
 
         // Create a transaction with a modified date previous to the last run
         val transaction = Transaction("Tandoori express")

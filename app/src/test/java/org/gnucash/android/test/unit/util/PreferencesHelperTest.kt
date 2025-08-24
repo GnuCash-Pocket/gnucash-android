@@ -26,7 +26,7 @@ class PreferencesHelperTest : GnuCashTest() {
     @Test
     fun shouldGetLastExportTimeDefaultValue() {
         val lastExportTime = PreferencesHelper.getLastExportTime(context)
-        assertThat(lastExportTime).isEqualTo(TimestampHelper.getTimestampFromEpochZero())
+        assertThat(lastExportTime).isEqualTo(TimestampHelper.timestampFromEpochZero)
     }
 
     @Test

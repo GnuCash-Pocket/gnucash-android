@@ -22,7 +22,36 @@ import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
-import org.gnucash.android.export.ofx.OfxHelper.*
+import org.gnucash.android.export.ofx.OfxHelper.APP_ID
+import org.gnucash.android.export.ofx.OfxHelper.OFX_HEADER
+import org.gnucash.android.export.ofx.OfxHelper.OFX_SGML_HEADER
+import org.gnucash.android.export.ofx.OfxHelper.TAG_ACCOUNT_ID
+import org.gnucash.android.export.ofx.OfxHelper.TAG_ACCOUNT_TYPE
+import org.gnucash.android.export.ofx.OfxHelper.TAG_BALANCE_AMOUNT
+import org.gnucash.android.export.ofx.OfxHelper.TAG_BANK_ACCOUNT_FROM
+import org.gnucash.android.export.ofx.OfxHelper.TAG_BANK_ACCOUNT_TO
+import org.gnucash.android.export.ofx.OfxHelper.TAG_BANK_ID
+import org.gnucash.android.export.ofx.OfxHelper.TAG_BANK_MESSAGES_V1
+import org.gnucash.android.export.ofx.OfxHelper.TAG_BANK_TRANSACTION_LIST
+import org.gnucash.android.export.ofx.OfxHelper.TAG_CURRENCY_DEF
+import org.gnucash.android.export.ofx.OfxHelper.TAG_DATE_AS_OF
+import org.gnucash.android.export.ofx.OfxHelper.TAG_DATE_END
+import org.gnucash.android.export.ofx.OfxHelper.TAG_DATE_POSTED
+import org.gnucash.android.export.ofx.OfxHelper.TAG_DATE_START
+import org.gnucash.android.export.ofx.OfxHelper.TAG_DATE_USER
+import org.gnucash.android.export.ofx.OfxHelper.TAG_LEDGER_BALANCE
+import org.gnucash.android.export.ofx.OfxHelper.TAG_MEMO
+import org.gnucash.android.export.ofx.OfxHelper.TAG_NAME
+import org.gnucash.android.export.ofx.OfxHelper.TAG_STATEMENT_TRANSACTION
+import org.gnucash.android.export.ofx.OfxHelper.TAG_STATEMENT_TRANSACTIONS
+import org.gnucash.android.export.ofx.OfxHelper.TAG_STATEMENT_TRANSACTION_RESPONSE
+import org.gnucash.android.export.ofx.OfxHelper.TAG_TRANSACTION_AMOUNT
+import org.gnucash.android.export.ofx.OfxHelper.TAG_TRANSACTION_FITID
+import org.gnucash.android.export.ofx.OfxHelper.TAG_TRANSACTION_TYPE
+import org.gnucash.android.export.ofx.OfxHelper.TAG_TRANSACTION_UID
+import org.gnucash.android.export.ofx.OfxHelper.UNSOLICITED_TRANSACTION_ID
+import org.gnucash.android.export.ofx.OfxHelper.formattedCurrentTime
+import org.gnucash.android.export.ofx.OfxHelper.getOfxFormattedTime
 import org.gnucash.android.gnc.GncProgressListener
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.Money
@@ -115,7 +144,7 @@ class OfxExporter(
         writeOFX(document, root, accounts)
         val useXmlHeader = PreferenceManager.getDefaultSharedPreferences(mContext)
             .getBoolean(mContext.getString(R.string.key_xml_ofx_header), false)
-        PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow(), bookUID)
+        PreferencesHelper.setLastExportTime(TimestampHelper.timestampFromNow, bookUID)
         if (useXmlHeader) {
             write(writer, document, false)
         } else {
@@ -205,7 +234,7 @@ class OfxExporter(
 
         //================= BEGIN ACCOUNT BALANCE INFO =================================
         val balance = getAccountBalance(account).toPlainString()
-        val formattedCurrentTimeString = getFormattedCurrentTime()
+        val formattedCurrentTimeString = formattedCurrentTime
         val balanceAmount = doc.createElement(TAG_BALANCE_AMOUNT)
         balanceAmount.appendChild(doc.createTextNode(balance))
         val dtasof = doc.createElement(TAG_DATE_AS_OF)

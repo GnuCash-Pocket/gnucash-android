@@ -271,7 +271,7 @@ public abstract class Exporter {
             throw new ExporterException(exportParams, e);
         }
 
-        if (result != null && exportParams.shouldDeleteTransactionsAfterExport()) {
+        if (result != null && exportParams.getDeleteTransactionsAfterExport()) {
             // Avoid recursion - Don't do a backup if just did a backup already!
             Context context = mContext;
             String bookUID = GnuCashApplication.getActiveBookUID();

@@ -116,7 +116,7 @@ class CsvTransactionsExporter(
                     writeTransaction(writer, fields, transaction)
                 } while (cursor.moveToNext());
             }
-            PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow(), bookUID)
+            PreferencesHelper.setLastExportTime(TimestampHelper.timestampFromNow, bookUID)
         } finally {
             cursor.close()
         }
