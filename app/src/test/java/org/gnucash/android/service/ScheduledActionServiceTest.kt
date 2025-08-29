@@ -20,7 +20,7 @@ import android.database.sqlite.SQLiteDatabase
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseHolder
-import org.gnucash.android.db.DatabaseSchema
+import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.DatabaseAdapter
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
@@ -38,6 +38,7 @@ import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.test.unit.GnuCashTest
+import org.gnucash.android.util.set
 import org.joda.time.DateTime
 import org.joda.time.DateTimeConstants
 import org.joda.time.LocalDateTime
@@ -66,7 +67,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
 
     @Before
     fun setUp() {
-        db = GnuCashApplication.getActiveDb()!!
+        db = GnuCashApplication.activeDb!!
         dbHolder = DatabaseHolder(context, db)
         baseAccount.commodity = Commodity.DEFAULT_COMMODITY
         transferAccount.commodity = Commodity.DEFAULT_COMMODITY
@@ -89,7 +90,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
         accountsDbAdapter.addRecord(transferAccount)
 
         transactionsDbAdapter = TransactionsDbAdapter.getInstance()
-        transactionsDbAdapter.addRecord(templateTransaction, DatabaseAdapter.UpdateMethod.insert)
+        transactionsDbAdapter.addRecord(templateTransaction, DatabaseAdapter.UpdateMethod.Insert)
     }
 
     @After
@@ -165,7 +166,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
         recurrence.byDays = listOf(Calendar.MONDAY)
         scheduledAction.setRecurrence(recurrence)
         ScheduledActionDbAdapter.getInstance()
-            .addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.insert)
+            .addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.Insert)
 
         val transactionsDbAdapter = TransactionsDbAdapter.getInstance()
         assertThat(transactionsDbAdapter.recordsCount).isZero()
@@ -184,7 +185,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
         scheduledAction.setRecurrence(PeriodType.WEEK, 2)
         scheduledAction.endTime = DateTime(2017, 8, 16, 9, 0).millis
         ScheduledActionDbAdapter.getInstance()
-            .addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.insert)
+            .addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.Insert)
 
         val transactionsDbAdapter = TransactionsDbAdapter.getInstance()
         assertThat(transactionsDbAdapter.recordsCount).isZero()
@@ -218,7 +219,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
         scheduledAction.setRecurrence(recurrence)
         scheduledAction.endTime = DateTime(2016, 8, 8, 9, 0).millis
         ScheduledActionDbAdapter.getInstance()
-            .addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.insert)
+            .addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.Insert)
 
         val transactionsDbAdapter = TransactionsDbAdapter.getInstance()
         assertThat(transactionsDbAdapter.recordsCount).isZero()
@@ -266,7 +267,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
     @Test
     fun scheduledBackups_shouldRunOnlyOnce() {
         val scheduledBackup = ScheduledAction(ScheduledAction.ActionType.BACKUP)
-        scheduledBackup.actionUID = GnuCashApplication.getActiveBookUID()
+        scheduledBackup.actionUID = GnuCashApplication.activeBookUID
         scheduledBackup.startTime = LocalDateTime.now()
             .minusMonths(4).minusDays(2).toDate().time
         scheduledBackup.setRecurrence(PeriodType.MONTH, 1)
@@ -279,9 +280,9 @@ class ScheduledActionServiceTest : GnuCashTest() {
         scheduledBackup.tag = backupParams.toTag()
 
         // Check there's not a backup for each missed run
-        val bookUID = GnuCashApplication.getActiveBookUID()
+        val bookUID = GnuCashApplication.activeBookUID
         assertThat(bookUID).isNotNull()
-        val backupFolder = File(Exporter.getExportFolderPath(context, bookUID))
+        val backupFolder = File(Exporter.getExportFolderPath(context, bookUID!!))
         assertThat(backupFolder).exists()
         assertThat(backupFolder.listFiles()).isEmpty()
 
@@ -327,9 +328,9 @@ class ScheduledActionServiceTest : GnuCashTest() {
         backupParams.exportTarget = ExportParams.ExportTarget.SD_CARD
         scheduledBackup.tag = backupParams.toTag()
 
-        val bookUID = GnuCashApplication.getActiveBookUID()
+        val bookUID = GnuCashApplication.activeBookUID
         assertThat(bookUID).isNotNull()
-        val backupFolder = File(Exporter.getExportFolderPath(context, bookUID))
+        val backupFolder = File(Exporter.getExportFolderPath(context, bookUID!!))
         assertThat(backupFolder).exists()
         assertThat(backupFolder.listFiles()).isEmpty()
 
@@ -346,19 +347,22 @@ class ScheduledActionServiceTest : GnuCashTest() {
      */
     @Test
     fun scheduledBackups_shouldNotIncludeTransactionsPreviousToTheLastRun() {
-        val scheduledBackup = ScheduledAction(ScheduledAction.ActionType.BACKUP)
-        scheduledBackup.startTime = LocalDateTime.now().minusDays(15).toDate().time
-        scheduledBackup.lastRunTime = LocalDateTime.now().minusDays(8).toDate().time
+        val scheduledBackup = ScheduledAction(ScheduledAction.ActionType.BACKUP).apply {
+            startTime = LocalDateTime.now().minusDays(15).toDate().time
+            lastRunTime = LocalDateTime.now().minusDays(8).toDate().time
+            executionCount = 1
+            val recurrence = Recurrence(PeriodType.WEEK).apply {
+                multiplier = 1
+                byDays = listOf(Calendar.WEDNESDAY)
+            }
+            setRecurrence(recurrence)
+            val backupParams = ExportParams(ExportFormat.QIF).apply {
+                exportTarget = ExportParams.ExportTarget.SD_CARD
+                exportStartTime = Timestamp(startTime)
+            }
+            tag = backupParams.toTag()
+        }
         val previousLastRun = scheduledBackup.lastRunTime
-        scheduledBackup.executionCount = 1
-        val recurrence = Recurrence(PeriodType.WEEK)
-        recurrence.multiplier = 1
-        recurrence.byDays = listOf(Calendar.WEDNESDAY)
-        scheduledBackup.setRecurrence(recurrence)
-        val backupParams = ExportParams(ExportFormat.QIF)
-        backupParams.exportTarget = ExportParams.ExportTarget.SD_CARD
-        backupParams.exportStartTime = Timestamp(scheduledBackup.startTime)
-        scheduledBackup.tag = backupParams.toTag()
 
         // Create a transaction with a modified date previous to the last run
         val transaction = Transaction("Tandoori express")
@@ -377,9 +381,9 @@ class ScheduledActionServiceTest : GnuCashTest() {
             Timestamp(LocalDateTime.now().minusDays(9).toDate().time)
         )
 
-        val bookUID = GnuCashApplication.getActiveBookUID()
+        val bookUID = GnuCashApplication.activeBookUID
         assertThat(bookUID).isNotNull()
-        val backupFolder = File(Exporter.getExportFolderPath(context, bookUID))
+        val backupFolder = File(Exporter.getExportFolderPath(context, bookUID!!))
         assertThat(backupFolder).exists()
         assertThat(backupFolder.listFiles()).isEmpty()
 
@@ -400,9 +404,9 @@ class ScheduledActionServiceTest : GnuCashTest() {
      */
     private fun setTransactionInDbTimestamp(transactionUID: String, timestamp: Timestamp) {
         val values = ContentValues()
-        values.put(DatabaseSchema.TransactionEntry.COLUMN_TIMESTAMP, timestamp.time)
+        values[TransactionEntry.COLUMN_TIMESTAMP] = timestamp.time
         transactionsDbAdapter.updateTransaction(
-            values, DatabaseSchema.TransactionEntry.COLUMN_UID + "=?",
+            values, TransactionEntry.COLUMN_UID + "=?",
             arrayOf(transactionUID)
         )
     }
@@ -414,7 +418,7 @@ class ScheduledActionServiceTest : GnuCashTest() {
     @Test
     fun scheduledBackups_shouldIncludeTransactionsAfterTheLastRun() {
         val scheduledBackup = ScheduledAction(ScheduledAction.ActionType.BACKUP)
-        scheduledBackup.actionUID = GnuCashApplication.getActiveBookUID()
+        scheduledBackup.actionUID = GnuCashApplication.activeBookUID
         scheduledBackup.startTime = LocalDateTime.now().minusDays(15).toDate().time
         scheduledBackup.lastRunTime = LocalDateTime.now().minusDays(8).toDate().time
         val previousLastRun = scheduledBackup.lastRunTime
@@ -438,9 +442,9 @@ class ScheduledActionServiceTest : GnuCashTest() {
         transaction.addSplit(split.createPair(transferAccount.uid))
         transactionsDbAdapter.addRecord(transaction)
 
-        val bookUID = GnuCashApplication.getActiveBookUID()
+        val bookUID = GnuCashApplication.activeBookUID
         assertThat(bookUID).isNotNull()
-        val backupFolder = File(Exporter.getExportFolderPath(context, bookUID))
+        val backupFolder = File(Exporter.getExportFolderPath(context, bookUID!!))
         assertThat(backupFolder).exists()
         assertThat(backupFolder.listFiles()).isEmpty()
 

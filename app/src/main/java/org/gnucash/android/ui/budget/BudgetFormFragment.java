@@ -255,7 +255,7 @@ public class BudgetFormFragment extends MenuFragment implements RecurrencePicker
         recurrence.setPeriodStart(mStartDate.getTimeInMillis());
         mBudget.setRecurrence(recurrence);
 
-        mBudgetsDbAdapter.addRecord(mBudget, DatabaseAdapter.UpdateMethod.insert);
+        mBudgetsDbAdapter.addRecord(mBudget, DatabaseAdapter.UpdateMethod.Insert);
         getActivity().finish();
     }
 

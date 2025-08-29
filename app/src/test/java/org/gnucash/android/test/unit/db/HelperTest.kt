@@ -1,7 +1,7 @@
 package org.gnucash.android.test.unit.db
 
 import org.assertj.core.api.Assertions.assertThat
-import org.gnucash.android.db.DatabaseHelper.sqlEscapeLike
+import org.gnucash.android.db.DatabaseHelper.Companion.sqlEscapeLike
 import org.gnucash.android.test.unit.GnuCashTest
 import org.junit.Test
 

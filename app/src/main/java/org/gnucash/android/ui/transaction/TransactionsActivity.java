@@ -283,7 +283,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         final ActivityTransactionsBinding binding = mBinding;
         String accountUID = getIntent().getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
         if (TextUtils.isEmpty(accountUID)) {
-            accountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
+            accountUID = mAccountsDbAdapter.getRootAccountUID();
         }
         account = mAccountsDbAdapter.getSimpleRecord(accountUID);
         if (account == null) {

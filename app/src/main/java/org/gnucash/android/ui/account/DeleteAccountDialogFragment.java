@@ -75,8 +75,8 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
 
     private DialogAccountDeleteBinding binding;
 
-    private int mTransactionCount;
-    private int mSubAccountCount;
+    private long mTransactionCount;
+    private long mSubAccountCount;
     private final AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
     private final TransactionsDbAdapter transactionsDbAdapter = accountsDbAdapter.transactionsDbAdapter;
     private final SplitsDbAdapter splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter;

@@ -47,7 +47,7 @@ class BooksDbAdapterTest : GnuCashTest() {
     @Test
     fun addBook() {
         val book = Book(generateUID())
-        booksDbAdapter.addRecord(book, DatabaseAdapter.UpdateMethod.insert)
+        booksDbAdapter.addRecord(book, DatabaseAdapter.UpdateMethod.Insert)
 
         assertThat(booksDbAdapter.recordsCount).isOne()
         assertThat(booksDbAdapter.getRecord(book.uid).displayName).isEqualTo("Book 1")

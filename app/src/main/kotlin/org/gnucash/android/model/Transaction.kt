@@ -48,8 +48,7 @@ class Transaction : BaseModel {
     /**
      * Timestamp when this transaction occurred
      */
-    var timeMillis: Long = 0
-        private set
+    var time: Long = 0
 
     /**
      * Flag indicating that this transaction is a template
@@ -91,7 +90,7 @@ class Transaction : BaseModel {
         }
         description = transaction.description
         note = transaction.note
-        timeMillis = transaction.timeMillis
+        time = transaction.time
         commodity = transaction.commodity
         splits = transaction.splits.map { Split(it, generateNewUID) }
     }
@@ -101,7 +100,7 @@ class Transaction : BaseModel {
      */
     private fun initDefaults() {
         commodity = Commodity.DEFAULT_COMMODITY
-        timeMillis = System.currentTimeMillis()
+        time = System.currentTimeMillis()
     }
 
     /**
@@ -259,7 +258,7 @@ class Transaction : BaseModel {
      */
     var description: String? = ""
         set(value) {
-            field = value?.trim { it <= ' ' }.orEmpty()
+            field = value?.trim().orEmpty()
         }
 
     /**
@@ -268,20 +267,11 @@ class Transaction : BaseModel {
      * @param timestamp Time when transaction occurred as [Date]
      */
     fun setTime(timestamp: Date) {
-        timeMillis = timestamp.time
-    }
-
-    /**
-     * Sets the time when the transaction occurred
-     *
-     * @param timeInMillis Time in milliseconds
-     */
-    fun setTime(timeInMillis: Long) {
-        timeMillis = timeInMillis
+        time = timestamp.time
     }
 
     override fun toString(): String {
-        return "{description: $description, date: ${formatShortDate(timeMillis)}}"
+        return "{description: $description, date: ${formatShortDate(time)}}"
     }
 
     fun getTransferSplit(accountUID: String): Split? {

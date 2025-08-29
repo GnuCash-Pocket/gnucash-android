@@ -13,7 +13,6 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.gnucash.android.R
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
@@ -25,7 +24,7 @@ import org.gnucash.android.model.AccountType
 class QualifiedAccountNameAdapter @JvmOverloads constructor(
     context: Context,
     private val where: String? = null,
-    private val whereArgs: Array<String>? = null,
+    private val whereArgs: Array<String?>? = null,
     var adapter: AccountsDbAdapter = AccountsDbAdapter.getInstance(),
     private val scope: CoroutineScope
 ) : ArrayAdapter<QualifiedAccountNameAdapter.Label>(context, android.R.layout.simple_spinner_item) {
@@ -59,7 +58,7 @@ class QualifiedAccountNameAdapter @JvmOverloads constructor(
     constructor(
         context: Context,
         where: String?,
-        whereArgs: Array<String>?,
+        whereArgs: Array<String?>?,
         adapter: AccountsDbAdapter,
         lifecycleOwner: LifecycleOwner
     ) : this(

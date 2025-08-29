@@ -27,7 +27,7 @@ class TransactionTest : GnuCashTest() {
         assertThat(transaction.currencyCode).isEqualTo(clone2.currencyCode)
         assertThat(transaction.description).isEqualTo(clone2.description)
         assertThat(transaction.note).isEqualTo(clone2.note)
-        assertThat(transaction.timeMillis).isEqualTo(clone2.timeMillis)
+        assertThat(transaction.time).isEqualTo(clone2.time)
         //TODO: Clone the created_at and modified_at times?
     }
 
@@ -40,7 +40,7 @@ class TransactionTest : GnuCashTest() {
         assertThat(transaction.currencyCode).isEqualTo(Commodity.DEFAULT_COMMODITY.currencyCode)
 
         val split = Split(createZeroInstance(Commodity.DEFAULT_COMMODITY), "test-account")
-        assertThat(split.transactionUID).isEmpty()
+        assertThat(split.transactionUID).isNullOrEmpty()
 
         transaction.addSplit(split)
         assertThat(split.transactionUID).isEqualTo(transaction.uid)

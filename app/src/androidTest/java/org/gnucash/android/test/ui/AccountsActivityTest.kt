@@ -97,7 +97,7 @@ class AccountsActivityTest : GnuAndroidTest() {
 
         val simpleAccount = Account(SIMPLE_ACCOUNT_NAME, getInstance(ACCOUNTS_CURRENCY_CODE))
         simpleAccount.setUID(SIMPLE_ACCOUNT_UID)
-        accountsDbAdapter.addRecord(simpleAccount, DatabaseAdapter.UpdateMethod.insert)
+        accountsDbAdapter.addRecord(simpleAccount, DatabaseAdapter.UpdateMethod.Insert)
 
         refreshAccountsList()
     }
@@ -124,7 +124,7 @@ class AccountsActivityTest : GnuAndroidTest() {
 
         val account = Account(SEARCH_ACCOUNT_NAME)
         account.parentUID = SIMPLE_ACCOUNT_UID
-        accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert)
+        accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.Insert)
 
         // before search query
         onView(withText(SIMPLE_ACCOUNT_NAME))
@@ -184,7 +184,7 @@ class AccountsActivityTest : GnuAndroidTest() {
         val transaction = Transaction("Future transaction")
         val split1 = Split(Money("4.15", ACCOUNTS_CURRENCY_CODE), SIMPLE_ACCOUNT_UID)
         transaction.addSplit(split1)
-        transaction.setTime(System.currentTimeMillis() + 4815162342L)
+        transaction.time = System.currentTimeMillis() + 4815162342L
         transactionsDbAdapter.addRecord(transaction)
 
         refreshAccountsList()
@@ -197,7 +197,7 @@ class AccountsActivityTest : GnuAndroidTest() {
     fun testChangeParentAccount() {
         val accountName = "Euro Account"
         val account = Account(accountName, Commodity.EUR)
-        accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert)
+        accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.Insert)
 
         refreshAccountsList()
 
@@ -276,7 +276,7 @@ class AccountsActivityTest : GnuAndroidTest() {
         //no sub-accounts
         assertThat(accountsDbAdapter.getSubAccountCount(SIMPLE_ACCOUNT_UID)).isZero()
         assertThat(
-            accountsDbAdapter.getSubAccountCount(accountsDbAdapter.getOrCreateRootAccountUID())
+            accountsDbAdapter.getSubAccountCount(accountsDbAdapter.rootAccountUID)
         ).isEqualTo(2)
         assertThat(accountsDbAdapter.simpleAccounts).extracting(
             "accountType",
@@ -332,7 +332,7 @@ class AccountsActivityTest : GnuAndroidTest() {
         transaction.addSplit(split)
         transaction.addSplit(split.createPair(SIMPLE_ACCOUNT_UID))
         account.addTransaction(transaction)
-        accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert)
+        accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.Insert)
 
         assertThat(accountsDbAdapter.getTransactionCount(account.uid)).isOne()
         assertThat(accountsDbAdapter.getTransactionCount(SIMPLE_ACCOUNT_UID)).isOne()
@@ -343,7 +343,7 @@ class AccountsActivityTest : GnuAndroidTest() {
 
         onView(withId(R.id.menu_save)).perform(click())
         assertThat(accountsDbAdapter.getTransactionCount(SIMPLE_ACCOUNT_UID)).isOne()
-        assertThat(splitsDbAdapter.fetchSplitsForAccount(SIMPLE_ACCOUNT_UID).count).isOne()
+        assertThat(splitsDbAdapter.fetchSplitsForAccount(SIMPLE_ACCOUNT_UID)?.count).isOne()
         assertThat(splitsDbAdapter.getSplitsForTransaction(transaction.uid)).hasSize(2)
     }
 
@@ -405,8 +405,8 @@ class AccountsActivityTest : GnuAndroidTest() {
         subAccount.parentUID = SIMPLE_ACCOUNT_UID
 
         val tranferAcct = Account("Other account")
-        accountsDbAdapter.addRecord(subAccount, DatabaseAdapter.UpdateMethod.insert)
-        accountsDbAdapter.addRecord(tranferAcct, DatabaseAdapter.UpdateMethod.insert)
+        accountsDbAdapter.addRecord(subAccount, DatabaseAdapter.UpdateMethod.Insert)
+        accountsDbAdapter.addRecord(tranferAcct, DatabaseAdapter.UpdateMethod.Insert)
 
         assertThat(accountsDbAdapter.recordsCount).isEqualTo(accountCount + 2)
 
@@ -509,7 +509,7 @@ class AccountsActivityTest : GnuAndroidTest() {
         hiddenAccount.isHidden = true
         accountsDbAdapter.addRecord(
             hiddenAccount,
-            DatabaseAdapter.UpdateMethod.insert
+            DatabaseAdapter.UpdateMethod.Insert
         )
         assertThat(accountsDbAdapter.recordsCount).isEqualTo(3)
 
@@ -539,7 +539,7 @@ class AccountsActivityTest : GnuAndroidTest() {
         hiddenAccount.isHidden = true
         accountsDbAdapter.addRecord(
             hiddenAccount,
-            DatabaseAdapter.UpdateMethod.insert
+            DatabaseAdapter.UpdateMethod.Insert
         )
         assertThat(accountsDbAdapter.recordsCount).isEqualTo(3)
 
@@ -548,7 +548,7 @@ class AccountsActivityTest : GnuAndroidTest() {
         hiddenAccountChild.parentUID = PARENT_ACCOUNT_UID
         accountsDbAdapter.addRecord(
             hiddenAccountChild,
-            DatabaseAdapter.UpdateMethod.insert
+            DatabaseAdapter.UpdateMethod.Insert
         )
         assertThat(accountsDbAdapter.recordsCount).isEqualTo(4)
 
@@ -607,7 +607,7 @@ class AccountsActivityTest : GnuAndroidTest() {
             accountsDbAdapter = AccountsDbAdapter.getInstance()
             transactionsDbAdapter = accountsDbAdapter.transactionsDbAdapter
             splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter
-            assertThat(accountsDbAdapter.isOpen()).isTrue()
+            assertThat(accountsDbAdapter.isOpen).isTrue()
         }
 
         /**

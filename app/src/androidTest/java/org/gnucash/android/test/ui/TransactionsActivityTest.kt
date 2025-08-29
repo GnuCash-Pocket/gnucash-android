@@ -41,7 +41,7 @@ import androidx.test.uiautomator.UiDevice
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
-import org.gnucash.android.db.DatabaseSchema
+import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.db.adapter.DatabaseAdapter
@@ -60,6 +60,7 @@ import org.gnucash.android.ui.common.UxArgument
 import org.gnucash.android.ui.transaction.TransactionFormFragment.DATE_FORMATTER
 import org.gnucash.android.ui.transaction.TransactionFormFragment.TIME_FORMATTER
 import org.gnucash.android.ui.transaction.TransactionsActivity
+import org.gnucash.android.util.set
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.not
@@ -100,11 +101,11 @@ class TransactionsActivityTest : GnuAndroidTest() {
 
         baseAccount = Account(TRANSACTIONS_ACCOUNT_NAME, COMMODITY)
         baseAccount.setUID(TRANSACTIONS_ACCOUNT_UID)
-        accountsDbAdapter.addRecord(baseAccount, DatabaseAdapter.UpdateMethod.insert)
+        accountsDbAdapter.addRecord(baseAccount, DatabaseAdapter.UpdateMethod.Insert)
 
         transferAccount = Account(TRANSFER_ACCOUNT_NAME, COMMODITY)
         transferAccount.setUID(TRANSFER_ACCOUNT_UID)
-        accountsDbAdapter.addRecord(transferAccount, DatabaseAdapter.UpdateMethod.insert)
+        accountsDbAdapter.addRecord(transferAccount, DatabaseAdapter.UpdateMethod.Insert)
 
         assertThat(accountsDbAdapter.recordsCount)
             .isEqualTo(3) //including ROOT account
@@ -113,14 +114,14 @@ class TransactionsActivityTest : GnuAndroidTest() {
         transaction = Transaction(TRANSACTION_NAME)
         transaction.commodity = COMMODITY
         transaction.note = "What up?"
-        transaction.setTime(transactionTimeMillis)
+        transaction.time = transactionTimeMillis
         val split = Split(Money(TRANSACTION_AMOUNT, CURRENCY_CODE), TRANSACTIONS_ACCOUNT_UID)
         split.type = TransactionType.DEBIT
 
         transaction.addSplit(split)
         transaction.addSplit(split.createPair(TRANSFER_ACCOUNT_UID))
 
-        transactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.insert)
+        transactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.Insert)
         assertThat(transactionsDbAdapter.recordsCount).isOne()
 
         val intent = Intent(Intent.ACTION_VIEW)
@@ -204,13 +205,13 @@ class TransactionsActivityTest : GnuAndroidTest() {
         onView(withId(R.id.input_transaction_amount))
             .check(matches(withText(formatter.format(balance.toDouble()))))
         onView(withId(R.id.input_date))
-            .check(matches(withText(DATE_FORMATTER.print(transaction.timeMillis))))
+            .check(matches(withText(DATE_FORMATTER.print(transaction.time))))
         onView(withId(R.id.input_time))
-            .check(matches(withText(TIME_FORMATTER.print(transaction.timeMillis))))
+            .check(matches(withText(TIME_FORMATTER.print(transaction.time))))
         onView(withId(R.id.notes))
             .check(matches(withText(transaction.note)))
 
-        validateTimeInput(transaction.timeMillis)
+        validateTimeInput(transaction.time)
     }
 
     //TODO: Add test for only one account but with double-entry enabled
@@ -268,9 +269,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         val euroAccount = Account("Euro Konto", euro)
         accountsDbAdapter.addRecord(euroAccount)
 
-        val transactionCount = transactionsDbAdapter.getTransactionsCount(
-            TRANSACTIONS_ACCOUNT_UID
-        )
+        val transactionCount = transactionsDbAdapter.getTransactionsCount(TRANSACTIONS_ACCOUNT_UID)
         setDefaultTransactionType(TransactionType.DEBIT)
         validateTransactionListDisplayed()
 
@@ -386,7 +385,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         imbalanceAcctUID = accountsDbAdapter.getImbalanceAccountUID(context, COMMODITY)
         assertThat(imbalanceAcctUID).isNotNull()
         assertThat(imbalanceAcctUID).isNotEmpty()
-        assertThat(accountsDbAdapter.isHiddenAccount(imbalanceAcctUID))
+        assertThat(accountsDbAdapter.isHiddenAccount(imbalanceAcctUID!!))
             .isTrue() //imbalance account should be hidden in single entry mode
 
         assertThat(transaction.splits).extracting("accountUID", String::class.java)
@@ -462,16 +461,14 @@ class TransactionsActivityTest : GnuAndroidTest() {
         )
         assertThat(imbalanceAcctUID).isNotNull()
         assertThat(imbalanceAcctUID).isNotEmpty()
-        assertThat(accountsDbAdapter.isHiddenAccount(imbalanceAcctUID)).isFalse()
+        assertThat(accountsDbAdapter.isHiddenAccount(imbalanceAcctUID!!)).isFalse()
 
         //at least one split will belong to the imbalance account
         assertThat(transaction.splits).extracting("accountUID", String::class.java)
             .contains(imbalanceAcctUID)
 
-        val imbalanceSplits = splitsDbAdapter.getSplitsForTransactionInAccount(
-            transaction.uid,
-            imbalanceAcctUID
-        )
+        val imbalanceSplits = splitsDbAdapter
+            .getSplitsForTransactionInAccount(transaction.uid, imbalanceAcctUID)
         assertThat(imbalanceSplits).hasSize(1)
 
         val split = imbalanceSplits[0]
@@ -519,20 +516,17 @@ class TransactionsActivityTest : GnuAndroidTest() {
     //FIXME: Improve on this test
     fun childAccountsShouldUseParentTransferAccountSetting() {
         val transferAccount = Account("New Transfer Acct")
-        accountsDbAdapter.addRecord(transferAccount, DatabaseAdapter.UpdateMethod.insert)
+        accountsDbAdapter.addRecord(transferAccount, DatabaseAdapter.UpdateMethod.Insert)
         accountsDbAdapter.addRecord(
             Account("Higher account"),
-            DatabaseAdapter.UpdateMethod.insert
+            DatabaseAdapter.UpdateMethod.Insert
         )
 
         val childAccount = Account("Child Account")
         childAccount.parentUID = TRANSACTIONS_ACCOUNT_UID
-        accountsDbAdapter.addRecord(childAccount, DatabaseAdapter.UpdateMethod.insert)
+        accountsDbAdapter.addRecord(childAccount, DatabaseAdapter.UpdateMethod.Insert)
         val contentValues = ContentValues()
-        contentValues.put(
-            DatabaseSchema.AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID,
-            transferAccount.uid
-        )
+        contentValues[AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID] = transferAccount.uid
         accountsDbAdapter.updateRecord(TRANSACTIONS_ACCOUNT_UID, contentValues)
 
         val intent = Intent(transactionsActivity, TransactionsActivity::class.java)
@@ -602,7 +596,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         val transaction = transactions[0]
         assertThat(TRANSACTION_NAME).isEqualTo(transaction.description)
         val expectedDate = transactionTimeMillis
-        val trxDate = transaction.timeMillis
+        val trxDate = transaction.time
         assertThat(DATE_FORMATTER.print(expectedDate))
             .isEqualTo(DATE_FORMATTER.print(trxDate))
         assertThat(TIME_FORMATTER.print(expectedDate))
@@ -635,7 +629,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
     @Test
     fun testMoveTransaction() {
         val account = Account("Move account", COMMODITY)
-        accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert)
+        accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.Insert)
 
         assertThat(transactionsDbAdapter.getAllTransactionsForAccount(account.uid)).isEmpty()
 
@@ -660,7 +654,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         transactionsDbAdapter.deleteAllRecords()
 
         val account = Account("Z Account", COMMODITY)
-        accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert)
+        accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.Insert)
 
         //create new transaction "Transaction Acct" --> "Transfer Account"
         onView(withId(R.id.fab_create_transaction))
@@ -723,8 +717,8 @@ class TransactionsActivityTest : GnuAndroidTest() {
         assertThat(dummyAccountTrns[0].description).isEqualTo(
             dummyAccountTrns[1].description
         )
-        assertThat(dummyAccountTrns[0].timeMillis).isNotEqualTo(
-            dummyAccountTrns[1].timeMillis
+        assertThat(dummyAccountTrns[0].time).isNotEqualTo(
+            dummyAccountTrns[1].time
         )
     }
 
@@ -872,8 +866,10 @@ class TransactionsActivityTest : GnuAndroidTest() {
         transactionsDbAdapter.addRecord(multiTransaction)
 
         val savedTransaction = transactionsDbAdapter.getRecord(multiTransaction.uid)
-        assertThat(savedTransaction.splits).extracting("quantity", Money::class.java).contains(expectedQty)
-        assertThat(savedTransaction.splits).extracting("value", Money::class.java).contains(expectedValue)
+        assertThat(savedTransaction.splits).extracting("quantity", Money::class.java)
+            .contains(expectedQty)
+        assertThat(savedTransaction.splits).extracting("value", Money::class.java)
+            .contains(expectedValue)
 
         refreshTransactionsList()
         onView(withText(trnDescription))

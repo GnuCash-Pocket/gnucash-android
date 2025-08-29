@@ -39,7 +39,7 @@ import kotlin.math.max
 /**
  * Creates a GnuCash CSV transactions representation of the accounts and transactions
  *
- * @author Semyannikov Gleb <nightdevgame></nightdevgame>@gmail.com>
+ * @author Semyannikov Gleb <nightdevgame@gmail.com>
  */
 class CsvTransactionsExporter(
     context: Context,
@@ -66,15 +66,16 @@ class CsvTransactionsExporter(
 
     private fun writeSplitsToCsv(writer: ICSVWriter, fields: Array<String>, splits: List<Split>) {
         // Sort splits by account name.
-        val splitToAccount =
-            splits.associate { it.uid to mAccountsDbAdapter.getAccountFullName(it.accountUID) }
+        val splitToAccount = splits.associate {
+            it.uid to accountsDbAdapter.getAccountFullName(it.accountUID!!)
+        }
         val splitsByAccount = splits.sortedBy { splitToAccount[it.uid] }
 
         for (split in splitsByAccount) {
             fields[8] = split.memo.orEmpty()
             val accountUID = split.accountUID!!
             val account = accountCache.getOrPut(accountUID) {
-                mAccountsDbAdapter.getSimpleRecord(accountUID)!!
+                accountsDbAdapter.getSimpleRecord(accountUID)!!
             }
             fields[9] = account.fullName.orEmpty()
             fields[10] = account.name
@@ -101,22 +102,22 @@ class CsvTransactionsExporter(
 
     @Throws(ExporterException::class)
     private fun writeExport(writer: ICSVWriter) {
-        val headers = mContext.resources.getStringArray(R.array.csv_transaction_headers)
+        val headers = context.resources.getStringArray(R.array.csv_transaction_headers)
         writer.writeNext(headers)
 
         val cursor =
-            mTransactionsDbAdapter.fetchTransactionsModifiedSince(mExportParams.exportStartTime)
+            transactionsDbAdapter.fetchTransactionsModifiedSince(exportParams.exportStartTime)!!
         Timber.d("Exporting %d transactions to CSV", cursor.count)
-        val fields = Array(headers.size) { "" }
+        val fields = Array<String>(headers.size) { "" }
         try {
             if (cursor.moveToFirst()) {
                 do {
                     cancellationSignal.throwIfCanceled()
-                    val transaction = mTransactionsDbAdapter.buildModelInstance(cursor)
+                    val transaction = transactionsDbAdapter.buildModelInstance(cursor)
                     writeTransaction(writer, fields, transaction)
                 } while (cursor.moveToNext());
             }
-            PreferencesHelper.setLastExportTime(TimestampHelper.getTimestampFromNow(), bookUID)
+            PreferencesHelper.setLastExportTime(TimestampHelper.timestampFromNow, bookUID)
         } finally {
             cursor.close()
         }
@@ -129,7 +130,7 @@ class CsvTransactionsExporter(
     ) {
         val commodity = transaction.commodity
 
-        fields[0] = dateFormat.print(transaction.timeMillis)
+        fields[0] = dateFormat.print(transaction.time)
         fields[1] = transaction.uid
         fields[2] = ""  // Transaction number
         fields[3] = transaction.description.orEmpty()

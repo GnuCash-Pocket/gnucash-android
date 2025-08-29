@@ -87,7 +87,7 @@ class PieChartReportTest : GnuAndroidTest() {
      */
     private fun addTransactionForCurrentMonth() {
         val transaction = Transaction(TRANSACTION_NAME)
-        transaction.setTime(System.currentTimeMillis() - DateUtils.HOUR_IN_MILLIS)
+        transaction.time = System.currentTimeMillis() - DateUtils.HOUR_IN_MILLIS
 
         val split = Split(
             Money(BigDecimal.valueOf(TRANSACTION_AMOUNT), commodity), DINING_EXPENSE_ACCOUNT_UID
@@ -97,7 +97,7 @@ class PieChartReportTest : GnuAndroidTest() {
         transaction.addSplit(split)
         transaction.addSplit(split.createPair(CASH_IN_WALLET_ASSET_ACCOUNT_UID))
 
-        transactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.insert)
+        transactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.Insert)
     }
 
     /**
@@ -107,7 +107,7 @@ class PieChartReportTest : GnuAndroidTest() {
      */
     private fun addTransactionForPreviousMonth(minusMonths: Int) {
         val transaction = Transaction(TRANSACTION2_NAME)
-        transaction.setTime(LocalDateTime.now().minusMonths(minusMonths).toDateTime().millis)
+        transaction.time = LocalDateTime.now().minusMonths(minusMonths).toDateTime().millis
 
         val split = Split(
             Money(BigDecimal.valueOf(TRANSACTION2_AMOUNT), commodity), BOOKS_EXPENSE_ACCOUNT_UID
@@ -117,7 +117,7 @@ class PieChartReportTest : GnuAndroidTest() {
         transaction.addSplit(split)
         transaction.addSplit(split.createPair(CASH_IN_WALLET_ASSET_ACCOUNT_UID))
 
-        transactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.insert)
+        transactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.Insert)
     }
 
     @Test
@@ -157,11 +157,11 @@ class PieChartReportTest : GnuAndroidTest() {
             GIFTS_RECEIVED_INCOME_ACCOUNT_UID
         )
         val transaction = Transaction(TRANSACTION3_NAME)
-        transaction.setTime(System.currentTimeMillis() - DateUtils.HOUR_IN_MILLIS);
+        transaction.time = System.currentTimeMillis() - DateUtils.HOUR_IN_MILLIS;
         transaction.addSplit(split)
         transaction.addSplit(split.createPair(CASH_IN_WALLET_ASSET_ACCOUNT_UID))
 
-        transactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.insert)
+        transactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.Insert)
 
         refreshReport()
 
@@ -265,9 +265,9 @@ class PieChartReportTest : GnuAndroidTest() {
         @BeforeClass
         @JvmStatic
         fun prepareTestCase() {
-            val context = GnuCashApplication.getAppContext()
+            val context = GnuCashApplication.appContext
             preventFirstRunDialogs(context)
-            oldActiveBookUID = GnuCashApplication.getActiveBookUID()!!
+            oldActiveBookUID = GnuCashApplication.activeBookUID!!
             testBookUID = GncXmlImporter.parse(
                 context,
                 context.resources.openRawResource(R.raw.default_accounts)

@@ -76,7 +76,7 @@ class MultiBookTest : GnuAndroidTest() {
         shouldOpenBookManager()
         onView(withText(book.displayName)).perform(click())
 
-        assertThat(GnuCashApplication.getActiveBookUID()).isEqualTo(book.uid)
+        assertThat(GnuCashApplication.activeBookUID).isEqualTo(book.uid)
     }
 
     @Test

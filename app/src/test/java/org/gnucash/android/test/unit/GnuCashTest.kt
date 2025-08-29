@@ -14,7 +14,7 @@ import java.io.InputStream
 abstract class GnuCashTest {
 
     @JvmField
-    protected val context = GnuCashApplication.getAppContext()
+    protected val context = GnuCashApplication.appContext
 
     companion object {
         @JvmStatic

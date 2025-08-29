@@ -359,7 +359,7 @@ public class TransactionsListFragment extends MenuFragment implements
                 Money amount = transaction.getBalance(mAccountUID);
                 displayBalance(transactionAmount, amount, colorBalanceZero);
 
-                String dateText = TransactionsActivity.getPrettyDateFormat(context, transaction.getTimeMillis());
+                String dateText = TransactionsActivity.getPrettyDateFormat(context, transaction.getTime());
                 transactionDate.setText(dateText);
 
                 if (mUseCompactView || !mUseDoubleEntry) {
@@ -424,7 +424,7 @@ public class TransactionsListFragment extends MenuFragment implements
             Transaction transaction = mTransactionsDbAdapter.getRecord(transactionUID);
             Transaction duplicate = new Transaction(transaction);
             duplicate.setTime(System.currentTimeMillis());
-            mTransactionsDbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.insert);
+            mTransactionsDbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.Insert);
             refresh();
         } catch (SQLException e) {
             Timber.e(e);

@@ -30,7 +30,7 @@ class Split : BaseModel, Parcelable {
     /**
      * Transaction UID which this split belongs to
      */
-    var transactionUID: String? = ""
+    var transactionUID: String? = null
 
     /**
      * Account UID which this split belongs to

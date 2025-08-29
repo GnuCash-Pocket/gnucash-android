@@ -68,7 +68,7 @@ abstract class ScheduledActionsListFragment : MenuFragment(), Refreshable {
         }
     }
 
-    override fun refresh(uid: String) {
+    override fun refresh(uid: String?) {
         refresh()
     }
 

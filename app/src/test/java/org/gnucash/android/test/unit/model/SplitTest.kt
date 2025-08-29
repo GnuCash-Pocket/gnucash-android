@@ -34,7 +34,7 @@ class SplitTest : GnuCashTest() {
     @Test
     fun testAddingSplitToTransaction() {
         val split = Split(createZeroInstance(Commodity.DEFAULT_COMMODITY), "Test")
-        assertThat(split.transactionUID).isEmpty()
+        assertThat(split.transactionUID).isNullOrEmpty()
 
         val transaction = Transaction("Random")
         transaction.addSplit(split)

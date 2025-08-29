@@ -4,17 +4,22 @@ import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.model.AccountType
 import org.joda.time.LocalDateTime
 
-abstract class IntervalReportFragment : BaseReportFragment()  {
+abstract class IntervalReportFragment : BaseReportFragment() {
     @JvmField
     protected val earliestTimestamps = mutableMapOf<AccountType, Long>()
+
     @JvmField
-    protected val latestTimestamps= mutableMapOf<AccountType, Long>()
+    protected val latestTimestamps = mutableMapOf<AccountType, Long>()
+
     @JvmField
     protected var earliestTransactionTimestamp: LocalDateTime? = null
+
     @JvmField
     protected var isChartDataPresent = false
+
     @JvmField
     protected val accountTypes = listOf(AccountType.INCOME, AccountType.EXPENSE)
+
     @JvmField
     protected var transactionsDbAdapter: TransactionsDbAdapter = TransactionsDbAdapter.getInstance()
 
@@ -38,13 +43,14 @@ abstract class IntervalReportFragment : BaseReportFragment()  {
 
         val commodityUID = mCommodity.getUID()
         for (type in accountTypes) {
-            val earliest = transactionsDbAdapter.getTimestampOfEarliestTransaction(type, commodityUID)
+            val earliest =
+                transactionsDbAdapter.getTimestampOfEarliestTransaction(type, commodityUID)
             if (earliest > TransactionsDbAdapter.INVALID_DATE) {
-                earliestTimestamps.put(type, earliest)
+                earliestTimestamps[type] = earliest
             }
             val latest = transactionsDbAdapter.getTimestampOfLatestTransaction(type, commodityUID)
             if (latest >= earliest) {
-                latestTimestamps.put(type, latest)
+                latestTimestamps[type] = latest
             }
         }
 

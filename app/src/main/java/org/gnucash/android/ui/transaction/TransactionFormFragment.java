@@ -284,7 +284,7 @@ public class TransactionFormFragment extends MenuFragment implements
         pricesDbAdapter = PricesDbAdapter.getInstance();
         scheduledActionDbAdapter = ScheduledActionDbAdapter.getInstance();
 
-        rootAccountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
+        rootAccountUID = mAccountsDbAdapter.getRootAccountUID();
         this.account = requireAccount();
         if (account == null) {
             Timber.e("Account not found");
@@ -422,10 +422,10 @@ public class TransactionFormFragment extends MenuFragment implements
         binding.inputTransactionAmount.setValue(transaction.getBalance(account).toBigDecimal(), !binding.inputTransactionAmount.isInputModified());
         binding.currencySymbol.setText(transaction.getCommodity().getSymbol());
         binding.notes.setText(transaction.getNote());
-        binding.inputDate.setText(DATE_FORMATTER.print(transaction.getTimeMillis()));
-        binding.inputTime.setText(TIME_FORMATTER.print(transaction.getTimeMillis()));
+        binding.inputDate.setText(DATE_FORMATTER.print(transaction.getTime()));
+        binding.inputTime.setText(TIME_FORMATTER.print(transaction.getTime()));
         Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(transaction.getTimeMillis());
+        cal.setTimeInMillis(transaction.getTime());
         mDate = cal;
 
         //TODO: deep copy the split list. We need a copy so we can modify with impunity
@@ -881,7 +881,7 @@ public class TransactionFormFragment extends MenuFragment implements
                 } else { //means it was new transaction, so a new template
                     Transaction templateTransaction = new Transaction(transaction);
                     templateTransaction.setTemplate(true);
-                    mTransactionsDbAdapter.addRecord(templateTransaction, DatabaseAdapter.UpdateMethod.insert);
+                    mTransactionsDbAdapter.addRecord(templateTransaction, DatabaseAdapter.UpdateMethod.Insert);
                     scheduleRecurringTransaction(templateTransaction);
                 }
             }
@@ -889,7 +889,7 @@ public class TransactionFormFragment extends MenuFragment implements
             // 1) Transactions may be existing or non-existing
             // 2) when transaction exists in the db, the splits may exist or not exist in the db
             // So replace is chosen.
-            mTransactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.replace);
+            mTransactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.Replace);
 
             if (!isTemplate && wasScheduled) { //we were editing a schedule and it was turned off
                 scheduledActionDbAdapter.deleteRecord(scheduledActionUID);
@@ -931,7 +931,7 @@ public class TransactionFormFragment extends MenuFragment implements
         } else {
             if (recurrence != null) {
                 scheduledAction.setActionUID(transactionUID);
-                scheduledActionDbAdapter.addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.replace);
+                scheduledActionDbAdapter.addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.Replace);
                 scheduledActionUID = scheduledAction.getUID();
                 transaction.setScheduledActionUID(scheduledActionUID);
                 Snackbar.make(getView(), R.string.toast_scheduled_recurring_transaction, Snackbar.LENGTH_SHORT).show();

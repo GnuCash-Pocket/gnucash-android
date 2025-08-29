@@ -15,14 +15,16 @@
  */
 package org.gnucash.android.ui.budget;
 
+import static org.gnucash.android.util.ColorExtKt.darken;
+
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 
 import androidx.fragment.app.FragmentManager;
 
 import org.gnucash.android.R;
-import org.gnucash.android.app.GnuCashApplication;
 import org.gnucash.android.databinding.ActivityBudgetsBinding;
 import org.gnucash.android.ui.common.BaseDrawerActivity;
 import org.gnucash.android.ui.common.FormActivity;
@@ -83,6 +85,6 @@ public class BudgetsActivity extends BaseDrawerActivity {
      * @return Color between red and green
      */
     public static int getBudgetProgressColor(double value) {
-        return GnuCashApplication.darken(android.graphics.Color.HSVToColor(new float[]{(float) value * 120f, 1f, 1f}));
+        return darken(Color.HSVToColor(new float[]{(float) value * 120f, 1f, 1f}));
     }
 }

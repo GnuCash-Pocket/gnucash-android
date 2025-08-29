@@ -76,7 +76,7 @@ class CommoditiesAdapter @JvmOverloads constructor(
     private fun loadData(adapter: CommoditiesDbAdapter): List<Commodity> {
         val where = DatabaseSchema.CommodityEntry.COLUMN_MNEMONIC + " <> ?" +
                 " AND " + DatabaseSchema.CommodityEntry.COLUMN_NAMESPACE + " <> ?";
-        val whereArgs = arrayOf(Commodity.TEMPLATE, Commodity.TEMPLATE)
+        val whereArgs = arrayOf<String?>(Commodity.TEMPLATE, Commodity.TEMPLATE)
         return adapter.getAllRecords(where, whereArgs)
     }
 

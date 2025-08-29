@@ -150,9 +150,9 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
         }
 
         RowBalanceBinding balanceBinding = RowBalanceBinding.inflate(inflater, binding.transactionItems, true);
-        bind(balanceBinding, mAccountUID, transaction.getTimeMillis());
+        bind(balanceBinding, mAccountUID, transaction.getTime());
 
-        String timeAndDate = DateExtKt.formatFullDate(transaction.getTimeMillis());
+        String timeAndDate = DateExtKt.formatFullDate(transaction.getTime());
         binding.trnTimeAndDate.setText(timeAndDate);
 
         if (!TextUtils.isEmpty(transaction.getNote())) {
@@ -261,7 +261,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
         Transaction duplicate = new Transaction(transaction);
         duplicate.setTime(System.currentTimeMillis());
         try {
-            transactionsDbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.insert);
+            transactionsDbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.Insert);
             if (duplicate.id <= 0) return;
         } catch (SQLException e) {
             Timber.e(e);

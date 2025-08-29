@@ -553,10 +553,11 @@ public class AccountsListFragment extends MenuFragment implements
                 Account account = accountsDbAdapter.getSimpleRecord(accountUID);
 
                 accountName.setText(account.getName());
-                int subAccountCount = accountsDbAdapter.getSubAccountCount(accountUID);
+                long subAccountCount = accountsDbAdapter.getSubAccountCount(accountUID);
                 if (subAccountCount > 0) {
                     description.setVisibility(View.VISIBLE);
-                    String text = getResources().getQuantityString(R.plurals.label_sub_accounts, subAccountCount, subAccountCount);
+                    int count = (int) subAccountCount;
+                    String text = getResources().getQuantityString(R.plurals.label_sub_accounts, count, count);
                     description.setText(text);
                 } else {
                     description.setVisibility(View.GONE);

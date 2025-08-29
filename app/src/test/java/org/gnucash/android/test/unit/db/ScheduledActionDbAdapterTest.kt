@@ -59,7 +59,7 @@ class ScheduledActionDbAdapterTest : GnuCashTest() {
         val repeatString = recurrence.frequencyRepeatString(context) + ", " +
                 res.getString(R.string.repeat_x_times, 4)
 
-        assertThat(scheduledAction.getRepeatString(context).trim { it <= ' ' })
+        assertThat(scheduledAction.getRepeatString(context).trim())
             .isEqualTo(repeatString)
     }
 

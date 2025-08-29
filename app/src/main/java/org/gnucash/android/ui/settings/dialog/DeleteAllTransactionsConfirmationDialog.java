@@ -85,7 +85,7 @@ public class DeleteAllTransactionsConfirmationDialog extends DoubleConfirmationD
         Timber.i("Deleted %d transactions successfully", count);
 
         if (preserveOpeningBalances) {
-            transactionsDbAdapter.bulkAddRecords(openingBalances, DatabaseAdapter.UpdateMethod.insert);
+            transactionsDbAdapter.bulkAddRecords(openingBalances, DatabaseAdapter.UpdateMethod.Insert);
         }
         Toast.makeText(context, R.string.toast_all_transactions_deleted, Toast.LENGTH_SHORT).show();
         WidgetConfigurationActivity.updateAllWidgets(context);

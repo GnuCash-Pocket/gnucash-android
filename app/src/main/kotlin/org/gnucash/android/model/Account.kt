@@ -40,7 +40,7 @@ class Account : BaseModel {
      */
     var name: String = ""
         set(value) {
-            field = value.trim { it <= ' ' }
+            field = value.trim()
         }
 
     /**

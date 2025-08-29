@@ -94,23 +94,26 @@ class OwnCloudExportTest : GnuAndroidTest() {
         val accountsDbAdapter = AccountsDbAdapter.getInstance()
         accountsDbAdapter.deleteAllRecords()
 
-        val currencyCode = GnuCashApplication.getDefaultCurrencyCode()
+        val currencyCode = GnuCashApplication.defaultCurrencyCode
         Commodity.DEFAULT_COMMODITY =
             CommoditiesDbAdapter.getInstance()!!.getCurrency(currencyCode)!!
 
         val account = Account("ownCloud")
         val transaction = Transaction("birds")
-        transaction.setTime(System.currentTimeMillis())
+        transaction.time = System.currentTimeMillis()
         val split = Split(Money("11.11", currencyCode), account.uid)
         transaction.addSplit(split)
         transaction.addSplit(
             split.createPair(
-                accountsDbAdapter.getOrCreateImbalanceAccountUID(context, Commodity.DEFAULT_COMMODITY)
+                accountsDbAdapter.getOrCreateImbalanceAccountUID(
+                    context,
+                    Commodity.DEFAULT_COMMODITY
+                )
             )
         )
         account.addTransaction(transaction)
 
-        accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert)
+        accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.Insert)
 
         prefs.edit()
             .putBoolean(context.getString(R.string.key_owncloud_sync), false)

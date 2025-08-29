@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.PersistableBundle
 
+@Throws(IllegalArgumentException::class)
 fun Context.findActivity(): Activity {
     if (this is Activity) {
         return this

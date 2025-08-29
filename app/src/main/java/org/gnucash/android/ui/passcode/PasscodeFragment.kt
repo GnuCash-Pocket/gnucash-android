@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.SystemClock
 import org.gnucash.android.BuildConfig
 import org.gnucash.android.ui.passcode.PasscodeHelper.getPasscode
 import timber.log.Timber
@@ -23,7 +24,7 @@ class PasscodeFragment : KeyboardFragment() {
         val context: Context = requireContext()
 
         if (code == codeOld) {
-            PasscodeHelper.PASSCODE_SESSION_INIT_TIME = System.currentTimeMillis()
+            PasscodeHelper.passcodeSessionTime = SystemClock.elapsedRealtime()
 
             val args = requireArguments()
             val action = args.getString(EXTRA_ACTION)

@@ -23,7 +23,7 @@ class AccountsTemplate {
 
     private fun getAssetNames(context: Context): List<String> {
         val assets = context.assets
-        val locale = GnuCashApplication.getDefaultLocale()
+        val locale = GnuCashApplication.defaultLocale
         return getAssetNames(assets, locale)
     }
 

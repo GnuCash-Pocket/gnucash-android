@@ -152,7 +152,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled(context);
         String accountUID = getArguments().getString(UxArgument.SELECTED_ACCOUNT_UID);
         mParentAccountUID = getArguments().getString(UxArgument.PARENT_ACCOUNT_UID);
-        mRootAccountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
+        mRootAccountUID = mAccountsDbAdapter.getRootAccountUID();
 
         mAccountsDbAdapter = AccountsDbAdapter.getInstance();
         accountTypesAdapter = new AccountTypesAdapter(context);
@@ -480,7 +480,8 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         ColorPickerDialog colorPickerDialogFragment = ColorPickerDialog.newInstance(
             R.string.color_picker_default_title,
             getAccountColorOptions(),
-            currentColor, -1, ColorPickerDialog.SIZE_SMALL);
+            currentColor, -1, ColorPickerDialog.SIZE_SMALL
+        );
         fragmentManager.setFragmentResultListener(COLOR_PICKER_DIALOG_TAG, this, this);
         colorPickerDialogFragment.show(fragmentManager, COLOR_PICKER_DIALOG_TAG);
     }
@@ -697,7 +698,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         if (account == null) {
             account = new Account(newName, selectedCommodity);
             //new account, insert it
-            mAccountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert);
+            mAccountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.Insert);
         } else {
             account.setName(newName);
             account.setCommodity(selectedCommodity);
@@ -737,7 +738,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         }
 
         // bulk update, will not update transactions
-        mAccountsDbAdapter.bulkAddRecords(accountsToUpdate, DatabaseAdapter.UpdateMethod.update);
+        mAccountsDbAdapter.bulkAddRecords(accountsToUpdate, DatabaseAdapter.UpdateMethod.Update);
 
         finishFragment();
     }

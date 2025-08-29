@@ -344,7 +344,7 @@ public class TransferFundsDialogFragment extends VolatileDialogFragment {
             price = priceQuoted;
         }
         try {
-            pricesDbAdapter.addRecord(price, DatabaseAdapter.UpdateMethod.insert);
+            pricesDbAdapter.addRecord(price, DatabaseAdapter.UpdateMethod.Insert);
 
             if (mOnTransferFundsListener != null) {
                 mOnTransferFundsListener.transferComplete(mOriginAmount, convertedAmount);
