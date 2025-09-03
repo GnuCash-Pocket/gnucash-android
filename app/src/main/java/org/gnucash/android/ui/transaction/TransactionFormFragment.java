@@ -387,12 +387,15 @@ public class TransactionFormFragment extends MenuFragment implements
                     if (!amountEntered) //if user already entered an amount
                         binding.inputTransactionAmount.setValue(splits.get(0).getValue().toBigDecimal());
                 } else {
-                    if (amountEntered) { //if user entered own amount, clear loaded splits and use the user value
+                    // if user entered own amount, clear loaded splits and use the user value
+                    if (amountEntered) {
                         mSplitsList.clear();
                         setDoubleEntryViewsVisibility(binding, View.VISIBLE);
                     } else {
-                        if (mUseDoubleEntry) { //don't hide the view in single entry mode
+                        // don't hide the view in single entry mode
+                        if (mUseDoubleEntry) {
                             setDoubleEntryViewsVisibility(binding, View.GONE);
+                            binding.btnSplitEditor.setVisibility(View.VISIBLE);
                         }
                     }
                 }
@@ -486,6 +489,7 @@ public class TransactionFormFragment extends MenuFragment implements
     private void toggleAmountInputEntryMode(FragmentTransactionFormBinding binding, boolean enabled) {
         if (enabled) {
             binding.inputTransactionAmount.setFocusable(true);
+            binding.inputTransactionAmount.setOnClickListener(null);
         } else {
             binding.inputTransactionAmount.setFocusable(false);
             binding.inputTransactionAmount.setOnClickListener(new View.OnClickListener() {
@@ -516,13 +520,6 @@ public class TransactionFormFragment extends MenuFragment implements
         binding.currencySymbol.setText(commodity.getSymbol());
         binding.inputTransactionAmount.setCommodity(commodity);
         binding.inputTransactionAmount.bindKeyboard(binding.calculatorKeyboard);
-
-        binding.btnSplitEditor.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openSplitEditor(binding);
-            }
-        });
 
         if (mUseDoubleEntry) {
             setSelectedTransferAccount(binding, account.getDefaultTransferAccountUID());
