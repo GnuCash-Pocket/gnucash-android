@@ -21,9 +21,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.ActionBar
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.gnucash.android.app.MenuFragment
+import org.gnucash.android.app.actionBar
 import org.gnucash.android.databinding.FragmentScheduledEventsListBinding
 import org.gnucash.android.ui.common.Refreshable
 
@@ -48,8 +49,7 @@ abstract class ScheduledActionsListFragment : MenuFragment(), Refreshable {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val context = view.context
-        val actionBar = (context as AppCompatActivity).supportActionBar
+        val actionBar: ActionBar? = this.actionBar
         actionBar?.setDisplayShowTitleEnabled(true)
         actionBar?.setDisplayHomeAsUpEnabled(true)
         actionBar?.setHomeButtonEnabled(true)
@@ -68,7 +68,7 @@ abstract class ScheduledActionsListFragment : MenuFragment(), Refreshable {
         }
     }
 
-    override fun refresh(uid: String) {
+    override fun refresh(uid: String?) {
         refresh()
     }
 

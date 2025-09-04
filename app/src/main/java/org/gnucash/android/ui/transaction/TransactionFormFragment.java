@@ -114,12 +114,12 @@ public class TransactionFormFragment extends MenuFragment implements
     /**
      * Transactions database adapter
      */
-    private TransactionsDbAdapter mTransactionsDbAdapter;
+    private TransactionsDbAdapter transactionsDbAdapter;
 
     /**
      * Accounts database adapter
      */
-    private AccountsDbAdapter mAccountsDbAdapter;
+    private AccountsDbAdapter accountsDbAdapter;
     private PricesDbAdapter pricesDbAdapter;
     private ScheduledActionDbAdapter scheduledActionDbAdapter;
 
@@ -131,7 +131,7 @@ public class TransactionFormFragment extends MenuFragment implements
     /**
      * Transaction to be created/updated
      */
-    private Transaction mTransaction;
+    private Transaction transaction;
 
     /**
      * Formats milliseconds into a date string of the format "dd MMM yyyy" e.g. 18 July 2012
@@ -146,12 +146,12 @@ public class TransactionFormFragment extends MenuFragment implements
     /**
      * Flag to note if double entry accounting is in use or not
      */
-    private boolean mUseDoubleEntry;
+    private boolean useDoubleEntry;
 
     /**
      * {@link Calendar} for holding the set date
      */
-    private Calendar mDate = Calendar.getInstance();
+    private Calendar date = Calendar.getInstance();
 
     /**
      * The Account of the account to which this transaction belongs.
@@ -159,15 +159,15 @@ public class TransactionFormFragment extends MenuFragment implements
      */
     private Account account;
 
-    private RecurrenceViewClickListener mRecurrenceViewClickListener;
-    private String mRecurrenceRule;
-    private final EventRecurrence mEventRecurrence = new EventRecurrence();
+    private RecurrenceViewClickListener recurrenceViewClickListener;
+    private String recurrenceRule;
+    private final EventRecurrence eventRecurrence = new EventRecurrence();
 
     private String rootAccountUID;
 
-    private final List<Split> mSplitsList = new ArrayList<>();
+    private final List<Split> splitsList = new ArrayList<>();
 
-    private boolean mEditMode = false;
+    private boolean editMode = false;
 
     /**
      * Flag which is set if another action is triggered during a transaction save (which interrrupts the save process).
@@ -179,14 +179,14 @@ public class TransactionFormFragment extends MenuFragment implements
     /**
      * Split value for the current account.
      */
-    private Money mSplitValue;
+    private Money splitValue;
     /**
      * Split quantity for the transfer account.
      */
-    private Money mSplitQuantity;
+    private Money splitQuantity;
 
     @Nullable
-    private FragmentTransactionFormBinding mBinding;
+    private FragmentTransactionFormBinding binding;
 
     /**
      * Create the view and retrieve references to the UI elements
@@ -194,8 +194,8 @@ public class TransactionFormFragment extends MenuFragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mBinding = FragmentTransactionFormBinding.inflate(inflater, container, false);
-        return mBinding.getRoot();
+        binding = FragmentTransactionFormBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
@@ -203,24 +203,24 @@ public class TransactionFormFragment extends MenuFragment implements
         super.onViewCreated(view, savedInstanceState);
         ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
         assert actionBar != null;
-        if (mEditMode) {
+        if (editMode) {
             actionBar.setTitle(R.string.title_edit_transaction);
         } else {
             actionBar.setTitle(R.string.title_add_transaction);
         }
 
-        FragmentTransactionFormBinding binding = mBinding;
+        FragmentTransactionFormBinding binding = this.binding;
         setListeners(binding);
 
         final Account account = requireAccount();
-        //updateTransferAccountsList must only be called after initializing mAccountsDbAdapter
+        //updateTransferAccountsList must only be called after initializing accountsDbAdapter
         updateTransferAccountsList(binding, account);
         initializeViews(binding, account);
 
-        if (mTransaction == null) {
+        if (transaction == null) {
             initTransactionNameAutocomplete(binding);
         } else {
-            initializeViewsWithTransaction(binding, mTransaction);
+            initializeViewsWithTransaction(binding, transaction);
         }
     }
 
@@ -247,15 +247,15 @@ public class TransactionFormFragment extends MenuFragment implements
             return;
         }
 
-        if (amount.equals(mSplitValue)
-            && (mSplitQuantity != null)
-            && !amount.equals(mSplitQuantity)
+        if (amount.equals(splitValue)
+            && (splitQuantity != null)
+            && !amount.equals(splitQuantity)
         ) {
-            transferComplete(amount, mSplitQuantity);
+            transferComplete(amount, splitQuantity);
             return;
         }
-        mSplitValue = null;
-        mSplitQuantity = null;
+        splitValue = null;
+        splitQuantity = null;
 
         TransferFundsDialogFragment fragment
             = TransferFundsDialogFragment.getInstance(amount, targetCommodity, this);
@@ -265,7 +265,7 @@ public class TransactionFormFragment extends MenuFragment implements
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        final FragmentTransactionFormBinding binding = mBinding;
+        final FragmentTransactionFormBinding binding = this.binding;
         if (binding == null) return;
         ViewGroup parent = binding.getRoot();
         CalculatorKeyboardView keyboardView = binding.calculatorKeyboard.calculatorKeyboard;
@@ -278,13 +278,13 @@ public class TransactionFormFragment extends MenuFragment implements
         final Bundle args = getArguments();
         final Context context = requireContext();
 
-        mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled(context);
+        useDoubleEntry = GnuCashApplication.isDoubleEntryEnabled(context);
 
-        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+        accountsDbAdapter = AccountsDbAdapter.getInstance();
         pricesDbAdapter = PricesDbAdapter.getInstance();
         scheduledActionDbAdapter = ScheduledActionDbAdapter.getInstance();
 
-        rootAccountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
+        rootAccountUID = accountsDbAdapter.getRootAccountUID();
         this.account = requireAccount();
         if (account == null) {
             Timber.e("Account not found");
@@ -292,13 +292,13 @@ public class TransactionFormFragment extends MenuFragment implements
             return;
         }
 
-        mEditMode = false;
+        editMode = false;
 
         String transactionUID = args.getString(UxArgument.SELECTED_TRANSACTION_UID);
-        mTransactionsDbAdapter = TransactionsDbAdapter.getInstance();
+        transactionsDbAdapter = TransactionsDbAdapter.getInstance();
         Transaction transaction = null;
         if (!TextUtils.isEmpty(transactionUID)) {
-            transaction = mTransactionsDbAdapter.getRecord(transactionUID);
+            transaction = transactionsDbAdapter.getRecord(transactionUID);
             if (transaction != null) {
                 String scheduledActionUID = args.getString(UxArgument.SCHEDULED_ACTION_UID);
                 if (!TextUtils.isEmpty(scheduledActionUID)) {
@@ -306,8 +306,8 @@ public class TransactionFormFragment extends MenuFragment implements
                 }
             }
         }
-        mEditMode = transaction != null;
-        mTransaction = transaction;
+        editMode = transaction != null;
+        this.transaction = transaction;
     }
 
     @Override
@@ -333,7 +333,7 @@ public class TransactionFormFragment extends MenuFragment implements
             final Account account = requireAccount();
             String accountUID = account.getUID();
             String transactionUID = cursor.getString(cursor.getColumnIndexOrThrow(TransactionEntry.COLUMN_UID));
-            Money balance = mTransactionsDbAdapter.getBalance(transactionUID, accountUID);
+            Money balance = transactionsDbAdapter.getBalance(transactionUID, accountUID);
 
             long timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(TransactionEntry.COLUMN_TIMESTAMP));
             String dateString = DateUtils.formatDateTime(view.getContext(), timestamp,
@@ -368,14 +368,14 @@ public class TransactionFormFragment extends MenuFragment implements
             public Cursor runQuery(CharSequence name) {
                 final Account account = requireAccount();
                 String accountUID = account.getUID();
-                return mTransactionsDbAdapter.fetchTransactionSuggestions(name == null ? "" : name.toString(), accountUID);
+                return transactionsDbAdapter.fetchTransactionSuggestions(name == null ? "" : name.toString(), accountUID);
             }
         });
 
         binding.inputTransactionName.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                Transaction transaction = new Transaction(mTransactionsDbAdapter.getRecord(id), true);
+                Transaction transaction = new Transaction(transactionsDbAdapter.getRecord(id), true);
                 transaction.setTime(System.currentTimeMillis());
                 //we check here because next method will modify it and we want to catch user-modification
                 boolean amountEntered = binding.inputTransactionAmount.isInputModified();
@@ -383,25 +383,28 @@ public class TransactionFormFragment extends MenuFragment implements
                 List<Split> splits = transaction.getSplits();
                 boolean isSplitPair = splits.size() == 2 && splits.get(0).isPairOf(splits.get(1));
                 if (isSplitPair) {
-                    mSplitsList.clear();
+                    splitsList.clear();
                     if (!amountEntered) //if user already entered an amount
                         binding.inputTransactionAmount.setValue(splits.get(0).getValue().toBigDecimal());
                 } else {
-                    if (amountEntered) { //if user entered own amount, clear loaded splits and use the user value
-                        mSplitsList.clear();
+                    // if user entered own amount, clear loaded splits and use the user value
+                    if (amountEntered) {
+                        splitsList.clear();
                         setDoubleEntryViewsVisibility(binding, View.VISIBLE);
                     } else {
-                        if (mUseDoubleEntry) { //don't hide the view in single entry mode
+                        // don't hide the view in single entry mode
+                        if (useDoubleEntry) {
                             setDoubleEntryViewsVisibility(binding, View.GONE);
+                            binding.btnSplitEditor.setVisibility(View.VISIBLE);
                         }
                     }
                 }
-                mTransaction = null; //we are creating a new transaction after all
+                TransactionFormFragment.this.transaction = null; //we are creating a new transaction after all
             }
         });
 
         binding.inputTransactionName.setAdapter(adapter);
-        mRecurrenceRule = null;
+        recurrenceRule = null;
     }
 
     /**
@@ -422,45 +425,45 @@ public class TransactionFormFragment extends MenuFragment implements
         binding.inputTransactionAmount.setValue(transaction.getBalance(account).toBigDecimal(), !binding.inputTransactionAmount.isInputModified());
         binding.currencySymbol.setText(transaction.getCommodity().getSymbol());
         binding.notes.setText(transaction.getNote());
-        binding.inputDate.setText(DATE_FORMATTER.print(transaction.getTimeMillis()));
-        binding.inputTime.setText(TIME_FORMATTER.print(transaction.getTimeMillis()));
+        binding.inputDate.setText(DATE_FORMATTER.print(transaction.getTime()));
+        binding.inputTime.setText(TIME_FORMATTER.print(transaction.getTime()));
         Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(transaction.getTimeMillis());
-        mDate = cal;
+        cal.setTimeInMillis(transaction.getTime());
+        date = cal;
 
         //TODO: deep copy the split list. We need a copy so we can modify with impunity
-        mSplitsList.clear();
-        mSplitsList.addAll(transaction.getSplits());
-        toggleAmountInputEntryMode(binding, mSplitsList.size() <= 2);
+        splitsList.clear();
+        splitsList.addAll(transaction.getSplits());
+        toggleAmountInputEntryMode(binding, splitsList.size() <= 2);
 
-        mSplitValue = null;
-        mSplitQuantity = null;
-        if (mSplitsList.size() == 2) {
-            for (Split split : mSplitsList) {
+        splitValue = null;
+        splitQuantity = null;
+        if (splitsList.size() == 2) {
+            for (Split split : splitsList) {
                 if (split.getAccountUID().equals(accountUID)) {
-                    mSplitValue = split.getValue();
+                    splitValue = split.getValue();
                     transactionType = split.getType();
                 } else if (!split.getQuantity().getCommodity().equals(transaction.getCommodity())) {
-                    mSplitQuantity = split.getQuantity();
+                    splitQuantity = split.getQuantity();
                 }
             }
         }
         //if there are more than two splits (which is the default for one entry), then
         //disable editing of the transfer account. User should open editor
-        if (mSplitsList.size() == 2 && mSplitsList.get(0).isPairOf(mSplitsList.get(1))) {
+        if (splitsList.size() == 2 && splitsList.get(0).isPairOf(splitsList.get(1))) {
             for (Split split : transaction.getSplits()) {
                 //two splits, one belongs to this account and the other to another account
-                if (mUseDoubleEntry && !split.getAccountUID().equals(accountUID)) {
+                if (useDoubleEntry && !split.getAccountUID().equals(accountUID)) {
                     setSelectedTransferAccount(binding, split.getAccountUID());
                 }
             }
         } else {
             setDoubleEntryViewsVisibility(binding, View.GONE);
-            if (mUseDoubleEntry && mSplitsList.size() >= 2) {
+            if (useDoubleEntry && splitsList.size() >= 2) {
                 binding.btnSplitEditor.setVisibility(View.VISIBLE);
             }
-            if (mSplitValue != null) {
-                transactionType = mSplitValue.isNegative() ? TransactionType.CREDIT : TransactionType.DEBIT;
+            if (splitValue != null) {
+                transactionType = splitValue.isNegative() ? TransactionType.CREDIT : TransactionType.DEBIT;
             }
         }
 
@@ -486,6 +489,7 @@ public class TransactionFormFragment extends MenuFragment implements
     private void toggleAmountInputEntryMode(FragmentTransactionFormBinding binding, boolean enabled) {
         if (enabled) {
             binding.inputTransactionAmount.setFocusable(true);
+            binding.inputTransactionAmount.setOnClickListener(null);
         } else {
             binding.inputTransactionAmount.setFocusable(false);
             binding.inputTransactionAmount.setOnClickListener(new View.OnClickListener() {
@@ -506,7 +510,7 @@ public class TransactionFormFragment extends MenuFragment implements
         long now = System.currentTimeMillis();
         binding.inputDate.setText(DATE_FORMATTER.print(now));
         binding.inputTime.setText(TIME_FORMATTER.print(now));
-        mDate = Calendar.getInstance();
+        date = Calendar.getInstance();
 
         TransactionType transactionType = GnuCashApplication.getDefaultTransactionType(context);
         binding.inputTransactionType.setAccountType(account.getAccountType());
@@ -517,14 +521,7 @@ public class TransactionFormFragment extends MenuFragment implements
         binding.inputTransactionAmount.setCommodity(commodity);
         binding.inputTransactionAmount.bindKeyboard(binding.calculatorKeyboard);
 
-        binding.btnSplitEditor.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openSplitEditor(binding);
-            }
-        });
-
-        if (mUseDoubleEntry) {
+        if (useDoubleEntry) {
             setSelectedTransferAccount(binding, account.getDefaultTransferAccountUID());
         } else {
             binding.layoutDoubleEntry.setVisibility(View.GONE);
@@ -547,15 +544,15 @@ public class TransactionFormFragment extends MenuFragment implements
             binding.getRoot().getContext(),
             conditions,
             new String[]{accountUID, AccountType.ROOT.name()},
-            mAccountsDbAdapter,
+            accountsDbAdapter,
             getViewLifecycleOwner()
         );
         accountTransferNameAdapter.load(new Function0<Unit>() {
             @Override
             public Unit invoke() {
                 String transferUID = account.getDefaultTransferAccountUID();
-                if (mTransaction != null) {
-                    Split split = mTransaction.getTransferSplit(accountUID);
+                if (transaction != null) {
+                    Split split = transaction.getTransferSplit(accountUID);
                     if (split != null) {
                         transferUID = split.getAccountUID();
                     }
@@ -583,11 +580,11 @@ public class TransactionFormFragment extends MenuFragment implements
 
         final String baseAmountString;
 
-        if (mTransaction == null) { //if we are creating a new transaction (not editing an existing one)
+        if (transaction == null) { //if we are creating a new transaction (not editing an existing one)
             baseAmountString = enteredAmount.toPlainString();
         } else {
-            Money biggestAmount = Money.createZeroInstance(mTransaction.getCurrencyCode());
-            for (Split split : mTransaction.getSplits()) {
+            Money biggestAmount = Money.createZeroInstance(transaction.getCurrencyCode());
+            for (Split split : transaction.getSplits()) {
                 if (split.getValue().toBigDecimal().compareTo(biggestAmount.toBigDecimal()) > 0)
                     biggestAmount = split.getValue();
             }
@@ -623,7 +620,7 @@ public class TransactionFormFragment extends MenuFragment implements
 
             @Override
             public void onClick(View v) {
-                long dateMillis = mDate.getTimeInMillis();
+                long dateMillis = date.getTimeInMillis();
                 DatePickerDialogFragment.newInstance(TransactionFormFragment.this, dateMillis)
                     .show(getParentFragmentManager(), "date_picker_fragment");
             }
@@ -633,14 +630,14 @@ public class TransactionFormFragment extends MenuFragment implements
 
             @Override
             public void onClick(View v) {
-                long timeMillis = mDate.getTimeInMillis();
+                long timeMillis = date.getTimeInMillis();
                 TimePickerDialogFragment.newInstance(TransactionFormFragment.this, timeMillis)
                     .show(getParentFragmentManager(), "time_picker_dialog_fragment");
             }
         });
 
-        mRecurrenceViewClickListener = new RecurrenceViewClickListener((AppCompatActivity) requireActivity(), mRecurrenceRule, this);
-        binding.inputRecurrence.setOnClickListener(mRecurrenceViewClickListener);
+        recurrenceViewClickListener = new RecurrenceViewClickListener(getParentFragmentManager(), recurrenceRule, this);
+        binding.inputRecurrence.setOnClickListener(recurrenceViewClickListener);
 
         binding.inputTransferAccountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             /**
@@ -655,10 +652,10 @@ public class TransactionFormFragment extends MenuFragment implements
                 removeFavoriteIconFromSelectedView((TextView) view);
                 final String transferAccountUID = accountTransferNameAdapter.getUID(position);
 
-                if (mSplitsList.size() == 2) { //when handling simple transfer to one account
+                if (splitsList.size() == 2) { //when handling simple transfer to one account
                     final Account account = requireAccount();
                     final String accountUID = account.getUID();
-                    for (Split split : mSplitsList) {
+                    for (Split split : splitsList) {
                         if (!split.getAccountUID().equals(accountUID)) {
                             split.setAccountUID(transferAccountUID);
                         }
@@ -699,13 +696,13 @@ public class TransactionFormFragment extends MenuFragment implements
     /**
      * Returns a list of splits based on the input in the transaction form.
      * This only gets the splits from the simple view, and not those from the Split Editor.
-     * If the Split Editor has been used and there is more than one split, then it returns {@link #mSplitsList}
+     * If the Split Editor has been used and there is more than one split, then it returns {@link #splitsList}
      *
-     * @return List of splits in the view or {@link #mSplitsList} is there are more than 2 splits in the transaction
+     * @return List of splits in the view or {@link #splitsList} is there are more than 2 splits in the transaction
      */
     private List<Split> extractSplitsFromView(FragmentTransactionFormBinding binding) {
         if (binding.inputTransactionType.getVisibility() != View.VISIBLE) {
-            return mSplitsList;
+            return splitsList;
         }
 
         BigDecimal enteredAmount = binding.inputTransactionAmount.getValue();
@@ -718,15 +715,15 @@ public class TransactionFormFragment extends MenuFragment implements
 
         final Account transferAccount = getTransferAccount(binding);
         if (transferAccount == null) {
-            return mSplitsList;
+            return splitsList;
         }
         final String transferAccountUID = transferAccount.getUID();
 
         if (isMultiCurrencyTransaction(binding)) { //if multi-currency transaction
             final Commodity targetCommodity = transferAccount.getCommodity();
 
-            if ((value.equals(mSplitValue)) && mSplitQuantity != null) {
-                quantity = mSplitQuantity;
+            if ((value.equals(splitValue)) && splitQuantity != null) {
+                quantity = splitQuantity;
             } else {
                 Price price = pricesDbAdapter.getPrice(accountCommodity, targetCommodity);
                 if (price != null) {
@@ -738,13 +735,13 @@ public class TransactionFormFragment extends MenuFragment implements
         Split split1;
         Split split2;
         // Try to preserve the other split attributes.
-        if (mSplitsList.size() >= 2) {
-            split1 = mSplitsList.get(0);
+        if (splitsList.size() >= 2) {
+            split1 = splitsList.get(0);
             split1.setValue(value);
             split1.setQuantity(value);
             split1.setAccountUID(accountUID);
 
-            split2 = mSplitsList.get(1);
+            split2 = splitsList.get(1);
             split2.setValue(value);
             split2.setQuantity(quantity);
             split2.setAccountUID(transferAccountUID);
@@ -770,14 +767,14 @@ public class TransactionFormFragment extends MenuFragment implements
      */
     @Nullable
     private Account getTransferAccount(@NonNull FragmentTransactionFormBinding binding) {
-        if (mUseDoubleEntry) {
+        if (useDoubleEntry) {
             int position = binding.inputTransferAccountSpinner.getSelectedItemPosition();
             return accountTransferNameAdapter.getAccount(position);
         }
         Context context = binding.getRoot().getContext();
         final Account account = requireAccount();
         final Commodity accountCommodity = account.getCommodity();
-        return mAccountsDbAdapter.getOrCreateImbalanceAccount(context, accountCommodity);
+        return accountsDbAdapter.getOrCreateImbalanceAccount(context, accountCommodity);
     }
 
     /**
@@ -795,12 +792,12 @@ public class TransactionFormFragment extends MenuFragment implements
         List<Split> splits = extractSplitsFromView(binding);
 
         Transaction transaction = new Transaction(description);
-        transaction.setTime(mDate.getTimeInMillis());
+        transaction.setTime(date.getTimeInMillis());
         transaction.setCommodity(accountCommodity);
         transaction.setNote(notes);
         transaction.setSplits(splits);
         transaction.setExported(false); //not necessary as exports use timestamps now. Because, legacy
-        transaction.setTemplate(account.isTemplate() || !TextUtils.isEmpty(mRecurrenceRule));
+        transaction.setTemplate(account.isTemplate() || !TextUtils.isEmpty(recurrenceRule));
 
         return transaction;
     }
@@ -823,13 +820,13 @@ public class TransactionFormFragment extends MenuFragment implements
      * @return {@code true} if multi-currency transaction, {@code false} otherwise
      */
     private boolean isMultiCurrencyTransaction(FragmentTransactionFormBinding binding) {
-        if (!mUseDoubleEntry)
+        if (!useDoubleEntry)
             return false;
 
         final Account account = requireAccount();
         final Commodity accountCommodity = account.getCommodity();
 
-        List<Split> splits = mSplitsList;
+        List<Split> splits = splitsList;
         for (Split split : splits) {
             Commodity splitCommodity = split.getQuantity().getCommodity();
             if (!accountCommodity.equals(splitCommodity)) {
@@ -860,7 +857,7 @@ public class TransactionFormFragment extends MenuFragment implements
         }
 
         boolean isTemplate = binding.checkboxSaveTemplate.isChecked();
-        Transaction transactionOld = mTransaction;
+        Transaction transactionOld = transaction;
         Transaction transaction = extractTransactionFromView(binding);
         String scheduledActionUID = null;
 
@@ -871,17 +868,17 @@ public class TransactionFormFragment extends MenuFragment implements
         }
         boolean wasScheduled = !TextUtils.isEmpty(scheduledActionUID);
 
-        mTransaction = transaction;
+        this.transaction = transaction;
 
         try {
             if (isTemplate) { //template is automatically checked when a transaction is scheduled
-                if (mEditMode && wasScheduled) {
+                if (editMode && wasScheduled) {
                     transaction.setScheduledActionUID(scheduledActionUID);
                     scheduleRecurringTransaction(transaction);
                 } else { //means it was new transaction, so a new template
                     Transaction templateTransaction = new Transaction(transaction);
                     templateTransaction.setTemplate(true);
-                    mTransactionsDbAdapter.addRecord(templateTransaction, DatabaseAdapter.UpdateMethod.insert);
+                    transactionsDbAdapter.insert(templateTransaction);
                     scheduleRecurringTransaction(templateTransaction);
                 }
             }
@@ -889,7 +886,7 @@ public class TransactionFormFragment extends MenuFragment implements
             // 1) Transactions may be existing or non-existing
             // 2) when transaction exists in the db, the splits may exist or not exist in the db
             // So replace is chosen.
-            mTransactionsDbAdapter.addRecord(transaction, DatabaseAdapter.UpdateMethod.replace);
+            transactionsDbAdapter.replace(transaction);
 
             if (!isTemplate && wasScheduled) { //we were editing a schedule and it was turned off
                 scheduledActionDbAdapter.deleteRecord(scheduledActionUID);
@@ -912,7 +909,7 @@ public class TransactionFormFragment extends MenuFragment implements
     private void scheduleRecurringTransaction(@NonNull Transaction transaction) {
         String transactionUID = transaction.getUID();
 
-        Recurrence recurrence = RecurrenceParser.parse(mEventRecurrence);
+        Recurrence recurrence = RecurrenceParser.parse(eventRecurrence);
 
         ScheduledAction scheduledAction = new ScheduledAction(ScheduledAction.ActionType.TRANSACTION);
         scheduledAction.setRecurrence(recurrence);
@@ -931,7 +928,7 @@ public class TransactionFormFragment extends MenuFragment implements
         } else {
             if (recurrence != null) {
                 scheduledAction.setActionUID(transactionUID);
-                scheduledActionDbAdapter.addRecord(scheduledAction, DatabaseAdapter.UpdateMethod.replace);
+                scheduledActionDbAdapter.replace(scheduledAction);
                 scheduledActionUID = scheduledAction.getUID();
                 transaction.setScheduledActionUID(scheduledActionUID);
                 Snackbar.make(getView(), R.string.toast_scheduled_recurring_transaction, Snackbar.LENGTH_SHORT).show();
@@ -943,7 +940,7 @@ public class TransactionFormFragment extends MenuFragment implements
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mBinding = null;
+        binding = null;
     }
 
     @Override
@@ -955,7 +952,7 @@ public class TransactionFormFragment extends MenuFragment implements
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         //hide the keyboard if it is visible
-        final FragmentTransactionFormBinding binding = mBinding;
+        final FragmentTransactionFormBinding binding = this.binding;
         if (binding == null) {
             return super.onOptionsItemSelected(item);
         }
@@ -980,7 +977,7 @@ public class TransactionFormFragment extends MenuFragment implements
                     } else {
                         binding.inputTransactionAmount.setError(null);
                     }
-                    if (mUseDoubleEntry && binding.inputTransferAccountSpinner.getCount() == 0) {
+                    if (useDoubleEntry && binding.inputTransferAccountSpinner.getCount() == 0) {
                         Snackbar.make(view, R.string.toast_disable_double_entry_to_save_transaction, Snackbar.LENGTH_LONG).show();
                     }
                 }
@@ -998,9 +995,9 @@ public class TransactionFormFragment extends MenuFragment implements
      * @return {@code true} if the transaction can be saved, {@code false} otherwise
      */
     private boolean canSave(FragmentTransactionFormBinding binding) {
-        return (mUseDoubleEntry && binding.inputTransactionAmount.isInputValid()
+        return (useDoubleEntry && binding.inputTransactionAmount.isInputValid()
             && binding.inputTransferAccountSpinner.getCount() > 0)
-            || (!mUseDoubleEntry && binding.inputTransactionAmount.isInputValid());
+            || (!useDoubleEntry && binding.inputTransactionAmount.isInputValid());
     }
 
     /**
@@ -1009,8 +1006,8 @@ public class TransactionFormFragment extends MenuFragment implements
      * @param splits List of splits produced in the fragment
      */
     private void setSplits(FragmentTransactionFormBinding binding, List<Split> splits) {
-        mSplitsList.clear();
-        mSplitsList.addAll(splits);
+        splitsList.clear();
+        splitsList.addAll(splits);
         Money balance = Transaction.computeBalance(account, splits);
         binding.inputTransactionAmount.setValue(balance.toBigDecimal());
         binding.inputTransactionType.setChecked(balance.isNegative());
@@ -1040,21 +1037,21 @@ public class TransactionFormFragment extends MenuFragment implements
 
     @Override
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-        mDate.set(Calendar.YEAR, year);
-        mDate.set(Calendar.MONTH, month);
-        mDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-        final FragmentTransactionFormBinding binding = mBinding;
+        date.set(Calendar.YEAR, year);
+        date.set(Calendar.MONTH, month);
+        date.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        final FragmentTransactionFormBinding binding = this.binding;
         if (binding == null) return;
-        binding.inputDate.setText(DATE_FORMATTER.print(mDate.getTimeInMillis()));
+        binding.inputDate.setText(DATE_FORMATTER.print(date.getTimeInMillis()));
     }
 
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        mDate.set(Calendar.HOUR_OF_DAY, hourOfDay);
-        mDate.set(Calendar.MINUTE, minute);
-        final FragmentTransactionFormBinding binding = mBinding;
+        date.set(Calendar.HOUR_OF_DAY, hourOfDay);
+        date.set(Calendar.MINUTE, minute);
+        final FragmentTransactionFormBinding binding = this.binding;
         if (binding == null) return;
-        binding.inputTime.setText(TIME_FORMATTER.print(mDate.getTimeInMillis()));
+        binding.inputTime.setText(TIME_FORMATTER.print(date.getTimeInMillis()));
     }
 
     /**
@@ -1079,13 +1076,13 @@ public class TransactionFormFragment extends MenuFragment implements
     }
 
     @Override
-    public void transferComplete(Money value, Money amount) {
-        mSplitValue = value;
-        mSplitQuantity = amount;
+    public void transferComplete(@NonNull Money value, @NonNull Money amount) {
+        splitValue = value;
+        splitQuantity = amount;
 
         //The transfer dialog was called while attempting to save. So try saving again
         if (onSaveAttempt) {
-            final FragmentTransactionFormBinding binding = mBinding;
+            final FragmentTransactionFormBinding binding = this.binding;
             if (binding == null) return;
             saveNewTransaction(binding);
         }
@@ -1095,14 +1092,14 @@ public class TransactionFormFragment extends MenuFragment implements
     @Override
     public void onRecurrenceSet(String rrule) {
         Timber.i("TX reoccurs: %s", rrule);
-        final FragmentTransactionFormBinding binding = mBinding;
+        final FragmentTransactionFormBinding binding = this.binding;
         if (binding == null) return;
         Context context = binding.inputRecurrence.getContext();
         String repeatString = null;
         if (!TextUtils.isEmpty(rrule)) {
             try {
-                mEventRecurrence.parse(rrule);
-                repeatString = EventRecurrenceFormatter.getRepeatString(context, context.getResources(), mEventRecurrence, true);
+                eventRecurrence.parse(rrule);
+                repeatString = EventRecurrenceFormatter.getRepeatString(context, context.getResources(), eventRecurrence, true);
             } catch (Exception e) {
                 Timber.e(e, "Bad recurrence for [%s]", rrule);
                 return;
@@ -1120,16 +1117,16 @@ public class TransactionFormFragment extends MenuFragment implements
         }
 
         binding.inputRecurrence.setText(repeatString);
-        mRecurrenceRule = rrule;
-        if (mRecurrenceViewClickListener != null) {
-            mRecurrenceViewClickListener.setRecurrence(rrule);
+        recurrenceRule = rrule;
+        if (recurrenceViewClickListener != null) {
+            recurrenceViewClickListener.setRecurrence(rrule);
         }
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK) {
-            FragmentTransactionFormBinding binding = mBinding;
+            FragmentTransactionFormBinding binding = this.binding;
             if (binding == null) return;
             List<Split> splits = data.getParcelableArrayListExtra(UxArgument.SPLIT_LIST);
             setSplits(binding, splits);
@@ -1152,7 +1149,7 @@ public class TransactionFormFragment extends MenuFragment implements
         final String accountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID, rootAccountUID);
         assert !TextUtils.isEmpty(accountUID);
         try {
-            account = mAccountsDbAdapter.getRecord(accountUID);
+            account = accountsDbAdapter.getRecord(accountUID);
             this.account = account;
         } catch (IllegalArgumentException e) {
             Timber.e(e);

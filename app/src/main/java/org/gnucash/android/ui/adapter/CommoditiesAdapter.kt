@@ -15,7 +15,7 @@ import org.gnucash.android.model.Commodity
 
 class CommoditiesAdapter @JvmOverloads constructor(
     context: Context,
-    private val adapter: CommoditiesDbAdapter = CommoditiesDbAdapter.getInstance()!!,
+    private val adapter: CommoditiesDbAdapter = CommoditiesDbAdapter.instance!!,
     private val scope: CoroutineScope
 ) : ArrayAdapter<CommoditiesAdapter.Label>(context, android.R.layout.simple_spinner_item) {
 
@@ -76,7 +76,7 @@ class CommoditiesAdapter @JvmOverloads constructor(
     private fun loadData(adapter: CommoditiesDbAdapter): List<Commodity> {
         val where = DatabaseSchema.CommodityEntry.COLUMN_MNEMONIC + " <> ?" +
                 " AND " + DatabaseSchema.CommodityEntry.COLUMN_NAMESPACE + " <> ?";
-        val whereArgs = arrayOf(Commodity.TEMPLATE, Commodity.TEMPLATE)
+        val whereArgs = arrayOf<String?>(Commodity.TEMPLATE, Commodity.TEMPLATE)
         return adapter.getAllRecords(where, whereArgs)
     }
 

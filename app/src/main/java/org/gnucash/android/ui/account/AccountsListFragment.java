@@ -84,7 +84,7 @@ public class AccountsListFragment extends MenuFragment implements
     SearchView.OnQueryTextListener,
     FragmentResultListener {
 
-    private AccountRecyclerAdapter mAccountRecyclerAdapter;
+    private AccountRecyclerAdapter accountListView;
 
     /**
      * Describes the kinds of accounts that should be loaded in the accounts list.
@@ -98,35 +98,29 @@ public class AccountsListFragment extends MenuFragment implements
      * Field indicating which kind of accounts to load.
      * Default value is {@link DisplayMode#TOP_LEVEL}
      */
-    private DisplayMode mDisplayMode = DisplayMode.TOP_LEVEL;
+    private DisplayMode displayMode = DisplayMode.TOP_LEVEL;
 
     /**
-     * Tag to save {@link AccountsListFragment#mDisplayMode} to fragment state
+     * Tag to save {@link AccountsListFragment#displayMode} to fragment state
      */
     private static final String STATE_DISPLAY_MODE = "display_mode";
 
     /**
      * Database adapter for loading Account records from the database
      */
-    private AccountsDbAdapter mAccountsDbAdapter;
+    private AccountsDbAdapter accountsDbAdapter;
     /**
      * Listener to be notified when an account is clicked
      */
-    private OnAccountClickedListener mAccountSelectedListener;
-
-    /**
-     * GUID of the account whose children will be loaded in the list fragment.
-     * If no parent account is specified, then all top-level accounts are loaded.
-     */
-    private String mParentAccountUID = null;
+    private OnAccountClickedListener accountClickedListener;
 
     /**
      * Filter for which accounts should be displayed. Used by search interface
      */
-    private String mCurrentFilter;
+    private String currentFilter;
     private boolean isShowHiddenAccounts = false;
 
-    private FragmentAccountsListBinding mBinding;
+    private FragmentAccountsListBinding binding;
     private final List<AccountBalanceTask> accountBalanceTasks = new ArrayList<>();
 
     public static AccountsListFragment newInstance(DisplayMode displayMode) {
@@ -138,10 +132,10 @@ public class AccountsListFragment extends MenuFragment implements
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        mBinding = FragmentAccountsListBinding.inflate(inflater, container, false);
-        return mBinding.getRoot();
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        binding = FragmentAccountsListBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
@@ -153,29 +147,29 @@ public class AccountsListFragment extends MenuFragment implements
         actionbar.setTitle(R.string.title_accounts);
         actionbar.setDisplayHomeAsUpEnabled(true);
 
-        mBinding.list.setHasFixedSize(true);
-        mBinding.list.setEmptyView(mBinding.emptyView);
-        mBinding.list.setAdapter(mAccountRecyclerAdapter);
-        mBinding.list.setTag("accounts");
+        binding.list.setHasFixedSize(true);
+        binding.list.setEmptyView(binding.emptyView);
+        binding.list.setAdapter(accountListView);
+        binding.list.setTag("accounts");
 
-        switch (mDisplayMode) {
+        switch (displayMode) {
             case TOP_LEVEL:
-                mBinding.emptyView.setText(R.string.label_no_accounts);
+                binding.emptyView.setText(R.string.label_no_accounts);
                 break;
             case RECENT:
-                mBinding.emptyView.setText(R.string.label_no_recent_accounts);
+                binding.emptyView.setText(R.string.label_no_recent_accounts);
                 break;
             case FAVORITES:
-                mBinding.emptyView.setText(R.string.label_no_favorite_accounts);
+                binding.emptyView.setText(R.string.label_no_favorite_accounts);
                 break;
         }
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
-            mBinding.list.setLayoutManager(gridLayoutManager);
+            binding.list.setLayoutManager(gridLayoutManager);
         } else {
             LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-            mBinding.list.setLayoutManager(mLayoutManager);
+            binding.list.setLayoutManager(mLayoutManager);
         }
     }
 
@@ -185,40 +179,39 @@ public class AccountsListFragment extends MenuFragment implements
 
         Bundle args = getArguments();
         if (args != null) {
-            mParentAccountUID = args.getString(UxArgument.PARENT_ACCOUNT_UID);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                mDisplayMode = args.getSerializable(STATE_DISPLAY_MODE, DisplayMode.class);
+                displayMode = args.getSerializable(STATE_DISPLAY_MODE, DisplayMode.class);
             } else {
-                mDisplayMode = (DisplayMode) args.getSerializable(STATE_DISPLAY_MODE);
+                displayMode = (DisplayMode) args.getSerializable(STATE_DISPLAY_MODE);
             }
             isShowHiddenAccounts = args.getBoolean(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts);
         }
 
         if (savedInstanceState != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                mDisplayMode = savedInstanceState.getSerializable(STATE_DISPLAY_MODE, DisplayMode.class);
+                displayMode = savedInstanceState.getSerializable(STATE_DISPLAY_MODE, DisplayMode.class);
             } else {
-                mDisplayMode = (DisplayMode) savedInstanceState.getSerializable(STATE_DISPLAY_MODE);
+                displayMode = (DisplayMode) savedInstanceState.getSerializable(STATE_DISPLAY_MODE);
             }
         }
-        if (mDisplayMode == null) {
-            mDisplayMode = DisplayMode.TOP_LEVEL;
+        if (displayMode == null) {
+            displayMode = DisplayMode.TOP_LEVEL;
         }
 
         // specify an adapter (see also next example)
-        mAccountRecyclerAdapter = new AccountRecyclerAdapter(null);
+        accountListView = new AccountRecyclerAdapter(null);
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+        accountsDbAdapter = AccountsDbAdapter.getInstance();
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        mBinding.list.setAdapter(null);
+        binding.list.setAdapter(null);
     }
 
     @Override
@@ -231,14 +224,14 @@ public class AccountsListFragment extends MenuFragment implements
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         try {
-            mAccountSelectedListener = (OnAccountClickedListener) context;
+            accountClickedListener = (OnAccountClickedListener) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context + " must implement OnAccountSelectedListener");
         }
     }
 
     public void onListItemClick(String accountUID) {
-        mAccountSelectedListener.accountSelected(accountUID);
+        accountClickedListener.accountSelected(accountUID);
     }
 
     @Override
@@ -257,14 +250,14 @@ public class AccountsListFragment extends MenuFragment implements
      * @param accountUID The UID of the account
      */
     private void tryDeleteAccount(final Activity activity, final String accountUID) {
-        if (mAccountsDbAdapter.getTransactionCount(accountUID) > 0 || mAccountsDbAdapter.getSubAccountCount(accountUID) > 0) {
+        if (accountsDbAdapter.getTransactionCount(accountUID) > 0 || accountsDbAdapter.getSubAccountCount(accountUID) > 0) {
             showConfirmationDialog(accountUID);
         } else {
             BackupManager.backupActiveBookAsync(activity, result -> {
                 if (result) {
                     try {
                         // Avoid calling AccountsDbAdapter.deleteRecord(long). See #654
-                        mAccountsDbAdapter.deleteRecord(accountUID);
+                        accountsDbAdapter.deleteRecord(accountUID);
                         refreshActivity();
                     } catch (Exception e) {
                         Timber.e(e);
@@ -291,7 +284,7 @@ public class AccountsListFragment extends MenuFragment implements
     private void toggleFavorite(@NonNull String accountUID, boolean isFavoriteAccount) {
         ContentValues contentValues = new ContentValues();
         contentValues.put(DatabaseSchema.AccountEntry.COLUMN_FAVORITE, isFavoriteAccount);
-        mAccountsDbAdapter.updateRecord(accountUID, contentValues);
+        accountsDbAdapter.updateRecord(accountUID, contentValues);
         refreshActivity();
     }
 
@@ -329,14 +322,14 @@ public class AccountsListFragment extends MenuFragment implements
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putSerializable(STATE_DISPLAY_MODE, mDisplayMode);
+        outState.putSerializable(STATE_DISPLAY_MODE, displayMode);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (mAccountRecyclerAdapter != null) {
-            mAccountRecyclerAdapter.changeCursor(null);
+        if (accountListView != null) {
+            accountListView.changeCursor(null);
         }
         cancelBalances();
     }
@@ -370,26 +363,26 @@ public class AccountsListFragment extends MenuFragment implements
         String parentAccountUID = arguments == null ? null : arguments.getString(UxArgument.PARENT_ACCOUNT_UID);
 
         Context context = requireContext();
-        return new AccountsCursorLoader(context, parentAccountUID, mDisplayMode, mCurrentFilter, isShowHiddenAccounts);
+        return new AccountsCursorLoader(context, parentAccountUID, displayMode, currentFilter, isShowHiddenAccounts);
     }
 
     @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor cursor) {
         Timber.d("Accounts loader finished. Swapping in cursor");
-        mAccountRecyclerAdapter.changeCursor(cursor);
+        accountListView.changeCursor(cursor);
         if (getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
-            if (mBinding.list.getAdapter() == null) {
-                mBinding.list.setAdapter(mAccountRecyclerAdapter);
+            if (binding.list.getAdapter() == null) {
+                binding.list.setAdapter(accountListView);
             }
-            mAccountRecyclerAdapter.notifyDataSetChanged();
+            accountListView.notifyDataSetChanged();
         }
     }
 
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         Timber.d("Resetting the accounts loader");
-        mAccountRecyclerAdapter.changeCursor(null);
+        accountListView.changeCursor(null);
     }
 
     @Override
@@ -401,14 +394,14 @@ public class AccountsListFragment extends MenuFragment implements
     @Override
     public boolean onQueryTextChange(String newText) {
         String newFilter = !TextUtils.isEmpty(newText) ? newText : null;
-        String oldFilter = mCurrentFilter;
+        String oldFilter = currentFilter;
         if (oldFilter == null && newFilter == null) {
             return true;
         }
         if (oldFilter != null && oldFilter.equals(newFilter)) {
             return true;
         }
-        mCurrentFilter = newFilter;
+        currentFilter = newFilter;
         refresh();
         return true;
     }
@@ -547,16 +540,17 @@ public class AccountsListFragment extends MenuFragment implements
 
             public void bind(@NonNull final Cursor cursor) {
                 if (!isResumed()) return;
-                AccountsDbAdapter accountsDbAdapter = mAccountsDbAdapter;
+                AccountsDbAdapter accountsDbAdapter = AccountsListFragment.this.accountsDbAdapter;
                 final String accountUID = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseSchema.AccountEntry.COLUMN_UID));
                 this.accountUID = accountUID;
                 Account account = accountsDbAdapter.getSimpleRecord(accountUID);
 
                 accountName.setText(account.getName());
-                int subAccountCount = accountsDbAdapter.getSubAccountCount(accountUID);
+                long subAccountCount = accountsDbAdapter.getSubAccountCount(accountUID);
                 if (subAccountCount > 0) {
                     description.setVisibility(View.VISIBLE);
-                    String text = getResources().getQuantityString(R.plurals.label_sub_accounts, subAccountCount, subAccountCount);
+                    int count = (int) subAccountCount;
+                    String text = getResources().getQuantityString(R.plurals.label_sub_accounts, count, count);
                     description.setText(text);
                 } else {
                     description.setVisibility(View.GONE);

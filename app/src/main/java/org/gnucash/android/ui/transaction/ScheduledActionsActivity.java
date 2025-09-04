@@ -45,10 +45,10 @@ public class ScheduledActionsActivity extends BaseDrawerActivity {
     public void inflateView() {
         binding = ActivityScheduledEventsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        mDrawerLayout = binding.drawerLayout;
-        mNavigationView = binding.navView;
-        mToolbar = binding.toolbarLayout.toolbar;
-        mToolbarProgress = binding.toolbarLayout.toolbarProgress.progress;
+        drawerLayout = binding.drawerLayout;
+        navigationView = binding.navView;
+        toolbar = binding.toolbarLayout.toolbar;
+        toolbarProgress = binding.toolbarLayout.toolbarProgress.progress;
     }
 
     @Override

@@ -2,7 +2,6 @@ package org.gnucash.android.test.unit.model
 
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.model.Commodity
-import org.gnucash.android.model.Commodity.Companion.getInstance
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Money.Companion.createZeroInstance
 import org.gnucash.android.model.Split
@@ -34,7 +33,7 @@ class SplitTest : GnuCashTest() {
     @Test
     fun testAddingSplitToTransaction() {
         val split = Split(createZeroInstance(Commodity.DEFAULT_COMMODITY), "Test")
-        assertThat(split.transactionUID).isEmpty()
+        assertThat(split.transactionUID).isNullOrEmpty()
 
         val transaction = Transaction("Random")
         transaction.addSplit(split)
@@ -44,7 +43,7 @@ class SplitTest : GnuCashTest() {
 
     @Test
     fun testCloning() {
-        val split = Split(Money(BigDecimal.TEN, getInstance("EUR")), "random-account")
+        val split = Split(Money(BigDecimal.TEN, Commodity.getInstance("EUR")), "random-account")
         split.transactionUID = "terminator-trx"
         split.type = TransactionType.CREDIT
 
@@ -75,7 +74,7 @@ class SplitTest : GnuCashTest() {
 
     @Test
     fun shouldGenerateValidCsv() {
-        val split = Split(Money(BigDecimal.TEN, getInstance("EUR")), "random-account")
+        val split = Split(Money(BigDecimal.TEN, Commodity.getInstance("EUR")), "random-account")
         split.transactionUID = "terminator-trx"
         split.type = TransactionType.CREDIT
 

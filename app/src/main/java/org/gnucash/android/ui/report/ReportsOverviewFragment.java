@@ -134,12 +134,12 @@ public class ReportsOverviewFragment extends BaseReportFragment {
         accountTypes.add(AccountType.ASSET);
         accountTypes.add(AccountType.CASH);
         accountTypes.add(AccountType.BANK);
-        mAssetsBalance = mAccountsDbAdapter.getCurrentAccountsBalance(accountTypes, mCommodity);
+        mAssetsBalance = accountsDbAdapter.getCurrentAccountsBalance(accountTypes, commodity);
 
         accountTypes.clear();
         accountTypes.add(AccountType.LIABILITY);
         accountTypes.add(AccountType.CREDIT);
-        mLiabilitiesBalance = mAccountsDbAdapter.getCurrentAccountsBalance(accountTypes, mCommodity);
+        mLiabilitiesBalance = accountsDbAdapter.getCurrentAccountsBalance(accountTypes, commodity);
     }
 
     /**
@@ -153,15 +153,15 @@ public class ReportsOverviewFragment extends BaseReportFragment {
         LocalDateTime now = LocalDateTime.now();
         long startTime = DateExtKt.toMillis(now.minusMonths(3));
         long endTime = DateExtKt.toMillis(now);
-        final Commodity commodity = mCommodity;
+        final Commodity commodity = this.commodity;
 
         String where = AccountEntry.COLUMN_TYPE + "=?"
             + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
             + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
-        String[] whereArgs = new String[]{mAccountType.name()};
+        String[] whereArgs = new String[]{accountType.name()};
         String orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC";
-        List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, whereArgs, orderBy);
-        Map<String, Money> balances = mAccountsDbAdapter.getAccountsBalances(accounts, startTime, endTime);
+        List<Account> accounts = accountsDbAdapter.getSimpleAccounts(where, whereArgs, orderBy);
+        Map<String, Money> balances = accountsDbAdapter.getAccountsBalances(accounts, startTime, endTime);
 
         for (Account account : accounts) {
             Money balance = balances.get(account.getUID());
@@ -234,6 +234,6 @@ public class ReportsOverviewFragment extends BaseReportFragment {
                 break;
         }
 
-        mReportsActivity.showReport(reportType);
+        reportsActivity.showReport(reportType);
     }
 }

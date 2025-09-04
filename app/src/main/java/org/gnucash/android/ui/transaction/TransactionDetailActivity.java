@@ -55,12 +55,12 @@ import timber.log.Timber;
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 public class TransactionDetailActivity extends PasscodeLockActivity implements FragmentResultListener, Refreshable {
-    private String mTransactionUID;
-    private String mAccountUID;
+    private String transactionUID;
+    private String accountUID;
 
     public static final int REQUEST_EDIT_TRANSACTION = 0x10;
 
-    private ActivityTransactionDetailBinding mBinding;
+    private ActivityTransactionDetailBinding binding;
     private final TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
 
     private final AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
@@ -69,30 +69,30 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mBinding = ActivityTransactionDetailBinding.inflate(getLayoutInflater());
-        setContentView(mBinding.getRoot());
+        binding = ActivityTransactionDetailBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        mTransactionUID = getIntent().getStringExtra(UxArgument.SELECTED_TRANSACTION_UID);
-        mAccountUID = getIntent().getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
+        transactionUID = getIntent().getStringExtra(UxArgument.SELECTED_TRANSACTION_UID);
+        accountUID = getIntent().getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
 
-        if (TextUtils.isEmpty(mTransactionUID) || TextUtils.isEmpty(mAccountUID)) {
+        if (TextUtils.isEmpty(transactionUID) || TextUtils.isEmpty(accountUID)) {
             throw new MissingFormatArgumentException("You must specify both the transaction and account GUID");
         }
 
-        setSupportActionBar(mBinding.toolbar);
+        setSupportActionBar(binding.toolbar);
         ActionBar actionBar = getSupportActionBar();
         assert actionBar != null;
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowTitleEnabled(false);
 
-        @ColorInt int accountColor = accountsDbAdapter.getActiveAccountColor(this, mAccountUID);
+        @ColorInt int accountColor = accountsDbAdapter.getActiveAccountColor(this, accountUID);
         setTitlesColor(accountColor);
-        mBinding.toolbar.setBackgroundColor(accountColor);
+        binding.toolbar.setBackgroundColor(accountColor);
 
         bindViews();
 
-        mBinding.fabEditTransaction.setOnClickListener(v -> editTransaction());
+        binding.fabEditTransaction.setOnClickListener(v -> editTransaction());
     }
 
     @Override
@@ -100,7 +100,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
         if (BulkMoveDialogFragment.TAG.equals(requestKey)) {
             String accountrUID = result.getString(UxArgument.SELECTED_ACCOUNT_UID);
             if (!TextUtils.isEmpty(accountrUID)) {
-                mAccountUID = accountrUID;
+                accountUID = accountrUID;
             }
             boolean refresh = result.getBoolean(Refreshable.EXTRA_REFRESH);
             if (refresh) refresh();
@@ -126,15 +126,15 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
      * Reads the transaction information from the database and binds it to the views
      */
     private void bindViews() {
-        ActivityTransactionDetailBinding binding = mBinding;
+        ActivityTransactionDetailBinding binding = this.binding;
         if (binding == null) return;
         // Remove all rows that are not special.
         binding.transactionItems.removeAllViews();
 
-        Transaction transaction = transactionsDbAdapter.getRecord(mTransactionUID);
+        Transaction transaction = transactionsDbAdapter.getRecord(transactionUID);
 
         binding.trnDescription.setText(transaction.getDescription());
-        binding.transactionAccount.setText(getString(R.string.label_inside_account_with_name, accountsDbAdapter.getAccountFullName(mAccountUID)));
+        binding.transactionAccount.setText(getString(R.string.label_inside_account_with_name, accountsDbAdapter.getAccountFullName(accountUID)));
 
         boolean useDoubleEntry = GnuCashApplication.isDoubleEntryEnabled(this);
         Context context = this;
@@ -150,9 +150,9 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
         }
 
         RowBalanceBinding balanceBinding = RowBalanceBinding.inflate(inflater, binding.transactionItems, true);
-        bind(balanceBinding, mAccountUID, transaction.getTimeMillis());
+        bind(balanceBinding, accountUID, transaction.getTime());
 
-        String timeAndDate = DateExtKt.formatFullDate(transaction.getTimeMillis());
+        String timeAndDate = DateExtKt.formatFullDate(transaction.getTime());
         binding.trnTimeAndDate.setText(timeAndDate);
 
         if (!TextUtils.isEmpty(transaction.getNote())) {
@@ -178,15 +178,15 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
 
     @Override
     public void refresh(String uid) {
-        mTransactionUID = uid;
+        transactionUID = uid;
         refresh();
     }
 
     private void editTransaction() {
         Intent intent = new Intent(this, FormActivity.class)
             .setAction(Intent.ACTION_INSERT_OR_EDIT)
-            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID)
-            .putExtra(UxArgument.SELECTED_TRANSACTION_UID, mTransactionUID)
+            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+            .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
             .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name());
         startActivityForResult(intent, REQUEST_EDIT_TRANSACTION);
     }
@@ -205,13 +205,13 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
                 finish();
                 return true;
             case R.id.menu_move:
-                moveTransaction(mTransactionUID);
+                moveTransaction(transactionUID);
                 return true;
             case R.id.menu_duplicate:
-                duplicateTransaction(mTransactionUID);
+                duplicateTransaction(transactionUID);
                 return true;
             case R.id.menu_delete:
-                deleteTransaction(mTransactionUID);
+                deleteTransaction(transactionUID);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -230,7 +230,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
     private void moveTransaction(@Nullable String transactionUID) {
         if (TextUtils.isEmpty(transactionUID)) return;
         String[] uids = new String[]{transactionUID};
-        BulkMoveDialogFragment fragment = BulkMoveDialogFragment.newInstance(uids, mAccountUID);
+        BulkMoveDialogFragment fragment = BulkMoveDialogFragment.newInstance(uids, accountUID);
         FragmentManager fm = getSupportFragmentManager();
         fm.setFragmentResultListener(BulkMoveDialogFragment.TAG, this, this);
         fragment.show(fm, BulkMoveDialogFragment.TAG);
@@ -261,7 +261,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
         Transaction duplicate = new Transaction(transaction);
         duplicate.setTime(System.currentTimeMillis());
         try {
-            transactionsDbAdapter.addRecord(duplicate, DatabaseAdapter.UpdateMethod.insert);
+            transactionsDbAdapter.insert(duplicate);
             if (duplicate.id <= 0) return;
         } catch (SQLException e) {
             Timber.e(e);
@@ -271,7 +271,7 @@ public class TransactionDetailActivity extends PasscodeLockActivity implements F
         // Show the new transaction
         Intent intent = new Intent(getIntent())
             .putExtra(UxArgument.SELECTED_TRANSACTION_UID, duplicate.getUID())
-            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, mAccountUID);
+            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID);
         startActivity(intent);
     }
 }

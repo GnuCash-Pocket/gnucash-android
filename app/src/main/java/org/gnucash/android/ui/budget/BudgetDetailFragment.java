@@ -72,10 +72,10 @@ import java.util.List;
  * Fragment for displaying budget details
  */
 public class BudgetDetailFragment extends MenuFragment implements Refreshable {
-    private String mBudgetUID;
-    private BudgetsDbAdapter mBudgetsDbAdapter;
+    private String budgetUID;
+    private BudgetsDbAdapter budgetsDbAdapter;
 
-    private FragmentBudgetDetailBinding mBinding;
+    private FragmentBudgetDetailBinding binding;
 
     public static BudgetDetailFragment newInstance(String budgetUID) {
         BudgetDetailFragment fragment = new BudgetDetailFragment();
@@ -88,18 +88,18 @@ public class BudgetDetailFragment extends MenuFragment implements Refreshable {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mBinding = FragmentBudgetDetailBinding.inflate(inflater, container, false);
-        View view = mBinding.getRoot();
-        mBinding.listItem2Lines.secondaryText.setMaxLines(3);
+        binding = FragmentBudgetDetailBinding.inflate(inflater, container, false);
+        View view = binding.getRoot();
+        binding.listItem2Lines.secondaryText.setMaxLines(3);
 
-        mBinding.list.setHasFixedSize(true);
+        binding.list.setHasFixedSize(true);
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
-            mBinding.list.setLayoutManager(gridLayoutManager);
+            binding.list.setLayoutManager(gridLayoutManager);
         } else {
             LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-            mBinding.list.setLayoutManager(mLayoutManager);
+            binding.list.setLayoutManager(mLayoutManager);
         }
         return view;
     }
@@ -109,25 +109,25 @@ public class BudgetDetailFragment extends MenuFragment implements Refreshable {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mBudgetsDbAdapter = BudgetsDbAdapter.getInstance();
-        mBudgetUID = getArguments().getString(UxArgument.BUDGET_UID);
+        budgetsDbAdapter = BudgetsDbAdapter.getInstance();
+        budgetUID = getArguments().getString(UxArgument.BUDGET_UID);
         bindViews();
     }
 
     private void bindViews() {
-        Context context = mBinding.budgetRecurrence.getContext();
-        Budget budget = mBudgetsDbAdapter.getRecord(mBudgetUID);
-        mBinding.listItem2Lines.primaryText.setText(budget.getName());
+        Context context = binding.budgetRecurrence.getContext();
+        Budget budget = budgetsDbAdapter.getRecord(budgetUID);
+        binding.listItem2Lines.primaryText.setText(budget.getName());
 
         String description = budget.getDescription();
         if (description != null && !description.isEmpty())
-            mBinding.listItem2Lines.secondaryText.setText(description);
+            binding.listItem2Lines.secondaryText.setText(description);
         else {
-            mBinding.listItem2Lines.secondaryText.setVisibility(View.GONE);
+            binding.listItem2Lines.secondaryText.setVisibility(View.GONE);
         }
-        mBinding.budgetRecurrence.setText(budget.getRecurrence().getRepeatString(context));
+        binding.budgetRecurrence.setText(budget.getRecurrence().getRepeatString(context));
 
-        mBinding.list.setAdapter(new BudgetAmountAdapter());
+        binding.list.setAdapter(new BudgetAmountAdapter());
     }
 
     @Override
@@ -144,7 +144,7 @@ public class BudgetDetailFragment extends MenuFragment implements Refreshable {
     @Override
     public void refresh() {
         bindViews();
-        String budgetName = mBudgetsDbAdapter.getAttribute(mBudgetUID, DatabaseSchema.BudgetEntry.COLUMN_NAME);
+        String budgetName = budgetsDbAdapter.getAttribute(budgetUID, DatabaseSchema.BudgetEntry.COLUMN_NAME);
         ActionBar actionBar = ((AppCompatActivity) requireActivity()).getSupportActionBar();
         assert actionBar != null;
         actionBar.setTitle("Budget: " + budgetName);
@@ -152,7 +152,7 @@ public class BudgetDetailFragment extends MenuFragment implements Refreshable {
 
     @Override
     public void refresh(String budgetUID) {
-        mBudgetUID = budgetUID;
+        this.budgetUID = budgetUID;
         refresh();
     }
 
@@ -171,7 +171,7 @@ public class BudgetDetailFragment extends MenuFragment implements Refreshable {
                 Intent intent = new Intent(context, FormActivity.class)
                     .setAction(Intent.ACTION_INSERT_OR_EDIT)
                     .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.BUDGET.name())
-                    .putExtra(UxArgument.BUDGET_UID, mBudgetUID);
+                    .putExtra(UxArgument.BUDGET_UID, budgetUID);
                 startActivityForResult(intent, 0x11);
                 return true;
             }
@@ -194,7 +194,7 @@ public class BudgetDetailFragment extends MenuFragment implements Refreshable {
         private final Budget mBudget;
 
         public BudgetAmountAdapter() {
-            mBudget = mBudgetsDbAdapter.getRecord(mBudgetUID);
+            mBudget = budgetsDbAdapter.getRecord(budgetUID);
             mBudgetAmounts = mBudget.getCompactedBudgetAmounts();
         }
 

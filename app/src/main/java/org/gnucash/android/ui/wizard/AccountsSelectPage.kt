@@ -35,7 +35,7 @@ class AccountsSelectPage(callbacks: ModelCallbacks, title: String) :
         if (!description.isNullOrEmpty()) {
             label += "\n" + description
         }
-        _accounts.put(label, header.assetId)
+        _accounts[label] = header.assetId
         return label
     }
 

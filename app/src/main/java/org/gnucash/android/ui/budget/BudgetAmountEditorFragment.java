@@ -62,29 +62,23 @@ import java.util.List;
 public class BudgetAmountEditorFragment extends MenuFragment {
 
     private QualifiedAccountNameAdapter accountNameAdapter;
-    private final List<View> mBudgetAmountViews = new ArrayList<>();
-    private AccountsDbAdapter mAccountsDbAdapter;
+    private final List<View> budgetAmountViews = new ArrayList<>();
+    private AccountsDbAdapter accountsDbAdapter;
 
-    private FragmentBudgetAmountEditorBinding mBinding;
-
-    public static BudgetAmountEditorFragment newInstance(Bundle args) {
-        BudgetAmountEditorFragment fragment = new BudgetAmountEditorFragment();
-        fragment.setArguments(args);
-        return fragment;
-    }
+    private FragmentBudgetAmountEditorBinding binding;
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        mBinding = FragmentBudgetAmountEditorBinding.inflate(inflater, container, false);
-        return mBinding.getRoot();
+        binding = FragmentBudgetAmountEditorBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+        accountsDbAdapter = AccountsDbAdapter.getInstance();
     }
 
     @Override
@@ -139,7 +133,7 @@ public class BudgetAmountEditorFragment extends MenuFragment {
      * @return {@code true} if all amounts a properly entered, {@code false} otherwise
      */
     private boolean canSave() {
-        for (View budgetAmountView : mBudgetAmountViews) {
+        for (View budgetAmountView : budgetAmountViews) {
             BudgetAmountViewHolder viewHolder = (BudgetAmountViewHolder) budgetAmountView.getTag();
             if (!viewHolder.amountEditText.isInputValid()) {
                 return false;
@@ -182,14 +176,14 @@ public class BudgetAmountEditorFragment extends MenuFragment {
      * @param budgetAmount Budget amount
      */
     private View addBudgetAmountView(BudgetAmount budgetAmount) {
-        ItemBudgetAmountBinding binding = ItemBudgetAmountBinding.inflate(getActivity().getLayoutInflater(), mBinding.budgetAmountLayout, false);
+        ItemBudgetAmountBinding binding = ItemBudgetAmountBinding.inflate(getActivity().getLayoutInflater(), this.binding.budgetAmountLayout, false);
         BudgetAmountViewHolder viewHolder = new BudgetAmountViewHolder(binding);
         if (budgetAmount != null) {
             viewHolder.bindViews(budgetAmount);
         }
         View view = binding.getRoot();
-        mBinding.budgetAmountLayout.addView(view, 0);
-        mBudgetAmountViews.add(view);
+        this.binding.budgetAmountLayout.addView(view, 0);
+        budgetAmountViews.add(view);
 //        mScrollView.fullScroll(ScrollView.FOCUS_DOWN);
         return view;
     }
@@ -198,7 +192,7 @@ public class BudgetAmountEditorFragment extends MenuFragment {
      * Loads the accounts in the spinner
      */
     private void setupAccountSpinnerAdapter() {
-        accountNameAdapter = new QualifiedAccountNameAdapter(requireContext(), mAccountsDbAdapter, getViewLifecycleOwner());
+        accountNameAdapter = new QualifiedAccountNameAdapter(requireContext(), accountsDbAdapter, getViewLifecycleOwner());
     }
 
     /**
@@ -208,7 +202,7 @@ public class BudgetAmountEditorFragment extends MenuFragment {
      */
     private List<BudgetAmount> extractBudgetAmounts() {
         List<BudgetAmount> budgetAmounts = new ArrayList<>();
-        for (View view : mBudgetAmountViews) {
+        for (View view : budgetAmountViews) {
             BudgetAmountViewHolder viewHolder = (BudgetAmountViewHolder) view.getTag();
             BigDecimal amountValue = viewHolder.amountEditText.getValue();
             if (amountValue == null)
@@ -228,9 +222,9 @@ public class BudgetAmountEditorFragment extends MenuFragment {
         super.onConfigurationChanged(newConfig);
         View view = getView();
         if (view instanceof ViewGroup parent) {
-            CalculatorKeyboardView keyboardView = mBinding.calculatorKeyboard.calculatorKeyboard;
+            CalculatorKeyboardView keyboardView = binding.calculatorKeyboard.calculatorKeyboard;
             keyboardView = CalculatorKeyboard.rebind(parent, keyboardView, null);
-            for (View budgetAmountView : mBudgetAmountViews) {
+            for (View budgetAmountView : budgetAmountViews) {
                 BudgetAmountViewHolder viewHolder = (BudgetAmountViewHolder) budgetAmountView.getTag();
                 viewHolder.amountEditText.bindKeyboard(keyboardView);
             }
@@ -255,7 +249,7 @@ public class BudgetAmountEditorFragment extends MenuFragment {
             itemView = binding.getRoot();
             itemView.setTag(this);
 
-            amountEditText.bindKeyboard(mBinding.calculatorKeyboard);
+            amountEditText.bindKeyboard(BudgetAmountEditorFragment.this.binding.calculatorKeyboard);
             budgetAccountSpinner.setAdapter(accountNameAdapter);
 
             budgetAccountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -276,8 +270,8 @@ public class BudgetAmountEditorFragment extends MenuFragment {
             removeItemBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mBinding.budgetAmountLayout.removeView(itemView);
-                    mBudgetAmountViews.remove(itemView);
+                    BudgetAmountEditorFragment.this.binding.budgetAmountLayout.removeView(itemView);
+                    budgetAmountViews.remove(itemView);
                 }
             });
         }

@@ -248,7 +248,7 @@ class Commodity @JvmOverloads constructor(
                 "USD" -> return USD
             }
 
-            val adapter = CommoditiesDbAdapter.getInstance()
+            val adapter = CommoditiesDbAdapter.instance
             return adapter?.getCurrency(currencyCode) ?: DEFAULT_COMMODITY
         }
 
@@ -263,7 +263,7 @@ class Commodity @JvmOverloads constructor(
         @JvmStatic
         fun getLocaleCurrencyCode(): String? {
             return try {
-                val locale = GnuCashApplication.getDefaultLocale()
+                val locale = GnuCashApplication.defaultLocale
                 Currency.getInstance(locale).currencyCode
             } catch (e: Throwable) {
                 Timber.e(e)

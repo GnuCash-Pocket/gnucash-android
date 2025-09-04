@@ -1,8 +1,12 @@
 package org.gnucash.android.db
 
 import android.database.Cursor
+import android.database.SQLException
 import android.database.sqlite.SQLiteStatement
 import androidx.annotation.IntRange
+import org.gnucash.android.db.adapter.DatabaseAdapter
+import org.gnucash.android.db.adapter.DatabaseAdapter.UpdateMethod
+import org.gnucash.android.model.BaseModel
 import java.math.BigDecimal
 import java.math.BigInteger
 
@@ -29,4 +33,36 @@ fun SQLiteStatement.bindBigInteger(@IntRange(from = 1) index: Int, value: BigInt
 fun SQLiteStatement.bindBigInteger(@IntRange(from = 1) index: Int, value: Long?) {
     requireNotNull(value) { "the bind value at index $index is null" }
     bindString(index, value.toString())
+}
+
+fun SQLiteStatement.bindBoolean(@IntRange(from = 1) index: Int, value: Boolean) {
+    bindLong(index, (if (value) 1 else 0).toLong())
+}
+
+fun Cursor.getBoolean(@IntRange(from = 0) columnIndex: Int): Boolean {
+    return getInt(columnIndex) != 0
+}
+
+fun Cursor.getBoolean(columnName: String): Boolean {
+    return getBoolean(getColumnIndexOrThrow(columnName))
+}
+
+fun Cursor.getDouble(columnName: String): Double {
+    return getDouble(getColumnIndexOrThrow(columnName))
+}
+
+fun Cursor.getFloat(columnName: String): Float {
+    return getFloat(getColumnIndexOrThrow(columnName))
+}
+
+fun Cursor.getInt(columnName: String): Int {
+    return getInt(getColumnIndexOrThrow(columnName))
+}
+
+fun Cursor.getLong(columnName: String): Long {
+    return getLong(getColumnIndexOrThrow(columnName))
+}
+
+fun Cursor.getString(columnName: String): String? {
+    return getString(getColumnIndexOrThrow(columnName))
 }

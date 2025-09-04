@@ -85,7 +85,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
     /**
      * Accounts database adapter
      */
-    private AccountsDbAdapter mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+    private AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
     private AccountTypesAdapter accountTypesAdapter;
     private CommoditiesAdapter commoditiesAdapter;
 
@@ -94,18 +94,18 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      * This value is set to the parent account of the transaction being edited or
      * the account in which a new sub-account is being created
      */
-    private String mParentAccountUID = null;
+    private String parentAccountUID = null;
     private String selectedParentAccountUID = null;
 
     /**
      * Account UID of the root account
      */
-    private String mRootAccountUID = null;
+    private String rootAccountUID = null;
 
     /**
      * Reference to account object which will be created at end of dialog
      */
-    private Account mAccount = null;
+    private Account account = null;
 
     /**
      * List of all descendant accounts, if we are modifying an account.
@@ -125,47 +125,38 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
     /**
      * Flag indicating if double entry transactions are enabled
      */
-    private boolean mUseDoubleEntry;
+    private boolean useDoubleEntry;
 
     @ColorInt
-    private int mSelectedColor = Account.DEFAULT_COLOR;
+    private int selectedColor = Account.DEFAULT_COLOR;
     private Account selectedDefaultTransferAccount;
     private String selectedName = "";
     private AccountType selectedAccountType = AccountType.ROOT;
     private Commodity selectedCommodity = Commodity.DEFAULT_COMMODITY;
 
-    private FragmentAccountFormBinding mBinding;
-
-    /**
-     * Construct a new instance of the dialog
-     *
-     * @return New instance of the dialog fragment
-     */
-    static public AccountFormFragment newInstance() {
-        return new AccountFormFragment();
-    }
+    private FragmentAccountFormBinding binding;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final Context context = requireContext();
-        mUseDoubleEntry = GnuCashApplication.isDoubleEntryEnabled(context);
+        useDoubleEntry = GnuCashApplication.isDoubleEntryEnabled(context);
         String accountUID = getArguments().getString(UxArgument.SELECTED_ACCOUNT_UID);
-        mParentAccountUID = getArguments().getString(UxArgument.PARENT_ACCOUNT_UID);
-        mRootAccountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
+        parentAccountUID = getArguments().getString(UxArgument.PARENT_ACCOUNT_UID);
+        rootAccountUID = accountsDbAdapter.getRootAccountUID();
 
-        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+        accountsDbAdapter = AccountsDbAdapter.getInstance();
         accountTypesAdapter = new AccountTypesAdapter(context);
-        Account account = mAccountsDbAdapter.getSimpleRecord(accountUID);
-        mAccount = account;
+        Account account = accountsDbAdapter.getSimpleRecord(accountUID);
+        this.account = account;
         if (account != null) {
-            mParentAccountUID = account.getParentUID();
+            parentAccountUID = account.getParentUID();
         }
-        if (TextUtils.isEmpty(mParentAccountUID)) {
+        if (TextUtils.isEmpty(parentAccountUID)) {
             // null parent, set Parent as root
-            mParentAccountUID = mRootAccountUID;
+            parentAccountUID = rootAccountUID;
         }
-        selectedParentAccountUID = mParentAccountUID;
+        selectedParentAccountUID = parentAccountUID;
     }
 
     /**
@@ -174,16 +165,16 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mBinding = FragmentAccountFormBinding.inflate(inflater, container, false);
-        return mBinding.getRoot();
+        binding = FragmentAccountFormBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        final FragmentAccountFormBinding binding = mBinding;
+        final FragmentAccountFormBinding binding = this.binding;
         final Context context = view.getContext();
-        final Account account = mAccount;
+        final Account account = this.account;
 
         binding.inputAccountName.addTextChangedListener(new TextWatcher() {
             @Override
@@ -211,7 +202,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
                 if (view == null) return;
                 selectedAccountType = accountTypesAdapter.getType(position);
                 loadParentAccountList(binding, selectedAccountType);
-                setParentAccountSelection(binding, mParentAccountUID);
+                setParentAccountSelection(binding, parentAccountUID);
             }
 
             @Override
@@ -321,7 +312,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
 
         selectedName = account.getName();
 
-        List<Account> descendants = mAccountsDbAdapter.getDescendants(account);
+        List<Account> descendants = accountsDbAdapter.getDescendants(account);
         descendantAccounts.clear();
         descendantAccounts.addAll(descendants);
 
@@ -330,7 +321,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         loadParentAccountList(binding, account.getAccountType());
         setParentAccountSelection(binding, account.getParentUID());
 
-        if (mAccountsDbAdapter.getTransactionMaxSplitNum(account.getUID()) > 1) {
+        if (accountsDbAdapter.getTransactionMaxSplitNum(account.getUID()) > 1) {
             //TODO: Allow changing the currency and effecting the change for all transactions without any currency exchange (purely cosmetic change)
             binding.inputCurrencySpinner.setEnabled(false);
         }
@@ -339,7 +330,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         binding.inputAccountDescription.setText(account.getDescription());
         binding.notes.setText(account.getNote());
 
-        if (mUseDoubleEntry) {
+        if (useDoubleEntry) {
             String defaultTransferAccountUID = account.getDefaultTransferAccountUID();
             if (!TextUtils.isEmpty(defaultTransferAccountUID)) {
                 setDefaultTransferAccountSelection(binding, defaultTransferAccountUID, true);
@@ -361,8 +352,8 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         binding.placeholderStatus.setChecked(account.isPlaceholder());
         binding.favoriteStatus.setChecked(account.isFavorite());
         binding.hiddenStatus.setChecked(account.isHidden());
-        mSelectedColor = account.getColor();
-        binding.inputColorPicker.setBackgroundTintList(ColorStateList.valueOf(mSelectedColor));
+        selectedColor = account.getColor();
+        binding.inputColorPicker.setBackgroundTintList(ColorStateList.valueOf(selectedColor));
     }
 
     /**
@@ -371,11 +362,11 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
     private void initializeViews(@NonNull FragmentAccountFormBinding binding) {
         selectedName = "";
         setSelectedCurrency(binding, Commodity.DEFAULT_COMMODITY);
-        binding.inputColorPicker.setBackgroundTintList(ColorStateList.valueOf(mSelectedColor));
+        binding.inputColorPicker.setBackgroundTintList(ColorStateList.valueOf(selectedColor));
 
-        String parentUID = mParentAccountUID;
+        String parentUID = parentAccountUID;
         if (!TextUtils.isEmpty(parentUID)) {
-            Account parentAccount = mAccountsDbAdapter.getSimpleRecord(parentUID);
+            Account parentAccount = accountsDbAdapter.getSimpleRecord(parentUID);
             if (parentAccount != null) {
                 setSelectedCurrency(binding, parentAccount.getCommodity());
                 AccountType parentAccountType = parentAccount.getAccountType();
@@ -475,12 +466,13 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      */
     private void showColorPickerDialog() {
         FragmentManager fragmentManager = getParentFragmentManager();
-        @ColorInt int currentColor = mSelectedColor;
+        @ColorInt int currentColor = selectedColor;
 
         ColorPickerDialog colorPickerDialogFragment = ColorPickerDialog.newInstance(
             R.string.color_picker_default_title,
             getAccountColorOptions(),
-            currentColor, -1, ColorPickerDialog.SIZE_SMALL);
+            currentColor, -1, ColorPickerDialog.SIZE_SMALL
+        );
         fragmentManager.setFragmentResultListener(COLOR_PICKER_DIALOG_TAG, this, this);
         colorPickerDialogFragment.show(fragmentManager, COLOR_PICKER_DIALOG_TAG);
     }
@@ -489,11 +481,11 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
     public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
         if (COLOR_PICKER_DIALOG_TAG.equals(requestKey)) {
             @ColorInt int color = result.getInt(ColorPickerDialog.EXTRA_COLOR);
-            FragmentAccountFormBinding binding = mBinding;
+            FragmentAccountFormBinding binding = this.binding;
             if (binding != null) {
                 binding.inputColorPicker.setBackgroundTintList(ColorStateList.valueOf(color));
             }
-            mSelectedColor = color;
+            selectedColor = color;
         }
     }
 
@@ -533,19 +525,19 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
             context,
             condition,
             new String[]{accountUID, AccountType.ROOT.name()},
-            mAccountsDbAdapter,
+            accountsDbAdapter,
             getViewLifecycleOwner()
         );
         defaultAccountNameAdapter.load(new Function0<Unit>() {
             @Override
             public Unit invoke() {
                 String accountUID = (account != null) ? account.getDefaultTransferAccountUID() : null;
-                setDefaultTransferAccountSelection(binding, accountUID, mUseDoubleEntry && (defaultAccountNameAdapter.getCount() > 0));
+                setDefaultTransferAccountSelection(binding, accountUID, useDoubleEntry && (defaultAccountNameAdapter.getCount() > 0));
                 return null;
             }
         });
         binding.inputDefaultTransferAccount.setAdapter(defaultAccountNameAdapter);
-        setDefaultTransferAccountInputsVisible(binding, mUseDoubleEntry);
+        setDefaultTransferAccountInputsVisible(binding, useDoubleEntry);
     }
 
     /**
@@ -558,7 +550,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         String condition = SplitEntry.COLUMN_TYPE + " IN (" + getAllowedParentAccountTypes(accountType) + ")"
             + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
 
-        final Account account = mAccount;
+        final Account account = this.account;
         if (account != null) {  //if editing an account
             // limit cyclic account hierarchies.
             if (descendantAccounts.isEmpty()) {
@@ -577,11 +569,11 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         binding.checkboxParentAccount.setVisibility(View.GONE);
         binding.inputParentAccount.setVisibility(View.GONE);
 
-        parentAccountNameAdapter = new QualifiedAccountNameAdapter(binding.getRoot().getContext(), condition, null, mAccountsDbAdapter, getViewLifecycleOwner());
+        parentAccountNameAdapter = new QualifiedAccountNameAdapter(binding.getRoot().getContext(), condition, null, accountsDbAdapter, getViewLifecycleOwner());
         parentAccountNameAdapter.load(new Function0<Unit>() {
             @Override
             public Unit invoke() {
-                String parentUID = (account != null) ? account.getParentUID() : mParentAccountUID;
+                String parentUID = (account != null) ? account.getParentUID() : parentAccountUID;
                 setParentAccountSelection(binding, parentUID);
                 return null;
             }
@@ -662,7 +654,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
             Timber.w("Activity required");
             return;
         }
-        FragmentAccountFormBinding binding = mBinding;
+        FragmentAccountFormBinding binding = this.binding;
         if (binding != null) {
             InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(binding.getRoot().getWindowToken(), 0);
@@ -682,7 +674,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
      */
     private void saveAccount() {
         Timber.i("Saving account");
-        @NonNull FragmentAccountFormBinding binding = mBinding;
+        @NonNull FragmentAccountFormBinding binding = this.binding;
         if (binding == null) return;
 
         // accounts to update, in case we're updating full names of a sub account tree
@@ -693,11 +685,11 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         }
         binding.nameTextInputLayout.setError(null);
 
-        Account account = mAccount;
+        Account account = this.account;
         if (account == null) {
             account = new Account(newName, selectedCommodity);
             //new account, insert it
-            mAccountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert);
+            accountsDbAdapter.insert(account);
         } else {
             account.setName(newName);
             account.setCommodity(selectedCommodity);
@@ -709,14 +701,14 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         account.setPlaceholder(binding.placeholderStatus.isChecked());
         account.setFavorite(binding.favoriteStatus.isChecked());
         account.setHidden(binding.hiddenStatus.isChecked());
-        account.setColor(mSelectedColor);
+        account.setColor(selectedColor);
 
         final String newParentAccountUID;
         if (binding.checkboxParentAccount.isChecked()) {
-            newParentAccountUID = TextUtils.isEmpty(selectedParentAccountUID) ? mRootAccountUID : selectedParentAccountUID;
+            newParentAccountUID = TextUtils.isEmpty(selectedParentAccountUID) ? rootAccountUID : selectedParentAccountUID;
         } else {
             //need to do this explicitly in case user removes parent account
-            newParentAccountUID = mRootAccountUID;
+            newParentAccountUID = rootAccountUID;
         }
 
         List<Account> accountsToUpdate = new ArrayList<>();
@@ -737,7 +729,7 @@ public class AccountFormFragment extends MenuFragment implements FragmentResultL
         }
 
         // bulk update, will not update transactions
-        mAccountsDbAdapter.bulkAddRecords(accountsToUpdate, DatabaseAdapter.UpdateMethod.update);
+        accountsDbAdapter.bulkAddRecords(accountsToUpdate, DatabaseAdapter.UpdateMethod.Update);
 
         finishFragment();
     }

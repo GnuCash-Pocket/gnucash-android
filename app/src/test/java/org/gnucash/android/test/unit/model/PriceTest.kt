@@ -109,7 +109,7 @@ class PriceTest : GnuCashTest() {
         val commodity2 = Commodity.EUR
 
         val rate = BigDecimal(1.17)
-        val pricesDbAdapter = PricesDbAdapter.getInstance()
+        val pricesDbAdapter = PricesDbAdapter.instance
         val price = Price(commodity2, commodity1, rate) // 1 EUR = 1.17 USD
         assertThat(price.toBigDecimal(2)).isEqualTo(rate.setScale(2, RoundingMode.HALF_UP))
         pricesDbAdapter.addRecord(price)

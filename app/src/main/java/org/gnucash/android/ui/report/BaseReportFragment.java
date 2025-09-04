@@ -98,30 +98,30 @@ public abstract class BaseReportFragment extends MenuFragment implements
      * Reporting period start time
      */
     @Nullable
-    protected LocalDateTime mReportPeriodStart = null;
+    protected LocalDateTime reportPeriodStart = null;
     /**
      * Reporting period end time
      */
     @Nullable
-    protected LocalDateTime mReportPeriodEnd = null;
+    protected LocalDateTime reportPeriodEnd = null;
 
     /**
      * Account type for which to display reports
      */
-    protected AccountType mAccountType = AccountType.EXPENSE;
-    protected AccountsDbAdapter mAccountsDbAdapter;
+    protected AccountType accountType = AccountType.EXPENSE;
+    protected AccountsDbAdapter accountsDbAdapter;
     protected PricesDbAdapter pricesDbAdapter = PricesDbAdapter.getInstance();
-    protected boolean mUseAccountColor = true;
+    protected boolean useAccountColor = true;
 
     /**
      * Commodity for which to display reports
      */
-    protected Commodity mCommodity = Commodity.DEFAULT_COMMODITY;
+    protected Commodity commodity = Commodity.DEFAULT_COMMODITY;
 
     /**
      * Intervals in which to group reports
      */
-    protected ReportsActivity.GroupInterval mGroupInterval = ReportsActivity.GroupInterval.MONTH;
+    protected ReportsActivity.GroupInterval groupInterval = ReportsActivity.GroupInterval.MONTH;
 
     /**
      * Pattern to use to display selected chart values
@@ -129,12 +129,12 @@ public abstract class BaseReportFragment extends MenuFragment implements
     private static final String SELECTED_VALUE_PATTERN = "%s — %s %s (%.2f%%)";
     private static final String TOTAL_VALUE_LABEL_PATTERN = "%s\n%s %s";
 
-    protected ReportsActivity mReportsActivity;
+    protected ReportsActivity reportsActivity;
 
-    protected TextView mSelectedValueTextView;
+    protected TextView selectedValueTextView;
 
     @Nullable
-    private GeneratorTask mReportGenerator;
+    private GeneratorTask generatorTask;
 
     /**
      * Return the title of this report
@@ -193,7 +193,7 @@ public abstract class BaseReportFragment extends MenuFragment implements
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflateView(inflater, container);
-        mSelectedValueTextView = view.findViewById(R.id.selected_chart_slice);
+        selectedValueTextView = view.findViewById(R.id.selected_chart_slice);
         return view;
     }
 
@@ -208,8 +208,8 @@ public abstract class BaseReportFragment extends MenuFragment implements
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mAccountsDbAdapter = AccountsDbAdapter.getInstance();
-        mUseAccountColor = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        accountsDbAdapter = AccountsDbAdapter.getInstance();
+        useAccountColor = PreferenceManager.getDefaultSharedPreferences(requireContext())
             .getBoolean(getString(R.string.key_use_account_color), false);
     }
 
@@ -224,9 +224,9 @@ public abstract class BaseReportFragment extends MenuFragment implements
         super.onActivityCreated(savedInstanceState);
 
         ReportsActivity reportsActivity = (ReportsActivity) requireActivity();
-        mReportPeriodStart = reportsActivity.getReportPeriodStart();
-        mReportPeriodEnd = reportsActivity.getReportPeriodEnd();
-        mAccountType = reportsActivity.getAccountType();
+        reportPeriodStart = reportsActivity.getReportPeriodStart();
+        reportPeriodEnd = reportsActivity.getReportPeriodEnd();
+        accountType = reportsActivity.getAccountType();
     }
 
     @Override
@@ -235,29 +235,29 @@ public abstract class BaseReportFragment extends MenuFragment implements
 
         Activity activity = getActivity();
         if (activity instanceof ReportsActivity) {
-            mReportsActivity = (ReportsActivity) activity;
+            reportsActivity = (ReportsActivity) activity;
         } else {
             throw new RuntimeException("Report fragments can only be used with the ReportsActivity");
         }
-        mReportsActivity.onFragmentResumed(this);
-        toggleBaseReportingOptionsVisibility(mReportsActivity);
-        mCommodity = Commodity.DEFAULT_COMMODITY;
+        reportsActivity.onFragmentResumed(this);
+        toggleBaseReportingOptionsVisibility(reportsActivity);
+        commodity = Commodity.DEFAULT_COMMODITY;
         refresh();
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        if (mReportGenerator != null)
-            mReportGenerator.cancel(true);
+        if (generatorTask != null)
+            generatorTask.cancel(true);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (mReportGenerator != null) {
-            mReportGenerator.cancel(true);
-            mReportGenerator = null;
+        if (generatorTask != null) {
+            generatorTask.cancel(true);
+            generatorTask = null;
         }
     }
 
@@ -307,11 +307,11 @@ public abstract class BaseReportFragment extends MenuFragment implements
 
     @Override
     public void refresh() {
-        if (mReportGenerator != null) {
-            mReportGenerator.cancel(true);
+        if (generatorTask != null) {
+            generatorTask.cancel(true);
         }
-        mReportGenerator = new GeneratorTask(mReportsActivity);
-        mReportGenerator.execute();
+        generatorTask = new GeneratorTask(reportsActivity);
+        generatorTask.execute();
     }
 
     /**
@@ -327,23 +327,23 @@ public abstract class BaseReportFragment extends MenuFragment implements
 
     @Override
     public void onGroupingUpdated(@NonNull ReportsActivity.GroupInterval groupInterval) {
-        if (mGroupInterval != groupInterval) {
-            mGroupInterval = groupInterval;
+        if (this.groupInterval != groupInterval) {
+            this.groupInterval = groupInterval;
             refresh();
         }
     }
 
     @Override
     public void onTimeRangeUpdated(@Nullable LocalDateTime start, @Nullable LocalDateTime end) {
-        mReportPeriodStart = start;
-        mReportPeriodEnd = end;
+        reportPeriodStart = start;
+        reportPeriodEnd = end;
         refresh();
     }
 
     @Override
     public void onAccountTypeUpdated(@NonNull AccountType accountType) {
-        if (mAccountType != accountType) {
-            mAccountType = accountType;
+        if (this.accountType != accountType) {
+            this.accountType = accountType;
             refresh();
         }
     }
@@ -355,12 +355,12 @@ public abstract class BaseReportFragment extends MenuFragment implements
 
     @Override
     public void onNothingSelected() {
-        if (mSelectedValueTextView != null)
-            mSelectedValueTextView.setText(R.string.select_chart_to_view_details);
+        if (selectedValueTextView != null)
+            selectedValueTextView.setText(R.string.select_chart_to_view_details);
     }
 
     protected String formatSelectedValue(String label, float value, float percentage) {
-        return formatSelectedValue(Locale.getDefault(), label.trim(), value, mCommodity, percentage);
+        return formatSelectedValue(Locale.getDefault(), label.trim(), value, commodity, percentage);
     }
 
     @VisibleForTesting
@@ -373,7 +373,7 @@ public abstract class BaseReportFragment extends MenuFragment implements
     }
 
     protected String formatTotalValue(float value) {
-        return formatTotalValue(requireContext(), Locale.getDefault(), value, mCommodity);
+        return formatTotalValue(requireContext(), Locale.getDefault(), value, commodity);
     }
 
     protected String getLabel(@NonNull Context context, @NonNull AccountType accountType) {
@@ -408,7 +408,7 @@ public abstract class BaseReportFragment extends MenuFragment implements
     @ColorInt
     protected int getAccountColor(@NonNull Account account, int count) {
         @ColorInt int color;
-        if (mUseAccountColor) {
+        if (useAccountColor) {
             color = (account.getColor() != Account.DEFAULT_COLOR)
                 ? account.getColor()
                 : COLORS[count % COLORS.length];

@@ -22,7 +22,7 @@ import java.util.Locale
 /**
  * Enumeration of the different export formats supported by the application
  *
- * @author Ngewi Fet <ngewif></ngewif>@gmail.com>
+ * @author Ngewi Fet <ngewif@gmail.com>
  */
 enum class ExportFormat(
     @JvmField

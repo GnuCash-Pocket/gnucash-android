@@ -86,14 +86,14 @@ public class SplitEditorFragment extends MenuFragment {
     private final List<SplitViewHolder> splitViewHolders = new ArrayList<>();
     private Account account;
 
-    private BigDecimal mBaseAmount = BigDecimal.ZERO;
+    private BigDecimal baseAmount = BigDecimal.ZERO;
 
-    private final BalanceTextWatcher mImbalanceWatcher = new BalanceTextWatcher();
+    private final BalanceTextWatcher imbalanceWatcher = new BalanceTextWatcher();
 
     /**
      * Flag for checking where the TransferFunds dialog has already been displayed to the user
      */
-    private boolean mCurrencyConversionDone = false;
+    private boolean currencyConversionDone = false;
 
     /**
      * Flag which is set if another action is triggered during a transaction save (which interrrupts the save process).
@@ -103,28 +103,15 @@ public class SplitEditorFragment extends MenuFragment {
     private boolean onSaveAttempt = false;
     private final Collection<SplitViewHolder> transferAttempt = new ArrayList<>();
 
-    private FragmentSplitEditorBinding mBinding;
+    private FragmentSplitEditorBinding binding;
     @ColorInt
     private int colorBalanceZero;
 
-    /**
-     * Create and return a new instance of the fragment with the appropriate paramenters
-     *
-     * @param args Arguments to be set to the fragment. <br>
-     *             See {@link UxArgument#AMOUNT_STRING} and {@link UxArgument#SPLIT_LIST}
-     * @return New instance of SplitEditorFragment
-     */
-    public static SplitEditorFragment newInstance(Bundle args) {
-        SplitEditorFragment fragment = new SplitEditorFragment();
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mBinding = FragmentSplitEditorBinding.inflate(inflater, container, false);
-        colorBalanceZero = mBinding.imbalanceTextview.getCurrentTextColor();
-        return mBinding.getRoot();
+        binding = FragmentSplitEditorBinding.inflate(inflater, container, false);
+        colorBalanceZero = binding.imbalanceTextview.getCurrentTextColor();
+        return binding.getRoot();
     }
 
     @Override
@@ -138,15 +125,19 @@ public class SplitEditorFragment extends MenuFragment {
         //we are editing splits for a new transaction.
         // But the user may have already created some splits before. Let's check
 
-        Bundle args = getArguments();
+        final Bundle args = getArguments();
         FormActivity activity = ((FormActivity) requireActivity());
-        mBaseAmount = new BigDecimal(args.getString(UxArgument.AMOUNT_STRING));
+        baseAmount = new BigDecimal(args.getString(UxArgument.AMOUNT_STRING));
 
         accountNameAdapter = new QualifiedAccountNameAdapter(requireContext(), getViewLifecycleOwner());
         accountNameAdapter.load(new Function0<Unit>() {
             @Override
             public Unit invoke() {
-                account = accountNameAdapter.getAccountDb(activity.getCurrentAccountUID());
+                String accountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID);
+                if (TextUtils.isEmpty(accountUID)) {
+                    accountUID = args.getString(UxArgument.PARENT_ACCOUNT_UID);
+                }
+                account = accountNameAdapter.getAccountDb(accountUID);
                 if (account == null) {
                     Timber.e("Account not found!");
                     activity.finish();
@@ -160,7 +151,7 @@ public class SplitEditorFragment extends MenuFragment {
 
     private void loadSplits() {
         splitViewHolders.clear();
-        mBinding.splitListLayout.removeAllViews();
+        binding.splitListLayout.removeAllViews();
 
         List<Split> splitList = getArguments().getParcelableArrayList(UxArgument.SPLIT_LIST);
         assert splitList != null;
@@ -168,19 +159,19 @@ public class SplitEditorFragment extends MenuFragment {
         if (!splitList.isEmpty()) {
             //aha! there are some splits. Let's load those instead
             loadSplitViews(splitList);
-            mImbalanceWatcher.afterTextChanged(null);
+            imbalanceWatcher.afterTextChanged(null);
         } else {
             Account account = this.account;
             Commodity commodity = account.getCommodity();
-            Split split = new Split(new Money(mBaseAmount, commodity), account.getUID());
+            Split split = new Split(new Money(baseAmount, commodity), account.getUID());
             AccountType accountType = account.getAccountType();
-            TransactionType transactionType = Transaction.getTypeForBalance(accountType, mBaseAmount.signum() < 0);
+            TransactionType transactionType = Transaction.getTypeForBalance(accountType, baseAmount.signum() < 0);
             split.setType(transactionType);
             SplitViewHolder splitViewHolder = addSplitView(split);
             ItemSplitEntryBinding splitViewBinding = splitViewHolder.binding;
             splitViewBinding.inputAccountsSpinner.setEnabled(false);
             splitViewBinding.btnRemoveSplit.setVisibility(View.GONE);
-            displayBalance(mBinding.imbalanceTextview, new Money(mBaseAmount.negate(), commodity), colorBalanceZero);
+            displayBalance(binding.imbalanceTextview, new Money(baseAmount.negate(), commodity), colorBalanceZero);
         }
     }
 
@@ -189,7 +180,7 @@ public class SplitEditorFragment extends MenuFragment {
         super.onConfigurationChanged(newConfig);
         View view = getView();
         if (view instanceof ViewGroup parent) {
-            CalculatorKeyboardView keyboardView = mBinding.calculatorKeyboard.calculatorKeyboard;
+            CalculatorKeyboardView keyboardView = binding.calculatorKeyboard.calculatorKeyboard;
             keyboardView = CalculatorKeyboard.rebind(parent, keyboardView, null);
             for (SplitViewHolder viewHolder : splitViewHolders) {
                 viewHolder.splitAmountEditText.bindKeyboard(keyboardView);
@@ -244,7 +235,7 @@ public class SplitEditorFragment extends MenuFragment {
      * @return Returns the split view which was added
      */
     private SplitViewHolder addSplitView(Split split) {
-        ItemSplitEntryBinding binding = ItemSplitEntryBinding.inflate(getLayoutInflater(), mBinding.splitListLayout, true);
+        ItemSplitEntryBinding binding = ItemSplitEntryBinding.inflate(getLayoutInflater(), this.binding.splitListLayout, true);
         View splitView = binding.getRoot();
         SplitViewHolder viewHolder = new SplitViewHolder(binding);
         viewHolder.bind(split);
@@ -280,15 +271,15 @@ public class SplitEditorFragment extends MenuFragment {
             this.splitUidTextView = binding.splitUid;
             this.splitTypeSwitch = binding.btnSplitType;
 
-            splitAmountEditText.bindKeyboard(mBinding.calculatorKeyboard);
+            splitAmountEditText.bindKeyboard(SplitEditorFragment.this.binding.calculatorKeyboard);
 
             removeSplitButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     SplitViewHolder viewHolder = (SplitViewHolder) itemView.getTag();
-                    mBinding.splitListLayout.removeView(itemView);
+                    SplitEditorFragment.this.binding.splitListLayout.removeView(itemView);
                     splitViewHolders.remove(viewHolder);
-                    mImbalanceWatcher.afterTextChanged(null);
+                    imbalanceWatcher.afterTextChanged(null);
                 }
             });
 
@@ -297,15 +288,15 @@ public class SplitEditorFragment extends MenuFragment {
             splitTypeSwitch.addOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    mImbalanceWatcher.afterTextChanged(null);
+                    imbalanceWatcher.afterTextChanged(null);
                 }
             });
-            splitAmountEditText.addTextChangedListener(mImbalanceWatcher);
+            splitAmountEditText.addTextChangedListener(imbalanceWatcher);
         }
 
         @Override
-        public void transferComplete(Money value, Money amount) {
-            mCurrencyConversionDone = true;
+        public void transferComplete(@NonNull Money value, @NonNull Money amount) {
+            currencyConversionDone = true;
             quantity = amount;
 
             //The transfer dialog was called while attempting to save. So try saving again
@@ -366,7 +357,7 @@ public class SplitEditorFragment extends MenuFragment {
                     setSelectedTransferAccount(transferUID, accountsSpinner);
                     splitTypeSwitch.setAccountType(accountTransfer.getAccountType());
                 }
-                splitTypeSwitch.setChecked(mBaseAmount.signum() > 0);
+                splitTypeSwitch.setChecked(baseAmount.signum() > 0);
             }
         }
     }
@@ -405,7 +396,7 @@ public class SplitEditorFragment extends MenuFragment {
             return;
         }
 
-        if (isMultiCurrencyTransaction() && !mCurrencyConversionDone) {
+        if (isMultiCurrencyTransaction() && !currencyConversionDone) {
             onSaveAttempt = true;
             if (startTransferFunds()) {
                 return;
@@ -494,7 +485,7 @@ public class SplitEditorFragment extends MenuFragment {
 
             Account account = SplitEditorFragment.this.account;
             Commodity commodity = account.getCommodity();
-            displayBalance(mBinding.imbalanceTextview, new Money(imbalance, commodity), colorBalanceZero);
+            displayBalance(binding.imbalanceTextview, new Money(imbalance, commodity), colorBalanceZero);
         }
     }
 
@@ -527,7 +518,7 @@ public class SplitEditorFragment extends MenuFragment {
             mTypeToggleButton.setAccountType(accountType);
 
             //refresh the imbalance amount if we change the account
-            mImbalanceWatcher.afterTextChanged(null);
+            imbalanceWatcher.afterTextChanged(null);
 
             Commodity fromCommodity = accountFrom.getCommodity();
             Commodity targetCommodity = accountTo.getCommodity();

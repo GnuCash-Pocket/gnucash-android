@@ -74,27 +74,27 @@ public class BudgetListFragment extends Fragment implements Refreshable,
     private static final int REQUEST_EDIT_BUDGET = 0xB;
     private static final int REQUEST_OPEN_ACCOUNT = 0xC;
 
-    private BudgetRecyclerAdapter mBudgetRecyclerAdapter;
+    private BudgetRecyclerAdapter budgetRecyclerAdapter;
 
-    private BudgetsDbAdapter mBudgetsDbAdapter;
+    private BudgetsDbAdapter budgetsDbAdapter;
 
-    private FragmentBudgetListBinding mBinding;
+    private FragmentBudgetListBinding binding;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mBinding = FragmentBudgetListBinding.inflate(inflater, container, false);
-        View view = mBinding.getRoot();
+        binding = FragmentBudgetListBinding.inflate(inflater, container, false);
+        View view = binding.getRoot();
 
-        mBinding.list.setHasFixedSize(true);
-        mBinding.list.setEmptyView(mBinding.emptyView);
+        binding.list.setHasFixedSize(true);
+        binding.list.setEmptyView(binding.emptyView);
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
-            mBinding.list.setLayoutManager(gridLayoutManager);
+            binding.list.setLayoutManager(gridLayoutManager);
         } else {
             LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-            mBinding.list.setLayoutManager(mLayoutManager);
+            binding.list.setLayoutManager(mLayoutManager);
         }
         return view;
     }
@@ -103,10 +103,10 @@ public class BudgetListFragment extends Fragment implements Refreshable,
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mBudgetsDbAdapter = BudgetsDbAdapter.getInstance();
-        mBudgetRecyclerAdapter = new BudgetRecyclerAdapter(null);
+        budgetsDbAdapter = BudgetsDbAdapter.getInstance();
+        budgetRecyclerAdapter = new BudgetRecyclerAdapter(null);
 
-        mBinding.list.setAdapter(mBudgetRecyclerAdapter);
+        binding.list.setAdapter(budgetRecyclerAdapter);
 
         getLoaderManager().initLoader(0, null, this);
     }
@@ -121,13 +121,13 @@ public class BudgetListFragment extends Fragment implements Refreshable,
     @Override
     public void onLoadFinished(@NonNull Loader<Cursor> loaderCursor, Cursor cursor) {
         Timber.d("Budget loader finished. Swapping in cursor");
-        mBudgetRecyclerAdapter.changeCursor(cursor);
+        budgetRecyclerAdapter.changeCursor(cursor);
     }
 
     @Override
     public void onLoaderReset(@NonNull Loader<Cursor> arg0) {
         Timber.d("Resetting the accounts loader");
-        mBudgetRecyclerAdapter.changeCursor(null);
+        budgetRecyclerAdapter.changeCursor(null);
     }
 
     @Override
@@ -208,7 +208,7 @@ public class BudgetListFragment extends Fragment implements Refreshable,
         @Override
         public void onBindViewHolderCursor(BudgetViewHolder holder, Cursor cursor) {
             Context context = holder.itemView.getContext();
-            final Budget budget = mBudgetsDbAdapter.buildModelInstance(cursor);
+            final Budget budget = budgetsDbAdapter.buildModelInstance(cursor);
             holder.bind(budget);
         }
 

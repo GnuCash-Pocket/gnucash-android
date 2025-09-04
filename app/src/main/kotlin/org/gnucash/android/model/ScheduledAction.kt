@@ -24,7 +24,6 @@ import org.gnucash.android.util.lastDayOfMonth
 import org.gnucash.android.util.lastDayOfWeek
 import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
-import java.sql.Timestamp
 import java.util.Calendar
 import java.util.Locale
 
@@ -432,7 +431,7 @@ class ScheduledAction    //all actions are enabled by default
     }
 
     override fun toString(): String {
-        return actionType.name + " - " + getRepeatString(GnuCashApplication.getAppContext())
+        return actionType.name + " - " + getRepeatString(GnuCashApplication.appContext)
     }
 
     companion object {

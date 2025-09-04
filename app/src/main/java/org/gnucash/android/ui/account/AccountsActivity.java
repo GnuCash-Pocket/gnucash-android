@@ -112,31 +112,31 @@ public class AccountsActivity extends BaseDrawerActivity implements
      * Configuration for rating the app
      */
     public static RateThisApp.Config rateAppConfig = new RateThisApp.Config(14, 100);
-    private AccountViewPagerAdapter mPagerAdapter;
+    private AccountViewPagerAdapter pagerAdapter;
 
-    private ActivityAccountsBinding mBinding;
+    private ActivityAccountsBinding binding;
 
     /**
      * Search view for searching accounts
      */
-    private SearchView mSearchView;
+    private SearchView searchView;
     /**
      * Filter for which accounts should be displayed. Used by search interface
      */
-    private String mCurrentFilter;
+    private String currentFilter;
     private boolean isShowHiddenAccounts = false;
 
     @SuppressLint("NotifyDataSetChanged")
     @Override
     public void refresh() {
-        final int count = mPagerAdapter.getItemCount();
+        final int count = pagerAdapter.getItemCount();
         for (int i = 0; i < count; i++) {
-            Fragment fragment = mPagerAdapter.getFragment(i);
+            Fragment fragment = pagerAdapter.getFragment(i);
             if (fragment instanceof Refreshable) {
                 ((Refreshable) fragment).refresh();
             }
         }
-        mPagerAdapter.notifyDataSetChanged();
+        pagerAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -180,12 +180,12 @@ public class AccountsActivity extends BaseDrawerActivity implements
 
     @Override
     public void inflateView() {
-        mBinding = ActivityAccountsBinding.inflate(getLayoutInflater());
-        setContentView(mBinding.getRoot());
-        mDrawerLayout = mBinding.drawerLayout;
-        mNavigationView = mBinding.navView;
-        mToolbar = mBinding.toolbarLayout.toolbar;
-        mToolbarProgress = mBinding.toolbarLayout.toolbarProgress.progress;
+        binding = ActivityAccountsBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        drawerLayout = binding.drawerLayout;
+        navigationView = binding.navView;
+        toolbar = binding.toolbarLayout.toolbar;
+        toolbarProgress = binding.toolbarLayout.toolbarProgress.progress;
     }
 
     @Override
@@ -202,17 +202,17 @@ public class AccountsActivity extends BaseDrawerActivity implements
 
         init();
 
-        TabLayout tabLayout = mBinding.tabLayout;
+        TabLayout tabLayout = binding.tabLayout;
         for (int i = 0; i < AccountViewPagerAdapter.DEFAULT_NUM_PAGES; i++) {
             tabLayout.addTab(tabLayout.newTab());
         }
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
         //show the simple accounts list
-        mPagerAdapter = new AccountViewPagerAdapter(this);
-        mBinding.pager.setAdapter(mPagerAdapter);
+        pagerAdapter = new AccountViewPagerAdapter(this);
+        binding.pager.setAdapter(pagerAdapter);
 
-        TabLayoutMediator tabLayoutMediator = new TabLayoutMediator(tabLayout, mBinding.pager, new TabLayoutMediator.TabConfigurationStrategy() {
+        TabLayoutMediator tabLayoutMediator = new TabLayoutMediator(tabLayout, binding.pager, new TabLayoutMediator.TabConfigurationStrategy() {
 
             @Override
             public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
@@ -233,7 +233,7 @@ public class AccountsActivity extends BaseDrawerActivity implements
 
         setCurrentTab();
 
-        mBinding.fabCreateAccount.setOnClickListener(new View.OnClickListener() {
+        binding.fabCreateAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent addAccountIntent = new Intent(AccountsActivity.this, FormActivity.class);
@@ -289,7 +289,7 @@ public class AccountsActivity extends BaseDrawerActivity implements
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         int lastTabIndex = preferences.getInt(LAST_OPEN_TAB_INDEX, INDEX_TOP_LEVEL_ACCOUNTS_FRAGMENT);
         int index = getIntent().getIntExtra(EXTRA_TAB_INDEX, lastTabIndex);
-        mBinding.pager.setCurrentItem(index);
+        binding.pager.setCurrentItem(index);
     }
 
     /**
@@ -316,7 +316,7 @@ public class AccountsActivity extends BaseDrawerActivity implements
     protected void onDestroy() {
         super.onDestroy();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        preferences.edit().putInt(LAST_OPEN_TAB_INDEX, mBinding.pager.getCurrentItem()).apply();
+        preferences.edit().putInt(LAST_OPEN_TAB_INDEX, binding.pager.getCurrentItem()).apply();
     }
 
     /**
@@ -333,7 +333,7 @@ public class AccountsActivity extends BaseDrawerActivity implements
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.account_actions, menu);
         // Associate searchable configuration with the SearchView
-        SearchView searchView = mSearchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
+        SearchView searchView = this.searchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
         if (searchView != null) {
             Activity activity = this;
             SearchManager searchManager = (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
@@ -514,8 +514,8 @@ public class AccountsActivity extends BaseDrawerActivity implements
 
     @Override
     public boolean onClose() {
-        if (!TextUtils.isEmpty(mSearchView.getQuery())) {
-            mSearchView.setQuery(null, true);
+        if (!TextUtils.isEmpty(searchView.getQuery())) {
+            searchView.setQuery(null, true);
         }
         return true;
     }
@@ -523,7 +523,7 @@ public class AccountsActivity extends BaseDrawerActivity implements
     @Override
     public boolean onQueryTextChange(String newText) {
         String newFilter = !TextUtils.isEmpty(newText) ? newText : null;
-        String oldFilter = mCurrentFilter;
+        String oldFilter = currentFilter;
         if (oldFilter == null && newFilter == null) {
             return true;
         }
@@ -541,11 +541,11 @@ public class AccountsActivity extends BaseDrawerActivity implements
     }
 
     private void setSearchFilter(String filter) {
-        mCurrentFilter = filter;
+        currentFilter = filter;
         // apply to each page
-        final int count = mPagerAdapter.getItemCount();
+        final int count = pagerAdapter.getItemCount();
         for (int i = 0; i < count; i++) {
-            AccountsListFragment fragment = (AccountsListFragment) mPagerAdapter.getFragment(i);
+            AccountsListFragment fragment = (AccountsListFragment) pagerAdapter.getFragment(i);
             if (fragment != null) {
                 fragment.onQueryTextChange(filter);
             }
@@ -562,9 +562,9 @@ public class AccountsActivity extends BaseDrawerActivity implements
         item.setIcon(visibilityIcon);
         isShowHiddenAccounts = isVisible;
         // apply to each page
-        final int count = mPagerAdapter.getItemCount();
+        final int count = pagerAdapter.getItemCount();
         for (int i = 0; i < count; i++) {
-            AccountsListFragment fragment = (AccountsListFragment) mPagerAdapter.getFragment(i);
+            AccountsListFragment fragment = (AccountsListFragment) pagerAdapter.getFragment(i);
             if (fragment != null) {
                 fragment.setShowHiddenAccounts(isShowHiddenAccounts);
             }

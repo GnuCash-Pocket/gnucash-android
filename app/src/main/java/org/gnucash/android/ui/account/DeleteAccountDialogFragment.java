@@ -71,12 +71,12 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
     /**
      * GUID of account from which to move the transactions
      */
-    private String mOriginAccountUID = null;
+    private String originAccountUID = null;
 
     private DialogAccountDeleteBinding binding;
 
-    private int mTransactionCount;
-    private int mSubAccountCount;
+    private long transactionCount;
+    private long subAccountCount;
     private final AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
     private final TransactionsDbAdapter transactionsDbAdapter = accountsDbAdapter.transactionsDbAdapter;
     private final SplitsDbAdapter splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter;
@@ -102,9 +102,9 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
         super.onCreate(savedInstanceState);
         String accountUID = getArguments().getString(UxArgument.SELECTED_ACCOUNT_UID);
         assert accountUID != null;
-        mOriginAccountUID = accountUID;
-        mSubAccountCount = accountsDbAdapter.getSubAccountCount(accountUID);
-        mTransactionCount = transactionsDbAdapter.getTransactionsCount(accountUID);
+        originAccountUID = accountUID;
+        subAccountCount = accountsDbAdapter.getSubAccountCount(accountUID);
+        transactionCount = transactionsDbAdapter.getTransactionsCount(accountUID);
     }
 
     @NonNull
@@ -117,7 +117,7 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final String accountUID = mOriginAccountUID;
+        final String accountUID = originAccountUID;
         Account account = accountsDbAdapter.getSimpleRecord(accountUID);
         assert account != null;
 
@@ -143,7 +143,7 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        final String accountUID = mOriginAccountUID;
+        final String accountUID = originAccountUID;
         final DialogAccountDeleteBinding binding = this.binding;
         final Context context = view.getContext();
 
@@ -161,7 +161,7 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
         accountOptions.radioMove.setChecked(false);
         accountOptions.radioMove.setEnabled(false);
         accountOptions.targetAccountsSpinner.setVisibility(View.GONE);
-        accountOptions.getRoot().setVisibility(mSubAccountCount > 0 ? View.VISIBLE : View.GONE);
+        accountOptions.getRoot().setVisibility(subAccountCount > 0 ? View.VISIBLE : View.GONE);
 
         final RadioGroupDeleteOrMoveBinding transactionOptions = binding.transactionsOptions;
         transactionOptions.titleContent.setText(R.string.section_header_transactions);
@@ -177,7 +177,7 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
         transactionOptions.radioMove.setChecked(false);
         transactionOptions.radioMove.setEnabled(false);
         transactionOptions.targetAccountsSpinner.setVisibility(View.GONE);
-        transactionOptions.getRoot().setVisibility(mTransactionCount > 0 ? View.VISIBLE : View.GONE);
+        transactionOptions.getRoot().setVisibility(transactionCount > 0 ? View.VISIBLE : View.GONE);
 
         Account account = accountsDbAdapter.getSimpleRecord(accountUID);
         Commodity commodity = account.getCommodity();
@@ -234,7 +234,7 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
     }
 
     private void maybeDelete() {
-        final String accountUID = mOriginAccountUID;
+        final String accountUID = originAccountUID;
         final DialogAccountDeleteBinding binding = this.binding;
 
         final RadioGroupDeleteOrMoveBinding accountOptions = binding.accountsOptions;
@@ -268,7 +268,7 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
         if (TextUtils.isEmpty(accountUID)) {
             return;
         }
-        if ((mSubAccountCount > 0) && (moveAccountsAccountIndex >= 0)) {
+        if ((subAccountCount > 0) && (moveAccountsAccountIndex >= 0)) {
             String targetAccountUID = accountNameAdapterAccountsDestination.getUID(moveAccountsAccountIndex);
             if (TextUtils.isEmpty(targetAccountUID)) {
                 return;
@@ -276,7 +276,7 @@ public class DeleteAccountDialogFragment extends DoubleConfirmationDialog {
             accountsDbAdapter.reassignDescendantAccounts(accountUID, targetAccountUID);
         }
 
-        if ((mTransactionCount > 0) && (moveTransactionsAccountIndex >= 0)) {
+        if ((transactionCount > 0) && (moveTransactionsAccountIndex >= 0)) {
             String targetAccountUID = accountNameAdapterTransactionsDestination.getUID(moveTransactionsAccountIndex);
             if (TextUtils.isEmpty(targetAccountUID)) {
                 return;

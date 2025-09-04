@@ -1,7 +1,8 @@
 package org.gnucash.android.test.unit.db
 
+import android.text.TextUtils
 import org.assertj.core.api.Assertions.assertThat
-import org.gnucash.android.db.DatabaseHelper.sqlEscapeLike
+import org.gnucash.android.db.DatabaseHelper.Companion.sqlEscapeLike
 import org.gnucash.android.test.unit.GnuCashTest
 import org.junit.Test
 
@@ -56,5 +57,26 @@ class HelperTest : GnuCashTest() {
 
         // placeholder
         assertThat(sqlEscapeLike("?")).isEqualTo("'%?%'")
+    }
+
+    @Test
+    fun `join empty`() {
+        join(arrayOf<String>())
+    }
+
+    @Test
+    fun `join one`() {
+        join(arrayOf<String>("abc"))
+    }
+
+    @Test
+    fun `join two`() {
+        join(arrayOf<String>("abc", "def"))
+    }
+
+    private fun join(array: Array<String>) {
+        val joinOld = "('" + TextUtils.join("','", array) + "')"
+        val joinNew = array.joinToString("','", prefix = "('", postfix = "')")
+        assertThat(joinNew).isEqualTo(joinOld)
     }
 }

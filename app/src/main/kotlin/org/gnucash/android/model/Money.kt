@@ -456,8 +456,7 @@ class Money(
             commodity,
             factor.commodity
         )
-        val amount = amount.multiply(factor.amount)
-        return Money(amount, commodity)
+        return Money(amount * factor.amount, commodity)
     }
 
     /**
@@ -468,7 +467,7 @@ class Money(
      * @return Money object whose value is the product of this objects values and `multiplier`
      */
     operator fun times(factor: BigDecimal): Money {
-        return Money(amount.multiply(factor), commodity)
+        return Money(amount * factor, commodity)
     }
 
     /**
@@ -493,7 +492,7 @@ class Money(
     }
 
     operator fun times(price: Price): Money {
-        return withCommodity(price.currency).times(price.toBigDecimal())
+        return withCommodity(price.currency) * price.toBigDecimal()
     }
 
     /**

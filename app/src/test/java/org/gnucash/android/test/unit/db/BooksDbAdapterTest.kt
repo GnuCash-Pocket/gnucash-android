@@ -36,7 +36,7 @@ class BooksDbAdapterTest : GnuCashTest() {
 
     @Before
     fun setUp() {
-        booksDbAdapter = BooksDbAdapter.getInstance()
+        booksDbAdapter = BooksDbAdapter.instance
         assertThat(booksDbAdapter.recordsCount).isOne() //there is always a default book after app start
         assertThat(booksDbAdapter.activeBookUID).isNotNull()
 
@@ -47,7 +47,7 @@ class BooksDbAdapterTest : GnuCashTest() {
     @Test
     fun addBook() {
         val book = Book(generateUID())
-        booksDbAdapter.addRecord(book, DatabaseAdapter.UpdateMethod.insert)
+        booksDbAdapter.insert(book)
 
         assertThat(booksDbAdapter.recordsCount).isOne()
         assertThat(booksDbAdapter.getRecord(book.uid).displayName).isEqualTo("Book 1")
@@ -112,7 +112,7 @@ class BooksDbAdapterTest : GnuCashTest() {
         val bookUID = createNewBookWithDefaultAccounts()
         val dbPath = context.getDatabasePath(bookUID)
         assertThat(dbPath).exists()
-        val booksDbAdapter = BooksDbAdapter.getInstance()
+        val booksDbAdapter = BooksDbAdapter.instance
         assertThat(booksDbAdapter.getRecord(bookUID)).isNotNull()
 
         val booksCount = booksDbAdapter.recordsCount

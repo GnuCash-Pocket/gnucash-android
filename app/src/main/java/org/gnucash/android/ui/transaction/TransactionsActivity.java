@@ -100,14 +100,14 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     /**
      * Account database adapter for manipulating the accounts list in navigation
      */
-    private final AccountsDbAdapter mAccountsDbAdapter = AccountsDbAdapter.getInstance();
+    private final AccountsDbAdapter accountsDbAdapter = AccountsDbAdapter.getInstance();
     private final TransactionsDbAdapter transactionsDbAdapter = TransactionsDbAdapter.getInstance();
     private QualifiedAccountNameAdapter accountNameAdapter;
 
-    private final SparseArray<Refreshable> mFragmentPageReferenceMap = new SparseArray<>();
+    private final SparseArray<Refreshable> fragmentPageReferenceMap = new SparseArray<>();
     private boolean isShowHiddenAccounts = false;
 
-    private ActivityTransactionsBinding mBinding;
+    private ActivityTransactionsBinding binding;
 
     private final AdapterView.OnItemSelectedListener accountSpinnerListener = new AdapterView.OnItemSelectedListener() {
 
@@ -149,7 +149,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         public Fragment getItem(int position) {
             if (account != null && account.isPlaceholder()) {
                 Fragment transactionsListFragment = prepareSubAccountsListFragment();
-                mFragmentPageReferenceMap.put(position, (Refreshable) transactionsListFragment);
+                fragmentPageReferenceMap.put(position, (Refreshable) transactionsListFragment);
                 return transactionsListFragment;
             }
 
@@ -165,14 +165,14 @@ public class TransactionsActivity extends BaseDrawerActivity implements
                     break;
             }
 
-            mFragmentPageReferenceMap.put(position, (Refreshable) currentFragment);
+            fragmentPageReferenceMap.put(position, (Refreshable) currentFragment);
             return currentFragment;
         }
 
         @Override
         public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
             super.destroyItem(container, position, object);
-            mFragmentPageReferenceMap.remove(position);
+            fragmentPageReferenceMap.remove(position);
         }
 
         @Override
@@ -234,11 +234,11 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      */
     @Override
     public void refresh(final String accountUID) {
-        final ActivityTransactionsBinding binding = mBinding;
+        final ActivityTransactionsBinding binding = this.binding;
         setTitleIndicatorColor(binding, accountUID);
 
-        for (int i = 0; i < mFragmentPageReferenceMap.size(); i++) {
-            mFragmentPageReferenceMap.valueAt(i).refresh(accountUID);
+        for (int i = 0; i < fragmentPageReferenceMap.size(); i++) {
+            fragmentPageReferenceMap.valueAt(i).refresh(accountUID);
         }
 
         if (mPagerAdapter != null) {
@@ -256,12 +256,12 @@ public class TransactionsActivity extends BaseDrawerActivity implements
 
     @Override
     public void inflateView() {
-        final ActivityTransactionsBinding binding = mBinding = ActivityTransactionsBinding.inflate(getLayoutInflater());
+        final ActivityTransactionsBinding binding = this.binding = ActivityTransactionsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        mDrawerLayout = binding.drawerLayout;
-        mNavigationView = binding.navView;
-        mToolbar = binding.toolbarLayout.toolbar;
-        mToolbarProgress = binding.toolbarLayout.toolbarProgress.progress;
+        drawerLayout = binding.drawerLayout;
+        navigationView = binding.navView;
+        toolbar = binding.toolbarLayout.toolbar;
+        toolbarProgress = binding.toolbarLayout.toolbarProgress.progress;
     }
 
     @Override
@@ -280,12 +280,12 @@ public class TransactionsActivity extends BaseDrawerActivity implements
 
         isShowHiddenAccounts = getIntent().getBooleanExtra(UxArgument.SHOW_HIDDEN, isShowHiddenAccounts);
 
-        final ActivityTransactionsBinding binding = mBinding;
+        final ActivityTransactionsBinding binding = this.binding;
         String accountUID = getIntent().getStringExtra(UxArgument.SELECTED_ACCOUNT_UID);
         if (TextUtils.isEmpty(accountUID)) {
-            accountUID = mAccountsDbAdapter.getOrCreateRootAccountUID();
+            accountUID = accountsDbAdapter.getRootAccountUID();
         }
-        account = mAccountsDbAdapter.getSimpleRecord(accountUID);
+        account = accountsDbAdapter.getSimpleRecord(accountUID);
         if (account == null) {
             Timber.e("Account not found");
             finish();
@@ -339,9 +339,9 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         List<Fragment> fragments = getSupportFragmentManager().getFragments();
         for (Fragment fragment : fragments) {
             if (fragment instanceof AccountsListFragment) {
-                mFragmentPageReferenceMap.put(INDEX_SUB_ACCOUNTS_FRAGMENT, (AccountsListFragment) fragment);
+                fragmentPageReferenceMap.put(INDEX_SUB_ACCOUNTS_FRAGMENT, (AccountsListFragment) fragment);
             } else if (fragment instanceof TransactionsListFragment) {
-                mFragmentPageReferenceMap.put(INDEX_TRANSACTIONS_FRAGMENT, (TransactionsListFragment) fragment);
+                fragmentPageReferenceMap.put(INDEX_TRANSACTIONS_FRAGMENT, (TransactionsListFragment) fragment);
             }
         }
     }
@@ -360,7 +360,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         if (account == null) return;
         @ColorInt int accountColor = account.getColor();
         if (accountColor == Account.DEFAULT_COLOR) {
-            accountColor = mAccountsDbAdapter.getActiveAccountColor(this, account.getUID());
+            accountColor = accountsDbAdapter.getActiveAccountColor(this, account.getUID());
         }
         setTitlesColor(accountColor);
         binding.tabLayout.setBackgroundColor(accountColor);
@@ -372,7 +372,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     private void setupActionBarNavigation(ActivityTransactionsBinding binding, final String accountUID) {
         if (accountNameAdapter == null) {
             final Context contextWithTheme = binding.toolbarLayout.toolbarSpinner.getContext();
-            accountNameAdapter = new QualifiedAccountNameAdapter(contextWithTheme, mAccountsDbAdapter, this);
+            accountNameAdapter = new QualifiedAccountNameAdapter(contextWithTheme, accountsDbAdapter, this);
             accountNameAdapter.load(new Function0<Unit>() {
                 @Override
                 public Unit invoke() {
@@ -521,7 +521,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     }
 
     private void toggleFavorite(Account account) {
-        AccountsDbAdapter accountsDbAdapter = mAccountsDbAdapter;
+        AccountsDbAdapter accountsDbAdapter = this.accountsDbAdapter;
         long accountId = account.id;
         boolean isFavorite = !account.isFavorite();
         //toggle favorite preference
@@ -546,12 +546,12 @@ public class TransactionsActivity extends BaseDrawerActivity implements
      * @param accountUID The UID of the account
      */
     private void deleteAccount(final String accountUID) {
-        if (mAccountsDbAdapter.getTransactionCount(accountUID) > 0 || mAccountsDbAdapter.getSubAccountCount(accountUID) > 0) {
+        if (accountsDbAdapter.getTransactionCount(accountUID) > 0 || accountsDbAdapter.getSubAccountCount(accountUID) > 0) {
             showConfirmationDialog(accountUID);
         } else {
             BackupManager.backupActiveBookAsync(this, result -> {
                 // Avoid calling AccountsDbAdapter.deleteRecord(long). See #654
-                if (mAccountsDbAdapter.deleteRecord(accountUID)) {
+                if (accountsDbAdapter.deleteRecord(accountUID)) {
                     finish();
                 }
                 return null;
@@ -582,9 +582,9 @@ public class TransactionsActivity extends BaseDrawerActivity implements
         item.setIcon(visibilityIcon);
         isShowHiddenAccounts = isVisible;
         // apply to each page
-        final int count = mFragmentPageReferenceMap.size();
+        final int count = fragmentPageReferenceMap.size();
         for (int i = 0; i < count; i++) {
-            Refreshable refreshable = mFragmentPageReferenceMap.valueAt(i);
+            Refreshable refreshable = fragmentPageReferenceMap.valueAt(i);
             if (refreshable instanceof AccountsListFragment) {
                 AccountsListFragment fragment = (AccountsListFragment) refreshable;
                 fragment.setShowHiddenAccounts(isVisible);
@@ -597,7 +597,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
     }
 
     private void swapAccount(@Nullable Account account) {
-        final ActivityTransactionsBinding binding = mBinding;
+        final ActivityTransactionsBinding binding = this.binding;
         if (account != null) {
             this.account = account;
             String accountUID = account.getUID();
@@ -617,7 +617,7 @@ public class TransactionsActivity extends BaseDrawerActivity implements
             //if there are no transactions, and there are sub-accounts, show the sub-accounts
             long txCount = transactionsDbAdapter.getTransactionsCount(accountUID);
             if (txCount == 0) {
-                long subCount = mAccountsDbAdapter.getSubAccountCount(accountUID);
+                long subCount = accountsDbAdapter.getSubAccountCount(accountUID);
                 if ((subCount > 0) || (binding.tabLayout.getTabCount() < 2)) {
                     binding.pager.setCurrentItem(INDEX_SUB_ACCOUNTS_FRAGMENT);
                 } else {

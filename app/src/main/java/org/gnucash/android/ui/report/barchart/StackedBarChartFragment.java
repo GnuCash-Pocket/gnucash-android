@@ -72,14 +72,14 @@ public class StackedBarChartFragment extends IntervalReportFragment {
     private static final int ANIMATION_DURATION = (int) DateUtils.SECOND_IN_MILLIS;
     private static final int NO_DATA_BAR_COUNTS = 3;
 
-    private boolean mTotalPercentageMode = true;
+    private boolean totalPercentageMode = true;
 
-    private FragmentBarChartBinding mBinding;
+    private FragmentBarChartBinding binding;
 
     @Override
     public View inflateView(LayoutInflater inflater, ViewGroup container) {
-        mBinding = FragmentBarChartBinding.inflate(inflater, container, false);
-        return mBinding.getRoot();
+        binding = FragmentBarChartBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
@@ -94,15 +94,15 @@ public class StackedBarChartFragment extends IntervalReportFragment {
 
         @ColorInt int textColorPrimary = getTextColor(context);
 
-        mBinding.barChart.setOnChartValueSelectedListener(this);
-        mBinding.barChart.getXAxis().setDrawGridLines(false);
-        mBinding.barChart.getXAxis().setTextColor(textColorPrimary);
-        mBinding.barChart.getAxisRight().setEnabled(false);
-        mBinding.barChart.getAxisLeft().setStartAtZero(false);
-        mBinding.barChart.getAxisLeft().enableGridDashedLine(4.0f, 4.0f, 0);
-        mBinding.barChart.getAxisLeft().setValueFormatter(new LargeValueFormatter(mCommodity.getSymbol()));
-        mBinding.barChart.getAxisLeft().setTextColor(textColorPrimary);
-        Legend legend = mBinding.barChart.getLegend();
+        binding.barChart.setOnChartValueSelectedListener(this);
+        binding.barChart.getXAxis().setDrawGridLines(false);
+        binding.barChart.getXAxis().setTextColor(textColorPrimary);
+        binding.barChart.getAxisRight().setEnabled(false);
+        binding.barChart.getAxisLeft().setStartAtZero(false);
+        binding.barChart.getAxisLeft().enableGridDashedLine(4.0f, 4.0f, 0);
+        binding.barChart.getAxisLeft().setValueFormatter(new LargeValueFormatter(commodity.getSymbol()));
+        binding.barChart.getAxisLeft().setTextColor(textColorPrimary);
+        Legend legend = binding.barChart.getLegend();
         legend.setTextColor(textColorPrimary);
         legend.setWordWrapEnabled(true);
     }
@@ -118,11 +118,11 @@ public class StackedBarChartFragment extends IntervalReportFragment {
         List<String> stackLabels = new ArrayList<>();
         List<Integer> colors = new ArrayList<>();
         Map<String, Integer> accountToColorMap = new LinkedHashMap<>();
-        ReportsActivity.GroupInterval groupInterval = mGroupInterval;
-        AccountType accountType = mAccountType;
+        ReportsActivity.GroupInterval groupInterval = this.groupInterval;
+        AccountType accountType = this.accountType;
 
         calculateEarliestAndLatestTimestamps(accountTypes);
-        LocalDateTime startDate = mReportPeriodStart;
+        LocalDateTime startDate = reportPeriodStart;
         if (startDate == null) {
             Long startTime = earliestTimestamps.get(accountType);
             if (startTime != null) {
@@ -132,7 +132,7 @@ public class StackedBarChartFragment extends IntervalReportFragment {
                 return getEmptyData(context);
             }
         }
-        LocalDateTime endDate = mReportPeriodEnd;
+        LocalDateTime endDate = reportPeriodEnd;
         if (endDate == null) {
             Long endTime = latestTimestamps.get(accountType);
             if (endTime != null) {
@@ -163,20 +163,20 @@ public class StackedBarChartFragment extends IntervalReportFragment {
             + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
         final String[] whereArgs = new String[]{accountType.name()};
         final String orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC";
-        List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, whereArgs, orderBy);
+        List<Account> accounts = accountsDbAdapter.getSimpleAccounts(where, whereArgs, orderBy);
 
         for (int i = 0; i < count; i++) {
             long startTime = DateExtKt.toMillis(startPeriod);
             long endTime = DateExtKt.toMillis(endPeriod);
             List<Float> stack = new ArrayList<>();
             List<String> labels = new ArrayList<>();
-            Map<String, Money> balances = mAccountsDbAdapter.getAccountsBalances(accounts, startTime, endTime);
+            Map<String, Money> balances = accountsDbAdapter.getAccountsBalances(accounts, startTime, endTime);
 
             for (Account account : accounts) {
                 Money balance = balances.get(account.getUID());
                 if ((balance == null) || balance.isAmountZero()) continue;
                 Timber.d("%s %s [%s] %s - %s %s", accountType, groupInterval, account, startPeriod, endPeriod, balance);
-                Price price = pricesDbAdapter.getPrice(balance.getCommodity(), mCommodity);
+                Price price = pricesDbAdapter.getPrice(balance.getCommodity(), commodity);
                 if (price == null) continue;
                 balance = balance.times(price);
                 float value = balance.toFloat();
@@ -268,24 +268,24 @@ public class StackedBarChartFragment extends IntervalReportFragment {
 
     @Override
     public void generateReport(@NonNull Context context) {
-        mBinding.barChart.setData(getData(context));
-        mBinding.barChart.getAxisLeft().setDrawLabels(isChartDataPresent);
-        mBinding.barChart.getXAxis().setDrawLabels(isChartDataPresent);
-        mBinding.barChart.setTouchEnabled(isChartDataPresent);
+        binding.barChart.setData(getData(context));
+        binding.barChart.getAxisLeft().setDrawLabels(isChartDataPresent);
+        binding.barChart.getXAxis().setDrawLabels(isChartDataPresent);
+        binding.barChart.setTouchEnabled(isChartDataPresent);
     }
 
     @Override
     protected void displayReport() {
-        mBinding.barChart.notifyDataSetChanged();
-        mBinding.barChart.highlightValues(null);
+        binding.barChart.notifyDataSetChanged();
+        binding.barChart.highlightValues(null);
         if (isChartDataPresent) {
-            mBinding.barChart.animateY(ANIMATION_DURATION);
+            binding.barChart.animateY(ANIMATION_DURATION);
         } else {
-            mBinding.barChart.clearAnimation();
-            mSelectedValueTextView.setText(R.string.label_chart_no_data);
+            binding.barChart.clearAnimation();
+            selectedValueTextView.setText(R.string.label_chart_no_data);
         }
 
-        mBinding.barChart.invalidate();
+        binding.barChart.invalidate();
     }
 
     @Override
@@ -304,23 +304,23 @@ public class StackedBarChartFragment extends IntervalReportFragment {
         if (item.isCheckable()) {
             item.setChecked(!item.isChecked());
         }
-        final Context context = mBinding.barChart.getContext();
+        final Context context = binding.barChart.getContext();
         switch (item.getItemId()) {
             case R.id.menu_toggle_legend:
-                Legend legend = mBinding.barChart.getLegend();
+                Legend legend = binding.barChart.getLegend();
                 if (!legend.isLegendCustom()) {
                     Toast.makeText(context, R.string.toast_legend_too_long, Toast.LENGTH_LONG).show();
                     item.setChecked(false);
                 } else {
-                    item.setChecked(!mBinding.barChart.getLegend().isEnabled());
-                    legend.setEnabled(!mBinding.barChart.getLegend().isEnabled());
-                    mBinding.barChart.invalidate();
+                    item.setChecked(!binding.barChart.getLegend().isEnabled());
+                    legend.setEnabled(!binding.barChart.getLegend().isEnabled());
+                    binding.barChart.invalidate();
                 }
                 return true;
 
             case R.id.menu_percentage_mode:
-                mTotalPercentageMode = !mTotalPercentageMode;
-                @StringRes int msgId = mTotalPercentageMode ? R.string.toast_chart_percentage_mode_total
+                totalPercentageMode = !totalPercentageMode;
+                @StringRes int msgId = totalPercentageMode ? R.string.toast_chart_percentage_mode_total
                     : R.string.toast_chart_percentage_mode_current_bar;
                 Toast.makeText(context, msgId, Toast.LENGTH_LONG).show();
                 return true;
@@ -344,8 +344,8 @@ public class StackedBarChartFragment extends IntervalReportFragment {
         String label = labels.get(index);
 
         final float total;
-        if (mTotalPercentageMode) {
-            BarData data = mBinding.barChart.getData();
+        if (totalPercentageMode) {
+            BarData data = binding.barChart.getData();
             int dataSetIndex = h.getDataSetIndex();
             IBarDataSet dataSet = data.getDataSetByIndex(dataSetIndex);
             total = getYValueSum(dataSet);
@@ -353,6 +353,6 @@ public class StackedBarChartFragment extends IntervalReportFragment {
             total = entry.getNegativeSum() + entry.getPositiveSum();
         }
         final float percentage = (total != 0f) ? ((value * 100) / total) : 0f;
-        mSelectedValueTextView.setText(formatSelectedValue(label, value, percentage));
+        selectedValueTextView.setText(formatSelectedValue(label, value, percentage));
     }
 }

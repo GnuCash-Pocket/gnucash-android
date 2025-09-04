@@ -30,7 +30,7 @@ class Split : BaseModel, Parcelable {
     /**
      * Transaction UID which this split belongs to
      */
-    var transactionUID: String? = ""
+    var transactionUID: String? = null
 
     /**
      * Account UID which this split belongs to
@@ -378,7 +378,7 @@ class Split : BaseModel, Parcelable {
             splitType: TransactionType
         ): Money {
             val accountUID = accountGUID ?: return Money.createZeroInstance(amount.commodity)
-            val account = AccountsDbAdapter.getInstance().getSimpleRecord(accountUID)
+            val account = AccountsDbAdapter.instance.getSimpleRecord(accountUID)
                 ?: return Money.createZeroInstance(amount.commodity)
             return getFormattedAmount(amount, account, splitType)
         }

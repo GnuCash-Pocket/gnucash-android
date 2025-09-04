@@ -54,21 +54,21 @@ import java.util.List;
  */
 public class BalanceSheetFragment extends BaseReportFragment {
 
-    private Money mAssetsBalance;
-    private Money mLiabilitiesBalance;
-    private final List<AccountType> mAssetAccountTypes = new ArrayList<>();
-    private final List<AccountType> mLiabilityAccountTypes = new ArrayList<>();
-    private final List<AccountType> mEquityAccountTypes = new ArrayList<>();
+    private Money assetsBalance;
+    private Money liabilitiesBalance;
+    private final List<AccountType> assetAccountTypes = new ArrayList<>();
+    private final List<AccountType> liabilityAccountTypes = new ArrayList<>();
+    private final List<AccountType> equityAccountTypes = new ArrayList<>();
 
-    private FragmentTextReportBinding mBinding;
+    private FragmentTextReportBinding binding;
     @ColorInt
     private int colorBalanceZero;
 
     @Override
     public View inflateView(LayoutInflater inflater, ViewGroup container) {
-        mBinding = FragmentTextReportBinding.inflate(inflater, container, false);
-        colorBalanceZero = mBinding.totalLiabilityAndEquity.getCurrentTextColor();
-        return mBinding.getRoot();
+        binding = FragmentTextReportBinding.inflate(inflater, container, false);
+        colorBalanceZero = binding.totalLiabilityAndEquity.getCurrentTextColor();
+        return binding.getRoot();
     }
 
     @Override
@@ -80,17 +80,17 @@ public class BalanceSheetFragment extends BaseReportFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mAssetAccountTypes.clear();
-        mAssetAccountTypes.add(AccountType.ASSET);
-        mAssetAccountTypes.add(AccountType.CASH);
-        mAssetAccountTypes.add(AccountType.BANK);
+        assetAccountTypes.clear();
+        assetAccountTypes.add(AccountType.ASSET);
+        assetAccountTypes.add(AccountType.CASH);
+        assetAccountTypes.add(AccountType.BANK);
 
-        mLiabilityAccountTypes.clear();
-        mLiabilityAccountTypes.add(AccountType.LIABILITY);
-        mLiabilityAccountTypes.add(AccountType.CREDIT);
+        liabilityAccountTypes.clear();
+        liabilityAccountTypes.add(AccountType.LIABILITY);
+        liabilityAccountTypes.add(AccountType.CREDIT);
 
-        mEquityAccountTypes.clear();
-        mEquityAccountTypes.add(AccountType.EQUITY);
+        equityAccountTypes.clear();
+        equityAccountTypes.add(AccountType.EQUITY);
     }
 
     @Override
@@ -105,17 +105,17 @@ public class BalanceSheetFragment extends BaseReportFragment {
 
     @Override
     protected void generateReport(@NonNull Context context) {
-        mAssetsBalance = mAccountsDbAdapter.getCurrentAccountsBalance(mAssetAccountTypes, mCommodity);
-        mLiabilitiesBalance = mAccountsDbAdapter.getCurrentAccountsBalance(mLiabilityAccountTypes, mCommodity).unaryMinus();
+        assetsBalance = accountsDbAdapter.getCurrentAccountsBalance(assetAccountTypes, commodity);
+        liabilitiesBalance = accountsDbAdapter.getCurrentAccountsBalance(liabilityAccountTypes, commodity).unaryMinus();
     }
 
     @Override
     protected void displayReport() {
-        loadAccountViews(mAssetAccountTypes, mBinding.tableAssets);
-        loadAccountViews(mLiabilityAccountTypes, mBinding.tableLiabilities);
-        loadAccountViews(mEquityAccountTypes, mBinding.tableEquity);
+        loadAccountViews(assetAccountTypes, binding.tableAssets);
+        loadAccountViews(liabilityAccountTypes, binding.tableLiabilities);
+        loadAccountViews(equityAccountTypes, binding.tableEquity);
 
-        displayBalance(mBinding.totalLiabilityAndEquity, mAssetsBalance.plus(mLiabilitiesBalance), colorBalanceZero);
+        displayBalance(binding.totalLiabilityAndEquity, assetsBalance.plus(liabilitiesBalance), colorBalanceZero);
     }
 
     @Override
@@ -140,12 +140,12 @@ public class BalanceSheetFragment extends BaseReportFragment {
             + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
             + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
         String orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC";
-        List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, null, orderBy);
+        List<Account> accounts = accountsDbAdapter.getSimpleAccounts(where, null, orderBy);
         Money total = Money.createZeroInstance(Commodity.DEFAULT_COMMODITY);
         boolean isRowEven = true;
 
         for (Account account : accounts) {
-            Money balance = mAccountsDbAdapter.getAccountBalance(account.getUID());
+            Money balance = accountsDbAdapter.getAccountBalance(account.getUID());
             if (balance.isAmountZero()) continue;
             AccountType accountType = account.getAccountType();
             balance = (accountType.hasDebitNormalBalance) ? balance : balance.unaryMinus();

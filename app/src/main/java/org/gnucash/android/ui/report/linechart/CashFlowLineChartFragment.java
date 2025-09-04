@@ -79,12 +79,12 @@ public class CashFlowLineChartFragment extends IntervalReportFragment {
         parseColor("#0065FF"), parseColor("#8F038A"),
     };
 
-    private FragmentLineChartBinding mBinding;
+    private FragmentLineChartBinding binding;
 
     @Override
     public View inflateView(LayoutInflater inflater, ViewGroup container) {
-        mBinding = FragmentLineChartBinding.inflate(inflater, container, false);
-        return mBinding.getRoot();
+        binding = FragmentLineChartBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
@@ -94,14 +94,14 @@ public class CashFlowLineChartFragment extends IntervalReportFragment {
 
         @ColorInt int textColorPrimary = getTextColor(context);
 
-        mBinding.lineChart.setOnChartValueSelectedListener(this);
-        mBinding.lineChart.getXAxis().setDrawGridLines(false);
-        mBinding.lineChart.getXAxis().setTextColor(textColorPrimary);
-        mBinding.lineChart.getAxisRight().setEnabled(false);
-        mBinding.lineChart.getAxisLeft().enableGridDashedLine(4.0f, 4.0f, 0);
-        mBinding.lineChart.getAxisLeft().setValueFormatter(new LargeValueFormatter(mCommodity.getSymbol()));
-        mBinding.lineChart.getAxisLeft().setTextColor(textColorPrimary);
-        Legend legend = mBinding.lineChart.getLegend();
+        binding.lineChart.setOnChartValueSelectedListener(this);
+        binding.lineChart.getXAxis().setDrawGridLines(false);
+        binding.lineChart.getXAxis().setTextColor(textColorPrimary);
+        binding.lineChart.getAxisRight().setEnabled(false);
+        binding.lineChart.getAxisLeft().enableGridDashedLine(4.0f, 4.0f, 0);
+        binding.lineChart.getAxisLeft().setValueFormatter(new LargeValueFormatter(commodity.getSymbol()));
+        binding.lineChart.getAxisLeft().setTextColor(textColorPrimary);
+        Legend legend = binding.lineChart.getLegend();
         legend.setTextColor(textColorPrimary);
     }
 
@@ -120,9 +120,9 @@ public class CashFlowLineChartFragment extends IntervalReportFragment {
     private LineData getData(@NonNull Context context, List<AccountType> accountTypes) {
         Timber.i("getData for %s", accountTypes);
         calculateEarliestAndLatestTimestamps(accountTypes);
-        ReportsActivity.GroupInterval groupInterval = mGroupInterval;
-        LocalDateTime startDate = mReportPeriodStart;
-        LocalDateTime endDate = mReportPeriodEnd;
+        ReportsActivity.GroupInterval groupInterval = this.groupInterval;
+        LocalDateTime startDate = reportPeriodStart;
+        LocalDateTime endDate = reportPeriodEnd;
 
         List<ILineDataSet> dataSets = new ArrayList<>();
         for (AccountType accountType : accountTypes) {
@@ -179,7 +179,7 @@ public class CashFlowLineChartFragment extends IntervalReportFragment {
         @Nullable LocalDateTime startEntries,
         @Nullable LocalDateTime endEntries
     ) {
-        final Commodity commodity = mCommodity;
+        final Commodity commodity = this.commodity;
         List<Entry> entries = new ArrayList<>();
 
         LocalDateTime startDate = startEntries;
@@ -222,13 +222,13 @@ public class CashFlowLineChartFragment extends IntervalReportFragment {
             + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
             + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
         String[] whereArgs = new String[]{accountType.name()};
-        List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, whereArgs, null);
+        List<Account> accounts = accountsDbAdapter.getSimpleAccounts(where, whereArgs, null);
 
         for (int i = 0, x = xAxisOffset; i < count; i++, x++) {
             long startTime = DateExtKt.toMillis(startPeriod);
             long endTime = DateExtKt.toMillis(endPeriod);
             Money balance = Money.createZeroInstance(commodity);
-            Map<String, Money> balances = mAccountsDbAdapter.getAccountsBalances(accounts, startTime, endTime);
+            Map<String, Money> balances = accountsDbAdapter.getAccountsBalances(accounts, startTime, endTime);
             for (Money accountBalance : balances.values()) {
                 Price price = pricesDbAdapter.getPrice(accountBalance.getCommodity(), commodity);
                 if (price == null) continue;
@@ -266,23 +266,23 @@ public class CashFlowLineChartFragment extends IntervalReportFragment {
     @Override
     protected void generateReport(@NonNull Context context) {
         LineData lineData = getData(context, accountTypes);
-        mBinding.lineChart.setData(lineData);
+        binding.lineChart.setData(lineData);
         isChartDataPresent = true;
     }
 
     @Override
     protected void displayReport() {
         if (!isChartDataPresent) {
-            final Context context = mBinding.lineChart.getContext();
-            mBinding.lineChart.getAxisLeft().setAxisMaxValue(10);
-            mBinding.lineChart.getAxisLeft().setDrawLabels(false);
-            mBinding.lineChart.getXAxis().setDrawLabels(false);
-            mBinding.lineChart.setTouchEnabled(false);
-            mSelectedValueTextView.setText(context.getString(R.string.label_chart_no_data));
+            final Context context = binding.lineChart.getContext();
+            binding.lineChart.getAxisLeft().setAxisMaxValue(10);
+            binding.lineChart.getAxisLeft().setDrawLabels(false);
+            binding.lineChart.getXAxis().setDrawLabels(false);
+            binding.lineChart.setTouchEnabled(false);
+            selectedValueTextView.setText(context.getString(R.string.label_chart_no_data));
         } else {
-            mBinding.lineChart.animateX(ANIMATION_DURATION);
+            binding.lineChart.animateX(ANIMATION_DURATION);
         }
-        mBinding.lineChart.invalidate();
+        binding.lineChart.invalidate();
     }
 
     @Override
@@ -322,24 +322,24 @@ public class CashFlowLineChartFragment extends IntervalReportFragment {
         if (e == null) return;
         float value = e.getY();
         int dataSetIndex = h.getDataSetIndex();
-        LineData data = mBinding.lineChart.getData();
+        LineData data = binding.lineChart.getData();
         ILineDataSet dataSet = data.getDataSetByIndex(dataSetIndex);
         if (dataSet == null) return;
         String label = dataSet.getLabel();
         float total = getYValueSum(dataSet);
         float percent = (total != 0f) ? ((value * 100) / total) : 0f;
-        mSelectedValueTextView.setText(formatSelectedValue(label, value, percent));
+        selectedValueTextView.setText(formatSelectedValue(label, value, percent));
     }
 
     private void showLegend(boolean isVisible) {
-        mBinding.lineChart.getLegend().setEnabled(isVisible);
-        mBinding.lineChart.invalidate();
+        binding.lineChart.getLegend().setEnabled(isVisible);
+        binding.lineChart.invalidate();
     }
 
     private void showAverageLines(boolean isVisible) {
-        mBinding.lineChart.getAxisLeft().removeAllLimitLines();
+        binding.lineChart.getAxisLeft().removeAllLimitLines();
         if (isVisible) {
-            for (ILineDataSet dataSet : mBinding.lineChart.getData().getDataSets()) {
+            for (ILineDataSet dataSet : binding.lineChart.getData().getDataSets()) {
                 int entryCount = dataSet.getEntryCount();
                 float limit = 0f;
                 if (entryCount > 0) {
@@ -348,10 +348,10 @@ public class CashFlowLineChartFragment extends IntervalReportFragment {
                 LimitLine line = new LimitLine(limit, dataSet.getLabel());
                 line.enableDashedLine(10, 5, 0);
                 line.setLineColor(dataSet.getColor());
-                mBinding.lineChart.getAxisLeft().addLimitLine(line);
+                binding.lineChart.getAxisLeft().addLimitLine(line);
             }
         }
-        mBinding.lineChart.invalidate();
+        binding.lineChart.invalidate();
     }
 
 }

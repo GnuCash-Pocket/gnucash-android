@@ -211,7 +211,7 @@ class GncXmlHelperTest : GnuCashTest() {
         var dtf = DateTimeFormat.forPattern("E")
         assertThat(df.format(Date(now))).isEqualTo(dtf.print(now))
 
-        df = SimpleDateFormat("EEEE", GnuCashApplication.getDefaultLocale())
+        df = SimpleDateFormat("EEEE", GnuCashApplication.defaultLocale)
         dtf = DateTimeFormat.forPattern("EEEE")
         assertThat(df.format(Date(now))).isEqualTo(dtf.print(now))
 

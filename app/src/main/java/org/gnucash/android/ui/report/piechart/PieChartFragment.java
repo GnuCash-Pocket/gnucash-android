@@ -53,7 +53,6 @@ import org.gnucash.android.util.DateExtKt;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -75,11 +74,11 @@ public class PieChartFragment extends BaseReportFragment {
      */
     private static final double GROUPING_SMALLER_SLICES_THRESHOLD = 5;
 
-    private boolean mChartDataPresent = true;
+    private boolean chartDataPresent = true;
 
-    private boolean mGroupSmallerSlices = true;
+    private boolean groupSmallerSlices = false;
 
-    private FragmentPieChartBinding mBinding;
+    private FragmentPieChartBinding binding;
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -87,11 +86,11 @@ public class PieChartFragment extends BaseReportFragment {
         final Context context = view.getContext();
         @ColorInt int textColorPrimary = getTextColor(context);
 
-        mBinding.pieChart.setCenterTextSize(CENTER_TEXT_SIZE);
-        mBinding.pieChart.setOnChartValueSelectedListener(this);
-        mBinding.pieChart.setDrawHoleEnabled(false);
-        mBinding.pieChart.setCenterTextColor(textColorPrimary);
-        Legend legend = mBinding.pieChart.getLegend();
+        binding.pieChart.setCenterTextSize(CENTER_TEXT_SIZE);
+        binding.pieChart.setOnChartValueSelectedListener(this);
+        binding.pieChart.setDrawHoleEnabled(false);
+        binding.pieChart.setCenterTextColor(textColorPrimary);
+        Legend legend = binding.pieChart.getLegend();
         legend.setTextColor(textColorPrimary);
         legend.setWordWrapEnabled(true);
     }
@@ -103,35 +102,35 @@ public class PieChartFragment extends BaseReportFragment {
 
     @Override
     public View inflateView(LayoutInflater inflater, ViewGroup container) {
-        mBinding = FragmentPieChartBinding.inflate(inflater, container, false);
-        return mBinding.getRoot();
+        binding = FragmentPieChartBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
     protected void generateReport(@NonNull Context context) {
         PieData pieData = getData();
         if (pieData.getDataSetCount() > 0 && pieData.getDataSet().getEntryCount() > 0) {
-            mChartDataPresent = true;
-            mBinding.pieChart.setData(mGroupSmallerSlices ? groupSmallerSlices(context, pieData) : pieData);
-            float sum = mBinding.pieChart.getData().getYValueSum();
-            mBinding.pieChart.setCenterText(formatTotalValue(sum));
+            chartDataPresent = true;
+            binding.pieChart.setData(groupSmallerSlices ? groupSmallerSlices(context, pieData) : pieData);
+            float sum = binding.pieChart.getData().getYValueSum();
+            binding.pieChart.setCenterText(formatTotalValue(sum));
         } else {
-            mChartDataPresent = false;
-            mBinding.pieChart.setCenterText(context.getString(R.string.label_chart_no_data));
-            mBinding.pieChart.setData(getEmptyData(context));
+            chartDataPresent = false;
+            binding.pieChart.setCenterText(context.getString(R.string.label_chart_no_data));
+            binding.pieChart.setData(getEmptyData(context));
         }
     }
 
     @Override
     protected void displayReport() {
-        if (mChartDataPresent) {
-            mBinding.pieChart.animateXY(ANIMATION_DURATION, ANIMATION_DURATION);
+        if (chartDataPresent) {
+            binding.pieChart.animateXY(ANIMATION_DURATION, ANIMATION_DURATION);
         }
 
-        mSelectedValueTextView.setText(R.string.label_select_pie_slice_to_see_details);
-        mBinding.pieChart.setTouchEnabled(mChartDataPresent);
-        mBinding.pieChart.highlightValues(null);
-        mBinding.pieChart.invalidate();
+        selectedValueTextView.setText(R.string.label_select_pie_slice_to_see_details);
+        binding.pieChart.setTouchEnabled(chartDataPresent);
+        binding.pieChart.highlightValues(null);
+        binding.pieChart.invalidate();
     }
 
     /**
@@ -143,17 +142,17 @@ public class PieChartFragment extends BaseReportFragment {
     private PieData getData() {
         PieDataSet dataSet = new PieDataSet(null, "");
         List<Integer> colors = new ArrayList<>();
-        long startTime = (mReportPeriodStart != null) ? DateExtKt.toMillis(mReportPeriodStart) : ALWAYS;
-        long endTime = (mReportPeriodEnd != null) ? DateExtKt.toMillis(mReportPeriodEnd) : ALWAYS;
-        final Commodity commodity = mCommodity;
+        long startTime = (reportPeriodStart != null) ? DateExtKt.toMillis(reportPeriodStart) : ALWAYS;
+        long endTime = (reportPeriodEnd != null) ? DateExtKt.toMillis(reportPeriodEnd) : ALWAYS;
+        final Commodity commodity = this.commodity;
 
         String where = AccountEntry.COLUMN_TYPE + "=?"
             + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
             + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0";
-        String[] whereArgs = new String[]{mAccountType.name()};
+        String[] whereArgs = new String[]{accountType.name()};
         String orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC";
-        List<Account> accounts = mAccountsDbAdapter.getSimpleAccounts(where, whereArgs, orderBy);
-        Map<String, Money> balances = mAccountsDbAdapter.getAccountsBalances(accounts, startTime, endTime);
+        List<Account> accounts = accountsDbAdapter.getSimpleAccounts(where, whereArgs, orderBy);
+        Map<String, Money> balances = accountsDbAdapter.getAccountsBalances(accounts, startTime, endTime);
 
         for (Account account : accounts) {
             Money balance = balances.get(account.getUID());
@@ -191,7 +190,7 @@ public class PieChartFragment extends BaseReportFragment {
      * Sorts the pie's slices in ascending order
      */
     private void sort() {
-        PieData data = mBinding.pieChart.getData();
+        PieData data = binding.pieChart.getData();
         PieDataSet dataSet = (PieDataSet) data.getDataSetByIndex(0);
         final int size = dataSet.getEntryCount();
         List<PieChartEntry> entries = new ArrayList<>(size);
@@ -208,17 +207,17 @@ public class PieChartFragment extends BaseReportFragment {
         }
         dataSet.setColors(colors);
 
-        mBinding.pieChart.notifyDataSetChanged();
-        mBinding.pieChart.highlightValues(null);
-        mBinding.pieChart.invalidate();
+        binding.pieChart.notifyDataSetChanged();
+        binding.pieChart.highlightValues(null);
+        binding.pieChart.invalidate();
     }
 
     @Override
     public void onPrepareOptionsMenu(@NonNull Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        menu.findItem(R.id.menu_order_by_size).setVisible(mChartDataPresent);
-        menu.findItem(R.id.menu_toggle_labels).setVisible(mChartDataPresent);
-        menu.findItem(R.id.menu_group_other_slice).setVisible(mChartDataPresent);
+        menu.findItem(R.id.menu_order_by_size).setVisible(chartDataPresent);
+        menu.findItem(R.id.menu_toggle_labels).setVisible(chartDataPresent);
+        menu.findItem(R.id.menu_group_other_slice).setVisible(chartDataPresent);
         // hide line/bar chart specific menu items
         menu.findItem(R.id.menu_percentage_mode).setVisible(false);
         menu.findItem(R.id.menu_toggle_average_lines).setVisible(false);
@@ -235,20 +234,20 @@ public class PieChartFragment extends BaseReportFragment {
                 return true;
             }
             case R.id.menu_toggle_legend: {
-                mBinding.pieChart.getLegend().setEnabled(!mBinding.pieChart.getLegend().isEnabled());
-                mBinding.pieChart.notifyDataSetChanged();
-                mBinding.pieChart.invalidate();
+                binding.pieChart.getLegend().setEnabled(!binding.pieChart.getLegend().isEnabled());
+                binding.pieChart.notifyDataSetChanged();
+                binding.pieChart.invalidate();
                 return true;
             }
             case R.id.menu_toggle_labels: {
-                boolean draw = !mBinding.pieChart.isDrawEntryLabelsEnabled();
-                mBinding.pieChart.getData().setDrawValues(draw);
-                mBinding.pieChart.setDrawEntryLabels(draw);
-                mBinding.pieChart.invalidate();
+                boolean draw = !binding.pieChart.isDrawEntryLabelsEnabled();
+                binding.pieChart.getData().setDrawValues(draw);
+                binding.pieChart.setDrawEntryLabels(draw);
+                binding.pieChart.invalidate();
                 return true;
             }
             case R.id.menu_group_other_slice: {
-                mGroupSmallerSlices = !mGroupSmallerSlices;
+                groupSmallerSlices = !groupSmallerSlices;
                 refresh();
                 return true;
             }
@@ -306,9 +305,9 @@ public class PieChartFragment extends BaseReportFragment {
         PieEntry entry = (PieEntry) e;
         String label = entry.getLabel();
         float value = entry.getValue();
-        PieData data = mBinding.pieChart.getData();
+        PieData data = binding.pieChart.getData();
         float total = data.getYValueSum();
         float percent = (total != 0f) ? ((value * 100) / total) : 0f;
-        mSelectedValueTextView.setText(formatSelectedValue(label, value, percent));
+        selectedValueTextView.setText(formatSelectedValue(label, value, percent));
     }
 }

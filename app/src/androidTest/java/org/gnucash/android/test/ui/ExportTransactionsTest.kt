@@ -61,18 +61,18 @@ class ExportTransactionsTest : GnuAndroidTest() {
 
     @Before
     fun setUp() {
-        accountsDbAdapter = AccountsDbAdapter.getInstance()
+        accountsDbAdapter = AccountsDbAdapter.instance
         accountsDbAdapter.deleteAllRecords()
 
         //this call initializes the static variables like DEFAULT_COMMODITY which are used implicitly by accounts/transactions
-        @Suppress("unused") val currencyCode = GnuCashApplication.getDefaultCurrencyCode()
+        @Suppress("unused") val currencyCode = GnuCashApplication.defaultCurrencyCode
         Commodity.DEFAULT_COMMODITY =
-            CommoditiesDbAdapter.getInstance()!!.getCurrency(currencyCode)!!
+            CommoditiesDbAdapter.instance!!.getCurrency(currencyCode)!!
 
         val account = Account("Exportable")
         val transaction = Transaction("Pizza")
         transaction.note = "What up?"
-        transaction.setTime(System.currentTimeMillis())
+        transaction.time = System.currentTimeMillis()
         val split = Split(Money("8.99", currencyCode), account.uid)
         split.memo = "Hawaii is the best!"
         transaction.addSplit(split)
@@ -86,7 +86,7 @@ class ExportTransactionsTest : GnuAndroidTest() {
         )
         account.addTransaction(transaction)
 
-        accountsDbAdapter.addRecord(account, DatabaseAdapter.UpdateMethod.insert)
+        accountsDbAdapter.insert(account)
     }
 
     @Test
