@@ -26,7 +26,7 @@ class ScheduledExportsListFragment : ScheduledActionsListFragment() {
     private fun addExport(context: Context) {
         val intent = Intent(context, FormActivity::class.java)
             .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.EXPORT.name)
-        startActivityForResult(intent, 0x1)
+        startActivity(intent)
     }
 
 }

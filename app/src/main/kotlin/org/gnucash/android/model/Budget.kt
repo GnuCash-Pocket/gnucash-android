@@ -28,7 +28,7 @@ import java.math.BigDecimal
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-class Budget @JvmOverloads constructor(
+class Budget(
     name: String = "",
     recurrence: Recurrence? = null
 ) : BaseModel() {

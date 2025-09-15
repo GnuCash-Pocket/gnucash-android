@@ -150,7 +150,7 @@ abstract class AsyncTaskProgressListener(context: Context) : DefaultProgressList
         if (!dialog.isShowing) return
         val length = values.size
         if (length == 0) return
-        val title = values[0] as String
+        val title = values[0] as CharSequence
         try {
             dialog.setTitle(title)
         } catch (e: IllegalArgumentException) {
@@ -163,14 +163,14 @@ abstract class AsyncTaskProgressListener(context: Context) : DefaultProgressList
             val count = (values[1] as Number).toLong()
             val total = (values[2] as Number).toLong()
             if (total > 0) {
-                val progress = (count * 100) / total
-                dialog.setIndeterminate(false)
-                dialog.setProgress(progress.toInt())
+                val progress = ((count * 100) / total).toInt()
+                dialog.isIndeterminate = false
+                dialog.progress = progress
             } else {
-                dialog.setIndeterminate(true)
+                dialog.isIndeterminate = true
             }
         } else {
-            dialog.setIndeterminate(true)
+            dialog.isIndeterminate = true
         }
     }
 

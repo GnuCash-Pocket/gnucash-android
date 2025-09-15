@@ -13,7 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -24,8 +25,9 @@ limitations under the License.
         android:id="@+id/imbalance_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:padding="@dimen/dialog_padding">
+        android:orientation="horizontal"
+        android:padding="@dimen/dialog_padding"
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/imbalance_label"
@@ -46,16 +48,20 @@ limitations under the License.
     </LinearLayout>
 
     <include
+        android:id="@+id/imbalance_divider"
         layout="@layout/horizontal_line"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_below="@id/imbalance_layout" />
+        android:layout_below="@id/imbalance_layout"
+        app:layout_constraintTop_toBottomOf="@id/imbalance_layout" />
 
     <ScrollView
+        android:id="@+id/split_list_scroll"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/calculator_keyboard"
-        android:layout_below="@id/imbalance_layout">
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toTopOf="@id/calculator_keyboard"
+        app:layout_constraintTop_toBottomOf="@id/imbalance_divider">
 
         <LinearLayout
             android:id="@+id/split_list_layout"
@@ -69,5 +75,8 @@ limitations under the License.
 
     <include
         android:id="@+id/calculator_keyboard"
-        layout="@layout/kbd_calculator" />
-</RelativeLayout>
+        layout="@layout/kbd_calculator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

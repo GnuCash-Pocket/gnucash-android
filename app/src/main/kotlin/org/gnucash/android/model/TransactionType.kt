@@ -22,7 +22,6 @@ package org.gnucash.android.model
  * @author Jesse Shieh <jesse.shieh.pub@gmail.com>
  */
 enum class TransactionType(
-    @JvmField
     val value: String
 ) {
     DEBIT("DEBIT"),
@@ -49,7 +48,6 @@ enum class TransactionType(
 
         private val _values = values()
 
-        @JvmStatic
         fun of(value: String?): TransactionType {
             return _values.firstOrNull { it.value == value } ?: DEBIT
         }

@@ -47,7 +47,7 @@ class BackupTest : GnuCashTest() {
     @Test
     @Throws(ExporterException::class)
     fun shouldCreateBackupFileName() {
-        val bookUID = GnuCashApplication.getActiveBookUID()
+        val bookUID = GnuCashApplication.activeBookUID
         val exporter: Exporter = GncXmlExporter(
             context, ExportParams(ExportFormat.XML),
             bookUID!!
@@ -72,10 +72,10 @@ class BackupTest : GnuCashTest() {
                     context.resources.openRawResource(R.raw.default_accounts)
                 )
                 if (activate) {
-                    val booksDbAdapter = BooksDbAdapter.getInstance()
+                    val booksDbAdapter = BooksDbAdapter.instance
                     booksDbAdapter.setActive(bookUID)
                     assertThat(booksDbAdapter.activeBookUID).isEqualTo(bookUID)
-                    assertThat(GnuCashApplication.getActiveBookUID()).isEqualTo(bookUID)
+                    assertThat(GnuCashApplication.activeBookUID).isEqualTo(bookUID)
                 }
                 return bookUID
             } catch (e: ParserConfigurationException) {

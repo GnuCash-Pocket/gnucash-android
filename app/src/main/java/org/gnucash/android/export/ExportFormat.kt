@@ -22,25 +22,21 @@ import java.util.Locale
 /**
  * Enumeration of the different export formats supported by the application
  *
- * @author Ngewi Fet <ngewif></ngewif>@gmail.com>
+ * @author Ngewi Fet <ngewif@gmail.com>
  */
 enum class ExportFormat(
-    @JvmField
     val value: String,
     /**
      * The file extension for this export format including the period e.g. ".qif"
      */
-    @JvmField
     val extension: String,
     /** The MIME type. */
-    @JvmField
     val mimeType: String = "*/*",
     /**
      * Full name of the export format acronym
      */
     private val description: String,
     /** The label id. */
-    @JvmField
     @StringRes val labelId: Int
 ) {
     QIF("QIF", ".qif", "application/qif", "Quicken Interchange Format", R.string.file_format_qif),
@@ -54,12 +50,11 @@ enum class ExportFormat(
     }
 
     companion object {
-        private val values = values()
+        private val _values = values()
 
-        @JvmStatic
         fun of(key: String?): ExportFormat {
             val value = key?.uppercase(Locale.ROOT) ?: return XML
-            return values.firstOrNull { it.value == value } ?: XML
+            return _values.firstOrNull { it.value == value } ?: XML
         }
     }
 }
