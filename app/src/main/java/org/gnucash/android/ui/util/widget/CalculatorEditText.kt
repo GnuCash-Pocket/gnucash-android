@@ -309,18 +309,18 @@ class CalculatorEditText @JvmOverloads constructor(
     }
 
     fun showKeyboard(): Boolean {
-        val calculatorKeyboard = keyboard
-        if (calculatorKeyboard != null && !calculatorKeyboard.isVisible) {
-            calculatorKeyboard.show(this)
+        val keyboard = this.keyboard ?: return false
+        if (!keyboard.isVisible) {
+            keyboard.show(this)
             return true
         }
         return false
     }
 
     fun hideKeyboard(): Boolean {
-        val calculatorKeyboard = keyboard
-        if (calculatorKeyboard != null && calculatorKeyboard.isVisible) {
-            calculatorKeyboard.hide()
+        val keyboard = this.keyboard ?: return false
+        if (keyboard.isVisible) {
+            keyboard.hide()
             return true
         }
         return false

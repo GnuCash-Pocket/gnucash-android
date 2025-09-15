@@ -341,6 +341,10 @@ class SplitEditorFragment : MenuFragment() {
                 }
                 splitTypeSwitch.isChecked = baseAmount.signum() > 0
             }
+
+            if (splitAmountEditText.isFocused) {
+                splitAmountEditText.showKeyboard()
+            }
         }
     }
 
@@ -410,19 +414,17 @@ class SplitEditorFragment : MenuFragment() {
         val accountNameAdapter = accountNameAdapter!!
         val splits = mutableListOf<Split>()
         for (viewHolder in splitViewHolders) {
-            val enteredAmount = viewHolder.splitAmountEditText.value
-            if (enteredAmount == null) continue
+            val enteredAmount = viewHolder.splitAmountEditText.value ?: continue
 
             var account = this.account
             val valueAmount = Money(enteredAmount.abs(), account!!.commodity)
 
             val position = viewHolder.accountsSpinner.selectedItemPosition
-            account = accountNameAdapter.getAccount(position)
-            if (account == null) continue
+            account = accountNameAdapter.getAccount(position) ?: continue
             val split = Split(valueAmount, account.uid)
             split.memo = viewHolder.splitMemoEditText.getText().toString()
             split.type = viewHolder.splitTypeSwitch.transactionType
-            split.setUID(viewHolder.splitUidTextView.getText().toString().trim())
+            split.setUID(viewHolder.splitUidTextView.getText().toString())
             splits.add(split)
         }
         return splits
