@@ -54,7 +54,7 @@ import org.gnucash.android.model.Account
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.util.FileUtils
-import org.gnucash.android.util.PreferencesHelper
+import org.gnucash.android.util.PreferencesHelper.setLastExportTime
 import org.gnucash.android.util.TimestampHelper
 import org.gnucash.android.util.set
 import java.io.BufferedReader
@@ -107,11 +107,7 @@ class QifExporter(
         val lastExportTimeStamp = exportParams.exportStartTime.time.toString()
         val transactionsDbAdapter = transactionsDbAdapter
 
-        val accountsList = accountsDbAdapter.simpleAccounts
-        val accounts = mutableMapOf<String, Account>()
-        for (account in accountsList) {
-            accounts[account.uid] = account
-        }
+        val accounts = accountsDbAdapter.simpleAccounts.associateBy(Account::uid)
 
         val quantityFormatter = NumberFormat.getNumberInstance(Locale.ROOT) as DecimalFormat
         quantityFormatter.isGroupingUsed = false
@@ -140,8 +136,8 @@ class QifExporter(
                     // or if the transaction has only one split (the whole transaction would be lost if it is not selected)
                     "trans_split_count == 1)" +
                     " AND " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " >= ?"
-        // trans_time ASC : put transactions in time order
         // trans_uid ASC  : put splits from the same transaction together
+        // trans_time ASC : put transactions in time order
         val orderBy = "acct1_uid ASC, trans_uid ASC, trans_time ASC, split_id ASC"
 
         var cursor: Cursor? = null
@@ -149,7 +145,7 @@ class QifExporter(
             cursor = transactionsDbAdapter.fetchTransactionsWithSplitsWithTransactionAccount(
                 projection,
                 where,
-                arrayOf<String?>(lastExportTimeStamp),
+                arrayOf(lastExportTimeStamp),
                 orderBy
             )
             if ((cursor == null) || !cursor.moveToFirst()) return
@@ -169,7 +165,7 @@ class QifExporter(
                 val imbalance = cursor.getDouble("trans_acct_balance")
                 val splitCount = cursor.getInt("trans_split_count")
 
-                val account1: Account = accounts[accountUID]!!
+                val account1: Account = accounts[accountUID] ?: continue
                 val accountFullName = account1.fullName
                 val accountDescription = account1.description
                 val accountType = account1.accountType
@@ -260,7 +256,7 @@ class QifExporter(
                 }
                 // all splits
                 val account2UID = cursor.getString("acct2_uid")
-                val account2: Account = accounts[account2UID]!!
+                val account2: Account = accounts[account2UID] ?: continue
                 val account2FullName = account2.fullName
                 val splitMemo = cursor.getString("split_memo")
                 val splitType = cursor.getString("split_type")
@@ -303,7 +299,7 @@ class QifExporter(
             transactionsDbAdapter.updateTransaction(contentValues, null, null)
 
             /** export successful */
-            PreferencesHelper.setLastExportTime(TimestampHelper.timestampFromNow, bookUID)
+            setLastExportTime(context, TimestampHelper.timestampFromNow, bookUID)
         } catch (e: IOException) {
             throw ExporterException(exportParams, e)
         } catch (e: OperationCanceledException) {

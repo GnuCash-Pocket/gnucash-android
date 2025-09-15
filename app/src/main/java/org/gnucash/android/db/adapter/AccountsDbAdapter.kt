@@ -58,6 +58,7 @@ import org.gnucash.android.util.set
 import timber.log.Timber
 import java.io.IOException
 import java.sql.Timestamp
+import kotlin.collections.associateBy
 
 /**
  * Manages persistence of [Account]s in the database
@@ -296,15 +297,11 @@ class AccountsDbAdapter(
             null,
             null
         )
-        val accountsByUID = mutableMapOf<String, Account>()
-        for (account in descendantAccounts) {
-            accountsByUID[account.uid] = account
-        }
-        val parentAccountFullName: String?
-        if (getAccountType(newParentAccountUID) == AccountType.ROOT) {
-            parentAccountFullName = ""
+        val accountsByUID = descendantAccounts.associateBy(Account::uid)
+        val parentAccountFullName = if (getAccountType(newParentAccountUID) == AccountType.ROOT) {
+            ""
         } else {
-            parentAccountFullName = getAccountFullName(newParentAccountUID)
+            getAccountFullName(newParentAccountUID)
         }
         val contentValues = ContentValues()
         for (account in descendantAccounts) {

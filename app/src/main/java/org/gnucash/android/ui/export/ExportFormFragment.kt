@@ -23,7 +23,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -55,6 +54,7 @@ import org.gnucash.android.databinding.FragmentExportFormBinding
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.DatabaseAdapter
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
+import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.export.DropboxHelper.authenticate
 import org.gnucash.android.export.DropboxHelper.hasToken
 import org.gnucash.android.export.DropboxHelper.retrieveAndSaveToken
@@ -411,23 +411,26 @@ class ExportFormFragment : MenuFragment(),
         binding.spinnerExportDestination.setSelection(position)
 
         //**************** export start time bindings ******************
-        val timestamp = getLastExportTime(context)
-        val date = timestamp.time - DateUtils.WEEK_IN_MILLIS
-        exportStartCalendar.timeInMillis = date
+        var timestamp = getLastExportTime(context, activeBookUID!!)
+        if (timestamp.time <= 0L) {
+            timestamp = TransactionsDbAdapter.instance.timestampOfFirstModification
+        }
+        val time = timestamp.time
+        exportStartCalendar.time = timestamp
 
         binding.exportStartDate.setOnClickListener {
             val dateMillis = exportStartCalendar.timeInMillis
             DatePickerDialogFragment.newInstance(this@ExportFormFragment, dateMillis)
                 .show(parentFragmentManager, "date_picker_fragment")
         }
-        binding.exportStartDate.text = TransactionFormFragment.DATE_FORMATTER.print(date)
+        binding.exportStartDate.text = TransactionFormFragment.DATE_FORMATTER.print(time)
 
         binding.exportStartTime.setOnClickListener {
             val timeMillis = exportStartCalendar.timeInMillis
             TimePickerDialogFragment.newInstance(this@ExportFormFragment, timeMillis)
                 .show(parentFragmentManager, "time_picker_dialog_fragment")
         }
-        binding.exportStartTime.text = TransactionFormFragment.TIME_FORMATTER.print(date)
+        binding.exportStartTime.text = TransactionFormFragment.TIME_FORMATTER.print(time)
 
         binding.switchExportAll.setOnCheckedChangeListener { _, isChecked ->
             binding.exportStartDate.isEnabled = !isChecked
@@ -641,9 +644,7 @@ class ExportFormFragment : MenuFragment(),
 
     override fun onDateSet(view: DatePicker, year: Int, month: Int, dayOfMonth: Int) {
         val binding = binding ?: return
-        exportStartCalendar.set(Calendar.YEAR, year)
-        exportStartCalendar.set(Calendar.MONTH, month)
-        exportStartCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+        exportStartCalendar.set(year, month, dayOfMonth)
         binding.exportStartDate.text = TransactionFormFragment.DATE_FORMATTER
             .print(exportStartCalendar.timeInMillis)
     }

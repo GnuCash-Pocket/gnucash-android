@@ -18,6 +18,7 @@ package org.gnucash.android.util
 import android.content.Context
 import androidx.core.content.edit
 import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
 import timber.log.Timber
 import java.sql.Timestamp
 
@@ -28,7 +29,7 @@ object PreferencesHelper {
     /**
      * Preference key for saving the last export time
      */
-    const val PREFERENCE_LAST_EXPORT_TIME_KEY: String = "last_export_time"
+    private const val KEY_LAST_EXPORT_TIME: String = "last_export_time"
 
     /**
      * Set the last export time in UTC time zone of the currently active Book in the application.
@@ -37,9 +38,9 @@ object PreferencesHelper {
      * @param lastExportTime the last export time to set.
      * @see .setLastExportTime
      */
-    fun setLastExportTime(lastExportTime: Timestamp) {
+    fun setLastExportTime(context: Context, lastExportTime: Timestamp) {
         Timber.v("Saving last export time for the currently active book")
-        setLastExportTime(lastExportTime, GnuCashApplication.activeBookUID)
+        setLastExportTime(context, lastExportTime, activeBookUID!!)
     }
 
     /**
@@ -48,13 +49,13 @@ object PreferencesHelper {
      *
      * @param lastExportTime the last export time to set.
      */
-    fun setLastExportTime(lastExportTime: Timestamp, bookUID: String?) {
+    fun setLastExportTime(context: Context, lastExportTime: Timestamp, bookUID: String) {
         val utcString = TimestampHelper.getUtcStringFromTimestamp(lastExportTime)
         Timber.d("Storing '%s' as lastExportTime in Android Preferences.", utcString)
-        GnuCashApplication.appContext.getSharedPreferences(bookUID, Context.MODE_PRIVATE)
-            .edit {
-                putString(PREFERENCE_LAST_EXPORT_TIME_KEY, utcString)
-            }
+        val prefs = GnuCashApplication.getBookPreferences(context, bookUID)
+        prefs.edit {
+            putString(KEY_LAST_EXPORT_TIME, utcString)
+        }
     }
 
     /**
@@ -63,11 +64,7 @@ object PreferencesHelper {
      * @return A [Timestamp] with the time.
      */
     fun getLastExportTime(context: Context): Timestamp {
-        val utcString = GnuCashApplication.getBookPreferences(context)
-            .getString(PREFERENCE_LAST_EXPORT_TIME_KEY, null)
-            ?: return TimestampHelper.timestampFromEpochZero
-        Timber.d("Retrieving '%s' as lastExportTime from Android Preferences.", utcString)
-        return TimestampHelper.getTimestampFromUtcString(utcString)
+        return getLastExportTime(context, activeBookUID!!)
     }
 
     /**
@@ -76,8 +73,8 @@ object PreferencesHelper {
      * @return A [Timestamp] with the time.
      */
     fun getLastExportTime(context: Context, bookUID: String): Timestamp {
-        val utcString = GnuCashApplication.getBookPreferences(context, bookUID)
-            .getString(PREFERENCE_LAST_EXPORT_TIME_KEY, null)
+        val prefs = GnuCashApplication.getBookPreferences(context, bookUID)
+        val utcString = prefs.getString(KEY_LAST_EXPORT_TIME, null)
             ?: return TimestampHelper.timestampFromEpochZero
         Timber.d("Retrieving '%s' as lastExportTime from Android Preferences.", utcString)
         return TimestampHelper.getTimestampFromUtcString(utcString)

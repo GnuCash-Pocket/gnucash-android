@@ -168,7 +168,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
-                    android:checked="false"
+                    android:checked="true"
                     android:padding="4dp"
                     android:text="@string/switch_export_transactions_from_all_time"
                     tools:ignore="UseSwitchCompatOrMaterialXml" />

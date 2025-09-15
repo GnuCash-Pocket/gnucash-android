@@ -62,6 +62,7 @@ class GncXmlImporter(
 
         val book = handler.importedBook
         setLastExportTime(
+            context,
             TransactionsDbAdapter.instance.timestampOfLastModification,
             book.uid
         )

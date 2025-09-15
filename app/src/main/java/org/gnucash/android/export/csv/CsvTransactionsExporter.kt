@@ -29,6 +29,7 @@ import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.util.PreferencesHelper
+import org.gnucash.android.util.PreferencesHelper.setLastExportTime
 import org.gnucash.android.util.TimestampHelper
 import org.joda.time.format.ISODateTimeFormat
 import timber.log.Timber
@@ -117,7 +118,7 @@ class CsvTransactionsExporter(
                     writeTransaction(writer, fields, transaction)
                 } while (cursor.moveToNext());
             }
-            PreferencesHelper.setLastExportTime(TimestampHelper.timestampFromNow, bookUID)
+            setLastExportTime(context, TimestampHelper.timestampFromNow, bookUID)
         } finally {
             cursor.close()
         }

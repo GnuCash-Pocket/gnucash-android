@@ -58,6 +58,7 @@ import org.gnucash.android.model.Money
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.util.PreferencesHelper
+import org.gnucash.android.util.PreferencesHelper.setLastExportTime
 import org.gnucash.android.util.TimestampHelper
 import org.w3c.dom.Document
 import org.w3c.dom.Element
@@ -144,7 +145,7 @@ class OfxExporter(
         writeOFX(document, root, accounts)
         val useXmlHeader = PreferenceManager.getDefaultSharedPreferences(context)
             .getBoolean(context.getString(R.string.key_xml_ofx_header), false)
-        PreferencesHelper.setLastExportTime(TimestampHelper.timestampFromNow, bookUID)
+        setLastExportTime(context, TimestampHelper.timestampFromNow, bookUID)
         if (useXmlHeader) {
             write(writer, document, false)
         } else {

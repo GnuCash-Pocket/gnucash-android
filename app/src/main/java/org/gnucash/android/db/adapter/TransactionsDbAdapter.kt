@@ -375,13 +375,12 @@ class TransactionsDbAdapter(
         // can be eliminated with a WHERE clause. Transactions in QIF can be auto balanced.
         //
         // Account, transaction and split Information can be retrieve in a single query.
-        return db.query(
+        val table =
             "trans_split_acct, trans_extra_info ON trans_extra_info.trans_acct_t_uid = trans_split_acct." +
                     TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID + ", " +
                     AccountEntry.TABLE_NAME + " AS account1 ON account1." + AccountEntry.COLUMN_UID +
-                    " = trans_extra_info.trans_acct_a_uid",
-            columns, where, whereArgs, null, null, orderBy
-        )
+                    " = trans_extra_info.trans_acct_a_uid"
+        return db.query(table, columns, where, whereArgs, null, null, orderBy)
     }
 
     override val recordsCount: Long
@@ -602,32 +601,35 @@ class TransactionsDbAdapter(
         return getTimestamp("MAX", type, commodityUID)
     }
 
+    val timestampOfFirstModification: Timestamp get() = getTimestampModification("MIN")
+
     /**
      * Returns the most recent `modified_at` timestamp of non-template transactions in the database
      *
      * @return Last modified time in milliseconds or current time if there is none in the database
      */
-    val timestampOfLastModification: Timestamp
-        get() {
-            val cursor = db.query(
-                tableName,
-                arrayOf<String?>("MAX(" + TransactionEntry.COLUMN_MODIFIED_AT + ")"),
-                null, null, null, null, null
-            )
+    val timestampOfLastModification: Timestamp get() = getTimestampModification("MAX")
 
-            var timestamp = timestampFromNow
-            try {
-                if (cursor.moveToFirst()) {
-                    val timeString = cursor.getString(0)
-                    if (timeString != null) { //in case there were no transactions in the XML file (account structure only)
-                        timestamp = getTimestampFromUtcString(timeString)
-                    }
+    private fun getTimestampModification(mod: String): Timestamp {
+        val cursor = db.query(
+            tableName,
+            arrayOf<String?>(mod + "(" + TransactionEntry.COLUMN_MODIFIED_AT + ")"),
+            null, null, null, null, null
+        )
+
+        var timestamp = timestampFromNow
+        try {
+            if (cursor.moveToFirst()) {
+                val timeString = cursor.getString(0)
+                if (!timeString.isNullOrEmpty()) { //in case there were no transactions in the XML file (account structure only)
+                    timestamp = getTimestampFromUtcString(timeString)
                 }
-            } finally {
-                cursor.close()
             }
-            return timestamp
+        } finally {
+            cursor.close()
         }
+        return timestamp
+    }
 
     /**
      * Returns the earliest or latest timestamp of transactions for a specific account type and currency
@@ -649,7 +651,8 @@ class TransactionsDbAdapter(
                 + " WHERE a." + AccountEntry.COLUMN_TYPE + " = ?"
                 + " AND a." + AccountEntry.COLUMN_COMMODITY_UID + " = ?"
                 + " AND t." + TransactionEntry.COLUMN_TEMPLATE + " = 0")
-        val cursor = db.rawQuery(sql, arrayOf<String?>(type.name, commodityUID))
+        val args = arrayOf<String?>(type.name, commodityUID)
+        val cursor = db.rawQuery(sql, args)
         var timestamp: Long = INVALID_DATE
         try {
             if (cursor.moveToFirst()) {
