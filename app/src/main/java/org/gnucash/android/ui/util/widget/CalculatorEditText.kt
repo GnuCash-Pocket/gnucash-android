@@ -63,7 +63,10 @@ class CalculatorEditText @JvmOverloads constructor(
      */
     private var isContentModified = false
     private var originalText: String? = ""
-    private val formatter = NumberFormat.getInstance(Locale.getDefault()) as DecimalFormat
+    private val formatter = (NumberFormat.getInstance(Locale.getDefault()) as DecimalFormat).apply {
+        minimumFractionDigits = 0
+        isGroupingUsed = false
+    }
     private var onBackPressedCallback: OnBackPressedCallback? = null
 
     /**
@@ -271,16 +274,14 @@ class CalculatorEditText @JvmOverloads constructor(
         }
 
     fun setValue(amount: BigDecimal?, isOriginal: Boolean) {
-        formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = commodity.smallestFractionDigits
-        formatter.isGroupingUsed = false
-        val resultString = if (amount != null) formatter.format(amount) else ""
+        val formatted = if (amount != null) formatter.format(amount) else ""
 
         if (isOriginal) {
-            originalText = resultString
+            originalText = formatted
         }
 
-        setTextToEnd(resultString)
+        setTextToEnd(formatted)
     }
 
     override fun onVisibilityChanged(changedView: View, visibility: Int) {

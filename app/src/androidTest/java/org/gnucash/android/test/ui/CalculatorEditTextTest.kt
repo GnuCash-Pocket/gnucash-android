@@ -85,7 +85,9 @@ class CalculatorEditTextTest : GnuAndroidTest() {
 
     @After
     fun tearDown() {
-        transactionsActivity.finish()
+        if (::transactionsActivity.isInitialized) {
+            transactionsActivity.finish()
+        }
     }
 
     /**
@@ -150,6 +152,7 @@ class CalculatorEditTextTest : GnuAndroidTest() {
         @BeforeClass
         @JvmStatic
         fun prepTestCase() {
+            configureDevice()
             preventFirstRunDialogs()
         }
     }

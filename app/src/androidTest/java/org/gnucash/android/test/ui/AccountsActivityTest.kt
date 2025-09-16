@@ -86,8 +86,6 @@ class AccountsActivityTest : GnuAndroidTest() {
 
     @Before
     fun setUp() {
-        accountsActivity = activityRule.activity
-
         accountsDbAdapter.deleteAllRecords() //clear the data
 
         val simpleAccount =
@@ -95,12 +93,15 @@ class AccountsActivityTest : GnuAndroidTest() {
         simpleAccount.setUID(SIMPLE_ACCOUNT_UID)
         accountsDbAdapter.insert(simpleAccount)
 
+        accountsActivity = activityRule.activity
         refreshAccountsList()
     }
 
     @After
     fun tearDown() {
-        accountsActivity.finish()
+        if (::accountsActivity.isInitialized) {
+            accountsActivity.finish()
+        }
     }
 
     fun testDisplayAccountsList() {
@@ -589,6 +590,7 @@ class AccountsActivityTest : GnuAndroidTest() {
         @BeforeClass
         @JvmStatic
         fun prepTest() {
+            configureDevice()
             preventFirstRunDialogs()
 
             accountsDbAdapter = AccountsDbAdapter.instance

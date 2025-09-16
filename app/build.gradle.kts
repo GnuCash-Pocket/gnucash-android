@@ -139,13 +139,15 @@ android {
         }
     }
 
-    compileOptions { //we want switch with strings during xml parsing
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+    compileOptions {
+        // For older Java 1.8 devices.
+        isCoreLibraryDesugaringEnabled = true
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
 
     testOptions {
@@ -158,16 +160,16 @@ android {
 dependencies {
     // Jetpack
     implementation("androidx.appcompat:appcompat:1.7.1")
-    implementation("com.google.android.material:material:1.12.0")
-    implementation("androidx.activity:activity-ktx:1.10.1")
+    implementation("com.google.android.material:material:1.13.0")
+    implementation("androidx.activity:activity-ktx:1.11.0")
     implementation("androidx.cardview:cardview:1.0.0")
-    implementation("androidx.core:core-ktx:1.16.0")
+    implementation("androidx.core:core-ktx:1.17.0")
     implementation("androidx.preference:preference-ktx:1.2.1")
     implementation("androidx.recyclerview:recyclerview:1.4.0")
-    implementation("androidx.work:work-runtime-ktx:2.10.2")
+    implementation("androidx.work:work-runtime-ktx:2.10.4")
 
-    implementation("net.objecthunter:exp4j:0.4.7")
-    implementation("com.ezylang:EvalEx:3.2.0")
+    implementation("net.objecthunter:exp4j:0.4.8")
+    implementation("com.ezylang:EvalEx:3.5.0")
     implementation("androidx.drawerlayout:drawerlayout:1.2.0")
 
     // Logging
@@ -178,7 +180,7 @@ dependencies {
     implementation("com.squareup:android-times-square:1.6.5")
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
-    implementation("joda-time:joda-time:2.13.0")
+    implementation("joda-time:joda-time:2.14.0")
     implementation("org.apache.jackrabbit:jackrabbit-webdav:2.13.3")
     implementation("com.code-troopers.betterpickers:library:3.1.0")
     implementation("com.github.techfreak:wizardpager:1.0.3")
@@ -193,22 +195,25 @@ dependencies {
 
     testImplementation("org.robolectric:robolectric:4.14.1")
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.assertj:assertj-core:3.27.3")
+    testImplementation("org.assertj:assertj-core:3.27.4")
 
-    androidTestImplementation("androidx.test:runner:1.6.2")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test:rules:1.6.1")
+    androidTestImplementation("androidx.test:runner:1.7.0")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test:rules:1.7.0")
 
     androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
 
-    val androidEspressoVersion = "3.6.1"
+    val androidEspressoVersion = "3.7.0"
     androidTestImplementation("androidx.test.espresso:espresso-core:$androidEspressoVersion")
     androidTestImplementation("androidx.test.espresso:espresso-intents:$androidEspressoVersion")
     androidTestImplementation("androidx.test.espresso:espresso-contrib:$androidEspressoVersion")
 
-    androidTestImplementation("org.assertj:assertj-core:3.27.3")
+    androidTestImplementation("org.assertj:assertj-core:3.21.0")
 
     androidTestImplementation("com.squareup.spoon:spoon-client:1.7.1")
+
+    // For older Java 1.8 devices.
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }
 
 afterEvaluate {

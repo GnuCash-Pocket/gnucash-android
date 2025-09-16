@@ -228,7 +228,9 @@ class PieChartReportTest : GnuAndroidTest() {
 
     @After
     fun tearDown() {
-        reportsActivity.finish()
+        if (::reportsActivity.isInitialized) {
+            reportsActivity.finish()
+        }
     }
 
     companion object {
@@ -265,6 +267,7 @@ class PieChartReportTest : GnuAndroidTest() {
         @BeforeClass
         @JvmStatic
         fun prepareTestCase() {
+            configureDevice()
             val context = GnuCashApplication.appContext
             preventFirstRunDialogs(context)
             oldActiveBookUID = GnuCashApplication.activeBookUID!!
