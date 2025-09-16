@@ -26,7 +26,7 @@ import java.math.BigDecimal
  *
  * @see Budget
  */
-class BudgetAmount @JvmOverloads constructor(
+class BudgetAmount(
     var budgetUID: String? = null,
     var accountUID: String? = null,
     // FIXME should be the account commodity

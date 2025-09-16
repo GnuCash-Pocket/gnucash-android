@@ -48,8 +48,7 @@ class Transaction : BaseModel {
     /**
      * Timestamp when this transaction occurred
      */
-    var timeMillis: Long = 0
-        private set
+    var time: Long = 0
 
     /**
      * Flag indicating that this transaction is a template
@@ -83,7 +82,6 @@ class Transaction : BaseModel {
      * @param transaction    Transaction to be cloned
      * @param generateNewUID Flag to determine if new UID should be assigned or not
      */
-    @JvmOverloads
     constructor(transaction: Transaction, generateNewUID: Boolean = true) {
         initDefaults()
         if (!generateNewUID) {
@@ -91,7 +89,7 @@ class Transaction : BaseModel {
         }
         description = transaction.description
         note = transaction.note
-        timeMillis = transaction.timeMillis
+        time = transaction.time
         commodity = transaction.commodity
         splits = transaction.splits.map { Split(it, generateNewUID) }
     }
@@ -101,7 +99,7 @@ class Transaction : BaseModel {
      */
     private fun initDefaults() {
         commodity = Commodity.DEFAULT_COMMODITY
-        timeMillis = System.currentTimeMillis()
+        time = System.currentTimeMillis()
     }
 
     /**
@@ -259,7 +257,7 @@ class Transaction : BaseModel {
      */
     var description: String? = ""
         set(value) {
-            field = value?.trim { it <= ' ' }.orEmpty()
+            field = value?.trim().orEmpty()
         }
 
     /**
@@ -268,20 +266,11 @@ class Transaction : BaseModel {
      * @param timestamp Time when transaction occurred as [Date]
      */
     fun setTime(timestamp: Date) {
-        timeMillis = timestamp.time
-    }
-
-    /**
-     * Sets the time when the transaction occurred
-     *
-     * @param timeInMillis Time in milliseconds
-     */
-    fun setTime(timeInMillis: Long) {
-        timeMillis = timeInMillis
+        time = timestamp.time
     }
 
     override fun toString(): String {
-        return "{description: $description, date: ${formatShortDate(timeMillis)}}"
+        return "{description: $description, date: ${formatShortDate(time)}}"
     }
 
     fun getTransferSplit(accountUID: String): Split? {
@@ -346,9 +335,8 @@ class Transaction : BaseModel {
          * @param splits  List of splits
          * @return Money list of splits
          */
-        @JvmStatic
         fun computeBalance(accountUID: String, splits: List<Split>): Money {
-            val accountsDbAdapter = AccountsDbAdapter.getInstance()
+            val accountsDbAdapter = AccountsDbAdapter.instance
             val account = accountsDbAdapter.getSimpleRecord(accountUID)!!
             return computeBalance(account, splits)
         }
@@ -364,7 +352,6 @@ class Transaction : BaseModel {
          * @param splits  List of splits
          * @return Money list of splits
          */
-        @JvmStatic
         fun computeBalance(account: Account, splits: List<Split>): Money {
             val accountUID = account.uid
             val accountType = account.accountType
@@ -397,7 +384,6 @@ class Transaction : BaseModel {
          * @param shouldReduceBalance `true` if type should reduce balance, `false` otherwise
          * @return TransactionType for the account
          */
-        @JvmStatic
         fun getTypeForBalance(
             accountType: AccountType,
             shouldReduceBalance: Boolean
@@ -417,19 +403,17 @@ class Transaction : BaseModel {
          * @param transaction Transaction used to create intent
          * @return Intent with transaction details as extras
          */
-        @JvmStatic
         fun createIntent(transaction: Transaction): Intent {
             val stringBuilder = StringBuilder()
             for (split in transaction.splits) {
                 stringBuilder.append(split.toCsv()).append("\n")
             }
-            val intent = Intent(Intent.ACTION_INSERT)
+            return Intent(Intent.ACTION_INSERT)
                 .setType(MIME_TYPE)
                 .putExtra(Intent.EXTRA_TITLE, transaction.description)
                 .putExtra(Intent.EXTRA_TEXT, transaction.note)
                 .putExtra(Account.EXTRA_CURRENCY_CODE, transaction.currencyCode)
                 .putExtra(EXTRA_SPLITS, stringBuilder.toString())
-            return intent
         }
     }
 }

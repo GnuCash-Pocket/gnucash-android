@@ -24,7 +24,6 @@ import org.gnucash.android.util.lastDayOfMonth
 import org.gnucash.android.util.lastDayOfWeek
 import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
-import java.sql.Timestamp
 import java.util.Calendar
 import java.util.Locale
 
@@ -60,7 +59,7 @@ class ScheduledAction    //all actions are enabled by default
     /**
      * Types of events which can be scheduled
      */
-    enum class ActionType(@JvmField val value: String, @JvmField @StringRes val labelId: Int) {
+    enum class ActionType(val value: String, @StringRes val labelId: Int) {
         TRANSACTION("TRANSACTION", R.string.action_transaction),
 
         // TODO rename `BACKUP` to `EXPORT`
@@ -69,7 +68,6 @@ class ScheduledAction    //all actions are enabled by default
         companion object {
             private val _values = values()
 
-            @JvmStatic
             fun of(value: String): ActionType {
                 val valueLower = value.uppercase(Locale.ROOT)
                 return _values.firstOrNull { it.value == valueLower } ?: TRANSACTION
@@ -432,7 +430,7 @@ class ScheduledAction    //all actions are enabled by default
     }
 
     override fun toString(): String {
-        return actionType.name + " - " + getRepeatString(GnuCashApplication.getAppContext())
+        return actionType.name + " - " + getRepeatString(GnuCashApplication.appContext)
     }
 
     companion object {
@@ -443,7 +441,6 @@ class ScheduledAction    //all actions are enabled by default
          * @param period      Period in milliseconds since Epoch
          * @return Scheduled Action
          */
-        @JvmStatic
         @Deprecated("Used for parsing legacy backup files. Use [Recurrence] instead")
         fun parseScheduledAction(transaction: Transaction, period: Long): ScheduledAction {
             val scheduledAction = ScheduledAction(ActionType.TRANSACTION)

@@ -2,7 +2,6 @@ package org.gnucash.android.widget
 
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.R
-import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.model.AccountType
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.test.unit.GnuCashTest

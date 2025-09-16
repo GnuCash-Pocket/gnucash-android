@@ -42,12 +42,12 @@ class OfxExporterTest : GnuCashTest() {
     @Test
     fun testWithNoTransactionsToExport_shouldNotCreateAnyFile() {
         val exportParameters = ExportParams(ExportFormat.OFX)
-        exportParameters.exportStartTime = TimestampHelper.getTimestampFromEpochZero()
+        exportParameters.exportStartTime = TimestampHelper.timestampFromEpochZero
         exportParameters.exportTarget = ExportParams.ExportTarget.SD_CARD
-        exportParameters.setDeleteTransactionsAfterExport(false)
+        exportParameters.deleteTransactionsAfterExport = false
         val exporter = OfxExporter(
             context, exportParameters,
-            GnuCashApplication.getActiveBookUID()!!
+            GnuCashApplication.activeBookUID!!
         )
         assertThrows(ExporterException::class.java) { exporter.export() }
     }
@@ -57,7 +57,7 @@ class OfxExporterTest : GnuCashTest() {
      */
     @Test
     fun testGenerateOFXExport() {
-        val accountsDbAdapter = GnuCashApplication.getAccountsDbAdapter()
+        val accountsDbAdapter = GnuCashApplication.accountsDbAdapter
 
         val account = Account("Basic Account")
         val transaction = Transaction("One transaction")
@@ -67,18 +67,18 @@ class OfxExporterTest : GnuCashTest() {
         accountsDbAdapter!!.addRecord(account)
 
         val exportParameters = ExportParams(ExportFormat.OFX)
-        exportParameters.exportStartTime = TimestampHelper.getTimestampFromEpochZero()
+        exportParameters.exportStartTime = TimestampHelper.timestampFromEpochZero
         exportParameters.exportTarget = ExportParams.ExportTarget.SD_CARD
-        exportParameters.setDeleteTransactionsAfterExport(false)
+        exportParameters.deleteTransactionsAfterExport = false
 
         val exporter = OfxExporter(
             context, exportParameters,
-            GnuCashApplication.getActiveBookUID()!!
+            GnuCashApplication.activeBookUID!!
         )
         val exportedFile = exporter.export()
 
         assertThat(exportedFile).isNotNull()
-        val file = File(exportedFile!!.path)
+        val file = File(exportedFile!!.path!!)
         assertThat(file).exists().hasExtension("ofx")
         assertThat(file.length()).isGreaterThan(0L)
         file.delete()

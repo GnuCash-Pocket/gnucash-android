@@ -10,12 +10,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.gnucash.android.db.DatabaseSchema
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
-import org.gnucash.android.lang.VoidCallback
 import org.gnucash.android.model.Commodity
 
-class CommoditiesAdapter @JvmOverloads constructor(
+class CommoditiesAdapter(
     context: Context,
-    private val adapter: CommoditiesDbAdapter = CommoditiesDbAdapter.getInstance()!!,
+    private val adapter: CommoditiesDbAdapter = CommoditiesDbAdapter.instance,
     private val scope: CoroutineScope
 ) : ArrayAdapter<CommoditiesAdapter.Label>(context, android.R.layout.simple_spinner_item) {
 
@@ -60,7 +59,7 @@ class CommoditiesAdapter @JvmOverloads constructor(
         return -1
     }
 
-    fun load(callback: VoidCallback? = null) {
+    fun load(callback: ((CommoditiesAdapter) -> Unit)? = null): CommoditiesAdapter {
         loadJob?.cancel()
         loadJob = scope.launch(Dispatchers.IO) {
             val records = loadData(adapter)
@@ -68,15 +67,16 @@ class CommoditiesAdapter @JvmOverloads constructor(
             scope.launch(Dispatchers.Main) {
                 clear()
                 addAll(labels)
-                callback?.invoke()
+                callback?.invoke(this@CommoditiesAdapter)
             }
         }
+        return this
     }
 
     private fun loadData(adapter: CommoditiesDbAdapter): List<Commodity> {
         val where = DatabaseSchema.CommodityEntry.COLUMN_MNEMONIC + " <> ?" +
                 " AND " + DatabaseSchema.CommodityEntry.COLUMN_NAMESPACE + " <> ?";
-        val whereArgs = arrayOf(Commodity.TEMPLATE, Commodity.TEMPLATE)
+        val whereArgs = arrayOf<String?>(Commodity.TEMPLATE, Commodity.TEMPLATE)
         return adapter.getAllRecords(where, whereArgs)
     }
 
