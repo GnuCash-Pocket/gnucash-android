@@ -118,6 +118,7 @@ class ExportTransactionsTest : GnuAndroidTest() {
         @BeforeClass
         @JvmStatic
         fun prepTest() {
+            configureDevice()
             preventFirstRunDialogs()
         }
     }

@@ -158,6 +158,7 @@ class MultiBookTest : GnuAndroidTest() {
         @BeforeClass
         @JvmStatic
         fun prepTestCase() {
+            configureDevice()
             preventFirstRunDialogs()
             booksDbAdapter = BooksDbAdapter.instance
         }

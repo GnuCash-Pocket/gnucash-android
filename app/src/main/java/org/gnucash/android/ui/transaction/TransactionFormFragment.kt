@@ -296,7 +296,7 @@ class TransactionFormFragment : MenuFragment(),
         from: Array<String?>?,
         to: IntArray?
     ) : SimpleCursorAdapter(context, layout, c, from, to, 0) {
-        override fun bindView(view: View, context: Context?, cursor: Cursor) {
+        override fun bindView(view: View, context: Context, cursor: Cursor) {
             super.bindView(view, context, cursor)
             val account = requireAccount()
             val accountUID = account.uid

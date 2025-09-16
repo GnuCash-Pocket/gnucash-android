@@ -228,6 +228,7 @@ class OwnCloudExportTest : GnuAndroidTest() {
         @BeforeClass
         @JvmStatic
         fun prepareTestCase() {
+            configureDevice()
             preventFirstRunDialogs()
         }
 

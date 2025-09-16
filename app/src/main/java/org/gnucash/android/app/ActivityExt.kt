@@ -62,3 +62,7 @@ val Fragment.actionBar: ActionBar? get() {
 }
 
 fun Fragment.finish() = activity?.finish()
+
+fun Activity.requireArguments(): Bundle {
+    return intent.extras!!
+}

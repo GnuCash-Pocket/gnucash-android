@@ -29,7 +29,7 @@ import java.util.TreeSet
 /**
  * Wizard displayed upon first run of the application for setup
  */
-class FirstRunWizardModel(context: Context?) : AbstractWizardModel(context) {
+class FirstRunWizardModel(context: Context) : AbstractWizardModel(context) {
     var titleWelcome: String? = null
 
     var titleCurrency: String? = null

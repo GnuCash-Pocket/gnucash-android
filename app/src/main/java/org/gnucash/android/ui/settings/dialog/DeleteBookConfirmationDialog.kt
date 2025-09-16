@@ -46,11 +46,11 @@ class DeleteBookConfirmationDialog : DoubleConfirmationDialog() {
     }
 
     private fun deleteBook(activity: Activity, bookUID: String, requestKey: String) {
+        val fm = parentFragmentManager
         backupBookAsync(activity, bookUID) {
             val deleted = BooksDbAdapter.instance.deleteBook(activity, bookUID)
             val result = Bundle()
             result.putBoolean(Refreshable.EXTRA_REFRESH, deleted)
-            val fm = parentFragmentManager
             fm.setFragmentResult(requestKey, result)
         }
     }

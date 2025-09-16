@@ -35,6 +35,8 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.google.android.material.tabs.TabLayout.TabLayoutOnPageChangeListener
 import org.gnucash.android.R
+import org.gnucash.android.app.isNullOrEmpty
+import org.gnucash.android.app.requireArguments
 import org.gnucash.android.databinding.ActivityTransactionsBinding
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
@@ -537,7 +539,7 @@ class TransactionsActivity : BaseDrawerActivity(),
         if (account != null) {
             return account
         }
-        val args: Bundle = intent.extras!!
+        val args = requireArguments()
         val accountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID)!!
         try {
             account = accountsDbAdapter.getRecord(accountUID)

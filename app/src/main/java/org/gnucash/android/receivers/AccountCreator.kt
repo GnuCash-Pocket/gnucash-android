@@ -36,7 +36,7 @@ import timber.log.Timber
  * @see {@link Account.EXTRA_CURRENCY_UID}, {@link Account.MIME_TYPE} {@link Intent.EXTRA_TITLE}, {@link Intent.EXTRA_UID}
  */
 class AccountCreator : BroadcastReceiver() {
-    override fun onReceive(context: Context?, intent: Intent) {
+    override fun onReceive(context: Context, intent: Intent) {
         Timber.i("Received account creation intent")
         val args = intent.extras
         if (args.isNullOrEmpty()) {

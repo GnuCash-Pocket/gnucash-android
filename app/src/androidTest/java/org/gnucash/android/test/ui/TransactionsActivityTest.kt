@@ -69,6 +69,7 @@ import org.junit.ClassRule
 import org.junit.Rule
 import org.junit.Test
 import java.math.BigDecimal
+import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -89,6 +90,11 @@ class TransactionsActivityTest : GnuAndroidTest() {
 
     private lateinit var baseAccount: Account
     private lateinit var transferAccount: Account
+
+    val formatter = (NumberFormat.getInstance(Locale.getDefault()) as DecimalFormat).apply {
+        minimumFractionDigits = 0
+        isGroupingUsed = false
+    }
 
     @Before
     fun setUp() {
@@ -129,7 +135,9 @@ class TransactionsActivityTest : GnuAndroidTest() {
 
     @After
     fun tearDown() {
-        transactionsActivity.finish()
+        if (::transactionsActivity.isInitialized) {
+            transactionsActivity.finish()
+        }
     }
 
     private fun validateTransactionListDisplayed() {
@@ -1057,6 +1065,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         @BeforeClass
         @JvmStatic
         fun prepareTestCase() {
+            configureDevice()
             preventFirstRunDialogs()
 
             accountsDbAdapter = AccountsDbAdapter.instance

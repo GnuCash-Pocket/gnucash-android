@@ -165,9 +165,9 @@ class WidgetConfigurationActivity : GnuCashActivity() {
     private fun handleIntent(intent: Intent) {
         var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
 
-        val extras = intent.extras
-        if (extras != null) {
-            appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, this.appWidgetId)
+        val args = intent.extras
+        if (args != null) {
+            appWidgetId = args.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, this.appWidgetId)
         }
 
         val context: Context = this
