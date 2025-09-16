@@ -59,7 +59,6 @@ limitations under the License.
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_marginStart="4dp"
-            android:checked="false"
             android:textOff="@string/label_debit"
             android:textOn="@string/label_credit"
             android:textSize="14sp"

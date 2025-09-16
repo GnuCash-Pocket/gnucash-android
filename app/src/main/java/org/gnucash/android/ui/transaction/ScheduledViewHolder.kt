@@ -19,7 +19,7 @@ abstract class ScheduledViewHolder(
     protected val refreshable: Refreshable
 ) : RecyclerView.ViewHolder(binding.root), PopupMenu.OnMenuItemClickListener {
     protected val scheduledActionDbAdapter: ScheduledActionDbAdapter =
-        ScheduledActionDbAdapter.getInstance()
+        ScheduledActionDbAdapter.instance
 
     protected val primaryTextView: TextView = binding.primaryText
     protected val descriptionTextView: TextView = binding.secondaryText

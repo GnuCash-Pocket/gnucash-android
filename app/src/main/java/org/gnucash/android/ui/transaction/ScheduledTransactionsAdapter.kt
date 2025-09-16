@@ -12,7 +12,7 @@ internal class ScheduledTransactionsAdapter(refreshable: Refreshable) :
     ScheduledAdapter<ScheduledTransactionsViewHolder>(refreshable) {
 
     override suspend fun loadData(): List<ScheduledAction> {
-        val databaseAdapter = ScheduledActionDbAdapter.getInstance()
+        val databaseAdapter = ScheduledActionDbAdapter.instance
         return databaseAdapter.getRecords(ScheduledAction.ActionType.TRANSACTION)
     }
 

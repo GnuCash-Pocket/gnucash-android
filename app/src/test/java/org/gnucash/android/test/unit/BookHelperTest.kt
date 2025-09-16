@@ -52,7 +52,7 @@ abstract class BookHelperTest : GnuCashTest() {
 
     @Before
     open fun setUp() {
-        booksDbAdapter = BooksDbAdapter.getInstance()
+        booksDbAdapter = BooksDbAdapter.instance
         booksDbAdapter.deleteAllRecords()
         assertThat(booksDbAdapter.recordsCount).isZero()
     }

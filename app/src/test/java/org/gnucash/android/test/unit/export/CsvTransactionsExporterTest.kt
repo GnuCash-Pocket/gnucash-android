@@ -34,9 +34,9 @@ class CsvTransactionsExporterTest : BookHelperTest() {
 
         val bookUID = importGnuCashXml("multipleTransactionImport.xml")
         val exportParameters = ExportParams(ExportFormat.CSVT).apply {
-            exportStartTime = TimestampHelper.getTimestampFromEpochZero()
+            exportStartTime = TimestampHelper.timestampFromEpochZero
             exportTarget = ExportParams.ExportTarget.SD_CARD
-            setDeleteTransactionsAfterExport(false)
+            deleteTransactionsAfterExport = false
         }
 
         val exportedFile = CsvTransactionsExporter(context, exportParameters, bookUID).export()
@@ -62,9 +62,9 @@ class CsvTransactionsExporterTest : BookHelperTest() {
 
         val bookUID = importGnuCashXml("multipleTransactionImport.xml")
         val exportParameters = ExportParams(ExportFormat.CSVT).apply {
-            exportStartTime = TimestampHelper.getTimestampFromEpochZero()
+            exportStartTime = TimestampHelper.timestampFromEpochZero
             exportTarget = ExportParams.ExportTarget.SD_CARD
-            setDeleteTransactionsAfterExport(false)
+            deleteTransactionsAfterExport = false
         }
 
         val exportedFile = CsvTransactionsExporter(context, exportParameters, bookUID)

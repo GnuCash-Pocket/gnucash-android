@@ -28,7 +28,6 @@ import org.joda.time.LocalDateTime
 import org.joda.time.Weeks
 import org.joda.time.format.DateTimeFormat
 import org.junit.Test
-import java.sql.Timestamp
 import java.util.Calendar
 import java.util.Locale
 

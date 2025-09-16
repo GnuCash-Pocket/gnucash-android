@@ -410,7 +410,6 @@ class Recurrence(periodType: PeriodType) : BaseModel() {
          * @param period Period in milliseconds since Epoch (old format to define a period)
          * @return Recurrence with the specified period.
          */
-        @JvmStatic
         fun fromLegacyPeriod(period: Long): Recurrence {
             var result = (period / RecurrenceParser.YEAR_MILLIS).toInt()
             if (result > 0) {

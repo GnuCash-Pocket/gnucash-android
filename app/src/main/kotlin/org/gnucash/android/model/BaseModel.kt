@@ -25,7 +25,6 @@ import java.util.UUID
  */
 abstract class BaseModel {
     /** Database record id. */
-    @JvmField
     var id: Long = 0
 
     /**
@@ -42,7 +41,7 @@ abstract class BaseModel {
     /**
      * The timestamp when this model entry was created in the database.
      */
-    var createdTimestamp: Timestamp = TimestampHelper.getTimestampFromNow()
+    var createdTimestamp: Timestamp = TimestampHelper.timestampFromNow
 
     /**
      * The timestamp when the model was last modified in the database
@@ -52,7 +51,7 @@ abstract class BaseModel {
      * <br />In that case, it has to be explicitly set in the SQL statement.
      *
      */
-    var modifiedTimestamp: Timestamp = TimestampHelper.getTimestampFromNow()
+    var modifiedTimestamp: Timestamp = TimestampHelper.timestampFromNow
 
     /**
      * A unique string identifier for this model instance.
@@ -66,8 +65,6 @@ abstract class BaseModel {
             }
             return value
         }
-
-    fun getUID(): String = uid
 
     open fun setUID(uid: String?) {
         _uid = uid
@@ -97,7 +94,6 @@ abstract class BaseModel {
          *
          * @return Random GUID for the model object
          */
-        @JvmStatic
         fun generateUID(): String {
             return UUID.randomUUID().toString().replace(regexDash, "")
         }

@@ -1,7 +1,6 @@
 package org.gnucash.android.test.unit.export
 
 import org.assertj.core.api.Assertions.assertThat
-import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.export.ExportFormat
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.xml.GncXmlExporter

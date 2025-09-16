@@ -2,7 +2,7 @@ package org.gnucash.android.model
 
 import java.util.Locale
 
-enum class WeekendAdjust(@JvmField val value: String?) {
+enum class WeekendAdjust(val value: String?) {
     NONE("none"),
 
     /* Previous weekday */
@@ -12,7 +12,6 @@ enum class WeekendAdjust(@JvmField val value: String?) {
     FORWARD("forward");
 
     companion object {
-        @JvmStatic
         fun of(value: String): WeekendAdjust {
             val valueLower = value.lowercase(Locale.ROOT)
             return WeekendAdjust.values().firstOrNull { it.value == valueLower } ?: NONE

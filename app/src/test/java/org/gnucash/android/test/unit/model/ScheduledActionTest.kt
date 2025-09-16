@@ -23,7 +23,6 @@ import org.gnucash.android.test.unit.GnuCashTest
 import org.joda.time.DateTime
 import org.joda.time.LocalDateTime
 import org.junit.Test
-import java.sql.Timestamp
 import java.util.Arrays
 import java.util.Calendar
 

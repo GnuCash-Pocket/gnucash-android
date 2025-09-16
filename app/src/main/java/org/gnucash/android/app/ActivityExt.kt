@@ -6,7 +6,11 @@ import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Bundle
 import android.os.PersistableBundle
+import androidx.appcompat.app.ActionBar
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 
+@Throws(IllegalArgumentException::class)
 fun Context.findActivity(): Activity {
     if (this is Activity) {
         return this
@@ -51,3 +55,10 @@ fun restartActivity(activity: Activity) {
 fun Activity.restart(savedState: Bundle?) = restartActivity(this, savedState)
 
 fun Activity.restart() = restartActivity(this)
+
+val Fragment.actionBar: ActionBar? get() {
+    val activity = (activity as? AppCompatActivity) ?: return null
+    return activity.supportActionBar
+}
+
+fun Fragment.finish() = activity?.finish()
