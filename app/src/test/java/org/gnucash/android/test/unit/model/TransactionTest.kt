@@ -2,7 +2,6 @@ package org.gnucash.android.test.unit.model
 
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.model.Commodity
-import org.gnucash.android.model.Commodity.Companion.getInstance
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Money.Companion.createZeroInstance
 import org.gnucash.android.model.Split
@@ -27,7 +26,7 @@ class TransactionTest : GnuCashTest() {
         assertThat(transaction.currencyCode).isEqualTo(clone2.currencyCode)
         assertThat(transaction.description).isEqualTo(clone2.description)
         assertThat(transaction.note).isEqualTo(clone2.note)
-        assertThat(transaction.timeMillis).isEqualTo(clone2.timeMillis)
+        assertThat(transaction.time).isEqualTo(clone2.time)
         //TODO: Clone the created_at and modified_at times?
     }
 
@@ -40,7 +39,7 @@ class TransactionTest : GnuCashTest() {
         assertThat(transaction.currencyCode).isEqualTo(Commodity.DEFAULT_COMMODITY.currencyCode)
 
         val split = Split(createZeroInstance(Commodity.DEFAULT_COMMODITY), "test-account")
-        assertThat(split.transactionUID).isEmpty()
+        assertThat(split.transactionUID).isNullOrEmpty()
 
         transaction.addSplit(split)
         assertThat(split.transactionUID).isEqualTo(transaction.uid)
@@ -70,7 +69,7 @@ class TransactionTest : GnuCashTest() {
     @Test
     fun testCreateAutoBalanceSplit() {
         val transactionCredit = Transaction("Transaction with more credit")
-        transactionCredit.commodity = getInstance("EUR")
+        transactionCredit.commodity = Commodity.getInstance("EUR")
         val creditSplit = Split(Money("1", "EUR"), "test-account")
         creditSplit.type = TransactionType.CREDIT
         transactionCredit.addSplit(creditSplit)
@@ -83,7 +82,7 @@ class TransactionTest : GnuCashTest() {
         assertThat(debitBalanceSplit.quantity).isEqualTo(creditSplit.quantity)
 
         val transactionDebit = Transaction("Transaction with more debit")
-        transactionDebit.commodity = getInstance("EUR")
+        transactionDebit.commodity = Commodity.getInstance("EUR")
         val debitSplit = Split(Money("1", "EUR"), "test-account")
         debitSplit.type = TransactionType.DEBIT
         transactionDebit.addSplit(debitSplit)

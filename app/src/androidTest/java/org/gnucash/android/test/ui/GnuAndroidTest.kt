@@ -7,16 +7,18 @@ import com.kobakei.ratethisapp.RateThisApp
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.ui.account.AccountsActivity
+import org.gnucash.android.util.applyLocale
 import org.junit.FixMethodOrder
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import java.util.Locale
 
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 abstract class GnuAndroidTest {
 
     @JvmField
-    protected val context = GnuCashApplication.getAppContext()
+    protected val context = GnuCashApplication.appContext
 
     /**
      * Sleep the thread for a specified period
@@ -58,8 +60,17 @@ abstract class GnuAndroidTest {
          */
         @JvmStatic
         fun preventFirstRunDialogs() {
-            val context = GnuCashApplication.getAppContext()
+            val context = GnuCashApplication.appContext
             preventFirstRunDialogs(context)
+        }
+
+        /**
+         * Configure the device for standard configuration.
+         */
+        @JvmStatic
+        fun configureDevice() {
+            val context = GnuCashApplication.appContext
+            context.applyLocale(Locale.US)
         }
     }
 }

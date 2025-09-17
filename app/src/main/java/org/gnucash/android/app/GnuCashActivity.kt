@@ -12,8 +12,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import org.gnucash.android.R
-import org.gnucash.android.app.GnuCashApplication.darken
 import org.gnucash.android.ui.SystemBarsDrawable
+import org.gnucash.android.util.darken
 
 open class GnuCashActivity : AppCompatActivity() {
 

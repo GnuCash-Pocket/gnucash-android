@@ -40,7 +40,7 @@ class Account : BaseModel {
      */
     var name: String = ""
         set(value) {
-            field = value.trim { it <= ' ' }
+            field = value.trim()
         }
 
     /**
@@ -102,7 +102,6 @@ class Account : BaseModel {
      * @param name      Name of the account
      * @param commodity [Commodity] to be used by transactions in this account
      */
-    @JvmOverloads
     constructor(name: String, commodity: Commodity = Commodity.DEFAULT_COMMODITY) {
         this.name = name
         this.fullName = this.name
@@ -221,7 +220,6 @@ class Account : BaseModel {
          */
         // TODO: get it from a theme value?
         @ColorInt
-        @JvmField
         val DEFAULT_COLOR = Color.rgb(237, 236, 235)
 
         /**

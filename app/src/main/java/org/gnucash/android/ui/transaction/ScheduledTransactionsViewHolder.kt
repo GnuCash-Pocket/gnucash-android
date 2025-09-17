@@ -18,7 +18,7 @@ internal class ScheduledTransactionsViewHolder(
     refreshable: Refreshable
 ) : ScheduledViewHolder(binding, refreshable) {
 
-    private val transactionsDbAdapter = TransactionsDbAdapter.getInstance()
+    private val transactionsDbAdapter = TransactionsDbAdapter.instance
 
     override fun bind(scheduledAction: ScheduledAction) {
         super.bind(scheduledAction)

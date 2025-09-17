@@ -42,9 +42,9 @@ class TransactionsDbAdapterTest : GnuCashTest() {
 
     @Before
     fun setUp() {
-        splitsDbAdapter = SplitsDbAdapter.getInstance()
-        transactionsDbAdapter = TransactionsDbAdapter.getInstance()
-        accountsDbAdapter = AccountsDbAdapter.getInstance()
+        splitsDbAdapter = SplitsDbAdapter.instance
+        transactionsDbAdapter = TransactionsDbAdapter.instance
+        accountsDbAdapter = AccountsDbAdapter.instance
 
         alphaAccount = Account(ALPHA_ACCOUNT_NAME)
         bravoAccount = Account(BRAVO_ACCOUNT_NAME)
@@ -63,13 +63,13 @@ class TransactionsDbAdapterTest : GnuCashTest() {
     @Test
     fun testTransactionsAreTimeSorted() {
         val t1 = Transaction("T800")
-        t1.setTime(System.currentTimeMillis() - 10000)
+        t1.time = System.currentTimeMillis() - 10000
         val split = Split(createZeroInstance(alphaAccount.commodity), alphaAccount.uid)
         t1.addSplit(split)
         t1.addSplit(split.createPair(bravoAccount.uid))
 
         val t2 = Transaction("T1000")
-        t2.setTime(System.currentTimeMillis())
+        t2.time = System.currentTimeMillis()
         val split2 = Split(Money("23.50", bravoAccount.commodity), bravoAccount.uid)
         t2.addSplit(split2)
         t2.addSplit(split2.createPair(alphaAccount.uid))
@@ -111,7 +111,8 @@ class TransactionsDbAdapterTest : GnuCashTest() {
 
         val imbalanceAccountUID =
             accountsDbAdapter.getImbalanceAccountUID(context, Commodity.DEFAULT_COMMODITY)
-        assertThat(trn.splits).extracting("accountUID", String::class.java).contains(imbalanceAccountUID)
+        assertThat(trn.splits).extracting("accountUID", String::class.java)
+            .contains(imbalanceAccountUID)
     }
 
     @Test

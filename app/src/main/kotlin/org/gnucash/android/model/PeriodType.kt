@@ -23,7 +23,7 @@ import java.util.Locale
  * @author Ngewi Fet <ngewif@gmail.com>
  * @see org.gnucash.android.model.ScheduledAction
  */
-enum class PeriodType(@JvmField val value: String) {
+enum class PeriodType(val value: String) {
     /* Not a true period at all, but convenient here. */
     ONCE("once"),
     HOUR("hour"),
@@ -45,7 +45,6 @@ enum class PeriodType(@JvmField val value: String) {
     companion object {
         private val _values = values()
 
-        @JvmStatic
         fun of(value: String): PeriodType {
             val valueLower = value.lowercase(Locale.ROOT)
             return _values.firstOrNull { it.value == valueLower } ?: ONCE

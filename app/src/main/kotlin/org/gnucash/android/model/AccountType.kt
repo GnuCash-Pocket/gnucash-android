@@ -12,12 +12,9 @@ enum class AccountType(
      * To increase the value of an account with normal balance of credit, one would credit the account.
      * To increase the value of an account with normal balance of debit, one would likewise debit the account.
      */
-    @JvmField
     val normalBalanceType: TransactionType,
-    @JvmField
     val displayBalanceType: TransactionType = normalBalanceType,
     // Index of the label in the array of strings `account_type_entry_values`
-    @JvmField
     val labelIndex: Int
 ) {
     /**< The bank account type denotes a savings
@@ -98,10 +95,8 @@ enum class AccountType(
      *   commodity as well as in total value.  */
     TRADING(TransactionType.CREDIT, labelIndex = 13);
 
-    @JvmField
     val hasDebitNormalBalance: Boolean = normalBalanceType === TransactionType.DEBIT
 
-    @JvmField
     val hasDebitDisplayBalance: Boolean = displayBalanceType === TransactionType.DEBIT
 
 }
