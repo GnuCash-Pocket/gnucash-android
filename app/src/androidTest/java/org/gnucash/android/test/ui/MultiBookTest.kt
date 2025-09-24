@@ -71,7 +71,7 @@ class MultiBookTest : GnuAndroidTest() {
     fun testLoadBookFromBookManager() {
         val book = Book()
         book.displayName = "Launch Codes"
-        BooksDbAdapter.instance.addRecord(book)
+        booksDbAdapter.insert(book)
 
         shouldOpenBookManager()
         onView(withText(book.displayName)).perform(click())
@@ -122,14 +122,14 @@ class MultiBookTest : GnuAndroidTest() {
         assertThat(booksDbAdapter.recordsCount).isEqualTo(bookCount + 1)
     }
 
-    //@Test TODO: Finish implementation of this test
+    @Test
     fun testDeleteBook() {
         val bookCount = booksDbAdapter.recordsCount
 
         val book = Book()
         val displayName = "To Be Deleted"
         book.displayName = displayName
-        booksDbAdapter.addRecord(book)
+        booksDbAdapter.insert(book)
 
         assertThat(booksDbAdapter.recordsCount).isEqualTo(bookCount + 1)
 
@@ -142,7 +142,11 @@ class MultiBookTest : GnuAndroidTest() {
             )
         ).perform(click())
 
+        // Show delete confirmation dialog.
         onView(withText(R.string.menu_delete)).perform(click())
+        // Check the "I'm sure" checkbox.
+        onView(withText(R.string.yes_sure)).perform(click())
+        // Delete the book.
         onView(withText(R.string.btn_delete_book)).perform(click())
 
         assertThat(booksDbAdapter.recordsCount).isEqualTo(bookCount)

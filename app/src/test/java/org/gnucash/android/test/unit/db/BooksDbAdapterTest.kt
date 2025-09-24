@@ -45,7 +45,7 @@ class BooksDbAdapterTest : GnuCashTest() {
 
     @Test
     fun addBook() {
-        val book = Book(generateUID())
+        val book = Book()
         booksDbAdapter.insert(book)
 
         assertThat(booksDbAdapter.recordsCount).isOne()
@@ -54,15 +54,15 @@ class BooksDbAdapterTest : GnuCashTest() {
 
     @Test(expected = IllegalArgumentException::class)
     fun savingBook_requiresRootAccountGUID() {
-        val book = Book()
-        booksDbAdapter.addRecord(book)
+        val book = Book(rootAccountUID = null)
+        booksDbAdapter.insert(book)
     }
 
     @Test
     fun deleteBook() {
         val book = Book()
         book.rootAccountUID = generateUID()
-        booksDbAdapter.addRecord(book)
+        booksDbAdapter.insert(book)
 
         booksDbAdapter.deleteRecord(book.uid)
 
@@ -71,11 +71,11 @@ class BooksDbAdapterTest : GnuCashTest() {
 
     @Test
     fun setBookActive() {
-        val book1 = Book(generateUID())
-        val book2 = Book(generateUID())
+        val book1 = Book()
+        val book2 = Book()
 
-        booksDbAdapter.addRecord(book1)
-        booksDbAdapter.addRecord(book2)
+        booksDbAdapter.insert(book1)
+        booksDbAdapter.insert(book2)
 
         booksDbAdapter.setActive(book1.uid)
 
@@ -94,11 +94,11 @@ class BooksDbAdapterTest : GnuCashTest() {
      */
     @Test
     fun testGeneratedDisplayName() {
-        val book1 = Book(generateUID())
-        val book2 = Book(generateUID())
+        val book1 = Book()
+        val book2 = Book()
 
-        booksDbAdapter.addRecord(book1)
-        booksDbAdapter.addRecord(book2)
+        booksDbAdapter.insert(book1)
+        booksDbAdapter.insert(book2)
 
         assertThat(booksDbAdapter.generateDefaultBookName()).isEqualTo("Book 3")
     }
@@ -132,17 +132,17 @@ class BooksDbAdapterTest : GnuCashTest() {
         val name3 = context.getString(R.string.book_default_name, 3)
         val name4 = context.getString(R.string.book_default_name, 4)
 
-        val book1 = Book(generateUID())
-        val book2 = Book(generateUID())
-        val book3 = Book(generateUID())
+        val book1 = Book()
+        val book2 = Book()
+        val book3 = Book()
 
-        booksDbAdapter.addRecord(book1)
+        booksDbAdapter.insert(book1)
         assertThat(book1.id).isNotZero()
         assertThat(book1.displayName).isEqualTo(name1)
-        booksDbAdapter.addRecord(book2)
+        booksDbAdapter.insert(book2)
         assertThat(book2.id).isNotZero()
         assertThat(book2.displayName).isEqualTo(name2)
-        booksDbAdapter.addRecord(book3)
+        booksDbAdapter.insert(book3)
         assertThat(book3.id).isNotZero()
         assertThat(book3.displayName).isEqualTo(name3)
 
@@ -157,18 +157,18 @@ class BooksDbAdapterTest : GnuCashTest() {
 
     @Test
     fun recoverFromNoActiveBookFound() {
-        val book1 = Book(generateUID())
+        val book1 = Book()
         book1.isActive = false
-        booksDbAdapter.addRecord(book1)
+        booksDbAdapter.insert(book1)
 
-        val book2 = Book(generateUID())
+        val book2 = Book()
         book2.isActive = false
-        booksDbAdapter.addRecord(book2)
+        booksDbAdapter.insert(book2)
 
         try {
             booksDbAdapter.activeBookUID
             fail("There shouldn't be any active book.")
-        } catch (e: NoActiveBookFoundException) {
+        } catch (_: NoActiveBookFoundException) {
             booksDbAdapter.fixBooksDatabase()
         }
 
