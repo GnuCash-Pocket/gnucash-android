@@ -16,14 +16,10 @@
 package org.gnucash.android.test.ui
 
 import android.Manifest
-import androidx.annotation.StringRes
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.scrollTo
-import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.DrawerActions.open
-import androidx.test.espresso.matcher.RootMatchers.withDecorView
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.rule.ActivityTestRule
@@ -38,8 +34,6 @@ import org.gnucash.android.model.Money
 import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.ui.account.AccountsActivity
-import org.hamcrest.Matchers.`is`
-import org.hamcrest.Matchers.not
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Rule
@@ -90,7 +84,7 @@ class ExportTransactionsTest : GnuAndroidTest() {
 
     @Test
     fun testCreateBackup() {
-        rule.activity
+        val activity = rule.activity
         onView(withId(R.id.drawer_layout)).perform(open())
         onView(withText(R.string.title_settings))
             .perform(scrollTo())
@@ -100,18 +94,7 @@ class ExportTransactionsTest : GnuAndroidTest() {
 
         onView(withText(R.string.title_create_backup_pref))
             .perform(click())
-        assertToastDisplayed(R.string.toast_backup_successful)
-    }
-
-    /**
-     * Checks that a specific toast message is displayed
-     *
-     * @param toastString String that should be displayed
-     */
-    private fun assertToastDisplayed(@StringRes toastString: Int) {
-        onView(withText(toastString))
-            .inRoot(withDecorView(not(`is`(rule.activity.window.decorView))))
-            .check(matches(isDisplayed()))
+        assertToastDisplayed(activity, R.string.toast_backup_successful)
     }
 
     companion object {

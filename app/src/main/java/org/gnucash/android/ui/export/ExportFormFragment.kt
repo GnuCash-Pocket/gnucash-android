@@ -389,8 +389,8 @@ class ExportFormFragment : MenuFragment(),
                         binding.recurrenceOptions.isVisible = true
                         exportParams.exportTarget = ExportTarget.OWNCLOUD
                         if (!preferences.getBoolean(getString(R.string.key_owncloud_sync), false)) {
-                            val ocDialog = OwnCloudDialogFragment.newInstance(null)
-                            ocDialog.show(parentFragmentManager, "ownCloud dialog")
+                            OwnCloudDialogFragment.newInstance()
+                                .show(parentFragmentManager, OwnCloudDialogFragment.TAG)
                         }
                     }
 

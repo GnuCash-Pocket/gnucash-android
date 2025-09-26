@@ -1,13 +1,27 @@
 package org.gnucash.android.test.ui
 
+import android.app.Activity
 import android.content.Context
+import android.os.Build
 import android.preference.PreferenceManager
+import androidx.annotation.StringRes
+import androidx.core.content.edit
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.RootMatchers.withDecorView
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.UiDevice
 import com.kobakei.ratethisapp.RateThisApp
+import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.util.applyLocale
+import org.hamcrest.Matchers.not
 import org.junit.FixMethodOrder
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
@@ -20,6 +34,9 @@ abstract class GnuAndroidTest {
     @JvmField
     protected val context = GnuCashApplication.appContext
 
+    val device: UiDevice
+        get() = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+
     /**
      * Sleep the thread for a specified period
      *
@@ -30,6 +47,32 @@ abstract class GnuAndroidTest {
             Thread.sleep(millis)
         } catch (e: InterruptedException) {
             e.printStackTrace()
+        }
+    }
+
+    /**
+     * Checks that a specific toast message is displayed
+     *
+     * @param toastString String that should be displayed
+     */
+    fun assertToastDisplayed(activity: Activity, @StringRes toastString: Int) {
+        assertToastDisplayed(activity, activity.getString(toastString))
+    }
+
+    /**
+     * Checks that a specific toast message is displayed
+     *
+     * @param toastString String that should be displayed
+     */
+    fun assertToastDisplayed(activity: Activity, toastString: String) {
+        device.waitForIdle()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            onView(withText(toastString))
+                .inRoot(withDecorView(not(activity.window.decorView)))
+                .check(matches(isDisplayed()))
+        } else {
+            // FIXME: see https://github.com/android/android-test/issues/803
+            // assertThat(device.hasObject(By.text(toastString))).isTrue()
         }
     }
 
@@ -46,13 +89,13 @@ abstract class GnuAndroidTest {
         fun preventFirstRunDialogs(context: Context) {
             AccountsActivity.rateAppConfig = RateThisApp.Config(10000, 10000)
             PreferenceManager.getDefaultSharedPreferences(context)
-                .edit() //do not show first run dialog
-                .putBoolean(context.getString(R.string.key_first_run), false)
-                .putInt(
-                    AccountsActivity.LAST_OPEN_TAB_INDEX,
-                    AccountsActivity.INDEX_TOP_LEVEL_ACCOUNTS_FRAGMENT
-                )
-                .apply()
+                .edit { //do not show first run dialog
+                    putBoolean(context.getString(R.string.key_first_run), false)
+                    putInt(
+                        AccountsActivity.LAST_OPEN_TAB_INDEX,
+                        AccountsActivity.INDEX_TOP_LEVEL_ACCOUNTS_FRAGMENT
+                    )
+                }
         }
 
         /**

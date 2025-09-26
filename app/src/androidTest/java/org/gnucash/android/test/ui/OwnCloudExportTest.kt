@@ -19,8 +19,8 @@ import android.Manifest
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
+import androidx.core.content.edit
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.action.ViewActions.clearText
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
@@ -29,16 +29,17 @@ import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.DrawerActions.open
-import androidx.test.espresso.matcher.RootMatchers.withDecorView
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.rule.ActivityTestRule
 import androidx.test.rule.GrantPermissionRule
+import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
+import org.gnucash.android.export.ExportFormat
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
@@ -46,9 +47,7 @@ import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.test.ui.util.DisableAnimationsRule
 import org.gnucash.android.ui.account.AccountsActivity
-import org.hamcrest.Matchers
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import org.gnucash.android.ui.settings.OwnCloudPreferences
 import org.junit.Assume
 import org.junit.Before
 import org.junit.BeforeClass
@@ -114,10 +113,10 @@ class OwnCloudExportTest : GnuAndroidTest() {
 
         accountsDbAdapter.insert(account)
 
-        prefs.edit()
-            .putBoolean(context.getString(R.string.key_owncloud_sync), false)
-            .putInt(context.getString(R.string.key_last_export_destination), 0)
-            .apply()
+        prefs.edit {
+            putBoolean(context.getString(R.string.key_owncloud_sync), false)
+            putInt(context.getString(R.string.key_last_export_destination), 0)
+        }
     }
 
     /**
@@ -166,52 +165,51 @@ class OwnCloudExportTest : GnuAndroidTest() {
         sleep(5000)
         onView(withId(BUTTON_POSITIVE)).perform(click())
 
-        assertEquals(
-            prefs.getString(context.getString(R.string.key_owncloud_server), null), OC_SERVER
-        )
-        assertEquals(
-            prefs.getString(context.getString(R.string.key_owncloud_username), null), OC_USERNAME
-        )
-        assertEquals(
-            prefs.getString(context.getString(R.string.key_owncloud_password), null), OC_PASSWORD
-        )
-        assertEquals(prefs.getString(context.getString(R.string.key_owncloud_dir), null), OC_DIR)
-
-        assertTrue(prefs.getBoolean(context.getString(R.string.key_owncloud_sync), false))
+        assertThat(prefs.getString(context.getString(R.string.key_owncloud_server), null))
+            .isEqualTo(OC_SERVER)
+        assertThat(prefs.getString(context.getString(R.string.key_owncloud_username), null))
+            .isEqualTo(OC_USERNAME)
+        assertThat(prefs.getString(context.getString(R.string.key_owncloud_password), null))
+            .isEqualTo(OC_PASSWORD)
+        assertThat(prefs.getString(context.getString(R.string.key_owncloud_dir), null))
+            .isEqualTo(OC_DIR)
+        assertThat(prefs.getBoolean(context.getString(R.string.key_owncloud_sync), false)).isTrue()
     }
 
-    /** / FIXME: 20.04.2017 This test now fails since introduction of SAF. */
+    @Test
     fun ownCloudExport() {
         Assume.assumeTrue(hasActiveInternetConnection(context))
-        prefs.edit().putBoolean(context.getString(R.string.key_owncloud_sync), true).commit()
+        prefs.edit { putBoolean(context.getString(R.string.key_owncloud_sync), true) }
+        val preferences = OwnCloudPreferences(context)
+        preferences.server = OC_SERVER
+        preferences.username = OC_USERNAME
+        preferences.password = OC_PASSWORD
+        preferences.dir = OC_DIR
 
         onView(withId(R.id.drawer_layout)).perform(open())
         onView(withText(R.string.nav_menu_export))
             .perform(click())
-        closeSoftKeyboard()
-        pressBack() //close the SAF file picker window
         onView(withId(R.id.spinner_export_destination))
             .perform(click())
         val destinations = context.resources.getStringArray(R.array.export_destinations)
-        onView(withText(destinations[3])).perform(click())
-        onView(withId(R.id.menu_save)).perform(click())
-        assertToastDisplayed(
-            String.format(
-                context.getString(R.string.toast_exported_to),
-                "ownCloud -> $OC_DIR"
-            )
-        )
-    }
+        onView(withText(destinations[2])).perform(click())
 
-    /**
-     * Checks that a specific toast message is displayed
-     *
-     * @param toastString String that should be displayed
-     */
-    private fun assertToastDisplayed(toastString: String) {
-        onView(withText(toastString))
-            .inRoot(withDecorView(Matchers.not(Matchers.`is`(activityRule.activity.window.decorView))))
-            .check(matches(isDisplayed()))
+        // Close the dialog
+        onView(withId(BUTTON_POSITIVE)).perform(click())
+        // Export
+        onView(withId(R.id.menu_save)).perform(click())
+
+        if (OC_DEMO_DISABLED) {
+            val toast = context.getString(R.string.toast_export_error, ExportFormat.XML.name)
+            assertToastDisplayed(activityRule.activity, toast)
+        } else {
+            sleep(2000)
+            val targetLocation = "ownCloud -> $OC_DIR"
+            assertToastDisplayed(
+                activityRule.activity,
+                String.format(context.getString(R.string.toast_exported_to), targetLocation)
+            )
+        }
     }
 
     companion object {

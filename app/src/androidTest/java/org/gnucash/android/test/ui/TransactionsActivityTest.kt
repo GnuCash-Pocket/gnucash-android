@@ -18,6 +18,7 @@ package org.gnucash.android.test.ui
 import android.Manifest
 import android.content.ContentValues
 import android.content.Intent
+import androidx.core.content.edit
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.clearText
 import androidx.test.espresso.action.ViewActions.click
@@ -26,7 +27,6 @@ import androidx.test.espresso.action.ViewActions.pressBack
 import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.RootMatchers.withDecorView
 import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
 import androidx.test.espresso.matcher.ViewMatchers.isChecked
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
@@ -34,10 +34,8 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withParent
 import androidx.test.espresso.matcher.ViewMatchers.withTagValue
 import androidx.test.espresso.matcher.ViewMatchers.withText
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.ActivityTestRule
 import androidx.test.rule.GrantPermissionRule
-import androidx.test.uiautomator.UiDevice
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
@@ -182,22 +180,10 @@ class TransactionsActivityTest : GnuAndroidTest() {
         onView(withText(R.string.title_add_transaction))
             .check(matches(isDisplayed()))
 
-        assertToastDisplayed(R.string.toast_transaction_amount_required)
+        assertToastDisplayed(transactionsActivity, R.string.toast_transaction_amount_required)
 
         val afterCount = transactionsDbAdapter.getTransactionsCount(TRANSACTIONS_ACCOUNT_UID)
         assertThat(afterCount).isEqualTo(beforeCount)
-    }
-
-    /**
-     * Checks that a specific toast message is displayed
-     *
-     * @param toastString String that should be displayed
-     */
-    private fun assertToastDisplayed(toastString: Int) {
-        UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).waitForIdle()
-        onView(withText(toastString))
-            .inRoot(withDecorView(not(transactionsActivity.window.decorView)))
-            .check(matches(isDisplayed()))
     }
 
     private fun validateEditTransactionFields(transaction: Transaction) {
@@ -485,12 +471,9 @@ class TransactionsActivityTest : GnuAndroidTest() {
 
     private fun setDoubleEntryEnabled(enabled: Boolean) {
         GnuCashApplication.getBookPreferences(context)
-            .edit()
-            .putBoolean(
-                context.getString(R.string.key_use_double_entry),
-                enabled
-            )
-            .apply()
+            .edit {
+                putBoolean(context.getString(R.string.key_use_double_entry), enabled)
+            }
     }
 
     @Test
@@ -511,12 +494,12 @@ class TransactionsActivityTest : GnuAndroidTest() {
 
     private fun setDefaultTransactionType(type: TransactionType) {
         GnuCashApplication.getBookPreferences(context)
-            .edit()
-            .putString(
-                context.getString(R.string.key_default_transaction_type),
-                type.value
-            )
-            .commit()
+            .edit {
+                putString(
+                    context.getString(R.string.key_default_transaction_type),
+                    type.value
+                )
+            }
     }
 
     //FIXME: Improve on this test

@@ -224,7 +224,7 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
             preferences.isSync = false
         } else {
             OwnCloudDialogFragment.newInstance(preference)
-                .show(parentFragmentManager, "owncloud_dialog")
+                .show(parentFragmentManager, OwnCloudDialogFragment.TAG)
         }
     }
 

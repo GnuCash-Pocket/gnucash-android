@@ -25,6 +25,7 @@ import android.os.AsyncTask
 import android.os.OperationCanceledException
 import android.widget.Toast
 import org.gnucash.android.R
+import org.gnucash.android.app.getActivity
 import org.gnucash.android.export.ExportParams.ExportTarget
 import org.gnucash.android.export.csv.CsvAccountExporter
 import org.gnucash.android.export.csv.CsvTransactionsExporter
@@ -118,17 +119,18 @@ class ExportAsyncTask(
         dismissProgressDialog()
 
         val context = progressDialog?.context ?: return
+        val activity = context.getActivity()
         val exportParams = this.exportParams ?: return
         if (exportLocation != null) {
-            if (context is Activity) {
-                reportSuccess(context, exportParams)
+            if (activity != null) {
+                reportSuccess(activity, exportParams)
             }
             if (exportParams.deleteTransactionsAfterExport) {
                 refreshViews(context)
             }
 
         } else {
-            if (context is Activity) {
+            if (activity != null) {
                 Toast.makeText(
                     context,
                     context.getString(R.string.toast_export_error, exportParams.exportFormat.name),
@@ -150,9 +152,8 @@ class ExportAsyncTask(
             //FIXME by moving the creation and display of the progress dialog to the Fragment
         }
         val context = progressDialog?.context
-        if (context is Activity) {
-            context.finish()
-        }
+        val activity = context?.getActivity()
+        activity?.finish()
     }
 
     private fun reportSuccess(context: Context, exportParams: ExportParams) {
@@ -163,7 +164,7 @@ class ExportAsyncTask(
             ExportTarget.OWNCLOUD -> {
                 val preferences = OwnCloudPreferences(context)
                 targetLocation =
-                    if (preferences.isSync) "ownCloud -> " + preferences.dir else "ownCloud sync not enabled"
+                    if (preferences.isSync) "ownCloud -> ${preferences.dir}" else "ownCloud sync not enabled"
             }
 
             else -> targetLocation =
