@@ -202,8 +202,13 @@ class ScheduledAction    //all actions are enabled by default
         val recurrence = recurrence ?: return startDate
         val multiplier = recurrence.multiplier
         val startDate = LocalDateTime(startTime)
-        val nextScheduledExecution = when (recurrence.periodType) {
-            PeriodType.ONCE -> startDate
+        val nextScheduledExecution: LocalDateTime = when (recurrence.periodType) {
+            PeriodType.ONCE -> if (instanceCount < multiplier) {
+                startDate
+            } else {
+                val endTime = endDate
+                return if (endTime > 0) endTime else System.currentTimeMillis()
+            }
             PeriodType.HOUR -> startDate.plusHours(multiplier)
             PeriodType.DAY -> startDate.plusDays(multiplier)
             PeriodType.WEEK -> computeNextWeeklyExecutionStartingAt(startDate)
@@ -362,10 +367,8 @@ class ScheduledAction    //all actions are enabled by default
      * @param ordinal    Ordinal of the periodicity. If unsure, specify 1
      * @see recurrence
      */
-    fun setRecurrence(periodType: PeriodType?, ordinal: Int) {
-        val recurrence = Recurrence(
-            periodType!!
-        )
+    fun setRecurrence(periodType: PeriodType, ordinal: Int) {
+        val recurrence = Recurrence(periodType)
         recurrence.multiplier = ordinal
         setRecurrence(recurrence)
     }

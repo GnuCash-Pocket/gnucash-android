@@ -423,7 +423,7 @@ class TransactionsListFragment : MenuFragment(),
     private fun duplicateTransaction(transactionUID: String) {
         try {
             val transaction = transactionsDbAdapter.getRecord(transactionUID)
-            val duplicate = Transaction(transaction)
+            val duplicate = transaction.copy()
             duplicate.time = System.currentTimeMillis()
             transactionsDbAdapter.insert(duplicate)
             refresh()

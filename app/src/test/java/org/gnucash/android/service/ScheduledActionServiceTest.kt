@@ -36,13 +36,12 @@ import org.gnucash.android.model.ScheduledAction
 import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
-import org.gnucash.android.test.unit.GnuCashTest
+import org.gnucash.android.test.unit.BookHelperTest
 import org.gnucash.android.util.set
 import org.joda.time.DateTime
 import org.joda.time.DateTimeConstants
 import org.joda.time.LocalDateTime
 import org.joda.time.Weeks
-import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import timber.log.Timber
@@ -54,20 +53,15 @@ import java.util.Calendar
 /**
  * Test the the scheduled actions service runs as expected
  */
-class ScheduledActionServiceTest : GnuCashTest() {
+class ScheduledActionServiceTest : BookHelperTest() {
     private var actionUID: String? = null
-    private lateinit var dbHolder: DatabaseHolder
-    private lateinit var db: SQLiteDatabase
 
     private val baseAccount = Account("Base Account")
     private val transferAccount = Account("Transfer Account")
 
-    private lateinit var transactionsDbAdapter: TransactionsDbAdapter
-
     @Before
-    fun setUp() {
-        db = GnuCashApplication.activeDb!!
-        dbHolder = DatabaseHolder(context, db)
+    override fun setUp() {
+        super.setUp()
         baseAccount.commodity = Commodity.DEFAULT_COMMODITY
         transferAccount.commodity = Commodity.DEFAULT_COMMODITY
 
@@ -92,11 +86,6 @@ class ScheduledActionServiceTest : GnuCashTest() {
         transactionsDbAdapter.insert(templateTransaction)
     }
 
-    @After
-    fun tearDown() {
-        transactionsDbAdapter.deleteAllRecords()
-    }
-
     @Test
     fun disabledScheduledActions_shouldNotRun() {
         val recurrence = Recurrence(PeriodType.WEEK)
@@ -106,11 +95,9 @@ class ScheduledActionServiceTest : GnuCashTest() {
         scheduledAction1.actionUID = actionUID
         scheduledAction1.setRecurrence(recurrence)
 
-        val trxnAdapter = TransactionsDbAdapter.instance
-
-        assertThat(trxnAdapter.recordsCount).isZero()
+        assertThat(transactionsDbAdapter.recordsCount).isZero()
         ScheduledActionService.processScheduledAction(dbHolder, scheduledAction1)
-        assertThat(trxnAdapter.recordsCount).isZero()
+        assertThat(transactionsDbAdapter.recordsCount).isZero()
     }
 
     @Test
@@ -121,11 +108,9 @@ class ScheduledActionServiceTest : GnuCashTest() {
         scheduledAction.setRecurrence(Recurrence(PeriodType.MONTH))
         scheduledAction.actionUID = actionUID
 
-        val trxnAdapter = TransactionsDbAdapter.instance
-
-        assertThat(trxnAdapter.recordsCount).isZero()
+        assertThat(transactionsDbAdapter.recordsCount).isZero()
         ScheduledActionService.processScheduledAction(dbHolder, scheduledAction)
-        assertThat(trxnAdapter.recordsCount).isZero()
+        assertThat(transactionsDbAdapter.recordsCount).isZero()
     }
 
     /**
@@ -141,10 +126,9 @@ class ScheduledActionServiceTest : GnuCashTest() {
         scheduledAction.totalPlannedExecutionCount = 4
         scheduledAction.instanceCount = 4
 
-        val trxnAdapter = TransactionsDbAdapter.instance
-        assertThat(trxnAdapter.recordsCount).isZero()
+        assertThat(transactionsDbAdapter.recordsCount).isZero()
         ScheduledActionService.processScheduledAction(dbHolder, scheduledAction)
-        assertThat(trxnAdapter.recordsCount).isZero()
+        assertThat(transactionsDbAdapter.recordsCount).isZero()
     }
 
     /**
@@ -166,7 +150,6 @@ class ScheduledActionServiceTest : GnuCashTest() {
         scheduledAction.setRecurrence(recurrence)
         ScheduledActionDbAdapter.instance.insert(scheduledAction)
 
-        val transactionsDbAdapter = TransactionsDbAdapter.instance
         assertThat(transactionsDbAdapter.recordsCount).isZero()
 
         ScheduledActionService.processScheduledAction(dbHolder, scheduledAction)
@@ -184,7 +167,6 @@ class ScheduledActionServiceTest : GnuCashTest() {
         scheduledAction.endDate = DateTime(2017, 8, 16, 9, 0).millis
         ScheduledActionDbAdapter.instance.insert(scheduledAction)
 
-        val transactionsDbAdapter = TransactionsDbAdapter.instance
         assertThat(transactionsDbAdapter.recordsCount).isZero()
 
         ScheduledActionService.processScheduledAction(dbHolder, scheduledAction)
@@ -217,7 +199,6 @@ class ScheduledActionServiceTest : GnuCashTest() {
         scheduledAction.endDate = DateTime(2016, 8, 8, 9, 0).millis
         ScheduledActionDbAdapter.instance.insert(scheduledAction)
 
-        val transactionsDbAdapter = TransactionsDbAdapter.instance
         assertThat(transactionsDbAdapter.recordsCount).isZero()
 
         ScheduledActionService.processScheduledAction(dbHolder, scheduledAction)
@@ -238,7 +219,6 @@ class ScheduledActionServiceTest : GnuCashTest() {
         scheduledAction.startDate = startTime.millis
         scheduledAction.setRecurrence(PeriodType.MONTH, 1)
 
-        val transactionsDbAdapter = TransactionsDbAdapter.instance
         assertThat(transactionsDbAdapter.recordsCount).isZero()
 
         ScheduledActionService.processScheduledAction(dbHolder, scheduledAction)
@@ -454,5 +434,93 @@ class ScheduledActionServiceTest : GnuCashTest() {
         assertThat(files).hasSize(1)
         assertThat(files[0]).isNotNull()
         assertThat(files[0].name).endsWith(".qif")
+    }
+
+    @Test
+    fun `common accounts with 1 of each type - once`() {
+        val bookUID = importGnuCashXml("simpleScheduledTransactionImport.xml")
+        assertThat(bookUID).isEqualTo("fb0911dd508266db9446bc605edad3e4")
+        assertThat(bookUID).isEqualTo(dbHolder.name)
+
+        val actions = scheduledActionDbAdapter.allRecords
+        assertThat(actions).hasSize(1)
+
+        val scheduledAction = actions[0]
+        assertThat(scheduledAction.uid).isEqualTo("9def659b35e85b09fe2bfade35053487")
+        assertThat(scheduledAction.name).isEqualTo("Los pollos hermanos")
+        assertThat(scheduledAction.recurrence).isNotNull()
+        assertThat(scheduledAction.instanceCount).isOne()
+        assertThat(scheduledAction.isEnabled).isTrue()
+        assertThat(scheduledAction.actionUID).isEqualTo("b645bef06d0844aece6424ceeec03983")
+
+        var executedCount = scheduledAction.instanceCount
+        val recurrence = scheduledAction.recurrence
+        scheduledAction.setRecurrence(PeriodType.ONCE, 1)
+        scheduledAction.instanceCount = 0
+        ScheduledActionService.processScheduledAction(dbHolder, scheduledAction)
+        executedCount += scheduledAction.instanceCount
+        scheduledAction.setRecurrence(recurrence)
+
+        assertThat(executedCount).isEqualTo(2)
+    }
+
+    @Test
+    fun `common accounts with 1 of each type - 1 month`() {
+        val bookUID = importGnuCashXml("simpleScheduledTransactionImport.xml")
+        assertThat(bookUID).isEqualTo("fb0911dd508266db9446bc605edad3e4")
+        assertThat(bookUID).isEqualTo(dbHolder.name)
+
+        val actions = scheduledActionDbAdapter.allRecords
+        assertThat(actions).hasSize(1)
+
+        val scheduledAction = actions[0]
+        assertThat(scheduledAction.uid).isEqualTo("9def659b35e85b09fe2bfade35053487")
+        assertThat(scheduledAction.name).isEqualTo("Los pollos hermanos")
+        assertThat(scheduledAction.recurrence).isNotNull()
+        assertThat(scheduledAction.instanceCount).isOne()
+        assertThat(scheduledAction.isEnabled).isTrue()
+        assertThat(scheduledAction.actionUID).isEqualTo("b645bef06d0844aece6424ceeec03983")
+
+        // 2016-09-24 to 2016-10-27
+        // 1 months from the start date to the end date
+        val endDate = Calendar.getInstance().apply {
+            set(Calendar.YEAR, 2016)
+            set(Calendar.MONTH, Calendar.OCTOBER)
+            set(Calendar.DAY_OF_MONTH, 27)
+        }
+        scheduledAction.endDate = endDate.timeInMillis
+        ScheduledActionService.processScheduledAction(dbHolder, scheduledAction)
+
+        assertThat(scheduledAction.instanceCount).isEqualTo(2)
+    }
+
+    @Test
+    fun `common accounts with 1 of each type - 109 months`() {
+        val bookUID = importGnuCashXml("simpleScheduledTransactionImport.xml")
+        assertThat(bookUID).isEqualTo("fb0911dd508266db9446bc605edad3e4")
+        assertThat(bookUID).isEqualTo(dbHolder.name)
+
+        val actions = scheduledActionDbAdapter.allRecords
+        assertThat(actions).hasSize(1)
+
+        val scheduledAction = actions[0]
+        assertThat(scheduledAction.uid).isEqualTo("9def659b35e85b09fe2bfade35053487")
+        assertThat(scheduledAction.name).isEqualTo("Los pollos hermanos")
+        assertThat(scheduledAction.recurrence).isNotNull()
+        assertThat(scheduledAction.instanceCount).isOne()
+        assertThat(scheduledAction.isEnabled).isTrue()
+        assertThat(scheduledAction.actionUID).isEqualTo("b645bef06d0844aece6424ceeec03983")
+
+        // 2016-09-24 to 2025-10-27
+        // 109 months from the start date to the end date
+        val endDate = Calendar.getInstance().apply {
+            set(Calendar.YEAR, 2025)
+            set(Calendar.MONTH, Calendar.OCTOBER)
+            set(Calendar.DAY_OF_MONTH, 27)
+        }
+        scheduledAction.endDate = endDate.timeInMillis
+        ScheduledActionService.processScheduledAction(dbHolder, scheduledAction)
+
+        assertThat(scheduledAction.instanceCount).isEqualTo(110)
     }
 }

@@ -228,7 +228,7 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
 
     private fun moveTransaction(transactionUID: String?) {
         if (transactionUID.isNullOrEmpty()) return
-        val uids = arrayOf<String>(transactionUID)
+        val uids = arrayOf(transactionUID)
         val fragment = BulkMoveDialogFragment.newInstance(uids, accountUID!!)
         val fm = supportFragmentManager
         fm.setFragmentResultListener(BulkMoveDialogFragment.TAG, this, this)
@@ -256,7 +256,7 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         if (transactionUID.isNullOrEmpty()) return
 
         val transaction = transactionsDbAdapter.getRecord(transactionUID)
-        val duplicate = Transaction(transaction)
+        val duplicate = transaction.copy()
         duplicate.time = System.currentTimeMillis()
         try {
             transactionsDbAdapter.insert(duplicate)

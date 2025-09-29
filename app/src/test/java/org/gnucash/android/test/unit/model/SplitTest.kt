@@ -47,10 +47,10 @@ class SplitTest : GnuCashTest() {
         split.transactionUID = "terminator-trx"
         split.type = TransactionType.CREDIT
 
-        val clone1 = Split(split, false)
+        val clone1 = split.copy(false)
         assertThat(clone1).isEqualTo(split)
 
-        val clone2 = Split(split, true)
+        val clone2 = split.copy(true)
         assertThat(clone2.uid).isNotEqualTo(split.uid)
         assertThat(split.isEquivalentTo(clone2)).isTrue()
     }

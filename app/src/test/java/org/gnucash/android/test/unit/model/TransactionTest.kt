@@ -17,11 +17,11 @@ class TransactionTest : GnuCashTest() {
         assertThat(transaction.uid).isNotNull()
         assertThat(transaction.currencyCode).isEqualTo(Commodity.DEFAULT_COMMODITY.currencyCode)
 
-        val clone1 = Transaction(transaction, false)
+        val clone1 = transaction.copy(false)
         assertThat(transaction.uid).isEqualTo(clone1.uid)
         assertThat(transaction).isEqualTo(clone1)
 
-        val clone2 = Transaction(transaction, true)
+        val clone2 = transaction.copy(true)
         assertThat(transaction.uid).isNotEqualTo(clone2.uid)
         assertThat(transaction.currencyCode).isEqualTo(clone2.currencyCode)
         assertThat(transaction.description).isEqualTo(clone2.description)

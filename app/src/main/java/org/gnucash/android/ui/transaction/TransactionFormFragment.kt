@@ -189,13 +189,13 @@ class TransactionFormFragment : MenuFragment(),
         val account = requireAccount()
         //updateTransferAccountsList must only be called after initializing accountsDbAdapter
         updateTransferAccountsList(binding, account)
-        initializeViews(binding, account)
+        bind(binding, account)
 
         val transaction = transaction
-        if (transaction == null) {
-            initTransactionNameAutocomplete(binding)
+        if (transaction == null || transaction.id == 0L) {
+            bindTransactionNameAutocomplete(binding)
         } else {
-            initializeViewsWithTransaction(binding, transaction!!)
+            bind(binding, transaction)
         }
     }
 
@@ -324,7 +324,7 @@ class TransactionFormFragment : MenuFragment(),
     /**
      * Initializes the transaction name field for autocompletion with existing transaction names in the database
      */
-    private fun initTransactionNameAutocomplete(binding: FragmentTransactionFormBinding) {
+    private fun bindTransactionNameAutocomplete(binding: FragmentTransactionFormBinding) {
         val from = arrayOf<String?>(TransactionEntry.COLUMN_DESCRIPTION)
         val to = intArrayOf(R.id.primary_text)
 
@@ -347,12 +347,12 @@ class TransactionFormFragment : MenuFragment(),
         binding.inputTransactionName.onItemClickListener =
             OnItemClickListener { adapterView, view, position, id ->
                 val transactionDb = transactionsDbAdapter.getRecord(id)
-                val transaction = Transaction(transactionDb, true)
+                val transaction = transactionDb.copy()
                 transaction.time = System.currentTimeMillis()
                 //we check here because next method will modify it and we want to catch user-modification
                 val amountEntered = binding.inputTransactionAmount.value
                 val amountModified = binding.inputTransactionAmount.isInputModified
-                initializeViewsWithTransaction(binding, transaction)
+                bind(binding, transaction)
                 val splits: List<Split> = transaction.splits
                 val isSplitPair = splits.size == 2 && splits[0].isPairOf(splits[1])
                 if (isSplitPair) {
@@ -387,10 +387,7 @@ class TransactionFormFragment : MenuFragment(),
      * Initialize views in the fragment with information from a transaction.
      * This method is called if the fragment is used for editing a transaction
      */
-    private fun initializeViewsWithTransaction(
-        binding: FragmentTransactionFormBinding,
-        transaction: Transaction
-    ) {
+    private fun bind(binding: FragmentTransactionFormBinding, transaction: Transaction) {
         val context = binding.root.context
         val account = requireAccount()
         val accountUID = account.uid
@@ -413,11 +410,12 @@ class TransactionFormFragment : MenuFragment(),
         binding.currencySymbol.text = accountCommodity.symbol
         binding.inputTransactionAmount.commodity = accountCommodity
 
-        binding.checkboxSaveTemplate.isChecked = transaction.isTemplate
         val scheduledActionUID = transaction.scheduledActionUID
         if (!scheduledActionUID.isNullOrEmpty()) {
             val scheduledAction = scheduledActionDbAdapter.getRecord(scheduledActionUID)
             onRecurrenceSet(scheduledAction.ruleString)
+        } else {
+            this.recurrenceRule = null
         }
     }
 
@@ -499,7 +497,7 @@ class TransactionFormFragment : MenuFragment(),
     /**
      * Initialize views with default data for new transactions
      */
-    private fun initializeViews(binding: FragmentTransactionFormBinding, account: Account) {
+    private fun bind(binding: FragmentTransactionFormBinding, account: Account) {
         val context = binding.root.context
 
         val now = Calendar.getInstance()
@@ -824,7 +822,7 @@ class TransactionFormFragment : MenuFragment(),
      * Collects information from the fragment views and uses it to create
      * and save a transaction
      */
-    private fun saveNewTransaction(binding: FragmentTransactionFormBinding) {
+    private fun saveTransaction(binding: FragmentTransactionFormBinding) {
         binding.inputTransactionAmount.error = null
 
         //determine whether we need to do currency conversion
@@ -834,7 +832,6 @@ class TransactionFormFragment : MenuFragment(),
             return
         }
 
-        val isTemplate = binding.checkboxSaveTemplate.isChecked
         val transactionOld = transaction
         val transaction = extractTransactionFromView(binding)
         var scheduledActionUID: String? = null
@@ -849,12 +846,12 @@ class TransactionFormFragment : MenuFragment(),
         this.transaction = transaction
 
         try {
-            if (isTemplate) { //template is automatically checked when a transaction is scheduled
+            if (transaction.isTemplate) { //template is automatically checked when a transaction is scheduled
                 if (editMode && wasScheduled) {
                     transaction.scheduledActionUID = scheduledActionUID
                     scheduleRecurringTransaction(transaction)
                 } else { //means it was new transaction, so a new template
-                    val templateTransaction = Transaction(transaction)
+                    val templateTransaction = transaction.copy()
                     templateTransaction.isTemplate = true
                     transactionsDbAdapter.insert(templateTransaction)
                     scheduleRecurringTransaction(templateTransaction)
@@ -866,7 +863,7 @@ class TransactionFormFragment : MenuFragment(),
             // So replace is chosen.
             transactionsDbAdapter.replace(transaction)
 
-            if (!isTemplate && wasScheduled) { //we were editing a schedule and it was turned off
+            if (!transaction.isTemplate && wasScheduled) { //we were editing a schedule and it was turned off
                 scheduledActionDbAdapter.deleteRecord(scheduledActionUID)
             }
 
@@ -882,7 +879,7 @@ class TransactionFormFragment : MenuFragment(),
     private fun maybeSaveTransaction(binding: FragmentTransactionFormBinding) {
         val view = binding.root
         if (canSave(binding)) {
-            saveNewTransaction(binding)
+            saveTransaction(binding)
         } else {
             if (binding.inputTransactionAmount.value == null) {
                 snackLong(R.string.toast_transaction_amount_required)
@@ -1038,7 +1035,7 @@ class TransactionFormFragment : MenuFragment(),
         //The transfer dialog was called while attempting to save. So try saving again
         if (onSaveAttempt) {
             val binding = this.binding ?: return
-            saveNewTransaction(binding)
+            saveTransaction(binding)
         }
         onSaveAttempt = false
     }
@@ -1061,13 +1058,6 @@ class TransactionFormFragment : MenuFragment(),
                 Timber.e(e, "Bad recurrence for [%s]", rrule)
                 return
             }
-
-            //when recurrence is set, we will definitely be saving a template
-            binding.checkboxSaveTemplate.isChecked = true
-            binding.checkboxSaveTemplate.setEnabled(false)
-        } else {
-            binding.checkboxSaveTemplate.setEnabled(true)
-            binding.checkboxSaveTemplate.isChecked = false
         }
         if (repeatString.isNullOrEmpty()) {
             repeatString = context.getString(R.string.label_tap_to_create_schedule)

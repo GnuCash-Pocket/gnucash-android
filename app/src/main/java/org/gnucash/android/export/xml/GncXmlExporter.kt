@@ -46,7 +46,6 @@ import org.gnucash.android.export.xml.GncXmlHelper.KEY_DEBIT_FORMULA
 import org.gnucash.android.export.xml.GncXmlHelper.KEY_DEBIT_NUMERIC
 import org.gnucash.android.export.xml.GncXmlHelper.KEY_DEFAULT_TRANSFER_ACCOUNT
 import org.gnucash.android.export.xml.GncXmlHelper.KEY_FAVORITE
-import org.gnucash.android.export.xml.GncXmlHelper.KEY_FROM_SCHED_ACTION
 import org.gnucash.android.export.xml.GncXmlHelper.KEY_HIDDEN
 import org.gnucash.android.export.xml.GncXmlHelper.KEY_NOTES
 import org.gnucash.android.export.xml.GncXmlHelper.KEY_PLACEHOLDER
@@ -461,33 +460,33 @@ class GncXmlExporter(
     private fun writeTransactions(xmlSerializer: XmlSerializer, isTemplates: Boolean) {
         Timber.i("write transactions")
         val projection = arrayOf<String?>(
-            TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " AS trans_uid",
-            TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_DESCRIPTION + " AS trans_desc",
-            TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_NOTES + " AS trans_notes",
-            TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " AS trans_time",
-            TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_EXPORTED + " AS trans_exported",
-            TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_COMMODITY_UID + " AS trans_commodity",
-            TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_CREATED_AT + " AS trans_date_posted",
-            TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_SCHEDX_ACTION_UID + " AS trans_from_sched_action",
-            SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ID + " AS split_id",
-            SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_UID + " AS split_uid",
-            SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_MEMO + " AS split_memo",
-            SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TYPE + " AS split_type",
-            SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_VALUE_NUM + " AS split_value_num",
-            SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_VALUE_DENOM + " AS split_value_denom",
-            SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_QUANTITY_NUM + " AS split_quantity_num",
-            SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_QUANTITY_DENOM + " AS split_quantity_denom",
-            SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID + " AS split_acct_uid",
-            SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID + " AS split_sched_xaction_acct_uid"
+            "t." + TransactionEntry.COLUMN_UID + " AS trans_uid",
+            "t." + TransactionEntry.COLUMN_DESCRIPTION + " AS trans_desc",
+            "t." + TransactionEntry.COLUMN_NOTES + " AS trans_notes",
+            "t." + TransactionEntry.COLUMN_TIMESTAMP + " AS trans_time",
+            "t." + TransactionEntry.COLUMN_EXPORTED + " AS trans_exported",
+            "t." + TransactionEntry.COLUMN_COMMODITY_UID + " AS trans_commodity",
+            "t." + TransactionEntry.COLUMN_CREATED_AT + " AS trans_date_posted",
+            "t." + TransactionEntry.COLUMN_SCHEDX_ACTION_UID + " AS trans_from_sched_action",
+            "s." + SplitEntry.COLUMN_ID + " AS split_id",
+            "s." + SplitEntry.COLUMN_UID + " AS split_uid",
+            "s." + SplitEntry.COLUMN_MEMO + " AS split_memo",
+            "s." + SplitEntry.COLUMN_TYPE + " AS split_type",
+            "s." + SplitEntry.COLUMN_VALUE_NUM + " AS split_value_num",
+            "s." + SplitEntry.COLUMN_VALUE_DENOM + " AS split_value_denom",
+            "s." + SplitEntry.COLUMN_QUANTITY_NUM + " AS split_quantity_num",
+            "s." + SplitEntry.COLUMN_QUANTITY_DENOM + " AS split_quantity_denom",
+            "s." + SplitEntry.COLUMN_ACCOUNT_UID + " AS split_acct_uid",
+            "s." + SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID + " AS split_sched_xaction_acct_uid"
         )
         val where: String = if (isTemplates) {
-            TransactionEntry.COLUMN_TEMPLATE + "=1"
+            "t." + TransactionEntry.COLUMN_TEMPLATE + "=1"
         } else {
-            TransactionEntry.COLUMN_TEMPLATE + "=0"
+            "t." + TransactionEntry.COLUMN_TEMPLATE + "=0"
         }
         val orderBy = ("trans_date_posted ASC"
-                + ", " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " ASC"
-                + ", " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " ASC"
+                + ", t." + TransactionEntry.COLUMN_UID + " ASC"
+                + ", t." + TransactionEntry.COLUMN_TIMESTAMP + " ASC"
                 + ", " + "split_id ASC")
         val cursor =
             transactionsDbAdapter.fetchTransactionsWithSplits(projection, where, null, orderBy)
@@ -512,7 +511,6 @@ class GncXmlExporter(
                 transactionToTemplateAccounts[txUID] = account
             } while (cursor.moveToNext())
 
-            writeTemplateAccounts(xmlSerializer, transactionToTemplateAccounts.values)
             //push cursor back to before the beginning
             cursor.moveToFirst()
         }
@@ -588,10 +586,6 @@ class GncXmlExporter(
                     slots.add(Slot.string(KEY_NOTES, notes))
                 }
 
-                val scheduledActionUID = cursor.getString("trans_from_sched_action")
-                if (!scheduledActionUID.isNullOrEmpty()) {
-                    slots.add(Slot.guid(KEY_FROM_SCHED_ACTION, scheduledActionUID))
-                }
                 if (!slots.isEmpty()) {
                     xmlSerializer.startTag(NS_TRANSACTION, TAG_SLOTS)
                     writeSlots(xmlSerializer, slots)
@@ -648,18 +642,11 @@ class GncXmlExporter(
             // account guid
             xmlSerializer.startTag(NS_SPLIT, TAG_ACCOUNT)
             xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
-            var splitAccountUID: String
-            if (isTemplates) {
-                //get the UID of the template account
-                splitAccountUID = transactionToTemplateAccounts[txUID]!!.uid
-            } else {
-                splitAccountUID = cursor.getString("split_acct_uid")!!
-            }
+            val splitAccountUID = cursor.getString("split_acct_uid")!!
             xmlSerializer.text(splitAccountUID)
             xmlSerializer.endTag(NS_SPLIT, TAG_ACCOUNT)
 
             //if we are exporting a template transaction, then we need to add some extra slots
-            // TODO be able to import `KEY_SCHED_XACTION` slots.
             if (isTemplates) {
                 val slots = mutableListOf<Slot>()
                 val frame = mutableListOf<Slot>()
@@ -667,7 +654,7 @@ class GncXmlExporter(
                 if (sched_xaction_acct_uid.isNullOrEmpty()) {
                     sched_xaction_acct_uid = splitAccountUID
                 }
-                frame.add(Slot.guid(KEY_SPLIT_ACCOUNT_SLOT, sched_xaction_acct_uid!!))
+                frame.add(Slot.guid(KEY_SPLIT_ACCOUNT_SLOT, sched_xaction_acct_uid))
                 if (trxType == TransactionType.CREDIT) {
                     frame.add(
                         Slot.string(KEY_CREDIT_FORMULA, formatFormula(splitAmount, trnCommodity))
@@ -700,18 +687,11 @@ class GncXmlExporter(
     }
 
     @Throws(IOException::class)
-    private fun writeTemplateAccounts(xmlSerializer: XmlSerializer, accounts: Collection<Account>) {
-        for (account in accounts) {
-            writeAccount(xmlSerializer, account)
-        }
-    }
-
-    @Throws(IOException::class)
     private fun writeTemplateTransactions(xmlSerializer: XmlSerializer) {
         cancellationSignal.throwIfCanceled()
         if (transactionsDbAdapter.templateTransactionsCount > 0) {
             xmlSerializer.startTag(NS_GNUCASH, TAG_TEMPLATE_TRANSACTIONS)
-            //TODO writeAccounts(xmlSerializer, true);
+            writeAccounts(xmlSerializer, true);
             writeTransactions(xmlSerializer, true)
             xmlSerializer.endTag(NS_GNUCASH, TAG_TEMPLATE_TRANSACTIONS)
         }
@@ -747,7 +727,7 @@ class GncXmlExporter(
         if (accountUID.isNotEmpty()) {
             try {
                 account = accountsDbAdapter.getRecord(accountUID)
-            } catch (_: IllegalArgumentException) {
+            } catch (_: Exception) {
             }
         }
         if (account == null) {

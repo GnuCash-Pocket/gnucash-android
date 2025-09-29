@@ -27,7 +27,6 @@ import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry
 import org.gnucash.android.db.adapter.BooksDbAdapter
-import org.gnucash.android.db.adapter.DatabaseAdapter
 import org.gnucash.android.db.adapter.RecurrenceDbAdapter
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
@@ -285,9 +284,9 @@ class ScheduledActionService {
                 return 0
             }
             val transactionsDbAdapter = TransactionsDbAdapter(dbHolder)
-            val trxnTemplate: Transaction?
+            val template: Transaction?
             try {
-                trxnTemplate = transactionsDbAdapter.getRecord(actionUID)
+                template = transactionsDbAdapter.getRecord(actionUID)
             } catch (ex: IllegalArgumentException) { //if the record could not be found, abort
                 Timber.e(
                     ex,
@@ -302,12 +301,11 @@ class ScheduledActionService {
             //if the end time is in the future, we execute all schedules until now (current time)
             //if there is no end time, we execute all schedules until now
             val endTime = if (scheduledAction.endTime > 0) {
-                min(scheduledAction.endTime, now).toLong()
+                min(scheduledAction.endTime, now)
             } else {
                 now
             }
             val totalPlannedExecutions = scheduledAction.totalPlannedExecutionCount
-            val transactions = mutableListOf<Transaction>()
 
             var executionCount = 0
             val previousExecutionCount = scheduledAction.instanceCount // We'll modify it
@@ -315,12 +313,12 @@ class ScheduledActionService {
             //so compute the actual transaction time from pre-known values
             var transactionTime = scheduledAction.computeNextCountBasedScheduledExecutionTime()
             while (transactionTime <= endTime) {
-                val recurringTrxn = Transaction(trxnTemplate, true)
-                recurringTrxn.time = transactionTime
-                transactions.add(recurringTrxn)
-                recurringTrxn.scheduledActionUID = scheduledAction.uid
+                val transaction = template.copy()
+                transaction.time = transactionTime
+                transaction.scheduledActionUID = scheduledAction.uid
+                transactionsDbAdapter.insert(transaction)
                 //required for computingNextScheduledExecutionTime
-                scheduledAction.instanceCount = ++executionCount
+                scheduledAction.instanceCount = previousExecutionCount + ++executionCount
 
                 if (totalPlannedExecutions > 0 && executionCount >= totalPlannedExecutions) {
                     break //if we hit the total planned executions set, then abort
@@ -329,7 +327,6 @@ class ScheduledActionService {
                 transactionTime = scheduledAction.computeNextCountBasedScheduledExecutionTime()
             }
 
-            transactionsDbAdapter.bulkAddRecords(transactions, DatabaseAdapter.UpdateMethod.Insert)
             // Be nice and restore the parameter's original state to avoid confusing the callers
             scheduledAction.instanceCount = previousExecutionCount
             return executionCount
