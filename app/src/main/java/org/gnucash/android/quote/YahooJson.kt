@@ -4,6 +4,7 @@ import android.text.format.DateUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.gnucash.android.model.Commodity
@@ -56,7 +57,7 @@ class YahooJson : QuoteProvider {
                         source = Price.SOURCE_QUOTE
                         type = Price.Type.Last
                     }
-                    launch(Dispatchers.Main) {
+                    withContext(Dispatchers.Main) {
                         callback.onQuote(price)
                     }
                 } catch (e: JSONException) {

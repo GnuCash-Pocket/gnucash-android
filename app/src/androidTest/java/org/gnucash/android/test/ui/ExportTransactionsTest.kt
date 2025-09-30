@@ -17,7 +17,6 @@ package org.gnucash.android.test.ui
 
 import android.Manifest
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.contrib.DrawerActions.open
 import androidx.test.espresso.matcher.ViewMatchers.withId
@@ -88,12 +87,10 @@ class ExportTransactionsTest : GnuAndroidTest() {
         onView(withId(R.id.drawer_layout)).perform(open())
         onView(withText(R.string.title_settings))
             .perform(scrollTo())
-        onView(withText(R.string.title_settings)).perform(click())
-        onView(withText(R.string.header_backup_and_export_settings))
-            .perform(click())
+        clickViewText(R.string.title_settings)
+        clickViewText(R.string.header_backup_and_export_settings)
 
-        onView(withText(R.string.title_create_backup_pref))
-            .perform(click())
+        clickViewText(R.string.title_create_backup_pref)
         assertToastDisplayed(activity, R.string.toast_backup_successful)
     }
 

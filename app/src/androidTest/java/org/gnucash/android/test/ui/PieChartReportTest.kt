@@ -22,9 +22,7 @@ import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.GeneralClickAction
 import androidx.test.espresso.action.Press
 import androidx.test.espresso.action.Tap
-import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.rule.ActivityTestRule
@@ -77,9 +75,7 @@ class PieChartReportTest : GnuAndroidTest() {
         reportsActivity = activityRule.activity
         assertThat(accountsDbAdapter.recordsCount)
             .isGreaterThan(20) //lots of accounts in the default
-        onView(withId(R.id.btn_pie_chart))
-            .check(matches(isDisplayed()))
-            .perform(click())
+        clickViewId(R.id.btn_pie_chart)
     }
 
     /**
@@ -122,7 +118,7 @@ class PieChartReportTest : GnuAndroidTest() {
 
     @Test
     fun testNoData() {
-        onView(withId(R.id.pie_chart)).perform(click())
+        clickViewId(R.id.pie_chart)
         onView(withId(R.id.selected_chart_slice))
             .check(matches(withText(R.string.label_select_pie_slice_to_see_details)))
     }
@@ -165,10 +161,8 @@ class PieChartReportTest : GnuAndroidTest() {
 
         refreshReport()
 
-        onView(withId(R.id.report_account_type_spinner))
-            .perform(click())
-        onView(withText(accountTypeAdapter[1].label))
-            .perform(click())
+        clickViewId(R.id.report_account_type_spinner)
+        clickViewText(accountTypeAdapter[1].label)
         onView(withId(R.id.pie_chart))
             .perform(clickXY(Position.BEGIN, Position.MIDDLE))
         val selectedText = BaseReportFragment.formatSelectedValue(
@@ -181,12 +175,10 @@ class PieChartReportTest : GnuAndroidTest() {
         onView(withId(R.id.selected_chart_slice))
             .check(matches(withText(selectedText)))
 
-        onView(withId(R.id.report_account_type_spinner))
-            .perform(click())
-        onView(withText(accountTypeAdapter[0].label))
-            .perform(click())
+        clickViewId(R.id.report_account_type_spinner)
+        clickViewText(accountTypeAdapter[0].label)
 
-        onView(withId(R.id.pie_chart)).perform(click())
+        clickViewId(R.id.pie_chart)
         onView(withId(R.id.selected_chart_slice)).check(
             matches(withText(R.string.label_select_pie_slice_to_see_details))
         )

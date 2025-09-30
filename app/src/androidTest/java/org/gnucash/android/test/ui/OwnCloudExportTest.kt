@@ -128,10 +128,8 @@ class OwnCloudExportTest : GnuAndroidTest() {
         onView(withId(R.id.drawer_layout)).perform(open())
         onView(withText(R.string.title_settings))
             .perform(scrollTo(), click())
-        onView(withText(R.string.header_backup_and_export_settings))
-            .perform(click())
-        onView(withText(R.string.title_owncloud_sync_preference))
-            .perform(click())
+        clickViewText(R.string.header_backup_and_export_settings)
+        clickViewText(R.string.title_owncloud_sync_preference)
         onView(withId(R.id.owncloud_hostname))
             .check(matches(isDisplayed()))
 
@@ -161,9 +159,9 @@ class OwnCloudExportTest : GnuAndroidTest() {
             )
         // owncloud demo server is offline, so fake check data succeeded.
         if (OC_DEMO_DISABLED) return
-        onView(withId(BUTTON_POSITIVE)).perform(click())
+        clickViewId(BUTTON_POSITIVE)
         sleep(5000)
-        onView(withId(BUTTON_POSITIVE)).perform(click())
+        clickViewId(BUTTON_POSITIVE)
 
         assertThat(prefs.getString(context.getString(R.string.key_owncloud_server), null))
             .isEqualTo(OC_SERVER)
@@ -187,17 +185,15 @@ class OwnCloudExportTest : GnuAndroidTest() {
         preferences.dir = OC_DIR
 
         onView(withId(R.id.drawer_layout)).perform(open())
-        onView(withText(R.string.nav_menu_export))
-            .perform(click())
-        onView(withId(R.id.spinner_export_destination))
-            .perform(click())
+        clickViewText(R.string.nav_menu_export)
+        clickViewId(R.id.spinner_export_destination)
         val destinations = context.resources.getStringArray(R.array.export_destinations)
-        onView(withText(destinations[2])).perform(click())
+        clickViewText(destinations[2])
 
         // Close the dialog
-        onView(withId(BUTTON_POSITIVE)).perform(click())
+        clickViewId(BUTTON_POSITIVE)
         // Export
-        onView(withId(R.id.menu_save)).perform(click())
+        clickViewId(R.id.menu_save)
 
         if (OC_DEMO_DISABLED) {
             val toast = context.getString(R.string.toast_export_error, ExportFormat.XML.name)

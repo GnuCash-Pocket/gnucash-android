@@ -17,10 +17,8 @@ package org.gnucash.android.test.ui
 
 import android.Manifest
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.rule.ActivityTestRule
 import androidx.test.rule.GrantPermissionRule
@@ -72,38 +70,30 @@ class FirstRunWizardActivityTest : GnuAndroidTest() {
     fun shouldRunWizardToEnd() {
         assertThat(accountsDbAdapter.recordsCount).isZero()
 
-        onView(withId(R.id.btn_save)).perform(click())
+        clickViewId(R.id.btn_save)
 
         // Select a currency.
-        onView(withText("EUR (Euro)"))
-            .perform(click())
-        onView(withText(R.string.btn_wizard_next))
-            .perform(click())
+        clickViewText("EUR (Euro)")
+        clickViewText(R.string.btn_wizard_next)
         onView(withText(R.string.wizard_title_account_setup))
             .check(matches(isDisplayed()))
 
         // Select accounts template.
-        onView(withText(R.string.wizard_option_create_default_accounts))
-            .perform(click())
-        onView(withText(R.string.btn_wizard_next))
-            .perform(click())
+        clickViewText(R.string.wizard_option_create_default_accounts)
+        clickViewText(R.string.btn_wizard_next)
         onView(withText(R.string.wizard_option_create_default_accounts))
             .check(matches(isDisplayed()))
-        onView(withText(R.string.btn_wizard_next))
-            .perform(click())
+        clickViewText(R.string.btn_wizard_next)
 
         // Select feedback.
-        onView(withText(R.string.wizard_option_auto_send_crash_reports))
-            .perform(click())
-        onView(withText(R.string.btn_wizard_next))
-            .perform(click())
+        clickViewText(R.string.wizard_option_auto_send_crash_reports)
+        clickViewText(R.string.btn_wizard_next)
 
         // Review.
         onView(withText(R.string.review))
             .check(matches(isDisplayed()))
 
-        onView(withId(R.id.btn_save))
-            .perform(click())
+        clickViewId(R.id.btn_save)
 
         //default accounts should be created
         val actualCount = GnuCashApplication.accountsDbAdapter!!.recordsCount
@@ -120,31 +110,25 @@ class FirstRunWizardActivityTest : GnuAndroidTest() {
     fun shouldDisplayFullCurrencyList() {
         assertThat(accountsDbAdapter.recordsCount).isZero()
 
-        onView(withId(R.id.btn_save)).perform(click())
+        clickViewId(R.id.btn_save)
 
-        onView(withText(R.string.wizard_option_currency_other))
-            .perform(click())
-        onView(withText(R.string.btn_wizard_next))
-            .perform(click())
+        clickViewText(R.string.wizard_option_currency_other)
+        clickViewText(R.string.btn_wizard_next)
         onView(withText(R.string.wizard_title_select_currency))
             .check(matches(isDisplayed()))
 
-        onView(withText("AFA (Afghani)")).perform(click())
-        onView(withId(R.id.btn_save)).perform(click())
+        clickViewText("AFA (Afghani)")
+        clickViewId(R.id.btn_save)
 
-        onView(withText(R.string.wizard_option_let_me_handle_it))
-            .perform(click())
+        clickViewText(R.string.wizard_option_let_me_handle_it)
 
-        onView(withText(R.string.btn_wizard_next))
-            .perform(click())
-        onView(withText(R.string.wizard_option_disable_crash_reports))
-            .perform(click())
-        onView(withText(R.string.btn_wizard_next))
-            .perform(click())
+        clickViewText(R.string.btn_wizard_next)
+        clickViewText(R.string.wizard_option_disable_crash_reports)
+        clickViewText(R.string.btn_wizard_next)
 
         onView(withText(R.string.review))
             .check(matches(isDisplayed()))
-        onView(withId(R.id.btn_save)).perform(click())
+        clickViewId(R.id.btn_save)
 
         //default accounts should not be created
         assertThat(accountsDbAdapter.recordsCount).isZero()

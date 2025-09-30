@@ -4,19 +4,22 @@ import android.app.Activity
 import android.content.Context
 import android.os.Build
 import android.preference.PreferenceManager
+import androidx.annotation.IdRes
 import androidx.annotation.StringRes
 import androidx.core.content.edit
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.ViewInteraction
+import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.RootMatchers.withDecorView
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import com.kobakei.ratethisapp.RateThisApp
-import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.ui.account.AccountsActivity
@@ -74,6 +77,47 @@ abstract class GnuAndroidTest {
             // FIXME: see https://github.com/android/android-test/issues/803
             // assertThat(device.hasObject(By.text(toastString))).isTrue()
         }
+    }
+
+    /**
+     * Simple wrapper for clicking on views with espresso
+     *
+     * @param viewId View resource ID
+     */
+    fun clickViewId(@IdRes viewId: Int): ViewInteraction {
+        return onView(withId(viewId))
+            .perform(click())
+    }
+
+    /**
+     * Simple wrapper for clicking on views in a dialog with espresso
+     *
+     * @param viewId View resource ID
+     */
+    fun clickViewDialog(@IdRes viewId: Int): ViewInteraction {
+        return onView(withId(viewId))
+            .inRoot(isDialog())
+            .perform(click())
+    }
+
+    /**
+     * Simple wrapper for clicking on views with espresso
+     *
+     * @param textId String resource ID
+     */
+    fun clickViewText(@StringRes textId: Int): ViewInteraction {
+        return onView(withText(textId))
+            .perform(click())
+    }
+
+    /**
+     * Simple wrapper for clicking on views with espresso
+     *
+     * @param text The text.
+     */
+    fun clickViewText(text: String?): ViewInteraction {
+        return onView(withText(text))
+            .perform(click())
     }
 
     companion object {

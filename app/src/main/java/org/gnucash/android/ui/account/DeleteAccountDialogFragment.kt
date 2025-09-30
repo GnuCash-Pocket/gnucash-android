@@ -31,6 +31,7 @@ import org.gnucash.android.databinding.DialogAccountDeleteBinding
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.joinIn
+import org.gnucash.android.model.AccountType
 import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.common.UxArgument
@@ -139,15 +140,13 @@ class DeleteAccountDialogFragment : DoubleConfirmationDialog() {
         val accountType = account.accountType
         val descendantAccountUIDs =
             accountsDbAdapter.getDescendantAccountUIDs(accountUID, null, null)
-        val joinedUIDs = descendantAccountUIDs.joinIn()
+        val joinedUIDs = (descendantAccountUIDs + accountUID).joinIn()
 
         //target accounts for transactions and accounts have different conditions
-        val accountMoveConditions = (AccountEntry.COLUMN_UID + " != ?"
-                + " AND " + AccountEntry.COLUMN_COMMODITY_UID + " = ?"
-                + " AND " + AccountEntry.COLUMN_TYPE + " = ?"
-                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0"
-                + " AND " + AccountEntry.COLUMN_UID + " NOT IN " + joinedUIDs)
-        val accountMoveArgs = arrayOf<String?>(accountUID, commodity.uid, accountType.name)
+        val accountMoveConditions = (AccountEntry.COLUMN_UID + " NOT IN " + joinedUIDs
+                + " AND " + AccountEntry.COLUMN_TYPE + " != ?"
+                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
+        val accountMoveArgs = arrayOf<String?>(AccountType.ROOT.name)
         accountNameAdapterAccountsDestination = QualifiedAccountNameAdapter(
             context,
             accountMoveConditions,
@@ -162,13 +161,11 @@ class DeleteAccountDialogFragment : DoubleConfirmationDialog() {
         }
         accountsOptions.targetAccountsSpinner.adapter = accountNameAdapterAccountsDestination
 
-        val transactionDeleteConditions = (AccountEntry.COLUMN_UID + " != ?"
+        val transactionDeleteConditions = (AccountEntry.COLUMN_UID + " NOT IN " + joinedUIDs
                 + " AND " + AccountEntry.COLUMN_COMMODITY_UID + " = ?"
                 + " AND " + AccountEntry.COLUMN_TYPE + " = ?"
-                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0"
-                + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
-                + " AND " + AccountEntry.COLUMN_UID + " NOT IN " + joinedUIDs)
-        val transactionDeleteArgs = arrayOf<String?>(accountUID, commodity.uid, accountType.name)
+                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
+        val transactionDeleteArgs = arrayOf<String?>(commodity.uid, accountType.name)
 
         accountNameAdapterTransactionsDestination = QualifiedAccountNameAdapter(
             context,
@@ -231,7 +228,7 @@ class DeleteAccountDialogFragment : DoubleConfirmationDialog() {
         moveAccountsAccountIndex: Int,
         moveTransactionsAccountIndex: Int
     ) {
-        if (accountUID.isNullOrEmpty()) {
+        if (accountUID.isEmpty()) {
             return
         }
         if ((subAccountCount > 0) && (moveAccountsAccountIndex >= 0)) {

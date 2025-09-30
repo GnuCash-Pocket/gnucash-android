@@ -43,6 +43,10 @@ class AccountTypesAdapter(
 
     data class Label(val value: AccountType, val label: String) {
         override fun toString(): String = label
+
+        override fun equals(other: Any?): Boolean {
+            return (other is Label) && (this.value == other.value)
+        }
     }
 
     companion object {

@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.gnucash.android.databinding.ListItemScheduledTrxnBinding
 import org.gnucash.android.model.ScheduledAction
 import org.gnucash.android.ui.common.Refreshable
@@ -69,7 +70,7 @@ abstract class ScheduledAdapter<VH : ScheduledViewHolder>(protected val refresha
             val records = loadData()
             data.clear()
             data.addAll(records)
-            lifecycleScope.launch(Dispatchers.Main) {
+            withContext(Dispatchers.Main) {
                 notifyDataSetChanged()
             }
         }

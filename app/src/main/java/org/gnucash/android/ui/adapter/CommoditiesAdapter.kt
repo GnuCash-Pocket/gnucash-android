@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.gnucash.android.db.DatabaseSchema
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.model.Commodity
@@ -64,7 +65,7 @@ class CommoditiesAdapter(
         loadJob = scope.launch(Dispatchers.IO) {
             val records = loadData(adapter)
             val labels = records.map { Label(it) }
-            scope.launch(Dispatchers.Main) {
+            withContext(Dispatchers.Main) {
                 clear()
                 addAll(labels)
                 callback?.invoke(this@CommoditiesAdapter)
@@ -81,6 +82,8 @@ class CommoditiesAdapter(
     }
 
     data class Label(val commodity: Commodity) {
-        override fun toString(): String = commodity.formatListItem()
+        private val label = commodity.formatListItem()
+
+        override fun toString(): String = label
     }
 }

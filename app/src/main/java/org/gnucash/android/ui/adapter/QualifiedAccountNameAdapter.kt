@@ -14,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.gnucash.android.R
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
@@ -151,7 +152,7 @@ class QualifiedAccountNameAdapter(
         loadJob = scope.launch(Dispatchers.IO) {
             val records = loadData(adapter)
             val labels = records.map { Label(it) }
-            scope.launch(Dispatchers.Main) {
+            withContext(Dispatchers.Main) {
                 clear()
                 addAll(labels)
                 callback?.invoke(this@QualifiedAccountNameAdapter)
@@ -172,8 +173,13 @@ class QualifiedAccountNameAdapter(
     }
 
     data class Label(val account: Account) {
-        override fun toString(): String {
-            return account.fullName ?: account.name
+        private val name: String =
+            if (account.fullName.isNullOrBlank()) account.name else account.fullName!!
+
+        override fun toString(): String = name
+
+        override fun equals(other: Any?): Boolean {
+            return (other is Label) && (this.name == other.name)
         }
     }
 
