@@ -279,7 +279,7 @@ class AccountsDbAdapterTest : GnuCashTest() {
         accountsDbAdapter.addRecord(account)
         accountsDbAdapter.addRecord(account2)
 
-        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.BACKUP)
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.EXPORT)
         scheduledAction.actionUID = "Test-uid"
         scheduledAction.setRecurrence(Recurrence(PeriodType.WEEK))
         val scheduledActionDbAdapter = ScheduledActionDbAdapter.instance

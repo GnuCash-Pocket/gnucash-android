@@ -19,6 +19,7 @@ import android.content.Context
 import androidx.annotation.StringRes
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.export.ExportParams
 import org.gnucash.android.util.dayOfWeek
 import org.gnucash.android.util.lastDayOfMonth
 import org.gnucash.android.util.lastDayOfWeek
@@ -40,9 +41,8 @@ class ScheduledAction    //all actions are enabled by default
     var actionType: ActionType = ActionType.TRANSACTION
 ) : BaseModel() {
 
-    private var _startDate: Long = 0
-
-    private var _endDate: Long = 0
+    /** "Scheduled Transaction Name" */
+    var name: String? = null
 
     /**
      * The tag saves additional information about the scheduled action,
@@ -62,8 +62,7 @@ class ScheduledAction    //all actions are enabled by default
     enum class ActionType(val value: String, @StringRes val labelId: Int) {
         TRANSACTION("TRANSACTION", R.string.action_transaction),
 
-        // TODO rename `BACKUP` to `EXPORT`
-        BACKUP("BACKUP", R.string.action_backup);
+        EXPORT("BACKUP", R.string.action_backup);
 
         companion object {
             private val _values = values()
@@ -87,39 +86,45 @@ class ScheduledAction    //all actions are enabled by default
     var actionUID: String? = null
 
     /**
-     * Flag indicating if this event is enabled or not
+     * "TRUE if the scheduled transaction is enabled."
      */
     var isEnabled = true
 
     /**
-     * Number of times this event is planned to be executed
+     * "Total number of occurrences for this scheduled transaction."
      */
     var totalPlannedExecutionCount = 0
 
     /**
-     * How many times this action has already been executed
+     * "Number of instances of this scheduled transaction."
      */
-    var executionCount = 0
+    var instanceCount = 0
 
     /**
-     * Flag for whether the scheduled transaction should be auto-created
+     * "TRUE if the transaction will be automatically created when its time comes."
      */
-    private var _autoCreate = true
-    private var _autoNotify = false
+    var isAutoCreate = false
 
     /**
-     * Number of days in advance to create the transaction
+     * "TRUE if the the user will be notified when the transaction is automatically created."
+     *
+     * This flag is currently unused in the app. It is only included here for compatibility with GnuCash desktop XML
+     */
+    var isAutoCreateNotify = false
+
+    /**
+     * "Number of days in advance to create this scheduled transaction."
      *
      * This flag is currently unused in the app. It is only included here for compatibility with GnuCash desktop XML
      */
     var advanceCreateDays = 0
 
     /**
-     * The number of days in advance to notify of scheduled transactions
+     * "Number of days in advance to remind about this scheduled transaction."
      *
      * This flag is currently unused in the app. It is only included here for compatibility with GnuCash desktop XML
      */
-    var advanceNotifyDays = 0
+    var advanceRemindDays = 0
 
     /**
      * Returns the time when the last schedule in the sequence of planned executions was executed.
@@ -132,10 +137,10 @@ class ScheduledAction    //all actions are enabled by default
      */
     val timeOfLastSchedule: Long
         get() {
-            val count = executionCount
+            val count = instanceCount
             if (count <= 0) return -1
             recurrence?.let { recurrence ->
-                var startDate = LocalDateTime(_startDate)
+                var startDate = LocalDateTime(startDate)
                 val multiplier = recurrence.multiplier
                 val factor = (count - 1) * multiplier
                 startDate = when (recurrence.periodType) {
@@ -151,7 +156,7 @@ class ScheduledAction    //all actions are enabled by default
                 }
                 return startDate.toDateTime().millis
             }
-            return _startDate
+            return startDate
         }
 
     /**
@@ -192,9 +197,9 @@ class ScheduledAction    //all actions are enabled by default
      */
     private fun computeNextScheduledExecutionTimeStartingAt(startTime: Long): Long {
         if (startTime <= 0) { // has never been run
-            return _startDate
+            return startDate
         }
-        val recurrence = recurrence ?: return _startDate
+        val recurrence = recurrence ?: return startDate
         val multiplier = recurrence.multiplier
         val startDate = LocalDateTime(startTime)
         val nextScheduledExecution = when (recurrence.periodType) {
@@ -262,92 +267,56 @@ class ScheduledAction    //all actions are enabled by default
     val period: Long
         get() = recurrence!!.period
 
-    /**
-     * The time of first execution of the scheduled action, represented as a timestamp in
-     * milliseconds since Epoch
-     */
+    /** "Date for the first occurrence for the scheduled transaction." */
+    var startDate: Long = 0L
+        set(startDate) {
+            field = startDate
+            recurrence?.periodStart = startDate
+        }
+
+    @Deprecated("renamed", ReplaceWith("startDate"))
     var startTime: Long
-        get() = _startDate
+        get() = startDate
         set(value) {
-            _startDate = value
-            recurrence?.periodStart = value
+            startDate = value
         }
 
     /**
-     * The end time of the scheduled action, represented as a timestamp in milliseconds since Epoch.
+     * "Date for the scheduled transaction to end."
      */
+    var endDate: Long = 0L
+        set(endDate) {
+            field = endDate
+            recurrence?.periodEnd = endDate
+        }
+
+    @Deprecated("renamed", ReplaceWith("endDate"))
     var endTime: Long
-        get() = _endDate
+        get() = endDate
         set(value) {
-            _endDate = value
-            recurrence?.periodEnd = value
+            endDate = value
         }
 
-    /**
-     * Returns flag if transactions should be automatically created or not
-     *
-     * This flag is currently unused in the app. It is only included here for compatibility with GnuCash desktop XML
-     *
-     * @return `true` if the transaction should be auto-created, `false` otherwise
-     */
-    fun shouldAutoCreate(): Boolean {
-        return _autoCreate
-    }
-
-    /**
-     * Set flag for automatically creating transaction based on this scheduled action
-     *
-     * This flag is currently unused in the app. It is only included here for compatibility with GnuCash desktop XML
-     *
-     * @param autoCreate Flag for auto creating transactions
-     */
-    fun setAutoCreate(autoCreate: Boolean) {
-        _autoCreate = autoCreate
-    }
-
-    /**
-     * Check if user will be notified of creation of scheduled transactions
-     *
-     * This flag is currently unused in the app. It is only included here for compatibility with GnuCash desktop XML
-     *
-     * @return `true` if user will be notified, `false` otherwise
-     */
-    fun shouldAutoNotify(): Boolean {
-        return _autoNotify
-    }
-
-    /**
-     * Sets whether to notify the user that scheduled transactions have been created
-     *
-     * This flag is currently unused in the app. It is only included here for compatibility with GnuCash desktop XML
-     *
-     * @param autoNotify Boolean flag
-     */
-    fun setAutoNotify(autoNotify: Boolean) {
-        _autoNotify = autoNotify
-    }
-
-    /** Backing field for @{link ScheduledAction#templateAccountUID} */
     private var _templateAccountUID: String? = null
-    var templateAccountUID: String?
-        /**
-         * Return the template account GUID for this scheduled action
-         *
-         * If no GUID was set, a new one is going to be generated and returned.
-         *
-         * @return String GUID of template account
-         */
-        get() = if (_templateAccountUID == null) generateUID().also {
-            _templateAccountUID = it
-        } else _templateAccountUID
-        /**
-         * Set the template account GUID
-         *
-         * @param value String GUID of template account
-         */
-        set(value) {
-            _templateAccountUID = value
+
+    /**
+     * "Account which holds the template transactions."
+     *
+     * If no GUID was set, a new one is going to be generated and returned.
+     */
+    val templateAccountUID: String
+        get() {
+            var value = _templateAccountUID
+            if (value == null) {
+                value = generateUID()
+                _templateAccountUID = value
+            }
+            return value
         }
+
+    fun setTemplateAccountUID(uid: String?) {
+        _templateAccountUID = uid
+    }
 
     /**
      * Returns the event schedule (start, end and recurrence)
@@ -356,7 +325,7 @@ class ScheduledAction    //all actions are enabled by default
      */
     fun getRepeatString(context: Context): String {
         val ruleBuilder = StringBuilder(recurrence!!.getRepeatString(context))
-        if (_endDate <= 0 && totalPlannedExecutionCount > 0) {
+        if (endDate <= 0 && totalPlannedExecutionCount > 0) {
             ruleBuilder.append(", ")
                 .append(context.getString(R.string.repeat_x_times, totalPlannedExecutionCount))
         }
@@ -373,11 +342,10 @@ class ScheduledAction    //all actions are enabled by default
     val ruleString: String
         get() {
             val recurrence = recurrence ?: return ""
-            val separator = ";"
             val ruleBuilder = StringBuilder(recurrence.ruleString)
-            if (_endDate > 0) {
+            if (endDate > 0) {
                 val df = DateTimeFormat.forPattern("yyyyMMdd'T'HHmmss'Z'").withZoneUTC()
-                ruleBuilder.append(";UNTIL=").append(df.print(_endDate))
+                ruleBuilder.append(";UNTIL=").append(df.print(endDate))
             } else if (totalPlannedExecutionCount > 0) {
                 ruleBuilder.append(";COUNT=").append(totalPlannedExecutionCount)
             }
@@ -414,23 +382,33 @@ class ScheduledAction    //all actions are enabled by default
         if (recurrence == null) return
         //if we were parsing XML and parsed the start and end date from the scheduled action first,
         //then use those over the values which might be gotten from the recurrence
-        if (_startDate > 0) {
-            recurrence.periodStart = _startDate
+        if (startDate > 0) {
+            recurrence.periodStart = startDate
         } else {
-            _startDate = recurrence.periodStart
+            startDate = recurrence.periodStart
         }
-        if (_endDate > 0) {
-            recurrence.periodEnd = _endDate
+        if (endDate > 0) {
+            recurrence.periodEnd = endDate
         } else {
             val periodEnd = recurrence.periodEnd
             if (periodEnd != null) {
-                _endDate = periodEnd
+                endDate = periodEnd
             }
         }
     }
 
     override fun toString(): String {
         return actionType.name + " - " + getRepeatString(GnuCashApplication.appContext)
+    }
+
+    fun setExportParams(exportParams: ExportParams) {
+        tag = exportParams.toTag()
+    }
+
+    fun getExportParams(): ExportParams? {
+        val tag = tag ?: return null
+        if (tag.isEmpty()) return null
+        return ExportParams.parseTag(tag)
     }
 
     companion object {

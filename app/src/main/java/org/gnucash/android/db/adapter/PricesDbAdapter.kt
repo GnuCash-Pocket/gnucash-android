@@ -21,7 +21,7 @@ class PricesDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
     DatabaseAdapter<Price>(
         commoditiesDbAdapter.holder,
         PriceEntry.TABLE_NAME,
-        arrayOf<String>(
+        arrayOf(
             PriceEntry.COLUMN_COMMODITY_UID,
             PriceEntry.COLUMN_CURRENCY_UID,
             PriceEntry.COLUMN_DATE,

@@ -42,7 +42,7 @@ class BudgetsDbAdapter
 ) : DatabaseAdapter<Budget>(
     budgetAmountsDbAdapter.holder,
     BudgetEntry.TABLE_NAME,
-    arrayOf<String>(
+    arrayOf(
         BudgetEntry.COLUMN_NAME,
         BudgetEntry.COLUMN_DESCRIPTION,
         BudgetEntry.COLUMN_RECURRENCE_UID,

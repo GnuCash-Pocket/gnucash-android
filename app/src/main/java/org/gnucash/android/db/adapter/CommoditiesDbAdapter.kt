@@ -8,6 +8,7 @@ import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.CommodityEntry
 import org.gnucash.android.db.bindBoolean
+import org.gnucash.android.db.bindInt
 import org.gnucash.android.db.getInt
 import org.gnucash.android.db.getString
 import org.gnucash.android.model.Commodity
@@ -23,7 +24,7 @@ class CommoditiesDbAdapter(
 ) : DatabaseAdapter<Commodity>(
     holder,
     CommodityEntry.TABLE_NAME,
-    arrayOf<String>(
+    arrayOf(
         CommodityEntry.COLUMN_FULLNAME,
         CommodityEntry.COLUMN_NAMESPACE,
         CommodityEntry.COLUMN_MNEMONIC,
@@ -84,7 +85,7 @@ class CommoditiesDbAdapter(
         if (commodity.cusip != null) {
             stmt.bindString(5, commodity.cusip)
         }
-        stmt.bindLong(6, commodity.smallestFraction.toLong())
+        stmt.bindInt(6, commodity.smallestFraction)
         stmt.bindBoolean(7, commodity.quoteFlag)
         if (commodity.quoteSource != null) {
             stmt.bindString(8, commodity.quoteSource)
@@ -168,15 +169,15 @@ class CommoditiesDbAdapter(
             cursor.close()
         }
 
-        when (currencyCode) {
-            "AUD" -> return Commodity.AUD
-            "CAD" -> return Commodity.CAD
-            "CHF" -> return Commodity.CHF
-            "EUR" -> return Commodity.EUR
-            "GBP" -> return Commodity.GBP
-            "JPY" -> return Commodity.JPY
-            "USD" -> return Commodity.USD
-            else -> return null
+        return when (currencyCode) {
+            "AUD" -> Commodity.AUD
+            "CAD" -> Commodity.CAD
+            "CHF" -> Commodity.CHF
+            "EUR" -> Commodity.EUR
+            "GBP" -> Commodity.GBP
+            "JPY" -> Commodity.JPY
+            "USD" -> Commodity.USD
+            else -> null
         }
     }
 

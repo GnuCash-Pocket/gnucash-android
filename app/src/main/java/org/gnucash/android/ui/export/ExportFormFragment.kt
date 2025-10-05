@@ -201,8 +201,7 @@ class ExportFormFragment : MenuFragment(),
 
     private fun bindForm(binding: FragmentExportFormBinding, scheduledAction: ScheduledAction) {
         this.scheduledAction = scheduledAction
-        val tag = scheduledAction.tag ?: return
-        val exportParams = ExportParams.parseTag(tag)
+        val exportParams = scheduledAction.getExportParams() ?: return
         val uri = exportParams.exportLocation
         val exportTarget = exportParams.exportTarget
         val csvSeparator = exportParams.csvSeparator
@@ -330,12 +329,12 @@ class ExportFormFragment : MenuFragment(),
             var updateMethod = DatabaseAdapter.UpdateMethod.Replace
             var scheduledAction = this.scheduledAction
             if (scheduledAction == null) {
-                scheduledAction = ScheduledAction(ScheduledAction.ActionType.BACKUP)
+                scheduledAction = ScheduledAction(ScheduledAction.ActionType.EXPORT)
                 scheduledAction.actionUID = bookUID
                 updateMethod = DatabaseAdapter.UpdateMethod.Insert
             }
             scheduledAction.setRecurrence(RecurrenceParser.parse(eventRecurrence))
-            scheduledAction.tag = exportParameters.toTag()
+            scheduledAction.setExportParams(exportParameters)
             ScheduledActionDbAdapter.instance.addRecord(scheduledAction, updateMethod)
             this.scheduledAction = scheduledAction
         }

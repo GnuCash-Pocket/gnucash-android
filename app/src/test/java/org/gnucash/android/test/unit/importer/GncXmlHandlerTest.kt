@@ -306,7 +306,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         // we'll just use the day of the week of the start time.
         val dayOfWeekFromByDays = scheduledTransaction.recurrence!!.byDays[0]
         val calendar = Calendar.getInstance()
-        calendar.timeInMillis = scheduledTransaction.startTime
+        calendar.timeInMillis = scheduledTransaction.startDate
         val dayOfWeekFromStartTime = calendar[Calendar.DAY_OF_WEEK]
         assertThat(dayOfWeekFromByDays).isEqualTo(dayOfWeekFromStartTime)
     }
@@ -433,14 +433,14 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(scheduledActionDbAdapter.recordsCount).isOne()
 
         val scheduledAction = scheduledActionDbAdapter.getRecord("d1ecc943a53e48de91dac65dfbcd23b3")
-        //TODO assertThat(scheduledAction.name).isEqualTo("Salad express Scheduled")
+        assertThat(scheduledAction.name).isEqualTo("Salad express Scheduled")
         assertThat(scheduledAction.actionUID).isEqualTo("a61cb5e0fc8f46e49f47a4812bfcd1e6")
         assertThat(scheduledAction.isEnabled).isTrue()
-        //TODO assertThat(scheduledAction.isAutoCreate).isFalse()
-        //TODO assertThat(scheduledAction.isAutoCreateNotify).isFalse()
-        //TODO assertThat(scheduledAction.instanceCount).isOne()
-        assertThat(formatDate(scheduledAction.startTime)).isEqualTo("2016-09-25")
-        assertThat(formatDate(scheduledAction.endTime)).isEqualTo("2025-12-31")
+        assertThat(scheduledAction.isAutoCreate).isFalse()
+        assertThat(scheduledAction.isAutoCreateNotify).isFalse()
+        assertThat(scheduledAction.instanceCount).isOne()
+        assertThat(formatDate(scheduledAction.startDate)).isEqualTo("2016-09-25")
+        assertThat(formatDate(scheduledAction.endDate)).isEqualTo("2025-12-31")
         assertThat(scheduledAction.templateAccountUID).isEqualTo("ea8dc2da727542c9becc721e5f05f0f9")
         assertThat(scheduledAction.recurrence).isNotNull()
         assertThat(scheduledAction.recurrence!!.periodType).isEqualTo(PeriodType.WEEK)

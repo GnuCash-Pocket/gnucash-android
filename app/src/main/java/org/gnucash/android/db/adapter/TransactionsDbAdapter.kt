@@ -59,7 +59,7 @@ class TransactionsDbAdapter(
 ) : DatabaseAdapter<Transaction>(
     splitsDbAdapter.holder,
     TransactionEntry.TABLE_NAME,
-    arrayOf<String>(
+    arrayOf(
         TransactionEntry.COLUMN_DESCRIPTION,
         TransactionEntry.COLUMN_NOTES,
         TransactionEntry.COLUMN_TIMESTAMP,
@@ -121,7 +121,7 @@ class TransactionsDbAdapter(
                 val deleteWhere = (SplitEntry.COLUMN_TRANSACTION_UID + " = ? AND "
                         + SplitEntry.COLUMN_UID + " NOT IN " + splitUIDs.joinIn())
                 val deleteArgs = arrayOf<String?>(transaction.uid)
-                val deleted = db.delete(SplitEntry.TABLE_NAME, deleteWhere, deleteArgs).toLong()
+                val deleted = db.delete(SplitEntry.TABLE_NAME, deleteWhere, deleteArgs)
                 Timber.d("%d splits deleted", deleted)
             }
 

@@ -25,6 +25,7 @@ import org.gnucash.android.R
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry
 import org.gnucash.android.db.DatabaseSchema.CommodityEntry
+import org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry
 import org.gnucash.android.db.DatabaseSchema.SplitEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.importer.CommoditiesXmlHandler
@@ -84,6 +85,9 @@ object MigrationHelper {
         }
         if (oldVersion < 24) {
             migrateTo24(db)
+        }
+        if (oldVersion < 25) {
+            migrateTo25(db)
         }
     }
 
@@ -290,6 +294,26 @@ object MigrationHelper {
             val sqlAddSchedxActionAccount = "ALTER TABLE " + SplitEntry.TABLE_NAME +
                     " ADD COLUMN " + SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID + " varchar(255)"
             db.execSQL(sqlAddSchedxActionAccount)
+        }
+    }
+
+    /**
+     * Upgrade the database to version 25.
+     *
+     * @param db the database.
+     */
+    private fun migrateTo25(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 25")
+
+        if (!DatabaseHelper.hasTableColumn(
+                db,
+                ScheduledActionEntry.TABLE_NAME,
+                ScheduledActionEntry.COLUMN_NAME
+            )
+        ) {
+            val sqlActionName = "ALTER TABLE " + ScheduledActionEntry.TABLE_NAME +
+                    " ADD COLUMN " + ScheduledActionEntry.COLUMN_NAME + " varchar(255)"
+            db.execSQL(sqlActionName)
         }
     }
 

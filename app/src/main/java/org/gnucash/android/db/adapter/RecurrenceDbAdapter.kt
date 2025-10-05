@@ -20,6 +20,7 @@ import android.database.sqlite.SQLiteStatement
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.RecurrenceEntry
+import org.gnucash.android.db.bindInt
 import org.gnucash.android.db.getInt
 import org.gnucash.android.db.getString
 import org.gnucash.android.model.PeriodType
@@ -34,7 +35,7 @@ import java.util.Calendar
 class RecurrenceDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Recurrence>(
     holder,
     RecurrenceEntry.TABLE_NAME,
-    arrayOf<String>(
+    arrayOf(
         RecurrenceEntry.COLUMN_MULTIPLIER,
         RecurrenceEntry.COLUMN_PERIOD_TYPE,
         RecurrenceEntry.COLUMN_BYDAY,
@@ -64,7 +65,7 @@ class RecurrenceDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Recurrence>(
 
     override fun bind(stmt: SQLiteStatement, recurrence: Recurrence): SQLiteStatement {
         bindBaseModel(stmt, recurrence)
-        stmt.bindLong(1, recurrence.multiplier.toLong())
+        stmt.bindInt(1, recurrence.multiplier)
         stmt.bindString(2, recurrence.periodType.name)
         if (!recurrence.byDays.isEmpty()) {
             stmt.bindString(3, byDaysToString(recurrence.byDays))

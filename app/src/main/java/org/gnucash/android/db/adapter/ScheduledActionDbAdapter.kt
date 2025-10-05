@@ -21,8 +21,12 @@ import android.database.DatabaseUtils
 import android.database.sqlite.SQLiteStatement
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseSchema
+import org.gnucash.android.db.DatabaseSchema.BookEntry
 import org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry
+import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.bindBoolean
+import org.gnucash.android.db.bindInt
+import org.gnucash.android.db.getBoolean
 import org.gnucash.android.db.getInt
 import org.gnucash.android.db.getLong
 import org.gnucash.android.db.getString
@@ -38,16 +42,20 @@ import java.io.IOException
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-class ScheduledActionDbAdapter(val recurrenceDbAdapter: RecurrenceDbAdapter) :
+class ScheduledActionDbAdapter(
+    val recurrenceDbAdapter: RecurrenceDbAdapter,
+    val transactionsDbAdapter: TransactionsDbAdapter,
+    private val booksDbAdapter: BooksDbAdapter = BooksDbAdapter.instance
+) :
     DatabaseAdapter<ScheduledAction>(
         recurrenceDbAdapter.holder,
         ScheduledActionEntry.TABLE_NAME,
-        arrayOf<String>(
+        arrayOf(
             ScheduledActionEntry.COLUMN_ACTION_UID,
             ScheduledActionEntry.COLUMN_TYPE,
             ScheduledActionEntry.COLUMN_START_TIME,
             ScheduledActionEntry.COLUMN_END_TIME,
-            ScheduledActionEntry.COLUMN_LAST_RUN,
+            ScheduledActionEntry.COLUMN_LAST_OCCUR,
             ScheduledActionEntry.COLUMN_ENABLED,
             ScheduledActionEntry.COLUMN_CREATED_AT,
             ScheduledActionEntry.COLUMN_TAG,
@@ -58,13 +66,15 @@ class ScheduledActionDbAdapter(val recurrenceDbAdapter: RecurrenceDbAdapter) :
             ScheduledActionEntry.COLUMN_ADVANCE_CREATION,
             ScheduledActionEntry.COLUMN_ADVANCE_NOTIFY,
             ScheduledActionEntry.COLUMN_TEMPLATE_ACCT_UID,
-            ScheduledActionEntry.COLUMN_EXECUTION_COUNT
+            ScheduledActionEntry.COLUMN_INSTANCE_COUNT,
+            ScheduledActionEntry.COLUMN_NAME
         )
     ) {
     @Throws(IOException::class)
     override fun close() {
         super.close()
         recurrenceDbAdapter.close()
+        transactionsDbAdapter.close()
     }
 
     override fun addRecord(scheduledAction: ScheduledAction, updateMethod: UpdateMethod) {
@@ -97,9 +107,9 @@ class ScheduledActionDbAdapter(val recurrenceDbAdapter: RecurrenceDbAdapter) :
      * **The GUID of the scheduled action should already exist in the database**
      *
      * @param scheduledAction Scheduled action
-     * @return Database record ID of the edited scheduled action
+     * @return the number of rows affected
      */
-    fun updateRecurrenceAttributes(scheduledAction: ScheduledAction): Long {
+    fun updateRecurrenceAttributes(scheduledAction: ScheduledAction): Int {
         //since we are updating, first fetch the existing recurrence UID and set it to the object
         //so that it will be updated and not a new one created
         val recurrenceUID =
@@ -111,8 +121,8 @@ class ScheduledActionDbAdapter(val recurrenceDbAdapter: RecurrenceDbAdapter) :
 
         val contentValues = ContentValues()
         extractBaseModelAttributes(contentValues, scheduledAction)
-        contentValues[ScheduledActionEntry.COLUMN_START_TIME] = scheduledAction.startTime
-        contentValues[ScheduledActionEntry.COLUMN_END_TIME] = scheduledAction.endTime
+        contentValues[ScheduledActionEntry.COLUMN_START_TIME] = scheduledAction.startDate
+        contentValues[ScheduledActionEntry.COLUMN_END_TIME] = scheduledAction.endDate
         contentValues[ScheduledActionEntry.COLUMN_TAG] = scheduledAction.tag
         contentValues[ScheduledActionEntry.COLUMN_TOTAL_FREQUENCY] =
             scheduledAction.totalPlannedExecutionCount
@@ -120,7 +130,7 @@ class ScheduledActionDbAdapter(val recurrenceDbAdapter: RecurrenceDbAdapter) :
         Timber.d("Updating scheduled event recurrence attributes")
         val where = ScheduledActionEntry.COLUMN_UID + "=?"
         val whereArgs = arrayOf<String?>(scheduledAction.uid)
-        return db.update(ScheduledActionEntry.TABLE_NAME, contentValues, where, whereArgs).toLong()
+        return db.update(ScheduledActionEntry.TABLE_NAME, contentValues, where, whereArgs)
     }
 
     override fun bind(stmt: SQLiteStatement, schedxAction: ScheduledAction): SQLiteStatement {
@@ -135,14 +145,17 @@ class ScheduledActionDbAdapter(val recurrenceDbAdapter: RecurrenceDbAdapter) :
         if (schedxAction.tag != null) {
             stmt.bindString(8, schedxAction.tag)
         }
-        stmt.bindLong(9, schedxAction.totalPlannedExecutionCount.toLong())
+        stmt.bindInt(9, schedxAction.totalPlannedExecutionCount)
         stmt.bindString(10, schedxAction.recurrence!!.uid)
-        stmt.bindBoolean(11, schedxAction.shouldAutoCreate())
-        stmt.bindBoolean(12, schedxAction.shouldAutoNotify())
-        stmt.bindLong(13, schedxAction.advanceCreateDays.toLong())
-        stmt.bindLong(14, schedxAction.advanceNotifyDays.toLong())
+        stmt.bindBoolean(11, schedxAction.isAutoCreate)
+        stmt.bindBoolean(12, schedxAction.isAutoCreateNotify)
+        stmt.bindInt(13, schedxAction.advanceCreateDays)
+        stmt.bindInt(14, schedxAction.advanceRemindDays)
         stmt.bindString(15, schedxAction.templateAccountUID)
-        stmt.bindLong(16, schedxAction.executionCount.toLong())
+        stmt.bindInt(16, schedxAction.instanceCount)
+        if (schedxAction.name != null) {
+            stmt.bindString(17, schedxAction.name)
+        }
 
         return stmt
     }
@@ -155,42 +168,56 @@ class ScheduledActionDbAdapter(val recurrenceDbAdapter: RecurrenceDbAdapter) :
      * @return ScheduledEvent object instance
      */
     override fun buildModelInstance(cursor: Cursor): ScheduledAction {
-        val actionUID = cursor.getString(ScheduledActionEntry.COLUMN_ACTION_UID)
+        val actionUID = cursor.getString(ScheduledActionEntry.COLUMN_ACTION_UID)!!
         val startTime = cursor.getLong(ScheduledActionEntry.COLUMN_START_TIME)
         val endTime = cursor.getLong(ScheduledActionEntry.COLUMN_END_TIME)
-        val lastRun = cursor.getLong(ScheduledActionEntry.COLUMN_LAST_RUN)
+        val lastRun = cursor.getLong(ScheduledActionEntry.COLUMN_LAST_OCCUR)
         val typeString = cursor.getString(ScheduledActionEntry.COLUMN_TYPE)!!
         val tag = cursor.getString(ScheduledActionEntry.COLUMN_TAG)
-        val enabled = cursor.getInt(ScheduledActionEntry.COLUMN_ENABLED) > 0
+        val enabled = cursor.getBoolean(ScheduledActionEntry.COLUMN_ENABLED)
         val numOccurrences = cursor.getInt(ScheduledActionEntry.COLUMN_TOTAL_FREQUENCY)
-        val execCount = cursor.getInt(ScheduledActionEntry.COLUMN_EXECUTION_COUNT)
-        val autoCreate = cursor.getInt(ScheduledActionEntry.COLUMN_AUTO_CREATE)
-        val autoNotify = cursor.getInt(ScheduledActionEntry.COLUMN_AUTO_NOTIFY)
+        val execCount = cursor.getInt(ScheduledActionEntry.COLUMN_INSTANCE_COUNT)
+        val autoCreate = cursor.getBoolean(ScheduledActionEntry.COLUMN_AUTO_CREATE)
+        val autoNotify = cursor.getBoolean(ScheduledActionEntry.COLUMN_AUTO_NOTIFY)
         val advanceCreate = cursor.getInt(ScheduledActionEntry.COLUMN_ADVANCE_CREATION)
         val advanceNotify = cursor.getInt(ScheduledActionEntry.COLUMN_ADVANCE_NOTIFY)
         val recurrenceUID = cursor.getString(ScheduledActionEntry.COLUMN_RECURRENCE_UID)!!
         val templateAccountUID = cursor.getString(ScheduledActionEntry.COLUMN_TEMPLATE_ACCT_UID)
+        var name = cursor.getString(ScheduledActionEntry.COLUMN_NAME)
 
         val actionType = ScheduledAction.ActionType.of(typeString)
-        val event = ScheduledAction(actionType)
-        populateBaseModelAttributes(cursor, event)
-        event.startTime = startTime
-        event.endTime = endTime
-        event.actionUID = actionUID
-        event.lastRunTime = lastRun
-        event.tag = tag
-        event.isEnabled = enabled
-        event.totalPlannedExecutionCount = numOccurrences
-        event.executionCount = execCount
-        event.setAutoCreate(autoCreate != 0)
-        event.setAutoNotify(autoNotify != 0)
-        event.advanceCreateDays = advanceCreate
-        event.advanceNotifyDays = advanceNotify
-        //TODO: optimize by doing overriding fetchRecord(String) and join the two tables
-        event.setRecurrence(recurrenceDbAdapter.getRecord(recurrenceUID))
-        event.templateAccountUID = templateAccountUID
+        if (name.isNullOrEmpty()) {
+            name = if (actionType == ScheduledAction.ActionType.TRANSACTION) {
+                transactionsDbAdapter.getAttribute(actionUID, TransactionEntry.COLUMN_DESCRIPTION)
+            } else {
+                try {
+                    booksDbAdapter.getAttribute(actionUID, BookEntry.COLUMN_DISPLAY_NAME)
+                } catch (_: IllegalArgumentException) {
+                    actionType.name
+                }
+            }
+        }
 
-        return event
+        val scheduledAction = ScheduledAction(actionType)
+        populateBaseModelAttributes(cursor, scheduledAction)
+        scheduledAction.startDate = startTime
+        scheduledAction.endDate = endTime
+        scheduledAction.actionUID = actionUID
+        scheduledAction.lastRunTime = lastRun
+        scheduledAction.tag = tag
+        scheduledAction.isEnabled = enabled
+        scheduledAction.totalPlannedExecutionCount = numOccurrences
+        scheduledAction.instanceCount = execCount
+        scheduledAction.isAutoCreate = autoCreate
+        scheduledAction.isAutoCreateNotify = autoNotify
+        scheduledAction.advanceCreateDays = advanceCreate
+        scheduledAction.advanceRemindDays = advanceNotify
+        //TODO: optimize by doing overriding fetchRecord(String) and join the two tables
+        scheduledAction.setRecurrence(recurrenceDbAdapter.getRecord(recurrenceUID))
+        scheduledAction.setTemplateAccountUID(templateAccountUID)
+        scheduledAction.name = name
+
+        return scheduledAction
     }
 
     /**
@@ -204,7 +231,7 @@ class ScheduledActionDbAdapter(val recurrenceDbAdapter: RecurrenceDbAdapter) :
         val cursor: Cursor? = db.query(
             tableName, null,
             ScheduledActionEntry.COLUMN_ACTION_UID + "= ?",
-            arrayOf<String>(actionUID), null, null, null
+            arrayOf<String?>(actionUID), null, null, null
         )
         return getRecords(cursor)
     }

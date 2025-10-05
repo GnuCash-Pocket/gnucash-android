@@ -65,33 +65,35 @@ class ScheduledActionDbAdapterTest : GnuCashTest() {
 
     @Test
     fun testAddGetRecord() {
-        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.BACKUP)
-        scheduledAction.actionUID = "Some UID"
+        val scheduledAction = ScheduledAction(ScheduledAction.ActionType.EXPORT)
+        scheduledAction.name = "Some Name"
+        scheduledAction.actionUID = "Some TX UID"
         scheduledAction.advanceCreateDays = 1
-        scheduledAction.advanceNotifyDays = 2
-        scheduledAction.setAutoCreate(true)
-        scheduledAction.setAutoNotify(true)
+        scheduledAction.advanceRemindDays = 2
+        scheduledAction.isAutoCreate = true
+        scheduledAction.isAutoCreateNotify = true
         scheduledAction.isEnabled = true
-        scheduledAction.startTime = 11111
-        scheduledAction.endTime = 33333
+        scheduledAction.startDate = 11111
+        scheduledAction.endDate = 33333
         scheduledAction.lastRunTime = 22222
-        scheduledAction.executionCount = 3
+        scheduledAction.instanceCount = 3
         scheduledAction.setRecurrence(Recurrence(PeriodType.MONTH))
         scheduledAction.tag = "QIF;SD_CARD;2016-06-25 12:56:07.175;false"
         scheduledActionDbAdapter.addRecord(scheduledAction)
 
         val scheduledActionFromDb = scheduledActionDbAdapter.getRecord(scheduledAction.uid)
+        assertThat(scheduledActionFromDb.name).isEqualTo(scheduledAction.name)
         assertThat(scheduledActionFromDb.uid).isEqualTo(scheduledAction.uid)
         assertThat(scheduledActionFromDb.actionUID).isEqualTo(scheduledAction.actionUID)
         assertThat(scheduledActionFromDb.advanceCreateDays).isEqualTo(scheduledAction.advanceCreateDays)
-        assertThat(scheduledActionFromDb.advanceNotifyDays).isEqualTo(scheduledAction.advanceNotifyDays)
-        assertThat(scheduledActionFromDb.shouldAutoCreate()).isEqualTo(scheduledAction.shouldAutoCreate())
-        assertThat(scheduledActionFromDb.shouldAutoNotify()).isEqualTo(scheduledAction.shouldAutoNotify())
+        assertThat(scheduledActionFromDb.advanceRemindDays).isEqualTo(scheduledAction.advanceRemindDays)
+        assertThat(scheduledActionFromDb.isAutoCreate).isEqualTo(scheduledAction.isAutoCreate)
+        assertThat(scheduledActionFromDb.isAutoCreateNotify).isEqualTo(scheduledAction.isAutoCreateNotify)
         assertThat(scheduledActionFromDb.isEnabled).isEqualTo(scheduledAction.isEnabled)
-        assertThat(scheduledActionFromDb.startTime).isEqualTo(scheduledAction.startTime)
-        assertThat(scheduledActionFromDb.endTime).isEqualTo(scheduledAction.endTime)
+        assertThat(scheduledActionFromDb.startDate).isEqualTo(scheduledAction.startDate)
+        assertThat(scheduledActionFromDb.endDate).isEqualTo(scheduledAction.endDate)
         assertThat(scheduledActionFromDb.lastRunTime).isEqualTo(scheduledAction.lastRunTime)
-        assertThat(scheduledActionFromDb.executionCount).isEqualTo(scheduledAction.executionCount)
+        assertThat(scheduledActionFromDb.instanceCount).isEqualTo(scheduledAction.instanceCount)
         assertThat(scheduledActionFromDb.recurrence).isEqualTo(scheduledAction.recurrence)
         assertThat(scheduledActionFromDb.tag).isEqualTo(scheduledAction.tag)
     }

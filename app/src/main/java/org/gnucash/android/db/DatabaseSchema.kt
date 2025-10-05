@@ -38,7 +38,7 @@ object DatabaseSchema {
      * Version number of database containing accounts and transactions info.
      * With any change to the database schema, this number must increase
      */
-    const val DATABASE_VERSION: Int = 24
+    const val DATABASE_VERSION: Int = 25
 
     abstract class CommonColumns : BaseColumns {
         companion object {
@@ -284,16 +284,25 @@ object DatabaseSchema {
         const val COLUMN_TYPE: String = "type"
 
         @Column(Cursor.FIELD_TYPE_STRING)
+        const val COLUMN_NAME: String = "name"
+
+        @Column(Cursor.FIELD_TYPE_STRING)
         const val COLUMN_ACTION_UID: String = "action_uid"
 
         @Column(Cursor.FIELD_TYPE_INTEGER)
-        const val COLUMN_START_TIME: String = "start_time"
+        const val COLUMN_START_DATE: String = "start_time"
 
         @Column(Cursor.FIELD_TYPE_INTEGER)
-        const val COLUMN_END_TIME: String = "end_time"
+        const val COLUMN_END_DATE: String = "end_time"
 
         @Column(Cursor.FIELD_TYPE_INTEGER)
-        const val COLUMN_LAST_RUN: String = "last_run"
+        const val COLUMN_LAST_OCCUR: String = "last_run"
+        @Deprecated("renamed", ReplaceWith("COLUMN_START_DATE"))
+        const val COLUMN_START_TIME: String = COLUMN_START_DATE
+
+        @Deprecated("renamed", ReplaceWith("COLUMN_END_DATE"))
+        const val COLUMN_END_TIME: String = COLUMN_END_DATE
+
 
         /**
          * Tag for scheduledAction-specific information e.g. backup parameters for backup
@@ -308,7 +317,7 @@ object DatabaseSchema {
         const val COLUMN_TOTAL_FREQUENCY: String = "total_frequency"
 
         @Column(Cursor.FIELD_TYPE_INTEGER)
-        const val COLUMN_EXECUTION_COUNT: String = "execution_count"
+        const val COLUMN_INSTANCE_COUNT: String = "execution_count"
 
         @Column(Cursor.FIELD_TYPE_STRING)
         const val COLUMN_RECURRENCE_UID: String = "recurrence_uid"

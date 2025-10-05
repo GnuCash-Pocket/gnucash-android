@@ -62,17 +62,17 @@ class HelperTest : GnuCashTest() {
 
     @Test
     fun `join empty`() {
-        join(arrayOf<String>())
+        join(emptyArray<String>())
     }
 
     @Test
     fun `join one array`() {
-        join(arrayOf<String>("abc"))
+        join(arrayOf("abc"))
     }
 
     @Test
     fun `join two array`() {
-        join(arrayOf<String>("abc", "def"))
+        join(arrayOf("abc", "def"))
     }
 
     private fun join(array: Array<String>) {
