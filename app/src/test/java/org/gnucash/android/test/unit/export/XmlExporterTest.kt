@@ -60,6 +60,7 @@ class XmlExporterTest : BookHelperTest() {
         val expected = readFile("expected.common_1.gnucash")
         val expectedIgnoreRoot = expected.trim()
             .substring(expected.indexOf('>', expected.indexOf("<gnc-v2")))
+            .replace("\r\n", "\n")
         assertThat(actualIgnoreRoot).isEqualTo(expectedIgnoreRoot)
     }
 }

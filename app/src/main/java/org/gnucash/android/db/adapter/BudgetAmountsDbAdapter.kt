@@ -36,7 +36,7 @@ class BudgetAmountsDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
     DatabaseAdapter<BudgetAmount>(
         commoditiesDbAdapter.holder,
         BudgetAmountEntry.TABLE_NAME,
-        arrayOf<String>(
+        arrayOf(
             BudgetAmountEntry.COLUMN_BUDGET_UID,
             BudgetAmountEntry.COLUMN_ACCOUNT_UID,
             BudgetAmountEntry.COLUMN_AMOUNT_NUM,

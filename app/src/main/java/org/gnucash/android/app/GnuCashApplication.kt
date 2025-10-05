@@ -155,7 +155,7 @@ class GnuCashApplication : Application() {
             transactionDbAdapter = TransactionsDbAdapter(splitsDbAdapter!!)
             accountsDbAdapter = AccountsDbAdapter(transactionDbAdapter!!, pricesDbAdapter!!)
             recurrenceDbAdapter = RecurrenceDbAdapter(dbHolder)
-            scheduledEventDbAdapter = ScheduledActionDbAdapter(recurrenceDbAdapter!!)
+            scheduledEventDbAdapter = ScheduledActionDbAdapter(recurrenceDbAdapter!!, transactionDbAdapter!!)
             budgetAmountsDbAdapter = BudgetAmountsDbAdapter(dbHolder)
             budgetDbAdapter = BudgetsDbAdapter(budgetAmountsDbAdapter!!, recurrenceDbAdapter!!)
             Commodity.DEFAULT_COMMODITY = commoditiesDbAdapter!!.getDefaultCommodity()
@@ -358,12 +358,12 @@ class GnuCashApplication : Application() {
                 var locale = Locale.getDefault()
                 //sometimes the locale en_UK is returned which causes a crash with Currency
                 if (locale.country == "UK") {
-                    locale = Locale(locale.getLanguage(), "GB")
+                    locale = Locale(locale.language, "GB")
                 }
 
                 //for unsupported locale es_LG
                 if (locale.country == "LG") {
-                    locale = Locale(locale.getLanguage(), "ES")
+                    locale = Locale(locale.language, "ES")
                 }
 
                 //there are some strange locales out there

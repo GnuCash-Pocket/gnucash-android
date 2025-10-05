@@ -53,7 +53,7 @@ class SplitsDbAdapter(
 ) : DatabaseAdapter<Split>(
     commoditiesDbAdapter.holder,
     SplitEntry.TABLE_NAME,
-    arrayOf<String>(
+    arrayOf(
         SplitEntry.COLUMN_MEMO,
         SplitEntry.COLUMN_TYPE,
         SplitEntry.COLUMN_VALUE_NUM,
@@ -405,7 +405,7 @@ class SplitsDbAdapter(
     fun getTransactionUID(transactionId: Long): String {
         val cursor = db.query(
             TransactionEntry.TABLE_NAME,
-            arrayOf<String>(TransactionEntry.COLUMN_UID),
+            arrayOf(TransactionEntry.COLUMN_UID),
             TransactionEntry.COLUMN_ID + " = " + transactionId,
             null, null, null, null
         )
@@ -456,7 +456,7 @@ class SplitsDbAdapter(
     fun getTransactionID(transactionUID: String): Long {
         val c = db.query(
             TransactionEntry.TABLE_NAME,
-            arrayOf<String>(TransactionEntry.COLUMN_ID),
+            arrayOf(TransactionEntry.COLUMN_ID),
             TransactionEntry.COLUMN_UID + "=?",
             arrayOf<String?>(transactionUID), null, null, null
         )

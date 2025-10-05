@@ -218,17 +218,14 @@ class GncXmlExporter(
             if (account != null) {
                 return account
             }
-            var where =
-                AccountEntry.COLUMN_TYPE + "=? AND " + AccountEntry.COLUMN_TEMPLATE + "=1"
+            var where = AccountEntry.COLUMN_TYPE + "=? AND " + AccountEntry.COLUMN_TEMPLATE + "=1"
             var whereArgs = arrayOf<String?>(AccountType.ROOT.name)
-            val template =
-                commoditiesDbAdapter.getCurrency(Commodity.TEMPLATE)
             var accounts =
                 accountsDbAdapter.getSimpleAccounts(where, whereArgs, null)
             if (accounts.isEmpty()) {
-                val commodity =
-                    commoditiesDbAdapter.getCurrency(Commodity.TEMPLATE)
+                val commodity = commoditiesDbAdapter.getCurrency(Commodity.TEMPLATE)
                 if (commodity != null) {
+                    Commodity.template.setUID(commodity.uid)
                     where =
                         AccountEntry.COLUMN_TYPE + "=? AND " + AccountEntry.COLUMN_COMMODITY_UID + "=?"
                     whereArgs = arrayOf<String?>(
@@ -245,8 +242,8 @@ class GncXmlExporter(
                 accounts = accountsDbAdapter.getSimpleAccounts(where, whereArgs, null)
                 if (accounts.isEmpty()) {
                     account = Account(AccountsDbAdapter.TEMPLATE_ACCOUNT_NAME, Commodity.template)
-                    field = account
                     account.accountType = AccountType.ROOT
+                    field = account
                     return account
                 }
             }
@@ -255,8 +252,7 @@ class GncXmlExporter(
             return account
         }
 
-    private val transactionToTemplateAccounts: MutableMap<String, Account> =
-        TreeMap<String, Account>()
+    private val transactionToTemplateAccounts: MutableMap<String, Account> = TreeMap()
 
     @Throws(IOException::class)
     private fun writeCounts(xmlSerializer: XmlSerializer) {
@@ -306,6 +302,7 @@ class GncXmlExporter(
         if (slots == null || slots.isEmpty()) {
             return
         }
+        cancellationSignal.throwIfCanceled()
         for (slot in slots) {
             writeSlot(xmlSerializer, slot)
         }
@@ -336,23 +333,23 @@ class GncXmlExporter(
 
     @Throws(IOException::class)
     private fun writeAccounts(xmlSerializer: XmlSerializer, isTemplate: Boolean) {
+        cancellationSignal.throwIfCanceled()
         Timber.i("export accounts. template: %s", isTemplate)
-        val rootUID: String?
         if (isTemplate) {
             val account = this.rootTemplateAccount
             if (account == null) {
                 Timber.i("No template root account found!")
                 return
             }
-            rootUID = account.uid
+            writeAccount(xmlSerializer, account)
         } else {
-            rootUID = accountsDbAdapter.rootAccountUID
+            val rootUID = accountsDbAdapter.rootAccountUID
             if (rootUID.isNullOrEmpty()) {
                 throw ExporterException(exportParams, "No root account found!")
             }
+            val account = accountsDbAdapter.getSimpleRecord(rootUID)!!
+            writeAccount(xmlSerializer, account)
         }
-        val account = accountsDbAdapter.getSimpleRecord(rootUID)!!
-        writeAccount(xmlSerializer, account)
     }
 
     @Throws(IOException::class)
@@ -483,11 +480,10 @@ class GncXmlExporter(
             SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID + " AS split_acct_uid",
             SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID + " AS split_sched_xaction_acct_uid"
         )
-        val where: String
-        if (isTemplates) {
-            where = TransactionEntry.COLUMN_TEMPLATE + "=1"
+        val where: String = if (isTemplates) {
+            TransactionEntry.COLUMN_TEMPLATE + "=1"
         } else {
-            where = TransactionEntry.COLUMN_TEMPLATE + "=0"
+            TransactionEntry.COLUMN_TEMPLATE + "=0"
         }
         val orderBy = ("trans_date_posted ASC"
                 + ", " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " ASC"
@@ -502,14 +498,14 @@ class GncXmlExporter(
         }
 
         if (isTemplates) {
+            cancellationSignal.throwIfCanceled()
             val rootTemplateAccount = this.rootTemplateAccount!!
             transactionToTemplateAccounts[""] = rootTemplateAccount
 
             //FIXME: Retrieve the template account GUIDs from the scheduled action table and create accounts with that
             //this will allow use to maintain the template account GUID when we import from the desktop and also use the same for the splits
             do {
-                cancellationSignal.throwIfCanceled()
-                val txUID = cursor.getString("trans_uid")!!
+                val txUID = cursor.getString("trans_uid") ?: continue
                 val account = Account(generateUID(), Commodity.template)
                 account.accountType = AccountType.BANK
                 account.parentUID = rootTemplateAccount.uid
@@ -522,17 +518,17 @@ class GncXmlExporter(
         }
 
         // FIXME: 12.10.2015 export split reconciled_state and reconciled_date to the export */
-        var lastTrxUID = ""
-        var trnCommodity: Commodity? = null
+        var txUIDPrevious = ""
+        var trnCommodity: Commodity = Commodity.DEFAULT_COMMODITY
         var transaction: Transaction?
         do {
             cancellationSignal.throwIfCanceled()
 
-            val curTrxUID = cursor.getString("trans_uid")!!
+            val txUID = cursor.getString("trans_uid")!!
             // new transaction starts
-            if (lastTrxUID != curTrxUID) {
+            if (txUIDPrevious != txUID) {
                 // there's an old transaction, close it
-                if (lastTrxUID.isNotEmpty()) {
+                if (txUIDPrevious.isNotEmpty()) {
                     xmlSerializer.endTag(NS_TRANSACTION, TAG_SPLITS)
                     xmlSerializer.endTag(NS_GNUCASH, TAG_TRANSACTION)
                 }
@@ -541,7 +537,7 @@ class GncXmlExporter(
                 val commodityUID = cursor.getString("trans_commodity")!!
                 trnCommodity = commoditiesDbAdapter.getRecord(commodityUID)
                 transaction = Transaction(description)
-                transaction.setUID(curTrxUID)
+                transaction.setUID(txUID)
                 transaction.commodity = trnCommodity
                 listener?.onTransaction(transaction)
                 xmlSerializer.startTag(NS_GNUCASH, TAG_TRANSACTION)
@@ -549,7 +545,7 @@ class GncXmlExporter(
                 // transaction id
                 xmlSerializer.startTag(NS_TRANSACTION, TAG_ID)
                 xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
-                xmlSerializer.text(curTrxUID)
+                xmlSerializer.text(txUID)
                 xmlSerializer.endTag(NS_TRANSACTION, TAG_ID)
                 // currency
                 xmlSerializer.startTag(NS_TRANSACTION, TAG_CURRENCY)
@@ -581,7 +577,7 @@ class GncXmlExporter(
                 xmlSerializer.startTag(NS_TRANSACTION, TAG_DESCRIPTION)
                 xmlSerializer.text(transaction.description)
                 xmlSerializer.endTag(NS_TRANSACTION, TAG_DESCRIPTION)
-                lastTrxUID = curTrxUID
+                txUIDPrevious = txUID
 
                 // slots
                 val slots = mutableListOf<Slot>()
@@ -652,12 +648,12 @@ class GncXmlExporter(
             // account guid
             xmlSerializer.startTag(NS_SPLIT, TAG_ACCOUNT)
             xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
-            var splitAccountUID = cursor.getString("split_acct_uid")
+            var splitAccountUID: String
             if (isTemplates) {
                 //get the UID of the template account
-                splitAccountUID = transactionToTemplateAccounts[curTrxUID]!!.uid
+                splitAccountUID = transactionToTemplateAccounts[txUID]!!.uid
             } else {
-                splitAccountUID = cursor.getString("split_acct_uid")
+                splitAccountUID = cursor.getString("split_acct_uid")!!
             }
             xmlSerializer.text(splitAccountUID)
             xmlSerializer.endTag(NS_SPLIT, TAG_ACCOUNT)
@@ -674,10 +670,7 @@ class GncXmlExporter(
                 frame.add(Slot.guid(KEY_SPLIT_ACCOUNT_SLOT, sched_xaction_acct_uid!!))
                 if (trxType == TransactionType.CREDIT) {
                     frame.add(
-                        Slot.string(
-                            KEY_CREDIT_FORMULA,
-                            formatFormula(splitAmount, trnCommodity!!)
-                        )
+                        Slot.string(KEY_CREDIT_FORMULA, formatFormula(splitAmount, trnCommodity))
                     )
                     frame.add(Slot.numeric(KEY_CREDIT_NUMERIC, splitValueNum, splitValueDenom))
                     frame.add(Slot.string(KEY_DEBIT_FORMULA, ""))
@@ -686,10 +679,7 @@ class GncXmlExporter(
                     frame.add(Slot.string(KEY_CREDIT_FORMULA, ""))
                     frame.add(Slot.numeric(KEY_CREDIT_NUMERIC, 0, 1))
                     frame.add(
-                        Slot.string(
-                            KEY_DEBIT_FORMULA,
-                            formatFormula(splitAmount, trnCommodity!!)
-                        )
+                        Slot.string(KEY_DEBIT_FORMULA, formatFormula(splitAmount, trnCommodity))
                     )
                     frame.add(Slot.numeric(KEY_DEBIT_NUMERIC, splitValueNum, splitValueDenom))
                 }
@@ -702,7 +692,7 @@ class GncXmlExporter(
 
             xmlSerializer.endTag(NS_TRANSACTION, TAG_SPLIT)
         } while (cursor.moveToNext())
-        if (lastTrxUID.isNotEmpty()) { // there's an unfinished transaction, close it
+        if (txUIDPrevious.isNotEmpty()) { // there's an unfinished transaction, close it
             xmlSerializer.endTag(NS_TRANSACTION, TAG_SPLITS)
             xmlSerializer.endTag(NS_GNUCASH, TAG_TRANSACTION)
         }
@@ -718,6 +708,7 @@ class GncXmlExporter(
 
     @Throws(IOException::class)
     private fun writeTemplateTransactions(xmlSerializer: XmlSerializer) {
+        cancellationSignal.throwIfCanceled()
         if (transactionsDbAdapter.templateTransactionsCount > 0) {
             xmlSerializer.startTag(NS_GNUCASH, TAG_TEMPLATE_TRANSACTIONS)
             //TODO writeAccounts(xmlSerializer, true);
@@ -746,45 +737,45 @@ class GncXmlExporter(
         xmlSerializer: XmlSerializer,
         scheduledAction: ScheduledAction
     ) {
-        var uid = scheduledAction.uid
-        val actionUID = scheduledAction.actionUID
-        val accountUID = scheduledAction.templateAccountUID
+        if (scheduledAction.actionType != ScheduledAction.ActionType.TRANSACTION) {
+            return
+        }
+        val uid = scheduledAction.uid
+        val txUID = scheduledAction.actionUID ?: return
+        var accountUID = scheduledAction.templateAccountUID
         var account: Account? = null
-        if (!accountUID.isNullOrEmpty()) {
+        if (accountUID.isNotEmpty()) {
             try {
                 account = accountsDbAdapter.getSimpleRecord(accountUID)
-            } catch (_: IllegalArgumentException) {
+            } catch (_: Exception) {
             }
         }
         if (account == null) {
-            account = transactionToTemplateAccounts[actionUID]
-            if (account == null) { //if the action UID does not belong to a transaction we've seen before, skip it
-                return
+            val where = AccountEntry.COLUMN_NAME + "=? AND " + AccountEntry.COLUMN_TEMPLATE + "=1"
+            val whereArgs = arrayOf<String?>(uid)
+            val accounts = accountsDbAdapter.getSimpleAccounts(where, whereArgs, null)
+            //if the action UID does not belong to a transaction we've seen before, skip it
+            account = if (accounts.isEmpty()) {
+                transactionToTemplateAccounts[txUID] ?: return
+            } else {
+                accounts[0]
             }
-            uid = account.name
+            account.name = uid
+            accountUID = account.uid
         }
         listener?.onSchedule(scheduledAction)
-        val actionType = scheduledAction.actionType
 
         xmlSerializer.startTag(NS_GNUCASH, TAG_SCHEDULED_ACTION)
         xmlSerializer.attribute(null, ATTR_KEY_VERSION, BOOK_VERSION)
-        xmlSerializer.startTag(NS_SX, TAG_ID)
 
+        xmlSerializer.startTag(NS_SX, TAG_ID)
         xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
         xmlSerializer.text(uid)
         xmlSerializer.endTag(NS_SX, TAG_ID)
 
-        var name: String? = null
-        if (name == null) {
-            if (actionType == ScheduledAction.ActionType.TRANSACTION) {
-                val transactionUID = actionUID!!
-                name = transactionsDbAdapter.getAttribute(
-                    transactionUID,
-                    TransactionEntry.COLUMN_DESCRIPTION
-                )
-            } else {
-                name = actionType.name
-            }
+        var name: String? = scheduledAction.name
+        if (name.isNullOrEmpty()) {
+            name = transactionsDbAdapter.getAttribute(txUID, TransactionEntry.COLUMN_DESCRIPTION)
         }
         xmlSerializer.startTag(NS_SX, TAG_NAME)
         xmlSerializer.text(name)
@@ -794,16 +785,16 @@ class GncXmlExporter(
         xmlSerializer.text(if (scheduledAction.isEnabled) "y" else "n")
         xmlSerializer.endTag(NS_SX, TAG_ENABLED)
         xmlSerializer.startTag(NS_SX, TAG_AUTO_CREATE)
-        xmlSerializer.text(if (scheduledAction.shouldAutoCreate()) "y" else "n")
+        xmlSerializer.text(if (scheduledAction.isAutoCreate) "y" else "n")
         xmlSerializer.endTag(NS_SX, TAG_AUTO_CREATE)
         xmlSerializer.startTag(NS_SX, TAG_AUTO_CREATE_NOTIFY)
-        xmlSerializer.text(if (scheduledAction.shouldAutoNotify()) "y" else "n")
+        xmlSerializer.text(if (scheduledAction.isAutoCreateNotify) "y" else "n")
         xmlSerializer.endTag(NS_SX, TAG_AUTO_CREATE_NOTIFY)
         xmlSerializer.startTag(NS_SX, TAG_ADVANCE_CREATE_DAYS)
         xmlSerializer.text(scheduledAction.advanceCreateDays.toString())
         xmlSerializer.endTag(NS_SX, TAG_ADVANCE_CREATE_DAYS)
         xmlSerializer.startTag(NS_SX, TAG_ADVANCE_REMIND_DAYS)
-        xmlSerializer.text(scheduledAction.advanceNotifyDays.toString())
+        xmlSerializer.text(scheduledAction.advanceRemindDays.toString())
         xmlSerializer.endTag(NS_SX, TAG_ADVANCE_REMIND_DAYS)
         xmlSerializer.startTag(NS_SX, TAG_INSTANCE_COUNT)
         val scheduledActionUID = scheduledAction.uid
@@ -812,7 +803,7 @@ class GncXmlExporter(
         xmlSerializer.endTag(NS_SX, TAG_INSTANCE_COUNT)
 
         //start date
-        val scheduleStartTime = scheduledAction.startTime
+        val scheduleStartTime = scheduledAction.startDate
         writeDate(xmlSerializer, NS_SX, TAG_START, scheduleStartTime)
 
         val lastRunTime = scheduledAction.lastRunTime
@@ -820,24 +811,23 @@ class GncXmlExporter(
             writeDate(xmlSerializer, NS_SX, TAG_LAST, lastRunTime)
         }
 
-        val endTime = scheduledAction.endTime
+        val endTime = scheduledAction.endDate
         if (endTime > 0) {
             //end date
             writeDate(xmlSerializer, NS_SX, TAG_END, endTime)
         } else { //add number of occurrences
-            val totalFrequency = scheduledAction.totalPlannedExecutionCount
-            if (totalFrequency > 0) {
+            val totalPlannedCount = scheduledAction.totalPlannedExecutionCount
+            if (totalPlannedCount > 0) {
                 xmlSerializer.startTag(NS_SX, TAG_NUM_OCCUR)
-                xmlSerializer.text(totalFrequency.toString())
+                xmlSerializer.text(totalPlannedCount.toString())
                 xmlSerializer.endTag(NS_SX, TAG_NUM_OCCUR)
             }
 
             //remaining occurrences
-            val executionCount = scheduledAction.executionCount
-            val remaining = totalFrequency - executionCount
-            if (remaining > 0) {
+            val remainingCount = totalPlannedCount - scheduledAction.instanceCount
+            if (remainingCount > 0) {
                 xmlSerializer.startTag(NS_SX, TAG_REM_OCCUR)
-                xmlSerializer.text(remaining.toString())
+                xmlSerializer.text(remainingCount.toString())
                 xmlSerializer.endTag(NS_SX, TAG_REM_OCCUR)
             }
         }
@@ -973,6 +963,7 @@ class GncXmlExporter(
 
     @Throws(IOException::class)
     private fun writePrice(xmlSerializer: XmlSerializer, price: Price) {
+        cancellationSignal.throwIfCanceled()
         listener?.onPrice(price)
         xmlSerializer.startTag(null, TAG_PRICE)
         // GUID
@@ -1125,6 +1116,7 @@ class GncXmlExporter(
         val slots = mutableListOf<Slot>()
 
         for (accountID in budget.accounts) {
+            cancellationSignal.throwIfCanceled()
             slots.clear()
 
             val periodCount = budget.numberOfPeriods
@@ -1155,6 +1147,7 @@ class GncXmlExporter(
         val notes = mutableListOf<Slot>()
 
         for (accountID in budget.accounts) {
+            cancellationSignal.throwIfCanceled()
             val frame = mutableListOf<Slot>()
 
             val periodCount = budget.numberOfPeriods

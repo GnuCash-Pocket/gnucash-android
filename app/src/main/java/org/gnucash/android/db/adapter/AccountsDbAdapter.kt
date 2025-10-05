@@ -77,7 +77,7 @@ class AccountsDbAdapter(
 ) : DatabaseAdapter<Account>(
     transactionsDbAdapter.holder,
     AccountEntry.TABLE_NAME,
-    arrayOf<String>(
+    arrayOf(
         AccountEntry.COLUMN_NAME,
         AccountEntry.COLUMN_DESCRIPTION,
         AccountEntry.COLUMN_TYPE,

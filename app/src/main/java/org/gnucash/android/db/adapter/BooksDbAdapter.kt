@@ -46,7 +46,7 @@ import kotlin.math.max
 class BooksDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Book>(
     holder,
     BookEntry.TABLE_NAME,
-    arrayOf<String>(
+    arrayOf(
         BookEntry.COLUMN_DISPLAY_NAME,
         BookEntry.COLUMN_ROOT_GUID,
         BookEntry.COLUMN_TEMPLATE_GUID,

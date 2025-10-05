@@ -13,7 +13,7 @@ internal class ScheduledExportAdapter(refreshable: Refreshable) :
 
     override suspend fun loadData(): List<ScheduledAction> {
         val databaseAdapter = ScheduledActionDbAdapter.instance
-        return databaseAdapter.getRecords(ScheduledAction.ActionType.BACKUP)
+        return databaseAdapter.getRecords(ScheduledAction.ActionType.EXPORT)
     }
 
     override fun createViewHolder(

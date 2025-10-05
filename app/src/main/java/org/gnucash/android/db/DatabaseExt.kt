@@ -22,7 +22,11 @@ fun SQLiteStatement.bindBigInteger(@IntRange(from = 1) index: Int, value: Long?)
 }
 
 fun SQLiteStatement.bindBoolean(@IntRange(from = 1) index: Int, value: Boolean) {
-    bindLong(index, (if (value) 1 else 0).toLong())
+    bindLong(index, if (value) 1L else 0L)
+}
+
+fun SQLiteStatement.bindInt(@IntRange(from = 1) index: Int, value: Int) {
+    bindLong(index, value.toLong())
 }
 
 fun Cursor.getBigDecimal(@IntRange(from = 0) columnIndex: Int): BigDecimal? {

@@ -304,7 +304,7 @@ class GncXmlHandler(
         transactionsDbAdapter = TransactionsDbAdapter(commoditiesDbAdapter!!)
         accountsDbAdapter = AccountsDbAdapter(transactionsDbAdapter!!, pricesDbAdapter!!)
         val recurrenceDbAdapter = RecurrenceDbAdapter(holder)
-        scheduledActionsDbAdapter = ScheduledActionDbAdapter(recurrenceDbAdapter)
+        scheduledActionsDbAdapter = ScheduledActionDbAdapter(recurrenceDbAdapter, transactionsDbAdapter!!)
         budgetsDbAdapter = BudgetsDbAdapter(recurrenceDbAdapter)
 
         Timber.d("before clean up db")
@@ -641,19 +641,19 @@ class GncXmlHandler(
 
     private fun handleEndAdvanceRemindDays(uri: String, value: String) {
         if (NS_SX == uri) {
-            scheduledAction!!.advanceNotifyDays = value.toInt()
+            scheduledAction!!.advanceRemindDays = value.toInt()
         }
     }
 
     private fun handleEndAutoCreate(uri: String, value: String) {
         if (NS_SX == uri) {
-            scheduledAction!!.setAutoCreate(value == "y")
+            scheduledAction!!.isAutoCreateNotify = value == "y"
         }
     }
 
     private fun handleEndAutoCreateNotify(uri: String, value: String) {
         if (NS_SX == uri) {
-            scheduledAction!!.setAutoNotify(value == "y")
+            scheduledAction!!.isAutoCreateNotify = value == "y"
         }
     }
 
@@ -859,7 +859,7 @@ class GncXmlHandler(
 
     private fun handleEndInstanceCount(uri: String, value: String) {
         if (NS_SX == uri) {
-            scheduledAction!!.executionCount = value.toInt()
+            scheduledAction!!.instanceCount = value.toInt()
         }
     }
 
@@ -907,11 +907,7 @@ class GncXmlHandler(
         } else if (NS_COMMODITY == uri) {
             commodity!!.fullname = name
         } else if (NS_SX == uri) {
-            if (name == ScheduledAction.ActionType.BACKUP.name) {
-                scheduledAction!!.actionType = ScheduledAction.ActionType.BACKUP
-            } else {
-                scheduledAction!!.actionType = ScheduledAction.ActionType.TRANSACTION
-            }
+            scheduledAction!!.name = name
         }
     }
 
@@ -1165,7 +1161,7 @@ class GncXmlHandler(
         if (NS_SX == uri) {
             val scheduledAction = scheduledAction!!
             if (scheduledAction.actionType == ScheduledAction.ActionType.TRANSACTION) {
-                scheduledAction.templateAccountUID = uid
+                scheduledAction.setTemplateAccountUID(uid)
                 val transactionUID = templateAccountToTransaction[uid]
                 scheduledAction.actionUID = transactionUID
             } else {

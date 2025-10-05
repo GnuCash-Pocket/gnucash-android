@@ -32,7 +32,6 @@ import org.gnucash.android.db.adapter.RecurrenceDbAdapter
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.export.ExportAsyncTask
-import org.gnucash.android.export.ExportParams
 import org.gnucash.android.model.Book
 import org.gnucash.android.model.ScheduledAction
 import org.gnucash.android.model.Transaction
@@ -79,7 +78,9 @@ class ScheduledActionService {
         val dbHelper = DatabaseHelper(context, book.uid)
         val dbHolder = dbHelper.holder
         val recurrenceDbAdapter = RecurrenceDbAdapter(dbHolder)
-        val scheduledActionDbAdapter = ScheduledActionDbAdapter(recurrenceDbAdapter)
+        val transactionsDbAdapter = TransactionsDbAdapter(dbHolder)
+        val scheduledActionDbAdapter =
+            ScheduledActionDbAdapter(recurrenceDbAdapter, transactionsDbAdapter)
 
         val scheduledActions = scheduledActionDbAdapter.allEnabledScheduledActions
         Timber.i(
@@ -150,11 +151,11 @@ class ScheduledActionService {
         fun processScheduledAction(dbHolder: DatabaseHolder, scheduledAction: ScheduledAction) {
             val now = System.currentTimeMillis()
             val totalPlannedExecutions = scheduledAction.totalPlannedExecutionCount
-            val executionCount = scheduledAction.executionCount
+            val executionCount = scheduledAction.instanceCount
 
             //the end time of the ScheduledAction is not handled here because
             //it is handled differently for transactions and backups. See the individual methods.
-            if (scheduledAction.startTime > now //if schedule begins in the future
+            if (scheduledAction.startDate > now //if schedule begins in the future
                 || !scheduledAction.isEnabled // of if schedule is disabled
                 || (totalPlannedExecutions > 0 && executionCount >= totalPlannedExecutions)
             ) { //limit was set and we reached or exceeded it
@@ -176,13 +177,13 @@ class ScheduledActionService {
             scheduledAction: ScheduledAction
         ) {
             Timber.i("Executing scheduled action: %s", scheduledAction)
-            var executionCount = 0
+            val instanceCount = scheduledAction.instanceCount
 
-            executionCount += when (scheduledAction.actionType) {
+            val executionCount = when (scheduledAction.actionType) {
                 ScheduledAction.ActionType.TRANSACTION ->
                     executeTransactions(dbHolder, scheduledAction)
 
-                ScheduledAction.ActionType.BACKUP ->
+                ScheduledAction.ActionType.EXPORT ->
                     executeBackup(dbHolder, scheduledAction)
             }
 
@@ -191,19 +192,19 @@ class ScheduledActionService {
                 // Set the execution count in the object because it will be checked
                 // for the next iteration in the calling loop.
                 // This call is important, do not remove!!
-                scheduledAction.executionCount = scheduledAction.executionCount + executionCount
+                scheduledAction.instanceCount = instanceCount + executionCount
                 // Update the last run time and execution count
                 val contentValues = ContentValues()
-                contentValues[ScheduledActionEntry.COLUMN_LAST_RUN] = scheduledAction.lastRunTime
-                contentValues[ScheduledActionEntry.COLUMN_EXECUTION_COUNT] =
-                    scheduledAction.executionCount
+                contentValues[ScheduledActionEntry.COLUMN_LAST_OCCUR] = scheduledAction.lastRunTime
+                contentValues[ScheduledActionEntry.COLUMN_INSTANCE_COUNT] =
+                    scheduledAction.instanceCount
 
                 val db = dbHolder.db
                 db.update(
                     ScheduledActionEntry.TABLE_NAME,
                     contentValues,
                     ScheduledActionEntry.COLUMN_UID + "=?",
-                    arrayOf<String>(scheduledAction.uid)
+                    arrayOf<String?>(scheduledAction.uid)
                 )
             }
         }
@@ -221,7 +222,7 @@ class ScheduledActionService {
 
             val context = dbHolder.context
             val bookUID = scheduledAction.actionUID ?: dbHolder.name
-            val params = ExportParams.parseTag(scheduledAction.tag!!)
+            val params = scheduledAction.getExportParams() ?: return 0
             // HACK: the tag isn't updated with the new date, so set the correct by hand
             params.exportStartTime = Timestamp(scheduledAction.lastRunTime)
             var result: Uri? = null
@@ -248,7 +249,7 @@ class ScheduledActionService {
          * @return `true` if execution is due, `false` otherwise
          */
         private fun shouldExecuteScheduledBackup(scheduledAction: ScheduledAction): Boolean {
-            if (scheduledAction.actionType != ScheduledAction.ActionType.BACKUP) {
+            if (scheduledAction.actionType != ScheduledAction.ActionType.EXPORT) {
                 return false
             }
             val now = System.currentTimeMillis()
@@ -309,7 +310,7 @@ class ScheduledActionService {
             val transactions = mutableListOf<Transaction>()
 
             var executionCount = 0
-            val previousExecutionCount = scheduledAction.executionCount // We'll modify it
+            val previousExecutionCount = scheduledAction.instanceCount // We'll modify it
             //we may be executing scheduled action significantly after scheduled time (depending on when Android fires the alarm)
             //so compute the actual transaction time from pre-known values
             var transactionTime = scheduledAction.computeNextCountBasedScheduledExecutionTime()
@@ -318,8 +319,8 @@ class ScheduledActionService {
                 recurringTrxn.time = transactionTime
                 transactions.add(recurringTrxn)
                 recurringTrxn.scheduledActionUID = scheduledAction.uid
-                scheduledAction.executionCount =
-                    ++executionCount //required for computingNextScheduledExecutionTime
+                //required for computingNextScheduledExecutionTime
+                scheduledAction.instanceCount = ++executionCount
 
                 if (totalPlannedExecutions > 0 && executionCount >= totalPlannedExecutions) {
                     break //if we hit the total planned executions set, then abort
@@ -330,7 +331,7 @@ class ScheduledActionService {
 
             transactionsDbAdapter.bulkAddRecords(transactions, DatabaseAdapter.UpdateMethod.Insert)
             // Be nice and restore the parameter's original state to avoid confusing the callers
-            scheduledAction.executionCount = previousExecutionCount
+            scheduledAction.instanceCount = previousExecutionCount
             return executionCount
         }
     }

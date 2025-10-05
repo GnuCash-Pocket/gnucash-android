@@ -133,7 +133,7 @@ abstract class Exporter protected constructor(
         accountsDbAdapter = AccountsDbAdapter(transactionsDbAdapter, pricesDbAdapter)
         val recurrenceDbAdapter = RecurrenceDbAdapter(holder)
         budgetsDbAdapter = BudgetsDbAdapter(recurrenceDbAdapter)
-        scheduledActionDbAdapter = ScheduledActionDbAdapter(recurrenceDbAdapter)
+        scheduledActionDbAdapter = ScheduledActionDbAdapter(recurrenceDbAdapter, transactionsDbAdapter)
 
         exportCacheFile = null
         cacheDir = File(context.cacheDir, exportParams.exportFormat.name)
@@ -461,7 +461,7 @@ abstract class Exporter protected constructor(
         val defaultEmail = PreferenceManager.getDefaultSharedPreferences(context)
             .getString(context.getString(R.string.key_default_export_email), null)
         if (!defaultEmail.isNullOrEmpty()) {
-            shareIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf<String>(defaultEmail))
+            shareIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf(defaultEmail))
         }
 
         val extraText = (context.getString(R.string.description_export_email)
