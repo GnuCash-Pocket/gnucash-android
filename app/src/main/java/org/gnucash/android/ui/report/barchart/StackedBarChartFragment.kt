@@ -141,7 +141,7 @@ class StackedBarChartFragment : IntervalReportFragment() {
                 + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
         val whereArgs = arrayOf<String?>(accountType.name)
         val orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC"
-        val accounts = accountsDbAdapter.getSimpleAccounts(where, whereArgs, orderBy)
+        val accounts = accountsDbAdapter.getAllRecords(where, whereArgs, orderBy)
 
         for (i in 0 until count) {
             val startTime = startPeriod.toMillis()

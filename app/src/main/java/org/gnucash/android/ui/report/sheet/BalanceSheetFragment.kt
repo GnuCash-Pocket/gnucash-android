@@ -109,7 +109,7 @@ class BalanceSheetFragment : BaseReportFragment() {
                 + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
                 + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
         val orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC"
-        val accounts = accountsDbAdapter.getSimpleAccounts(where, null, orderBy)
+        val accounts = accountsDbAdapter.getAllRecords(where, null, orderBy)
         var total = createZeroInstance(commodity)
         var isRowEven = true
 

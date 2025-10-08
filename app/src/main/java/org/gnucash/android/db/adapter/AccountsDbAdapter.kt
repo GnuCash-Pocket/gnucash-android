@@ -292,9 +292,8 @@ class AccountsDbAdapter(
         if (isCached) cache.clear()
         val descendantAccountUIDs = getDescendantAccountUIDs(parentAccountUID, null, null)
         if (descendantAccountUIDs.isEmpty()) return
-        val descendantAccounts = getSimpleAccounts(
+        val descendantAccounts = getAllRecords(
             AccountEntry.COLUMN_UID + " IN " + descendantAccountUIDs.joinIn(),
-            null,
             null
         )
         val accountsByUID = descendantAccounts.associateBy(Account::uid)
@@ -401,8 +400,8 @@ class AccountsDbAdapter(
      * @param cursor Cursor pointing to account record in database
      * @return [Account] object constructed from database record
      */
-    override fun buildModelInstance(cursor: Cursor): Account {
-        val account = buildSimpleAccountInstance(cursor)
+    fun buildFullModelInstance(cursor: Cursor): Account {
+        val account = buildModelInstance(cursor)
         account.transactions = transactionsDbAdapter.getAllTransactionsForAccount(account.uid)
         return account
     }
@@ -417,7 +416,7 @@ class AccountsDbAdapter(
      * @param cursor Cursor pointing to account record in database
      * @return [Account] object constructed from database record
      */
-    fun buildSimpleAccountInstance(cursor: Cursor): Account {
+    override fun buildModelInstance(cursor: Cursor): Account {
         val account = Account(cursor.getString(AccountEntry.COLUMN_NAME)!!)
         populateBaseModelAttributes(cursor, account)
 
@@ -484,8 +483,8 @@ class AccountsDbAdapter(
     @ColorInt
     fun getAccountColor(accountUID: String): Int {
         try {
-            val account = getSimpleRecord(accountUID)
-            return account?.color ?: Account.DEFAULT_COLOR
+            val account = getRecord(accountUID)
+            return account.color
         } catch (e: IllegalArgumentException) {
             Timber.e(e)
             return Account.DEFAULT_COLOR
@@ -509,42 +508,7 @@ class AccountsDbAdapter(
      * @return List of [Account]s in the database
      */
     val simpleAccounts: List<Account>
-        get() = getSimpleAccounts(null, null, null)
-
-    /**
-     * Returns a list of all account entries in the system (includes root account)
-     * No transactions are loaded, just the accounts
-     *
-     * @return List of [Account]s in the database
-     */
-    fun getSimpleAccounts(
-        where: String?,
-        whereArgs: Array<String?>?,
-        orderBy: String?
-    ): List<Account> {
-        var orderBy = orderBy
-        if (orderBy == null) {
-            orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC"
-        }
-        val accounts = mutableListOf<Account>()
-        val cursor = fetchAccounts(where, whereArgs, orderBy)
-        if (cursor == null) return accounts
-
-        try {
-            if (cursor.moveToFirst()) {
-                do {
-                    val account = buildSimpleAccountInstance(cursor)
-                    accounts.add(account)
-                    if (isCached) {
-                        cache[account.uid] = account
-                    }
-                } while (cursor.moveToNext())
-            }
-        } finally {
-            cursor.close()
-        }
-        return accounts
-    }
+        get() = getAllRecords(null, null, AccountEntry.COLUMN_FULL_NAME + " ASC")
 
     /**
      * Returns a list of accounts which have transactions that have not been exported yet
@@ -599,7 +563,7 @@ class AccountsDbAdapter(
             insert(account)
             return account
         }
-        return getSimpleRecord(uid)
+        return getRecord(uid)
     }
 
     /**
@@ -729,7 +693,7 @@ class AccountsDbAdapter(
      * @param orderBy   orderBy clause
      * @return Cursor set of accounts which fulfill `where`
      */
-    fun fetchAccounts(where: String?, whereArgs: Array<String?>?, orderBy: String?): Cursor? {
+    fun fetchAccounts(where: String?, whereArgs: Array<String?>?, orderBy: String? = null): Cursor? {
         var orderBy = orderBy
         if (orderBy.isNullOrEmpty()) {
             orderBy = AccountEntry.COLUMN_NAME + " ASC"
@@ -842,7 +806,7 @@ class AccountsDbAdapter(
         val where = (AccountEntry.COLUMN_TYPE + " = ?"
                 + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
         val whereArgs = arrayOf<String?>(accountType.name)
-        val accounts = getSimpleAccounts(where, whereArgs, null)
+        val accounts = getAllRecords(where, whereArgs)
         return getAccountsBalance(accounts, currency, startTimestamp, endTimestamp)
     }
 
@@ -889,7 +853,7 @@ class AccountsDbAdapter(
         endTimestamp: Long,
         includeSubAccounts: Boolean
     ): Money {
-        val account = getSimpleRecord(accountUID)
+        val account = getRecord(accountUID)
         return computeBalance(account!!, startTimestamp, endTimestamp, includeSubAccounts)
     }
 
@@ -928,7 +892,7 @@ class AccountsDbAdapter(
             val children = getChildren(accountUID)
             Timber.d("compute account children : %d", children.size)
             for (childUID in children) {
-                val child = getSimpleRecord(childUID)
+                val child = getRecord(childUID)
                 val childCommodity = child!!.commodity
                 var childBalance = computeBalance(child, startTimestamp, endTimestamp, true)
                 if (childBalance.isAmountZero) continue
@@ -975,7 +939,7 @@ class AccountsDbAdapter(
     ): Money {
         val accounts = mutableListOf<Account>()
         for (accountUID in accountUIDList) {
-            getSimpleRecord(accountUID)?.let { accounts.add(it) }
+            getRecordOrNull(accountUID)?.let { accounts.add(it) }
         }
         return getAccountsBalance(accounts, startTimestamp, endTimestamp)
     }
@@ -1287,7 +1251,7 @@ class AccountsDbAdapter(
      */
     @Throws(IllegalArgumentException::class)
     fun getCommodity(accountUID: String): Commodity {
-        val account = getSimpleRecord(accountUID)
+        val account = getRecordOrNull(accountUID)
         if (account != null) return account.commodity
         throw IllegalArgumentException("Account not found")
     }
@@ -1301,7 +1265,7 @@ class AccountsDbAdapter(
      * @see .getFullyQualifiedAccountName
      */
     fun getAccountName(accountUID: String): String {
-        val account = getSimpleRecord(accountUID)
+        val account = getRecordOrNull(accountUID)
         if (account != null) return account.name
         return getAttribute(accountUID, AccountEntry.COLUMN_NAME)
     }
@@ -1384,7 +1348,7 @@ class AccountsDbAdapter(
      */
     @Throws(IllegalArgumentException::class)
     fun getAccountFullName(accountUID: String): String? {
-        val account = getSimpleRecord(accountUID)
+        val account = getRecordOrNull(accountUID)
         if (account != null) return account.fullName
         throw IllegalArgumentException("Account not found")
     }
@@ -1397,7 +1361,7 @@ class AccountsDbAdapter(
      * @return `true` if the account is a placeholder account, `false` otherwise
      */
     fun isPlaceholderAccount(accountUID: String): Boolean {
-        val account = getSimpleRecord(accountUID)
+        val account = getRecordOrNull(accountUID)
         if (account != null) return account.isPlaceholder
         val isPlaceholder = getAttribute(accountUID, AccountEntry.COLUMN_PLACEHOLDER)
         return isPlaceholder.toInt() != 0
@@ -1410,7 +1374,7 @@ class AccountsDbAdapter(
      * @return `true` if the account is hidden, `false` otherwise
      */
     fun isHiddenAccount(accountUID: String): Boolean {
-        val account = getSimpleRecord(accountUID)
+        val account = getRecordOrNull(accountUID)
         if (account != null) return account.isHidden
         val isHidden = getAttribute(accountUID, AccountEntry.COLUMN_HIDDEN)
         return isHidden.toInt() != 0
@@ -1423,7 +1387,7 @@ class AccountsDbAdapter(
      * @return `true` if the account is a favorite account, `false` otherwise
      */
     fun isFavoriteAccount(accountUID: String): Boolean {
-        val account = getSimpleRecord(accountUID)
+        val account = getRecordOrNull(accountUID)
         if (account != null) return account.isFavorite
         val isFavorite = getAttribute(accountUID, AccountEntry.COLUMN_FAVORITE)
         return isFavorite.toInt() != 0
@@ -1583,37 +1547,28 @@ class AccountsDbAdapter(
             null
         )
         try {
-            if (cursor.moveToFirst()) {
-                return cursor.getLong(0).toInt()
+            return if (cursor.moveToFirst()) {
+                cursor.getLong(0).toInt()
             } else {
-                return 0
+                0
             }
         } finally {
             cursor.close()
         }
     }
 
-    @Throws(IllegalArgumentException::class)
-    fun getSimpleRecord(uid: String?): Account? {
+    fun getFullRecord(uid: String?): Account? {
         if (uid.isNullOrEmpty()) return null
-        if (isCached) {
-            val account = cache[uid]
-            if (account != null) return account
-            // TODO avoid race-condition when multiple simultaneous calls for same record.
-        }
-
-        Timber.v("Fetching simple account %s", uid)
+        Timber.v("Fetching full account %s", uid)
         val cursor = fetchRecord(uid) ?: return null
         try {
             if (cursor.moveToFirst()) {
-                val account = buildSimpleAccountInstance(cursor)
-                if (isCached) cache[uid] = account
-                return account
+                return buildFullModelInstance(cursor)
             }
-            throw IllegalArgumentException("Account not found")
         } finally {
             cursor.close()
         }
+        return null
     }
 
     fun getTransactionCount(uid: String): Long {
@@ -1629,7 +1584,7 @@ class AccountsDbAdapter(
      */
     @Throws(IllegalArgumentException::class)
     fun getAccountType(accountUID: String): AccountType {
-        val account = getSimpleRecord(accountUID)
+        val account = getRecordOrNull(accountUID)
         if (account != null) return account.accountType
         throw IllegalArgumentException("Account not found")
     }
@@ -1672,7 +1627,7 @@ class AccountsDbAdapter(
     private fun populateDescendants(accountUID: String, result: MutableList<Account>) {
         val descendantsUIDs = getDescendantAccountUIDs(accountUID, null, null)
         for (descendantsUID in descendantsUIDs) {
-            getSimpleRecord(descendantsUID)?.let { result.add(it) }
+            getRecordOrNull(descendantsUID)?.let { result.add(it) }
         }
     }
 

@@ -54,9 +54,7 @@ class TransactionTest : GnuCashTest() {
         val split2 = Split(createZeroInstance(Commodity.DEFAULT_COMMODITY), "account-something")
         split2.transactionUID = "pre-existent"
 
-        val splits: MutableList<Split> = ArrayList()
-        splits.add(split1)
-        splits.add(split2)
+        val splits = listOf(split1, split2)
 
         t1.splits = splits
 

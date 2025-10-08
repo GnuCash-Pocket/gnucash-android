@@ -40,7 +40,7 @@ import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
 import org.gnucash.android.app.GnuCashApplication.Companion.shouldSaveOpeningBalances
 import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.DatabaseHolder
-import org.gnucash.android.db.DatabaseSchema
+import org.gnucash.android.db.DatabaseSchema.BookEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.BudgetsDbAdapter
@@ -237,7 +237,7 @@ abstract class Exporter protected constructor(
         var exportCacheFile = exportCacheFile
         if (exportCacheFile == null) {
             val bookName =
-                booksDbAdapter.getAttribute(bookUID, DatabaseSchema.BookEntry.COLUMN_DISPLAY_NAME)
+                booksDbAdapter.getAttribute(bookUID, BookEntry.COLUMN_DISPLAY_NAME)
             val name =
                 buildExportFilename(exportParams.exportFormat, exportParams.isCompressed, bookName)
             exportCacheFile = File(cacheDir, name)
@@ -468,7 +468,7 @@ abstract class Exporter protected constructor(
                 + " " + formatFullDateTime(System.currentTimeMillis()))
         shareIntent.putExtra(Intent.EXTRA_TEXT, extraText)
 
-        val activities: MutableList<ResolveInfo?>? =
+        val activities: List<ResolveInfo?>? =
             context.packageManager.queryIntentActivities(shareIntent, 0)
         if (activities != null && !activities.isEmpty()) {
             context.startActivity(

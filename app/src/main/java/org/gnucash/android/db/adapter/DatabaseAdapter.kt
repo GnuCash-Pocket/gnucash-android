@@ -504,19 +504,9 @@ abstract class DatabaseAdapter<Model : BaseModel>(
     open val allRecords: List<Model>
         get() = getAllRecords(null, null)
 
-    fun getAllRecords(where: String?, whereArgs: Array<String?>?): List<Model> {
-        val cursor = fetchAllRecords(where, whereArgs, null) ?: return emptyList()
-        val records = mutableListOf<Model>()
-        try {
-            if (cursor.moveToFirst()) {
-                do {
-                    records.add(buildModelInstance(cursor))
-                } while (cursor.moveToNext())
-            }
-        } finally {
-            cursor.close()
-        }
-        return records
+    fun getAllRecords(where: String?, whereArgs: Array<String?>?, orderBy: String? = null): List<Model> {
+        val cursor = fetchAllRecords(where, whereArgs, orderBy) ?: return emptyList()
+        return getRecords(cursor)
     }
 
     protected fun getRecords(cursor: Cursor?): List<Model> {

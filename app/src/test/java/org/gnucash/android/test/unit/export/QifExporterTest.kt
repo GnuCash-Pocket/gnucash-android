@@ -221,7 +221,7 @@ class QifExporterTest : BookHelperTest() {
         assertThat(transactionsDbAdapter.recordsCount).isOne()
 
         val transaction = transactionsDbAdapter.getRecord("b33c8a6160494417558fd143731fc26a")
-        assertThat(transaction.splits.size).isEqualTo(2)
+        assertThat(transaction.splits).hasSize(2)
 
         val exportParameters = ExportParams(ExportFormat.QIF)
         exportParameters.exportStartTime = TimestampHelper.timestampFromEpochZero
@@ -271,7 +271,7 @@ class QifExporterTest : BookHelperTest() {
         assertThat(transaction.description).isEqualTo("Tandoori Mahal")
 
         // Check splits
-        assertThat(transaction.splits.size).isEqualTo(3)
+        assertThat(transaction.splits).hasSize(3)
 
         val exportParameters = ExportParams(ExportFormat.QIF)
         exportParameters.exportStartTime = TimestampHelper.timestampFromEpochZero

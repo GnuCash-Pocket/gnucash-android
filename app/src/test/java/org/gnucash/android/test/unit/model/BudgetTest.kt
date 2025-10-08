@@ -40,9 +40,10 @@ class BudgetTest : GnuCashTest() {
         assertThat(budgetAmount.budgetUID).isEqualTo(budget.uid)
 
         //setting a whole list should also set the budget UIDs
-        val budgetAmounts: MutableList<BudgetAmount> = ArrayList()
-        budgetAmounts.add(BudgetAmount(createZeroInstance(Commodity.DEFAULT_COMMODITY), "test"))
-        budgetAmounts.add(BudgetAmount(createZeroInstance(Commodity.DEFAULT_COMMODITY), "second"))
+        val budgetAmounts = listOf(
+            BudgetAmount(createZeroInstance(Commodity.DEFAULT_COMMODITY), "test"),
+            BudgetAmount(createZeroInstance(Commodity.DEFAULT_COMMODITY), "second")
+        )
 
         budget.setBudgetAmounts(budgetAmounts)
 

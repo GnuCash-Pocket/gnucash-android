@@ -50,7 +50,7 @@ import org.gnucash.android.app.getSerializableCompat
 import org.gnucash.android.databinding.CardviewAccountBinding
 import org.gnucash.android.databinding.FragmentAccountsListBinding
 import org.gnucash.android.db.DatabaseCursorLoader
-import org.gnucash.android.db.DatabaseSchema
+import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.getString
 import org.gnucash.android.model.Account
@@ -243,7 +243,7 @@ class AccountsListFragment : MenuFragment(),
 
     private fun toggleFavorite(accountUID: String, isFavoriteAccount: Boolean) {
         val contentValues = ContentValues()
-        contentValues[DatabaseSchema.AccountEntry.COLUMN_FAVORITE] = isFavoriteAccount
+        contentValues[AccountEntry.COLUMN_FAVORITE] = isFavoriteAccount
         accountsDbAdapter.updateRecord(accountUID, contentValues)
         refreshActivity()
     }
@@ -462,11 +462,11 @@ class AccountsListFragment : MenuFragment(),
             fun bind(cursor: Cursor) {
                 if (!isResumed) return
                 val accountsDbAdapter = this@AccountsListFragment.accountsDbAdapter
-                val accountUID = cursor.getString(DatabaseSchema.AccountEntry.COLUMN_UID)!!
+                val accountUID = cursor.getString(AccountEntry.COLUMN_UID)!!
                 this.accountUID = accountUID
-                val account = accountsDbAdapter.getSimpleRecord(accountUID)
+                val account = accountsDbAdapter.getRecord(accountUID)
 
-                accountName.text = account!!.name
+                accountName.text = account.name
                 val subAccountCount = accountsDbAdapter.getSubAccountCount(accountUID)
                 if (subAccountCount > 0) {
                     description.isVisible = true
@@ -569,7 +569,7 @@ class AccountsListFragment : MenuFragment(),
                 accountsDbAdapter: AccountsDbAdapter
             ): Int {
                 val parentUID = account.parentUID ?: return Account.DEFAULT_COLOR
-                val parentAccount = accountsDbAdapter.getSimpleRecord(parentUID)!!
+                val parentAccount = accountsDbAdapter.getRecord(parentUID)
                 return getColor(parentAccount, accountsDbAdapter)
             }
         }

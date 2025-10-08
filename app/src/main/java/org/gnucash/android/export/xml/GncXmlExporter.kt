@@ -224,25 +224,25 @@ class GncXmlExporter(
             val template =
                 commoditiesDbAdapter.getCurrency(Commodity.TEMPLATE)
             var accounts =
-                accountsDbAdapter.getSimpleAccounts(where, whereArgs, null)
+                accountsDbAdapter.getAllRecords(where, whereArgs)
             if (accounts.isEmpty()) {
                 val commodity =
                     commoditiesDbAdapter.getCurrency(Commodity.TEMPLATE)
                 if (commodity != null) {
                     where =
                         AccountEntry.COLUMN_TYPE + "=? AND " + AccountEntry.COLUMN_COMMODITY_UID + "=?"
-                    whereArgs = arrayOf<String?>(
+                    whereArgs = arrayOf(
                         AccountType.ROOT.name,
                         commodity.uid
                     )
                 } else {
                     where = AccountEntry.COLUMN_TYPE + "=? AND " + AccountEntry.COLUMN_NAME + "=?"
-                    whereArgs = arrayOf<String?>(
+                    whereArgs = arrayOf(
                         AccountType.ROOT.name,
                         AccountsDbAdapter.TEMPLATE_ACCOUNT_NAME
                     )
                 }
-                accounts = accountsDbAdapter.getSimpleAccounts(where, whereArgs, null)
+                accounts = accountsDbAdapter.getAllRecords(where, whereArgs)
                 if (accounts.isEmpty()) {
                     account = Account(AccountsDbAdapter.TEMPLATE_ACCOUNT_NAME, Commodity.template)
                     field = account
@@ -351,7 +351,7 @@ class GncXmlExporter(
                 throw ExporterException(exportParams, "No root account found!")
             }
         }
-        val account = accountsDbAdapter.getSimpleRecord(rootUID)!!
+        val account = accountsDbAdapter.getRecord(rootUID)
         writeAccount(xmlSerializer, account)
     }
 
@@ -448,7 +448,7 @@ class GncXmlExporter(
         // gnucash desktop requires that parent account appears before its descendants.
         val children = accountsDbAdapter.getChildren(account.uid)
         for (childUID in children) {
-            val child = accountsDbAdapter.getSimpleRecord(childUID)!!
+            val child = accountsDbAdapter.getRecord(childUID)
             writeAccount(xmlSerializer, child)
         }
     }
@@ -483,11 +483,10 @@ class GncXmlExporter(
             SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID + " AS split_acct_uid",
             SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID + " AS split_sched_xaction_acct_uid"
         )
-        val where: String
-        if (isTemplates) {
-            where = TransactionEntry.COLUMN_TEMPLATE + "=1"
+        val where: String = if (isTemplates) {
+            TransactionEntry.COLUMN_TEMPLATE + "=1"
         } else {
-            where = TransactionEntry.COLUMN_TEMPLATE + "=0"
+            TransactionEntry.COLUMN_TEMPLATE + "=0"
         }
         val orderBy = ("trans_date_posted ASC"
                 + ", " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " ASC"
@@ -752,7 +751,7 @@ class GncXmlExporter(
         var account: Account? = null
         if (!accountUID.isNullOrEmpty()) {
             try {
-                account = accountsDbAdapter.getSimpleRecord(accountUID)
+                account = accountsDbAdapter.getRecord(accountUID)
             } catch (_: IllegalArgumentException) {
             }
         }
