@@ -16,9 +16,7 @@
 package org.gnucash.android.ui.settings
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
-import android.database.Cursor
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -27,32 +25,34 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import android.widget.ImageView
-import android.widget.ListAdapter
-import android.widget.ListView
 import android.widget.TextView
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatDialog
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
-import androidx.cursoradapter.widget.SimpleCursorAdapter
 import androidx.fragment.app.FragmentResultListener
-import androidx.fragment.app.ListFragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.app.GnuCashApplication.Companion.defaultCurrencyCode
+import org.gnucash.android.app.MenuFragment
 import org.gnucash.android.app.actionBar
 import org.gnucash.android.app.finish
+import org.gnucash.android.databinding.CardviewBookBinding
+import org.gnucash.android.databinding.FragmentBookListBinding
 import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.DatabaseSchema.BookEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
-import org.gnucash.android.db.getString
 import org.gnucash.android.importer.AccountsTemplate
+import org.gnucash.android.model.Book
 import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.ui.adapter.AccountsTemplatesAdapter
+import org.gnucash.android.ui.adapter.ModelDiff
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.get
 import org.gnucash.android.ui.settings.dialog.DeleteBookConfirmationDialog
@@ -65,24 +65,19 @@ import timber.log.Timber
 /**
  * Fragment for managing the books in the database
  */
-class BookManagerFragment : ListFragment(), Refreshable, FragmentResultListener {
-    private lateinit var booksAdapter: BooksAdapter
+class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener {
+    private var booksAdapter: BooksAdapter? = null
     private var accountsTemplatesAdapter: AccountsTemplatesAdapter? = null
+    private var binding: FragmentBookListBinding? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return inflater.inflate(R.layout.fragment_book_list, container, false)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
-
-        booksAdapter = BooksAdapter(requireContext())
-        listAdapter = booksAdapter
+        val binding = FragmentBookListBinding.inflate(inflater, container, false)
+        this.binding = binding
+        return binding.root
     }
 
     override fun onDestroy() {
@@ -95,7 +90,13 @@ class BookManagerFragment : ListFragment(), Refreshable, FragmentResultListener 
         val actionBar: ActionBar? = this.actionBar
         actionBar?.setTitle(R.string.title_manage_books)
 
-        listView.setChoiceMode(ListView.CHOICE_MODE_NONE)
+        val binding = binding!!
+        val context = binding.list.context
+        booksAdapter = BooksAdapter()
+
+        binding.list.setLayoutManager(LinearLayoutManager(context))
+        binding.list.emptyView = binding.empty
+        binding.list.adapter = booksAdapter
     }
 
     override fun onResume() {
@@ -103,6 +104,7 @@ class BookManagerFragment : ListFragment(), Refreshable, FragmentResultListener 
         refresh()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.book_list_actions, menu)
@@ -132,8 +134,8 @@ class BookManagerFragment : ListFragment(), Refreshable, FragmentResultListener 
     override fun refresh() {
         if (isDetached) return
         val booksDbAdapter = BooksDbAdapter.instance
-        val cursor = booksDbAdapter.fetchAllRecords()
-        booksAdapter!!.swapCursor(cursor)
+        val records = booksDbAdapter.allRecords
+        booksAdapter?.submitList(records)
     }
 
     override fun refresh(uid: String?) {
@@ -158,10 +160,11 @@ class BookManagerFragment : ListFragment(), Refreshable, FragmentResultListener 
     }
 
     private fun createBook(activity: Activity) {
-        if (accountsTemplatesAdapter == null) {
-            accountsTemplatesAdapter = AccountsTemplatesAdapter(activity)
+        var adapter = accountsTemplatesAdapter
+        if (adapter == null) {
+            adapter = AccountsTemplatesAdapter(activity)
+            accountsTemplatesAdapter = adapter
         }
-        val adapter: ListAdapter = accountsTemplatesAdapter!!
 
         AlertDialog.Builder(activity)
             .setTitle(R.string.title_create_default_accounts)
@@ -179,31 +182,49 @@ class BookManagerFragment : ListFragment(), Refreshable, FragmentResultListener 
             .show()
     }
 
-    private inner class BooksAdapter(context: Context) : SimpleCursorAdapter(
-        context,
-        R.layout.cardview_book,
-        null,
-        arrayOf<String?>(BookEntry.COLUMN_DISPLAY_NAME, BookEntry.COLUMN_SOURCE_URI),
-        intArrayOf(R.id.primary_text, R.id.secondary_text),
-        0
-    ) {
+    private inner class BooksAdapter : ListAdapter<Book, BookViewHolder>(ModelDiff<Book>()) {
+        override fun onCreateViewHolder(
+            parent: ViewGroup,
+            viewType: Int
+        ): BookViewHolder {
+            val inflater = LayoutInflater.from(parent.context)
+            val binding = CardviewBookBinding.inflate(inflater, parent, false)
+            return BookViewHolder(binding)
+        }
+
+        override fun onBindViewHolder(
+            holder: BookViewHolder,
+            position: Int
+        ) {
+            val item = getItem(position)
+            holder.bind(item)
+        }
+    }
+
+    inner class BookViewHolder(private val binding: CardviewBookBinding) :
+        RecyclerView.ViewHolder(binding.root) {
         private val activeBookUID = GnuCashApplication.activeBookUID
 
-        override fun bindView(view: View, context: Context, cursor: Cursor) {
-            super.bindView(view, context, cursor)
+        private val nameView = binding.listItem2Lines.primaryText
+        private val statsView = binding.listItem2Lines.secondaryText
+        private val lastSyncLabel = binding.labelLastSync
+        private val lastSyncTimeView = binding.lastSyncTime
+        private val optionsMenuView = binding.optionsMenu
 
-            val bookUID = cursor.getString(BookEntry.COLUMN_UID)!!
+        fun bind(book: Book) {
+            val bookUID = book.uid
 
-            setLastExportedText(view, bookUID)
-            setStatisticsText(view, bookUID)
-            setUpMenu(view, context, cursor, bookUID)
-
+            nameView.text = book.displayName
             if (activeBookUID == bookUID) {
-                val primaryText = view.findViewById<TextView>(R.id.primary_text)!!
-                primaryText.setTextColor(ContextCompat.getColor(context, R.color.theme_primary))
+                val context = itemView.context
+                nameView.setTextColor(ContextCompat.getColor(context, R.color.theme_primary))
             }
 
-            view.setOnClickListener { v ->
+            setLastExportedText(book)
+            setStatisticsText(book)
+            setUpMenu(book)
+
+            itemView.setOnClickListener { v ->
                 //do nothing if the active book is tapped
                 if (activeBookUID != bookUID) {
                     loadBook(v.context, bookUID)
@@ -212,10 +233,10 @@ class BookManagerFragment : ListFragment(), Refreshable, FragmentResultListener 
             }
         }
 
-        fun setUpMenu(view: View, context: Context, cursor: Cursor, bookUID: String) {
-            val bookName = cursor.getString(BookEntry.COLUMN_DISPLAY_NAME)
-            val optionsMenu = view.findViewById<ImageView>(R.id.options_menu)
-            optionsMenu.setOnClickListener { v ->
+        fun setUpMenu(book: Book) {
+            val bookUID = book.uid
+            val bookName = book.displayName
+            optionsMenuView.setOnClickListener { v ->
                 val popupMenu = PopupMenu(v.context, v)
                 val menuInflater = popupMenu.menuInflater
                 menuInflater.inflate(R.menu.book_context_menu, popupMenu.menu)
@@ -263,11 +284,12 @@ class BookManagerFragment : ListFragment(), Refreshable, FragmentResultListener 
                 }
                 .setPositiveButton(R.string.btn_rename) { dialog, _ ->
                     val bookTitle =
-                        (dialog as AlertDialog).findViewById<EditText>(R.id.input_book_title)!!
+                        (dialog as AppCompatDialog).findViewById<EditText>(R.id.input_book_title)!!
+                    val bookName = bookTitle.getText().toString().trim()
                     BooksDbAdapter.instance.updateRecord(
                         bookUID,
                         BookEntry.COLUMN_DISPLAY_NAME,
-                        bookTitle.getText().toString().trim()
+                        bookName
                     )
                     refresh()
                 }
@@ -277,40 +299,39 @@ class BookManagerFragment : ListFragment(), Refreshable, FragmentResultListener 
             return true
         }
 
-        fun setLastExportedText(view: View, bookUID: String) {
-            val context = view.context
-            val labelLastSync = view.findViewById<TextView>(R.id.label_last_sync)!!
-            labelLastSync.setText(R.string.label_last_export_time)
+        fun setLastExportedText(book: Book) {
+            val bookUID = book.uid
+            val context = itemView.context
+            lastSyncLabel.setText(R.string.label_last_export_time)
 
             val lastSyncTime = getLastExportTime(context, bookUID)
-            val lastSyncText = view.findViewById<TextView>(R.id.last_sync_time)!!
-            if (lastSyncTime.time <= 0L) lastSyncText.setText(R.string.last_export_time_never)
-            else lastSyncText.text = lastSyncTime.toString()
+            if (lastSyncTime.time <= 0L) lastSyncTimeView.setText(R.string.last_export_time_never)
+            else lastSyncTimeView.text = lastSyncTime.toString()
         }
 
-        fun setStatisticsText(view: View, bookUID: String) {
-            val context = view.context
+        fun setStatisticsText(book: Book) {
+            val bookUID = book.uid
+            val context = itemView.context
             val dbHelper = DatabaseHelper(context, bookUID)
             val holder = dbHelper.holder
             val trnAdapter = TransactionsDbAdapter(holder)
-            val transactionCount = trnAdapter.recordsCount.toInt()
+            val transactionCount = trnAdapter.recordsCount
             val accountsDbAdapter = AccountsDbAdapter(trnAdapter)
-            val accountsCount = accountsDbAdapter.recordsCount.toInt()
+            val accountsCount = accountsDbAdapter.recordsCount
             dbHelper.close()
 
             val transactionStats = resources.getQuantityString(
                 R.plurals.book_transaction_stats,
-                transactionCount,
+                transactionCount.toInt(),
                 transactionCount
             )
             val accountStats = resources.getQuantityString(
                 R.plurals.book_account_stats,
-                accountsCount,
+                accountsCount.toInt(),
                 accountsCount
             )
             val stats = "$accountStats, $transactionStats"
-            val statsText = view.findViewById<TextView>(R.id.secondary_text)
-            statsText.text = stats
+            statsView.text = stats
         }
     }
 

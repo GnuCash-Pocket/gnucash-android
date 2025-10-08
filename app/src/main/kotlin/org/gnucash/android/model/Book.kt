@@ -75,4 +75,14 @@ class Book(rootAccountUID: String? = generateUID()) : BaseModel() {
     override fun toString(): String {
         return displayName ?: super.toString()
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (other is Book) {
+            if (this.displayName != other.displayName) return false
+            if (this.rootAccountUID != other.rootAccountUID) return false
+            if (this.isActive != other.isActive) return false
+            if (this.lastSync != other.lastSync) return false
+        }
+        return super.equals(other)
+    }
 }

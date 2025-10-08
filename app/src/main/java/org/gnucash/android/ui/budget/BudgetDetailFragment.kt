@@ -33,6 +33,7 @@ import androidx.appcompat.app.ActionBar
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.LimitLine
@@ -50,7 +51,7 @@ import org.gnucash.android.db.adapter.BudgetsDbAdapter
 import org.gnucash.android.math.isZero
 import org.gnucash.android.model.Budget
 import org.gnucash.android.model.BudgetAmount
-import org.gnucash.android.ui.budget.BudgetDetailFragment.BudgetAmountAdapter.BudgetAmountViewHolder
+import org.gnucash.android.ui.adapter.ModelDiff
 import org.gnucash.android.ui.budget.BudgetsActivity.Companion.getBudgetProgressColor
 import org.gnucash.android.ui.common.FormActivity
 import org.gnucash.android.ui.common.Refreshable
@@ -113,7 +114,7 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
         }
         binding.budgetRecurrence.text = budget.recurrence!!.getRepeatString(context)
 
-        binding.list.adapter = BudgetAmountAdapter()
+        binding.list.adapter = BudgetAmountAdapter(budgetUID!!)
     }
 
     override fun onResume() {
@@ -167,9 +168,13 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
         }
     }
 
-    internal inner class BudgetAmountAdapter : RecyclerView.Adapter<BudgetAmountViewHolder>() {
-        private val budget: Budget = budgetsDbAdapter.getRecord(budgetUID!!)
-        private val budgetAmounts: List<BudgetAmount> = budget.compactedBudgetAmounts
+    internal inner class BudgetAmountAdapter(budgetUID: String) :
+        ListAdapter<BudgetAmount, BudgetAmountViewHolder>(ModelDiff<BudgetAmount>()) {
+        private val budget: Budget = budgetsDbAdapter.getRecord(budgetUID)
+
+        init {
+            submitList(budget.compactedBudgetAmounts)
+        }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BudgetAmountViewHolder {
             val binding = CardviewBudgetAmountBinding.inflate(layoutInflater, parent, false)
@@ -177,8 +182,59 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
         }
 
         override fun onBindViewHolder(holder: BudgetAmountViewHolder, position: Int) {
-            val budgetAmount = budgetAmounts[position]
+            val budgetAmount = getItem(position)
             holder.bind(budget, budgetAmount)
+        }
+    }
+
+    internal inner class BudgetAmountViewHolder(binding: CardviewBudgetAmountBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        private val budgetAccount: TextView = binding.budgetAccount
+        private val budgetAmount: TextView = binding.budgetAmount
+        private val budgetSpent: TextView = binding.budgetSpent
+        private val budgetLeft: TextView = binding.budgetLeft
+        private val budgetIndicator: ProgressBar = binding.budgetIndicator
+        private val budgetChart: BarChart = binding.budgetChart
+
+        fun bind(budget: Budget, budgetAmount: BudgetAmount) {
+            val budgetAccountUID = budgetAmount.accountUID!!
+            val projectedAmount = budgetAmount.amount
+            val accountsDbAdapter = AccountsDbAdapter.instance
+            val spentAmount = accountsDbAdapter.getAccountBalance(
+                budgetAccountUID,
+                budget.startOfCurrentPeriod,
+                budget.endOfCurrentPeriod
+            )
+            val spentAmountAbs = spentAmount.abs()
+
+            budgetAccount.text = accountsDbAdapter.getAccountFullName(budgetAccountUID)
+            this.budgetAmount.text = projectedAmount.formattedString()
+
+            budgetSpent.text = spentAmountAbs.formattedString()
+            budgetLeft.text = projectedAmount.minus(spentAmountAbs).formattedString()
+
+            var budgetProgress = 0f
+            if (!projectedAmount.isAmountZero) {
+                budgetProgress = spentAmount.toBigDecimal().divide(
+                    projectedAmount.toBigDecimal(),
+                    spentAmount.commodity.smallestFractionDigits,
+                    RoundingMode.HALF_EVEN
+                ).toFloat()
+            }
+
+            budgetIndicator.progress = (budgetProgress * 100).toInt()
+            @ColorInt val color = getBudgetProgressColor(1 - budgetProgress)
+            budgetSpent.setTextColor(color)
+            budgetLeft.setTextColor(color)
+
+            generateChartData(budget, budgetAmount, budgetChart)
+
+            itemView.setOnClickListener { v ->
+                val accountUID = budgetAmount.accountUID
+                val intent = Intent(v.context, TransactionsActivity::class.java)
+                    .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+                startActivityForResult(intent, REQUEST_REFRESH)
+            }
         }
 
         /**
@@ -187,7 +243,11 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
          * @param barChart     View where to display the chart
          * @param budgetAmount BudgetAmount to visualize
          */
-        private fun generateChartData(barChart: BarChart, budgetAmount: BudgetAmount) {
+        private fun generateChartData(
+            budget: Budget,
+            budgetAmount: BudgetAmount,
+            barChart: BarChart
+        ) {
             // FIXME: 25.10.15 chart is broken
 
             val accountsDbAdapter = AccountsDbAdapter.instance
@@ -228,61 +288,6 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
             barChart.isAutoScaleMinMaxEnabled = true
             barChart.setDrawValueAboveBar(true)
             barChart.invalidate()
-        }
-
-        override fun getItemCount(): Int {
-            return budgetAmounts.size
-        }
-
-        internal inner class BudgetAmountViewHolder(binding: CardviewBudgetAmountBinding) :
-            RecyclerView.ViewHolder(binding.root) {
-            private val budgetAccount: TextView = binding.budgetAccount
-            private val budgetAmount: TextView = binding.budgetAmount
-            private val budgetSpent: TextView = binding.budgetSpent
-            private val budgetLeft: TextView = binding.budgetLeft
-            private val budgetIndicator: ProgressBar = binding.budgetIndicator
-            private val budgetChart: BarChart = binding.budgetChart
-
-            fun bind(budget: Budget, budgetAmount: BudgetAmount) {
-                val budgetAccountUID = budgetAmount.accountUID!!
-                val projectedAmount = budgetAmount.amount
-                val accountsDbAdapter = AccountsDbAdapter.instance
-                val spentAmount = accountsDbAdapter.getAccountBalance(
-                    budgetAccountUID,
-                    budget.startOfCurrentPeriod,
-                    budget.endOfCurrentPeriod
-                )
-                val spentAmountAbs = spentAmount.abs()
-
-                budgetAccount.text = accountsDbAdapter.getAccountFullName(budgetAccountUID)
-                this.budgetAmount.text = projectedAmount.formattedString()
-
-                budgetSpent.text = spentAmountAbs.formattedString()
-                budgetLeft.text = projectedAmount.minus(spentAmountAbs).formattedString()
-
-                var budgetProgress = 0f
-                if (!projectedAmount.isAmountZero) {
-                    budgetProgress = spentAmount.toBigDecimal().divide(
-                        projectedAmount.toBigDecimal(),
-                        spentAmount.commodity.smallestFractionDigits,
-                        RoundingMode.HALF_EVEN
-                    ).toFloat()
-                }
-
-                budgetIndicator.progress = (budgetProgress * 100).toInt()
-                @ColorInt val color = getBudgetProgressColor(1 - budgetProgress)
-                budgetSpent.setTextColor(color)
-                budgetLeft.setTextColor(color)
-
-                generateChartData(budgetChart, budgetAmount)
-
-                itemView.setOnClickListener { v ->
-                    val accountUID = budgetAmount.accountUID
-                    val intent = Intent(v.context, TransactionsActivity::class.java)
-                        .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
-                    startActivityForResult(intent, REQUEST_REFRESH)
-                }
-            }
         }
     }
 
