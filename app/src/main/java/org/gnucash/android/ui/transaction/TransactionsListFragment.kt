@@ -53,13 +53,12 @@ import org.gnucash.android.db.DatabaseCursorLoader
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.model.Transaction
+import org.gnucash.android.ui.adapter.CursorRecyclerAdapter
 import org.gnucash.android.ui.common.FormActivity
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.common.UxArgument
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity.Companion.updateAllWidgets
-import org.gnucash.android.ui.transaction.TransactionsListFragment.TransactionRecyclerAdapter.TransactionViewHolder
 import org.gnucash.android.ui.transaction.dialog.BulkMoveDialogFragment
-import org.gnucash.android.ui.util.CursorRecyclerAdapter
 import org.gnucash.android.ui.util.displayBalance
 import org.gnucash.android.util.BackupManager.backupActiveBookAsync
 import timber.log.Timber
@@ -129,6 +128,8 @@ class TransactionsListFragment : MenuFragment(),
 
         val binding = this.binding!!
         val context = binding.list.context
+        transactionsAdapter = TransactionRecyclerAdapter(null)
+
         binding.list.setHasFixedSize(true)
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             binding.list.setLayoutManager(GridLayoutManager(context, 2))
@@ -137,8 +138,6 @@ class TransactionsListFragment : MenuFragment(),
         }
         binding.list.emptyView = binding.empty
         binding.list.tag = "transactions"
-
-        transactionsAdapter = TransactionRecyclerAdapter(null)
         binding.list.adapter = transactionsAdapter
     }
 
@@ -248,142 +247,142 @@ class TransactionsListFragment : MenuFragment(),
         override fun onBindViewHolderCursor(holder: TransactionViewHolder, cursor: Cursor) {
             holder.bind(cursor)
         }
+    }
 
-        inner class TransactionViewHolder(binding: CardviewTransactionBinding) :
-            RecyclerView.ViewHolder(binding.root), PopupMenu.OnMenuItemClickListener {
-            private val primaryText: TextView = binding.listItem2Lines.primaryText
-            private val secondaryText: TextView = binding.listItem2Lines.secondaryText
-            private val transactionAmount: TextView = binding.transactionAmount
-            private val optionsMenu: ImageView = binding.optionsMenu
+    inner class TransactionViewHolder(binding: CardviewTransactionBinding) :
+        RecyclerView.ViewHolder(binding.root), PopupMenu.OnMenuItemClickListener {
+        private val primaryText: TextView = binding.listItem2Lines.primaryText
+        private val secondaryText: TextView = binding.listItem2Lines.secondaryText
+        private val transactionAmount: TextView = binding.transactionAmount
+        private val optionsMenu: ImageView = binding.optionsMenu
 
-            //these views are not used in the compact view, hence the nullability
-            private val transactionDate: TextView = binding.transactionDate
-            private val editTransaction: ImageView = binding.editTransaction
+        //these views are not used in the compact view, hence the nullability
+        private val transactionDate: TextView = binding.transactionDate
+        private val editTransaction: ImageView = binding.editTransaction
 
-            private var transaction: Transaction? = null
+        private var transaction: Transaction? = null
 
-            @ColorInt
-            private val colorBalanceZero: Int = transactionAmount.currentTextColor
+        @ColorInt
+        private val colorBalanceZero: Int = transactionAmount.currentTextColor
 
-            init {
-                optionsMenu.setOnClickListener { v ->
-                    val popup = PopupMenu(v.context, v)
-                    popup.setOnMenuItemClickListener(this@TransactionViewHolder)
-                    val inflater = popup.menuInflater
-                    val menu = popup.menu
-                    inflater.inflate(R.menu.transactions_context_menu, menu)
-                    menu.findItem(R.id.menu_edit).isVisible = useCompactView
-                    popup.show()
-                }
-
-                itemView.setOnClickListener {
-                    transaction?.let { onListItemClick(it.uid) }
-                }
+        init {
+            optionsMenu.setOnClickListener { v ->
+                val popup = PopupMenu(v.context, v)
+                popup.setOnMenuItemClickListener(this@TransactionViewHolder)
+                val inflater = popup.menuInflater
+                val menu = popup.menu
+                inflater.inflate(R.menu.transactions_context_menu, menu)
+                menu.findItem(R.id.menu_edit).isVisible = useCompactView
+                popup.show()
             }
 
-            override fun onMenuItemClick(item: MenuItem): Boolean {
-                val accountUID = accountUID ?: return false
-                val transactionUID = transaction?.uid ?: return false
-
-                when (item.itemId) {
-                    R.id.menu_delete -> {
-                        deleteTransaction(transactionUID)
-                        return true
-                    }
-
-                    R.id.menu_duplicate -> {
-                        duplicateTransaction(transactionUID)
-                        return true
-                    }
-
-                    R.id.menu_move -> {
-                        moveTransaction(transactionUID, accountUID)
-                        return true
-                    }
-
-                    R.id.menu_edit -> {
-                        editTransaction(transactionUID, accountUID)
-                        return true
-                    }
-
-                    else -> return false
-                }
+            itemView.setOnClickListener {
+                transaction?.let { onListItemClick(it.uid) }
             }
+        }
 
-            fun bind(cursor: Cursor) {
-                val context = itemView.context
-                val transaction = transactionsDbAdapter.buildModelInstance(cursor)
-                this.transaction = transaction
-                val accountUID = accountUID!!
-                val transactionUID = transaction.uid
+        override fun onMenuItemClick(item: MenuItem): Boolean {
+            val accountUID = accountUID ?: return false
+            val transactionUID = transaction?.uid ?: return false
 
-                primaryText.text = transaction.description
+            when (item.itemId) {
+                R.id.menu_delete -> {
+                    deleteTransaction(transactionUID)
+                    return true
+                }
 
-                val amount = transaction.getBalance(accountUID)
-                transactionAmount.displayBalance(amount, colorBalanceZero)
+                R.id.menu_duplicate -> {
+                    duplicateTransaction(transactionUID)
+                    return true
+                }
 
-                val dateText = getPrettyDateFormat(context, transaction.time)
-                transactionDate.text = dateText
+                R.id.menu_move -> {
+                    moveTransaction(transactionUID, accountUID)
+                    return true
+                }
 
-                if (useCompactView || !useDoubleEntry) {
-                    secondaryText.isVisible = false
-                    editTransaction.isVisible = false
-                } else {
-                    secondaryText.isVisible = true
-                    editTransaction.isVisible = true
+                R.id.menu_edit -> {
+                    editTransaction(transactionUID, accountUID)
+                    return true
+                }
 
-                    val splits = transaction.splits
-                    var text: String? = ""
-                    var error: String? = null
+                else -> return false
+            }
+        }
 
-                    if (splits.size == 2) {
-                        if (splits[0].isPairOf(splits[1])) {
-                            for (split in splits) {
-                                if (split.accountUID != accountUID) {
-                                    text = AccountsDbAdapter.instance.getFullyQualifiedAccountName(
-                                        split.accountUID!!
-                                    )
-                                    break
-                                }
+        fun bind(cursor: Cursor) {
+            val context = itemView.context
+            val transaction = transactionsDbAdapter.buildModelInstance(cursor)
+            this.transaction = transaction
+            val accountUID = accountUID!!
+            val transactionUID = transaction.uid
+
+            primaryText.text = transaction.description
+
+            val amount = transaction.getBalance(accountUID)
+            transactionAmount.displayBalance(amount, colorBalanceZero)
+
+            val dateText = getPrettyDateFormat(context, transaction.time)
+            transactionDate.text = dateText
+
+            if (useCompactView || !useDoubleEntry) {
+                secondaryText.isVisible = false
+                editTransaction.isVisible = false
+            } else {
+                secondaryText.isVisible = true
+                editTransaction.isVisible = true
+
+                val splits = transaction.splits
+                var text: String? = ""
+                var error: String? = null
+
+                if (splits.size == 2) {
+                    if (splits[0].isPairOf(splits[1])) {
+                        for (split in splits) {
+                            if (split.accountUID != accountUID) {
+                                text = AccountsDbAdapter.instance.getFullyQualifiedAccountName(
+                                    split.accountUID!!
+                                )
+                                break
                             }
                         }
-                        if (text.isNullOrEmpty()) {
-                            text = getString(R.string.label_split_count, splits.size)
-                            error = getString(R.string.imbalance_account_name)
-                        }
-                    } else if (splits.size > 2) {
+                    }
+                    if (text.isNullOrEmpty()) {
                         text = getString(R.string.label_split_count, splits.size)
+                        error = getString(R.string.imbalance_account_name)
                     }
-                    secondaryText.text = text
-                    secondaryText.error = error
+                } else if (splits.size > 2) {
+                    text = getString(R.string.label_split_count, splits.size)
+                }
+                secondaryText.text = text
+                secondaryText.error = error
 
-                    editTransaction.setOnClickListener {
-                        editTransaction(
-                            transactionUID,
-                            accountUID
-                        )
-                    }
+                editTransaction.setOnClickListener {
+                    editTransaction(
+                        transactionUID,
+                        accountUID
+                    )
                 }
             }
+        }
 
-            /**
-             * Formats the date to show the the day of the week if the `dateMillis` is within 7 days
-             * of today. Else it shows the actual date formatted as short string. <br></br>
-             * It also shows "today", "yesterday" or "tomorrow" if the date is on any of those days
-             *
-             * @param context
-             * @param time
-             * @return
-             */
-            private fun getPrettyDateFormat(context: Context, time: Long): String {
-                return DateUtils.getRelativeDateTimeString(
-                    context,
-                    time,
-                    DateUtils.MINUTE_IN_MILLIS,
-                    DateUtils.WEEK_IN_MILLIS,
-                    0
-                ).toString()
-            }
+        /**
+         * Formats the date to show the the day of the week if the `dateMillis` is within 7 days
+         * of today. Else it shows the actual date formatted as short string. <br></br>
+         * It also shows "today", "yesterday" or "tomorrow" if the date is on any of those days
+         *
+         * @param context
+         * @param time
+         * @return
+         */
+        private fun getPrettyDateFormat(context: Context, time: Long): String {
+            return DateUtils.getRelativeDateTimeString(
+                context,
+                time,
+                DateUtils.MINUTE_IN_MILLIS,
+                DateUtils.WEEK_IN_MILLIS,
+                0
+            ).toString()
         }
     }
 

@@ -6,22 +6,22 @@ import android.view.ViewGroup
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.ListAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.gnucash.android.databinding.ListItemScheduledTrxnBinding
 import org.gnucash.android.model.ScheduledAction
+import org.gnucash.android.ui.adapter.ModelDiff
 import org.gnucash.android.ui.common.Refreshable
 
 /**
  * Extends a simple cursor adapter to bind transaction attributes to views
  */
 abstract class ScheduledAdapter<VH : ScheduledViewHolder>(protected val refreshable: Refreshable) :
-    RecyclerView.Adapter<VH>() {
+    ListAdapter<ScheduledAction, VH>(ModelDiff<ScheduledAction>()) {
 
-    private val data = mutableListOf<ScheduledAction>()
     private var loadJob: Job? = null
 
     init {
@@ -29,10 +29,7 @@ abstract class ScheduledAdapter<VH : ScheduledViewHolder>(protected val refresha
     }
 
     override fun onBindViewHolder(holder: VH, position: Int) {
-        if (position >= data.size) {
-            return
-        }
-        val item = data[position]
+        val item = getItem(position)
         holder.bind(item)
     }
 
@@ -47,18 +44,6 @@ abstract class ScheduledAdapter<VH : ScheduledViewHolder>(protected val refresha
         refreshable: Refreshable
     ): VH
 
-    override fun getItemCount(): Int {
-        return data.size
-    }
-
-    override fun getItemId(position: Int): Long {
-        if (position >= data.size) {
-            return 0
-        }
-        val item = data[position]
-        return item.id
-    }
-
     fun load(lifecycleOwner: LifecycleOwner) {
         load(lifecycleOwner.lifecycleScope)
     }
@@ -68,10 +53,8 @@ abstract class ScheduledAdapter<VH : ScheduledViewHolder>(protected val refresha
         loadJob?.cancel()
         loadJob = lifecycleScope.launch(Dispatchers.IO) {
             val records = loadData()
-            data.clear()
-            data.addAll(records)
             withContext(Dispatchers.Main) {
-                notifyDataSetChanged()
+                submitList(records)
             }
         }
     }

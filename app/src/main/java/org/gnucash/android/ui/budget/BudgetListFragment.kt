@@ -46,12 +46,11 @@ import org.gnucash.android.db.DatabaseSchema
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BudgetsDbAdapter
 import org.gnucash.android.model.Budget
-import org.gnucash.android.ui.budget.BudgetListFragment.BudgetRecyclerAdapter.BudgetViewHolder
+import org.gnucash.android.ui.adapter.CursorRecyclerAdapter
 import org.gnucash.android.ui.budget.BudgetsActivity.Companion.getBudgetProgressColor
 import org.gnucash.android.ui.common.FormActivity
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.common.UxArgument
-import org.gnucash.android.ui.util.CursorRecyclerAdapter
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -190,91 +189,91 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
             val binding = CardviewBudgetBinding.inflate(layoutInflater, parent, false)
             return BudgetViewHolder(binding)
         }
+    }
 
-        internal inner class BudgetViewHolder(binding: CardviewBudgetBinding) :
-            RecyclerView.ViewHolder(binding.root), PopupMenu.OnMenuItemClickListener {
-            private val budgetName: TextView = binding.listItem2Lines.primaryText
-            private val accountName: TextView = binding.listItem2Lines.secondaryText
-            private val budgetAmount: TextView = binding.budgetAmount
-            private val optionsMenu: ImageView = binding.optionsMenu
-            private val budgetIndicator: ProgressBar = binding.budgetIndicator
-            private val budgetRecurrence: TextView = binding.budgetRecurrence
-            private var budgetUID: String? = null
+    internal inner class BudgetViewHolder(binding: CardviewBudgetBinding) :
+        RecyclerView.ViewHolder(binding.root), PopupMenu.OnMenuItemClickListener {
+        private val budgetName: TextView = binding.listItem2Lines.primaryText
+        private val accountName: TextView = binding.listItem2Lines.secondaryText
+        private val budgetAmount: TextView = binding.budgetAmount
+        private val optionsMenu: ImageView = binding.optionsMenu
+        private val budgetIndicator: ProgressBar = binding.budgetIndicator
+        private val budgetRecurrence: TextView = binding.budgetRecurrence
+        private var budgetUID: String? = null
 
-            init {
-                optionsMenu.setOnClickListener { v ->
-                    val popup = PopupMenu(v.context, v)
-                    popup.setOnMenuItemClickListener(this@BudgetViewHolder)
-                    val inflater = popup.menuInflater
-                    inflater.inflate(R.menu.budget_context_menu, popup.menu)
-                    popup.show()
-                }
+        init {
+            optionsMenu.setOnClickListener { v ->
+                val popup = PopupMenu(v.context, v)
+                popup.setOnMenuItemClickListener(this@BudgetViewHolder)
+                val inflater = popup.menuInflater
+                inflater.inflate(R.menu.budget_context_menu, popup.menu)
+                popup.show()
             }
+        }
 
-            override fun onMenuItemClick(item: MenuItem): Boolean {
-                when (item.itemId) {
-                    R.id.menu_edit -> {
-                        editBudget(budgetUID)
-                        return true
-                    }
-
-                    R.id.menu_delete -> {
-                        deleteBudget(budgetUID!!)
-                        return true
-                    }
-
-                    else -> return false
+        override fun onMenuItemClick(item: MenuItem): Boolean {
+            when (item.itemId) {
+                R.id.menu_edit -> {
+                    editBudget(budgetUID)
+                    return true
                 }
+
+                R.id.menu_delete -> {
+                    deleteBudget(budgetUID!!)
+                    return true
+                }
+
+                else -> return false
             }
+        }
 
-            fun bind(budget: Budget) {
-                val context = itemView.context
-                this.budgetUID = budget.uid
+        fun bind(budget: Budget) {
+            val context = itemView.context
+            this.budgetUID = budget.uid
 
-                budgetName.text = budget.name
+            budgetName.text = budget.name
 
-                val accountsDbAdapter = AccountsDbAdapter.instance
-                val numberOfAccounts = budget.numberOfAccounts
-                val accountString = if (numberOfAccounts == 1) {
-                    accountsDbAdapter.getAccountFullName(budget.budgetAmounts[0].accountUID!!)
-                } else {
-                    "$numberOfAccounts budgeted accounts"
-                }
-                accountName.text = accountString
+            val accountsDbAdapter = AccountsDbAdapter.instance
+            val numberOfAccounts = budget.numberOfAccounts
+            val accountString = if (numberOfAccounts == 1) {
+                accountsDbAdapter.getAccountFullName(budget.budgetAmounts[0].accountUID!!)
+            } else {
+                "$numberOfAccounts budgeted accounts"
+            }
+            accountName.text = accountString
 
-                budgetRecurrence.setText(
-                    (budget.recurrence!!.getRepeatString(context) + " - "
-                            + budget.recurrence!!.daysLeftInCurrentPeriod + " days left")
+            budgetRecurrence.setText(
+                (budget.recurrence!!.getRepeatString(context) + " - "
+                        + budget.recurrence!!.daysLeftInCurrentPeriod + " days left")
+            )
+
+            var spentAmountValue = BigDecimal.ZERO
+            for (budgetAmount in budget.compactedBudgetAmounts) {
+                val balance = accountsDbAdapter.getAccountBalance(
+                    budgetAmount.accountUID!!,
+                    budget.startOfCurrentPeriod,
+                    budget.endOfCurrentPeriod
                 )
+                spentAmountValue += balance.toBigDecimal()
+            }
 
-                var spentAmountValue = BigDecimal.ZERO
-                for (budgetAmount in budget.compactedBudgetAmounts) {
-                    val balance = accountsDbAdapter.getAccountBalance(
-                        budgetAmount.accountUID!!,
-                        budget.startOfCurrentPeriod,
-                        budget.endOfCurrentPeriod
-                    )
-                    spentAmountValue += balance.toBigDecimal()
-                }
+            val budgetTotal = budget.amountSum
+            val commodity = budgetTotal.commodity
+            val usedAmount =
+                (commodity.symbol + spentAmountValue + " of " + budgetTotal.formattedString())
+            budgetAmount.text = usedAmount
 
-                val budgetTotal = budget.amountSum
-                val commodity = budgetTotal.commodity
-                val usedAmount =
-                    (commodity.symbol + spentAmountValue + " of " + budgetTotal.formattedString())
-                budgetAmount.text = usedAmount
+            val budgetProgress = if (budgetTotal.isAmountZero) 0f else spentAmountValue.divide(
+                budgetTotal.toBigDecimal(),
+                commodity.smallestFractionDigits,
+                RoundingMode.HALF_UP
+            ).toFloat()
+            budgetIndicator.progress = (budgetProgress * 100).toInt()
 
-                val budgetProgress = if (budgetTotal.isAmountZero) 0f else spentAmountValue.divide(
-                    budgetTotal.toBigDecimal(),
-                    commodity.smallestFractionDigits,
-                    RoundingMode.HALF_UP
-                ).toFloat()
-                budgetIndicator.progress = (budgetProgress * 100).toInt()
+            budgetAmount.setTextColor(getBudgetProgressColor(1 - budgetProgress))
 
-                budgetAmount.setTextColor(getBudgetProgressColor(1 - budgetProgress))
-
-                itemView.setOnClickListener {
-                    onClickBudget(budget.uid)
-                }
+            itemView.setOnClickListener {
+                onClickBudget(budget.uid)
             }
         }
     }

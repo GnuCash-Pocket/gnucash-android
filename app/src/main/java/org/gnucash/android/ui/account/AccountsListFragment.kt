@@ -54,12 +54,11 @@ import org.gnucash.android.db.DatabaseSchema
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.getString
 import org.gnucash.android.model.Account
-import org.gnucash.android.ui.account.AccountsListFragment.AccountRecyclerAdapter.AccountViewHolder
+import org.gnucash.android.ui.adapter.CursorRecyclerAdapter
 import org.gnucash.android.ui.common.FormActivity
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.common.UxArgument
 import org.gnucash.android.ui.util.AccountBalanceTask
-import org.gnucash.android.ui.util.CursorRecyclerAdapter
 import org.gnucash.android.util.BackupManager.backupActiveBookAsync
 import org.gnucash.android.util.set
 import timber.log.Timber
@@ -419,9 +418,6 @@ class AccountsListFragment : MenuFragment(),
 
     internal inner class AccountRecyclerAdapter(cursor: Cursor?) :
         CursorRecyclerAdapter<AccountViewHolder>(cursor) {
-        init {
-            setHasStableIds(true)
-        }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AccountViewHolder {
             val binding = CardviewAccountBinding.inflate(
@@ -435,77 +431,78 @@ class AccountsListFragment : MenuFragment(),
         override fun onBindViewHolderCursor(holder: AccountViewHolder, cursor: Cursor) {
             holder.bind(cursor)
         }
+    }
 
-        internal inner class AccountViewHolder(binding: CardviewAccountBinding) :
-            RecyclerView.ViewHolder(binding.root), PopupMenu.OnMenuItemClickListener {
-            private val accountName: TextView = binding.listItem.primaryText
-            private val description: TextView = binding.listItem.secondaryText
-            private val accountBalance: TextView = binding.accountBalance
-            private val createTransaction: ImageView = binding.createTransaction
-            private val favoriteStatus: CheckBox = binding.favoriteStatus
-            private val optionsMenu: ImageView = binding.optionsMenu
-            private val colorStripView: View = binding.accountColorStrip
-            private val budgetIndicator: ProgressBar = binding.budgetIndicator
+    internal inner class AccountViewHolder(binding: CardviewAccountBinding) :
+        RecyclerView.ViewHolder(binding.root), PopupMenu.OnMenuItemClickListener {
+        private val accountName: TextView = binding.listItem.primaryText
+        private val description: TextView = binding.listItem.secondaryText
+        private val accountBalance: TextView = binding.accountBalance
+        private val createTransaction: ImageView = binding.createTransaction
+        private val favoriteStatus: CheckBox = binding.favoriteStatus
+        private val optionsMenu: ImageView = binding.optionsMenu
+        private val colorStripView: View = binding.accountColorStrip
+        private val budgetIndicator: ProgressBar = binding.budgetIndicator
 
-            private var accountUID: String? = null
+        private var accountUID: String? = null
 
-            init {
-                optionsMenu.setOnClickListener { v ->
-                    val popup = PopupMenu(v.context, v)
-                    popup.setOnMenuItemClickListener(this@AccountViewHolder)
-                    val inflater = popup.menuInflater
-                    inflater.inflate(R.menu.account_context_menu, popup.menu)
-                    popup.show()
+        init {
+            optionsMenu.setOnClickListener { v ->
+                val popup = PopupMenu(v.context, v)
+                popup.setOnMenuItemClickListener(this@AccountViewHolder)
+                val inflater = popup.menuInflater
+                inflater.inflate(R.menu.account_context_menu, popup.menu)
+                popup.show()
+            }
+        }
+
+        fun bind(cursor: Cursor) {
+            if (!isResumed) return
+            val accountsDbAdapter = this@AccountsListFragment.accountsDbAdapter
+            val accountUID = cursor.getString(DatabaseSchema.AccountEntry.COLUMN_UID)!!
+            this.accountUID = accountUID
+            val account = accountsDbAdapter.getSimpleRecord(accountUID)
+
+            accountName.text = account!!.name
+            val subAccountCount = accountsDbAdapter.getSubAccountCount(accountUID)
+            if (subAccountCount > 0) {
+                description.isVisible = true
+                val count = subAccountCount.toInt()
+                val text =
+                    resources.getQuantityString(R.plurals.label_sub_accounts, count, count)
+                description.text = text
+            } else {
+                description.isVisible = false
+            }
+
+            // add a summary of transactions to the account view
+
+            // Make sure the balance task is truly multi-thread
+            val task = AccountBalanceTask(
+                accountsDbAdapter,
+                accountBalance,
+                description.currentTextColor
+            )
+            accountBalanceTasks.add(task)
+            task.execute(accountUID)
+
+            @ColorInt val accountColor = getColor(account, accountsDbAdapter)
+            colorStripView.setBackgroundColor(accountColor)
+
+            if (account.isPlaceholder) {
+                createTransaction.isVisible = false
+            } else {
+                createTransaction.setOnClickListener { v ->
+                    val context = v.context
+                    val intent = Intent(context, FormActivity::class.java)
+                        .setAction(Intent.ACTION_INSERT_OR_EDIT)
+                        .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+                        .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
+                    context.startActivity(intent)
                 }
             }
 
-            fun bind(cursor: Cursor) {
-                if (!isResumed) return
-                val accountsDbAdapter = this@AccountsListFragment.accountsDbAdapter
-                val accountUID = cursor.getString(DatabaseSchema.AccountEntry.COLUMN_UID)!!
-                this.accountUID = accountUID
-                val account = accountsDbAdapter.getSimpleRecord(accountUID)
-
-                accountName.text = account!!.name
-                val subAccountCount = accountsDbAdapter.getSubAccountCount(accountUID)
-                if (subAccountCount > 0) {
-                    description.isVisible = true
-                    val count = subAccountCount.toInt()
-                    val text =
-                        resources.getQuantityString(R.plurals.label_sub_accounts, count, count)
-                    description.text = text
-                } else {
-                    description.isVisible = false
-                }
-
-                // add a summary of transactions to the account view
-
-                // Make sure the balance task is truly multi-thread
-                val task = AccountBalanceTask(
-                    accountsDbAdapter,
-                    accountBalance,
-                    description.currentTextColor
-                )
-                accountBalanceTasks.add(task)
-                task.execute(accountUID)
-
-                @ColorInt val accountColor = getColor(account, accountsDbAdapter)
-                colorStripView.setBackgroundColor(accountColor)
-
-                if (account.isPlaceholder) {
-                    createTransaction.isVisible = false
-                } else {
-                    createTransaction.setOnClickListener { v ->
-                        val context = v.context
-                        val intent = Intent(context, FormActivity::class.java)
-                            .setAction(Intent.ACTION_INSERT_OR_EDIT)
-                            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
-                            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
-                        context.startActivity(intent)
-                    }
-                }
-
-                // TODO budgets is not an official feature yet.
+            // TODO budgets is not an official feature yet.
 //                List<Budget> budgets = BudgetsDbAdapter.getInstance().getAccountBudgets(accountUID);
 //                //TODO: include fetch only active budgets
 //                if (!budgets.isEmpty()) {
@@ -523,55 +520,54 @@ class AccountsListFragment : MenuFragment(),
 //                } else {
 //                    budgetIndicator.isVisible = false;
 //                }
-                val isFavoriteAccount = accountsDbAdapter.isFavoriteAccount(accountUID)
-                favoriteStatus.setOnCheckedChangeListener(null)
-                favoriteStatus.isChecked = isFavoriteAccount
-                favoriteStatus.setOnCheckedChangeListener { _, isChecked ->
-                    toggleFavorite(accountUID, isChecked)
-                }
-
-                itemView.setOnClickListener {
-                    onListItemClick(accountUID)
-                }
+            val isFavoriteAccount = accountsDbAdapter.isFavoriteAccount(accountUID)
+            favoriteStatus.setOnCheckedChangeListener(null)
+            favoriteStatus.isChecked = isFavoriteAccount
+            favoriteStatus.setOnCheckedChangeListener { _, isChecked ->
+                toggleFavorite(accountUID, isChecked)
             }
 
-            override fun onMenuItemClick(item: MenuItem): Boolean {
-                val activity = activity ?: return false
-                val accountUID = accountUID ?: return false
+            itemView.setOnClickListener {
+                onListItemClick(accountUID)
+            }
+        }
 
-                when (item.itemId) {
-                    R.id.menu_edit -> {
-                        openCreateOrEditActivity(activity, accountUID)
-                        return true
-                    }
+        override fun onMenuItemClick(item: MenuItem): Boolean {
+            val activity = activity ?: return false
+            val accountUID = accountUID ?: return false
 
-                    R.id.menu_delete -> {
-                        tryDeleteAccount(activity, accountUID)
-                        return true
-                    }
-
-                    else -> return false
+            when (item.itemId) {
+                R.id.menu_edit -> {
+                    openCreateOrEditActivity(activity, accountUID)
+                    return true
                 }
-            }
 
-            @ColorInt
-            private fun getColor(account: Account, accountsDbAdapter: AccountsDbAdapter): Int {
-                @ColorInt var color = account.color
-                if (color == Account.DEFAULT_COLOR) {
-                    color = getParentColor(account, accountsDbAdapter)
+                R.id.menu_delete -> {
+                    tryDeleteAccount(activity, accountUID)
+                    return true
                 }
-                return color
-            }
 
-            @ColorInt
-            private fun getParentColor(
-                account: Account,
-                accountsDbAdapter: AccountsDbAdapter
-            ): Int {
-                val parentUID = account.parentUID ?: return Account.DEFAULT_COLOR
-                val parentAccount = accountsDbAdapter.getSimpleRecord(parentUID)!!
-                return getColor(parentAccount, accountsDbAdapter)
+                else -> return false
             }
+        }
+
+        @ColorInt
+        private fun getColor(account: Account, accountsDbAdapter: AccountsDbAdapter): Int {
+            @ColorInt var color = account.color
+            if (color == Account.DEFAULT_COLOR) {
+                color = getParentColor(account, accountsDbAdapter)
+            }
+            return color
+        }
+
+        @ColorInt
+        private fun getParentColor(
+            account: Account,
+            accountsDbAdapter: AccountsDbAdapter
+        ): Int {
+            val parentUID = account.parentUID ?: return Account.DEFAULT_COLOR
+            val parentAccount = accountsDbAdapter.getSimpleRecord(parentUID)!!
+            return getColor(parentAccount, accountsDbAdapter)
         }
     }
 
