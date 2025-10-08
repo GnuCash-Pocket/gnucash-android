@@ -121,7 +121,7 @@ class BudgetsDbAdapterTest : GnuCashTest() {
     }
 
     private fun bulkCreateBudgets(): List<Budget> {
-        val budgets: MutableList<Budget> = ArrayList()
+        val budgets = mutableListOf<Budget>()
         var budget = Budget("", Recurrence(PeriodType.MONTH))
         budget.addAmount(
             BudgetAmount(createZeroInstance(Commodity.DEFAULT_COMMODITY), account.uid)

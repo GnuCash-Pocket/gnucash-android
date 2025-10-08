@@ -444,7 +444,7 @@ class AccountsActivityTest : GnuAndroidTest() {
      */
     private fun accountExists(accountUID: String): Boolean {
         return try {
-            accountsDbAdapter.getSimpleRecord(accountUID) != null
+            accountsDbAdapter.getRecordOrNull(accountUID) != null
         } catch (_: IllegalArgumentException) {
             false
         }

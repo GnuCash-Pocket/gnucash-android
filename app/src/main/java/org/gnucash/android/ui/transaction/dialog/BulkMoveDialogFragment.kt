@@ -23,7 +23,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import org.gnucash.android.R
 import org.gnucash.android.databinding.DialogBulkMoveBinding
-import org.gnucash.android.db.DatabaseSchema
+import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.model.AccountType
@@ -49,11 +49,11 @@ class BulkMoveDialogFragment : DialogFragment() {
         val originAccountUID: String = args.getString(UxArgument.ORIGIN_ACCOUNT_UID)!!
         val originCommodity = accountsDbAdapter.getCommodity(originAccountUID)
 
-        val where = (DatabaseSchema.AccountEntry.COLUMN_UID + " != ?"
-                + " AND " + DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID + " = ?"
-                + " AND " + DatabaseSchema.AccountEntry.COLUMN_TYPE + " != ?"
-                + " AND " + DatabaseSchema.AccountEntry.COLUMN_TEMPLATE + " = 0"
-                + " AND " + DatabaseSchema.AccountEntry.COLUMN_PLACEHOLDER + " = 0")
+        val where = (AccountEntry.COLUMN_UID + " != ?"
+                + " AND " + AccountEntry.COLUMN_COMMODITY_UID + " = ?"
+                + " AND " + AccountEntry.COLUMN_TYPE + " != ?"
+                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0"
+                + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0")
         val whereArgs = arrayOf<String?>(
             originAccountUID,
             originCommodity.uid,

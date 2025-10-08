@@ -45,7 +45,7 @@ import org.gnucash.android.app.MenuFragment
 import org.gnucash.android.app.actionBar
 import org.gnucash.android.databinding.CardviewBudgetAmountBinding
 import org.gnucash.android.databinding.FragmentBudgetDetailBinding
-import org.gnucash.android.db.DatabaseSchema
+import org.gnucash.android.db.DatabaseSchema.BudgetEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BudgetsDbAdapter
 import org.gnucash.android.math.isZero
@@ -131,7 +131,7 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
         this.budgetUID = uid
         if (!uid.isNullOrEmpty()) {
             val budgetName =
-                budgetsDbAdapter.getAttribute(uid, DatabaseSchema.BudgetEntry.COLUMN_NAME)
+                budgetsDbAdapter.getAttribute(uid, BudgetEntry.COLUMN_NAME)
             val actionBar: ActionBar? = this.actionBar
             actionBar?.title = "Budget: $budgetName"
         }

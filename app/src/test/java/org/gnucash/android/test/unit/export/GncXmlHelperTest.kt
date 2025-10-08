@@ -160,7 +160,7 @@ class GncXmlHelperTest : GnuCashTest() {
                     assertThat(GncXmlHelper.formatDateTime(calendar)).isEqualTo(expected)
                     try {
                         Thread.sleep(1)
-                    } catch (ignore: InterruptedException) {
+                    } catch (_: InterruptedException) {
                     }
                 }
             } catch (e: Throwable) {

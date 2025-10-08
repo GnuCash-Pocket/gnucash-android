@@ -74,7 +74,7 @@ class DeleteAccountDialogFragment : DoubleConfirmationDialog() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val accountUID = originAccountUID!!
-        val account = accountsDbAdapter.getSimpleRecord(accountUID)!!
+        val account = accountsDbAdapter.getRecord(accountUID)
         val binding = createView(layoutInflater)
 
         return dialogBuilder
@@ -135,7 +135,7 @@ class DeleteAccountDialogFragment : DoubleConfirmationDialog() {
             root.isVisible = transactionCount > 0
         }
 
-        val account = accountsDbAdapter.getSimpleRecord(accountUID)!!
+        val account = accountsDbAdapter.getRecord(accountUID)
         val commodity = account.commodity
         val accountType = account.accountType
         val descendantAccountUIDs =

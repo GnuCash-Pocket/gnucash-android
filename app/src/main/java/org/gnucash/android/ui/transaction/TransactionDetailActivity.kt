@@ -89,8 +89,8 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
     }
 
     private fun bind(binding: ItemSplitAmountInfoBinding, split: Split) {
-        val account = accountsDbAdapter.getSimpleRecord(split.accountUID)
-        binding.splitAccountName.text = account!!.fullName
+        val account = accountsDbAdapter.getRecord(split.accountUID!!)
+        binding.splitAccountName.text = account.fullName
         val balanceView =
             if (split.type == TransactionType.DEBIT) binding.splitDebit else binding.splitCredit
         @ColorInt val colorBalanceZero = balanceView.currentTextColor
@@ -98,7 +98,7 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
     }
 
     private fun bind(binding: RowBalanceBinding, accountUID: String, timeMillis: Long) {
-        val account = accountsDbAdapter.getSimpleRecord(accountUID)!!
+        val account = accountsDbAdapter.getRecord(accountUID)
         val accountBalance = accountsDbAdapter.getAccountBalance(accountUID, ALWAYS, timeMillis, true)
         val balanceTextView =
             if (account.accountType.hasDebitDisplayBalance) binding.balanceDebit else binding.balanceCredit

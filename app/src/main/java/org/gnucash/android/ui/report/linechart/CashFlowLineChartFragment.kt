@@ -191,7 +191,7 @@ class CashFlowLineChartFragment : IntervalReportFragment() {
                 + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
                 + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
         val whereArgs = arrayOf<String?>(accountType.name)
-        val accounts = accountsDbAdapter.getSimpleAccounts(where, whereArgs, null)
+        val accounts = accountsDbAdapter.getAllRecords(where, whereArgs)
 
         var i = 0
         var x = xAxisOffset

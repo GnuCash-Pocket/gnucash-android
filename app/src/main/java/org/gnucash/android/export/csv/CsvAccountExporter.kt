@@ -19,7 +19,7 @@ import android.content.Context
 import com.opencsv.CSVWriterBuilder
 import com.opencsv.ICSVWriter
 import org.gnucash.android.R
-import org.gnucash.android.db.DatabaseSchema
+import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
 import org.gnucash.android.gnc.GncProgressListener
@@ -55,8 +55,9 @@ class CsvAccountExporter(
      * @param writer Destination for the CSV export
      */
     fun writeExport(writer: ICSVWriter) {
-        val where = DatabaseSchema.AccountEntry.COLUMN_TEMPLATE + " = 0"
-        val accounts = accountsDbAdapter.getSimpleAccounts(where, null, null)
+        val where = AccountEntry.COLUMN_TEMPLATE + " = 0"
+        val orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC"
+        val accounts = accountsDbAdapter.getAllRecords(where, null, orderBy)
         listener?.onAccountCount(accounts.size.toLong())
 
         val names = context.resources.getStringArray(R.array.csv_account_headers)

@@ -270,12 +270,7 @@ class WidgetConfigurationActivity : GnuCashActivity() {
             val holder = DatabaseHolder(context, BookDbHelper.getDatabase(bookUID), bookUID)
             val accountsDbAdapter = AccountsDbAdapter(holder)
 
-            var account: Account? = null
-            try {
-                account = accountsDbAdapter.getSimpleRecord(accountUID)
-            } catch (e: IllegalArgumentException) {
-                Timber.e(e, "Account not found, resetting widget")
-            }
+            val account = accountsDbAdapter.getRecordOrNull(accountUID)
             if (account == null) {
                 accountsDbAdapter.closeQuietly()
 

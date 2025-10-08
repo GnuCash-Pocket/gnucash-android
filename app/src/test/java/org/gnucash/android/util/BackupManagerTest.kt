@@ -30,7 +30,7 @@ class BackupManagerTest : GnuCashTest() {
         BackupManager.backupAllBooks()
 
         for (bookUID in booksDbAdapter.allBookUIDs) {
-            assertThat(BackupManager.getBackupList(context, bookUID).size).isOne()
+            assertThat(BackupManager.getBackupList(context, bookUID)).hasSize(1)
         }
     }
 
@@ -43,7 +43,7 @@ class BackupManagerTest : GnuCashTest() {
         Thread.sleep(1000) // FIXME: Use Mockito to get a different date in Exporter.buildExportFilename
         assertThat(BackupManager.backupActiveBook()).isTrue()
 
-        assertThat(BackupManager.getBackupList(context, bookUID).size).isEqualTo(2)
+        assertThat(BackupManager.getBackupList(context, bookUID)).hasSize(2)
     }
 
     @Test

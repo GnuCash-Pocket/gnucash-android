@@ -105,7 +105,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(transaction.createdTimestamp.time).isEqualTo(parseDateTime("2016-08-23 12:44:19 +0200"))
 
         // Check splits
-        assertThat(transaction.splits.size).isEqualTo(2)
+        assertThat(transaction.splits).hasSize(2)
 
         val split1 = transaction.splits[0]
         assertThat(split1.uid).isEqualTo("ad2cbc774fc4e71885d17e6932448e8e")
@@ -145,7 +145,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(transaction.description).isEqualTo("Tandoori Mahal")
 
         // Check splits
-        assertThat(transaction.splits.size).isEqualTo(3)
+        assertThat(transaction.splits).hasSize(3)
 
         val splitExpense = transaction.splits[0]
         assertThat(splitExpense.uid).isEqualTo("c50cce06e2bf9085730821c82d0b36ca")
@@ -195,7 +195,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(transaction.commodity.smallestFraction).isEqualTo(100)
 
         // Check splits
-        assertThat(transaction.splits.size).isEqualTo(2)
+        assertThat(transaction.splits).hasSize(2)
 
         val splitDebit = transaction.splits[0]
         assertThat(splitDebit.uid).isEqualTo("88bbbbac7689a8657b04427f8117a783")
@@ -261,7 +261,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(scheduledTransaction.createdTimestamp.time).isEqualTo(parseDateTime("2016-08-24 19:50:15 +0200"))
 
         // Check splits
-        assertThat(scheduledTransaction.splits.size).isEqualTo(2)
+        assertThat(scheduledTransaction.splits).hasSize(2)
 
         val splitCredit = scheduledTransaction.splits[0]
         assertThat(splitCredit.uid).isEqualTo("f66794ef262aac3ae085ecc3030f2769")
@@ -300,7 +300,7 @@ class GncXmlHandlerTest : BookHelperTest() {
             scheduledActionDbAdapter.getRecord("b5a13acb5a9459ebed10d06b75bbad10")
 
         // There are 3 byDays but, for now, getting one is enough to ensure it is executed
-        assertThat(scheduledTransaction.recurrence!!.byDays.size).isGreaterThanOrEqualTo(1)
+        assertThat(scheduledTransaction.recurrence!!.byDays).hasSizeGreaterThanOrEqualTo(1)
 
         // Until we implement parsing of days of the week for scheduled actions,
         // we'll just use the day of the week of the start time.
@@ -335,7 +335,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(scheduledTransaction.commodity.currencyCode).isEqualTo("USD")
 
         // Check splits
-        assertThat(scheduledTransaction.splits.size).isEqualTo(2)
+        assertThat(scheduledTransaction.splits).hasSize(2)
 
         val amount = Money("20", "USD")
         val splitCredit = scheduledTransaction.splits[0]

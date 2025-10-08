@@ -274,7 +274,7 @@ class TransactionsActivity : BaseDrawerActivity(),
     ) {
         val accountNameAdapter = accountNameAdapter ?: return
         if (accountNameAdapter.isEmpty) return
-        var account = accountsDbAdapter.getSimpleRecord(accountUID)
+        var account = accountsDbAdapter.getRecordOrNull(accountUID)
         // In case the account was deleted.
         var position = accountNameAdapter.getPosition(accountUID)
         if (position == AdapterView.INVALID_POSITION && account != null) {

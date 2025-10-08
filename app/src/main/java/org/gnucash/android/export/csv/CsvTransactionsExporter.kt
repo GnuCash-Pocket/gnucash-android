@@ -28,7 +28,6 @@ import org.gnucash.android.model.Money
 import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
-import org.gnucash.android.util.PreferencesHelper
 import org.gnucash.android.util.PreferencesHelper.setLastExportTime
 import org.gnucash.android.util.TimestampHelper
 import org.joda.time.format.ISODateTimeFormat
@@ -76,7 +75,7 @@ class CsvTransactionsExporter(
             fields[8] = split.memo.orEmpty()
             val accountUID = split.accountUID!!
             val account = accountCache.getOrPut(accountUID) {
-                accountsDbAdapter.getSimpleRecord(accountUID)!!
+                accountsDbAdapter.getRecord(accountUID)
             }
             fields[9] = account.fullName.orEmpty()
             fields[10] = account.name

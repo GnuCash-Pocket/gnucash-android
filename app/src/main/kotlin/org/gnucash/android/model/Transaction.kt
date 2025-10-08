@@ -337,7 +337,7 @@ class Transaction : BaseModel {
          */
         fun computeBalance(accountUID: String, splits: List<Split>): Money {
             val accountsDbAdapter = AccountsDbAdapter.instance
-            val account = accountsDbAdapter.getSimpleRecord(accountUID)!!
+            val account = accountsDbAdapter.getRecord(accountUID)
             return computeBalance(account, splits)
         }
 

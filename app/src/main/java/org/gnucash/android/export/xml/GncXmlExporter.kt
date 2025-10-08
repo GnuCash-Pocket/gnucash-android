@@ -221,25 +221,25 @@ class GncXmlExporter(
             var where = AccountEntry.COLUMN_TYPE + "=? AND " + AccountEntry.COLUMN_TEMPLATE + "=1"
             var whereArgs = arrayOf<String?>(AccountType.ROOT.name)
             var accounts =
-                accountsDbAdapter.getSimpleAccounts(where, whereArgs, null)
+                accountsDbAdapter.getAllRecords(where, whereArgs)
             if (accounts.isEmpty()) {
                 val commodity = commoditiesDbAdapter.getCurrency(Commodity.TEMPLATE)
                 if (commodity != null) {
                     Commodity.template.setUID(commodity.uid)
                     where =
                         AccountEntry.COLUMN_TYPE + "=? AND " + AccountEntry.COLUMN_COMMODITY_UID + "=?"
-                    whereArgs = arrayOf<String?>(
+                    whereArgs = arrayOf(
                         AccountType.ROOT.name,
                         commodity.uid
                     )
                 } else {
                     where = AccountEntry.COLUMN_TYPE + "=? AND " + AccountEntry.COLUMN_NAME + "=?"
-                    whereArgs = arrayOf<String?>(
+                    whereArgs = arrayOf(
                         AccountType.ROOT.name,
                         AccountsDbAdapter.TEMPLATE_ACCOUNT_NAME
                     )
                 }
-                accounts = accountsDbAdapter.getSimpleAccounts(where, whereArgs, null)
+                accounts = accountsDbAdapter.getAllRecords(where, whereArgs)
                 if (accounts.isEmpty()) {
                     account = Account(AccountsDbAdapter.TEMPLATE_ACCOUNT_NAME, Commodity.template)
                     account.accountType = AccountType.ROOT
@@ -347,7 +347,7 @@ class GncXmlExporter(
             if (rootUID.isNullOrEmpty()) {
                 throw ExporterException(exportParams, "No root account found!")
             }
-            val account = accountsDbAdapter.getSimpleRecord(rootUID)!!
+            val account = accountsDbAdapter.getRecord(rootUID)
             writeAccount(xmlSerializer, account)
         }
     }
@@ -445,7 +445,7 @@ class GncXmlExporter(
         // gnucash desktop requires that parent account appears before its descendants.
         val children = accountsDbAdapter.getChildren(account.uid)
         for (childUID in children) {
-            val child = accountsDbAdapter.getSimpleRecord(childUID)!!
+            val child = accountsDbAdapter.getRecord(childUID)
             writeAccount(xmlSerializer, child)
         }
     }
@@ -746,14 +746,14 @@ class GncXmlExporter(
         var account: Account? = null
         if (accountUID.isNotEmpty()) {
             try {
-                account = accountsDbAdapter.getSimpleRecord(accountUID)
-            } catch (_: Exception) {
+                account = accountsDbAdapter.getRecord(accountUID)
+            } catch (_: IllegalArgumentException) {
             }
         }
         if (account == null) {
             val where = AccountEntry.COLUMN_NAME + "=? AND " + AccountEntry.COLUMN_TEMPLATE + "=1"
             val whereArgs = arrayOf<String?>(uid)
-            val accounts = accountsDbAdapter.getSimpleAccounts(where, whereArgs, null)
+            val accounts = accountsDbAdapter.getAllRecords(where, whereArgs)
             //if the action UID does not belong to a transaction we've seen before, skip it
             account = if (accounts.isEmpty()) {
                 transactionToTemplateAccounts[txUID] ?: return

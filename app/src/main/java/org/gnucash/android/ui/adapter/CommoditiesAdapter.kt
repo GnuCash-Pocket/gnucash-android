@@ -9,7 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.gnucash.android.db.DatabaseSchema
+import org.gnucash.android.db.DatabaseSchema.CommodityEntry
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.model.Commodity
 
@@ -75,8 +75,8 @@ class CommoditiesAdapter(
     }
 
     private fun loadData(adapter: CommoditiesDbAdapter): List<Commodity> {
-        val where = DatabaseSchema.CommodityEntry.COLUMN_MNEMONIC + " <> ?" +
-                " AND " + DatabaseSchema.CommodityEntry.COLUMN_NAMESPACE + " <> ?";
+        val where = CommodityEntry.COLUMN_MNEMONIC + " <> ?" +
+                " AND " + CommodityEntry.COLUMN_NAMESPACE + " <> ?";
         val whereArgs = arrayOf<String?>(Commodity.TEMPLATE, Commodity.TEMPLATE)
         return adapter.getAllRecords(where, whereArgs)
     }

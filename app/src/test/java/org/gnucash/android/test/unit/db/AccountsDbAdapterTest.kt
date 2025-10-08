@@ -116,7 +116,7 @@ class AccountsDbAdapterTest : GnuCashTest() {
         accountsDbAdapter.addRecord(alpha)
 
         val accounts = accountsDbAdapter.simpleAccounts
-        assertThat(accounts.size).isEqualTo(3)
+        assertThat(accounts).hasSize(3)
         val root = accounts[0]
         val rootType = root.accountType
         assertThat(rootType).isEqualTo(AccountType.ROOT)
@@ -135,9 +135,7 @@ class AccountsDbAdapterTest : GnuCashTest() {
         account1.addTransaction(transaction)
         account2.addTransaction(transaction)
 
-        val accounts: MutableList<Account> = ArrayList()
-        accounts.add(account1)
-        accounts.add(account2)
+        val accounts = listOf(account1, account2)
 
         accountsDbAdapter.bulkAddRecords(accounts)
 
@@ -148,7 +146,9 @@ class AccountsDbAdapterTest : GnuCashTest() {
             splitsDbAdapter.getSplitsForTransactionInAccount(transaction.uid, account2.uid)
         ).hasSize(1)
 
-        assertThat(accountsDbAdapter.getRecord(account1.uid).transactions).hasSize(1)
+        val account = accountsDbAdapter.getFullRecord(account1.uid)
+        assertThat(account).isNotNull()
+        assertThat(account!!.transactions).hasSize(1)
     }
 
     @Test
@@ -206,7 +206,7 @@ class AccountsDbAdapterTest : GnuCashTest() {
         accountsDbAdapter.deleteRecord(ALPHA_ACCOUNT_NAME)
 
         val trxn = transactionsDbAdapter.getRecord(transaction.uid)
-        assertThat(trxn.splits.size).isOne()
+        assertThat(trxn.splits).hasSize(1)
         assertThat(trxn.splits[0].accountUID).isEqualTo(BRAVO_ACCOUNT_NAME)
     }
 

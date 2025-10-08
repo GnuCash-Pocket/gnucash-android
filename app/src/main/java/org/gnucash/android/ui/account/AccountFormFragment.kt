@@ -130,7 +130,7 @@ class AccountFormFragment : MenuFragment(), FragmentResultListener {
 
         accountsDbAdapter = AccountsDbAdapter.instance
         accountTypesAdapter = AccountTypesAdapter(context)
-        val account = accountsDbAdapter.getSimpleRecord(accountUID)
+        val account = accountUID?.let { accountsDbAdapter.getRecordOrNull(it) }
         this.account = account
         if (account != null) {
             parentAccountUID = account.parentUID
@@ -337,7 +337,7 @@ class AccountFormFragment : MenuFragment(), FragmentResultListener {
 
         val parentUID = parentAccountUID
         if (!parentUID.isNullOrEmpty()) {
-            val parentAccount = accountsDbAdapter.getSimpleRecord(parentUID)
+            val parentAccount = accountsDbAdapter.getRecordOrNull(parentUID)
             if (parentAccount != null) {
                 setSelectedCurrency(binding, parentAccount.commodity)
                 val parentAccountType = parentAccount.accountType

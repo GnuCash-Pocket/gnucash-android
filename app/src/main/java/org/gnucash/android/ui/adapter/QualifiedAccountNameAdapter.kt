@@ -165,11 +165,11 @@ class QualifiedAccountNameAdapter(
         val where = where ?: WHERE_NO_ROOT
         val whereArgs = whereArgs
         val orderBy = ORDER_BY_FAVORITE_THEN_FULL_NAME
-        return adapter.getSimpleAccounts(where, whereArgs, orderBy)
+        return adapter.getAllRecords(where, whereArgs, orderBy)
     }
 
     fun getAccountDb(uid: String): Account? {
-        return getAccount(uid) ?: adapter.getSimpleRecord(uid)
+        return getAccount(uid) ?: adapter.getRecordOrNull(uid)
     }
 
     data class Label(val account: Account) {
