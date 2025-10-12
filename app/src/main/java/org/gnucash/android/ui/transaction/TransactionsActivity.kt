@@ -18,28 +18,22 @@ package org.gnucash.android.ui.transaction
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.SparseArray
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import android.widget.AdapterView
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.ActionBar
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentResultListener
-import androidx.fragment.app.FragmentStatePagerAdapter
-import com.google.android.material.tabs.TabLayout
-import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
-import com.google.android.material.tabs.TabLayout.TabLayoutOnPageChangeListener
+import com.google.android.material.tabs.TabLayoutMediator
 import org.gnucash.android.R
 import org.gnucash.android.databinding.ActivityTransactionsBinding
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
-import org.gnucash.android.lang.iterator
 import org.gnucash.android.model.Account
 import org.gnucash.android.ui.account.AccountsListFragment
 import org.gnucash.android.ui.account.DeleteAccountDialogFragment
@@ -49,9 +43,9 @@ import org.gnucash.android.ui.common.BaseDrawerActivity
 import org.gnucash.android.ui.common.FormActivity
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.common.UxArgument
+import org.gnucash.android.ui.util.widget.FragmentStateAdapter
 import org.gnucash.android.util.BackupManager.backupActiveBookAsync
 import timber.log.Timber
-import kotlin.math.min
 
 /**
  * Activity for displaying, creating and editing transactions
@@ -74,7 +68,6 @@ class TransactionsActivity : BaseDrawerActivity(),
     private var transactionsDbAdapter = TransactionsDbAdapter.instance
     private var accountNameAdapter: QualifiedAccountNameAdapter? = null
 
-    private val fragmentPages = SparseArray<Refreshable>()
     private var isShowHiddenAccounts = false
 
     private lateinit var binding: ActivityTransactionsBinding
@@ -99,40 +92,23 @@ class TransactionsActivity : BaseDrawerActivity(),
     /**
      * Adapter for managing the sub-account and transaction fragment pages in the accounts view
      */
-    private inner class AccountViewPagerAdapter(fm: FragmentManager) :
-        FragmentStatePagerAdapter(fm) {
-        override fun getItem(position: Int): Fragment {
-            val account = requireAccount()
-            val accountUID = account.uid
-            val fragment = if (account.isPlaceholder || position == INDEX_SUB_ACCOUNTS_FRAGMENT) {
-                prepareSubAccountsListFragment(accountUID)
-            } else {
-                prepareTransactionsListFragment(accountUID)
+    private inner class AccountViewPagerAdapter(activity: FragmentActivity, val account: Account) :
+        FragmentStateAdapter(activity) {
+        private val accountUID = account.uid
+
+        override fun createFragment(position: Int): Fragment {
+            return when (position) {
+                INDEX_SUB_ACCOUNTS_FRAGMENT -> prepareSubAccountsListFragment(accountUID)
+                INDEX_TRANSACTIONS_FRAGMENT -> prepareTransactionsListFragment(accountUID)
+                else -> throw IndexOutOfBoundsException()
             }
-            fragmentPages[position] = fragment
-            return fragment
         }
 
-        override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
-            super.destroyItem(container, position, `object`)
-            fragmentPages.remove(position)
-        }
-
-        override fun getPageTitle(position: Int): CharSequence? {
-            val account = requireAccount()
-            if (account.isPlaceholder || position == INDEX_SUB_ACCOUNTS_FRAGMENT) {
-                return getText(R.string.section_header_subaccounts)
+        override fun getItemCount(): Int {
+            if (account.isPlaceholder) {
+                return 1
             }
-
-            return getText(R.string.section_header_transactions)
-        }
-
-        override fun getCount(): Int {
-            val account = requireAccount()
-            if (!account.isPlaceholder) {
-                return DEFAULT_NUM_PAGES
-            }
-            return 1
+            return NUM_PAGES
         }
 
         /**
@@ -182,8 +158,11 @@ class TransactionsActivity : BaseDrawerActivity(),
         val binding = this.binding
         setTitleIndicatorColor(binding)
 
-        for (fragment in fragmentPages.iterator()) {
-            fragment.refresh(uid)
+        val fragments = supportFragmentManager.fragments
+        for (fragment in fragments) {
+            if (fragment is Refreshable) {
+                fragment.refresh(uid)
+            }
         }
 
         pagerAdapter?.notifyDataSetChanged()
@@ -221,41 +200,24 @@ class TransactionsActivity : BaseDrawerActivity(),
         val account = requireAccount()
         val accountUID = account.uid
 
-        binding.tabLayout.addTab(
-            binding.tabLayout.newTab().setText(R.string.section_header_subaccounts)
-        )
+        val tabLayout = binding.tabLayout
+        tabLayout.addTab(tabLayout.newTab())
 
         setupActionBarNavigation(binding, accountUID)
 
-        pagerAdapter = AccountViewPagerAdapter(supportFragmentManager)
+        pagerAdapter = AccountViewPagerAdapter(this, account)
         binding.pager.adapter = pagerAdapter
-        binding.pager.addOnPageChangeListener(TabLayoutOnPageChangeListener(binding.tabLayout))
-
-        binding.tabLayout.addOnTabSelectedListener(object : OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab) {
-                val position = tab.position
-                binding.pager.currentItem = min(position, binding.pager.childCount)
+        TabLayoutMediator(tabLayout, binding.pager) { tab, position ->
+            when (position) {
+                INDEX_SUB_ACCOUNTS_FRAGMENT -> tab.setText(R.string.section_header_subaccounts)
+                INDEX_TRANSACTIONS_FRAGMENT -> tab.setText(R.string.section_header_transactions)
             }
-
-            override fun onTabUnselected(tab: TabLayout.Tab) = Unit
-
-            override fun onTabReselected(tab: TabLayout.Tab) = Unit
-        })
+        }.attach()
 
         binding.fabCreateTransaction.setOnClickListener {
-            val accountUID = account?.uid ?: return@setOnClickListener
             when (binding.pager.currentItem) {
                 INDEX_SUB_ACCOUNTS_FRAGMENT -> createNewAccount(accountUID)
                 INDEX_TRANSACTIONS_FRAGMENT -> createNewTransaction(accountUID)
-            }
-        }
-
-        val fragments = supportFragmentManager.fragments
-        for (fragment in fragments) {
-            if (fragment is AccountsListFragment) {
-                fragmentPages[INDEX_SUB_ACCOUNTS_FRAGMENT] = fragment
-            } else if (fragment is TransactionsListFragment) {
-                fragmentPages[INDEX_TRANSACTIONS_FRAGMENT] = fragment
             }
         }
     }
@@ -481,7 +443,8 @@ class TransactionsActivity : BaseDrawerActivity(),
         item.setIcon(visibilityIcon)
         isShowHiddenAccounts = isVisible
         // apply to each page
-        for (fragment in fragmentPages.iterator()) {
+        val fragments = supportFragmentManager.fragments
+        for (fragment in fragments) {
             if (fragment is AccountsListFragment) {
                 fragment.setShowHiddenAccounts(isVisible)
             }
@@ -495,16 +458,15 @@ class TransactionsActivity : BaseDrawerActivity(),
             val accountUID = account.uid
             //update the intent in case the account gets rotated
             intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
-            pagerAdapter?.notifyDataSetChanged()
+            //TODO pagerAdapter?.notifyDataSetChanged()
+            val tabLayout = binding.tabLayout
             if (account.isPlaceholder) {
-                if (binding.tabLayout.tabCount > 1) {
-                    binding.tabLayout.removeTabAt(INDEX_TRANSACTIONS_FRAGMENT)
+                if (tabLayout.tabCount > 1) {
+                    tabLayout.removeTabAt(INDEX_TRANSACTIONS_FRAGMENT)
                 }
             } else {
-                if (binding.tabLayout.tabCount < 2) {
-                    binding.tabLayout.addTab(
-                        binding.tabLayout.newTab().setText(R.string.section_header_transactions)
-                    )
+                if (tabLayout.tabCount < 2) {
+                    tabLayout.addTab(tabLayout.newTab())
                 }
             }
 
@@ -568,7 +530,7 @@ class TransactionsActivity : BaseDrawerActivity(),
         /**
          * Number of pages to show
          */
-        private const val DEFAULT_NUM_PAGES = 2
+        private const val NUM_PAGES = 2
 
         private const val REQUEST_REFRESH = 0x0000
     }

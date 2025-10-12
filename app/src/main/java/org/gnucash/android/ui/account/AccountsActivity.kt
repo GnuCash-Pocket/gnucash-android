@@ -120,14 +120,7 @@ class AccountsActivity : BaseDrawerActivity(),
         }
 
         override fun getItemCount(): Int {
-            return DEFAULT_NUM_PAGES
-        }
-
-        companion object {
-            /**
-             * Number of pages to show
-             */
-            const val DEFAULT_NUM_PAGES = 3
+            return NUM_PAGES
         }
     }
 
@@ -150,7 +143,7 @@ class AccountsActivity : BaseDrawerActivity(),
         init()
 
         val tabLayout = binding.tabLayout
-        for (i in 0 until AccountViewPagerAdapter.DEFAULT_NUM_PAGES) {
+        for (i in 0 until NUM_PAGES) {
             tabLayout.addTab(tabLayout.newTab())
         }
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL)
@@ -372,6 +365,11 @@ class AccountsActivity : BaseDrawerActivity(),
          * Index of the favorite accounts tab
          */
         const val INDEX_FAVORITE_ACCOUNTS_FRAGMENT = 2
+
+        /**
+         * Number of pages to show
+         */
+        const val NUM_PAGES = 3
 
         /**
          * Used to save the index of the last open tab and restore the pager to that index

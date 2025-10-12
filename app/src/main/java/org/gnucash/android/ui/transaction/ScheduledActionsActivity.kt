@@ -17,14 +17,13 @@ package org.gnucash.android.ui.transaction
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentStatePagerAdapter
+import androidx.fragment.app.FragmentActivity
 import com.google.android.material.tabs.TabLayout
-import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
-import com.google.android.material.tabs.TabLayout.TabLayoutOnPageChangeListener
+import com.google.android.material.tabs.TabLayoutMediator
 import org.gnucash.android.R
 import org.gnucash.android.databinding.ActivityScheduledEventsBinding
 import org.gnucash.android.ui.common.BaseDrawerActivity
+import org.gnucash.android.ui.util.widget.FragmentStateAdapter
 
 /**
  * Activity for displaying scheduled actions
@@ -49,54 +48,43 @@ class ScheduledActionsActivity : BaseDrawerActivity() {
         super.onCreate(savedInstanceState)
 
         val tabLayout = binding.tabLayout
-        tabLayout.addTab(tabLayout.newTab().setText(R.string.title_scheduled_transactions))
-        tabLayout.addTab(tabLayout.newTab().setText(R.string.title_scheduled_exports))
+        for (i in 0 until NUM_PAGES) {
+            tabLayout.addTab(tabLayout.newTab())
+        }
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL)
 
-        val viewPager = binding.pager
-
-        //show the simple accounts list
-        viewPager.adapter = ScheduledActionsViewPager(supportFragmentManager)
-        viewPager.addOnPageChangeListener(TabLayoutOnPageChangeListener(tabLayout))
-        tabLayout.addOnTabSelectedListener(object : OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab) {
-                viewPager.currentItem = tab.position
+        binding.pager.adapter = ScheduledActionsViewPager(this)
+        TabLayoutMediator(tabLayout, binding.pager) { tab, position ->
+            when (position) {
+                INDEX_SCHEDULED_TRANSACTIONS -> tab.setText(R.string.title_scheduled_transactions)
+                INDEX_SCHEDULED_EXPORTS -> tab.setText(R.string.title_scheduled_exports)
             }
-
-            override fun onTabUnselected(tab: TabLayout.Tab) = Unit
-
-            override fun onTabReselected(tab: TabLayout.Tab) = Unit
-        })
+        }.attach()
     }
-
 
     /**
      * View pager adapter for managing the scheduled action views
      */
-    private inner class ScheduledActionsViewPager(fm: FragmentManager) :
-        FragmentStatePagerAdapter(fm) {
-        override fun getPageTitle(position: Int): CharSequence? {
+    private class ScheduledActionsViewPager(activity: FragmentActivity) :
+        FragmentStateAdapter(activity) {
+        override fun createFragment(position: Int): Fragment {
             return when (position) {
-                INDEX_SCHEDULED_TRANSACTIONS -> getString(R.string.title_scheduled_transactions)
-                INDEX_SCHEDULED_EXPORTS -> getString(R.string.title_scheduled_exports)
-                else -> super.getPageTitle(position)
+                INDEX_SCHEDULED_TRANSACTIONS -> ScheduledTransactionsListFragment()
+                INDEX_SCHEDULED_EXPORTS -> ScheduledExportsListFragment()
+                else -> throw IndexOutOfBoundsException()
             }
         }
 
-        override fun getItem(position: Int): Fragment {
-            when (position) {
-                INDEX_SCHEDULED_TRANSACTIONS -> return ScheduledTransactionsListFragment()
-                INDEX_SCHEDULED_EXPORTS -> return ScheduledExportsListFragment()
-            }
-            throw IndexOutOfBoundsException()
-        }
-
-        override fun getCount(): Int {
-            return 2
+        override fun getItemCount(): Int {
+            return NUM_PAGES
         }
     }
 
     companion object {
+        /**
+         * Number of pages to show
+         */
+        private const val NUM_PAGES = 2
         private const val INDEX_SCHEDULED_TRANSACTIONS = 0
         private const val INDEX_SCHEDULED_EXPORTS = 1
     }
