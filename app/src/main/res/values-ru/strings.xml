@@ -422,7 +422,6 @@
     <string name="light_ui_title">"Яркий тема"</string>
     <string name="dark_ui_title" msgid="3373976268671557416">"Тёмная тема"</string>
     <string name="yes_sure">Да, я уверен</string>
-    <string name="key_export_accounts_csv">Экспорт в CSV</string>
     <string name="summary_export_accounts_csv">Экспортировать все счета (без проводок) в CSV</string>
     <string name="title_export_accounts_csv">Экспорт в CSV</string>
     <string name="label_csv_separator">Разделитель</string>

@@ -416,7 +416,6 @@
     <string name="light_ui_title">"明亮模式"</string>
     <string name="dark_ui_title" msgid="3373976268671557416">"深色模式"</string>
     <string name="yes_sure">是的，我确定。</string>
-    <string name="key_export_accounts_csv">导出帐户_csv_key</string>
     <string name="summary_export_accounts_csv">导出所有账户 (无交易) 到 CSV</string>
     <string name="title_export_accounts_csv">导出为 CSV</string>
     <string name="label_csv_separator">分隔符</string>

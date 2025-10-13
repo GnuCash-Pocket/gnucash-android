@@ -254,7 +254,6 @@
     <string name="menu_settings" msgid="3524924670246877187">"Налаштування"</string>
     <string name="username">Ім’я користувача</string>
     <string name="password">Пароль</string>
-    <string name="owncloud_pref">ownСloud</string>
     <string name="owncloud_server_invalid">Сервер не знайдено</string>
     <string name="owncloud_user_invalid">Невірне ім’я користувача або пароль</string>
     <string name="owncloud_dir_invalid">Назва не повинна містити: \\ &lt; &gt; : \&quot; | * ?</string>
