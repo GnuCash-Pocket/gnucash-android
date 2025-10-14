@@ -456,7 +456,11 @@ abstract class DatabaseAdapter<Model : BaseModel>(
         val cursor = fetchRecord(uid) ?: return null
         try {
             if (cursor.moveToFirst()) {
-                val model = buildModelInstance(cursor)
+                val model = try {
+                    buildModelInstance(cursor)
+                } catch (_: IllegalArgumentException) {
+                    return null
+                }
                 if (isCached) {
                     cache[uid] = model
                 }
@@ -504,7 +508,11 @@ abstract class DatabaseAdapter<Model : BaseModel>(
     open val allRecords: List<Model>
         get() = getAllRecords(null, null)
 
-    fun getAllRecords(where: String?, whereArgs: Array<String?>?, orderBy: String? = null): List<Model> {
+    fun getAllRecords(
+        where: String?,
+        whereArgs: Array<String?>?,
+        orderBy: String? = null
+    ): List<Model> {
         val cursor = fetchAllRecords(where, whereArgs, orderBy) ?: return emptyList()
         return getRecords(cursor)
     }

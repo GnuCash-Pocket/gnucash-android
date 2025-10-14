@@ -566,7 +566,7 @@ class AccountsListFragment : MenuFragment(),
             accountsDbAdapter: AccountsDbAdapter
         ): Int {
             val parentUID = account.parentUID ?: return Account.DEFAULT_COLOR
-            val parentAccount = accountsDbAdapter.getRecord(parentUID)
+            val parentAccount = accountsDbAdapter.getRecordOrNull(parentUID) ?: return Account.DEFAULT_COLOR
             return getColor(parentAccount, accountsDbAdapter)
         }
     }
