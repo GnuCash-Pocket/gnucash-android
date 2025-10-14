@@ -164,8 +164,12 @@ class TransactionsListFragment : MenuFragment(),
         refresh()
     }
 
-    private fun onListItemClick(transactionUID: String) {
-        val intent = Intent(requireContext(), TransactionDetailActivity::class.java)
+    private fun onListItemClick(context: Context, transactionUID: String, accountUID: String) {
+        if (transactionUID.isEmpty() || accountUID.isEmpty()) {
+            Timber.w("You must specify both the transaction and account UID")
+            return
+        }
+        val intent = Intent(context, TransactionDetailActivity::class.java)
             .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
         startActivity(intent)
@@ -277,13 +281,17 @@ class TransactionsListFragment : MenuFragment(),
             }
 
             itemView.setOnClickListener {
-                transaction?.let { onListItemClick(it.uid) }
+                val transactionUID = transaction?.uid ?: return@setOnClickListener
+                val accountUID = accountUID ?: return@setOnClickListener
+                onListItemClick(itemView.context, transactionUID, accountUID)
             }
         }
 
         override fun onMenuItemClick(item: MenuItem): Boolean {
-            val accountUID = accountUID ?: return false
-            val transactionUID = transaction?.uid ?: return false
+            val transactionUID = transaction?.uid
+            if (transactionUID.isNullOrEmpty()) return false
+            val accountUID = accountUID
+            if (accountUID.isNullOrEmpty()) return false
 
             when (item.itemId) {
                 R.id.menu_delete -> {
@@ -312,9 +320,9 @@ class TransactionsListFragment : MenuFragment(),
 
         fun bind(cursor: Cursor) {
             val context = itemView.context
+            val accountUID = accountUID!!
             val transaction = transactionsDbAdapter.buildModelInstance(cursor)
             this.transaction = transaction
-            val accountUID = accountUID!!
             val transactionUID = transaction.uid
 
             primaryText.text = transaction.description

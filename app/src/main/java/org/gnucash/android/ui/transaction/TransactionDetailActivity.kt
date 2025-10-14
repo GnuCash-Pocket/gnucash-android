@@ -61,7 +61,7 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         accountUID = intent.getStringExtra(UxArgument.SELECTED_ACCOUNT_UID)
 
         if (transactionUID.isNullOrEmpty() || accountUID.isNullOrEmpty()) {
-            throw MissingFormatArgumentException("You must specify both the transaction and account GUID")
+            throw MissingFormatArgumentException("You must specify both the transaction and account UID")
         }
 
         setSupportActionBar(binding.toolbar)
