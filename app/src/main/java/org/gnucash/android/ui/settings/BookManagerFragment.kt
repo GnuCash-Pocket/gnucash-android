@@ -59,6 +59,7 @@ import org.gnucash.android.ui.settings.dialog.DeleteBookConfirmationDialog
 import org.gnucash.android.util.BookUtils.loadBook
 import org.gnucash.android.util.PreferencesHelper.getLastExportTime
 import org.gnucash.android.util.chooseDocument
+import org.gnucash.android.util.formatMediumDateTime
 import org.gnucash.android.util.openBook
 import timber.log.Timber
 
@@ -305,8 +306,11 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
             lastSyncLabel.setText(R.string.label_last_export_time)
 
             val lastSyncTime = getLastExportTime(context, bookUID)
-            if (lastSyncTime.time <= 0L) lastSyncTimeView.setText(R.string.last_export_time_never)
-            else lastSyncTimeView.text = lastSyncTime.toString()
+            if (lastSyncTime.time <= 0L) {
+                lastSyncTimeView.setText(R.string.last_export_time_never)
+            } else {
+                lastSyncTimeView.text = formatMediumDateTime(lastSyncTime.time)
+            }
         }
 
         fun setStatisticsText(book: Book) {

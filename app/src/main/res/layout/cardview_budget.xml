@@ -18,93 +18,70 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginLeft="5dp"
-    android:layout_marginRight="5dp"
     android:clickable="true"
     android:focusable="true"
-    android:foreground="?selectableItemBackground"
-    app:cardCornerRadius="4dp"
     app:cardPreventCornerOverlap="false"
     app:cardUseCompatPadding="true">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:minHeight="@dimen/card_min_height"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:background="?selectableItemBackground"
+        android:padding="@dimen/dialog_padding">
 
         <include
             android:id="@+id/list_item_2_lines"
             layout="@layout/list_item_2_lines"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/dialog_padding"
-            android:layout_marginTop="@dimen/dialog_padding"
-            android:layout_marginRight="@dimen/dialog_padding"
-            android:layout_toRightOf="@id/account_color_strip"
-            android:paddingTop="6dp" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/budget_recurrence"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/dialog_padding"
-            android:layout_marginRight="@dimen/dialog_padding"
-            android:gravity="left|start"
-            android:maxLines="1"
-            android:textSize="15sp"
+            android:layout_marginTop="8dp"
+            android:textAppearance="?android:textAppearanceMedium"
+            app:layout_constraintTop_toBottomOf="@id/list_item_2_lines"
             tools:text="$2,500 monthly until 02/14" />
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/options_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:paddingStart="16dp"
+            android:paddingTop="16dp"
+            android:paddingEnd="0dp"
+            android:src="@drawable/ic_more_vert"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:ignore="ContentDescription" />
 
-            <ImageView
-                android:id="@+id/options_menu"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentBottom="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:paddingLeft="24dp"
-                android:paddingTop="20dp"
-                android:paddingBottom="4dp"
-                android:scaleType="centerInside"
-                android:src="@drawable/ic_more_vert"
-                tools:ignore="ContentDescription" />
+        <TextView
+            android:id="@+id/budget_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:textColor="?android:textColorPrimary"
+            app:layout_constraintEnd_toStartOf="@id/options_menu"
+            app:layout_constraintTop_toBottomOf="@id/budget_recurrence"
+            tools:ignore="RtlHardcoded"
+            tools:text="$ 2000 of $ 2,500" />
 
-            <LinearLayout
-                android:id="@+id/budget_progress_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/dialog_padding"
-                android:layout_marginRight="@dimen/dialog_padding"
-                android:layout_toLeftOf="@id/options_menu"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/budget_amount"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="right"
-                    android:maxLines="1"
-                    android:padding="5dp"
-                    android:textColor="?android:textColorPrimary"
-                    android:textSize="18sp"
-                    tools:text="$ 2000 of $ 2,500" />
-
-                <ProgressBar
-                    android:id="@+id/budget_indicator"
-                    style="@android:style/Widget.ProgressBar.Horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="10dp"
-                    android:indeterminate="false"
-                    android:max="100"
-                    android:paddingBottom="4dp"
-                    android:progressDrawable="@drawable/budget_progress_indicator"
-                    tools:background="@color/account_gold" />
-            </LinearLayout>
-
-        </RelativeLayout>
-    </LinearLayout>
+        <ProgressBar
+            android:id="@+id/budget_indicator"
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_width="0dp"
+            android:layout_height="10dp"
+            android:indeterminate="false"
+            android:max="100"
+            android:paddingBottom="4dp"
+            android:progressDrawable="@drawable/budget_progress_indicator"
+            app:layout_constraintEnd_toStartOf="@id/options_menu"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/budget_amount"
+            tools:background="@color/account_gold" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>
