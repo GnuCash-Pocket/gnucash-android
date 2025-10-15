@@ -85,6 +85,10 @@
             android:key="@string/key_xml_ofx_header"
             android:summary="@string/summary_xml_ofx_header"
             android:title="@string/title_xml_ofx_header" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="@string/key_compress_export"
+            android:title="@string/option_compress_export" />
     </PreferenceCategory>
 
 </PreferenceScreen>
