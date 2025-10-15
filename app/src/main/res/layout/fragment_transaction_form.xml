@@ -211,5 +211,6 @@
 
     <include
         android:id="@+id/calculator_keyboard"
-        layout="@layout/kbd_calculator" />
+        layout="@layout/kbd_calculator"
+        android:visibility="gone" />
 </FrameLayout>

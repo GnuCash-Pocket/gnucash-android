@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/FormRow"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        style="@style/FormIcon"
+        android:src="@drawable/ic_calendar_start" />
+
+    <TextView
+        android:id="@+id/date_start"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="?selectableItemBackground"
+        android:padding="4dp" />
+
+    <ImageButton
+        android:id="@+id/date_start_clear"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="top"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/menu_delete"
+        android:src="@drawable/ic_close" />
+</LinearLayout>

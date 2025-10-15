@@ -166,28 +166,28 @@ class GnuCashApplication : Application() {
                 try {
                     splitsDbAdapter!!.close()
                     splitsDbAdapter = null
-                } catch (ignore: IOException) {
+                } catch (_: IOException) {
                 }
             }
             if (transactionDbAdapter != null) {
                 try {
                     transactionDbAdapter!!.close()
                     transactionDbAdapter = null
-                } catch (ignore: IOException) {
+                } catch (_: IOException) {
                 }
             }
             if (accountsDbAdapter != null) {
                 try {
                     accountsDbAdapter!!.close()
                     accountsDbAdapter = null
-                } catch (ignore: IOException) {
+                } catch (_: IOException) {
                 }
             }
             if (recurrenceDbAdapter != null) {
                 try {
                     recurrenceDbAdapter!!.close()
                     recurrenceDbAdapter = null
-                } catch (ignore: IOException) {
+                } catch (_: IOException) {
                 }
             }
             if (scheduledEventDbAdapter != null) {

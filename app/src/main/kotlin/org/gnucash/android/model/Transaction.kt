@@ -18,7 +18,9 @@ package org.gnucash.android.model
 import android.content.Intent
 import org.gnucash.android.BuildConfig
 import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.model.Transaction.Companion.computeBalance
 import org.gnucash.android.util.formatShortDate
+import java.math.BigDecimal
 import java.util.Date
 
 /**
@@ -29,6 +31,7 @@ import java.util.Date
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 class Transaction : BaseModel {
+
     /**
      * GUID of commodity associated with this transaction
      */
@@ -278,6 +281,27 @@ class Transaction : BaseModel {
         return splits.firstOrNull { it.accountUID != accountUID && (it.value == amount) }
             ?: splits.firstOrNull { it.accountUID != accountUID }
     }
+
+    fun getDefaultAccountUID(type: TransactionType): String? {
+        if (splits.isEmpty()) {
+            return null
+        }
+        var accountUID: String? = null
+        var valueMax: BigDecimal? = null
+        for (split in splits) {
+            val value: BigDecimal = split.value.toBigDecimal()
+            if (valueMax == null || value > valueMax) {
+                valueMax = value
+                accountUID = split.accountUID
+            } else if (split.type == type && value == valueMax) {
+                accountUID = split.accountUID
+            }
+        }
+        return accountUID
+    }
+
+    // Prefer DEBIT over CREDIT
+    val defaultAccountUID: String? get() = getDefaultAccountUID(TransactionType.DEBIT)
 
     companion object {
         /**

@@ -290,4 +290,9 @@
     <string name="default_color" translatable="false">@string/default_theme</string>
     <string name="menu_accounts_hidden" translatable="false">@string/hidden</string>
     <string name="exchange_rate_example">1 %1$s = %2$s %3$s</string>
+    <string name="nav_menu_search">@string/menu_search_accounts</string>
+    <string name="title_search">@string/menu_search_accounts</string>
+    <string name="action_find">@android:string/search_go</string>
+    <string name="search_field_description" translatable="false">@string/description</string>
+    <string name="search_field_notes" translatable="false">@string/hint_notes</string>
 </resources>

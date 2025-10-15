@@ -276,7 +276,7 @@ class Money(
             if (commodity.isCurrency) {
                 try {
                     currency = commodity.currency
-                } catch (ignore: IllegalArgumentException) {
+                } catch (_: IllegalArgumentException) {
                 }
             }
             decimalFormatSymbols = decimalFormatSymbols.apply { currencySymbol = commodity.symbol }

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/FormRow"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        style="@style/FormIcon"
+        android:src="@drawable/ic_notes" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <EditText
+            android:id="@+id/notes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/search_field_notes"
+            android:inputType="textMultiLine|textCapSentences"
+            android:singleLine="false"
+            android:textAppearance="?android:textAppearanceSmall" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <ImageButton
+        android:id="@+id/notes_clear"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="top"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/menu_delete"
+        android:src="@drawable/ic_close" />
+</LinearLayout>

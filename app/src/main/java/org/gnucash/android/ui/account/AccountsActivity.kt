@@ -389,10 +389,10 @@ class AccountsActivity : BaseDrawerActivity(),
         /**
          * Displays the dialog for exporting transactions
          */
-        fun openExportFragment(activity: AppCompatActivity) {
-            val intent = Intent(activity, FormActivity::class.java)
+        fun openExportFragment(context: Context) {
+            val intent = Intent(context, FormActivity::class.java)
                 .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.EXPORT.name)
-            activity.startActivity(intent)
+            context.startActivity(intent)
         }
 
         /**

@@ -488,4 +488,9 @@
     <string name="title_progress_processing_prices">Processing prices</string>
     <string name="title_progress_processing_schedules">Processing schedules</string>
     <string name="title_progress_processing_transactions">Processing transactions</string>
+    <string name="title_search_form">Search Criteria</string>
+    <string name="title_search_items_where">"Search for items where"</string>
+    <string name="search_criteria_all">"all criteria are met"</string>
+    <string name="search_criteria_any">"any criteria are met"</string>
+    <string name="search_field_date_posted">Date Posted</string>
 </resources>

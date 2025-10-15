@@ -18,6 +18,7 @@ package org.gnucash.android.ui.report
 
 import android.app.DatePickerDialog
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -384,5 +385,12 @@ class ReportsActivity : BaseDrawerActivity(),
         private const val STATE_REPORT_TYPE = "report_type"
         private const val STATE_REPORT_START = "report_start"
         private const val STATE_REPORT_END = "report_end"
+
+        fun show(context: Context) {
+            val intent = Intent(context, ReportsActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            context.startActivity(intent)
+        }
     }
 }

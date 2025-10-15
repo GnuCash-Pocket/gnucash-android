@@ -30,6 +30,7 @@ import org.gnucash.android.ui.budget.BudgetAmountEditorFragment
 import org.gnucash.android.ui.budget.BudgetFormFragment
 import org.gnucash.android.ui.export.ExportFormFragment
 import org.gnucash.android.ui.passcode.PasscodeLockActivity
+import org.gnucash.android.ui.search.SearchFormFragment
 import org.gnucash.android.ui.transaction.SplitEditorFragment
 import org.gnucash.android.ui.transaction.TransactionFormFragment
 import org.gnucash.android.util.BookUtils.activateBook
@@ -50,7 +51,8 @@ class FormActivity : PasscodeLockActivity() {
         EXPORT,
         SPLIT_EDITOR,
         BUDGET,
-        BUDGET_AMOUNT_EDITOR
+        BUDGET_AMOUNT_EDITOR,
+        SEARCH_FORM
     }
 
     private lateinit var binding: ActivityFormBinding
@@ -84,7 +86,8 @@ class FormActivity : PasscodeLockActivity() {
             accountUID = args.getString(UxArgument.PARENT_ACCOUNT_UID)
         }
         if (!accountUID.isNullOrEmpty()) {
-            @ColorInt val accountColor = AccountsDbAdapter.instance.getActiveAccountColor(this, accountUID)
+            @ColorInt val accountColor =
+                AccountsDbAdapter.instance.getActiveAccountColor(this, accountUID)
             setTitlesColor(accountColor)
         }
 
@@ -102,14 +105,14 @@ class FormActivity : PasscodeLockActivity() {
             FormType.SPLIT_EDITOR -> showSplitEditorFragment(args)
             FormType.BUDGET -> showBudgetFormFragment(args)
             FormType.BUDGET_AMOUNT_EDITOR -> showBudgetAmountEditorFragment(args)
+            FormType.SEARCH_FORM -> showSearchForm(args)
         }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
-                setResult(RESULT_CANCELED)
-                finish()
+                goBack()
                 return true
             }
         }
@@ -179,6 +182,16 @@ class FormActivity : PasscodeLockActivity() {
     }
 
     /**
+     * Load the search form fragment
+     *
+     * @param args Arguments
+     */
+    private fun showSearchForm(args: Bundle) {
+        val fragment = SearchFormFragment()
+        showFormFragment(fragment, args)
+    }
+
+    /**
      * Loads the fragment into the fragment container, replacing whatever was there before
      *
      * @param fragment Fragment to be displayed
@@ -188,5 +201,15 @@ class FormActivity : PasscodeLockActivity() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
             .commit()
+    }
+
+    private fun goBack() {
+        val fm = supportFragmentManager
+        if (fm.backStackEntryCount > 0) {
+            fm.popBackStack()
+        } else {
+            setResult(RESULT_CANCELED)
+            finish()
+        }
     }
 }

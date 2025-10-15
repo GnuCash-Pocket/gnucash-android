@@ -16,6 +16,7 @@
  */
 package org.gnucash.android.ui.transaction
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -531,5 +532,14 @@ class TransactionsActivity : BaseDrawerActivity(),
         private const val NUM_PAGES = 2
 
         private const val REQUEST_REFRESH = 0x0000
+
+        /**
+         * Displays the form for searching transactions
+         */
+        fun openSearchFragment(context: Context) {
+            val intent = Intent(context, FormActivity::class.java)
+                .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.SEARCH_FORM.name)
+            context.startActivity(intent)
+        }
     }
 }

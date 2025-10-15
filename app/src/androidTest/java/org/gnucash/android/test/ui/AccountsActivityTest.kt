@@ -56,8 +56,7 @@ import org.gnucash.android.receivers.AccountCreator
 import org.gnucash.android.test.ui.util.DisableAnimationsRule
 import org.gnucash.android.test.ui.util.performClick
 import org.gnucash.android.ui.account.AccountsActivity
-import org.gnucash.android.ui.adapter.AccountTypesAdapter
-import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
+import org.gnucash.android.ui.adapter.SpinnerItem
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.allOf
@@ -233,7 +232,7 @@ class AccountsActivityTest : GnuAndroidTest() {
     fun shouldHideParentAccountViewWhenNoParentsExist() {
         val textTrading =
             context.resources.getStringArray(R.array.account_type_entry_values)[AccountType.TRADING.labelIndex]
-        val labelTrading = AccountTypesAdapter.Label(AccountType.TRADING, textTrading)
+        val labelTrading = SpinnerItem(AccountType.TRADING, textTrading)
 
         clickViewText(SIMPLE_ACCOUNT_NAME)
         onView(withId(R.id.fragment_transaction_list))
@@ -254,7 +253,7 @@ class AccountsActivityTest : GnuAndroidTest() {
 
         onData(
             allOf(
-                `is`(instanceOf<Any>(AccountTypesAdapter.Label::class.java)),
+                `is`(instanceOf<Any>(SpinnerItem::class.java)),
                 `is`(labelTrading)
             )
         ).performClick()
@@ -421,8 +420,8 @@ class AccountsActivityTest : GnuAndroidTest() {
             .performClick()
         onData(
             allOf(
-                `is`(instanceOf<Any>(QualifiedAccountNameAdapter.Label::class.java)),
-                `is`(QualifiedAccountNameAdapter.Label(transferAccount))
+                `is`(instanceOf<Any>(SpinnerItem::class.java)),
+                `is`(SpinnerItem(transferAccount))
             )
         ).inRoot(isPlatformPopup())
             .performClick()

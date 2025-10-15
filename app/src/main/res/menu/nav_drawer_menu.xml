@@ -42,6 +42,10 @@
         android:title="@string/title_transactions">
         <menu>
             <item
+                android:id="@+id/nav_item_search"
+                android:icon="@drawable/ic_search"
+                android:title="@string/nav_menu_search" />
+            <item
                 android:id="@+id/nav_item_scheduled_actions"
                 android:icon="@drawable/ic_schedule"
                 android:title="@string/nav_menu_scheduled_actions" />

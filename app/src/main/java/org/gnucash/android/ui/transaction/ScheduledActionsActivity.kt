@@ -15,6 +15,8 @@
  */
 package org.gnucash.android.ui.transaction
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -87,5 +89,13 @@ class ScheduledActionsActivity : BaseDrawerActivity() {
         private const val NUM_PAGES = 2
         private const val INDEX_SCHEDULED_TRANSACTIONS = 0
         private const val INDEX_SCHEDULED_EXPORTS = 1
+
+        //show scheduled transactions
+        fun show(context: Context) {
+            val intent = Intent(context, ScheduledActionsActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            context.startActivity(intent)
+        }
     }
 }

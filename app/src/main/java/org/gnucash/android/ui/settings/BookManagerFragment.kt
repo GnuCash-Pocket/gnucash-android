@@ -53,6 +53,7 @@ import org.gnucash.android.model.Book
 import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.ui.adapter.AccountsTemplatesAdapter
 import org.gnucash.android.ui.adapter.ModelDiff
+import org.gnucash.android.ui.adapter.SpinnerItem
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.get
 import org.gnucash.android.ui.settings.dialog.DeleteBookConfirmationDialog
@@ -174,8 +175,9 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
                 // Dismisses itself
             }
             .setSingleChoiceItems(adapter, RecyclerView.NO_POSITION) { dialog, which ->
-                val item = adapter[which] as AccountsTemplate.Header
-                val fileId = item.assetId
+                val item = adapter[which] as SpinnerItem<AccountsTemplate.Header>
+                val header = item.value
+                val fileId = header.assetId
                 dialog.dismiss()
                 val currencyCode = defaultCurrencyCode
                 AccountsActivity.createDefaultAccounts(activity, currencyCode, fileId, null)
@@ -239,8 +241,8 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
             val bookName = book.displayName
             optionsMenuView.setOnClickListener { v ->
                 val popupMenu = PopupMenu(v.context, v)
-                val menuInflater = popupMenu.menuInflater
-                menuInflater.inflate(R.menu.book_context_menu, popupMenu.menu)
+                val inflater = popupMenu.menuInflater
+                inflater.inflate(R.menu.book_context_menu, popupMenu.menu)
 
                 popupMenu.setOnMenuItemClickListener { item ->
                     when (item.itemId) {

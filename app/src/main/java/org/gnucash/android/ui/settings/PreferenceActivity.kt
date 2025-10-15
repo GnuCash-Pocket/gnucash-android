@@ -15,6 +15,8 @@
  */
 package org.gnucash.android.ui.settings
 
+import android.content.Context
+import android.content.Intent
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.view.MenuItem
@@ -124,5 +126,10 @@ class PreferenceActivity : PasscodeLockActivity(),
 
     companion object {
         const val ACTION_MANAGE_BOOKS: String = BuildConfig.APPLICATION_ID + ".action.MANAGE_BOOKS"
+
+        fun show(context: Context) {
+            val intent = Intent(context, PreferenceActivity::class.java)
+            context.startActivity(intent)
+        }
     }
 }

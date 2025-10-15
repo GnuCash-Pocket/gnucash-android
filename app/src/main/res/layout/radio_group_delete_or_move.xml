@@ -53,6 +53,6 @@
         android:id="@+id/target_accounts_spinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="48dp" />
+        android:minHeight="?android:attr/listPreferredItemHeight" />
 
 </RadioGroup>

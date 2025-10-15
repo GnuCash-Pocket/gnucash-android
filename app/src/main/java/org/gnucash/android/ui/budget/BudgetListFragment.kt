@@ -203,11 +203,11 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
 
         init {
             optionsMenu.setOnClickListener { v ->
-                val popup = PopupMenu(v.context, v)
-                popup.setOnMenuItemClickListener(this@BudgetViewHolder)
-                val inflater = popup.menuInflater
-                inflater.inflate(R.menu.budget_context_menu, popup.menu)
-                popup.show()
+                val popupMenu = PopupMenu(v.context, v)
+                popupMenu.setOnMenuItemClickListener(this@BudgetViewHolder)
+                val inflater = popupMenu.menuInflater
+                inflater.inflate(R.menu.budget_context_menu, popupMenu.menu)
+                popupMenu.show()
             }
         }
 

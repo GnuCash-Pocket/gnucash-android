@@ -11,7 +11,7 @@ import org.gnucash.android.databinding.ListItemScheduledTrxnBinding
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.model.ScheduledAction
 import org.gnucash.android.ui.common.Refreshable
-import org.gnucash.android.util.BackupManager
+import org.gnucash.android.util.BackupManager.backupActiveBookAsync
 import org.gnucash.android.util.formatMediumDateTime
 
 abstract class ScheduledViewHolder(
@@ -30,11 +30,11 @@ abstract class ScheduledViewHolder(
 
     init {
         menuView.setOnClickListener { v: View ->
-            val popup = PopupMenu(v.context, v)
-            popup.setOnMenuItemClickListener(this@ScheduledViewHolder)
-            val inflater = popup.menuInflater
-            inflater.inflate(R.menu.schedxactions_context_menu, popup.menu)
-            popup.show()
+            val popupMenu = PopupMenu(v.context, v)
+            popupMenu.setOnMenuItemClickListener(this@ScheduledViewHolder)
+            val inflater = popupMenu.menuInflater
+            inflater.inflate(R.menu.schedxactions_context_menu, popupMenu.menu)
+            popupMenu.show()
         }
     }
 
@@ -69,7 +69,7 @@ abstract class ScheduledViewHolder(
                 val action = scheduledAction
                 if (action != null) {
                     val activity = itemView.context.findActivity()
-                    BackupManager.backupActiveBookAsync(activity) {
+                    backupActiveBookAsync(activity) {
                         deleteSchedule(action)
                         refreshable.refresh()
                     }

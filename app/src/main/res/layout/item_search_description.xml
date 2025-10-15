@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/FormRow"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:completionThreshold="1"
+            android:hint="@string/search_field_description"
+            android:inputType="textCapSentences"
+            android:singleLine="true"
+            android:textAppearance="?android:textAppearanceMedium">
+
+        </com.google.android.material.textfield.MaterialAutoCompleteTextView>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <ImageButton
+        android:id="@+id/description_clear"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="top"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/menu_delete"
+        android:src="@drawable/ic_close" />
+</LinearLayout>

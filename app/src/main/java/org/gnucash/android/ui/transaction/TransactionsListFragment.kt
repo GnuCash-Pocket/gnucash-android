@@ -78,7 +78,7 @@ class TransactionsListFragment : MenuFragment(),
     private var useCompactView = false
     private var useDoubleEntry = true
 
-    private var transactionsAdapter: TransactionRecyclerAdapter? = null
+    private var transactionsAdapter: TransactionCursorAdapter? = null
 
     private var binding: FragmentTransactionsListBinding? = null
 
@@ -128,7 +128,7 @@ class TransactionsListFragment : MenuFragment(),
 
         val binding = this.binding!!
         val context = binding.list.context
-        transactionsAdapter = TransactionRecyclerAdapter(null)
+        transactionsAdapter = TransactionCursorAdapter(null)
 
         binding.list.setHasFixedSize(true)
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -164,7 +164,11 @@ class TransactionsListFragment : MenuFragment(),
         refresh()
     }
 
-    private fun onListItemClick(context: Context, transactionUID: String, accountUID: String) {
+    private fun showTransactionDetails(
+        context: Context,
+        transactionUID: String,
+        accountUID: String
+    ) {
         if (transactionUID.isEmpty() || accountUID.isEmpty()) {
             Timber.w("You must specify both the transaction and account UID")
             return
@@ -240,7 +244,7 @@ class TransactionsListFragment : MenuFragment(),
         }
     }
 
-    inner class TransactionRecyclerAdapter(cursor: Cursor?) :
+    private inner class TransactionCursorAdapter(cursor: Cursor?) :
         CursorRecyclerAdapter<TransactionViewHolder>(cursor) {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TransactionViewHolder {
             val inflater = LayoutInflater.from(parent.context)
@@ -253,7 +257,7 @@ class TransactionsListFragment : MenuFragment(),
         }
     }
 
-    inner class TransactionViewHolder(binding: CardviewTransactionBinding) :
+    private inner class TransactionViewHolder(binding: CardviewTransactionBinding) :
         RecyclerView.ViewHolder(binding.root), PopupMenu.OnMenuItemClickListener {
         private val primaryText: TextView = binding.listItem2Lines.primaryText
         private val secondaryText: TextView = binding.listItem2Lines.secondaryText
@@ -271,19 +275,19 @@ class TransactionsListFragment : MenuFragment(),
 
         init {
             optionsMenu.setOnClickListener { v ->
-                val popup = PopupMenu(v.context, v)
-                popup.setOnMenuItemClickListener(this@TransactionViewHolder)
-                val inflater = popup.menuInflater
-                val menu = popup.menu
+                val popupMenu = PopupMenu(v.context, v)
+                popupMenu.setOnMenuItemClickListener(this@TransactionViewHolder)
+                val inflater = popupMenu.menuInflater
+                val menu = popupMenu.menu
                 inflater.inflate(R.menu.transactions_context_menu, menu)
                 menu.findItem(R.id.menu_edit).isVisible = useCompactView
-                popup.show()
+                popupMenu.show()
             }
 
             itemView.setOnClickListener {
                 val transactionUID = transaction?.uid ?: return@setOnClickListener
                 val accountUID = accountUID ?: return@setOnClickListener
-                onListItemClick(itemView.context, transactionUID, accountUID)
+                showTransactionDetails(itemView.context, transactionUID, accountUID)
             }
         }
 
@@ -293,28 +297,28 @@ class TransactionsListFragment : MenuFragment(),
             val accountUID = accountUID
             if (accountUID.isNullOrEmpty()) return false
 
-            when (item.itemId) {
+            return when (item.itemId) {
                 R.id.menu_delete -> {
                     deleteTransaction(transactionUID)
-                    return true
+                    true
                 }
 
                 R.id.menu_duplicate -> {
                     duplicateTransaction(transactionUID)
-                    return true
+                    true
                 }
 
                 R.id.menu_move -> {
                     moveTransaction(transactionUID, accountUID)
-                    return true
+                    true
                 }
 
                 R.id.menu_edit -> {
                     editTransaction(transactionUID, accountUID)
-                    return true
+                    true
                 }
 
-                else -> return false
+                else -> false
             }
         }
 
@@ -356,20 +360,17 @@ class TransactionsListFragment : MenuFragment(),
                         }
                     }
                     if (text.isNullOrEmpty()) {
-                        text = getString(R.string.label_split_count, splits.size)
-                        error = getString(R.string.imbalance_account_name)
+                        text = context.getString(R.string.label_split_count, splits.size)
+                        error = context.getString(R.string.imbalance_account_name)
                     }
                 } else if (splits.size > 2) {
-                    text = getString(R.string.label_split_count, splits.size)
+                    text = context.getString(R.string.label_split_count, splits.size)
                 }
                 secondaryText.text = text
                 secondaryText.error = error
 
                 editTransaction.setOnClickListener {
-                    editTransaction(
-                        transactionUID,
-                        accountUID
-                    )
+                    editTransaction(transactionUID, accountUID)
                 }
             }
         }
@@ -401,7 +402,6 @@ class TransactionsListFragment : MenuFragment(),
                 transactionsDbAdapter.deleteRecord(transactionUID)
                 updateAllWidgets(activity)
                 refresh()
-                null
             }
         } else {
             transactionsDbAdapter.deleteRecord(transactionUID)
@@ -431,7 +431,8 @@ class TransactionsListFragment : MenuFragment(),
     }
 
     private fun editTransaction(transactionUID: String, accountUID: String) {
-        val intent = Intent(requireContext(), FormActivity::class.java)
+        val context: Context = requireContext()
+        val intent = Intent(context, FormActivity::class.java)
             .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
             .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)

@@ -5,7 +5,6 @@ import android.database.DatabaseUtils.sqlEscapeString
 import android.text.TextUtils
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.lifecycle.LifecycleOwner
@@ -27,7 +26,7 @@ class QualifiedAccountNameAdapter(
     private val whereArgs: Array<String?>? = null,
     var adapter: AccountsDbAdapter = AccountsDbAdapter.instance,
     private val scope: CoroutineScope
-) : ArrayAdapter<QualifiedAccountNameAdapter.Label>(context, android.R.layout.simple_spinner_item) {
+) : SpinnerArrayAdapter<Account>(context) {
 
     private var loadJob: Job? = null
 
@@ -94,7 +93,7 @@ class QualifiedAccountNameAdapter(
 
     fun getAccount(position: Int): Account? {
         if (position < 0) return null
-        return getItem(position)?.account
+        return getItem(position)?.value
     }
 
     fun getUID(position: Int): String? {
@@ -124,7 +123,7 @@ class QualifiedAccountNameAdapter(
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val view = super.getView(position, convertView, parent)
-        val textView = if (view is TextView) view else view.findViewById(android.R.id.text1)
+        val textView = (view as? TextView) ?: view.findViewById(android.R.id.text1)
         textView.ellipsize = TextUtils.TruncateAt.MIDDLE
         return view
     }
@@ -133,7 +132,7 @@ class QualifiedAccountNameAdapter(
         val account = getAccount(position)!!
 
         val view = super.getDropDownView(position, convertView, parent)
-        val textView = if (view is TextView) view else view.findViewById(android.R.id.text1)
+        val textView = (view as? TextView) ?: view.findViewById(android.R.id.text1)
         textView.ellipsize = TextUtils.TruncateAt.MIDDLE
 
         @DrawableRes val icon = if (account.isFavorite) R.drawable.ic_favorite else 0
@@ -151,10 +150,17 @@ class QualifiedAccountNameAdapter(
         loadJob?.cancel()
         loadJob = scope.launch(Dispatchers.IO) {
             val records = loadData(adapter)
-            val labels = records.map { Label(it) }
+            val items = records.map { account ->
+                val label = if (account.fullName.isNullOrBlank()) {
+                    account.name
+                } else {
+                    account.fullName!!
+                }
+                SpinnerItem(account, label)
+            }
             withContext(Dispatchers.Main) {
                 clear()
-                addAll(labels)
+                addAll(items)
                 callback?.invoke(this@QualifiedAccountNameAdapter)
             }
         }
@@ -170,17 +176,6 @@ class QualifiedAccountNameAdapter(
 
     fun getAccountDb(uid: String): Account? {
         return getAccount(uid) ?: adapter.getRecordOrNull(uid)
-    }
-
-    data class Label(val account: Account) {
-        private val name: String =
-            if (account.fullName.isNullOrBlank()) account.name else account.fullName!!
-
-        override fun toString(): String = name
-
-        override fun equals(other: Any?): Boolean {
-            return (other is Label) && (this.name == other.name)
-        }
     }
 
     companion object {

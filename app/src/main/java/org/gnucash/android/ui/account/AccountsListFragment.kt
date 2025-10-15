@@ -448,11 +448,11 @@ class AccountsListFragment : MenuFragment(),
 
         init {
             optionsMenu.setOnClickListener { v ->
-                val popup = PopupMenu(v.context, v)
-                popup.setOnMenuItemClickListener(this@AccountViewHolder)
-                val inflater = popup.menuInflater
-                inflater.inflate(R.menu.account_context_menu, popup.menu)
-                popup.show()
+                val popupMenu = PopupMenu(v.context, v)
+                popupMenu.setOnMenuItemClickListener(this@AccountViewHolder)
+                val inflater = popupMenu.menuInflater
+                inflater.inflate(R.menu.account_context_menu, popupMenu.menu)
+                popupMenu.show()
             }
         }
 

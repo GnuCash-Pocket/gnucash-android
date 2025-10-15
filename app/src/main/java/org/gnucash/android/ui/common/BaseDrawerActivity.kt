@@ -40,6 +40,7 @@ import org.gnucash.android.ui.passcode.PasscodeLockActivity
 import org.gnucash.android.ui.report.ReportsActivity
 import org.gnucash.android.ui.settings.PreferenceActivity
 import org.gnucash.android.ui.transaction.ScheduledActionsActivity
+import org.gnucash.android.ui.transaction.TransactionsActivity
 import org.gnucash.android.util.BookUtils.activateBook
 import org.gnucash.android.util.BookUtils.loadBook
 import org.gnucash.android.util.chooseDocument
@@ -244,31 +245,25 @@ abstract class BaseDrawerActivity : PasscodeLockActivity() {
      * Handler for the navigation drawer items
      */
     protected fun onDrawerMenuItemClicked(itemId: Int) {
+        val context: Context = this
+
         when (itemId) {
             R.id.nav_item_open -> chooseDocument(REQUEST_OPEN_DOCUMENT)
 
             R.id.nav_item_favorites -> AccountsActivity.start(
-                this,
+                context,
                 AccountsActivity.INDEX_FAVORITE_ACCOUNTS_FRAGMENT
             )
 
-            R.id.nav_item_reports -> {
-                val intent = Intent(this, ReportsActivity::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                    .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                startActivity(intent)
-            }
+            R.id.nav_item_reports -> ReportsActivity.show(context)
 
-            R.id.nav_item_scheduled_actions -> {
-                //show scheduled transactions
-                val intent = Intent(this, ScheduledActionsActivity::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                    .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                startActivity(intent)
-            }
+            R.id.nav_item_scheduled_actions -> ScheduledActionsActivity.show(context)
 
-            R.id.nav_item_export -> AccountsActivity.openExportFragment(this)
-            R.id.nav_item_settings -> startActivity(Intent(this, PreferenceActivity::class.java))
+            R.id.nav_item_export -> AccountsActivity.openExportFragment(context)
+
+            R.id.nav_item_settings -> PreferenceActivity.show(context)
+
+            R.id.nav_item_search -> TransactionsActivity.openSearchFragment(context)
         }
         drawerLayout!!.closeDrawer(navigationView!!)
     }
