@@ -34,7 +34,6 @@ import org.gnucash.android.ui.util.displayBalance
 import org.gnucash.android.util.BackupManager.backupActiveBookAsync
 import org.gnucash.android.util.formatFullDate
 import timber.log.Timber
-import java.util.MissingFormatArgumentException
 
 /**
  * Activity for displaying transaction information
@@ -61,7 +60,7 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         accountUID = intent.getStringExtra(UxArgument.SELECTED_ACCOUNT_UID)
 
         if (transactionUID.isNullOrEmpty() || accountUID.isNullOrEmpty()) {
-            throw MissingFormatArgumentException("You must specify both the transaction and account UID")
+            throw IllegalArgumentException("Both the transaction and account UID are required")
         }
 
         setSupportActionBar(binding.toolbar)

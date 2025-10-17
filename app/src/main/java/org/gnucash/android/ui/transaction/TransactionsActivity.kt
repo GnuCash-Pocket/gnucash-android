@@ -509,9 +509,7 @@ class TransactionsActivity : BaseDrawerActivity(),
             Timber.e(e)
         }
         if (account == null) {
-            Timber.e("Account not found")
-            finish()
-            throw NullPointerException("Account required")
+            throw IllegalArgumentException("Account required")
         }
         return account
     }
