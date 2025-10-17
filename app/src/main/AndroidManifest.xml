@@ -39,9 +39,6 @@
         android:name="${applicationId}.permission.CREATE_ACCOUNT"
         android:label="@string/label_permission_create_accounts" />
 
-    <uses-permission
-        android:name="android.permission.VIBRATE"
-        android:label="Allow device to vibrate with notifications" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission
         android:name="android.permission.RECEIVE_BOOT_COMPLETED"
@@ -59,7 +56,7 @@
         android:largeHeap="true"
         android:theme="@style/Theme.GnuCash.NoActionBar">
         <activity
-            android:name=".ui.account.AccountsActivity"
+            android:name="org.gnucash.android.ui.account.AccountsActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -100,16 +97,22 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.passcode.PasscodeLockScreenActivity"
+            android:name="org.gnucash.android.ui.passcode.PasscodeLockScreenActivity"
+            android:exported="false"
             android:noHistory="true"
             android:windowSoftInputMode="stateAlwaysHidden" />
-        <activity android:name=".ui.transaction.ScheduledActionsActivity" />
         <activity
-            android:name=".ui.passcode.PasscodePreferenceActivity"
+            android:name="org.gnucash.android.ui.transaction.ScheduledActionsActivity"
+            android:exported="false" />
+        <activity
+            android:name="org.gnucash.android.ui.passcode.PasscodePreferenceActivity"
+            android:exported="false"
             android:theme="@style/Theme.GnuCash.NoActionBar" />
-        <activity android:name=".ui.transaction.TransactionsActivity" />
         <activity
-            android:name=".ui.homescreen.WidgetConfigurationActivity"
+            android:name="org.gnucash.android.ui.transaction.TransactionsActivity"
+            android:exported="false" />
+        <activity
+            android:name="org.gnucash.android.ui.homescreen.WidgetConfigurationActivity"
             android:excludeFromRecents="true"
             android:exported="true"
             android:label="@string/label_widget_configuration"
@@ -119,24 +122,30 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.common.FormActivity"
-            android:configChanges="orientation|screenSize" />
+            android:name="org.gnucash.android.ui.common.FormActivity"
+            android:configChanges="orientation|screenSize"
+            android:exported="false" />
         <activity
-            android:name=".ui.transaction.TransactionDetailActivity"
-            android:configChanges="orientation|screenSize" />
+            android:name="org.gnucash.android.ui.transaction.TransactionDetailActivity"
+            android:configChanges="orientation|screenSize"
+            android:exported="false" />
         <activity
-            android:name=".ui.report.ReportsActivity"
+            android:name="org.gnucash.android.ui.report.ReportsActivity"
+            android:exported="false"
             android:label="@string/title_reports"
             android:launchMode="singleTop" />
         <activity
-            android:name=".ui.budget.BudgetsActivity"
+            android:name="org.gnucash.android.ui.budget.BudgetsActivity"
+            android:exported="false"
             android:launchMode="singleTop" />
         <activity
-            android:name=".ui.wizard.FirstRunWizardActivity"
+            android:name="org.gnucash.android.ui.wizard.FirstRunWizardActivity"
+            android:exported="false"
             android:label="@string/title_setup_gnucash"
             android:theme="@style/Theme.GnuCash" />
         <activity
-            android:name=".ui.settings.PreferenceActivity"
+            android:name="org.gnucash.android.ui.settings.PreferenceActivity"
+            android:exported="false"
             android:label="@string/title_settings"
             android:theme="@style/Theme.GnuCash" />
         <activity
@@ -154,7 +163,7 @@
         </activity>
 
         <receiver
-            android:name=".receivers.TransactionRecorder"
+            android:name="org.gnucash.android.receivers.TransactionRecorder"
             android:exported="true"
             android:label="Records transactions received through intents"
             android:permission="${applicationId}.permission.RECORD_TRANSACTION">
@@ -165,7 +174,7 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".receivers.AccountCreator"
+            android:name="org.gnucash.android.receivers.AccountCreator"
             android:enabled="true"
             android:exported="true"
             android:label="Creates new accounts"
@@ -177,7 +186,7 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".receivers.TransactionAppWidgetProvider"
+            android:name="org.gnucash.android.receivers.TransactionAppWidgetProvider"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
