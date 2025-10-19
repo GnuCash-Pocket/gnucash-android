@@ -36,10 +36,10 @@ import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
-import org.gnucash.android.model.Account
 import org.gnucash.android.model.Book
 import org.gnucash.android.receivers.TransactionAppWidgetProvider
 import org.gnucash.android.ui.account.AccountsActivity
+import org.gnucash.android.ui.adapter.DefaultItemSelectedListener
 import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
 import org.gnucash.android.ui.common.FormActivity
 import org.gnucash.android.ui.common.UxArgument
@@ -92,39 +92,25 @@ class WidgetConfigurationActivity : GnuCashActivity() {
      * Sets click listeners for the buttons in the dialog
      */
     private fun bindListeners() {
-        binding.inputBooksSpinner.onItemSelectedListener = object :
-            AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                if (view == null) return
-                val context = view.context
+        binding.inputBooksSpinner.onItemSelectedListener =
+            DefaultItemSelectedListener { parent: AdapterView<*>,
+                                          view: View?,
+                                          position: Int,
+                                          id: Long ->
+                val context = view!!.context
                 val book = books[position]
                 val holder = DatabaseHelper(context, book.uid).holder
                 accountNameAdapter.swapAdapter(AccountsDbAdapter(holder))
                 selectedBookUID = book.uid
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>) = Unit
-        }
-
-        binding.inputAccountsSpinner.onItemSelectedListener = object :
-            AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                if (view == null) return
+        binding.inputAccountsSpinner.onItemSelectedListener =
+            DefaultItemSelectedListener { parent: AdapterView<*>,
+                                          view: View?,
+                                          position: Int,
+                                          id: Long ->
                 selectedAccountUID = accountNameAdapter.getUID(position)
             }
-
-            override fun onNothingSelected(parent: AdapterView<*>) = Unit
-        }
 
         binding.inputHideAccountBalance.setOnCheckedChangeListener { _, isChecked ->
             isHideBalance = isChecked

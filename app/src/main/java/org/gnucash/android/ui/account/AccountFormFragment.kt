@@ -21,8 +21,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -52,9 +50,11 @@ import org.gnucash.android.model.AccountType
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.ui.adapter.AccountTypesAdapter
 import org.gnucash.android.ui.adapter.CommoditiesAdapter
+import org.gnucash.android.ui.adapter.DefaultItemSelectedListener
 import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
 import org.gnucash.android.ui.colorpicker.ColorPickerDialog
 import org.gnucash.android.ui.common.UxArgument
+import org.gnucash.android.ui.text.DefaultTextWatcher
 import org.gnucash.android.ui.util.widget.setTextToEnd
 import timber.log.Timber
 
@@ -161,52 +161,32 @@ class AccountFormFragment : MenuFragment(), FragmentResultListener {
         val context = view.context
         val account = this.account
 
-        binding.inputAccountName.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) =
-                Unit
-
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) = Unit
-
-            override fun afterTextChanged(s: Editable) {
-                if (s.isNotEmpty()) {
-                    binding.nameTextInputLayout.error = null
-                }
-                selectedName = s.toString()
+        binding.inputAccountName.addTextChangedListener(DefaultTextWatcher { s ->
+            if (s.isNotEmpty()) {
+                binding.nameTextInputLayout.error = null
             }
+            selectedName = s.toString()
         })
 
-        binding.inputAccountTypeSpinner.onItemSelectedListener = object :
-            AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                if (view == null) return
-                val accountType = accountTypesAdapter!!.getType(position) ?: return
+        binding.inputAccountTypeSpinner.onItemSelectedListener =
+            DefaultItemSelectedListener { parent: AdapterView<*>,
+                                          view: View?,
+                                          position: Int,
+                                          id: Long ->
+                val accountType =
+                    accountTypesAdapter!!.getType(position) ?: return@DefaultItemSelectedListener
                 selectedAccountType = accountType
                 loadParentAccountList(binding, accountType)
                 setParentAccountSelection(binding, parentAccountUID)
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>) = Unit
-        }
-
         binding.inputParentAccount.isEnabled = false
         binding.inputParentAccount.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    if (view == null) return
-                    selectedParentAccountUID = parentAccountNameAdapter!!.getUID(position)
-                }
-
-                override fun onNothingSelected(parent: AdapterView<*>) = Unit
+            DefaultItemSelectedListener { parent: AdapterView<*>,
+                                          view: View?,
+                                          position: Int,
+                                          id: Long ->
+                selectedParentAccountUID = parentAccountNameAdapter!!.getUID(position)
             }
 
         binding.checkboxParentAccount.setOnCheckedChangeListener { _, isChecked ->
@@ -214,20 +194,13 @@ class AccountFormFragment : MenuFragment(), FragmentResultListener {
         }
 
         binding.inputDefaultTransferAccount.isEnabled = false
-        binding.inputDefaultTransferAccount.onItemSelectedListener = object :
-            AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                if (view == null) return
+        binding.inputDefaultTransferAccount.onItemSelectedListener =
+            DefaultItemSelectedListener { parent: AdapterView<*>,
+                                          view: View?,
+                                          position: Int,
+                                          id: Long ->
                 selectedDefaultTransferAccount = defaultAccountNameAdapter!!.getAccount(position)
             }
-
-            override fun onNothingSelected(parent: AdapterView<*>) = Unit
-        }
         binding.checkboxDefaultTransferAccount.setOnCheckedChangeListener { _, isChecked ->
             binding.inputDefaultTransferAccount.isEnabled = isChecked
         }
@@ -242,20 +215,13 @@ class AccountFormFragment : MenuFragment(), FragmentResultListener {
             binding.inputCurrencySpinner.setSelection(position)
         }
         binding.inputCurrencySpinner.adapter = commoditiesAdapter
-        binding.inputCurrencySpinner.onItemSelectedListener = object :
-            AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                if (view == null) return
+        binding.inputCurrencySpinner.onItemSelectedListener =
+            DefaultItemSelectedListener { parent: AdapterView<*>,
+                                          view: View?,
+                                          position: Int,
+                                          id: Long ->
                 selectedCommodity = commoditiesAdapter!!.getCommodity(position) ?: selectedCommodity
             }
-
-            override fun onNothingSelected(parent: AdapterView<*>) = Unit
-        }
 
         val actionBar: ActionBar? = this.actionBar
         //need to load the cursor adapters for the spinners before initializing the views

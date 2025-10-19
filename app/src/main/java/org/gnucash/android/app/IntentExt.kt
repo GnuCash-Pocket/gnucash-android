@@ -3,9 +3,9 @@ package org.gnucash.android.app
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
+import androidx.core.os.BundleCompat
 import java.io.Serializable
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -28,12 +28,8 @@ fun Bundle?.isNullOrEmpty(): Boolean {
     return (this == null) || this.isEmpty
 }
 
-@Suppress("DEPRECATION")
 fun <T : Parcelable> Bundle.getParcelableCompat(key: String, clazz: Class<T>): T? {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        return getParcelable<T>(key, clazz)
-    }
-    return getParcelable<T>(key)
+    return BundleCompat.getParcelable(this, key, clazz)
 }
 
 fun <T : Parcelable> Intent.getParcelableCompat(key: String, clazz: Class<T>): T? {
@@ -41,34 +37,27 @@ fun <T : Parcelable> Intent.getParcelableCompat(key: String, clazz: Class<T>): T
 }
 
 fun <T : Serializable> Bundle.getSerializableCompat(key: String, clazz: Class<T>): T? {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        return getSerializable(key, clazz)
-    }
-    return getSerializable(key) as T?
+    return BundleCompat.getSerializable(this, key, clazz)
 }
 
-@Suppress("DEPRECATION")
-fun <T : Parcelable> Bundle.getParcelableArrayCompat(key: String, clazz: Class<T>): Array<T>? {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        return getParcelableArray<T>(key, clazz)
-    }
-    return getParcelableArray(key) as Array<T>?
+fun Bundle.getParcelableArrayCompat(key: String, clazz: Class<Parcelable>): Array<Parcelable>? {
+    return BundleCompat.getParcelableArray(this, key, clazz)
 }
 
-@Suppress("DEPRECATION")
-fun <T : Parcelable> Intent.getParcelableArrayCompat(key: String, clazz: Class<T>): Array<T>? {
+fun Intent.getParcelableArrayCompat(key: String, clazz: Class<Parcelable>): Array<Parcelable>? {
     return extras?.getParcelableArrayCompat(key, clazz)
 }
 
-@Suppress("DEPRECATION")
-fun <T : Parcelable> Bundle.getParcelableArrayListCompat(key: String, clazz: Class<T>): ArrayList<T>? {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        return getParcelableArrayList<T>(key, clazz)
-    }
-    return getParcelableArrayList<T>(key)
+fun <T : Parcelable> Bundle.getParcelableArrayListCompat(
+    key: String,
+    clazz: Class<T>
+): ArrayList<T>? {
+    return BundleCompat.getParcelableArrayList<T>(this, key, clazz)
 }
 
-@Suppress("DEPRECATION")
-fun <T : Parcelable> Intent.getParcelableArrayListCompat(key: String, clazz: Class<T>): ArrayList<T>? {
+fun <T : Parcelable> Intent.getParcelableArrayListCompat(
+    key: String,
+    clazz: Class<T>
+): ArrayList<T>? {
     return extras?.getParcelableArrayListCompat(key, clazz)
 }

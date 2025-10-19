@@ -17,9 +17,7 @@ package org.gnucash.android.ui.util.widget
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.text.Editable
 import android.text.InputType
-import android.text.TextWatcher
 import android.util.AttributeSet
 import android.view.KeyEvent
 import android.view.View
@@ -35,6 +33,7 @@ import org.gnucash.android.databinding.KbdCalculatorBinding
 import org.gnucash.android.inputmethodservice.CalculatorKeyboardView
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
+import org.gnucash.android.ui.text.DefaultTextWatcher
 import org.gnucash.android.ui.util.widget.CalculatorKeyboard.Companion.filter
 import org.gnucash.android.util.AmountParser
 import timber.log.Timber
@@ -94,15 +93,8 @@ class CalculatorEditText @JvmOverloads constructor(
         // Disable system keyboard appearing on long-press, but for some reason, this prevents the text selection from working.
         setShowSoftInputOnFocus(false)
 
-        addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) =
-                Unit
-
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) = Unit
-
-            override fun afterTextChanged(s: Editable) {
-                isContentModified = originalText != s.toString()
-            }
+        addTextChangedListener(DefaultTextWatcher { s ->
+            isContentModified = originalText != s.toString()
         })
 
         setOnEditorActionListener(object : OnEditorActionListener {

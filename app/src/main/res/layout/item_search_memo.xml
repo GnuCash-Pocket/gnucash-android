@@ -15,14 +15,13 @@
         android:layout_weight="1">
 
         <EditText
-            android:id="@+id/input_transaction_name"
+            android:id="@+id/input_split_memo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:completionThreshold="1"
-            android:hint="@string/search_field_description"
-            android:inputType="textCapSentences"
-            android:singleLine="true"
-            android:textAppearance="?android:textAppearanceMedium" />
+            android:hint="@string/search_field_memo"
+            android:inputType="textMultiLine|textCapSentences"
+            android:singleLine="false"
+            android:textAppearance="?android:textAppearanceSmall" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <ImageButton

@@ -4,24 +4,26 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <ImageView
-        style="@style/FormIcon"
-        android:src="@drawable/ic_calendar_end" />
+    <Spinner
+        android:id="@+id/comparison"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
     <TextView
-        android:id="@+id/date_end"
+        android:id="@+id/date_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:background="?selectableItemBackground"
+        android:contentDescription="@string/search_field_date_posted"
         android:padding="4dp" />
 
     <ImageButton
-        android:id="@+id/date_end_clear"
+        android:id="@+id/delete_btn"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_gravity="top"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/menu_delete"
-        android:src="@drawable/ic_close" />
+        android:src="@drawable/ic_delete" />
 </LinearLayout>

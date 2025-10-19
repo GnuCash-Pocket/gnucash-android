@@ -42,6 +42,7 @@ import org.gnucash.android.databinding.ItemBudgetAmountBinding
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.model.BudgetAmount
 import org.gnucash.android.model.Money
+import org.gnucash.android.ui.adapter.DefaultItemSelectedListener
 import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
 import org.gnucash.android.ui.common.UxArgument
 import org.gnucash.android.ui.util.widget.CalculatorEditText
@@ -239,20 +240,13 @@ class BudgetAmountEditorFragment : MenuFragment() {
             budgetAccountSpinner.adapter = accountNameAdapter
 
             budgetAccountSpinner.onItemSelectedListener =
-                object : AdapterView.OnItemSelectedListener {
-                    override fun onItemSelected(
-                        parent: AdapterView<*>,
-                        view: View?,
-                        position: Int,
-                        id: Long
-                    ) {
-                        if (view == null) return
-                        val account = accountNameAdapter!!.getAccount(position)!!
-                        val commodity = account.commodity
-                        currencySymbolTextView.text = commodity.symbol
-                    }
-
-                    override fun onNothingSelected(parent: AdapterView<*>) = Unit
+                DefaultItemSelectedListener { parent: AdapterView<*>,
+                                              view: View?,
+                                              position: Int,
+                                              id: Long ->
+                    val account = accountNameAdapter!!.getAccount(position)!!
+                    val commodity = account.commodity
+                    currencySymbolTextView.text = commodity.symbol
                 }
 
             removeItemBtn.setOnClickListener {

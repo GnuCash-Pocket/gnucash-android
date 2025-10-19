@@ -18,8 +18,6 @@ package org.gnucash.android.ui.transaction.dialog
 import android.app.Dialog
 import android.database.SQLException
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
@@ -32,8 +30,9 @@ import org.gnucash.android.model.Price
 import org.gnucash.android.quote.QuoteCallback
 import org.gnucash.android.quote.QuoteProvider
 import org.gnucash.android.quote.YahooJson
+import org.gnucash.android.ui.text.DefaultTextWatcher
+import org.gnucash.android.ui.text.TextInputResetError
 import org.gnucash.android.ui.transaction.OnTransferFundsListener
-import org.gnucash.android.ui.util.TextInputResetError
 import org.gnucash.android.ui.util.dialog.VolatileDialogFragment
 import org.gnucash.android.ui.util.displayBalance
 import org.gnucash.android.util.AmountParser.parse
@@ -126,74 +125,60 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
             fetchQuote(binding, fromCommodity, targetCommodity)
         }
 
-        binding.inputExchangeRate.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable) {
-                if (!binding.radioExchangeRate.isChecked) return
-                val value = s.toString()
-                try {
-                    val rateDecimal = parse(value)
-                    val rate = rateDecimal.toDouble()
+        binding.inputExchangeRate.addTextChangedListener(DefaultTextWatcher { s ->
+            if (!binding.radioExchangeRate.isChecked) return@DefaultTextWatcher
+            val value = s.toString()
+            try {
+                val rateDecimal = parse(value)
+                val rate = rateDecimal.toDouble()
+                binding.exchangeRateExample.text = getString(
+                    R.string.exchange_rate_example,
+                    fromCurrencyCode,
+                    formatterRate.format(rate),
+                    targetCurrencyCode
+                )
+                if (rate > 0f) {
+                    binding.exchangeRateInverse.text = getString(
+                        R.string.exchange_rate_example,
+                        targetCurrencyCode,
+                        formatterRate.format(1 / rate),
+                        fromCurrencyCode
+                    )
+                    val price = fromDecimal * rateDecimal
+                    binding.inputConvertedAmount.setText(formatterAmount.format(price))
+                } else {
+                    binding.exchangeRateInverse.text = null
+                }
+            } catch (_: ParseException) {
+            }
+        })
+
+        binding.inputConvertedAmount.addTextChangedListener(DefaultTextWatcher { s ->
+            if (!binding.radioConvertedAmount.isChecked) return@DefaultTextWatcher
+            val value = s.toString()
+            try {
+                val amount = parse(value)
+                if (amount > BigDecimal.ZERO) {
+                    val rate = amount.toDouble() / fromDecimal.toDouble()
                     binding.exchangeRateExample.text = getString(
                         R.string.exchange_rate_example,
                         fromCurrencyCode,
                         formatterRate.format(rate),
                         targetCurrencyCode
                     )
-                    if (rate > 0f) {
-                        binding.exchangeRateInverse.text = getString(
-                            R.string.exchange_rate_example,
-                            targetCurrencyCode,
-                            formatterRate.format(1 / rate),
-                            fromCurrencyCode
-                        )
-                        val price = fromDecimal * rateDecimal
-                        binding.inputConvertedAmount.setText(formatterAmount.format(price))
-                    } else {
-                        binding.exchangeRateInverse.text = null
-                    }
-                } catch (_: ParseException) {
+                    binding.exchangeRateInverse.text = getString(
+                        R.string.exchange_rate_example,
+                        targetCurrencyCode,
+                        formatterRate.format(1 / rate),
+                        fromCurrencyCode
+                    )
+                    binding.inputExchangeRate.setText(formatterRate.format(rate))
+                } else {
+                    binding.exchangeRateExample.text = null
+                    binding.exchangeRateInverse.text = null
                 }
+            } catch (_: ParseException) {
             }
-
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) =
-                Unit
-
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) = Unit
-        })
-
-        binding.inputConvertedAmount.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable) {
-                if (!binding.radioConvertedAmount.isChecked) return
-                val value = s.toString()
-                try {
-                    val amount = parse(value)
-                    if (amount > BigDecimal.ZERO) {
-                        val rate = amount.toDouble() / fromDecimal.toDouble()
-                        binding.exchangeRateExample.text = getString(
-                            R.string.exchange_rate_example,
-                            fromCurrencyCode,
-                            formatterRate.format(rate),
-                            targetCurrencyCode
-                        )
-                        binding.exchangeRateInverse.text = getString(
-                            R.string.exchange_rate_example,
-                            targetCurrencyCode,
-                            formatterRate.format(1 / rate),
-                            fromCurrencyCode
-                        )
-                        binding.inputExchangeRate.setText(formatterRate.format(rate))
-                    } else {
-                        binding.exchangeRateExample.text = null
-                        binding.exchangeRateInverse.text = null
-                    }
-                } catch (_: ParseException) {
-                }
-            }
-
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) =
-                Unit
-
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) = Unit
         })
 
         val price = pricesDbAdapter.getPrice(fromCommodity, targetCommodity)

@@ -1,4 +1,4 @@
-package org.gnucash.android.ui.util
+package org.gnucash.android.ui.text
 
 import android.text.Editable
 import android.text.TextWatcher

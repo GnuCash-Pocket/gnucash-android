@@ -65,6 +65,7 @@ import org.gnucash.android.export.ExportParams.ExportTarget
 import org.gnucash.android.export.Exporter
 import org.gnucash.android.export.Exporter.Companion.buildExportFilename
 import org.gnucash.android.model.ScheduledAction
+import org.gnucash.android.ui.adapter.DefaultItemSelectedListener
 import org.gnucash.android.ui.common.UxArgument
 import org.gnucash.android.ui.export.OptionsViewAnimationUtils.collapse
 import org.gnucash.android.ui.export.OptionsViewAnimationUtils.expand
@@ -355,16 +356,11 @@ class ExportFormFragment : MenuFragment(),
         )
         destinationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerExportDestination.adapter = destinationAdapter
-        binding.spinnerExportDestination.onItemSelectedListener = object :
-            AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                //the item selection is fired twice by the Android framework. Ignore the first one
-                if (view == null) return
+        binding.spinnerExportDestination.onItemSelectedListener =
+            DefaultItemSelectedListener { parent: AdapterView<*>,
+                                          view: View?,
+                                          position: Int,
+                                          id: Long ->
                 when (position) {
                     TARGET_URI -> {
                         exportParams.exportTarget = ExportTarget.URI
@@ -402,9 +398,6 @@ class ExportFormFragment : MenuFragment(),
                     else -> exportParams.exportTarget = ExportTarget.SD_CARD
                 }
             }
-
-            override fun onNothingSelected(parent: AdapterView<*>) = Unit
-        }
 
         val position = preferences.getInt(getString(R.string.key_last_export_destination), 0)
         binding.spinnerExportDestination.setSelection(position)
@@ -490,22 +483,14 @@ class ExportFormFragment : MenuFragment(),
         )
         formatAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.valueExportFormat.adapter = formatAdapter
-        binding.valueExportFormat.onItemSelectedListener = object :
-            AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                if (view == null)  //the item selection is fired twice by the Android framework. Ignore the first one
-                    return
+        binding.valueExportFormat.onItemSelectedListener =
+            DefaultItemSelectedListener { parent: AdapterView<*>,
+                                          view: View?,
+                                          position: Int,
+                                          id: Long ->
                 val item: ExportFormatItem = formatAdapter[position]
                 onFormatSelected(binding, item.value)
             }
-
-            override fun onNothingSelected(parent: AdapterView<*>) = Unit
-        }
         var formatIndex = RecyclerView.NO_POSITION
         for (i in formatItems.indices) {
             val item = formatItems[i]

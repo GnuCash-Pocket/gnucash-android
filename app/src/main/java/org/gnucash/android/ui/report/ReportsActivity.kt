@@ -37,6 +37,7 @@ import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.model.AccountType
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.ui.adapter.AccountTypesAdapter.Companion.expenseAndIncome
+import org.gnucash.android.ui.adapter.DefaultItemSelectedListener
 import org.gnucash.android.ui.common.BaseDrawerActivity
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.get
@@ -93,21 +94,14 @@ class ReportsActivity : BaseDrawerActivity(),
     private var binding: ActivityReportsBinding? = null
 
     var reportTypeSelectedListener: AdapterView.OnItemSelectedListener =
-        object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                if (view == null) return
-                val reportType = ReportType.values()[position]
-                if (this@ReportsActivity.reportType != reportType) {
-                    showReport(reportType)
-                }
+        DefaultItemSelectedListener { parent: AdapterView<*>,
+                                      view: View?,
+                                      position: Int,
+                                      id: Long ->
+            val reportType = ReportType.values()[position]
+            if (this@ReportsActivity.reportType != reportType) {
+                showReport(reportType)
             }
-
-            override fun onNothingSelected(parent: AdapterView<*>) = Unit
         }
 
     override fun inflateView() {
@@ -143,15 +137,11 @@ class ReportsActivity : BaseDrawerActivity(),
         )
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.timeRangeSpinner.adapter = adapter
-        binding.timeRangeSpinner.onItemSelectedListener = object :
-            AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                if (view == null) return
+        binding.timeRangeSpinner.onItemSelectedListener =
+            DefaultItemSelectedListener { parent: AdapterView<*>,
+                                          view: View?,
+                                          position: Int,
+                                          id: Long ->
                 val now = LocalDateTime.now()
                 reportPeriodEnd = now
                 when (position) {
@@ -175,35 +165,24 @@ class ReportsActivity : BaseDrawerActivity(),
                             now.toLocalDate(),
                             this@ReportsActivity
                         ).show(supportFragmentManager, "range_dialog")
-                        return
+                        return@DefaultItemSelectedListener
                     }
                 }
                 //the date picker will trigger the update itself
                 updateDateRangeOnFragment()
             }
-
-            override fun onNothingSelected(parent: AdapterView<*>) = Unit
-        }
         binding.timeRangeSpinner.setSelection(1)
 
         val accountTypeAdapter = expenseAndIncome(context)
         binding.reportAccountTypeSpinner.adapter = accountTypeAdapter
-        binding.reportAccountTypeSpinner.onItemSelectedListener = object :
-            AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                if (view == null) return
-                if (position < 0) return
+        binding.reportAccountTypeSpinner.onItemSelectedListener =
+            DefaultItemSelectedListener { parent: AdapterView<*>,
+                                          view: View?,
+                                          position: Int,
+                                          id: Long ->
                 val label = accountTypeAdapter[position]
                 updateAccountTypeOnFragments(label.value)
             }
-
-            override fun onNothingSelected(parent: AdapterView<*>) = Unit
-        }
 
         if (savedInstanceState == null) {
             showOverview()

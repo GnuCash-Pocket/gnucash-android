@@ -39,6 +39,7 @@ import org.gnucash.android.model.Account
 import org.gnucash.android.ui.account.AccountsListFragment
 import org.gnucash.android.ui.account.DeleteAccountDialogFragment
 import org.gnucash.android.ui.account.OnAccountClickedListener
+import org.gnucash.android.ui.adapter.DefaultItemSelectedListener
 import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
 import org.gnucash.android.ui.common.BaseDrawerActivity
 import org.gnucash.android.ui.common.FormActivity
@@ -74,18 +75,12 @@ class TransactionsActivity : BaseDrawerActivity(),
     private lateinit var binding: ActivityTransactionsBinding
 
     private val accountSpinnerListener: AdapterView.OnItemSelectedListener =
-        object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                val account = accountNameAdapter?.getAccount(position)
-                swapAccount(account)
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) = Unit
+        DefaultItemSelectedListener(false) { parent: AdapterView<*>,
+                                      view: View?,
+                                      position: Int,
+                                      id: Long ->
+            val account = accountNameAdapter?.getAccount(position)
+            swapAccount(account)
         }
 
     private var pagerAdapter: AccountViewPagerAdapter? = null

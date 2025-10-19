@@ -1,6 +1,7 @@
 package org.gnucash.android.ui.adapter
 
 import android.content.Context
+import android.widget.AdapterView.INVALID_POSITION
 import android.widget.ArrayAdapter
 import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
@@ -45,5 +46,15 @@ open class SpinnerArrayAdapter<T> : ArrayAdapter<SpinnerItem<T>> {
 
     override fun hasStableIds(): Boolean {
         return true
+    }
+
+    fun getValuePosition(value: T): Int {
+        for (i in 0 until count) {
+            val item = getItem(i) ?: continue
+            if (item.value == value) {
+                return i
+            }
+        }
+        return INVALID_POSITION
     }
 }

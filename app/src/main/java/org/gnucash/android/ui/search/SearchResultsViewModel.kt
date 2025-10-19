@@ -9,15 +9,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.gnucash.android.db.DatabaseHelper.Companion.sqlEscapeLike
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
-import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.model.Transaction
 import timber.log.Timber
 
 class SearchResultsViewModel : ViewModel() {
-    var form = SearchForm()
+    var where: String? = null
 
     private val _results = MutableStateFlow<Cursor?>(null)
     val results: StateFlow<Cursor?> = _results
@@ -31,7 +29,7 @@ class SearchResultsViewModel : ViewModel() {
                 cursorOld?.close()
             }
 
-            val where = buildQuery(form)
+            val where = this@SearchResultsViewModel.where
             Timber.d("Search transactions: $where")
 
             val orderBy = TransactionEntry.COLUMN_TIMESTAMP + " DESC"
@@ -70,62 +68,5 @@ class SearchResultsViewModel : ViewModel() {
             _results.value = null
         } catch (_: Exception) {
         }
-    }
-
-    private fun buildQuery(form: SearchForm): String {
-        val comparison = form.comparisonType
-
-        val where = StringBuilder()
-        if (!form.description.isNullOrEmpty()) {
-            where.append('(')
-                .append(TransactionEntry.COLUMN_DESCRIPTION)
-                .append(" LIKE ")
-                .append(sqlEscapeLike(form.description))
-                .append(')')
-        }
-        if (!form.notes.isNullOrEmpty()) {
-            if (where.isNotEmpty()) {
-                if (comparison == ComparisonType.All) {
-                    where.append(" AND ")
-                } else {
-                    where.append(" OR ")
-                }
-            }
-            where.append('(')
-                .append(TransactionEntry.COLUMN_NOTES)
-                .append(" LIKE ")
-                .append(sqlEscapeLike(form.notes))
-                .append(')')
-        }
-        if (form.dateMin != null && form.dateMin != AccountsDbAdapter.ALWAYS) {
-            if (where.isNotEmpty()) {
-                if (comparison == ComparisonType.All) {
-                    where.append(" AND ")
-                } else {
-                    where.append(" OR ")
-                }
-            }
-            where.append('(')
-                .append(TransactionEntry.COLUMN_TIMESTAMP)
-                .append(" >= ")
-                .append(form.dateMin!!)
-                .append(')')
-        }
-        if (form.dateMax != null && form.dateMax != AccountsDbAdapter.ALWAYS) {
-            if (where.isNotEmpty()) {
-                if (comparison == ComparisonType.All) {
-                    where.append(" AND ")
-                } else {
-                    where.append(" OR ")
-                }
-            }
-            where.append('(')
-                .append(TransactionEntry.COLUMN_TIMESTAMP)
-                .append(" <= ")
-                .append(form.dateMax!!)
-                .append(')')
-        }
-
-        return where.toString()
     }
 }

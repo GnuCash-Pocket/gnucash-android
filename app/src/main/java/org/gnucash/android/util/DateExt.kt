@@ -3,10 +3,14 @@ package org.gnucash.android.util
 import androidx.annotation.IntRange
 import org.joda.time.DateTime
 import org.joda.time.DateTimeConstants
+import org.joda.time.DateTimeUtils
+import org.joda.time.DateTimeZone
+import org.joda.time.LocalDate
 import org.joda.time.LocalDateTime
 import org.joda.time.Weeks
 import org.joda.time.format.DateTimeFormat
 import java.text.DateFormat
+import java.util.Calendar
 import java.util.Date
 
 /**
@@ -198,6 +202,34 @@ fun LocalDateTime?.toMillis(): Long {
     return this?.toDateTime()?.millis ?: NEVER
 }
 
+fun LocalDate?.toMillis(): Long {
+    return this?.toDate()?.time ?: NEVER
+}
+
+fun DateTime?.toMillis(): Long {
+    return this?.toDate()?.time ?: NEVER
+}
+
 fun Long?.toLocalDateTime(): LocalDateTime? {
     return if (this == NEVER) null else LocalDateTime(this)
+}
+
+fun Long?.toLocalDate(): LocalDate? {
+    return if (this == NEVER) null else LocalDate(this)
+}
+
+fun LocalDate.toDateTimeAtEndOfDay(): DateTime {
+    return toDateTimeAtEndOfDay(null)
+}
+
+fun LocalDate.toDateTimeAtEndOfDay(zone: DateTimeZone?): DateTime {
+    val zone = DateTimeUtils.getZone(zone)!!
+    val calendar = Calendar.getInstance(zone.toTimeZone()).apply {
+        timeInMillis = toMillis()
+        set(Calendar.HOUR_OF_DAY, getMaximum(Calendar.HOUR_OF_DAY))
+        set(Calendar.MINUTE, getMaximum(Calendar.MINUTE))
+        set(Calendar.SECOND, getMaximum(Calendar.SECOND))
+        set(Calendar.MILLISECOND, getMaximum(Calendar.MILLISECOND))
+    }
+    return DateTime(calendar.timeInMillis, zone)
 }

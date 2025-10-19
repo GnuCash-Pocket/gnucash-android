@@ -36,6 +36,7 @@ import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.ui.account.AccountsActivity
+import org.gnucash.android.ui.adapter.DefaultItemSelectedListener
 import org.gnucash.android.ui.passcode.PasscodeLockActivity
 import org.gnucash.android.ui.report.ReportsActivity
 import org.gnucash.android.ui.settings.PreferenceActivity
@@ -212,33 +213,27 @@ abstract class BaseDrawerActivity : PasscodeLockActivity() {
         val activeBookPosition = activeBookIndex
         bookNameSpinner.setSelection(activeBookIndex)
 
-        bookNameSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                if (view == null) return
+        bookNameSpinner.onItemSelectedListener =
+            DefaultItemSelectedListener { parent: AdapterView<*>,
+                                          view: View?,
+                                          position: Int,
+                                          id: Long ->
                 if (position == activeBookPosition) {
-                    return
+                    return@DefaultItemSelectedListener
                 }
-                val context = view.context
+                val context = view!!.context
                 if (position == parent.count - 1) {
                     val intent = Intent(context, PreferenceActivity::class.java)
                     intent.setAction(PreferenceActivity.ACTION_MANAGE_BOOKS)
                     startActivity(intent)
                     drawerLayout!!.closeDrawer(navigationView!!)
-                    return
+                    return@DefaultItemSelectedListener
                 }
                 val book = books[position]
                 loadBook(context, book.uid)
                 finish()
                 AccountsActivity.start(context)
             }
-
-            override fun onNothingSelected(parent: AdapterView<*>) = Unit
-        }
     }
 
     /**
