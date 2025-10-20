@@ -47,7 +47,15 @@ class SearchFormViewModel : ViewModel() {
     }
 
     fun addNumeric(): SearchCriteria.Numeric {
-        return form.addNumeric()
+        return form.addNumeric(false)
+    }
+
+    fun addValue(): SearchCriteria.Numeric {
+        return form.addNumeric(true)
+    }
+
+    fun addAccount(): SearchCriteria.Account {
+        return form.addAccount()
     }
 
     fun remove(item: SearchCriteria) {

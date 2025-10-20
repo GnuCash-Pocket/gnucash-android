@@ -494,6 +494,8 @@
     <string name="search_criteria_any">"any criteria are met"</string>
     <string name="search_field_date_posted">Date Posted</string>
     <string name="search_field_amount">Amount</string>
+    <string name="search_field_value">Value</string>
+    <string name="search_field_account">Account</string>
     <string name="search_compare_contains">contains</string>
     <string name="search_compare_equals">equals</string>
     <string name="search_compare_date_lt">"is before"</string>
@@ -517,4 +519,6 @@
     <string name="search_compare_numeric_any">"has credits or debits"</string>
     <string name="search_compare_numeric_debit">"has debits"</string>
     <string name="search_compare_numeric_credit">"has credits"</string>
+    <string name="search_compare_account_any">"matches any account"</string>
+    <string name="search_compare_account_none">"matches no accounts"</string>
 </resources>

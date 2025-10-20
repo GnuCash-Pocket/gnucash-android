@@ -115,7 +115,7 @@ class SplitsDbAdapter(
         if (split.memo != null) {
             stmt.bindString(1, split.memo)
         }
-        stmt.bindString(2, split.type.name)
+        stmt.bindString(2, split.type.value)
         stmt.bindLong(3, split.value.numerator)
         stmt.bindLong(4, split.value.denominator)
         stmt.bindLong(5, split.quantity.numerator)
@@ -171,7 +171,7 @@ class SplitsDbAdapter(
         populateBaseModelAttributes(cursor, split)
         split.quantity = quantity
         split.transactionUID = transxUID
-        split.type = TransactionType.valueOf(typeName)
+        split.type = TransactionType.of(typeName)
         split.memo = memo
         split.reconcileState = reconcileState?.get(0) ?: FLAG_NOT_RECONCILED
         if (!reconcileDate.isNullOrEmpty()) {
@@ -183,7 +183,7 @@ class SplitsDbAdapter(
     }
 
     fun computeSplitBalance(account: Account, startTimestamp: Long, endTimestamp: Long): Money {
-        val accounts = mutableListOf<Account>(account)
+        val accounts = mutableListOf(account)
         val balances = computeSplitBalances(accounts, startTimestamp, endTimestamp)
         val balance = balances[account.uid]
         return balance ?: createZeroInstance(account.commodity)

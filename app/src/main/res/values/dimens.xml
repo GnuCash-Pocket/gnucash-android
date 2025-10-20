@@ -36,4 +36,6 @@
 
     <dimen name="kbd_key_height">60dp</dimen>
     <dimen name="kbd_key_radius">25dp</dimen>
+
+    <dimen name="search_item_delete">30dp</dimen>
 </resources>

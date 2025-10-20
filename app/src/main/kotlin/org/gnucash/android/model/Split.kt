@@ -322,7 +322,7 @@ class Split : BaseModel, Parcelable {
         setUID(source.readString())
         accountUID = source.readString()
         transactionUID = source.readString()
-        type = TransactionType.valueOf(source.readString()!!)
+        type = TransactionType.of(source.readString()!!)
 
         value = source.readMoney()!!
         quantity = source.readMoney()!!
@@ -419,7 +419,7 @@ class Split : BaseModel, Parcelable {
                 val amount = Money(tokens[0], tokens[1])
                 val split = Split(amount, tokens[2])
                 split.transactionUID = tokens[3]
-                split.type = TransactionType.valueOf(tokens[4])
+                split.type = TransactionType.of(tokens[4])
                 if (tokens.size == 6) {
                     split.memo = tokens[5]
                 }
@@ -437,7 +437,7 @@ class Split : BaseModel, Parcelable {
                 split.setUID(tokens[0])
                 split.quantity = quantity
                 split.transactionUID = tokens[7]
-                split.type = TransactionType.valueOf(tokens[9])
+                split.type = TransactionType.of(tokens[9])
                 if (tokens.size == 11) {
                     split.memo = tokens[10]
                 }

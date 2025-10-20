@@ -40,6 +40,10 @@ enum class TransactionType(
         return opposite
     }
 
+    override fun toString(): String {
+        return value
+    }
+
     companion object {
         init {
             DEBIT.opposite = CREDIT

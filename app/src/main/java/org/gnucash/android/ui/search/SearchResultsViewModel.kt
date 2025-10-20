@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.model.Transaction
 import timber.log.Timber
@@ -29,11 +28,10 @@ class SearchResultsViewModel : ViewModel() {
                 cursorOld?.close()
             }
 
-            val where = this@SearchResultsViewModel.where
+            val where = this@SearchResultsViewModel.where ?: return@launch
             Timber.d("Search transactions: $where")
 
-            val orderBy = TransactionEntry.COLUMN_TIMESTAMP + " DESC"
-            val cursor = transactionsDbAdapter.fetchAllRecords(where, null, orderBy)
+            val cursor = transactionsDbAdapter.fetchSearch(where)
 
             withContext(Dispatchers.Main) {
                 _results.emit(cursor)

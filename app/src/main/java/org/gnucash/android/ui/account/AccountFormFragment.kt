@@ -500,7 +500,7 @@ class AccountFormFragment : MenuFragment(), FragmentResultListener {
         accountType: AccountType
     ) {
         var condition =
-            (SplitEntry.COLUMN_TYPE + " IN " + getAllowedParentAccountTypes(accountType)
+            (AccountEntry.COLUMN_TYPE + " IN " + getAllowedParentAccountTypes(accountType)
                     + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
 
         val account = this.account

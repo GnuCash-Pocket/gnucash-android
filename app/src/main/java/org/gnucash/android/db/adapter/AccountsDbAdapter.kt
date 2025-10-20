@@ -854,7 +854,7 @@ class AccountsDbAdapter(
         includeSubAccounts: Boolean
     ): Money {
         val account = getRecord(accountUID)
-        return computeBalance(account!!, startTimestamp, endTimestamp, includeSubAccounts)
+        return computeBalance(account, startTimestamp, endTimestamp, includeSubAccounts)
     }
 
     private fun computeBalance(

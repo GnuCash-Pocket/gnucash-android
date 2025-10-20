@@ -533,7 +533,7 @@ class TransactionsActivity : BaseDrawerActivity(),
          */
         fun openSearchFragment(context: Context) {
             val intent = Intent(context, FormActivity::class.java)
-                .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.SEARCH_FORM.name)
+                .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.SEARCH.name)
             context.startActivity(intent)
         }
     }

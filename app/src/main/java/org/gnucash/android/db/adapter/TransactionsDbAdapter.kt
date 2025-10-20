@@ -695,6 +695,20 @@ class TransactionsDbAdapter(
         super.close()
     }
 
+    fun fetchSearch(where: String): Cursor? {
+        val table = (TransactionEntry.TABLE_NAME + " t"
+                + " INNER JOIN " + SplitEntry.TABLE_NAME + " s1" + " ON t." + TransactionEntry.COLUMN_UID
+                + " = s1." + SplitEntry.COLUMN_TRANSACTION_UID
+                + " INNER JOIN " + SplitEntry.TABLE_NAME + " s2" + " ON t." + TransactionEntry.COLUMN_UID
+                + " = s2." + SplitEntry.COLUMN_TRANSACTION_UID
+                )
+        val columns = arrayOf<String?>("t.*")
+        val selection = "(s1._id < s2._id) AND $where"
+        val orderBy = ("t." + TransactionEntry.COLUMN_TIMESTAMP + " DESC"
+                + ", t." + TransactionEntry.COLUMN_ID + " DESC")
+        return db.query(true, table, columns, selection, null, null, null, orderBy, null)
+    }
+
     companion object {
         const val INVALID_DATE: Long = Long.MIN_VALUE
 

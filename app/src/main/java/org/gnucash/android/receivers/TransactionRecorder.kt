@@ -91,7 +91,7 @@ class TransactionRecorder : BroadcastReceiver() {
         //Parse deprecated args for compatibility. Transactions were bound to accounts, now only splits are
         val accountUID = args.getString(Transaction.EXTRA_ACCOUNT_UID)
         if (accountUID != null) {
-            val type = TransactionType.valueOf(args.getString(Transaction.EXTRA_TRANSACTION_TYPE)!!)
+            val type = TransactionType.of(args.getString(Transaction.EXTRA_TRANSACTION_TYPE)!!)
             var amountBigDecimal: BigDecimal = args.getSerializableCompat(Transaction.EXTRA_AMOUNT, BigDecimal::class.java)!!
             amountBigDecimal =
                 amountBigDecimal.setScale(commodity.smallestFractionDigits, RoundingMode.HALF_EVEN)

@@ -5,9 +5,10 @@ import android.widget.AdapterView.INVALID_POSITION
 import android.widget.ArrayAdapter
 import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
+import org.gnucash.android.R
 
 open class SpinnerArrayAdapter<T> : ArrayAdapter<SpinnerItem<T>> {
-    constructor(context: Context) : this(context, android.R.layout.simple_spinner_item)
+    constructor(context: Context) : this(context, R.layout.item_spinner)
 
     constructor(context: Context, @LayoutRes resource: Int) : super(context, resource)
 
@@ -35,10 +36,10 @@ open class SpinnerArrayAdapter<T> : ArrayAdapter<SpinnerItem<T>> {
             super(context, resource, objects)
 
     constructor(context: Context, objects: List<SpinnerItem<T>>) :
-            this(context, android.R.layout.simple_spinner_item, objects)
+            this(context, R.layout.item_spinner, objects)
 
     constructor(context: Context, objects: Array<SpinnerItem<T>>) :
-            this(context, android.R.layout.simple_spinner_item, objects)
+            this(context, R.layout.item_spinner, objects)
 
     init {
         setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)

@@ -52,7 +52,7 @@ class FormActivity : PasscodeLockActivity() {
         SPLIT_EDITOR,
         BUDGET,
         BUDGET_AMOUNT_EDITOR,
-        SEARCH_FORM
+        SEARCH
     }
 
     private lateinit var binding: ActivityFormBinding
@@ -105,7 +105,7 @@ class FormActivity : PasscodeLockActivity() {
             FormType.SPLIT_EDITOR -> showSplitEditorFragment(args)
             FormType.BUDGET -> showBudgetFormFragment(args)
             FormType.BUDGET_AMOUNT_EDITOR -> showBudgetAmountEditorFragment(args)
-            FormType.SEARCH_FORM -> showSearchForm(args)
+            FormType.SEARCH -> showSearchForm(args)
         }
     }
 

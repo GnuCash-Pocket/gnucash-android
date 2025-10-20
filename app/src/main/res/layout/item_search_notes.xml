@@ -1,34 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     style="@style/FormRow"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <Spinner
-        android:id="@+id/comparison"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <com.google.android.material.textfield.TextInputLayout
+    <com.google.android.flexbox.FlexboxLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        app:flexWrap="wrap">
 
-        <EditText
-            android:id="@+id/notes"
-            android:layout_width="match_parent"
+        <Spinner
+            android:id="@+id/comparison"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/material_input"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="@string/search_field_notes"
-            android:inputType="textMultiLine|textCapSentences"
-            android:singleLine="false"
-            android:textAppearance="?android:textAppearanceSmall" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:minWidth="150dp"
+            app:layout_flexGrow="1">
+
+            <EditText
+                android:id="@+id/notes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/search_field_notes"
+                android:inputType="textMultiLine|textCapSentences"
+                android:singleLine="false"
+                android:textAppearance="?android:textAppearanceSmall" />
+        </com.google.android.material.textfield.TextInputLayout>
+    </com.google.android.flexbox.FlexboxLayout>
 
     <ImageButton
         android:id="@+id/delete_btn"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="@dimen/search_item_delete"
+        android:layout_height="@dimen/search_item_delete"
         android:layout_gravity="top"
+        android:layout_marginStart="4dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/menu_delete"
         android:src="@drawable/ic_delete" />

@@ -682,7 +682,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
             .putExtra(Intent.EXTRA_TEXT, "Intents for sale")
             .putExtra(Transaction.EXTRA_AMOUNT, BigDecimal.valueOf(4.99))
             .putExtra(Transaction.EXTRA_ACCOUNT_UID, TRANSACTIONS_ACCOUNT_UID)
-            .putExtra(Transaction.EXTRA_TRANSACTION_TYPE, TransactionType.DEBIT.name)
+            .putExtra(Transaction.EXTRA_TRANSACTION_TYPE, TransactionType.DEBIT.value)
             .putExtra(Account.EXTRA_CURRENCY_CODE, "USD")
 
         TransactionRecorder().onReceive(transactionsActivity, transactionIntent)

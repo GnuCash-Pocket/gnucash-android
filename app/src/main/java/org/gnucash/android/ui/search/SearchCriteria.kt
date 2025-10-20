@@ -5,7 +5,8 @@ import java.math.BigDecimal
 
 enum class ComparisonType {
     All,
-    Any
+    Any,
+    None
 }
 
 enum class StringCompare {
@@ -74,7 +75,12 @@ sealed class SearchCriteria {
 
     data class Numeric(
         var value: BigDecimal? = null,
-        var match: NumericMatch = NumericMatch.HasDebitsOrCredits,
+        var match: NumericMatch? = null,
         var compare: Compare = Compare.EqualTo
+    ) : SearchCriteria()
+
+    data class Account(
+        var value: org.gnucash.android.model.Account? = null,
+        var compare: ComparisonType = ComparisonType.Any
     ) : SearchCriteria()
 }

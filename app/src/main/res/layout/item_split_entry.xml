@@ -69,11 +69,9 @@ limitations under the License.
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:paddingStart="22dp"
-            android:paddingTop="6dp"
-            android:paddingEnd="6dp"
-            android:paddingBottom="6dp"
-            android:src="@drawable/ic_close"
+            android:paddingStart="12dp"
+            android:paddingBottom="12dp"
+            android:src="@drawable/ic_delete"
             tools:ignore="ContentDescription" />
     </LinearLayout>
 

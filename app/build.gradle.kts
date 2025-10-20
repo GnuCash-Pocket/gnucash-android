@@ -166,11 +166,12 @@ dependencies {
     implementation("androidx.core:core-ktx:1.17.0")
     implementation("androidx.preference:preference-ktx:1.2.1")
     implementation("androidx.recyclerview:recyclerview:1.4.0")
-    implementation("androidx.work:work-runtime-ktx:2.10.4")
+    implementation("androidx.work:work-runtime-ktx:2.10.5")
 
     implementation("net.objecthunter:exp4j:0.4.8")
     implementation("com.ezylang:EvalEx:3.5.0")
     implementation("androidx.drawerlayout:drawerlayout:1.2.0")
+    implementation("com.google.android.flexbox:flexbox:3.0.0")
 
     // Logging
     implementation("com.google.firebase:firebase-crashlytics:19.4.4")

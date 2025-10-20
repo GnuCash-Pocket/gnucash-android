@@ -42,6 +42,7 @@ import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.text.ParseException
 import java.util.Locale
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * A custom EditText which supports computations and uses a custom calculator keyboard.
@@ -67,6 +68,7 @@ class CalculatorEditText @JvmOverloads constructor(
         isGroupingUsed = false
     }
     private var onBackPressedCallback: OnBackPressedCallback? = null
+    private val onValueChangedListeners = CopyOnWriteArrayList<OnValueChangedListener>()
 
     /**
      * Returns the currency used for computations
@@ -271,6 +273,8 @@ class CalculatorEditText @JvmOverloads constructor(
 
         if (isOriginal) {
             originalText = formatted
+        } else {
+            notifyEvaluate(amount)
         }
 
         setTextToEnd(formatted)
@@ -316,5 +320,19 @@ class CalculatorEditText @JvmOverloads constructor(
             return true
         }
         return false
+    }
+
+    interface OnValueChangedListener {
+        fun onValueChanged(value: BigDecimal?)
+    }
+
+    fun addValueChangedListener(listener: OnValueChangedListener) {
+        onValueChangedListeners.add(listener)
+    }
+
+    private fun notifyEvaluate(value: BigDecimal?) {
+        for (listener in onValueChangedListeners) {
+            listener.onValueChanged(value)
+        }
     }
 }
