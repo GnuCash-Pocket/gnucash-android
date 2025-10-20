@@ -434,3 +434,7 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
         }
     }
 }
+
+fun SQLiteDatabase.hasTableColumn(tableName: String, columnName: String): Boolean {
+    return DatabaseHelper.hasTableColumn(this, tableName, columnName)
+}
