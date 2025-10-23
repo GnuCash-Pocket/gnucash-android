@@ -201,9 +201,9 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
 
         if (!canSave) {
             if (budgetName.isEmpty()) {
-                binding.nameTextInputLayout.setError("A name is required")
+                binding.nameTextInputLayout.error = "A name is required"
             } else {
-                binding.nameTextInputLayout.setError(null)
+                binding.nameTextInputLayout.error = null
             }
 
             if (budgetAmounts.isEmpty()) {

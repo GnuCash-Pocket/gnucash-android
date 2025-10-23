@@ -7,15 +7,17 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okio.IOException
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Price
-import org.json.JSONException
 import org.json.JSONObject
 import timber.log.Timber
 import java.math.BigDecimal
 import java.util.Locale
 
 class YahooJson : QuoteProvider {
+
+    private val client by lazy { OkHttpClient() }
 
     override fun get(
         fromCommodity: Commodity,
@@ -34,15 +36,13 @@ class YahooJson : QuoteProvider {
                 .url(url)
                 .build()
 
-            val client = OkHttpClient()
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    Timber.e(response.message)
-                    return@use
-                }
-                val body = response.body!!
-                val s = body.string()
-                try {
+            val result: Result<Price?> = runCatching {
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        throw IOException(response.message)
+                    }
+                    val body = response.body!!
+                    val s = body.string()
                     val json = JSONObject(s)
                     val chart = json.getJSONObject("chart")
                     val result = chart.getJSONArray("result")
@@ -57,12 +57,13 @@ class YahooJson : QuoteProvider {
                         source = Price.SOURCE_QUOTE
                         type = Price.Type.Last
                     }
-                    withContext(Dispatchers.Main) {
-                        callback.onQuote(price)
-                    }
-                } catch (e: JSONException) {
-                    Timber.e(e)
+                    price
                 }
+            }.onFailure { e ->
+                Timber.e(e)
+            }
+            withContext(Dispatchers.Main) {
+                callback.onQuote(result.getOrNull())
             }
         }
     }

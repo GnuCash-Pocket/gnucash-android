@@ -116,6 +116,10 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
                 binding.inputExchangeRate.requestFocus()
             }
         }
+        // Enable the "Fetch Quote" button.
+        binding.radioExchangeRate.post {
+            binding.radioExchangeRate.isChecked = true
+        }
 
         binding.btnFetchExchangeRate.setOnClickListener {
             binding.btnFetchExchangeRate.isEnabled = false
@@ -245,12 +249,12 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
             val rate: BigDecimal
             try {
                 rate = parse(binding.inputExchangeRate.text.toString())
-            } catch (e: ParseException) {
-                binding.exchangeRateTextInputLayout.setError(getString(R.string.error_invalid_exchange_rate))
+            } catch (_: ParseException) {
+                binding.exchangeRateTextInputLayout.error = getString(R.string.error_invalid_exchange_rate)
                 return
             }
             if (rate <= BigDecimal.ZERO) {
-                binding.exchangeRateTextInputLayout.setError(getString(R.string.error_invalid_exchange_rate))
+                binding.exchangeRateTextInputLayout.error = getString(R.string.error_invalid_exchange_rate)
                 return
             }
             convertedAmount = (originAmount * rate).withCommodity(targetCommodity)
@@ -261,11 +265,11 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
             try {
                 amount = parse(binding.inputConvertedAmount.text.toString())
             } catch (_: ParseException) {
-                binding.convertedAmountTextInputLayout.setError(getString(R.string.error_invalid_amount))
+                binding.convertedAmountTextInputLayout.error = getString(R.string.error_invalid_amount)
                 return
             }
             if (amount < BigDecimal.ZERO) {
-                binding.convertedAmountTextInputLayout.setError(getString(R.string.error_invalid_amount))
+                binding.convertedAmountTextInputLayout.error = getString(R.string.error_invalid_amount)
                 return
             }
             convertedAmount = Money(amount, targetCommodity)
@@ -291,13 +295,13 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
         fromCommodity: Commodity,
         targetCommodity: Commodity
     ) {
-        binding.exchangeRateTextInputLayout.setError(null)
+        binding.exchangeRateTextInputLayout.error = null
         if (!fromCommodity.isCurrency) {
-            binding.exchangeRateTextInputLayout.setError("Currency expected")
+            binding.exchangeRateTextInputLayout.error = "Currency expected"
             return
         }
         if (!targetCommodity.isCurrency) {
-            binding.exchangeRateTextInputLayout.setError("Currency expected")
+            binding.exchangeRateTextInputLayout.error = "Currency expected"
             return
         }
         val formatterRate = NumberFormat.getNumberInstance()
@@ -306,10 +310,12 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
 
         val provider: QuoteProvider = YahooJson()
         provider.get(fromCommodity, targetCommodity, this, object : QuoteCallback {
-            override fun onQuote(price: Price) {
-                priceQuoted = price
-                val rate = price.toBigDecimal(SCALE_RATE)
-                binding.inputExchangeRate.setText(formatterRate.format(rate))
+            override fun onQuote(price: Price?) {
+                if (price != null) {
+                    priceQuoted = price
+                    val rate = price.toBigDecimal(SCALE_RATE)
+                    binding.inputExchangeRate.setText(formatterRate.format(rate))
+                }
                 binding.btnFetchExchangeRate.isEnabled = true
             }
         })
