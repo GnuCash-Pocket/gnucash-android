@@ -187,14 +187,17 @@ class ScheduledActionDbAdapter(
 
         val actionType = ScheduledAction.ActionType.of(typeString)
         if (name.isNullOrEmpty()) {
-            name = if (actionType == ScheduledAction.ActionType.TRANSACTION) {
-                transactionsDbAdapter.getAttribute(actionUID, TransactionEntry.COLUMN_DESCRIPTION)
-            } else {
-                try {
+            name = try {
+                if (actionType == ScheduledAction.ActionType.TRANSACTION) {
+                    transactionsDbAdapter.getAttribute(
+                        actionUID,
+                        TransactionEntry.COLUMN_DESCRIPTION
+                    )
+                } else {
                     booksDbAdapter.getAttribute(actionUID, BookEntry.COLUMN_DISPLAY_NAME)
-                } catch (_: IllegalArgumentException) {
-                    actionType.name
                 }
+            } catch (_: Exception) {
+                actionType.value
             }
         }
 
