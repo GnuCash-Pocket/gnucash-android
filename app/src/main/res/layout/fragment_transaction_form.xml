@@ -197,15 +197,6 @@
                     android:text="@string/label_tap_to_create_schedule" />
 
             </LinearLayout>
-
-            <CheckBox
-                android:id="@+id/checkbox_save_template"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/form_row_bottom_margin"
-                android:text="@string/label_save_template"
-                android:visibility="gone" />
-            <!-- Not exposing the transaction template checkbox to the UI at this time -->
         </LinearLayout>
     </ScrollView>
 

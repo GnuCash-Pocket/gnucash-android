@@ -335,10 +335,10 @@ class TransactionsDbAdapter(
         whereArgs: Array<String?>?,
         orderBy: String?
     ): Cursor? {
-        val table = TransactionEntry.TABLE_NAME + ", " + SplitEntry.TABLE_NAME +
-                " ON " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID +
-                " = " + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID +
-                ", trans_extra_info ON trans_extra_info.trans_acct_t_uid = " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID
+        val table = TransactionEntry.TABLE_NAME + " t, " + SplitEntry.TABLE_NAME + " s" +
+                " ON t." + TransactionEntry.COLUMN_UID +
+                " = s." + SplitEntry.COLUMN_TRANSACTION_UID +
+                ", trans_extra_info ON trans_extra_info.trans_acct_t_uid = t." + TransactionEntry.COLUMN_UID
         return db.query(table, columns, where, whereArgs, null, null, orderBy)
     }
 

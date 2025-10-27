@@ -214,7 +214,6 @@ object GncXmlHelper {
     const val KEY_CREDIT_FORMULA: String = "credit-formula"
     const val KEY_DEBIT_NUMERIC: String = "debit-numeric"
     const val KEY_CREDIT_NUMERIC: String = "credit-numeric"
-    const val KEY_FROM_SCHED_ACTION: String = "from-sched-xaction"
     const val KEY_DEFAULT_TRANSFER_ACCOUNT: String = "default_transfer_account"
 
     const val CD_TYPE_BOOK: String = "book"
@@ -356,21 +355,6 @@ object GncXmlHelper {
             (amount * denom).stripTrailingZeros().toPlainString()
         )
         return "$numerator/$denomString"
-    }
-
-    /**
-     * Format the amount in template transaction splits.
-     *
-     * GnuCash desktop always formats with a locale dependent format, and that varies per user.<br></br>
-     * So we will use the device locale here and hope that the user has the same locale on the desktop GnuCash
-     *
-     * @param amount Amount to be formatted
-     * @return String representation of amount
-     */
-    @Deprecated("")
-    fun formatTemplateSplitAmount(amount: BigDecimal?): String {
-        //TODO: If we ever implement an application-specific locale setting, use it here as well
-        return NumberFormat.getNumberInstance().format(amount)
     }
 
     fun formatFormula(amount: BigDecimal, commodity: Commodity): String {

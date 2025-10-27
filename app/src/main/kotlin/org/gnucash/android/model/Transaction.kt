@@ -67,11 +67,14 @@ class Transaction : BaseModel {
      * Overloaded constructor. Creates a new transaction instance with the
      * provided data and initializes the rest to default values.
      *
-     * @param name Name of the transaction
+     * @param description Description of the transaction
      */
-    constructor(name: String?) {
+    constructor(description: String?) {
+        this.description = description
+    }
+
+    init {
         initDefaults()
-        description = name
     }
 
     /**
@@ -82,19 +85,18 @@ class Transaction : BaseModel {
      * is set to false. Otherwise, a new one is generated.<br />
      * The export flag and the template flag are not copied from the old transaction to the new.
      *
-     * @param transaction    Transaction to be cloned
      * @param generateNewUID Flag to determine if new UID should be assigned or not
      */
-    constructor(transaction: Transaction, generateNewUID: Boolean = true) {
-        initDefaults()
+    fun copy(generateNewUID: Boolean = true): Transaction {
+        val clone = Transaction(description)
         if (!generateNewUID) {
-            setUID(transaction.uid)
+            clone.setUID(uid)
         }
-        description = transaction.description
-        note = transaction.note
-        time = transaction.time
-        commodity = transaction.commodity
-        splits = transaction.splits.map { Split(it, generateNewUID) }
+        clone.commodity = commodity
+        clone.note = note
+        clone.splits = splits.map { it.copy(generateNewUID) }
+        clone.time = time
+        return clone
     }
 
     /**

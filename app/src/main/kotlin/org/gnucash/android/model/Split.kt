@@ -104,21 +104,19 @@ class Split : BaseModel, Parcelable {
     /**
      * Clones the `sourceSplit` to create a new instance with same fields
      *
-     * @param sourceSplit Split to be cloned
      * @param generateUID Determines if the clone should have a new UID or should
      * maintain the one from source
      */
-    constructor(sourceSplit: Split, generateUID: Boolean = true) {
+    fun copy(generateUID: Boolean = true): Split {
+        val clone = Split(value, quantity, accountUID)
         if (!generateUID) {
-            setUID(sourceSplit.uid)
+            clone.setUID(uid)
         }
-        memo = sourceSplit.memo
-        accountUID = sourceSplit.accountUID
-        type = sourceSplit.type
-        transactionUID = sourceSplit.transactionUID
-        value = sourceSplit.value
-        quantity = sourceSplit.quantity
-        scheduledActionAccountUID = sourceSplit.scheduledActionAccountUID
+        clone.memo = memo
+        clone.scheduledActionAccountUID = scheduledActionAccountUID
+        clone.transactionUID = transactionUID
+        clone.type = type
+        return clone
     }
 
     /**

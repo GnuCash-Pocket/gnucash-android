@@ -406,8 +406,9 @@ class AccountsActivityTest : GnuAndroidTest() {
             )
         ).performClick()
         clickViewText(R.string.title_delete_account)
+        sleep(1000) // wait for data to load
 
-        /* FIXME: 17.08.2016 This enabled check fails during some test runs-not reliable, investigate why */
+        /* FIXME: 17.08.2016 This enabled check fails during some test runs - not reliable, investigate why */
         onView(allOf(withParent(withId(R.id.accounts_options)), withId(R.id.radio_move)))
             .check(matches(isEnabled()))
             .performClick()

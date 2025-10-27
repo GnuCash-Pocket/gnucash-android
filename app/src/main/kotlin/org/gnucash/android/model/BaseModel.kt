@@ -33,7 +33,7 @@ abstract class BaseModel {
      * It is declared private because it is generated only on-demand.
      * Sub-classes should use the accessor methods to read and write this value
      *
-     * @see getUID()
+     * @see uid
      * @see setUID(String)
      */
     private var _uid: String? = null
@@ -87,15 +87,13 @@ abstract class BaseModel {
     }
 
     companion object {
-        private val regexDash = "-".toRegex()
-
         /**
          * Method for generating the Global Unique ID for the model object
          *
          * @return Random GUID for the model object
          */
         fun generateUID(): String {
-            return UUID.randomUUID().toString().replace(regexDash, "")
+            return UUID.randomUUID().toString().replace("-", "")
         }
     }
 }

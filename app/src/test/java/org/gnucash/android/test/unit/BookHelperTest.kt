@@ -12,7 +12,6 @@ import org.gnucash.android.db.adapter.PricesDbAdapter
 import org.gnucash.android.db.adapter.RecurrenceDbAdapter
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
-import org.gnucash.android.export.xml.GncXmlHelper.TAG_ROOT
 import org.gnucash.android.importer.GncXmlImporter
 import org.gnucash.android.util.ConsoleTree
 import org.junit.After
@@ -20,7 +19,7 @@ import org.junit.Before
 import timber.log.Timber
 
 abstract class BookHelperTest : GnuCashTest() {
-    protected var importedHolder: DatabaseHolder? = null
+    protected lateinit var dbHolder: DatabaseHolder
     protected lateinit var booksDbAdapter: BooksDbAdapter
 
     protected lateinit var transactionsDbAdapter: TransactionsDbAdapter
@@ -38,85 +37,41 @@ abstract class BookHelperTest : GnuCashTest() {
     }
 
     private fun setUpDbAdapters(bookUID: String) {
+        close()
         val databaseHelper = DatabaseHelper(context, bookUID)
         val mainHolder = databaseHelper.holder
         commoditiesDbAdapter = CommoditiesDbAdapter(mainHolder)
         transactionsDbAdapter = TransactionsDbAdapter(commoditiesDbAdapter)
         accountsDbAdapter = AccountsDbAdapter(transactionsDbAdapter)
         val recurrenceDbAdapter = RecurrenceDbAdapter(mainHolder)
-        scheduledActionDbAdapter = ScheduledActionDbAdapter(recurrenceDbAdapter, transactionsDbAdapter)
+        scheduledActionDbAdapter =
+            ScheduledActionDbAdapter(recurrenceDbAdapter, transactionsDbAdapter)
         budgetsDbAdapter = BudgetsDbAdapter(recurrenceDbAdapter)
         pricesDbAdapter = PricesDbAdapter(commoditiesDbAdapter)
-        importedHolder = mainHolder
+        dbHolder = mainHolder
     }
 
     @Before
     open fun setUp() {
+        System.gc()
         booksDbAdapter = BooksDbAdapter.instance
-        booksDbAdapter.deleteAllRecords()
-        assertThat(booksDbAdapter.recordsCount).isZero()
+        assertThat(booksDbAdapter.recordsCount).isOne()
+        setUpDbAdapters(booksDbAdapter.activeBookUID)
     }
 
     @After
     open fun tearDown() {
-        transactionsDbAdapter.close()
-        accountsDbAdapter.close()
-        scheduledActionDbAdapter.close()
-        importedHolder?.close()
+        close()
     }
 
-    private fun removeTag(xml: String, tag: String): String {
-        val tagStart1 = "<$tag>\n"
-        val tagStart2 = "<$tag>"
-        val tagStart3 = "<$tag\n"
-        val tagStart4 = "<$tag "
-        val tagEnd1 = "</$tag>\n"
-        val tagEnd2 = "</$tag>"
-        var indexStart = xml.indexOf(tagStart1)
-        if (indexStart < 0) {
-            indexStart = xml.indexOf(tagStart2)
-            if (indexStart < 0) {
-                indexStart = xml.indexOf(tagStart3)
-                if (indexStart < 0) {
-                    indexStart = xml.indexOf(tagStart4)
-                }
-            }
-        }
-        while (indexStart > 0) {
-            if (Character.isSpaceChar(xml[indexStart - 1])) {
-                indexStart--
-            } else {
-                break
-            }
-        }
-        var tagEnd = tagEnd1
-        var indexEnd = xml.indexOf(tagEnd, indexStart + 1)
-        if (indexEnd < 0) {
-            tagEnd = tagEnd2
-            indexEnd = xml.indexOf(tagEnd, indexStart + 1)
-        }
-        return xml.substring(0, indexStart) + xml.substring(indexEnd + tagEnd.length)
-    }
-
-    private fun insideTag(xml: String, tag: String): String {
-        val tagStart = "<$tag>"
-        val tagStartLF = "<$tag\n"
-        val tagStartSP = "<$tag "
-        val tagEnd = "</$tag>"
-        var indexStart = xml.indexOf(tagStart)
-        if (indexStart < 0) {
-            indexStart = xml.indexOf(tagStartLF)
-            if (indexStart < 0) {
-                indexStart = xml.indexOf(tagStartSP)
-            }
-        }
-        indexStart = xml.indexOf('>', indexStart + 1)
-        val indexEnd = xml.indexOf(tagEnd, indexStart + 1)
-        return xml.substring(indexStart, indexEnd)
-    }
-
-    protected fun insideRoot(xml: String): String {
-        return insideTag(xml, TAG_ROOT)
+    private fun close() {
+        if (::accountsDbAdapter.isInitialized) accountsDbAdapter.close()
+        if (::budgetsDbAdapter.isInitialized) budgetsDbAdapter.close()
+        if (::commoditiesDbAdapter.isInitialized) commoditiesDbAdapter.close()
+        if (::pricesDbAdapter.isInitialized) pricesDbAdapter.close()
+        if (::scheduledActionDbAdapter.isInitialized) scheduledActionDbAdapter.close()
+        if (::transactionsDbAdapter.isInitialized) transactionsDbAdapter.close()
+        if (::dbHolder.isInitialized) dbHolder.close()
     }
 
     companion object {

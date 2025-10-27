@@ -484,7 +484,7 @@ abstract class DatabaseAdapter<Model : BaseModel>(
     @Throws(IllegalArgumentException::class)
     fun getRecord(uid: String): Model {
         val model = getRecordOrNull(uid)
-        requireNotNull(model) { "Record for $tableName not found in $tableName" }
+        requireNotNull(model) { "Record not found in $tableName" }
         return model
     }
 

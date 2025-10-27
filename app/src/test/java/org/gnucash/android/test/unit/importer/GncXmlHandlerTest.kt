@@ -393,7 +393,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
 
         assertThat(transactionsDbAdapter.recordsCount).isOne()
-        assertThat(queryNumEntries(importedHolder!!.db, TransactionEntry.TABLE_NAME, null, null)).isEqualTo(2)// 1 regular + 1 template
+        assertThat(queryNumEntries(dbHolder.db, TransactionEntry.TABLE_NAME, null, null)).isEqualTo(2)// 1 regular + 1 template
 
         var transaction = transactionsDbAdapter.getRecord("ded49386f8ea319ccaee043ba062b3e1")
 
