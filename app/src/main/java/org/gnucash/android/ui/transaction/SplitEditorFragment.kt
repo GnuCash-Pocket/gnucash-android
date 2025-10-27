@@ -35,7 +35,6 @@ import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.ActionBar
 import androidx.core.view.isVisible
-import com.google.android.material.snackbar.Snackbar
 import org.gnucash.android.R
 import org.gnucash.android.app.MenuFragment
 import org.gnucash.android.app.actionBar
@@ -51,6 +50,7 @@ import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction.Companion.getTypeForBalance
 import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
 import org.gnucash.android.ui.common.UxArgument
+import org.gnucash.android.ui.snackLong
 import org.gnucash.android.ui.transaction.dialog.TransferFundsDialogFragment.Companion.getInstance
 import org.gnucash.android.ui.util.displayBalance
 import org.gnucash.android.ui.util.widget.CalculatorEditText
@@ -378,11 +378,7 @@ class SplitEditorFragment : MenuFragment() {
      */
     private fun saveSplits() {
         if (!canSave()) {
-            Snackbar.make(
-                requireView(),
-                R.string.toast_error_check_split_amounts,
-                Snackbar.LENGTH_SHORT
-            ).show()
+            snackLong(R.string.toast_error_check_split_amounts)
             return
         }
 

@@ -29,7 +29,6 @@ import android.widget.AdapterView
 import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.ActionBar
 import androidx.core.view.isVisible
 import org.gnucash.android.R
@@ -45,6 +44,7 @@ import org.gnucash.android.model.Money
 import org.gnucash.android.ui.adapter.DefaultItemSelectedListener
 import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
 import org.gnucash.android.ui.common.UxArgument
+import org.gnucash.android.ui.snackLong
 import org.gnucash.android.ui.util.widget.CalculatorEditText
 import org.gnucash.android.ui.util.widget.CalculatorKeyboard.Companion.rebind
 
@@ -133,12 +133,7 @@ class BudgetAmountEditorFragment : MenuFragment() {
             }
             //at least one account should be loaded (don't create budget with empty account tree
             if (viewHolder.budgetAccountSpinner.count == 0) {
-                val context = viewHolder.itemView.context
-                Toast.makeText(
-                    context,
-                    "You need an account hierarchy to create a budget!",
-                    Toast.LENGTH_SHORT
-                ).show()
+                viewHolder.itemView.snackLong("You need an account hierarchy to create a budget!")
                 return false
             }
         }

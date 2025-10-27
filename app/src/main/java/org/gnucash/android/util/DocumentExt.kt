@@ -3,11 +3,11 @@ package org.gnucash.android.util
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import org.gnucash.android.R
 import org.gnucash.android.importer.ImportBookCallback
 import org.gnucash.android.ui.account.AccountsActivity.Companion.importXmlFileFromIntent
+import org.gnucash.android.ui.snackLong
 import timber.log.Timber
 
 private const val contentMimeType = "*/*"
@@ -27,7 +27,7 @@ fun Activity.chooseContent(requestCode: Int) {
         startActivityForResult(intent, requestCode)
     } catch (e: ActivityNotFoundException) {
         Timber.e(e, "No file manager for selecting files available")
-        Toast.makeText(context, R.string.toast_install_file_manager, Toast.LENGTH_LONG).show()
+        context.snackLong(R.string.toast_install_file_manager)
     }
 }
 
@@ -38,7 +38,7 @@ fun Fragment.chooseContent(requestCode: Int) {
         startActivityForResult(intent, requestCode)
     } catch (e: ActivityNotFoundException) {
         Timber.e(e, "No file manager for selecting files available")
-        Toast.makeText(context, R.string.toast_install_file_manager, Toast.LENGTH_LONG).show()
+        context.snackLong(R.string.toast_install_file_manager)
     }
 }
 

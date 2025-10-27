@@ -27,7 +27,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.DatePicker
-import android.widget.Toast
 import androidx.appcompat.app.ActionBar
 import androidx.core.view.isVisible
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence
@@ -46,6 +45,7 @@ import org.gnucash.android.model.Money
 import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
 import org.gnucash.android.ui.common.FormActivity
 import org.gnucash.android.ui.common.UxArgument
+import org.gnucash.android.ui.snackLong
 import org.gnucash.android.ui.transaction.TransactionFormFragment
 import org.gnucash.android.ui.util.RecurrenceParser.parse
 import org.gnucash.android.ui.util.RecurrenceViewClickListener
@@ -187,11 +187,7 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
         if (eventRecurrence.until != null && eventRecurrence.until.isNotEmpty()
             || eventRecurrence.count <= 0
         ) {
-            Toast.makeText(
-                context,
-                "Set a number periods in the recurrence dialog to save the budget",
-                Toast.LENGTH_SHORT
-            ).show()
+            snackLong("Set a number periods in the recurrence dialog to save the budget")
             return false
         }
 
@@ -208,19 +204,11 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
 
             if (budgetAmounts.isEmpty()) {
                 binding.budgetAmountLayout.inputBudgetAmount.error = "Enter an amount for the budget"
-                Toast.makeText(
-                    context,
-                    "Add budget amounts in order to save the budget",
-                    Toast.LENGTH_SHORT
-                ).show()
+                snackLong("Add budget amounts in order to save the budget")
             }
 
             if (recurrenceRule == null) {
-                Toast.makeText(
-                    context,
-                    "Set a repeat pattern to create a budget!",
-                    Toast.LENGTH_SHORT
-                ).show()
+                snackLong("Set a repeat pattern to create a budget!")
             }
         }
 

@@ -24,7 +24,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
 import com.github.mikephil.charting.data.BarData
@@ -40,6 +39,7 @@ import org.gnucash.android.model.isNullOrZero
 import org.gnucash.android.ui.report.IntervalReportFragment
 import org.gnucash.android.ui.report.ReportType
 import org.gnucash.android.ui.report.ReportsActivity.GroupInterval
+import org.gnucash.android.ui.snackLong
 import org.gnucash.android.util.getFirstQuarterMonth
 import org.gnucash.android.util.toMillis
 import org.joda.time.LocalDateTime
@@ -280,8 +280,7 @@ class StackedBarChartFragment : IntervalReportFragment() {
             R.id.menu_toggle_legend -> {
                 val legend = binding.barChart.legend
                 if (!legend.isLegendCustom) {
-                    Toast.makeText(context, R.string.toast_legend_too_long, Toast.LENGTH_LONG)
-                        .show()
+                    snackLong(R.string.toast_legend_too_long)
                     item.isChecked = false
                 } else {
                     item.isChecked = !legend.isEnabled
@@ -297,7 +296,7 @@ class StackedBarChartFragment : IntervalReportFragment() {
                     R.string.toast_chart_percentage_mode_total
                 else
                     R.string.toast_chart_percentage_mode_current_bar
-                Toast.makeText(context, msgId, Toast.LENGTH_LONG).show()
+                snackLong(msgId)
                 return true
             }
 

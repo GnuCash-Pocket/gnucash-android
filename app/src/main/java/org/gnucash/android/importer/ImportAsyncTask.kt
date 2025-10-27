@@ -23,7 +23,6 @@ import android.content.DialogInterface
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.OperationCanceledException
-import android.widget.Toast
 import org.gnucash.android.R
 import org.gnucash.android.db.DatabaseSchema.BookEntry
 import org.gnucash.android.db.adapter.BooksDbAdapter
@@ -31,6 +30,7 @@ import org.gnucash.android.gnc.AsyncTaskProgressListener
 import org.gnucash.android.model.Book
 import org.gnucash.android.service.ScheduledActionService.Companion.schedulePeriodic
 import org.gnucash.android.ui.common.GnucashProgressDialog
+import org.gnucash.android.ui.snackLong
 import org.gnucash.android.util.BackupManager.backupActiveBook
 import org.gnucash.android.util.BookUtils
 import org.gnucash.android.util.getDocumentName
@@ -141,12 +141,10 @@ class ImportAsyncTask(
         val context = progressDialog.context
 
         if (!bookUID.isNullOrEmpty()) {
-            val message = R.string.toast_success_importing_accounts
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            context.snackLong(R.string.toast_success_importing_accounts)
             BookUtils.loadBook(context, bookUID)
         } else {
-            val message = R.string.toast_error_importing_accounts
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            context.snackLong(R.string.toast_error_importing_accounts)
         }
 
         schedulePeriodic(context)

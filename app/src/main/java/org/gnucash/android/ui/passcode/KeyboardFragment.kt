@@ -20,10 +20,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import org.gnucash.android.R
 import org.gnucash.android.lang.plus
+import org.gnucash.android.ui.snackLong
 
 /**
  * Soft numeric keyboard for lock screen and passcode preference.
@@ -132,7 +132,7 @@ open class KeyboardFragment : Fragment() {
     protected open fun onPasscodeEntered(code: String) = Unit
 
     protected fun showWrongPassword() {
-        Toast.makeText(requireContext(), R.string.toast_wrong_passcode, Toast.LENGTH_SHORT).show()
+        snackLong(R.string.toast_wrong_passcode)
     }
 
     companion object {

@@ -6,20 +6,32 @@ import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Bundle
 import android.os.PersistableBundle
+import android.view.View
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 
-@Throws(IllegalArgumentException::class)
-fun Context.findActivity(): Activity {
+tailrec fun Context.getActivity(): Activity? {
     if (this is Activity) {
         return this
     }
     if (this is ContextWrapper) {
-        return baseContext.findActivity()
+        return baseContext.getActivity()
+    }
+    return null
+}
+
+@Throws(IllegalArgumentException::class)
+fun Context.findActivity(): Activity {
+    val activity = getActivity()
+    if (activity != null) {
+        return activity
     }
     throw IllegalArgumentException("context has not activity")
 }
+
+
+fun View.getActivity(): Activity = context.getActivity()!!
 
 /**
  * Restart the activity.
@@ -56,10 +68,11 @@ fun Activity.restart(savedState: Bundle?) = restartActivity(this, savedState)
 
 fun Activity.restart() = restartActivity(this)
 
-val Fragment.actionBar: ActionBar? get() {
-    val activity = (activity as? AppCompatActivity) ?: return null
-    return activity.supportActionBar
-}
+val Fragment.actionBar: ActionBar?
+    get() {
+        val activity = (activity as? AppCompatActivity) ?: return null
+        return activity.supportActionBar
+    }
 
 fun Fragment.finish() = activity?.finish()
 

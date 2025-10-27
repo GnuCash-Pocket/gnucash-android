@@ -18,7 +18,6 @@ package org.gnucash.android.ui.transaction.dialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import org.gnucash.android.R
@@ -31,6 +30,7 @@ import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.common.UxArgument
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity
+import org.gnucash.android.ui.snackLong
 
 /**
  * Dialog fragment for moving transactions from one account to another
@@ -96,7 +96,7 @@ class BulkMoveDialogFragment : DialogFragment() {
         val currencySrc = accountsDbAdapter.getCommodity(srcAccountUID)
         val currencyDst = accountsDbAdapter.getCommodity(dstAccountUID)
         if (currencySrc != currencyDst) {
-            Toast.makeText(context, R.string.toast_incompatible_currency, Toast.LENGTH_LONG).show()
+            snackLong(R.string.toast_incompatible_currency)
             return
         }
 

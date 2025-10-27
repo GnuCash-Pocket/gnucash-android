@@ -24,7 +24,6 @@ import android.net.Uri
 import android.os.CancellationSignal
 import android.preference.PreferenceManager
 import android.text.format.DateUtils
-import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import com.dropbox.core.DbxException
@@ -56,6 +55,7 @@ import org.gnucash.android.export.ExportParams.ExportTarget
 import org.gnucash.android.gnc.GncProgressListener
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.ui.settings.OwnCloudPreferences
+import org.gnucash.android.ui.snackLong
 import org.gnucash.android.util.BackupManager
 import org.gnucash.android.util.BackupManager.getBackupFolder
 import org.gnucash.android.util.FileUtils.moveFile
@@ -479,10 +479,7 @@ abstract class Exporter protected constructor(
             )
             return exportFile
         } else {
-            Toast.makeText(
-                context, R.string.toast_no_compatible_apps_to_receive_export,
-                Toast.LENGTH_LONG
-            ).show()
+            context.snackLong(R.string.toast_no_compatible_apps_to_receive_export)
         }
 
         return null

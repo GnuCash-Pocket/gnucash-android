@@ -20,7 +20,6 @@ import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import android.widget.Toast
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication.Companion.shouldSaveOpeningBalances
 import org.gnucash.android.db.adapter.AccountsDbAdapter
@@ -28,6 +27,7 @@ import org.gnucash.android.db.adapter.DatabaseAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity
+import org.gnucash.android.ui.snackLong
 import org.gnucash.android.util.BackupManager.backupActiveBookAsync
 import timber.log.Timber
 
@@ -76,7 +76,7 @@ class DeleteAllTransactionsConfirmationDialog : DoubleConfirmationDialog() {
                 DatabaseAdapter.UpdateMethod.Insert
             )
         }
-        Toast.makeText(context, R.string.toast_all_transactions_deleted, Toast.LENGTH_SHORT).show()
+        snackLong(R.string.toast_all_transactions_deleted)
         WidgetConfigurationActivity.updateAllWidgets(context)
     }
 }

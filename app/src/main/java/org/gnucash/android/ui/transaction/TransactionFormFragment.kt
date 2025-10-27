@@ -43,7 +43,6 @@ import androidx.cursoradapter.widget.SimpleCursorAdapter
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrenceFormatter
 import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment.OnRecurrenceSetListener
-import com.google.android.material.snackbar.Snackbar
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication.Companion.getDefaultTransactionType
 import org.gnucash.android.app.GnuCashApplication.Companion.isDoubleEntryEnabled
@@ -69,6 +68,8 @@ import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
 import org.gnucash.android.ui.common.FormActivity
 import org.gnucash.android.ui.common.UxArgument
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity.Companion.updateAllWidgets
+import org.gnucash.android.ui.snackLong
+import org.gnucash.android.ui.snackShort
 import org.gnucash.android.ui.transaction.dialog.TransferFundsDialogFragment.Companion.getInstance
 import org.gnucash.android.ui.util.RecurrenceParser.parse
 import org.gnucash.android.ui.util.RecurrenceViewClickListener
@@ -313,7 +314,8 @@ class TransactionFormFragment : MenuFragment(),
             )
 
             val secondaryTextView = view.findViewById<TextView>(R.id.secondary_text)
-            secondaryTextView.text = "${balance.formattedString()} on $dateString" //TODO: Extract string
+            secondaryTextView.text =
+                "${balance.formattedString()} on $dateString" //TODO: Extract string
         }
     }
 
@@ -545,17 +547,12 @@ class TransactionFormFragment : MenuFragment(),
     private fun openSplitEditor(binding: FragmentTransactionFormBinding) {
         val enteredAmount = binding.inputTransactionAmount.value
         if (enteredAmount == null) {
-            Snackbar.make(
-                binding.root,
-                R.string.toast_enter_amount_to_split,
-                Snackbar.LENGTH_SHORT
-            ).show()
+            snackShort(R.string.toast_enter_amount_to_split)
             binding.inputTransactionAmount.requestFocus()
             binding.inputTransactionAmount.error = getString(R.string.toast_enter_amount_to_split)
             return
-        } else {
-            binding.inputTransactionAmount.error = null
         }
+        binding.inputTransactionAmount.error = null
 
         val baseAmountString: String?
 
@@ -881,11 +878,7 @@ class TransactionFormFragment : MenuFragment(),
             saveNewTransaction(binding)
         } else {
             if (binding.inputTransactionAmount.value == null) {
-                Snackbar.make(
-                    view,
-                    R.string.toast_transaction_amount_required,
-                    Snackbar.LENGTH_LONG
-                ).show()
+                snackLong(R.string.toast_transaction_amount_required)
                 binding.inputTransactionAmount.requestFocus()
                 binding.inputTransactionAmount.error =
                     getString(R.string.toast_transaction_amount_required)
@@ -893,11 +886,7 @@ class TransactionFormFragment : MenuFragment(),
                 binding.inputTransactionAmount.error = null
             }
             if (useDoubleEntry && binding.inputTransferAccountSpinner.count == 0) {
-                Snackbar.make(
-                    view,
-                    R.string.toast_disable_double_entry_to_save_transaction,
-                    Snackbar.LENGTH_LONG
-                ).show()
+                snackLong(R.string.toast_disable_double_entry_to_save_transaction)
             }
         }
     }
@@ -924,11 +913,7 @@ class TransactionFormFragment : MenuFragment(),
             } else {
                 scheduledAction.setUID(scheduledActionUID)
                 scheduledActionDbAdapter.updateRecurrenceAttributes(scheduledAction)
-                Snackbar.make(
-                    requireView(),
-                    R.string.toast_updated_transaction_recurring_schedule,
-                    Snackbar.LENGTH_SHORT
-                ).show()
+                snackLong(R.string.toast_updated_transaction_recurring_schedule)
             }
         } else {
             if (recurrence != null) {
@@ -936,11 +921,7 @@ class TransactionFormFragment : MenuFragment(),
                 scheduledActionDbAdapter.replace(scheduledAction)
                 scheduledActionUID = scheduledAction.uid
                 transaction.scheduledActionUID = scheduledActionUID
-                Snackbar.make(
-                    requireView(),
-                    R.string.toast_scheduled_recurring_transaction,
-                    Snackbar.LENGTH_SHORT
-                ).show()
+                snackLong(R.string.toast_scheduled_recurring_transaction)
             }
         }
     }

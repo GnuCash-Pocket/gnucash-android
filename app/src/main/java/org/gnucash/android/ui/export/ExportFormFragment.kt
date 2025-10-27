@@ -33,7 +33,6 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.DatePicker
 import android.widget.TimePicker
-import android.widget.Toast
 import androidx.appcompat.app.ActionBar
 import androidx.core.content.edit
 import androidx.core.view.isVisible
@@ -41,7 +40,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrenceFormatter
 import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment.OnRecurrenceSetListener
-import com.google.android.material.snackbar.Snackbar
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
 import org.gnucash.android.app.GnuCashApplication.Companion.isDoubleEntryEnabled
@@ -72,6 +70,7 @@ import org.gnucash.android.ui.export.OptionsViewAnimationUtils.expand
 import org.gnucash.android.ui.get
 import org.gnucash.android.ui.passcode.PasscodeHelper.skipPasscodeScreen
 import org.gnucash.android.ui.settings.dialog.OwnCloudDialogFragment
+import org.gnucash.android.ui.snackLong
 import org.gnucash.android.ui.transaction.TransactionFormFragment
 import org.gnucash.android.ui.util.RecurrenceParser
 import org.gnucash.android.ui.util.RecurrenceViewClickListener
@@ -564,17 +563,7 @@ class ExportFormFragment : MenuFragment(),
             startActivityForResult(createIntent, REQUEST_EXPORT_FILE)
         } catch (e: ActivityNotFoundException) {
             Timber.e(e, "Cannot create document for export")
-            if (isVisible) {
-                val view = requireView()
-                Snackbar.make(view, R.string.toast_install_file_manager, Snackbar.LENGTH_LONG)
-                    .show()
-            } else {
-                Toast.makeText(
-                    requireContext(),
-                    R.string.toast_install_file_manager,
-                    Toast.LENGTH_LONG
-                ).show()
-            }
+            snackLong(R.string.toast_install_file_manager)
         }
     }
 

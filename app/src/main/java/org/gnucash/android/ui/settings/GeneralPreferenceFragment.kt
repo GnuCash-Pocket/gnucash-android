@@ -18,13 +18,13 @@ package org.gnucash.android.ui.settings
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.preference.Preference
 import androidx.preference.TwoStatePreference
 import org.gnucash.android.R
 import org.gnucash.android.app.restart
 import org.gnucash.android.ui.passcode.PasscodeHelper
 import org.gnucash.android.ui.passcode.PasscodePreferenceActivity
+import org.gnucash.android.ui.snackLong
 
 /**
  * Fragment for general preferences. Currently caters to the passcode and reporting preferences
@@ -77,11 +77,11 @@ class GeneralPreferenceFragment : GnuPreferenceFragment() {
 
         when (requestCode) {
             PASSCODE_REQUEST_CODE -> if (resultCode == Activity.RESULT_OK) {
-                Toast.makeText(context, R.string.toast_passcode_set, Toast.LENGTH_SHORT).show()
+                snackLong(R.string.toast_passcode_set)
             }
 
             REQUEST_CHANGE_PASSCODE -> if (resultCode == Activity.RESULT_OK) {
-                Toast.makeText(context, R.string.toast_passcode_set, Toast.LENGTH_SHORT).show()
+                snackLong(R.string.toast_passcode_set)
             }
 
             else -> super.onActivityResult(requestCode, resultCode, data)
