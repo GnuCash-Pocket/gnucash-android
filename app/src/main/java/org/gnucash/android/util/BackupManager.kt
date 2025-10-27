@@ -20,7 +20,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.net.Uri
 import android.os.AsyncTask
-import android.widget.Toast
 import androidx.annotation.WorkerThread
 import androidx.core.net.toUri
 import androidx.work.PeriodicWorkRequest
@@ -35,6 +34,7 @@ import org.gnucash.android.export.Exporter
 import org.gnucash.android.export.xml.GncXmlExporter
 import org.gnucash.android.lang.BooleanCallback
 import org.gnucash.android.ui.common.GnucashProgressDialog
+import org.gnucash.android.ui.snackLong
 import org.gnucash.android.work.BackupWorker
 import timber.log.Timber
 import java.io.File
@@ -231,8 +231,7 @@ object BackupManager {
                     progressDialog = null
                 }
                 if (!result) {
-                    Toast.makeText(activity, R.string.toast_backup_failed, Toast.LENGTH_SHORT)
-                        .show()
+                    activity?.snackLong(R.string.toast_backup_failed)
                 }
                 after.invoke(result)
             }

@@ -20,10 +20,8 @@ import android.app.AlertDialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.preference.ListPreference
 import androidx.preference.Preference
-import com.google.android.material.snackbar.Snackbar
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
 import org.gnucash.android.app.GnuCashApplication.Companion.defaultCurrencyCode
@@ -36,6 +34,7 @@ import org.gnucash.android.export.Exporter.Companion.buildExportFilename
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.ui.settings.dialog.DeleteAllAccountsConfirmationDialog
+import org.gnucash.android.ui.snackLong
 import org.gnucash.android.util.openBook
 import timber.log.Timber
 import java.util.concurrent.ExecutionException
@@ -142,17 +141,7 @@ class AccountPreferencesFragment : GnuPreferenceFragment() {
             startActivityForResult(createIntent, REQUEST_EXPORT_FILE)
         } catch (e: ActivityNotFoundException) {
             Timber.e(e, "Cannot create document for export")
-            if (isVisible) {
-                val view = requireView()
-                Snackbar.make(view, R.string.toast_install_file_manager, Snackbar.LENGTH_LONG)
-                    .show()
-            } else {
-                Toast.makeText(
-                    requireContext(),
-                    R.string.toast_install_file_manager,
-                    Toast.LENGTH_LONG
-                ).show()
-            }
+            snackLong(R.string.toast_install_file_manager)
         }
     }
 
@@ -184,18 +173,10 @@ class AccountPreferencesFragment : GnuPreferenceFragment() {
                     exportTask.execute(exportParams)//.get()
                 } catch (e: InterruptedException) {
                     Timber.e(e)
-                    Toast.makeText(
-                        activity,
-                        "An error occurred during the Accounts CSV export",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    snackLong("An error occurred during the Accounts CSV export")
                 } catch (e: ExecutionException) {
                     Timber.e(e)
-                    Toast.makeText(
-                        activity,
-                        "An error occurred during the Accounts CSV export",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    snackLong("An error occurred during the Accounts CSV export")
                 }
             }
 

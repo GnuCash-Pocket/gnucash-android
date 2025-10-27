@@ -18,10 +18,10 @@ package org.gnucash.android.ui.settings.dialog
 import android.app.Activity
 import android.app.Dialog
 import android.os.Bundle
-import android.widget.Toast
 import org.gnucash.android.R
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity
+import org.gnucash.android.ui.snackLong
 import org.gnucash.android.util.BackupManager.backupActiveBookAsync
 
 /**
@@ -47,7 +47,7 @@ class DeleteAllAccountsConfirmationDialog : DoubleConfirmationDialog() {
     private fun deleteAccounts(activity: Activity) {
         backupActiveBookAsync(activity) {
             AccountsDbAdapter.instance.deleteAllRecords()
-            Toast.makeText(activity, R.string.toast_all_accounts_deleted, Toast.LENGTH_SHORT).show()
+            snackLong(R.string.toast_all_accounts_deleted)
             WidgetConfigurationActivity.updateAllWidgets(activity)
         }
     }

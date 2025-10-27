@@ -23,7 +23,6 @@ import android.content.DialogInterface
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.OperationCanceledException
-import android.widget.Toast
 import org.gnucash.android.R
 import org.gnucash.android.app.getActivity
 import org.gnucash.android.export.ExportParams.ExportTarget
@@ -38,6 +37,7 @@ import org.gnucash.android.importer.ExportBookCallback
 import org.gnucash.android.ui.common.GnucashProgressDialog
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.settings.OwnCloudPreferences
+import org.gnucash.android.ui.snackLong
 import timber.log.Timber
 
 /**
@@ -130,13 +130,9 @@ class ExportAsyncTask(
             }
 
         } else {
-            if (activity != null) {
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.toast_export_error, exportParams.exportFormat.name),
-                    Toast.LENGTH_LONG
-                ).show()
-            }
+            activity?.snackLong(
+                context.getString(R.string.toast_export_error, exportParams.exportFormat.name),
+            )
         }
         bookCallback?.invoke(exportLocation)
     }
@@ -170,11 +166,9 @@ class ExportAsyncTask(
             else -> targetLocation =
                 context.getString(R.string.label_export_target_external_service)
         }
-        Toast.makeText(
-            context,
-            String.format(context.getString(R.string.toast_exported_to), targetLocation),
-            Toast.LENGTH_LONG
-        ).show()
+        context.snackLong(
+            context.getString(R.string.toast_exported_to, targetLocation)
+        )
     }
 
     private fun refreshViews(context: Context) {

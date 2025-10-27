@@ -22,7 +22,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.ArrayAdapter
-import android.widget.Toast
 import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.preference.EditTextPreference
@@ -30,7 +29,6 @@ import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.SwitchPreference
 import androidx.preference.TwoStatePreference
-import com.google.android.material.snackbar.Snackbar
 import org.gnucash.android.BuildConfig
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
@@ -45,6 +43,7 @@ import org.gnucash.android.export.Exporter.Companion.getExportTime
 import org.gnucash.android.export.Exporter.Companion.sanitizeFilename
 import org.gnucash.android.importer.ImportAsyncTask
 import org.gnucash.android.ui.settings.dialog.OwnCloudDialogFragment
+import org.gnucash.android.ui.snackLong
 import org.gnucash.android.util.BackupManager
 import org.gnucash.android.util.BackupManager.backupActiveBookAsync
 import org.gnucash.android.util.getDocumentName
@@ -114,12 +113,7 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
             backupActiveBookAsync(activity) { result: Boolean ->
                 val msg =
                     if (result) R.string.toast_backup_successful else R.string.toast_backup_failed
-                if (fragment.isVisible) {
-                    val view = fragment.view ?: return@backupActiveBookAsync
-                    Snackbar.make(view, msg, Snackbar.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(activity, msg, Toast.LENGTH_LONG).show()
-                }
+                snackLong(msg)
             }
             true
         }
@@ -139,20 +133,7 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
                 startActivityForResult(createIntent, REQUEST_BACKUP_FILE)
             } catch (e: ActivityNotFoundException) {
                 Timber.e(e, "Cannot create document for backup")
-                if (isVisible) {
-                    val view = requireView()
-                    Snackbar.make(
-                        view,
-                        R.string.toast_install_file_manager,
-                        Snackbar.LENGTH_LONG
-                    ).show()
-                } else {
-                    Toast.makeText(
-                        context,
-                        R.string.toast_install_file_manager,
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
+                snackLong(R.string.toast_install_file_manager)
             }
             true
         }
