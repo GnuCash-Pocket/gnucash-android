@@ -16,6 +16,7 @@
  */
 package org.gnucash.android.ui.transaction
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -83,8 +84,6 @@ class TransactionsActivity : BaseDrawerActivity(),
             swapAccount(account)
         }
 
-    private var pagerAdapter: AccountViewPagerAdapter? = null
-
     /**
      * Adapter for managing the sub-account and transaction fragment pages in the accounts view
      */
@@ -150,25 +149,28 @@ class TransactionsActivity : BaseDrawerActivity(),
     /**
      * Refreshes the fragments currently in the transactions activity
      */
+    @SuppressLint("NotifyDataSetChanged")
     override fun refresh(uid: String?) {
-        val binding = this.binding
-        setTitleIndicatorColor(binding)
-
-        val fragments = supportFragmentManager.fragments
-        for (fragment in fragments) {
-            if (fragment is Refreshable) {
-                fragment.refresh(uid)
-            }
-        }
-
-        pagerAdapter?.notifyDataSetChanged()
-
-        binding.toolbarLayout.toolbarSpinner.setEnabled(!accountNameAdapter!!.isEmpty)
+        refresh(requireAccount())
     }
 
     override fun refresh() {
-        val accountUID = account?.uid ?: intent.getStringExtra(UxArgument.SELECTED_ACCOUNT_UID)
-        refresh(accountUID)
+        refresh(requireAccount())
+    }
+
+    private fun refresh(account: Account) {
+        val binding = this.binding
+        setTitleIndicatorColor(binding)
+
+        binding.toolbarLayout.toolbarSpinner.setEnabled(!accountNameAdapter!!.isEmpty)
+        binding.pager.adapter = AccountViewPagerAdapter(this, account)
+        TabLayoutMediator(binding.tabLayout, binding.pager) { tab, position ->
+            when (position) {
+                INDEX_SUB_ACCOUNTS_FRAGMENT -> tab.setText(R.string.section_header_subaccounts)
+                INDEX_TRANSACTIONS_FRAGMENT -> tab.setText(R.string.section_header_transactions)
+            }
+        }.attach()
+        binding.pager.currentItem = INDEX_TRANSACTIONS_FRAGMENT
     }
 
     override fun inflateView() {
@@ -201,16 +203,9 @@ class TransactionsActivity : BaseDrawerActivity(),
 
         setupActionBarNavigation(binding, accountUID)
 
-        pagerAdapter = AccountViewPagerAdapter(this, account)
-        binding.pager.adapter = pagerAdapter
-        TabLayoutMediator(tabLayout, binding.pager) { tab, position ->
-            when (position) {
-                INDEX_SUB_ACCOUNTS_FRAGMENT -> tab.setText(R.string.section_header_subaccounts)
-                INDEX_TRANSACTIONS_FRAGMENT -> tab.setText(R.string.section_header_transactions)
-            }
-        }.attach()
-
         binding.fabCreateTransaction.setOnClickListener {
+            val account = this@TransactionsActivity.account ?: return@setOnClickListener
+            val accountUID = account.uid
             when (binding.pager.currentItem) {
                 INDEX_SUB_ACCOUNTS_FRAGMENT -> createNewAccount(accountUID)
                 INDEX_TRANSACTIONS_FRAGMENT -> createNewTransaction(accountUID)
@@ -454,21 +449,21 @@ class TransactionsActivity : BaseDrawerActivity(),
             val accountUID = account.uid
             //update the intent in case the account gets rotated
             intent.putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
-            //TODO pagerAdapter?.notifyDataSetChanged()
-            val tabLayout = binding.tabLayout
-            if (account.isPlaceholder) {
-                if (tabLayout.tabCount > 1) {
-                    tabLayout.removeTabAt(INDEX_TRANSACTIONS_FRAGMENT)
-                }
-            } else {
-                if (tabLayout.tabCount < 2) {
-                    tabLayout.addTab(tabLayout.newTab())
-                }
-            }
 
             //if there are no transactions, and there are sub-accounts, show the sub-accounts
+            val tabLayout = binding.tabLayout
             val txCount = transactionsDbAdapter.getTransactionsCount(accountUID)
             if (txCount == 0) {
+                if (account.isPlaceholder) {
+                    if (tabLayout.tabCount > 1) {
+                        tabLayout.removeTabAt(INDEX_TRANSACTIONS_FRAGMENT)
+                    }
+                } else {
+                    if (tabLayout.tabCount < 2) {
+                        tabLayout.addTab(tabLayout.newTab())
+                    }
+                }
+
                 val subCount = accountsDbAdapter.getSubAccountCount(accountUID)
                 if ((subCount > 0) || (binding.tabLayout.tabCount < 2)) {
                     binding.pager.currentItem = INDEX_SUB_ACCOUNTS_FRAGMENT
@@ -476,11 +471,14 @@ class TransactionsActivity : BaseDrawerActivity(),
                     binding.pager.currentItem = INDEX_TRANSACTIONS_FRAGMENT
                 }
             } else {
+                if (tabLayout.tabCount < 2) {
+                    tabLayout.addTab(tabLayout.newTab())
+                }
                 binding.pager.currentItem = INDEX_TRANSACTIONS_FRAGMENT
             }
 
             //refresh any fragments in the tab with the new account UID
-            refresh(accountUID)
+            refresh(account)
         } else {
             //refresh any fragments in the tab with the new account UID
             refresh()
