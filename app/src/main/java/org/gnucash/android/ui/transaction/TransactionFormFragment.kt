@@ -190,6 +190,7 @@ class TransactionFormFragment : MenuFragment(),
         updateTransferAccountsList(binding, account)
         initializeViews(binding, account)
 
+        val transaction = transaction
         if (transaction == null) {
             initTransactionNameAutocomplete(binding)
         } else {
@@ -325,9 +326,7 @@ class TransactionFormFragment : MenuFragment(),
         val to = intArrayOf(R.id.primary_text)
 
         val context = binding.inputTransactionName.context
-        val adapter: SimpleCursorAdapter = DropDownCursorAdapter(
-            context, R.layout.dropdown_item_2lines, null, from, to
-        )
+        val adapter = DropDownCursorAdapter(context, R.layout.dropdown_item_2lines, null, from, to)
 
         adapter.setCursorToStringConverter { cursor ->
             cursor.getString(TransactionEntry.COLUMN_DESCRIPTION)
@@ -344,7 +343,8 @@ class TransactionFormFragment : MenuFragment(),
 
         binding.inputTransactionName.onItemClickListener =
             OnItemClickListener { adapterView, view, position, id ->
-                val transaction = Transaction(transactionsDbAdapter.getRecord(id), true)
+                val transactionDb = transactionsDbAdapter.getRecord(id)
+                val transaction = Transaction(transactionDb, true)
                 transaction.time = System.currentTimeMillis()
                 //we check here because next method will modify it and we want to catch user-modification
                 val amountEntered = binding.inputTransactionAmount.isInputModified
@@ -373,7 +373,7 @@ class TransactionFormFragment : MenuFragment(),
                 this@TransactionFormFragment.transaction = null
             }
 
-        binding.inputTransactionName.setAdapter<SimpleCursorAdapter?>(adapter)
+        binding.inputTransactionName.setAdapter(adapter)
         recurrenceRule = null
     }
 
@@ -390,10 +390,6 @@ class TransactionFormFragment : MenuFragment(),
         val accountUID = account.uid
         binding.inputTransactionName.setTextToEnd(transaction.description)
 
-        var transactionType = getDefaultTransactionType(context)
-        binding.inputTransactionType.accountType = account.accountType
-        binding.inputTransactionType.setChecked(transactionType)
-
         //when autocompleting, only change the amount if the user has not manually changed it already
         binding.inputTransactionAmount.setValue(
             transaction.getBalance(account).toBigDecimal(),
@@ -405,47 +401,11 @@ class TransactionFormFragment : MenuFragment(),
         binding.inputTime.text = TIME_FORMATTER.print(transaction.time)
         date = Calendar.getInstance().apply { timeInMillis = transaction.time }
 
-        //TODO: deep copy the split list. We need a copy so we can modify with impunity
-        splitsList.clear()
-        splitsList.addAll(transaction.splits)
-        toggleAmountInputEntryMode(binding, splitsList.size <= 2)
-
-        splitValue = null
-        splitQuantity = null
-        if (splitsList.size == 2) {
-            for (split in splitsList) {
-                if (split.accountUID == accountUID) {
-                    splitValue = split.value
-                    transactionType = split.type
-                } else if (split.quantity.commodity != transaction.commodity) {
-                    splitQuantity = split.quantity
-                }
-            }
-        }
-        //if there are more than two splits (which is the default for one entry), then
-        //disable editing of the transfer account. User should open editor
-        if (splitsList.size == 2 && splitsList[0].isPairOf(splitsList[1])) {
-            for (split in transaction.splits) {
-                //two splits, one belongs to this account and the other to another account
-                if (useDoubleEntry && split.accountUID != accountUID) {
-                    setSelectedTransferAccount(binding, split.accountUID)
-                }
-            }
-        } else {
-            setDoubleEntryViewsVisibility(binding, false)
-            if (useDoubleEntry && splitsList.size >= 2) {
-                binding.btnSplitEditor.isVisible = true
-            }
-            if (splitValue != null) {
-                transactionType =
-                    if (splitValue!!.isNegative) TransactionType.CREDIT else TransactionType.DEBIT
-            }
-        }
+        bindSplits(binding, account, transaction.splits)
 
         val accountCommodity = account.commodity
         binding.currencySymbol.text = accountCommodity.symbol
         binding.inputTransactionAmount.commodity = accountCommodity
-        binding.inputTransactionType.setChecked(transactionType)
 
         binding.checkboxSaveTemplate.isChecked = transaction.isTemplate
         val scheduledActionUID = transaction.scheduledActionUID
@@ -455,12 +415,65 @@ class TransactionFormFragment : MenuFragment(),
         }
     }
 
+    private fun bindSplits(
+        binding: FragmentTransactionFormBinding,
+        account: Account,
+        splits: List<Split>
+    ) {
+        val context = binding.root.context
+        val accountUID = account.uid
+        val accountCommodity = account.commodity
+        var transactionType = getDefaultTransactionType(context)
+
+        splitsList.clear()
+        splitsList.addAll(splits)
+        val splitsSize = splits.size
+        toggleAmountInputEntryMode(binding, splitsSize <= 2)
+        binding.inputTransactionType.isVisible = splitsSize <= 2
+
+        splitValue = null
+        splitQuantity = null
+        if (splitsSize == 2) {
+            for (split in splitsList) {
+                if (split.accountUID == accountUID) {
+                    splitValue = split.value
+                    transactionType = split.type
+                } else if (split.quantity.commodity != accountCommodity) {
+                    splitQuantity = split.quantity
+                }
+            }
+        }
+        //if there are more than two splits (which is the default for one entry), then
+        //disable editing of the transfer account. User should open editor
+        if (splitsSize == 2 && splitsList[0].isPairOf(splitsList[1])) {
+            for (split in splits) {
+                //two splits, one belongs to this account and the other to another account
+                if (useDoubleEntry && split.accountUID != accountUID) {
+                    setSelectedTransferAccount(binding, split.accountUID)
+                }
+            }
+        } else {
+            setDoubleEntryViewsVisibility(binding, false)
+            if (useDoubleEntry && splitsSize >= 2) {
+                binding.btnSplitEditor.isVisible = true
+            }
+            if (splitValue != null) {
+                transactionType =
+                    if (splitValue!!.isNegative) TransactionType.CREDIT else TransactionType.DEBIT
+            }
+        }
+
+        val balance = Transaction.computeBalance(account, splits)
+        binding.inputTransactionAmount.value = balance.toBigDecimal()
+        binding.inputTransactionType.accountType = account.accountType
+        binding.inputTransactionType.setChecked(transactionType)
+    }
+
     private fun setDoubleEntryViewsVisibility(
         binding: FragmentTransactionFormBinding,
         visible: Boolean
     ) {
         binding.layoutDoubleEntry.isVisible = visible
-        binding.inputTransactionType.isVisible = visible
         binding.btnSplitEditor.isVisible = visible
     }
 
@@ -500,8 +513,7 @@ class TransactionFormFragment : MenuFragment(),
         if (useDoubleEntry) {
             setSelectedTransferAccount(binding, account.defaultTransferAccountUID)
         } else {
-            binding.layoutDoubleEntry.isVisible = false
-            binding.btnSplitEditor.isVisible = false
+            setDoubleEntryViewsVisibility(binding, false)
         }
     }
 
@@ -525,7 +537,7 @@ class TransactionFormFragment : MenuFragment(),
             arrayOf(accountUID, AccountType.ROOT.name),
             accountsDbAdapter,
             viewLifecycleOwner
-        ).load { adapter: QualifiedAccountNameAdapter? ->
+        ).load { _ ->
             var transferUID = account.defaultTransferAccountUID
             if (transaction != null) {
                 val split = transaction!!.getTransferSplit(accountUID)
@@ -576,14 +588,12 @@ class TransactionFormFragment : MenuFragment(),
         val context = binding.root.context
         val account = requireAccount()
         val accountUID = account.uid
+        val splits = extractSplitsFromView(binding, account)
         val intent = Intent(context, FormActivity::class.java)
             .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.SPLIT_EDITOR.name)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
             .putExtra(UxArgument.AMOUNT_STRING, baseAmountString)
-            .putParcelableArrayListExtra(
-                UxArgument.SPLIT_LIST,
-                ArrayList(extractSplitsFromView(binding))
-            )
+            .putParcelableArrayListExtra(UxArgument.SPLIT_LIST, ArrayList(splits))
 
         startActivityForResult(intent, REQUEST_SPLIT_EDITOR)
     }
@@ -679,23 +689,19 @@ class TransactionFormFragment : MenuFragment(),
      *
      * @return List of splits in the view or [.splitsList] is there are more than 2 splits in the transaction
      */
-    private fun extractSplitsFromView(binding: FragmentTransactionFormBinding): List<Split> {
+    private fun extractSplitsFromView(binding: FragmentTransactionFormBinding, account: Account): List<Split> {
         if (splitEditorUsed(binding)) {
             return splitsList
         }
 
         var enteredAmount = binding.inputTransactionAmount.value
         if (enteredAmount == null) enteredAmount = BigDecimal.ZERO
-        val account = requireAccount()
         val accountUID = account.uid
         val accountCommodity = account.commodity
         val value = Money(enteredAmount, accountCommodity)
         var quantity = Money(value)
 
-        val transferAccount = getTransferAccount(binding)
-        if (transferAccount == null) {
-            return splitsList
-        }
+        val transferAccount = getTransferAccount(binding) ?: return splitsList
         val transferAccountUID = transferAccount.uid
 
         if (isMultiCurrencyTransaction(binding)) { //if multi-currency transaction
@@ -762,7 +768,7 @@ class TransactionFormFragment : MenuFragment(),
         val account = requireAccount()
         val accountCommodity = account.commodity
 
-        val splits = extractSplitsFromView(binding)
+        val splits = extractSplitsFromView(binding, account)
 
         val transaction = Transaction(description).apply {
             time = date.timeInMillis
@@ -777,8 +783,6 @@ class TransactionFormFragment : MenuFragment(),
 
     /**
      * Checks whether the split editor has been used for editing this transaction.
-     *
-     * The Split Editor is considered to have been used if the transaction type switch is not visible
      *
      * @return `true` if split editor was used, `false` otherwise
      */
@@ -809,8 +813,7 @@ class TransactionFormFragment : MenuFragment(),
         }
 
         val position = binding.inputTransferAccountSpinner.selectedItemPosition
-        val transferAccount = accountTransferNameAdapter!!.getAccount(position)
-        if (transferAccount == null) return false
+        val transferAccount = accountTransferNameAdapter?.getAccount(position) ?: return false
         val transferCommodity = transferAccount.commodity
 
         return accountCommodity != transferCommodity
@@ -1001,11 +1004,8 @@ class TransactionFormFragment : MenuFragment(),
      */
     private fun setSplits(binding: FragmentTransactionFormBinding, splits: List<Split>) {
         val account = requireAccount()
-        splitsList.clear()
-        splitsList.addAll(splits)
-        val balance = Transaction.computeBalance(account, splits)
-        binding.inputTransactionAmount.value = balance.toBigDecimal()
-        binding.inputTransactionType.isChecked = balance.isNegative
+        bindSplits(binding, account, splits)
+        binding.inputTransactionType.isVisible = false
     }
 
     /**
@@ -1104,6 +1104,7 @@ class TransactionFormFragment : MenuFragment(),
             //once split editor has been used and saved, only allow editing through it
             toggleAmountInputEntryMode(binding, false)
             setDoubleEntryViewsVisibility(binding, false)
+            binding.inputTransactionType.isVisible = false
             binding.btnSplitEditor.isVisible = true
         }
     }

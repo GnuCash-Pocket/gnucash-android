@@ -280,7 +280,7 @@ class TransactionsListFragment : MenuFragment(),
                 val inflater = popupMenu.menuInflater
                 val menu = popupMenu.menu
                 inflater.inflate(R.menu.transactions_context_menu, menu)
-                menu.findItem(R.id.menu_edit).isVisible = useCompactView
+                menu.findItem(R.id.menu_edit).isVisible = useCompactView || !useDoubleEntry
                 popupMenu.show()
             }
 

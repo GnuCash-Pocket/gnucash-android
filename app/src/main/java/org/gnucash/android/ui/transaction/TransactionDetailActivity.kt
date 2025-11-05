@@ -123,10 +123,6 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         val context: Context = this
         val inflater = layoutInflater
         for (split in transaction.splits) {
-            if (!useDoubleEntry) {
-                //do now show imbalance accounts for single entry use case
-                continue
-            }
             val imbalanceUID =
                 accountsDbAdapter.getImbalanceAccountUID(context, split.value.commodity)
             if (split.accountUID == imbalanceUID) {
@@ -136,6 +132,9 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
             val splitBinding =
                 ItemSplitAmountInfoBinding.inflate(inflater, binding.transactionItems, true)
             bind(splitBinding, split)
+            if (!useDoubleEntry) {
+                break
+            }
         }
 
         val balanceBinding = RowBalanceBinding.inflate(inflater, binding.transactionItems, true)

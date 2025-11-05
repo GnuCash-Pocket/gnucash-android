@@ -132,8 +132,7 @@ abstract class GnuAndroidTest {
         @JvmStatic
         fun preventFirstRunDialogs(context: Context) {
             AccountsActivity.rateAppConfig = RateThisApp.Config(10000, 10000)
-            PreferenceManager.getDefaultSharedPreferences(context)
-                .edit { //do not show first run dialog
+            PreferenceManager.getDefaultSharedPreferences(context).edit { //do not show first run dialog
                     putBoolean(context.getString(R.string.key_first_run), false)
                     putInt(
                         AccountsActivity.LAST_OPEN_TAB_INDEX,

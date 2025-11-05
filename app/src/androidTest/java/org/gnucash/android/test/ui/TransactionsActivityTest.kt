@@ -333,7 +333,6 @@ class TransactionsActivityTest : GnuAndroidTest() {
      * Tests that transactions splits are automatically balanced and an imbalance account will be created
      * This test case assumes that single entry is used
      */
-    //TODO: move this to the unit tests
     fun testAutoBalanceTransactions() {
         setDoubleEntryEnabled(false)
         transactionsDbAdapter.deleteAllRecords()
@@ -353,7 +352,8 @@ class TransactionsActivityTest : GnuAndroidTest() {
             .perform(typeText("499"))
 
         //no double entry so no split editor
-        //TODO: check that the split drawable is not displayed
+        onView(withId(R.id.btn_split_editor))
+            .check(matches(not(isDisplayed())))
         clickViewId(R.id.menu_save)
 
         assertThat(transactionsDbAdapter.recordsCount).isOne()
@@ -451,10 +451,9 @@ class TransactionsActivityTest : GnuAndroidTest() {
 
 
     private fun setDoubleEntryEnabled(enabled: Boolean) {
-        GnuCashApplication.getBookPreferences(context)
-            .edit {
-                putBoolean(context.getString(R.string.key_use_double_entry), enabled)
-            }
+        GnuCashApplication.getBookPreferences(context).edit {
+            putBoolean(context.getString(R.string.key_use_double_entry), enabled)
+        }
     }
 
     @Test
@@ -951,6 +950,39 @@ class TransactionsActivityTest : GnuAndroidTest() {
         val transferAcctSplit = editedTransaction.getSplits(TRANSFER_ACCOUNT_UID)[0]
         assertThat(transferAcctSplit.quantity).isEqualTo(expectedValue)
         assertThat(transferAcctSplit.value).isEqualTo(expectedValue)
+    }
+
+    @Test
+    fun single_entry_transaction() {
+        setDoubleEntryEnabled(false)
+        transactionsDbAdapter.deleteAllRecords()
+        assertThat(transactionsDbAdapter.recordsCount).isZero()
+
+        validateTransactionListDisplayed()
+        clickViewId(R.id.fab_create_transaction)
+        onView(withId(R.id.fragment_transaction_form))
+            .check(matches(isDisplayed()))
+        onView(withId(R.id.input_transaction_type))
+            .check(matches(isDisplayed()))
+        //no double-entry so no split editor
+        onView(withId(R.id.btn_split_editor))
+            .check(matches(not(isDisplayed())))
+
+        onView(withId(R.id.input_transaction_name))
+            .perform(typeText("Amazon"))
+        onView(withId(R.id.input_transaction_amount))
+            .perform(typeText("100"))
+
+        clickViewId(R.id.input_transaction_type)
+        clickViewId(R.id.menu_save)
+
+        assertThat(transactionsDbAdapter.recordsCount).isOne()
+        val transaction = transactionsDbAdapter.allTransactions[0]
+        val splits = transaction.splits
+        assertThat(splits).hasSize(2)
+        assertThat(splits[0].value.toDouble()).isEqualTo(100.00)
+        assertThat(splits[1].value.toDouble()).isEqualTo(100.00)
+        assertThat(splits[0].isPairOf(splits[1])).isTrue()
     }
 
     /**

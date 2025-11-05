@@ -205,7 +205,7 @@ class TransactionsDbAdapter(
         val selection = ("s." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
                 + " AND t." + TransactionEntry.COLUMN_TEMPLATE + " = 0")
         val selectionArgs = arrayOf<String?>(accountUID)
-        val sortOrder = "t." + TransactionEntry.COLUMN_TIMESTAMP + " DESC"
+        val sortOrder = "t." + TransactionEntry.COLUMN_TIMESTAMP + " DESC, t." + TransactionEntry.COLUMN_ID + " DESC"
 
         return queryBuilder.query(
             db,
