@@ -98,7 +98,7 @@ class CalculatorEditTextTest : GnuAndroidTest() {
 
         // Verify the input type is correct
         onView(withId(R.id.input_transaction_amount)).check(
-            matches(allOf(withInputType(InputType.TYPE_CLASS_NUMBER)))
+            matches(allOf(withInputType(InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)))
         )
 
         // Giving the focus to the amount field shows the keyboard

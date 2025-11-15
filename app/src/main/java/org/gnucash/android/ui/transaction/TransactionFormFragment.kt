@@ -69,7 +69,7 @@ import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
 import org.gnucash.android.ui.common.FormActivity
 import org.gnucash.android.ui.common.UxArgument
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity.Companion.updateAllWidgets
-import org.gnucash.android.ui.transaction.dialog.TransferFundsDialogFragment.Companion.getInstance
+import org.gnucash.android.ui.transaction.dialog.TransferFundsDialogFragment
 import org.gnucash.android.ui.util.RecurrenceParser.parse
 import org.gnucash.android.ui.util.RecurrenceViewClickListener
 import org.gnucash.android.ui.util.dialog.DatePickerDialogFragment
@@ -204,8 +204,7 @@ class TransactionFormFragment : MenuFragment(),
         val accountFrom = requireAccount()
         val fromCommodity = accountFrom.commodity
         val position = binding.inputTransferAccountSpinner.selectedItemPosition
-        val accountTarget = accountTransferNameAdapter!!.getAccount(position)
-        if (accountTarget == null) return
+        val accountTarget = accountTransferNameAdapter?.getAccount(position) ?: return
         val targetCommodity = accountTarget.commodity
 
         val enteredAmount = binding.inputTransactionAmount.value
@@ -230,11 +229,12 @@ class TransactionFormFragment : MenuFragment(),
         splitValue = null
         splitQuantity = null
 
-        val fragment = getInstance(amount, targetCommodity, this)
+        val fragment = TransferFundsDialogFragment.getInstance(amount, targetCommodity, this)
         fragment.show(
             parentFragmentManager,
             "transfer_funds_editor;" + fromCommodity + ";" + targetCommodity + ";" + amount.toPlainString()
         )
+        //FIXME if dialog "Cancel"ed, then revert account
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -314,7 +314,8 @@ class TransactionFormFragment : MenuFragment(),
 
             val secondaryTextView = view.findViewById<TextView>(R.id.secondary_text)
             //TODO: Extract string
-            secondaryTextView.text = "${balance.formattedString()} on $dateString"
+            secondaryTextView.text =
+                "${balance.formattedString()} on $dateString"
         }
     }
 

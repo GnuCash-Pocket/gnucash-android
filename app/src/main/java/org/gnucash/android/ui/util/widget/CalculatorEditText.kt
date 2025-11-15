@@ -86,9 +86,8 @@ class CalculatorEditText @JvmOverloads constructor(
         background = null
         isSingleLine = true
 
-        // Disable spell check (hex strings look like words to Android)
         setInputType(InputType.TYPE_NULL)
-        setRawInputType(InputType.TYPE_CLASS_NUMBER)
+        setRawInputType(InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
 
         addFilter(filter)
 

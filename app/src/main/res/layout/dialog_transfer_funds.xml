@@ -130,15 +130,14 @@
             app:layout_constraintStart_toEndOf="@id/radio_exchange_rate"
             app:layout_constraintTop_toBottomOf="@id/description">
 
-            <EditText
+            <org.gnucash.android.ui.util.widget.CalculatorEditText
                 android:id="@+id/input_exchange_rate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/hint_exchange_rate"
-                android:inputType="numberDecimal">
+                android:hint="@string/hint_exchange_rate">
 
                 <requestFocus />
-            </EditText>
+            </org.gnucash.android.ui.util.widget.CalculatorEditText>
         </com.google.android.material.textfield.TextInputLayout>
 
         <Button
@@ -167,13 +166,12 @@
             app:layout_constraintStart_toEndOf="@id/radio_converted_amount"
             app:layout_constraintTop_toBottomOf="@id/exchange_rate_text_input_layout">
 
-            <EditText
+            <org.gnucash.android.ui.util.widget.CalculatorEditText
                 android:id="@+id/input_converted_amount"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:enabled="false"
-                android:hint="@string/hint_converted_amount"
-                android:inputType="numberDecimal" />
+                android:hint="@string/hint_converted_amount" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
