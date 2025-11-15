@@ -165,9 +165,9 @@
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
     <string name="color_picker_default_title">Velg en farge</string>
     <!-- Content description for a color square. -->
-    <string name="color_swatch_description">Color <xliff:g example="14" id="color_index">%1$d</xliff:g></string>
+    <string name="color_swatch_description">Color <xliff:g example="14" id="color_index">%1$s</xliff:g></string>
     <!-- Content description for a selected color square. -->
-    <string name="color_swatch_description_selected">Color <xliff:g example="14" id="color_index">%1$d</xliff:g> selected</string>
+    <string name="color_swatch_description_selected">Color <xliff:g example="14" id="color_index">%1$s</xliff:g> selected</string>
     <string name="label_account_color_and_type">Konto farge &amp; Type</string>
     <string name="label_delete_sub_accounts">Slett underkontoer</string>
     <string name="title_recent_accounts">Siste</string>

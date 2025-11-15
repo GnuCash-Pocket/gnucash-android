@@ -41,7 +41,6 @@ import org.gnucash.android.app.MenuFragment
 import org.gnucash.android.app.actionBar
 import org.gnucash.android.databinding.FragmentAccountFormBinding
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
-import org.gnucash.android.db.DatabaseSchema.SplitEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.DatabaseAdapter
 import org.gnucash.android.db.joinIn
@@ -149,7 +148,7 @@ class AccountFormFragment : MenuFragment(), FragmentResultListener {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = FragmentAccountFormBinding.inflate(inflater, container, false)
         this.binding = binding
         return binding.root
@@ -407,15 +406,11 @@ class AccountFormFragment : MenuFragment(), FragmentResultListener {
      */
     private fun showColorPickerDialog() {
         val fragmentManager = parentFragmentManager
-        @ColorInt val currentColor = selectedColor
-
-        val context = requireContext()
-        val accountColorOptions = context.resources.getIntArray(R.array.account_colors)
 
         val colorPickerDialogFragment = ColorPickerDialog.newInstance(
             R.string.color_picker_default_title,
-            accountColorOptions,
-            currentColor, -1, ColorPickerDialog.SIZE_SMALL
+            ColorPickerDialog.SIZE_SMALL,
+            selectedColor
         )
         fragmentManager.setFragmentResultListener(
             ColorPickerDialog.COLOR_PICKER_DIALOG_TAG,

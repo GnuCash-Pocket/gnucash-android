@@ -149,8 +149,8 @@
     <string name="file_format_ofx">הבורסה הפיננסית הפתוח</string>
     <string name="file_format_xml">GnuCash XML</string>
     <string name="color_picker_default_title" comment="color_picker_default_title Default title for color picker dialog [CHAR LIMIT=30]">בחר צבע</string>
-    <string name="color_swatch_description" comment="color_swatch_description Content description for a color square.">צבע <xliff:g example="14" id="color_index">%1$d</xliff:g></string>
-    <string name="color_swatch_description_selected" comment="color_swatch_description_selected Content description for a selected color square.">צבע <xliff:g example="14" id="color_index">%1$d</xliff:g> נבחר</string>
+    <string name="color_swatch_description" comment="color_swatch_description Content description for a color square.">צבע <xliff:g example="14" id="color_index">%1$s</xliff:g></string>
+    <string name="color_swatch_description_selected" comment="color_swatch_description_selected Content description for a selected color square.">צבע <xliff:g example="14" id="color_index">%1$s</xliff:g> נבחר</string>
     <string name="label_account_color_and_type">צבע חשבון וסוג</string>
     <string name="label_delete_sub_accounts">מחק תתי-חשבונות</string>
     <string name="title_recent_accounts">אחרונים</string>

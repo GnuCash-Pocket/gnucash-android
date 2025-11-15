@@ -165,9 +165,9 @@
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
     <string name="color_picker_default_title">Select a Colour</string>
     <!-- Content description for a color square. -->
-    <string name="color_swatch_description">Colour <xliff:g example="14" id="color_index">%1$d</xliff:g></string>
+    <string name="color_swatch_description">Colour <xliff:g example="14" id="color_index">%1$s</xliff:g></string>
     <!-- Content description for a selected color square. -->
-    <string name="color_swatch_description_selected">Colour <xliff:g example="14" id="color_index">%1$d</xliff:g> selected</string>
+    <string name="color_swatch_description_selected">Colour <xliff:g example="14" id="color_index">%1$s</xliff:g> selected</string>
     <string name="label_account_color_and_type">Account Colour &amp; Type</string>
     <string name="label_delete_sub_accounts">Delete sub-accounts</string>
     <string name="title_recent_accounts">Recent</string>
@@ -521,4 +521,52 @@
     <string name="search_compare_numeric_credit">"has credits"</string>
     <string name="search_compare_account_any">"matches any account"</string>
     <string name="search_compare_account_none">"matches no accounts"</string>
+
+    <string-array name="colors_names_gtk">
+        <item>"Very Light Blue"</item>
+        <item>"Light Blue"</item>
+        <item>"Blue"</item>
+        <item>"Dark Blue"</item>
+        <item>"Very Dark Blue"</item>
+        <item>"Very Light Green"</item>
+        <item>"Light Green"</item>
+        <item>"Green"</item>
+        <item>"Dark Green"</item>
+        <item>"Very Dark Green"</item>
+        <item>"Very Light Yellow"</item>
+        <item>"Light Yellow"</item>
+        <item>"Yellow"</item>
+        <item>"Dark Yellow"</item>
+        <item>"Very Dark Yellow"</item>
+        <item>"Very Light Orange"</item>
+        <item>"Light Orange"</item>
+        <item>"Orange"</item>
+        <item>"Dark Orange"</item>
+        <item>"Very Dark Orange"</item>
+        <item>"Very Light Red"</item>
+        <item>"Light Red"</item>
+        <item>"Red"</item>
+        <item>"Dark Red"</item>
+        <item>"Very Dark Red"</item>
+        <item>"Very Light Purple"</item>
+        <item>"Light Purple"</item>
+        <item>"Purple"</item>
+        <item>"Dark Purple"</item>
+        <item>"Very Dark Purple"</item>
+        <item>"Very Light Brown"</item>
+        <item>"Light Brown"</item>
+        <item>"Brown"</item>
+        <item>"Dark Brown"</item>
+        <item>"Very Dark Brown"</item>
+        <item>"White"</item>
+        <item>"Light Gray 1"</item>
+        <item>"Light Gray 2"</item>
+        <item>"Light Gray 3"</item>
+        <item>"Light Gray 4"</item>
+        <item>"Dark Gray 1"</item>
+        <item>"Dark Gray 2"</item>
+        <item>"Dark Gray 3"</item>
+        <item>"Dark Gray 4"</item>
+        <item>"Black"</item>
+    </string-array>
 </resources>

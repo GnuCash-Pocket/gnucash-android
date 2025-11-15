@@ -54,4 +54,88 @@
 
     <!-- Recurrence -->
     <color name="recurrence_bubble_text_normal">?android:textColorPrimary</color>
+
+    <array name="account_colors_material" translatable="false">
+        <item>#686868</item> <!-- gray -->
+        <item>#CCCCCC</item> <!-- silver -->
+        <item>#000066</item> <!-- midnight blue -->
+        <item>#3714A4</item> <!-- blue violet -->
+        <item>#0B57A4</item> <!-- aqua -->
+        <item>#1469EB</item> <!-- Assets -->
+        <item>#2A82D7</item> <!-- blue -->
+        <item>#8BBDEB</item> <!-- light blue -->
+        <item>#1B4F15</item> <!-- forest green -->
+        <item>#2B4726</item> <!-- olive -->
+        <item>#008000</item> <!-- dark green -->
+        <item>#2B8A6D</item> <!-- teal -->
+        <item>#3AA03A</item> <!-- green -->
+        <item>#7F2B14</item> <!-- maroon -->
+        <item>#964B00</item> <!-- brown -->
+        <item>#A50516</item> <!-- crimson -->
+        <item>#D13E29</item> <!-- Expenses -->
+        <item>#D7462C</item> <!-- red orange -->
+        <item>#FC0D1B</item> <!-- red -->
+        <item>#FC331C</item> <!-- orange red -->
+        <item>#FC6A6C</item> <!-- light red -->
+        <item>#6B28CE</item> <!-- violet -->
+        <item>#6041FA</item> <!-- violet blue -->
+        <item>#A51497</item> <!-- fuchsia -->
+        <item>#B304AD</item> <!-- Liabilities -->
+        <item>#AF31F2</item> <!-- purple -->
+        <item>#FF0080</item> <!-- hot pink -->
+        <item>#FB3C8F</item> <!-- deep pink -->
+        <item>#FC1CAD</item> <!-- magenta -->
+        <item>#FC5AB8</item> <!-- pink -->
+        <item>#F69E94</item> <!-- salmon -->
+        <item>#EE8600</item> <!-- Equity -->
+        <item>#FD7222</item> <!-- orange -->
+        <item>#FEC42E</item> <!-- yellow orange -->
+    </array>
+    <array name="colors_gtk" translatable="false">
+        <item>#99c1f1</item>
+        <item>#62a0ea</item>
+        <item>#3584e4</item>
+        <item>#1c71d8</item>
+        <item>#1a5fb4</item>
+        <item>#8ff0a4</item>
+        <item>#57e389</item>
+        <item>#33d17a</item>
+        <item>#2ec27e</item>
+        <item>#26a269</item>
+        <item>#f9f06b</item>
+        <item>#f8e45c</item>
+        <item>#f6d32d</item>
+        <item>#f5c211</item>
+        <item>#e5a50a</item>
+        <item>#ffbe6f</item>
+        <item>#ffa348</item>
+        <item>#ff7800</item>
+        <item>#e66100</item>
+        <item>#c64600</item>
+        <item>#f66151</item>
+        <item>#ed333b</item>
+        <item>#e01b24</item>
+        <item>#c01c28</item>
+        <item>#a51d2d</item>
+        <item>#dc8add</item>
+        <item>#c061cb</item>
+        <item>#9141ac</item>
+        <item>#813d9c</item>
+        <item>#613583</item>
+        <item>#cdab8f</item>
+        <item>#b5835a</item>
+        <item>#986a44</item>
+        <item>#865e3c</item>
+        <item>#63452c</item>
+        <item>#ffffff</item>
+        <item>#f6f5f4</item>
+        <item>#deddda</item>
+        <item>#c0bfbc</item>
+        <item>#9a9996</item>
+        <item>#77767b</item>
+        <item>#5e5c64</item>
+        <item>#3d3846</item>
+        <item>#241f31</item>
+        <item>#000000</item>
+    </array>
 </resources>
