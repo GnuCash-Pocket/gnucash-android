@@ -50,8 +50,10 @@ import org.gnucash.android.app.actionBar
 import org.gnucash.android.databinding.CardviewTransactionBinding
 import org.gnucash.android.databinding.FragmentTransactionsListBinding
 import org.gnucash.android.db.DatabaseCursorLoader
+import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
+import org.gnucash.android.db.getString
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.ui.adapter.CursorRecyclerAdapter
 import org.gnucash.android.ui.common.FormActivity
@@ -74,6 +76,7 @@ class TransactionsListFragment : MenuFragment(),
     FragmentResultListener {
     private var transactionsDbAdapter: TransactionsDbAdapter = TransactionsDbAdapter.instance
     private var accountUID: String? = null
+    private var scrollTransactionUID: String? = null
 
     private var useCompactView = false
     private var useDoubleEntry = true
@@ -87,6 +90,7 @@ class TransactionsListFragment : MenuFragment(),
         val context = requireContext()
         val args = requireArguments()
         accountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID)
+        scrollTransactionUID = args.getString(UxArgument.SELECTED_TRANSACTION_UID)
 
         useDoubleEntry = isDoubleEntryEnabled(context)
         useCompactView = getBookPreferences(context).getBoolean(
@@ -219,6 +223,7 @@ class TransactionsListFragment : MenuFragment(),
     override fun onLoadFinished(loader: Loader<Cursor>, cursor: Cursor?) {
         Timber.d("Transactions loader finished. Swapping in cursor")
         transactionsAdapter?.changeCursor(cursor)
+        scrollToTransaction(cursor, scrollTransactionUID)
     }
 
     override fun onLoaderReset(loader: Loader<Cursor>) {
@@ -442,5 +447,25 @@ class TransactionsListFragment : MenuFragment(),
             .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
         startActivity(intent)
+    }
+
+    private fun scrollToTransaction(cursor: Cursor?, scrollTransactionUID: String?) {
+        val cursor = cursor ?: return
+        val scrollTransactionUID = scrollTransactionUID ?: return
+        if (scrollTransactionUID.isEmpty()) return
+        val binding = binding ?: return
+
+        var position = 0
+        if (cursor.moveToFirst()) {
+            do {
+                val transactionUID = cursor.getString(TransactionEntry.COLUMN_UID)
+                if (transactionUID == scrollTransactionUID) {
+                    break
+                }
+                position++
+            } while (cursor.moveToNext())
+        }
+        cursor.moveToFirst()
+        binding.list.scrollToPosition(position)
     }
 }

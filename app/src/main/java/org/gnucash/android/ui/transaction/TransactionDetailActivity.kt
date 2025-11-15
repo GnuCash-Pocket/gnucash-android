@@ -88,8 +88,12 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
     }
 
     private fun bind(binding: ItemSplitAmountInfoBinding, split: Split) {
-        val account = accountsDbAdapter.getRecord(split.accountUID!!)
+        val splitAccountUID = split.accountUID!!
+        val account = accountsDbAdapter.getRecord(splitAccountUID)
         binding.splitAccountName.text = account.fullName
+        if (accountUID != splitAccountUID) {
+            binding.splitAccountName.setOnClickListener { showAccount(split) }
+        }
         val balanceView =
             if (split.type == TransactionType.DEBIT) binding.splitDebit else binding.splitCredit
         @ColorInt val colorBalanceZero = balanceView.currentTextColor
@@ -98,7 +102,8 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
 
     private fun bind(binding: RowBalanceBinding, accountUID: String, timeMillis: Long) {
         val account = accountsDbAdapter.getRecord(accountUID)
-        val accountBalance = accountsDbAdapter.getAccountBalance(accountUID, ALWAYS, timeMillis, true)
+        val accountBalance =
+            accountsDbAdapter.getAccountBalance(accountUID, ALWAYS, timeMillis, true)
         val balanceTextView =
             if (account.accountType.hasDebitDisplayBalance) binding.balanceDebit else binding.balanceCredit
         balanceTextView.displayBalance(accountBalance, balanceTextView.currentTextColor)
@@ -265,6 +270,17 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         val intent = Intent(intent)
             .putExtra(UxArgument.SELECTED_TRANSACTION_UID, duplicate.uid)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+        startActivity(intent)
+    }
+
+    // Show the transaction in the account.
+    fun showAccount(split: Split) {
+        val accountUID = split.accountUID ?: return
+        val transactionUID = split.transactionUID ?: return
+        val intent = Intent(this, TransactionsActivity::class.java)
+            .setAction(Intent.ACTION_VIEW)
+            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+            .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
         startActivity(intent)
     }
 

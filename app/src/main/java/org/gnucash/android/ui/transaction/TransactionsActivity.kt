@@ -129,6 +129,7 @@ class TransactionsActivity : BaseDrawerActivity(),
             Timber.i("Opening transactions for account: %s", accountUID)
             val args = Bundle()
             args.putString(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+            args.putString(UxArgument.SELECTED_TRANSACTION_UID, intent.getStringExtra(UxArgument.SELECTED_TRANSACTION_UID))
             val fragment = TransactionsListFragment()
             fragment.arguments = args
             return fragment
