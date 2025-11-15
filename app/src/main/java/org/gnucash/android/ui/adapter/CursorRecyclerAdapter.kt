@@ -81,7 +81,11 @@ abstract class CursorRecyclerAdapter<VH : RecyclerView.ViewHolder>(cursor: Curso
     override fun getItemCount(): Int {
         val cursor = cursor ?: return 0
         return if (isDataValid) {
-            cursor.count
+            try {
+                cursor.count
+            } catch (_: IllegalStateException) {
+                0
+            }
         } else {
             0
         }
