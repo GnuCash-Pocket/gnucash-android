@@ -313,7 +313,8 @@ class TransactionFormFragment : MenuFragment(),
             )
 
             val secondaryTextView = view.findViewById<TextView>(R.id.secondary_text)
-            secondaryTextView.text = "${balance.formattedString()} on $dateString" //TODO: Extract string
+            //TODO: Extract string
+            secondaryTextView.text = "${balance.formattedString()} on $dateString"
         }
     }
 
@@ -344,21 +345,25 @@ class TransactionFormFragment : MenuFragment(),
 
         binding.inputTransactionName.onItemClickListener =
             OnItemClickListener { adapterView, view, position, id ->
-                val transaction = Transaction(transactionsDbAdapter.getRecord(id), true)
+                val transactionDb = transactionsDbAdapter.getRecord(id)
+                val transaction = Transaction(transactionDb, true)
                 transaction.time = System.currentTimeMillis()
                 //we check here because next method will modify it and we want to catch user-modification
-                val amountEntered = binding.inputTransactionAmount.isInputModified
+                val amountEntered = binding.inputTransactionAmount.value
+                val amountModified = binding.inputTransactionAmount.isInputModified
                 initializeViewsWithTransaction(binding, transaction)
                 val splits: List<Split> = transaction.splits
                 val isSplitPair = splits.size == 2 && splits[0].isPairOf(splits[1])
                 if (isSplitPair) {
                     splitsList.clear()
-                    if (!amountEntered) { //if user already entered an amount
+                    if (amountModified) { //if user already entered an amount
+                        binding.inputTransactionAmount.value = amountEntered
+                    } else {
                         binding.inputTransactionAmount.value = splits[0].value.toBigDecimal()
                     }
                 } else {
                     // if user entered own amount, clear loaded splits and use the user value
-                    if (amountEntered) {
+                    if (amountModified) {
                         splitsList.clear()
                         setDoubleEntryViewsVisibility(binding, true)
                     } else {
