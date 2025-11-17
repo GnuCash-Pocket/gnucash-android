@@ -156,7 +156,12 @@ class TransactionsListFragment : MenuFragment(),
      */
     override fun refresh() {
         if (isDetached) return
-        loaderManager.restartLoader(0, null, this)
+        try {
+            loaderManager.restartLoader(0, null, this)
+        } catch (e: IllegalStateException) {
+            // No fragment manager.
+            Timber.e(e)
+        }
     }
 
     override fun onResume() {
