@@ -481,4 +481,6 @@
     <string name="title_progress_processing_prices">価格処理</string>
     <string name="title_progress_processing_schedules">スケジュール処理</string>
     <string name="title_progress_processing_transactions">取引処理</string>
+    <!-- msgid "Number" -->
+    <string name="number">番号</string>
 </resources>

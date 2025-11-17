@@ -63,6 +63,8 @@ class Transaction : BaseModel {
      */
     var scheduledActionUID: String? = null
 
+    var number: String? = null
+
     /**
      * Overloaded constructor. Creates a new transaction instance with the
      * provided data and initializes the rest to default values.
@@ -94,6 +96,7 @@ class Transaction : BaseModel {
         }
         clone.commodity = commodity
         clone.note = note
+        clone.number = number
         clone.splits = splits.map { it.copy(generateNewUID) }
         clone.time = time
         return clone

@@ -1006,6 +1006,7 @@
         <cmdty:space>CURRENCY</cmdty:space>
         <cmdty:id>USD</cmdty:id>
       </trn:currency>
+      <trn:num>N123</trn:num>
       <trn:date-posted>
         <ts:date>2025-03-27 10:59:00 +0000</ts:date>
       </trn:date-posted>

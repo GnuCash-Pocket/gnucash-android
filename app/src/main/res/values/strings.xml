@@ -521,6 +521,8 @@
     <string name="search_compare_numeric_credit">"has credits"</string>
     <string name="search_compare_account_any">"matches any account"</string>
     <string name="search_compare_account_none">"matches no accounts"</string>
+    <!-- msgid "Number" -->
+    <string name="number">Number</string>
 
     <string-array name="colors_names_gtk">
         <item>"Very Light Blue"</item>

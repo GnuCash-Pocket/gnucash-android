@@ -484,4 +484,6 @@
     <string name="title_progress_processing_prices">Hintojen käsittely</string>
     <string name="title_progress_processing_schedules">Aikataulujen käsittely</string>
     <string name="title_progress_processing_transactions">Transaktioiden käsittely</string>
+    <!-- msgid "Number" -->
+    <string name="number">Numero</string>
 </resources>

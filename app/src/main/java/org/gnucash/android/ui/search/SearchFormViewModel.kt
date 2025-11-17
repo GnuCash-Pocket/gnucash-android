@@ -42,6 +42,10 @@ class SearchFormViewModel : ViewModel() {
         return form.addMemo()
     }
 
+    fun addNumber(): SearchCriteria.Number {
+        return form.addNumber()
+    }
+
     fun addDate(): SearchCriteria.Date {
         return form.addDate()
     }

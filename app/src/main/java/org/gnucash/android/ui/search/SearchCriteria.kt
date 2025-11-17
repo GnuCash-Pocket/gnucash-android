@@ -62,6 +62,11 @@ sealed class SearchCriteria {
         var compare: StringCompare = StringCompare.Contains
     ) : SearchCriteria()
 
+    data class Number(
+        var value: String? = null,
+        var compare: StringCompare = StringCompare.Contains
+    ) : SearchCriteria()
+
     data class Date(
         var value: LocalDate? = null,
         var compare: Compare = Compare.LessThanOrEqualTo

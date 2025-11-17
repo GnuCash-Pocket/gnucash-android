@@ -496,4 +496,6 @@
     <string name="title_progress_processing_prices">معالجة الأسعار</string>
     <string name="title_progress_processing_schedules">معالجة الجداول</string>
     <string name="title_progress_processing_transactions">معالجة المعاملات</string>
+    <!-- msgid "Number" -->
+    <string name="number">عدد</string>
 </resources>

@@ -487,4 +487,6 @@
     <string name="title_progress_processing_prices">Обрада цена</string>
     <string name="title_progress_processing_schedules">Обрада распореда</string>
     <string name="title_progress_processing_transactions">Обрада трансакција</string>
+    <!-- msgid "Number" -->
+    <string name="number">Број</string>
 </resources>

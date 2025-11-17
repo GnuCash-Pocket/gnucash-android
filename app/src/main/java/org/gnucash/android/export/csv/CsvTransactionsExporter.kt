@@ -132,7 +132,7 @@ class CsvTransactionsExporter(
 
         fields[0] = dateFormat.print(transaction.time)
         fields[1] = transaction.uid
-        fields[2] = ""  // Transaction number
+        fields[2] = transaction.number.orEmpty()
         fields[3] = transaction.description.orEmpty()
         fields[4] = transaction.note.orEmpty()
         fields[5] = "${commodity.namespace}::${commodity.currencyCode}"

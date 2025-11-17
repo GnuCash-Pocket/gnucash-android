@@ -481,4 +481,6 @@
     <string name="title_progress_processing_prices">가격 처리</string>
     <string name="title_progress_processing_schedules">일정 처리</string>
     <string name="title_progress_processing_transactions">거래 처리</string>
+    <!-- msgid "Number" -->
+    <string name="number">번호</string>
 </resources>

@@ -484,4 +484,6 @@
     <string name="title_progress_processing_prices">پردازش قیمت‌ها</string>
     <string name="title_progress_processing_schedules">پردازش برنامه‌ها</string>
     <string name="title_progress_processing_transactions">پردازش تراکنش‌ها</string>
+    <!-- msgid "Number" -->
+    <string name="number">شماره</string>
 </resources>

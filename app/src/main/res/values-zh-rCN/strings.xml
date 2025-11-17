@@ -484,4 +484,6 @@
     <string name="title_progress_processing_prices">处理价格</string>
     <string name="title_progress_processing_schedules">处理进度表</string>
     <string name="title_progress_processing_transactions">处理交易</string>
+    <!-- msgid "Number" -->
+    <string name="number">编号</string>
 </resources>

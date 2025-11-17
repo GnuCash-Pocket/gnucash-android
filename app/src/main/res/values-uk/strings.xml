@@ -490,4 +490,6 @@
     <string name="title_progress_processing_prices">Обробка цін</string>
     <string name="title_progress_processing_schedules">Обробка графіків</string>
     <string name="title_progress_processing_transactions">Обробка транзакцій</string>
+    <!-- msgid "Number" -->
+    <string name="number">Число</string>
 </resources>

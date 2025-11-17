@@ -487,4 +487,6 @@
     <string name="title_progress_processing_prices">Obrada cijene</string>
     <string name="title_progress_processing_schedules">Obrada rasporedi</string>
     <string name="title_progress_processing_transactions">Obrada transakcija</string>
+    <!-- msgid "Number" -->
+    <string name="number">Broj</string>
 </resources>

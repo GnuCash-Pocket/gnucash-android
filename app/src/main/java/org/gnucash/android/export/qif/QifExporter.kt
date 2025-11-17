@@ -39,6 +39,7 @@ import org.gnucash.android.export.qif.QifHelper.ENTRY_TERMINATOR
 import org.gnucash.android.export.qif.QifHelper.INTERNAL_CURRENCY_PREFIX
 import org.gnucash.android.export.qif.QifHelper.MEMO_PREFIX
 import org.gnucash.android.export.qif.QifHelper.NEW_LINE
+import org.gnucash.android.export.qif.QifHelper.NUMBER_PREFIX
 import org.gnucash.android.export.qif.QifHelper.PAYEE_PREFIX
 import org.gnucash.android.export.qif.QifHelper.SPLIT_AMOUNT_PREFIX
 import org.gnucash.android.export.qif.QifHelper.SPLIT_CATEGORY_PREFIX
@@ -72,6 +73,8 @@ import java.util.Locale
 
 /**
  * Exports the accounts and transactions in the database to the QIF format
+ *
+ * https://en.wikipedia.org/wiki/Quicken_Interchange_Format
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  * @author Yongxin Wang <fefe.wyx@gmail.com>
@@ -113,10 +116,12 @@ class QifExporter(
         quantityFormatter.isGroupingUsed = false
 
         val projection = arrayOf<String?>(
+            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_ID + " AS trans_id",
             TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID + " AS trans_uid",
             TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " AS trans_time",
             TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_DESCRIPTION + " AS trans_desc",
             TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_NOTES + " AS trans_notes",
+            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_NUMBER + " AS trans_num",
             SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_ID + " AS split_id",
             SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_UID + " AS split_uid",
             SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_NUM + " AS split_quantity_num",
@@ -138,7 +143,7 @@ class QifExporter(
                     " AND " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + " >= ?"
         // trans_uid ASC  : put splits from the same transaction together
         // trans_time ASC : put transactions in time order
-        val orderBy = "acct1_uid ASC, trans_uid ASC, trans_time ASC, split_id ASC"
+        val orderBy = "acct1_uid ASC, trans_time ASC, trans_num ASC, trans_id ASC, split_id ASC"
 
         var cursor: Cursor? = null
         try {
@@ -159,9 +164,10 @@ class QifExporter(
                 cancellationSignal.throwIfCanceled()
                 val accountUID = cursor.getString("acct1_uid") ?: continue
                 val transactionUID = cursor.getString("trans_uid") ?: continue
-                val description = cursor.getString("trans_desc") ?: continue
+                val description = cursor.getString("trans_desc").toSingleLine() ?: continue
                 val time = cursor.getLong("trans_time")
-                val notes = cursor.getString("trans_notes")
+                val number = cursor.getString("trans_num").toSingleLine()
+                val notes = cursor.getString("trans_notes").toSingleLine()
                 val imbalance = cursor.getDouble("trans_acct_balance")
                 val splitCount = cursor.getInt("trans_split_count")
 
@@ -227,10 +233,16 @@ class QifExporter(
                     writer.append(PAYEE_PREFIX)
                         .append(description.trim())
                         .append(NEW_LINE)
+                    // Number
+                    if (!number.isNullOrEmpty()) {
+                        writer.append(NUMBER_PREFIX)
+                            .append(number)
+                            .append(NEW_LINE)
+                    }
                     // Notes, memo
                     if (!notes.isNullOrEmpty()) {
                         writer.append(MEMO_PREFIX)
-                            .append(notes.replace('\n', ' ').trim())
+                            .append(notes)
                             .append(NEW_LINE)
                     }
                     // deal with imbalance first
@@ -258,7 +270,7 @@ class QifExporter(
                 val account2UID = cursor.getString("acct2_uid")
                 val account2: Account = accounts[account2UID] ?: continue
                 val account2FullName = account2.fullName
-                val splitMemo = cursor.getString("split_memo")
+                val splitMemo = cursor.getString("split_memo").toSingleLine()
                 val splitType = cursor.getString("split_type")
                 val splitQuantityNum = cursor.getLong("split_quantity_num")
                 val splitQuantityDenom = cursor.getLong("split_quantity_denom")
@@ -271,7 +283,7 @@ class QifExporter(
                     .append(NEW_LINE)
                 if (!splitMemo.isNullOrEmpty()) {
                     writer.append(SPLIT_MEMO_PREFIX)
-                        .append(splitMemo.replace('\n', ' ').trim())
+                        .append(splitMemo)
                         .append(NEW_LINE)
                 }
                 var quantity = Money(splitQuantityNum, splitQuantityDenom, account2.commodity)
@@ -354,4 +366,8 @@ class QifExporter(
         }
         return splitFiles
     }
+
+    private fun String?.toSingleLine() = this?.replace('\n', ' ')
+        ?.replace('\r', ' ')
+        ?.trim()
 }

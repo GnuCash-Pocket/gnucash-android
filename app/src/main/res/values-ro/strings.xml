@@ -487,4 +487,6 @@
     <string name="title_progress_processing_prices">Prelucrarea prețurilor</string>
     <string name="title_progress_processing_schedules">Prelucrarea programelor</string>
     <string name="title_progress_processing_transactions">Prelucrarea tranzacțiilor</string>
+    <!-- msgid "Number" -->
+    <string name="number">Număr</string>
 </resources>

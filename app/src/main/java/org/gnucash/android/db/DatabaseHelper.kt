@@ -186,6 +186,7 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                     + TransactionEntry.COLUMN_CURRENCY + " varchar(255), "
                     + TransactionEntry.COLUMN_COMMODITY_UID + " varchar(255) not null, "
                     + TransactionEntry.COLUMN_SCHEDX_ACTION_UID + " varchar(255), "
+                    + TransactionEntry.COLUMN_NUMBER + " varchar(255), "
                     + TransactionEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
                     + TransactionEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
                     + "FOREIGN KEY (" + TransactionEntry.COLUMN_SCHEDX_ACTION_UID + ") REFERENCES " + ScheduledActionEntry.TABLE_NAME + " (" + ScheduledActionEntry.COLUMN_UID + ") ON DELETE SET NULL, "

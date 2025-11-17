@@ -400,6 +400,7 @@ class TransactionFormFragment : MenuFragment(),
         )
         binding.currencySymbol.text = transaction.commodity.symbol
         binding.notes.setText(transaction.note)
+        binding.number.setText(transaction.number)
         binding.inputDate.text = DATE_FORMATTER.print(transaction.time)
         binding.inputTime.text = TIME_FORMATTER.print(transaction.time)
         date = Calendar.getInstance().apply { timeInMillis = transaction.time }
@@ -764,6 +765,7 @@ class TransactionFormFragment : MenuFragment(),
     private fun extractTransactionFromView(binding: FragmentTransactionFormBinding): Transaction {
         val description = binding.inputTransactionName.getText().toString()
         val notes = binding.notes.getText().toString()
+        val number = binding.number.getText().toString()
         val account = requireAccount()
         val accountCommodity = account.commodity
 
@@ -773,6 +775,7 @@ class TransactionFormFragment : MenuFragment(),
             time = date.timeInMillis
             commodity = accountCommodity
             note = notes
+            this.number = number
             this.splits = splits
             isExported = false //not necessary as exports use timestamps now. Because, legacy
             isTemplate = account.isTemplate || !recurrenceRule.isNullOrEmpty()

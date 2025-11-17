@@ -98,6 +98,25 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/row_trn_number"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/dialog_padding">
+
+                    <ImageView
+                        style="@style/FormIcon"
+                        android:src="@drawable/ic_123" />
+
+                    <TextView
+                        android:id="@+id/number"
+                        style="@style/TransactionInfo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:id="@+id/row_trn_notes"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

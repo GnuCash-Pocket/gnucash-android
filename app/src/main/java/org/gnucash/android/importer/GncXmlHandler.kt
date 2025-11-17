@@ -96,6 +96,7 @@ import org.gnucash.android.export.xml.GncXmlHelper.TAG_LAST
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_MEMO
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_MULT
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_NAME
+import org.gnucash.android.export.xml.GncXmlHelper.TAG_NUM
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_NUM_OCCUR
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_NUM_PERIODS
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_PARENT
@@ -422,6 +423,7 @@ class GncXmlHandler(
             TAG_ADVANCE_CREATE_DAYS -> handleEndAdvanceCreateDays(uri, characterString)
             TAG_ADVANCE_REMIND_DAYS -> handleEndAdvanceRemindDays(uri, characterString)
             TAG_INSTANCE_COUNT -> handleEndInstanceCount(uri, characterString)
+            TAG_NUM -> handleEndNumber(uri, characterString)
             TAG_NUM_OCCUR -> handleEndNumberOccurrence(uri, characterString)
             TAG_REM_OCCUR -> handleEndRemainingOccurrence(uri, characterString)
             TAG_MULT -> handleEndMultiplier(uri, characterString)
@@ -908,6 +910,12 @@ class GncXmlHandler(
             commodity!!.fullname = name
         } else if (NS_SX == uri) {
             scheduledAction!!.name = name
+        }
+    }
+
+    private fun handleEndNumber(uri: String, value: String) {
+        if (NS_TRANSACTION == uri) {
+            transaction!!.number = value
         }
     }
 

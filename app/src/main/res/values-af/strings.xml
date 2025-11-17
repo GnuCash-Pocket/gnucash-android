@@ -484,4 +484,6 @@
     <string name="title_progress_processing_prices">Verwerking van pryse</string>
     <string name="title_progress_processing_schedules">Verwerking van skedules</string>
     <string name="title_progress_processing_transactions">Verwerking van transaksies</string>
+    <!-- msgid "Number" -->
+    <string name="number">Number</string>
 </resources>

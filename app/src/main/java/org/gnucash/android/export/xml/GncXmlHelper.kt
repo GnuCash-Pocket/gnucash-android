@@ -182,6 +182,7 @@ object GncXmlHelper {
     const val TAG_START: String = "start"
     const val TAG_LAST: String = "last"
     const val TAG_END: String = "end"
+    const val TAG_NUM: String = "num"
     const val TAG_NUM_OCCUR: String = "num-occur"
     const val TAG_REM_OCCUR: String = "rem-occur"
     const val TAG_TAG: String = "tag"

@@ -484,4 +484,6 @@
     <string name="title_progress_processing_prices">Processamento dos preços</string>
     <string name="title_progress_processing_schedules">Processando os cronogramas</string>
     <string name="title_progress_processing_transactions">Processamento das transações</string>
+    <!-- msgid "Number" -->
+    <string name="number">Número</string>
 </resources>

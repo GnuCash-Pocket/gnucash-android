@@ -148,21 +148,28 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         val timeAndDate = formatFullDate(transaction.time)
         binding.trnTimeAndDate.text = timeAndDate
 
-        if (!transaction.note.isNullOrEmpty()) {
+        if (transaction.number.isNullOrEmpty()) {
+            binding.rowTrnNumber.isVisible = false
+        } else {
+            binding.number.text = transaction.number
+            binding.rowTrnNumber.isVisible = true
+        }
+
+        if (transaction.note.isNullOrEmpty()) {
+            binding.rowTrnNotes.isVisible = false
+        } else {
             binding.notes.text = transaction.note
             binding.rowTrnNotes.isVisible = true
-        } else {
-            binding.rowTrnNotes.isVisible = false
         }
 
         val actionUID = transaction.scheduledActionUID
-        if (actionUID != null) {
+        if (actionUID.isNullOrEmpty()) {
+            binding.rowTrnRecurrence.isVisible = false
+        } else {
             val scheduledAction =
                 ScheduledActionDbAdapter.instance.getRecord(actionUID)
             binding.trnRecurrence.text = scheduledAction.getRepeatString(context)
             binding.rowTrnRecurrence.isVisible = true
-        } else {
-            binding.rowTrnRecurrence.isVisible = false
         }
 
         binding.fabEditTransaction.setOnClickListener { editTransaction() }

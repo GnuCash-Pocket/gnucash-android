@@ -160,6 +160,7 @@ class QifExporterTest : BookHelperTest() {
     fun memoAndDescription_shouldBeExported() {
         val expectedDescription = "my description"
         val expectedMemo = "my memo"
+        val expectedNumber = "n123"
         val expectedAccountName = "Basic Account"
         val expectedTime = Calendar.getInstance().apply {
             set(2025, Calendar.SEPTEMBER, 12)
@@ -173,6 +174,7 @@ class QifExporterTest : BookHelperTest() {
         transaction.addSplit(Split(Money("123.45", "EUR"), account.uid))
         transaction.description = expectedDescription
         transaction.note = expectedMemo
+        transaction.number = expectedNumber
         transaction.time = expectedTime
         account.addTransaction(transaction)
 
@@ -202,11 +204,12 @@ class QifExporterTest : BookHelperTest() {
         assertThat(lines[5]).isEqualTo(QifHelper.DATE_PREFIX + "2025/9/12")
         assertThat(lines[6]).isEqualTo(QifHelper.CATEGORY_PREFIX + "[" + expectedAccountName + "]")
         assertThat(lines[7]).isEqualTo(QifHelper.PAYEE_PREFIX + expectedDescription)
-        assertThat(lines[8]).isEqualTo(QifHelper.MEMO_PREFIX + expectedMemo)
-        assertThat(lines[9]).isEqualTo(QifHelper.SPLIT_CATEGORY_PREFIX + "[Imbalance-USD]")
-        assertThat(lines[10]).isEqualTo(QifHelper.SPLIT_AMOUNT_PREFIX + "-123.45")
-        assertThat(lines[11]).isEqualTo(QifHelper.TOTAL_AMOUNT_PREFIX + "-123.45")
-        assertThat(lines[12]).isEqualTo(QifHelper.ENTRY_TERMINATOR)
+        assertThat(lines[8]).isEqualTo(QifHelper.NUMBER_PREFIX + expectedNumber)
+        assertThat(lines[9]).isEqualTo(QifHelper.MEMO_PREFIX + expectedMemo)
+        assertThat(lines[10]).isEqualTo(QifHelper.SPLIT_CATEGORY_PREFIX + "[Imbalance-USD]")
+        assertThat(lines[11]).isEqualTo(QifHelper.SPLIT_AMOUNT_PREFIX + "-123.45")
+        assertThat(lines[12]).isEqualTo(QifHelper.TOTAL_AMOUNT_PREFIX + "-123.45")
+        assertThat(lines[13]).isEqualTo(QifHelper.ENTRY_TERMINATOR)
         file.delete()
     }
 

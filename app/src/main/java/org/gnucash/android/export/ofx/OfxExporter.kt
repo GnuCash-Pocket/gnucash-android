@@ -332,7 +332,7 @@ class OfxExporter(
         name.appendChild(doc.createTextNode(transaction.description))
         transactionNode.appendChild(name)
 
-        if (transaction.note != null && transaction.note!!.isNotEmpty()) {
+        if (!transaction.note.isNullOrEmpty()) {
             val memo = doc.createElement(TAG_MEMO)
             memo.appendChild(doc.createTextNode(transaction.note))
             transactionNode.appendChild(memo)

@@ -469,4 +469,6 @@
     <string name="title_progress_processing_prices">עיבוד מחירים</string>
     <string name="title_progress_processing_schedules">עיבוד לוחות זמנים</string>
     <string name="title_progress_processing_transactions">עיבוד עסקאות</string>
+    <!-- msgid "Number" -->
+    <string name="number">מספר</string>
 </resources>

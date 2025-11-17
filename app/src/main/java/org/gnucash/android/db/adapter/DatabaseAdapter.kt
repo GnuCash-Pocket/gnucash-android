@@ -105,6 +105,8 @@ abstract class DatabaseAdapter<Model : BaseModel>(
 
         db.execSQL(
             ("CREATE TEMP VIEW IF NOT EXISTS trans_split_acct AS SELECT "
+                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_ID + " AS "
+                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_ID + ", "
                     + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_MODIFIED_AT + " AS "
                     + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_MODIFIED_AT + ", "
                     + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " AS "
@@ -119,6 +121,8 @@ abstract class DatabaseAdapter<Model : BaseModel>(
                     + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_EXPORTED + ", "
                     + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + " AS "
                     + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TEMPLATE + ", "
+                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_NUMBER + " AS "
+                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_NUMBER + ", "
                     + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ID + " AS "
                     + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_ID + ", "
                     + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_UID + " AS "

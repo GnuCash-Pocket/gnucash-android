@@ -484,4 +484,6 @@
     <string name="title_progress_processing_prices">Árak feldolgozása</string>
     <string name="title_progress_processing_schedules">Jegyzékek feldolgozása</string>
     <string name="title_progress_processing_transactions">Tranzakciók feldolgozása</string>
+    <!-- msgid "Number" -->
+    <string name="number">Szám</string>
 </resources>

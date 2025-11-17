@@ -270,6 +270,7 @@
     </string-array>
     <string name="hint_description" translatable="false">@string/description</string>
     <string name="hint_notes" translatable="false">@string/notes</string>
+    <string name="hint_number" translatable="false">@string/number</string>
     <string name="label_account_color" translatable="false">@string/account_color</string>
     <string name="label_account_type" translatable="false">@string/type</string>
     <string name="label_account_name" translatable="false">@string/account_name</string>
@@ -296,4 +297,5 @@
     <string name="search_field_description" translatable="false">@string/description</string>
     <string name="search_field_notes" translatable="false">@string/hint_notes</string>
     <string name="search_field_memo" translatable="false">@string/hint_split_memo</string>
+    <string name="search_field_number" translatable="false">@string/hint_number</string>
 </resources>

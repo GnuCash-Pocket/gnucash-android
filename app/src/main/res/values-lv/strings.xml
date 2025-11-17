@@ -487,4 +487,6 @@
     <string name="title_progress_processing_prices">Cenu apstrāde</string>
     <string name="title_progress_processing_schedules">Grafiksu apstrāde</string>
     <string name="title_progress_processing_transactions">Darījumu apstrāde</string>
+    <!-- msgid "Number" -->
+    <string name="number">Numurs</string>
 </resources>

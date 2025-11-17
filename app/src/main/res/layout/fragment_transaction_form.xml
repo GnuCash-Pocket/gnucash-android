@@ -161,6 +161,30 @@
 
                 <ImageView
                     style="@style/FormIcon"
+                    android:src="@drawable/ic_123" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                    <EditText
+                        android:id="@+id/number"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/hint_number"
+                        android:inputType="textNoSuggestions"
+                        android:singleLine="true"
+                        android:textAppearance="?android:textAppearanceSmall" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+            <View style="@style/Divider" />
+
+            <LinearLayout style="@style/FormRow">
+
+                <ImageView
+                    style="@style/FormIcon"
                     android:src="@drawable/ic_notes" />
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -173,7 +197,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/hint_notes"
-                        android:inputType="textMultiLine|textCapSentences"
+                        android:inputType="textMultiLine|textCapSentences|textLongMessage"
                         android:singleLine="false"
                         android:textAppearance="?android:textAppearanceSmall" />
                 </com.google.android.material.textfield.TextInputLayout>

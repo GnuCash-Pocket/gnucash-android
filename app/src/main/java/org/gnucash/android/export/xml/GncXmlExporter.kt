@@ -137,6 +137,7 @@ import org.gnucash.android.export.xml.GncXmlHelper.TAG_LAST
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_MEMO
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_MULT
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_NAME
+import org.gnucash.android.export.xml.GncXmlHelper.TAG_NUM
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_NUM_OCCUR
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_NUM_PERIODS
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_PARENT
@@ -468,6 +469,7 @@ class GncXmlExporter(
             "t." + TransactionEntry.COLUMN_COMMODITY_UID + " AS trans_commodity",
             "t." + TransactionEntry.COLUMN_CREATED_AT + " AS trans_date_posted",
             "t." + TransactionEntry.COLUMN_SCHEDX_ACTION_UID + " AS trans_from_sched_action",
+            "t." + TransactionEntry.COLUMN_NUMBER + " AS trans_num",
             "s." + SplitEntry.COLUMN_ID + " AS split_id",
             "s." + SplitEntry.COLUMN_UID + " AS split_uid",
             "s." + SplitEntry.COLUMN_MEMO + " AS split_memo",
@@ -554,6 +556,13 @@ class GncXmlExporter(
                 xmlSerializer.text(trnCommodity.currencyCode)
                 xmlSerializer.endTag(NS_COMMODITY, TAG_ID)
                 xmlSerializer.endTag(NS_TRANSACTION, TAG_CURRENCY)
+                // number
+                val number = cursor.getString("trans_num")
+                if (!number.isNullOrEmpty()) {
+                    xmlSerializer.startTag(NS_TRANSACTION, TAG_NUM)
+                    xmlSerializer.text(number)
+                    xmlSerializer.endTag(NS_TRANSACTION, TAG_NUM)
+                }
                 // date posted, time which user put on the transaction
                 val datePosted = cursor.getLong("trans_time")
                 val strDate = formatDateTime(datePosted)

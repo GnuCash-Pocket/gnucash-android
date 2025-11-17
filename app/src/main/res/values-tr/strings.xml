@@ -484,4 +484,6 @@
     <string name="title_progress_processing_prices">Fiyatların işlenmesi</string>
     <string name="title_progress_processing_schedules">Takvimlerin işlenmesi</string>
     <string name="title_progress_processing_transactions">İşlemlerin işlenmesi</string>
+    <!-- msgid "Number" -->
+    <string name="number">Numara</string>
 </resources>

@@ -68,7 +68,8 @@ class TransactionsDbAdapter(
         TransactionEntry.COLUMN_COMMODITY_UID,
         TransactionEntry.COLUMN_CREATED_AT,
         TransactionEntry.COLUMN_SCHEDX_ACTION_UID,
-        TransactionEntry.COLUMN_TEMPLATE
+        TransactionEntry.COLUMN_TEMPLATE,
+        TransactionEntry.COLUMN_NUMBER
     )
 ) {
     val commoditiesDbAdapter: CommoditiesDbAdapter = splitsDbAdapter.commoditiesDbAdapter
@@ -180,6 +181,9 @@ class TransactionsDbAdapter(
             stmt.bindString(8, transaction.scheduledActionUID)
         }
         stmt.bindBoolean(9, transaction.isTemplate)
+        if (transaction.number != null) {
+            stmt.bindString(10, transaction.number)
+        }
 
         return stmt
     }
@@ -205,7 +209,9 @@ class TransactionsDbAdapter(
         val selection = ("s." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
                 + " AND t." + TransactionEntry.COLUMN_TEMPLATE + " = 0")
         val selectionArgs = arrayOf<String?>(accountUID)
-        val sortOrder = "t." + TransactionEntry.COLUMN_TIMESTAMP + " DESC, t." + TransactionEntry.COLUMN_ID + " DESC"
+        val sortOrder = "t." + TransactionEntry.COLUMN_TIMESTAMP + " DESC, " +
+                "t." + TransactionEntry.COLUMN_NUMBER + " DESC, " +
+                "t." + TransactionEntry.COLUMN_ID + " DESC"
 
         return queryBuilder.query(
             db,
@@ -355,7 +361,9 @@ class TransactionsDbAdapter(
             TransactionEntry.COLUMN_TEMPLATE + "=0 AND " + TransactionEntry.COLUMN_TIMESTAMP + " >= ?"
         val whereArgs = arrayOf<String?>(timestamp.getTime().toString())
         val orderBy =
-            TransactionEntry.COLUMN_TIMESTAMP + " ASC, " + TransactionEntry.COLUMN_ID + " ASC"
+            TransactionEntry.COLUMN_TIMESTAMP + " ASC, " +
+                    TransactionEntry.COLUMN_NUMBER + " ASC, " +
+                    TransactionEntry.COLUMN_ID + " ASC"
         return queryBuilder.query(db, null, where, whereArgs, null, null, orderBy, null)
     }
 
@@ -364,7 +372,7 @@ class TransactionsDbAdapter(
         where: String?,
         whereArgs: Array<String?>?,
         orderBy: String?
-    ): Cursor? {
+    ): Cursor {
         // table is :
         // trans_split_acct, trans_extra_info ON trans_extra_info.trans_acct_t_uid = transactions_uid ,
         // accounts AS account1 ON account1.uid = trans_extra_info.trans_acct_a_uid
@@ -416,6 +424,7 @@ class TransactionsDbAdapter(
         val commodityUID = cursor.getString(TransactionEntry.COLUMN_COMMODITY_UID)!!
         transaction.commodity = commoditiesDbAdapter.getRecord(commodityUID)
         transaction.scheduledActionUID = cursor.getString(TransactionEntry.COLUMN_SCHEDX_ACTION_UID)
+        transaction.number = cursor.getString(TransactionEntry.COLUMN_NUMBER)
         transaction.splits = splitsDbAdapter.getSplitsForTransaction(transaction.uid)
 
         return transaction
@@ -704,8 +713,9 @@ class TransactionsDbAdapter(
                 )
         val columns = arrayOf<String?>("t.*")
         val selection = "(s1._id < s2._id) AND $where"
-        val orderBy = ("t." + TransactionEntry.COLUMN_TIMESTAMP + " DESC"
-                + ", t." + TransactionEntry.COLUMN_ID + " DESC")
+        val orderBy = "t." + TransactionEntry.COLUMN_TIMESTAMP + " DESC, " +
+                "t." + TransactionEntry.COLUMN_NUMBER + " DESC, " +
+                "t." + TransactionEntry.COLUMN_ID + " DESC"
         return db.query(true, table, columns, selection, null, null, null, orderBy, null)
     }
 

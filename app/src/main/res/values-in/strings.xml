@@ -481,4 +481,6 @@
     <string name="title_progress_processing_prices">Memproses harga</string>
     <string name="title_progress_processing_schedules">Memproses jadwal</string>
     <string name="title_progress_processing_transactions">Memproses transaksi</string>
+    <!-- msgid "Number" -->
+    <string name="number">Nomor</string>
 </resources>

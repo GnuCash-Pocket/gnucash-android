@@ -490,4 +490,6 @@
     <string name="title_progress_processing_prices">Zpracování cen</string>
     <string name="title_progress_processing_schedules">Zpracování harmonogramů</string>
     <string name="title_progress_processing_transactions">Zpracování transakcí</string>
+    <!-- msgid "Number" -->
+    <string name="number">Číslo</string>
 </resources>

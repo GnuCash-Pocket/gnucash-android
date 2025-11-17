@@ -34,6 +34,8 @@ object QifHelper {
     const val SPLIT_CATEGORY_PREFIX: String = "S"
     const val SPLIT_PERCENTAGE_PREFIX: String = "%"
     const val TYPE_PREFIX: String = "T"
+    /** Number of the check. Can also be "Deposit", "Transfer", "Print", "ATM", "EFT". */
+    const val NUMBER_PREFIX: String = "N"
 
     /**
      * Cash Flow: Cash Account

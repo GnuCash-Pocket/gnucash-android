@@ -89,6 +89,9 @@ object MigrationHelper {
         if (oldVersion < 25) {
             migrateTo25(db)
         }
+        if (oldVersion < 27) {
+            migrateTo27(db)
+        }
     }
 
     /**
@@ -200,8 +203,8 @@ object MigrationHelper {
         }
 
         // Restore the currency code column that was deleted in v19.
-        val sqlAccountCurrency =
-            "ALTER TABLE " + AccountEntry.TABLE_NAME + " ADD COLUMN " + AccountEntry.COLUMN_CURRENCY + " varchar(255)"
+        val sqlAccountCurrency = "ALTER TABLE " + AccountEntry.TABLE_NAME +
+                " ADD COLUMN " + AccountEntry.COLUMN_CURRENCY + " varchar(255)"
         try {
             db.execSQL(sqlAccountCurrency)
         } catch (e: SQLException) {
@@ -209,10 +212,10 @@ object MigrationHelper {
         }
 
         // Restore the currency code column.
-        val sqlTransactionCurrency =
-            "ALTER TABLE " + TransactionEntry.TABLE_NAME + " ADD COLUMN " + TransactionEntry.COLUMN_CURRENCY + " varchar(255)"
+        val sql = "ALTER TABLE " + TransactionEntry.TABLE_NAME +
+                " ADD COLUMN " + TransactionEntry.COLUMN_CURRENCY + " varchar(255)"
         try {
-            db.execSQL(sqlTransactionCurrency)
+            db.execSQL(sql)
         } catch (e: SQLException) {
             Timber.e(e)
         }
@@ -229,10 +232,10 @@ object MigrationHelper {
 
         if (!db.hasTableColumn(CommodityEntry.TABLE_NAME, CommodityEntry.COLUMN_QUOTE_FLAG)) {
             // Restore the currency code column that was deleted in v19.
-            val sqlCommodityFlag =
-                "ALTER TABLE " + CommodityEntry.TABLE_NAME + " ADD COLUMN " + CommodityEntry.COLUMN_QUOTE_FLAG + " tinyint default 0"
+            val sql = "ALTER TABLE " + CommodityEntry.TABLE_NAME +
+                    " ADD COLUMN " + CommodityEntry.COLUMN_QUOTE_FLAG + " tinyint default 0"
             try {
-                db.execSQL(sqlCommodityFlag)
+                db.execSQL(sql)
             } catch (e: SQLException) {
                 Timber.e(e)
             }
@@ -265,18 +268,18 @@ object MigrationHelper {
         Timber.i("Upgrading database to version 24")
 
         if (!db.hasTableColumn(AccountEntry.TABLE_NAME, AccountEntry.COLUMN_TEMPLATE)) {
-            val sqlAccountTemplate = "ALTER TABLE " + AccountEntry.TABLE_NAME +
+            val sql = "ALTER TABLE " + AccountEntry.TABLE_NAME +
                     " ADD COLUMN " + AccountEntry.COLUMN_TEMPLATE + " tinyint default 0"
-            db.execSQL(sqlAccountTemplate)
+            db.execSQL(sql)
         }
         if (!db.hasTableColumn(
                 SplitEntry.TABLE_NAME,
                 SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID
             )
         ) {
-            val sqlAddSchedxActionAccount = "ALTER TABLE " + SplitEntry.TABLE_NAME +
+            val sql = "ALTER TABLE " + SplitEntry.TABLE_NAME +
                     " ADD COLUMN " + SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID + " varchar(255)"
-            db.execSQL(sqlAddSchedxActionAccount)
+            db.execSQL(sql)
         }
     }
 
@@ -289,9 +292,23 @@ object MigrationHelper {
         Timber.i("Upgrading database to version 25")
 
         if (!db.hasTableColumn(ScheduledActionEntry.TABLE_NAME, ScheduledActionEntry.COLUMN_NAME)) {
-            val sqlActionName = "ALTER TABLE " + ScheduledActionEntry.TABLE_NAME +
+            val sql = "ALTER TABLE " + ScheduledActionEntry.TABLE_NAME +
                     " ADD COLUMN " + ScheduledActionEntry.COLUMN_NAME + " varchar(255)"
-            db.execSQL(sqlActionName)
+            db.execSQL(sql)
+        }
+    }
+
+    /**
+     * Upgrade the database to version 27.
+     *
+     * @param db the database.
+     */
+    private fun migrateTo27(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 27")
+
+        if (!db.hasTableColumn(TransactionEntry.TABLE_NAME, TransactionEntry.COLUMN_NUMBER)) {
+            val sql = "ALTER TABLE ${TransactionEntry.TABLE_NAME} ADD COLUMN ${TransactionEntry.COLUMN_NUMBER} varchar(255)"
+            db.execSQL(sql)
         }
     }
 

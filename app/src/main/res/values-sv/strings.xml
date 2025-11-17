@@ -484,4 +484,6 @@
     <string name="title_progress_processing_prices">Bearbetning av priser</string>
     <string name="title_progress_processing_schedules">Bearbetning av scheman</string>
     <string name="title_progress_processing_transactions">Bearbetning av transaktioner</string>
+    <!-- msgid "Number" -->
+    <string name="number">Nummer</string>
 </resources>

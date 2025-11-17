@@ -36,6 +36,12 @@ data class SearchForm(
         return criterion
     }
 
+    fun addNumber(): SearchCriteria.Number {
+        val criterion = SearchCriteria.Number()
+        _criteria.add(criterion)
+        return criterion
+    }
+
     fun addDate(): SearchCriteria.Date {
         val criterion = SearchCriteria.Date()
         _criteria.add(criterion)
@@ -96,6 +102,7 @@ data class SearchForm(
                 is SearchCriteria.Description -> appendQuery(criterion)
                 is SearchCriteria.Memo -> appendQuery(criterion)
                 is SearchCriteria.Note -> appendQuery(criterion)
+                is SearchCriteria.Number -> appendQuery(criterion)
                 is SearchCriteria.Numeric -> appendQuery(criterion)
             }
             return this
@@ -215,6 +222,17 @@ data class SearchForm(
         private fun StringBuilder.appendQuery(criterion: SearchCriteria.Note): StringBuilder {
             val s = criterion.value ?: return this
             append(TRANSACTION_ALIAS).append(TransactionEntry.COLUMN_NOTES)
+            when (criterion.compare) {
+                StringCompare.Contains -> append(" LIKE ").append(sqlEscapeLike(s))
+
+                StringCompare.Equals -> append(" = ").append(sqlEscapeString(s))
+            }
+            return this
+        }
+
+        private fun StringBuilder.appendQuery(criterion: SearchCriteria.Number): StringBuilder {
+            val s = criterion.value ?: return this
+            append(TRANSACTION_ALIAS).append(TransactionEntry.COLUMN_NUMBER)
             when (criterion.compare) {
                 StringCompare.Contains -> append(" LIKE ").append(sqlEscapeLike(s))
 

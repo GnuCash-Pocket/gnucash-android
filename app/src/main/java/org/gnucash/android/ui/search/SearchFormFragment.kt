@@ -22,6 +22,7 @@ import org.gnucash.android.databinding.ItemSearchDateBinding
 import org.gnucash.android.databinding.ItemSearchDescriptionBinding
 import org.gnucash.android.databinding.ItemSearchMemoBinding
 import org.gnucash.android.databinding.ItemSearchNotesBinding
+import org.gnucash.android.databinding.ItemSearchNumberBinding
 import org.gnucash.android.databinding.ItemSearchNumericBinding
 import org.gnucash.android.ui.adapter.DefaultItemSelectedListener
 import org.gnucash.android.ui.adapter.QualifiedAccountNameAdapter
@@ -58,7 +59,7 @@ class SearchFormFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = FragmentSearchFormBinding.inflate(inflater, container, false)
         this.binding = binding
         return binding.root
@@ -104,6 +105,7 @@ class SearchFormFragment : Fragment() {
                 is SearchCriteria.Description -> addDescription(binding.list, criterion)
                 is SearchCriteria.Memo -> addMemo(binding.list, criterion)
                 is SearchCriteria.Note -> addNote(binding.list, criterion)
+                is SearchCriteria.Number -> addNumber(binding.list, criterion)
                 is SearchCriteria.Numeric -> addNumeric(binding.list, criterion)
             }
         }
@@ -192,6 +194,31 @@ class SearchFormFragment : Fragment() {
         }
         binding.inputSplitMemo.setText(criterion.value)
         binding.inputSplitMemo.addTextChangedListener(DefaultTextWatcher { s ->
+            criterion.value = s.toString()
+        })
+        binding.deleteBtn.setOnClickListener {
+            viewModel.remove(criterion)
+            removeItem(binding.root)
+        }
+    }
+
+    private fun bind(binding: ItemSearchNumberBinding, criterion: SearchCriteria.Number) {
+        val context: Context = binding.root.context
+        val adapter = createStringComparisonAdapter(context)
+        binding.comparison.adapter = adapter
+        binding.comparison.onItemSelectedListener =
+            DefaultItemSelectedListener { parent: AdapterView<*>,
+                                          view: View?,
+                                          position: Int,
+                                          id: Long ->
+                val item = adapter.getItem(position)!!
+                criterion.compare = item.value
+            }
+        binding.comparison.post {
+            binding.comparison.setSelection(adapter.getValuePosition(criterion.compare))
+        }
+        binding.number.setText(criterion.value)
+        binding.number.addTextChangedListener(DefaultTextWatcher { s ->
             criterion.value = s.toString()
         })
         binding.deleteBtn.setOnClickListener {
@@ -299,13 +326,14 @@ class SearchFormFragment : Fragment() {
         binding.comparison.post {
             binding.comparison.setSelection(adapter.getValuePosition(criterion.compare))
         }
-        val accountsAdapter = QualifiedAccountNameAdapter(context, viewLifecycleOwner).load { adapter ->
-            criterion.value?.let { account ->
-                binding.accountsListSpinner.post {
-                    binding.accountsListSpinner.setSelection(adapter.getValuePosition(account))
+        val accountsAdapter = QualifiedAccountNameAdapter(context, viewLifecycleOwner)
+            .load { adapter ->
+                criterion.value?.let { account ->
+                    binding.accountsListSpinner.post {
+                        binding.accountsListSpinner.setSelection(adapter.getValuePosition(account))
+                    }
                 }
             }
-        }
         binding.accountsListSpinner.adapter = accountsAdapter
         binding.accountsListSpinner.onItemSelectedListener =
             DefaultItemSelectedListener { parent: AdapterView<*>,
@@ -326,6 +354,7 @@ class SearchFormFragment : Fragment() {
         menu.add(0, MENU_DESCRIPTION, 0, R.string.search_field_description)
         menu.add(0, MENU_NOTE, 0, R.string.search_field_notes)
         menu.add(0, MENU_MEMO, 0, R.string.search_field_memo)
+        menu.add(0, MENU_NUMBER, 0, R.string.search_field_number)
         menu.add(0, MENU_DATE_POSTED, 0, R.string.search_field_date_posted)
         menu.add(0, MENU_AMOUNT, 0, R.string.search_field_amount)
         menu.add(0, MENU_VALUE, 0, R.string.search_field_value)
@@ -333,50 +362,24 @@ class SearchFormFragment : Fragment() {
 
         popupMenu.setOnMenuItemClickListener { item ->
             return@setOnMenuItemClickListener when (item.itemId) {
-                MENU_DESCRIPTION -> {
-                    addDescription()
-                    true
-                }
-
-                MENU_NOTE -> {
-                    addNote()
-                    true
-                }
-
-                MENU_MEMO -> {
-                    addMemo()
-                    true
-                }
-
-                MENU_DATE_POSTED -> {
-                    addDatePosted()
-                    true
-                }
-
-                MENU_AMOUNT -> {
-                    addNumeric()
-                    true
-                }
-
-                MENU_VALUE -> {
-                    addValue()
-                    true
-                }
-
-                MENU_ACCOUNT -> {
-                    addAccount()
-                    true
-                }
-
+                MENU_DESCRIPTION -> addDescription()
+                MENU_NOTE -> addNote()
+                MENU_MEMO -> addMemo()
+                MENU_NUMBER -> addNumber()
+                MENU_DATE_POSTED -> addDatePosted()
+                MENU_AMOUNT -> addNumeric()
+                MENU_VALUE -> addValue()
+                MENU_ACCOUNT -> addAccount()
                 else -> false
             }
         }
         return popupMenu
     }
 
-    private fun addDescription() {
-        val binding = binding ?: return
+    private fun addDescription(): Boolean {
+        val binding = binding ?: return false
         addDescription(binding.list, viewModel.addDescription())
+        return true
     }
 
     private fun addDescription(parent: ViewGroup, criterion: SearchCriteria.Description) {
@@ -384,9 +387,10 @@ class SearchFormFragment : Fragment() {
         bind(bindingItem, criterion)
     }
 
-    private fun addNote() {
-        val binding = binding ?: return
+    private fun addNote(): Boolean {
+        val binding = binding ?: return false
         addNote(binding.list, viewModel.addNote())
+        return true
     }
 
     private fun addNote(parent: ViewGroup, criterion: SearchCriteria.Note) {
@@ -394,9 +398,10 @@ class SearchFormFragment : Fragment() {
         bind(bindingItem, criterion)
     }
 
-    private fun addMemo() {
-        val binding = binding ?: return
+    private fun addMemo(): Boolean {
+        val binding = binding ?: return false
         addMemo(binding.list, viewModel.addMemo())
+        return true
     }
 
     private fun addMemo(parent: ViewGroup, criterion: SearchCriteria.Memo) {
@@ -404,9 +409,21 @@ class SearchFormFragment : Fragment() {
         bind(bindingItem, criterion)
     }
 
-    private fun addDatePosted() {
-        val binding = binding ?: return
+    private fun addNumber(): Boolean {
+        val binding = binding ?: return false
+        addNumber(binding.list, viewModel.addNumber())
+        return true
+    }
+
+    private fun addNumber(parent: ViewGroup, criterion: SearchCriteria.Number) {
+        val bindingItem = ItemSearchNumberBinding.inflate(layoutInflater, parent, true)
+        bind(bindingItem, criterion)
+    }
+
+    private fun addDatePosted(): Boolean {
+        val binding = binding ?: return false
         addDatePosted(binding.list, viewModel.addDate())
+        return true
     }
 
     private fun addDatePosted(parent: ViewGroup, criterion: SearchCriteria.Date) {
@@ -414,9 +431,10 @@ class SearchFormFragment : Fragment() {
         bind(bindingItem, criterion)
     }
 
-    private fun addNumeric() {
-        val binding = binding ?: return
+    private fun addNumeric(): Boolean {
+        val binding = binding ?: return false
         addNumeric(binding.list, viewModel.addNumeric())
+        return true
     }
 
     private fun addNumeric(parent: ViewGroup, criterion: SearchCriteria.Numeric) {
@@ -424,9 +442,10 @@ class SearchFormFragment : Fragment() {
         bind(bindingItem, criterion)
     }
 
-    private fun addValue() {
-        val binding = binding ?: return
+    private fun addValue(): Boolean {
+        val binding = binding ?: return false
         addValue(binding.list, viewModel.addValue())
+        return true
     }
 
     private fun addValue(parent: ViewGroup, criterion: SearchCriteria.Numeric) {
@@ -434,9 +453,10 @@ class SearchFormFragment : Fragment() {
         bind(bindingItem, criterion)
     }
 
-    private fun addAccount() {
-        val binding = binding ?: return
+    private fun addAccount(): Boolean {
+        val binding = binding ?: return false
         addAccount(binding.list, viewModel.addAccount())
+        return true
     }
 
     private fun addAccount(parent: ViewGroup, criterion: SearchCriteria.Account) {
@@ -563,10 +583,11 @@ class SearchFormFragment : Fragment() {
         private const val MENU_DESCRIPTION = 0
         private const val MENU_NOTE = 1
         private const val MENU_MEMO = 2
-        private const val MENU_DATE_POSTED = 3
-        private const val MENU_AMOUNT = 4
-        private const val MENU_VALUE = 5
-        private const val MENU_ACCOUNT = 6
+        private const val MENU_NUMBER = 3
+        private const val MENU_DATE_POSTED = 4
+        private const val MENU_AMOUNT = 5
+        private const val MENU_VALUE = 6
+        private const val MENU_ACCOUNT = 7
 
         private val dateFormatter: DateTimeFormatter = DateTimeFormat.fullDate()
     }

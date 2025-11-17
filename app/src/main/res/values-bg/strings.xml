@@ -483,4 +483,6 @@
     <string name="title_progress_processing_prices">Обработка на цени</string>
     <string name="title_progress_processing_schedules">Обработка на графици</string>
     <string name="title_progress_processing_transactions">Обработка на транзакции</string>
+    <!-- msgid "Number" -->
+    <string name="number">Брой</string>
 </resources>

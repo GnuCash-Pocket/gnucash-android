@@ -484,4 +484,6 @@
     <string name="title_progress_processing_prices">Xử lý giá cả</string>
     <string name="title_progress_processing_schedules">Xử lý lịch trình</string>
     <string name="title_progress_processing_transactions">Xử lý giao dịch</string>
+    <!-- msgid "Number" -->
+    <string name="number">Số</string>
 </resources>
