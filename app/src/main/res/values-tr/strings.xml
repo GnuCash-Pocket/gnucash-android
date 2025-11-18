@@ -254,7 +254,7 @@
     <string name="password">Parola</string>
     <string name="owncloud_server_invalid">OC sunucusu bulanamadı</string>
     <string name="owncloud_user_invalid">OC kullanıcı adı/parola geçersiz</string>
-    <string name="owncloud_dir_invalid">Geçersiz karakterler: \\ &lt; &gt; : \&quot; | * ?</string>
+    <string name="owncloud_dir_invalid">Geçersiz karakterler: \\ / &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">OC sunucu Tamam</string>
     <string name="owncloud_user_ok">OC kullanıcı adı/parola Tamam</string>
     <string name="owncloud_dir_ok">Dizin adı Tamam</string>

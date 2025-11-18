@@ -1,4 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -13,13 +14,16 @@
         android:hint="@string/owncloud_server"
         android:inputType="textUri" />
 
-    <TextView
-        android:id="@+id/owncloud_hostname_invalid"
+    <EditText
+        android:id="@+id/owncloud_dir"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:gravity="center"
-        android:textColor="@color/debit_red" />
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="4dp"
+        android:hint="Directory"
+        android:inputType="textUri" />
 
     <EditText
         android:id="@+id/owncloud_username"
@@ -28,16 +32,9 @@
         android:layout_marginStart="4dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="4dp"
+        android:fontFamily="sans-serif"
         android:hint="@string/username"
         android:inputType="text" />
-
-    <TextView
-        android:id="@+id/owncloud_username_invalid"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:gravity="center"
-        android:textColor="@color/debit_red" />
 
     <EditText
         android:id="@+id/owncloud_password"
@@ -50,22 +47,16 @@
         android:hint="@string/password"
         android:inputType="textPassword" />
 
-    <EditText
-        android:id="@+id/owncloud_dir"
+    <TextView
+        android:id="@+id/owncloud_error"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="4dp"
-        android:layout_marginBottom="4dp"
-        android:hint="Directory"
-        android:inputType="textUri" />
-
-    <TextView
-        android:id="@+id/owncloud_dir_invalid"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
         android:gravity="center"
-        android:textColor="@color/debit_red" />
+        android:textColor="@color/design_default_color_error"
+        android:visibility="gone"
+        tools:text="@string/owncloud_server_invalid"
+        tools:visibility="visible" />
 </LinearLayout>

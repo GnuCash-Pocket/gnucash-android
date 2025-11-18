@@ -256,7 +256,7 @@
     <string name="password">Hasło</string>
     <string name="owncloud_server_invalid">Nie znaleziono serwera OC</string>
     <string name="owncloud_user_invalid">OC username/password invalid</string>
-    <string name="owncloud_dir_invalid">Invalid chars: \\ &lt; &gt; : \&quot; | * ?</string>
+    <string name="owncloud_dir_invalid">Invalid chars: \\ / &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">Serwer OC jest prawidłowy</string>
     <string name="owncloud_user_ok">OC username/password OK</string>
     <string name="owncloud_dir_ok">Dir name OK</string>

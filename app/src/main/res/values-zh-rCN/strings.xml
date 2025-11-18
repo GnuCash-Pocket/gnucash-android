@@ -254,7 +254,7 @@
     <string name="password">密码</string>
     <string name="owncloud_server_invalid">找不到 OC 服务器</string>
     <string name="owncloud_user_invalid">OC 用户名/密码无效</string>
-    <string name="owncloud_dir_invalid">无效字符： \\ &lt; &gt; : \&quot; | * ?</string>
+    <string name="owncloud_dir_invalid">无效字符： \\ / &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">OC 服务器正常</string>
     <string name="owncloud_user_ok">OC 用户名/密码正确</string>
     <string name="owncloud_dir_ok">目录名正确</string>

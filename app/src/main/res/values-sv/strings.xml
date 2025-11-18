@@ -254,7 +254,7 @@
     <string name="password">Lösenord</string>
     <string name="owncloud_server_invalid">OC server hittades inte</string>
     <string name="owncloud_user_invalid">OC användarnamn/lösenord ogiltigt</string>
-    <string name="owncloud_dir_invalid">Ogiltiga tecken: \\ &lt; &gt; : \&quot; | * ?</string>
+    <string name="owncloud_dir_invalid">Ogiltiga tecken: \\ / &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">OC server OK</string>
     <string name="owncloud_user_ok">OC användarnamn/lösenord OK</string>
     <string name="owncloud_dir_ok">Dir namn OK</string>

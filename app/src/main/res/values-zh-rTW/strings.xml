@@ -254,7 +254,7 @@
     <string name="password">密碼</string>
     <string name="owncloud_server_invalid">找不到 ownCloud 伺服器</string>
     <string name="owncloud_user_invalid">ownCloud 使用者名稱/密碼無效</string>
-    <string name="owncloud_dir_invalid">無效字元: \\ &lt; &gt; : \&quot; | * ?</string>
+    <string name="owncloud_dir_invalid">無效字元: \\ / &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">OC 伺服器 OK</string>
     <string name="owncloud_user_ok">OC 使用者名稱/密碼 OK</string>
     <string name="owncloud_dir_ok">目錄名稱 OK</string>
