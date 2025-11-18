@@ -177,7 +177,10 @@ dependencies {
     implementation("com.google.firebase:firebase-crashlytics:19.4.4")
     implementation("com.jakewharton.timber:timber:5.0.1")
 
-    implementation("com.github.nextcloud:android-library:1.0.31")
+    implementation("com.github.nextcloud:android-library:1.0.31") {
+        // unused in Android and brings wrong Junit version
+        exclude(group = "org.ogce", module = "xpp3")
+    }
     implementation("com.squareup:android-times-square:1.6.5")
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
