@@ -28,7 +28,7 @@ import org.gnucash.android.R
  * Helper class for commonly used DropBox methods
  */
 object DropboxHelper {
-    private val DROPBOX_APP_KEY = BuildConfig.DROPBOX_APP_KEY
+    private const val DROPBOX_APP_KEY = BuildConfig.DROPBOX_APP_KEY
 
     /**
      * DropBox API v2 client for making requests to DropBox
@@ -65,7 +65,7 @@ object DropboxHelper {
 
         val accessToken = getAccessToken(context)
         if (accessToken.isNullOrEmpty()) {
-            authenticate(context)
+            authenticateDropbox(context)
             return null
         }
 
@@ -80,7 +80,7 @@ object DropboxHelper {
      *
      * @return `true` if token exists, `false` otherwise
      */
-    fun hasToken(context: Context): Boolean {
+    fun hasDropboxToken(context: Context): Boolean {
         val accessToken = getAccessToken(context)
         return !accessToken.isNullOrEmpty()
     }
@@ -103,7 +103,7 @@ object DropboxHelper {
         }
     }
 
-    fun deleteAccessToken(context: Context) {
+    fun deleteDropboxToken(context: Context) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         val keyAccessToken = context.getString(R.string.key_dropbox_access_token)
         prefs.edit {
@@ -111,7 +111,7 @@ object DropboxHelper {
         }
     }
 
-    fun authenticate(context: Context) {
+    fun authenticateDropbox(context: Context) {
         Auth.startOAuth2Authentication(context, DROPBOX_APP_KEY)
     }
 }

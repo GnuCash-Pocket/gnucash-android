@@ -53,8 +53,8 @@ import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.DatabaseAdapter
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
-import org.gnucash.android.export.DropboxHelper.authenticate
-import org.gnucash.android.export.DropboxHelper.hasToken
+import org.gnucash.android.export.DropboxHelper.authenticateDropbox
+import org.gnucash.android.export.DropboxHelper.hasDropboxToken
 import org.gnucash.android.export.DropboxHelper.retrieveAndSaveToken
 import org.gnucash.android.export.ExportAsyncTask
 import org.gnucash.android.export.ExportFormat
@@ -373,8 +373,8 @@ class ExportFormFragment : MenuFragment(),
                         binding.recurrenceOptions.isVisible = true
                         exportParams.exportTarget = ExportTarget.DROPBOX
 
-                        if (!hasToken(context)) {
-                            authenticate(context)
+                        if (!hasDropboxToken(context)) {
+                            authenticateDropbox(context)
                         }
                     }
 
