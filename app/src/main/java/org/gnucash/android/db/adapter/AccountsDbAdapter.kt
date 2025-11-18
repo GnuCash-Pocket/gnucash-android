@@ -558,7 +558,7 @@ class AccountsDbAdapter(
         if (uid.isNullOrEmpty()) {
             val account = Account(imbalanceAccountName, commodity)
             account.accountType = AccountType.BANK
-            account.parentUID = this.rootAccountUID
+            account.parentUID = rootAccountUID
             account.isHidden = !isDoubleEntryEnabled(context)
             insert(account)
             return account
@@ -595,7 +595,7 @@ class AccountsDbAdapter(
         require(!fullName.isNullOrEmpty()) { "Full name required" }
         val tokens = fullName.trim().split(ACCOUNT_NAME_SEPARATOR.toRegex())
             .dropLastWhile { it.isEmpty() }.toTypedArray()
-        var uid = this.rootAccountUID
+        var uid = rootAccountUID
         var parentName: String? = ""
         val accountsList = ArrayList<Account>()
         val commodity = commoditiesDbAdapter.getDefaultCommodity()
@@ -1111,7 +1111,7 @@ class AccountsDbAdapter(
                     + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " = ?)")
             selectionArgs = arrayOf<String?>(
                 AccountType.ROOT.name,
-                this.rootAccountUID
+                rootAccountUID
             )
         } else {
             selection += " AND (" + AccountEntry.COLUMN_NAME + " LIKE " + sqlEscapeLike(filterName) + ")"
@@ -1312,7 +1312,7 @@ class AccountsDbAdapter(
         val accountName = getAccountName(accountUID)
         val parentAccountUID = getParentAccountUID(accountUID)
 
-        if (parentAccountUID == null || parentAccountUID == accountUID || parentAccountUID == this.rootAccountUID) {
+        if (parentAccountUID == null || parentAccountUID == accountUID || parentAccountUID == rootAccountUID) {
             return accountName
         }
 
@@ -1331,7 +1331,7 @@ class AccountsDbAdapter(
         val accountName = account.name
         val parentAccountUID = account.parentUID
 
-        if (parentAccountUID.isNullOrEmpty() || parentAccountUID == this.rootAccountUID) {
+        if (parentAccountUID.isNullOrEmpty() || parentAccountUID == rootAccountUID) {
             return accountName
         }
 
@@ -1526,7 +1526,7 @@ class AccountsDbAdapter(
                         account.defaultTransferAccountUID = null
                     }
                     if (uid == account.parentUID) {
-                        account.parentUID = this.rootAccountUID
+                        account.parentUID = rootAccountUID
                     }
                 }
             }

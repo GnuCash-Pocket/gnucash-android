@@ -492,7 +492,7 @@ class AccountsActivityTest : GnuAndroidTest() {
     private fun refreshAccountsList() {
         try {
             activityRule.runOnUiThread { accountsActivity.refresh() }
-            sleep(1000)
+            sleep(2000)
         } catch (throwable: Throwable) {
             System.err.println("Failed to refresh accounts")
         }
@@ -548,12 +548,14 @@ class AccountsActivityTest : GnuAndroidTest() {
 
         // Show hidden accounts.
         clickViewId(R.id.menu_hidden)
-        sleep(500) // wait for animations to finish
+        sleep(1500) // wait for animations to finish
         onView(allOf(withText(PARENT_ACCOUNT_NAME)))
             .check(matches(isDisplayed()))
 
         // Show children accounts.
         clickViewText(PARENT_ACCOUNT_NAME)
+        // Show the sub-accounts
+        clickViewText(R.string.section_header_subaccounts)
         onView(allOf(withText("Child of Hidden")))
             .check(matches(isDisplayed()))
 
@@ -565,7 +567,7 @@ class AccountsActivityTest : GnuAndroidTest() {
 
         // Hide the accounts
         clickViewId(R.id.menu_hidden)
-        sleep(500) // wait for animations to finish
+        sleep(1500) // wait for animations to finish
         onView(allOf(withText(PARENT_ACCOUNT_NAME)))
             .check(doesNotExist())
     }

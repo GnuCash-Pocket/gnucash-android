@@ -309,7 +309,7 @@ class AccountsListFragment : MenuFragment(),
     }
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor?> {
-        Timber.d("Creating the accounts loader")
+        Timber.d("Creating the accounts loader for $displayMode")
         val arguments = getArguments()
         val parentAccountUID = arguments?.getString(UxArgument.PARENT_ACCOUNT_UID)
 
@@ -325,19 +325,20 @@ class AccountsListFragment : MenuFragment(),
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onLoadFinished(loader: Loader<Cursor?>, cursor: Cursor?) {
-        Timber.d("Accounts loader finished. Swapping in cursor")
-        accountListAdapter?.changeCursor(cursor)
+        Timber.d("Accounts loader finished for $displayMode")
+        val adapter = accountListAdapter ?: return
+        adapter.changeCursor(cursor)
         if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
             val binding = binding
             if (binding != null && binding.list.adapter == null) {
-                binding.list.adapter = accountListAdapter
+                binding.list.adapter = adapter
             }
-            accountListAdapter!!.notifyDataSetChanged()
+            adapter.notifyDataSetChanged()
         }
     }
 
     override fun onLoaderReset(loader: Loader<Cursor?>) {
-        Timber.d("Resetting the accounts loader")
+        Timber.d("Resetting the accounts loader $displayMode")
         accountListAdapter?.changeCursor(null)
     }
 

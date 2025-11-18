@@ -430,7 +430,7 @@ class TransactionsActivity : BaseDrawerActivity(),
     private fun showHiddenAccounts(item: MenuItem, isVisible: Boolean) {
         item.isChecked = isVisible
         @DrawableRes val visibilityIcon =
-            if (isVisible) R.drawable.ic_visibility_off else R.drawable.ic_visibility
+            if (isVisible) R.drawable.ic_visibility else R.drawable.ic_visibility_off
         item.setIcon(visibilityIcon)
         isShowHiddenAccounts = isVisible
         // apply to each page
