@@ -253,7 +253,7 @@
     <string name="password">비밀번호</string>
     <string name="owncloud_server_invalid">Owncloud 서버를 찾을 수 없습니다</string>
     <string name="owncloud_user_invalid">Owncloud의 사용자 이름 또는 비밀번호가 맞지 않습니다</string>
-    <string name="owncloud_dir_invalid">사용할 수 없는 문자: \\ &lt; &gt; : \&quot; | * ?</string>
+    <string name="owncloud_dir_invalid">사용할 수 없는 문자: \\ / &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">Owncloud서버 정상</string>
     <string name="owncloud_user_ok">아이디와 비밀번호 확인</string>
     <string name="owncloud_dir_ok">폴더 확인</string>

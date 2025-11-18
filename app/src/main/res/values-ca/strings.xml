@@ -255,7 +255,7 @@
     <string name="password">Contrasenya</string>
     <string name="owncloud_server_invalid">No s\'ha trobat el servidor d\'OC</string>
     <string name="owncloud_user_invalid">El nom d\'usuari/contrasenya d\'OC no és correcte</string>
-    <string name="owncloud_dir_invalid">Caràcters invalids: \\ &lt; &gt; : \&quot; | * ?</string>
+    <string name="owncloud_dir_invalid">Caràcters invalids: \\ / &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">Servidor d\'OC correcte</string>
     <string name="owncloud_user_ok">Nom d\'usuari/contrasenya d\'OC correcte</string>
     <string name="owncloud_dir_ok">Nom de carpeta correcte</string>

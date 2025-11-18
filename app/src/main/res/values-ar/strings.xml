@@ -258,7 +258,7 @@
     <string name="password">كلمة المرور</string>
     <string name="owncloud_server_invalid">لم يتم العثور على خادم OC</string>
     <string name="owncloud_user_invalid">اسم المستخدم/كلمة المرور لـ OC غير صالحة</string>
-    <string name="owncloud_dir_invalid">أحرف غير صالحة: \\ &lt; &gt; : \&quot; &lt;unk&gt; * ?</string>
+    <string name="owncloud_dir_invalid">أحرف غير صالحة: \\ / &lt; &gt; : \&quot; &lt;unk&gt; * ?</string>
     <string name="owncloud_server_ok">خادم OC على ما يرام</string>
     <string name="owncloud_user_ok">اسم المستخدم/كلمة المرور لـ OC على ما يرام</string>
     <string name="owncloud_dir_ok">Dir name OK</string>

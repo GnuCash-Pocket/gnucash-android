@@ -254,7 +254,7 @@
     <string name="password">Συνθηματικό</string>
     <string name="owncloud_server_invalid">Ο διακομιστής ownCloud δεν βρέθηκε</string>
     <string name="owncloud_user_invalid">Λανθασμένο όνομα χρήστη/κωδικός ownCloud</string>
-    <string name="owncloud_dir_invalid">Μη έγκυροι χαρακτήρες: \\ &lt; &gt; : \&quot; | * ?</string>
+    <string name="owncloud_dir_invalid">Μη έγκυροι χαρακτήρες: \\ / &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">Διακομιστής ownCloud ΟΚ</string>
     <string name="owncloud_user_ok">Όνομα χρήστη/κωδικός ownCloud OK</string>
     <string name="owncloud_dir_ok">Όνομα φακέλου OK</string>

@@ -237,7 +237,7 @@
     <string name="password">סיסמה</string>
     <string name="owncloud_server_invalid">שרת OC לא נמצא</string>
     <string name="owncloud_user_invalid">שם משתמש וסיסמה עבור OC לא תקינים</string>
-    <string name="owncloud_dir_invalid">תווים לא תקינים: \\ &lt; &gt; : \&quot; | * ?</string>
+    <string name="owncloud_dir_invalid">תווים לא תקינים: \\ / &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">שרת OC תקין</string>
     <string name="owncloud_user_ok">שם משתמש/סיסמה עבור OC תקינים</string>
     <string name="owncloud_dir_ok">שם תיקייה תקין</string>

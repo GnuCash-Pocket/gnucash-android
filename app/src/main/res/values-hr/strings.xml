@@ -255,7 +255,7 @@
     <string name="password">Lozinka</string>
     <string name="owncloud_server_invalid">OC server nije nađen</string>
     <string name="owncloud_user_invalid">OC korisničko ime/lozinka ne valja</string>
-    <string name="owncloud_dir_invalid">Nevaljani slovni znakovi: \\ &lt; &gt; : \&quot; | * ?</string>
+    <string name="owncloud_dir_invalid">Nevaljani slovni znakovi: \\ / &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">OC server je u redu</string>
     <string name="owncloud_user_ok">OC korisničko ime/lozinka je u redu</string>
     <string name="owncloud_dir_ok">Dir ime je u redu</string>

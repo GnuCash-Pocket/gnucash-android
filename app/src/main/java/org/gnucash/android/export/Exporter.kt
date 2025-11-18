@@ -29,9 +29,9 @@ import androidx.core.net.toUri
 import com.dropbox.core.DbxException
 import com.owncloud.android.lib.common.OwnCloudClientFactory
 import com.owncloud.android.lib.common.OwnCloudCredentialsFactory
-import com.owncloud.android.lib.resources.files.CreateRemoteFolderOperation
+import com.owncloud.android.lib.resources.files.CreateFolderRemoteOperation
 import com.owncloud.android.lib.resources.files.FileUtils
-import com.owncloud.android.lib.resources.files.UploadRemoteFileOperation
+import com.owncloud.android.lib.resources.files.UploadFileRemoteOperation
 import org.gnucash.android.BuildConfig
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
@@ -379,7 +379,7 @@ abstract class Exporter protected constructor(
         client.credentials = OwnCloudCredentialsFactory.newBasicCredentials(ocUsername, ocPassword)
 
         if (!ocDir.isNullOrEmpty()) {
-            val dirResult = CreateRemoteFolderOperation(ocDir, true).execute(client)
+            val dirResult = CreateFolderRemoteOperation(ocDir, true).execute(client)
             if (!dirResult.isSuccess) {
                 Timber.w(
                     "Error creating folder (it may happen if it already exists): %s",
@@ -391,7 +391,7 @@ abstract class Exporter protected constructor(
         val remotePath = ocDir + FileUtils.PATH_SEPARATOR + exportedFile.name
         val mimeType = this.exportMimeType
 
-        val result = UploadRemoteFileOperation(
+        val result = UploadFileRemoteOperation(
             exportedFile.absolutePath,
             remotePath,
             mimeType,
@@ -616,9 +616,9 @@ abstract class Exporter protected constructor(
             return file.absolutePath
         }
 
-        private fun getFileLastModifiedTimestamp(file: File): String {
-            val timeStampLong = file.lastModified() / DateUtils.SECOND_IN_MILLIS
-            return timeStampLong.toString()
+        private fun getFileLastModifiedTimestamp(file: File): Long {
+            // must be in seconds, according to UNIX time
+            return file.lastModified() / DateUtils.SECOND_IN_MILLIS
         }
     }
 }

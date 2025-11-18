@@ -253,7 +253,7 @@
     <string name="password">パスワード</string>
     <string name="owncloud_server_invalid">OC サーバーが見つかりません</string>
     <string name="owncloud_user_invalid">OC のユーザー名/パスワードが正しくありません</string>
-    <string name="owncloud_dir_invalid">無効な文字: \\ &lt; &gt; : \&quot; | * ?</string>
+    <string name="owncloud_dir_invalid">無効な文字: \\ / &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">OC サーバー OK</string>
     <string name="owncloud_user_ok">OC ユーザー名/パスワード OK</string>
     <string name="owncloud_dir_ok">ディレクトリ名 OK</string>

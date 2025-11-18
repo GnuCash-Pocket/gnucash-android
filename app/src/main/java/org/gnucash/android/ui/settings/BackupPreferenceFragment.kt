@@ -35,9 +35,9 @@ import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
 import org.gnucash.android.app.GnuCashApplication.Companion.getBookPreferences
 import org.gnucash.android.app.takePersistableUriPermission
 import org.gnucash.android.db.adapter.BooksDbAdapter
-import org.gnucash.android.export.DropboxHelper.authenticate
-import org.gnucash.android.export.DropboxHelper.deleteAccessToken
-import org.gnucash.android.export.DropboxHelper.hasToken
+import org.gnucash.android.export.DropboxHelper.authenticateDropbox
+import org.gnucash.android.export.DropboxHelper.deleteDropboxToken
+import org.gnucash.android.export.DropboxHelper.hasDropboxToken
 import org.gnucash.android.export.ExportFormat
 import org.gnucash.android.export.Exporter.Companion.getExportTime
 import org.gnucash.android.export.Exporter.Companion.sanitizeFilename
@@ -167,7 +167,7 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
      */
     fun toggleDropboxPreference(preference: TwoStatePreference) {
         val context = preference.context
-        preference.isChecked = hasToken(context)
+        preference.isChecked = hasDropboxToken(context)
     }
 
     /**
@@ -187,10 +187,10 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
      */
     private fun toggleDropboxSync(preference: TwoStatePreference) {
         val context = preference.context
-        if (!hasToken(context)) {
-            authenticate(context)
+        if (!hasDropboxToken(context)) {
+            authenticateDropbox(context)
         } else {
-            deleteAccessToken(context)
+            deleteDropboxToken(context)
         }
     }
 

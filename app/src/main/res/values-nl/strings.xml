@@ -254,7 +254,7 @@
     <string name="password">Wachtwoord</string>
     <string name="owncloud_server_invalid">OC server niet gevonden</string>
     <string name="owncloud_user_invalid">OC gebruikersnaam/wachtwoord ongeldig</string>
-    <string name="owncloud_dir_invalid">Invalid chars: \\ &lt; &gt; : \&quot; | * ?</string>
+    <string name="owncloud_dir_invalid">Invalid chars: \\ / &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">OC server OK</string>
     <string name="owncloud_user_ok">OC username/password OK</string>
     <string name="owncloud_dir_ok">Dir name OK</string>
