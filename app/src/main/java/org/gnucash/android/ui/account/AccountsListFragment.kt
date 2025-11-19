@@ -261,7 +261,7 @@ class AccountsListFragment : MenuFragment(),
      * with the ListView
      */
     override fun refresh() {
-        if (isDetached) return
+        if (isDetached || fragmentManager == null) return
         cancelBalances()
         loaderManager.restartLoader<Cursor>(0, null, this)
     }

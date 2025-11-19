@@ -153,8 +153,7 @@ abstract class Exporter protected constructor(
         val exportParams = this.exportParams
         val result: Uri?
         try {
-            val file = writeToFile(exportParams)
-            if (file == null) return null
+            val file = writeToFile(exportParams) ?: return null
             result = moveToTarget(exportParams, file)
         } catch (ee: ExporterException) {
             throw ee

@@ -134,7 +134,7 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
     }
 
     override fun refresh() {
-        if (isDetached) return
+        if (isDetached || fragmentManager == null) return
         val booksDbAdapter = BooksDbAdapter.instance
         val records = booksDbAdapter.allRecords
         booksAdapter?.submitList(records)

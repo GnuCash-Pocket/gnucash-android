@@ -154,15 +154,14 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
      * @return List of budget amounts
      */
     private fun extractBudgetAmounts(binding: FragmentBudgetFormBinding): List<BudgetAmount> {
-        val value = binding.budgetAmountLayout.inputBudgetAmount.value
-        if (value == null) return budgetAmounts
+        val value = binding.budgetAmountLayout.inputBudgetAmount.value ?: return budgetAmounts
 
         if (budgetAmounts.isEmpty()) { //has not been set in budget amounts editor
             val budgetAmounts = mutableListOf<BudgetAmount>()
             val accountPosition =
                 binding.budgetAmountLayout.inputBudgetAccountSpinner.selectedItemPosition
-            val account = accountNameAdapter!!.getAccount(accountPosition)
-            if (account == null) return this.budgetAmounts
+            val account =
+                accountNameAdapter!!.getAccount(accountPosition) ?: return this.budgetAmounts
             val amount = Money(value, account.commodity)
             val budgetAmount = BudgetAmount(amount, account.uid)
             budgetAmounts.add(budgetAmount)

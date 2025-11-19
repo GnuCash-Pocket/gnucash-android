@@ -193,11 +193,9 @@ class BudgetAmountEditorFragment : MenuFragment() {
         val budgetAmounts = mutableListOf<BudgetAmount>()
         for (view in budgetAmountViews) {
             val viewHolder = view.tag as BudgetAmountViewHolder
-            val amountValue = viewHolder.amountEditText.value
-            if (amountValue == null) continue
+            val amountValue = viewHolder.amountEditText.value ?: continue
             val accountPosition = viewHolder.budgetAccountSpinner.selectedItemPosition
-            val account = accountNameAdapter!!.getAccount(accountPosition)
-            if (account == null) continue
+            val account = accountNameAdapter!!.getAccount(accountPosition) ?: continue
             val amount = Money(amountValue, account.commodity)
             val budgetAmount = BudgetAmount(amount, account.uid)
             budgetAmounts.add(budgetAmount)

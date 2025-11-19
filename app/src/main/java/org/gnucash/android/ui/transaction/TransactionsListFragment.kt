@@ -159,7 +159,7 @@ class TransactionsListFragment : MenuFragment(),
      * Reload the list of transactions and recompute account balances
      */
     override fun refresh() {
-        if (isDetached) return
+        if (isDetached || fragmentManager == null) return
         try {
             loaderManager.restartLoader(0, null, this)
         } catch (e: IllegalStateException) {
