@@ -896,8 +896,7 @@ class AccountsDbAdapter(
                 val childCommodity = child!!.commodity
                 var childBalance = computeBalance(child, startTimestamp, endTimestamp, true)
                 if (childBalance.isAmountZero) continue
-                val price = pricesDbAdapter.getPrice(childCommodity, commodity)
-                if (price == null) continue
+                val price = pricesDbAdapter.getPrice(childCommodity, commodity) ?: continue
                 balance += childBalance * price
             }
         }
@@ -984,8 +983,7 @@ class AccountsDbAdapter(
             for (account in accounts) {
                 var accountBalance = getAccountBalance(account, startTimestamp, endTimestamp, false)
                 if (accountBalance.isAmountZero) continue
-                val price = pricesDbAdapter.getPrice(accountBalance.commodity, currency)
-                if (price == null) continue
+                val price = pricesDbAdapter.getPrice(accountBalance.commodity, currency) ?: continue
                 balance += accountBalance * price
             }
         } else {
@@ -993,8 +991,7 @@ class AccountsDbAdapter(
             for (account in accounts) {
                 var accountBalance = balances[account.uid]
                 if ((accountBalance == null) || accountBalance.isAmountZero) continue
-                val price = pricesDbAdapter.getPrice(accountBalance.commodity, currency)
-                if (price == null) continue
+                val price = pricesDbAdapter.getPrice(accountBalance.commodity, currency) ?: continue
                 balance += accountBalance * price
             }
         }

@@ -273,8 +273,7 @@ class AccountFormFragment : MenuFragment(), FragmentResultListener {
             } else {
                 var parentUID = account.parentUID
                 while (!parentUID.isNullOrEmpty()) {
-                    val parentAccount = defaultAccountNameAdapter!!.getAccount(parentUID)
-                    if (parentAccount == null) break
+                    val parentAccount = defaultAccountNameAdapter!!.getAccount(parentUID) ?: break
                     defaultTransferAccountUID = parentAccount.defaultTransferAccountUID
                     if (!defaultTransferAccountUID.isNullOrEmpty()) {
                         setDefaultTransferAccountSelection(binding, parentUID, false)

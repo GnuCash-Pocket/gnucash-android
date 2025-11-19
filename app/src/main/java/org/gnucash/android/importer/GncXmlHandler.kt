@@ -465,8 +465,7 @@ class GncXmlHandler(
         // Set the account for created balancing splits to correct imbalance accounts
         for (split in autoBalanceSplits) {
             // XXX: yes, getAccountUID() returns a currency UID in this case (see Transaction.createAutoBalanceSplit())
-            val currencyUID = split.accountUID
-            if (currencyUID == null) continue
+            val currencyUID = split.accountUID ?: continue
             var imbAccount = imbalanceAccounts[currencyUID]
             if (imbAccount == null) {
                 val commodity = commoditiesDbAdapter!!.getRecord(currencyUID)

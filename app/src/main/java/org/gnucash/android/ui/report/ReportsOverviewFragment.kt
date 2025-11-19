@@ -51,7 +51,7 @@ class ReportsOverviewFragment : BaseReportFragment() {
     private var binding: FragmentReportSummaryBinding? = null
 
     @ColorInt
-    private var colorBalanceZero = 0
+    private var colorBalanceZero = Color.TRANSPARENT
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): View {
         val binding = FragmentReportSummaryBinding.inflate(inflater, container, false)
@@ -145,8 +145,7 @@ class ReportsOverviewFragment : BaseReportFragment() {
             for (account in accounts) {
                 var balance = balances[account.uid]
                 if (balance.isNullOrZero()) continue
-                val price = pricesDbAdapter.getPrice(balance.commodity, commodity)
-                if (price == null) continue
+                val price = pricesDbAdapter.getPrice(balance.commodity, commodity) ?: continue
                 balance *= price
                 val value = balance.toFloat()
                 if (value > 0f) {

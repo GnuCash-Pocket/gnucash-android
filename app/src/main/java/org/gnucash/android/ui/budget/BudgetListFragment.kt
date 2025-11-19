@@ -121,7 +121,7 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
     }
 
     override fun refresh() {
-        if (isDetached) return
+        if (isDetached || fragmentManager == null) return
         loaderManager.restartLoader<Cursor>(0, null, this)
     }
 

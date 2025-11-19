@@ -202,8 +202,8 @@ class CashFlowLineChartFragment : IntervalReportFragment() {
             val balances = accountsDbAdapter.getAccountsBalances(accounts, startTime, endTime)
             for (accountBalance in balances.values) {
                 var accountBalance = accountBalance
-                val price = pricesDbAdapter.getPrice(accountBalance.commodity, commodity)
-                if (price == null) continue
+                val price =
+                    pricesDbAdapter.getPrice(accountBalance.commodity, commodity) ?: continue
                 accountBalance *= price
                 balance += accountBalance
             }

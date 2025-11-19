@@ -1110,8 +1110,7 @@ class GncXmlExporter(
 
             val periodCount = budget.numberOfPeriods
             for (period in 0 until periodCount) {
-                val budgetAmount = budget.getBudgetAmount(accountID, period)
-                if (budgetAmount == null) continue
+                val budgetAmount = budget.getBudgetAmount(accountID, period) ?: continue
                 val amount = budgetAmount.amount
                 if (amount.isAmountZero) continue
                 slots.add(Slot.numeric(period.toString(), amount))
@@ -1141,8 +1140,7 @@ class GncXmlExporter(
 
             val periodCount = budget.numberOfPeriods
             for (period in 0 until periodCount) {
-                val budgetAmount = budget.getBudgetAmount(accountID, period)
-                if (budgetAmount == null) continue
+                val budgetAmount = budget.getBudgetAmount(accountID, period) ?: continue
                 val note = budgetAmount.notes
                 if (note.isNullOrEmpty()) continue
                 frame.add(Slot.string(period.toString(), note))
