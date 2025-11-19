@@ -448,9 +448,10 @@ class AccountsActivity : BaseDrawerActivity(),
         ) {
             ImportAsyncTask(activity) { bookUID ->
                 if (!currencyCode.isNullOrEmpty()) {
-                    val commoditiesDbAdapter = CommoditiesDbAdapter.instance
+                    val accountsDbAdapter = AccountsDbAdapter.instance
+                    val commoditiesDbAdapter = accountsDbAdapter.commoditiesDbAdapter
                     val currencyUID = commoditiesDbAdapter.getCommodityUID(currencyCode)
-                    AccountsDbAdapter.instance.updateAllAccounts(
+                    accountsDbAdapter.updateAllAccounts(
                         DatabaseSchema.AccountEntry.COLUMN_COMMODITY_UID,
                         currencyUID
                     )

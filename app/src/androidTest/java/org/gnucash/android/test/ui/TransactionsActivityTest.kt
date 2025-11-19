@@ -582,6 +582,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
     fun testDeleteTransaction() {
         clickViewId(R.id.options_menu)
         clickViewText(R.string.menu_delete)
+        sleep(1000) // wait for backup to finish
 
         assertThat(transactionsDbAdapter.getTransactionsCount(TRANSACTIONS_ACCOUNT_UID)).isZero()
     }

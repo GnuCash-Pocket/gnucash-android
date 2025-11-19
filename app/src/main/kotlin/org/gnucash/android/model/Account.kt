@@ -206,6 +206,10 @@ class Account : BaseModel {
 
     override fun toString(): String = fullName ?: name
 
+    override fun hashCode(): Int {
+        return toString().hashCode()
+    }
+
     companion object {
         /**
          * The MIME type for accounts in GnucashMobile

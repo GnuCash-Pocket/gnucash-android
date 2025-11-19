@@ -3,6 +3,7 @@ package org.gnucash.android.util
 import junit.framework.TestCase.fail
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.R
+import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.importer.GncXmlImporter
 import org.gnucash.android.test.unit.GnuCashTest
@@ -18,6 +19,11 @@ class BackupManagerTest : GnuCashTest() {
         booksDbAdapter = BooksDbAdapter.instance
         booksDbAdapter.deleteAllRecords()
         assertThat(booksDbAdapter.recordsCount).isZero()
+        try {
+            val activeBookUID = GnuCashApplication.activeBookUID
+            assertThat(activeBookUID).isNull()
+        } catch (_: BooksDbAdapter.NoActiveBookFoundException) {
+        }
     }
 
     @Test

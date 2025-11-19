@@ -149,16 +149,17 @@ class GnuCashApplication : Application() {
             Companion.dbHelper = dbHelper
             val dbHolder: DatabaseHolder = dbHelper.holder
 
-            commoditiesDbAdapter = CommoditiesDbAdapter(dbHolder)
-            pricesDbAdapter = PricesDbAdapter(commoditiesDbAdapter!!)
-            splitsDbAdapter = SplitsDbAdapter(commoditiesDbAdapter!!)
+            val commoditiesDbAdapter = CommoditiesDbAdapter(dbHolder, true)
+            this.commoditiesDbAdapter = commoditiesDbAdapter
+            pricesDbAdapter = PricesDbAdapter(commoditiesDbAdapter)
+            splitsDbAdapter = SplitsDbAdapter(commoditiesDbAdapter)
             transactionDbAdapter = TransactionsDbAdapter(splitsDbAdapter!!)
             accountsDbAdapter = AccountsDbAdapter(transactionDbAdapter!!, pricesDbAdapter!!)
             recurrenceDbAdapter = RecurrenceDbAdapter(dbHolder)
             scheduledEventDbAdapter = ScheduledActionDbAdapter(recurrenceDbAdapter!!, transactionDbAdapter!!)
-            budgetAmountsDbAdapter = BudgetAmountsDbAdapter(dbHolder)
+            budgetAmountsDbAdapter = BudgetAmountsDbAdapter(commoditiesDbAdapter)
             budgetDbAdapter = BudgetsDbAdapter(budgetAmountsDbAdapter!!, recurrenceDbAdapter!!)
-            Commodity.DEFAULT_COMMODITY = commoditiesDbAdapter!!.getDefaultCommodity()
+            Commodity.DEFAULT_COMMODITY = commoditiesDbAdapter.defaultCommodity
         }
 
         private fun destroyDatabaseAdapters() {

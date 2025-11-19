@@ -33,7 +33,7 @@ class CommoditiesXmlHandler(holder: DatabaseHolder) : DefaultHandler() {
      */
     private val commodities: MutableMap<String, Commodity> = TreeMap<String, Commodity>()
 
-    private val commoditiesDbAdapter: CommoditiesDbAdapter = CommoditiesDbAdapter(holder, false)
+    private val commoditiesDbAdapter: CommoditiesDbAdapter = CommoditiesDbAdapter(holder)
 
     @Throws(SAXException::class)
     override fun startDocument() {

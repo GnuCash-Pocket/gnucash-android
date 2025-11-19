@@ -31,7 +31,6 @@ import org.gnucash.android.export.ExportAsyncTask
 import org.gnucash.android.export.ExportFormat
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter.Companion.buildExportFilename
-import org.gnucash.android.model.Commodity
 import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.ui.settings.dialog.DeleteAllAccountsConfirmationDialog
 import org.gnucash.android.ui.snackLong
@@ -74,8 +73,8 @@ class AccountPreferencesFragment : GnuPreferenceFragment() {
         if (currencyCode.isNullOrEmpty()) {
             currencyCode = defaultCurrencyCode
         }
-        var commodity =
-            commoditiesDbAdapter.getCurrency(currencyCode) ?: Commodity.DEFAULT_COMMODITY
+        val commodity = commoditiesDbAdapter.getCurrency(currencyCode)
+            ?: commoditiesDbAdapter.defaultCommodity
         val currencyName = commodity.formatListItem()
         listPreference.summary = currencyName
         listPreference.setOnPreferenceChangeListener { preference, newValue ->

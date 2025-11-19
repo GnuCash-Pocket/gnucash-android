@@ -23,9 +23,7 @@ import org.gnucash.android.app.GnuCashApplication.Companion.appContext
 import org.gnucash.android.db.DatabaseSchema.BookEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.model.Book
-import org.gnucash.android.model.Commodity
 import java.io.File
 
 /**
@@ -71,10 +69,8 @@ class BookDbHelper(private val context: Context) : SQLiteOpenHelper(
         val book = Book()
         val dbHelper = DatabaseHelper(context, book.uid)
         val dbHolder = dbHelper.holder
-        val commoditiesDbAdapter = CommoditiesDbAdapter(dbHolder)
-        Commodity.DEFAULT_COMMODITY = commoditiesDbAdapter.getDefaultCommodity()
 
-        val accountsDbAdapter = AccountsDbAdapter(dbHolder)
+        val accountsDbAdapter = AccountsDbAdapter(dbHolder, true)
         val rootAccountUID = accountsDbAdapter.rootAccountUID
         try {
             dbHelper.close()

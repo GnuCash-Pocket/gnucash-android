@@ -70,7 +70,8 @@ class SplitsDbAdapter(
 ) {
     private val accountCommodities = mutableMapOf<String, Commodity>()
 
-    constructor(holder: DatabaseHolder) : this(CommoditiesDbAdapter(holder))
+    constructor(holder: DatabaseHolder, initCommodity: Boolean = false) :
+            this(CommoditiesDbAdapter(holder, initCommodity))
 
     @Throws(IOException::class)
     override fun close() {

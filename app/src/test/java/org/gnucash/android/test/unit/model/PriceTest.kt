@@ -37,14 +37,14 @@ class PriceTest : GnuCashTest() {
         var exchangeRate = BigDecimal(exchangeRateString)
         var price = Price(commodity1, commodity2, exchangeRate)
         // EUR uses 2 fractional digits.
-        assertThat(price.toString()).isEqualTo("0.12")
+        assertThat(price.toString()).isEqualTo("CURRENCY::USD/CURRENCY::EUR=0.12")
 
         // ensure we don't get more decimal places than needed (0.123000)
         exchangeRateString = "0.123456"
         exchangeRate = BigDecimal(exchangeRateString)
         price = Price(commodity1, commodity2, exchangeRate)
         // EUR uses 2 fractional digits.
-        assertThat(price.toString()).isEqualTo("0.12")
+        assertThat(price.toString()).isEqualTo("CURRENCY::USD/CURRENCY::EUR=0.12")
     }
 
     @Test
@@ -57,7 +57,7 @@ class PriceTest : GnuCashTest() {
         val exchangeRate = BigDecimal(exchangeRateString)
         val price = Price(commodity1, commodity2, exchangeRate)
         // USD uses 2 fractional digits.
-        assertThat(price.toString()).isEqualTo("1,23")
+        assertThat(price.toString()).isEqualTo("CURRENCY::EUR/CURRENCY::USD=1,23")
     }
 
     /**
@@ -75,7 +75,7 @@ class PriceTest : GnuCashTest() {
         price.valueDenom = denominator
         try {
             price.toString()
-        } catch (e: ArithmeticException) {
+        } catch (_: ArithmeticException) {
             fail("The numerator/denominator division in Price.toString() should not fail.")
         }
     }
