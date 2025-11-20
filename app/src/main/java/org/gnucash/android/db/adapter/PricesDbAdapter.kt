@@ -33,6 +33,7 @@ class PricesDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
         true
     ) {
     private val cachePair = mutableMapOf<String, Price>()
+    private var cachePairLoaded = false
 
     @Throws(IOException::class)
     override fun close() {
@@ -120,10 +121,10 @@ class PricesDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
         val key = "$commodityUID/$currencyUID"
         val keyInverse = "$currencyUID/$commodityUID"
         if (isCached) {
-            var price = cachePair[key]
+            val price = cachePair[key]
             if (price != null) return price
-            price = cachePair[keyInverse]
-            if (price != null) return price
+            val priceInverse = cachePair[keyInverse]
+            if (priceInverse != null) return priceInverse
         }
         if (commodity == currency) {
             val price = Price(commodity, currency, BigDecimal.ONE)
@@ -132,38 +133,43 @@ class PricesDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
             }
             return price
         }
+
+        // Cache all the prices.
+        if (isCached && !cachePairLoaded) {
+            cacheAll()
+            cachePairLoaded = true
+
+            // Try hit the cache again.
+            val price = cachePair[key]
+            if (price != null) return price
+            val priceInverse = cachePair[keyInverse]
+            if (priceInverse != null) return priceInverse
+            return null
+        }
+
         // the commodity and currency can be swapped
         val where = ("(" + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " +
                 PriceEntry.COLUMN_CURRENCY_UID + " = ?)" +
                 " OR (" + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " +
                 PriceEntry.COLUMN_CURRENCY_UID + " = ?)")
         val whereArgs = arrayOf<String?>(commodityUID, currencyUID, currencyUID, commodityUID)
-        // only get the latest price
         val orderBy = PriceEntry.COLUMN_DATE + " DESC"
         val cursor = db.query(tableName, null, where, whereArgs, null, null, orderBy, "1")
+        // only get the latest price
         try {
             if (cursor.moveToFirst()) {
                 val price = buildModelInstance(cursor)
                 val valueNum = price.valueNum
                 val valueDenom = price.valueDenom
                 if (valueNum <= 0 || valueDenom <= 0) {
-                    // this should not happen
+                    // this should not happen!
                     return null
                 }
                 // swap numerator and denominator
-                val priceInverse = price.inverse()
                 if (price.currencyUID == currencyUID) {
-                    if (isCached) {
-                        cachePair[key] = price
-                        cachePair[keyInverse] = priceInverse
-                    }
                     return price
                 }
-                if (isCached) {
-                    cachePair[keyInverse] = price
-                    cachePair[key] = priceInverse
-                }
-                return priceInverse
+                return price.inverse()
             }
         } finally {
             cursor.close()
@@ -187,6 +193,25 @@ class PricesDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
                 cachePair[key] = model
                 cachePair[keyInverse] = model.inverse()
             }
+        }
+    }
+
+    private fun cacheAll() {
+        // override the older price
+        val orderBy = PriceEntry.COLUMN_DATE + " ASC"
+        val prices = getAllRecords(null, null, orderBy)
+        for (price in prices) {
+            val valueNum = price.valueNum
+            val valueDenom = price.valueDenom
+            if (valueNum <= 0 || valueDenom <= 0) {
+                // this should not happen!
+                continue
+            }
+            val key = "${price.commodityUID}/${price.currencyUID}"
+            cachePair[key] = price
+            val priceInverse = price.inverse()
+            val keyInverse = "${priceInverse.commodityUID}/${priceInverse.currencyUID}"
+            cachePair[keyInverse] = priceInverse
         }
     }
 

@@ -79,7 +79,8 @@ class TransactionsDbAdapter(
      *
      * @param holder Database holder
      */
-    constructor(holder: DatabaseHolder) : this(SplitsDbAdapter(holder))
+    constructor(holder: DatabaseHolder, initCommodity: Boolean = false) :
+            this(SplitsDbAdapter(holder, initCommodity))
 
     constructor(commoditiesDbAdapter: CommoditiesDbAdapter) :
             this(SplitsDbAdapter(commoditiesDbAdapter))

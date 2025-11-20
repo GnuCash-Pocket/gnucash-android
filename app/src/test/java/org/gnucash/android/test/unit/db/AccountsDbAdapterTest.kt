@@ -86,7 +86,7 @@ class AccountsDbAdapterTest : GnuCashTest() {
      */
     private fun initAdapters(bookUID: String?) {
         if (bookUID == null) {
-            commoditiesDbAdapter = CommoditiesDbAdapter.instance!!
+            commoditiesDbAdapter = CommoditiesDbAdapter.instance
             splitsDbAdapter = SplitsDbAdapter.instance
             transactionsDbAdapter = TransactionsDbAdapter.instance
             accountsDbAdapter = AccountsDbAdapter.instance

@@ -45,7 +45,7 @@ class BudgetAmountsDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
             BudgetAmountEntry.COLUMN_NOTES
         )
     ) {
-    constructor(holder: DatabaseHolder) : this(CommoditiesDbAdapter(holder))
+    constructor(holder: DatabaseHolder) : this(CommoditiesDbAdapter(holder, false))
 
     @Throws(IOException::class)
     override fun close() {

@@ -66,7 +66,7 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
      * @param holder Database holder
      */
     private fun createDatabaseTables(holder: DatabaseHolder) {
-        Timber.i("Creating database tables")
+        Timber.i("Creating database tables for db ${holder.name}")
         val db = holder.db
         db.execSQL(ACCOUNTS_TABLE_CREATE)
         db.execSQL(TRANSACTIONS_TABLE_CREATE)
@@ -119,15 +119,7 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
 
         try {
             importCommodities(holder)
-        } catch (e: SAXException) {
-            val msg = "Error loading currencies into the database"
-            Timber.e(e, msg)
-            throw SQLiteException(msg, e)
-        } catch (e: ParserConfigurationException) {
-            val msg = "Error loading currencies into the database"
-            Timber.e(e, msg)
-            throw SQLiteException(msg, e)
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             val msg = "Error loading currencies into the database"
             Timber.e(e, msg)
             throw SQLiteException(msg, e)

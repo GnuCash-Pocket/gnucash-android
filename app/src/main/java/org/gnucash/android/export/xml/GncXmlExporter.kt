@@ -336,7 +336,7 @@ class GncXmlExporter(
         cancellationSignal.throwIfCanceled()
         Timber.i("export accounts. template: %s", isTemplate)
         if (isTemplate) {
-            val account = this.rootTemplateAccount
+            val account = rootTemplateAccount
             if (account == null) {
                 Timber.i("No template root account found!")
                 return
@@ -344,7 +344,7 @@ class GncXmlExporter(
             writeAccount(xmlSerializer, account)
         } else {
             val rootUID = accountsDbAdapter.rootAccountUID
-            if (rootUID.isNullOrEmpty()) {
+            if (rootUID.isEmpty()) {
                 throw ExporterException(exportParams, "No root account found!")
             }
             val account = accountsDbAdapter.getRecord(rootUID)
@@ -519,7 +519,7 @@ class GncXmlExporter(
 
         // FIXME: 12.10.2015 export split reconciled_state and reconciled_date to the export */
         var txUIDPrevious = ""
-        var trnCommodity: Commodity = Commodity.DEFAULT_COMMODITY
+        var trnCommodity = commoditiesDbAdapter.defaultCommodity
         var transaction: Transaction?
         do {
             cancellationSignal.throwIfCanceled()
@@ -1110,8 +1110,7 @@ class GncXmlExporter(
 
             val periodCount = budget.numberOfPeriods
             for (period in 0 until periodCount) {
-                val budgetAmount = budget.getBudgetAmount(accountID, period)
-                if (budgetAmount == null) continue
+                val budgetAmount = budget.getBudgetAmount(accountID, period) ?: continue
                 val amount = budgetAmount.amount
                 if (amount.isAmountZero) continue
                 slots.add(Slot.numeric(period.toString(), amount))
@@ -1141,8 +1140,7 @@ class GncXmlExporter(
 
             val periodCount = budget.numberOfPeriods
             for (period in 0 until periodCount) {
-                val budgetAmount = budget.getBudgetAmount(accountID, period)
-                if (budgetAmount == null) continue
+                val budgetAmount = budget.getBudgetAmount(accountID, period) ?: continue
                 val note = budgetAmount.notes
                 if (note.isNullOrEmpty()) continue
                 frame.add(Slot.string(period.toString(), note))

@@ -41,6 +41,7 @@ import org.gnucash.android.R
 import org.gnucash.android.app.MenuFragment
 import org.gnucash.android.app.actionBar
 import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.db.adapter.PricesDbAdapter
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.AccountType
@@ -92,6 +93,7 @@ abstract class BaseReportFragment : MenuFragment(),
      * Account type for which to display reports
      */
     protected var accountType: AccountType = AccountType.EXPENSE
+    protected var commoditiesDbAdapter: CommoditiesDbAdapter = CommoditiesDbAdapter.instance
     protected var accountsDbAdapter: AccountsDbAdapter = AccountsDbAdapter.instance
     protected var pricesDbAdapter: PricesDbAdapter = PricesDbAdapter.instance
     protected var useAccountColor: Boolean = true
@@ -99,7 +101,7 @@ abstract class BaseReportFragment : MenuFragment(),
     /**
      * Commodity for which to display reports
      */
-    protected var commodity: Commodity = Commodity.DEFAULT_COMMODITY
+    protected var commodity: Commodity = commoditiesDbAdapter.defaultCommodity
 
     /**
      * Intervals in which to group reports
@@ -192,7 +194,10 @@ abstract class BaseReportFragment : MenuFragment(),
 
     override fun onStart() {
         super.onStart()
+        accountsDbAdapter = AccountsDbAdapter.instance
+        commoditiesDbAdapter = accountsDbAdapter.commoditiesDbAdapter
         pricesDbAdapter = PricesDbAdapter.instance
+        commodity = commoditiesDbAdapter.defaultCommodity
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -215,7 +220,6 @@ abstract class BaseReportFragment : MenuFragment(),
         }
         reportsActivity.onFragmentResumed(this)
         toggleBaseReportingOptionsVisibility(reportsActivity)
-        commodity = Commodity.DEFAULT_COMMODITY
         refresh()
     }
 

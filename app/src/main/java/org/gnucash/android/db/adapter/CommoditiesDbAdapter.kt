@@ -20,7 +20,7 @@ import timber.log.Timber
  */
 class CommoditiesDbAdapter(
     holder: DatabaseHolder,
-    initCommon: Boolean = true
+    initCommon: Boolean = false
 ) : DatabaseAdapter<Commodity>(
     holder,
     CommodityEntry.TABLE_NAME,
@@ -37,7 +37,7 @@ class CommoditiesDbAdapter(
     ),
     true
 ) {
-    private var defaultCommodity: Commodity? = null
+    private var _defaultCommodity: Commodity? = null
 
     /**
      * Opens the database adapter with an existing database
@@ -53,8 +53,6 @@ class CommoditiesDbAdapter(
     init {
         if (initCommon) {
             initCommon()
-        } else {
-            defaultCommodity = getDefaultCommodity()
         }
     }
 
@@ -69,9 +67,7 @@ class CommoditiesDbAdapter(
         Commodity.GBP = getCurrency("GBP")!!
         Commodity.JPY = getCurrency("JPY")!!
         Commodity.USD = getCurrency("USD")!!
-
-        Commodity.DEFAULT_COMMODITY = getDefaultCommodity()
-        defaultCommodity = Commodity.DEFAULT_COMMODITY
+        Commodity.DEFAULT_COMMODITY = defaultCommodity
     }
 
     override fun bind(stmt: SQLiteStatement, commodity: Commodity): SQLiteStatement {
@@ -207,23 +203,24 @@ class CommoditiesDbAdapter(
         return commodity
     }
 
-    fun getDefaultCommodity(): Commodity {
-        var commodity: Commodity? = defaultCommodity
-        if (commodity != null) {
+    val defaultCommodity: Commodity
+        get() {
+            var commodity: Commodity? = _defaultCommodity
+            if (commodity != null) {
+                return commodity
+            }
+
+            val context = holder.context
+            val prefKey = context.getString(R.string.key_default_currency)
+            val preferences = bookPreferences
+            var currencyCode = preferences.getString(prefKey, null)
+            if (currencyCode == null) {
+                currencyCode = getLocaleCurrencyCode()
+            }
+            commodity = getCurrency(currencyCode) ?: Commodity.DEFAULT_COMMODITY
+            _defaultCommodity = commodity
             return commodity
         }
-
-        val context = holder.context
-        val prefKey = context.getString(R.string.key_default_currency)
-        val preferences = bookPreferences
-        var currencyCode = preferences.getString(prefKey, null)
-        if (currencyCode == null) {
-            currencyCode = getLocaleCurrencyCode()
-        }
-        commodity = getCurrency(currencyCode) ?: Commodity.DEFAULT_COMMODITY
-        defaultCommodity = commodity
-        return commodity
-    }
 
     fun setDefaultCurrencyCode(currencyCode: String?) {
         val context = holder.context
@@ -233,7 +230,7 @@ class CommoditiesDbAdapter(
 
         val commodity = getCurrency(currencyCode)
         if (commodity != null) {
-            defaultCommodity = commodity
+            _defaultCommodity = commodity
             Commodity.DEFAULT_COMMODITY = commodity
         }
     }

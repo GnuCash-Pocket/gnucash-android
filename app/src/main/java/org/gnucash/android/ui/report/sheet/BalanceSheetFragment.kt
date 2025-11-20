@@ -133,8 +133,7 @@ class BalanceSheetFragment : BaseReportFragment() {
             balanceTextView.displayBalance(balance, colorBalanceZero)
 
             // Price conversion.
-            val price = pricesDbAdapter.getPrice(balance.commodity, total.commodity)
-            if (price == null) continue
+            val price = pricesDbAdapter.getPrice(balance.commodity, total.commodity) ?: continue
             balance *= price
             total += balance
         }
