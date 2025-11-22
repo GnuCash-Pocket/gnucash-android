@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import org.joda.time.LocalDate
 
 class SearchFormViewModel : ViewModel() {
     val form = SearchForm()
@@ -47,7 +48,9 @@ class SearchFormViewModel : ViewModel() {
     }
 
     fun addDate(): SearchCriteria.Date {
-        return form.addDate()
+        return form.addDate().apply {
+            value = LocalDate.now()
+        }
     }
 
     fun addNumeric(): SearchCriteria.Numeric {

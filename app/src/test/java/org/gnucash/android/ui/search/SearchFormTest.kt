@@ -13,6 +13,15 @@ import java.math.BigDecimal
 
 class SearchFormTest : GnuCashTest() {
     @Test
+    fun `Query for single description - empty`() {
+        val form = SearchForm()
+        form.addDescription()
+        val where = form.buildSQL()
+        val expected = ""
+        assertThat(where).isEqualTo(expected)
+    }
+
+    @Test
     fun `Query for single description - contains`() {
         val form = SearchForm()
         val criterion = form.addDescription()
@@ -31,6 +40,15 @@ class SearchFormTest : GnuCashTest() {
         criterion.compare = StringCompare.Equals
         val where = form.buildSQL()
         val expected = "(t.${TransactionEntry.COLUMN_DESCRIPTION} = 'zebra')"
+        assertThat(where).isEqualTo(expected)
+    }
+
+    @Test
+    fun `Query for single note - empty`() {
+        val form = SearchForm()
+        form.addNote()
+        val where = form.buildSQL()
+        val expected = ""
         assertThat(where).isEqualTo(expected)
     }
 
@@ -59,6 +77,14 @@ class SearchFormTest : GnuCashTest() {
     }
 
     @Test
+    fun `Query for single memo - empty`() {
+        val form = SearchForm()
+        val where = form.buildSQL()
+        val expected = ""
+        assertThat(where).isEqualTo(expected)
+    }
+
+    @Test
     fun `Query for single memo - contains`() {
         val column1 = "s1." + SplitEntry.COLUMN_MEMO
         val column2 = "s2." + SplitEntry.COLUMN_MEMO
@@ -81,6 +107,15 @@ class SearchFormTest : GnuCashTest() {
         criterion.compare = StringCompare.Equals
         val where = form.buildSQL()
         val expected = "(($column1 = 'zebra') OR ($column2 = 'zebra'))"
+        assertThat(where).isEqualTo(expected)
+    }
+
+    @Test
+    fun `Query for single date - empty`() {
+        val form = SearchForm()
+        form.addDate()
+        val where = form.buildSQL()
+        val expected = ""
         assertThat(where).isEqualTo(expected)
     }
 
@@ -117,6 +152,15 @@ class SearchFormTest : GnuCashTest() {
         criterion.compare = Compare.NotEqualTo
         where = form.buildSQL()
         assertThat(where).isEqualTo("($column NOT BETWEEN ${dayStart.toMillis()} AND ${dayEnd.toMillis()})")
+    }
+
+    @Test
+    fun `Query for single amount - empty`() {
+        val form = SearchForm()
+        form.addNumeric(false)
+        val where = form.buildSQL()
+        val expected = ""
+        assertThat(where).isEqualTo(expected)
     }
 
     @Test
@@ -158,6 +202,15 @@ class SearchFormTest : GnuCashTest() {
         criterion.compare = Compare.NotEqualTo
         where = form.buildSQL()
         expected = "(($column1 <> 123.45) OR ($column2 <> 123.45))"
+        assertThat(where).isEqualTo(expected)
+    }
+
+    @Test
+    fun `Query for single value - empty`() {
+        val form = SearchForm()
+        form.addNumeric(true)
+        val where = form.buildSQL()
+        val expected = ""
         assertThat(where).isEqualTo(expected)
     }
 
