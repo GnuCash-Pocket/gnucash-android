@@ -705,6 +705,12 @@ class TransactionsDbAdapter(
     }
 
     fun fetchSearch(where: String): Cursor? {
+        if (where.isEmpty()) {
+            val orderBy = TransactionEntry.COLUMN_TIMESTAMP + " DESC, " +
+                    TransactionEntry.COLUMN_NUMBER + " DESC, " +
+                    TransactionEntry.COLUMN_ID + " DESC"
+            return fetchAllRecords(null, null, orderBy)
+        }
         val table = (TransactionEntry.TABLE_NAME + " t"
                 + " INNER JOIN " + SplitEntry.TABLE_NAME + " s1" + " ON t." + TransactionEntry.COLUMN_UID
                 + " = s1." + SplitEntry.COLUMN_TRANSACTION_UID
@@ -712,7 +718,7 @@ class TransactionsDbAdapter(
                 + " = s2." + SplitEntry.COLUMN_TRANSACTION_UID
                 )
         val columns = arrayOf<String?>("t.*")
-        val selection = "(s1._id < s2._id) AND $where"
+        val selection = "(s1.${SplitEntry.COLUMN_ID} < s2.${SplitEntry.COLUMN_ID}) AND $where"
         val orderBy = "t." + TransactionEntry.COLUMN_TIMESTAMP + " DESC, " +
                 "t." + TransactionEntry.COLUMN_NUMBER + " DESC, " +
                 "t." + TransactionEntry.COLUMN_ID + " DESC"

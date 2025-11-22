@@ -7,7 +7,6 @@ import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.util.toDateTimeAtEndOfDay
 import org.gnucash.android.util.toMillis
-import java.math.BigDecimal
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.util.Locale
@@ -69,6 +68,7 @@ data class SearchForm(
         val compareAll = comparisonType == ComparisonType.All
         val where = StringBuilder()
         for (criterion in criteria) {
+            if (criterion.isEmpty()) continue
             if (where.isNotEmpty()) {
                 if (compareAll) {
                     where.append(" AND ")
@@ -242,6 +242,8 @@ data class SearchForm(
         }
 
         private fun StringBuilder.appendQuery(criterion: SearchCriteria.Numeric): StringBuilder {
+            if (criterion.value == null) return this
+
             append('(')
             appendQuery(criterion, SPLIT1_ALIAS)
             append(") OR (")
@@ -255,7 +257,7 @@ data class SearchForm(
             criterion: SearchCriteria.Numeric,
             alias: String
         ): StringBuilder {
-            val amount = criterion.value ?: BigDecimal.ZERO
+            val amount = criterion.value!!
             val whereLength = this.length
             append('(')
             append(alias).append(SplitEntry.COLUMN_VALUE_NUM)
@@ -288,6 +290,5 @@ data class SearchForm(
 
             return this
         }
-
     }
 }

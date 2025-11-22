@@ -242,7 +242,7 @@ class SearchFormFragment : Fragment() {
         binding.comparison.post {
             binding.comparison.setSelection(adapter.getValuePosition(criterion.compare))
         }
-        val date = criterion.value ?: LocalDate.now()
+        val date = criterion.value
         binding.dateText.text = dateFormatter.print(date)
         binding.dateText.setOnClickListener {
             val listener = DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
