@@ -133,7 +133,7 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
             val budgetName =
                 budgetsDbAdapter.getAttribute(uid, BudgetEntry.COLUMN_NAME)
             val actionBar: ActionBar? = this.actionBar
-            actionBar?.title = "Budget: $budgetName"
+            actionBar?.title = getString(R.string.title_budgets) + ": " + budgetName
         }
         binding?.let { bindViews(it) }
     }

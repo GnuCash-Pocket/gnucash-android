@@ -169,13 +169,13 @@ class AccountPreferencesFragment : GnuPreferenceFragment() {
                 val exportTask = ExportAsyncTask(activity, activeBookUID!!)
 
                 try {
-                    exportTask.execute(exportParams)//.get()
+                    exportTask.execute(exportParams)
                 } catch (e: InterruptedException) {
                     Timber.e(e)
-                    snackLong("An error occurred during the Accounts CSV export")
+                    snackLong(R.string.toast_export_error)
                 } catch (e: ExecutionException) {
                     Timber.e(e)
-                    snackLong("An error occurred during the Accounts CSV export")
+                    snackLong(R.string.toast_export_error)
                 }
             }
 

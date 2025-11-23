@@ -80,7 +80,7 @@ class OwnCloudDialogFragment : VolatileDialogFragment() {
         directoryErrorText.isVisible = false
 
         return AlertDialog.Builder(context, theme)
-            .setTitle("ownCloud")
+            .setTitle(R.string.owncloud_pref)
             .setView(binding.root)
             .setNegativeButton(R.string.btn_cancel) { _, _ ->
                 // Dismisses itself

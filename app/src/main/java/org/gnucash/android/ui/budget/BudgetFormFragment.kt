@@ -17,6 +17,7 @@ package org.gnucash.android.ui.budget
 
 import android.app.Activity
 import android.app.DatePickerDialog
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
@@ -66,7 +67,7 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
 
     private var budget: Budget? = null
     private val startDate: Calendar = Calendar.getInstance()
-    private var budgetAmounts: List<BudgetAmount> = emptyList<BudgetAmount>()
+    private var budgetAmounts: List<BudgetAmount> = emptyList()
     private var accountNameAdapter: QualifiedAccountNameAdapter? = null
 
     private var binding: FragmentBudgetFormBinding? = null
@@ -81,7 +82,7 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = FragmentBudgetFormBinding.inflate(inflater, container, false)
         this.binding = binding
         return binding.root
@@ -91,11 +92,7 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
         super.onViewCreated(view, savedInstanceState)
 
         val actionBar: ActionBar? = this.actionBar
-        if (budget == null) {
-            actionBar?.title = "Create Budget"
-        } else {
-            actionBar?.setTitle(R.string.title_edit_budget)
-        }
+        actionBar?.setTitle(R.string.title_edit_budget)
 
         val binding = this.binding!!
         binding.budgetAmountLayout.btnRemoveItem.isVisible = false
@@ -183,11 +180,11 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
      * @return `true` if the budget can be saved, `false` otherwise
      */
     private fun canSave(binding: FragmentBudgetFormBinding): Boolean {
-        val context = binding.root.context
+        val context: Context = binding.root.context
         if (eventRecurrence.until != null && eventRecurrence.until.isNotEmpty()
             || eventRecurrence.count <= 0
         ) {
-            snackLong("Set a number periods in the recurrence dialog to save the budget")
+            snackLong(R.string.budget_periods_required)
             return false
         }
 
@@ -197,18 +194,19 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
 
         if (!canSave) {
             if (budgetName.isEmpty()) {
-                binding.nameTextInputLayout.error = "A name is required"
+                binding.nameTextInputLayout.error = context.getString(R.string.name_required)
             } else {
                 binding.nameTextInputLayout.error = null
             }
 
             if (budgetAmounts.isEmpty()) {
-                binding.budgetAmountLayout.inputBudgetAmount.error = "Enter an amount for the budget"
-                snackLong("Add budget amounts in order to save the budget")
+                val message = context.getString(R.string.budget_amount_required)
+                binding.budgetAmountLayout.inputBudgetAmount.error = message
+                snackLong(message)
             }
 
             if (recurrenceRule == null) {
-                snackLong("Set a repeat pattern to create a budget!")
+                snackLong(R.string.budget_repeat_required)
             }
         }
 
@@ -334,11 +332,10 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
      * Toggles the visibility of the amount input based on [.budgetAmounts]
      */
     private fun toggleAmountInputVisibility(binding: FragmentBudgetFormBinding) {
+        binding.btnAddBudgetAmount.text = getString(R.string.title_edit_budget_amounts)
         if (budgetAmounts.size > 1) {
             binding.budgetAmountLayout.root.isVisible = false
-            binding.btnAddBudgetAmount.text = "Edit Budget Amounts"
         } else {
-            binding.btnAddBudgetAmount.text = "Add Budget Amounts"
             binding.budgetAmountLayout.root.isVisible = true
             if (!budgetAmounts.isEmpty()) {
                 val budgetAmount = budgetAmounts[0]

@@ -285,63 +285,64 @@ class RecurrenceTest : GnuCashTest() {
 
     @Test
     fun budget_CurrentPeriod() {
+        val context = this.context
         val start = DateTime(2024, 7, 18, 12, 0)
         assertThat(start.weekOfMonth()).isEqualTo(3)
         assertThat(start.dayOfWeek).isEqualTo(DateTimeConstants.THURSDAY)
 
         val recurrence = Recurrence(PeriodType.ONCE)
         recurrence.periodStart = start.millis
-        var s = recurrence.getTextOfCurrentPeriod(1)
+        var s = recurrence.getTextOfCurrentPeriod(context, 1)
         assertThat(s).isEqualTo("Now")
-        s = recurrence.getTextOfCurrentPeriod(2)
+        s = recurrence.getTextOfCurrentPeriod(context, 2)
         assertThat(s).isEqualTo("Now")
 
         recurrence.periodType = PeriodType.HOUR
-        s = recurrence.getTextOfCurrentPeriod(1)
+        s = recurrence.getTextOfCurrentPeriod(context, 1)
         assertThat(s).isEqualTo("12")
-        s = recurrence.getTextOfCurrentPeriod(2)
+        s = recurrence.getTextOfCurrentPeriod(context, 2)
         assertThat(s).isEqualTo("13")
 
         recurrence.periodType = PeriodType.DAY
-        s = recurrence.getTextOfCurrentPeriod(1)
+        s = recurrence.getTextOfCurrentPeriod(context, 1)
         assertThat(s).isEqualTo("Thursday")
-        s = recurrence.getTextOfCurrentPeriod(2)
+        s = recurrence.getTextOfCurrentPeriod(context, 2)
         assertThat(s).isEqualTo("Friday")
 
         recurrence.periodType = PeriodType.WEEK
-        s = recurrence.getTextOfCurrentPeriod(1)
+        s = recurrence.getTextOfCurrentPeriod(context, 1)
         assertThat(s).isEqualTo("29")
-        s = recurrence.getTextOfCurrentPeriod(2)
+        s = recurrence.getTextOfCurrentPeriod(context, 2)
         assertThat(s).isEqualTo("30")
 
         recurrence.periodType = PeriodType.MONTH
-        s = recurrence.getTextOfCurrentPeriod(1)
+        s = recurrence.getTextOfCurrentPeriod(context, 1)
         assertThat(s).isEqualTo("July")
-        s = recurrence.getTextOfCurrentPeriod(2)
+        s = recurrence.getTextOfCurrentPeriod(context, 2)
         assertThat(s).isEqualTo("August")
 
         recurrence.periodType = PeriodType.YEAR
-        s = recurrence.getTextOfCurrentPeriod(1)
+        s = recurrence.getTextOfCurrentPeriod(context, 1)
         assertThat(s).isEqualTo("2024")
-        s = recurrence.getTextOfCurrentPeriod(2)
+        s = recurrence.getTextOfCurrentPeriod(context, 2)
         assertThat(s).isEqualTo("2025")
 
         recurrence.periodType = PeriodType.END_OF_MONTH
-        s = recurrence.getTextOfCurrentPeriod(1)
+        s = recurrence.getTextOfCurrentPeriod(context, 1)
         assertThat(s).isEqualTo("31") // 31st of July
-        s = recurrence.getTextOfCurrentPeriod(2)
+        s = recurrence.getTextOfCurrentPeriod(context, 2)
         assertThat(s).isEqualTo("31") // 31st of August
 
         recurrence.periodType = PeriodType.LAST_WEEKDAY
-        s = recurrence.getTextOfCurrentPeriod(1)
+        s = recurrence.getTextOfCurrentPeriod(context, 1)
         assertThat(s).isEqualTo("25") // Last Thursday of July
-        s = recurrence.getTextOfCurrentPeriod(2)
+        s = recurrence.getTextOfCurrentPeriod(context, 2)
         assertThat(s).isEqualTo("29") // Last Thursday of August
 
         recurrence.periodType = PeriodType.NTH_WEEKDAY
-        s = recurrence.getTextOfCurrentPeriod(1)
+        s = recurrence.getTextOfCurrentPeriod(context, 1)
         assertThat(s).isEqualTo("3rd Thursday")
-        s = recurrence.getTextOfCurrentPeriod(2)
+        s = recurrence.getTextOfCurrentPeriod(context, 2)
         assertThat(s).isEqualTo("3rd Thursday")
     }
 

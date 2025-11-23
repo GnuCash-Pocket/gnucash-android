@@ -523,6 +523,24 @@
     <string name="search_compare_account_none">"matches no accounts"</string>
     <!-- msgid "Number" -->
     <string name="number">Number</string>
+    <string name="none">None</string>
+    <string name="now">Now</string>
+    <string-array name="repeat_ordinal">
+        <item>1st</item>
+        <item>2nd</item>
+        <item>3rd</item>
+        <item>4th</item>
+        <item>5th</item>
+    </string-array>
+    <string name="repeat_remaining">%d days left</string>
+    <string name="budgeted_accounts">%d budgeted accounts</string>
+    <string name="budget_account_required">You need an account hierarchy to create a budget!</string>
+    <string name="budget_amount_required">Enter an amount for the budget</string>
+    <string name="budget_periods_required">Set the number of periods in the recurrence to save the budget</string>
+    <string name="budget_repeat_required">Set a repeat pattern to create a budget!</string>
+    <string name="commodity_required">Commodity_required</string>
+    <string name="name_required">A name is required</string>
+    <string name="title_edit_budget_amounts">Edit Budget Amounts</string>
 
     <string-array name="colors_names_gtk">
         <item>"Very Light Blue"</item>

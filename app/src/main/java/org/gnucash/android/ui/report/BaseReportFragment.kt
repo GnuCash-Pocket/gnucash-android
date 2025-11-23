@@ -216,7 +216,7 @@ abstract class BaseReportFragment : MenuFragment(),
         if (activity is ReportsActivity) {
             reportsActivity = activity
         } else {
-            throw RuntimeException("Report fragments can only be used with the ReportsActivity")
+            throw IllegalArgumentException("Report fragments can only be used with the ReportsActivity")
         }
         reportsActivity.onFragmentResumed(this)
         toggleBaseReportingOptionsVisibility(reportsActivity)
@@ -237,7 +237,7 @@ abstract class BaseReportFragment : MenuFragment(),
     }
 
     private fun toggleBaseReportingOptionsVisibility(activity: ReportsActivity) {
-        val timeRangeLayout = activity.findViewById<View?>(R.id.time_range_layout)
+        val timeRangeLayout = activity.findViewById<View>(R.id.time_range_layout)
         timeRangeLayout?.isVisible = requiresTimeRangeOptions()
     }
 

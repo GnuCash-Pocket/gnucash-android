@@ -117,7 +117,7 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
         refresh()
         requireActivity().findViewById<View?>(R.id.fab_create_budget)?.isVisible = true
         val actionBar: ActionBar? = this.actionBar
-        actionBar?.title = "Budgets"
+        actionBar?.setTitle(R.string.title_budgets)
     }
 
     override fun refresh() {
@@ -238,13 +238,14 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
             val accountString = if (numberOfAccounts == 1) {
                 accountsDbAdapter.getAccountFullName(budget.budgetAmounts[0].accountUID!!)
             } else {
-                "$numberOfAccounts budgeted accounts"
+                context.getString(R.string.budgeted_accounts, numberOfAccounts)
             }
             accountName.text = accountString
 
-            budgetRecurrence.setText(
-                (budget.recurrence!!.getRepeatString(context) + " - "
-                        + budget.recurrence!!.daysLeftInCurrentPeriod + " days left")
+            val recurrence = budget.recurrence!!
+            budgetRecurrence.text = recurrence.getRepeatString(context) + " — " + context.getString(
+                R.string.repeat_remaining,
+                recurrence.daysLeftInCurrentPeriod
             )
 
             var spentAmountValue = BigDecimal.ZERO
@@ -260,7 +261,7 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
             val budgetTotal = budget.amountSum
             val commodity = budgetTotal.commodity
             val usedAmount =
-                (commodity.symbol + spentAmountValue + " of " + budgetTotal.formattedString())
+                (commodity.symbol + spentAmountValue + " / " + budgetTotal.formattedString())
             budgetAmount.text = usedAmount
 
             val budgetProgress = if (budgetTotal.isAmountZero) 0f else spentAmountValue.divide(
@@ -281,7 +282,8 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
     /**
      * Loads Budgets asynchronously from the database
      */
-    private class BudgetsCursorLoader(context: Context) : DatabaseCursorLoader<BudgetsDbAdapter>(context) {
+    private class BudgetsCursorLoader(context: Context) :
+        DatabaseCursorLoader<BudgetsDbAdapter>(context) {
         override fun loadInBackground(): Cursor? {
             databaseAdapter = BudgetsDbAdapter.instance
             return databaseAdapter!!.fetchAllRecords(

@@ -16,6 +16,7 @@
 package org.gnucash.android.ui.transaction.dialog
 
 import android.app.Dialog
+import android.content.Context
 import android.database.SQLException
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -280,13 +281,14 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
         fromCommodity: Commodity,
         targetCommodity: Commodity
     ) {
+        val context: Context = binding.root.context
         binding.exchangeRateTextInputLayout.error = null
         if (!fromCommodity.isCurrency) {
-            binding.exchangeRateTextInputLayout.error = "Currency expected"
+            binding.exchangeRateTextInputLayout.error = context.getString(R.string.commodity_required)
             return
         }
         if (!targetCommodity.isCurrency) {
-            binding.exchangeRateTextInputLayout.error = "Currency expected"
+            binding.exchangeRateTextInputLayout.error = context.getString(R.string.commodity_required)
             return
         }
         val formatterRate = NumberFormat.getNumberInstance()

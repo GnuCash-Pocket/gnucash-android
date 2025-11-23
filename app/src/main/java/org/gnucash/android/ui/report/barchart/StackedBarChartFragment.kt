@@ -162,8 +162,7 @@ class StackedBarChartFragment : IntervalReportFragment() {
                     endPeriod,
                     balance
                 )
-                val price = pricesDbAdapter.getPrice(balance.commodity, commodity)
-                if (price == null) continue
+                val price = pricesDbAdapter.getPrice(balance.commodity, commodity) ?: continue
                 balance *= price
                 val value = balance.toFloat()
                 if (value > 0f) {

@@ -229,11 +229,11 @@ class Recurrence(periodType: PeriodType) : BaseModel() {
      *
      * @return String of current period
      */
-    fun getTextOfCurrentPeriod(periodNum: Int): String {
+    fun getTextOfCurrentPeriod(context: Context, periodNum: Int): String {
         val interval = max(1, periodNum) - 1
         val startDate = LocalDateTime(periodStart)
         return when (periodType) {
-            PeriodType.ONCE -> "Now"
+            PeriodType.ONCE -> context.getString(R.string.now)
             PeriodType.HOUR -> startDate.plusHours(interval).hourOfDay().asText
             PeriodType.DAY -> startDate.plusDays(interval).dayOfWeek().asText
             PeriodType.WEEK -> startDate.plusWeeks(interval).weekOfWeekyear().asText
@@ -245,6 +245,7 @@ class Recurrence(periodType: PeriodType) : BaseModel() {
             PeriodType.NTH_WEEKDAY -> {
                 val week = startDate.weekOfMonth() - 1
                 val dayName = startDate.dayOfWeek().asText
+                val numerals = context.resources.getStringArray(R.array.repeat_ordinal)
                 String.format("%s %s", numerals[week], dayName)
             }
 
@@ -400,9 +401,6 @@ class Recurrence(periodType: PeriodType) : BaseModel() {
             EventRecurrence.MONTHLY to PeriodType.MONTH,
             EventRecurrence.YEARLY to PeriodType.YEAR
         )
-
-        // TODO move this to strings.xml
-        private val numerals = arrayOf("1st", "2nd", "3rd", "4th", "5th")
 
         /**
          * Returns a new [Recurrence] with the [PeriodType] specified in the old format.

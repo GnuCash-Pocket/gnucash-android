@@ -68,7 +68,7 @@ class BudgetAmountEditorFragment : MenuFragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = FragmentBudgetAmountEditorBinding.inflate(inflater, container, false)
         this.binding = binding
         return binding.root
@@ -78,7 +78,7 @@ class BudgetAmountEditorFragment : MenuFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val actionBar: ActionBar? = this.actionBar
-        actionBar?.title = "Edit Budget Amounts"
+        actionBar?.title = getString(R.string.title_edit_budget_amounts)
 
         val budgetAmounts = arguments?.getParcelableArrayListCompat(
             UxArgument.BUDGET_AMOUNT_LIST,
@@ -133,7 +133,7 @@ class BudgetAmountEditorFragment : MenuFragment() {
             }
             //at least one account should be loaded (don't create budget with empty account tree
             if (viewHolder.budgetAccountSpinner.count == 0) {
-                viewHolder.itemView.snackLong("You need an account hierarchy to create a budget!")
+                viewHolder.itemView.snackLong(R.string.budget_account_required)
                 return false
             }
         }

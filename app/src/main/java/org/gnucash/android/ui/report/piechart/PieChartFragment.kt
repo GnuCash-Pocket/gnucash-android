@@ -137,8 +137,7 @@ class PieChartFragment : BaseReportFragment() {
             for (account in accounts) {
                 var balance = balances[account.uid]
                 if (balance.isNullOrZero()) continue
-                val price = pricesDbAdapter.getPrice(balance.commodity, commodity)
-                if (price == null) continue
+                val price = pricesDbAdapter.getPrice(balance.commodity, commodity) ?: continue
                 balance *= price
                 val value = balance.toFloat()
                 if (value > 0f) {
