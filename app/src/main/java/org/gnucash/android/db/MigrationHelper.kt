@@ -168,17 +168,13 @@ object MigrationHelper {
                     " AND (c." + CommodityEntry.COLUMN_NAMESPACE + " = " + sqlEscapeString(Commodity.COMMODITY_CURRENCY) +
                     " OR c." + CommodityEntry.COLUMN_NAMESPACE + " = " + sqlEscapeString(Commodity.COMMODITY_ISO4217) + ")" +
                     " AND a." + AccountEntry.COLUMN_COMMODITY_UID + " != c." + CommodityEntry.COLUMN_UID
-        val cursor = db.rawQuery(sqlAccountCurrencyWrong, null)
         val accountsWrong = mutableListOf<AccountCurrency>()
-        if (cursor.moveToFirst()) {
-            do {
-                val currencyCode = cursor.getString(0)
-                val commodityUIDOld = cursor.getString(1)
-                val commodityUIDNew = cursor.getString(2)
-                accountsWrong.add(AccountCurrency(currencyCode, commodityUIDOld, commodityUIDNew))
-            } while (cursor.moveToNext())
+        db.rawQuery(sqlAccountCurrencyWrong, null).forEach { cursor ->
+            val currencyCode = cursor.getString(0)
+            val commodityUIDOld = cursor.getString(1)
+            val commodityUIDNew = cursor.getString(2)
+            accountsWrong.add(AccountCurrency(currencyCode, commodityUIDOld, commodityUIDNew))
         }
-        cursor.close()
 
         // Update with correct commodities.
         for (accountWrong in accountsWrong) {

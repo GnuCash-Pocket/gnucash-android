@@ -78,3 +78,13 @@ fun Cursor.getString(columnName: String): String? {
 fun Array<String>.joinIn(): String = joinToString("','", prefix = "('", postfix = "')")
 
 fun Iterable<String>.joinIn(): String = joinToString("','", prefix = "('", postfix = "')")
+
+fun Cursor.forEach(callback: (Cursor) -> Unit) {
+    use { cursor ->
+        if (cursor.moveToFirst()) {
+            do {
+                callback(cursor)
+            } while (cursor.moveToNext())
+        }
+    }
+}

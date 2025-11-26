@@ -17,6 +17,7 @@ import org.gnucash.android.util.ConsoleTree
 import org.junit.After
 import org.junit.Before
 import timber.log.Timber
+import java.nio.charset.StandardCharsets
 
 abstract class BookHelperTest : GnuCashTest() {
     protected lateinit var dbHolder: DatabaseHolder
@@ -72,6 +73,12 @@ abstract class BookHelperTest : GnuCashTest() {
         if (::scheduledActionDbAdapter.isInitialized) scheduledActionDbAdapter.close()
         if (::transactionsDbAdapter.isInitialized) transactionsDbAdapter.close()
         if (::dbHolder.isInitialized) dbHolder.close()
+    }
+
+    protected fun readFile(name: String): String {
+        val stream = openResourceStream(name)
+        val bytes = stream.readAllBytes()
+        return String(bytes, StandardCharsets.UTF_8)
     }
 
     companion object {

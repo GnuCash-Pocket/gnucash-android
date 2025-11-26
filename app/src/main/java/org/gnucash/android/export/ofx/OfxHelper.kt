@@ -21,6 +21,7 @@ import org.joda.time.DateTimeZone
 import org.joda.time.format.DateTimeFormat
 import java.util.Locale
 import java.util.TimeZone
+import kotlin.math.absoluteValue
 
 /**
  * Helper class with collection of useful method and constants for the OFX export
@@ -75,9 +76,12 @@ object OfxHelper {
     const val TAG_MEMO: String = "MEMO"
     const val TAG_BANK_ACCOUNT_TO: String = "BANKACCTTO"
     const val TAG_BANK_TRANSACTION_LIST: String = "BANKTRANLIST"
+    // The OFX element "STMTRS" is of type "StatementResponse"
     const val TAG_STATEMENT_TRANSACTIONS: String = "STMTRS"
     const val TAG_STATEMENT_TRANSACTION: String = "STMTTRN"
     const val TAG_STATEMENT_TRANSACTION_RESPONSE: String = "STMTTRNRS"
+
+    const val NEW_LINE: String = "\n"
 
     /**
      * ID which will be used as the bank ID for OFX from this app
@@ -91,7 +95,7 @@ object OfxHelper {
      * @see .getOfxFormattedTime
      */
     val formattedCurrentTime: String
-        get() = getOfxFormattedTime(System.currentTimeMillis())
+        get() = formatTime(System.currentTimeMillis())
 
     /**
      * Returns a formatted string representation of time in `milliseconds`.
@@ -100,11 +104,11 @@ object OfxHelper {
      * "For example, “19961005132200.124[-5:EST]” represents October 5, 1996, at 1:22 and 124 milliseconds p.m., in Eastern Standard Time.
      * This is the same as 6:22 p.m. Greenwich Mean Time (GMT)."
      *
-     * @param date Long value representing the time to be formatted
+     * @param time Long value representing the time to be formatted
      * @return Formatted string representation of time in `milliseconds`
      */
-    fun getOfxFormattedTime(date: Long): String {
-        return getOfxFormattedTime(date, TimeZone.getDefault())
+    fun formatTime(time: Long): String {
+        return formatTime(time, TimeZone.getDefault())
     }
 
     /**
@@ -118,13 +122,12 @@ object OfxHelper {
      * @param timeZone the time zone.
      * @return Formatted string representation of time in `milliseconds`
      */
-    fun getOfxFormattedTime(date: Long, timeZone: TimeZone?): String {
-        val tz = timeZone ?: TimeZone.getDefault()
-        val zone = DateTimeZone.forTimeZone(tz)
+    fun formatTime(date: Long, timeZone: TimeZone): String {
+        val zone = DateTimeZone.forTimeZone(timeZone)
         val formatter = DateTimeFormat.forPattern(OFX_DATE_PATTERN).withZone(zone)
         val offsetMillis = zone.getOffset(date)
-        val hours = (offsetMillis / DateUtils.HOUR_IN_MILLIS) % 24
-        val sign = if (offsetMillis > 0) "+" else ""
+        val hours = ((offsetMillis / DateUtils.HOUR_IN_MILLIS) % 24).absoluteValue
+        val sign = if (offsetMillis > 0) "+" else if (offsetMillis < 0) "-" else ""
         val tzName = zone.getShortName(date, Locale.ROOT)
         return formatter.print(date) + "[" + sign + hours + ":" + tzName + "]"
     }

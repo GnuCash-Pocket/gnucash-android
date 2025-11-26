@@ -96,6 +96,18 @@ class Money(
      * Overloaded constructor.
      * Accepts strings as arguments and parses them to create the Money object
      *
+     * @param amount       Numerical value of the Money
+     * @param currencyCode Currency code as specified by ISO 4217
+     */
+    constructor(amount: Double, currencyCode: String) : this(
+        BigDecimal(amount),
+        currencyCode
+    )
+
+    /**
+     * Overloaded constructor.
+     * Accepts strings as arguments and parses them to create the Money object
+     *
      * @param amount    Numerical value of the Money
      * @param commodity Commodity of the money
      */

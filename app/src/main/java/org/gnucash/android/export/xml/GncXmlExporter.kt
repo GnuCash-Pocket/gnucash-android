@@ -22,6 +22,7 @@ import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.DatabaseSchema.SplitEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.forEach
 import org.gnucash.android.db.getLong
 import org.gnucash.android.db.getString
 import org.gnucash.android.export.ExportParams
@@ -1046,14 +1047,10 @@ class GncXmlExporter(
     @Throws(IOException::class)
     private fun writeBudgets(xmlSerializer: XmlSerializer) {
         Timber.i("write budgets")
-        val cursor = budgetsDbAdapter.fetchAllRecords()
-        if (cursor != null) {
-            while (cursor.moveToNext()) {
-                cancellationSignal.throwIfCanceled()
-                val budget = budgetsDbAdapter.buildModelInstance(cursor)
-                writeBudget(xmlSerializer, budget)
-            }
-            cursor.close()
+        budgetsDbAdapter.fetchAllRecords().forEach { cursor ->
+            cancellationSignal.throwIfCanceled()
+            val budget = budgetsDbAdapter.buildModelInstance(cursor)
+            writeBudget(xmlSerializer, budget)
         }
     }
 

@@ -3,10 +3,10 @@ package org.gnucash.android.test.ui
 import android.app.Activity
 import android.content.Context
 import android.os.Build
-import android.preference.PreferenceManager
 import androidx.annotation.IdRes
 import androidx.annotation.StringRes
 import androidx.core.content.edit
+import androidx.preference.PreferenceManager
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.ViewInteraction
 import androidx.test.espresso.action.ViewActions.click

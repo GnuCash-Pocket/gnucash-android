@@ -240,12 +240,6 @@ class GncXmlHandler(
     private var budgetPeriod: Long? = null
 
     /**
-     * Flag which says to ignore template transactions until we successfully parse a split amount
-     * Is updated for each transaction template split parsed
-     */
-    private var ignoreTemplateTransaction = true
-
-    /**
      * Flag which notifies the handler to ignore a scheduled action because some error occurred during parsing
      */
     private var ignoreScheduledAction = false
@@ -301,8 +295,7 @@ class GncXmlHandler(
         transactionsDbAdapter = TransactionsDbAdapter(commoditiesDbAdapter)
         accountsDbAdapter = AccountsDbAdapter(transactionsDbAdapter, pricesDbAdapter)
         val recurrenceDbAdapter = RecurrenceDbAdapter(holder)
-        scheduledActionsDbAdapter =
-            ScheduledActionDbAdapter(recurrenceDbAdapter, transactionsDbAdapter)
+        scheduledActionsDbAdapter = ScheduledActionDbAdapter(recurrenceDbAdapter, transactionsDbAdapter)
         budgetsDbAdapter = BudgetsDbAdapter(recurrenceDbAdapter)
 
         Timber.d("before clean up db")
@@ -755,10 +748,13 @@ class GncXmlHandler(
                 val tagParent = elementParent.localName
 
                 if (NS_TRANSACTION == uriParent) {
+                    val transaction = transaction!!
+                    val timestamp = Timestamp(date)
                     when (tagParent) {
-                        TAG_DATE_ENTERED -> transaction!!.createdTimestamp = Timestamp(date)
-                        TAG_DATE_POSTED -> transaction!!.time = date
+                        TAG_DATE_ENTERED -> transaction.createdTimestamp = timestamp
+                        TAG_DATE_POSTED -> transaction.time = date
                     }
+                    transaction.isExported = true
                 } else if (NS_PRICE == uriParent) {
                     if (TAG_TIME == tagParent) {
                         price!!.date = date
@@ -1099,7 +1095,6 @@ class GncXmlHandler(
 
                 split.value = Money(value, commodity)
                 split.type = splitType
-                ignoreTemplateTransaction = false //we have successfully parsed an amount
             }
         } catch (e: NumberFormatException) {
             Timber.e(e, "Error parsing template split formula [%s]", value)
@@ -1129,7 +1124,6 @@ class GncXmlHandler(
 
                 split.value = Money(splitAmount, commodity)
                 split.type = splitType
-                ignoreTemplateTransaction = false //we have successfully parsed an amount
             }
         } catch (e: NumberFormatException) {
             Timber.e(e, "Error parsing template split numeric [%s]", value)
@@ -1181,29 +1175,28 @@ class GncXmlHandler(
     }
 
     private fun handleEndTransaction() {
-        transaction!!.isTemplate = isInTemplates
-        val imbSplit = transaction!!.createAutoBalanceSplit()
+        val transaction = this.transaction!!
+        val imbSplit = transaction.createAutoBalanceSplit()
         if (imbSplit != null) {
             autoBalanceSplits.add(imbSplit)
         }
         if (isInTemplates) {
-            if (!ignoreTemplateTransaction) {
-                transactionsDbAdapter.insert(transaction!!)
-            }
+            transaction.isTemplate = true
         } else {
-            transactionsDbAdapter.insert(transaction!!)
-            listener?.onTransaction(transaction!!)
+            listener?.onTransaction(transaction)
+        }
+        if (transaction.splits.isNotEmpty()) {
+            transactionsDbAdapter.insert(transaction)
         }
         if (recurrencePeriod > 0) { //if we find an old format recurrence period, parse it
-            transaction!!.isTemplate = true
+            transaction.isTemplate = true
             val scheduledAction =
-                ScheduledAction.parseScheduledAction(transaction!!, recurrencePeriod)
+                ScheduledAction.parseScheduledAction(transaction, recurrencePeriod)
             scheduledActionsDbAdapter.insert(scheduledAction)
             listener?.onSchedule(scheduledAction)
         }
         recurrencePeriod = 0
-        ignoreTemplateTransaction = true
-        transaction = null
+        this.transaction = null
     }
 
     private fun handleEndType(uri: String, type: String) {

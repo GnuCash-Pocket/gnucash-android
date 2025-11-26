@@ -409,21 +409,15 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
         }
 
         fun hasTableColumn(db: SQLiteDatabase, tableName: String, columnName: String): Boolean {
-            val cursor = db.rawQuery("PRAGMA table_info($tableName)", null)
-            try {
-                if (cursor.moveToFirst()) {
-                    val indexName = cursor.getColumnIndexOrThrow("name")
-                    do {
-                        val name = cursor.getString(indexName)
-                        if (columnName == name) {
-                            return true
-                        }
-                    } while (cursor.moveToNext())
+            var result = false
+            db.rawQuery("PRAGMA table_info($tableName)", null).forEach { cursor ->
+                val name = cursor.getString("name")
+                if (columnName == name) {
+                    result = true
+                    return@forEach
                 }
-            } finally {
-                cursor.close()
             }
-            return false
+            return result
         }
     }
 }

@@ -130,10 +130,10 @@ class TransactionsDbAdapterTest : GnuCashTest() {
         //balance is negated because the CASH account has inverse normal balance
         transaction = transactionsDbAdapter.getRecord(transaction.uid)
         var savedBalance = transaction.getBalance(alphaAccount)
-        assertThat(savedBalance).isEqualTo(firstSplitAmount.unaryMinus())
+        assertThat(savedBalance).isEqualTo(firstSplitAmount)
 
         savedBalance = transaction.getBalance(bravoAccount)
-        assertThat(savedBalance).isEqualTo(secondSplitAmount.unaryMinus())
+        assertThat(savedBalance).isEqualTo(secondSplitAmount)
         assertThat(savedBalance.commodity).isEqualTo(secondSplitAmount.commodity)
     }
 

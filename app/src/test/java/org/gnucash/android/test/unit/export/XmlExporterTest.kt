@@ -11,12 +11,6 @@ import java.nio.charset.StandardCharsets
 
 class XmlExporterTest : BookHelperTest() {
 
-    private fun readFile(name: String): String {
-        val stream = javaClass.classLoader!!.getResourceAsStream(name)
-        val bytes = stream.readAllBytes()
-        return String(bytes, StandardCharsets.UTF_8)
-    }
-
     @Test
     fun `the exported file is exactly like the imported file - common accounts`() {
         val bookUID = importGnuCashXml("acctchrt_common.gnucash")

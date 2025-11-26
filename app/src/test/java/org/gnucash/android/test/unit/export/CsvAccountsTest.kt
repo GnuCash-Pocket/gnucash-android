@@ -7,7 +7,6 @@ import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.csv.CsvAccountExporter
 import org.gnucash.android.test.unit.BookHelperTest
 import org.junit.Test
-import java.nio.charset.StandardCharsets
 import java.util.Locale
 
 class CsvAccountsTest : BookHelperTest() {
@@ -26,9 +25,7 @@ class CsvAccountsTest : BookHelperTest() {
         val file = exportedFile!!.toFile()
         val actual = file.readText()
 
-        val expectedBytes =
-            openResourceStream("expected.acctchrt_common.accounts.csv").readAllBytes()
-        val expected = String(expectedBytes, StandardCharsets.UTF_8)
+        val expected = readFile("expected.acctchrt_common.accounts.csv")
         assertThat(actual).isEqualTo(expected)
     }
 }

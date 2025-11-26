@@ -124,6 +124,7 @@ class Account : BaseModel {
      * @return Array list of transactions for the account
      */
     var transactions: List<Transaction>
+        @Deprecated("use transactions db adapter")
         get() = _transactions
         /**
          * Sets a list of transactions for this account.
@@ -136,14 +137,6 @@ class Account : BaseModel {
         set(value) {
             _transactions = value.toMutableList()
         }
-
-    /**
-     * Returns the number of transactions in this account
-     *
-     * @return Number transactions in account
-     */
-    val transactionCount: Int
-        get() = _transactions.size
 
     /**
      * The color of the account.

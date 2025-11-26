@@ -20,7 +20,6 @@ import android.content.Context
 import android.graphics.Color
 import android.os.AsyncTask
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -32,6 +31,7 @@ import androidx.annotation.StringRes
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.ActionBar
 import androidx.core.view.isVisible
+import androidx.preference.PreferenceManager
 import com.github.mikephil.charting.data.ChartData
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.highlight.Highlight
@@ -282,8 +282,9 @@ abstract class BaseReportFragment : MenuFragment(),
 
     override fun refresh() {
         generatorTask?.cancel(true)
-        generatorTask = GeneratorTask(reportsActivity)
-        generatorTask!!.execute()
+        val task = GeneratorTask(reportsActivity)
+        generatorTask = task
+        task.execute()
     }
 
     /**

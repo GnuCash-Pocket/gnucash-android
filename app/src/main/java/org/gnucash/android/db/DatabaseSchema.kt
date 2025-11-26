@@ -195,11 +195,10 @@ object DatabaseSchema {
         const val COLUMN_TIMESTAMP: String = "timestamp"
 
         /**
-         * Flag for marking transactions which have been exported
-         *
+         * Flag for marking transactions which have been exported.
+         * Cannot rely on the MODIFIED timestamp only, because of the trigger when importing transactions.
          */
         @Column(Cursor.FIELD_TYPE_INTEGER)
-        @Deprecated("Transactions are exported based on last modified timestamp")
         const val COLUMN_EXPORTED: String = "is_exported"
 
         @Column(Cursor.FIELD_TYPE_INTEGER)

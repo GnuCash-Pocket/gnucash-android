@@ -7,12 +7,10 @@ import org.gnucash.android.export.ExportFormat
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.csv.CsvTransactionsExporter
 import org.gnucash.android.test.unit.BookHelperTest
-import org.gnucash.android.util.TimestampHelper
 import org.gnucash.android.util.applyLocale
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import java.nio.charset.StandardCharsets
 import java.util.Locale
 
 class CsvTransactionsExporterTest : BookHelperTest() {
@@ -33,11 +31,8 @@ class CsvTransactionsExporterTest : BookHelperTest() {
         val context = context.applyLocale(Locale.US)
 
         val bookUID = importGnuCashXml("multipleTransactionImport.xml")
-        val exportParameters = ExportParams(ExportFormat.CSVT).apply {
-            exportStartTime = TimestampHelper.timestampFromEpochZero
-            exportTarget = ExportParams.ExportTarget.SD_CARD
-            deleteTransactionsAfterExport = false
-        }
+        val exportParameters = ExportParams(ExportFormat.CSVT)
+        transactionsDbAdapter.markTransactionsExported(exportParameters.exportStartTime, false)
 
         val exportedFile = CsvTransactionsExporter(context, exportParameters, bookUID).export()
 
@@ -61,11 +56,8 @@ class CsvTransactionsExporterTest : BookHelperTest() {
         val context = context.applyLocale(Locale.ITALY)
 
         val bookUID = importGnuCashXml("multipleTransactionImport.xml")
-        val exportParameters = ExportParams(ExportFormat.CSVT).apply {
-            exportStartTime = TimestampHelper.timestampFromEpochZero
-            exportTarget = ExportParams.ExportTarget.SD_CARD
-            deleteTransactionsAfterExport = false
-        }
+        val exportParameters = ExportParams(ExportFormat.CSVT)
+        transactionsDbAdapter.markTransactionsExported(exportParameters.exportStartTime, false)
 
         val exportedFile = CsvTransactionsExporter(context, exportParameters, bookUID)
             .export()
@@ -90,9 +82,8 @@ class CsvTransactionsExporterTest : BookHelperTest() {
         val context = context.applyLocale(Locale.GERMANY)
 
         val bookUID = importGnuCashXml("common_1.gnucash")
-        val exportParameters = ExportParams(ExportFormat.CSVT).apply {
-            exportTarget = ExportParams.ExportTarget.SD_CARD
-        }
+        val exportParameters = ExportParams(ExportFormat.CSVT)
+        transactionsDbAdapter.markTransactionsExported(exportParameters.exportStartTime, false)
 
         val exportedFile = CsvTransactionsExporter(context, exportParameters, bookUID)
             .export()
@@ -105,8 +96,7 @@ class CsvTransactionsExporterTest : BookHelperTest() {
             .replace("1,0753", "1 + 7/93")
             .replace("0,0067", "888/133253")
 
-        val expectedBytes = openResourceStream("expected.common_1.de.csv").readAllBytes()
-        val expected = String(expectedBytes, StandardCharsets.UTF_8)
+        val expected = readFile("expected.common_1.de.csv")
         assertThat(actual).isEqualTo(expected)
     }
 }
