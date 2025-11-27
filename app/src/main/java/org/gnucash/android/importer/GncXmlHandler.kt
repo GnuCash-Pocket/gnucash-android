@@ -1349,7 +1349,7 @@ class GncXmlHandler(
 
     private fun handleStartSplit(uri: String) {
         if (NS_TRANSACTION == uri) {
-            split = Split(createZeroInstance(rootAccount!!.commodity), "")
+            split = Split(createZeroInstance(rootAccount!!.commodity), null)
         }
     }
 

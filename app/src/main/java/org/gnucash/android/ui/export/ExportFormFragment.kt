@@ -462,6 +462,9 @@ class ExportFormFragment : MenuFragment(),
         formatItems.add(
             ExportFormatItem(ExportFormat.QIF, context.getString(ExportFormat.QIF.labelId))
         )
+        formatItems.add(
+            ExportFormatItem(ExportFormat.OFX, context.getString(ExportFormat.OFX.labelId))
+        )
         if (isDoubleEntry) {
             formatItems.add(
                 ExportFormatItem(ExportFormat.XML, context.getString(ExportFormat.XML.labelId))
@@ -470,9 +473,6 @@ class ExportFormFragment : MenuFragment(),
                 defaultFormat = ExportFormat.XML
             }
         } else {
-            formatItems.add(
-                ExportFormatItem(ExportFormat.OFX, context.getString(ExportFormat.OFX.labelId))
-            )
             if (defaultFormat == ExportFormat.XML) {
                 defaultFormat = ExportFormat.OFX
             }

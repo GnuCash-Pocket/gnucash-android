@@ -319,7 +319,7 @@ class AccountsActivityTest : GnuAndroidTest() {
         val account = Account("Transfer Account", accountsCurrency)
         val transaction = Transaction("Simple transaction")
         transaction.commodity = accountsCurrency
-        val split = Split(Money(BigDecimal.TEN, accountsCurrency), account.uid)
+        val split = Split(Money(BigDecimal.TEN, accountsCurrency), account)
         transaction.addSplit(split)
         transaction.addSplit(split.createPair(SIMPLE_ACCOUNT_UID))
         account.addTransaction(transaction)

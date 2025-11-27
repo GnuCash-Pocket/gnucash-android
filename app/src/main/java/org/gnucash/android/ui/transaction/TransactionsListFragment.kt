@@ -74,6 +74,7 @@ class TransactionsListFragment : MenuFragment(),
     Refreshable,
     LoaderManager.LoaderCallbacks<Cursor>,
     FragmentResultListener {
+    private var accountsDbAdapter: AccountsDbAdapter =AccountsDbAdapter.instance
     private var transactionsDbAdapter: TransactionsDbAdapter = TransactionsDbAdapter.instance
     private var accountUID: String? = null
     private var scrollTransactionUID: String? = null
@@ -105,6 +106,7 @@ class TransactionsListFragment : MenuFragment(),
             )
         }
 
+        accountsDbAdapter = AccountsDbAdapter.instance
         transactionsDbAdapter = TransactionsDbAdapter.instance
     }
 
@@ -362,7 +364,7 @@ class TransactionsListFragment : MenuFragment(),
                     if (splits[0].isPairOf(splits[1])) {
                         for (split in splits) {
                             if (split.accountUID != accountUID) {
-                                text = AccountsDbAdapter.instance.getFullyQualifiedAccountName(
+                                text = accountsDbAdapter.getFullyQualifiedAccountName(
                                     split.accountUID!!
                                 )
                                 break

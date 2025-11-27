@@ -223,33 +223,6 @@ class AccountsDbAdapter(
     }
 
     /**
-     * Marks all transactions for a given account as exported
-     *
-     * @param accountUID Unique ID of the record to be marked as exported
-     * @return Number of records marked as exported
-     */
-    fun markAsExported(accountUID: String): Int {
-        if (isCached) cache.clear()
-        val contentValues = ContentValues()
-        contentValues[TransactionEntry.COLUMN_EXPORTED] = 1
-        return db.update(
-            TransactionEntry.TABLE_NAME,
-            contentValues,
-            (TransactionEntry.COLUMN_UID + " IN ("
-                    + "SELECT DISTINCT " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID
-                    + " FROM " + TransactionEntry.TABLE_NAME + ", " + SplitEntry.TABLE_NAME + " ON "
-                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " = "
-                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID + ", "
-                    + AccountEntry.TABLE_NAME + " ON " + SplitEntry.TABLE_NAME + "."
-                    + SplitEntry.COLUMN_ACCOUNT_UID + " = " + AccountEntry.TABLE_NAME + "."
-                    + AccountEntry.COLUMN_UID + " WHERE " + AccountEntry.TABLE_NAME + "."
-                    + AccountEntry.COLUMN_UID + " = ?"
-                    + ")"),
-            arrayOf<String?>(accountUID)
-        )
-    }
-
-    /**
      * This feature goes through all the rows in the accounts and changes value for `columnKey` to `newValue`<br></br>
      * The `newValue` parameter is taken as string since SQLite typically stores everything as text.
      *
