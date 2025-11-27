@@ -488,9 +488,11 @@ class TransactionsDbAdapter(
      */
     fun getTransactionsCount(accountUID: String): Int {
         val cursor = fetchAllTransactionsForAccount(accountUID) ?: return 0
-        var count = cursor.count
-        cursor.close()
-        return count
+        return try {
+            cursor.count
+        } finally {
+            cursor.close()
+        }
     }
 
     /**
@@ -574,7 +576,7 @@ class TransactionsDbAdapter(
      *
      * @param contentValues Values with which to update the record
      * @param whereClause   Conditions for updating formatted as SQL where statement
-     * @param whereArgs     Arguments for the SQL wehere statement
+     * @param whereArgs     Arguments for the SQL where statement
      * @return Number of records affected
      */
     fun updateTransaction(
