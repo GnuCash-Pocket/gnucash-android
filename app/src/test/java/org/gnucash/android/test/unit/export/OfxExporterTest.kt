@@ -24,7 +24,9 @@ import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter.ExporterException
 import org.gnucash.android.export.ofx.OfxExporter
 import org.gnucash.android.export.ofx.OfxHelper
+import org.gnucash.android.export.ofx.OfxHelper.APP_ID
 import org.gnucash.android.model.Account
+import org.gnucash.android.model.AccountType
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Money.Companion.createZeroInstance
 import org.gnucash.android.model.Split
@@ -79,7 +81,7 @@ class OfxExporterTest : BookHelperTest() {
         assertThat(file.length()).isGreaterThan(0L)
         val actual = file.readText()
         file.delete()
-        assertThat(actual).startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>")
+        assertThat(actual).startsWith("<?xml version='1.0' encoding='UTF-8'")
     }
 
     @Test
@@ -109,7 +111,6 @@ class OfxExporterTest : BookHelperTest() {
         val date = LocalDate(2025, 11, 26).toMillis()
 
         val account = Account("Basic Account")
-        account.setUID("d2006bc2032b4908917f7b1fdd008788")
         val transaction = Transaction("One transaction")
         transaction.setUID("9dabf93ab0444ffabab513329286b691")
         transaction.time = date
@@ -130,10 +131,7 @@ class OfxExporterTest : BookHelperTest() {
         val file = exportedFile!!.toFile()
         assertThat(file).exists().hasExtension("ofx")
         assertThat(file.length()).isGreaterThan(0L)
-        val actual = file.readText().trimEnd().replace("\r\n", "\n")
-            .replace(Regex("<DTASOF>\\d+\\.\\d\\d\\d\\[0:UTC\\]</DTASOF>"), "<DTASOF>20251126</DTASOF>")
-            .replace(Regex("<DTEND>\\d+\\.\\d\\d\\d\\[0:UTC\\]</DTEND>"), "<DTEND>20251126</DTEND>")
-            .replace(Regex("<DTUSER>\\d+\\.\\d\\d\\d\\[0:UTC\\]</DTUSER>"), "<DTUSER>20251126</DTUSER>")
+        val actual = file.readText().expect("20251126")
         file.delete()
 
         val expected = readFile("expected.one.ofx").trimEnd().replace("\r\n", "\n")
@@ -169,13 +167,52 @@ class OfxExporterTest : BookHelperTest() {
         val file = exportedFile!!.toFile()
         assertThat(file).exists().hasExtension("ofx")
         assertThat(file.length()).isGreaterThan(0L)
-        val actual = file.readText().trimEnd().replace("\r\n", "\n")
-            .replace(Regex("<DTASOF>\\d+\\.\\d\\d\\d\\[0:UTC\\]</DTASOF>"), "<DTASOF>20251126</DTASOF>")
-            .replace(Regex("<DTEND>\\d+\\.\\d\\d\\d\\[0:UTC\\]</DTEND>"), "<DTEND>20251126</DTEND>")
-            .replace(Regex("<DTUSER>\\d+\\.\\d\\d\\d\\[0:UTC\\]</DTUSER>"), "<DTUSER>20251126</DTUSER>")
+        val actual = file.readText().expect("20251126")
         file.delete()
 
         val expected = readFile("expected.pair.ofx").trimEnd().replace("\r\n", "\n")
         assertThat(actual).isEqualTo(expected)
+    }
+
+    @Test
+    fun `the exported file is exactly as expected - credit card`() {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+        val date = LocalDate(2025, 11, 26).toMillis()
+
+        val account = Account("Visa")
+        account.accountType = AccountType.CREDIT
+        val transaction = Transaction("One transaction")
+        transaction.setUID("9dabf93ab0444ffabab513329286b691")
+        transaction.time = date
+        transaction.addSplit(Split(Money(123.45, "EUR"), account))
+
+        accountsDbAdapter.addRecord(account)
+        transactionsDbAdapter.addRecord(transaction)
+
+        val exportParameters = ExportParams(ExportFormat.OFX)
+        val exporter = OfxExporter(
+            context,
+            exportParameters,
+            GnuCashApplication.activeBookUID!!
+        )
+        val exportedFile = exporter.export()
+
+        assertThat(exportedFile).isNotNull()
+        val file = exportedFile!!.toFile()
+        assertThat(file).exists().hasExtension("ofx")
+        assertThat(file.length()).isGreaterThan(0L)
+        val actual = file.readText().expect("20251126")
+        file.delete()
+
+        val expected = readFile("expected.cc.ofx").trimEnd().replace("\r\n", "\n")
+        assertThat(actual).isEqualTo(expected)
+    }
+
+    private fun String.expect(date: String): String {
+        return trimEnd().replace("\r\n", "\n")
+            .replace(Regex("<BANKID>${APP_ID}</BANKID>"), "<BANKID>org.gnucash.pocket</BANKID>")
+            .replace(Regex("<DTASOF>\\d+\\.\\d\\d\\d\\[0:UTC\\]</DTASOF>"), "<DTASOF>${date}</DTASOF>")
+            .replace(Regex("<DTEND>\\d+\\.\\d\\d\\d\\[0:UTC\\]</DTEND>"), "<DTEND>${date}</DTEND>")
+            .replace(Regex("<DTUSER>\\d+\\.\\d\\d\\d\\[0:UTC\\]</DTUSER>"), "<DTUSER>${date}</DTUSER>")
     }
 }

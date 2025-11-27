@@ -7,7 +7,7 @@
       <STMTRS>
         <CURDEF>USD</CURDEF>
         <BANKACCTFROM>
-          <BANKID>org.gnucash.pocket.devel</BANKID>
+          <BANKID>org.gnucash.pocket</BANKID>
           <ACCTID>Assets:Cash in Wallet</ACCTID>
           <ACCTTYPE>CHECKING</ACCTTYPE>
         </BANKACCTFROM>
@@ -22,7 +22,7 @@
             <FITID>9dabf93ab0444ffabab513329286b691</FITID>
             <NAME>Food</NAME>
             <BANKACCTTO>
-              <BANKID>org.gnucash.pocket.devel</BANKID>
+              <BANKID>org.gnucash.pocket</BANKID>
               <ACCTID>Expenses:Dining</ACCTID>
               <ACCTTYPE>CHECKING</ACCTTYPE>
             </BANKACCTTO>
@@ -36,7 +36,7 @@
       <STMTRS>
         <CURDEF>USD</CURDEF>
         <BANKACCTFROM>
-          <BANKID>org.gnucash.pocket.devel</BANKID>
+          <BANKID>org.gnucash.pocket</BANKID>
           <ACCTID>Expenses:Dining</ACCTID>
           <ACCTTYPE>CHECKING</ACCTTYPE>
         </BANKACCTFROM>
@@ -51,7 +51,7 @@
             <FITID>9dabf93ab0444ffabab513329286b691</FITID>
             <NAME>Food</NAME>
             <BANKACCTTO>
-              <BANKID>org.gnucash.pocket.devel</BANKID>
+              <BANKID>org.gnucash.pocket</BANKID>
               <ACCTID>Assets:Cash in Wallet</ACCTID>
               <ACCTTYPE>CHECKING</ACCTTYPE>
             </BANKACCTTO>

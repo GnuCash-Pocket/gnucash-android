@@ -34,6 +34,11 @@ import org.gnucash.android.export.ofx.OfxHelper.TAG_BANK_ACCOUNT_TO
 import org.gnucash.android.export.ofx.OfxHelper.TAG_BANK_ID
 import org.gnucash.android.export.ofx.OfxHelper.TAG_BANK_MESSAGES_V1
 import org.gnucash.android.export.ofx.OfxHelper.TAG_BANK_TRANSACTION_LIST
+import org.gnucash.android.export.ofx.OfxHelper.TAG_CC_ACCOUNT_FROM
+import org.gnucash.android.export.ofx.OfxHelper.TAG_CC_ACCOUNT_TO
+import org.gnucash.android.export.ofx.OfxHelper.TAG_CC_MESSAGES_V1
+import org.gnucash.android.export.ofx.OfxHelper.TAG_CC_STATEMENT_TRANSACTIONS
+import org.gnucash.android.export.ofx.OfxHelper.TAG_CC_STATEMENT_TRANSACTION_RESPONSE
 import org.gnucash.android.export.ofx.OfxHelper.TAG_CHECK_NUMBER
 import org.gnucash.android.export.ofx.OfxHelper.TAG_CURRENCY_DEF
 import org.gnucash.android.export.ofx.OfxHelper.TAG_DATE_AS_OF
@@ -55,6 +60,8 @@ import org.gnucash.android.export.ofx.OfxHelper.TAG_TRANSACTION_UID
 import org.gnucash.android.export.ofx.OfxHelper.UNSOLICITED_TRANSACTION_ID
 import org.gnucash.android.export.ofx.OfxHelper.formatTime
 import org.gnucash.android.export.ofx.OfxHelper.formattedCurrentTime
+import org.gnucash.android.export.ofx.OfxHelper.isBanking
+import org.gnucash.android.export.ofx.OfxHelper.isCreditCard
 import org.gnucash.android.gnc.GncProgressListener
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.Money
@@ -87,6 +94,8 @@ class OfxExporter(
             throw ExporterException(exportParams, "No accounts to export")
         }
         writeDocument(writer, exportParams, accounts)
+
+        transactionsDbAdapter.markTransactionsExported(exportParams.exportStartTime)
         setLastExportTime(context, TimestampHelper.timestampFromNow, bookUID)
     }
 
@@ -142,6 +151,34 @@ class OfxExporter(
         val nameImbalance = context.getString(R.string.imbalance_account_name)
         val modifiedSince = exportParams.exportStartTime
 
+        val accountsWithTransactions = accounts
+            .filter { it.commodity.isCurrency }
+            .filter { transactionsDbAdapter.getTransactionsCount(it.uid) > 0 }
+            .filter {
+                // TODO: investigate whether skipping the imbalance accounts makes sense.
+                // Also, using locale-dependant names here is error-prone.
+                isDoubleEntryEnabled || !it.name.contains(nameImbalance)
+            }
+        if (accountsWithTransactions.isEmpty()) {
+            throw ExporterException(exportParams, "No accounts to export")
+        }
+
+        val accountsBank = accountsWithTransactions.filter { it.isBanking }
+        if (accountsBank.isNotEmpty()) {
+            writeBankAccounts(xmlSerializer, accountsBank, modifiedSince)
+        }
+
+        val accountsCredit = accountsWithTransactions.filter { it.isCreditCard }
+        if (accountsCredit.isNotEmpty()) {
+            writeCreditAccounts(xmlSerializer, accountsCredit, modifiedSince)
+        }
+    }
+
+    private fun writeBankAccounts(
+        xmlSerializer: XmlSerializer,
+        accounts: List<Account>,
+        modifiedSince: Timestamp
+    ) {
         xmlSerializer.startTag(null, TAG_BANK_MESSAGES_V1)
         xmlSerializer.startTag(null, TAG_STATEMENT_TRANSACTION_RESPONSE)
 
@@ -150,38 +187,61 @@ class OfxExporter(
         xmlSerializer.text(UNSOLICITED_TRANSACTION_ID)
         xmlSerializer.endTag(null, TAG_TRANSACTION_UID)
 
-        accounts
-            .filter { !cancellationSignal.isCanceled }
-            .filter { it.commodity.isCurrency }
-            .filter { transactionsDbAdapter.getTransactionsCount(it.uid) > 0 }
-            .filter {
-                // TODO: investigate whether skipping the imbalance accounts makes sense.
-                // Also, using locale-dependant names here is error-prone.
-                isDoubleEntryEnabled || !it.name.contains(nameImbalance)
-            }
-            .forEach { account ->
-                cancellationSignal.throwIfCanceled()
-                // Add account details (transactions) to the XML document.
-                writeAccount(xmlSerializer, account, modifiedSince)
-            }
+        accounts.forEach { account ->
+            cancellationSignal.throwIfCanceled()
+            // Add account details (transactions) to the XML document.
+            writeAccount(xmlSerializer, account, modifiedSince, false)
+        }
 
         xmlSerializer.endTag(null, TAG_STATEMENT_TRANSACTION_RESPONSE)
         xmlSerializer.endTag(null, TAG_BANK_MESSAGES_V1)
     }
 
+    private fun writeCreditAccounts(
+        xmlSerializer: XmlSerializer,
+        accounts: List<Account>,
+        modifiedSince: Timestamp
+    ) {
+        xmlSerializer.startTag(null, TAG_CC_MESSAGES_V1)
+        xmlSerializer.startTag(null, TAG_CC_STATEMENT_TRANSACTION_RESPONSE)
+
+        // Unsolicited because the data exported is not as a result of a request.
+        xmlSerializer.startTag(null, TAG_TRANSACTION_UID)
+        xmlSerializer.text(UNSOLICITED_TRANSACTION_ID)
+        xmlSerializer.endTag(null, TAG_TRANSACTION_UID)
+
+        accounts.forEach { account ->
+            cancellationSignal.throwIfCanceled()
+            // Add account details (transactions) to the XML document.
+            writeAccount(xmlSerializer, account, modifiedSince, true)
+        }
+
+        xmlSerializer.endTag(null, TAG_CC_STATEMENT_TRANSACTION_RESPONSE)
+        xmlSerializer.endTag(null, TAG_CC_MESSAGES_V1)
+    }
+
     private fun writeAccount(
         xmlSerializer: XmlSerializer,
         account: Account,
-        modifiedSince: Timestamp
+        modifiedSince: Timestamp,
+        isCreditCard: Boolean = false
     ) {
-        xmlSerializer.startTag(null, TAG_STATEMENT_TRANSACTIONS)
+        if (isCreditCard) {
+            xmlSerializer.startTag(null, TAG_CC_STATEMENT_TRANSACTIONS)
+        } else {
+            xmlSerializer.startTag(null, TAG_STATEMENT_TRANSACTIONS)
+        }
 
         xmlSerializer.startTag(null, TAG_CURRENCY_DEF)
         xmlSerializer.text(account.commodity.currencyCode)
         xmlSerializer.endTag(null, TAG_CURRENCY_DEF)
 
         //================= BEGIN BANK ACCOUNT INFO =================================
-        xmlSerializer.startTag(null, TAG_BANK_ACCOUNT_FROM)
+        if (isCreditCard) {
+            xmlSerializer.startTag(null, TAG_CC_ACCOUNT_FROM)
+        } else {
+            xmlSerializer.startTag(null, TAG_BANK_ACCOUNT_FROM)
+        }
 
         xmlSerializer.startTag(null, TAG_BANK_ID)
         xmlSerializer.text(APP_ID)
@@ -195,7 +255,11 @@ class OfxExporter(
         xmlSerializer.text(OfxAccountType.of(account.accountType).value)
         xmlSerializer.endTag(null, TAG_ACCOUNT_TYPE)
 
-        xmlSerializer.endTag(null, TAG_BANK_ACCOUNT_FROM)
+        if (isCreditCard) {
+            xmlSerializer.endTag(null, TAG_CC_ACCOUNT_FROM)
+        } else {
+            xmlSerializer.endTag(null, TAG_BANK_ACCOUNT_FROM)
+        }
         //================= END BANK ACCOUNT INFO ============================================
 
         writeTransactions(xmlSerializer, account, modifiedSince)
@@ -214,7 +278,11 @@ class OfxExporter(
         xmlSerializer.endTag(null, TAG_LEDGER_BALANCE)
         //================= END ACCOUNT BALANCE INFO =================================
 
-        xmlSerializer.endTag(null, TAG_STATEMENT_TRANSACTIONS)
+        if (isCreditCard) {
+            xmlSerializer.endTag(null, TAG_CC_STATEMENT_TRANSACTIONS)
+        } else {
+            xmlSerializer.endTag(null, TAG_STATEMENT_TRANSACTIONS)
+        }
 
         listener?.onAccount(account)
     }
@@ -244,14 +312,21 @@ class OfxExporter(
         xmlSerializer.text(formattedCurrentTime)
         xmlSerializer.endTag(null, TAG_DATE_END)
 
-        transactionsDbAdapter.fetchTransactionsModifiedSince(modifiedSince).forEach { cursor ->
+        transactionsDbAdapter.fetchTransactionsToExportSince(modifiedSince).forEach { cursor ->
             val transaction = transactionsDbAdapter.buildModelInstance(cursor)
-            writeTransaction(xmlSerializer, account, transaction)
-            listener?.onTransaction(transaction)
+            if (transaction.hasAccount(account)) {
+                writeTransaction(xmlSerializer, account, transaction)
+                listener?.onTransaction(transaction)
+            }
         }
 
         xmlSerializer.endTag(null, TAG_BANK_TRANSACTION_LIST)
         //================= END TRANSACTIONS LIST =================================
+    }
+
+    private fun Transaction.hasAccount(account: Account): Boolean {
+        val accountUID = account.uid
+        return splits.any { it.accountUID == accountUID }
     }
 
     private fun writeTransaction(
@@ -327,8 +402,13 @@ class OfxExporter(
             }
         }
         if (transferAccount == account) return
+        val isCreditCard = account.isCreditCard
 
-        xmlSerializer.startTag(null, TAG_BANK_ACCOUNT_TO)
+        if (isCreditCard) {
+            xmlSerializer.startTag(null, TAG_CC_ACCOUNT_TO)
+        } else {
+            xmlSerializer.startTag(null, TAG_BANK_ACCOUNT_TO)
+        }
 
         xmlSerializer.startTag(null, TAG_BANK_ID)
         xmlSerializer.text(APP_ID)
@@ -342,6 +422,10 @@ class OfxExporter(
         xmlSerializer.text(OfxAccountType.of(transferAccount.accountType).value)
         xmlSerializer.endTag(null, TAG_ACCOUNT_TYPE)
 
-        xmlSerializer.endTag(null, TAG_BANK_ACCOUNT_TO)
+        if (isCreditCard) {
+            xmlSerializer.endTag(null, TAG_CC_ACCOUNT_TO)
+        } else {
+            xmlSerializer.endTag(null, TAG_BANK_ACCOUNT_TO)
+        }
     }
 }
