@@ -113,6 +113,7 @@ class Account : BaseModel {
      *
      * @param transaction [Transaction] to be added to the account
      */
+    @Deprecated("add transaction directly to the db")
     fun addTransaction(transaction: Transaction) {
         transaction.commodity = commodity
         _transactions.add(transaction)

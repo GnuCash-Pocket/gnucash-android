@@ -73,8 +73,7 @@
         <item name="android:layout_marginTop">@dimen/hint_margin</item>
         <item name="android:layout_marginBottom">@dimen/hint_margin</item>
         <item name="android:textColor">@color/light_gray</item>
-        <item name="android:textSize">12sp</item>
-        <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
     </style>
 
     <style name="ImageButton.Transparent" parent="Widget.AppCompat.ImageButton">

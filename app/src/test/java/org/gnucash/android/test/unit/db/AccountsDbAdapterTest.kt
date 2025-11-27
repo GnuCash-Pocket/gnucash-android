@@ -129,9 +129,9 @@ class AccountsDbAdapterTest : GnuCashTest() {
         val account1 = Account("AlphaAccount")
         val account2 = Account("BetaAccount")
         val transaction = Transaction("MyTransaction")
-        val split = Split(createZeroInstance(account1.commodity), account1.uid)
+        val split = Split(createZeroInstance(account1.commodity), account1)
         transaction.addSplit(split)
-        transaction.addSplit(split.createPair(account2.uid))
+        transaction.addSplit(split.createPair(account2))
         account1.addTransaction(transaction)
         account2.addTransaction(transaction)
 
@@ -156,9 +156,9 @@ class AccountsDbAdapterTest : GnuCashTest() {
         val account1 = Account("AlphaAccount")
         val account2 = Account("BetaAccount")
         val transaction = Transaction("MyTransaction")
-        val split = Split(createZeroInstance(account1.commodity), account1.uid)
+        val split = Split(createZeroInstance(account1.commodity), account1)
         transaction.addSplit(split)
-        transaction.addSplit(split.createPair(account2.uid))
+        transaction.addSplit(split.createPair(account2))
         account1.addTransaction(transaction)
         account2.addTransaction(transaction)
 
@@ -254,10 +254,10 @@ class AccountsDbAdapterTest : GnuCashTest() {
         accountsDbAdapter.addRecord(account)
 
         val transaction = Transaction("Test description")
-        val split = Split(createZeroInstance(account.commodity), account.uid)
+        val split = Split(createZeroInstance(account.commodity), account)
         transaction.addSplit(split)
         val account1 = Account("Transfer account")
-        transaction.addSplit(split.createPair(account1.uid))
+        transaction.addSplit(split.createPair(account1))
         account1.addTransaction(transaction)
 
         accountsDbAdapter.addRecord(account1)
@@ -271,10 +271,10 @@ class AccountsDbAdapterTest : GnuCashTest() {
     fun shouldClearAllTablesWhenDeletingAllAccounts() {
         val account = Account("Test")
         val transaction = Transaction("Test description")
-        val split = Split(createZeroInstance(account.commodity), account.uid)
+        val split = Split(createZeroInstance(account.commodity), account)
         transaction.addSplit(split)
         val account2 = Account("Transfer account")
-        transaction.addSplit(split.createPair(account2.uid))
+        transaction.addSplit(split.createPair(account2))
 
         accountsDbAdapter.addRecord(account)
         accountsDbAdapter.addRecord(account2)
@@ -308,10 +308,10 @@ class AccountsDbAdapterTest : GnuCashTest() {
     fun simpleAccountListShouldNotContainTransactions() {
         val account = Account("Test")
         val transaction = Transaction("Test description")
-        val split = Split(createZeroInstance(account.commodity), account.uid)
+        val split = Split(createZeroInstance(account.commodity), account)
         transaction.addSplit(split)
         val account1 = Account("Transfer")
-        transaction.addSplit(split.createPair(account1.uid))
+        transaction.addSplit(split.createPair(account1))
 
         accountsDbAdapter.addRecord(account)
         accountsDbAdapter.addRecord(account1)
@@ -333,27 +333,27 @@ class AccountsDbAdapterTest : GnuCashTest() {
 
         val transaction = Transaction("Test description")
         transactionsDbAdapter.addRecord(transaction)
-        var split = Split(Money(BigDecimal.TEN, Commodity.USD), account.uid)
+        var split = Split(Money(BigDecimal.TEN, Commodity.USD), account)
         split.transactionUID = transaction.uid
         split.type = TransactionType.DEBIT
         splitsDbAdapter.addRecord(split)
 
-        split = Split(Money("4.99", "USD"), account.uid)
+        split = Split(Money("4.99", "USD"), account)
         split.transactionUID = transaction.uid
         split.type = TransactionType.DEBIT
         splitsDbAdapter.addRecord(split)
 
-        split = Split(Money("1.19", "USD"), account.uid)
+        split = Split(Money("1.19", "USD"), account)
         split.transactionUID = transaction.uid
         split.type = TransactionType.CREDIT
         splitsDbAdapter.addRecord(split)
 
-        split = Split(Money("3.49", "EUR"), account.uid)
+        split = Split(Money("3.49", "EUR"), account)
         split.transactionUID = transaction.uid
         split.type = TransactionType.DEBIT
         splitsDbAdapter.addRecord(split)
 
-        split = Split(Money("8.39", "USD"), transferAcct.uid)
+        split = Split(Money("8.39", "USD"), transferAcct)
         split.transactionUID = transaction.uid
         splitsDbAdapter.addRecord(split)
 
@@ -396,9 +396,9 @@ class AccountsDbAdapterTest : GnuCashTest() {
         val transaction = Transaction("Random")
         account2.addTransaction(transaction)
 
-        val split = Split(createZeroInstance(account.commodity), account.uid)
+        val split = Split(createZeroInstance(account.commodity), account)
         transaction.addSplit(split)
-        transaction.addSplit(split.createPair(account2.uid))
+        transaction.addSplit(split.createPair(account2))
 
         accountsDbAdapter.addRecord(account)
         accountsDbAdapter.addRecord(account2)
@@ -472,9 +472,9 @@ class AccountsDbAdapterTest : GnuCashTest() {
         val transaction = Transaction("Template")
         transaction.isTemplate = true
         transaction.commodity = Commodity.EUR
-        val split = Split(money, account.uid)
+        val split = Split(money, account)
         transaction.addSplit(split)
-        transaction.addSplit(split.createPair(transferAccount.uid))
+        transaction.addSplit(split.createPair(transferAccount))
 
         transactionsDbAdapter.addRecord(transaction)
         val transactions = transactionsDbAdapter.allRecords

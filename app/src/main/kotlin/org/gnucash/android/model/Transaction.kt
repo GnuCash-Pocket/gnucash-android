@@ -193,7 +193,7 @@ class Transaction : BaseModel {
      * @see computeBalance
      */
     fun getBalance(accountUID: String): Money {
-        return computeBalance(accountUID, splits)
+        return computeBalance(accountUID, splits, true)
     }
 
     /**
@@ -205,8 +205,8 @@ class Transaction : BaseModel {
      * @return Money balance of the transaction for the specified account
      * @see computeBalance
      */
-    fun getBalance(account: Account): Money {
-        return computeBalance(account, splits)
+    fun getBalance(account: Account, display: Boolean): Money {
+        return computeBalance(account, splits, display)
     }
 
     /**
@@ -363,10 +363,10 @@ class Transaction : BaseModel {
          * @param splits  List of splits
          * @return Money list of splits
          */
-        fun computeBalance(accountUID: String, splits: List<Split>): Money {
+        fun computeBalance(accountUID: String, splits: List<Split>, display: Boolean): Money {
             val accountsDbAdapter = AccountsDbAdapter.instance
             val account = accountsDbAdapter.getRecord(accountUID)
-            return computeBalance(account, splits)
+            return computeBalance(account, splits, display)
         }
 
         /**
@@ -380,11 +380,15 @@ class Transaction : BaseModel {
          * @param splits  List of splits
          * @return Money list of splits
          */
-        fun computeBalance(account: Account, splits: List<Split>): Money {
+        fun computeBalance(account: Account, splits: List<Split>, display: Boolean = false): Money {
             val accountUID = account.uid
             val accountType = account.accountType
             val accountCommodity = account.commodity
-            val isDebitAccount = accountType.hasDebitDisplayBalance
+            val isDebitAccount = if (display) {
+                accountType.hasDebitDisplayBalance
+            } else {
+                accountType.hasDebitNormalBalance
+            }
             var balance = Money.createZeroInstance(accountCommodity)
             for (split in splits) {
                 if (split.accountUID != accountUID) continue

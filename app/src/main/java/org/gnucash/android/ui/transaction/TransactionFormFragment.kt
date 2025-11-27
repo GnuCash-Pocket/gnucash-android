@@ -304,7 +304,7 @@ class TransactionFormFragment : MenuFragment(),
             val accountUID = account.uid
             val transactionUID =
                 cursor.getString(cursor.getColumnIndexOrThrow(TransactionEntry.COLUMN_UID))
-            val balance = transactionsDbAdapter.getBalance(transactionUID, accountUID)
+            val balance = transactionsDbAdapter.getBalance(transactionUID, accountUID, true)
 
             val timestamp =
                 cursor.getLong(cursor.getColumnIndexOrThrow(TransactionEntry.COLUMN_TIMESTAMP))
@@ -395,7 +395,7 @@ class TransactionFormFragment : MenuFragment(),
 
         //when autocompleting, only change the amount if the user has not manually changed it already
         binding.inputTransactionAmount.setValue(
-            transaction.getBalance(account).toBigDecimal(),
+            transaction.getBalance(account, true).toBigDecimal(),
             !binding.inputTransactionAmount.isInputModified
         )
         binding.currencySymbol.text = transaction.commodity.symbol
@@ -468,7 +468,7 @@ class TransactionFormFragment : MenuFragment(),
             }
         }
 
-        val balance = Transaction.computeBalance(account, splits)
+        val balance = Transaction.computeBalance(account, splits, true)
         binding.inputTransactionAmount.value = balance.toBigDecimal()
         binding.inputTransactionType.accountType = account.accountType
         binding.inputTransactionType.setChecked(transactionType)
@@ -731,8 +731,8 @@ class TransactionFormFragment : MenuFragment(),
             split2.quantity = quantity
             split2.accountUID = transferAccountUID
         } else {
-            split1 = Split(value, accountUID)
-            split2 = Split(value, quantity, transferAccountUID)
+            split1 = Split(value, account)
+            split2 = Split(value, quantity, transferAccount)
         }
         split1.type = binding.inputTransactionType.transactionType
         split2.type = binding.inputTransactionType.transactionType.invert()

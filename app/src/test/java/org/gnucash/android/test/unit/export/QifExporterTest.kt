@@ -92,7 +92,7 @@ class QifExporterTest : BookHelperTest() {
 
         val account = Account("Basic Account")
         val transaction = Transaction("One transaction")
-        transaction.addSplit(Split(createZeroInstance("EUR"), account.uid))
+        transaction.addSplit(Split(createZeroInstance("EUR"), account))
         account.addTransaction(transaction)
 
         accountsDbAdapter.addRecord(account)
@@ -124,14 +124,14 @@ class QifExporterTest : BookHelperTest() {
 
         val account = Account("Basic Account", Commodity.getInstance("EUR"))
         val transaction = Transaction("One transaction")
-        transaction.addSplit(Split(createZeroInstance("EUR"), account.uid))
+        transaction.addSplit(Split(createZeroInstance("EUR"), account))
         account.addTransaction(transaction)
         accountsDbAdapter.addRecord(account)
 
         val foreignAccount = Account("US Konto", Commodity.getInstance("USD"))
         val multiCurr = Transaction("multi-currency")
-        val split1 = Split(Money("12", "USD"), Money("15", "EUR"), foreignAccount.uid)
-        val split2 = split1.createPair(account.uid)
+        val split1 = Split(Money("12", "USD"), Money("15", "EUR"), foreignAccount)
+        val split2 = split1.createPair(account)
         multiCurr.addSplit(split1)
         multiCurr.addSplit(split2)
         foreignAccount.addTransaction(multiCurr)
@@ -171,7 +171,7 @@ class QifExporterTest : BookHelperTest() {
 
         val account = Account(expectedAccountName)
         val transaction = Transaction("One transaction")
-        transaction.addSplit(Split(Money(-123.45, "EUR"), account.uid))
+        transaction.addSplit(Split(Money(-123.45, "EUR"), account))
         transaction.description = expectedDescription
         transaction.note = expectedMemo
         transaction.number = expectedNumber
@@ -338,8 +338,8 @@ class QifExporterTest : BookHelperTest() {
 
         val transactionsDbAdapter = TransactionsDbAdapter(holder)
         val transaction = Transaction("One transaction")
-        val split1 = Split(Money(-123.45, Commodity.EUR), account1.uid)
-        val split2 = split1.createPair(account2.uid)
+        val split1 = Split(Money(-123.45, Commodity.EUR), account1)
+        val split2 = split1.createPair(account2)
         split2.accountUID = account2.uid
         transaction.addSplit(split1)
         transaction.addSplit(split2)

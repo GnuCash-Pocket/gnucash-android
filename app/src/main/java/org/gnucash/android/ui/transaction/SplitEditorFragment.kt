@@ -151,7 +151,7 @@ class SplitEditorFragment : MenuFragment() {
         if (splitList.isNullOrEmpty()) {
             val account = this.account!!
             val commodity = account.commodity
-            val split = Split(Money(baseAmount, commodity), account.uid)
+            val split = Split(Money(baseAmount, commodity), account)
             val accountType = account.accountType
             val transactionType = getTypeForBalance(accountType, baseAmount.signum() < 0)
             split.type = transactionType
@@ -418,7 +418,7 @@ class SplitEditorFragment : MenuFragment() {
 
             val position = viewHolder.accountsSpinner.selectedItemPosition
             account = accountNameAdapter.getAccount(position) ?: continue
-            val split = Split(valueAmount, account.uid)
+            val split = Split(valueAmount, account)
             split.memo = viewHolder.splitMemoEditText.getText().toString()
             split.type = viewHolder.splitTypeSwitch.transactionType
             split.setUID(viewHolder.splitUidTextView.getText().toString())

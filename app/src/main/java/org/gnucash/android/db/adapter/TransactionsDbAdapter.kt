@@ -448,9 +448,9 @@ class TransactionsDbAdapter(
      * @param accountUID     GUID of the account
      * @return [Money] balance of the transaction for that account
      */
-    fun getBalance(transactionUID: String, accountUID: String): Money {
+    fun getBalance(transactionUID: String, accountUID: String, display: Boolean): Money {
         val splits = splitsDbAdapter.getSplitsForTransactionInAccount(transactionUID, accountUID)
-        return computeBalance(accountUID, splits)
+        return computeBalance(accountUID, splits, display)
     }
 
     /**

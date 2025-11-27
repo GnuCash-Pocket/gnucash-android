@@ -68,7 +68,7 @@ class ScheduledActionServiceTest : BookHelperTest() {
         templateTransaction.commodity = Commodity.DEFAULT_COMMODITY
         templateTransaction.isTemplate = true
 
-        val split1 = Split(Money(BigDecimal.TEN, Commodity.DEFAULT_COMMODITY), baseAccount.uid)
+        val split1 = Split(Money(BigDecimal.TEN, Commodity.DEFAULT_COMMODITY), baseAccount)
         val split2 = split1.createPair(transferAccount.uid)
 
         templateTransaction.addSplit(split1)
@@ -347,7 +347,7 @@ class ScheduledActionServiceTest : BookHelperTest() {
         )
         split.type = TransactionType.DEBIT
         transaction.addSplit(split)
-        transaction.addSplit(split.createPair(transferAccount.uid))
+        transaction.addSplit(split.createPair(transferAccount))
         transactionsDbAdapter.addRecord(transaction)
         // We set the date directly in the database as the corresponding field
         // is ignored when the object is stored. It's set through a trigger instead.
@@ -415,7 +415,7 @@ class ScheduledActionServiceTest : BookHelperTest() {
         )
         split.type = TransactionType.DEBIT
         transaction.addSplit(split)
-        transaction.addSplit(split.createPair(transferAccount.uid))
+        transaction.addSplit(split.createPair(transferAccount))
         transactionsDbAdapter.addRecord(transaction)
 
         val bookUID = GnuCashApplication.activeBookUID

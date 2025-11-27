@@ -44,44 +44,59 @@ object OfxHelper {
      * Header for OFX documents
      */
     const val OFX_HEADER: String =
-        "OFXHEADER=\"200\" VERSION=\"211\" SECURITY=\"NONE\" OLDFILEUID=\"NONE\" NEWFILEUID=\"NONE\""
+        "OFX OFXHEADER=\"200\" VERSION=\"211\" SECURITY=\"NONE\" OLDFILEUID=\"NONE\" NEWFILEUID=\"NONE\""
 
     /**
      * SGML header for OFX. Used for compatibility with desktop GnuCash
      */
     const val OFX_SGML_HEADER: String =
-        "ENCODING:UTF-8\nOFXHEADER:100\nDATA:OFXSGML\nVERSION:211\nSECURITY:NONE\nCHARSET:UTF-8\nCOMPRESSION:NONE\nOLDFILEUID:NONE\nNEWFILEUID:NONE"
+        "ENCODING:UTF-8\nOFXHEADER:100\nDATA:OFXSGML\nVERSION:211\nSECURITY:NONE\nCHARSET:UTF-8\nCOMPRESSION:NONE\nOLDFILEUID:NONE\nNEWFILEUID:NONE\n"
 
+    const val TAG_ROOT = "OFX"
     /*
      * XML tag name constants for the OFX file
      */
     const val TAG_TRANSACTION_UID: String = "TRNUID"
     const val TAG_BANK_MESSAGES_V1: String = "BANKMSGSRSV1"
+    // Default currency for the statement
     const val TAG_CURRENCY_DEF: String = "CURDEF"
     const val TAG_BANK_ID: String = "BANKID"
     const val TAG_ACCOUNT_ID: String = "ACCTID"
     const val TAG_ACCOUNT_TYPE: String = "ACCTTYPE"
+    // Account-from aggregate
     const val TAG_BANK_ACCOUNT_FROM: String = "BANKACCTFROM"
+    // Ledger balance amount
     const val TAG_BALANCE_AMOUNT: String = "BALAMT"
+    // Balance date
     const val TAG_DATE_AS_OF: String = "DTASOF"
+    // Ledger balance aggregate
     const val TAG_LEDGER_BALANCE: String = "LEDGERBAL"
+    // Start date for transaction data
     const val TAG_DATE_START: String = "DTSTART"
+    // Value that client should send in next <DTSTART> request to ensure that it does not miss any transactions
     const val TAG_DATE_END: String = "DTEND"
     const val TAG_TRANSACTION_TYPE: String = "TRNTYPE"
     const val TAG_DATE_POSTED: String = "DTPOSTED"
     const val TAG_DATE_USER: String = "DTUSER"
     const val TAG_TRANSACTION_AMOUNT: String = "TRNAMT"
+    // Financial Institution Transaction ID
     const val TAG_TRANSACTION_FITID: String = "FITID"
     const val TAG_NAME: String = "NAME"
     const val TAG_MEMO: String = "MEMO"
     const val TAG_BANK_ACCOUNT_TO: String = "BANKACCTTO"
+    // statement transaction data
     const val TAG_BANK_TRANSACTION_LIST: String = "BANKTRANLIST"
-    // The OFX element "STMTRS" is of type "StatementResponse"
+    // Statement-response aggregate
     const val TAG_STATEMENT_TRANSACTIONS: String = "STMTRS"
+    // statement transaction
     const val TAG_STATEMENT_TRANSACTION: String = "STMTTRN"
     const val TAG_STATEMENT_TRANSACTION_RESPONSE: String = "STMTTRNRS"
+    const val TAG_CHECK_NUMBER: String = "CHECKNUM"
 
-    const val NEW_LINE: String = "\n"
+    //TODO Credit-card-download-response aggregate
+    const val TAG_CC_RESPONSE: String = "CCSTMTRS"
+    //TODO Account from aggregate
+    const val TAG_CC_ACCOUNT_FROM: String = "CCACCTFROM"
 
     /**
      * ID which will be used as the bank ID for OFX from this app

@@ -801,7 +801,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         val multiTransaction = Transaction(trnDescription)
         val split1 = Split(expectedValue, TRANSACTIONS_ACCOUNT_UID)
         split1.type = TransactionType.DEBIT
-        val split2 = Split(expectedValue, expectedQty, euroAccount.uid)
+        val split2 = Split(expectedValue, expectedQty, euroAccount)
         split2.type = TransactionType.CREDIT
         multiTransaction.addSplit(split1)
         multiTransaction.addSplit(split2)
@@ -881,7 +881,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         val multiTransaction = Transaction(trnDescription)
         val split1 = Split(expectedValue, TRANSACTIONS_ACCOUNT_UID)
         split1.type = TransactionType.CREDIT
-        val split2 = Split(expectedValue, expectedQty, accountOther.uid)
+        val split2 = Split(expectedValue, expectedQty, accountOther)
         split2.type = TransactionType.DEBIT
         multiTransaction.addSplit(split1)
         multiTransaction.addSplit(split2)

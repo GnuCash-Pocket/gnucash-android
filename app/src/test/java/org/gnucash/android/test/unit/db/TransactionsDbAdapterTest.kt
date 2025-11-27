@@ -52,7 +52,7 @@ class TransactionsDbAdapterTest : GnuCashTest() {
         accountsDbAdapter.addRecord(bravoAccount)
         accountsDbAdapter.addRecord(alphaAccount)
 
-        testSplit = Split(Money(BigDecimal.TEN, alphaAccount.commodity), alphaAccount.uid)
+        testSplit = Split(Money(BigDecimal.TEN, alphaAccount.commodity), alphaAccount)
     }
 
     @After
@@ -64,15 +64,15 @@ class TransactionsDbAdapterTest : GnuCashTest() {
     fun testTransactionsAreTimeSorted() {
         val t1 = Transaction("T800")
         t1.time = System.currentTimeMillis() - 10000
-        val split = Split(createZeroInstance(alphaAccount.commodity), alphaAccount.uid)
+        val split = Split(createZeroInstance(alphaAccount.commodity), alphaAccount)
         t1.addSplit(split)
-        t1.addSplit(split.createPair(bravoAccount.uid))
+        t1.addSplit(split.createPair(bravoAccount))
 
         val t2 = Transaction("T1000")
         t2.time = System.currentTimeMillis()
-        val split2 = Split(Money("23.50", bravoAccount.commodity), bravoAccount.uid)
+        val split2 = Split(Money("23.50", bravoAccount.commodity), bravoAccount)
         t2.addSplit(split2)
-        t2.addSplit(split2.createPair(alphaAccount.uid))
+        t2.addSplit(split2.createPair(alphaAccount))
 
         transactionsDbAdapter.addRecord(t1)
         transactionsDbAdapter.addRecord(t2)
@@ -87,7 +87,7 @@ class TransactionsDbAdapterTest : GnuCashTest() {
     @Test
     fun deletingTransactionsShouldDeleteSplits() {
         val transaction = Transaction("")
-        val split = Split(createZeroInstance(alphaAccount.commodity), alphaAccount.uid)
+        val split = Split(createZeroInstance(alphaAccount.commodity), alphaAccount)
         transaction.addSplit(split)
         transactionsDbAdapter.addRecord(transaction)
 
@@ -100,7 +100,7 @@ class TransactionsDbAdapterTest : GnuCashTest() {
     @Test
     fun shouldBalanceTransactionsOnSave() {
         val transaction = Transaction("Auto balance")
-        val split = Split(Money(BigDecimal.TEN, alphaAccount.commodity), alphaAccount.uid)
+        val split = Split(Money(BigDecimal.TEN, alphaAccount.commodity), alphaAccount)
 
         transaction.addSplit(split)
 
@@ -119,20 +119,20 @@ class TransactionsDbAdapterTest : GnuCashTest() {
     fun testComputeBalance() {
         var transaction = Transaction("Compute")
         val firstSplitAmount = Money("4.99", alphaAccount.commodity)
-        var split = Split(firstSplitAmount, alphaAccount.uid)
+        var split = Split(firstSplitAmount, alphaAccount)
         transaction.addSplit(split)
         val secondSplitAmount = Money("3.50", bravoAccount.commodity)
-        split = Split(secondSplitAmount, bravoAccount.uid)
+        split = Split(secondSplitAmount, bravoAccount)
         transaction.addSplit(split)
 
         transactionsDbAdapter.addRecord(transaction)
 
         //balance is negated because the CASH account has inverse normal balance
         transaction = transactionsDbAdapter.getRecord(transaction.uid)
-        var savedBalance = transaction.getBalance(alphaAccount)
+        var savedBalance = transaction.getBalance(alphaAccount, false)
         assertThat(savedBalance).isEqualTo(firstSplitAmount)
 
-        savedBalance = transaction.getBalance(bravoAccount)
+        savedBalance = transaction.getBalance(bravoAccount, false)
         assertThat(savedBalance).isEqualTo(secondSplitAmount)
         assertThat(savedBalance.commodity).isEqualTo(secondSplitAmount.commodity)
     }
