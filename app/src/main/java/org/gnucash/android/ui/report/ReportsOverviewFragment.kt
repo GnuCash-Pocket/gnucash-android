@@ -51,7 +51,7 @@ class ReportsOverviewFragment : BaseReportFragment() {
     private var binding: FragmentReportSummaryBinding? = null
 
     @ColorInt
-    private var colorBalanceZero = 0
+    private var colorBalanceZero = Color.TRANSPARENT
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): View {
         val binding = FragmentReportSummaryBinding.inflate(inflater, container, false)

@@ -16,8 +16,10 @@
 package org.gnucash.android.ui.report.sheet
 
 import android.content.Context
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.Menu
+import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TableLayout
@@ -27,8 +29,10 @@ import org.gnucash.android.databinding.FragmentTextReportBinding
 import org.gnucash.android.databinding.RowBalanceSheetBinding
 import org.gnucash.android.databinding.TotalBalanceSheetBinding
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
+import org.gnucash.android.db.adapter.AccountsDbAdapter.Companion.ALWAYS
 import org.gnucash.android.db.joinIn
 import org.gnucash.android.model.AccountType
+import org.gnucash.android.model.Money
 import org.gnucash.android.model.Money.Companion.createZeroInstance
 import org.gnucash.android.model.isNullOrZero
 import org.gnucash.android.ui.report.BaseReportFragment
@@ -41,19 +45,21 @@ import org.gnucash.android.ui.util.displayBalance
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 class BalanceSheetFragment : BaseReportFragment() {
-    private var assetsBalance = createZeroInstance(commodity)
-    private var liabilitiesBalance = createZeroInstance(commodity)
-
+    private var sheet: BalanceSheet? = null
     private var binding: FragmentTextReportBinding? = null
 
     @ColorInt
-    private var colorBalanceZero = 0
+    private var colorBalanceZero = Color.TRANSPARENT
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): View {
         val binding = FragmentTextReportBinding.inflate(inflater, container, false)
         this.binding = binding
         colorBalanceZero = binding.totalLiabilityAndEquity.currentTextColor
         return binding.root
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        // No menu
     }
 
     override val reportType: ReportType = ReportType.SHEET
@@ -67,57 +73,37 @@ class BalanceSheetFragment : BaseReportFragment() {
     }
 
     override fun generateReport(context: Context) {
-        assetsBalance = accountsDbAdapter.getCurrentAccountsBalance(assetAccountTypes, commodity)
-        liabilitiesBalance =
-            -accountsDbAdapter.getCurrentAccountsBalance(liabilityAccountTypes, commodity)
+        sheet = calculateSheet()
     }
 
     override fun displayReport() {
+        val sheet = sheet ?: return
         val binding = binding ?: return
-        loadAccountViews(assetAccountTypes, binding.tableAssets)
-        loadAccountViews(liabilityAccountTypes, binding.tableLiabilities)
-        loadAccountViews(equityAccountTypes, binding.tableEquity)
+        loadAccountViews(sheet.assets, binding.tableAssets)
+        loadAccountViews(sheet.liabilities, binding.tableLiabilities)
+        loadAccountViews(sheet.equity, binding.tableEquity)
 
-        binding.totalLiabilityAndEquity.displayBalance(
-            assetsBalance + liabilitiesBalance,
-            colorBalanceZero
-        )
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        super.onPrepareOptionsMenu(menu)
-        menu.findItem(R.id.menu_group_reports_by).isVisible = false
+        val net = sheet.assets.total + sheet.liabilities.total
+        binding.totalLiabilityAndEquity.displayBalance(net, colorBalanceZero)
     }
 
     /**
      * Loads rows for the individual accounts and adds them to the report
      *
-     * @param accountTypes Account types for which to load balances
+     * @param balance Account balances
      * @param tableLayout  Table layout into which to load the rows
      */
     private fun loadAccountViews(
-        accountTypes: List<AccountType>,
+        balance: Balance,
         tableLayout: TableLayout
     ) {
         val context = tableLayout.context
         val inflater = LayoutInflater.from(context)
         tableLayout.removeAllViews()
 
-        // FIXME move this to generateReport
-        val accountTypesList = accountTypes.map { it.name }.joinIn()
-        val where = (AccountEntry.COLUMN_TYPE + " IN " + accountTypesList
-                + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
-                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
-        val orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC"
-        val accounts = accountsDbAdapter.getAllRecords(where, null, orderBy)
-        var total = createZeroInstance(commodity)
         var isRowEven = true
 
-        for (account in accounts) {
-            var balance = accountsDbAdapter.getAccountBalance(account.uid)
-            if (balance.isNullOrZero()) continue
-            val accountType = account.accountType
-            balance = if (accountType.hasDebitNormalBalance) balance else -balance
+        for (accountBalance in balance.balances) {
             val binding = RowBalanceSheetBinding.inflate(inflater, tableLayout, true)
             // alternate light and dark rows
             if (isRowEven) {
@@ -127,22 +113,68 @@ class BalanceSheetFragment : BaseReportFragment() {
                 binding.root.setBackgroundResource(R.color.row_odd)
                 isRowEven = true
             }
-            binding.accountName.text = account.name
+            binding.accountName.text = accountBalance.name
             val balanceTextView = binding.accountBalance
             @ColorInt val colorBalanceZero = balanceTextView.currentTextColor
-            balanceTextView.displayBalance(balance, colorBalanceZero)
-
-            // Price conversion.
-            val price = pricesDbAdapter.getPrice(balance.commodity, total.commodity) ?: continue
-            balance *= price
-            total += balance
+            balanceTextView.displayBalance(accountBalance.amount, colorBalanceZero)
         }
 
         val binding = TotalBalanceSheetBinding.inflate(inflater, tableLayout, true)
         val accountBalance = binding.accountBalance
         @ColorInt val colorBalanceZero = accountBalance.currentTextColor
-        accountBalance.displayBalance(total, colorBalanceZero)
+        accountBalance.displayBalance(balance.total, colorBalanceZero)
     }
+
+    private fun calculateSheet(): BalanceSheet {
+        return BalanceSheet(
+            assets = calculateBalance(assetAccountTypes),
+            liabilities = calculateBalance(liabilityAccountTypes),
+            equity = calculateBalance(equityAccountTypes)
+        )
+    }
+
+    private fun calculateBalance(accountTypes: List<AccountType>): Balance {
+        val accountBalances = mutableListOf<AccountBalance>()
+        var total = createZeroInstance(commodity)
+
+        val accountTypesList = accountTypes.map { it.name }.joinIn()
+        val where = (AccountEntry.COLUMN_TYPE + " IN " + accountTypesList
+                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
+        val orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC"
+        val accounts = accountsDbAdapter.getAllRecords(where, null, orderBy)
+        val now = System.currentTimeMillis()
+
+        for (account in accounts) {
+            var amount = accountsDbAdapter.getAccountBalance(account, ALWAYS, now, false)
+            if (amount.isNullOrZero()) continue
+            val accountType = account.accountType
+            amount = if (accountType.hasDebitNormalBalance) amount else -amount
+            accountBalances.add(AccountBalance(account.name, amount))
+
+            // Price conversion.
+            val price = pricesDbAdapter.getPrice(amount.commodity, total.commodity) ?: continue
+            amount *= price
+            total += amount
+        }
+
+        return Balance(accountBalances, total)
+    }
+
+    data class Balance(
+        val balances: List<AccountBalance>,
+        val total: Money
+    )
+
+    data class AccountBalance(
+        val name: String,
+        val amount: Money
+    )
+
+    data class BalanceSheet(
+        val assets: Balance,
+        val liabilities: Balance,
+        val equity: Balance
+    )
 
     companion object {
         private val assetAccountTypes = listOf<AccountType>(
