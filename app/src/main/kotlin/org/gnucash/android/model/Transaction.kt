@@ -44,7 +44,6 @@ class Transaction : BaseModel {
 
     /**
      * Flag indicating if this transaction has been exported before or not
-     * The transactions are typically exported as bank statement in the OFX format
      */
     var isExported = false
 

@@ -44,8 +44,8 @@ object TimestampHelper {
      * @param timestamp The [Timestamp] to format.
      * @return The formatted [String].
      */
-    fun getUtcStringFromTimestamp(timestamp: Timestamp): String {
-        return getUtcStringFromTimestamp(timestamp.time)
+    fun getUtcStringFromTimestamp(timestamp: Timestamp?): String {
+        return getUtcStringFromTimestamp((timestamp ?: timestampFromEpochZero).time)
     }
 
     /**

@@ -3,9 +3,9 @@ package org.gnucash.android.ui.passcode
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.SystemClock
-import android.preference.PreferenceManager
 import android.text.format.DateUtils
 import androidx.core.content.edit
+import androidx.preference.PreferenceManager
 import org.gnucash.android.ui.common.UxArgument
 
 object PasscodeHelper {

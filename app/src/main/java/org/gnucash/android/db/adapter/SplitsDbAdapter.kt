@@ -24,6 +24,7 @@ import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.DatabaseSchema.SplitEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
+import org.gnucash.android.db.forEach
 import org.gnucash.android.db.getLong
 import org.gnucash.android.db.getString
 import org.gnucash.android.db.joinIn
@@ -236,39 +237,29 @@ class SplitsDbAdapter(
                 + " GROUP BY a." + AccountEntry.COLUMN_UID
                 + ", s." + SplitEntry.COLUMN_TYPE
                 + ", s." + SplitEntry.COLUMN_QUANTITY_DENOM)
-        val cursor = db.rawQuery(sql, accountsWhereArgs)
-
         val totals = mutableMapOf<String, Money>()
-        try {
-            if (!cursor.moveToFirst()) {
-                return totals
+        db.rawQuery(sql, accountsWhereArgs).forEach { cursor ->
+            //FIXME beware of 64-bit overflow - get as BigInteger
+            var amount_num = cursor.getLong(0)
+            val amount_denom = cursor.getLong(1)
+            val splitType = cursor.getString(2)
+            val accountUID = cursor.getString(3)
+            val commodityUID = cursor.getString(4)
+
+            if (credit == splitType) {
+                amount_num = -amount_num
             }
-            do {
-                //FIXME beware of 64-bit overflow - get as BigInteger
-                var amount_num = cursor.getLong(0)
-                val amount_denom = cursor.getLong(1)
-                val splitType = cursor.getString(2)
-                val accountUID = cursor.getString(3)
-                val commodityUID = cursor.getString(4)
-
-                if (credit == splitType) {
-                    amount_num = -amount_num
-                }
-                val amount = toBigDecimal(amount_num, amount_denom)
-                val commodity = commoditiesDbAdapter.getRecord(commodityUID)
-                val balance = Money(amount, commodity)
-                var total = totals[accountUID]
-                if (total == null) {
-                    total = balance
-                } else {
-                    total += balance
-                }
-                totals[accountUID] = total
-            } while (cursor.moveToNext())
-        } finally {
-            cursor.close()
+            val amount = toBigDecimal(amount_num, amount_denom)
+            val commodity = commoditiesDbAdapter.getRecord(commodityUID)
+            val balance = Money(amount, commodity)
+            var total = totals[accountUID]
+            if (total == null) {
+                total = balance
+            } else {
+                total += balance
+            }
+            totals[accountUID] = total
         }
-
         return totals
     }
 

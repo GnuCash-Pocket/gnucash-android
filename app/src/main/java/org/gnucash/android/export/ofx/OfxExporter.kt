@@ -16,10 +16,11 @@
 package org.gnucash.android.export.ofx
 
 import android.content.Context
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.forEach
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
 import org.gnucash.android.export.ofx.OfxHelper.APP_ID
@@ -50,14 +51,13 @@ import org.gnucash.android.export.ofx.OfxHelper.TAG_TRANSACTION_FITID
 import org.gnucash.android.export.ofx.OfxHelper.TAG_TRANSACTION_TYPE
 import org.gnucash.android.export.ofx.OfxHelper.TAG_TRANSACTION_UID
 import org.gnucash.android.export.ofx.OfxHelper.UNSOLICITED_TRANSACTION_ID
+import org.gnucash.android.export.ofx.OfxHelper.formatTime
 import org.gnucash.android.export.ofx.OfxHelper.formattedCurrentTime
-import org.gnucash.android.export.ofx.OfxHelper.getOfxFormattedTime
 import org.gnucash.android.gnc.GncProgressListener
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
-import org.gnucash.android.util.PreferencesHelper
 import org.gnucash.android.util.PreferencesHelper.setLastExportTime
 import org.gnucash.android.util.TimestampHelper
 import org.w3c.dom.Document
@@ -106,9 +106,11 @@ class OfxExporter(
         parent.appendChild(bankmsgs)
         val isDoubleEntryEnabled = GnuCashApplication.isDoubleEntryEnabled(context)
         val nameImbalance = context.getString(R.string.imbalance_account_name)
+        val modifiedSince = exportParams.exportStartTime
         accounts
             .filter { !cancellationSignal.isCanceled }
-            .filter { it.transactionCount > 0 }
+            .filter { it.commodity.isCurrency }
+            .filter { transactionsDbAdapter.getTransactionsCount(it.uid) > 0 }
             .filter {
                 // TODO: investigate whether skipping the imbalance accounts makes sense.
                 // Also, using locale-dependant names here is error-prone.
@@ -121,7 +123,7 @@ class OfxExporter(
                     doc,
                     statementTransactionResponse,
                     account,
-                    exportParams.exportStartTime
+                    modifiedSince
                 )
                 // Mark as exported.
                 accountsDbAdapter.markAsExported(account.uid)
@@ -173,6 +175,7 @@ class OfxExporter(
             throw ExporterException(exportParams, "No accounts to export")
         }
         writeAccounts(writer, accounts)
+        transactionsDbAdapter.markTransactionsExported(exportParams.exportStartTime)
     }
 
     /**
@@ -212,16 +215,18 @@ class OfxExporter(
         doc: Document,
         parent: Element,
         account: Account,
-        exportStartTime: Timestamp?
+        exportStartTime: Timestamp
     ) {
+        val statementTransactions = doc.createElement(TAG_STATEMENT_TRANSACTIONS)
         val currency = doc.createElement(TAG_CURRENCY_DEF)
         currency.appendChild(doc.createTextNode(account.commodity.currencyCode))
+        statementTransactions.appendChild(currency)
 
         //================= BEGIN BANK ACCOUNT INFO (BANKACCTFROM) =================================
         val bankId = doc.createElement(TAG_BANK_ID)
         bankId.appendChild(doc.createTextNode(APP_ID))
         val acctId = doc.createElement(TAG_ACCOUNT_ID)
-        acctId.appendChild(doc.createTextNode(account.uid))
+        acctId.appendChild(doc.createTextNode(account.fullName))
         val accttype = doc.createElement(TAG_ACCOUNT_TYPE)
         val ofxAccountType = OfxAccountType.of(account.accountType).name
         accttype.appendChild(doc.createTextNode(ofxAccountType))
@@ -229,9 +234,8 @@ class OfxExporter(
         bankFrom.appendChild(bankId)
         bankFrom.appendChild(acctId)
         bankFrom.appendChild(accttype)
-
+        statementTransactions.appendChild(bankFrom)
         //================= END BANK ACCOUNT INFO ============================================
-
 
         //================= BEGIN ACCOUNT BALANCE INFO =================================
         val balance = getAccountBalance(account).toPlainString()
@@ -243,34 +247,14 @@ class OfxExporter(
         val ledgerBalance = doc.createElement(TAG_LEDGER_BALANCE)
         ledgerBalance.appendChild(balanceAmount)
         ledgerBalance.appendChild(dtasof)
-
+        statementTransactions.appendChild(ledgerBalance)
         //================= END ACCOUNT BALANCE INFO =================================
 
-
-        //================= BEGIN TIME PERIOD INFO =================================
-        val dtstart = doc.createElement(TAG_DATE_START)
-        dtstart.appendChild(doc.createTextNode(formattedCurrentTimeString))
-        val dtend = doc.createElement(TAG_DATE_END)
-        dtend.appendChild(doc.createTextNode(formattedCurrentTimeString))
-
-        //================= END TIME PERIOD INFO =================================
-
-
         //================= BEGIN TRANSACTIONS LIST =================================
-        val bankTransactionsList = doc.createElement(TAG_BANK_TRANSACTION_LIST)
-        bankTransactionsList.appendChild(dtstart)
-        bankTransactionsList.appendChild(dtend)
-        for (transaction in account.transactions) {
-            if (transaction.modifiedTimestamp.before(exportStartTime)) continue
-            bankTransactionsList.appendChild(toOFX(transaction, doc, account.uid))
-            listener?.onTransaction(transaction)
-        }
-        //================= END TRANSACTIONS LIST =================================
-        val statementTransactions = doc.createElement(TAG_STATEMENT_TRANSACTIONS)
-        statementTransactions.appendChild(currency)
-        statementTransactions.appendChild(bankFrom)
+        val bankTransactionsList = writeTransactions(doc, account, exportStartTime)
         statementTransactions.appendChild(bankTransactionsList)
-        statementTransactions.appendChild(ledgerBalance)
+        //================= END TRANSACTIONS LIST =================================
+
         parent.appendChild(statementTransactions)
 
         listener?.onAccount(account)
@@ -283,11 +267,37 @@ class OfxExporter(
      * @return [Money] aggregate amount of all transactions in account.
      */
     private fun getAccountBalance(account: Account): Money {
-        var balance = Money.createZeroInstance(account.commodity)
-        for (transaction in account.transactions) {
-            balance += transaction.getBalance(account)
+        return accountsDbAdapter.getAccountBalance(account)
+    }
+
+    private fun writeTransactions(
+        doc: Document,
+        account: Account,
+        exportStartTime: Timestamp
+    ): Element {
+        val dtstart = doc.createElement(TAG_DATE_START)
+        val dtend = doc.createElement(TAG_DATE_END)
+        var dtstartTime: Long = Long.MAX_VALUE
+        var dtendTime: Long = Long.MIN_VALUE
+
+        val bankTransactionsList = doc.createElement(TAG_BANK_TRANSACTION_LIST)
+        bankTransactionsList.appendChild(dtstart)
+        bankTransactionsList.appendChild(dtend)
+        transactionsDbAdapter.fetchTransactionsToExportSince(exportStartTime).forEach { cursor ->
+            val transaction = transactionsDbAdapter.buildModelInstance(cursor)
+            if (transaction.hasAccount(account)) {
+                bankTransactionsList.appendChild(toOFX(transaction, doc, account.uid))
+                listener?.onTransaction(transaction)
+
+                if (transaction.time < dtstartTime) dtstartTime = transaction.time
+                if (transaction.time > dtendTime) dtendTime = transaction.time
+            }
         }
-        return balance
+
+        dtstart.appendChild(doc.createTextNode(formatTime(dtstartTime)))
+        dtend.appendChild(doc.createTextNode(formatTime(dtendTime)))
+
+        return bankTransactionsList
     }
 
     /**
@@ -302,9 +312,9 @@ class OfxExporter(
         val acctDbAdapter = AccountsDbAdapter.instance
         val balance = transaction.getBalance(accountUID)
         val transactionType = if (balance.isNegative) {
-            TransactionType.DEBIT
-        } else {
             TransactionType.CREDIT
+        } else {
+            TransactionType.DEBIT
         }
 
         val transactionNode = doc.createElement(TAG_STATEMENT_TRANSACTION)
@@ -313,11 +323,11 @@ class OfxExporter(
         transactionNode.appendChild(typeNode)
 
         val datePosted = doc.createElement(TAG_DATE_POSTED)
-        datePosted.appendChild(doc.createTextNode(getOfxFormattedTime(transaction.time)))
+        datePosted.appendChild(doc.createTextNode(formatTime(transaction.time)))
         transactionNode.appendChild(datePosted)
 
         val dateUser = doc.createElement(TAG_DATE_USER)
-        dateUser.appendChild(doc.createTextNode(getOfxFormattedTime(transaction.time)))
+        dateUser.appendChild(doc.createTextNode(formatTime(transaction.time)))
         transactionNode.appendChild(dateUser)
 
         val amount = doc.createElement(TAG_TRANSACTION_AMOUNT)
@@ -364,5 +374,10 @@ class OfxExporter(
             transactionNode.appendChild(bankAccountTo)
         }
         return transactionNode
+    }
+
+    private fun Transaction.hasAccount(account: Account): Boolean {
+        val accountUID = account.uid
+        return splits.any { it.accountUID == accountUID }
     }
 }

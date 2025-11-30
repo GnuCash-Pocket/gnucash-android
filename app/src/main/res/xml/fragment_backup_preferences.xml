@@ -73,6 +73,7 @@
             android:summary="@string/summary_default_export_email"
             android:title="@string/title_default_export_email" />
         <SwitchPreference
+            android:defaultValue="true"
             android:key="@string/key_export_all_transactions"
             android:summary="@string/hint_export_choice"
             android:title="@string/title_export_all_transactions" />

@@ -171,7 +171,7 @@ class QifExporterTest : BookHelperTest() {
 
         val account = Account(expectedAccountName)
         val transaction = Transaction("One transaction")
-        transaction.addSplit(Split(Money("123.45", "EUR"), account.uid))
+        transaction.addSplit(Split(Money(-123.45, "EUR"), account.uid))
         transaction.description = expectedDescription
         transaction.note = expectedMemo
         transaction.number = expectedNumber
@@ -338,7 +338,7 @@ class QifExporterTest : BookHelperTest() {
 
         val transactionsDbAdapter = TransactionsDbAdapter(holder)
         val transaction = Transaction("One transaction")
-        val split1 = Split(Money(123.45, Commodity.EUR), account1.uid)
+        val split1 = Split(Money(-123.45, Commodity.EUR), account1.uid)
         val split2 = split1.createPair(account2.uid)
         split2.accountUID = account2.uid
         transaction.addSplit(split1)

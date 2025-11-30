@@ -318,7 +318,7 @@ class AccountsDbAdapterTest : GnuCashTest() {
 
         val accounts = accountsDbAdapter.simpleAccounts
         for (testAcct in accounts) {
-            assertThat(testAcct.transactionCount).isZero()
+            assertThat(testAcct.transactions).isEmpty()
         }
     }
 

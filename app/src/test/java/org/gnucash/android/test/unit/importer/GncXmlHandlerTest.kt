@@ -27,8 +27,11 @@ import org.gnucash.android.model.AccountType
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.PeriodType
 import org.gnucash.android.model.Price
+import org.gnucash.android.model.Split
+import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.test.unit.BookHelperTest
+import org.gnucash.android.util.TimestampHelper
 import org.junit.Ignore
 import org.junit.Test
 import java.util.Calendar
@@ -393,7 +396,9 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
 
         assertThat(transactionsDbAdapter.recordsCount).isOne()
-        assertThat(queryNumEntries(dbHolder.db, TransactionEntry.TABLE_NAME, null, null)).isEqualTo(2)// 1 regular + 1 template
+        // 1 regular + 1 template
+        assertThat(queryNumEntries(dbHolder.db, TransactionEntry.TABLE_NAME, null, null))
+            .isEqualTo(2)
 
         var transaction = transactionsDbAdapter.getRecord("ded49386f8ea319ccaee043ba062b3e1")
 
@@ -478,5 +483,32 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(splitCredit.value).isEqualTo(Money("20", "USD"))
         assertThat(splitCredit.quantity.isAmountZero).isTrue()
         assertThat(splitCredit.isPairOf(splitDebit)).isTrue()
+    }
+
+    @Test
+    fun `export since`() {
+        val since = TimestampHelper.timestampFromEpochZero
+        importGnuCashXml("common_1.gnucash")
+        // 3 normal transactions + 1 template transaction
+        assertThat(transactionsDbAdapter.recordsCount).isEqualTo(3)
+        val transactionsImported = transactionsDbAdapter.fetchTransactionsToExportSince(since)
+        assertThat(transactionsImported.count).isZero()
+        assertThat(transactionsImported.moveToFirst()).isFalse()
+        transactionsImported.close()
+
+        val account = accountsDbAdapter.getRecord("2525cbd0457c4c8db12e311c960e5f45")
+        val transaction = Transaction("Food")
+        val split = Split(Money(123.45, "USD"), account)
+        transaction.addSplit(split)
+        transaction.addSplit(split.createPair("377cc9fff6ad44daa3873e070afaf2e1"))
+        transactionsDbAdapter.insert(transaction)
+        assertThat(transactionsDbAdapter.recordsCount).isEqualTo(4)
+
+        val transactionsModified = transactionsDbAdapter.fetchTransactionsToExportSince(since)
+        assertThat(transactionsModified.count).isOne()
+        assertThat(transactionsModified.moveToFirst()).isTrue()
+        val transactionToExport = transactionsDbAdapter.buildModelInstance(transactionsModified)
+        transactionsModified.close()
+        assertThat(transactionToExport).isEqualTo(transaction)
     }
 }
