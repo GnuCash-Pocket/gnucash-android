@@ -48,7 +48,7 @@ import org.gnucash.android.util.toMillis
 class PieChartFragment : BaseReportFragment() {
     private var chartDataPresent = true
 
-    private var groupSmallerSlices = false
+    private var groupSmallerSlices = true
 
     private var binding: FragmentPieChartBinding? = null
 
@@ -197,6 +197,7 @@ class PieChartFragment : BaseReportFragment() {
         menu.findItem(R.id.menu_order_by_size).isVisible = chartDataPresent
         menu.findItem(R.id.menu_toggle_labels).isVisible = chartDataPresent
         menu.findItem(R.id.menu_group_other_slice).isVisible = chartDataPresent
+        menu.findItem(R.id.menu_group_other_slice).isChecked = groupSmallerSlices
         // hide line/bar chart specific menu items
         menu.findItem(R.id.menu_percentage_mode).isVisible = false
         menu.findItem(R.id.menu_toggle_average_lines).isVisible = false
