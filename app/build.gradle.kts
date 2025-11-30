@@ -177,7 +177,7 @@ dependencies {
     implementation("com.google.firebase:firebase-crashlytics:19.4.4")
     implementation("com.jakewharton.timber:timber:5.0.1")
 
-    implementation("com.github.nextcloud:android-library:1.0.31") {
+    implementation("com.github.nextcloud:android-library:2.22.1") {
         // unused in Android and brings wrong Junit version
         exclude(group = "org.ogce", module = "xpp3")
     }

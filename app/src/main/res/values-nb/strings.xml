@@ -254,7 +254,7 @@
     <string name="password">Passord</string>
     <string name="owncloud_server_invalid">Finner ikke OC-server</string>
     <string name="owncloud_user_invalid">OC brukernavn/passord ugyldig</string>
-    <string name="owncloud_dir_invalid">Ugyldige tegn: \\ &lt; &gt;: \ \"| * ?</string>
+    <string name="owncloud_dir_invalid">Ugyldige tegn: \\ / &lt; &gt;: \ \"| * ?</string>
     <string name="owncloud_server_ok">OC serveren OK</string>
     <string name="owncloud_user_ok">OC brukernavn/passord OK</string>
     <string name="owncloud_dir_ok">Mappenavn OK</string>

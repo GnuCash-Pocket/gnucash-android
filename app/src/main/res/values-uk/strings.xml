@@ -256,7 +256,7 @@
     <string name="password">Пароль</string>
     <string name="owncloud_server_invalid">Сервер не знайдено</string>
     <string name="owncloud_user_invalid">Невірне ім’я користувача або пароль</string>
-    <string name="owncloud_dir_invalid">Назва не повинна містити: \\ &lt; &gt; : \&quot; | * ?</string>
+    <string name="owncloud_dir_invalid">Назва не повинна містити: \\ / &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">Сервер знайдено</string>
     <string name="owncloud_user_ok">Ім’я користувача та пароль вірні</string>
     <string name="owncloud_dir_ok">Ім’я теки підходить</string>

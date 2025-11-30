@@ -254,7 +254,7 @@
     <string name="password">Palavra-passe</string>
     <string name="owncloud_server_invalid">Servidor OC não encontrado</string>
     <string name="owncloud_user_invalid">Utilizador/palavra-passe OC inválido</string>
-    <string name="owncloud_dir_invalid">Carateres inválidos: \\ &lt; &gt; : \&quot; | * ?</string>
+    <string name="owncloud_dir_invalid">Carateres inválidos: \\ / &lt; &gt; : \&quot; | * ?</string>
     <string name="owncloud_server_ok">Servidor OC OK</string>
     <string name="owncloud_user_ok">Nome de utilizador/palavra-passe OC OK</string>
     <string name="owncloud_dir_ok">Nome da diretoria OK</string>

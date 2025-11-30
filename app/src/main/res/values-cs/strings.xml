@@ -256,7 +256,7 @@
     <string name="password">Heslo</string>
     <string name="owncloud_server_invalid">OC server nebyl nalezen</string>
     <string name="owncloud_user_invalid">OC uživatelské jméno/heslo je neplatné</string>
-    <string name="owncloud_dir_invalid">Neplatné znaky: \\ &lt; &gt;: \&quot;| * ?</string>
+    <string name="owncloud_dir_invalid">Neplatné znaky: \\ / &lt; &gt;: \&quot;| * ?</string>
     <string name="owncloud_server_ok">OC server OK</string>
     <string name="owncloud_user_ok">OC uživatelské jméno/heslo OK</string>
     <string name="owncloud_dir_ok">Název složky OK</string>
