@@ -31,6 +31,7 @@ import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.BookEntry
 import org.gnucash.android.db.bindBoolean
+import org.gnucash.android.db.forEach
 import org.gnucash.android.db.getInt
 import org.gnucash.android.db.getString
 import org.gnucash.android.model.Book
@@ -284,10 +285,8 @@ class BooksDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Book>(
             db.query(
                 true, tableName, arrayOf<String?>(BookEntry.COLUMN_UID),
                 null, null, null, null, null, null
-            ).use { cursor ->
-                while (cursor.moveToNext()) {
-                    bookUIDs.add(cursor.getString(0))
-                }
+            ).forEach { cursor ->
+                bookUIDs.add(cursor.getString(0))
             }
             return bookUIDs
         }

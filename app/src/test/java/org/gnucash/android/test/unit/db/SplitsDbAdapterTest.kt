@@ -75,7 +75,7 @@ class SplitsDbAdapterTest : GnuCashTest() {
     fun shouldHaveTransactionInDatabase() {
         val transaction = Transaction("") //not added to the db
 
-        val split = Split(createZeroInstance(Commodity.DEFAULT_COMMODITY), account.uid)
+        val split = Split(createZeroInstance(Commodity.DEFAULT_COMMODITY), account)
         split.transactionUID = transaction.uid
         splitsDbAdapter.addRecord(split)
     }
@@ -85,7 +85,7 @@ class SplitsDbAdapterTest : GnuCashTest() {
         val transaction = Transaction("")
         transactionsDbAdapter.addRecord(transaction)
 
-        val split = Split(createZeroInstance(Commodity.DEFAULT_COMMODITY), account.uid)
+        val split = Split(createZeroInstance(Commodity.DEFAULT_COMMODITY), account)
         split.transactionUID = transaction.uid
         splitsDbAdapter.addRecord(split)
 
@@ -105,7 +105,7 @@ class SplitsDbAdapterTest : GnuCashTest() {
 
         assertThat(transaction.isExported).isTrue()
 
-        val split = Split(createZeroInstance(Commodity.DEFAULT_COMMODITY), account.uid)
+        val split = Split(createZeroInstance(Commodity.DEFAULT_COMMODITY), account)
         split.transactionUID = transaction.uid
         splitsDbAdapter.addRecord(split)
 

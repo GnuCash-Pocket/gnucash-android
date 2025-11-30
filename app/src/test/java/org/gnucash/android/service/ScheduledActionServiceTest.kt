@@ -16,10 +16,8 @@
 package org.gnucash.android.service
 
 import android.content.ContentValues
-import android.database.sqlite.SQLiteDatabase
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.app.GnuCashApplication
-import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
@@ -38,6 +36,7 @@ import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.test.unit.BookHelperTest
 import org.gnucash.android.util.set
+import org.gnucash.android.util.toMillis
 import org.joda.time.DateTime
 import org.joda.time.DateTimeConstants
 import org.joda.time.LocalDateTime
@@ -69,7 +68,7 @@ class ScheduledActionServiceTest : BookHelperTest() {
         templateTransaction.commodity = Commodity.DEFAULT_COMMODITY
         templateTransaction.isTemplate = true
 
-        val split1 = Split(Money(BigDecimal.TEN, Commodity.DEFAULT_COMMODITY), baseAccount.uid)
+        val split1 = Split(Money(BigDecimal.TEN, Commodity.DEFAULT_COMMODITY), baseAccount)
         val split2 = split1.createPair(transferAccount.uid)
 
         templateTransaction.addSplit(split1)
@@ -348,13 +347,13 @@ class ScheduledActionServiceTest : BookHelperTest() {
         )
         split.type = TransactionType.DEBIT
         transaction.addSplit(split)
-        transaction.addSplit(split.createPair(transferAccount.uid))
+        transaction.addSplit(split.createPair(transferAccount))
         transactionsDbAdapter.addRecord(transaction)
         // We set the date directly in the database as the corresponding field
         // is ignored when the object is stored. It's set through a trigger instead.
         setTransactionInDbTimestamp(
             transaction.uid,
-            Timestamp(LocalDateTime.now().minusDays(9).toDate().time)
+            LocalDateTime.now().minusDays(9).toMillis()
         )
 
         val bookUID = GnuCashApplication.activeBookUID
@@ -378,9 +377,9 @@ class ScheduledActionServiceTest : BookHelperTest() {
      * @param transactionUID UID of the transaction to set the timestamp.
      * @param timestamp      the new timestamp.
      */
-    private fun setTransactionInDbTimestamp(transactionUID: String, timestamp: Timestamp) {
+    private fun setTransactionInDbTimestamp(transactionUID: String, timestamp: Long) {
         val values = ContentValues()
-        values[TransactionEntry.COLUMN_TIMESTAMP] = timestamp.time
+        values[TransactionEntry.COLUMN_MODIFIED_AT] = timestamp
         transactionsDbAdapter.updateTransaction(
             values,
             TransactionEntry.COLUMN_UID + "=?",
@@ -416,7 +415,7 @@ class ScheduledActionServiceTest : BookHelperTest() {
         )
         split.type = TransactionType.DEBIT
         transaction.addSplit(split)
-        transaction.addSplit(split.createPair(transferAccount.uid))
+        transaction.addSplit(split.createPair(transferAccount))
         transactionsDbAdapter.addRecord(transaction)
 
         val bookUID = GnuCashApplication.activeBookUID

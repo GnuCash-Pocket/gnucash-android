@@ -28,6 +28,7 @@ import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.DatabaseSchema.CommonColumns
 import org.gnucash.android.db.DatabaseSchema.SplitEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
+import org.gnucash.android.db.forEach
 import org.gnucash.android.db.getLong
 import org.gnucash.android.db.getString
 import org.gnucash.android.model.BaseModel
@@ -517,7 +518,7 @@ abstract class DatabaseAdapter<Model : BaseModel>(
         whereArgs: Array<String?>?,
         orderBy: String? = null
     ): List<Model> {
-        val cursor = fetchAllRecords(where, whereArgs, orderBy) ?: return emptyList()
+        val cursor = fetchAllRecords(where, whereArgs, orderBy)
         return getRecords(cursor)
     }
 
@@ -525,18 +526,12 @@ abstract class DatabaseAdapter<Model : BaseModel>(
         if (cursor == null) return emptyList()
 
         val records = mutableListOf<Model>()
-        try {
-            if (cursor.moveToFirst()) {
-                do {
-                    val model = buildModelInstance(cursor)
-                    records.add(model)
-                    if (isCached) {
-                        cache[model.uid] = model
-                    }
-                } while (cursor.moveToNext())
+        cursor.forEach { cursor ->
+            val model = buildModelInstance(cursor)
+            records.add(model)
+            if (isCached) {
+                cache[model.uid] = model
             }
-        } finally {
-            cursor.close()
         }
         return records
     }
@@ -599,7 +594,7 @@ abstract class DatabaseAdapter<Model : BaseModel>(
      *
      * @return [Cursor] to all records in table `tableName`
      */
-    open fun fetchAllRecords(): Cursor? {
+    open fun fetchAllRecords(): Cursor {
         return fetchAllRecords(null, null, null)
     }
 
@@ -611,7 +606,7 @@ abstract class DatabaseAdapter<Model : BaseModel>(
      * @param orderBy   SQL orderby clause
      * @return Cursor to records matching conditions
      */
-    fun fetchAllRecords(where: String?, whereArgs: Array<String?>?, orderBy: String?): Cursor? {
+    fun fetchAllRecords(where: String?, whereArgs: Array<String?>?, orderBy: String?): Cursor {
         Timber.v(
             "Fetching all accounts from db where %s/%s order by %s",
             where,

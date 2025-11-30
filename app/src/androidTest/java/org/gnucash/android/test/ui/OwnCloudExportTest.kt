@@ -99,7 +99,7 @@ class OwnCloudExportTest : GnuAndroidTest() {
         val account = Account("ownCloud")
         val transaction = Transaction("birds")
         transaction.time = System.currentTimeMillis()
-        val split = Split(Money("11.11", currencyCode), account.uid)
+        val split = Split(Money("11.11", currencyCode), account)
         transaction.addSplit(split)
         transaction.addSplit(
             split.createPair(

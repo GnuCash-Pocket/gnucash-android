@@ -19,10 +19,10 @@ import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -36,6 +36,7 @@ import android.widget.TimePicker
 import androidx.appcompat.app.ActionBar
 import androidx.core.content.edit
 import androidx.core.view.isVisible
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrenceFormatter
@@ -314,7 +315,8 @@ class ExportFormFragment : MenuFragment(),
         val bookUID = activeBookUID ?: return
         val position = binding.spinnerExportDestination.selectedItemPosition
 
-        ExportAsyncTask(requireActivity(), bookUID) { bookUri ->
+        val activity: Context = requireActivity()
+        ExportAsyncTask(activity, bookUID) { bookUri ->
             if (bookUri != null) {
                 PreferenceManager.getDefaultSharedPreferences(activity).edit {
                     putInt(getString(R.string.key_last_export_destination), position)
@@ -460,6 +462,9 @@ class ExportFormFragment : MenuFragment(),
         formatItems.add(
             ExportFormatItem(ExportFormat.QIF, context.getString(ExportFormat.QIF.labelId))
         )
+        formatItems.add(
+            ExportFormatItem(ExportFormat.OFX, context.getString(ExportFormat.OFX.labelId))
+        )
         if (isDoubleEntry) {
             formatItems.add(
                 ExportFormatItem(ExportFormat.XML, context.getString(ExportFormat.XML.labelId))
@@ -468,9 +473,6 @@ class ExportFormFragment : MenuFragment(),
                 defaultFormat = ExportFormat.XML
             }
         } else {
-            formatItems.add(
-                ExportFormatItem(ExportFormat.OFX, context.getString(ExportFormat.OFX.labelId))
-            )
             if (defaultFormat == ExportFormat.XML) {
                 defaultFormat = ExportFormat.OFX
             }

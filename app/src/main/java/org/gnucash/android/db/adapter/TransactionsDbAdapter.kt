@@ -42,6 +42,7 @@ import org.gnucash.android.model.Transaction.Companion.computeBalance
 import org.gnucash.android.util.TimestampHelper.getTimestampFromUtcString
 import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
 import org.gnucash.android.util.TimestampHelper.timestampFromNow
+import org.gnucash.android.util.set
 import timber.log.Timber
 import java.io.IOException
 import java.sql.Timestamp
@@ -341,7 +342,7 @@ class TransactionsDbAdapter(
         where: String?,
         whereArgs: Array<String?>?,
         orderBy: String?
-    ): Cursor? {
+    ): Cursor {
         val table = TransactionEntry.TABLE_NAME + " t, " + SplitEntry.TABLE_NAME + " s" +
                 " ON t." + TransactionEntry.COLUMN_UID +
                 " = s." + SplitEntry.COLUMN_TRANSACTION_UID +
@@ -355,17 +356,24 @@ class TransactionsDbAdapter(
      * @param timestamp Timestamp in milliseconds (since Epoch)
      * @return Cursor to the results
      */
-    fun fetchTransactionsModifiedSince(timestamp: Timestamp): Cursor? {
-        val queryBuilder = SQLiteQueryBuilder()
-        queryBuilder.tables = TransactionEntry.TABLE_NAME
-        val where =
-            TransactionEntry.COLUMN_TEMPLATE + "=0 AND " + TransactionEntry.COLUMN_TIMESTAMP + " >= ?"
-        val whereArgs = arrayOf<String?>(timestamp.getTime().toString())
-        val orderBy =
-            TransactionEntry.COLUMN_TIMESTAMP + " ASC, " +
+    fun fetchTransactionsToExportSince(timestamp: Timestamp): Cursor {
+        val where = TransactionEntry.COLUMN_TEMPLATE + " = 0 AND " +
+                TransactionEntry.COLUMN_EXPORTED + " = 0 AND " +
+                TransactionEntry.COLUMN_MODIFIED_AT + " >= ?"
+        val whereArgs = arrayOf<String?>(getUtcStringFromTimestamp(timestamp))
+        val orderBy = TransactionEntry.COLUMN_TIMESTAMP + " ASC, " +
                     TransactionEntry.COLUMN_NUMBER + " ASC, " +
                     TransactionEntry.COLUMN_ID + " ASC"
-        return queryBuilder.query(db, null, where, whereArgs, null, null, orderBy, null)
+        return fetchAllRecords(where, whereArgs, orderBy)
+    }
+
+    fun markTransactionsExported(timestamp: Timestamp, exported: Boolean = true) {
+        val values = ContentValues()
+        values[TransactionEntry.COLUMN_EXPORTED] = exported
+        val where = TransactionEntry.COLUMN_TEMPLATE + " = 0 AND " +
+                TransactionEntry.COLUMN_MODIFIED_AT + " >= ?"
+        val whereArgs = arrayOf<String?>(getUtcStringFromTimestamp(timestamp))
+        db.update(tableName, values, where, whereArgs)
     }
 
     fun fetchTransactionsWithSplitsWithTransactionAccount(
@@ -440,9 +448,9 @@ class TransactionsDbAdapter(
      * @param accountUID     GUID of the account
      * @return [Money] balance of the transaction for that account
      */
-    fun getBalance(transactionUID: String, accountUID: String): Money {
+    fun getBalance(transactionUID: String, accountUID: String, display: Boolean): Money {
         val splits = splitsDbAdapter.getSplitsForTransactionInAccount(transactionUID, accountUID)
-        return computeBalance(accountUID, splits)
+        return computeBalance(accountUID, splits, display)
     }
 
     /**
@@ -480,9 +488,11 @@ class TransactionsDbAdapter(
      */
     fun getTransactionsCount(accountUID: String): Int {
         val cursor = fetchAllTransactionsForAccount(accountUID) ?: return 0
-        var count = cursor.count
-        cursor.close()
-        return count
+        return try {
+            cursor.count
+        } finally {
+            cursor.close()
+        }
     }
 
     /**
@@ -566,7 +576,7 @@ class TransactionsDbAdapter(
      *
      * @param contentValues Values with which to update the record
      * @param whereClause   Conditions for updating formatted as SQL where statement
-     * @param whereArgs     Arguments for the SQL wehere statement
+     * @param whereArgs     Arguments for the SQL where statement
      * @return Number of records affected
      */
     fun updateTransaction(

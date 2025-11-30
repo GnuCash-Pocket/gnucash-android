@@ -17,8 +17,8 @@ package org.gnucash.android.test.ui
 
 import android.Manifest
 import android.content.Intent
-import android.preference.PreferenceManager
 import android.view.View
+import androidx.preference.PreferenceManager
 import androidx.test.espresso.Espresso.onData
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
@@ -319,7 +319,7 @@ class AccountsActivityTest : GnuAndroidTest() {
         val account = Account("Transfer Account", accountsCurrency)
         val transaction = Transaction("Simple transaction")
         transaction.commodity = accountsCurrency
-        val split = Split(Money(BigDecimal.TEN, accountsCurrency), account.uid)
+        val split = Split(Money(BigDecimal.TEN, accountsCurrency), account)
         transaction.addSplit(split)
         transaction.addSplit(split.createPair(SIMPLE_ACCOUNT_UID))
         account.addTransaction(transaction)

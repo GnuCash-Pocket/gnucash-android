@@ -16,10 +16,11 @@
 package org.gnucash.android.export.ofx
 
 import android.content.Context
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
-import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.AccountsDbAdapter.Companion.ALWAYS
+import org.gnucash.android.db.forEach
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
 import org.gnucash.android.export.ofx.OfxHelper.APP_ID
@@ -33,6 +34,12 @@ import org.gnucash.android.export.ofx.OfxHelper.TAG_BANK_ACCOUNT_TO
 import org.gnucash.android.export.ofx.OfxHelper.TAG_BANK_ID
 import org.gnucash.android.export.ofx.OfxHelper.TAG_BANK_MESSAGES_V1
 import org.gnucash.android.export.ofx.OfxHelper.TAG_BANK_TRANSACTION_LIST
+import org.gnucash.android.export.ofx.OfxHelper.TAG_CC_ACCOUNT_FROM
+import org.gnucash.android.export.ofx.OfxHelper.TAG_CC_ACCOUNT_TO
+import org.gnucash.android.export.ofx.OfxHelper.TAG_CC_MESSAGES_V1
+import org.gnucash.android.export.ofx.OfxHelper.TAG_CC_STATEMENT_TRANSACTIONS
+import org.gnucash.android.export.ofx.OfxHelper.TAG_CC_STATEMENT_TRANSACTION_RESPONSE
+import org.gnucash.android.export.ofx.OfxHelper.TAG_CHECK_NUMBER
 import org.gnucash.android.export.ofx.OfxHelper.TAG_CURRENCY_DEF
 import org.gnucash.android.export.ofx.OfxHelper.TAG_DATE_AS_OF
 import org.gnucash.android.export.ofx.OfxHelper.TAG_DATE_END
@@ -42,6 +49,7 @@ import org.gnucash.android.export.ofx.OfxHelper.TAG_DATE_USER
 import org.gnucash.android.export.ofx.OfxHelper.TAG_LEDGER_BALANCE
 import org.gnucash.android.export.ofx.OfxHelper.TAG_MEMO
 import org.gnucash.android.export.ofx.OfxHelper.TAG_NAME
+import org.gnucash.android.export.ofx.OfxHelper.TAG_ROOT
 import org.gnucash.android.export.ofx.OfxHelper.TAG_STATEMENT_TRANSACTION
 import org.gnucash.android.export.ofx.OfxHelper.TAG_STATEMENT_TRANSACTIONS
 import org.gnucash.android.export.ofx.OfxHelper.TAG_STATEMENT_TRANSACTION_RESPONSE
@@ -50,30 +58,22 @@ import org.gnucash.android.export.ofx.OfxHelper.TAG_TRANSACTION_FITID
 import org.gnucash.android.export.ofx.OfxHelper.TAG_TRANSACTION_TYPE
 import org.gnucash.android.export.ofx.OfxHelper.TAG_TRANSACTION_UID
 import org.gnucash.android.export.ofx.OfxHelper.UNSOLICITED_TRANSACTION_ID
+import org.gnucash.android.export.ofx.OfxHelper.formatTime
 import org.gnucash.android.export.ofx.OfxHelper.formattedCurrentTime
-import org.gnucash.android.export.ofx.OfxHelper.getOfxFormattedTime
+import org.gnucash.android.export.ofx.OfxHelper.isBanking
+import org.gnucash.android.export.ofx.OfxHelper.isCreditCard
 import org.gnucash.android.gnc.GncProgressListener
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
-import org.gnucash.android.util.PreferencesHelper
 import org.gnucash.android.util.PreferencesHelper.setLastExportTime
 import org.gnucash.android.util.TimestampHelper
-import org.w3c.dom.Document
-import org.w3c.dom.Element
-import org.w3c.dom.Node
-import timber.log.Timber
+import org.xmlpull.v1.XmlPullParserFactory
+import org.xmlpull.v1.XmlSerializer
 import java.io.Writer
+import java.nio.charset.StandardCharsets
 import java.sql.Timestamp
-import javax.xml.parsers.DocumentBuilder
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.parsers.ParserConfigurationException
-import javax.xml.transform.OutputKeys
-import javax.xml.transform.TransformerException
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.stream.StreamResult
 
 /**
  * Exports the data in the database in OFX format.
@@ -87,191 +87,202 @@ class OfxExporter(
     bookUID: String,
     listener: GncProgressListener? = null
 ) : Exporter(context, params, bookUID, listener) {
-    /**
-     * Converts all expenses into OFX XML format and adds them to the XML document.
-     *
-     * @param accounts List of accounts to export.
-     * @param doc DOM document of the OFX expenses.
-     * @param parent Parent node for all expenses in report.
-     */
-    private fun writeOFX(doc: Document, parent: Element, accounts: List<Account>) {
-        val transactionUid = doc.createElement(TAG_TRANSACTION_UID)
-        // Unsolicited because the data exported is not as a result of a request.
-        transactionUid.appendChild(doc.createTextNode(UNSOLICITED_TRANSACTION_ID))
-        val statementTransactionResponse =
-            doc.createElement(TAG_STATEMENT_TRANSACTION_RESPONSE)
-        statementTransactionResponse.appendChild(transactionUid)
-        val bankmsgs = doc.createElement(TAG_BANK_MESSAGES_V1)
-        bankmsgs.appendChild(statementTransactionResponse)
-        parent.appendChild(bankmsgs)
-        val isDoubleEntryEnabled = GnuCashApplication.isDoubleEntryEnabled(context)
-        val nameImbalance = context.getString(R.string.imbalance_account_name)
-        accounts
-            .filter { !cancellationSignal.isCanceled }
-            .filter { it.transactionCount > 0 }
-            .filter {
-                // TODO: investigate whether skipping the imbalance accounts makes sense.
-                // Also, using locale-dependant names here is error-prone.
-                isDoubleEntryEnabled || !it.name.contains(nameImbalance)
-            }
-            .forEach { account ->
-                cancellationSignal.throwIfCanceled()
-                // Add account details (transactions) to the XML document.
-                writeAccount(
-                    doc,
-                    statementTransactionResponse,
-                    account,
-                    exportParams.exportStartTime
-                )
-                // Mark as exported.
-                accountsDbAdapter.markAsExported(account.uid)
-            }
-    }
-
-    /**
-     * Generate OFX export file from the transactions in the database.
-     *
-     * @param accounts List of accounts to export.
-     * @return String containing OFX export.
-     * @throws ExporterException if an XML builder could not be created.
-     */
-    @Throws(ExporterException::class)
-    private fun writeAccounts(writer: Writer, accounts: List<Account>) {
-        val document = createDocumentBuilder().newDocument()
-        val root = document.createElement("OFX")
-        val pi = document.createProcessingInstruction("OFX", OFX_HEADER)
-        document.appendChild(pi)
-        document.appendChild(root)
-        writeOFX(document, root, accounts)
-        val useXmlHeader = PreferenceManager.getDefaultSharedPreferences(context)
-            .getBoolean(context.getString(R.string.key_xml_ofx_header), false)
-        setLastExportTime(context, TimestampHelper.timestampFromNow, bookUID)
-        if (useXmlHeader) {
-            write(writer, document, false)
-        } else {
-            // If we want SGML OFX headers, write first to string and then prepend header.
-            val ofxNode = document.getElementsByTagName("OFX").item(0)
-            writer.write(OFX_SGML_HEADER)
-            writer.write("\n")
-            write(writer, ofxNode, true)
-        }
-    }
-
-    @Throws(ExporterException::class)
-    private fun createDocumentBuilder(): DocumentBuilder {
-        val docFactory = DocumentBuilderFactory.newInstance()
-        try {
-            return docFactory.newDocumentBuilder()
-        } catch (e: ParserConfigurationException) {
-            throw ExporterException(exportParams, e)
-        }
-    }
 
     override fun writeExport(writer: Writer, exportParams: ExportParams) {
         val accounts = accountsDbAdapter.getExportableAccounts(exportParams.exportStartTime)
         if (accounts.isEmpty()) {
             throw ExporterException(exportParams, "No accounts to export")
         }
-        writeAccounts(writer, accounts)
+        writeDocument(writer, exportParams, accounts)
+
+        transactionsDbAdapter.markTransactionsExported(exportParams.exportStartTime)
+        setLastExportTime(context, TimestampHelper.timestampFromNow, bookUID)
     }
 
     /**
-     * Writes out the document held in `node` to `outputWriter`
+     * Generate OFX export file from the transactions in the database.
      *
-     * @param writer Writer to use in writing the file to stream.
-     * @param node Node, containing the OFX document structure. Usually the parent node.
-     * @param omitXmlDeclaration Flag which causes the XML declaration to be omitted.
+     * @param accounts List of accounts to export.
+     * @throws ExporterException if an XML builder could not be created.
      */
-    private fun write(writer: Writer, node: Node, omitXmlDeclaration: Boolean) {
+    @Throws(ExporterException::class)
+    private fun writeDocument(writer: Writer, exportParams: ExportParams, accounts: List<Account>) {
+        val useXmlHeader = PreferenceManager.getDefaultSharedPreferences(context)
+            .getBoolean(context.getString(R.string.key_xml_ofx_header), true)
+
+        val factory = XmlPullParserFactory.newInstance()
+        factory.isNamespaceAware = false
+        val xmlSerializer = factory.newSerializer()
         try {
-            val transformerFactory = TransformerFactory.newInstance()
-            val transformer = transformerFactory.newTransformer()
-            val source = DOMSource(node)
-            val result = StreamResult(writer)
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2")
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes")
-            if (omitXmlDeclaration) {
-                transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")
+            xmlSerializer.setFeature(
+                "http://xmlpull.org/v1/doc/features.html#indent-output",
+                true
+            )
+        } catch (_: IllegalStateException) {
+            // Feature not supported. No problem
+        }
+        xmlSerializer.setOutput(writer)
+        if (useXmlHeader) {
+            xmlSerializer.startDocument(StandardCharsets.UTF_8.name(), true)
+            writer.write("\n")
+            xmlSerializer.processingInstruction(OFX_HEADER)
+        } else {
+            writer.write(OFX_SGML_HEADER)
+        }
+        xmlSerializer.startTag(null, TAG_ROOT)
+        writeAccounts(xmlSerializer, exportParams, accounts)
+        xmlSerializer.endTag(null, TAG_ROOT)
+        xmlSerializer.endDocument()
+        xmlSerializer.flush()
+    }
+
+    /**
+     * Converts all expenses into OFX XML format and adds them to the XML document.
+     *
+     * @param xmlSerializer the wXML writer.
+     * @param accounts List of accounts to export.
+     */
+    private fun writeAccounts(
+        xmlSerializer: XmlSerializer,
+        exportParams: ExportParams,
+        accounts: List<Account>
+    ) {
+        val isDoubleEntryEnabled = GnuCashApplication.isDoubleEntryEnabled(context)
+        val nameImbalance = context.getString(R.string.imbalance_account_name)
+        val modifiedSince = exportParams.exportStartTime
+
+        val accountsWithTransactions = accounts
+            .filter { it.commodity.isCurrency }
+            .filter { transactionsDbAdapter.getTransactionsCount(it.uid) > 0 }
+            .filter {
+                // TODO: investigate whether skipping the imbalance accounts makes sense.
+                // Also, using locale-dependant names here is error-prone.
+                isDoubleEntryEnabled || !it.name.contains(nameImbalance)
             }
-            transformer.transform(source, result)
-        } catch (e: TransformerException) {
-            Timber.e(e)
-            throw ExporterException(exportParams, e)
+        if (accountsWithTransactions.isEmpty()) {
+            throw ExporterException(exportParams, "No accounts to export")
+        }
+
+        val accountsBank = accountsWithTransactions.filter { it.isBanking }
+        if (accountsBank.isNotEmpty()) {
+            writeBankAccounts(xmlSerializer, accountsBank, modifiedSince)
+        }
+
+        val accountsCredit = accountsWithTransactions.filter { it.isCreditCard }
+        if (accountsCredit.isNotEmpty()) {
+            writeCreditAccounts(xmlSerializer, accountsCredit, modifiedSince)
         }
     }
 
-    /**
-     * Converts this account's transactions into XML and adds them to the DOM document
-     *
-     * @param doc             XML DOM document for the OFX data
-     * @param parent          Parent node to which to add this account's transactions in XML
-     * @param account         The account.
-     * @param exportStartTime Time from which to export transactions which are created/modified after
-     */
-    private fun writeAccount(
-        doc: Document,
-        parent: Element,
-        account: Account,
-        exportStartTime: Timestamp?
+    private fun writeBankAccounts(
+        xmlSerializer: XmlSerializer,
+        accounts: List<Account>,
+        modifiedSince: Timestamp
     ) {
-        val currency = doc.createElement(TAG_CURRENCY_DEF)
-        currency.appendChild(doc.createTextNode(account.commodity.currencyCode))
+        xmlSerializer.startTag(null, TAG_BANK_MESSAGES_V1)
+        xmlSerializer.startTag(null, TAG_STATEMENT_TRANSACTION_RESPONSE)
 
-        //================= BEGIN BANK ACCOUNT INFO (BANKACCTFROM) =================================
-        val bankId = doc.createElement(TAG_BANK_ID)
-        bankId.appendChild(doc.createTextNode(APP_ID))
-        val acctId = doc.createElement(TAG_ACCOUNT_ID)
-        acctId.appendChild(doc.createTextNode(account.uid))
-        val accttype = doc.createElement(TAG_ACCOUNT_TYPE)
-        val ofxAccountType = OfxAccountType.of(account.accountType).name
-        accttype.appendChild(doc.createTextNode(ofxAccountType))
-        val bankFrom = doc.createElement(TAG_BANK_ACCOUNT_FROM)
-        bankFrom.appendChild(bankId)
-        bankFrom.appendChild(acctId)
-        bankFrom.appendChild(accttype)
+        // Unsolicited because the data exported is not as a result of a request.
+        xmlSerializer.startTag(null, TAG_TRANSACTION_UID)
+        xmlSerializer.text(UNSOLICITED_TRANSACTION_ID)
+        xmlSerializer.endTag(null, TAG_TRANSACTION_UID)
 
+        accounts.forEach { account ->
+            cancellationSignal.throwIfCanceled()
+            // Add account details (transactions) to the XML document.
+            writeAccount(xmlSerializer, account, modifiedSince, false)
+        }
+
+        xmlSerializer.endTag(null, TAG_STATEMENT_TRANSACTION_RESPONSE)
+        xmlSerializer.endTag(null, TAG_BANK_MESSAGES_V1)
+    }
+
+    private fun writeCreditAccounts(
+        xmlSerializer: XmlSerializer,
+        accounts: List<Account>,
+        modifiedSince: Timestamp
+    ) {
+        xmlSerializer.startTag(null, TAG_CC_MESSAGES_V1)
+        xmlSerializer.startTag(null, TAG_CC_STATEMENT_TRANSACTION_RESPONSE)
+
+        // Unsolicited because the data exported is not as a result of a request.
+        xmlSerializer.startTag(null, TAG_TRANSACTION_UID)
+        xmlSerializer.text(UNSOLICITED_TRANSACTION_ID)
+        xmlSerializer.endTag(null, TAG_TRANSACTION_UID)
+
+        accounts.forEach { account ->
+            cancellationSignal.throwIfCanceled()
+            // Add account details (transactions) to the XML document.
+            writeAccount(xmlSerializer, account, modifiedSince, true)
+        }
+
+        xmlSerializer.endTag(null, TAG_CC_STATEMENT_TRANSACTION_RESPONSE)
+        xmlSerializer.endTag(null, TAG_CC_MESSAGES_V1)
+    }
+
+    private fun writeAccount(
+        xmlSerializer: XmlSerializer,
+        account: Account,
+        modifiedSince: Timestamp,
+        isCreditCard: Boolean = false
+    ) {
+        if (isCreditCard) {
+            xmlSerializer.startTag(null, TAG_CC_STATEMENT_TRANSACTIONS)
+        } else {
+            xmlSerializer.startTag(null, TAG_STATEMENT_TRANSACTIONS)
+        }
+
+        xmlSerializer.startTag(null, TAG_CURRENCY_DEF)
+        xmlSerializer.text(account.commodity.currencyCode)
+        xmlSerializer.endTag(null, TAG_CURRENCY_DEF)
+
+        //================= BEGIN BANK ACCOUNT INFO =================================
+        if (isCreditCard) {
+            xmlSerializer.startTag(null, TAG_CC_ACCOUNT_FROM)
+        } else {
+            xmlSerializer.startTag(null, TAG_BANK_ACCOUNT_FROM)
+        }
+
+        xmlSerializer.startTag(null, TAG_BANK_ID)
+        xmlSerializer.text(APP_ID)
+        xmlSerializer.endTag(null, TAG_BANK_ID)
+
+        xmlSerializer.startTag(null, TAG_ACCOUNT_ID)
+        xmlSerializer.text(account.fullName)
+        xmlSerializer.endTag(null, TAG_ACCOUNT_ID)
+
+        xmlSerializer.startTag(null, TAG_ACCOUNT_TYPE)
+        xmlSerializer.text(OfxAccountType.of(account.accountType).value)
+        xmlSerializer.endTag(null, TAG_ACCOUNT_TYPE)
+
+        if (isCreditCard) {
+            xmlSerializer.endTag(null, TAG_CC_ACCOUNT_FROM)
+        } else {
+            xmlSerializer.endTag(null, TAG_BANK_ACCOUNT_FROM)
+        }
         //================= END BANK ACCOUNT INFO ============================================
 
+        writeTransactions(xmlSerializer, account, modifiedSince)
 
         //================= BEGIN ACCOUNT BALANCE INFO =================================
-        val balance = getAccountBalance(account).toPlainString()
-        val formattedCurrentTimeString = formattedCurrentTime
-        val balanceAmount = doc.createElement(TAG_BALANCE_AMOUNT)
-        balanceAmount.appendChild(doc.createTextNode(balance))
-        val dtasof = doc.createElement(TAG_DATE_AS_OF)
-        dtasof.appendChild(doc.createTextNode(formattedCurrentTimeString))
-        val ledgerBalance = doc.createElement(TAG_LEDGER_BALANCE)
-        ledgerBalance.appendChild(balanceAmount)
-        ledgerBalance.appendChild(dtasof)
+        val balance = getAccountBalance(account)
+        xmlSerializer.startTag(null, TAG_LEDGER_BALANCE)
 
+        xmlSerializer.startTag(null, TAG_BALANCE_AMOUNT)
+        xmlSerializer.text(balance.toPlainString())
+        xmlSerializer.endTag(null, TAG_BALANCE_AMOUNT)
+        xmlSerializer.startTag(null, TAG_DATE_AS_OF)
+        xmlSerializer.text(formattedCurrentTime)
+        xmlSerializer.endTag(null, TAG_DATE_AS_OF)
+
+        xmlSerializer.endTag(null, TAG_LEDGER_BALANCE)
         //================= END ACCOUNT BALANCE INFO =================================
 
-
-        //================= BEGIN TIME PERIOD INFO =================================
-        val dtstart = doc.createElement(TAG_DATE_START)
-        dtstart.appendChild(doc.createTextNode(formattedCurrentTimeString))
-        val dtend = doc.createElement(TAG_DATE_END)
-        dtend.appendChild(doc.createTextNode(formattedCurrentTimeString))
-
-        //================= END TIME PERIOD INFO =================================
-
-
-        //================= BEGIN TRANSACTIONS LIST =================================
-        val bankTransactionsList = doc.createElement(TAG_BANK_TRANSACTION_LIST)
-        bankTransactionsList.appendChild(dtstart)
-        bankTransactionsList.appendChild(dtend)
-        for (transaction in account.transactions) {
-            if (transaction.modifiedTimestamp.before(exportStartTime)) continue
-            bankTransactionsList.appendChild(toOFX(transaction, doc, account.uid))
-            listener?.onTransaction(transaction)
+        if (isCreditCard) {
+            xmlSerializer.endTag(null, TAG_CC_STATEMENT_TRANSACTIONS)
+        } else {
+            xmlSerializer.endTag(null, TAG_STATEMENT_TRANSACTIONS)
         }
-        //================= END TRANSACTIONS LIST =================================
-        val statementTransactions = doc.createElement(TAG_STATEMENT_TRANSACTIONS)
-        statementTransactions.appendChild(currency)
-        statementTransactions.appendChild(bankFrom)
-        statementTransactions.appendChild(bankTransactionsList)
-        statementTransactions.appendChild(ledgerBalance)
-        parent.appendChild(statementTransactions)
 
         listener?.onAccount(account)
     }
@@ -283,86 +294,138 @@ class OfxExporter(
      * @return [Money] aggregate amount of all transactions in account.
      */
     private fun getAccountBalance(account: Account): Money {
-        var balance = Money.createZeroInstance(account.commodity)
-        for (transaction in account.transactions) {
-            balance += transaction.getBalance(account)
-        }
-        return balance
+        return accountsDbAdapter.getAccountBalance(account, ALWAYS, System.currentTimeMillis())
     }
 
-    /**
-     * Converts transaction to XML DOM corresponding to OFX Statement transaction and
-     * returns the element node for the transaction.
-     * The Unique ID of the account is needed in order to properly export double entry transactions
-     *
-     * @param doc        XML document to which transaction should be added
-     * @param accountUID Unique Identifier of the account which called the method.  @return Element in DOM corresponding to transaction
-     */
-    private fun toOFX(transaction: Transaction, doc: Document, accountUID: String): Element {
-        val acctDbAdapter = AccountsDbAdapter.instance
-        val balance = transaction.getBalance(accountUID)
-        val transactionType = if (balance.isNegative) {
-            TransactionType.DEBIT
-        } else {
-            TransactionType.CREDIT
+    private fun writeTransactions(
+        xmlSerializer: XmlSerializer,
+        account: Account,
+        modifiedSince: Timestamp
+    ) {
+        //================= BEGIN TRANSACTIONS LIST =================================
+        xmlSerializer.startTag(null, TAG_BANK_TRANSACTION_LIST)
+
+        xmlSerializer.startTag(null, TAG_DATE_START)
+        xmlSerializer.text(formatTime(modifiedSince.time))
+        xmlSerializer.endTag(null, TAG_DATE_START)
+        xmlSerializer.startTag(null, TAG_DATE_END)
+        xmlSerializer.text(formattedCurrentTime)
+        xmlSerializer.endTag(null, TAG_DATE_END)
+
+        transactionsDbAdapter.fetchTransactionsToExportSince(modifiedSince).forEach { cursor ->
+            val transaction = transactionsDbAdapter.buildModelInstance(cursor)
+            if (transaction.hasAccount(account)) {
+                writeTransaction(xmlSerializer, account, transaction)
+                listener?.onTransaction(transaction)
+            }
         }
 
-        val transactionNode = doc.createElement(TAG_STATEMENT_TRANSACTION)
-        val typeNode = doc.createElement(TAG_TRANSACTION_TYPE)
-        typeNode.appendChild(doc.createTextNode(transactionType.toString()))
-        transactionNode.appendChild(typeNode)
+        xmlSerializer.endTag(null, TAG_BANK_TRANSACTION_LIST)
+        //================= END TRANSACTIONS LIST =================================
+    }
 
-        val datePosted = doc.createElement(TAG_DATE_POSTED)
-        datePosted.appendChild(doc.createTextNode(getOfxFormattedTime(transaction.time)))
-        transactionNode.appendChild(datePosted)
+    private fun Transaction.hasAccount(account: Account): Boolean {
+        val accountUID = account.uid
+        return splits.any { it.accountUID == accountUID }
+    }
 
-        val dateUser = doc.createElement(TAG_DATE_USER)
-        dateUser.appendChild(doc.createTextNode(getOfxFormattedTime(transaction.time)))
-        transactionNode.appendChild(dateUser)
+    private fun writeTransaction(
+        xmlSerializer: XmlSerializer,
+        account: Account,
+        transaction: Transaction
+    ) {
+        val balance = transaction.getBalance(account, false)
+        val transactionType = if (balance.isNegative) {
+            TransactionType.CREDIT
+        } else {
+            TransactionType.DEBIT
+        }
 
-        val amount = doc.createElement(TAG_TRANSACTION_AMOUNT)
-        amount.appendChild(doc.createTextNode(balance.toPlainString()))
-        transactionNode.appendChild(amount)
+        xmlSerializer.startTag(null, TAG_STATEMENT_TRANSACTION)
 
-        val transID = doc.createElement(TAG_TRANSACTION_FITID)
-        transID.appendChild(doc.createTextNode(transaction.uid))
-        transactionNode.appendChild(transID)
+        xmlSerializer.startTag(null, TAG_TRANSACTION_TYPE)
+        xmlSerializer.text(transactionType.value)
+        xmlSerializer.endTag(null, TAG_TRANSACTION_TYPE)
 
-        val name = doc.createElement(TAG_NAME)
-        name.appendChild(doc.createTextNode(transaction.description))
-        transactionNode.appendChild(name)
+        xmlSerializer.startTag(null, TAG_DATE_POSTED)
+        xmlSerializer.text(formatTime(transaction.time))
+        xmlSerializer.endTag(null, TAG_DATE_POSTED)
+
+        xmlSerializer.startTag(null, TAG_DATE_USER)
+        xmlSerializer.text(formatTime(transaction.modifiedTimestamp.time))
+        xmlSerializer.endTag(null, TAG_DATE_USER)
+
+        // This amount should be specified as a positive number.
+        xmlSerializer.startTag(null, TAG_TRANSACTION_AMOUNT)
+        xmlSerializer.text(balance.abs().toPlainString())
+        xmlSerializer.endTag(null, TAG_TRANSACTION_AMOUNT)
+
+        xmlSerializer.startTag(null, TAG_TRANSACTION_FITID)
+        xmlSerializer.text(transaction.uid)
+        xmlSerializer.endTag(null, TAG_TRANSACTION_FITID)
+
+        if (!transaction.number.isNullOrEmpty()) {
+            xmlSerializer.startTag(null, TAG_CHECK_NUMBER)
+            xmlSerializer.text(transaction.number)
+            xmlSerializer.endTag(null, TAG_CHECK_NUMBER)
+        }
+
+        xmlSerializer.startTag(null, TAG_NAME)
+        xmlSerializer.text(transaction.description)
+        xmlSerializer.endTag(null, TAG_NAME)
 
         if (!transaction.note.isNullOrEmpty()) {
-            val memo = doc.createElement(TAG_MEMO)
-            memo.appendChild(doc.createTextNode(transaction.note))
-            transactionNode.appendChild(memo)
+            xmlSerializer.startTag(null, TAG_MEMO)
+            xmlSerializer.text(transaction.note)
+            xmlSerializer.endTag(null, TAG_MEMO)
         }
 
-        if (transaction.splits.size == 2) { //if we have exactly one other split, then treat it like a transfer
-            var transferAccountUID = accountUID
-            for (split in transaction.splits) {
-                if (split.accountUID != accountUID) {
-                    transferAccountUID = split.accountUID!!
-                    break
-                }
+        //if we have exactly one other split, then treat it like a transfer
+        if (transaction.splits.size >= 2) {
+            writeTransfer(xmlSerializer, account, transaction)
+        }
+
+        xmlSerializer.endTag(null, TAG_STATEMENT_TRANSACTION)
+    }
+
+    private fun writeTransfer(
+        xmlSerializer: XmlSerializer,
+        account: Account,
+        transaction: Transaction
+    ) {
+        val accountUID: String = account.uid
+        var transferAccount = account
+        for (split in transaction.splits) {
+            if (split.accountUID != accountUID) {
+                transferAccount = accountsDbAdapter.getRecord(split.accountUID!!)
+                break
             }
-            val bankId = doc.createElement(TAG_BANK_ID)
-            bankId.appendChild(doc.createTextNode(APP_ID))
-
-            val acctId = doc.createElement(TAG_ACCOUNT_ID)
-            acctId.appendChild(doc.createTextNode(transferAccountUID))
-
-            val accttype = doc.createElement(TAG_ACCOUNT_TYPE)
-            val ofxAccountType = OfxAccountType.of(acctDbAdapter.getAccountType(transferAccountUID))
-            accttype.appendChild(doc.createTextNode(ofxAccountType.toString()))
-
-            val bankAccountTo = doc.createElement(TAG_BANK_ACCOUNT_TO)
-            bankAccountTo.appendChild(bankId)
-            bankAccountTo.appendChild(acctId)
-            bankAccountTo.appendChild(accttype)
-
-            transactionNode.appendChild(bankAccountTo)
         }
-        return transactionNode
+        if (transferAccount == account) return
+        val isCreditCard = account.isCreditCard
+
+        if (isCreditCard) {
+            xmlSerializer.startTag(null, TAG_CC_ACCOUNT_TO)
+        } else {
+            xmlSerializer.startTag(null, TAG_BANK_ACCOUNT_TO)
+        }
+
+        xmlSerializer.startTag(null, TAG_BANK_ID)
+        xmlSerializer.text(APP_ID)
+        xmlSerializer.endTag(null, TAG_BANK_ID)
+
+        xmlSerializer.startTag(null, TAG_ACCOUNT_ID)
+        xmlSerializer.text(transferAccount.fullName)
+        xmlSerializer.endTag(null, TAG_ACCOUNT_ID)
+
+        xmlSerializer.startTag(null, TAG_ACCOUNT_TYPE)
+        xmlSerializer.text(OfxAccountType.of(transferAccount.accountType).value)
+        xmlSerializer.endTag(null, TAG_ACCOUNT_TYPE)
+
+        if (isCreditCard) {
+            xmlSerializer.endTag(null, TAG_CC_ACCOUNT_TO)
+        } else {
+            xmlSerializer.endTag(null, TAG_BANK_ACCOUNT_TO)
+        }
     }
 }

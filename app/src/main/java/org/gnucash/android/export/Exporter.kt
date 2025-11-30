@@ -22,10 +22,10 @@ import android.content.pm.ResolveInfo
 import android.database.SQLException
 import android.net.Uri
 import android.os.CancellationSignal
-import android.preference.PreferenceManager
 import android.text.format.DateUtils
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
+import androidx.preference.PreferenceManager
 import com.dropbox.core.DbxException
 import com.owncloud.android.lib.common.OwnCloudClientFactory
 import com.owncloud.android.lib.common.OwnCloudCredentialsFactory
