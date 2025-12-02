@@ -25,6 +25,7 @@ import androidx.preference.Preference
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
 import org.gnucash.android.app.GnuCashApplication.Companion.defaultCurrencyCode
+import org.gnucash.android.app.getActivity
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.export.ExportAsyncTask
@@ -93,21 +94,21 @@ class AccountPreferencesFragment : GnuPreferenceFragment() {
             true
         }
 
-        preference = findPreference<Preference>(getString(R.string.key_export_accounts_csv))!!
-        preference.setOnPreferenceClickListener { preference ->
+        preference = findPreference(getString(R.string.key_export_accounts_csv))!!
+        preference.setOnPreferenceClickListener { _ ->
             selectExportFile()
             true
         }
 
-        preference = findPreference<Preference>(getString(R.string.key_delete_all_accounts))!!
-        preference.setOnPreferenceClickListener { preference ->
+        preference = findPreference(getString(R.string.key_delete_all_accounts))!!
+        preference.setOnPreferenceClickListener { _ ->
             showDeleteAccountsDialog()
             true
         }
 
-        preference = findPreference<Preference>(getString(R.string.key_create_default_accounts))!!
-        preference.setOnPreferenceClickListener { preference ->
-            val activity: Activity = requireActivity()
+        preference = findPreference(getString(R.string.key_create_default_accounts))!!
+        preference.setOnPreferenceClickListener { _ ->
+            val activity: Activity = preference.context.getActivity() ?: return@setOnPreferenceClickListener false
             AlertDialog.Builder(activity)
                 .setTitle(R.string.title_create_default_accounts)
                 .setMessage(R.string.msg_confirm_create_default_accounts_setting)

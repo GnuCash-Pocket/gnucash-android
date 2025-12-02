@@ -339,8 +339,8 @@ class GnuCashApplication : Application() {
 
             // Maybe use the cached commodity.
             var commodity = Commodity.DEFAULT_COMMODITY
-            currencyCode = if (commodity != null) commodity.currencyCode else null
-            if (!currencyCode.isNullOrEmpty()) return currencyCode
+            currencyCode = commodity.currencyCode
+            if (currencyCode.isNotEmpty()) return currencyCode
 
             // Last chance!
             commodity = Commodity.USD

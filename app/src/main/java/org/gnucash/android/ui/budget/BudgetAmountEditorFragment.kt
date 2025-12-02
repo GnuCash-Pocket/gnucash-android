@@ -34,7 +34,6 @@ import androidx.core.view.isVisible
 import org.gnucash.android.R
 import org.gnucash.android.app.MenuFragment
 import org.gnucash.android.app.actionBar
-import org.gnucash.android.app.finish
 import org.gnucash.android.app.getParcelableArrayListCompat
 import org.gnucash.android.databinding.FragmentBudgetAmountEditorBinding
 import org.gnucash.android.databinding.ItemBudgetAmountBinding
@@ -142,11 +141,12 @@ class BudgetAmountEditorFragment : MenuFragment() {
 
     private fun saveBudgetAmounts() {
         if (canSave()) {
+            val activity = activity ?: return
             val budgetAmounts = ArrayList<BudgetAmount>(extractBudgetAmounts())
             val data = Intent()
                 .putParcelableArrayListExtra(UxArgument.BUDGET_AMOUNT_LIST, budgetAmounts)
-            requireActivity().setResult(Activity.RESULT_OK, data)
-            finish()
+            activity.setResult(Activity.RESULT_OK, data)
+            activity.finish()
         }
     }
 

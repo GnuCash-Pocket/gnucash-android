@@ -23,7 +23,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import androidx.core.content.edit
-import androidx.fragment.app.Fragment
 import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
@@ -101,15 +100,14 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
         }
 
         preference = findPreference<Preference>(getString(R.string.key_restore_backup))!!
-        preference.setOnPreferenceClickListener { preference ->
+        preference.setOnPreferenceClickListener { _ ->
             restoreBackup()
             true
         }
 
         preference = findPreference<Preference>(getString(R.string.key_create_backup))!!
-        preference.setOnPreferenceClickListener { preference ->
-            val fragment: Fragment = this@BackupPreferenceFragment
-            val activity: Activity = requireActivity()
+        preference.setOnPreferenceClickListener { _ ->
+            val activity = activity ?: return@setOnPreferenceClickListener false
             backupActiveBookAsync(activity) { result: Boolean ->
                 val msg =
                     if (result) R.string.toast_backup_successful else R.string.toast_backup_failed
@@ -214,7 +212,7 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
      */
     private fun restoreBackup() {
         Timber.i("Opening GnuCash XML backups for restore")
-        val activity: Activity = requireActivity()
+        val activity = activity ?: return
         val bookUID = activeBookUID
 
         val defaultBackupFile = BackupManager.getBookBackupFileUri(activity, bookUID!!)

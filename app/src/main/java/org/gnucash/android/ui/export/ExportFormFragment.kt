@@ -47,6 +47,7 @@ import org.gnucash.android.app.GnuCashApplication.Companion.isDoubleEntryEnabled
 import org.gnucash.android.app.MenuFragment
 import org.gnucash.android.app.actionBar
 import org.gnucash.android.app.finish
+import org.gnucash.android.app.getActivity
 import org.gnucash.android.app.isNullOrEmpty
 import org.gnucash.android.app.takePersistableUriPermission
 import org.gnucash.android.databinding.FragmentExportFormBinding
@@ -315,7 +316,7 @@ class ExportFormFragment : MenuFragment(),
         val bookUID = activeBookUID ?: return
         val position = binding.spinnerExportDestination.selectedItemPosition
 
-        val activity: Context = requireActivity()
+        val activity: Context = binding.root.getActivity() ?: return
         ExportAsyncTask(activity, bookUID) { bookUri ->
             if (bookUri != null) {
                 PreferenceManager.getDefaultSharedPreferences(activity).edit {

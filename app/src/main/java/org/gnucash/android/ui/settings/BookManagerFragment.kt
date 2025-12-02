@@ -279,7 +279,8 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
          * @return `true`
          */
         fun handleMenuRenameBook(bookName: String?, bookUID: String): Boolean {
-            val dialog = AlertDialog.Builder(requireActivity())
+            val activity = activity ?: return false
+            val dialog = AlertDialog.Builder(activity)
                 .setTitle(R.string.title_rename_book)
                 .setView(R.layout.dialog_rename_book)
                 .setNegativeButton(R.string.btn_cancel) { _, _ ->

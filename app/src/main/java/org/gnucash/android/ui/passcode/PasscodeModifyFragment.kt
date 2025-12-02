@@ -53,7 +53,7 @@ class PasscodeModifyFragment : KeyboardFragment() {
     override fun onPasscodeEntered(code: String) {
         val codeOld = passcodeOriginal
         Timber.d("Passcode: %s", code)
-        val activity = requireActivity()
+        val activity = activity ?: return
 
         when (state) {
             STATE_VERIFY -> if (code == codeOld || codeOld == null) {

@@ -22,6 +22,7 @@ class PasscodeFragment : KeyboardFragment() {
         val codeOld = passcodeOriginal.orEmpty()
         Timber.d("Passcode: %s ~ %s", codeOld, code)
         val context: Context = requireContext()
+        val activity = activity ?: return
 
         if (code == codeOld) {
             PasscodeHelper.passcodeSessionTime = SystemClock.elapsedRealtime()
@@ -38,7 +39,6 @@ class PasscodeFragment : KeyboardFragment() {
                 .putExtras(args)
             startActivity(intent)
 
-            val activity = requireActivity()
             activity.setResult(Activity.RESULT_OK)
             activity.finish()
         } else {

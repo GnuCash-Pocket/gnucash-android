@@ -31,7 +31,7 @@ fun Context.findActivity(): Activity {
 }
 
 
-fun View.getActivity(): Activity = context.getActivity()!!
+fun View.getActivity(): Activity? = context.getActivity()
 
 /**
  * Restart the activity.

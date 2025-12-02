@@ -70,7 +70,7 @@ class CalculatorKeyboard(
      */
     private val keyboardView: CalculatorKeyboardView
 ) {
-    private val window: Window
+    private val window: Window? get() = keyboardView.getActivity()?.window
     private val inputMethodManager: InputMethodManager
     private val isHapticFeedback: Boolean
 
@@ -100,11 +100,11 @@ class CalculatorKeyboard(
         inputMethodManager =
             context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         isHapticFeedback = isHapticFeedbackEnabled(context)
-        // Hide the standard keyboard initially
-        window = keyboardView.getActivity().window
 
+        // Hide the standard keyboard initially
         val keyboardActionListener = object : OnKeyboardActionListener {
             override fun onKey(primaryCode: Int, keyCodes: IntArray) {
+                val window = window ?: return
                 val focusCurrent = (window.currentFocus as? CalculatorEditText) ?: return
                 val editable = focusCurrent.getText() ?: return
 
@@ -133,7 +133,7 @@ class CalculatorKeyboard(
                 if (text.isNullOrEmpty()) {
                     return
                 }
-                val focusCurrent = (window.currentFocus as? CalculatorEditText) ?: return
+                val focusCurrent = (window?.currentFocus as? CalculatorEditText) ?: return
                 val editable = focusCurrent.getText() ?: return
 
                 val start = Selection.getSelectionStart(editable)
@@ -164,7 +164,7 @@ class CalculatorKeyboard(
     fun show(view: View?) {
         if (view != null) {
             inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
-            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
+            window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
         }
 
         keyboardView.isVisible = true

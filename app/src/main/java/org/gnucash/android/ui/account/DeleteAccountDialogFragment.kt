@@ -15,7 +15,6 @@
  */
 package org.gnucash.android.ui.account
 
-import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
@@ -214,9 +213,9 @@ class DeleteAccountDialogFragment : DoubleConfirmationDialog() {
             AdapterView.INVALID_POSITION
         }
 
-        val activity: Activity = requireActivity()
+        val activity = activity ?: return
         val fm = parentFragmentManager
-        backupActiveBookAsync(activity) { result ->
+        backupActiveBookAsync(activity) { _ ->
             deleteAccount(activity, fm, accountUID, moveAccountsIndex, moveTransactionsIndex)
         }
     }

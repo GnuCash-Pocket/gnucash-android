@@ -417,7 +417,7 @@ class TransactionsListFragment : MenuFragment(),
     }
 
     private fun deleteTransaction(transactionUID: String) {
-        val activity: Activity = requireActivity()
+        val activity = activity ?: return
         if (shouldBackupTransactions(activity)) {
             backupActiveBookAsync(activity) { result ->
                 transactionsDbAdapter.deleteRecord(transactionUID)
@@ -452,7 +452,7 @@ class TransactionsListFragment : MenuFragment(),
     }
 
     private fun editTransaction(transactionUID: String, accountUID: String) {
-        val context: Context = requireContext()
+        val context: Context = context ?: return
         val intent = Intent(context, FormActivity::class.java)
             .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
             .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)

@@ -40,8 +40,9 @@ class GeneralPreferenceFragment : GnuPreferenceFragment() {
         addPreferencesFromResource(R.xml.fragment_general_preferences)
 
         val preferenceTheme = findPreference<Preference>(getString(R.string.key_theme))!!
-        preferenceTheme.setOnPreferenceChangeListener { preference, newValue ->
-            requireActivity().restart()
+        preferenceTheme.setOnPreferenceChangeListener { _, newValue ->
+            val activity = activity ?: return@setOnPreferenceChangeListener false
+            activity.restart()
             true
         }
 
