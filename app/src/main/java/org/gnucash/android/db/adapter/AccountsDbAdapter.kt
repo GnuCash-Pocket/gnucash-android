@@ -1479,26 +1479,7 @@ class AccountsDbAdapter(
     }
 
     fun getTransactionMaxSplitNum(accountUID: String): Int {
-        val cursor = db.query(
-            "trans_extra_info",
-            arrayOf<String?>("MAX(trans_split_count)"),
-            "trans_acct_t_uid IN ( SELECT DISTINCT " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID +
-                    " FROM trans_split_acct WHERE " + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID +
-                    " = ? )",
-            arrayOf<String?>(accountUID),
-            null,
-            null,
-            null
-        )
-        try {
-            return if (cursor.moveToFirst()) {
-                cursor.getLong(0).toInt()
-            } else {
-                0
-            }
-        } finally {
-            cursor.close()
-        }
+        return transactionsDbAdapter.getTransactionMaxSplitNum(accountUID)
     }
 
     fun getFullRecord(uid: String?): Account? {
