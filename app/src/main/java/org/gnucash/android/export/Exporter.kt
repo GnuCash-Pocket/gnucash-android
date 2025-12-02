@@ -310,8 +310,7 @@ abstract class Exporter protected constructor(
         }
 
         try {
-            val outputStream: OutputStream =
-                context.contentResolver.openOutputStream(exportUri)!!
+            val outputStream = context.contentResolver.openOutputStream(exportUri)!!
             // Now we always get just one file exported (multi-currency QIFs are zipped)
             moveFile(exportedFile, outputStream)
             return exportUri

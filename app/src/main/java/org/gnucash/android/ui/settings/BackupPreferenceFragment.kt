@@ -23,7 +23,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import androidx.core.content.edit
-import androidx.fragment.app.Fragment
 import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
@@ -87,7 +86,7 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
         }
 
         val keyDefaultExportFormat = getString(R.string.key_default_export_format)
-        preference = findPreference<Preference>(keyDefaultExportFormat)!!
+        preference = findPreference(keyDefaultExportFormat)!!
         if (preference.summaryProvider == null) {
             preference.setSummaryProvider { preference ->
                 val listPreference = preference as ListPreference
@@ -100,15 +99,14 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
             }
         }
 
-        preference = findPreference<Preference>(getString(R.string.key_restore_backup))!!
-        preference.setOnPreferenceClickListener { preference ->
+        preference = findPreference(getString(R.string.key_restore_backup))!!
+        preference.setOnPreferenceClickListener { _ ->
             restoreBackup()
             true
         }
 
-        preference = findPreference<Preference>(getString(R.string.key_create_backup))!!
-        preference.setOnPreferenceClickListener { preference ->
-            val fragment: Fragment = this@BackupPreferenceFragment
+        preference = findPreference(getString(R.string.key_create_backup))!!
+        preference.setOnPreferenceClickListener { _ ->
             val activity: Activity = requireActivity()
             backupActiveBookAsync(activity) { result: Boolean ->
                 val msg =
@@ -118,33 +116,16 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
             true
         }
 
-        preference = findPreference<Preference>(getString(R.string.key_backup_location))!!
-        preference.setOnPreferenceClickListener { preference ->
-            val context = preference.context
-            val bookName = BooksDbAdapter.instance.activeBookDisplayName
-            val fileName =
-                sanitizeFilename(bookName) + "_" + getString(R.string.label_backup_filename)
-
-            val createIntent = Intent(Intent.ACTION_CREATE_DOCUMENT)
-                .setType(BackupManager.MIME_TYPE)
-                .addCategory(Intent.CATEGORY_OPENABLE)
-                .putExtra(Intent.EXTRA_TITLE, fileName)
-            try {
-                startActivityForResult(createIntent, REQUEST_BACKUP_FILE)
-            } catch (e: ActivityNotFoundException) {
-                Timber.e(e, "Cannot create document for backup")
-                snackLong(R.string.toast_install_file_manager)
-            }
+        preference = findPreference(getString(R.string.key_backup_location))!!
+        preference.setOnPreferenceClickListener { _ ->
+            selectBackupFile()
             true
         }
-
         val defaultBackupLocation = BackupManager.getBookBackupFileUri(context, activeBookUID!!)
-        if (defaultBackupLocation != null) {
-            preference.summary = defaultBackupLocation.getDocumentName(context)
-        }
+        preference.summary = defaultBackupLocation.getDocumentName(context)
 
         var switch = findPreference<TwoStatePreference>(getString(R.string.key_dropbox_sync))!!
-        switch.setOnPreferenceClickListener { preference ->
+        switch.setOnPreferenceClickListener { _ ->
             toggleDropboxSync(switch)
             toggleDropboxPreference(switch)
             false
@@ -152,12 +133,29 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
         toggleDropboxPreference(switch)
 
         switch = findPreference(getString(R.string.key_owncloud_sync))!!
-        switch.setOnPreferenceClickListener { preference ->
+        switch.setOnPreferenceClickListener { _ ->
             toggleOwnCloudSync(switch)
             toggleOwnCloudPreference(switch)
             false
         }
         toggleOwnCloudPreference(switch)
+    }
+
+    private fun selectBackupFile() {
+        val bookName = BooksDbAdapter.instance.activeBookDisplayName
+        val fileName = sanitizeFilename(bookName) +
+                getString(R.string.suffix_backup_filename)
+
+        val createIntent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+            .setType(BackupManager.MIME_TYPE)
+            .addCategory(Intent.CATEGORY_OPENABLE)
+            .putExtra(Intent.EXTRA_TITLE, fileName)
+        try {
+            startActivityForResult(createIntent, REQUEST_BACKUP_FILE)
+        } catch (e: ActivityNotFoundException) {
+            Timber.e(e, "Cannot create document for backup")
+            snackLong(R.string.toast_install_file_manager)
+        }
     }
 
     /**
@@ -280,12 +278,12 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
                 val context = requireContext()
                 context.takePersistableUriPermission(data)
 
+                val key = context.getString(R.string.key_backup_location)
                 getBookPreferences(context).edit {
-                    putString(BackupManager.KEY_BACKUP_FILE, backupFileUri.toString())
+                    putString(key, backupFileUri.toString())
                 }
 
-                val preference =
-                    findPreference<Preference>(getString(R.string.key_backup_location))!!
+                val preference = findPreference<Preference>(key)!!
                 preference.summary = backupFileUri.getDocumentName(preference.context)
             }
 

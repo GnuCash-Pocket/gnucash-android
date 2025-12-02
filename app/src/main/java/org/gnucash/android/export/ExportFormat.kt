@@ -43,7 +43,9 @@ enum class ExportFormat(
     OFX("OFX", ".ofx", "application/x-ofx", "Open Financial eXchange", R.string.file_format_ofx),
     XML("XML", ".xac", "application/x-gnucash", "GnuCash XML", R.string.file_format_xml),
     CSVA("CSVA", ".csv", "text/csv", "GnuCash accounts CSV", R.string.file_format_csv),
-    CSVT("CSVT", ".csv", "text/csv", "GnuCash transactions CSV", R.string.file_format_csv);
+    CSVT("CSVT", ".csv", "text/csv", "GnuCash transactions CSV", R.string.file_format_csv),
+    // Not meant for public use - yet.
+    SQLITE("sqlite3", ".db", "application/x-sqlite3", "SQLite3", 0);
 
     override fun toString(): String {
         return description

@@ -27,25 +27,26 @@ import androidx.work.WorkManager
 import androidx.work.WorkRequest
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.export.ExportFormat
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
-import org.gnucash.android.export.xml.GncXmlExporter
 import org.gnucash.android.lang.BooleanCallback
 import org.gnucash.android.ui.common.GnucashProgressDialog
 import org.gnucash.android.ui.snackLong
+import org.gnucash.android.util.FileUtils.copyFile
 import org.gnucash.android.work.BackupWorker
 import timber.log.Timber
 import java.io.File
 import java.util.concurrent.TimeUnit
+import java.util.zip.GZIPOutputStream
 
 /**
  * Deals with all backup-related tasks.
  */
 object BackupManager {
-    const val KEY_BACKUP_FILE: String = "book_backup_file_key"
-    const val MIME_TYPE: String = "application/gzip"
+    const val MIME_TYPE: String = "application/x-sqlite3"
 
     /**
      * Perform an automatic backup of all books in the database.
@@ -106,19 +107,20 @@ object BackupManager {
      */
     @WorkerThread
     fun backupBook(context: Context, bookUID: String): Boolean {
-        val params = ExportParams(ExportFormat.XML)
-        params.exportTarget = ExportParams.ExportTarget.URI
-        params.isCompressed = true
-        try {
-            val backupUri = getBookBackupFileUri(context, bookUID, params)
-            params.exportLocation = backupUri
-            val exporter: Exporter = GncXmlExporter(context, params, bookUID)
-            val uri: Uri? = exporter.export()
-            return (uri != null)
+        return try {
+            val helper = DatabaseHelper(context, bookUID)
+            val name = helper.databaseName
+            val file = context.getDatabasePath(name)
+            val backupUri = getBookBackupFileUri(context, bookUID)
+            val outputStream = context.contentResolver.openOutputStream(backupUri)!!
+            val gzipOutputStream = GZIPOutputStream(outputStream)
+            copyFile(file, gzipOutputStream)
+            helper.close()
+            true
         } catch (e: Throwable) {
             Timber.e(e, "Error creating backup")
+            false
         }
-        return false
     }
 
     /**
@@ -161,7 +163,7 @@ object BackupManager {
      * @param bookUID Unique ID of the book
      * @return DocumentFile for book backups, or null if the user hasn't set any.
      */
-    fun getBookBackupFileUri(context: Context, bookUID: String): Uri? {
+    fun getBookBackupFileUri(context: Context, bookUID: String): Uri {
         return getBookBackupFileUri(context, bookUID, null)
     }
 
@@ -171,9 +173,13 @@ object BackupManager {
      * @param bookUID Unique ID of the book
      * @return DocumentFile for book backups, or null if the user hasn't set any.
      */
-    fun getBookBackupFileUri(context: Context, bookUID: String, exportParams: ExportParams?): Uri? {
+    fun getBookBackupFileUri(context: Context, bookUID: String, exportParams: ExportParams?): Uri {
+        val exportParams = exportParams ?: ExportParams(ExportFormat.SQLITE).apply {
+            isCompressed = true
+        }
         val preferences = GnuCashApplication.getBookPreferences(context, bookUID)
-        val path = preferences.getString(KEY_BACKUP_FILE, null)
+        val key = context.getString(R.string.key_backup_location)
+        val path = preferences.getString(key, null)
         if (path.isNullOrEmpty()) {
             val file = getBackupFile(context, bookUID, exportParams)
             return file.toUri()
