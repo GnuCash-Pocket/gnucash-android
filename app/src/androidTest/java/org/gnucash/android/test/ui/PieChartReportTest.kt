@@ -23,6 +23,7 @@ import androidx.test.espresso.action.GeneralClickAction
 import androidx.test.espresso.action.Press
 import androidx.test.espresso.action.Tap
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.isClickable
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.rule.ActivityTestRule
@@ -45,6 +46,7 @@ import org.gnucash.android.ui.get
 import org.gnucash.android.ui.report.BaseReportFragment
 import org.gnucash.android.ui.report.ReportsActivity
 import org.gnucash.android.util.BookUtils
+import org.hamcrest.Matchers.not
 import org.joda.time.LocalDateTime
 import org.junit.After
 import org.junit.AfterClass
@@ -53,7 +55,6 @@ import org.junit.BeforeClass
 import org.junit.ClassRule
 import org.junit.Rule
 import org.junit.Test
-import java.math.BigDecimal
 import java.util.Locale
 
 class PieChartReportTest : GnuAndroidTest() {
@@ -86,7 +87,7 @@ class PieChartReportTest : GnuAndroidTest() {
         transaction.time = System.currentTimeMillis() - DateUtils.HOUR_IN_MILLIS
 
         val split = Split(
-            Money(BigDecimal.valueOf(TRANSACTION_AMOUNT), commodity), DINING_EXPENSE_ACCOUNT_UID
+            Money(TRANSACTION_AMOUNT, commodity), DINING_EXPENSE_ACCOUNT_UID
         )
         split.type = TransactionType.DEBIT
 
@@ -106,7 +107,7 @@ class PieChartReportTest : GnuAndroidTest() {
         transaction.time = LocalDateTime.now().minusMonths(minusMonths).toDateTime().millis
 
         val split = Split(
-            Money(BigDecimal.valueOf(TRANSACTION2_AMOUNT), commodity), BOOKS_EXPENSE_ACCOUNT_UID
+            Money(TRANSACTION2_AMOUNT, commodity), BOOKS_EXPENSE_ACCOUNT_UID
         )
         split.type = TransactionType.DEBIT
 
@@ -118,9 +119,10 @@ class PieChartReportTest : GnuAndroidTest() {
 
     @Test
     fun testNoData() {
-        clickViewId(R.id.pie_chart)
+        onView(withId(R.id.chart))
+            .check(matches(not(isClickable())))
         onView(withId(R.id.selected_chart_slice))
-            .check(matches(withText(R.string.label_select_pie_slice_to_see_details)))
+            .check(matches(withText("")))
     }
 
     @Test
@@ -130,7 +132,7 @@ class PieChartReportTest : GnuAndroidTest() {
         assertThat(transactionsDbAdapter.recordsCount).isGreaterThan(1)
         refreshReport()
 
-        onView(withId(R.id.pie_chart))
+        onView(withId(R.id.chart))
             .perform(clickXY(Position.BEGIN, Position.MIDDLE))
         val percent =
             ((TRANSACTION_AMOUNT * 100) / (TRANSACTION_AMOUNT + TRANSACTION2_AMOUNT)).toFloat()
@@ -149,21 +151,22 @@ class PieChartReportTest : GnuAndroidTest() {
     fun testSpinner() {
         val accountTypeAdapter = AccountTypesAdapter.expenseAndIncome(context)
         val split = Split(
-            Money(BigDecimal.valueOf(TRANSACTION3_AMOUNT), commodity),
-            GIFTS_RECEIVED_INCOME_ACCOUNT_UID
+            Money(TRANSACTION3_AMOUNT, commodity),
+            CASH_IN_WALLET_ASSET_ACCOUNT_UID
         )
         val transaction = Transaction(TRANSACTION3_NAME)
         transaction.time = System.currentTimeMillis() - DateUtils.HOUR_IN_MILLIS;
         transaction.addSplit(split)
-        transaction.addSplit(split.createPair(CASH_IN_WALLET_ASSET_ACCOUNT_UID))
+        transaction.addSplit(split.createPair(GIFTS_RECEIVED_INCOME_ACCOUNT_UID))
 
         transactionsDbAdapter.insert(transaction)
 
         refreshReport()
 
         clickViewId(R.id.report_account_type_spinner)
-        clickViewText(accountTypeAdapter[1].label)
-        onView(withId(R.id.pie_chart))
+        clickViewText(accountTypeAdapter[1].label) // INCOME
+        sleep(1000) // wait for chart to render
+        onView(withId(R.id.chart))
             .perform(clickXY(Position.BEGIN, Position.MIDDLE))
         val selectedText = BaseReportFragment.formatSelectedValue(
             Locale.getDefault(),
@@ -176,12 +179,13 @@ class PieChartReportTest : GnuAndroidTest() {
             .check(matches(withText(selectedText)))
 
         clickViewId(R.id.report_account_type_spinner)
-        clickViewText(accountTypeAdapter[0].label)
+        clickViewText(accountTypeAdapter[0].label) // EXPENSES
+        sleep(1000) // wait for chart to render
 
-        clickViewId(R.id.pie_chart)
-        onView(withId(R.id.selected_chart_slice)).check(
-            matches(withText(R.string.label_select_pie_slice_to_see_details))
-        )
+        onView(withId(R.id.chart))
+            .check(matches(not(isClickable())))
+        onView(withId(R.id.selected_chart_slice))
+            .check(matches(withText("")))
     }
 
     enum class Position {
@@ -208,14 +212,10 @@ class PieChartReportTest : GnuAndroidTest() {
      * Refresh reports
      */
     private fun refreshReport() {
-        try {
-            activityRule.runOnUiThread {
-                reportsActivity.refresh()
-            }
-            sleep(5000)
-        } catch (t: Throwable) {
-            System.err.println("Failed to refresh reports")
+        activityRule.runOnUiThread {
+            reportsActivity.refresh()
         }
+        sleep(5000)
     }
 
     @After

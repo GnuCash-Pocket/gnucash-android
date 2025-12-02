@@ -381,8 +381,7 @@ class ScheduledAction    //all actions are enabled by default
      * @param recurrence [Recurrence] object
      */
     fun setRecurrence(recurrence: Recurrence?) {
-        this.recurrence = recurrence
-        if (recurrence == null) return
+        this.recurrence = recurrence ?: return
         //if we were parsing XML and parsed the start and end date from the scheduled action first,
         //then use those over the values which might be gotten from the recurrence
         if (startDate > 0) {

@@ -23,6 +23,7 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.ColorInt
+import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
@@ -42,11 +43,9 @@ import org.joda.time.LocalDateTime
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-class ReportsOverviewFragment : BaseReportFragment() {
+class ReportsOverviewFragment : BaseReportFragment<PieData>() {
     private var assetsBalance: Money = Money.createZeroInstance(commodity)
     private var liabilitiesBalance: Money = Money.createZeroInstance(commodity)
-
-    private var chartHasData = false
 
     private var binding: FragmentReportSummaryBinding? = null
 
@@ -71,19 +70,77 @@ class ReportsOverviewFragment : BaseReportFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val context = view.context
         val binding = binding!!
 
         setHasOptionsMenu(false)
 
         colorBalanceZero = binding.totalAssets.currentTextColor
-        @ColorInt val textColorPrimary = getTextColor(context)
 
         binding.btnBarChart.setOnClickListener(this::onClickChartTypeButton)
         binding.btnPieChart.setOnClickListener(this::onClickChartTypeButton)
         binding.btnLineChart.setOnClickListener(this::onClickChartTypeButton)
         binding.btnBalanceSheet.setOnClickListener(this::onClickChartTypeButton)
-        binding.pieChart.apply {
+
+        val chartLayout = binding.chartLayout!!
+        chartLayout.selectedChartSlice.setText(R.string.label_last_3_months_expenses)
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        super.onPrepareOptionsMenu(menu)
+        menu.findItem(R.id.menu_group_reports_by).isVisible = false
+    }
+
+    override fun generateReport(context: Context): PieData {
+        assetsBalance = accountsDbAdapter.getCurrentAccountsBalance(assetTypes, commodity)
+        liabilitiesBalance = accountsDbAdapter.getCurrentAccountsBalance(liabilityTypes, commodity)
+
+        val data = getData()
+        if (isEmpty(data)) {
+            return getEmptyData(context)
+        }
+        return PieChartFragment.groupSmallerSlices(context, data)
+    }
+
+    private fun getData(): PieData {
+        val dataSet = PieDataSet(null, "")
+        val colors = mutableListOf<Int>()
+        val now = LocalDateTime.now()
+        val startTime = now.minusMonths(3).toMillis()
+        val endTime = now.toMillis()
+        val commodity = this.commodity
+
+        val where = (AccountEntry.COLUMN_TYPE + "=?"
+                + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
+                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
+        val whereArgs = arrayOf<String?>(accountType.name)
+        val orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC"
+        val accounts = accountsDbAdapter.getAllRecords(where, whereArgs, orderBy)
+        val balances = accountsDbAdapter.getAccountsBalances(accounts, startTime, endTime)
+
+        for (account in accounts) {
+            var balance = balances[account.uid]
+            if (balance.isNullOrZero()) continue
+            val price = pricesDbAdapter.getPrice(balance.commodity, commodity) ?: continue
+            balance *= price
+            val value = balance.toFloat()
+            if (value > 0f) {
+                val count = dataSet.entryCount
+                dataSet.addEntry(PieEntry(value, account.name))
+                @ColorInt val color = getAccountColor(account, count)
+                colors.add(color)
+            }
+        }
+        dataSet.colors = colors
+        dataSet.setSliceSpace(PieChartFragment.SPACE_BETWEEN_SLICES)
+        return PieData(dataSet)
+    }
+
+    override fun displayReport(data: PieData) {
+        val binding = binding ?: return
+        val context = binding.root.context
+        @ColorInt val textColorPrimary = getTextColor(context)
+
+        val chart = PieChart(context).apply {
             setCenterTextSize(PieChartFragment.CENTER_TEXT_SIZE.toFloat())
             setDrawSliceText(false)
             setCenterTextColor(textColorPrimary)
@@ -92,86 +149,31 @@ class ReportsOverviewFragment : BaseReportFragment() {
                 isWordWrapEnabled = true
                 textColor = textColorPrimary
             }
-        }
-    }
+            this.data = data
 
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        super.onPrepareOptionsMenu(menu)
-        menu.findItem(R.id.menu_group_reports_by).isVisible = false
-    }
-
-    override fun generateReport(context: Context) {
-        val binding = binding ?: return
-        val pieData = PieChartFragment.groupSmallerSlices(context, this.data)
-        if (pieData.dataSetCount > 0 && pieData.dataSet.entryCount > 0) {
-            binding.pieChart.data = pieData
-            val sum = binding.pieChart.data.yValueSum
-            binding.pieChart.centerText = formatTotalValue(sum)
-            binding.pieChart.legend.isEnabled = true
-            chartHasData = true
-        } else {
-            binding.pieChart.data = getEmptyData(context)
-            binding.pieChart.centerText = context.getString(R.string.label_chart_no_data)
-            binding.pieChart.legend.isEnabled = false
-            chartHasData = false
-        }
-
-        assetsBalance = accountsDbAdapter.getCurrentAccountsBalance(assetTypes, commodity)
-        liabilitiesBalance = accountsDbAdapter.getCurrentAccountsBalance(liabilityTypes, commodity)
-    }
-
-    /**
-     * Returns `PieData` instance with data entries, colors and labels
-     *
-     * @return `PieData` instance
-     */
-    private val data: PieData
-        get() {
-            val dataSet = PieDataSet(null, "")
-            val colors = mutableListOf<Int>()
-            val now = LocalDateTime.now()
-            val startTime = now.minusMonths(3).toMillis()
-            val endTime = now.toMillis()
-            val commodity = this.commodity
-
-            val where = (AccountEntry.COLUMN_TYPE + "=?"
-                    + " AND " + AccountEntry.COLUMN_PLACEHOLDER + " = 0"
-                    + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
-            val whereArgs = arrayOf<String?>(accountType.name)
-            val orderBy = AccountEntry.COLUMN_FULL_NAME + " ASC"
-            val accounts = accountsDbAdapter.getAllRecords(where, whereArgs, orderBy)
-            val balances = accountsDbAdapter.getAccountsBalances(accounts, startTime, endTime)
-
-            for (account in accounts) {
-                var balance = balances[account.uid]
-                if (balance.isNullOrZero()) continue
-                val price = pricesDbAdapter.getPrice(balance.commodity, commodity) ?: continue
-                balance *= price
-                val value = balance.toFloat()
-                if (value > 0f) {
-                    val count = dataSet.entryCount
-                    dataSet.addEntry(PieEntry(value, account.name))
-                    @ColorInt val color = getAccountColor(account, count)
-                    colors.add(color)
-                }
-            }
-            dataSet.colors = colors
-            dataSet.setSliceSpace(PieChartFragment.SPACE_BETWEEN_SLICES)
-            return PieData(dataSet)
-        }
-
-    override fun displayReport() {
-        val binding = binding ?: return
-        binding.pieChart.apply {
-            if (chartHasData) {
-                animateXY(1500, 1500)
-                setTouchEnabled(true)
-            } else {
+            if (isEmpty(data)) {
+                centerText = context.getString(R.string.label_chart_no_data)
+                legend.isEnabled = false
                 setTouchEnabled(false)
+                clearAnimation()
+            } else {
+                centerText = formatTotalValue(data.yValueSum)
+                legend.isEnabled = true
+                setTouchEnabled(true)
+                animateXY(ANIMATION_DURATION, ANIMATION_DURATION)
             }
             highlightValues(null)
-            invalidate()
         }
+
+        val chartLayout = binding.chartLayout
+        chartLayout.chartContainer.removeAllViews()
+        chartLayout.chartContainer.addView(
+            chart,
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        )
 
         val totalAssets = assetsBalance
         val totalLiabilities = -liabilitiesBalance
@@ -188,10 +190,17 @@ class ReportsOverviewFragment : BaseReportFragment() {
      */
     private fun getEmptyData(context: Context): PieData {
         val dataSet = PieDataSet(null, context.getString(R.string.label_chart_no_data))
-        dataSet.addEntry(PieEntry(1f, 0))
+        dataSet.addEntry(PieEntry(DATA_EMPTY, 0))
         dataSet.setColor(NO_DATA_COLOR)
         dataSet.setDrawValues(false)
         return PieData(dataSet)
+    }
+
+    private fun isEmpty(data: PieData): Boolean {
+        return (data.dataSetCount == 0) ||
+                (data.entryCount == 0) ||
+                (data.dataSet.entryCount == 0) ||
+                ((data.yMin <= DATA_EMPTY) && (data.yMax <= DATA_EMPTY))
     }
 
     fun onClickChartTypeButton(view: View) {
@@ -207,6 +216,7 @@ class ReportsOverviewFragment : BaseReportFragment() {
     }
 
     companion object {
+        private const val ANIMATION_DURATION = 1500
         private val assetTypes = listOf<AccountType>(
             AccountType.ASSET,
             AccountType.CASH,

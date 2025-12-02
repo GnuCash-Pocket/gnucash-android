@@ -24,6 +24,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TableLayout
 import androidx.annotation.ColorInt
+import com.github.mikephil.charting.data.ChartData
+import com.github.mikephil.charting.data.DataSet
+import com.github.mikephil.charting.data.Entry
 import org.gnucash.android.R
 import org.gnucash.android.databinding.FragmentTextReportBinding
 import org.gnucash.android.databinding.RowBalanceSheetBinding
@@ -39,12 +42,45 @@ import org.gnucash.android.ui.report.BaseReportFragment
 import org.gnucash.android.ui.report.ReportType
 import org.gnucash.android.ui.util.displayBalance
 
+class AccountBalance(
+    val name: String,
+    val amount: Money
+) : Entry()
+
+class Balance(
+    val balances: List<AccountBalance>,
+    val total: Money,
+    label: String
+) : DataSet<AccountBalance>(balances, label) {
+    override fun copy(): DataSet<AccountBalance> {
+        val copied = Balance(balances, total, label)
+        copy(copied)
+        return copied
+    }
+}
+
+class BalanceSheet() : ChartData<Balance>() {
+    constructor(
+        assets: Balance,
+        liabilities: Balance,
+        equity: Balance
+    ) : this() {
+        addDataSet(assets)
+        addDataSet(liabilities)
+        addDataSet(equity)
+    }
+
+    val assets: Balance get() = dataSets[0]
+    val liabilities: Balance get() = dataSets[1]
+    val equity: Balance get() = dataSets[2]
+}
+
 /**
  * Balance sheet report fragment
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-class BalanceSheetFragment : BaseReportFragment() {
+class BalanceSheetFragment : BaseReportFragment<BalanceSheet>() {
     private var sheet: BalanceSheet? = null
     private var binding: FragmentTextReportBinding? = null
 
@@ -72,18 +108,25 @@ class BalanceSheetFragment : BaseReportFragment() {
         return false
     }
 
-    override fun generateReport(context: Context) {
-        sheet = calculateSheet()
+    override fun generateReport(context: Context): BalanceSheet {
+        return getData(context)
     }
 
-    override fun displayReport() {
-        val sheet = sheet ?: return
-        val binding = binding ?: return
-        loadAccountViews(sheet.assets, binding.tableAssets)
-        loadAccountViews(sheet.liabilities, binding.tableLiabilities)
-        loadAccountViews(sheet.equity, binding.tableEquity)
+    private fun getData(context: Context): BalanceSheet {
+        val assets = calculateBalance(assetAccountTypes, context.getString(R.string.label_assets))
+        val liabilities = calculateBalance(liabilityAccountTypes, context.getString(R.string.label_liabilities))
+        val equity = calculateBalance(equityAccountTypes, context.getString(R.string.label_equity))
+        return BalanceSheet(assets, liabilities, equity)
+    }
 
-        val net = sheet.assets.total + sheet.liabilities.total
+    override fun displayReport(data: BalanceSheet) {
+        val binding = binding ?: return
+        this.sheet = data
+        loadAccountViews(data.assets, binding.tableAssets)
+        loadAccountViews(data.liabilities, binding.tableLiabilities)
+        loadAccountViews(data.equity, binding.tableEquity)
+
+        val net = data.assets.total + data.liabilities.total
         binding.totalLiabilityAndEquity.displayBalance(net, colorBalanceZero)
     }
 
@@ -125,15 +168,7 @@ class BalanceSheetFragment : BaseReportFragment() {
         accountBalance.displayBalance(balance.total, colorBalanceZero)
     }
 
-    private fun calculateSheet(): BalanceSheet {
-        return BalanceSheet(
-            assets = calculateBalance(assetAccountTypes),
-            liabilities = calculateBalance(liabilityAccountTypes),
-            equity = calculateBalance(equityAccountTypes)
-        )
-    }
-
-    private fun calculateBalance(accountTypes: List<AccountType>): Balance {
+    private fun calculateBalance(accountTypes: List<AccountType>, label: String): Balance {
         val accountBalances = mutableListOf<AccountBalance>()
         var total = createZeroInstance(commodity)
 
@@ -157,24 +192,8 @@ class BalanceSheetFragment : BaseReportFragment() {
             total += amount
         }
 
-        return Balance(accountBalances, total)
+        return Balance(accountBalances, total, label)
     }
-
-    data class Balance(
-        val balances: List<AccountBalance>,
-        val total: Money
-    )
-
-    data class AccountBalance(
-        val name: String,
-        val amount: Money
-    )
-
-    data class BalanceSheet(
-        val assets: Balance,
-        val liabilities: Balance,
-        val equity: Balance
-    )
 
     companion object {
         private val assetAccountTypes = listOf<AccountType>(

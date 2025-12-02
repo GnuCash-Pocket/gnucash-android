@@ -99,12 +99,16 @@ class TransactionTypeSwitch @JvmOverloads constructor(
                 textCredit = context.getString(R.string.label_decrease)
             }
 
-            AccountType.LIABILITY, AccountType.TRADING, AccountType.EQUITY -> {
+            AccountType.LIABILITY,
+            AccountType.TRADING,
+            AccountType.EQUITY -> {
                 textDebit = context.getString(R.string.label_decrease)
                 textCredit = context.getString(R.string.label_increase)
             }
 
-            AccountType.STOCK, AccountType.MUTUAL, AccountType.CURRENCY -> {
+            AccountType.STOCK,
+            AccountType.MUTUAL,
+            AccountType.CURRENCY -> {
                 textDebit = context.getString(R.string.label_buy)
                 textCredit = context.getString(R.string.label_sell)
             }

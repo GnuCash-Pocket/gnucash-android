@@ -27,8 +27,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.annotation.ColorInt
+import androidx.annotation.MainThread
 import androidx.annotation.StringRes
 import androidx.annotation.VisibleForTesting
+import androidx.annotation.WorkerThread
 import androidx.appcompat.app.ActionBar
 import androidx.core.view.isVisible
 import androidx.preference.PreferenceManager
@@ -75,7 +77,7 @@ import kotlin.math.max
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-abstract class BaseReportFragment : MenuFragment(),
+abstract class BaseReportFragment<D : ChartData<*>> : MenuFragment(),
     OnChartValueSelectedListener,
     ReportOptionsListener,
     Refreshable {
@@ -159,13 +161,15 @@ abstract class BaseReportFragment : MenuFragment(),
      * <br></br>Put any code to update the UI in [.displayReport]
      *
      */
-    protected abstract fun generateReport(context: Context)
+    @WorkerThread
+    protected abstract fun generateReport(context: Context): D
 
     /**
      * Update the view after the report chart has been generated <br></br>
      * Sub-classes should call to the base method
      */
-    protected abstract fun displayReport()
+    @MainThread
+    protected abstract fun displayReport(data: D)
 
     protected abstract fun inflateView(inflater: LayoutInflater, container: ViewGroup?): View
 
@@ -362,8 +366,7 @@ abstract class BaseReportFragment : MenuFragment(),
         return color
     }
 
-    private inner class GeneratorTask(activity: ReportsActivity) :
-        AsyncTask<Any, Any, Any>() {
+    private inner class GeneratorTask(activity: ReportsActivity) : AsyncTask<Any, Any, D>() {
         private val activityRef: WeakReference<ReportsActivity> =
             WeakReference<ReportsActivity>(activity)
 
@@ -372,17 +375,15 @@ abstract class BaseReportFragment : MenuFragment(),
             activity.showProgressBar(true)
         }
 
-        override fun doInBackground(vararg params: Any?): Any? {
+        override fun doInBackground(vararg params: Any?): D? {
             val activity: BaseDrawerActivity = activityRef.get() ?: return null
-            // FIXME return data to be displayed.
-            generateReport(activity)
-            return Unit
+            return generateReport(activity)
         }
 
-        override fun onPostExecute(result: Any?) {
+        override fun onPostExecute(result: D?) {
+            val data = result ?: return
             val activity: BaseDrawerActivity = activityRef.get() ?: return
-            // FIXME display the result data that was generated.
-            displayReport()
+            displayReport(data)
             activity.showProgressBar(false)
         }
     }
@@ -392,6 +393,7 @@ abstract class BaseReportFragment : MenuFragment(),
          * Color for chart with no data
          */
         const val NO_DATA_COLOR: Int = Color.LTGRAY
+        protected const val DATA_EMPTY = 1e-5f
 
         protected val COLORS: IntArray = intArrayOf(
             parseColor("#17ee4e")!!, parseColor("#cc1f09")!!, parseColor("#3940f7")!!,

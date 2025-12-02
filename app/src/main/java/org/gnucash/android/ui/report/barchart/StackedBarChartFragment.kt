@@ -17,7 +17,6 @@
 package org.gnucash.android.ui.report.barchart
 
 import android.content.Context
-import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.Menu
@@ -26,6 +25,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
+import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
@@ -33,7 +33,7 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.formatter.LargeValueFormatter
 import com.github.mikephil.charting.highlight.Highlight
 import org.gnucash.android.R
-import org.gnucash.android.databinding.FragmentBarChartBinding
+import org.gnucash.android.databinding.FragmentChartBinding
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.model.isNullOrZero
 import org.gnucash.android.ui.report.IntervalReportFragment
@@ -51,41 +51,20 @@ import timber.log.Timber
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-class StackedBarChartFragment : IntervalReportFragment() {
+class StackedBarChartFragment : IntervalReportFragment<BarData>() {
     private var totalPercentageMode = true
 
-    private var binding: FragmentBarChartBinding? = null
+    private var binding: FragmentChartBinding? = null
+    private var chart: BarChart? = null
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): View {
-        val binding = FragmentBarChartBinding.inflate(inflater, container, false)
+        val binding = FragmentChartBinding.inflate(inflater, container, false)
         this.binding = binding
+        this.selectedValueTextView = binding.selectedChartSlice
         return binding.root
     }
 
     override val reportType: ReportType = ReportType.BAR_CHART
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        val context = view.context
-        val binding = binding!!
-
-        @ColorInt val textColorPrimary = getTextColor(context)
-
-        binding.barChart.apply {
-            setOnChartValueSelectedListener(this@StackedBarChartFragment)
-            xAxis.setDrawGridLines(false)
-            xAxis.textColor = textColorPrimary
-            axisRight.isEnabled = false
-            axisLeft.setStartAtZero(false)
-            axisLeft.enableGridDashedLine(4.0f, 4.0f, 0f)
-            axisLeft.valueFormatter = LargeValueFormatter(commodity.symbol)
-            axisLeft.textColor = textColorPrimary
-            legend.apply {
-                textColor = textColorPrimary
-                isWordWrapEnabled = true
-            }
-        }
-    }
 
     /**
      * Returns a data object that represents a user data of the specified account types
@@ -96,7 +75,7 @@ class StackedBarChartFragment : IntervalReportFragment() {
         val entries = mutableListOf<BarEntry>()
         val stackLabels = mutableListOf<String>()
         val colors = mutableListOf<Int>()
-        val accountToColorMap: MutableMap<String, Int> = LinkedHashMap<String, Int>()
+        val accountToColorMap: MutableMap<String, Int> = LinkedHashMap()
         val groupInterval = this.groupInterval
         val accountType = this.accountType
 
@@ -177,7 +156,7 @@ class StackedBarChartFragment : IntervalReportFragment() {
                         color = accountToColorMap[accountUID]!!
                     } else {
                         color = getAccountColor(account, colors.size)
-                        accountToColorMap.put(accountUID, color)
+                        accountToColorMap[accountUID] = color
                     }
                     colors.add(color)
                 }
@@ -206,11 +185,6 @@ class StackedBarChartFragment : IntervalReportFragment() {
         dataSet.stackLabels = stackLabels.toTypedArray<String>()
         dataSet.colors = colors
 
-        if ((dataSet.entryCount == 0) || (getYValueSum<BarEntry>(dataSet) == 0f)) {
-            isChartDataPresent = false
-            return getEmptyData(context)
-        }
-        isChartDataPresent = true
         return BarData(dataSet)
     }
 
@@ -231,31 +205,77 @@ class StackedBarChartFragment : IntervalReportFragment() {
         return BarData(dataSet)
     }
 
-    override fun generateReport(context: Context) {
-        val binding = binding ?: return
-        binding.barChart.data = getData(context)
-        binding.barChart.axisLeft.setDrawLabels(isChartDataPresent)
-        binding.barChart.xAxis.setDrawLabels(isChartDataPresent)
-        binding.barChart.setTouchEnabled(isChartDataPresent)
-    }
-
-    override fun displayReport() {
-        val binding = binding ?: return
-        binding.barChart.apply {
-            notifyDataSetChanged()
-            highlightValues(null)
-            if (isChartDataPresent) {
-                animateY(ANIMATION_DURATION)
-            } else {
-                clearAnimation()
-            }
-            invalidate()
+    private fun isEmpty(data: BarData): Boolean {
+        if ((data.dataSetCount == 0) ||
+            (data.entryCount == 0) ||
+            ((data.yMin <= DATA_EMPTY) && (data.yMax <= DATA_EMPTY))
+        ) {
+            return true
         }
 
-        if (isChartDataPresent) {
-            selectedValueTextView?.text = null
-        } else {
-            selectedValueTextView?.setText(R.string.label_chart_no_data)
+        val dataSet = data.dataSets[0]
+        return dataSet.entryCount == 0 ||
+                dataSet.stackLabels.isEmpty() ||
+                (getYValueSum<BarEntry>(dataSet) == 0f)
+    }
+
+    override fun generateReport(context: Context): BarData {
+        isChartDataPresent = false
+        val data = getData(context)
+        if (isEmpty(data)) {
+            return getEmptyData(context)
+        }
+        isChartDataPresent = true
+        return data
+    }
+
+    override fun displayReport(data: BarData) {
+        val binding = binding ?: return
+        val context = binding.root.context
+        val isChartDataPresent = isChartDataPresent
+        val selectedValueTextView = binding.selectedChartSlice
+        @ColorInt val textColorPrimary = getTextColor(context)
+
+        val chart = BarChart(context).apply {
+            id = R.id.chart
+            setOnChartValueSelectedListener(this@StackedBarChartFragment)
+            axisLeft.setDrawLabels(isChartDataPresent)
+            axisLeft.setStartAtZero(false)
+            axisLeft.enableGridDashedLine(4.0f, 4.0f, 0f)
+            axisLeft.valueFormatter = LargeValueFormatter(commodity.symbol)
+            axisLeft.textColor = textColorPrimary
+            axisRight.isEnabled = false
+            xAxis.setDrawLabels(isChartDataPresent)
+            xAxis.setDrawGridLines(false)
+            xAxis.textColor = textColorPrimary
+            legend.apply {
+                textColor = textColorPrimary
+                isWordWrapEnabled = true
+            }
+            setTouchEnabled(isChartDataPresent)
+
+            this.data = data
+
+            if (isChartDataPresent) {
+                selectedValueTextView.text = null
+                animateY(ANIMATION_DURATION)
+            } else {
+                selectedValueTextView.setText(R.string.label_chart_no_data)
+                clearAnimation()
+            }
+            highlightValues(null)
+        }
+        this.chart = chart
+
+        binding.chartContainer.apply {
+            removeAllViews()
+            addView(
+                chart,
+                ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+            )
         }
     }
 
@@ -273,18 +293,17 @@ class StackedBarChartFragment : IntervalReportFragment() {
         if (item.isCheckable) {
             item.isChecked = !item.isChecked
         }
-        val binding = binding ?: return false
-        val context = binding.barChart.context
         when (item.itemId) {
             R.id.menu_toggle_legend -> {
-                val legend = binding.barChart.legend
+                val chart = chart ?: return false
+                val legend = chart.legend
                 if (!legend.isLegendCustom) {
                     snackLong(R.string.toast_legend_too_long)
                     item.isChecked = false
                 } else {
                     item.isChecked = !legend.isEnabled
                     legend.isEnabled = !legend.isEnabled
-                    binding.barChart.invalidate()
+                    chart.invalidate()
                 }
                 return true
             }
@@ -304,7 +323,7 @@ class StackedBarChartFragment : IntervalReportFragment() {
     }
 
     override fun onValueSelected(e: Entry?, h: Highlight) {
-        val binding = binding ?: return
+        val chart = chart ?: return
         if (e == null) return
         val entry = e as BarEntry
         var index = h.stackIndex
@@ -312,13 +331,13 @@ class StackedBarChartFragment : IntervalReportFragment() {
             index = 0
         }
         val value = entry.yVals[index]
-        val labels = entry.data as List<String>
+        val labels = entry.data as? List<String?> ?: return
         if (labels.isEmpty()) return
-        val label = labels[index]
+        val label = labels[index] ?: return
 
         val total: Float
         if (totalPercentageMode) {
-            val data = binding.barChart.data
+            val data = chart.data
             val dataSetIndex = h.dataSetIndex
             val dataSet = data.getDataSetByIndex(dataSetIndex)
             total = getYValueSum<BarEntry>(dataSet)

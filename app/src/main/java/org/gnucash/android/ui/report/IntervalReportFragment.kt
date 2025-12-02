@@ -1,10 +1,11 @@
 package org.gnucash.android.ui.report
 
+import com.github.mikephil.charting.data.ChartData
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.model.AccountType
 import org.joda.time.LocalDateTime
 
-abstract class IntervalReportFragment : BaseReportFragment() {
+abstract class IntervalReportFragment<D : ChartData<*>> : BaseReportFragment<D>() {
     protected val earliestTimestamps = mutableMapOf<AccountType, Long>()
 
     protected val latestTimestamps = mutableMapOf<AccountType, Long>()

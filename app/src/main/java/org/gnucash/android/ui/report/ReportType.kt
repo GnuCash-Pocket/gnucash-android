@@ -17,7 +17,6 @@ package org.gnucash.android.ui.report
 
 import android.content.Context
 import androidx.annotation.ColorRes
-import androidx.annotation.LayoutRes
 import androidx.annotation.StringRes
 import org.gnucash.android.R
 import org.gnucash.android.ui.report.barchart.StackedBarChartFragment
@@ -34,41 +33,35 @@ import org.gnucash.android.ui.report.sheet.BalanceSheetFragment
 enum class ReportType(
     @StringRes val titleId: Int,
     @ColorRes val colorId: Int,
-    @LayoutRes val layoutId: Int,
-    val fragmentClass: Class<out BaseReportFragment>
+    val fragmentClass: Class<out BaseReportFragment<*>>
 ) {
     PIE_CHART(
         R.string.title_pie_chart,
         R.color.report_orange,
-        R.layout.fragment_pie_chart,
         PieChartFragment::class.java
     ),
     BAR_CHART(
         R.string.title_bar_chart,
         R.color.report_red,
-        R.layout.fragment_bar_chart,
         StackedBarChartFragment::class.java
     ),
     LINE_CHART(
         R.string.title_line_chart,
         R.color.report_blue,
-        R.layout.fragment_line_chart,
         CashFlowLineChartFragment::class.java
     ),
     SHEET(
         R.string.title_balance_sheet_report,
         R.color.report_purple,
-        R.layout.fragment_text_report,
         BalanceSheetFragment::class.java
     ),
     NONE(
         R.string.title_reports,
         R.color.report_green,
-        R.layout.fragment_report_summary,
         ReportsOverviewFragment::class.java
     );
 
-    val fragment: BaseReportFragment
+    val fragment: BaseReportFragment<*>
         get() = fragmentClass.newInstance()
 
     companion object {

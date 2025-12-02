@@ -198,7 +198,7 @@ class ReportsActivity : BaseDrawerActivity(),
     fun onFragmentResumed(fragment: Fragment) {
         val binding = this.binding!!
         var reportType = ReportType.NONE
-        if (fragment is BaseReportFragment) {
+        if (fragment is BaseReportFragment<*>) {
             reportType = fragment.reportType
             binding.reportAccountTypeSpinner.isVisible = fragment.requiresAccountTypeOptions()
         }

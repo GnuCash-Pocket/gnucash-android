@@ -17,13 +17,13 @@
 package org.gnucash.android.ui.report.linechart
 
 import android.content.Context
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.ColorInt
+import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.LimitLine
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
@@ -32,7 +32,7 @@ import com.github.mikephil.charting.formatter.LargeValueFormatter
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import org.gnucash.android.R
-import org.gnucash.android.databinding.FragmentLineChartBinding
+import org.gnucash.android.databinding.FragmentChartBinding
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.model.AccountType
 import org.gnucash.android.model.Money.Companion.createZeroInstance
@@ -51,32 +51,15 @@ import timber.log.Timber
  * @author Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-class CashFlowLineChartFragment : IntervalReportFragment() {
-    private var binding: FragmentLineChartBinding? = null
+class CashFlowLineChartFragment : IntervalReportFragment<LineData>() {
+    private var binding: FragmentChartBinding? = null
+    private var chart: LineChart? = null
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): View {
-        val binding = FragmentLineChartBinding.inflate(inflater, container, false)
+        val binding = FragmentChartBinding.inflate(inflater, container, false)
         this.binding = binding
+        this.selectedValueTextView = binding.selectedChartSlice
         return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        val context = view.context
-        val binding = binding!!
-
-        @ColorInt val textColorPrimary = getTextColor(context)
-
-        binding.lineChart.apply {
-            setOnChartValueSelectedListener(this@CashFlowLineChartFragment)
-            xAxis.setDrawGridLines(false)
-            xAxis.textColor = textColorPrimary
-            axisRight.isEnabled = false
-            axisLeft.enableGridDashedLine(4.0f, 4.0f, 0f)
-            axisLeft.valueFormatter = LargeValueFormatter(commodity.symbol)
-            axisLeft.textColor = textColorPrimary
-            legend.textColor = textColorPrimary
-        }
     }
 
     override val reportType: ReportType = ReportType.LINE_CHART
@@ -96,20 +79,17 @@ class CashFlowLineChartFragment : IntervalReportFragment() {
 
         val dataSets = mutableListOf<ILineDataSet>()
         for (accountType in accountTypes) {
+            val index = dataSets.size
             val entries = getEntryList(accountType, groupInterval, startDate, endDate)
             val dataSet = LineDataSet(entries, getLabel(context, accountType))
             dataSet.setDrawFilled(true)
             dataSet.lineWidth = 2f
-            dataSet.color = LINE_COLORS[dataSets.size]
-            dataSet.fillColor = FILL_COLORS[dataSets.size]
+            dataSet.color = LINE_COLORS[index]
+            dataSet.fillColor = FILL_COLORS[index]
             dataSets.add(dataSet)
         }
 
         val lineData = LineData(dataSets)
-        if (getYValueSum<Entry, ILineDataSet>(lineData) == 0f) {
-            isChartDataPresent = false
-            return getEmptyData(context)
-        }
         lineData.setValueTextColor(getTextColor(context))
         return lineData
     }
@@ -133,6 +113,12 @@ class CashFlowLineChartFragment : IntervalReportFragment() {
         dataSet.fillColor = NO_DATA_COLOR
 
         return LineData(dataSet)
+    }
+
+    private fun isEmpty(data: LineData): Boolean {
+        return (data.dataSetCount == 0) ||
+                (data.entryCount == 0) ||
+                ((data.yMin <= DATA_EMPTY) && (data.yMax <= DATA_EMPTY))
     }
 
     /**
@@ -242,29 +228,60 @@ class CashFlowLineChartFragment : IntervalReportFragment() {
         return false
     }
 
-    override fun generateReport(context: Context) {
-        val binding = binding ?: return
-        binding.lineChart.data = getData(context, accountTypes)
+    override fun generateReport(context: Context): LineData {
+        isChartDataPresent = false
+        val data = getData(context, accountTypes)
+        if (isEmpty(data)) {
+            return getEmptyData(context)
+        }
         isChartDataPresent = true
+        return data
     }
 
-    override fun displayReport() {
+    override fun displayReport(data: LineData) {
         val binding = binding ?: return
-        binding.lineChart.apply {
+        val context = binding.root.context
+        val isChartDataPresent = isChartDataPresent
+        val selectedValueTextView = binding.selectedChartSlice
+        @ColorInt val textColorPrimary = getTextColor(context)
+
+        val chart = LineChart(context).apply {
+            id = R.id.chart
+            setOnChartValueSelectedListener(this@CashFlowLineChartFragment)
+            xAxis.setDrawGridLines(false)
+            xAxis.textColor = textColorPrimary
+            axisRight.isEnabled = false
+            axisLeft.enableGridDashedLine(4.0f, 4.0f, 0f)
+            axisLeft.valueFormatter = LargeValueFormatter(commodity.symbol)
+            axisLeft.textColor = textColorPrimary
+            legend.textColor = textColorPrimary
+
+            this.data = data
+
             if (isChartDataPresent) {
+                selectedValueTextView.text = null
                 animateX(ANIMATION_DURATION)
             } else {
+                selectedValueTextView.setText(R.string.label_chart_no_data)
                 axisLeft.setAxisMaxValue(10f)
                 axisLeft.setDrawLabels(false)
                 xAxis.setDrawLabels(false)
                 setTouchEnabled(false)
+                clearAnimation()
             }
-            invalidate()
+            highlightValues(null)
         }
-        if (isChartDataPresent) {
-            selectedValueTextView?.text = null
-        } else {
-            selectedValueTextView?.setText(R.string.label_chart_no_data)
+        this.chart = chart
+
+        binding.chartContainer.apply {
+            removeAllViews()
+            addView(
+                chart,
+                ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+            )
         }
     }
 
@@ -299,30 +316,29 @@ class CashFlowLineChartFragment : IntervalReportFragment() {
     }
 
     override fun onValueSelected(e: Entry?, h: Highlight) {
-        val binding = binding ?: return
+        val chart = chart ?: return
         if (e == null) return
         val value = e.y
         val dataSetIndex = h.dataSetIndex
-        val data = binding.lineChart.data
-        val dataSet = data.getDataSetByIndex(dataSetIndex)
-        if (dataSet == null) return
-        val label = dataSet.label
+        val data = chart.data
+        val dataSet = data.getDataSetByIndex(dataSetIndex) ?: return
+        val label = dataSet.label ?: return
         val total = getYValueSum<Entry>(dataSet)
         val percent = if (total != 0f) ((value * 100) / total) else 0f
         selectedValueTextView?.text = formatSelectedValue(label, value, percent)
     }
 
     private fun showLegend(isVisible: Boolean) {
-        val binding = binding ?: return
-        binding.lineChart.legend.isEnabled = isVisible
-        binding.lineChart.invalidate()
+        val lineChart = chart ?: return
+        lineChart.legend.isEnabled = isVisible
+        lineChart.invalidate()
     }
 
     private fun showAverageLines(isVisible: Boolean) {
-        val binding = binding ?: return
-        binding.lineChart.axisLeft.removeAllLimitLines()
+        val lineChart = chart ?: return
+        lineChart.axisLeft.removeAllLimitLines()
         if (isVisible) {
-            for (dataSet in binding.lineChart.data.dataSets) {
+            for (dataSet in lineChart.data.dataSets) {
                 val entryCount = dataSet.entryCount
                 var limit = 0f
                 if (entryCount > 0) {
@@ -331,10 +347,10 @@ class CashFlowLineChartFragment : IntervalReportFragment() {
                 val line = LimitLine(limit, dataSet.label)
                 line.enableDashedLine(10f, 5f, 0f)
                 line.lineColor = dataSet.color
-                binding.lineChart.axisLeft.addLimitLine(line)
+                lineChart.axisLeft.addLimitLine(line)
             }
         }
-        binding.lineChart.invalidate()
+        lineChart.invalidate()
     }
 
     companion object {

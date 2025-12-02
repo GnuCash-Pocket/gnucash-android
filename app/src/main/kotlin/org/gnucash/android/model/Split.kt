@@ -44,7 +44,7 @@ class Split : BaseModel, Parcelable {
     /**
      * The [TransactionType] of this transaction, credit or debit
      */
-    var type: TransactionType = TransactionType.CREDIT
+    var type: TransactionType = TransactionType.DEBIT
 
     /**
      * Memo associated with this split
