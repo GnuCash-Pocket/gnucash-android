@@ -541,6 +541,12 @@
     <string name="commodity_required">Commodity_required</string>
     <string name="name_required">A name is required</string>
     <string name="title_edit_budget_amounts">Edit Budget Amounts</string>
+    <string name="book">Book</string>
+    <string name="label_no_budgets">No budgets to display</string>
+    <string name="title_add_budget">New budget</string>
+    <string name="add_budget_amounts">Add Budget Amounts</string>
+    <string name="label_spent">Spent</string>
+    <string name="label_remaining">Remaining</string>
 
     <string-array name="colors_names_gtk">
         <item>"Very Light Blue"</item>

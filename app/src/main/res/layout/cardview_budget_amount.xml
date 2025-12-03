@@ -51,7 +51,6 @@
             android:textColor="?android:textColorPrimary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="RtlHardcoded"
             tools:text="$ 3000" />
 
         <TextView
@@ -61,7 +60,7 @@
             android:layout_marginTop="8dp"
             android:gravity="start"
             android:singleLine="true"
-            android:text="Spent"
+            android:text="@string/label_spent"
             android:textAppearance="?android:textAppearanceSmall"
             app:layout_constraintEnd_toStartOf="@id/label_left"
             app:layout_constraintStart_toStartOf="parent"
@@ -74,7 +73,7 @@
             android:layout_weight="1"
             android:gravity="end"
             android:singleLine="true"
-            android:text="Remaining"
+            android:text="@string/label_remaining"
             android:textAppearance="?android:textAppearanceSmall"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/label_spent"

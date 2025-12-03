@@ -101,7 +101,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="true"
-                    android:text=","
+                    android:text="@string/comma"
                     android:textStyle="bold" />
 
                 <RadioButton
@@ -109,7 +109,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
-                    android:text=";"
+                    android:text="@string/semicolon"
                     android:textStyle="bold" />
 
                 <RadioButton
@@ -117,7 +117,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
-                    android:text=":"
+                    android:text="@string/colon"
                     android:textStyle="bold" />
             </RadioGroup>
         </LinearLayout>

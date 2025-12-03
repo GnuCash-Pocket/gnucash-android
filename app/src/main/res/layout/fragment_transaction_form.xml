@@ -67,7 +67,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
                     android:minWidth="32dp"
-                    android:text="USD"
+                    android:text="$"
                     android:textAppearance="?android:textAppearanceMedium"
                     android:textColor="@color/debit_red" />
 

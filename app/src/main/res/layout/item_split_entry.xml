@@ -30,7 +30,7 @@ limitations under the License.
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:text="USD"
+            android:text="$"
             android:textAppearance="?android:textAppearanceMedium"
             android:textColor="@color/debit_red" />
 
