@@ -16,6 +16,7 @@
  */
 package org.gnucash.android.db.adapter
 
+import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteQueryBuilder
 import android.database.sqlite.SQLiteStatement
@@ -39,6 +40,7 @@ import org.gnucash.android.model.TransactionType
 import org.gnucash.android.util.TimestampHelper.getTimestampFromUtcString
 import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
 import org.gnucash.android.util.TimestampHelper.timestampFromNow
+import org.gnucash.android.util.set
 import timber.log.Timber
 import java.io.IOException
 
@@ -90,25 +92,14 @@ class SplitsDbAdapter(
         super.addRecord(split, updateMethod)
 
         if (updateMethod != UpdateMethod.Insert) {
-            val transactionUID = split.transactionUID ?: return
-            val transactionId = getTransactionID(transactionUID)
             //when a split is updated, we want mark the transaction as not exported
-            updateRecord(
-                TransactionEntry.TABLE_NAME,
-                transactionId,
-                TransactionEntry.COLUMN_EXPORTED,
-                "0"
-            )
-
             //modifying a split means modifying the accompanying transaction as well
-            updateRecord(
-                TransactionEntry.TABLE_NAME,
-                transactionId,
-                TransactionEntry.COLUMN_MODIFIED_AT,
-                getUtcStringFromTimestamp(
-                    timestampFromNow
-                )
-            )
+            val transactionUID = split.transactionUID!!
+            val content = ContentValues()
+            content[TransactionEntry.COLUMN_EXPORTED] = false
+            content[TransactionEntry.COLUMN_MODIFIED_AT] =
+                getUtcStringFromTimestamp(timestampFromNow)
+            updateRecord(TransactionEntry.TABLE_NAME, transactionUID, content)
         }
     }
 

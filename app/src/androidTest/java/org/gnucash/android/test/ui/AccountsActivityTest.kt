@@ -244,9 +244,9 @@ class AccountsActivityTest : GnuAndroidTest() {
             )
         ).perform(swipeRight())
         clickViewId(R.id.fab_add)
-        sleep(1000)
+
         onView(withId(R.id.checkbox_parent_account))
-            .check(matches(allOf(isChecked())))
+            .check(matches(isChecked()))
         onView(withId(R.id.input_account_name))
             .perform(typeText("Trading account"))
         closeSoftKeyboard()

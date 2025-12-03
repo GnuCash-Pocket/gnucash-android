@@ -393,14 +393,15 @@ class TransactionsActivityTest : GnuAndroidTest() {
         closeSoftKeyboard()
         clickViewId(R.id.btn_split_editor)
 
-        onView(withId(R.id.split_list_layout)).check(
-            matches(
-                allOf(
-                    isDisplayed(),
-                    hasDescendant(withId(R.id.input_split_amount))
+        onView(withId(R.id.split_list_layout))
+            .check(
+                matches(
+                    allOf(
+                        isDisplayed(),
+                        hasDescendant(withId(R.id.input_split_amount))
+                    )
                 )
             )
-        )
 
         onView(
             allOf(
@@ -461,14 +462,15 @@ class TransactionsActivityTest : GnuAndroidTest() {
         setDefaultTransactionType(TransactionType.CREDIT)
 
         clickViewId(R.id.fab_add)
-        onView(withId(R.id.input_transaction_type)).check(
-            matches(
-                allOf(
-                    isChecked(),
-                    withText(R.string.label_spend)
+        onView(withId(R.id.input_transaction_type))
+            .check(
+                matches(
+                    allOf(
+                        isChecked(),
+                        withText(R.string.label_spend)
+                    )
                 )
             )
-        )
     }
 
     private fun setDefaultTransactionType(type: TransactionType) {

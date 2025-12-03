@@ -129,7 +129,10 @@ class TransactionsActivity : BaseDrawerActivity(),
             Timber.i("Opening transactions for account: %s", accountUID)
             val args = Bundle()
             args.putString(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
-            args.putString(UxArgument.SELECTED_TRANSACTION_UID, intent.getStringExtra(UxArgument.SELECTED_TRANSACTION_UID))
+            args.putString(
+                UxArgument.SELECTED_TRANSACTION_UID,
+                intent.getStringExtra(UxArgument.SELECTED_TRANSACTION_UID)
+            )
             val fragment = TransactionsListFragment()
             fragment.arguments = args
             return fragment
@@ -178,7 +181,8 @@ class TransactionsActivity : BaseDrawerActivity(),
     }
 
     override fun inflateView() {
-        this.binding = ActivityTransactionsBinding.inflate(layoutInflater)
+        val binding = ActivityTransactionsBinding.inflate(layoutInflater)
+        this.binding = binding
         setContentView(binding.root)
         drawerLayout = binding.drawerLayout
         navigationView = binding.navView

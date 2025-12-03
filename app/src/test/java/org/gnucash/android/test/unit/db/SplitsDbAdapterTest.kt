@@ -17,7 +17,7 @@ package org.gnucash.android.test.unit.db
 
 import android.database.sqlite.SQLiteException
 import org.assertj.core.api.Assertions.assertThat
-import org.gnucash.android.db.DatabaseSchema
+import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.SplitsDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
@@ -111,8 +111,8 @@ class SplitsDbAdapterTest : GnuCashTest() {
 
         val isExported = transactionsDbAdapter.getAttribute(
             transaction.uid,
-            DatabaseSchema.TransactionEntry.COLUMN_EXPORTED
-        )
-        assertThat(isExported.toBoolean()).isFalse()
+            TransactionEntry.COLUMN_EXPORTED
+        ).toBoolean()
+        assertThat(isExported).isFalse()
     }
 }
