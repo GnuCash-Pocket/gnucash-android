@@ -18,7 +18,7 @@ class ScheduledExportsListFragment : ScheduledActionsListFragment() {
         super.onViewCreated(view, savedInstanceState)
         val binding = binding!!
         binding.empty.setText(R.string.label_no_scheduled_exports_to_display)
-        binding.fabCreateTransaction.setOnClickListener {
+        binding.fabAdd.setOnClickListener {
             addExport(it.context)
         }
     }
@@ -26,6 +26,7 @@ class ScheduledExportsListFragment : ScheduledActionsListFragment() {
     private fun addExport(context: Context) {
         val intent = Intent(context, FormActivity::class.java)
             .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.EXPORT.name)
+        //TODO add argument do enable recurrence
         startActivity(intent)
     }
 

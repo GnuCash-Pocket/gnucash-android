@@ -129,7 +129,7 @@ class AccountsListFragment : MenuFragment(),
         binding.list.setHasFixedSize(true)
         binding.list.emptyView = binding.empty
         binding.list.adapter = accountListAdapter
-        binding.list.tag = "accounts"
+        binding.list.tag = TAG
 
         when (displayMode) {
             DisplayMode.TOP_LEVEL -> binding.empty.setText(R.string.label_no_accounts)
@@ -142,6 +142,12 @@ class AccountsListFragment : MenuFragment(),
             binding.list.layoutManager = GridLayoutManager(context, 2)
         } else {
             binding.list.layoutManager = LinearLayoutManager(context)
+        }
+
+        binding.fabAdd.setOnClickListener {
+            val context = it.context
+            val parentAccountUID = arguments?.getString(UxArgument.PARENT_ACCOUNT_UID)
+            createNewAccount(context, parentAccountUID)
         }
     }
 
@@ -310,7 +316,6 @@ class AccountsListFragment : MenuFragment(),
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor?> {
         Timber.d("Creating the accounts loader for $displayMode")
-        val arguments = getArguments()
         val parentAccountUID = arguments?.getString(UxArgument.PARENT_ACCOUNT_UID)
 
         val context = requireContext()
@@ -415,6 +420,14 @@ class AccountsListFragment : MenuFragment(),
             isShowHiddenAccounts = isVisible
             refresh()
         }
+    }
+
+    private fun createNewAccount(context: Context, parentAccountUID: String?) {
+        val intent = Intent(context, FormActivity::class.java)
+            .setAction(Intent.ACTION_INSERT_OR_EDIT)
+            .putExtra(UxArgument.PARENT_ACCOUNT_UID, parentAccountUID)
+            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name)
+        startActivity(intent)
     }
 
     internal inner class AccountRecyclerAdapter(cursor: Cursor?) :
@@ -567,12 +580,15 @@ class AccountsListFragment : MenuFragment(),
             accountsDbAdapter: AccountsDbAdapter
         ): Int {
             val parentUID = account.parentUID ?: return Account.DEFAULT_COLOR
-            val parentAccount = accountsDbAdapter.getRecordOrNull(parentUID) ?: return Account.DEFAULT_COLOR
+            val parentAccount =
+                accountsDbAdapter.getRecordOrNull(parentUID) ?: return Account.DEFAULT_COLOR
             return getColor(parentAccount, accountsDbAdapter)
         }
     }
 
     companion object {
+        const val TAG = "accounts"
+
         /**
          * Tag to save [AccountsListFragment.displayMode] to fragment state
          */

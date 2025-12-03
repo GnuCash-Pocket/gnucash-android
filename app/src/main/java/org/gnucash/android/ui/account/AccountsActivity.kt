@@ -27,7 +27,6 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.annotation.DrawableRes
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.edit
 import androidx.fragment.app.Fragment
@@ -43,7 +42,6 @@ import org.gnucash.android.app.GnuCashApplication.Companion.shouldBackupForImpor
 import org.gnucash.android.databinding.ActivityAccountsBinding
 import org.gnucash.android.db.DatabaseSchema
 import org.gnucash.android.db.adapter.AccountsDbAdapter
-import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.importer.ImportAsyncTask
 import org.gnucash.android.importer.ImportBookCallback
 import org.gnucash.android.service.ScheduledActionService.Companion.schedulePeriodic
@@ -161,13 +159,6 @@ class AccountsActivity : BaseDrawerActivity(),
         }.attach()
 
         setCurrentTab()
-
-        binding.fabCreateAccount.setOnClickListener {
-            val intent = Intent(this@AccountsActivity, FormActivity::class.java)
-                .setAction(Intent.ACTION_INSERT_OR_EDIT)
-                .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name)
-            startActivity(intent)
-        }
     }
 
     override fun onStart() {

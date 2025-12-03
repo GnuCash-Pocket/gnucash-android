@@ -55,8 +55,10 @@ import org.gnucash.android.model.Transaction
 import org.gnucash.android.receivers.AccountCreator
 import org.gnucash.android.test.ui.util.DisableAnimationsRule
 import org.gnucash.android.test.ui.util.performClick
+import org.gnucash.android.test.ui.util.withTagValue
 import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.ui.adapter.SpinnerItem
+import org.gnucash.android.ui.transaction.TransactionsListFragment
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.allOf
@@ -154,7 +156,7 @@ class AccountsActivityTest : GnuAndroidTest() {
     @Test
     fun testCreateAccount() {
         assertThat(accountsDbAdapter.allRecords).hasSize(1)
-        clickViewId(R.id.fab_create_account)
+        clickViewId(R.id.fab_add)
         sleep(1000)
 
         val NEW_ACCOUNT_NAME = "A New Account"
@@ -235,9 +237,13 @@ class AccountsActivityTest : GnuAndroidTest() {
         val labelTrading = SpinnerItem(AccountType.TRADING, textTrading)
 
         clickViewText(SIMPLE_ACCOUNT_NAME)
-        onView(withId(R.id.fragment_transaction_list))
-            .perform(swipeRight())
-        clickViewId(R.id.fab_create_transaction)
+        onView(
+            allOf(
+                withId(android.R.id.list),
+                withTagValue(TransactionsListFragment.TAG)
+            )
+        ).perform(swipeRight())
+        clickViewId(R.id.fab_add)
         sleep(1000)
         onView(withId(R.id.checkbox_parent_account))
             .check(matches(allOf(isChecked())))

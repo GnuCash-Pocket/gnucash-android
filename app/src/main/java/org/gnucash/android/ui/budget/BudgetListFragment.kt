@@ -30,7 +30,6 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.widget.PopupMenu
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.Loader
@@ -72,7 +71,7 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = FragmentBudgetListBinding.inflate(inflater, container, false)
         this.binding = binding
         return binding.root
@@ -94,7 +93,11 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
         binding.list.emptyView = binding.empty
         binding.list.adapter = budgetRecyclerAdapter
 
-        loaderManager.initLoader<Cursor>(0, null, this)
+        binding.fabAdd.setOnClickListener {
+            createBudget(it.context)
+        }
+
+        loaderManager.initLoader(0, null, this)
     }
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor?> {
@@ -115,7 +118,6 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
     override fun onResume() {
         super.onResume()
         refresh()
-        requireActivity().findViewById<View?>(R.id.fab_create_budget)?.isVisible = true
         val actionBar: ActionBar? = this.actionBar
         actionBar?.setTitle(R.string.title_budgets)
     }
@@ -176,6 +178,18 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
         if (resultCode == Activity.RESULT_OK) {
             refresh()
         }
+    }
+
+    /**
+     * Callback when create budget floating action button is clicked
+     *
+     * @param view View which was clicked
+     */
+    private fun createBudget(context: Context) {
+        val intent = Intent(context, FormActivity::class.java)
+            .setAction(Intent.ACTION_INSERT_OR_EDIT)
+            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.BUDGET.name)
+        startActivity(intent)
     }
 
     internal inner class BudgetRecyclerAdapter(cursor: Cursor?) :

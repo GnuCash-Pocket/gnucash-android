@@ -50,18 +50,6 @@
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_create_transaction"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_gravity="end|bottom"
-            android:layout_margin="20dp"
-            android:contentDescription="@string/title_add_transaction"
-            android:src="@drawable/ic_add"
-            app:elevation="6dp"
-            app:layout_behavior="org.gnucash.android.ui.util.ScrollingFABBehavior" />
-
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     <com.google.android.material.navigation.NavigationView

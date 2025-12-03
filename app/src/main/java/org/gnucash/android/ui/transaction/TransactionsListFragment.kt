@@ -74,7 +74,7 @@ class TransactionsListFragment : MenuFragment(),
     Refreshable,
     LoaderManager.LoaderCallbacks<Cursor>,
     FragmentResultListener {
-    private var accountsDbAdapter: AccountsDbAdapter =AccountsDbAdapter.instance
+    private var accountsDbAdapter: AccountsDbAdapter = AccountsDbAdapter.instance
     private var transactionsDbAdapter: TransactionsDbAdapter = TransactionsDbAdapter.instance
     private var accountUID: String? = null
     private var scrollTransactionUID: String? = null
@@ -119,7 +119,7 @@ class TransactionsListFragment : MenuFragment(),
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = FragmentTransactionsListBinding.inflate(inflater, container, false)
         this.binding = binding
         return binding.root
@@ -143,8 +143,17 @@ class TransactionsListFragment : MenuFragment(),
             binding.list.setLayoutManager(LinearLayoutManager(context))
         }
         binding.list.emptyView = binding.empty
-        binding.list.tag = "transactions"
+        binding.list.tag = TAG
         binding.list.adapter = transactionsAdapter
+
+        val accountUID = accountUID
+        if (accountUID.isNullOrEmpty()) {
+            binding.fabAdd.isEnabled = false
+        } else {
+            binding.fabAdd.setOnClickListener {
+                createNewTransaction(context, accountUID)
+            }
+        }
     }
 
     /**
@@ -469,5 +478,17 @@ class TransactionsListFragment : MenuFragment(),
         }
         cursor.moveToFirst()
         binding.list.scrollToPosition(position)
+    }
+
+    private fun createNewTransaction(context: Context, accountUID: String) {
+        val intent = Intent(context, FormActivity::class.java)
+            .setAction(Intent.ACTION_INSERT_OR_EDIT)
+            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
+        startActivity(intent)
+    }
+
+    companion object {
+        const val TAG = "transactions"
     }
 }

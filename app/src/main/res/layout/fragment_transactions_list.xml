@@ -15,27 +15,30 @@
 -->
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/fragment_transaction_list"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
     <org.gnucash.android.ui.util.widget.EmptyRecyclerView
         android:id="@android:id/list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:paddingBottom="@dimen/card_min_height"
-        android:scrollbars="vertical" />
+        android:layout_height="match_parent" />
 
     <TextView
         android:id="@android:id/empty"
+        style="@style/Text.Empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:gravity="center"
         android:text="@string/label_no_transactions"
-        android:textColor="@color/theme_accent"
-        android:textSize="20sp"
-        android:visibility="gone" />
+        tools:visibility="visible" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="20dp"
+        android:contentDescription="@string/title_add_transaction"
+        android:src="@drawable/ic_add" />
+
 </FrameLayout>

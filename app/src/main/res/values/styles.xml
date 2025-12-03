@@ -187,4 +187,11 @@
     <style name="TextAppearance.RecurrencePickerStyle">
         <item name="android:textSize">15sp</item>
     </style>
+
+    <style name="Text.Empty" parent="Widget.AppCompat.TextView">
+        <item name="android:gravity">center</item>
+        <item name="android:textAppearance">?android:textAppearanceLarge</item>
+        <item name="android:textColor">@color/theme_accent</item>
+        <item name="android:visibility">gone</item>
+    </style>
 </resources>

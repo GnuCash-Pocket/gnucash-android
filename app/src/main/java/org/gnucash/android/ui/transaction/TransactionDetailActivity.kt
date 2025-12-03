@@ -172,7 +172,7 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
             binding.rowTrnRecurrence.isVisible = true
         }
 
-        binding.fabEditTransaction.setOnClickListener { editTransaction() }
+        binding.fabEdit.setOnClickListener { editTransaction() }
     }
 
     override fun refresh() {

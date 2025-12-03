@@ -53,22 +53,6 @@ class BudgetsActivity : BaseDrawerActivity() {
                 .replace(R.id.fragment_container, BudgetListFragment())
                 .commit()
         }
-
-        binding.fabCreateBudget.setOnClickListener { v ->
-            onCreateBudgetClick(v)
-        }
-    }
-
-    /**
-     * Callback when create budget floating action button is clicked
-     *
-     * @param view View which was clicked
-     */
-    private fun onCreateBudgetClick(view: View) {
-        val intent = Intent(view.context, FormActivity::class.java)
-            .setAction(Intent.ACTION_INSERT_OR_EDIT)
-            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.BUDGET.name)
-        startActivity(intent)
     }
 
     companion object {

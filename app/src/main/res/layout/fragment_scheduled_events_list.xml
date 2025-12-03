@@ -15,39 +15,30 @@
 -->
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
     <org.gnucash.android.ui.util.widget.EmptyRecyclerView
         android:id="@android:id/list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:listSelector="@drawable/calendar_bg_selector" />
+        android:layout_height="match_parent" />
 
     <TextView
         android:id="@android:id/empty"
-        style="@style/ListItem"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:gravity="center"
+        style="@style/Text.Empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:text="@string/label_no_recurring_transactions"
-        android:textAppearance="?android:textAppearanceLarge"
-        android:textColor="@color/theme_accent" />
+        tools:visibility="visible" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_create_transaction"
+        android:id="@+id/fab_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
         android:layout_margin="20dp"
         android:contentDescription="@string/title_create_export_schedule"
-        android:src="@drawable/ic_add"
-        app:elevation="6dp"
-        app:layout_behavior="org.gnucash.android.ui.util.ScrollingFABBehavior" />
+        android:src="@drawable/ic_add" />
 
 </FrameLayout>

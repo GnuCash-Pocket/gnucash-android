@@ -15,7 +15,7 @@ class ScheduledTransactionsListFragment : ScheduledActionsListFragment() {
         super.onViewCreated(view, savedInstanceState)
         val binding = binding!!
         binding.empty.setText(R.string.label_no_recurring_transactions)
-        binding.fabCreateTransaction.isVisible = false
+        binding.fabAdd.isVisible = false
     }
 
 }

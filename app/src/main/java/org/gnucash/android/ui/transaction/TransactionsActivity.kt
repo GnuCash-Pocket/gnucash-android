@@ -77,9 +77,9 @@ class TransactionsActivity : BaseDrawerActivity(),
 
     private val accountSpinnerListener: AdapterView.OnItemSelectedListener =
         DefaultItemSelectedListener(false) { parent: AdapterView<*>,
-                                      view: View?,
-                                      position: Int,
-                                      id: Long ->
+                                             view: View?,
+                                             position: Int,
+                                             id: Long ->
             val account = accountNameAdapter?.getAccount(position)
             swapAccount(account)
         }
@@ -164,13 +164,16 @@ class TransactionsActivity : BaseDrawerActivity(),
         setTitleIndicatorColor(binding)
 
         binding.toolbarLayout.toolbarSpinner.setEnabled(!accountNameAdapter!!.isEmpty)
+        val adapterBefore = binding.pager.adapter
         binding.pager.adapter = AccountViewPagerAdapter(this, account)
-        TabLayoutMediator(binding.tabLayout, binding.pager) { tab, position ->
-            when (position) {
-                INDEX_SUB_ACCOUNTS_FRAGMENT -> tab.setText(R.string.section_header_subaccounts)
-                INDEX_TRANSACTIONS_FRAGMENT -> tab.setText(R.string.section_header_transactions)
-            }
-        }.attach()
+        if (adapterBefore == null) {
+            TabLayoutMediator(binding.tabLayout, binding.pager) { tab, position ->
+                when (position) {
+                    INDEX_SUB_ACCOUNTS_FRAGMENT -> tab.setText(R.string.section_header_subaccounts)
+                    INDEX_TRANSACTIONS_FRAGMENT -> tab.setText(R.string.section_header_transactions)
+                }
+            }.attach()
+        }
         binding.pager.currentItem = INDEX_TRANSACTIONS_FRAGMENT
     }
 
@@ -203,15 +206,6 @@ class TransactionsActivity : BaseDrawerActivity(),
         tabLayout.addTab(tabLayout.newTab())
 
         setupActionBarNavigation(binding, accountUID)
-
-        binding.fabCreateTransaction.setOnClickListener {
-            val account = this@TransactionsActivity.account ?: return@setOnClickListener
-            val accountUID = account.uid
-            when (binding.pager.currentItem) {
-                INDEX_SUB_ACCOUNTS_FRAGMENT -> createNewAccount(accountUID)
-                INDEX_TRANSACTIONS_FRAGMENT -> createNewTransaction(accountUID)
-            }
-        }
     }
 
     override fun onResume() {
@@ -347,22 +341,6 @@ class TransactionsActivity : BaseDrawerActivity(),
             return
         }
         super.onActivityResult(requestCode, resultCode, data)
-    }
-
-    private fun createNewAccount(parentAccountUID: String) {
-        val intent = Intent(this, FormActivity::class.java)
-            .setAction(Intent.ACTION_INSERT_OR_EDIT)
-            .putExtra(UxArgument.PARENT_ACCOUNT_UID, parentAccountUID)
-            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name)
-        startActivityForResult(intent, REQUEST_REFRESH)
-    }
-
-    private fun createNewTransaction(accountUID: String) {
-        val intent = Intent(this, FormActivity::class.java)
-            .setAction(Intent.ACTION_INSERT_OR_EDIT)
-            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
-            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
-        startActivityForResult(intent, REQUEST_REFRESH)
     }
 
     override fun accountSelected(accountUID: String) {
