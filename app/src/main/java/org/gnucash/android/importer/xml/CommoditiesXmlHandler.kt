@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.importer
+package org.gnucash.android.importer.xml
 
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter

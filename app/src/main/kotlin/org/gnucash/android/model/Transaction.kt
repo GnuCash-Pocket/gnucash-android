@@ -18,6 +18,7 @@ package org.gnucash.android.model
 import android.content.Intent
 import org.gnucash.android.BuildConfig
 import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.export.csv.CsvTransactionsExporter.Companion.toCsv
 import org.gnucash.android.model.Transaction.Companion.computeBalance
 import org.gnucash.android.util.formatShortDate
 import java.math.BigDecimal
@@ -40,7 +41,7 @@ class Transaction : BaseModel {
     /**
      * An extra note giving details about the transaction
      */
-    var note: String? = ""
+    var notes: String = ""
 
     /**
      * Flag indicating if this transaction has been exported before or not
@@ -62,7 +63,7 @@ class Transaction : BaseModel {
      */
     var scheduledActionUID: String? = null
 
-    var number: String? = null
+    var number: String = ""
 
     /**
      * Overloaded constructor. Creates a new transaction instance with the
@@ -70,7 +71,7 @@ class Transaction : BaseModel {
      *
      * @param description Description of the transaction
      */
-    constructor(description: String?) {
+    constructor(description: String) {
         this.description = description
     }
 
@@ -94,7 +95,7 @@ class Transaction : BaseModel {
             clone.setUID(uid)
         }
         clone.commodity = commodity
-        clone.note = note
+        clone.notes = notes
         clone.number = number
         clone.splits = splits.map { it.copy(generateNewUID) }
         clone.time = time
@@ -262,9 +263,9 @@ class Transaction : BaseModel {
     /**
      * A description of the transaction
      */
-    var description: String? = ""
+    var description: String = ""
         set(value) {
-            field = value?.trim().orEmpty()
+            field = value.trim()
         }
 
     /**
@@ -443,7 +444,7 @@ class Transaction : BaseModel {
             return Intent(Intent.ACTION_INSERT)
                 .setType(MIME_TYPE)
                 .putExtra(Intent.EXTRA_TITLE, transaction.description)
-                .putExtra(Intent.EXTRA_TEXT, transaction.note)
+                .putExtra(Intent.EXTRA_TEXT, transaction.notes)
                 .putExtra(Account.EXTRA_CURRENCY_CODE, transaction.currencyCode)
                 .putExtra(EXTRA_SPLITS, stringBuilder.toString())
         }

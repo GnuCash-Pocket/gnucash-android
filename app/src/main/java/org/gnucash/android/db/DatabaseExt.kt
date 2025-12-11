@@ -1,10 +1,16 @@
 package org.gnucash.android.db
 
+import android.content.ContentValues
 import android.database.Cursor
+import android.database.SQLException
+import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteDatabase.CONFLICT_NONE
 import android.database.sqlite.SQLiteStatement
 import androidx.annotation.IntRange
+import org.gnucash.android.util.set
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.sql.Timestamp
 
 fun SQLiteStatement.bindBigDecimal(@IntRange(from = 1) index: Int, value: BigDecimal?) {
     requireNotNull(value) { "the bind value at index $index is null" }
@@ -87,4 +93,24 @@ fun Cursor.forEach(callback: (Cursor) -> Unit) {
             } while (cursor.moveToNext())
         }
     }
+}
+
+fun Long.toTimestamp(): Timestamp {
+    return Timestamp(this)
+}
+
+fun Cursor.toValues(): ContentValues {
+    val values = ContentValues()
+    val columnCount = columnCount
+    for (i in 0 until columnCount) {
+        val name = columnNames[i]
+        val value = getString(i)
+        values[name] = value
+    }
+    return values
+}
+
+@Throws(SQLException::class)
+fun SQLiteDatabase.insert(table: String, values: ContentValues): Long {
+    return insertWithOnConflict(table, null, values, CONFLICT_NONE)
 }

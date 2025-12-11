@@ -19,9 +19,9 @@ import androidx.core.net.toFile
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.adapter.BooksDbAdapter
+import org.gnucash.android.export.ExportException
 import org.gnucash.android.export.ExportFormat
 import org.gnucash.android.export.ExportParams
-import org.gnucash.android.export.Exporter.ExporterException
 import org.gnucash.android.export.ofx.OfxExporter
 import org.gnucash.android.export.ofx.OfxHelper
 import org.gnucash.android.export.ofx.OfxHelper.APP_ID
@@ -52,7 +52,7 @@ class OfxExporterTest : BookHelperTest() {
             exportParameters,
             GnuCashApplication.activeBookUID!!
         )
-        assertThrows(ExporterException::class.java) { exporter.export() }
+        assertThrows(ExportException::class.java) { exporter.export() }
     }
 
     /**

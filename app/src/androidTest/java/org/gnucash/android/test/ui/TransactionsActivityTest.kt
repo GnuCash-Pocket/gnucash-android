@@ -115,7 +115,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         transactionTimeMillis = System.currentTimeMillis()
         transaction = Transaction(TRANSACTION_NAME)
         transaction.commodity = COMMODITY
-        transaction.note = "What up?"
+        transaction.notes = "What up?"
         transaction.time = transactionTimeMillis
         val split = Split(Money(TRANSACTION_AMOUNT, CURRENCY_CODE), TRANSACTIONS_ACCOUNT_UID)
         split.type = TransactionType.DEBIT
@@ -198,7 +198,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         onView(withId(R.id.input_time))
             .check(matches(withText(TIME_FORMATTER.print(transaction.time))))
         onView(withId(R.id.notes))
-            .check(matches(withText(transaction.note)))
+            .check(matches(withText(transaction.notes)))
 
         validateTimeInput(transaction.time)
     }
@@ -699,7 +699,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
 
         for (transaction in transactions) {
             if (transaction.description == "Power intents") {
-                assertThat(transaction.note).isEqualTo("Intents for sale")
+                assertThat(transaction.notes).isEqualTo("Intents for sale")
                 assertThat(
                     transaction.getBalance(
                         TRANSACTIONS_ACCOUNT_UID

@@ -86,7 +86,7 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
         }
 
         val keyDefaultExportFormat = getString(R.string.key_default_export_format)
-        preference = findPreference<Preference>(keyDefaultExportFormat)!!
+        preference = findPreference(keyDefaultExportFormat)!!
         if (preference.summaryProvider == null) {
             preference.setSummaryProvider { preference ->
                 val listPreference = preference as ListPreference
@@ -99,13 +99,13 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
             }
         }
 
-        preference = findPreference<Preference>(getString(R.string.key_restore_backup))!!
+        preference = findPreference(getString(R.string.key_restore_backup))!!
         preference.setOnPreferenceClickListener { _ ->
             restoreBackup()
             true
         }
 
-        preference = findPreference<Preference>(getString(R.string.key_create_backup))!!
+        preference = findPreference(getString(R.string.key_create_backup))!!
         preference.setOnPreferenceClickListener { _ ->
             val activity = activity ?: return@setOnPreferenceClickListener false
             backupActiveBookAsync(activity) { result: Boolean ->
@@ -116,9 +116,8 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
             true
         }
 
-        preference = findPreference<Preference>(getString(R.string.key_backup_location))!!
+        preference = findPreference(getString(R.string.key_backup_location))!!
         preference.setOnPreferenceClickListener { preference ->
-            val context = preference.context
             val bookName = BooksDbAdapter.instance.activeBookDisplayName
             val fileName =
                 sanitizeFilename(bookName) + "_" + getString(R.string.label_backup_filename)
@@ -142,7 +141,7 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
         }
 
         var switch = findPreference<TwoStatePreference>(getString(R.string.key_dropbox_sync))!!
-        switch.setOnPreferenceClickListener { preference ->
+        switch.setOnPreferenceClickListener { _ ->
             toggleDropboxSync(switch)
             toggleDropboxPreference(switch)
             false
@@ -150,7 +149,7 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
         toggleDropboxPreference(switch)
 
         switch = findPreference(getString(R.string.key_owncloud_sync))!!
-        switch.setOnPreferenceClickListener { preference ->
+        switch.setOnPreferenceClickListener { _ ->
             toggleOwnCloudSync(switch)
             toggleOwnCloudPreference(switch)
             false

@@ -77,9 +77,12 @@ class ScheduledActionDbAdapter(
         transactionsDbAdapter.close()
     }
 
-    override fun addRecord(scheduledAction: ScheduledAction, updateMethod: UpdateMethod) {
-        recurrenceDbAdapter.addRecord(scheduledAction.recurrence!!, updateMethod)
-        super.addRecord(scheduledAction, updateMethod)
+    override fun addRecord(
+        scheduledAction: ScheduledAction,
+        updateMethod: UpdateMethod
+    ): ScheduledAction {
+        recurrenceDbAdapter.addRecord(scheduledAction.recurrence, updateMethod)
+        return super.addRecord(scheduledAction, updateMethod)
     }
 
     override fun bulkAddRecords(
@@ -88,7 +91,7 @@ class ScheduledActionDbAdapter(
     ): Long {
         val recurrences = mutableListOf<Recurrence>()
         for (scheduledAction in scheduledActions) {
-            scheduledAction.recurrence?.let { recurrences.add(it) }
+            recurrences.add(scheduledAction.recurrence)
         }
 
         //first add the recurrences, they have no dependencies (foreign key constraints)
@@ -116,7 +119,7 @@ class ScheduledActionDbAdapter(
             getAttribute(scheduledAction, ScheduledActionEntry.COLUMN_RECURRENCE_UID)
 
         val recurrence = scheduledAction.recurrence
-        recurrence!!.setUID(recurrenceUID)
+        recurrence.setUID(recurrenceUID)
         recurrenceDbAdapter.update(recurrence)
 
         val contentValues = ContentValues()
@@ -137,16 +140,16 @@ class ScheduledActionDbAdapter(
         bindBaseModel(stmt, schedxAction)
         stmt.bindString(1, schedxAction.actionUID)
         stmt.bindString(2, schedxAction.actionType.value)
-        stmt.bindLong(3, schedxAction.startTime)
-        stmt.bindLong(4, schedxAction.endTime)
-        stmt.bindLong(5, schedxAction.lastRunTime)
+        stmt.bindLong(3, schedxAction.startDate)
+        stmt.bindLong(4, schedxAction.endDate)
+        stmt.bindLong(5, schedxAction.lastRunDate)
         stmt.bindBoolean(6, schedxAction.isEnabled)
         stmt.bindString(7, getUtcStringFromTimestamp(schedxAction.createdTimestamp))
         if (schedxAction.tag != null) {
             stmt.bindString(8, schedxAction.tag)
         }
         stmt.bindInt(9, schedxAction.totalPlannedExecutionCount)
-        stmt.bindString(10, schedxAction.recurrence!!.uid)
+        stmt.bindString(10, schedxAction.recurrence.uid)
         stmt.bindBoolean(11, schedxAction.isAutoCreate)
         stmt.bindBoolean(12, schedxAction.isAutoCreateNotify)
         stmt.bindInt(13, schedxAction.advanceCreateDays)

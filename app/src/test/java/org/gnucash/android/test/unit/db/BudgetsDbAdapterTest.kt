@@ -15,6 +15,7 @@
  */
 package org.gnucash.android.test.unit.db
 
+import android.database.sqlite.SQLiteException
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BudgetAmountsDbAdapter
@@ -139,21 +140,11 @@ class BudgetsDbAdapterTest : GnuCashTest() {
         return budgets
     }
 
-    @Test(expected = NullPointerException::class)
+    @Test(expected = SQLiteException::class)
     fun savingBudget_shouldRequireExistingAccount() {
         val budget = Budget("")
         budget.addAmount(
             BudgetAmount(createZeroInstance(Commodity.DEFAULT_COMMODITY), "unknown-account")
-        )
-
-        budgetsDbAdapter.addRecord(budget)
-    }
-
-    @Test(expected = NullPointerException::class)
-    fun savingBudget_shouldRequireRecurrence() {
-        val budget = Budget("")
-        budget.addAmount(
-            BudgetAmount(createZeroInstance(Commodity.DEFAULT_COMMODITY), account.uid)
         )
 
         budgetsDbAdapter.addRecord(budget)

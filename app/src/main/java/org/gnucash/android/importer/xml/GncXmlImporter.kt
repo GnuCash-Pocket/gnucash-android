@@ -14,24 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gnucash.android.importer
+package org.gnucash.android.importer.xml
 
 import android.content.Context
-import android.os.CancellationSignal
-import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.gnc.GncProgressListener
+import org.gnucash.android.importer.Importer
 import org.gnucash.android.model.Book
-import org.gnucash.android.util.PreferencesHelper.setLastExportTime
 import org.xml.sax.InputSource
 import org.xml.sax.SAXException
 import org.xml.sax.XMLReader
-import timber.log.Timber
-import java.io.BufferedInputStream
-import java.io.EOFException
 import java.io.IOException
 import java.io.InputStream
-import java.util.zip.GZIPInputStream
-import java.util.zip.ZipInputStream
 import javax.xml.parsers.ParserConfigurationException
 import javax.xml.parsers.SAXParserFactory
 
@@ -41,44 +34,20 @@ import javax.xml.parsers.SAXParserFactory
  * @author Ngewi Fet <ngewif@gmail.com>
  */
 class GncXmlImporter(
-    private val context: Context,
-    private val inputStream: InputStream,
-    private val listener: GncProgressListener?
-) {
-    private val cancellationSignal = CancellationSignal()
+    context: Context,
+    inputStream: InputStream,
+    listener: GncProgressListener?
+) : Importer(context, inputStream, listener) {
 
     @Throws(IOException::class, ParserConfigurationException::class, SAXException::class)
-    fun parse(): Book {
-        //TODO: Set an error handler which can log errors
-        Timber.d("Start import")
-        val input: InputStream = getInputStream(inputStream)
+    override fun parse(inputStream: InputStream): List<Book> {
         val handler = GncXmlHandler(context, listener, cancellationSignal)
-        val reader: XMLReader = createXMLReader(handler)
-
-        val startTime = System.nanoTime()
-        reader.parse(InputSource(input))
-        val endTime = System.nanoTime()
-        Timber.d("%d ns spent on importing the file", endTime - startTime)
-
-        val book = handler.importedBook
-        setLastExportTime(
-            context,
-            TransactionsDbAdapter.instance.timestampOfLastModification,
-            book.uid
-        )
-
-        return book
-    }
-
-    fun cancel() {
-        cancellationSignal.cancel()
+        val reader = createXMLReader(handler)
+        reader.parse(InputSource(inputStream))
+        return handler.importedBooks
     }
 
     companion object {
-        private const val ZIP_MAGIC = 0x504B0304
-        private const val ZIP_MAGIC_EMPTY = 0x504B0506
-        private const val ZIP_MAGIC_SPANNED = 0x504B0708
-
         /**
          * Parse GnuCash XML input and populates the database
          *
@@ -104,39 +73,7 @@ class GncXmlImporter(
             listener: GncProgressListener?
         ): Book {
             val importer = GncXmlImporter(context, gncXmlInputStream, listener)
-            return importer.parse()
-        }
-
-        @Throws(IOException::class)
-        private fun getInputStream(inputStream: InputStream): InputStream {
-            val bis = BufferedInputStream(inputStream)
-            bis.mark(4)
-            val byte0 = bis.read()
-            if (byte0 == -1) throw EOFException("file too small")
-            val byte1 = bis.read()
-            if (byte1 == -1) throw EOFException("file too small")
-            val byte2 = bis.read()
-            if (byte2 == -1) throw EOFException("file too small")
-            val byte3 = bis.read()
-            if (byte3 == -1) throw EOFException("file too small")
-            bis.reset() //push back the signature to the stream
-
-            val signature2 = ((byte1 and 0xFF) shl 8) or (byte0 and 0xFF)
-            //check if matches standard gzip magic number
-            if (signature2 == GZIPInputStream.GZIP_MAGIC) {
-                return GZIPInputStream(bis)
-            }
-
-            val signature4 = ((byte3 and 0xFF) shl 24) or ((byte2 and 0xFF) shl 16) or signature2
-            if ((signature4 == ZIP_MAGIC) || (signature4 == ZIP_MAGIC_EMPTY) || (signature4 == ZIP_MAGIC_SPANNED)) {
-                val zis = ZipInputStream(bis)
-                val entry = zis.nextEntry
-                if (entry != null) {
-                    return zis
-                }
-            }
-
-            return bis
+            return importer.parse()[0]
         }
 
         @Throws(ParserConfigurationException::class, SAXException::class)

@@ -35,7 +35,7 @@ class ScheduledActionTest : GnuCashTest() {
         val scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
         val startTime = getTimeInMillis(2014, 8, 26)
         scheduledAction.startDate = startTime
-        assertThat(scheduledAction.recurrence).isNull()
+        assertThat(scheduledAction.recurrence.periodType).isEqualTo(PeriodType.ONCE)
 
         val recurrence = Recurrence(PeriodType.MONTH)
         assertThat(recurrence.periodStart).isNotEqualTo(startTime)
@@ -52,7 +52,7 @@ class ScheduledActionTest : GnuCashTest() {
         val scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
         val endTime = getTimeInMillis(2014, 8, 26)
         scheduledAction.endDate = endTime
-        assertThat(scheduledAction.recurrence).isNull()
+        assertThat(scheduledAction.recurrence.periodType).isEqualTo(PeriodType.ONCE)
 
         val recurrence = Recurrence(PeriodType.MONTH)
         assertThat(recurrence.periodEnd).isNull()

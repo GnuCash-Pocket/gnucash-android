@@ -1,79 +1,127 @@
 package org.gnucash.android.model
 
-import org.gnucash.android.export.xml.GncXmlHelper.formatNumeric
-
+/**
+ * Based on `KvpValue`
+ */
 data class Slot(
     var key: String,
-    var type: String,
+    var type: Type,
     var value: Any? = null
 ) {
-    val isDate: Boolean get() = (type == TYPE_GDATE) && (value is Long)
+    val isDate: Boolean get() = (type === Type.GDATE) && (value is Long)
 
-    val isFrame: Boolean get() = (type == TYPE_FRAME) && (value is List<*>)
+    val isDouble: Boolean get() = (type === Type.DOUBLE) && (value is Double)
 
-    val isGUID: Boolean get() = (type == TYPE_GUID) && (value!!.toString().length == 32)
+    val isFrame: Boolean get() = (type === Type.FRAME) && (value is List<*>)
 
-    val isNumeric: Boolean get() = (type == TYPE_NUMERIC) && (value!!.toString().indexOf('/') > 0)
+    val isGUID: Boolean get() = (type === Type.GUID) && (value!!.toString().length == 32)
 
-    val isString: Boolean get() = (type == TYPE_STRING) && ((value is String) || (value is String?))
+    val isLong: Boolean get() = (type === Type.INT64) && (value is Long)
+
+    val isNumeric: Boolean get() = (type === Type.NUMERIC) && (value is Numeric)
+
+    val isString: Boolean get() = (type === Type.STRING) && ((value is String) || (value is String?))
+
+    val isDateTime: Boolean get() = (type === Type.TIME64) && (value is Long)
 
     val asDate: Long
         get() = if (isDate) value as Long
-        else throw TypeCastException(type)
+        else throw TypeCastException(type.attribute)
+
+    val asDateTime: Long
+        get() = if (isDateTime) value as Long
+        else throw TypeCastException(type.attribute)
+
+    val asDouble: Double
+        get() = if (isDouble) value as Double
+        else throw TypeCastException(type.attribute)
 
     val asFrame: List<Slot>
         get() = if (isFrame) value as List<Slot>
-        else throw TypeCastException(type)
+        else throw TypeCastException(type.attribute)
 
     val asGUID: String
         get() = if (isGUID) value as String
-        else throw TypeCastException(type)
+        else throw TypeCastException(type.attribute)
 
-    val asNumeric: String
-        get() = if (isNumeric) value as String
-        else throw TypeCastException(type)
+    val asLong: Long
+        get() = if (isLong) value as Long
+        else throw TypeCastException(type.attribute)
+
+    val asNumeric: Numeric
+        get() = if (isNumeric) value as Numeric
+        else throw TypeCastException(type.attribute)
 
     val asString: String
         get() = if (isString) value as String
-        else throw TypeCastException(type)
+        else throw TypeCastException(type.attribute)
 
     override fun toString(): String {
-        return value.toString()
+        return "$key=$value"
     }
 
     fun add(slot: Slot) {
-        if (type == TYPE_FRAME) {
-            if (value == null) {
-                value = listOf(slot)
+        if (type === Type.FRAME) {
+            value = if (value == null) {
+                listOf(slot)
             } else {
-                value = (value as List<*>) + slot
+                (value as List<*>) + slot
+            }
+        }
+    }
+
+    enum class Type(
+        val value: Int,
+        val attribute: String
+    ) {
+        INVALID(-1, ""),
+        INT64(1, "int64"),
+        DOUBLE(2, "double"),
+        NUMERIC(3, "numeric"),
+        STRING(4, "string"),
+        GUID(5, "guid"),
+        TIME64(6, "time64"),
+        PLACEHOLDER_DONT_USE(7, "binary"),
+        GLIST(8, "glist"),
+        FRAME(9, "frame"),
+        GDATE(10, "gdate");
+
+        override fun toString(): String {
+            return attribute
+        }
+
+        companion object {
+            private val values = values()
+
+            fun of(ordinal: Int): Type {
+                return values.firstOrNull { it.value == ordinal } ?: INVALID
+            }
+
+            fun of(value: String): Type {
+                return values.firstOrNull { it.attribute == value } ?: INVALID
             }
         }
     }
 
     companion object {
-        const val TYPE_FRAME = "frame"
-        const val TYPE_GDATE = "gdate"
-        const val TYPE_GUID = "guid"
-        const val TYPE_NUMERIC = "numeric"
-        const val TYPE_STRING = "string"
+        fun frame(key: String, slots: List<Slot>): Slot = Slot(key, Type.FRAME, slots)
 
-        fun frame(key: String, slots: List<Slot>): Slot = Slot(key, TYPE_FRAME, slots)
+        fun gdate(key: String, date: Long): Slot = Slot(key, Type.GDATE, date)
 
-        fun gdate(key: String, date: Long): Slot = Slot(key, TYPE_GDATE, date)
+        fun guid(key: String, guid: String): Slot = Slot(key, Type.GUID, guid)
 
-        fun guid(key: String, guid: String): Slot = Slot(key, TYPE_GUID, guid)
+        fun long(key: String, number: Long): Slot = Slot(key, Type.INT64, number)
 
         fun numeric(key: String, numerator: Long, denominator: Long): Slot =
-            Slot(key, TYPE_NUMERIC, formatNumeric(numerator, denominator))
+            Slot(key, Type.NUMERIC, Numeric(numerator, denominator).reduce())
 
         fun numeric(key: String, numerator: String, denominator: String): Slot =
             numeric(key, numerator.toLong(), denominator.toLong())
 
-        fun string(key: String, value: String): Slot = Slot(key, TYPE_STRING, value)
+        fun string(key: String, value: String): Slot = Slot(key, Type.STRING, value)
 
-        fun numeric(key: String, value: Money) = Slot(key, TYPE_NUMERIC, formatNumeric(value))
+        fun numeric(key: String, value: Money) = numeric(key, value.numerator, value.denominator)
 
-        fun empty() = Slot("", TYPE_STRING)
+        fun empty() = Slot("", Type.STRING)
     }
 }

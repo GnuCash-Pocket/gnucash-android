@@ -49,7 +49,7 @@ class ImportAsyncTask(
 ) : AsyncTask<Uri, Any, String>() {
     private val progressDialog: ProgressDialog
     private val listener: AsyncTaskProgressListener = ProgressListener(activity)
-    private var importer: GncXmlImporter? = null
+    private var importer: Importer? = null
 
     init {
         progressDialog = GnucashProgressDialog(activity).apply {
@@ -85,17 +85,16 @@ class ImportAsyncTask(
 
         val uri: Uri = uris[0]
         val context = progressDialog.context
-        val book: Book?
-        val bookUID: String?
+        val books: List<Book>
+        var bookUID: String? = null
+
         try {
             val accountInputStream = uri.openStream(context)!!
-            val importer = GncXmlImporter(context, accountInputStream, listener)
+            val importer = ImporterFactory.create(context, accountInputStream, listener)
             this.importer = importer
-            book = importer.parse()
-            book.sourceUri = uri
-            bookUID = book.uid
+            books = importer.parse()
         } catch (ce: OperationCanceledException) {
-            Timber.i(ce)
+            Timber.i(ce, "Canceled")
             return null
         } catch (e: Throwable) {
             Timber.e(e, "Error importing: %s", uri)
@@ -106,24 +105,28 @@ class ImportAsyncTask(
         val contentValues = ContentValues()
         contentValues[BookEntry.COLUMN_SOURCE_URI] = uri.toString()
 
-        var displayName = book.displayName
-        if (displayName.isNullOrEmpty()) {
-            var name = uri.getDocumentName(context)
-            if (name.isNotEmpty()) {
-                // Remove short file type extension, e.g. ".xml" or ".gnucash" or ".gnca.gz"
-                val indexFileType = name.indexOf('.')
-                if (indexFileType > 0) {
-                    name = name.substring(0, indexFileType)
-                }
-                displayName = name
-            }
+        for (book in books) {
+            bookUID = book.uid
+            book.sourceUri = uri
+            var displayName = book.displayName
             if (displayName.isNullOrEmpty()) {
-                displayName = booksDbAdapter.generateDefaultBookName()
+                var name = uri.getDocumentName(context)
+                if (name.isNotEmpty()) {
+                    // Remove short file type extension, e.g. ".xml" or ".gnucash" or ".gnca.gz"
+                    val indexFileType = name.indexOf('.')
+                    if (indexFileType > 0) {
+                        name = name.take(indexFileType)
+                    }
+                    displayName = name
+                }
+                if (displayName.isNullOrEmpty()) {
+                    displayName = booksDbAdapter.generateDefaultBookName()
+                }
+                book.displayName = displayName
             }
-            book.displayName = displayName
+            contentValues[BookEntry.COLUMN_DISPLAY_NAME] = displayName
+            booksDbAdapter.updateRecord(book.uid, contentValues)
         }
-        contentValues[BookEntry.COLUMN_DISPLAY_NAME] = displayName
-        booksDbAdapter.updateRecord(bookUID, contentValues)
 
         return bookUID
     }

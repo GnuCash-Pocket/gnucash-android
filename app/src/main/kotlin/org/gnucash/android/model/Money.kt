@@ -157,6 +157,11 @@ class Money(
         commodity
     )
 
+    constructor(amount: Numeric, commodity: Commodity) : this(
+        toBigDecimal(amount),
+        commodity
+    )
+
     /**
      * Copy constructor.
      * Creates a new Money object which is a clone of `money`
@@ -229,6 +234,10 @@ class Money(
 
     fun toBigDecimal(): BigDecimal {
         return asBigDecimal()
+    }
+
+    fun toNumeric(): Numeric {
+        return Numeric(numerator, denominator)
     }
 
     /**
@@ -511,7 +520,7 @@ class Money(
      * @return `true` if the amount is negative, `false` otherwise.
      */
     val isNegative: Boolean
-        get() = amount.compareTo(BigDecimal.ZERO) < 0
+        get() = amount < BigDecimal.ZERO
 
     /**
      * Returns the string representation of the amount (without currency) of the Money object.

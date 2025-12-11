@@ -25,6 +25,7 @@ import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.forEach
 import org.gnucash.android.db.getLong
 import org.gnucash.android.db.getString
+import org.gnucash.android.export.ExportException
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
 import org.gnucash.android.export.xml.GncXmlHelper.ATTR_KEY_DATE_POSTED
@@ -166,6 +167,7 @@ import org.gnucash.android.export.xml.GncXmlHelper.TAG_TAG
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_TEMPLATE_ACCOUNT
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_TEMPLATE_TRANSACTIONS
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_TIME
+import org.gnucash.android.export.xml.GncXmlHelper.TAG_TIME64
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_TRANSACTION
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_TYPE
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_VALUE
@@ -174,7 +176,7 @@ import org.gnucash.android.export.xml.GncXmlHelper.formatDate
 import org.gnucash.android.export.xml.GncXmlHelper.formatDateTime
 import org.gnucash.android.export.xml.GncXmlHelper.formatFormula
 import org.gnucash.android.gnc.GncProgressListener
-import org.gnucash.android.importer.CommoditiesXmlHandler
+import org.gnucash.android.importer.xml.CommoditiesXmlHandler
 import org.gnucash.android.math.toBigDecimal
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.AccountType
@@ -257,151 +259,155 @@ class GncXmlExporter(
     private val transactionToTemplateAccounts: MutableMap<String, Account> = TreeMap()
 
     @Throws(IOException::class)
-    private fun writeCounts(xmlSerializer: XmlSerializer) {
+    private fun writeCounts(serializer: XmlSerializer) {
         // commodities count
         var count = accountsDbAdapter.commoditiesInUseCount
         listener?.onCommodityCount(count)
-        writeCount(xmlSerializer, CD_TYPE_COMMODITY, count)
+        writeCount(serializer, CD_TYPE_COMMODITY, count)
 
         // accounts count
         count = accountsDbAdapter.getRecordsCount(AccountEntry.COLUMN_TEMPLATE + "=0", null)
         listener?.onAccountCount(count)
-        writeCount(xmlSerializer, CD_TYPE_ACCOUNT, count)
+        writeCount(serializer, CD_TYPE_ACCOUNT, count)
 
         // transactions count
         count =
             transactionsDbAdapter.getRecordsCount(TransactionEntry.COLUMN_TEMPLATE + "=0", null)
         listener?.onTransactionCount(count)
-        writeCount(xmlSerializer, CD_TYPE_TRANSACTION, count)
+        writeCount(serializer, CD_TYPE_TRANSACTION, count)
 
         // scheduled transactions count
         count = scheduledActionDbAdapter.getRecordsCount(ScheduledAction.ActionType.TRANSACTION)
         listener?.onScheduleCount(count)
-        writeCount(xmlSerializer, CD_TYPE_SCHEDXACTION, count)
+        writeCount(serializer, CD_TYPE_SCHEDXACTION, count)
 
         // budgets count
         count = budgetsDbAdapter.recordsCount
         listener?.onBudgetCount(count)
-        writeCount(xmlSerializer, CD_TYPE_BUDGET, count)
+        writeCount(serializer, CD_TYPE_BUDGET, count)
 
         // prices count
         count = pricesDbAdapter.recordsCount
         listener?.onPriceCount(count)
-        writeCount(xmlSerializer, CD_TYPE_PRICE, count)
+        writeCount(serializer, CD_TYPE_PRICE, count)
     }
 
     @Throws(IOException::class)
-    private fun writeCount(xmlSerializer: XmlSerializer, type: String, count: Long) {
+    private fun writeCount(serializer: XmlSerializer, type: String, count: Long) {
         if (count <= 0) return
-        xmlSerializer.startTag(NS_GNUCASH, TAG_COUNT_DATA)
-        xmlSerializer.attribute(NS_CD, ATTR_KEY_TYPE, type)
-        xmlSerializer.text(count.toString())
-        xmlSerializer.endTag(NS_GNUCASH, TAG_COUNT_DATA)
+        serializer.startTag(NS_GNUCASH, TAG_COUNT_DATA)
+        serializer.attribute(NS_CD, ATTR_KEY_TYPE, type)
+        serializer.text(count.toString())
+        serializer.endTag(NS_GNUCASH, TAG_COUNT_DATA)
     }
 
     @Throws(IOException::class)
-    private fun writeSlots(xmlSerializer: XmlSerializer, slots: Collection<Slot>?) {
+    private fun writeSlots(serializer: XmlSerializer, slots: Collection<Slot>?) {
         if (slots == null || slots.isEmpty()) {
             return
         }
         cancellationSignal.throwIfCanceled()
         for (slot in slots) {
-            writeSlot(xmlSerializer, slot)
+            writeSlot(serializer, slot)
         }
     }
 
     @Throws(IOException::class)
-    private fun writeSlot(xmlSerializer: XmlSerializer, slot: Slot) {
-        xmlSerializer.startTag(null, TAG_SLOT)
-        xmlSerializer.startTag(NS_SLOT, TAG_KEY)
-        xmlSerializer.text(slot.key)
-        xmlSerializer.endTag(NS_SLOT, TAG_KEY)
-        xmlSerializer.startTag(NS_SLOT, TAG_VALUE)
-        xmlSerializer.attribute(null, ATTR_KEY_TYPE, slot.type)
+    private fun writeSlot(serializer: XmlSerializer, slot: Slot) {
+        serializer.startTag(null, TAG_SLOT)
+        serializer.startTag(NS_SLOT, TAG_KEY)
+        serializer.text(slot.key)
+        serializer.endTag(NS_SLOT, TAG_KEY)
+        serializer.startTag(NS_SLOT, TAG_VALUE)
+        serializer.attribute(null, ATTR_KEY_TYPE, slot.type.attribute)
         if (slot.value != null) {
             if (slot.isDate) {
-                xmlSerializer.startTag(null, TAG_GDATE)
-                xmlSerializer.text(formatDate(slot.asDate))
-                xmlSerializer.endTag(null, TAG_GDATE)
+                serializer.startTag(null, TAG_GDATE)
+                serializer.text(formatDate(slot.asDate))
+                serializer.endTag(null, TAG_GDATE)
+            } else if (slot.isDateTime) {
+                serializer.startTag(null, TAG_TIME64)
+                serializer.text(formatDate(slot.asDateTime))
+                serializer.endTag(null, TAG_TIME64)
             } else if (slot.isFrame) {
-                writeSlots(xmlSerializer, slot.asFrame)
+                writeSlots(serializer, slot.asFrame)
             } else {
-                xmlSerializer.text(slot.toString())
+                serializer.text(slot.value?.toString())
             }
         }
-        xmlSerializer.endTag(NS_SLOT, TAG_VALUE)
-        xmlSerializer.endTag(null, TAG_SLOT)
+        serializer.endTag(NS_SLOT, TAG_VALUE)
+        serializer.endTag(null, TAG_SLOT)
     }
 
     @Throws(IOException::class)
-    private fun writeAccounts(xmlSerializer: XmlSerializer, isTemplate: Boolean) {
+    private fun writeAccounts(serializer: XmlSerializer, isTemplate: Boolean) {
         cancellationSignal.throwIfCanceled()
         Timber.i("export accounts. template: %s", isTemplate)
         if (isTemplate) {
             val account = rootTemplateAccount
             if (account == null) {
-                Timber.i("No template root account found!")
+                Timber.i("Template root account required")
                 return
             }
-            writeAccount(xmlSerializer, account)
+            writeAccount(serializer, account)
         } else {
             val rootUID = accountsDbAdapter.rootAccountUID
             if (rootUID.isEmpty()) {
-                throw ExporterException(exportParams, "No root account found!")
+                throw ExportException(exportParams, "Root account required")
             }
             val account = accountsDbAdapter.getRecord(rootUID)
-            writeAccount(xmlSerializer, account)
+            writeAccount(serializer, account)
         }
     }
 
     @Throws(IOException::class)
-    private fun writeAccount(xmlSerializer: XmlSerializer, account: Account) {
+    private fun writeAccount(serializer: XmlSerializer, account: Account) {
         cancellationSignal.throwIfCanceled()
         if (listener != null && !account.isTemplate) listener.onAccount(account)
         // write account
-        xmlSerializer.startTag(NS_GNUCASH, TAG_ACCOUNT)
-        xmlSerializer.attribute(null, ATTR_KEY_VERSION, BOOK_VERSION)
+        serializer.startTag(NS_GNUCASH, TAG_ACCOUNT)
+        serializer.attribute(null, ATTR_KEY_VERSION, BOOK_VERSION)
         // account name
-        xmlSerializer.startTag(NS_ACCOUNT, TAG_NAME)
-        xmlSerializer.text(account.name)
-        xmlSerializer.endTag(NS_ACCOUNT, TAG_NAME)
+        serializer.startTag(NS_ACCOUNT, TAG_NAME)
+        serializer.text(account.name)
+        serializer.endTag(NS_ACCOUNT, TAG_NAME)
         // account guid
-        xmlSerializer.startTag(NS_ACCOUNT, TAG_ID)
-        xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
-        xmlSerializer.text(account.uid)
-        xmlSerializer.endTag(NS_ACCOUNT, TAG_ID)
+        serializer.startTag(NS_ACCOUNT, TAG_ID)
+        serializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
+        serializer.text(account.uid)
+        serializer.endTag(NS_ACCOUNT, TAG_ID)
         // account type
-        xmlSerializer.startTag(NS_ACCOUNT, TAG_TYPE)
+        serializer.startTag(NS_ACCOUNT, TAG_TYPE)
         val accountType = account.accountType
-        xmlSerializer.text(accountType.name)
-        xmlSerializer.endTag(NS_ACCOUNT, TAG_TYPE)
+        serializer.text(accountType.name)
+        serializer.endTag(NS_ACCOUNT, TAG_TYPE)
         // commodity
         val commodity = account.commodity
-        xmlSerializer.startTag(NS_ACCOUNT, TAG_COMMODITY)
-        xmlSerializer.startTag(NS_COMMODITY, TAG_SPACE)
-        xmlSerializer.text(commodity.namespace)
-        xmlSerializer.endTag(NS_COMMODITY, TAG_SPACE)
-        xmlSerializer.startTag(NS_COMMODITY, TAG_ID)
-        xmlSerializer.text(commodity.currencyCode)
-        xmlSerializer.endTag(NS_COMMODITY, TAG_ID)
-        xmlSerializer.endTag(NS_ACCOUNT, TAG_COMMODITY)
+        serializer.startTag(NS_ACCOUNT, TAG_COMMODITY)
+        serializer.startTag(NS_COMMODITY, TAG_SPACE)
+        serializer.text(commodity.namespace)
+        serializer.endTag(NS_COMMODITY, TAG_SPACE)
+        serializer.startTag(NS_COMMODITY, TAG_ID)
+        serializer.text(commodity.currencyCode)
+        serializer.endTag(NS_COMMODITY, TAG_ID)
+        serializer.endTag(NS_ACCOUNT, TAG_COMMODITY)
         // commodity scu
-        xmlSerializer.startTag(NS_ACCOUNT, TAG_COMMODITY_SCU)
-        xmlSerializer.text(commodity.smallestFraction.toString())
-        xmlSerializer.endTag(NS_ACCOUNT, TAG_COMMODITY_SCU)
+        serializer.startTag(NS_ACCOUNT, TAG_COMMODITY_SCU)
+        serializer.text(commodity.smallestFraction.toString())
+        serializer.endTag(NS_ACCOUNT, TAG_COMMODITY_SCU)
         // account code
         val code = account.code
         if (!code.isNullOrEmpty()) {
-            xmlSerializer.startTag(NS_ACCOUNT, TAG_CODE)
-            xmlSerializer.text(code)
-            xmlSerializer.endTag(NS_ACCOUNT, TAG_CODE)
+            serializer.startTag(NS_ACCOUNT, TAG_CODE)
+            serializer.text(code)
+            serializer.endTag(NS_ACCOUNT, TAG_CODE)
         }
         // account description
         val description = account.description
         if (!description.isNullOrEmpty()) {
-            xmlSerializer.startTag(NS_ACCOUNT, TAG_DESCRIPTION)
-            xmlSerializer.text(description)
-            xmlSerializer.endTag(NS_ACCOUNT, TAG_DESCRIPTION)
+            serializer.startTag(NS_ACCOUNT, TAG_DESCRIPTION)
+            serializer.text(description)
+            serializer.endTag(NS_ACCOUNT, TAG_DESCRIPTION)
         }
         // account slots, color, placeholder, default transfer account, favorite
         val slots = mutableListOf<Slot>()
@@ -434,40 +440,40 @@ class GncXmlExporter(
         }
 
         if (!slots.isEmpty()) {
-            xmlSerializer.startTag(NS_ACCOUNT, TAG_SLOTS)
-            writeSlots(xmlSerializer, slots)
-            xmlSerializer.endTag(NS_ACCOUNT, TAG_SLOTS)
+            serializer.startTag(NS_ACCOUNT, TAG_SLOTS)
+            writeSlots(serializer, slots)
+            serializer.endTag(NS_ACCOUNT, TAG_SLOTS)
         }
 
         // parent uid
         val parentUID = account.parentUID
         if ((accountType != AccountType.ROOT) && !parentUID.isNullOrEmpty()) {
-            xmlSerializer.startTag(NS_ACCOUNT, TAG_PARENT)
-            xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
-            xmlSerializer.text(parentUID)
-            xmlSerializer.endTag(NS_ACCOUNT, TAG_PARENT)
+            serializer.startTag(NS_ACCOUNT, TAG_PARENT)
+            serializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
+            serializer.text(parentUID)
+            serializer.endTag(NS_ACCOUNT, TAG_PARENT)
         } else {
             Timber.d("root account : %s", account.uid)
         }
-        xmlSerializer.endTag(NS_GNUCASH, TAG_ACCOUNT)
+        serializer.endTag(NS_GNUCASH, TAG_ACCOUNT)
 
         // gnucash desktop requires that parent account appears before its descendants.
         val children = accountsDbAdapter.getChildren(account.uid)
         for (childUID in children) {
             val child = accountsDbAdapter.getRecord(childUID)
-            writeAccount(xmlSerializer, child)
+            writeAccount(serializer, child)
         }
     }
 
     /**
      * Serializes transactions from the database to XML
      *
-     * @param xmlSerializer XML serializer
+     * @param serializer XML serializer
      * @param isTemplates   Flag whether to export templates or normal transactions
      * @throws IOException if the XML serializer cannot be written to
      */
     @Throws(IOException::class)
-    private fun writeTransactions(xmlSerializer: XmlSerializer, isTemplates: Boolean) {
+    private fun writeTransactions(serializer: XmlSerializer, isTemplates: Boolean) {
         Timber.i("write transactions")
         val projection = arrayOf<String?>(
             "t." + TransactionEntry.COLUMN_UID + " AS trans_uid",
@@ -538,61 +544,61 @@ class GncXmlExporter(
             if (txUIDPrevious != txUID) {
                 // there's an old transaction, close it
                 if (txUIDPrevious.isNotEmpty()) {
-                    xmlSerializer.endTag(NS_TRANSACTION, TAG_SPLITS)
-                    xmlSerializer.endTag(NS_GNUCASH, TAG_TRANSACTION)
+                    serializer.endTag(NS_TRANSACTION, TAG_SPLITS)
+                    serializer.endTag(NS_GNUCASH, TAG_TRANSACTION)
                 }
                 // new transaction
-                val description = cursor.getString("trans_desc")
+                val description = cursor.getString("trans_desc").orEmpty()
                 val commodityUID = cursor.getString("trans_commodity")!!
                 trnCommodity = commoditiesDbAdapter.getRecord(commodityUID)
                 transaction = Transaction(description)
                 transaction.setUID(txUID)
                 transaction.commodity = trnCommodity
                 listener?.onTransaction(transaction)
-                xmlSerializer.startTag(NS_GNUCASH, TAG_TRANSACTION)
-                xmlSerializer.attribute(null, ATTR_KEY_VERSION, BOOK_VERSION)
+                serializer.startTag(NS_GNUCASH, TAG_TRANSACTION)
+                serializer.attribute(null, ATTR_KEY_VERSION, BOOK_VERSION)
                 // transaction id
-                xmlSerializer.startTag(NS_TRANSACTION, TAG_ID)
-                xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
-                xmlSerializer.text(txUID)
-                xmlSerializer.endTag(NS_TRANSACTION, TAG_ID)
+                serializer.startTag(NS_TRANSACTION, TAG_ID)
+                serializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
+                serializer.text(txUID)
+                serializer.endTag(NS_TRANSACTION, TAG_ID)
                 // currency
-                xmlSerializer.startTag(NS_TRANSACTION, TAG_CURRENCY)
-                xmlSerializer.startTag(NS_COMMODITY, TAG_SPACE)
-                xmlSerializer.text(trnCommodity.namespace)
-                xmlSerializer.endTag(NS_COMMODITY, TAG_SPACE)
-                xmlSerializer.startTag(NS_COMMODITY, TAG_ID)
-                xmlSerializer.text(trnCommodity.currencyCode)
-                xmlSerializer.endTag(NS_COMMODITY, TAG_ID)
-                xmlSerializer.endTag(NS_TRANSACTION, TAG_CURRENCY)
+                serializer.startTag(NS_TRANSACTION, TAG_CURRENCY)
+                serializer.startTag(NS_COMMODITY, TAG_SPACE)
+                serializer.text(trnCommodity.namespace)
+                serializer.endTag(NS_COMMODITY, TAG_SPACE)
+                serializer.startTag(NS_COMMODITY, TAG_ID)
+                serializer.text(trnCommodity.currencyCode)
+                serializer.endTag(NS_COMMODITY, TAG_ID)
+                serializer.endTag(NS_TRANSACTION, TAG_CURRENCY)
                 // number
                 val number = cursor.getString("trans_num")
                 if (!number.isNullOrEmpty()) {
-                    xmlSerializer.startTag(NS_TRANSACTION, TAG_NUM)
-                    xmlSerializer.text(number)
-                    xmlSerializer.endTag(NS_TRANSACTION, TAG_NUM)
+                    serializer.startTag(NS_TRANSACTION, TAG_NUM)
+                    serializer.text(number)
+                    serializer.endTag(NS_TRANSACTION, TAG_NUM)
                 }
                 // date posted, time which user put on the transaction
                 val datePosted = cursor.getLong("trans_time")
                 val strDate = formatDateTime(datePosted)
-                xmlSerializer.startTag(NS_TRANSACTION, TAG_DATE_POSTED)
-                xmlSerializer.startTag(NS_TS, TAG_DATE)
-                xmlSerializer.text(strDate)
-                xmlSerializer.endTag(NS_TS, TAG_DATE)
-                xmlSerializer.endTag(NS_TRANSACTION, TAG_DATE_POSTED)
+                serializer.startTag(NS_TRANSACTION, TAG_DATE_POSTED)
+                serializer.startTag(NS_TS, TAG_DATE)
+                serializer.text(strDate)
+                serializer.endTag(NS_TS, TAG_DATE)
+                serializer.endTag(NS_TRANSACTION, TAG_DATE_POSTED)
 
                 // date entered, time when the transaction was actually created
                 val timeEntered = getTimestampFromUtcString(cursor.getString("trans_date_posted")!!)
-                xmlSerializer.startTag(NS_TRANSACTION, TAG_DATE_ENTERED)
-                xmlSerializer.startTag(NS_TS, TAG_DATE)
-                xmlSerializer.text(formatDateTime(timeEntered))
-                xmlSerializer.endTag(NS_TS, TAG_DATE)
-                xmlSerializer.endTag(NS_TRANSACTION, TAG_DATE_ENTERED)
+                serializer.startTag(NS_TRANSACTION, TAG_DATE_ENTERED)
+                serializer.startTag(NS_TS, TAG_DATE)
+                serializer.text(formatDateTime(timeEntered))
+                serializer.endTag(NS_TS, TAG_DATE)
+                serializer.endTag(NS_TRANSACTION, TAG_DATE_ENTERED)
 
                 // description
-                xmlSerializer.startTag(NS_TRANSACTION, TAG_DESCRIPTION)
-                xmlSerializer.text(transaction.description)
-                xmlSerializer.endTag(NS_TRANSACTION, TAG_DESCRIPTION)
+                serializer.startTag(NS_TRANSACTION, TAG_DESCRIPTION)
+                serializer.text(transaction.description)
+                serializer.endTag(NS_TRANSACTION, TAG_DESCRIPTION)
                 txUIDPrevious = txUID
 
                 // slots
@@ -605,33 +611,33 @@ class GncXmlExporter(
                 }
 
                 if (!slots.isEmpty()) {
-                    xmlSerializer.startTag(NS_TRANSACTION, TAG_SLOTS)
-                    writeSlots(xmlSerializer, slots)
-                    xmlSerializer.endTag(NS_TRANSACTION, TAG_SLOTS)
+                    serializer.startTag(NS_TRANSACTION, TAG_SLOTS)
+                    writeSlots(serializer, slots)
+                    serializer.endTag(NS_TRANSACTION, TAG_SLOTS)
                 }
 
                 // splits start
-                xmlSerializer.startTag(NS_TRANSACTION, TAG_SPLITS)
+                serializer.startTag(NS_TRANSACTION, TAG_SPLITS)
             }
-            xmlSerializer.startTag(NS_TRANSACTION, TAG_SPLIT)
+            serializer.startTag(NS_TRANSACTION, TAG_SPLIT)
             // split id
-            xmlSerializer.startTag(NS_SPLIT, TAG_ID)
-            xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
-            xmlSerializer.text(cursor.getString("split_uid"))
-            xmlSerializer.endTag(NS_SPLIT, TAG_ID)
+            serializer.startTag(NS_SPLIT, TAG_ID)
+            serializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
+            serializer.text(cursor.getString("split_uid"))
+            serializer.endTag(NS_SPLIT, TAG_ID)
             // memo
             val memo = cursor.getString("split_memo")
             if (!memo.isNullOrEmpty()) {
-                xmlSerializer.startTag(NS_SPLIT, TAG_MEMO)
-                xmlSerializer.text(memo)
-                xmlSerializer.endTag(NS_SPLIT, TAG_MEMO)
+                serializer.startTag(NS_SPLIT, TAG_MEMO)
+                serializer.text(memo)
+                serializer.endTag(NS_SPLIT, TAG_MEMO)
             }
             // reconciled
-            xmlSerializer.startTag(NS_SPLIT, TAG_RECONCILED_STATE)
+            serializer.startTag(NS_SPLIT, TAG_RECONCILED_STATE)
             //FIXME: retrieve reconciled state from the split in the db
-            // xmlSerializer.text(split.reconcileState);
-            xmlSerializer.text("n")
-            xmlSerializer.endTag(NS_SPLIT, TAG_RECONCILED_STATE)
+            // serializer.text(split.reconcileState);
+            serializer.text("n")
+            serializer.endTag(NS_SPLIT, TAG_RECONCILED_STATE)
             //todo: if split is reconciled, add reconciled date
             // value, in the transaction's currency
             val trxType = TransactionType.of(cursor.getString("split_type"))
@@ -643,9 +649,9 @@ class GncXmlExporter(
                 strValue = (if (trxType == TransactionType.CREDIT) "-" else "") +
                         splitValueNum + "/" + splitValueDenom
             }
-            xmlSerializer.startTag(NS_SPLIT, TAG_VALUE)
-            xmlSerializer.text(strValue)
-            xmlSerializer.endTag(NS_SPLIT, TAG_VALUE)
+            serializer.startTag(NS_SPLIT, TAG_VALUE)
+            serializer.text(strValue)
+            serializer.endTag(NS_SPLIT, TAG_VALUE)
             // quantity, in the split account's currency
             val splitQuantityNum = cursor.getLong("split_quantity_num")
             val splitQuantityDenom = cursor.getLong("split_quantity_denom")
@@ -654,15 +660,15 @@ class GncXmlExporter(
                 strValue = (if (trxType == TransactionType.CREDIT) "-" else "") +
                         splitQuantityNum + "/" + splitQuantityDenom
             }
-            xmlSerializer.startTag(NS_SPLIT, TAG_QUANTITY)
-            xmlSerializer.text(strValue)
-            xmlSerializer.endTag(NS_SPLIT, TAG_QUANTITY)
+            serializer.startTag(NS_SPLIT, TAG_QUANTITY)
+            serializer.text(strValue)
+            serializer.endTag(NS_SPLIT, TAG_QUANTITY)
             // account guid
-            xmlSerializer.startTag(NS_SPLIT, TAG_ACCOUNT)
-            xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
+            serializer.startTag(NS_SPLIT, TAG_ACCOUNT)
+            serializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
             val splitAccountUID = cursor.getString("split_acct_uid")!!
-            xmlSerializer.text(splitAccountUID)
-            xmlSerializer.endTag(NS_SPLIT, TAG_ACCOUNT)
+            serializer.text(splitAccountUID)
+            serializer.endTag(NS_SPLIT, TAG_ACCOUNT)
 
             //if we are exporting a template transaction, then we need to add some extra slots
             if (isTemplates) {
@@ -690,49 +696,49 @@ class GncXmlExporter(
                 }
                 slots.add(Slot.frame(KEY_SCHED_XACTION, frame))
 
-                xmlSerializer.startTag(NS_SPLIT, TAG_SLOTS)
-                writeSlots(xmlSerializer, slots)
-                xmlSerializer.endTag(NS_SPLIT, TAG_SLOTS)
+                serializer.startTag(NS_SPLIT, TAG_SLOTS)
+                writeSlots(serializer, slots)
+                serializer.endTag(NS_SPLIT, TAG_SLOTS)
             }
 
-            xmlSerializer.endTag(NS_TRANSACTION, TAG_SPLIT)
+            serializer.endTag(NS_TRANSACTION, TAG_SPLIT)
         } while (cursor.moveToNext())
         if (txUIDPrevious.isNotEmpty()) { // there's an unfinished transaction, close it
-            xmlSerializer.endTag(NS_TRANSACTION, TAG_SPLITS)
-            xmlSerializer.endTag(NS_GNUCASH, TAG_TRANSACTION)
+            serializer.endTag(NS_TRANSACTION, TAG_SPLITS)
+            serializer.endTag(NS_GNUCASH, TAG_TRANSACTION)
         }
         cursor.close()
     }
 
     @Throws(IOException::class)
-    private fun writeTemplateTransactions(xmlSerializer: XmlSerializer) {
+    private fun writeTemplateTransactions(serializer: XmlSerializer) {
         cancellationSignal.throwIfCanceled()
         if (transactionsDbAdapter.templateTransactionsCount > 0) {
-            xmlSerializer.startTag(NS_GNUCASH, TAG_TEMPLATE_TRANSACTIONS)
-            writeAccounts(xmlSerializer, true);
-            writeTransactions(xmlSerializer, true)
-            xmlSerializer.endTag(NS_GNUCASH, TAG_TEMPLATE_TRANSACTIONS)
+            serializer.startTag(NS_GNUCASH, TAG_TEMPLATE_TRANSACTIONS)
+            writeAccounts(serializer, true);
+            writeTransactions(serializer, true)
+            serializer.endTag(NS_GNUCASH, TAG_TEMPLATE_TRANSACTIONS)
         }
     }
 
     /**
      * Serializes [ScheduledAction]s from the database to XML
      *
-     * @param xmlSerializer XML serializer
+     * @param serializer XML serializer
      * @throws IOException
      */
     @Throws(IOException::class)
-    private fun writeScheduledTransactions(xmlSerializer: XmlSerializer) {
+    private fun writeScheduledTransactions(serializer: XmlSerializer) {
         Timber.i("write scheduled transactions")
         val actions = scheduledActionDbAdapter.getRecords(ScheduledAction.ActionType.TRANSACTION)
         for (scheduledAction in actions) {
-            writeScheduledTransaction(xmlSerializer, scheduledAction)
+            writeScheduledTransaction(serializer, scheduledAction)
         }
     }
 
     @Throws(IOException::class)
     private fun writeScheduledTransaction(
-        xmlSerializer: XmlSerializer,
+        serializer: XmlSerializer,
         scheduledAction: ScheduledAction
     ) {
         if (scheduledAction.actionType != ScheduledAction.ActionType.TRANSACTION) {
@@ -763,156 +769,156 @@ class GncXmlExporter(
         }
         listener?.onSchedule(scheduledAction)
 
-        xmlSerializer.startTag(NS_GNUCASH, TAG_SCHEDULED_ACTION)
-        xmlSerializer.attribute(null, ATTR_KEY_VERSION, BOOK_VERSION)
+        serializer.startTag(NS_GNUCASH, TAG_SCHEDULED_ACTION)
+        serializer.attribute(null, ATTR_KEY_VERSION, BOOK_VERSION)
 
-        xmlSerializer.startTag(NS_SX, TAG_ID)
-        xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
-        xmlSerializer.text(uid)
-        xmlSerializer.endTag(NS_SX, TAG_ID)
+        serializer.startTag(NS_SX, TAG_ID)
+        serializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
+        serializer.text(uid)
+        serializer.endTag(NS_SX, TAG_ID)
 
-        var name: String? = scheduledAction.name
-        if (name.isNullOrEmpty()) {
+        var name = scheduledAction.name
+        if (name.isEmpty()) {
             name = transactionsDbAdapter.getAttribute(txUID, TransactionEntry.COLUMN_DESCRIPTION)
         }
-        xmlSerializer.startTag(NS_SX, TAG_NAME)
-        xmlSerializer.text(name)
-        xmlSerializer.endTag(NS_SX, TAG_NAME)
+        serializer.startTag(NS_SX, TAG_NAME)
+        serializer.text(name)
+        serializer.endTag(NS_SX, TAG_NAME)
 
-        xmlSerializer.startTag(NS_SX, TAG_ENABLED)
-        xmlSerializer.text(if (scheduledAction.isEnabled) "y" else "n")
-        xmlSerializer.endTag(NS_SX, TAG_ENABLED)
-        xmlSerializer.startTag(NS_SX, TAG_AUTO_CREATE)
-        xmlSerializer.text(if (scheduledAction.isAutoCreate) "y" else "n")
-        xmlSerializer.endTag(NS_SX, TAG_AUTO_CREATE)
-        xmlSerializer.startTag(NS_SX, TAG_AUTO_CREATE_NOTIFY)
-        xmlSerializer.text(if (scheduledAction.isAutoCreateNotify) "y" else "n")
-        xmlSerializer.endTag(NS_SX, TAG_AUTO_CREATE_NOTIFY)
-        xmlSerializer.startTag(NS_SX, TAG_ADVANCE_CREATE_DAYS)
-        xmlSerializer.text(scheduledAction.advanceCreateDays.toString())
-        xmlSerializer.endTag(NS_SX, TAG_ADVANCE_CREATE_DAYS)
-        xmlSerializer.startTag(NS_SX, TAG_ADVANCE_REMIND_DAYS)
-        xmlSerializer.text(scheduledAction.advanceRemindDays.toString())
-        xmlSerializer.endTag(NS_SX, TAG_ADVANCE_REMIND_DAYS)
-        xmlSerializer.startTag(NS_SX, TAG_INSTANCE_COUNT)
+        serializer.startTag(NS_SX, TAG_ENABLED)
+        serializer.text(if (scheduledAction.isEnabled) "y" else "n")
+        serializer.endTag(NS_SX, TAG_ENABLED)
+        serializer.startTag(NS_SX, TAG_AUTO_CREATE)
+        serializer.text(if (scheduledAction.isAutoCreate) "y" else "n")
+        serializer.endTag(NS_SX, TAG_AUTO_CREATE)
+        serializer.startTag(NS_SX, TAG_AUTO_CREATE_NOTIFY)
+        serializer.text(if (scheduledAction.isAutoCreateNotify) "y" else "n")
+        serializer.endTag(NS_SX, TAG_AUTO_CREATE_NOTIFY)
+        serializer.startTag(NS_SX, TAG_ADVANCE_CREATE_DAYS)
+        serializer.text(scheduledAction.advanceCreateDays.toString())
+        serializer.endTag(NS_SX, TAG_ADVANCE_CREATE_DAYS)
+        serializer.startTag(NS_SX, TAG_ADVANCE_REMIND_DAYS)
+        serializer.text(scheduledAction.advanceRemindDays.toString())
+        serializer.endTag(NS_SX, TAG_ADVANCE_REMIND_DAYS)
+        serializer.startTag(NS_SX, TAG_INSTANCE_COUNT)
         val scheduledActionUID = scheduledAction.uid
         val instanceCount = scheduledActionDbAdapter.getActionInstanceCount(scheduledActionUID)
-        xmlSerializer.text(instanceCount.toString())
-        xmlSerializer.endTag(NS_SX, TAG_INSTANCE_COUNT)
+        serializer.text(instanceCount.toString())
+        serializer.endTag(NS_SX, TAG_INSTANCE_COUNT)
 
         //start date
         val scheduleStartTime = scheduledAction.startDate
-        writeDate(xmlSerializer, NS_SX, TAG_START, scheduleStartTime)
+        writeDate(serializer, NS_SX, TAG_START, scheduleStartTime)
 
         val lastRunTime = scheduledAction.lastRunTime
         if (lastRunTime > 0) {
-            writeDate(xmlSerializer, NS_SX, TAG_LAST, lastRunTime)
+            writeDate(serializer, NS_SX, TAG_LAST, lastRunTime)
         }
 
         val endTime = scheduledAction.endDate
         if (endTime > 0) {
             //end date
-            writeDate(xmlSerializer, NS_SX, TAG_END, endTime)
+            writeDate(serializer, NS_SX, TAG_END, endTime)
         } else { //add number of occurrences
             val totalPlannedCount = scheduledAction.totalPlannedExecutionCount
             if (totalPlannedCount > 0) {
-                xmlSerializer.startTag(NS_SX, TAG_NUM_OCCUR)
-                xmlSerializer.text(totalPlannedCount.toString())
-                xmlSerializer.endTag(NS_SX, TAG_NUM_OCCUR)
+                serializer.startTag(NS_SX, TAG_NUM_OCCUR)
+                serializer.text(totalPlannedCount.toString())
+                serializer.endTag(NS_SX, TAG_NUM_OCCUR)
             }
 
             //remaining occurrences
             val remainingCount = totalPlannedCount - scheduledAction.instanceCount
             if (remainingCount > 0) {
-                xmlSerializer.startTag(NS_SX, TAG_REM_OCCUR)
-                xmlSerializer.text(remainingCount.toString())
-                xmlSerializer.endTag(NS_SX, TAG_REM_OCCUR)
+                serializer.startTag(NS_SX, TAG_REM_OCCUR)
+                serializer.text(remainingCount.toString())
+                serializer.endTag(NS_SX, TAG_REM_OCCUR)
             }
         }
 
         val tag = scheduledAction.tag
         if (!tag.isNullOrEmpty()) {
-            xmlSerializer.startTag(NS_SX, TAG_TAG)
-            xmlSerializer.text(tag)
-            xmlSerializer.endTag(NS_SX, TAG_TAG)
+            serializer.startTag(NS_SX, TAG_TAG)
+            serializer.text(tag)
+            serializer.endTag(NS_SX, TAG_TAG)
         }
 
-        xmlSerializer.startTag(NS_SX, TAG_TEMPLATE_ACCOUNT)
-        xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
-        xmlSerializer.text(accountUID)
-        xmlSerializer.endTag(NS_SX, TAG_TEMPLATE_ACCOUNT)
+        serializer.startTag(NS_SX, TAG_TEMPLATE_ACCOUNT)
+        serializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
+        serializer.text(accountUID)
+        serializer.endTag(NS_SX, TAG_TEMPLATE_ACCOUNT)
 
         // FIXME: 11.10.2015 Retrieve the information for this section from the recurrence table */
-        xmlSerializer.startTag(NS_SX, TAG_SCHEDULE)
-        xmlSerializer.startTag(NS_GNUCASH, TAG_RECURRENCE)
-        xmlSerializer.attribute(null, ATTR_KEY_VERSION, RECURRENCE_VERSION)
-        writeRecurrence(xmlSerializer, scheduledAction.recurrence)
-        xmlSerializer.endTag(NS_GNUCASH, TAG_RECURRENCE)
-        xmlSerializer.endTag(NS_SX, TAG_SCHEDULE)
+        serializer.startTag(NS_SX, TAG_SCHEDULE)
+        serializer.startTag(NS_GNUCASH, TAG_RECURRENCE)
+        serializer.attribute(null, ATTR_KEY_VERSION, RECURRENCE_VERSION)
+        writeRecurrence(serializer, scheduledAction.recurrence)
+        serializer.endTag(NS_GNUCASH, TAG_RECURRENCE)
+        serializer.endTag(NS_SX, TAG_SCHEDULE)
 
-        xmlSerializer.endTag(NS_GNUCASH, TAG_SCHEDULED_ACTION)
+        serializer.endTag(NS_GNUCASH, TAG_SCHEDULED_ACTION)
     }
 
     /**
      * Serializes a date as a `tag` which has a nested [GncXmlHelper.TAG_GDATE] which
      * has the date as a text element formatted.
      *
-     * @param xmlSerializer XML serializer
+     * @param serializer XML serializer
      * @param namespace     The tag namespace.
      * @param tag           Enclosing tag
      * @param timeMillis    Date to be formatted and output
      */
     @Throws(IOException::class)
     private fun writeDate(
-        xmlSerializer: XmlSerializer,
+        serializer: XmlSerializer,
         namespace: String?,
         tag: String,
         timeMillis: Long
     ) {
-        xmlSerializer.startTag(namespace, tag)
-        xmlSerializer.startTag(null, TAG_GDATE)
-        xmlSerializer.text(formatDate(timeMillis))
-        xmlSerializer.endTag(null, TAG_GDATE)
-        xmlSerializer.endTag(namespace, tag)
+        serializer.startTag(namespace, tag)
+        serializer.startTag(null, TAG_GDATE)
+        serializer.text(formatDate(timeMillis))
+        serializer.endTag(null, TAG_GDATE)
+        serializer.endTag(namespace, tag)
     }
 
     @Throws(IOException::class)
-    private fun writeCommodities(xmlSerializer: XmlSerializer, commodities: List<Commodity>) {
+    private fun writeCommodities(serializer: XmlSerializer, commodities: List<Commodity>) {
         Timber.i("write commodities")
         var hasTemplate = false
         for (commodity in commodities) {
-            writeCommodity(xmlSerializer, commodity)
+            writeCommodity(serializer, commodity)
             if (commodity.isTemplate) {
                 hasTemplate = true
             }
         }
         if (!hasTemplate) {
-            writeCommodity(xmlSerializer, Commodity.template)
+            writeCommodity(serializer, Commodity.template)
         }
     }
 
     @Throws(IOException::class)
-    private fun writeCommodities(xmlSerializer: XmlSerializer) {
+    private fun writeCommodities(serializer: XmlSerializer) {
         val commodities = accountsDbAdapter.commoditiesInUse
-        writeCommodities(xmlSerializer, commodities)
+        writeCommodities(serializer, commodities)
     }
 
     @Throws(IOException::class)
-    private fun writeCommodity(xmlSerializer: XmlSerializer, commodity: Commodity) {
+    private fun writeCommodity(serializer: XmlSerializer, commodity: Commodity) {
         listener?.onCommodity(commodity)
-        xmlSerializer.startTag(NS_GNUCASH, TAG_COMMODITY)
-        xmlSerializer.attribute(null, ATTR_KEY_VERSION, BOOK_VERSION)
-        xmlSerializer.startTag(NS_COMMODITY, TAG_SPACE)
-        xmlSerializer.text(commodity.namespace)
-        xmlSerializer.endTag(NS_COMMODITY, TAG_SPACE)
-        xmlSerializer.startTag(NS_COMMODITY, TAG_ID)
-        xmlSerializer.text(commodity.currencyCode)
-        xmlSerializer.endTag(NS_COMMODITY, TAG_ID)
+        serializer.startTag(NS_GNUCASH, TAG_COMMODITY)
+        serializer.attribute(null, ATTR_KEY_VERSION, BOOK_VERSION)
+        serializer.startTag(NS_COMMODITY, TAG_SPACE)
+        serializer.text(commodity.namespace)
+        serializer.endTag(NS_COMMODITY, TAG_SPACE)
+        serializer.startTag(NS_COMMODITY, TAG_ID)
+        serializer.text(commodity.currencyCode)
+        serializer.endTag(NS_COMMODITY, TAG_ID)
         if (CommoditiesXmlHandler.SOURCE_CURRENCY != commodity.quoteSource) {
             if (!commodity.fullname.isNullOrEmpty() && !commodity.isCurrency) {
-                xmlSerializer.startTag(NS_COMMODITY, TAG_NAME)
-                xmlSerializer.text(commodity.fullname)
-                xmlSerializer.endTag(NS_COMMODITY, TAG_NAME)
+                serializer.startTag(NS_COMMODITY, TAG_NAME)
+                serializer.text(commodity.fullname)
+                serializer.endTag(NS_COMMODITY, TAG_NAME)
             }
             val cusip = commodity.cusip
             if (!cusip.isNullOrEmpty()) {
@@ -920,99 +926,99 @@ class GncXmlExporter(
                     // "exchange-code is stored in ISIN/CUSIP"
                     cusip.toInt()
                 } catch (_: NumberFormatException) {
-                    xmlSerializer.startTag(NS_COMMODITY, TAG_XCODE)
-                    xmlSerializer.text(cusip)
-                    xmlSerializer.endTag(NS_COMMODITY, TAG_XCODE)
+                    serializer.startTag(NS_COMMODITY, TAG_XCODE)
+                    serializer.text(cusip)
+                    serializer.endTag(NS_COMMODITY, TAG_XCODE)
                 }
             }
-            xmlSerializer.startTag(NS_COMMODITY, TAG_FRACTION)
-            xmlSerializer.text(commodity.smallestFraction.toString())
-            xmlSerializer.endTag(NS_COMMODITY, TAG_FRACTION)
+            serializer.startTag(NS_COMMODITY, TAG_FRACTION)
+            serializer.text(commodity.smallestFraction.toString())
+            serializer.endTag(NS_COMMODITY, TAG_FRACTION)
         }
         if (commodity.quoteFlag) {
-            xmlSerializer.startTag(NS_COMMODITY, TAG_GET_QUOTES)
-            xmlSerializer.endTag(NS_COMMODITY, TAG_GET_QUOTES)
-            xmlSerializer.startTag(NS_COMMODITY, TAG_QUOTE_SOURCE)
-            xmlSerializer.text(commodity.quoteSource)
-            xmlSerializer.endTag(NS_COMMODITY, TAG_QUOTE_SOURCE)
+            serializer.startTag(NS_COMMODITY, TAG_GET_QUOTES)
+            serializer.endTag(NS_COMMODITY, TAG_GET_QUOTES)
+            serializer.startTag(NS_COMMODITY, TAG_QUOTE_SOURCE)
+            serializer.text(commodity.quoteSource)
+            serializer.endTag(NS_COMMODITY, TAG_QUOTE_SOURCE)
             val tz = commodity.quoteTimeZone
-            xmlSerializer.startTag(NS_COMMODITY, TAG_QUOTE_TZ)
+            serializer.startTag(NS_COMMODITY, TAG_QUOTE_TZ)
             if (tz != null) {
-                xmlSerializer.text(tz.id)
+                serializer.text(tz.id)
             }
-            xmlSerializer.endTag(NS_COMMODITY, TAG_QUOTE_TZ)
+            serializer.endTag(NS_COMMODITY, TAG_QUOTE_TZ)
         }
-        xmlSerializer.endTag(NS_GNUCASH, TAG_COMMODITY)
+        serializer.endTag(NS_GNUCASH, TAG_COMMODITY)
     }
 
     @Throws(IOException::class)
-    private fun writePrices(xmlSerializer: XmlSerializer) {
+    private fun writePrices(serializer: XmlSerializer) {
         val prices = pricesDbAdapter.allRecords
         if (prices.isEmpty()) return
 
         Timber.i("write prices")
-        xmlSerializer.startTag(NS_GNUCASH, TAG_PRICEDB)
-        xmlSerializer.attribute(null, ATTR_KEY_VERSION, "1")
+        serializer.startTag(NS_GNUCASH, TAG_PRICEDB)
+        serializer.attribute(null, ATTR_KEY_VERSION, "1")
         for (price in prices) {
-            writePrice(xmlSerializer, price)
+            writePrice(serializer, price)
         }
-        xmlSerializer.endTag(NS_GNUCASH, TAG_PRICEDB)
+        serializer.endTag(NS_GNUCASH, TAG_PRICEDB)
     }
 
     @Throws(IOException::class)
-    private fun writePrice(xmlSerializer: XmlSerializer, price: Price) {
+    private fun writePrice(serializer: XmlSerializer, price: Price) {
         cancellationSignal.throwIfCanceled()
         listener?.onPrice(price)
-        xmlSerializer.startTag(null, TAG_PRICE)
+        serializer.startTag(null, TAG_PRICE)
         // GUID
-        xmlSerializer.startTag(NS_PRICE, TAG_ID)
-        xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
-        xmlSerializer.text(price.uid)
-        xmlSerializer.endTag(NS_PRICE, TAG_ID)
+        serializer.startTag(NS_PRICE, TAG_ID)
+        serializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
+        serializer.text(price.uid)
+        serializer.endTag(NS_PRICE, TAG_ID)
         // commodity
         val commodity = price.commodity
-        xmlSerializer.startTag(NS_PRICE, TAG_COMMODITY)
-        xmlSerializer.startTag(NS_COMMODITY, TAG_SPACE)
-        xmlSerializer.text(commodity.namespace)
-        xmlSerializer.endTag(NS_COMMODITY, TAG_SPACE)
-        xmlSerializer.startTag(NS_COMMODITY, TAG_ID)
-        xmlSerializer.text(commodity.currencyCode)
-        xmlSerializer.endTag(NS_COMMODITY, TAG_ID)
-        xmlSerializer.endTag(NS_PRICE, TAG_COMMODITY)
+        serializer.startTag(NS_PRICE, TAG_COMMODITY)
+        serializer.startTag(NS_COMMODITY, TAG_SPACE)
+        serializer.text(commodity.namespace)
+        serializer.endTag(NS_COMMODITY, TAG_SPACE)
+        serializer.startTag(NS_COMMODITY, TAG_ID)
+        serializer.text(commodity.currencyCode)
+        serializer.endTag(NS_COMMODITY, TAG_ID)
+        serializer.endTag(NS_PRICE, TAG_COMMODITY)
         // currency
         val currency = price.currency
-        xmlSerializer.startTag(NS_PRICE, TAG_CURRENCY)
-        xmlSerializer.startTag(NS_COMMODITY, TAG_SPACE)
-        xmlSerializer.text(currency.namespace)
-        xmlSerializer.endTag(NS_COMMODITY, TAG_SPACE)
-        xmlSerializer.startTag(NS_COMMODITY, TAG_ID)
-        xmlSerializer.text(currency.currencyCode)
-        xmlSerializer.endTag(NS_COMMODITY, TAG_ID)
-        xmlSerializer.endTag(NS_PRICE, TAG_CURRENCY)
+        serializer.startTag(NS_PRICE, TAG_CURRENCY)
+        serializer.startTag(NS_COMMODITY, TAG_SPACE)
+        serializer.text(currency.namespace)
+        serializer.endTag(NS_COMMODITY, TAG_SPACE)
+        serializer.startTag(NS_COMMODITY, TAG_ID)
+        serializer.text(currency.currencyCode)
+        serializer.endTag(NS_COMMODITY, TAG_ID)
+        serializer.endTag(NS_PRICE, TAG_CURRENCY)
         // time
-        xmlSerializer.startTag(NS_PRICE, TAG_TIME)
-        xmlSerializer.startTag(NS_TS, TAG_DATE)
-        xmlSerializer.text(formatDateTime(price.date))
-        xmlSerializer.endTag(NS_TS, TAG_DATE)
-        xmlSerializer.endTag(NS_PRICE, TAG_TIME)
+        serializer.startTag(NS_PRICE, TAG_TIME)
+        serializer.startTag(NS_TS, TAG_DATE)
+        serializer.text(formatDateTime(price.date))
+        serializer.endTag(NS_TS, TAG_DATE)
+        serializer.endTag(NS_PRICE, TAG_TIME)
         // source
         if (!price.source.isNullOrEmpty()) {
-            xmlSerializer.startTag(NS_PRICE, TAG_SOURCE)
-            xmlSerializer.text(price.source)
-            xmlSerializer.endTag(NS_PRICE, TAG_SOURCE)
+            serializer.startTag(NS_PRICE, TAG_SOURCE)
+            serializer.text(price.source)
+            serializer.endTag(NS_PRICE, TAG_SOURCE)
         }
         // type, optional
         val type = price.type
         if (type != Price.Type.Unknown) {
-            xmlSerializer.startTag(NS_PRICE, TAG_TYPE)
-            xmlSerializer.text(type.value)
-            xmlSerializer.endTag(NS_PRICE, TAG_TYPE)
+            serializer.startTag(NS_PRICE, TAG_TYPE)
+            serializer.text(type.value)
+            serializer.endTag(NS_PRICE, TAG_TYPE)
         }
         // value
-        xmlSerializer.startTag(NS_PRICE, TAG_VALUE)
-        xmlSerializer.text("${price.valueNum}/${price.valueDenom}")
-        xmlSerializer.endTag(NS_PRICE, TAG_VALUE)
-        xmlSerializer.endTag(null, TAG_PRICE)
+        serializer.startTag(NS_PRICE, TAG_VALUE)
+        serializer.text("${price.valueNum}/${price.valueDenom}")
+        serializer.endTag(NS_PRICE, TAG_VALUE)
+        serializer.endTag(null, TAG_PRICE)
     }
 
     /**
@@ -1021,22 +1027,22 @@ class GncXmlExporter(
      * This is because there are different recurrence start tags for transactions and budgets.<br></br>
      * So make sure to write the recurrence start/closing tags before/after calling this method.
      *
-     * @param xmlSerializer XML serializer
+     * @param serializer XML serializer
      * @param recurrence    Recurrence object
      */
     @Throws(IOException::class)
-    private fun writeRecurrence(xmlSerializer: XmlSerializer, recurrence: Recurrence?) {
+    private fun writeRecurrence(serializer: XmlSerializer, recurrence: Recurrence?) {
         if (recurrence == null) return
         val periodType = recurrence.periodType
-        xmlSerializer.startTag(NS_RECURRENCE, TAG_MULT)
-        xmlSerializer.text(recurrence.multiplier.toString())
-        xmlSerializer.endTag(NS_RECURRENCE, TAG_MULT)
-        xmlSerializer.startTag(NS_RECURRENCE, TAG_PERIOD_TYPE)
-        xmlSerializer.text(periodType.value)
-        xmlSerializer.endTag(NS_RECURRENCE, TAG_PERIOD_TYPE)
+        serializer.startTag(NS_RECURRENCE, TAG_MULT)
+        serializer.text(recurrence.multiplier.toString())
+        serializer.endTag(NS_RECURRENCE, TAG_MULT)
+        serializer.startTag(NS_RECURRENCE, TAG_PERIOD_TYPE)
+        serializer.text(periodType.value)
+        serializer.endTag(NS_RECURRENCE, TAG_PERIOD_TYPE)
 
         val recurrenceStartTime = recurrence.periodStart
-        writeDate(xmlSerializer, NS_RECURRENCE, TAG_START, recurrenceStartTime)
+        writeDate(serializer, NS_RECURRENCE, TAG_START, recurrenceStartTime)
 
         val weekendAdjust = recurrence.weekendAdjust
         if (weekendAdjust != WeekendAdjust.NONE) {
@@ -1046,67 +1052,67 @@ class GncXmlExporter(
             to improve this broken backward compatibility for most of the
             cases, we don't write out this XML element as long as it is
             only "none". */
-            xmlSerializer.startTag(NS_RECURRENCE, GncXmlHelper.TAG_WEEKEND_ADJ)
-            xmlSerializer.text(weekendAdjust.value)
-            xmlSerializer.endTag(NS_RECURRENCE, GncXmlHelper.TAG_WEEKEND_ADJ)
+            serializer.startTag(NS_RECURRENCE, GncXmlHelper.TAG_WEEKEND_ADJ)
+            serializer.text(weekendAdjust.value)
+            serializer.endTag(NS_RECURRENCE, GncXmlHelper.TAG_WEEKEND_ADJ)
         }
     }
 
     @Throws(IOException::class)
-    private fun writeBudgets(xmlSerializer: XmlSerializer) {
+    private fun writeBudgets(serializer: XmlSerializer) {
         Timber.i("write budgets")
         budgetsDbAdapter.fetchAllRecords().forEach { cursor ->
             cancellationSignal.throwIfCanceled()
             val budget = budgetsDbAdapter.buildModelInstance(cursor)
-            writeBudget(xmlSerializer, budget)
+            writeBudget(serializer, budget)
         }
     }
 
     @Throws(IOException::class)
-    private fun writeBudget(xmlSerializer: XmlSerializer, budget: Budget) {
+    private fun writeBudget(serializer: XmlSerializer, budget: Budget) {
         listener?.onBudget(budget)
-        xmlSerializer.startTag(NS_GNUCASH, TAG_BUDGET)
-        xmlSerializer.attribute(null, ATTR_KEY_VERSION, BOOK_VERSION)
+        serializer.startTag(NS_GNUCASH, TAG_BUDGET)
+        serializer.attribute(null, ATTR_KEY_VERSION, BOOK_VERSION)
         // budget id
-        xmlSerializer.startTag(NS_BUDGET, TAG_ID)
-        xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
-        xmlSerializer.text(budget.uid)
-        xmlSerializer.endTag(NS_BUDGET, TAG_ID)
+        serializer.startTag(NS_BUDGET, TAG_ID)
+        serializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
+        serializer.text(budget.uid)
+        serializer.endTag(NS_BUDGET, TAG_ID)
         // budget name
-        xmlSerializer.startTag(NS_BUDGET, TAG_NAME)
-        xmlSerializer.text(budget.name)
-        xmlSerializer.endTag(NS_BUDGET, TAG_NAME)
+        serializer.startTag(NS_BUDGET, TAG_NAME)
+        serializer.text(budget.name)
+        serializer.endTag(NS_BUDGET, TAG_NAME)
         // budget description
         val description = budget.description
         if (!description.isNullOrEmpty()) {
-            xmlSerializer.startTag(NS_BUDGET, TAG_DESCRIPTION)
-            xmlSerializer.text(description)
-            xmlSerializer.endTag(NS_BUDGET, TAG_DESCRIPTION)
+            serializer.startTag(NS_BUDGET, TAG_DESCRIPTION)
+            serializer.text(description)
+            serializer.endTag(NS_BUDGET, TAG_DESCRIPTION)
         }
         // budget periods
-        xmlSerializer.startTag(NS_BUDGET, TAG_NUM_PERIODS)
-        xmlSerializer.text(budget.numberOfPeriods.toString())
-        xmlSerializer.endTag(NS_BUDGET, TAG_NUM_PERIODS)
+        serializer.startTag(NS_BUDGET, TAG_NUM_PERIODS)
+        serializer.text(budget.numberOfPeriods.toString())
+        serializer.endTag(NS_BUDGET, TAG_NUM_PERIODS)
         // budget recurrence
-        xmlSerializer.startTag(NS_BUDGET, TAG_RECURRENCE)
-        xmlSerializer.attribute(null, ATTR_KEY_VERSION, RECURRENCE_VERSION)
-        writeRecurrence(xmlSerializer, budget.recurrence)
-        xmlSerializer.endTag(NS_BUDGET, TAG_RECURRENCE)
+        serializer.startTag(NS_BUDGET, TAG_RECURRENCE)
+        serializer.attribute(null, ATTR_KEY_VERSION, RECURRENCE_VERSION)
+        writeRecurrence(serializer, budget.recurrence)
+        serializer.endTag(NS_BUDGET, TAG_RECURRENCE)
 
         // budget as slots
-        xmlSerializer.startTag(NS_BUDGET, TAG_SLOTS)
+        serializer.startTag(NS_BUDGET, TAG_SLOTS)
 
-        writeBudgetAmounts(xmlSerializer, budget)
+        writeBudgetAmounts(serializer, budget)
 
         // Notes are grouped together.
-        writeBudgetNotes(xmlSerializer, budget)
+        writeBudgetNotes(serializer, budget)
 
-        xmlSerializer.endTag(NS_BUDGET, TAG_SLOTS)
-        xmlSerializer.endTag(NS_GNUCASH, TAG_BUDGET)
+        serializer.endTag(NS_BUDGET, TAG_SLOTS)
+        serializer.endTag(NS_GNUCASH, TAG_BUDGET)
     }
 
     @Throws(IOException::class)
-    private fun writeBudgetAmounts(xmlSerializer: XmlSerializer, budget: Budget) {
+    private fun writeBudgetAmounts(serializer: XmlSerializer, budget: Budget) {
         val slots = mutableListOf<Slot>()
 
         for (accountID in budget.accounts) {
@@ -1123,20 +1129,20 @@ class GncXmlExporter(
 
             if (slots.isEmpty()) continue
 
-            xmlSerializer.startTag(null, TAG_SLOT)
-            xmlSerializer.startTag(NS_SLOT, TAG_KEY)
-            xmlSerializer.text(accountID)
-            xmlSerializer.endTag(NS_SLOT, TAG_KEY)
-            xmlSerializer.startTag(NS_SLOT, TAG_VALUE)
-            xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_FRAME)
-            writeSlots(xmlSerializer, slots)
-            xmlSerializer.endTag(NS_SLOT, TAG_VALUE)
-            xmlSerializer.endTag(null, TAG_SLOT)
+            serializer.startTag(null, TAG_SLOT)
+            serializer.startTag(NS_SLOT, TAG_KEY)
+            serializer.text(accountID)
+            serializer.endTag(NS_SLOT, TAG_KEY)
+            serializer.startTag(NS_SLOT, TAG_VALUE)
+            serializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_FRAME)
+            writeSlots(serializer, slots)
+            serializer.endTag(NS_SLOT, TAG_VALUE)
+            serializer.endTag(null, TAG_SLOT)
         }
     }
 
     @Throws(IOException::class)
-    private fun writeBudgetNotes(xmlSerializer: XmlSerializer, budget: Budget) {
+    private fun writeBudgetNotes(serializer: XmlSerializer, budget: Budget) {
         val notes = mutableListOf<Slot>()
 
         for (accountID in budget.accounts) {
@@ -1159,7 +1165,7 @@ class GncXmlExporter(
         if (!notes.isEmpty()) {
             val slots = mutableListOf<Slot>()
             slots.add(Slot.frame(KEY_NOTES, notes))
-            writeSlots(xmlSerializer, slots)
+            writeSlots(serializer, slots)
         }
     }
 
@@ -1167,9 +1173,9 @@ class GncXmlExporter(
      * Generates an XML export of the database and writes it to the `writer` output stream
      *
      * @param writer Output stream
-     * @throws ExporterException
+     * @throws ExportException
      */
-    @Throws(ExporterException::class)
+    @Throws(ExportException::class)
     fun export(writer: Writer) {
         val book = booksDbAdapter.activeBook
         export(book, writer)
@@ -1180,9 +1186,9 @@ class GncXmlExporter(
      *
      * @param bookUID the book UID to export.
      * @param writer  Output stream
-     * @throws ExporterException
+     * @throws ExportException
      */
-    @Throws(ExporterException::class)
+    @Throws(ExportException::class)
     fun export(bookUID: String, writer: Writer) {
         val book = booksDbAdapter.getRecord(bookUID)
         export(book, writer)
@@ -1193,103 +1199,103 @@ class GncXmlExporter(
      *
      * @param book   the book to export.
      * @param writer Output stream
-     * @throws ExporterException
+     * @throws ExportException
      */
-    @Throws(ExporterException::class)
+    @Throws(ExportException::class, IllegalArgumentException::class, IllegalStateException::class)
     fun export(book: Book, writer: Writer) {
         Timber.i("generate export for book %s", book.uid)
         val timeStart = SystemClock.elapsedRealtime()
         try {
             val factory = XmlPullParserFactory.newInstance()
             factory.isNamespaceAware = true
-            val xmlSerializer = factory.newSerializer()
+            val serializer = factory.newSerializer()
             try {
-                xmlSerializer.setFeature(
+                serializer.setFeature(
                     "http://xmlpull.org/v1/doc/features.html#indent-output",
                     true
                 )
             } catch (_: IllegalStateException) {
                 // Feature not supported. No problem
             }
-            xmlSerializer.setOutput(writer)
-            xmlSerializer.startDocument(StandardCharsets.UTF_8.name(), true)
+            serializer.setOutput(writer)
+            serializer.startDocument(StandardCharsets.UTF_8.name(), true)
             // root tag
-            xmlSerializer.setPrefix(NS_ACCOUNT_PREFIX, NS_ACCOUNT)
-            xmlSerializer.setPrefix(NS_BOOK_PREFIX, NS_BOOK)
-            xmlSerializer.setPrefix(NS_GNUCASH_PREFIX, NS_GNUCASH)
-            xmlSerializer.setPrefix(NS_CD_PREFIX, NS_CD)
-            xmlSerializer.setPrefix(NS_COMMODITY_PREFIX, NS_COMMODITY)
-            xmlSerializer.setPrefix(NS_PRICE_PREFIX, NS_PRICE)
-            xmlSerializer.setPrefix(NS_SLOT_PREFIX, NS_SLOT)
-            xmlSerializer.setPrefix(NS_SPLIT_PREFIX, NS_SPLIT)
-            xmlSerializer.setPrefix(NS_SX_PREFIX, NS_SX)
-            xmlSerializer.setPrefix(NS_TRANSACTION_PREFIX, NS_TRANSACTION)
-            xmlSerializer.setPrefix(NS_TS_PREFIX, NS_TS)
-            xmlSerializer.setPrefix(NS_FS_PREFIX, NS_FS)
-            xmlSerializer.setPrefix(NS_BUDGET_PREFIX, NS_BUDGET)
-            xmlSerializer.setPrefix(NS_RECURRENCE_PREFIX, NS_RECURRENCE)
-            xmlSerializer.setPrefix(NS_LOT_PREFIX, NS_LOT)
-            xmlSerializer.setPrefix(NS_ADDRESS_PREFIX, NS_ADDRESS)
-            xmlSerializer.setPrefix(NS_BILLTERM_PREFIX, NS_BILLTERM)
-            xmlSerializer.setPrefix(NS_BT_DAYS_PREFIX, NS_BT_DAYS)
-            xmlSerializer.setPrefix(NS_BT_PROX_PREFIX, NS_BT_PROX)
-            xmlSerializer.setPrefix(NS_CUSTOMER_PREFIX, NS_CUSTOMER)
-            xmlSerializer.setPrefix(NS_EMPLOYEE_PREFIX, NS_EMPLOYEE)
-            xmlSerializer.setPrefix(NS_ENTRY_PREFIX, NS_ENTRY)
-            xmlSerializer.setPrefix(NS_INVOICE_PREFIX, NS_INVOICE)
-            xmlSerializer.setPrefix(NS_JOB_PREFIX, NS_JOB)
-            xmlSerializer.setPrefix(NS_ORDER_PREFIX, NS_ORDER)
-            xmlSerializer.setPrefix(NS_OWNER_PREFIX, NS_OWNER)
-            xmlSerializer.setPrefix(NS_TAXTABLE_PREFIX, NS_TAXTABLE)
-            xmlSerializer.setPrefix(NS_TTE_PREFIX, NS_TTE)
-            xmlSerializer.setPrefix(NS_VENDOR_PREFIX, NS_VENDOR)
-            xmlSerializer.startTag(null, TAG_ROOT)
+            serializer.setPrefix(NS_ACCOUNT_PREFIX, NS_ACCOUNT)
+            serializer.setPrefix(NS_BOOK_PREFIX, NS_BOOK)
+            serializer.setPrefix(NS_GNUCASH_PREFIX, NS_GNUCASH)
+            serializer.setPrefix(NS_CD_PREFIX, NS_CD)
+            serializer.setPrefix(NS_COMMODITY_PREFIX, NS_COMMODITY)
+            serializer.setPrefix(NS_PRICE_PREFIX, NS_PRICE)
+            serializer.setPrefix(NS_SLOT_PREFIX, NS_SLOT)
+            serializer.setPrefix(NS_SPLIT_PREFIX, NS_SPLIT)
+            serializer.setPrefix(NS_SX_PREFIX, NS_SX)
+            serializer.setPrefix(NS_TRANSACTION_PREFIX, NS_TRANSACTION)
+            serializer.setPrefix(NS_TS_PREFIX, NS_TS)
+            serializer.setPrefix(NS_FS_PREFIX, NS_FS)
+            serializer.setPrefix(NS_BUDGET_PREFIX, NS_BUDGET)
+            serializer.setPrefix(NS_RECURRENCE_PREFIX, NS_RECURRENCE)
+            serializer.setPrefix(NS_LOT_PREFIX, NS_LOT)
+            serializer.setPrefix(NS_ADDRESS_PREFIX, NS_ADDRESS)
+            serializer.setPrefix(NS_BILLTERM_PREFIX, NS_BILLTERM)
+            serializer.setPrefix(NS_BT_DAYS_PREFIX, NS_BT_DAYS)
+            serializer.setPrefix(NS_BT_PROX_PREFIX, NS_BT_PROX)
+            serializer.setPrefix(NS_CUSTOMER_PREFIX, NS_CUSTOMER)
+            serializer.setPrefix(NS_EMPLOYEE_PREFIX, NS_EMPLOYEE)
+            serializer.setPrefix(NS_ENTRY_PREFIX, NS_ENTRY)
+            serializer.setPrefix(NS_INVOICE_PREFIX, NS_INVOICE)
+            serializer.setPrefix(NS_JOB_PREFIX, NS_JOB)
+            serializer.setPrefix(NS_ORDER_PREFIX, NS_ORDER)
+            serializer.setPrefix(NS_OWNER_PREFIX, NS_OWNER)
+            serializer.setPrefix(NS_TAXTABLE_PREFIX, NS_TAXTABLE)
+            serializer.setPrefix(NS_TTE_PREFIX, NS_TTE)
+            serializer.setPrefix(NS_VENDOR_PREFIX, NS_VENDOR)
+            serializer.startTag(null, TAG_ROOT)
             // book count
             listener?.onBookCount(1)
-            writeCount(xmlSerializer, CD_TYPE_BOOK, 1)
-            writeBook(xmlSerializer, book)
-            xmlSerializer.endTag(null, TAG_ROOT)
-            xmlSerializer.endDocument()
-            xmlSerializer.flush()
+            writeCount(serializer, CD_TYPE_BOOK, 1)
+            writeBook(serializer, book)
+            serializer.endTag(null, TAG_ROOT)
+            serializer.endDocument()
+            serializer.flush()
         } catch (e: Exception) {
             Timber.e(e)
-            throw ExporterException(exportParams, e)
+            throw ExportException(exportParams, e)
         }
         val timeFinish = SystemClock.elapsedRealtime()
         Timber.v("exported in %d ms", timeFinish - timeStart)
     }
 
     @Throws(IOException::class)
-    private fun writeBook(xmlSerializer: XmlSerializer, book: Book) {
+    private fun writeBook(serializer: XmlSerializer, book: Book) {
         listener?.onBook(book)
         // book
-        xmlSerializer.startTag(NS_GNUCASH, TAG_BOOK)
-        xmlSerializer.attribute(null, ATTR_KEY_VERSION, BOOK_VERSION)
+        serializer.startTag(NS_GNUCASH, TAG_BOOK)
+        serializer.attribute(null, ATTR_KEY_VERSION, BOOK_VERSION)
         // book id
-        xmlSerializer.startTag(NS_BOOK, TAG_ID)
-        xmlSerializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
-        xmlSerializer.text(book.uid)
-        xmlSerializer.endTag(NS_BOOK, TAG_ID)
-        writeCounts(xmlSerializer)
+        serializer.startTag(NS_BOOK, TAG_ID)
+        serializer.attribute(null, ATTR_KEY_TYPE, ATTR_VALUE_GUID)
+        serializer.text(book.uid)
+        serializer.endTag(NS_BOOK, TAG_ID)
+        writeCounts(serializer)
         // export the commodities used in the DB
-        writeCommodities(xmlSerializer)
+        writeCommodities(serializer)
         // prices
-        writePrices(xmlSerializer)
+        writePrices(serializer)
         // accounts.
-        writeAccounts(xmlSerializer, false)
+        writeAccounts(serializer, false)
         // transactions.
-        writeTransactions(xmlSerializer, false)
+        writeTransactions(serializer, false)
         //transaction templates
-        writeTemplateTransactions(xmlSerializer)
+        writeTemplateTransactions(serializer)
         //scheduled actions
-        writeScheduledTransactions(xmlSerializer)
+        writeScheduledTransactions(serializer)
         //budgets
-        writeBudgets(xmlSerializer)
+        writeBudgets(serializer)
 
-        xmlSerializer.endTag(NS_GNUCASH, TAG_BOOK)
+        serializer.endTag(NS_GNUCASH, TAG_BOOK)
     }
 
-    @Throws(ExporterException::class)
+    @Throws(ExportException::class)
     override fun writeExport(writer: Writer, exportParams: ExportParams) {
         export(bookUID, writer)
     }

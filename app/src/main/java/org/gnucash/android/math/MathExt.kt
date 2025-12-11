@@ -2,6 +2,7 @@ package org.gnucash.android.math
 
 import android.os.Build
 import android.os.Parcel
+import org.gnucash.android.model.Numeric
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.math.RoundingMode
@@ -58,6 +59,16 @@ fun toBigDecimal(numerator: BigInteger, denominator: Long): BigDecimal {
     // Assume denominator is multiple of "10"s only.
     val scale = denominator.numberOfTrailingZeros
     return BigDecimal(numerator, scale)
+}
+
+/**
+ * Returns the [BigDecimal] from the `numerator` and `denominator`
+ *
+ * @param numeric  Numeric with numerator and denominator.
+ * @return BigDecimal representation of the number
+ */
+fun toBigDecimal(numeric: Numeric): BigDecimal {
+    return toBigDecimal(numeric.numerator, numeric.denominator)
 }
 
 fun BigDecimal.equalsIgnoreScale(that: BigDecimal): Boolean {

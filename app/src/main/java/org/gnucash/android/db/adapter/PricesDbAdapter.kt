@@ -1,7 +1,6 @@
 package org.gnucash.android.db.adapter
 
 import android.database.Cursor
-import android.database.SQLException
 import android.database.sqlite.SQLiteStatement
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseSchema.PriceEntry
@@ -178,8 +177,7 @@ class PricesDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
         return null
     }
 
-    @Throws(SQLException::class)
-    override fun addRecord(model: Price, updateMethod: UpdateMethod) {
+    override fun addRecord(model: Price, updateMethod: UpdateMethod): Price {
         super.addRecord(model, updateMethod)
         if (isCached) {
             val commodity = model.commodity
@@ -194,6 +192,8 @@ class PricesDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
                 cachePair[keyInverse] = model.inverse()
             }
         }
+
+        return model
     }
 
     private fun cacheAll() {

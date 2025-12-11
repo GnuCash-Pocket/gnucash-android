@@ -1,11 +1,12 @@
 package org.gnucash.android.test.unit.model
 
 import org.assertj.core.api.Assertions.assertThat
+import org.gnucash.android.export.csv.CsvTransactionsExporter.Companion.parseSplit
+import org.gnucash.android.export.csv.CsvTransactionsExporter.Companion.toCsv
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Money.Companion.createZeroInstance
 import org.gnucash.android.model.Split
-import org.gnucash.android.model.Split.Companion.parseSplit
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.test.unit.GnuCashTest

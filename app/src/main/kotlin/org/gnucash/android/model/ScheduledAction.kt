@@ -42,7 +42,7 @@ class ScheduledAction    //all actions are enabled by default
 ) : BaseModel() {
 
     /** "Scheduled Transaction Name" */
-    var name: String? = null
+    var name: String = ""
 
     /**
      * The tag saves additional information about the scheduled action,
@@ -53,13 +53,13 @@ class ScheduledAction    //all actions are enabled by default
     /**
      * Recurrence of this scheduled action
      */
-    var recurrence: Recurrence? = null
+    var recurrence: Recurrence = Recurrence(PeriodType.ONCE)
         private set
 
     /**
      * Types of events which can be scheduled
      */
-    enum class ActionType(val value: String, @StringRes val labelId: Int) {
+    enum class ActionType(val value: String, @param:StringRes val labelId: Int) {
         TRANSACTION("TRANSACTION", R.string.action_transaction),
 
         EXPORT("BACKUP", R.string.action_backup);
@@ -77,7 +77,14 @@ class ScheduledAction    //all actions are enabled by default
     /**
      * Next scheduled run of Event
      */
-    var lastRunTime: Long = 0
+    var lastRunDate: Long = 0
+
+    @Deprecated("renamed", ReplaceWith("lastRunDate"))
+    var lastRunTime: Long
+        get() = lastRunDate
+        set(value) {
+            lastRunDate = value
+        }
 
     /**
      * Unique ID of the template from which the recurring event will be executed.
@@ -139,24 +146,21 @@ class ScheduledAction    //all actions are enabled by default
         get() {
             val count = instanceCount
             if (count <= 0) return -1
-            recurrence?.let { recurrence ->
-                var startDate = LocalDateTime(startDate)
-                val multiplier = recurrence.multiplier
-                val factor = (count - 1) * multiplier
-                startDate = when (recurrence.periodType) {
-                    PeriodType.ONCE -> startDate
-                    PeriodType.HOUR -> startDate.plusHours(factor)
-                    PeriodType.DAY -> startDate.plusDays(factor)
-                    PeriodType.WEEK -> startDate.plusWeeks(factor)
-                    PeriodType.MONTH -> startDate.plusMonths(factor)
-                    PeriodType.YEAR -> startDate.plusYears(factor)
-                    PeriodType.LAST_WEEKDAY -> startDate.plusMonths(factor).lastDayOfWeek(startDate)
-                    PeriodType.NTH_WEEKDAY -> startDate.plusMonths(factor).dayOfWeek(startDate)
-                    PeriodType.END_OF_MONTH -> startDate.plusMonths(factor).lastDayOfMonth()
-                }
-                return startDate.toDateTime().millis
+            var startDate = LocalDateTime(startDate)
+            val multiplier = recurrence.multiplier
+            val factor = (count - 1) * multiplier
+            startDate = when (recurrence.periodType) {
+                PeriodType.ONCE -> startDate
+                PeriodType.HOUR -> startDate.plusHours(factor)
+                PeriodType.DAY -> startDate.plusDays(factor)
+                PeriodType.WEEK -> startDate.plusWeeks(factor)
+                PeriodType.MONTH -> startDate.plusMonths(factor)
+                PeriodType.YEAR -> startDate.plusYears(factor)
+                PeriodType.LAST_WEEKDAY -> startDate.plusMonths(factor).lastDayOfWeek(startDate)
+                PeriodType.NTH_WEEKDAY -> startDate.plusMonths(factor).dayOfWeek(startDate)
+                PeriodType.END_OF_MONTH -> startDate.plusMonths(factor).lastDayOfMonth()
             }
-            return startDate
+            return startDate.toDateTime().millis
         }
 
     /**
@@ -270,13 +274,13 @@ class ScheduledAction    //all actions are enabled by default
      */
     @get:Deprecated("Uses fixed values for time of months and years (which actually vary depending on number of days in month or leap year)")
     val period: Long
-        get() = recurrence!!.period
+        get() = recurrence.period
 
     /** "Date for the first occurrence for the scheduled transaction." */
     var startDate: Long = 0L
         set(startDate) {
             field = startDate
-            recurrence?.periodStart = startDate
+            recurrence.periodStart = startDate
         }
 
     @Deprecated("renamed", ReplaceWith("startDate"))
@@ -292,7 +296,7 @@ class ScheduledAction    //all actions are enabled by default
     var endDate: Long = 0L
         set(endDate) {
             field = endDate
-            recurrence?.periodEnd = endDate
+            recurrence.periodEnd = endDate
         }
 
     @Deprecated("renamed", ReplaceWith("endDate"))
@@ -329,7 +333,7 @@ class ScheduledAction    //all actions are enabled by default
      * @return String description of repeat schedule
      */
     fun getRepeatString(context: Context): String {
-        val ruleBuilder = StringBuilder(recurrence!!.getRepeatString(context))
+        val ruleBuilder = StringBuilder(recurrence.getRepeatString(context))
         if (endDate <= 0 && totalPlannedExecutionCount > 0) {
             ruleBuilder.append(", ")
                 .append(context.getString(R.string.repeat_x_times, totalPlannedExecutionCount))
@@ -381,7 +385,8 @@ class ScheduledAction    //all actions are enabled by default
      * @param recurrence [Recurrence] object
      */
     fun setRecurrence(recurrence: Recurrence?) {
-        this.recurrence = recurrence ?: return
+        val recurrence = recurrence ?: Recurrence(PeriodType.ONCE)
+        this.recurrence = recurrence
         //if we were parsing XML and parsed the start and end date from the scheduled action first,
         //then use those over the values which might be gotten from the recurrence
         if (startDate > 0) {

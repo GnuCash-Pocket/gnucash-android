@@ -23,7 +23,6 @@ import android.database.SQLException
 import android.database.sqlite.SQLiteQueryBuilder
 import android.database.sqlite.SQLiteStatement
 import org.gnucash.android.app.GnuCashApplication
-import org.gnucash.android.app.GnuCashApplication.Companion.appContext
 import org.gnucash.android.db.DatabaseHelper.Companion.sqlEscapeLike
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
@@ -101,14 +100,14 @@ class TransactionsDbAdapter(
      * @param transaction [Transaction] to be inserted to database
      */
     @Throws(SQLException::class)
-    override fun addRecord(transaction: Transaction, updateMethod: UpdateMethod) {
+    override fun addRecord(transaction: Transaction, updateMethod: UpdateMethod): Transaction {
         // Did the transaction have any splits before?
         val didChange = transaction.id != 0L
         try {
             beginTransaction()
             val imbalanceSplit = transaction.createAutoBalanceSplit()
             if (imbalanceSplit != null) {
-                val context = appContext
+                val context = holder.context
                 val imbalanceAccountUID = AccountsDbAdapter(this)
                     .getOrCreateImbalanceAccountUID(context, transaction.commodity)
                 imbalanceSplit.accountUID = imbalanceAccountUID
@@ -139,6 +138,8 @@ class TransactionsDbAdapter(
         } finally {
             endTransaction()
         }
+
+        return transaction
     }
 
     /**
@@ -180,7 +181,7 @@ class TransactionsDbAdapter(
     override fun bind(stmt: SQLiteStatement, transaction: Transaction): SQLiteStatement {
         bindBaseModel(stmt, transaction)
         stmt.bindString(1, transaction.description)
-        stmt.bindString(2, transaction.note)
+        stmt.bindString(2, transaction.notes)
         stmt.bindLong(3, transaction.time)
         stmt.bindBoolean(4, transaction.isExported)
         stmt.bindString(5, transaction.currencyCode)
@@ -190,9 +191,7 @@ class TransactionsDbAdapter(
             stmt.bindString(8, transaction.scheduledActionUID)
         }
         stmt.bindBoolean(9, transaction.isTemplate)
-        if (transaction.number != null) {
-            stmt.bindString(10, transaction.number)
-        }
+        stmt.bindString(10, transaction.number)
 
         return stmt
     }
@@ -428,17 +427,24 @@ class TransactionsDbAdapter(
      */
     override fun buildModelInstance(cursor: Cursor): Transaction {
         val name = cursor.getString(TransactionEntry.COLUMN_DESCRIPTION)!!
+        val time = cursor.getLong(TransactionEntry.COLUMN_TIMESTAMP)
+        val notes = cursor.getString(TransactionEntry.COLUMN_NOTES)
+        val isExported = cursor.getBoolean(TransactionEntry.COLUMN_EXPORTED)
+        val isTemplate = cursor.getBoolean(TransactionEntry.COLUMN_TEMPLATE)
+        val commodityUID = cursor.getString(TransactionEntry.COLUMN_COMMODITY_UID)!!
+        val scheduledActionUID = cursor.getString(TransactionEntry.COLUMN_SCHEDX_ACTION_UID)
+        val number = cursor.getString(TransactionEntry.COLUMN_NUMBER)
+        val commodity = commoditiesDbAdapter.getRecord(commodityUID)
+
         val transaction = Transaction(name)
         populateBaseModelAttributes(cursor, transaction)
-
-        transaction.time = cursor.getLong(TransactionEntry.COLUMN_TIMESTAMP)
-        transaction.note = cursor.getString(TransactionEntry.COLUMN_NOTES)
-        transaction.isExported = cursor.getBoolean(TransactionEntry.COLUMN_EXPORTED)
-        transaction.isTemplate = cursor.getBoolean(TransactionEntry.COLUMN_TEMPLATE)
-        val commodityUID = cursor.getString(TransactionEntry.COLUMN_COMMODITY_UID)!!
-        transaction.commodity = commoditiesDbAdapter.getRecord(commodityUID)
-        transaction.scheduledActionUID = cursor.getString(TransactionEntry.COLUMN_SCHEDX_ACTION_UID)
-        transaction.number = cursor.getString(TransactionEntry.COLUMN_NUMBER)
+        transaction.time = time
+        transaction.notes = notes.orEmpty()
+        transaction.isExported = isExported
+        transaction.isTemplate = isTemplate
+        transaction.commodity = commodity
+        transaction.scheduledActionUID = scheduledActionUID
+        transaction.number = number.orEmpty()
         transaction.splits = splitsDbAdapter.getSplitsForTransaction(transaction.uid)
 
         return transaction

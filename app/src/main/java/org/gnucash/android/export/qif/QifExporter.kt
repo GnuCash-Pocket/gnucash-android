@@ -27,6 +27,7 @@ import org.gnucash.android.db.getDouble
 import org.gnucash.android.db.getInt
 import org.gnucash.android.db.getLong
 import org.gnucash.android.db.getString
+import org.gnucash.android.export.ExportException
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
 import org.gnucash.android.export.qif.QifHelper.ACCOUNT_DESCRIPTION_PREFIX
@@ -83,7 +84,7 @@ class QifExporter(
     bookUID: String,
     listener: GncProgressListener? = null
 ) : Exporter(context, params, bookUID, listener) {
-    @Throws(ExporterException::class, IOException::class)
+    @Throws(ExportException::class, IOException::class)
     override fun writeToFile(exportParams: ExportParams): File? {
         val isCompressed = exportParams.isCompressed
         // Disable compression for files that will be zipped afterwards.
@@ -105,7 +106,7 @@ class QifExporter(
         return splitByCurrency[0]
     }
 
-    @Throws(ExporterException::class, IOException::class)
+    @Throws(ExportException::class, IOException::class)
     // TODO write each commodity to separate file here, instead of splitting the file afterwards.
     override fun writeExport(writer: Writer, exportParams: ExportParams) {
         val transactionsDbAdapter = transactionsDbAdapter
@@ -314,9 +315,9 @@ class QifExporter(
             transactionsDbAdapter.markTransactionsExported(exportParams.exportStartTime)
             setLastExportTime(context, TimestampHelper.timestampFromNow, bookUID)
         } catch (e: IOException) {
-            throw ExporterException(exportParams, e)
+            throw ExportException(exportParams, e)
         } catch (e: OperationCanceledException) {
-            throw ExporterException(exportParams, e)
+            throw ExportException(exportParams, e)
         } finally {
             cursor?.close()
         }

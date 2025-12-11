@@ -26,7 +26,6 @@ import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
-import org.gnucash.android.app.GnuCashApplication.Companion.appContext
 import org.gnucash.android.app.GnuCashApplication.Companion.defaultCurrencyCode
 import org.gnucash.android.app.GnuCashApplication.Companion.isDoubleEntryEnabled
 import org.gnucash.android.db.DatabaseHelper.Companion.sqlEscapeLike
@@ -129,7 +128,7 @@ class AccountsDbAdapter(
      * @param account [Account] to be inserted to database
      */
     @Throws(SQLException::class)
-    override fun addRecord(account: Account, updateMethod: UpdateMethod) {
+    override fun addRecord(account: Account, updateMethod: UpdateMethod): Account {
         Timber.d("Replace account to db")
         if (account.isRoot && !account.isTemplate) {
             rootUID = account.uid
@@ -149,6 +148,8 @@ class AccountsDbAdapter(
                 transactionsDbAdapter.update(transaction)
             }
         }
+
+        return account
     }
 
     /**
@@ -529,7 +530,7 @@ class AccountsDbAdapter(
      * @return The account
      */
     fun getOrCreateImbalanceAccount(context: Context, commodity: Commodity): Account? {
-        val imbalanceAccountName: String = getImbalanceAccountName(context, commodity)
+        val imbalanceAccountName = getImbalanceAccountName(context, commodity)
         val uid = findAccountUidByFullName(imbalanceAccountName)
         if (uid.isNullOrEmpty()) {
             val account = Account(imbalanceAccountName, commodity)
@@ -604,7 +605,7 @@ class AccountsDbAdapter(
          * @return String unique ID of the opening balance account
          */
         get() {
-            val openingBalanceAccountName: String? = openingBalanceAccountFullName
+            val openingBalanceAccountName: String = openingBalanceAccountFullName
             var uid = findAccountUidByFullName(openingBalanceAccountName)
             if (uid == null) {
                 uid = createAccountHierarchy(
@@ -1170,6 +1171,7 @@ class AccountsDbAdapter(
             // No ROOT exits, create a new one
             val commodity = commoditiesDbAdapter.defaultCommodity
             val rootAccount = Account(ROOT_ACCOUNT_NAME, commodity)
+            rootAccount.setUID(uid)
             rootAccount.accountType = AccountType.ROOT
             rootAccount.fullName = ROOT_ACCOUNT_FULL_NAME
             rootAccount.isHidden = false
@@ -1361,16 +1363,16 @@ class AccountsDbAdapter(
      */
     val allOpeningBalanceTransactions: List<Transaction>
         get() {
-            val accounts =
-                this.simpleAccounts
+            val context = holder.context
+            val accounts = this.simpleAccounts
             val openingTransactions = mutableListOf<Transaction>()
             for (account in accounts) {
                 val balance = getAccountBalance(account, ALWAYS, ALWAYS, false)
                 if (balance.isAmountZero) continue
 
                 val transaction =
-                    Transaction(appContext.getString(R.string.account_name_opening_balances))
-                transaction.note = account.name
+                    Transaction(context.getString(R.string.account_name_opening_balances))
+                transaction.notes = account.name
                 transaction.commodity = account.commodity
                 val transactionType = getTypeForBalance(account.accountType, balance.isNegative)
                 val split = Split(balance, account)
@@ -1562,6 +1564,25 @@ class AccountsDbAdapter(
         }
     }
 
+    /**
+     * Get the name of the default account for opening balances for the current locale.
+     * For the English locale, it will be "Equity:Opening Balances"
+     *
+     * @return Fully qualified account name of the opening balances account
+     */
+    val openingBalanceAccountFullName: String
+        get() {
+            val context = holder.context
+            val parentEquity = context.getString(R.string.account_name_equity).trim()
+            //German locale has no parent Equity account
+            return if (parentEquity.isNotEmpty()) {
+                (parentEquity + ACCOUNT_NAME_SEPARATOR
+                        + context.getString(R.string.account_name_opening_balances))
+            } else {
+                context.getString(R.string.account_name_opening_balances)
+            }
+        }
+
     companion object {
         /**
          * Separator used for account name hierarchies between parent and child accounts
@@ -1599,24 +1620,5 @@ class AccountsDbAdapter(
         fun getImbalanceAccountName(context: Context, commodity: Commodity): String {
             return getImbalanceAccountPrefix(context) + commodity.currencyCode
         }
-
-        /**
-         * Get the name of the default account for opening balances for the current locale.
-         * For the English locale, it will be "Equity:Opening Balances"
-         *
-         * @return Fully qualified account name of the opening balances account
-         */
-        val openingBalanceAccountFullName: String?
-            get() {
-                val context = appContext
-                val parentEquity = context.getString(R.string.account_name_equity).trim()
-                //German locale has no parent Equity account
-                return if (parentEquity.isNotEmpty()) {
-                    (parentEquity + ACCOUNT_NAME_SEPARATOR
-                            + context.getString(R.string.account_name_opening_balances))
-                } else {
-                    context.getString(R.string.account_name_opening_balances)
-                }
-            }
     }
 }

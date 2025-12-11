@@ -149,7 +149,7 @@ class CommoditiesDbAdapter(
                 + " AND " + CommodityEntry.COLUMN_NAMESPACE
                 + " IN ('" + Commodity.COMMODITY_CURRENCY + "','" + Commodity.COMMODITY_ISO4217 + "')")
         val whereArgs = arrayOf<String?>(currencyCode)
-        val cursor = fetchAllRecords(where, whereArgs, null) ?: return null
+        val cursor = fetchAllRecords(where, whereArgs, null)
         try {
             if (cursor.moveToFirst()) {
                 val commodity = buildModelInstance(cursor)
@@ -190,17 +190,13 @@ class CommoditiesDbAdapter(
     }
 
     fun loadCommodity(commodity: Commodity): Commodity {
-        var commodity = commodity
         if (commodity.id != 0L) {
             return commodity
         }
-        try {
-            commodity = getRecord(commodity.uid)
-        } catch (_: Exception) {
-            // Commodity not found.
-            commodity = getCurrency(commodity.currencyCode)!!
-        }
-        return commodity
+        return getRecordOrNull(commodity.uid)
+            ?: getCommodity(commodity.mnemonic, commodity.namespace)
+            ?: getCurrency(commodity.currencyCode)
+            ?: commodity
     }
 
     val defaultCommodity: Commodity
@@ -233,6 +229,33 @@ class CommoditiesDbAdapter(
             _defaultCommodity = commodity
             Commodity.DEFAULT_COMMODITY = commodity
         }
+    }
+
+    fun getCommodity(mnemonic: String, namespace: String): Commodity? {
+        val ns = if (namespace == Commodity.COMMODITY_ISO4217) {
+            Commodity.COMMODITY_CURRENCY
+        } else {
+            namespace
+        }
+        if (isCached) {
+            val commodity = cache.values.firstOrNull {
+                it.mnemonic == mnemonic && it.namespace == ns
+            }
+            if (commodity != null) {
+                return commodity
+            }
+        }
+
+        val where = CommodityEntry.COLUMN_MNEMONIC + "=?" +
+                " AND " + CommodityEntry.COLUMN_NAMESPACE + "=?"
+        val whereArgs = arrayOf<String?>(mnemonic, ns)
+        val cursor = fetchAllRecords(where, whereArgs, null)
+        cursor.use {
+            if (cursor.moveToFirst()) {
+                return buildModelInstance(cursor)
+            }
+        }
+        return null
     }
 
     companion object {

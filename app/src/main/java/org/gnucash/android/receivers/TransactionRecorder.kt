@@ -21,11 +21,11 @@ import android.content.Intent
 import org.gnucash.android.app.getSerializableCompat
 import org.gnucash.android.app.isNullOrEmpty
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
+import org.gnucash.android.export.csv.CsvTransactionsExporter.Companion.parseSplit
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Split
-import org.gnucash.android.model.Split.Companion.parseSplit
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity
@@ -68,7 +68,7 @@ class TransactionRecorder : BroadcastReceiver() {
         val transactionsDbAdapter = TransactionsDbAdapter.instance
         val commoditiesDbAdapter = transactionsDbAdapter.commoditiesDbAdapter
 
-        val note = args.getString(Intent.EXTRA_TEXT)
+        val notes = args.getString(Intent.EXTRA_TEXT)
 
         val currencyUID = args.getString(Account.EXTRA_CURRENCY_UID)
         val commodity: Commodity?
@@ -85,14 +85,14 @@ class TransactionRecorder : BroadcastReceiver() {
 
         val transaction = Transaction(name)
         transaction.time = System.currentTimeMillis()
-        transaction.note = note
+        transaction.notes = notes.orEmpty()
         transaction.commodity = commodity
 
         //Parse deprecated args for compatibility. Transactions were bound to accounts, now only splits are
         val accountUID = args.getString(Transaction.EXTRA_ACCOUNT_UID)
         if (accountUID != null) {
             val type = TransactionType.of(args.getString(Transaction.EXTRA_TRANSACTION_TYPE)!!)
-            var amountBigDecimal: BigDecimal = args.getSerializableCompat(Transaction.EXTRA_AMOUNT, BigDecimal::class.java)!!
+            var amountBigDecimal = args.getSerializableCompat(Transaction.EXTRA_AMOUNT, BigDecimal::class.java)!!
             amountBigDecimal =
                 amountBigDecimal.setScale(commodity.smallestFractionDigits, RoundingMode.HALF_EVEN)
                     .round(MathContext.DECIMAL128)

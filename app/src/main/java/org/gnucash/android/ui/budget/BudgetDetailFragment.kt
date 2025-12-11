@@ -112,7 +112,7 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
         } else {
             binding.listItem2Lines.secondaryText.isVisible = false
         }
-        binding.budgetRecurrence.text = budget.recurrence!!.getRepeatString(context)
+        binding.budgetRecurrence.text = budget.recurrence.getRepeatString(context)
 
         binding.list.adapter = BudgetAmountAdapter(budgetUID!!)
     }
@@ -255,7 +255,7 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
             //todo: refactor getNumberOfPeriods into budget
             var budgetPeriods = budget.numberOfPeriods.toInt()
             budgetPeriods = if (budgetPeriods <= 0) 12 else budgetPeriods
-            val periods = budget.recurrence!!.getNumberOfPeriods(budgetPeriods)
+            val periods = budget.recurrence.getNumberOfPeriods(budgetPeriods)
 
             val barEntries = mutableListOf<BarEntry>()
             // FIXME: 15.08.2016 why do we need number of periods */

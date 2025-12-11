@@ -48,7 +48,7 @@ import org.gnucash.android.db.DatabaseSchema.BookEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
-import org.gnucash.android.importer.AccountsTemplate
+import org.gnucash.android.importer.xml.AccountsTemplate
 import org.gnucash.android.lang.trim
 import org.gnucash.android.model.Book
 import org.gnucash.android.ui.account.AccountsActivity

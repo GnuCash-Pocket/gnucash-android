@@ -28,10 +28,7 @@ import java.math.BigDecimal
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-class Budget(
-    name: String = "",
-    recurrence: Recurrence? = null
-) : BaseModel() {
+class Budget() : BaseModel() {
 
     /**
      * Returns the name of the budget
@@ -48,9 +45,10 @@ class Budget(
     /**
      * The recurrence for this budget
      */
-    var recurrence: Recurrence? = null
+    var recurrence: Recurrence = Recurrence(PeriodType.ONCE)
 
-    private val amountsByAccount = mutableMapOf<String, MutableList<BudgetAmount>>()
+    private val amountsByAccount = mutableMapOf<String, List<BudgetAmount>>()
+    val amounts: Map<String, List<BudgetAmount>> = amountsByAccount
 
     /**
      * Return list of budget amounts associated with this budget
@@ -60,8 +58,11 @@ class Budget(
     val budgetAmounts: List<BudgetAmount>
         get() = amountsByAccount.values.flatten()
 
-    init {
+    constructor(name: String) : this() {
         this.name = name
+    }
+
+    constructor(name: String, recurrence: Recurrence) : this(name) {
         this.recurrence = recurrence
     }
 
@@ -88,8 +89,9 @@ class Budget(
      */
     fun addAmount(budgetAmount: BudgetAmount): BudgetAmount {
         budgetAmount.budgetUID = uid
-        val list = amountsByAccount.getOrPut(budgetAmount.accountUID!!) { mutableListOf() }
-        list.add(budgetAmount)
+        val key = budgetAmount.accountUID!!
+        val list = amountsByAccount.getOrPut(key) { mutableListOf() }
+        amountsByAccount[key] = list + budgetAmount
         return budgetAmount
     }
 
@@ -100,12 +102,12 @@ class Budget(
      * @param period The budget period.
      * @param amount The budget amount.
      */
-    fun addAmount(account: Account, period: Long, amount: BigDecimal): BudgetAmount {
+    fun addAmount(account: Account, period: Int, amount: BigDecimal): BudgetAmount {
         val budgetAmount = BudgetAmount(
             budgetUID = uid,
             accountUID = account.uid,
             amount = Money(amount, account.commodity),
-            periodNum = period
+            periodIndex = period
         )
         return addAmount(budgetAmount)
     }
@@ -134,7 +136,7 @@ class Budget(
      * @param periodNum  Budgeting period, zero-based index
      * @return Money amount or zero if no matching [BudgetAmount] is found for the period
      */
-    fun getAmount(accountUID: String, periodNum: Long): Money? {
+    fun getAmount(accountUID: String, periodNum: Int): Money? {
         return getBudgetAmount(accountUID, periodNum)?.amount
     }
 
@@ -161,7 +163,7 @@ class Budget(
     /**
      * The number of periods covered by this budget
      */
-    var numberOfPeriods: Long = 12 //default to 12 periods per year
+    var numberOfPeriods: Int = 12 //default to 12 periods per year
 
     /**
      * Returns the timestamp of the start of current period of the budget
@@ -170,27 +172,25 @@ class Budget(
      */
     val startOfCurrentPeriod: Long
         get() {
+            val interval = recurrence.multiplier
             var localDate = LocalDateTime()
-            recurrence?.let { recurrence ->
-                val interval = recurrence.multiplier
-                localDate = when (recurrence.periodType) {
-                    PeriodType.ONCE -> localDate
-                    PeriodType.HOUR -> localDate.millisOfDay().withMinimumValue()
-                        .minusHours(interval)
+            localDate = when (recurrence.periodType) {
+                PeriodType.ONCE -> localDate
+                PeriodType.HOUR -> localDate.millisOfDay().withMinimumValue()
+                    .minusHours(interval)
 
-                    PeriodType.DAY -> localDate.minusDays(interval).millisOfDay().withMinimumValue()
-                    PeriodType.WEEK -> localDate.minusWeeks(interval).dayOfWeek().withMinimumValue()
-                    PeriodType.MONTH -> localDate.minusMonths(interval)
-                        .dayOfMonth().withMinimumValue()
+                PeriodType.DAY -> localDate.minusDays(interval).millisOfDay().withMinimumValue()
+                PeriodType.WEEK -> localDate.minusWeeks(interval).dayOfWeek().withMinimumValue()
+                PeriodType.MONTH -> localDate.minusMonths(interval)
+                    .dayOfMonth().withMinimumValue()
 
-                    PeriodType.YEAR -> localDate.minusYears(interval).dayOfYear().withMinimumValue()
-                    PeriodType.LAST_WEEKDAY -> localDate.minusMonths(interval)
-                        .lastDayOfWeek(localDate)
+                PeriodType.YEAR -> localDate.minusYears(interval).dayOfYear().withMinimumValue()
+                PeriodType.LAST_WEEKDAY -> localDate.minusMonths(interval)
+                    .lastDayOfWeek(localDate)
 
-                    PeriodType.NTH_WEEKDAY -> localDate.minusMonths(interval).dayOfWeek(localDate)
-                    PeriodType.END_OF_MONTH -> localDate.minusMonths(interval)
-                        .dayOfMonth().withMaximumValue()
-                }
+                PeriodType.NTH_WEEKDAY -> localDate.minusMonths(interval).dayOfWeek(localDate)
+                PeriodType.END_OF_MONTH -> localDate.minusMonths(interval)
+                    .dayOfMonth().withMaximumValue()
             }
             return localDate.toDateTime().millis
         }
@@ -202,46 +202,41 @@ class Budget(
      */
     val endOfCurrentPeriod: Long
         get() {
+            val interval = recurrence.multiplier
             var localDate = LocalDateTime()
-            recurrence?.let { recurrence ->
-                val interval = recurrence.multiplier
-                localDate = when (recurrence.periodType) {
-                    PeriodType.ONCE -> localDate
-                    PeriodType.HOUR -> localDate.plusHours(interval).millisOfDay()
-                        .withMaximumValue()
+            localDate = when (recurrence.periodType) {
+                PeriodType.ONCE -> localDate
+                PeriodType.HOUR -> localDate.plusHours(interval).millisOfDay()
+                    .withMaximumValue()
 
-                    PeriodType.DAY -> localDate.plusDays(interval).millisOfDay().withMaximumValue()
-                    PeriodType.WEEK -> localDate.plusWeeks(interval).dayOfWeek().withMaximumValue()
-                    PeriodType.MONTH -> localDate.plusMonths(interval)
-                        .dayOfMonth().withMaximumValue()
+                PeriodType.DAY -> localDate.plusDays(interval).millisOfDay().withMaximumValue()
+                PeriodType.WEEK -> localDate.plusWeeks(interval).dayOfWeek().withMaximumValue()
+                PeriodType.MONTH -> localDate.plusMonths(interval)
+                    .dayOfMonth().withMaximumValue()
 
-                    PeriodType.YEAR -> localDate.plusYears(interval).dayOfYear().withMaximumValue()
-                    PeriodType.LAST_WEEKDAY -> localDate.plusMonths(interval)
-                        .lastDayOfWeek(localDate)
+                PeriodType.YEAR -> localDate.plusYears(interval).dayOfYear().withMaximumValue()
+                PeriodType.LAST_WEEKDAY -> localDate.plusMonths(interval)
+                    .lastDayOfWeek(localDate)
 
-                    PeriodType.NTH_WEEKDAY -> localDate.plusMonths(interval).dayOfWeek(localDate)
-                    PeriodType.END_OF_MONTH -> localDate.plusMonths(interval).lastDayOfMonth()
-                }
+                PeriodType.NTH_WEEKDAY -> localDate.plusMonths(interval).dayOfWeek(localDate)
+                PeriodType.END_OF_MONTH -> localDate.plusMonths(interval).lastDayOfMonth()
             }
             return localDate.toDateTime().millis
         }
 
     fun getStartOfPeriod(periodNum: Int): Long {
-        var localDate = LocalDateTime()
-        recurrence?.let { recurrence ->
-            localDate = LocalDateTime(recurrence.periodStart)
-            val interval = recurrence.multiplier * periodNum
-            localDate = when (recurrence.periodType) {
-                PeriodType.ONCE -> localDate
-                PeriodType.HOUR -> localDate.plusHours(interval).millisOfDay().withMinimumValue()
-                PeriodType.DAY -> localDate.plusDays(interval).millisOfDay().withMinimumValue()
-                PeriodType.WEEK -> localDate.minusDays(interval).dayOfWeek().withMinimumValue()
-                PeriodType.MONTH -> localDate.minusMonths(interval).dayOfMonth().withMinimumValue()
-                PeriodType.YEAR -> localDate.minusYears(interval).dayOfYear().withMinimumValue()
-                PeriodType.LAST_WEEKDAY -> localDate.minusMonths(interval).lastDayOfMonth()
-                PeriodType.NTH_WEEKDAY -> localDate.minusMonths(interval).dayOfWeek(localDate)
-                PeriodType.END_OF_MONTH -> localDate.minusMonths(interval).lastDayOfMonth()
-            }
+        val interval = recurrence.multiplier * periodNum
+        var localDate = LocalDateTime(recurrence.periodStart)
+        localDate = when (recurrence.periodType) {
+            PeriodType.ONCE -> localDate
+            PeriodType.HOUR -> localDate.plusHours(interval).millisOfDay().withMinimumValue()
+            PeriodType.DAY -> localDate.plusDays(interval).millisOfDay().withMinimumValue()
+            PeriodType.WEEK -> localDate.minusDays(interval).dayOfWeek().withMinimumValue()
+            PeriodType.MONTH -> localDate.minusMonths(interval).dayOfMonth().withMinimumValue()
+            PeriodType.YEAR -> localDate.minusYears(interval).dayOfYear().withMinimumValue()
+            PeriodType.LAST_WEEKDAY -> localDate.minusMonths(interval).lastDayOfMonth()
+            PeriodType.NTH_WEEKDAY -> localDate.minusMonths(interval).dayOfWeek(localDate)
+            PeriodType.END_OF_MONTH -> localDate.minusMonths(interval).lastDayOfMonth()
         }
         return localDate.toDateTime().millis
     }
@@ -253,36 +248,34 @@ class Budget(
      * @return End timestamp in milliseconds of the period
      */
     fun getEndOfPeriod(periodNum: Int): Long {
+        val interval = recurrence.multiplier * periodNum
         var localDate = LocalDateTime()
-        recurrence?.let { recurrence ->
-            val interval = recurrence.multiplier * periodNum
-            localDate = when (recurrence.periodType) {
-                PeriodType.ONCE -> localDate
-                PeriodType.HOUR -> localDate.plusHours(interval)
-                PeriodType.DAY -> localDate.plusDays(interval).millisOfDay().withMaximumValue()
-                PeriodType.WEEK -> localDate.plusWeeks(interval).dayOfWeek().withMaximumValue()
-                PeriodType.MONTH -> localDate.plusMonths(interval).dayOfMonth().withMaximumValue()
-                PeriodType.YEAR -> localDate.plusYears(interval).dayOfYear().withMaximumValue()
-                PeriodType.LAST_WEEKDAY -> localDate.plusMonths(interval).lastDayOfWeek(localDate)
-                PeriodType.NTH_WEEKDAY -> localDate.plusMonths(interval).dayOfWeek(localDate)
-                PeriodType.END_OF_MONTH -> localDate.plusMonths(interval).lastDayOfMonth()
-            }
+        localDate = when (recurrence.periodType) {
+            PeriodType.ONCE -> localDate
+            PeriodType.HOUR -> localDate.plusHours(interval)
+            PeriodType.DAY -> localDate.plusDays(interval).millisOfDay().withMaximumValue()
+            PeriodType.WEEK -> localDate.plusWeeks(interval).dayOfWeek().withMaximumValue()
+            PeriodType.MONTH -> localDate.plusMonths(interval).dayOfMonth().withMaximumValue()
+            PeriodType.YEAR -> localDate.plusYears(interval).dayOfYear().withMaximumValue()
+            PeriodType.LAST_WEEKDAY -> localDate.plusMonths(interval).lastDayOfWeek(localDate)
+            PeriodType.NTH_WEEKDAY -> localDate.plusMonths(interval).dayOfWeek(localDate)
+            PeriodType.END_OF_MONTH -> localDate.plusMonths(interval).lastDayOfMonth()
         }
         return localDate.toDateTime().millis
     }
 
-    fun getBudgetAmount(account: Account, period: Long): BudgetAmount? {
+    fun getBudgetAmount(account: Account, period: Int): BudgetAmount? {
         return getBudgetAmount(account.uid, period)
     }
 
-    fun getBudgetAmount(accountUID: String, period: Long): BudgetAmount? {
+    fun getBudgetAmount(accountUID: String, period: Int): BudgetAmount? {
         val budgetAmounts = amountsByAccount[accountUID] ?: return null
         val budgetUID = uid
 
         return budgetAmounts.firstOrNull {
             it.budgetUID == budgetUID
                     && it.accountUID == accountUID
-                    && (it.periodNum == period || it.periodNum == PERIOD_ALL)
+                    && (it.periodIndex == period || it.periodIndex == PERIOD_ALL)
         }
     }
 
@@ -339,7 +332,7 @@ class Budget(
                     } else {
                         val budgetAmount = BudgetAmount(uid, accountUID).apply {
                             amount = Money(first, Commodity.DEFAULT_COMMODITY)
-                            periodNum = PERIOD_ALL
+                            periodIndex = PERIOD_ALL
                         }
                         compactBudgetAmounts.add(budgetAmount)
                     }
@@ -366,7 +359,7 @@ class Budget(
             val amounts = mutableListOf<BudgetAmount>()
 
             for (budgetAmount in amountsByAccount.values.flatten()) {
-                if (budgetAmount.periodNum == PERIOD_ALL) {
+                if (budgetAmount.periodIndex == PERIOD_ALL) {
                     val accountUID = budgetAmount.accountUID
 
                     for (period in 0 until numberOfPeriods) {
@@ -382,6 +375,6 @@ class Budget(
         }
 
     companion object {
-        const val PERIOD_ALL = -1L
+        const val PERIOD_ALL = -1
     }
 }

@@ -3,7 +3,7 @@ package org.gnucash.android.ui.wizard
 import android.content.Context
 import com.tech.freak.wizardpager.model.ModelCallbacks
 import com.tech.freak.wizardpager.model.SingleFixedChoicePage
-import org.gnucash.android.importer.AccountsTemplate
+import org.gnucash.android.importer.xml.AccountsTemplate
 
 /**
  * Page displaying all the accounts templates.

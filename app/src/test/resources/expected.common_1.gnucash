@@ -1329,6 +1329,15 @@
           <slot:key>notes</slot:key>
           <slot:value type="frame">
             <slot>
+              <slot:key>dbbf295a331d4182bca73b548f5f7eaf</slot:key>
+              <slot:value type="frame">
+                <slot>
+                  <slot:key>1</slot:key>
+                  <slot:value type="string">note for 04</slot:value>
+                </slot>
+              </slot:value>
+            </slot>
+            <slot>
               <slot:key>84bbb4a4c12844fa9a4a7b4d6915288a</slot:key>
               <slot:value type="frame">
                 <slot>

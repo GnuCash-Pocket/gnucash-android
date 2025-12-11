@@ -22,7 +22,6 @@ import org.gnucash.android.db.adapter.AccountsDbAdapter.Companion.ALWAYS
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.model.Split
-import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.ui.common.FormActivity
 import org.gnucash.android.ui.common.Refreshable
@@ -148,17 +147,17 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         val timeAndDate = formatFullDate(transaction.time)
         binding.trnTimeAndDate.text = timeAndDate
 
-        if (transaction.number.isNullOrEmpty()) {
+        if (transaction.number.isEmpty()) {
             binding.rowTrnNumber.isVisible = false
         } else {
             binding.number.text = transaction.number
             binding.rowTrnNumber.isVisible = true
         }
 
-        if (transaction.note.isNullOrEmpty()) {
+        if (transaction.notes.isEmpty()) {
             binding.rowTrnNotes.isVisible = false
         } else {
-            binding.notes.text = transaction.note
+            binding.notes.text = transaction.notes
             binding.rowTrnNotes.isVisible = true
         }
 

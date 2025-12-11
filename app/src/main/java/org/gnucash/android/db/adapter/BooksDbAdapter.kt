@@ -25,7 +25,6 @@ import androidx.core.content.edit
 import androidx.core.net.toUri
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
-import org.gnucash.android.app.GnuCashApplication.Companion.appContext
 import org.gnucash.android.app.GnuCashApplication.Companion.getBookPreferences
 import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.DatabaseHolder
@@ -270,8 +269,9 @@ class BooksDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Book>(
      */
     private val bookDatabases: List<String>
         get() {
+            val context = holder.context
             val bookDatabases = mutableListOf<String>()
-            for (database in appContext.databaseList()) {
+            for (database in context.databaseList()) {
                 if (isBookDatabase(database)) {
                     bookDatabases.add(database)
                 }
@@ -331,7 +331,7 @@ class BooksDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Book>(
         val sql =
             "SELECT COUNT(*) FROM " + tableName + " WHERE " + BookEntry.COLUMN_DISPLAY_NAME + " = ?"
         val statement = db.compileStatement(sql)
-        val context = appContext
+        val context = holder.context
 
         while (true) {
             val name = context.getString(R.string.book_default_name, bookCount)

@@ -137,10 +137,10 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
         binding.inputBudgetName.setText(budget.name)
         binding.inputDescription.setText(budget.description)
 
-        val recurrenceRuleString = budget.recurrence!!.ruleString
+        val recurrenceRuleString = budget.recurrence.ruleString
         recurrenceRule = recurrenceRuleString
         eventRecurrence.parse(recurrenceRuleString)
-        binding.inputRecurrence.text = budget.recurrence!!.getRepeatString(context)
+        binding.inputRecurrence.text = budget.recurrence.getRepeatString(context)
 
         budgetAmounts = budget.compactedBudgetAmounts
         toggleAmountInputVisibility(binding)
@@ -221,12 +221,8 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
         if (!canSave(binding)) return
         val name = binding.inputBudgetName.trim()
 
-        var budget = budget
-        if (budget == null) {
-            budget = Budget(name)
-        } else {
-            budget.name = name
-        }
+        val budget = budget ?: Budget()
+        budget.name = name
         this.budget = budget
 
         // TODO: 22.10.2015 set the period num of the budget amount
@@ -236,7 +232,7 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
         budget.description = binding.inputDescription.trim()
 
         val recurrence = parse(eventRecurrence)
-        recurrence!!.periodStart = startDate.timeInMillis
+        recurrence.periodStart = startDate.timeInMillis
         budget.recurrence = recurrence
 
         budgetsDbAdapter.insert(budget)

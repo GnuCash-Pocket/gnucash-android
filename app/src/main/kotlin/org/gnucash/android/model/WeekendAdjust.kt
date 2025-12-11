@@ -2,7 +2,7 @@ package org.gnucash.android.model
 
 import java.util.Locale
 
-enum class WeekendAdjust(val value: String?) {
+enum class WeekendAdjust(val value: String) {
     NONE("none"),
 
     /* Previous weekday */

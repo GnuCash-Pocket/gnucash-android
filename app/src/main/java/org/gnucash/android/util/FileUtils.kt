@@ -5,6 +5,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
+import java.io.InputStream
 import java.io.OutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -76,19 +77,29 @@ object FileUtils {
      */
     @Throws(IOException::class)
     fun moveFile(src: File, outputStream: OutputStream) {
-        val buffer = ByteArray(1024)
-        var read: Int
         try {
             FileInputStream(src).use { inputStream ->
-                while ((inputStream.read(buffer).also { read = it }) != -1) {
-                    outputStream.write(buffer, 0, read)
-                }
+                copy(inputStream, outputStream)
             }
         } finally {
-            outputStream.flush()
             outputStream.close()
         }
         Timber.i("Deleting temp export file: %s", src)
         src.delete()
+    }
+
+    @Throws(IOException::class)
+    fun copy(input: InputStream, output: OutputStream): Long {
+        val buffer = ByteArray(1024)
+        var size = 0L
+        do {
+            val read = input.read(buffer)
+            if (read > 0) {
+                output.write(buffer, 0, read)
+                size += read
+            }
+        } while (read >= 0)
+        output.flush()
+        return size
     }
 }

@@ -20,12 +20,12 @@ import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.adapter.BooksDbAdapter
+import org.gnucash.android.export.ExportException
 import org.gnucash.android.export.ExportFormat
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
-import org.gnucash.android.export.Exporter.ExporterException
 import org.gnucash.android.export.xml.GncXmlExporter
-import org.gnucash.android.importer.GncXmlImporter
+import org.gnucash.android.importer.xml.GncXmlImporter
 import org.gnucash.android.test.unit.GnuCashTest
 import org.junit.Before
 import org.junit.Test
@@ -45,7 +45,7 @@ class BackupTest : GnuCashTest() {
     }
 
     @Test
-    @Throws(ExporterException::class)
+    @Throws(ExportException::class)
     fun shouldCreateBackupFileName() {
         val bookUID = GnuCashApplication.activeBookUID
         val exporter: Exporter = GncXmlExporter(

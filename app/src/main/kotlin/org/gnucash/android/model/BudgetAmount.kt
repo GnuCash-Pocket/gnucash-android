@@ -29,13 +29,13 @@ import java.math.BigDecimal
 class BudgetAmount(
     var budgetUID: String? = null,
     var accountUID: String? = null,
-    // FIXME should be the account commodity
+    // Should be the account commodity!
     var amount: Money = Money.createZeroInstance(Commodity.DEFAULT_COMMODITY),
     /**
      * Period number for this budget amount. The period is zero-based index, and a value of -1
      * indicates that this budget amount is applicable to all budgeting periods.
      */
-    var periodNum: Long = 0,
+    var periodIndex: Int = 0,
     var notes: String? = null
 ) : BaseModel(), Parcelable {
 
@@ -45,9 +45,23 @@ class BudgetAmount(
      * @param amount     Money amount of the budget
      * @param accountUID GUID of the account
      */
-    constructor(amount: Money, accountUID: String?) : this(accountUID = accountUID) {
-        this.amount = amount.abs()
-    }
+    constructor(amount: Money, accountUID: String?) : this(
+        budgetUID = null,
+        accountUID = accountUID,
+        amount = amount.abs()
+    )
+
+    /**
+     * Creates a new budget amount with the absolute value of `amount`
+     *
+     * @param amount     Money amount of the budget
+     * @param accountUID GUID of the account
+     */
+    constructor(amount: Money, account: Account) : this(
+        budgetUID = null,
+        accountUID = account.uid,
+        amount = amount.abs().withCommodity(account.commodity)
+    )
 
     override fun describeContents(): Int {
         return 0
@@ -57,7 +71,7 @@ class BudgetAmount(
         dest.writeString(uid)
         dest.writeString(budgetUID)
         dest.writeString(accountUID)
-        dest.writeLong(periodNum)
+        dest.writeInt(periodIndex)
         dest.writeMoney(amount, flags)
         dest.writeString(notes)
     }
@@ -71,14 +85,14 @@ class BudgetAmount(
         setUID(source.readString())
         budgetUID = source.readString()
         accountUID = source.readString()
-        periodNum = source.readLong()
+        periodIndex = source.readInt()
         amount = source.readMoney()!!
         notes = source.readString()
     }
 
-    val amountNumerator: Long = amount.numerator
+    val amountNumerator: Long get() = amount.numerator
 
-    val amountDenominator: Long = amount.denominator
+    val amountDenominator: Long get() = amount.denominator
 
     fun setAmount(numerator: Long, denominator: Long) {
         setAmount(toBigDecimal(numerator, denominator))

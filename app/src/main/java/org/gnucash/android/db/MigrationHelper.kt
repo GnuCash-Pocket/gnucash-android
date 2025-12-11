@@ -28,7 +28,7 @@ import org.gnucash.android.db.DatabaseSchema.CommodityEntry
 import org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry
 import org.gnucash.android.db.DatabaseSchema.SplitEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
-import org.gnucash.android.importer.CommoditiesXmlHandler
+import org.gnucash.android.importer.xml.CommoditiesXmlHandler
 import org.gnucash.android.model.Commodity
 import org.xml.sax.InputSource
 import org.xml.sax.SAXException

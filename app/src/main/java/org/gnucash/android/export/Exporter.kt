@@ -73,6 +73,8 @@ import java.io.Writer
 import java.nio.charset.StandardCharsets
 import java.util.zip.GZIPOutputStream
 
+typealias ExportBookCallback = (bookURI: Uri?) -> Unit
+
 /**
  * Base class for the different exporters
  *
@@ -145,9 +147,9 @@ abstract class Exporter protected constructor(
      * Generates the export output
      *
      * @return the export location.
-     * @throws ExporterException if an error occurs during export
+     * @throws ExportException if an error occurs during export
      */
-    @Throws(ExporterException::class)
+    @Throws(ExportException::class)
     fun export(): Uri? {
         Timber.i("generate export")
         val exportParams = this.exportParams
@@ -155,10 +157,10 @@ abstract class Exporter protected constructor(
         try {
             val file = writeToFile(exportParams) ?: return null
             result = moveToTarget(exportParams, file)
-        } catch (ee: ExporterException) {
+        } catch (ee: ExportException) {
             throw ee
         } catch (e: Throwable) {
-            throw ExporterException(exportParams, e)
+            throw ExportException(exportParams, e)
         }
 
         if (result != null && exportParams.deleteTransactionsAfterExport) {
@@ -188,22 +190,22 @@ abstract class Exporter protected constructor(
         return result
     }
 
-    @Throws(ExporterException::class)
+    @Throws(ExportException::class)
     protected open fun writeToFile(exportParams: ExportParams): File? {
         val cacheFile = getExportCacheFile(exportParams)
         try {
             createWriter(cacheFile).use { writer ->
                 writeExport(writer, exportParams)
             }
-        } catch (ee: ExporterException) {
+        } catch (ee: ExportException) {
             throw ee
         } catch (e: Exception) {
-            throw ExporterException(exportParams, e)
+            throw ExportException(exportParams, e)
         }
         return cacheFile
     }
 
-    @Throws(ExporterException::class, IOException::class)
+    @Throws(ExportException::class, IOException::class)
     protected abstract fun writeExport(writer: Writer, exportParams: ExportParams)
 
     /**
@@ -277,9 +279,9 @@ abstract class Exporter protected constructor(
      * Moves the generated export files to the target specified by the user
      *
      * @param cacheFile the cached file to read from.
-     * @throws Exporter.ExporterException if the move fails
+     * @throws ExportException if the move fails
      */
-    @Throws(ExporterException::class)
+    @Throws(ExportException::class)
     private fun moveToTarget(exportParams: ExportParams, cacheFile: File): Uri? {
         when (exportParams.exportTarget) {
             ExportTarget.SHARING -> return shareFiles(exportParams, cacheFile)
@@ -298,9 +300,9 @@ abstract class Exporter protected constructor(
      * Move the exported files to a specified URI.
      * This URI could be a Storage Access Framework file
      *
-     * @throws Exporter.ExporterException if something failed while moving the exported file
+     * @throws ExportException if something failed while moving the exported file
      */
-    @Throws(ExporterException::class)
+    @Throws(ExportException::class)
     private fun moveExportToUri(exportParams: ExportParams, exportedFile: File): Uri? {
         val context = this.context
         val exportUri = exportParams.exportLocation
@@ -316,7 +318,7 @@ abstract class Exporter protected constructor(
             moveFile(exportedFile, outputStream)
             return exportUri
         } catch (e: IOException) {
-            throw ExporterException(exportParams, e)
+            throw ExportException(exportParams, e)
         }
     }
 
@@ -328,7 +330,7 @@ abstract class Exporter protected constructor(
         val context = this.context
         val dbxClient = getClient(context)
         if (dbxClient == null) {
-            throw ExporterException(exportParams, "Dropbox client required")
+            throw ExportException(exportParams, "Dropbox client required")
         }
 
         try {
@@ -349,14 +351,14 @@ abstract class Exporter protected constructor(
                 .build()
         } catch (e: IOException) {
             Timber.e(e)
-            throw ExporterException(exportParams, e)
+            throw ExportException(exportParams, e)
         } catch (e: DbxException) {
             Timber.e(e)
-            throw ExporterException(exportParams, e)
+            throw ExportException(exportParams, e)
         }
     }
 
-    @Throws(ExporterException::class)
+    @Throws(ExportException::class)
     private fun moveExportToOwnCloud(exportParams: ExportParams, exportedFile: File): Uri? {
         Timber.i("Copying exported file to ownCloud")
         val context = this.context
@@ -365,7 +367,7 @@ abstract class Exporter protected constructor(
         val ocSync = preferences.isSync
 
         if (!ocSync) {
-            throw ExporterException(exportParams, "ownCloud not enabled.")
+            throw ExportException(exportParams, "ownCloud not enabled.")
         }
 
         val ocServer = preferences.server!!
@@ -397,7 +399,7 @@ abstract class Exporter protected constructor(
             getFileLastModifiedTimestamp(exportedFile)
         ).execute(client)
         if (!result.isSuccess) {
-            throw ExporterException(exportParams, result.logMessage)
+            throw ExportException(exportParams, result.logMessage)
         }
 
         exportedFile.delete()
@@ -415,7 +417,7 @@ abstract class Exporter protected constructor(
      * @return The list of files moved to the SD card.
      */
     @Deprecated("Use the Storage Access Framework to save to SD card. See {@link #moveExportToUri(ExportParams, File)}")
-    @Throws(ExporterException::class)
+    @Throws(ExportException::class)
     private fun moveExportToSDCard(exportParams: ExportParams, exportedFile: File): Uri? {
         Timber.i("Moving exported file to external storage")
         val context = this.context
@@ -429,7 +431,7 @@ abstract class Exporter protected constructor(
             moveFile(exportedFile, dst)
             return dst.toUri()
         } catch (e: IOException) {
-            throw ExporterException(exportParams, e)
+            throw ExportException(exportParams, e)
         }
     }
 
@@ -509,17 +511,6 @@ abstract class Exporter protected constructor(
 
     fun cancel() {
         cancellationSignal.cancel()
-    }
-
-    class ExporterException : RuntimeException {
-        constructor(params: ExportParams, msg: String) :
-                super("Failed to generate export with parameters: $params - $msg")
-
-        constructor(params: ExportParams, throwable: Throwable) :
-                super(
-                    "Failed to generate export ${params.exportFormat} - ${throwable.message}",
-                    throwable
-                )
     }
 
     companion object {

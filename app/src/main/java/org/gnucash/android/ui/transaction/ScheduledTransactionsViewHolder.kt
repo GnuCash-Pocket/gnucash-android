@@ -33,7 +33,7 @@ internal class ScheduledTransactionsViewHolder(
                 e,
                 "Scheduled transaction with UID $transactionUID could not be found in the db"
             )
-            Transaction(null)
+            Transaction("")
         }
         val splits = transaction.splits
 

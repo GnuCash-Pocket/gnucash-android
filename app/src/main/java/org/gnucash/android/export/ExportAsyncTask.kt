@@ -33,7 +33,6 @@ import org.gnucash.android.export.qif.QifExporter
 import org.gnucash.android.export.xml.GncXmlExporter
 import org.gnucash.android.gnc.AsyncTaskProgressListener
 import org.gnucash.android.gnc.GncProgressListener
-import org.gnucash.android.importer.ExportBookCallback
 import org.gnucash.android.ui.common.GnucashProgressDialog
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.settings.OwnCloudPreferences

@@ -20,6 +20,7 @@ import com.opencsv.CSVWriterBuilder
 import com.opencsv.ICSVWriter
 import org.gnucash.android.R
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
+import org.gnucash.android.export.ExportException
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
 import org.gnucash.android.gnc.GncProgressListener
@@ -39,7 +40,7 @@ class CsvAccountExporter(
     bookUID: String,
     listener: GncProgressListener? = null
 ) : Exporter(context, params, bookUID, listener) {
-    @Throws(ExporterException::class, IOException::class)
+    @Throws(ExportException::class, IOException::class)
     override fun writeExport(writer: Writer, exportParams: ExportParams) {
         val csvWriter = CSVWriterBuilder(writer)
             .withSeparator(exportParams.csvSeparator)

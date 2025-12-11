@@ -30,7 +30,7 @@ import org.gnucash.android.db.adapter.PricesDbAdapter
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.db.adapter.SplitsDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
-import org.gnucash.android.importer.GncXmlImporter
+import org.gnucash.android.importer.xml.GncXmlImporter
 import org.gnucash.android.model.Account
 import org.gnucash.android.model.AccountType
 import org.gnucash.android.model.Budget

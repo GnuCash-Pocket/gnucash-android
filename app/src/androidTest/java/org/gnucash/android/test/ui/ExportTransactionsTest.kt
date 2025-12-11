@@ -63,7 +63,7 @@ class ExportTransactionsTest : GnuAndroidTest() {
 
         val account = Account("Exportable")
         val transaction = Transaction("Pizza")
-        transaction.note = "What up?"
+        transaction.notes = "What up?"
         transaction.time = System.currentTimeMillis()
         val split = Split(Money("8.99", currencyCode), account)
         split.memo = "Hawaii is the best!"

@@ -111,6 +111,10 @@
     <slot:key>features</slot:key>
     <slot:value type="frame">
       <slot>
+        <slot:key>ISO-8601 formatted date strings in SQLite3 databases.</slot:key>
+        <slot:value type="string">Use ISO formatted date-time strings in SQLite3 databases (requires at least GnuCash 2.6.20)</slot:value>
+      </slot>
+      <slot>
         <slot:key>Register sort and filter settings stored in .gcm file</slot:key>
         <slot:value type="string">Store the register sort and filter settings in .gcm metadata file (requires at least GnuCash 3.3)</slot:value>
       </slot>
@@ -1533,6 +1537,15 @@
             <slot>
               <slot:key>0</slot:key>
               <slot:value type="string">note #1</slot:value>
+            </slot>
+          </slot:value>
+        </slot>
+        <slot>
+          <slot:key>dbbf295a331d4182bca73b548f5f7eaf</slot:key>
+          <slot:value type="frame">
+            <slot>
+              <slot:key>1</slot:key>
+              <slot:value type="string">note for 04</slot:value>
             </slot>
           </slot:value>
         </slot>

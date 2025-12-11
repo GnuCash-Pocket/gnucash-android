@@ -19,14 +19,15 @@ package org.gnucash.android.export.xml
 import org.gnucash.android.math.toBigDecimal
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
-import org.gnucash.android.ui.transaction.TransactionFormFragment
+import org.gnucash.android.model.Numeric
+import org.gnucash.android.model.Numeric.Companion.stripCurrencyFormatting
+import org.gnucash.android.model.Slot
 import org.joda.time.DateTimeZone
 import org.joda.time.Instant
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
 import java.math.BigDecimal
-import java.text.NumberFormat
 import java.text.ParseException
 import java.util.Calendar
 import java.util.Date
@@ -102,13 +103,15 @@ object GncXmlHelper {
     const val ATTR_KEY_TYPE: String = "type"
     const val ATTR_KEY_DATE_POSTED: String = "date-posted"
     const val ATTR_KEY_VERSION: String = "version"
-    const val ATTR_VALUE_STRING: String = "string"
-    const val ATTR_VALUE_NUMERIC: String = "numeric"
-    const val ATTR_VALUE_GUID: String = "guid"
+    val ATTR_VALUE_STRING = Slot.Type.STRING.attribute
+    val ATTR_VALUE_NUMERIC = Slot.Type.NUMERIC.attribute
+    val ATTR_VALUE_GUID = Slot.Type.GUID.attribute
     const val ATTR_VALUE_BOOK: String = "book"
-    const val ATTR_VALUE_FRAME: String = "frame"
-    const val ATTR_VALUE_GDATE: String = "gdate"
+    val ATTR_VALUE_FRAME = Slot.Type.FRAME.attribute
+    val ATTR_VALUE_GDATE = Slot.Type.GDATE.attribute
+    val ATTR_VALUE_TIME64 = Slot.Type.TIME64.attribute
     const val TAG_GDATE: String = "gdate"
+    const val TAG_TIME64: String = "time64"
 
     /*
     Qualified GnuCash XML tag names
@@ -328,16 +331,8 @@ object GncXmlHelper {
      */
     @Throws(ParseException::class)
     fun parseSplitAmount(amountString: String): BigDecimal {
-        val index = amountString.indexOf('/')
-        if (index < 0) {
-            throw ParseException("Cannot parse money string : $amountString", 0)
-        }
-
-        val numerator =
-            TransactionFormFragment.stripCurrencyFormatting(amountString.substring(0, index))
-        val denominator =
-            TransactionFormFragment.stripCurrencyFormatting(amountString.substring(index + 1))
-        return toBigDecimal(numerator.toLong(), denominator.toLong())
+        val numeric = Numeric.parse(amountString)
+        return toBigDecimal(numeric.numerator, numeric.denominator)
     }
 
     /**
@@ -353,7 +348,7 @@ object GncXmlHelper {
         val denom = BigDecimal(denomInt)
         val denomString = denomInt.toString()
 
-        val numerator = TransactionFormFragment.stripCurrencyFormatting(
+        val numerator = stripCurrencyFormatting(
             (amount * denom).stripTrailingZeros().toPlainString()
         )
         return "$numerator/$denomString"
@@ -369,24 +364,14 @@ object GncXmlHelper {
     }
 
     fun formatNumeric(numerator: Long, denominator: Long): String {
-        if (denominator == 0L) return "1/0"
-        if (numerator == 0L) return "0/1"
-        var n = numerator
-        var d = denominator
-        if ((n >= 10) && (d >= 10)) {
-            var n10 = n % 10L
-            var d10 = d % 10L
-            while ((n10 == 0L) && (d10 == 0L) && (n >= 10) && (d >= 10)) {
-                n /= 10
-                d /= 10
-                n10 = n % 10L
-                d10 = d % 10L
-            }
-        }
-        return "$n/$d"
+        return formatNumeric(Numeric(numerator, denominator))
+    }
+
+    fun formatNumeric(numeric: Numeric): String {
+        return numeric.reduce().format()
     }
 
     fun formatNumeric(money: Money): String {
-        return formatNumeric(money.numerator, money.denominator)
+        return formatNumeric(money.toNumeric())
     }
 }

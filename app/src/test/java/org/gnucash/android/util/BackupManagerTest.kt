@@ -5,7 +5,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.adapter.BooksDbAdapter
-import org.gnucash.android.importer.GncXmlImporter
+import org.gnucash.android.importer.xml.GncXmlImporter
 import org.gnucash.android.test.unit.GnuCashTest
 import org.junit.Before
 import org.junit.Test

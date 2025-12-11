@@ -37,14 +37,17 @@ class ScheduledActionDbAdapterTest : GnuCashTest() {
 
         val enabledActions = scheduledActionDbAdapter.allEnabledScheduledActions
         assertThat(enabledActions).hasSize(1)
-        assertThat(enabledActions[0].recurrence!!.periodType).isEqualTo(PeriodType.WEEK)
+        assertThat(enabledActions[0].recurrence.periodType).isEqualTo(PeriodType.WEEK)
     }
 
-    @Test(expected = NullPointerException::class) //no recurrence is set
+    //no recurrence is set
+    @Test
     fun everyScheduledActionShouldHaveRecurrence() {
         val scheduledAction = ScheduledAction(ScheduledAction.ActionType.TRANSACTION)
         scheduledAction.actionUID = generateUID()
-        scheduledActionDbAdapter.addRecord(scheduledAction)
+        val sx = scheduledActionDbAdapter.addRecord(scheduledAction)
+        assertThat(sx.recurrence).isNotNull()
+        assertThat(sx.recurrence.periodType).isEqualTo(PeriodType.ONCE)
     }
 
     @Test

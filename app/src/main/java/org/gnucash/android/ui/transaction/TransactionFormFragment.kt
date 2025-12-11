@@ -399,7 +399,7 @@ class TransactionFormFragment : MenuFragment(),
             !binding.inputTransactionAmount.isInputModified
         )
         binding.currencySymbol.text = transaction.commodity.symbol
-        binding.notes.setText(transaction.note)
+        binding.notes.setText(transaction.notes)
         binding.number.setText(transaction.number)
         binding.inputDate.text = DATE_FORMATTER.print(transaction.time)
         binding.inputTime.text = TIME_FORMATTER.print(transaction.time)
@@ -774,7 +774,7 @@ class TransactionFormFragment : MenuFragment(),
         val transaction = Transaction(description).apply {
             time = date.timeInMillis
             commodity = accountCommodity
-            note = notes
+            this.notes = notes
             this.number = number
             this.splits = splits
             isExported = false //not necessary as exports use timestamps now. Because, legacy
@@ -1120,24 +1120,5 @@ class TransactionFormFragment : MenuFragment(),
          * Formats milliseconds to time string of format "HH:mm" e.g. 15:25
          */
         val TIME_FORMATTER: DateTimeFormatter = DateTimeFormat.mediumTime()
-
-        /**
-         * Strips formatting from a currency string.
-         * All non-digit information is removed, but the sign is preserved.
-         *
-         * @param s String to be stripped
-         * @return Stripped string with all non-digits removed
-         */
-        fun stripCurrencyFormatting(s: String): String {
-            if (s.isEmpty()) return s
-            //remove all currency formatting and anything else which is not a number
-            val sign = s.trim()[0]
-            var stripped = s.trim().replace("\\D*".toRegex(), "")
-            if (stripped.isEmpty()) return ""
-            if (sign == '+' || sign == '-') {
-                stripped = sign + stripped
-            }
-            return stripped
-        }
     }
 }

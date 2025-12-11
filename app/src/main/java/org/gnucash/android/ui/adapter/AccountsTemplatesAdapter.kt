@@ -4,7 +4,7 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import org.gnucash.android.importer.AccountsTemplate
+import org.gnucash.android.importer.xml.AccountsTemplate
 
 class AccountsTemplatesAdapter(context: Context) : SpinnerArrayAdapter<AccountsTemplate.Header>(
     context,

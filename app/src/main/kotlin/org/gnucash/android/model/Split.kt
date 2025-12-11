@@ -49,7 +49,7 @@ class Split : BaseModel, Parcelable {
     /**
      * Memo associated with this split
      */
-    var memo: String? = null
+    var memo: String = ""
 
     /**
      * The reconciled state is one of the following values:
@@ -65,7 +65,7 @@ class Split : BaseModel, Parcelable {
     /**
      * Date of the reconciliation. Database required non-null field
      */
-    var reconcileDate: Long = System.currentTimeMillis()
+    var reconcileDate: Long = 0L
 
     /**
      * Account UID for a scheduled action.
@@ -241,39 +241,6 @@ class Split : BaseModel, Parcelable {
     }
 
     /**
-     * Returns a string representation of the split which can be parsed again
-     * using [org.gnucash.android.model.Split.parseSplit]
-     *
-     *
-     * The string is formatted as:<br />
-     * "&lt;uid&gt;;&lt;valueNum&gt;;&lt;valueDenom&gt;;&lt;valueCurrencyCode&gt;;&lt;quantityNum
-     * &gt;;&lt;quantityDenom&gt;;&lt;quantityCurrencyCode&gt;;&lt;transaction_uid&gt;;&lt;
-     * account_uid&gt;;&lt;type&gt;;&lt;memo&gt;"
-     *
-     * **Only the memo field is allowed to be null**
-     *
-     * @return the converted CSV string of this split
-     */
-    fun toCsv(): String {
-        //TODO: add reconciled state and date
-        val splitString = StringBuilder()
-            .append(uid)
-            .append(SEPARATOR_CSV).append(value.numerator)
-            .append(SEPARATOR_CSV).append(value.denominator)
-            .append(SEPARATOR_CSV).append(value.commodity.currencyCode)
-            .append(SEPARATOR_CSV).append(quantity.numerator)
-            .append(SEPARATOR_CSV).append(quantity.denominator)
-            .append(SEPARATOR_CSV).append(quantity.commodity.currencyCode)
-            .append(SEPARATOR_CSV).append(transactionUID)
-            .append(SEPARATOR_CSV).append(accountUID)
-            .append(SEPARATOR_CSV).append(type.name)
-        if (memo != null) {
-            splitString.append(SEPARATOR_CSV).append(memo)
-        }
-        return splitString.toString()
-    }
-
-    /**
      * Two splits are considered equivalent if all the fields (excluding GUID
      * and timestamps - created, modified, reconciled) are equal.
      *
@@ -368,7 +335,7 @@ class Split : BaseModel, Parcelable {
         value = source.readMoney()!!
         quantity = source.readMoney()!!
 
-        memo = source.readString()
+        memo = source.readString().orEmpty()
         reconcileState = source.readString()!![0]
         reconcileDate = source.readLong()
     }
@@ -388,8 +355,6 @@ class Split : BaseModel, Parcelable {
          * Flag indicating that the split has been cleared, but not reconciled
          */
         const val FLAG_CLEARED = 'c'
-
-        private const val SEPARATOR_CSV = ";"
 
         /**
          * Splits are saved as absolute values to the database, with no negative numbers.
@@ -436,53 +401,6 @@ class Split : BaseModel, Parcelable {
                 absAmount
             } else {
                 -absAmount
-            }
-        }
-
-        /**
-         * Parses a split which is in the format:<br/>
-         * "<uid>;<valueNum>;<valueDenom>;<currency_code>;<quantityNum>;<quantityDenom>;
-         * <currency_code>;<transaction_uid>;<account_uid>;<type>;<memo>".
-         *
-         * <p>Also supports parsing of the deprecated format
-         * "<amount>;<currency_code>;<transaction_uid>;<account_uid>;<type>;<memo>".
-         * The split input string is the same produced by the {@link Split#toCsv()} method.</p>
-         *
-         * @param splitCsvString String containing formatted split
-         * @return Split instance parsed from the string
-         */
-        fun parseSplit(splitCsvString: String): Split {
-            //TODO: parse reconciled state and date
-            val tokens =
-                splitCsvString.split(SEPARATOR_CSV.toRegex()).dropLastWhile { it.isEmpty() }
-                    .toTypedArray()
-            return if (tokens.size < 8) { //old format splits
-                val amount = Money(tokens[0], tokens[1])
-                val split = Split(amount, tokens[2])
-                split.transactionUID = tokens[3]
-                split.type = TransactionType.of(tokens[4])
-                if (tokens.size == 6) {
-                    split.memo = tokens[5]
-                }
-                split
-            } else {
-                val valueNum = tokens[1].toLong()
-                val valueDenom = tokens[2].toLong()
-                val valueCurrencyCode = tokens[3]
-                val quantityNum = tokens[4].toLong()
-                val quantityDenom = tokens[5].toLong()
-                val qtyCurrencyCode = tokens[6]
-                val value = Money(valueNum, valueDenom, valueCurrencyCode)
-                val quantity = Money(quantityNum, quantityDenom, qtyCurrencyCode)
-                val split = Split(value, tokens[8])
-                split.setUID(tokens[0])
-                split.quantity = quantity
-                split.transactionUID = tokens[7]
-                split.type = TransactionType.of(tokens[9])
-                if (tokens.size == 11) {
-                    split.memo = tokens[10]
-                }
-                split
             }
         }
 

@@ -88,8 +88,8 @@ class SplitsDbAdapter(
      *
      * @param split [Split] to be recorded in DB
      */
-    override fun addRecord(split: Split, updateMethod: UpdateMethod) {
-        super.addRecord(split, updateMethod)
+    override fun addRecord(split: Split, updateMethod: UpdateMethod): Split {
+        val result = super.addRecord(split, updateMethod)
 
         if (updateMethod != UpdateMethod.Insert) {
             //when a split is updated, we want mark the transaction as not exported
@@ -101,6 +101,8 @@ class SplitsDbAdapter(
                 getUtcStringFromTimestamp(timestampFromNow)
             updateRecord(TransactionEntry.TABLE_NAME, transactionUID, content)
         }
+
+        return result
     }
 
     override fun bind(stmt: SQLiteStatement, split: Split): SQLiteStatement {
@@ -165,7 +167,7 @@ class SplitsDbAdapter(
         split.quantity = quantity
         split.transactionUID = transxUID
         split.type = TransactionType.of(typeName)
-        split.memo = memo
+        split.memo = memo.orEmpty()
         split.reconcileState = reconcileState?.get(0) ?: FLAG_NOT_RECONCILED
         if (!reconcileDate.isNullOrEmpty()) {
             split.reconcileDate = getTimestampFromUtcString(reconcileDate).getTime()

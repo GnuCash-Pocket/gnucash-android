@@ -21,6 +21,8 @@ import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry
+import org.gnucash.android.db.bindInt
+import org.gnucash.android.db.getInt
 import org.gnucash.android.db.getLong
 import org.gnucash.android.db.getString
 import org.gnucash.android.model.BudgetAmount
@@ -58,13 +60,13 @@ class BudgetAmountsDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
         val accountUID = cursor.getString(BudgetAmountEntry.COLUMN_ACCOUNT_UID)!!
         val amountNum = cursor.getLong(BudgetAmountEntry.COLUMN_AMOUNT_NUM)
         val amountDenom = cursor.getLong(BudgetAmountEntry.COLUMN_AMOUNT_DENOM)
-        val periodNum = cursor.getLong(BudgetAmountEntry.COLUMN_PERIOD_NUM)
+        val periodNum = cursor.getInt(BudgetAmountEntry.COLUMN_PERIOD_NUM)
         val notes = cursor.getString(BudgetAmountEntry.COLUMN_NOTES)
 
         val budgetAmount = BudgetAmount(budgetUID, accountUID)
         populateBaseModelAttributes(cursor, budgetAmount)
         budgetAmount.amount = Money(amountNum, amountDenom, getCommodity(accountUID))
-        budgetAmount.periodNum = periodNum
+        budgetAmount.periodIndex = periodNum
         budgetAmount.notes = notes
 
         return budgetAmount
@@ -76,7 +78,7 @@ class BudgetAmountsDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
         stmt.bindString(2, budgetAmount.accountUID)
         stmt.bindLong(3, budgetAmount.amount.numerator)
         stmt.bindLong(4, budgetAmount.amount.denominator)
-        stmt.bindLong(5, budgetAmount.periodNum)
+        stmt.bindInt(5, budgetAmount.periodIndex)
         if (budgetAmount.notes != null) {
             stmt.bindString(6, budgetAmount.notes)
         }

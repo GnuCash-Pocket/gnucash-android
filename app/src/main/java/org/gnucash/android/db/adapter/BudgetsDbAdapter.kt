@@ -22,12 +22,12 @@ import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry
 import org.gnucash.android.db.DatabaseSchema.BudgetEntry
-import org.gnucash.android.db.getLong
+import org.gnucash.android.db.bindInt
+import org.gnucash.android.db.getInt
 import org.gnucash.android.db.getString
 import org.gnucash.android.model.Budget
 import org.gnucash.android.model.BudgetAmount
 import org.gnucash.android.model.Money
-import org.gnucash.android.model.Recurrence
 import java.io.IOException
 
 /**
@@ -67,22 +67,24 @@ class BudgetsDbAdapter
         recurrenceDbAdapter.close()
     }
 
-    override fun addRecord(budget: Budget, updateMethod: UpdateMethod) {
+    override fun addRecord(budget: Budget, updateMethod: UpdateMethod): Budget {
         require(!budget.budgetAmounts.isEmpty()) { "Budgets must have budget amounts" }
 
-        recurrenceDbAdapter.addRecord(budget.recurrence!!, updateMethod)
+        recurrenceDbAdapter.addRecord(budget.recurrence, updateMethod)
         super.addRecord(budget, updateMethod)
         budgetAmountsDbAdapter.deleteBudgetAmountsForBudget(budget.uid)
         for (budgetAmount in budget.budgetAmounts) {
             budgetAmountsDbAdapter.addRecord(budgetAmount, updateMethod)
         }
+
+        return budget
     }
 
-    override fun bulkAddRecords(budgets: List< Budget>, updateMethod: UpdateMethod): Long {
+    override fun bulkAddRecords(budgets: List<Budget>, updateMethod: UpdateMethod): Long {
         val budgetAmounts: List<BudgetAmount> = budgets.flatMap { it.budgetAmounts }
 
         //first add the recurrences, they have no dependencies (foreign key constraints)
-        val recurrences: List<Recurrence> = budgets.mapNotNull { it.recurrence }
+        val recurrences = budgets.map { it.recurrence }
         recurrenceDbAdapter.bulkAddRecords(recurrences, updateMethod)
 
         //now add the budgets themselves
@@ -100,14 +102,16 @@ class BudgetsDbAdapter
         val name = cursor.getString(BudgetEntry.COLUMN_NAME)!!
         val description = cursor.getString(BudgetEntry.COLUMN_DESCRIPTION)
         val recurrenceUID = cursor.getString(BudgetEntry.COLUMN_RECURRENCE_UID)!!
-        val numPeriods = cursor.getLong(BudgetEntry.COLUMN_NUM_PERIODS)
+        val numPeriods = cursor.getInt(BudgetEntry.COLUMN_NUM_PERIODS)
 
-        val budget = Budget(name)
+        val budget = Budget()
         populateBaseModelAttributes(cursor, budget)
+        budget.name = name
         budget.description = description
         budget.recurrence = recurrenceDbAdapter.getRecord(recurrenceUID)
         budget.numberOfPeriods = numPeriods
-        budget.setBudgetAmounts(budgetAmountsDbAdapter.getBudgetAmountsForBudget(budget.uid))
+        val amounts = budgetAmountsDbAdapter.getBudgetAmountsForBudget(budget.uid)
+        budget.setBudgetAmounts(amounts)
 
         return budget
     }
@@ -118,8 +122,8 @@ class BudgetsDbAdapter
         if (budget.description != null) {
             stmt.bindString(2, budget.description)
         }
-        stmt.bindString(3, budget.recurrence!!.uid)
-        stmt.bindLong(4, budget.numberOfPeriods)
+        stmt.bindString(3, budget.recurrence.uid)
+        stmt.bindInt(4, budget.numberOfPeriods)
 
         return stmt
     }

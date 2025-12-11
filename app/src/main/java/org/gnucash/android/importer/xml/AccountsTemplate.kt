@@ -1,4 +1,4 @@
-package org.gnucash.android.importer
+package org.gnucash.android.importer.xml
 
 import android.content.Context
 import android.content.res.AssetManager

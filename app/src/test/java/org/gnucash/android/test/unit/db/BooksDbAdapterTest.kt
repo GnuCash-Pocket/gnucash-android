@@ -20,7 +20,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.R
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter.NoActiveBookFoundException
-import org.gnucash.android.model.BaseModel.Companion.generateUID
 import org.gnucash.android.model.Book
 import org.gnucash.android.test.unit.GnuCashTest
 import org.gnucash.android.test.unit.export.BackupTest
@@ -52,16 +51,17 @@ class BooksDbAdapterTest : GnuCashTest() {
         assertThat(booksDbAdapter.getRecord(book.uid).displayName).isEqualTo("Book 1")
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun savingBook_requiresRootAccountGUID() {
         val book = Book(rootAccountUID = null)
-        booksDbAdapter.insert(book)
+        val inserted = booksDbAdapter.insert(book)
+        assertThat(inserted.rootAccountUID).isNotNull()
+        assertThat(inserted.rootAccountUID).isNotEmpty()
     }
 
     @Test
     fun deleteBook() {
         val book = Book()
-        book.rootAccountUID = generateUID()
         booksDbAdapter.insert(book)
 
         booksDbAdapter.deleteRecord(book.uid)

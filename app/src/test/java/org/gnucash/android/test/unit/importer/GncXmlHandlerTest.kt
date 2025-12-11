@@ -20,6 +20,12 @@ import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
+import org.gnucash.android.db.adapter.BudgetsDbAdapter
+import org.gnucash.android.db.adapter.CommoditiesDbAdapter
+import org.gnucash.android.db.adapter.PricesDbAdapter
+import org.gnucash.android.db.adapter.RecurrenceDbAdapter
+import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
+import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.export.xml.GncXmlHelper.formatDate
 import org.gnucash.android.export.xml.GncXmlHelper.parseDateTime
 import org.gnucash.android.model.Account
@@ -100,7 +106,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         // Check attributes
         assertThat(transaction.description).isEqualTo("Kahuna Burger")
         assertThat(transaction.commodity.currencyCode).isEqualTo("USD")
-        assertThat(transaction.note).isEqualTo("")
+        assertThat(transaction.notes).isEqualTo("")
         assertThat(transaction.scheduledActionUID).isNull()
         assertThat(transaction.isExported).isTrue()
         assertThat(transaction.isTemplate).isFalse()
@@ -115,20 +121,20 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(split1.accountUID).isEqualTo("6a7cf8267314992bdddcee56d71a3908")
         assertThat(split1.transactionUID).isEqualTo("b33c8a6160494417558fd143731fc26a")
         assertThat(split1.type).isEqualTo(TransactionType.DEBIT)
-        assertThat(split1.memo).isNull()
+        assertThat(split1.memo).isEmpty()
         assertThat(split1.value).isEqualTo(Money("10", "USD"))
         assertThat(split1.quantity).isEqualTo(Money("10", "USD"))
-        assertThat(split1.reconcileState).isEqualTo('n')
+        assertThat(split1.reconcileState).isEqualTo(Split.FLAG_NOT_RECONCILED)
 
         val split2 = transaction.splits[1]
         assertThat(split2.uid).isEqualTo("61d4d604bc00a59cabff4e8875d00bee")
         assertThat(split2.accountUID).isEqualTo("dae686a1636addc0dae1ae670701aa4a")
         assertThat(split2.transactionUID).isEqualTo("b33c8a6160494417558fd143731fc26a")
         assertThat(split2.type).isEqualTo(TransactionType.CREDIT)
-        assertThat(split2.memo).isNull()
+        assertThat(split2.memo).isEmpty()
         assertThat(split2.value).isEqualTo(Money("10", "USD"))
         assertThat(split2.quantity).isEqualTo(Money("10", "USD"))
-        assertThat(split2.reconcileState).isEqualTo('n')
+        assertThat(split2.reconcileState).isEqualTo(Split.FLAG_NOT_RECONCILED)
         assertThat(split2.isPairOf(split1)).isTrue()
     }
 
@@ -155,7 +161,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(splitExpense.accountUID).isEqualTo("6a7cf8267314992bdddcee56d71a3908")
         assertThat(splitExpense.transactionUID).isEqualTo("042ff745a80e94e6237fb0549f6d32ae")
         assertThat(splitExpense.type).isEqualTo(TransactionType.DEBIT)
-        assertThat(splitExpense.memo).isNull()
+        assertThat(splitExpense.memo).isEmpty()
         assertThat(splitExpense.value).isEqualTo(Money("50", "USD"))
         assertThat(splitExpense.quantity).isEqualTo(Money("50", "USD"))
 
@@ -174,7 +180,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(splitAsset2.accountUID).isEqualTo("ee139a5658a0d37507dc26284798e347")
         assertThat(splitAsset2.transactionUID).isEqualTo("042ff745a80e94e6237fb0549f6d32ae")
         assertThat(splitAsset2.type).isEqualTo(TransactionType.CREDIT)
-        assertThat(splitAsset2.memo).isNull()
+        assertThat(splitAsset2.memo).isEmpty()
         assertThat(splitAsset2.value).isEqualTo(Money("45", "USD"))
         assertThat(splitAsset2.quantity).isEqualTo(Money("45", "USD"))
         assertThat(splitAsset2.isPairOf(splitExpense)).isFalse()
@@ -256,7 +262,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         // Check attributes
         assertThat(scheduledTransaction.description).isEqualTo("Los pollos hermanos")
         assertThat(scheduledTransaction.commodity.currencyCode).isEqualTo("USD")
-        assertThat(scheduledTransaction.note).isEqualTo("")
+        assertThat(scheduledTransaction.notes).isEqualTo("")
         assertThat(scheduledTransaction.scheduledActionUID).isNull()
         assertThat(scheduledTransaction.isExported).isTrue()
         assertThat(scheduledTransaction.isTemplate).isTrue()
@@ -271,7 +277,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(splitCredit.accountUID).isEqualTo("6a7cf8267314992bdddcee56d71a3908")
         assertThat(splitCredit.transactionUID).isEqualTo("b645bef06d0844aece6424ceeec03983")
         assertThat(splitCredit.type).isEqualTo(TransactionType.CREDIT)
-        assertThat(splitCredit.memo).isNull()
+        assertThat(splitCredit.memo).isEmpty()
         assertThat(splitCredit.value).isEqualTo(Money("20", "USD"))
 
         // FIXME: the quantity is always 0 as it's set from <split:quantity> instead
@@ -282,7 +288,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(splitDebit.accountUID).isEqualTo("dae686a1636addc0dae1ae670701aa4a")
         assertThat(splitDebit.transactionUID).isEqualTo("b645bef06d0844aece6424ceeec03983")
         assertThat(splitDebit.type).isEqualTo(TransactionType.DEBIT)
-        assertThat(splitDebit.memo).isNull()
+        assertThat(splitDebit.memo).isEmpty()
         assertThat(splitDebit.value).isEqualTo(Money("20", "USD"))
         // FIXME: the quantity is always 0 as it's set from <split:quantity> instead
         // of from the slots
@@ -303,11 +309,11 @@ class GncXmlHandlerTest : BookHelperTest() {
             scheduledActionDbAdapter.getRecord("b5a13acb5a9459ebed10d06b75bbad10")
 
         // There are 3 byDays but, for now, getting one is enough to ensure it is executed
-        assertThat(scheduledTransaction.recurrence!!.byDays).hasSizeGreaterThanOrEqualTo(1)
+        assertThat(scheduledTransaction.recurrence.byDays).hasSizeGreaterThanOrEqualTo(1)
 
         // Until we implement parsing of days of the week for scheduled actions,
         // we'll just use the day of the week of the start time.
-        val dayOfWeekFromByDays = scheduledTransaction.recurrence!!.byDays[0]
+        val dayOfWeekFromByDays = scheduledTransaction.recurrence.byDays[0]
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = scheduledTransaction.startDate
         val dayOfWeekFromStartTime = calendar[Calendar.DAY_OF_WEEK]
@@ -448,8 +454,8 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(formatDate(scheduledAction.endDate)).isEqualTo("2025-12-31")
         assertThat(scheduledAction.templateAccountUID).isEqualTo("ea8dc2da727542c9becc721e5f05f0f9")
         assertThat(scheduledAction.recurrence).isNotNull()
-        assertThat(scheduledAction.recurrence!!.periodType).isEqualTo(PeriodType.WEEK)
-        assertThat(scheduledAction.recurrence!!.multiplier).isOne()
+        assertThat(scheduledAction.recurrence.periodType).isEqualTo(PeriodType.WEEK)
+        assertThat(scheduledAction.recurrence.multiplier).isOne()
 
         transaction = transactionsDbAdapter.getRecord("a61cb5e0fc8f46e49f47a4812bfcd1e6")
 
@@ -486,6 +492,22 @@ class GncXmlHandlerTest : BookHelperTest() {
     }
 
     @Test
+    fun `import xml - common_1`() {
+        val bookUID = importGnuCashXml("common_1.gnucash")
+        testCommon1(
+            bookUID,
+            accountsDbAdapter,
+            booksDbAdapter,
+            budgetsDbAdapter,
+            commoditiesDbAdapter,
+            pricesDbAdapter,
+            recurrenceDbAdapter,
+            scheduledActionDbAdapter,
+            transactionsDbAdapter
+        )
+    }
+
+    @Test
     fun `export since`() {
         val since = TimestampHelper.timestampFromEpochZero
         importGnuCashXml("common_1.gnucash")
@@ -510,5 +532,85 @@ class GncXmlHandlerTest : BookHelperTest() {
         val transactionToExport = transactionsDbAdapter.buildModelInstance(transactionsModified)
         transactionsModified.close()
         assertThat(transactionToExport).isEqualTo(transaction)
+    }
+
+    companion object {
+        fun testCommon1(
+            bookUID: String,
+            accountsDbAdapter: AccountsDbAdapter,
+            booksDbAdapter: BooksDbAdapter,
+            budgetsDbAdapter: BudgetsDbAdapter,
+            commoditiesDbAdapter: CommoditiesDbAdapter,
+            pricesDbAdapter: PricesDbAdapter,
+            recurrenceDbAdapter: RecurrenceDbAdapter,
+            scheduledActionDbAdapter: ScheduledActionDbAdapter,
+            transactionsDbAdapter: TransactionsDbAdapter
+        ) {
+            val currencyILS = commoditiesDbAdapter.getCurrency("ILS")!!
+            val currencyUSD = commoditiesDbAdapter.getCurrency("USD")!!
+
+            assertThat(bookUID).isEqualTo("a7682e5d878e43cea216611401f08463")
+            val book = booksDbAdapter.getRecord(bookUID)
+            assertThat(book.uid).isEqualTo("a7682e5d878e43cea216611401f08463")
+            assertThat(book.rootAccountUID).isEqualTo("2fd3dc45e1974993a15ea1c611d3d345")
+            assertThat(book.rootTemplateUID).isEqualTo("5569f2318478400f94606478b0de55c5")
+
+            assertThat(pricesDbAdapter.recordsCount).isEqualTo(2)
+            // 67 regular accounts + 2 template accounts
+            assertThat(accountsDbAdapter.recordsCount).isEqualTo(69)
+            assertThat(budgetsDbAdapter.recordsCount).isOne()
+            assertThat(recurrenceDbAdapter.recordsCount).isEqualTo(2)
+            assertThat(scheduledActionDbAdapter.recordsCount).isOne()
+            // 3 regular transactions + 1 template transaction
+            assertThat(transactionsDbAdapter.recordsCount).isEqualTo(3)
+            assertThat(transactionsDbAdapter.splitsDbAdapter.recordsCount).isEqualTo(8)
+
+            assertThat(accountsDbAdapter.recordsCount).isEqualTo(69)
+            val account = accountsDbAdapter.getRecord("dbbf295a331d4182bca73b548f5f7eaf")
+            assertThat(account.parentUID).isEqualTo("84bbb4a4c12844fa9a4a7b4d6915288a")
+            assertThat(account.name).isEqualTo("Groceries")
+            assertThat(account.fullName).isEqualTo("Expenses:Groceries")
+
+            val transaction = transactionsDbAdapter.getRecord("ca215bd292094eae8267d4cba5e6a0f1")
+            assertThat(transaction.description).isEqualTo("Amazon")
+            assertThat(transaction.notes).isEqualTo("hardcover")
+            assertThat(transaction.number).isEqualTo("N123")
+            assertThat(transaction.splits).hasSize(2)
+            assertThat(transaction.splits[0].value).isEqualTo(Money(123.45, currencyUSD))
+            assertThat(transaction.splits[0].memo).isEqualTo("bible")
+
+            val template = transactionsDbAdapter.getRecord("9b42fbb885db4918819a05fc42dd63e0")
+            assertThat(template.isTemplate).isTrue()
+            assertThat(template.description).isEqualTo("AT&T")
+            assertThat(template.splits).hasSize(2)
+            assertThat(template.splits[0].value).isEqualTo(Money(99.90, currencyILS))
+
+            val scheduledAction =
+                scheduledActionDbAdapter.getRecord("11d621073ed745debd5027325d7853a4")
+            assertThat(scheduledAction.name).isEqualTo("AT&T subscription")
+            assertThat(scheduledAction.templateAccountUID).isEqualTo("3bdbf5e3b9364a6fb2dd463d1241a4ea")
+            assertThat(scheduledAction.actionUID).isEqualTo(template.uid)
+
+            val budget = budgetsDbAdapter.getRecord("2f4e4e47cedb413e86ab4823757d1d84")
+            assertThat(budget.name).isEqualTo("Groceries Budget")
+            assertThat(budget.description).isEqualTo("shopping")
+            assertThat(budget.recurrence).isNotNull()
+            assertThat(budget.numberOfPeriods).isEqualTo(12)
+            assertThat(budget.budgetAmounts).hasSize(13)
+
+            val budgetAmount = budget.budgetAmounts.first { it.periodIndex == 1 }
+            assertThat(budgetAmount.budgetUID).isEqualTo("2f4e4e47cedb413e86ab4823757d1d84")
+            assertThat(budgetAmount.accountUID).isEqualTo("dbbf295a331d4182bca73b548f5f7eaf")
+            assertThat(budgetAmount.amount.numerator).isEqualTo(1010_00L)
+            assertThat(budgetAmount.amount.denominator).isEqualTo(100L)
+            assertThat(budgetAmount.notes).isEqualTo("note for 04")
+
+            val budgetAmountParent =
+                budget.budgetAmounts.first { it.periodIndex == 0 && it.accountUID == account.parentUID }
+            assertThat(budgetAmountParent.budgetUID).isEqualTo("2f4e4e47cedb413e86ab4823757d1d84")
+            assertThat(budgetAmountParent.accountUID).isEqualTo("84bbb4a4c12844fa9a4a7b4d6915288a")
+            assertThat(budgetAmountParent.notes).isEqualTo("note #1")
+            assertThat(budgetAmountParent.amount.isAmountZero).isTrue()
+        }
     }
 }

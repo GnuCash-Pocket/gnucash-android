@@ -21,6 +21,7 @@ import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.adapter.AccountsDbAdapter.Companion.ALWAYS
 import org.gnucash.android.db.forEach
+import org.gnucash.android.export.ExportException
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
 import org.gnucash.android.export.ofx.OfxHelper.APP_ID
@@ -91,7 +92,7 @@ class OfxExporter(
     override fun writeExport(writer: Writer, exportParams: ExportParams) {
         val accounts = accountsDbAdapter.getExportableAccounts(exportParams.exportStartTime)
         if (accounts.isEmpty()) {
-            throw ExporterException(exportParams, "No accounts to export")
+            throw ExportException(exportParams, "No accounts to export")
         }
         writeDocument(writer, exportParams, accounts)
 
@@ -103,9 +104,9 @@ class OfxExporter(
      * Generate OFX export file from the transactions in the database.
      *
      * @param accounts List of accounts to export.
-     * @throws ExporterException if an XML builder could not be created.
+     * @throws ExportException if an XML builder could not be created.
      */
-    @Throws(ExporterException::class)
+    @Throws(ExportException::class)
     private fun writeDocument(writer: Writer, exportParams: ExportParams, accounts: List<Account>) {
         val useXmlHeader = PreferenceManager.getDefaultSharedPreferences(context)
             .getBoolean(context.getString(R.string.key_xml_ofx_header), true)
@@ -160,7 +161,7 @@ class OfxExporter(
                 isDoubleEntryEnabled || !it.name.contains(nameImbalance)
             }
         if (accountsWithTransactions.isEmpty()) {
-            throw ExporterException(exportParams, "No accounts to export")
+            throw ExportException(exportParams, "No accounts to export")
         }
 
         val accountsBank = accountsWithTransactions.filter { it.isBanking }
@@ -364,7 +365,7 @@ class OfxExporter(
         xmlSerializer.text(transaction.uid)
         xmlSerializer.endTag(null, TAG_TRANSACTION_FITID)
 
-        if (!transaction.number.isNullOrEmpty()) {
+        if (transaction.number.isNotEmpty()) {
             xmlSerializer.startTag(null, TAG_CHECK_NUMBER)
             xmlSerializer.text(transaction.number)
             xmlSerializer.endTag(null, TAG_CHECK_NUMBER)
@@ -374,9 +375,9 @@ class OfxExporter(
         xmlSerializer.text(transaction.description)
         xmlSerializer.endTag(null, TAG_NAME)
 
-        if (!transaction.note.isNullOrEmpty()) {
+        if (transaction.notes.isNotEmpty()) {
             xmlSerializer.startTag(null, TAG_MEMO)
-            xmlSerializer.text(transaction.note)
+            xmlSerializer.text(transaction.notes)
             xmlSerializer.endTag(null, TAG_MEMO)
         }
 

@@ -17,6 +17,7 @@ package org.gnucash.android.test.unit.model
 
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.model.Budget
+import org.gnucash.android.model.Budget.Companion.PERIOD_ALL
 import org.gnucash.android.model.BudgetAmount
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
@@ -74,15 +75,15 @@ class BudgetTest : GnuCashTest() {
         val budget = Budget("Test")
         budget.numberOfPeriods = 6
         var budgetAmount = BudgetAmount(Money("10", "USD"), "test")
-        budgetAmount.periodNum = 1
+        budgetAmount.periodIndex = 1
         budget.addAmount(budgetAmount)
 
         budgetAmount = BudgetAmount(Money("15", "USD"), "test")
-        budgetAmount.periodNum = 2
+        budgetAmount.periodIndex = 2
         budget.addAmount(budgetAmount)
 
         budgetAmount = BudgetAmount(Money("5", "USD"), "secondAccount")
-        budgetAmount.periodNum = 5
+        budgetAmount.periodIndex = 5
         budget.addAmount(budgetAmount)
 
         val compactedBudgetAmounts = budget.compactedBudgetAmounts
@@ -90,9 +91,9 @@ class BudgetTest : GnuCashTest() {
         assertThat(compactedBudgetAmounts).extracting("accountUID", String::class.java)
             .contains("test", "secondAccount")
 
-        val periodNum = assertThat(compactedBudgetAmounts).extracting("periodNum", Long::class.java)
-        periodNum.contains(1L, 2L, 5L)
-        periodNum.doesNotContain(-1L)
+        val periodNum = assertThat(compactedBudgetAmounts).extracting("periodIndex", Int::class.java)
+        periodNum.contains(1, 2, 5)
+        periodNum.doesNotContain(PERIOD_ALL)
     }
 
     /**
@@ -104,32 +105,32 @@ class BudgetTest : GnuCashTest() {
         val budget = Budget("Test")
         budget.numberOfPeriods = 6
         var budgetAmount = BudgetAmount(Money("10", "USD"), "first")
-        budgetAmount.periodNum = 1
+        budgetAmount.periodIndex = 1
         budget.addAmount(budgetAmount)
 
         budgetAmount = BudgetAmount(Money("10", "USD"), "first")
-        budgetAmount.periodNum = 2
+        budgetAmount.periodIndex = 2
         budget.addAmount(budgetAmount)
 
         budgetAmount = BudgetAmount(Money("10", "USD"), "first")
-        budgetAmount.periodNum = 5
+        budgetAmount.periodIndex = 5
         budget.addAmount(budgetAmount)
 
         budgetAmount = BudgetAmount(Money("10", "EUR"), "second")
-        budgetAmount.periodNum = 4
+        budgetAmount.periodIndex = 4
         budget.addAmount(budgetAmount)
 
         budgetAmount = BudgetAmount(Money("13", "EUR"), "third")
-        budgetAmount.periodNum = -1
+        budgetAmount.periodIndex = -1
         budget.addAmount(budgetAmount)
 
         val compactedBudgetAmounts = budget.compactedBudgetAmounts
 
         assertThat(compactedBudgetAmounts).hasSize(3)
-        val periodNum = assertThat(compactedBudgetAmounts).extracting("periodNum", Long::class.java)
+        val periodNum = assertThat(compactedBudgetAmounts).extracting("periodIndex", Int::class.java)
         periodNum.hasSize(3)
-        periodNum.contains(-1L, 4L)
-        periodNum.doesNotContain(1L, 2L, 3L)
+        periodNum.contains(PERIOD_ALL, 4)
+        periodNum.doesNotContain(1, 2, 3)
 
         assertThat(compactedBudgetAmounts)
             .extracting("accountUID", String::class.java)
@@ -146,17 +147,17 @@ class BudgetTest : GnuCashTest() {
         val budget = Budget("Test")
         budget.numberOfPeriods = 6
         val budgetAmount = BudgetAmount(Money("10", "USD"), "first")
-        budgetAmount.periodNum = -1
+        budgetAmount.periodIndex = -1
         budget.addAmount(budgetAmount)
 
         val expandedBudgetAmount = budget.expandedBudgetAmounts
 
         assertThat(expandedBudgetAmount).hasSize(6)
 
-        val periodNum = assertThat(expandedBudgetAmount).extracting("periodNum", Long::class.java)
+        val periodNum = assertThat(expandedBudgetAmount).extracting("periodIndex", Int::class.java)
         periodNum.hasSize(6)
-        periodNum.contains(0L, 1L, 2L, 3L, 4L, 5L)
-        periodNum.doesNotContain(-1L)
+        periodNum.contains(0, 1, 2, 3, 4, 5)
+        periodNum.doesNotContain(PERIOD_ALL)
 
         assertThat(expandedBudgetAmount).extracting("accountUID", String::class.java).hasSize(6)
     }
@@ -166,23 +167,23 @@ class BudgetTest : GnuCashTest() {
         val budget = Budget("Test")
         budget.numberOfPeriods = 6
         var budgetAmount = BudgetAmount(Money("10", "USD"), "first")
-        budgetAmount.periodNum = 1
+        budgetAmount.periodIndex = 1
         budget.addAmount(budgetAmount)
 
         budgetAmount = BudgetAmount(Money("10", "USD"), "first")
-        budgetAmount.periodNum = 2
+        budgetAmount.periodIndex = 2
         budget.addAmount(budgetAmount)
 
         budgetAmount = BudgetAmount(Money("10", "USD"), "first")
-        budgetAmount.periodNum = 5
+        budgetAmount.periodIndex = 5
         budget.addAmount(budgetAmount)
 
         budgetAmount = BudgetAmount(Money("10", "EUR"), "second")
-        budgetAmount.periodNum = 4
+        budgetAmount.periodIndex = 4
         budget.addAmount(budgetAmount)
 
         budgetAmount = BudgetAmount(Money("13", "EUR"), "third")
-        budgetAmount.periodNum = -1
+        budgetAmount.periodIndex = -1
         budget.addAmount(budgetAmount)
 
         assertThat(budget.numberOfAccounts).isEqualTo(3)

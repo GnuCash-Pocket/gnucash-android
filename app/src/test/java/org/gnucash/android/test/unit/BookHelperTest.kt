@@ -12,11 +12,14 @@ import org.gnucash.android.db.adapter.PricesDbAdapter
 import org.gnucash.android.db.adapter.RecurrenceDbAdapter
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
-import org.gnucash.android.importer.GncXmlImporter
+import org.gnucash.android.gnc.GncProgressListener
+import org.gnucash.android.importer.sql.SqliteImporter
+import org.gnucash.android.importer.xml.GncXmlImporter
 import org.gnucash.android.util.ConsoleTree
 import org.junit.After
 import org.junit.Before
 import timber.log.Timber
+import java.io.InputStream
 import java.nio.charset.StandardCharsets
 
 abstract class BookHelperTest : GnuCashTest() {
@@ -25,6 +28,7 @@ abstract class BookHelperTest : GnuCashTest() {
 
     protected lateinit var transactionsDbAdapter: TransactionsDbAdapter
     protected lateinit var accountsDbAdapter: AccountsDbAdapter
+    protected lateinit var recurrenceDbAdapter: RecurrenceDbAdapter
     protected lateinit var scheduledActionDbAdapter: ScheduledActionDbAdapter
     protected lateinit var commoditiesDbAdapter: CommoditiesDbAdapter
     protected lateinit var budgetsDbAdapter: BudgetsDbAdapter
@@ -37,6 +41,26 @@ abstract class BookHelperTest : GnuCashTest() {
         return bookUID
     }
 
+    protected fun importGnuCashSqlite(
+        filename: String,
+        listener: GncProgressListener? = null
+    ): String {
+        val inputStream = openResourceStream(filename)
+        return importGnuCashSqlite(inputStream, listener)
+    }
+
+    protected fun importGnuCashSqlite(
+        inputStream: InputStream,
+        listener: GncProgressListener? = null
+    ): String {
+        val importer = SqliteImporter(context, inputStream, listener)
+        val books = importer.parse()
+        val book = books[books.lastIndex]
+        val bookUID = book.uid
+        setUpDbAdapters(bookUID)
+        return bookUID
+    }
+
     private fun setUpDbAdapters(bookUID: String) {
         close()
         val databaseHelper = DatabaseHelper(context, bookUID)
@@ -44,7 +68,7 @@ abstract class BookHelperTest : GnuCashTest() {
         commoditiesDbAdapter = CommoditiesDbAdapter(mainHolder)
         transactionsDbAdapter = TransactionsDbAdapter(commoditiesDbAdapter)
         accountsDbAdapter = AccountsDbAdapter(transactionsDbAdapter)
-        val recurrenceDbAdapter = RecurrenceDbAdapter(mainHolder)
+        recurrenceDbAdapter = RecurrenceDbAdapter(mainHolder)
         scheduledActionDbAdapter =
             ScheduledActionDbAdapter(recurrenceDbAdapter, transactionsDbAdapter)
         budgetsDbAdapter = BudgetsDbAdapter(recurrenceDbAdapter)
@@ -65,7 +89,7 @@ abstract class BookHelperTest : GnuCashTest() {
         close()
     }
 
-    private fun close() {
+    protected fun close() {
         if (::accountsDbAdapter.isInitialized) accountsDbAdapter.close()
         if (::budgetsDbAdapter.isInitialized) budgetsDbAdapter.close()
         if (::commoditiesDbAdapter.isInitialized) commoditiesDbAdapter.close()

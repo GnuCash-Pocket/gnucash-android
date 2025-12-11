@@ -51,7 +51,7 @@ class BookDbHelper(private val context: Context) : SQLiteOpenHelper(
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(BOOKS_TABLE_CREATE)
-        insertBlankBook(appContext, db)
+        insertBlankBook(context, db)
     }
 
     fun insertBlankBook(): Book {

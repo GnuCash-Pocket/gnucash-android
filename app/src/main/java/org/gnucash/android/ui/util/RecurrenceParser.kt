@@ -42,8 +42,8 @@ object RecurrenceParser {
      * @param eventRecurrence EventRecurrence object
      * @return Recurrence object
      */
-    fun parse(eventRecurrence: EventRecurrence?): Recurrence? {
-        if (eventRecurrence == null) return null
+    fun parse(eventRecurrence: EventRecurrence?): Recurrence {
+        if (eventRecurrence == null) return Recurrence(PeriodType.ONCE)
         val periodType: PeriodType = when (eventRecurrence.freq) {
             EventRecurrence.HOURLY -> PeriodType.HOUR
             EventRecurrence.DAILY -> PeriodType.DAY

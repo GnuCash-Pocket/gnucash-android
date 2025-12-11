@@ -23,7 +23,7 @@ import java.sql.Timestamp
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
-class Book(rootAccountUID: String? = generateUID()) : BaseModel() {
+class Book(rootAccountUID: String? = null) : BaseModel() {
     /**
      * The Uri of the GnuCash XML source for the book
      *
@@ -51,7 +51,7 @@ class Book(rootAccountUID: String? = generateUID()) : BaseModel() {
      *
      * @param rootAccountUID GUID of the book root account
      */
-    var rootAccountUID: String? = rootAccountUID
+    var rootAccountUID: String = rootAccountUID ?: generateUID()
 
     /**
      * The GUID of the root template account

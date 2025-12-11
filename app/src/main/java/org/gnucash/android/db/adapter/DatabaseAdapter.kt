@@ -24,10 +24,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteStatement
 import org.gnucash.android.db.BookDbHelper.Companion.getBookPreferences
 import org.gnucash.android.db.DatabaseHolder
-import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.DatabaseSchema.CommonColumns
-import org.gnucash.android.db.DatabaseSchema.SplitEntry
-import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.forEach
 import org.gnucash.android.db.getLong
 import org.gnucash.android.db.getString
@@ -104,8 +101,8 @@ abstract class DatabaseAdapter<Model : BaseModel>(
      * @param model Model to be saved to the database
      */
     @Throws(SQLException::class)
-    fun addRecord(model: Model) {
-        addRecord(model, UpdateMethod.Replace)
+    fun addRecord(model: Model): Model {
+        return addRecord(model, UpdateMethod.Replace)
     }
 
     /**
@@ -117,7 +114,7 @@ abstract class DatabaseAdapter<Model : BaseModel>(
      * @param updateMethod Method to use for adding the record
      */
     @Throws(SQLException::class)
-    open fun addRecord(model: Model, updateMethod: UpdateMethod) {
+    open fun addRecord(model: Model, updateMethod: UpdateMethod): Model {
         Timber.d(
             "Adding record to database: %s %s",
             model.javaClass.getSimpleName(),
@@ -147,6 +144,8 @@ abstract class DatabaseAdapter<Model : BaseModel>(
             }
         }
         if (isCached) cache[model.uid] = model
+
+        return model
     }
 
     /**
@@ -691,18 +690,18 @@ abstract class DatabaseAdapter<Model : BaseModel>(
     }
 
     @Throws(SQLException::class)
-    fun insert(model: Model) {
-        addRecord(model, UpdateMethod.Insert)
+    fun insert(model: Model): Model {
+        return addRecord(model, UpdateMethod.Insert)
     }
 
     @Throws(SQLException::class)
-    fun replace(model: Model) {
-        addRecord(model, UpdateMethod.Replace)
+    fun replace(model: Model): Model {
+        return addRecord(model, UpdateMethod.Replace)
     }
 
     @Throws(SQLException::class)
-    fun update(model: Model) {
-        addRecord(model, UpdateMethod.Update)
+    fun update(model: Model): Model {
+        return addRecord(model, UpdateMethod.Update)
     }
 
     /**
