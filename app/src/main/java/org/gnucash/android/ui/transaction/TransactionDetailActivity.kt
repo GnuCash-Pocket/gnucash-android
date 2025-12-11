@@ -104,7 +104,7 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         val accountBalance =
             accountsDbAdapter.getAccountBalance(accountUID, ALWAYS, timeMillis, true)
         val balanceTextView =
-            if (account.accountType.hasDebitDisplayBalance) binding.balanceDebit else binding.balanceCredit
+            if (account.type.hasDebitDisplayBalance) binding.balanceDebit else binding.balanceCredit
         balanceTextView.displayBalance(accountBalance, balanceTextView.currentTextColor)
     }
 
@@ -142,9 +142,9 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         }
 
         val balanceBinding = RowBalanceBinding.inflate(inflater, binding.transactionItems, true)
-        bind(balanceBinding, accountUID!!, transaction.time)
+        bind(balanceBinding, accountUID!!, transaction.datePosted)
 
-        val timeAndDate = formatFullDate(transaction.time)
+        val timeAndDate = formatFullDate(transaction.datePosted)
         binding.trnTimeAndDate.text = timeAndDate
 
         if (transaction.number.isEmpty()) {
@@ -262,7 +262,7 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         if (transactionUID.isNullOrEmpty()) return
 
         val transaction = transactionsDbAdapter.getRecord(transactionUID)
-        val duplicate = transaction.copy(time = System.currentTimeMillis())
+        val duplicate = transaction.copy(datePosted = System.currentTimeMillis())
         try {
             transactionsDbAdapter.insert(duplicate)
             if (duplicate.id <= 0) return

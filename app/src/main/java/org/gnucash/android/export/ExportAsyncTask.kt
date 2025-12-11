@@ -26,13 +26,7 @@ import android.os.OperationCanceledException
 import org.gnucash.android.R
 import org.gnucash.android.app.getActivity
 import org.gnucash.android.export.ExportParams.ExportTarget
-import org.gnucash.android.export.csv.CsvAccountExporter
-import org.gnucash.android.export.csv.CsvTransactionsExporter
-import org.gnucash.android.export.ofx.OfxExporter
-import org.gnucash.android.export.qif.QifExporter
-import org.gnucash.android.export.xml.GncXmlExporter
 import org.gnucash.android.gnc.AsyncTaskProgressListener
-import org.gnucash.android.gnc.GncProgressListener
 import org.gnucash.android.ui.common.GnucashProgressDialog
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.settings.OwnCloudPreferences
@@ -82,7 +76,7 @@ class ExportAsyncTask(
         val exportParams: ExportParams = params[0]
         this.exportParams = exportParams
         val context = progressDialog?.context ?: return null
-        val exporter: Exporter = createExporter(context, exportParams, bookUID, listener)
+        val exporter = ExporterFactory.create(context, exportParams, bookUID, listener)
         this.exporter = exporter
         val exportedFile: Uri?
 
@@ -178,40 +172,6 @@ class ExportAsyncTask(
     private inner class ProgressListener(context: Context) : AsyncTaskProgressListener(context) {
         override fun publishProgress(label: String, progress: Long, total: Long) {
             this@ExportAsyncTask.publishProgress(label, progress, total)
-        }
-    }
-
-    companion object {
-        /**
-         * Returns an exporter corresponding to the user settings.
-         *
-         * @return Object of one of [QifExporter], [OfxExporter] or [GncXmlExporter], {@Link CsvAccountExporter} or {@Link CsvTransactionsExporter}
-         */
-        fun createExporter(
-            context: Context,
-            exportParams: ExportParams,
-            bookUID: String,
-            listener: GncProgressListener?
-        ): Exporter {
-            when (exportParams.exportFormat) {
-                ExportFormat.QIF -> return QifExporter(context, exportParams, bookUID, listener)
-                ExportFormat.OFX -> return OfxExporter(context, exportParams, bookUID, listener)
-                ExportFormat.CSVA -> return CsvAccountExporter(
-                    context,
-                    exportParams,
-                    bookUID,
-                    listener
-                )
-
-                ExportFormat.CSVT -> return CsvTransactionsExporter(
-                    context,
-                    exportParams,
-                    bookUID,
-                    listener
-                )
-
-                else -> return GncXmlExporter(context, exportParams, bookUID, listener)
-            }
         }
     }
 }

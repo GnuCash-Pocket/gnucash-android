@@ -63,13 +63,13 @@ class TransactionsDbAdapterTest : GnuCashTest() {
     @Test
     fun testTransactionsAreTimeSorted() {
         val t1 = Transaction("T800")
-        t1.time = System.currentTimeMillis() - 10000
+        t1.datePosted = System.currentTimeMillis() - 10000
         val split = Split(createZeroInstance(alphaAccount.commodity), alphaAccount)
         t1.addSplit(split)
         t1.addSplit(split.createPair(bravoAccount))
 
         val t2 = Transaction("T1000")
-        t2.time = System.currentTimeMillis()
+        t2.datePosted = System.currentTimeMillis()
         val split2 = Split(Money("23.50", bravoAccount.commodity), bravoAccount)
         t2.addSplit(split2)
         t2.addSplit(split2.createPair(alphaAccount))

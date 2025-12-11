@@ -91,13 +91,17 @@ class QifExporterTest : BookHelperTest() {
     fun testGenerateQIFExport() {
         val holder = DatabaseHolder(context, db)
         val accountsDbAdapter = AccountsDbAdapter(holder)
+        val commoditiesDbAdapter = accountsDbAdapter.commoditiesDbAdapter
+        val transactionsDbAdapter = accountsDbAdapter.transactionsDbAdapter
 
-        val account = Account("Basic Account")
+        val commodity = commoditiesDbAdapter.defaultCommodity
+        val account = Account("Basic Account", commodity)
         val transaction = Transaction("One transaction")
+        transaction.commodity = commodity
         transaction.addSplit(Split(createZeroInstance("EUR"), account))
-        account.addTransaction(transaction)
 
         accountsDbAdapter.addRecord(account)
+        transactionsDbAdapter.addRecord(transaction)
 
         val exportParameters = ExportParams(ExportFormat.QIF)
         exportParameters.exportStartTime = TimestampHelper.timestampFromEpochZero
@@ -128,8 +132,8 @@ class QifExporterTest : BookHelperTest() {
         val account = Account("Basic Account", Commodity.getInstance("EUR"))
         val transaction = Transaction("One transaction")
         transaction.addSplit(Split(createZeroInstance("EUR"), account))
-        account.addTransaction(transaction)
         accountsDbAdapter.addRecord(account)
+        transactionsDbAdapter.addRecord(transaction)
 
         val foreignAccount = Account("US Konto", Commodity.getInstance("USD"))
         val multiCurr = Transaction("multi-currency")
@@ -137,9 +141,9 @@ class QifExporterTest : BookHelperTest() {
         val split2 = split1.createPair(account)
         multiCurr.addSplit(split1)
         multiCurr.addSplit(split2)
-        foreignAccount.addTransaction(multiCurr)
 
         accountsDbAdapter.addRecord(foreignAccount)
+        transactionsDbAdapter.addRecord(multiCurr)
 
         val exportParameters = ExportParams(ExportFormat.QIF)
         exportParameters.exportStartTime = TimestampHelper.timestampFromEpochZero
@@ -171,17 +175,21 @@ class QifExporterTest : BookHelperTest() {
 
         val holder = DatabaseHolder(context, db)
         val accountsDbAdapter = AccountsDbAdapter(holder)
+        val commoditiesDbAdapter = accountsDbAdapter.commoditiesDbAdapter
+        val transactionsDbAdapter = accountsDbAdapter.transactionsDbAdapter
 
-        val account = Account(expectedAccountName)
+        val commodity = commoditiesDbAdapter.defaultCommodity
+        val account = Account(expectedAccountName, commodity)
         val transaction = Transaction("One transaction")
-        transaction.addSplit(Split(Money(-123.45, "EUR"), account))
+        transaction.commodity = commodity
         transaction.description = expectedDescription
         transaction.notes = expectedMemo
         transaction.number = expectedNumber
-        transaction.time = expectedTime
-        account.addTransaction(transaction)
+        transaction.datePosted = expectedTime
+        transaction.addSplit(Split(Money(-123.45, "EUR"), account))
 
         accountsDbAdapter.addRecord(account)
+        transactionsDbAdapter.addRecord(transaction)
 
         val exportParameters = ExportParams(ExportFormat.QIF)
         exportParameters.exportStartTime = TimestampHelper.timestampFromEpochZero
@@ -334,11 +342,11 @@ class QifExporterTest : BookHelperTest() {
         val holder = DatabaseHolder(context, db)
         val accountsDbAdapter = AccountsDbAdapter(holder)
         val account1 = Account(expectedAccountName1, Commodity.EUR)
-        account1.accountType = AccountType.EXPENSE
+        account1.type = AccountType.EXPENSE
         account1.setUID("account-001")
         accountsDbAdapter.addRecord(account1)
         val account2 = Account(expectedAccountName2, Commodity.EUR)
-        account2.accountType = AccountType.CASH
+        account2.type = AccountType.CASH
         account2.setUID("account-002")
         accountsDbAdapter.addRecord(account2)
 
@@ -351,7 +359,7 @@ class QifExporterTest : BookHelperTest() {
         transaction.addSplit(split2)
         transaction.description = expectedDescription
         transaction.notes = expectedMemo
-        transaction.time = expectedTime
+        transaction.datePosted = expectedTime
         transactionsDbAdapter.addRecord(transaction)
 
         val exportParameters = ExportParams(ExportFormat.QIF)

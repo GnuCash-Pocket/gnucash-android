@@ -23,4 +23,5 @@ interface GncProgressListener {
     fun onSchedule(scheduledAction: ScheduledAction) = Unit
     fun onTransactionCount(count: Long) = Unit
     fun onTransaction(transaction: Transaction) = Unit
+    fun onTransaction(description: String) = Unit
 }

@@ -162,6 +162,7 @@
     <string name="file_format_qif">Quicken Interchange Format</string>
     <string name="file_format_ofx">Open Financial eXchange</string>
     <string name="file_format_xml">GnuCash XML</string>
+    <string name="file_format_sqlite">GnuCash SQLite database</string>
     <!-- Default title for color picker dialog [CHAR LIMIT=30] -->
     <string name="color_picker_default_title">Select a Colour</string>
     <!-- Content description for a color square. -->

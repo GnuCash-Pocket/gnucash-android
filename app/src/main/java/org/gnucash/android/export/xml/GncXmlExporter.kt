@@ -17,7 +17,6 @@
 package org.gnucash.android.export.xml
 
 import android.content.Context
-import android.os.SystemClock
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.DatabaseSchema.SplitEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
@@ -25,6 +24,7 @@ import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.forEach
 import org.gnucash.android.db.getLong
 import org.gnucash.android.db.getString
+import org.gnucash.android.db.getTimestamp
 import org.gnucash.android.export.ExportException
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter
@@ -191,7 +191,6 @@ import org.gnucash.android.model.Slot
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.model.WeekendAdjust
-import org.gnucash.android.util.TimestampHelper.getTimestampFromUtcString
 import org.gnucash.android.util.formatRGB
 import org.xmlpull.v1.XmlPullParserFactory
 import org.xmlpull.v1.XmlSerializer
@@ -246,7 +245,7 @@ class GncXmlExporter(
                 accounts = accountsDbAdapter.getAllRecords(where, whereArgs)
                 if (accounts.isEmpty()) {
                     account = Account(AccountsDbAdapter.TEMPLATE_ACCOUNT_NAME, Commodity.template)
-                    account.accountType = AccountType.ROOT
+                    account.type = AccountType.ROOT
                     field = account
                     return account
                 }
@@ -332,7 +331,7 @@ class GncXmlExporter(
             } else if (slot.isFrame) {
                 writeSlots(serializer, slot.asFrame)
             } else {
-                serializer.text(slot.value?.toString())
+                serializer.text(slot.value!!.toString())
             }
         }
         serializer.endTag(NS_SLOT, TAG_VALUE)
@@ -378,7 +377,7 @@ class GncXmlExporter(
         serializer.endTag(NS_ACCOUNT, TAG_ID)
         // account type
         serializer.startTag(NS_ACCOUNT, TAG_TYPE)
-        val accountType = account.accountType
+        val accountType = account.type
         serializer.text(accountType.name)
         serializer.endTag(NS_ACCOUNT, TAG_TYPE)
         // commodity
@@ -434,7 +433,7 @@ class GncXmlExporter(
             slots.add(Slot.string(KEY_HIDDEN, "true"))
         }
 
-        val notes = account.note
+        val notes = account.notes
         if (!notes.isNullOrEmpty()) {
             slots.add(Slot.string(KEY_NOTES, notes))
         }
@@ -479,10 +478,10 @@ class GncXmlExporter(
             "t." + TransactionEntry.COLUMN_UID + " AS trans_uid",
             "t." + TransactionEntry.COLUMN_DESCRIPTION + " AS trans_desc",
             "t." + TransactionEntry.COLUMN_NOTES + " AS trans_notes",
-            "t." + TransactionEntry.COLUMN_TIMESTAMP + " AS trans_time",
+            "t." + TransactionEntry.COLUMN_DATE_POSTED + " AS trans_date_posted",
             "t." + TransactionEntry.COLUMN_EXPORTED + " AS trans_exported",
             "t." + TransactionEntry.COLUMN_COMMODITY_UID + " AS trans_commodity",
-            "t." + TransactionEntry.COLUMN_CREATED_AT + " AS trans_date_posted",
+            "t." + TransactionEntry.COLUMN_DATE_ENTERED + " AS trans_date_entered",
             "t." + TransactionEntry.COLUMN_SCHEDX_ACTION_UID + " AS trans_from_sched_action",
             "t." + TransactionEntry.COLUMN_NUMBER + " AS trans_num",
             "s." + SplitEntry.COLUMN_ID + " AS split_id",
@@ -501,13 +500,9 @@ class GncXmlExporter(
         } else {
             "t." + TransactionEntry.COLUMN_TEMPLATE + "=0"
         }
-        val orderBy = ("trans_date_posted ASC"
-                + ", t." + TransactionEntry.COLUMN_UID + " ASC"
-                + ", t." + TransactionEntry.COLUMN_TIMESTAMP + " ASC"
-                + ", " + "split_id ASC")
+        val orderBy = "trans_date_posted ASC, trans_date_entered ASC, trans_uid ASC, split_id ASC"
         val cursor =
             transactionsDbAdapter.fetchTransactionsWithSplits(projection, where, null, orderBy)
-                ?: return
         if (!cursor.moveToFirst()) {
             cursor.close()
             return
@@ -523,7 +518,7 @@ class GncXmlExporter(
             do {
                 val txUID = cursor.getString("trans_uid") ?: continue
                 val account = Account(generateUID(), Commodity.template)
-                account.accountType = AccountType.BANK
+                account.type = AccountType.BANK
                 account.parentUID = rootTemplateAccount.uid
                 transactionToTemplateAccounts[txUID] = account
             } while (cursor.moveToNext())
@@ -579,7 +574,7 @@ class GncXmlExporter(
                     serializer.endTag(NS_TRANSACTION, TAG_NUM)
                 }
                 // date posted, time which user put on the transaction
-                val datePosted = cursor.getLong("trans_time")
+                val datePosted = cursor.getLong("trans_date_posted")
                 val strDate = formatDateTime(datePosted)
                 serializer.startTag(NS_TRANSACTION, TAG_DATE_POSTED)
                 serializer.startTag(NS_TS, TAG_DATE)
@@ -588,7 +583,7 @@ class GncXmlExporter(
                 serializer.endTag(NS_TRANSACTION, TAG_DATE_POSTED)
 
                 // date entered, time when the transaction was actually created
-                val timeEntered = getTimestampFromUtcString(cursor.getString("trans_date_posted")!!)
+                val timeEntered = cursor.getTimestamp("trans_date_entered")!!
                 serializer.startTag(NS_TRANSACTION, TAG_DATE_ENTERED)
                 serializer.startTag(NS_TS, TAG_DATE)
                 serializer.text(formatDateTime(timeEntered))
@@ -643,7 +638,7 @@ class GncXmlExporter(
             val trxType = TransactionType.of(cursor.getString("split_type"))
             val splitValueNum = cursor.getLong("split_value_num")
             val splitValueDenom = cursor.getLong("split_value_denom")
-            val splitAmount = toBigDecimal(splitValueNum, splitValueDenom)
+            val splitValue = toBigDecimal(splitValueNum, splitValueDenom)
             var strValue = "0/100"
             if (!isTemplates) { //when doing normal transaction export
                 strValue = (if (trxType == TransactionType.CREDIT) "-" else "") +
@@ -681,7 +676,7 @@ class GncXmlExporter(
                 frame.add(Slot.guid(KEY_SPLIT_ACCOUNT_SLOT, sched_xaction_acct_uid))
                 if (trxType == TransactionType.CREDIT) {
                     frame.add(
-                        Slot.string(KEY_CREDIT_FORMULA, formatFormula(splitAmount, trnCommodity))
+                        Slot.string(KEY_CREDIT_FORMULA, formatFormula(splitValue, trnCommodity))
                     )
                     frame.add(Slot.numeric(KEY_CREDIT_NUMERIC, splitValueNum, splitValueDenom))
                     frame.add(Slot.string(KEY_DEBIT_FORMULA, ""))
@@ -690,7 +685,7 @@ class GncXmlExporter(
                     frame.add(Slot.string(KEY_CREDIT_FORMULA, ""))
                     frame.add(Slot.numeric(KEY_CREDIT_NUMERIC, 0, 1))
                     frame.add(
-                        Slot.string(KEY_DEBIT_FORMULA, formatFormula(splitAmount, trnCommodity))
+                        Slot.string(KEY_DEBIT_FORMULA, formatFormula(splitValue, trnCommodity))
                     )
                     frame.add(Slot.numeric(KEY_DEBIT_NUMERIC, splitValueNum, splitValueDenom))
                 }
@@ -893,7 +888,8 @@ class GncXmlExporter(
             }
         }
         if (!hasTemplate) {
-            writeCommodity(serializer, Commodity.template)
+            val commodity = commoditiesDbAdapter.loadCommodity(Commodity.template)
+            writeCommodity(serializer, commodity)
         }
     }
 
@@ -1203,66 +1199,57 @@ class GncXmlExporter(
      */
     @Throws(ExportException::class, IllegalArgumentException::class, IllegalStateException::class)
     fun export(book: Book, writer: Writer) {
-        Timber.i("generate export for book %s", book.uid)
-        val timeStart = SystemClock.elapsedRealtime()
+        val factory = XmlPullParserFactory.newInstance()
+        factory.isNamespaceAware = true
+        val serializer = factory.newSerializer()
         try {
-            val factory = XmlPullParserFactory.newInstance()
-            factory.isNamespaceAware = true
-            val serializer = factory.newSerializer()
-            try {
-                serializer.setFeature(
-                    "http://xmlpull.org/v1/doc/features.html#indent-output",
-                    true
-                )
-            } catch (_: IllegalStateException) {
-                // Feature not supported. No problem
-            }
-            serializer.setOutput(writer)
-            serializer.startDocument(StandardCharsets.UTF_8.name(), true)
-            // root tag
-            serializer.setPrefix(NS_ACCOUNT_PREFIX, NS_ACCOUNT)
-            serializer.setPrefix(NS_BOOK_PREFIX, NS_BOOK)
-            serializer.setPrefix(NS_GNUCASH_PREFIX, NS_GNUCASH)
-            serializer.setPrefix(NS_CD_PREFIX, NS_CD)
-            serializer.setPrefix(NS_COMMODITY_PREFIX, NS_COMMODITY)
-            serializer.setPrefix(NS_PRICE_PREFIX, NS_PRICE)
-            serializer.setPrefix(NS_SLOT_PREFIX, NS_SLOT)
-            serializer.setPrefix(NS_SPLIT_PREFIX, NS_SPLIT)
-            serializer.setPrefix(NS_SX_PREFIX, NS_SX)
-            serializer.setPrefix(NS_TRANSACTION_PREFIX, NS_TRANSACTION)
-            serializer.setPrefix(NS_TS_PREFIX, NS_TS)
-            serializer.setPrefix(NS_FS_PREFIX, NS_FS)
-            serializer.setPrefix(NS_BUDGET_PREFIX, NS_BUDGET)
-            serializer.setPrefix(NS_RECURRENCE_PREFIX, NS_RECURRENCE)
-            serializer.setPrefix(NS_LOT_PREFIX, NS_LOT)
-            serializer.setPrefix(NS_ADDRESS_PREFIX, NS_ADDRESS)
-            serializer.setPrefix(NS_BILLTERM_PREFIX, NS_BILLTERM)
-            serializer.setPrefix(NS_BT_DAYS_PREFIX, NS_BT_DAYS)
-            serializer.setPrefix(NS_BT_PROX_PREFIX, NS_BT_PROX)
-            serializer.setPrefix(NS_CUSTOMER_PREFIX, NS_CUSTOMER)
-            serializer.setPrefix(NS_EMPLOYEE_PREFIX, NS_EMPLOYEE)
-            serializer.setPrefix(NS_ENTRY_PREFIX, NS_ENTRY)
-            serializer.setPrefix(NS_INVOICE_PREFIX, NS_INVOICE)
-            serializer.setPrefix(NS_JOB_PREFIX, NS_JOB)
-            serializer.setPrefix(NS_ORDER_PREFIX, NS_ORDER)
-            serializer.setPrefix(NS_OWNER_PREFIX, NS_OWNER)
-            serializer.setPrefix(NS_TAXTABLE_PREFIX, NS_TAXTABLE)
-            serializer.setPrefix(NS_TTE_PREFIX, NS_TTE)
-            serializer.setPrefix(NS_VENDOR_PREFIX, NS_VENDOR)
-            serializer.startTag(null, TAG_ROOT)
-            // book count
-            listener?.onBookCount(1)
-            writeCount(serializer, CD_TYPE_BOOK, 1)
-            writeBook(serializer, book)
-            serializer.endTag(null, TAG_ROOT)
-            serializer.endDocument()
-            serializer.flush()
-        } catch (e: Exception) {
-            Timber.e(e)
-            throw ExportException(exportParams, e)
+            serializer.setFeature(
+                "http://xmlpull.org/v1/doc/features.html#indent-output",
+                true
+            )
+        } catch (_: IllegalStateException) {
+            // Feature not supported. No problem
         }
-        val timeFinish = SystemClock.elapsedRealtime()
-        Timber.v("exported in %d ms", timeFinish - timeStart)
+        serializer.setOutput(writer)
+        serializer.startDocument(StandardCharsets.UTF_8.name(), true)
+        // root tag
+        serializer.setPrefix(NS_ACCOUNT_PREFIX, NS_ACCOUNT)
+        serializer.setPrefix(NS_BOOK_PREFIX, NS_BOOK)
+        serializer.setPrefix(NS_GNUCASH_PREFIX, NS_GNUCASH)
+        serializer.setPrefix(NS_CD_PREFIX, NS_CD)
+        serializer.setPrefix(NS_COMMODITY_PREFIX, NS_COMMODITY)
+        serializer.setPrefix(NS_PRICE_PREFIX, NS_PRICE)
+        serializer.setPrefix(NS_SLOT_PREFIX, NS_SLOT)
+        serializer.setPrefix(NS_SPLIT_PREFIX, NS_SPLIT)
+        serializer.setPrefix(NS_SX_PREFIX, NS_SX)
+        serializer.setPrefix(NS_TRANSACTION_PREFIX, NS_TRANSACTION)
+        serializer.setPrefix(NS_TS_PREFIX, NS_TS)
+        serializer.setPrefix(NS_FS_PREFIX, NS_FS)
+        serializer.setPrefix(NS_BUDGET_PREFIX, NS_BUDGET)
+        serializer.setPrefix(NS_RECURRENCE_PREFIX, NS_RECURRENCE)
+        serializer.setPrefix(NS_LOT_PREFIX, NS_LOT)
+        serializer.setPrefix(NS_ADDRESS_PREFIX, NS_ADDRESS)
+        serializer.setPrefix(NS_BILLTERM_PREFIX, NS_BILLTERM)
+        serializer.setPrefix(NS_BT_DAYS_PREFIX, NS_BT_DAYS)
+        serializer.setPrefix(NS_BT_PROX_PREFIX, NS_BT_PROX)
+        serializer.setPrefix(NS_CUSTOMER_PREFIX, NS_CUSTOMER)
+        serializer.setPrefix(NS_EMPLOYEE_PREFIX, NS_EMPLOYEE)
+        serializer.setPrefix(NS_ENTRY_PREFIX, NS_ENTRY)
+        serializer.setPrefix(NS_INVOICE_PREFIX, NS_INVOICE)
+        serializer.setPrefix(NS_JOB_PREFIX, NS_JOB)
+        serializer.setPrefix(NS_ORDER_PREFIX, NS_ORDER)
+        serializer.setPrefix(NS_OWNER_PREFIX, NS_OWNER)
+        serializer.setPrefix(NS_TAXTABLE_PREFIX, NS_TAXTABLE)
+        serializer.setPrefix(NS_TTE_PREFIX, NS_TTE)
+        serializer.setPrefix(NS_VENDOR_PREFIX, NS_VENDOR)
+        serializer.startTag(null, TAG_ROOT)
+        // book count
+        listener?.onBookCount(1)
+        writeCount(serializer, CD_TYPE_BOOK, 1)
+        writeBook(serializer, book)
+        serializer.endTag(null, TAG_ROOT)
+        serializer.endDocument()
+        serializer.flush()
     }
 
     @Throws(IOException::class)

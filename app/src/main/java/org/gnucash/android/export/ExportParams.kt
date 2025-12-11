@@ -18,6 +18,8 @@ package org.gnucash.android.export
 import android.net.Uri
 import androidx.core.net.toUri
 import org.gnucash.android.util.TimestampHelper
+import org.gnucash.android.util.TimestampHelper.getTimestampFromUtcString
+import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
 import java.sql.Timestamp
 
 /**
@@ -92,7 +94,7 @@ class ExportParams() {
 
     override fun toString(): String {
         return "Export all transactions created since " +
-                TimestampHelper.getUtcStringFromTimestamp(exportStartTime) +
+                getUtcStringFromTimestamp(exportStartTime) +
                 " UTC as " + exportFormat + " to " + exportTarget +
                 (if (exportLocation != null) " ($exportLocation)" else "")
     }
@@ -107,9 +109,9 @@ class ExportParams() {
     fun toTag(): String {
         return (exportFormat.name
                 + TAG_SEPARATOR + exportTarget.name
-                + TAG_SEPARATOR + TimestampHelper.getUtcStringFromTimestamp(this.exportStartTime)
+                + TAG_SEPARATOR + getUtcStringFromTimestamp(exportStartTime)
                 + TAG_SEPARATOR + deleteTransactionsAfterExport
-                + TAG_SEPARATOR + (if (this.exportLocation != null) this.exportLocation else "")
+                + TAG_SEPARATOR + (if (exportLocation != null) exportLocation else "")
                 + TAG_SEPARATOR + isCompressed)
     }
 
@@ -131,7 +133,7 @@ class ExportParams() {
                 tag.split(TAG_SEPARATOR.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             val params = ExportParams(ExportFormat.of(tokens[0]))
             params.exportTarget = ExportTarget.valueOf(tokens[1])
-            params.exportStartTime = TimestampHelper.getTimestampFromUtcString(tokens[2])
+            params.exportStartTime = getTimestampFromUtcString(tokens[2])
             params.deleteTransactionsAfterExport = tokens[3].toBoolean()
             if (tokens.size >= 5) {
                 params.exportLocation = tokens[4].toUri()

@@ -15,7 +15,6 @@
  */
 package org.gnucash.android.ui.transaction
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -373,9 +372,9 @@ class TransactionsListFragment : MenuFragment(),
             transactionAmount.displayBalance(amount, colorBalanceZero)
 
             val dateText = if (useAbsoluteDate) {
-                formatMediumDate(transaction.time)
+                formatMediumDate(transaction.datePosted)
             } else {
-                getPrettyDateFormat(context, transaction.time)
+                getPrettyDateFormat(context, transaction.datePosted)
             }
             transactionDate.text = dateText
 
@@ -440,7 +439,7 @@ class TransactionsListFragment : MenuFragment(),
     private fun deleteTransaction(transactionUID: String) {
         val activity = activity ?: return
         if (shouldBackupTransactions(activity)) {
-            backupActiveBookAsync(activity) { result ->
+            backupActiveBookAsync(activity) { _ ->
                 deleteTransactionImpl(transactionUID, activity)
             }
         } else {
@@ -448,19 +447,19 @@ class TransactionsListFragment : MenuFragment(),
         }
     }
 
-    private fun deleteTransactionImpl(transactionUID: String, activity: Activity) {
+    private fun deleteTransactionImpl(transactionUID: String, context: Context) {
         val position = findItemPosition(transactionUID)
         transactionsDbAdapter.deleteRecord(transactionUID)
         if (position >= 0) {
             transactionsAdapter?.notifyItemRemoved(position)
         }
-        updateAllWidgets(activity)
+        updateAllWidgets(context)
     }
 
     private fun duplicateTransaction(transactionUID: String) {
         try {
             val transaction = transactionsDbAdapter.getRecord(transactionUID)
-            val duplicate = transaction.copy(time = System.currentTimeMillis())
+            val duplicate = transaction.copy(datePosted = System.currentTimeMillis())
             transactionsDbAdapter.insert(duplicate)
             scrollTransactionUID = duplicate.uid
             refresh()

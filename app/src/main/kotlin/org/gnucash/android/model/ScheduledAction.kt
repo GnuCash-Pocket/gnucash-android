@@ -213,6 +213,7 @@ class ScheduledAction    //all actions are enabled by default
                 val endTime = endDate
                 return if (endTime > 0) endTime else System.currentTimeMillis()
             }
+
             PeriodType.HOUR -> startDate.plusHours(multiplier)
             PeriodType.DAY -> startDate.plusDays(multiplier)
             PeriodType.WEEK -> computeNextWeeklyExecutionStartingAt(startDate)

@@ -26,11 +26,12 @@ import org.joda.time.DateTimeZone
 import org.joda.time.Instant
 import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
-import org.joda.time.format.DateTimeFormatter
 import java.math.BigDecimal
+import java.text.NumberFormat
 import java.text.ParseException
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 
 /**
  * Collection of helper tags and methods for Gnc XML export
@@ -203,9 +204,8 @@ object GncXmlHelper {
 
     const val RECURRENCE_VERSION: String = "1.0.0"
     const val BOOK_VERSION: String = "2.0.0"
-    private val TIME_FORMATTER: DateTimeFormatter =
-        DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss Z").withZoneUTC()
-    private val DATE_FORMATTER: DateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd")
+    private val TIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss Z").withZoneUTC()
+    private val DATE_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd").withZoneUTC()
 
     const val KEY_PLACEHOLDER: String = "placeholder"
     const val KEY_COLOR: String = "color"
@@ -361,6 +361,16 @@ object GncXmlHelper {
 
     fun formatFormula(money: Money): String {
         return money.formattedStringWithoutSymbol()
+    }
+
+    fun formatFormula(amount: BigDecimal, locale: Locale = Locale.ROOT, withGrouping: Boolean = true): String {
+        val precision = amount.scale()
+        val format = NumberFormat.getNumberInstance(locale).apply {
+            minimumFractionDigits = precision
+            maximumFractionDigits = precision
+            isGroupingUsed = withGrouping
+        }
+        return format.format(amount)
     }
 
     fun formatNumeric(numerator: Long, denominator: Long): String {

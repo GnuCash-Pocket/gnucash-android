@@ -22,6 +22,7 @@ import android.content.pm.ResolveInfo
 import android.database.SQLException
 import android.net.Uri
 import android.os.CancellationSignal
+import android.os.SystemClock
 import android.text.format.DateUtils
 import androidx.annotation.WorkerThread
 import androidx.core.content.FileProvider
@@ -156,7 +157,8 @@ abstract class Exporter protected constructor(
     @WorkerThread
     @Throws(ExportException::class)
     fun export(): Uri? {
-        Timber.i("generate export")
+        Timber.i("generate export for book %s", bookUID)
+        val timeStart = SystemClock.elapsedRealtime()
         val exportParams = this.exportParams
         val result: Uri?
         try {
@@ -192,6 +194,9 @@ abstract class Exporter protected constructor(
             close()
         } catch (_: Exception) {
         }
+        val timeFinish = SystemClock.elapsedRealtime()
+        val timeSeconds = (timeFinish - timeStart) / DateUtils.SECOND_IN_MILLIS
+        Timber.v("exported in %s", DateUtils.formatElapsedTime(timeSeconds))
         return result
     }
 
@@ -205,7 +210,7 @@ abstract class Exporter protected constructor(
             }
         } catch (ee: ExportException) {
             throw ee
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             throw ExportException(exportParams, e)
         }
         return cacheFile
@@ -336,8 +341,8 @@ abstract class Exporter protected constructor(
     private fun moveExportToDropbox(exportParams: ExportParams, exportedFile: File): Uri? {
         Timber.i("Uploading exported files to DropBox")
         val context = this.context
-        val client =
-            getClient(context) ?: throw ExportException(exportParams, "Dropbox client required")
+        val client = getClient(context)
+            ?: throw ExportException(exportParams, "Dropbox client required")
 
         try {
             val inputStream = FileInputStream(exportedFile)

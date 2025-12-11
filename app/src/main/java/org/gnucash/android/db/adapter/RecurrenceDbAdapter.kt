@@ -21,12 +21,10 @@ import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.RecurrenceEntry
 import org.gnucash.android.db.bindInt
-import org.gnucash.android.db.getInt
-import org.gnucash.android.db.getString
+import org.gnucash.android.db.bindTimestamp
+import org.gnucash.android.db.getTimestamp
 import org.gnucash.android.model.PeriodType
 import org.gnucash.android.model.Recurrence
-import org.gnucash.android.util.TimestampHelper.getTimestampFromUtcString
-import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
 import java.util.Calendar
 
 /**
@@ -35,29 +33,21 @@ import java.util.Calendar
 class RecurrenceDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Recurrence>(
     holder,
     RecurrenceEntry.TABLE_NAME,
-    arrayOf(
-        RecurrenceEntry.COLUMN_MULTIPLIER,
-        RecurrenceEntry.COLUMN_PERIOD_TYPE,
-        RecurrenceEntry.COLUMN_BYDAY,
-        RecurrenceEntry.COLUMN_PERIOD_START,
-        RecurrenceEntry.COLUMN_PERIOD_END
-    )
+    entryColumns
 ) {
     override fun buildModelInstance(cursor: Cursor): Recurrence {
-        val type = cursor.getString(RecurrenceEntry.COLUMN_PERIOD_TYPE)!!
-        val multiplier = cursor.getInt(RecurrenceEntry.COLUMN_MULTIPLIER)
-        val periodStart = cursor.getString(RecurrenceEntry.COLUMN_PERIOD_START)!!
-        val periodEnd = cursor.getString(RecurrenceEntry.COLUMN_PERIOD_END)
-        val byDays = cursor.getString(RecurrenceEntry.COLUMN_BYDAY)
+        val type = cursor.getString(INDEX_COLUMN_PERIOD_TYPE)!!
+        val multiplier = cursor.getInt(INDEX_COLUMN_MULTIPLIER)
+        val periodStart = cursor.getTimestamp(INDEX_COLUMN_PERIOD_START)!!
+        val periodEnd = cursor.getTimestamp(INDEX_COLUMN_PERIOD_END)
+        val byDays = cursor.getString(INDEX_COLUMN_BYDAY)
 
         val periodType = PeriodType.valueOf(type)
         val recurrence = Recurrence(periodType)
         populateBaseModelAttributes(cursor, recurrence)
         recurrence.multiplier = multiplier
-        recurrence.periodStart = getTimestampFromUtcString(periodStart).time
-        if (periodEnd != null) {
-            recurrence.periodEnd = getTimestampFromUtcString(periodEnd).time
-        }
+        recurrence.periodStart = periodStart.time
+        recurrence.periodEnd = periodEnd?.time
         recurrence.byDays = stringToByDays(byDays)
 
         return recurrence
@@ -65,21 +55,34 @@ class RecurrenceDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Recurrence>(
 
     override fun bind(stmt: SQLiteStatement, recurrence: Recurrence): SQLiteStatement {
         bindBaseModel(stmt, recurrence)
-        stmt.bindInt(1, recurrence.multiplier)
-        stmt.bindString(2, recurrence.periodType.name)
+        stmt.bindInt(1 + INDEX_COLUMN_MULTIPLIER, recurrence.multiplier)
+        stmt.bindString(1 + INDEX_COLUMN_PERIOD_TYPE, recurrence.periodType.name)
         if (!recurrence.byDays.isEmpty()) {
-            stmt.bindString(3, byDaysToString(recurrence.byDays))
+            stmt.bindString(1 + INDEX_COLUMN_BYDAY, byDaysToString(recurrence.byDays))
         }
         //recurrence should always have a start date
-        stmt.bindString(4, getUtcStringFromTimestamp(recurrence.periodStart))
+        stmt.bindTimestamp(1 + INDEX_COLUMN_PERIOD_START, recurrence.periodStart)
         if (recurrence.periodEnd != null) {
-            stmt.bindString(5, getUtcStringFromTimestamp(recurrence.periodEnd!!))
+            stmt.bindTimestamp(1 + INDEX_COLUMN_PERIOD_END, recurrence.periodEnd!!)
         }
 
         return stmt
     }
 
     companion object {
+        private val entryColumns = arrayOf(
+            RecurrenceEntry.COLUMN_MULTIPLIER,
+            RecurrenceEntry.COLUMN_PERIOD_TYPE,
+            RecurrenceEntry.COLUMN_BYDAY,
+            RecurrenceEntry.COLUMN_PERIOD_START,
+            RecurrenceEntry.COLUMN_PERIOD_END
+        )
+        private const val INDEX_COLUMN_MULTIPLIER = 0
+        private const val INDEX_COLUMN_PERIOD_TYPE = INDEX_COLUMN_MULTIPLIER + 1
+        private const val INDEX_COLUMN_BYDAY = INDEX_COLUMN_PERIOD_TYPE + 1
+        private const val INDEX_COLUMN_PERIOD_START = INDEX_COLUMN_BYDAY + 1
+        private const val INDEX_COLUMN_PERIOD_END = INDEX_COLUMN_PERIOD_START + 1
+
         val instance: RecurrenceDbAdapter get() = GnuCashApplication.recurrenceDbAdapter!!
 
         /**
@@ -104,7 +107,7 @@ class RecurrenceDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Recurrence>(
                 }
                 builder.append(",")
             }
-            builder.deleteCharAt(builder.length - 1)
+            builder.deleteCharAt(builder.lastIndex)
             return builder.toString()
         }
 

@@ -50,7 +50,7 @@ class SearchResultsViewModel : ViewModel() {
 
     fun duplicate(transaction: Transaction) {
         try {
-            val duplicate = transaction.copy(time = System.currentTimeMillis())
+            val duplicate = transaction.copy(datePosted = System.currentTimeMillis())
             transactionsDbAdapter.insert(duplicate)
             search()
         } catch (e: SQLException) {

@@ -152,7 +152,6 @@ import org.xml.sax.helpers.DefaultHandler
 import timber.log.Timber
 import java.io.Closeable
 import java.math.BigDecimal
-import java.sql.Timestamp
 import java.text.ParseException
 import java.util.Calendar
 import java.util.Stack
@@ -458,7 +457,7 @@ class GncXmlHandler(
                 val commodity = commoditiesDbAdapter.getRecord(currencyUID)
                 imbAccount = Account(imbalancePrefix + commodity.currencyCode, commodity)
                 imbAccount.parentUID = rootAccount!!.uid
-                imbAccount.accountType = AccountType.BANK
+                imbAccount.type = AccountType.BANK
                 imbalanceAccounts[currencyUID] = imbAccount
                 accountsDbAdapter.insert(imbAccount)
                 listener?.onAccount(imbAccount)
@@ -569,7 +568,7 @@ class GncXmlHandler(
                 } else if (rootTemplateAccount == null) {
                     account = Account(AccountsDbAdapter.TEMPLATE_ACCOUNT_NAME, Commodity.template)
                     rootTemplateAccount = account
-                    rootTemplateAccount!!.accountType = AccountType.ROOT
+                    rootTemplateAccount!!.type = AccountType.ROOT
                     book.rootTemplateUID = account.uid
                 }
             } else {
@@ -587,7 +586,7 @@ class GncXmlHandler(
                         commoditiesDbAdapter.defaultCommodity
                     )
                     rootAccount = account
-                    rootAccount!!.accountType = AccountType.ROOT
+                    rootAccount!!.type = AccountType.ROOT
                     book.rootAccountUID = account.uid
                 }
                 accounts.add(account)
@@ -742,10 +741,9 @@ class GncXmlHandler(
 
                 if (NS_TRANSACTION == uriParent) {
                     val transaction = transaction!!
-                    val timestamp = Timestamp(date)
                     when (tagParent) {
-                        TAG_DATE_ENTERED -> transaction.createdTimestamp = timestamp
-                        TAG_DATE_POSTED -> transaction.time = date
+                        TAG_DATE_ENTERED -> transaction.dateEntered = date
+                        TAG_DATE_POSTED -> transaction.datePosted = date
                     }
                     transaction.isExported = true
                 } else if (NS_PRICE == uriParent) {
@@ -1197,7 +1195,7 @@ class GncXmlHandler(
     private fun handleEndType(uri: String, type: String) {
         if (NS_ACCOUNT == uri) {
             val accountType = AccountType.valueOf(type)
-            account!!.accountType = accountType
+            account!!.type = accountType
         } else if (NS_PRICE == uri) {
             price!!.type = Price.Type.of(type)
         }
@@ -1275,7 +1273,7 @@ class GncXmlHandler(
                 }
             } else if (KEY_NOTES == slot.key && slot.type == Slot.Type.STRING) {
                 transaction?.notes = value
-                account?.note = value
+                account?.notes = value
             }
         } else if (NS_SPLIT == uri) {
             val split = split!!

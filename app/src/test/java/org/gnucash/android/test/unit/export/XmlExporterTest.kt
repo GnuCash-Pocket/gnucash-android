@@ -7,7 +7,6 @@ import org.gnucash.android.export.xml.GncXmlExporter
 import org.gnucash.android.test.unit.BookHelperTest
 import org.junit.Test
 import java.io.StringWriter
-import java.nio.charset.StandardCharsets
 
 class XmlExporterTest : BookHelperTest() {
 

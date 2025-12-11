@@ -22,6 +22,7 @@ import org.gnucash.android.export.csv.CsvTransactionsExporter.Companion.toCsv
 import org.gnucash.android.model.Transaction.Companion.computeBalance
 import org.gnucash.android.util.formatShortDate
 import java.math.BigDecimal
+import java.sql.Timestamp
 import java.util.Date
 
 /**
@@ -51,7 +52,7 @@ class Transaction : BaseModel {
     /**
      * Timestamp when this transaction occurred
      */
-    var time: Long = 0
+    var datePosted: Long = 0
 
     /**
      * Flag indicating that this transaction is a template
@@ -90,7 +91,7 @@ class Transaction : BaseModel {
      * @param generateNewUID Flag to determine if new UID should be assigned or not
      * @param time The date posted.
      */
-    fun copy(generateNewUID: Boolean = true, time: Long? = null): Transaction {
+    fun copy(generateNewUID: Boolean = true, datePosted: Long? = null): Transaction {
         val clone = Transaction(description)
         if (!generateNewUID) {
             clone.setUID(uid)
@@ -99,7 +100,7 @@ class Transaction : BaseModel {
         clone.notes = notes
         clone.number = number
         clone.splits = splits.map { it.copy(generateNewUID) }
-        clone.time = time ?: this.time
+        clone.datePosted = datePosted ?: this.datePosted
         return clone
     }
 
@@ -108,7 +109,7 @@ class Transaction : BaseModel {
      */
     private fun initDefaults() {
         commodity = Commodity.DEFAULT_COMMODITY
-        time = System.currentTimeMillis()
+        datePosted = System.currentTimeMillis()
     }
 
     /**
@@ -160,6 +161,12 @@ class Transaction : BaseModel {
             }
         }
 
+    var dateEntered: Long
+        get() = createdTimestamp.time
+        set(value) {
+            createdTimestamp = Timestamp(value)
+        }
+
     /**
      * Returns the list of splits belonging to a specific account
      *
@@ -180,6 +187,9 @@ class Transaction : BaseModel {
     fun addSplit(split: Split) {
         //sets the currency of the split to the currency of the transaction
         split.transactionUID = uid
+        if (splits.isEmpty() && (commodity === Commodity.DEFAULT_COMMODITY)) {
+            commodity = split.value.commodity
+        }
         if (splits.none { it.uid == split.uid || it == split }) {
             _splits.add(split)
         }
@@ -275,11 +285,11 @@ class Transaction : BaseModel {
      * @param timestamp Time when transaction occurred as [Date]
      */
     fun setTime(timestamp: Date) {
-        time = timestamp.time
+        datePosted = timestamp.time
     }
 
     override fun toString(): String {
-        return "{description: $description, date: ${formatShortDate(time)}}"
+        return "{description: $description, date: ${formatShortDate(datePosted)}}"
     }
 
     fun getTransferSplit(accountUID: String): Split? {
@@ -384,7 +394,7 @@ class Transaction : BaseModel {
          */
         fun computeBalance(account: Account, splits: List<Split>, display: Boolean = false): Money {
             val accountUID = account.uid
-            val accountType = account.accountType
+            val accountType = account.type
             val accountCommodity = account.commodity
             val isDebitAccount = if (display) {
                 accountType.hasDebitDisplayBalance

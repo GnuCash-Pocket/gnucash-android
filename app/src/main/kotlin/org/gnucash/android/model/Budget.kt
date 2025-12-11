@@ -91,7 +91,7 @@ class Budget() : BaseModel() {
         budgetAmount.budgetUID = uid
         val key = budgetAmount.accountUID!!
         val list = amountsByAccount.getOrPut(key) { mutableListOf() }
-        amountsByAccount[key] = list + budgetAmount
+        amountsByAccount[key] = (list + budgetAmount).sortedBy { it.periodIndex }
         return budgetAmount
     }
 
@@ -153,7 +153,7 @@ class Budget() : BaseModel() {
             for (budgetAmount in amountsByAccount.values.flatten()) {
                 try {
                     sum += budgetAmount.amount.abs()
-                } catch (ex: CurrencyMismatchException) {
+                } catch (_: CurrencyMismatchException) {
                     Timber.w("Skip some budget amounts with different currency")
                 }
             }
@@ -273,9 +273,7 @@ class Budget() : BaseModel() {
         val budgetUID = uid
 
         return budgetAmounts.firstOrNull {
-            it.budgetUID == budgetUID
-                    && it.accountUID == accountUID
-                    && (it.periodIndex == period || it.periodIndex == PERIOD_ALL)
+            (it.budgetUID == budgetUID) && (it.accountUID == accountUID) && (it.periodIndex == period || it.periodIndex == PERIOD_ALL)
         }
     }
 

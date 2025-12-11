@@ -182,7 +182,7 @@ class BalanceSheetFragment : BaseReportFragment<BalanceSheet>() {
         for (account in accounts) {
             var amount = accountsDbAdapter.getAccountBalance(account, ALWAYS, now, false)
             if (amount.isNullOrZero()) continue
-            val accountType = account.accountType
+            val accountType = account.type
             amount = if (accountType.hasDebitNormalBalance) amount else -amount
             accountBalances.add(AccountBalance(account.name, amount))
 

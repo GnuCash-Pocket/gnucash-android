@@ -1,5 +1,7 @@
 package org.gnucash.android.test.unit
 
+import androidx.core.content.edit
+import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.test.unit.testutil.ShadowCrashlytics
 import org.junit.BeforeClass
@@ -25,5 +27,11 @@ abstract class GnuCashTest {
 
     protected fun openResourceStream(name: String): InputStream {
         return javaClass!!.classLoader!!.getResourceAsStream(name)
+    }
+
+    protected fun setDoubleEntryEnabled(enabled: Boolean) {
+        GnuCashApplication.getBookPreferences(context).edit {
+            putBoolean(context.getString(R.string.key_use_double_entry), enabled)
+        }
     }
 }

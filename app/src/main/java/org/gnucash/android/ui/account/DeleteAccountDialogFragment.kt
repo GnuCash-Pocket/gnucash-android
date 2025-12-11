@@ -136,7 +136,7 @@ class DeleteAccountDialogFragment : DoubleConfirmationDialog() {
 
         val account = accountsDbAdapter.getRecord(accountUID)
         val commodity = account.commodity
-        val accountType = account.accountType
+        val accountType = account.type
         val descendantAccountUIDs =
             accountsDbAdapter.getDescendantAccountUIDs(accountUID, null, null)
         val joinedUIDs = (descendantAccountUIDs + accountUID).joinIn()

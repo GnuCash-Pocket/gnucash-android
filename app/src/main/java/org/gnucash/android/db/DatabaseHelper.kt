@@ -33,10 +33,7 @@ import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.MigrationHelper.importCommodities
 import org.gnucash.android.db.MigrationHelper.migrate
 import org.gnucash.android.model.Commodity
-import org.xml.sax.SAXException
 import timber.log.Timber
-import java.io.IOException
-import javax.xml.parsers.ParserConfigurationException
 
 /**
  * Helper class for managing the SQLite database.
@@ -173,14 +170,14 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                     + TransactionEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
                     + TransactionEntry.COLUMN_DESCRIPTION + " varchar(255), "
                     + TransactionEntry.COLUMN_NOTES + " text, "
-                    + TransactionEntry.COLUMN_TIMESTAMP + " integer not null, "
+                    + TransactionEntry.COLUMN_DATE_POSTED + " integer not null, "
                     + TransactionEntry.COLUMN_EXPORTED + " tinyint default 0, "
                     + TransactionEntry.COLUMN_TEMPLATE + " tinyint default 0, "
                     + TransactionEntry.COLUMN_CURRENCY + " varchar(255), "
                     + TransactionEntry.COLUMN_COMMODITY_UID + " varchar(255) not null, "
                     + TransactionEntry.COLUMN_SCHEDX_ACTION_UID + " varchar(255), "
                     + TransactionEntry.COLUMN_NUMBER + " varchar(255), "
-                    + TransactionEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+                    + TransactionEntry.COLUMN_DATE_ENTERED + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
                     + TransactionEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
                     + "FOREIGN KEY (" + TransactionEntry.COLUMN_SCHEDX_ACTION_UID + ") REFERENCES " + ScheduledActionEntry.TABLE_NAME + " (" + ScheduledActionEntry.COLUMN_UID + ") ON DELETE SET NULL, "
                     + "FOREIGN KEY (" + TransactionEntry.COLUMN_COMMODITY_UID + ") REFERENCES " + CommodityEntry.TABLE_NAME + " (" + CommodityEntry.COLUMN_UID + ") "
@@ -345,8 +342,7 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
             val escaper = StringBuilder()
             DatabaseUtils.appendEscapedSQLString(escaper, value)
             var escape = false
-            val length = escaper.length
-            for (i in length - 1 downTo 1) {
+            for (i in escaper.lastIndex downTo 1) {
                 val c = escaper[i]
                 if ((c == '%') || (c == '_')) {
                     escape = true
@@ -354,7 +350,7 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                 }
             }
             escaper.insert(1, '%')
-            escaper.insert(escaper.length - 1, '%')
+            escaper.insert(escaper.lastIndex, '%')
             if (escape) {
                 escaper.append(" ESCAPE '_'")
             }

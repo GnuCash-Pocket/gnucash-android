@@ -30,7 +30,7 @@ import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.RecurrenceDbAdapter
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
-import org.gnucash.android.export.ExportAsyncTask
+import org.gnucash.android.export.ExporterFactory
 import org.gnucash.android.model.Book
 import org.gnucash.android.model.ScheduledAction
 import org.gnucash.android.model.Transaction
@@ -227,7 +227,7 @@ class ScheduledActionService {
             var result: Uri? = null
             try {
                 //wait for async task to finish before we proceed (we are holding a wake lock)
-                val exporter = ExportAsyncTask.createExporter(context, params, bookUID, null)
+                val exporter = ExporterFactory.create(context, params, bookUID, null)
                 result = exporter.export()
             } catch (e: InterruptedException) {
                 Timber.e(e)
@@ -313,7 +313,7 @@ class ScheduledActionService {
             //so compute the actual transaction time from pre-known values
             var transactionTime = scheduledAction.computeNextCountBasedScheduledExecutionTime()
             while (transactionTime <= endTime) {
-                val transaction = template.copy(time = transactionTime)
+                val transaction = template.copy(datePosted = transactionTime)
                 transaction.scheduledActionUID = scheduledAction.uid
                 transactionsDbAdapter.insert(transaction)
                 //required for computingNextScheduledExecutionTime

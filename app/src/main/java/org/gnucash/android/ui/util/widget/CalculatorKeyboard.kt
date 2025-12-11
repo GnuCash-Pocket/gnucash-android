@@ -112,7 +112,7 @@ class CalculatorKeyboard(
                     KEY_CODE_DELETE -> {
                         val start = Selection.getSelectionStart(editable)
                         val end = Selection.getSelectionEnd(editable)
-                        editable.delete(max((start - 1), 0), end)
+                        editable.delete(max(start - 1, 0), end)
                     }
 
                     KEY_CODE_CLEAR -> editable.clear()
