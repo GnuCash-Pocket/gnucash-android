@@ -154,6 +154,7 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
         book.setUID(guid)
         book.rootAccountUID = rootAccountUID
         book.rootTemplateUID = rootTemplateUID
+        book.displayName = booksDbAdapter.generateDefaultBookName()
 
         return book
     }
