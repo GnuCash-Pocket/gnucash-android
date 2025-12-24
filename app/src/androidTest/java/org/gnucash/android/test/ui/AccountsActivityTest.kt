@@ -318,14 +318,14 @@ class AccountsActivityTest : GnuAndroidTest() {
 
         assertThat(accountsDbAdapter.getTransactionCount(account.uid)).isOne()
         assertThat(accountsDbAdapter.getTransactionCount(SIMPLE_ACCOUNT_UID)).isOne()
-        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction.uid)).hasSize(2)
+        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction)).hasSize(2)
 
         clickViewText(R.string.title_edit_account)
 
         clickViewId(R.id.menu_save)
         assertThat(accountsDbAdapter.getTransactionCount(SIMPLE_ACCOUNT_UID)).isOne()
-        assertThat(splitsDbAdapter.fetchSplitsForAccount(SIMPLE_ACCOUNT_UID)?.count).isOne()
-        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction.uid)).hasSize(2)
+        assertThat(splitsDbAdapter.fetchSplitsForAccount(SIMPLE_ACCOUNT_UID).count).isOne()
+        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction)).hasSize(2)
     }
 
     fun testDeleteSimpleAccount() {

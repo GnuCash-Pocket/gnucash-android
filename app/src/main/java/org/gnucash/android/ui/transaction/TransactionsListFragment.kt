@@ -275,8 +275,8 @@ class TransactionsListFragment : MenuFragment(),
         override fun loadInBackground(): Cursor? {
             val databaseAdapter = TransactionsDbAdapter.instance
             this.databaseAdapter = databaseAdapter
-            val c = databaseAdapter.fetchAllTransactionsForAccount(accountUID)
-            if (c != null) registerContentObserver(c)
+            val c = databaseAdapter.fetchTransactionsForAccount(accountUID)
+            registerContentObserver(c)
             return c
         }
     }

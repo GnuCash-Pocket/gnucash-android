@@ -187,7 +187,7 @@ class ScheduledActionService {
             }
 
             if (executionCount > 0) {
-                scheduledAction.lastRunTime = System.currentTimeMillis()
+                scheduledAction.lastRunDate = System.currentTimeMillis()
                 // Set the execution count in the object because it will be checked
                 // for the next iteration in the calling loop.
                 // This call is important, do not remove!!
@@ -199,12 +199,9 @@ class ScheduledActionService {
                     scheduledAction.instanceCount
 
                 val db = dbHolder.db
-                db.update(
-                    ScheduledActionEntry.TABLE_NAME,
-                    contentValues,
-                    ScheduledActionEntry.COLUMN_UID + "=?",
-                    arrayOf<String?>(scheduledAction.uid)
-                )
+                val where = ScheduledActionEntry.COLUMN_UID + " = ?"
+                val whereArgs = arrayOf<String?>(scheduledAction.uid)
+                db.update(ScheduledActionEntry.TABLE_NAME, contentValues, where, whereArgs)
             }
         }
 
@@ -278,23 +275,9 @@ class ScheduledActionService {
             dbHolder: DatabaseHolder,
             scheduledAction: ScheduledAction
         ): Int {
-            val actionUID = scheduledAction.actionUID
-            if (actionUID.isNullOrEmpty()) {
-                Timber.w("Scheduled transaction without action")
-                return 0
-            }
             val transactionsDbAdapter = TransactionsDbAdapter(dbHolder)
-            val template: Transaction?
-            try {
-                template = transactionsDbAdapter.getRecord(actionUID)
-            } catch (ex: IllegalArgumentException) { //if the record could not be found, abort
-                Timber.e(
-                    ex,
-                    "Scheduled transaction with action %s could not be found in the db with path %s",
-                    actionUID, dbHolder.db.path
-                )
-                return 0
-            }
+            //if the record could not be found, then abort
+            val template = getTemplate(transactionsDbAdapter, scheduledAction) ?: return 0
 
             val now = System.currentTimeMillis()
             //if there is an end time in the past, we execute all schedules up to the end time.
@@ -315,6 +298,12 @@ class ScheduledActionService {
             while (transactionTime <= endTime) {
                 val transaction = template.copy(datePosted = transactionTime)
                 transaction.scheduledActionUID = scheduledAction.uid
+                for (split in transaction.splits) {
+                    if (split.scheduledActionAccountUID.isNullOrEmpty()) continue
+                    split.accountUID = split.scheduledActionAccountUID
+                    split.scheduledActionAccountUID = null
+                }
+
                 transactionsDbAdapter.insert(transaction)
                 //required for computingNextScheduledExecutionTime
                 scheduledAction.instanceCount = previousExecutionCount + ++executionCount
@@ -329,6 +318,33 @@ class ScheduledActionService {
             // Be nice and restore the parameter's original state to avoid confusing the callers
             scheduledAction.instanceCount = previousExecutionCount
             return executionCount
+        }
+
+        private fun getTemplate(
+            transactionsDbAdapter: TransactionsDbAdapter,
+            scheduledAction: ScheduledAction
+        ): Transaction? {
+            val actionUID = scheduledAction.actionUID
+            if (actionUID.isNullOrEmpty()) {
+                val transactions =
+                    transactionsDbAdapter.getTransactionsForAccount(scheduledAction.templateAccountUID)
+                if (transactions.isEmpty()) {
+                    Timber.w("No template transaction found")
+                    return null
+                }
+                return transactions[0]
+            }
+            return try {
+                transactionsDbAdapter.getRecord(actionUID)
+            } catch (e: IllegalArgumentException) {
+                Timber.e(
+                    e,
+                    "Scheduled transaction with action %s could not be found in the book %s",
+                    actionUID,
+                    transactionsDbAdapter.holder.name
+                )
+                null
+            }
         }
     }
 }

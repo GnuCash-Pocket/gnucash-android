@@ -252,6 +252,18 @@ class SplitsDbAdapter(
     }
 
     /**
+     * Returns the list of splits for a transaction
+     *
+     * @param transaction record of the transaction
+     * @return List of [Split]s
+     * @see .getSplitsForTransaction
+     * @see .getTransactionUID
+     */
+    fun getSplitsForTransaction(transaction: Transaction): List<Split> {
+        return getSplitsForTransaction(transaction.uid)
+    }
+
+    /**
      * Fetch splits for a given transaction within a specific account
      *
      * @param transactionUID String unique ID of transaction

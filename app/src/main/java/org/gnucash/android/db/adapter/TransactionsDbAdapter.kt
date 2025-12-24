@@ -35,6 +35,7 @@ import org.gnucash.android.db.forEach
 import org.gnucash.android.db.getBoolean
 import org.gnucash.android.db.getTimestamp
 import org.gnucash.android.db.joinIn
+import org.gnucash.android.model.Account
 import org.gnucash.android.model.AccountType
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
@@ -180,48 +181,14 @@ class TransactionsDbAdapter(
     }
 
     /**
-     * Returns a cursor to a set of all transactions which have a split belonging to the account with unique ID
-     * `accountUID`.
+     * Returns a cursor to all transactions which have at least one split in the account
      *
-     * @param accountUID UID of the account whose transactions are to be retrieved
-     * @return Cursor holding set of transactions for particular account
-     * @throws java.lang.IllegalArgumentException if the accountUID is null
-     */
-    fun fetchAllTransactionsForAccount(accountUID: String): Cursor? {
-        val queryBuilder = SQLiteQueryBuilder()
-        queryBuilder.tables = TransactionEntry.TABLE_NAME + " t" +
-                " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON " +
-                "t." + TransactionEntry.COLUMN_UID + " = " +
-                "s." + SplitEntry.COLUMN_TRANSACTION_UID
-        queryBuilder.isDistinct = true
-        val projectionIn = allColumnsPrefix("t.")
-        val selection = ("s." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
-                + " AND t." + TransactionEntry.COLUMN_TEMPLATE + " = 0")
-        val selectionArgs = arrayOf<String?>(accountUID)
-        val sortOrder = "t." + TransactionEntry.COLUMN_DATE_POSTED + " DESC, " +
-                "t." + TransactionEntry.COLUMN_NUMBER + " DESC, " +
-                "t." + TransactionEntry.COLUMN_ID + " DESC"
-
-        return queryBuilder.query(
-            db,
-            projectionIn,
-            selection,
-            selectionArgs,
-            null,
-            null,
-            sortOrder
-        )
-    }
-
-    /**
-     * Returns a cursor to all scheduled transactions which have at least one split in the account
-     *
-     * This is basically a set of all template transactions for this account
+     * This is basically a set of all transactions for this account
      *
      * @param accountUID GUID of account
      * @return Cursor with set of transactions
      */
-    fun fetchScheduledTransactionsForAccount(accountUID: String): Cursor? {
+    fun fetchTransactionsForAccount(accountUID: String): Cursor {
         val table = TransactionEntry.TABLE_NAME + " t" +
                 " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON " +
                 "t." + TransactionEntry.COLUMN_UID + " = " +
@@ -229,7 +196,9 @@ class TransactionsDbAdapter(
         val projectionIn = allColumnsPrefix("t.")
         val selection = "s." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
         val selectionArgs = arrayOf<String?>(accountUID)
-        val sortOrder = "t." + TransactionEntry.COLUMN_DATE_POSTED + " DESC"
+        val sortOrder = "t." + TransactionEntry.COLUMN_DATE_POSTED + " DESC, " +
+                "t." + TransactionEntry.COLUMN_NUMBER + " DESC, " +
+                "t." + TransactionEntry.COLUMN_ID + " DESC"
 
         return db.query(
             true,
@@ -258,32 +227,6 @@ class TransactionsDbAdapter(
                     + " (SELECT " + SplitEntry.COLUMN_TRANSACTION_UID + " FROM " + SplitEntry.TABLE_NAME + " WHERE "
                     + SplitEntry.COLUMN_ACCOUNT_UID + " = ?)")
         db.execSQL(rawDeleteQuery, arrayOf<String?>(accountUID))
-    }
-
-    /**
-     * Deletes all transactions which have no splits associated with them
-     *
-     * @return Number of records deleted
-     */
-    fun deleteTransactionsWithNoSplits(): Int {
-        return db.delete(
-            tableName,
-            "NOT EXISTS ( SELECT * FROM " + SplitEntry.TABLE_NAME +
-                    " WHERE " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID +
-                    " = " + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID + " ) ",
-            null
-        )
-    }
-
-    /**
-     * Returns list of all transactions for account with UID `accountUID`
-     *
-     * @param accountUID UID of account whose transactions are to be retrieved
-     * @return List of [Transaction]s for account with UID `accountUID`
-     */
-    fun getAllTransactionsForAccount(accountUID: String): List<Transaction> {
-        val cursor = fetchAllTransactionsForAccount(accountUID)
-        return getRecords(cursor)
     }
 
     /**
@@ -431,6 +374,7 @@ class TransactionsDbAdapter(
         transaction.commodity = commoditiesDbAdapter.getRecord(commodityUID)
         transaction.scheduledActionUID = scheduledActionUID
         transaction.number = number
+        transaction.splits = splitsDbAdapter.getSplitsForTransaction(transaction)
 
         return transaction
     }
@@ -483,7 +427,7 @@ class TransactionsDbAdapter(
      * @return Number of transactions with splits in the account
      */
     fun getTransactionsCount(accountUID: String): Int {
-        val cursor = fetchAllTransactionsForAccount(accountUID) ?: return 0
+        val cursor = fetchTransactionsForAccount(accountUID)
         return try {
             cursor.count
         } finally {
@@ -508,9 +452,13 @@ class TransactionsDbAdapter(
      *
      * @return List of all scheduled transactions
      */
-    fun getScheduledTransactionsForAccount(accountUID: String): List<Transaction> {
-        val cursor = fetchScheduledTransactionsForAccount(accountUID)
+    fun getTransactionsForAccount(accountUID: String): List<Transaction> {
+        val cursor = fetchTransactionsForAccount(accountUID)
         return getRecords(cursor)
+    }
+
+    fun getTransactionsForAccount(account: Account): List<Transaction> {
+        return getTransactionsForAccount(account.uid)
     }
 
     /**

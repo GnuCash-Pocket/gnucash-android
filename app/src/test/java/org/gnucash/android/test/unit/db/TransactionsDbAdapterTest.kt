@@ -77,9 +77,7 @@ class TransactionsDbAdapterTest : GnuCashTest() {
         transactionsDbAdapter.addRecord(t1)
         transactionsDbAdapter.addRecord(t2)
 
-        val transactionsList = transactionsDbAdapter.getAllTransactionsForAccount(
-            alphaAccount.uid
-        )
+        val transactionsList = transactionsDbAdapter.getTransactionsForAccount(alphaAccount)
         assertThat(transactionsList).contains(t2, Index.atIndex(0))
         assertThat(transactionsList).contains(t1, Index.atIndex(1))
     }
@@ -91,10 +89,10 @@ class TransactionsDbAdapterTest : GnuCashTest() {
         transaction.addSplit(split)
         transactionsDbAdapter.addRecord(transaction)
 
-        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction.uid)).hasSize(1)
+        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction)).hasSize(1)
 
         transactionsDbAdapter.deleteRecord(transaction.uid)
-        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction.uid)).isEmpty()
+        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction)).isEmpty()
     }
 
     @Test

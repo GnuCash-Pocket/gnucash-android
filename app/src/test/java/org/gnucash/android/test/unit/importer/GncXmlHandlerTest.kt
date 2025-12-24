@@ -41,7 +41,6 @@ import org.gnucash.android.util.TimestampHelper
 import org.gnucash.android.util.toMillis
 import org.joda.time.DateTimeZone
 import org.joda.time.LocalDate
-import org.junit.Ignore
 import org.junit.Test
 import java.util.Calendar
 
@@ -245,58 +244,6 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(price.valueNum).isEqualTo(11153L)
         assertThat(price.valueDenom).isEqualTo(10000L)
         assertThat(price.date).isEqualTo(parseDateTime("2016-09-18 20:23:55 +0200"))
-    }
-
-    /**
-     * Tests importing a simple scheduled transaction with default splits.
-     */
-    //@Test Disabled as currently amounts are only read from credit/debit-numeric
-    // slots and transactions without amount are ignored.
-    @Ignore
-    fun simpleScheduledTransactionImport() {
-        val bookUID = importGnuCashXml("simpleScheduledTransactionImport.xml")
-        assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
-
-        assertThat(transactionsDbAdapter.templateTransactionsCount).isOne()
-
-        val scheduledTransaction =
-            transactionsDbAdapter.getRecord("b645bef06d0844aece6424ceeec03983")
-
-        // Check attributes
-        assertThat(scheduledTransaction.description).isEqualTo("Los pollos hermanos")
-        assertThat(scheduledTransaction.commodity.currencyCode).isEqualTo("USD")
-        assertThat(scheduledTransaction.notes).isEqualTo("")
-        assertThat(scheduledTransaction.scheduledActionUID).isNull()
-        assertThat(scheduledTransaction.isExported).isTrue()
-        assertThat(scheduledTransaction.isTemplate).isTrue()
-        assertThat(scheduledTransaction.datePosted).isEqualTo(parseDateTime("2016-08-24 10:00:00 +0200"))
-        assertThat(scheduledTransaction.createdTimestamp.time).isEqualTo(parseDateTime("2016-08-24 19:50:15 +0200"))
-
-        // Check splits
-        assertThat(scheduledTransaction.splits).hasSize(2)
-
-        val splitCredit = scheduledTransaction.splits[0]
-        assertThat(splitCredit.uid).isEqualTo("f66794ef262aac3ae085ecc3030f2769")
-        assertThat(splitCredit.accountUID).isEqualTo("6a7cf8267314992bdddcee56d71a3908")
-        assertThat(splitCredit.transactionUID).isEqualTo("b645bef06d0844aece6424ceeec03983")
-        assertThat(splitCredit.type).isEqualTo(TransactionType.CREDIT)
-        assertThat(splitCredit.memo).isEmpty()
-        assertThat(splitCredit.value).isEqualTo(Money("20", "USD"))
-
-        // FIXME: the quantity is always 0 as it's set from <split:quantity> instead
-        // of from the slots
-        //assertThat(split1.getQuantity()).isEqualTo(new Money("20", "USD"));
-        val splitDebit = scheduledTransaction.splits[1]
-        assertThat(splitDebit.uid).isEqualTo("57e2be6ca6b568f8f7c9b2e455e1e21f")
-        assertThat(splitDebit.accountUID).isEqualTo("dae686a1636addc0dae1ae670701aa4a")
-        assertThat(splitDebit.transactionUID).isEqualTo("b645bef06d0844aece6424ceeec03983")
-        assertThat(splitDebit.type).isEqualTo(TransactionType.DEBIT)
-        assertThat(splitDebit.memo).isEmpty()
-        assertThat(splitDebit.value).isEqualTo(Money("20", "USD"))
-        // FIXME: the quantity is always 0 as it's set from <split:quantity> instead
-        // of from the slots
-        //assertThat(split2.getQuantity()).isEqualTo(new Money("20", "USD"));
-        assertThat(splitDebit.isPairOf(splitCredit)).isTrue()
     }
 
     /**

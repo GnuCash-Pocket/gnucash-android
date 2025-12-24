@@ -148,9 +148,7 @@ class AccountsDbAdapterTest : GnuCashTest() {
         val account = accountsDbAdapter.getRecord(account1.uid)
         assertThat(account).isNotNull()
 
-        assertThat(
-            transactionsDbAdapter.getAllTransactionsForAccount(account.uid)
-        ).hasSize(1)
+        assertThat(transactionsDbAdapter.getTransactionsForAccount(account)).hasSize(1)
     }
 
     @Test
@@ -461,18 +459,14 @@ class AccountsDbAdapterTest : GnuCashTest() {
         val transactions = transactionsDbAdapter.allRecords
         assertThat(transactions).hasSize(1)
 
-        assertThat(
-            transactionsDbAdapter.getScheduledTransactionsForAccount(account.uid)
-        ).hasSize(1)
+        assertThat(transactionsDbAdapter.getTransactionsForAccount(account)).hasSize(1)
 
         //edit the account
         account.name = "Edited account"
         accountsDbAdapter.update(account)
 
-        assertThat(
-            transactionsDbAdapter.getScheduledTransactionsForAccount(account.uid)
-        ).hasSize(1)
-        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction.uid)).hasSize(2)
+        assertThat(transactionsDbAdapter.getTransactionsForAccount(account)).hasSize(1)
+        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction)).hasSize(2)
     }
 
     @Test
