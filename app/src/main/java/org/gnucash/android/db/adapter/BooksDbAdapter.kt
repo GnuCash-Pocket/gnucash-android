@@ -35,6 +35,7 @@ import org.gnucash.android.db.forEach
 import org.gnucash.android.db.getBoolean
 import org.gnucash.android.db.getTimestamp
 import org.gnucash.android.model.Book
+import org.gnucash.android.util.TimestampHelper.timestampFromEpochZero
 import org.gnucash.android.util.set
 import timber.log.Timber
 import kotlin.math.max
@@ -48,12 +49,12 @@ class BooksDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Book>(
     entryColumns
 ) {
     override fun buildModelInstance(cursor: Cursor): Book {
-        val rootAccountGUID = cursor.getString(INDEX_COLUMN_ROOT_GUID)
+        val rootAccountGUID = cursor.getString(INDEX_COLUMN_ROOT_GUID)!!
         val rootTemplateGUID = cursor.getString(INDEX_COLUMN_TEMPLATE_GUID)
         val uriString = cursor.getString(INDEX_COLUMN_SOURCE_URI)
         val displayName = cursor.getString(INDEX_COLUMN_DISPLAY_NAME)
         val active = cursor.getBoolean(INDEX_COLUMN_ACTIVE)
-        val lastSync = cursor.getTimestamp(INDEX_COLUMN_LAST_SYNC)!!
+        val lastSync = cursor.getTimestamp(INDEX_COLUMN_LAST_SYNC)
 
         val book = Book(rootAccountGUID)
         populateBaseModelAttributes(cursor, book)
@@ -61,7 +62,7 @@ class BooksDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Book>(
         book.rootTemplateUID = rootTemplateGUID
         book.sourceUri = uriString?.toUri()
         book.isActive = active
-        book.lastSync = lastSync
+        book.lastSync = lastSync ?: timestampFromEpochZero
 
         return book
     }

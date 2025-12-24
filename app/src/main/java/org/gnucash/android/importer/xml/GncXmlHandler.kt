@@ -18,7 +18,9 @@ package org.gnucash.android.importer.xml
 
 import android.content.ContentValues
 import android.content.Context
+import android.database.SQLException
 import android.os.CancellationSignal
+import androidx.annotation.ColorInt
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.app.GnuCashApplication.Companion.appContext
 import org.gnucash.android.db.DatabaseHelper
@@ -145,6 +147,8 @@ import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.model.WeekendAdjust
+import org.gnucash.android.util.NotSet
+import org.gnucash.android.util.parseColor
 import org.gnucash.android.util.set
 import org.xml.sax.Attributes
 import org.xml.sax.SAXException
@@ -284,6 +288,19 @@ class GncXmlHandler(
         val databaseHelper = DatabaseHelper(context, bookUID)
         val holder = databaseHelper.holder
         this.holder = holder
+        val db = holder.db
+        try {
+            // Nice to have for performance, but not critical.
+            db.enableWriteAheadLogging()
+        } catch (e: SQLException) {
+            Timber.e(e)
+        }
+        // disable foreign key. The database structure should be ensured by the data inserted.
+        // it will make insertion much faster.
+        db.setForeignKeyConstraintsEnabled(false)
+
+        book = booksDbAdapter.getRecordOrNull(bookUID) ?: book
+
         commoditiesDbAdapter = CommoditiesDbAdapter(holder, true)
         pricesDbAdapter = PricesDbAdapter(commoditiesDbAdapter)
         transactionsDbAdapter = TransactionsDbAdapter(commoditiesDbAdapter)
@@ -294,10 +311,6 @@ class GncXmlHandler(
         budgetsDbAdapter = BudgetsDbAdapter(recurrenceDbAdapter)
 
         Timber.d("before clean up db")
-        // disable foreign key. The database structure should be ensured by the data inserted.
-        // it will make insertion much faster.
-        accountsDbAdapter.enableForeignKey(false)
-
         budgetsDbAdapter.deleteAllRecords()
         pricesDbAdapter.deleteAllRecords()
         scheduledActionsDbAdapter.deleteAllRecords()
@@ -488,7 +501,7 @@ class GncXmlHandler(
      * We on purpose do not set the book active. Only import. Caller should handle activation
      */
     private fun saveToDatabase() {
-        accountsDbAdapter.enableForeignKey(true)
+        holder!!.db.setForeignKeyConstraintsEnabled(true)
         maybeClose() //close it after import
     }
 
@@ -1014,12 +1027,19 @@ class GncXmlHandler(
             KEY_PLACEHOLDER -> account?.isPlaceholder = slot.asString.toBoolean()
 
             KEY_COLOR -> {
-                val color = slot.asString
+                val colorCode = slot.asString
                 try {
-                    account?.setColor(color)
+                    @ColorInt var color = Account.DEFAULT_COLOR
+                    //sometimes the color entry in the account file is "Not set" instead of just blank.
+                    if (!colorCode.isEmpty() && colorCode != NotSet) {
+                        color = parseColor(colorCode) ?: Account.DEFAULT_COLOR
+                        if (color == Account.SILVER_COLOR) {
+                            color = Account.DEFAULT_COLOR
+                        }
+                    }
+                    account?.color = color
                 } catch (e: IllegalArgumentException) {
-                    //sometimes the color entry in the account file is "Not set" instead of just blank. So catch!
-                    Timber.e(e, "Invalid color code \"%s\" for account %s", color, account)
+                    Timber.e(e, "Invalid color code \"%s\" for account %s", colorCode, account)
                 }
             }
 

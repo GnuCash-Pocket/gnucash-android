@@ -188,6 +188,9 @@ class Account : BaseModel {
         // TODO: get it from a theme value?
         @ColorInt
         val DEFAULT_COLOR = Color.rgb(237, 236, 235)
+        /** An older default color. */
+        @ColorInt
+        val SILVER_COLOR = Color.rgb(238, 238, 238)
 
         /**
          * An extra key for passing the currency code (according ISO 4217) in an intent

@@ -22,6 +22,7 @@ import android.database.DatabaseUtils
 import android.database.SQLException
 import android.database.sqlite.SQLiteQueryBuilder
 import android.database.sqlite.SQLiteStatement
+import androidx.core.database.sqlite.transaction
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseHelper.Companion.sqlEscapeLike
 import org.gnucash.android.db.DatabaseHolder
@@ -90,12 +91,11 @@ class TransactionsDbAdapter(
     override fun addRecord(transaction: Transaction, updateMethod: UpdateMethod): Transaction {
         // Did the transaction have any splits before?
         val didChange = transaction.id != 0L
-        try {
-            beginTransaction()
+        db.transaction {
             val imbalanceSplit = transaction.createAutoBalanceSplit()
             if (imbalanceSplit != null) {
                 val context = holder.context
-                val imbalanceAccountUID = AccountsDbAdapter(this)
+                val imbalanceAccountUID = AccountsDbAdapter(this@TransactionsDbAdapter)
                     .getOrCreateImbalanceAccountUID(context, transaction.commodity)
                 imbalanceSplit.accountUID = imbalanceAccountUID
             }
@@ -120,10 +120,6 @@ class TransactionsDbAdapter(
                 val deleted = db.delete(SplitEntry.TABLE_NAME, deleteWhere, deleteArgs)
                 Timber.d("%d splits deleted", deleted)
             }
-
-            setTransactionSuccessful()
-        } finally {
-            endTransaction()
         }
 
         return transaction

@@ -196,9 +196,7 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
         val accounts = mutableListOf<Account>()
 
         pipeAccounts(db, book.rootAccountUID, false, accounts)
-        book.rootTemplateUID?.let {
-            pipeAccounts(db, it, true, accounts)
-        }
+        pipeAccounts(db, book.rootTemplateUID, true, accounts)
 
         return accounts
     }

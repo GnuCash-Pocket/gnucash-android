@@ -861,20 +861,6 @@ abstract class DatabaseAdapter<Model : BaseModel>(
         db.setTransactionSuccessful()
     }
 
-    /** Foreign key constraits should be enabled in general.
-     * But if it affects speed (check constraints takes time)
-     * and the constrained can be assured by the program,
-     * or if some SQL exec will cause deletion of records
-     * (like use replace in accounts update will delete all transactions)
-     * that need not be deleted, then it can be disabled temporarily */
-    fun enableForeignKey(enable: Boolean) {
-        if (enable) {
-            db.execSQL("PRAGMA foreign_keys=ON;")
-        } else {
-            db.execSQL("PRAGMA foreign_keys=OFF;")
-        }
-    }
-
     /**
      * Expose mDb.endTransaction()
      */

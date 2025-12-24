@@ -56,7 +56,7 @@ class Book(rootAccountUID: String? = null) : BaseModel() {
     /**
      * The GUID of the root template account
      */
-    var rootTemplateUID: String? = generateUID()
+    var rootTemplateUID: String = generateUID()
 
     /**
      * `true` if this book is the currently active book in the app, `false` otherwise.

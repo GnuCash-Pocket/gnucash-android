@@ -2,6 +2,8 @@ package org.gnucash.android.importer
 
 import android.content.Context
 import android.os.CancellationSignal
+import android.os.SystemClock
+import android.text.format.DateUtils
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.gnc.GncProgressListener
@@ -25,7 +27,7 @@ abstract class Importer(
     fun parse(): List<Book> {
         //TODO: Set an error handler which can log errors
         Timber.d("Start import")
-        val startTime = System.nanoTime()
+        val timeStart = SystemClock.elapsedRealtime()
         val books = try {
             parse(inputStream)
         } catch (e: ImportException) {
@@ -33,8 +35,6 @@ abstract class Importer(
         } catch (e: Throwable) {
             throw ImportException(e)
         }
-        val endTime = System.nanoTime()
-        Timber.d("%d ns spent on importing the file", endTime - startTime)
 
         for (book in books) {
             setLastExportTime(
@@ -43,6 +43,10 @@ abstract class Importer(
                 book.uid
             )
         }
+
+        val timeFinish = SystemClock.elapsedRealtime()
+        val timeSeconds = (timeFinish - timeStart) / DateUtils.SECOND_IN_MILLIS
+        Timber.v("imported in %s", DateUtils.formatElapsedTime(timeSeconds))
         return books
     }
 
