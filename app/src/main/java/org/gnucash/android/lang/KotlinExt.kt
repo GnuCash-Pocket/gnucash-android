@@ -3,6 +3,7 @@ package org.gnucash.android.lang
 import android.text.Editable
 import android.text.TextUtils
 import android.util.SparseArray
+import android.widget.EditText
 import androidx.collection.LongSparseArray
 import org.gnucash.android.util.SparseArrayIterator
 
@@ -28,3 +29,5 @@ fun Editable.trim(): String {
 fun <E> SparseArray<E>.iterator(): Iterator<E> {
     return SparseArrayIterator(this)
 }
+
+fun EditText.trim(): String = text.toString().trim()

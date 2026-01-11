@@ -40,6 +40,7 @@ import org.gnucash.android.app.finish
 import org.gnucash.android.app.getParcelableArrayListCompat
 import org.gnucash.android.databinding.FragmentBudgetFormBinding
 import org.gnucash.android.db.adapter.BudgetsDbAdapter
+import org.gnucash.android.lang.trim
 import org.gnucash.android.model.Budget
 import org.gnucash.android.model.BudgetAmount
 import org.gnucash.android.model.Money
@@ -218,7 +219,7 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
     private fun saveBudget() {
         val binding = this.binding!!
         if (!canSave(binding)) return
-        val name = binding.inputBudgetName.getText().toString().trim()
+        val name = binding.inputBudgetName.trim()
 
         var budget = budget
         if (budget == null) {
@@ -232,7 +233,7 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
         extractBudgetAmounts(binding)
         budget.setBudgetAmounts(budgetAmounts)
 
-        budget.description = binding.inputDescription.getText().toString().trim()
+        budget.description = binding.inputDescription.trim()
 
         val recurrence = parse(eventRecurrence)
         recurrence!!.periodStart = startDate.timeInMillis

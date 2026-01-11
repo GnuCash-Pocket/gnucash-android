@@ -49,6 +49,7 @@ import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.importer.AccountsTemplate
+import org.gnucash.android.lang.trim
 import org.gnucash.android.model.Book
 import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.ui.adapter.AccountsTemplatesAdapter
@@ -289,7 +290,7 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
                 .setPositiveButton(R.string.btn_rename) { dialog, _ ->
                     val bookTitle =
                         (dialog as AppCompatDialog).findViewById<EditText>(R.id.input_book_title)!!
-                    val bookName = bookTitle.getText().toString().trim()
+                    val bookName = bookTitle.trim()
                     BooksDbAdapter.instance.updateRecord(
                         bookUID,
                         BookEntry.COLUMN_DISPLAY_NAME,

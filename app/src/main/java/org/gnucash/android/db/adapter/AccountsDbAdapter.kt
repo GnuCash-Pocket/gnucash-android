@@ -92,7 +92,8 @@ class AccountsDbAdapter(
         AccountEntry.COLUMN_PARENT_ACCOUNT_UID,
         AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID,
         AccountEntry.COLUMN_NOTES,
-        AccountEntry.COLUMN_TEMPLATE
+        AccountEntry.COLUMN_TEMPLATE,
+        AccountEntry.COLUMN_CODE
     ), true
 ) {
     /**
@@ -218,6 +219,9 @@ class AccountsDbAdapter(
             stmt.bindString(14, account.note)
         }
         stmt.bindBoolean(15, account.isTemplate)
+        if (account.code != null) {
+            stmt.bindString(16, account.code)
+        }
 
         return stmt
     }
@@ -394,6 +398,7 @@ class AccountsDbAdapter(
         val account = Account(cursor.getString(AccountEntry.COLUMN_NAME)!!)
         populateBaseModelAttributes(cursor, account)
 
+        account.code = cursor.getString(AccountEntry.COLUMN_CODE)
         account.description = cursor.getString(AccountEntry.COLUMN_DESCRIPTION)
         account.parentUID = cursor.getString(AccountEntry.COLUMN_PARENT_ACCOUNT_UID)
         account.accountType = AccountType.valueOf(cursor.getString(AccountEntry.COLUMN_TYPE)!!)
@@ -412,6 +417,7 @@ class AccountsDbAdapter(
         }
         account.note = cursor.getString(AccountEntry.COLUMN_NOTES)
         account.isTemplate = cursor.getBoolean(AccountEntry.COLUMN_TEMPLATE)
+
         if (account.isRoot) {
             account.isHidden = false
             account.isPlaceholder = false

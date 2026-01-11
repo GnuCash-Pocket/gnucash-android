@@ -79,7 +79,7 @@ class CsvAccountExporter(
         fields[1] = account.fullName
         fields[2] = account.name
 
-        fields[3] = "" //Account code
+        fields[3] = account.code.orEmpty()
         fields[4] = account.description
         fields[5] = formatRGB(account.color)
         fields[6] = account.note.orEmpty()

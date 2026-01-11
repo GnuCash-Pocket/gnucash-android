@@ -92,6 +92,9 @@ object MigrationHelper {
         if (oldVersion < 27) {
             migrateTo27(db)
         }
+        if (oldVersion < 28) {
+            migrateTo28(db)
+        }
     }
 
     /**
@@ -304,6 +307,20 @@ object MigrationHelper {
 
         if (!db.hasTableColumn(TransactionEntry.TABLE_NAME, TransactionEntry.COLUMN_NUMBER)) {
             val sql = "ALTER TABLE ${TransactionEntry.TABLE_NAME} ADD COLUMN ${TransactionEntry.COLUMN_NUMBER} varchar(255)"
+            db.execSQL(sql)
+        }
+    }
+
+    /**
+     * Upgrade the database to version 28.
+     *
+     * @param db the database.
+     */
+    private fun migrateTo28(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 28")
+
+        if (!db.hasTableColumn(AccountEntry.TABLE_NAME, AccountEntry.COLUMN_CODE)) {
+            val sql = "ALTER TABLE ${AccountEntry.TABLE_NAME} ADD COLUMN ${AccountEntry.COLUMN_CODE} varchar(255)"
             db.execSQL(sql)
         }
     }

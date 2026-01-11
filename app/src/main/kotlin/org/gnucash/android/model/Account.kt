@@ -50,6 +50,11 @@ class Account : BaseModel {
     var fullName: String?
 
     /**
+     * Account code
+     */
+    var code: String? = ""
+
+    /**
      * Account description
      */
     var description: String? = ""

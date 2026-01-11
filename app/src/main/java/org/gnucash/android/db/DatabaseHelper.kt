@@ -143,6 +143,7 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                 + AccountEntry.COLUMN_TYPE + " varchar(255) not null, "
                 + AccountEntry.COLUMN_CURRENCY + " varchar(255), "
                 + AccountEntry.COLUMN_COMMODITY_UID + " varchar(255) not null, "
+                + AccountEntry.COLUMN_CODE + " varchar(255), "
                 + AccountEntry.COLUMN_DESCRIPTION + " varchar(255), "
                 + AccountEntry.COLUMN_COLOR_CODE + " varchar(255), "
                 + AccountEntry.COLUMN_FAVORITE + " tinyint default 0, "

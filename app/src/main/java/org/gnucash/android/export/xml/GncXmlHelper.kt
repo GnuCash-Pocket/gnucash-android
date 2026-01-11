@@ -134,6 +134,7 @@ object GncXmlHelper {
     const val TAG_TYPE: String = "type"
     const val TAG_COMMODITY_SCU: String = "commodity-scu"
     const val TAG_PARENT: String = "parent"
+    const val TAG_CODE: String = "code"
     const val TAG_DESCRIPTION: String = "description"
     const val TAG_TITLE: String = "title"
     const val TAG_LOTS: String = "lots"
