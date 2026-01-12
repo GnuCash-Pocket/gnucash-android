@@ -37,7 +37,9 @@ internal class ScheduledTransactionsViewHolder(
         }
         val splits = transaction.splits
 
-        primaryTextView.text = scheduledAction.name ?: transaction.description
+        var name = scheduledAction.name
+        if (name.isNullOrEmpty()) name = transaction.description
+        primaryTextView.text = name
         descriptionTextView.text = formatSchedule(scheduledAction)
 
         var text = ""

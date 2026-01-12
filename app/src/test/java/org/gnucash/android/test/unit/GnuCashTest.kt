@@ -24,6 +24,6 @@ abstract class GnuCashTest {
     }
 
     protected fun openResourceStream(name: String): InputStream {
-        return javaClass.classLoader.getResourceAsStream(name)
+        return javaClass!!.classLoader!!.getResourceAsStream(name)
     }
 }

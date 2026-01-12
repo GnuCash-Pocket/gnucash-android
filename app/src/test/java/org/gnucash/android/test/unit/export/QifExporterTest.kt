@@ -41,8 +41,10 @@ import org.junit.Before
 import org.junit.Test
 import java.io.BufferedReader
 import java.io.File
-import java.io.FileReader
+import java.io.FileInputStream
 import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
 import java.util.Calendar
 import java.util.zip.ZipFile
 
@@ -107,7 +109,8 @@ class QifExporterTest : BookHelperTest() {
 
         assertThat(exportedFile).isNotNull()
         val file = File(exportedFile!!.path!!)
-        assertThat(file).exists().hasExtension("qif")
+        assertThat(file).exists()
+        assertThat(file.name).endsWith(".qif")
         assertThat(file.length()).isGreaterThan(0L)
         file.delete()
     }
@@ -190,7 +193,8 @@ class QifExporterTest : BookHelperTest() {
 
         assertThat(exportedFile).isNotNull()
         val file = File(exportedFile!!.path!!)
-        assertThat(file).exists().hasExtension("qif")
+        assertThat(file).exists()
+        assertThat(file.name).endsWith(".qif")
         val fileContent = readFileContent(file)
         assertThat(fileContent).isNotEmpty()
         val lines = fileContent.split(QifHelper.NEW_LINE.toRegex()).dropLastWhile { it.isEmpty() }
@@ -236,7 +240,8 @@ class QifExporterTest : BookHelperTest() {
 
         assertThat(exportedFile).isNotNull()
         val file = File(exportedFile!!.path!!)
-        assertThat(file).exists().hasExtension("qif")
+        assertThat(file).exists()
+        assertThat(file.name).endsWith(".qif")
         val fileContent = readFileContent(file)
         assertThat(fileContent).isNotEmpty()
         val lines = fileContent.split(QifHelper.NEW_LINE.toRegex()).dropLastWhile { it.isEmpty() }
@@ -286,7 +291,8 @@ class QifExporterTest : BookHelperTest() {
 
         assertThat(exportedFile).isNotNull()
         val file = File(exportedFile!!.path!!)
-        assertThat(file).exists().hasExtension("qif")
+        assertThat(file).exists()
+        assertThat(file.name).endsWith(".qif")
         val fileContent = readFileContent(file)
         assertThat(fileContent).isNotEmpty()
         val lines = fileContent.split(QifHelper.NEW_LINE.toRegex()).dropLastWhile { it.isEmpty() }
@@ -358,7 +364,8 @@ class QifExporterTest : BookHelperTest() {
 
         assertThat(exportedFile).isNotNull()
         val file = File(exportedFile!!.path!!)
-        assertThat(file).exists().hasExtension("qif")
+        assertThat(file).exists()
+        assertThat(file.name).endsWith(".qif")
         val fileContent = readFileContent(file)
         assertThat(fileContent).isNotEmpty()
         val lines = fileContent.split(QifHelper.NEW_LINE.toRegex()).dropLastWhile { it.isEmpty() }
@@ -381,14 +388,19 @@ class QifExporterTest : BookHelperTest() {
     }
 
     @Throws(IOException::class)
-    fun readFileContent(file: File?): String {
+    private fun readFileContent(input: InputStream): String {
+        val reader = BufferedReader(InputStreamReader(input))
         val fileContentsBuilder = StringBuilder()
-        val reader = BufferedReader(FileReader(file))
         var line: String?
         while ((reader.readLine().also { line = it }) != null) {
             fileContentsBuilder.append(line).append('\n')
         }
-
         return fileContentsBuilder.toString()
+    }
+
+    @Throws(IOException::class)
+    fun readFileContent(file: File): String {
+        val fileInput = FileInputStream(file)
+        return readFileContent(fileInput)
     }
 }

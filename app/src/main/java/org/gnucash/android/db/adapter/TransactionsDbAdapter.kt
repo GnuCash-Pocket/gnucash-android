@@ -31,16 +31,19 @@ import org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry
 import org.gnucash.android.db.DatabaseSchema.SplitEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.bindBoolean
+import org.gnucash.android.db.forEach
 import org.gnucash.android.db.getBoolean
 import org.gnucash.android.db.getLong
 import org.gnucash.android.db.getString
 import org.gnucash.android.db.joinIn
 import org.gnucash.android.model.AccountType
+import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.Transaction.Companion.computeBalance
 import org.gnucash.android.util.TimestampHelper.getTimestampFromUtcString
 import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
+import org.gnucash.android.util.TimestampHelper.timestampFromEpochZero
 import org.gnucash.android.util.TimestampHelper.timestampFromNow
 import org.gnucash.android.util.set
 import timber.log.Timber
@@ -204,12 +207,10 @@ class TransactionsDbAdapter(
      */
     fun fetchAllTransactionsForAccount(accountUID: String): Cursor? {
         val queryBuilder = SQLiteQueryBuilder()
-        queryBuilder.setTables(
-            (TransactionEntry.TABLE_NAME + " t"
-                    + " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON "
-                    + "t." + TransactionEntry.COLUMN_UID + " = "
-                    + "s." + SplitEntry.COLUMN_TRANSACTION_UID)
-        )
+        queryBuilder.tables = TransactionEntry.TABLE_NAME + " t" +
+                " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON " +
+                "t." + TransactionEntry.COLUMN_UID + " = " +
+                "s." + SplitEntry.COLUMN_TRANSACTION_UID
         queryBuilder.isDistinct = true
         val projectionIn = arrayOf<String?>("t.*")
         val selection = ("s." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
@@ -852,6 +853,35 @@ class TransactionsDbAdapter(
         } finally {
             cursor.close()
         }
+    }
+
+    fun getAllCommoditiesInUse(
+        isTemplate: Boolean = false,
+        modifiedSince: Timestamp = timestampFromEpochZero
+    ): List<Commodity> {
+        val result = mutableListOf<Commodity>()
+        val table = TransactionEntry.TABLE_NAME + " t INNER JOIN " + SplitEntry.TABLE_NAME + " s" +
+                " ON t." + TransactionEntry.COLUMN_UID + " = s." + SplitEntry.COLUMN_TRANSACTION_UID +
+                " INNER JOIN " + AccountEntry.TABLE_NAME + " a" +
+                " ON a." + AccountEntry.COLUMN_UID + " = s." + SplitEntry.COLUMN_ACCOUNT_UID
+        val projection = arrayOf("a." + AccountEntry.COLUMN_COMMODITY_UID)
+        val where = "t." + TransactionEntry.COLUMN_TEMPLATE + " = ?" +
+                " AND t." + TransactionEntry.COLUMN_MODIFIED_AT + " >= ?" +
+                " AND a." + AccountEntry.COLUMN_TEMPLATE + " = ?"
+        val whereArgs = arrayOf<String?>(
+            if (isTemplate) "1" else "0",
+            getUtcStringFromTimestamp(modifiedSince),
+            if (isTemplate) "1" else "0"
+        )
+        val cursor = db.query(true, table, projection, where, whereArgs, null, null, null, null)
+        cursor.forEach { cursor ->
+            val commodityUID = cursor.getString(0)
+            val commodity = commoditiesDbAdapter.getRecord(commodityUID)
+            if (isTemplate == commodity.isTemplate) {
+                result.add(commodity)
+            }
+        }
+        return result
     }
 
     companion object {

@@ -9,7 +9,7 @@ import org.robolectric.annotation.Implements
  * Shadow class for crashlytics to prevent logging during testing
  */
 @Implements(FirebaseCrashlytics::class)
-object ShadowCrashlytics {
+class ShadowCrashlytics {
     @Implementation
     fun start(context: Context) {
         println("Shadowing crashlytics start")
