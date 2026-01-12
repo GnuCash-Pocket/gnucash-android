@@ -1,0 +1,93 @@
+[versions]
+activity = "1.9.3"  # 1.9.3 -> minSdk 21
+agp = "8.13.2"
+android-test-espresso = "3.7.0"
+android-test-ext-junit = "1.3.0"
+android-test-rules = "1.7.0"
+android-test-runner = "1.7.0"
+android-test-uiautomator = "2.3.0"
+apache-http = "3.1"
+appcompat = "1.7.1"
+assertj = "3.27.6"
+betterpickers = "3.1.0"
+cardview = "1.0.0"
+chart = "v3.1.0"
+core = "1.17.0"
+crashlytics = "19.4.4"  # 19.4.4 -> minSdk 21
+crashlytics-plugin = "3.0.6"
+desugar_jdk_libs = "2.1.5"
+drawerlayout = "1.2.0"
+dropbox = "7.0.0"
+evalex = "3.6.0"
+exp4j = "0.4.8"
+flexbox = "3.0.0"
+google-services = "4.4.4"
+hilt = "2.57.2"
+joda-time = "2.14.0"
+junit = "4.13.2"
+kotlin = "2.3.0"
+ksp = "2.3.4"
+material = "1.13.0"
+nextcloud = "2.22.1"
+okhttp = "5.3.2"
+opencsv = "5.12.0"
+preference = "1.2.1"
+ratethisapp = "0.0.7"
+recyclerview = "1.4.0"
+robolectric = "4.15.1"  # 4.15.1 -> minSdk 21
+timber = "5.0.1"
+times-square = "1.7.11"
+wizardpager = "1.0.3"
+work-runtime = "2.10.5"  # 2.10.5 -> minSdk 21
+
+[libraries]
+android-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "android-test-ext-junit" }
+android-test-rules = { module = "androidx.test:rules", version.ref = "android-test-rules" }
+android-test-runner = { module = "androidx.test:runner", version.ref = "android-test-runner" }
+android-test-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "android-test-uiautomator" }
+androidx-activity = { module = "androidx.activity:activity-ktx", version.ref = "activity" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+androidx-cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
+androidx-core = { module = "androidx.core:core-ktx", version.ref = "core" }
+androidx-drawerlayout = { module = "androidx.drawerlayout:drawerlayout", version.ref = "drawerlayout" }
+androidx-preference = { module = "androidx.preference:preference-ktx", version.ref = "preference" }
+androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
+androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "work-runtime" }
+apache-http = { module = "commons-httpclient:commons-httpclient", version.ref = "apache-http" }
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+betterpickers = { module = "com.code-troopers.betterpickers:library", version.ref = "betterpickers" }
+chart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "chart" }
+crashlytics = { module = "com.google.firebase:firebase-crashlytics", version.ref = "crashlytics" }
+desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
+dropbox = { module = "com.dropbox.core:dropbox-android-sdk", version.ref = "dropbox" }
+espresso-contrib = { module = "androidx.test.espresso:espresso-contrib", version.ref = "android-test-espresso" }
+espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "android-test-espresso" }
+espresso-intents = { module = "androidx.test.espresso:espresso-intents", version.ref = "android-test-espresso" }
+evalex = { module = "com.ezylang:EvalEx", version.ref = "evalex" }
+exp4j = { module = "net.objecthunter:exp4j", version.ref = "exp4j" }
+flexbox = { module = "com.google.android.flexbox:flexbox", version.ref = "flexbox" }
+joda-time = { module = "joda-time:joda-time", version.ref = "joda-time" }
+junit = { module = "junit:junit", version.ref = "junit" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+nextcloud = { module = "com.github.nextcloud:android-library", version.ref = "nextcloud" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+opencsv = { module = "com.opencsv:opencsv", version.ref = "opencsv" }
+ratethisapp = { module = "com.kobakei:ratethisapp", version.ref = "ratethisapp" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
+times-square = { module = "com.squareup:android-times-square", version.ref = "times-square" }
+wizardpager = { module = "com.github.techfreak:wizardpager", version.ref = "wizardpager" }
+
+[bundles]
+espresso = ["espresso-core", "espresso-intents", "espresso-contrib"]
+android-test = ["android-test-ext-junit", "android-test-rules", "android-test-runner", "android-test-uiautomator"]
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlytics-plugin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

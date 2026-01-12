@@ -26,7 +26,6 @@ import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.action.ViewActions.clearText
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.scrollTo
-import androidx.test.espresso.action.ViewActions.swipeRight
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -55,10 +54,8 @@ import org.gnucash.android.model.Transaction
 import org.gnucash.android.receivers.AccountCreator
 import org.gnucash.android.test.ui.util.DisableAnimationsRule
 import org.gnucash.android.test.ui.util.performClick
-import org.gnucash.android.test.ui.util.withTagValue
 import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.ui.adapter.SpinnerItem
-import org.gnucash.android.ui.transaction.TransactionsListFragment
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.allOf
@@ -237,12 +234,7 @@ class AccountsActivityTest : GnuAndroidTest() {
         val labelTrading = SpinnerItem(AccountType.TRADING, textTrading)
 
         clickViewText(SIMPLE_ACCOUNT_NAME)
-        onView(
-            allOf(
-                withId(android.R.id.list),
-                withTagValue(TransactionsListFragment.TAG)
-            )
-        ).perform(swipeRight())
+        clickViewText(R.string.section_header_subaccounts)
         clickViewId(R.id.fab_add)
 
         onView(withId(R.id.checkbox_parent_account))

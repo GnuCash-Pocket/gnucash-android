@@ -443,7 +443,10 @@ class TransactionsActivity : BaseDrawerActivity(),
                     }
                 } else {
                     if (tabLayout.tabCount < 2) {
-                        tabLayout.addTab(tabLayout.newTab())
+                        tabLayout.addTab(
+                            tabLayout.newTab()
+                                .setText(R.string.section_header_transactions)
+                        )
                     }
                 }
 
@@ -455,7 +458,10 @@ class TransactionsActivity : BaseDrawerActivity(),
                 }
             } else {
                 if (tabLayout.tabCount < 2) {
-                    tabLayout.addTab(tabLayout.newTab())
+                    tabLayout.addTab(
+                        tabLayout.newTab()
+                            .setText(R.string.section_header_transactions)
+                    )
                 }
                 binding.pager.currentItem = INDEX_TRANSACTIONS_FRAGMENT
             }

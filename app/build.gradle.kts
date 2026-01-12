@@ -1,33 +1,30 @@
+import org.gnucash.GitCommitValueSource
+import org.gradle.kotlin.dsl.support.uppercaseFirstChar
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.extraProperties
-import org.jetbrains.kotlin.konan.exec.Command
-import java.util.Locale
 
 plugins {
-    id("com.android.application")
-    kotlin("android")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
 
-    // Add the Firebase Crashlytics plugin.
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
-
-    id("spoon")
+    // Add the Firebase Crashlytics plugins.
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.crashlytics)
 }
 
 val versionMajor = 2
-val versionMinor = 6
+val versionMinor = 13
 val versionPatch = 0
 val versionBuild = 0
 
 val dropboxAppKey =
     (project.properties["RELEASE_DROPBOX_APP_KEY"] as String?) ?: "dhjh8ke9wf05948"
 
-fun gitSha(): String {
-    return Command("git", "rev-parse", "--short", "HEAD").getOutputLines()[0].trim()
-}
-
 android {
     namespace = "org.gnucash.android"
-    compileSdk = 36
+    compileSdk {
+        version = release(36)
+    }
 
     defaultConfig {
         applicationId = "org.gnucash.pocket"
@@ -77,12 +74,13 @@ android {
     buildTypes {
         //todo re-enable minify and test coverage
         debug {
-//            isTestCoverageEnabled = true
+            enableUnitTestCoverage = true
+            enableAndroidTestCoverage = true
             signingConfig = signingConfigs["debug"]
         }
         release {
 //            isMinifyEnabled = true
-            proguardFile(getDefaultProguardFile("proguard-android.txt"))
+            proguardFile(getDefaultProguardFile("proguard-android-optimize.txt"))
             proguardFile("proguard-rules.pro")
             signingConfig = signingConfigs["release"]
         }
@@ -96,11 +94,14 @@ android {
 
     productFlavors {
         create("development") {
+            val gitCommitProvider = providers.of(GitCommitValueSource::class.java) {}
+            val gitCommit = gitCommitProvider.get()
+
             dimension = "stability"
             isDefault = true
             applicationIdSuffix = ".devel"
             versionName =
-                "${versionMajor}.${versionMinor}.${versionPatch}.${versionBuild}-${gitSha()}"
+                "${versionMajor}.${versionMinor}.${versionPatch}.${versionBuild}-$gitCommit"
             resValue("string", "app_name", "GnuCash dev")
             resValue("string", "app_version_name", versionName.toString())
 
@@ -146,8 +147,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    kotlin {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_1_8
+        }
     }
 
     testOptions {
@@ -159,77 +162,61 @@ android {
 
 dependencies {
     // Jetpack
-    implementation("androidx.appcompat:appcompat:1.7.1")
-    implementation("com.google.android.material:material:1.13.0")
-    implementation("androidx.activity:activity-ktx:1.11.0")
-    implementation("androidx.cardview:cardview:1.0.0")
-    implementation("androidx.core:core-ktx:1.17.0")
-    implementation("androidx.preference:preference-ktx:1.2.1")
-    implementation("androidx.recyclerview:recyclerview:1.4.0")
-    implementation("androidx.work:work-runtime-ktx:2.10.5")
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.cardview)
+    implementation(libs.androidx.core)
+    implementation(libs.androidx.drawerlayout)
+    implementation(libs.androidx.preference)
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.work.runtime)
 
-    implementation("net.objecthunter:exp4j:0.4.8")
-    implementation("com.ezylang:EvalEx:3.5.0")
-    implementation("androidx.drawerlayout:drawerlayout:1.2.0")
-    implementation("com.google.android.flexbox:flexbox:3.0.0")
+    implementation(libs.evalex)
+    implementation(libs.exp4j)
+    implementation(libs.flexbox)
+    implementation(libs.material)
 
     // Logging
-    implementation("com.google.firebase:firebase-crashlytics:19.4.4")
-    implementation("com.jakewharton.timber:timber:5.0.1")
+    implementation(libs.crashlytics)
+    implementation(libs.timber)
 
-    implementation("com.github.nextcloud:android-library:2.22.1") {
+    implementation(libs.chart)
+    implementation(libs.joda.time)
+    implementation(libs.betterpickers)
+    implementation(libs.times.square)
+    implementation(libs.wizardpager)
+    implementation(libs.ratethisapp)
+    implementation(libs.okhttp)
+
+    // Export
+    implementation(libs.apache.http) { // for OwnCloudClient
+        exclude(group = "commons-logging", module = "commons-logging")
+    }
+    implementation(libs.dropbox)
+    implementation(libs.nextcloud) {
         // unused in Android and brings wrong Junit version
         exclude(group = "org.ogce", module = "xpp3")
     }
-    implementation("com.squareup:android-times-square:1.6.5")
-    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
-
-    implementation("joda-time:joda-time:2.14.0")
-    implementation("org.apache.jackrabbit:jackrabbit-webdav:2.13.3")
-    implementation("com.code-troopers.betterpickers:library:3.1.0")
-    implementation("com.github.techfreak:wizardpager:1.0.3")
-    implementation("com.dropbox.core:dropbox-android-sdk:7.0.0")
-    implementation("com.kobakei:ratethisapp:0.0.7")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-
-    // Export
-    implementation("com.opencsv:opencsv:5.9") {
+    implementation(libs.opencsv) {
         exclude(group = "commons-logging", module = "commons-logging")
     }
 
-    testImplementation("org.robolectric:robolectric:4.14.1")
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.assertj:assertj-core:3.27.4")
+    testImplementation(libs.robolectric)
+    testImplementation(libs.junit)
+    testImplementation(libs.assertj.core)
 
-    androidTestImplementation("androidx.test:runner:1.7.0")
-    androidTestImplementation("androidx.test.ext:junit:1.3.0")
-    androidTestImplementation("androidx.test:rules:1.7.0")
-
-    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
-
-    val androidEspressoVersion = "3.7.0"
-    androidTestImplementation("androidx.test.espresso:espresso-core:$androidEspressoVersion")
-    androidTestImplementation("androidx.test.espresso:espresso-intents:$androidEspressoVersion")
-    androidTestImplementation("androidx.test.espresso:espresso-contrib:$androidEspressoVersion")
-
-    androidTestImplementation("org.assertj:assertj-core:3.21.0")
-
-    androidTestImplementation("com.squareup.spoon:spoon-client:1.7.1")
+    androidTestImplementation(libs.bundles.android.test)
+    androidTestImplementation(libs.bundles.espresso)
+    androidTestImplementation(libs.assertj.core)
 
     // For older Java 1.8 devices.
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
 
 afterEvaluate {
-    spoon {
-        debug = true
-        grantAllPermissions = true
-        codeCoverage = true
-    }
-
     // Disable Google Services plugin for some flavors.
     android.productFlavors.forEach { flavor ->
-        val flavorName = flavor.name.capitalize(Locale.ROOT)
+        val flavorName = flavor.name.uppercaseFirstChar()
         tasks.matching { task ->
             task.name.contains("GoogleServices") && task.name.contains(flavorName)
         }.forEach { task ->
