@@ -638,6 +638,8 @@ class GncXmlHandler(
     }
 
     private fun handleEndBook(localName: String) {
+        val book = book
+        val displayName = book.displayName
         if (hasBookElement) {
             if (TAG_BOOK == localName) {
                 booksDbAdapter.replace(book)
@@ -649,6 +651,7 @@ class GncXmlHandler(
             listener?.onBook(book)
             importedBooks.add(book)
         }
+        book.displayName = displayName
     }
 
     private fun handleEndBudget() {
