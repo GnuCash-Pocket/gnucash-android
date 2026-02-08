@@ -307,7 +307,7 @@ class TransactionFormFragment : MenuFragment(),
             val balance = transactionsDbAdapter.getBalance(transactionUID, accountUID, true)
 
             val timestamp =
-                cursor.getLong(cursor.getColumnIndexOrThrow(TransactionEntry.COLUMN_TIMESTAMP))
+                cursor.getLong(cursor.getColumnIndexOrThrow(TransactionEntry.COLUMN_DATE_POSTED))
             val dateString = DateUtils.formatDateTime(
                 view.context,
                 timestamp,
@@ -348,7 +348,7 @@ class TransactionFormFragment : MenuFragment(),
             OnItemClickListener { adapterView, view, position, id ->
                 val transactionDb = transactionsDbAdapter.getRecord(id)
                 val transaction = transactionDb.copy()
-                transaction.time = System.currentTimeMillis()
+                transaction.datePosted = System.currentTimeMillis()
                 //we check here because next method will modify it and we want to catch user-modification
                 val amountEntered = binding.inputTransactionAmount.value
                 val amountModified = binding.inputTransactionAmount.isInputModified
@@ -401,9 +401,9 @@ class TransactionFormFragment : MenuFragment(),
         binding.currencySymbol.text = transaction.commodity.symbol
         binding.notes.setText(transaction.notes)
         binding.number.setText(transaction.number)
-        binding.inputDate.text = DATE_FORMATTER.print(transaction.time)
-        binding.inputTime.text = TIME_FORMATTER.print(transaction.time)
-        date = Calendar.getInstance().apply { timeInMillis = transaction.time }
+        binding.inputDate.text = DATE_FORMATTER.print(transaction.datePosted)
+        binding.inputTime.text = TIME_FORMATTER.print(transaction.datePosted)
+        date = Calendar.getInstance().apply { timeInMillis = transaction.datePosted }
 
         bindSplits(binding, account, transaction.splits)
 
@@ -470,7 +470,7 @@ class TransactionFormFragment : MenuFragment(),
 
         val balance = Transaction.computeBalance(account, splits, true)
         binding.inputTransactionAmount.value = balance.toBigDecimal()
-        binding.inputTransactionType.accountType = account.accountType
+        binding.inputTransactionType.accountType = account.type
         binding.inputTransactionType.setChecked(transactionType)
     }
 
@@ -507,7 +507,7 @@ class TransactionFormFragment : MenuFragment(),
         date = now
 
         val transactionType = getDefaultTransactionType(context)
-        binding.inputTransactionType.accountType = account.accountType
+        binding.inputTransactionType.accountType = account.type
         binding.inputTransactionType.setChecked(transactionType)
 
         val commodity = account.commodity
@@ -772,7 +772,7 @@ class TransactionFormFragment : MenuFragment(),
         val splits = extractSplitsFromView(binding, account)
 
         val transaction = Transaction(description).apply {
-            time = date.timeInMillis
+            datePosted = date.timeInMillis
             commodity = accountCommodity
             this.notes = notes
             this.number = number

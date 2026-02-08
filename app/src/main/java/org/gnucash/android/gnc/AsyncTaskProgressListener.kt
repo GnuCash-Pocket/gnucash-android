@@ -55,6 +55,7 @@ abstract class AsyncTaskProgressListener(context: Context) : DefaultProgressList
 
     override fun onAccountCount(count: Long) {
         totalAccounts = count
+        countAccounts = 0
         publishProgressDebounce(labelAccounts!!, countAccounts, totalAccounts)
     }
 
@@ -74,6 +75,7 @@ abstract class AsyncTaskProgressListener(context: Context) : DefaultProgressList
 
     override fun onBudgetCount(count: Long) {
         totalBudgets = count
+        countBudgets = 0
         publishProgressDebounce(labelBudgets!!, countBudgets, totalBudgets)
     }
 
@@ -84,6 +86,7 @@ abstract class AsyncTaskProgressListener(context: Context) : DefaultProgressList
 
     override fun onCommodityCount(count: Long) {
         totalCommodities = count
+        countCommodities = 0
         publishProgressDebounce(labelCommodities!!, countCommodities, totalCommodities)
     }
 
@@ -95,6 +98,7 @@ abstract class AsyncTaskProgressListener(context: Context) : DefaultProgressList
 
     override fun onPriceCount(count: Long) {
         totalPrices = count
+        countPrices = 0
         publishProgressDebounce(labelPrices!!, countPrices, totalPrices)
     }
 
@@ -105,6 +109,7 @@ abstract class AsyncTaskProgressListener(context: Context) : DefaultProgressList
 
     override fun onScheduleCount(count: Long) {
         totalScheduled = count
+        countScheduled = 0
         publishProgressDebounce(labelSchedules!!, countScheduled, totalScheduled)
     }
 
@@ -115,6 +120,7 @@ abstract class AsyncTaskProgressListener(context: Context) : DefaultProgressList
 
     override fun onTransactionCount(count: Long) {
         totalTransactions = count
+        countTransactions = 0
         publishProgressDebounce(
             labelTransactions!!,
             countTransactions,
@@ -124,7 +130,11 @@ abstract class AsyncTaskProgressListener(context: Context) : DefaultProgressList
 
     override fun onTransaction(transaction: Transaction) {
         if (transaction.isTemplate) return
-        Timber.v("%s: %s", labelTransactions, transaction)
+        onTransaction(transaction.toString())
+    }
+
+    override fun onTransaction(description: String) {
+        Timber.v("%s: %s", labelTransactions, description)
         publishProgressDebounce(
             labelTransactions!!,
             ++countTransactions,

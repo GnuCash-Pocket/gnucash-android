@@ -84,7 +84,7 @@ class PieChartReportTest : GnuAndroidTest() {
      */
     private fun addTransactionForCurrentMonth() {
         val transaction = Transaction(TRANSACTION_NAME)
-        transaction.time = System.currentTimeMillis() - DateUtils.HOUR_IN_MILLIS
+        transaction.datePosted = System.currentTimeMillis() - DateUtils.HOUR_IN_MILLIS
 
         val split = Split(
             Money(TRANSACTION_AMOUNT, commodity), DINING_EXPENSE_ACCOUNT_UID
@@ -104,7 +104,7 @@ class PieChartReportTest : GnuAndroidTest() {
      */
     private fun addTransactionForPreviousMonth(minusMonths: Int) {
         val transaction = Transaction(TRANSACTION2_NAME)
-        transaction.time = LocalDateTime.now().minusMonths(minusMonths).toDateTime().millis
+        transaction.datePosted = LocalDateTime.now().minusMonths(minusMonths).toDateTime().millis
 
         val split = Split(
             Money(TRANSACTION2_AMOUNT, commodity), BOOKS_EXPENSE_ACCOUNT_UID
@@ -155,7 +155,7 @@ class PieChartReportTest : GnuAndroidTest() {
             CASH_IN_WALLET_ASSET_ACCOUNT_UID
         )
         val transaction = Transaction(TRANSACTION3_NAME)
-        transaction.time = System.currentTimeMillis() - DateUtils.HOUR_IN_MILLIS;
+        transaction.datePosted = System.currentTimeMillis() - DateUtils.HOUR_IN_MILLIS;
         transaction.addSplit(split)
         transaction.addSplit(split.createPair(GIFTS_RECEIVED_INCOME_ACCOUNT_UID))
 

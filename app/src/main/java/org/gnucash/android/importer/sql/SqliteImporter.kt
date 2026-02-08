@@ -19,6 +19,7 @@ import org.gnucash.android.db.getDouble
 import org.gnucash.android.db.getInt
 import org.gnucash.android.db.getLong
 import org.gnucash.android.db.getString
+import org.gnucash.android.db.getTimestamp
 import org.gnucash.android.export.xml.GncXmlHelper.KEY_COLOR
 import org.gnucash.android.export.xml.GncXmlHelper.KEY_CREDIT_FORMULA
 import org.gnucash.android.export.xml.GncXmlHelper.KEY_CREDIT_NUMERIC
@@ -50,7 +51,6 @@ import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.model.WeekendAdjust
 import org.gnucash.android.util.FileUtils
-import org.gnucash.android.util.TimestampHelper
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
 import timber.log.Timber
@@ -60,10 +60,13 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.math.BigDecimal
-import java.sql.Timestamp
 import java.text.ParseException
 import java.util.UUID
 
+/**
+ * Export from SQLite3 database.
+ * https://wiki.gnucash.org/wiki/SQL
+ */
 class SqliteImporter(context: Context, inputStream: InputStream, listener: GncProgressListener?) :
     Importer(context, inputStream, listener) {
     private lateinit var holder: DatabaseHolder
@@ -154,6 +157,7 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
         book.setUID(guid)
         book.rootAccountUID = rootAccountUID
         book.rootTemplateUID = rootTemplateUID
+        book.displayName = booksDbAdapter.generateDefaultBookName()
 
         return book
     }
@@ -192,9 +196,7 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
         val accounts = mutableListOf<Account>()
 
         pipeAccounts(db, book.rootAccountUID, false, accounts)
-        book.rootTemplateUID?.let {
-            pipeAccounts(db, it, true, accounts)
-        }
+        pipeAccounts(db, book.rootTemplateUID, true, accounts)
 
         return accounts
     }
@@ -264,7 +266,7 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
 
         val account = Account(name, commodity)
         account.setUID(guid)
-        account.accountType = AccountType.valueOf(type)
+        account.type = AccountType.valueOf(type)
         account.parentUID = parentGuid
         account.code = code
         account.description = description
@@ -289,7 +291,7 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
 
                 KEY_FAVORITE -> account.isFavorite = slot.asString.toBoolean()
 
-                KEY_NOTES -> account.note = slot.asString
+                KEY_NOTES -> account.notes = slot.asString
             }
         }
 
@@ -624,7 +626,7 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
         val memo = cursor.getString("memo")!!
         //val action = cursor.getString("action")!!
         val reconcileState = cursor.getString("reconcile_state")!!
-        val reconcileDate = cursor.getString("reconcile_date")
+        val reconcileDate = cursor.getTimestamp("reconcile_date")
         val valueNum = cursor.getLong("value_num")
         val valueDenom = cursor.getLong("value_denom")
         val quantityNum = cursor.getLong("quantity_num")
@@ -640,9 +642,7 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
         split.setUID(guid)
         split.memo = memo
         split.reconcileState = reconcileState[0]
-        if (!reconcileDate.isNullOrEmpty()) {
-            split.reconcileDate = TimestampHelper.getTimestampFromUtcString(reconcileDate).getTime()
-        }
+        split.reconcileDate = reconcileDate?.time ?: 0L
 
         pipeSlots(db, split).forEach { slot ->
             when (slot.key) {
@@ -745,10 +745,8 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
         transaction.setUID(guid)
         transaction.number = num.orEmpty()
         transaction.commodity = commodity
-        postDate?.let { transaction.time = parseDateTime(it) }
-        enterDate?.let {
-            transaction.createdTimestamp = Timestamp(parseDateTime(it))
-        }
+        postDate?.let { transaction.datePosted = parseDateTime(it) }
+        enterDate?.let { transaction.dateEntered = parseDateTime(it) }
         transaction.isTemplate = commodity.isTemplate
         transaction.isExported = true
 

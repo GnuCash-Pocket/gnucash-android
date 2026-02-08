@@ -84,7 +84,7 @@ class TransactionRecorder : BroadcastReceiver() {
         }
 
         val transaction = Transaction(name)
-        transaction.time = System.currentTimeMillis()
+        transaction.datePosted = System.currentTimeMillis()
         transaction.notes = notes.orEmpty()
         transaction.commodity = commodity
 

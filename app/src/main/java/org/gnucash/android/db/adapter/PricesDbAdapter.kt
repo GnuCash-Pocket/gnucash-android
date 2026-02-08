@@ -4,33 +4,22 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteStatement
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseSchema.PriceEntry
-import org.gnucash.android.db.getLong
-import org.gnucash.android.db.getString
+import org.gnucash.android.db.bindTimestamp
+import org.gnucash.android.db.getTimestamp
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Price
-import org.gnucash.android.util.TimestampHelper.getTimestampFromUtcString
-import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
 import java.io.IOException
 import java.math.BigDecimal
 
 /**
  * Database adapter for prices
  */
-class PricesDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
-    DatabaseAdapter<Price>(
-        commoditiesDbAdapter.holder,
-        PriceEntry.TABLE_NAME,
-        arrayOf(
-            PriceEntry.COLUMN_COMMODITY_UID,
-            PriceEntry.COLUMN_CURRENCY_UID,
-            PriceEntry.COLUMN_DATE,
-            PriceEntry.COLUMN_SOURCE,
-            PriceEntry.COLUMN_TYPE,
-            PriceEntry.COLUMN_VALUE_NUM,
-            PriceEntry.COLUMN_VALUE_DENOM
-        ),
-        true
-    ) {
+class PricesDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) : DatabaseAdapter<Price>(
+    commoditiesDbAdapter.holder,
+    PriceEntry.TABLE_NAME,
+    entryColumns,
+    true
+) {
     private val cachePair = mutableMapOf<String, Price>()
     private var cachePairLoaded = false
 
@@ -43,33 +32,33 @@ class PricesDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
 
     override fun bind(stmt: SQLiteStatement, price: Price): SQLiteStatement {
         bindBaseModel(stmt, price)
-        stmt.bindString(1, price.commodityUID)
-        stmt.bindString(2, price.currencyUID)
-        stmt.bindString(3, getUtcStringFromTimestamp(price.date))
+        stmt.bindString(1 + INDEX_COLUMN_COMMODITY_UID, price.commodityUID)
+        stmt.bindString(1 + INDEX_COLUMN_CURRENCY_UID, price.currencyUID)
+        stmt.bindTimestamp(1 + INDEX_COLUMN_DATE, price.date)
         if (price.source != null) {
-            stmt.bindString(4, price.source)
+            stmt.bindString(1 + INDEX_COLUMN_SOURCE, price.source)
         }
-        stmt.bindString(5, price.type.value)
-        stmt.bindLong(6, price.valueNum)
-        stmt.bindLong(7, price.valueDenom)
+        stmt.bindString(1 + INDEX_COLUMN_TYPE, price.type.value)
+        stmt.bindLong(1 + INDEX_COLUMN_VALUE_NUM, price.valueNum)
+        stmt.bindLong(1 + INDEX_COLUMN_VALUE_DENOM, price.valueDenom)
 
         return stmt
     }
 
     override fun buildModelInstance(cursor: Cursor): Price {
-        val commodityUID = cursor.getString(PriceEntry.COLUMN_COMMODITY_UID)!!
-        val currencyUID = cursor.getString(PriceEntry.COLUMN_CURRENCY_UID)!!
-        val dateString = cursor.getString(PriceEntry.COLUMN_DATE)!!
-        val source = cursor.getString(PriceEntry.COLUMN_SOURCE)
-        val type = cursor.getString(PriceEntry.COLUMN_TYPE)
-        val valueNum = cursor.getLong(PriceEntry.COLUMN_VALUE_NUM)
-        val valueDenom = cursor.getLong(PriceEntry.COLUMN_VALUE_DENOM)
+        val commodityUID = cursor.getString(INDEX_COLUMN_COMMODITY_UID)!!
+        val currencyUID = cursor.getString(INDEX_COLUMN_CURRENCY_UID)!!
+        val dateString = cursor.getTimestamp(INDEX_COLUMN_DATE)!!
+        val source = cursor.getString(INDEX_COLUMN_SOURCE)
+        val type = cursor.getString(INDEX_COLUMN_TYPE)
+        val valueNum = cursor.getLong(INDEX_COLUMN_VALUE_NUM)
+        val valueDenom = cursor.getLong(INDEX_COLUMN_VALUE_DENOM)
 
         val commodity1 = commoditiesDbAdapter.getRecord(commodityUID)
         val commodity2 = commoditiesDbAdapter.getRecord(currencyUID)
         val price = Price(commodity1, commodity2)
         populateBaseModelAttributes(cursor, price)
-        price.date = getTimestampFromUtcString(dateString).getTime()
+        price.date = dateString.time
         price.source = source
         price.type = Price.Type.of(type)
         price.valueNum = valueNum
@@ -147,13 +136,13 @@ class PricesDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
         }
 
         // the commodity and currency can be swapped
-        val where = ("(" + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " +
+        val where = "(" + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " +
                 PriceEntry.COLUMN_CURRENCY_UID + " = ?)" +
                 " OR (" + PriceEntry.COLUMN_COMMODITY_UID + " = ? AND " +
-                PriceEntry.COLUMN_CURRENCY_UID + " = ?)")
+                PriceEntry.COLUMN_CURRENCY_UID + " = ?)"
         val whereArgs = arrayOf<String?>(commodityUID, currencyUID, currencyUID, commodityUID)
         val orderBy = PriceEntry.COLUMN_DATE + " DESC"
-        val cursor = db.query(tableName, null, where, whereArgs, null, null, orderBy, "1")
+        val cursor = db.query(tableName, allColumns, where, whereArgs, null, null, orderBy, "1")
         // only get the latest price
         try {
             if (cursor.moveToFirst()) {
@@ -216,6 +205,23 @@ class PricesDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
     }
 
     companion object {
+        private val entryColumns = arrayOf(
+            PriceEntry.COLUMN_COMMODITY_UID,
+            PriceEntry.COLUMN_CURRENCY_UID,
+            PriceEntry.COLUMN_DATE,
+            PriceEntry.COLUMN_SOURCE,
+            PriceEntry.COLUMN_TYPE,
+            PriceEntry.COLUMN_VALUE_NUM,
+            PriceEntry.COLUMN_VALUE_DENOM
+        )
+        private const val INDEX_COLUMN_COMMODITY_UID = 0
+        private const val INDEX_COLUMN_CURRENCY_UID = INDEX_COLUMN_COMMODITY_UID + 1
+        private const val INDEX_COLUMN_DATE = INDEX_COLUMN_CURRENCY_UID + 1
+        private const val INDEX_COLUMN_SOURCE = INDEX_COLUMN_DATE + 1
+        private const val INDEX_COLUMN_TYPE = INDEX_COLUMN_SOURCE + 1
+        private const val INDEX_COLUMN_VALUE_NUM = INDEX_COLUMN_TYPE + 1
+        private const val INDEX_COLUMN_VALUE_DENOM = INDEX_COLUMN_VALUE_NUM + 1
+
         val instance: PricesDbAdapter get() = GnuCashApplication.pricesDbAdapter!!
     }
 }

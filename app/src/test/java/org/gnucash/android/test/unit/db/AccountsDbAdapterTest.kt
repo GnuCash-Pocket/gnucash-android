@@ -118,7 +118,7 @@ class AccountsDbAdapterTest : GnuCashTest() {
         val accounts = accountsDbAdapter.simpleAccounts
         assertThat(accounts).hasSize(3)
         val root = accounts[0]
-        val rootType = root.accountType
+        val rootType = root.type
         assertThat(rootType).isEqualTo(AccountType.ROOT)
         assertThat(accounts).contains(alpha, Index.atIndex(1))
         assertThat(accounts).contains(bravo, Index.atIndex(2))
@@ -128,16 +128,15 @@ class AccountsDbAdapterTest : GnuCashTest() {
     fun bulkAddAccountsShouldNotModifyTransactions() {
         val account1 = Account("AlphaAccount")
         val account2 = Account("BetaAccount")
+
+        val accounts = listOf(account1, account2)
+        accountsDbAdapter.bulkAddRecords(accounts)
+
         val transaction = Transaction("MyTransaction")
         val split = Split(createZeroInstance(account1.commodity), account1)
         transaction.addSplit(split)
         transaction.addSplit(split.createPair(account2))
-        account1.addTransaction(transaction)
-        account2.addTransaction(transaction)
-
-        val accounts = listOf(account1, account2)
-
-        accountsDbAdapter.bulkAddRecords(accounts)
+        transactionsDbAdapter.insert(transaction)
 
         assertThat(
             splitsDbAdapter.getSplitsForTransactionInAccount(transaction.uid, account1.uid)
@@ -146,9 +145,10 @@ class AccountsDbAdapterTest : GnuCashTest() {
             splitsDbAdapter.getSplitsForTransactionInAccount(transaction.uid, account2.uid)
         ).hasSize(1)
 
-        val account = accountsDbAdapter.getFullRecord(account1.uid)
+        val account = accountsDbAdapter.getRecord(account1.uid)
         assertThat(account).isNotNull()
-        assertThat(account!!.transactions).hasSize(1)
+
+        assertThat(transactionsDbAdapter.getTransactionsForAccount(account)).hasSize(1)
     }
 
     @Test
@@ -159,17 +159,14 @@ class AccountsDbAdapterTest : GnuCashTest() {
         val split = Split(createZeroInstance(account1.commodity), account1)
         transaction.addSplit(split)
         transaction.addSplit(split.createPair(account2))
-        account1.addTransaction(transaction)
-        account2.addTransaction(transaction)
 
         // Disable foreign key validation because the second split,
         // which is added during 1st account,
         // references the second account which has not been added yet.
-        accountsDbAdapter.enableForeignKey(false)
         accountsDbAdapter.addRecord(account1)
         accountsDbAdapter.addRecord(account2)
-        accountsDbAdapter.enableForeignKey(true)
         assertThat(accountsDbAdapter.recordsCount).isEqualTo(3) //root+account1+account2
+        transactionsDbAdapter.addRecord(transaction)
 
         val firstAccount = accountsDbAdapter.getRecord(account1.uid)
         assertThat(firstAccount).isNotNull()
@@ -220,7 +217,8 @@ class AccountsDbAdapterTest : GnuCashTest() {
         assertThat(accountsDbAdapter.recordsCount).isEqualTo(2L)
 
         val accounts = accountsDbAdapter.simpleAccounts
-        assertThat(accounts).extracting("accountType", AccountType::class.java)
+        assertThat(accounts)
+            .extracting("type", AccountType::class.java)
             .contains(AccountType.ROOT)
 
         val rootAccountUID = accountsDbAdapter.rootAccountUID
@@ -258,9 +256,9 @@ class AccountsDbAdapterTest : GnuCashTest() {
         transaction.addSplit(split)
         val account1 = Account("Transfer account")
         transaction.addSplit(split.createPair(account1))
-        account1.addTransaction(transaction)
 
         accountsDbAdapter.addRecord(account1)
+        transactionsDbAdapter.addRecord(transaction)
 
         assertThat(transactionsDbAdapter.recordsCount).isOne()
         assertThat(splitsDbAdapter.recordsCount).isEqualTo(2)
@@ -305,27 +303,9 @@ class AccountsDbAdapterTest : GnuCashTest() {
     }
 
     @Test
-    fun simpleAccountListShouldNotContainTransactions() {
-        val account = Account("Test")
-        val transaction = Transaction("Test description")
-        val split = Split(createZeroInstance(account.commodity), account)
-        transaction.addSplit(split)
-        val account1 = Account("Transfer")
-        transaction.addSplit(split.createPair(account1))
-
-        accountsDbAdapter.addRecord(account)
-        accountsDbAdapter.addRecord(account1)
-
-        val accounts = accountsDbAdapter.simpleAccounts
-        for (testAcct in accounts) {
-            assertThat(testAcct.transactions).isEmpty()
-        }
-    }
-
-    @Test
     fun shouldComputeAccountBalanceCorrectly() {
         val account = Account("Test", Commodity.USD)
-        account.accountType = AccountType.ASSET //debit normal account balance
+        account.type = AccountType.ASSET //debit normal account balance
         val transferAcct = Account("Transfer")
 
         accountsDbAdapter.addRecord(account)
@@ -378,13 +358,13 @@ class AccountsDbAdapterTest : GnuCashTest() {
         assertThat(accounts).hasSize(3)
         assertThat(accounts[0].name).isEqualTo("Assets")
         assertThat(accounts[0].fullName).isEqualTo("Assets")
-        assertThat(accounts[0].accountType).isEqualTo(AccountType.ASSET)
+        assertThat(accounts[0].type).isEqualTo(AccountType.ASSET)
         assertThat(accounts[1].name).isEqualTo("Current Assets")
         assertThat(accounts[1].fullName).isEqualTo("Assets:Current Assets")
-        assertThat(accounts[1].accountType).isEqualTo(AccountType.ASSET)
+        assertThat(accounts[1].type).isEqualTo(AccountType.ASSET)
         assertThat(accounts[2].name).isEqualTo("Cash in Wallet")
         assertThat(accounts[2].fullName).isEqualTo("Assets:Current Assets:Cash in Wallet")
-        assertThat(accounts[2].accountType).isEqualTo(AccountType.ASSET)
+        assertThat(accounts[2].type).isEqualTo(AccountType.ASSET)
     }
 
     @Test
@@ -392,16 +372,15 @@ class AccountsDbAdapterTest : GnuCashTest() {
         val account = Account("Parent")
         val account2 = Account("Child")
         account2.parentUID = account.uid
+        accountsDbAdapter.addRecord(account)
+        accountsDbAdapter.addRecord(account2)
 
         val transaction = Transaction("Random")
-        account2.addTransaction(transaction)
 
         val split = Split(createZeroInstance(account.commodity), account)
         transaction.addSplit(split)
         transaction.addSplit(split.createPair(account2))
-
-        accountsDbAdapter.addRecord(account)
-        accountsDbAdapter.addRecord(account2)
+        transactionsDbAdapter.addRecord(transaction)
 
         assertThat(accountsDbAdapter.recordsCount).isEqualTo(3)
         assertThat(transactionsDbAdapter.recordsCount).isOne()
@@ -480,18 +459,14 @@ class AccountsDbAdapterTest : GnuCashTest() {
         val transactions = transactionsDbAdapter.allRecords
         assertThat(transactions).hasSize(1)
 
-        assertThat(
-            transactionsDbAdapter.getScheduledTransactionsForAccount(account.uid)
-        ).hasSize(1)
+        assertThat(transactionsDbAdapter.getTransactionsForAccount(account)).hasSize(1)
 
         //edit the account
         account.name = "Edited account"
         accountsDbAdapter.update(account)
 
-        assertThat(
-            transactionsDbAdapter.getScheduledTransactionsForAccount(account.uid)
-        ).hasSize(1)
-        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction.uid)).hasSize(2)
+        assertThat(transactionsDbAdapter.getTransactionsForAccount(account)).hasSize(1)
+        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction)).hasSize(2)
     }
 
     @Test

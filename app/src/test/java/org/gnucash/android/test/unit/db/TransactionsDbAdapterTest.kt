@@ -63,13 +63,13 @@ class TransactionsDbAdapterTest : GnuCashTest() {
     @Test
     fun testTransactionsAreTimeSorted() {
         val t1 = Transaction("T800")
-        t1.time = System.currentTimeMillis() - 10000
+        t1.datePosted = System.currentTimeMillis() - 10000
         val split = Split(createZeroInstance(alphaAccount.commodity), alphaAccount)
         t1.addSplit(split)
         t1.addSplit(split.createPair(bravoAccount))
 
         val t2 = Transaction("T1000")
-        t2.time = System.currentTimeMillis()
+        t2.datePosted = System.currentTimeMillis()
         val split2 = Split(Money("23.50", bravoAccount.commodity), bravoAccount)
         t2.addSplit(split2)
         t2.addSplit(split2.createPair(alphaAccount))
@@ -77,9 +77,7 @@ class TransactionsDbAdapterTest : GnuCashTest() {
         transactionsDbAdapter.addRecord(t1)
         transactionsDbAdapter.addRecord(t2)
 
-        val transactionsList = transactionsDbAdapter.getAllTransactionsForAccount(
-            alphaAccount.uid
-        )
+        val transactionsList = transactionsDbAdapter.getTransactionsForAccount(alphaAccount)
         assertThat(transactionsList).contains(t2, Index.atIndex(0))
         assertThat(transactionsList).contains(t1, Index.atIndex(1))
     }
@@ -91,10 +89,10 @@ class TransactionsDbAdapterTest : GnuCashTest() {
         transaction.addSplit(split)
         transactionsDbAdapter.addRecord(transaction)
 
-        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction.uid)).hasSize(1)
+        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction)).hasSize(1)
 
         transactionsDbAdapter.deleteRecord(transaction.uid)
-        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction.uid)).isEmpty()
+        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction)).isEmpty()
     }
 
     @Test

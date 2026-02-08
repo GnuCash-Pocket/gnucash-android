@@ -18,16 +18,17 @@ package org.gnucash.android.db.adapter
 
 import android.content.ContentValues
 import android.database.Cursor
-import android.database.sqlite.SQLiteQueryBuilder
 import android.database.sqlite.SQLiteStatement
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.DatabaseSchema.SplitEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
+import org.gnucash.android.db.bindTimestamp
 import org.gnucash.android.db.forEach
 import org.gnucash.android.db.getLong
 import org.gnucash.android.db.getString
+import org.gnucash.android.db.getTimestamp
 import org.gnucash.android.db.joinIn
 import org.gnucash.android.math.toBigDecimal
 import org.gnucash.android.model.Account
@@ -36,9 +37,8 @@ import org.gnucash.android.model.Money
 import org.gnucash.android.model.Money.Companion.createZeroInstance
 import org.gnucash.android.model.Split
 import org.gnucash.android.model.Split.Companion.FLAG_NOT_RECONCILED
+import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
-import org.gnucash.android.util.TimestampHelper.getTimestampFromUtcString
-import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
 import org.gnucash.android.util.TimestampHelper.timestampFromNow
 import org.gnucash.android.util.set
 import timber.log.Timber
@@ -56,20 +56,7 @@ class SplitsDbAdapter(
 ) : DatabaseAdapter<Split>(
     commoditiesDbAdapter.holder,
     SplitEntry.TABLE_NAME,
-    arrayOf(
-        SplitEntry.COLUMN_MEMO,
-        SplitEntry.COLUMN_TYPE,
-        SplitEntry.COLUMN_VALUE_NUM,
-        SplitEntry.COLUMN_VALUE_DENOM,
-        SplitEntry.COLUMN_QUANTITY_NUM,
-        SplitEntry.COLUMN_QUANTITY_DENOM,
-        SplitEntry.COLUMN_CREATED_AT,
-        SplitEntry.COLUMN_RECONCILE_STATE,
-        SplitEntry.COLUMN_RECONCILE_DATE,
-        SplitEntry.COLUMN_ACCOUNT_UID,
-        SplitEntry.COLUMN_TRANSACTION_UID,
-        SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID
-    )
+    entryColumns
 ) {
     private val accountCommodities = mutableMapOf<String, Commodity>()
 
@@ -97,8 +84,7 @@ class SplitsDbAdapter(
             val transactionUID = split.transactionUID!!
             val content = ContentValues()
             content[TransactionEntry.COLUMN_EXPORTED] = false
-            content[TransactionEntry.COLUMN_MODIFIED_AT] =
-                getUtcStringFromTimestamp(timestampFromNow)
+            content[TransactionEntry.COLUMN_MODIFIED_AT] = timestampFromNow
             updateRecord(TransactionEntry.TABLE_NAME, transactionUID, content)
         }
 
@@ -107,21 +93,21 @@ class SplitsDbAdapter(
 
     override fun bind(stmt: SQLiteStatement, split: Split): SQLiteStatement {
         bindBaseModel(stmt, split)
-        if (split.memo != null) {
-            stmt.bindString(1, split.memo)
-        }
-        stmt.bindString(2, split.type.value)
-        stmt.bindLong(3, split.value.numerator)
-        stmt.bindLong(4, split.value.denominator)
-        stmt.bindLong(5, split.quantity.numerator)
-        stmt.bindLong(6, split.quantity.denominator)
-        stmt.bindString(7, getUtcStringFromTimestamp(split.createdTimestamp))
-        stmt.bindString(8, split.reconcileState.toString())
-        stmt.bindString(9, getUtcStringFromTimestamp(split.reconcileDate))
-        stmt.bindString(10, split.accountUID)
-        stmt.bindString(11, split.transactionUID)
+        stmt.bindString(1 + INDEX_COLUMN_MEMO, split.memo)
+        stmt.bindString(1 + INDEX_COLUMN_TYPE, split.type.value)
+        stmt.bindLong(1 + INDEX_COLUMN_VALUE_NUM, split.value.numerator)
+        stmt.bindLong(1 + INDEX_COLUMN_VALUE_DENOM, split.value.denominator)
+        stmt.bindLong(1 + INDEX_COLUMN_QUANTITY_NUM, split.quantity.numerator)
+        stmt.bindLong(1 + INDEX_COLUMN_QUANTITY_DENOM, split.quantity.denominator)
+        stmt.bindString(1 + INDEX_COLUMN_RECONCILE_STATE, split.reconcileState.toString())
+        stmt.bindTimestamp(1 + INDEX_COLUMN_RECONCILE_DATE, split.reconcileDate)
+        stmt.bindString(1 + INDEX_COLUMN_ACCOUNT_UID, split.accountUID)
+        stmt.bindString(1 + INDEX_COLUMN_TRANSACTION_UID, split.transactionUID)
         if (split.scheduledActionAccountUID != null) {
-            stmt.bindString(12, split.scheduledActionAccountUID)
+            stmt.bindString(
+                1 + INDEX_COLUMN_SCHEDX_ACTION_ACCOUNT_UID,
+                split.scheduledActionAccountUID
+            )
         }
 
         return stmt
@@ -136,25 +122,25 @@ class SplitsDbAdapter(
      * @return [Split] instance
      */
     override fun buildModelInstance(cursor: Cursor): Split {
-        val valueNum = cursor.getLong(SplitEntry.COLUMN_VALUE_NUM)
-        val valueDenom = cursor.getLong(SplitEntry.COLUMN_VALUE_DENOM)
-        val quantityNum = cursor.getLong(SplitEntry.COLUMN_QUANTITY_NUM)
-        val quantityDenom = cursor.getLong(SplitEntry.COLUMN_QUANTITY_DENOM)
-        val typeName = cursor.getString(SplitEntry.COLUMN_TYPE)!!
-        val accountUID = cursor.getString(SplitEntry.COLUMN_ACCOUNT_UID)!!
-        val transxUID = cursor.getString(SplitEntry.COLUMN_TRANSACTION_UID)!!
-        val memo = cursor.getString(SplitEntry.COLUMN_MEMO)
-        val reconcileState = cursor.getString(SplitEntry.COLUMN_RECONCILE_STATE)
-        val reconcileDate = cursor.getString(SplitEntry.COLUMN_RECONCILE_DATE)
-        val schedxAccountUID = cursor.getString(SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID)
+        val valueNum = cursor.getLong(INDEX_COLUMN_VALUE_NUM)
+        val valueDenom = cursor.getLong(INDEX_COLUMN_VALUE_DENOM)
+        val quantityNum = cursor.getLong(INDEX_COLUMN_QUANTITY_NUM)
+        val quantityDenom = cursor.getLong(INDEX_COLUMN_QUANTITY_DENOM)
+        val typeName = cursor.getString(INDEX_COLUMN_TYPE)!!
+        val accountUID = cursor.getString(INDEX_COLUMN_ACCOUNT_UID)!!
+        val transxUID = cursor.getString(INDEX_COLUMN_TRANSACTION_UID)!!
+        val memo = cursor.getString(INDEX_COLUMN_MEMO).orEmpty()
+        val reconcileState = cursor.getString(INDEX_COLUMN_RECONCILE_STATE)
+        val reconcileDate = cursor.getTimestamp(INDEX_COLUMN_RECONCILE_DATE)
+        val schedxAccountUID = cursor.getString(INDEX_COLUMN_SCHEDX_ACTION_ACCOUNT_UID)
 
         val transactionCurrencyUID = getAttribute(
             TransactionEntry.TABLE_NAME,
             transxUID,
             TransactionEntry.COLUMN_COMMODITY_UID
         )
-        val transactionCurrency = commoditiesDbAdapter.getRecord(transactionCurrencyUID)
-        val value = Money(valueNum, valueDenom, transactionCurrency)
+        val currency = commoditiesDbAdapter.getRecord(transactionCurrencyUID)
+        val value = Money(valueNum, valueDenom, currency)
         val commodity = if (schedxAccountUID.isNullOrEmpty()) {
             getAccountCommodity(accountUID)
         } else {
@@ -167,11 +153,9 @@ class SplitsDbAdapter(
         split.quantity = quantity
         split.transactionUID = transxUID
         split.type = TransactionType.of(typeName)
-        split.memo = memo.orEmpty()
+        split.memo = memo
         split.reconcileState = reconcileState?.get(0) ?: FLAG_NOT_RECONCILED
-        if (!reconcileDate.isNullOrEmpty()) {
-            split.reconcileDate = getTimestampFromUtcString(reconcileDate).getTime()
-        }
+        split.reconcileDate = reconcileDate?.time ?: 0L
         split.scheduledActionAccountUID = schedxAccountUID
 
         return split
@@ -201,8 +185,8 @@ class SplitsDbAdapter(
         startTimestamp: Long,
         endTimestamp: Long
     ): Map<String, Money> {
-        var selection = ("t." + TransactionEntry.COLUMN_TEMPLATE + " = 0"
-                + " AND s." + SplitEntry.COLUMN_QUANTITY_DENOM + " > 0")
+        var selection = "t." + TransactionEntry.COLUMN_TEMPLATE + " = 0" +
+                " AND s." + SplitEntry.COLUMN_QUANTITY_DENOM + " > 0"
 
         if (!accountsWhere.isNullOrEmpty()) {
             selection += " AND ($accountsWhere)"
@@ -211,11 +195,11 @@ class SplitsDbAdapter(
         val validStart = startTimestamp != AccountsDbAdapter.ALWAYS
         val validEnd = endTimestamp != AccountsDbAdapter.ALWAYS
         if (validStart && validEnd) {
-            selection += " AND t." + TransactionEntry.COLUMN_TIMESTAMP + " BETWEEN " + startTimestamp + " AND " + endTimestamp
+            selection += " AND t." + TransactionEntry.COLUMN_DATE_POSTED + " BETWEEN " + startTimestamp + " AND " + endTimestamp
         } else if (validEnd) {
-            selection += " AND t." + TransactionEntry.COLUMN_TIMESTAMP + " <= " + endTimestamp
+            selection += " AND t." + TransactionEntry.COLUMN_DATE_POSTED + " <= " + endTimestamp
         } else if (validStart) {
-            selection += " AND t." + TransactionEntry.COLUMN_TIMESTAMP + " >= " + startTimestamp
+            selection += " AND t." + TransactionEntry.COLUMN_DATE_POSTED + " >= " + startTimestamp
         }
 
         val sql = ("SELECT SUM(s." + SplitEntry.COLUMN_QUANTITY_NUM + ")"
@@ -233,16 +217,16 @@ class SplitsDbAdapter(
         val totals = mutableMapOf<String, Money>()
         db.rawQuery(sql, accountsWhereArgs).forEach { cursor ->
             //FIXME beware of 64-bit overflow - get as BigInteger
-            var amount_num = cursor.getLong(0)
-            val amount_denom = cursor.getLong(1)
+            var amountNum = cursor.getLong(0)
+            val amountDenom = cursor.getLong(1)
             val splitType = cursor.getString(2)
             val accountUID = cursor.getString(3)
             val commodityUID = cursor.getString(4)
 
             if (credit == splitType) {
-                amount_num = -amount_num
+                amountNum = -amountNum
             }
-            val amount = toBigDecimal(amount_num, amount_denom)
+            val amount = toBigDecimal(amountNum, amountDenom)
             val commodity = commoditiesDbAdapter.getRecord(commodityUID)
             val balance = Money(amount, commodity)
             var total = totals[accountUID]
@@ -270,13 +254,13 @@ class SplitsDbAdapter(
     /**
      * Returns the list of splits for a transaction
      *
-     * @param transactionID DB record ID of the transaction
+     * @param transaction record of the transaction
      * @return List of [Split]s
      * @see .getSplitsForTransaction
      * @see .getTransactionUID
      */
-    fun getSplitsForTransaction(transactionID: Long): List<Split> {
-        return getSplitsForTransaction(getTransactionUID(transactionID))
+    fun getSplitsForTransaction(transaction: Transaction): List<Split> {
+        return getSplitsForTransaction(transaction.uid)
     }
 
     /**
@@ -295,29 +279,17 @@ class SplitsDbAdapter(
     }
 
     /**
-     * Fetches a collection of splits for a given condition and sorted by `sortOrder`
-     *
-     * @param where     String condition, formatted as SQL WHERE clause
-     * @param whereArgs where args
-     * @param sortOrder Sort order for the returned records
-     * @return Cursor to split records
-     */
-    fun fetchSplits(where: String?, whereArgs: Array<String?>?, sortOrder: String?): Cursor? {
-        return db.query(tableName, null, where, whereArgs, null, null, sortOrder)
-    }
-
-    /**
      * Returns a Cursor to a dataset of splits belonging to a specific transaction
      *
-     * @param transactionUID Unique idendtifier of the transaction
+     * @param transactionUID Unique identifier of the transaction
      * @return Cursor to splits
      */
-    fun fetchSplitsForTransaction(transactionUID: String): Cursor? {
+    fun fetchSplitsForTransaction(transactionUID: String): Cursor {
         Timber.v("Fetching all splits for transaction UID %s", transactionUID)
         val where = SplitEntry.COLUMN_TRANSACTION_UID + " = ?"
         val whereArgs = arrayOf<String?>(transactionUID)
         val orderBy = SplitEntry.COLUMN_ID + " ASC"
-        return db.query(tableName, null, where, whereArgs, null, null, orderBy)
+        return db.query(tableName, allColumns, where, whereArgs, null, null, orderBy)
     }
 
     /**
@@ -326,41 +298,28 @@ class SplitsDbAdapter(
      * @param accountUID String unique ID of account
      * @return Cursor containing splits dataset
      */
-    fun fetchSplitsForAccount(accountUID: String): Cursor? {
+    fun fetchSplitsForAccount(accountUID: String): Cursor {
         Timber.d("Fetching all splits for account UID %s", accountUID)
 
         //This is more complicated than a simple "where account_uid=?" query because
         // we need to *not* return any splits which belong to recurring transactions
-        val queryBuilder = SQLiteQueryBuilder()
-        queryBuilder.setTables(
-            (TransactionEntry.TABLE_NAME
-                    + " INNER JOIN " + SplitEntry.TABLE_NAME + " ON "
-                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " = "
-                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID)
-        )
-        queryBuilder.isDistinct = true
-        val projectionIn = arrayOf<String?>(SplitEntry.TABLE_NAME + ".*")
-        val selection = (SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
-                + " AND " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + " = 0")
-        val selectionArgs = arrayOf<String?>(accountUID)
-        val sortOrder =
-            TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " DESC"
+        val table = TransactionEntry.TABLE_NAME + " t" +
+                " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON " +
+                "t." + TransactionEntry.COLUMN_UID + " = " +
+                "s." + SplitEntry.COLUMN_TRANSACTION_UID
+        val projectionIn = allColumnsPrefix("s.")
+        val where = "s." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?" +
+                " AND t." + TransactionEntry.COLUMN_TEMPLATE + " = 0"
+        val whereArgs = arrayOf<String?>(accountUID)
+        val sortOrder = "t." + TransactionEntry.COLUMN_DATE_POSTED + " DESC"
 
-        return queryBuilder.query(
-            db,
-            projectionIn,
-            selection,
-            selectionArgs,
-            null,
-            null,
-            sortOrder
-        )
+        return db.query(true, table, projectionIn, where, whereArgs, null, null, sortOrder, null)
     }
 
     /**
      * Returns a cursor to splits for a given transaction and account
      *
-     * @param transactionUID Unique idendtifier of the transaction
+     * @param transactionUID Unique identifier of the transaction
      * @param accountUID     String unique ID of account
      * @return Cursor to splits data set
      */
@@ -371,13 +330,11 @@ class SplitsDbAdapter(
             "Fetching all splits for transaction ID %s and account ID %s",
             transactionUID, accountUID
         )
-        return db.query(
-            tableName,
-            null, (SplitEntry.COLUMN_TRANSACTION_UID + " = ? AND "
-                    + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"),
-            arrayOf<String?>(transactionUID, accountUID),
-            null, null, SplitEntry.COLUMN_VALUE_NUM + " ASC"
-        )
+        val where =
+            SplitEntry.COLUMN_TRANSACTION_UID + " = ? AND " + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
+        val whereArgs = arrayOf<String?>(transactionUID, accountUID)
+        val orderBy = SplitEntry.COLUMN_VALUE_NUM + " ASC"
+        return db.query(tableName, allColumns, where, whereArgs, null, null, orderBy)
     }
 
     /**
@@ -415,8 +372,9 @@ class SplitsDbAdapter(
 
         //if we just deleted the last split, then remove the transaction from db
         if (!transactionUID.isNullOrEmpty()) {
-            val cursor = fetchSplitsForTransaction(transactionUID) ?: return false
+            val cursor = fetchSplitsForTransaction(transactionUID)
             try {
+                cursor.moveToFirst()
                 if (cursor.count > 0) {
                     val transactionID = getTransactionID(transactionUID)
                     result = db.delete(
@@ -497,7 +455,70 @@ class SplitsDbAdapter(
         }
     }
 
+    fun getSplitForTransaction(transaction: Transaction, cursor: Cursor, columnOffset: Int): Split {
+        val valueNum = cursor.getLong(SplitEntry.COLUMN_VALUE_NUM, columnOffset)
+        val valueDenom = cursor.getLong(SplitEntry.COLUMN_VALUE_DENOM, columnOffset)
+        val quantityNum = cursor.getLong(SplitEntry.COLUMN_QUANTITY_NUM, columnOffset)
+        val quantityDenom = cursor.getLong(SplitEntry.COLUMN_QUANTITY_DENOM, columnOffset)
+        val typeName = cursor.getString(SplitEntry.COLUMN_TYPE, columnOffset)!!
+        val accountUID = cursor.getString(SplitEntry.COLUMN_ACCOUNT_UID, columnOffset)!!
+        val transxUID = cursor.getString(SplitEntry.COLUMN_TRANSACTION_UID, columnOffset)!!
+        val memo = cursor.getString(SplitEntry.COLUMN_MEMO, columnOffset)
+        val reconcileState = cursor.getString(SplitEntry.COLUMN_RECONCILE_STATE, columnOffset)
+        val reconcileDate = cursor.getTimestamp(SplitEntry.COLUMN_RECONCILE_DATE, columnOffset)
+        val actionAccountUID =
+            cursor.getString(SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID, columnOffset)
+        val accountCommodityUID =
+            cursor.getString(AccountEntry.COLUMN_COMMODITY_UID, columnOffset)!!
+
+        val transactionCurrency = transaction.commodity
+        val value = Money(valueNum, valueDenom, transactionCurrency)
+        val commodity = if (actionAccountUID.isNullOrEmpty()) {
+            commoditiesDbAdapter.getRecord(accountCommodityUID)
+        } else {
+            getAccountCommodity(actionAccountUID)
+        }
+        val quantity = Money(quantityNum, quantityDenom, commodity)
+
+        val split = Split(value, accountUID)
+        populateBaseModelAttributes(cursor, split, columnOffset)
+        split.quantity = quantity
+        split.transactionUID = transxUID
+        split.type = TransactionType.of(typeName)
+        split.memo = memo.orEmpty()
+        split.reconcileState = reconcileState?.get(0) ?: FLAG_NOT_RECONCILED
+        split.reconcileDate = reconcileDate?.time ?: 0L
+        split.scheduledActionAccountUID = actionAccountUID
+
+        return split
+    }
+
     companion object {
+        private val entryColumns = arrayOf(
+            SplitEntry.COLUMN_MEMO,
+            SplitEntry.COLUMN_TYPE,
+            SplitEntry.COLUMN_VALUE_NUM,
+            SplitEntry.COLUMN_VALUE_DENOM,
+            SplitEntry.COLUMN_QUANTITY_NUM,
+            SplitEntry.COLUMN_QUANTITY_DENOM,
+            SplitEntry.COLUMN_RECONCILE_STATE,
+            SplitEntry.COLUMN_RECONCILE_DATE,
+            SplitEntry.COLUMN_ACCOUNT_UID,
+            SplitEntry.COLUMN_TRANSACTION_UID,
+            SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID
+        )
+        internal const val INDEX_COLUMN_MEMO = 0
+        internal const val INDEX_COLUMN_TYPE = INDEX_COLUMN_MEMO + 1
+        internal const val INDEX_COLUMN_VALUE_NUM = INDEX_COLUMN_TYPE + 1
+        internal const val INDEX_COLUMN_VALUE_DENOM = INDEX_COLUMN_VALUE_NUM + 1
+        internal const val INDEX_COLUMN_QUANTITY_NUM = INDEX_COLUMN_VALUE_DENOM + 1
+        internal const val INDEX_COLUMN_QUANTITY_DENOM = INDEX_COLUMN_QUANTITY_NUM + 1
+        internal const val INDEX_COLUMN_RECONCILE_STATE = INDEX_COLUMN_QUANTITY_DENOM + 1
+        internal const val INDEX_COLUMN_RECONCILE_DATE = INDEX_COLUMN_RECONCILE_STATE + 1
+        internal const val INDEX_COLUMN_ACCOUNT_UID = INDEX_COLUMN_RECONCILE_DATE + 1
+        internal const val INDEX_COLUMN_TRANSACTION_UID = INDEX_COLUMN_ACCOUNT_UID + 1
+        internal const val INDEX_COLUMN_SCHEDX_ACTION_ACCOUNT_UID = INDEX_COLUMN_TRANSACTION_UID + 1
+
         private val credit = TransactionType.CREDIT.value
 
         /**

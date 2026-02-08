@@ -9,8 +9,6 @@ import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.CommodityEntry
 import org.gnucash.android.db.bindBoolean
 import org.gnucash.android.db.bindInt
-import org.gnucash.android.db.getInt
-import org.gnucash.android.db.getString
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Commodity.Companion.getLocaleCurrencyCode
 import timber.log.Timber
@@ -24,17 +22,7 @@ class CommoditiesDbAdapter(
 ) : DatabaseAdapter<Commodity>(
     holder,
     CommodityEntry.TABLE_NAME,
-    arrayOf(
-        CommodityEntry.COLUMN_FULLNAME,
-        CommodityEntry.COLUMN_NAMESPACE,
-        CommodityEntry.COLUMN_MNEMONIC,
-        CommodityEntry.COLUMN_LOCAL_SYMBOL,
-        CommodityEntry.COLUMN_CUSIP,
-        CommodityEntry.COLUMN_SMALLEST_FRACTION,
-        CommodityEntry.COLUMN_QUOTE_FLAG,
-        CommodityEntry.COLUMN_QUOTE_SOURCE,
-        CommodityEntry.COLUMN_QUOTE_TZ
-    ),
+    entryColumns,
     true
 ) {
     private var _defaultCommodity: Commodity? = null
@@ -72,37 +60,36 @@ class CommoditiesDbAdapter(
 
     override fun bind(stmt: SQLiteStatement, commodity: Commodity): SQLiteStatement {
         bindBaseModel(stmt, commodity)
-        stmt.bindString(1, commodity.fullname)
-        stmt.bindString(2, commodity.namespace)
-        stmt.bindString(3, commodity.mnemonic)
+        stmt.bindString(1 + INDEX_COLUMN_FULLNAME, commodity.fullname)
+        stmt.bindString(1 + INDEX_COLUMN_NAMESPACE, commodity.namespace)
+        stmt.bindString(1 + INDEX_COLUMN_MNEMONIC, commodity.mnemonic)
         if (commodity.localSymbol != null) {
-            stmt.bindString(4, commodity.localSymbol)
+            stmt.bindString(1 + INDEX_COLUMN_LOCAL_SYMBOL, commodity.localSymbol)
         }
         if (commodity.cusip != null) {
-            stmt.bindString(5, commodity.cusip)
+            stmt.bindString(1 + INDEX_COLUMN_CUSIP, commodity.cusip)
         }
-        stmt.bindInt(6, commodity.smallestFraction)
-        stmt.bindBoolean(7, commodity.quoteFlag)
+        stmt.bindInt(1 + INDEX_COLUMN_SMALLEST_FRACTION, commodity.smallestFraction)
+        stmt.bindBoolean(1 + INDEX_COLUMN_QUOTE_FLAG, commodity.quoteFlag)
         if (commodity.quoteSource != null) {
-            stmt.bindString(8, commodity.quoteSource)
+            stmt.bindString(1 + INDEX_COLUMN_QUOTE_SOURCE, commodity.quoteSource)
         }
         if (commodity.getQuoteTimeZoneId() != null) {
-            stmt.bindString(9, commodity.getQuoteTimeZoneId())
+            stmt.bindString(1 + INDEX_COLUMN_QUOTE_TZ, commodity.getQuoteTimeZoneId())
         }
 
         return stmt
     }
 
     override fun buildModelInstance(cursor: Cursor): Commodity {
-        val fullname = cursor.getString(CommodityEntry.COLUMN_FULLNAME)
-        val mnemonic = cursor.getString(CommodityEntry.COLUMN_MNEMONIC)!!
-        val namespace = cursor.getString(CommodityEntry.COLUMN_NAMESPACE)!!
-        val cusip = cursor.getString(CommodityEntry.COLUMN_CUSIP)
-        val localSymbol = cursor.getString(CommodityEntry.COLUMN_LOCAL_SYMBOL)
-
-        val fraction = cursor.getInt(CommodityEntry.COLUMN_SMALLEST_FRACTION)
-        val quoteSource = cursor.getString(CommodityEntry.COLUMN_QUOTE_SOURCE)
-        val quoteTZ = cursor.getString(CommodityEntry.COLUMN_QUOTE_TZ)
+        val fullname = cursor.getString(INDEX_COLUMN_FULLNAME)
+        val mnemonic = cursor.getString(INDEX_COLUMN_MNEMONIC)!!
+        val namespace = cursor.getString(INDEX_COLUMN_NAMESPACE)!!
+        val cusip = cursor.getString(INDEX_COLUMN_CUSIP)
+        val localSymbol = cursor.getString(INDEX_COLUMN_LOCAL_SYMBOL)
+        val fraction = cursor.getInt(INDEX_COLUMN_SMALLEST_FRACTION)
+        val quoteSource = cursor.getString(INDEX_COLUMN_QUOTE_SOURCE)
+        val quoteTZ = cursor.getString(INDEX_COLUMN_QUOTE_TZ)
 
         val commodity = Commodity(fullname, mnemonic, namespace, fraction)
         populateBaseModelAttributes(cursor, commodity)
@@ -114,18 +101,13 @@ class CommoditiesDbAdapter(
         return commodity
     }
 
-    override fun fetchAllRecords(): Cursor {
-        return fetchAllRecords(CommodityEntry.COLUMN_MNEMONIC + " ASC")
-    }
-
-    /**
-     * Fetches all commodities in the database sorted in the specified order
-     *
-     * @param orderBy SQL statement for orderBy without the ORDER_BY itself
-     * @return Cursor holding all commodity records
-     */
-    fun fetchAllRecords(orderBy: String?): Cursor {
-        return db.query(tableName, null, null, null, null, null, orderBy)
+    override fun fetchAllRecords(
+        where: String?,
+        whereArgs: Array<String?>?,
+        orderBy: String?
+    ): Cursor {
+        val orderBy = orderBy ?: (CommodityEntry.COLUMN_MNEMONIC + " ASC")
+        return super.fetchAllRecords(where, whereArgs, orderBy)
     }
 
     /**
@@ -259,6 +241,27 @@ class CommoditiesDbAdapter(
     }
 
     companion object {
+        private val entryColumns = arrayOf(
+            CommodityEntry.COLUMN_FULLNAME,
+            CommodityEntry.COLUMN_NAMESPACE,
+            CommodityEntry.COLUMN_MNEMONIC,
+            CommodityEntry.COLUMN_LOCAL_SYMBOL,
+            CommodityEntry.COLUMN_CUSIP,
+            CommodityEntry.COLUMN_SMALLEST_FRACTION,
+            CommodityEntry.COLUMN_QUOTE_FLAG,
+            CommodityEntry.COLUMN_QUOTE_SOURCE,
+            CommodityEntry.COLUMN_QUOTE_TZ
+        )
+        private const val INDEX_COLUMN_FULLNAME = 0
+        private const val INDEX_COLUMN_NAMESPACE = INDEX_COLUMN_FULLNAME + 1
+        private const val INDEX_COLUMN_MNEMONIC = INDEX_COLUMN_NAMESPACE + 1
+        private const val INDEX_COLUMN_LOCAL_SYMBOL = INDEX_COLUMN_MNEMONIC + 1
+        private const val INDEX_COLUMN_CUSIP = INDEX_COLUMN_LOCAL_SYMBOL + 1
+        private const val INDEX_COLUMN_SMALLEST_FRACTION = INDEX_COLUMN_CUSIP + 1
+        private const val INDEX_COLUMN_QUOTE_FLAG = INDEX_COLUMN_SMALLEST_FRACTION + 1
+        private const val INDEX_COLUMN_QUOTE_SOURCE = INDEX_COLUMN_QUOTE_FLAG + 1
+        private const val INDEX_COLUMN_QUOTE_TZ = INDEX_COLUMN_QUOTE_SOURCE + 1
+
         val instance: CommoditiesDbAdapter get() = GnuCashApplication.commoditiesDbAdapter!!
     }
 }
