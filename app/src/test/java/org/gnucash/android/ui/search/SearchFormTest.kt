@@ -121,7 +121,7 @@ class SearchFormTest : GnuCashTest() {
 
     @Test
     fun `Query for single date`() {
-        val column = "t." + TransactionEntry.COLUMN_TIMESTAMP
+        val column = "t." + TransactionEntry.COLUMN_DATE_POSTED
         val form = SearchForm()
         val criterion = form.addDate()
         val now = LocalDate.now()

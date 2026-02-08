@@ -105,6 +105,10 @@ object OfxHelper {
     const val TAG_CC_ACCOUNT_FROM: String = "CCACCTFROM"
     const val TAG_CC_ACCOUNT_TO: String = "CACCTTO"
 
+    // TODO: investigate whether skipping the imbalance accounts makes sense.
+    // Also, using locale-dependant names here is error-prone.
+    const val IGNORE_IMBALANCE = true
+
     /**
      * ID which will be used as the bank ID for OFX from this app
      */
@@ -155,11 +159,11 @@ object OfxHelper {
     }
 
     val Account.isBanking: Boolean get() {
-        val type = OfxAccountType.of(accountType)
+        val type = OfxAccountType.of(type)
         return (type == OfxAccountType.CHECKING) || (type == OfxAccountType.SAVINGS)
     }
 
     val Account.isCreditCard: Boolean get() {
-        return accountType == AccountType.CREDIT
+        return type == AccountType.CREDIT
     }
 }

@@ -116,7 +116,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         transaction = Transaction(TRANSACTION_NAME)
         transaction.commodity = COMMODITY
         transaction.notes = "What up?"
-        transaction.time = transactionTimeMillis
+        transaction.datePosted = transactionTimeMillis
         val split = Split(Money(TRANSACTION_AMOUNT, CURRENCY_CODE), TRANSACTIONS_ACCOUNT_UID)
         split.type = TransactionType.DEBIT
 
@@ -194,13 +194,13 @@ class TransactionsActivityTest : GnuAndroidTest() {
         onView(withId(R.id.input_transaction_amount))
             .check(matches(withText(formatter.format(balance.toDouble()))))
         onView(withId(R.id.input_date))
-            .check(matches(withText(DATE_FORMATTER.print(transaction.time))))
+            .check(matches(withText(DATE_FORMATTER.print(transaction.datePosted))))
         onView(withId(R.id.input_time))
-            .check(matches(withText(TIME_FORMATTER.print(transaction.time))))
+            .check(matches(withText(TIME_FORMATTER.print(transaction.datePosted))))
         onView(withId(R.id.notes))
             .check(matches(withText(transaction.notes)))
 
-        validateTimeInput(transaction.time)
+        validateTimeInput(transaction.datePosted)
     }
 
     //TODO: Add test for only one account but with double-entry enabled
@@ -451,12 +451,6 @@ class TransactionsActivityTest : GnuAndroidTest() {
     }
 
 
-    private fun setDoubleEntryEnabled(enabled: Boolean) {
-        GnuCashApplication.getBookPreferences(context).edit {
-            putBoolean(context.getString(R.string.key_use_double_entry), enabled)
-        }
-    }
-
     @Test
     fun testDefaultTransactionType() {
         setDefaultTransactionType(TransactionType.CREDIT)
@@ -562,7 +556,7 @@ class TransactionsActivityTest : GnuAndroidTest() {
         val transaction = transactions[0]
         assertThat(TRANSACTION_NAME).isEqualTo(transaction.description)
         val expectedDate = transactionTimeMillis
-        val trxDate = transaction.time
+        val trxDate = transaction.datePosted
         assertThat(DATE_FORMATTER.print(expectedDate))
             .isEqualTo(DATE_FORMATTER.print(trxDate))
         assertThat(TIME_FORMATTER.print(expectedDate))
@@ -669,8 +663,8 @@ class TransactionsActivityTest : GnuAndroidTest() {
         assertThat(dummyAccountTrns[0].description).isEqualTo(
             dummyAccountTrns[1].description
         )
-        assertThat(dummyAccountTrns[0].time).isNotEqualTo(
-            dummyAccountTrns[1].time
+        assertThat(dummyAccountTrns[0].datePosted).isNotEqualTo(
+            dummyAccountTrns[1].datePosted
         )
     }
 

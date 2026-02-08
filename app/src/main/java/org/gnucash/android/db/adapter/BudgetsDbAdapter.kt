@@ -16,15 +16,12 @@
 package org.gnucash.android.db.adapter
 
 import android.database.Cursor
-import android.database.sqlite.SQLiteQueryBuilder
 import android.database.sqlite.SQLiteStatement
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry
 import org.gnucash.android.db.DatabaseSchema.BudgetEntry
 import org.gnucash.android.db.bindInt
-import org.gnucash.android.db.getInt
-import org.gnucash.android.db.getString
 import org.gnucash.android.model.Budget
 import org.gnucash.android.model.BudgetAmount
 import org.gnucash.android.model.Money
@@ -42,12 +39,7 @@ class BudgetsDbAdapter
 ) : DatabaseAdapter<Budget>(
     budgetAmountsDbAdapter.holder,
     BudgetEntry.TABLE_NAME,
-    arrayOf(
-        BudgetEntry.COLUMN_NAME,
-        BudgetEntry.COLUMN_DESCRIPTION,
-        BudgetEntry.COLUMN_RECURRENCE_UID,
-        BudgetEntry.COLUMN_NUM_PERIODS
-    )
+    entryColumns
 ) {
     /**
      * Opens the database adapter with an existing database
@@ -99,10 +91,10 @@ class BudgetsDbAdapter
     }
 
     override fun buildModelInstance(cursor: Cursor): Budget {
-        val name = cursor.getString(BudgetEntry.COLUMN_NAME)!!
-        val description = cursor.getString(BudgetEntry.COLUMN_DESCRIPTION)
-        val recurrenceUID = cursor.getString(BudgetEntry.COLUMN_RECURRENCE_UID)!!
-        val numPeriods = cursor.getInt(BudgetEntry.COLUMN_NUM_PERIODS)
+        val name = cursor.getString(INDEX_COLUMN_NAME)!!
+        val description = cursor.getString(INDEX_COLUMN_DESCRIPTION)
+        val recurrenceUID = cursor.getString(INDEX_COLUMN_RECURRENCE_UID)!!
+        val numPeriods = cursor.getInt(INDEX_COLUMN_NUM_PERIODS)
 
         val budget = Budget()
         populateBaseModelAttributes(cursor, budget)
@@ -118,12 +110,12 @@ class BudgetsDbAdapter
 
     override fun bind(stmt: SQLiteStatement, budget: Budget): SQLiteStatement {
         bindBaseModel(stmt, budget)
-        stmt.bindString(1, budget.name)
+        stmt.bindString(1 + INDEX_COLUMN_NAME, budget.name)
         if (budget.description != null) {
-            stmt.bindString(2, budget.description)
+            stmt.bindString(1 + INDEX_COLUMN_DESCRIPTION, budget.description)
         }
-        stmt.bindString(3, budget.recurrence.uid)
-        stmt.bindInt(4, budget.numberOfPeriods)
+        stmt.bindString(1 + INDEX_COLUMN_RECURRENCE_UID, budget.recurrence.uid)
+        stmt.bindInt(1 + INDEX_COLUMN_NUM_PERIODS, budget.numberOfPeriods)
 
         return stmt
     }
@@ -135,28 +127,23 @@ class BudgetsDbAdapter
      * @return Cursor with budgets data
      */
     fun fetchBudgetsForAccount(accountUID: String): Cursor? {
-        val queryBuilder = SQLiteQueryBuilder()
-        queryBuilder.setTables(
-            (BudgetEntry.TABLE_NAME + "," + BudgetAmountEntry.TABLE_NAME
-                    + " ON " + BudgetEntry.TABLE_NAME + "." + BudgetEntry.COLUMN_UID + " = "
-                    + BudgetAmountEntry.TABLE_NAME + "." + BudgetAmountEntry.COLUMN_BUDGET_UID)
-        )
-
-        queryBuilder.isDistinct = true
-        val projectionIn = arrayOf<String?>(BudgetEntry.TABLE_NAME + ".*")
-        val selection =
-            BudgetAmountEntry.TABLE_NAME + "." + BudgetAmountEntry.COLUMN_ACCOUNT_UID + " = ?"
+        val table = BudgetEntry.TABLE_NAME + " b, " + BudgetAmountEntry.TABLE_NAME + " ba" +
+                " ON b." + BudgetEntry.COLUMN_UID + " = ba." + BudgetAmountEntry.COLUMN_BUDGET_UID
+        val projectionIn = allColumnsPrefix("b.")
+        val selection = "ba." + BudgetAmountEntry.COLUMN_ACCOUNT_UID + " = ?"
         val selectionArgs = arrayOf<String?>(accountUID)
-        val sortOrder = BudgetEntry.TABLE_NAME + "." + BudgetEntry.COLUMN_NAME + " ASC"
+        val sortOrder = "b." + BudgetEntry.COLUMN_NAME + " ASC"
 
-        return queryBuilder.query(
-            db,
+        return db.query(
+            true,
+            table,
             projectionIn,
             selection,
             selectionArgs,
             null,
             null,
-            sortOrder
+            sortOrder,
+            null
         )
     }
 
@@ -194,6 +181,17 @@ class BudgetsDbAdapter
     }
 
     companion object {
+        private val entryColumns = arrayOf(
+            BudgetEntry.COLUMN_NAME,
+            BudgetEntry.COLUMN_DESCRIPTION,
+            BudgetEntry.COLUMN_RECURRENCE_UID,
+            BudgetEntry.COLUMN_NUM_PERIODS
+        )
+        private const val INDEX_COLUMN_NAME = 0
+        private const val INDEX_COLUMN_DESCRIPTION = INDEX_COLUMN_NAME + 1
+        private const val INDEX_COLUMN_RECURRENCE_UID = INDEX_COLUMN_DESCRIPTION + 1
+        private const val INDEX_COLUMN_NUM_PERIODS = INDEX_COLUMN_RECURRENCE_UID + 1
+
         /**
          * Returns an instance of the budget database adapter
          *

@@ -38,6 +38,9 @@ import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.test.unit.BookHelperTest
 import org.gnucash.android.util.TimestampHelper
+import org.gnucash.android.util.toMillis
+import org.joda.time.DateTimeZone
+import org.joda.time.LocalDate
 import org.junit.Ignore
 import org.junit.Test
 import java.util.Calendar
@@ -76,7 +79,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(assetsAccount.name).isEqualTo("Assets")
         assertThat(assetsAccount.isHidden).isFalse()
         assertThat(assetsAccount.isPlaceholder).isTrue()
-        assertThat(assetsAccount.accountType).isEqualTo(AccountType.ASSET)
+        assertThat(assetsAccount.type).isEqualTo(AccountType.ASSET)
 
         val diningAccount = accountsDbAdapter.getRecord("6a7cf8267314992bdddcee56d71a3908")
         assertThat(diningAccount.parentUID).isEqualTo("9b607f63aecb1a175556676904432365")
@@ -85,7 +88,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(diningAccount.isHidden).isFalse()
         assertThat(diningAccount.isPlaceholder).isFalse()
         assertThat(diningAccount.isFavorite).isFalse()
-        assertThat(diningAccount.accountType).isEqualTo(AccountType.EXPENSE)
+        assertThat(diningAccount.type).isEqualTo(AccountType.EXPENSE)
         assertThat(diningAccount.commodity.currencyCode).isEqualTo("USD")
         assertThat(diningAccount.color).isEqualTo(Account.DEFAULT_COLOR)
         assertThat(diningAccount.defaultTransferAccountUID).isNull()
@@ -110,8 +113,8 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(transaction.scheduledActionUID).isNull()
         assertThat(transaction.isExported).isTrue()
         assertThat(transaction.isTemplate).isFalse()
-        assertThat(transaction.time).isEqualTo(parseDateTime("2016-08-23 10:00:00 +0200"))
-        assertThat(transaction.createdTimestamp.time).isEqualTo(parseDateTime("2016-08-23 12:44:19 +0200"))
+        assertThat(transaction.datePosted).isEqualTo(parseDateTime("2016-08-23 10:00:00 +0200"))
+        assertThat(transaction.dateEntered).isEqualTo(parseDateTime("2016-08-23 12:44:19 +0200"))
 
         // Check splits
         assertThat(transaction.splits).hasSize(2)
@@ -266,7 +269,7 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(scheduledTransaction.scheduledActionUID).isNull()
         assertThat(scheduledTransaction.isExported).isTrue()
         assertThat(scheduledTransaction.isTemplate).isTrue()
-        assertThat(scheduledTransaction.time).isEqualTo(parseDateTime("2016-08-24 10:00:00 +0200"))
+        assertThat(scheduledTransaction.datePosted).isEqualTo(parseDateTime("2016-08-24 10:00:00 +0200"))
         assertThat(scheduledTransaction.createdTimestamp.time).isEqualTo(parseDateTime("2016-08-24 19:50:15 +0200"))
 
         // Check splits
@@ -566,18 +569,41 @@ class GncXmlHandlerTest : BookHelperTest() {
             assertThat(transactionsDbAdapter.splitsDbAdapter.recordsCount).isEqualTo(8)
 
             assertThat(accountsDbAdapter.recordsCount).isEqualTo(69)
+
+            val root = accountsDbAdapter.getRecord("2fd3dc45e1974993a15ea1c611d3d345")
+            assertThat(root.parentUID).isNull()
+            assertThat(root.name).isEqualTo("Root Account")
+            assertThat(root.fullName).isEqualTo("Root Account")
+            assertThat(root.type).isEqualTo(AccountType.ROOT)
+
+            val rootTemplate = accountsDbAdapter.getRecord("5569f2318478400f94606478b0de55c5")
+            assertThat(rootTemplate.parentUID).isNull()
+            assertThat(rootTemplate.name).isEqualTo("Template Root")
+            assertThat(rootTemplate.fullName).isEqualTo("Template Root")
+            assertThat(rootTemplate.type).isEqualTo(AccountType.ROOT)
+            assertThat(rootTemplate.commodity.isTemplate).isTrue()
+
             val account = accountsDbAdapter.getRecord("dbbf295a331d4182bca73b548f5f7eaf")
             assertThat(account.parentUID).isEqualTo("84bbb4a4c12844fa9a4a7b4d6915288a")
             assertThat(account.name).isEqualTo("Groceries")
             assertThat(account.fullName).isEqualTo("Expenses:Groceries")
+            assertThat(account.type).isEqualTo(AccountType.EXPENSE)
 
             val transaction = transactionsDbAdapter.getRecord("ca215bd292094eae8267d4cba5e6a0f1")
             assertThat(transaction.description).isEqualTo("Amazon")
             assertThat(transaction.notes).isEqualTo("hardcover")
             assertThat(transaction.number).isEqualTo("N123")
             assertThat(transaction.splits).hasSize(2)
+            assertThat(transaction.splits[0].uid).isEqualTo("5d7db05823ab46f3b0930e632c0c8e8f")
+            assertThat(transaction.splits[0].accountUID).isEqualTo("0c1ed5137c5d43c0a2d5668c7ae89d72")
             assertThat(transaction.splits[0].value).isEqualTo(Money(123.45, currencyUSD))
+            assertThat(transaction.splits[0].type).isEqualTo(TransactionType.DEBIT)
             assertThat(transaction.splits[0].memo).isEqualTo("bible")
+            assertThat(transaction.splits[1].uid).isEqualTo("f2bbfea2313f4a92aef8bc4fbe7db9b1")
+            assertThat(transaction.splits[1].accountUID).isEqualTo("377cc9fff6ad44daa3873e070afaf2e1")
+            assertThat(transaction.splits[1].value).isEqualTo(Money(123.45, currencyUSD))
+            assertThat(transaction.splits[1].type).isEqualTo(TransactionType.CREDIT)
+            assertThat(transaction.splits[1].memo).isEmpty()
 
             val template = transactionsDbAdapter.getRecord("9b42fbb885db4918819a05fc42dd63e0")
             assertThat(template.isTemplate).isTrue()
@@ -585,11 +611,16 @@ class GncXmlHandlerTest : BookHelperTest() {
             assertThat(template.splits).hasSize(2)
             assertThat(template.splits[0].value).isEqualTo(Money(99.90, currencyILS))
 
+            val scheduledDate = LocalDate(2025, 5, 31).toDateTimeAtStartOfDay(DateTimeZone.UTC)
             val scheduledAction =
                 scheduledActionDbAdapter.getRecord("11d621073ed745debd5027325d7853a4")
             assertThat(scheduledAction.name).isEqualTo("AT&T subscription")
             assertThat(scheduledAction.templateAccountUID).isEqualTo("3bdbf5e3b9364a6fb2dd463d1241a4ea")
             assertThat(scheduledAction.actionUID).isEqualTo(template.uid)
+            assertThat(scheduledAction.startDate).isEqualTo(scheduledDate.toMillis())
+            assertThat(scheduledAction.endDate).isEqualTo(0L)
+            assertThat(scheduledAction.lastRunDate).isEqualTo(0L)
+            assertThat(scheduledAction.instanceCount).isEqualTo(1)
 
             val budget = budgetsDbAdapter.getRecord("2f4e4e47cedb413e86ab4823757d1d84")
             assertThat(budget.name).isEqualTo("Groceries Budget")

@@ -395,7 +395,7 @@ class Split : BaseModel, Parcelable {
             splitType: TransactionType
         ): Money {
             val absAmount = amount.abs()
-            val isDebitAccount = account.accountType.hasDebitNormalBalance
+            val isDebitAccount = account.type.hasDebitNormalBalance
             val isDebitSplit = splitType === TransactionType.DEBIT
             return if ((isDebitAccount && isDebitSplit) || (!isDebitAccount && !isDebitSplit)) {
                 absAmount

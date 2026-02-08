@@ -18,6 +18,7 @@ package org.gnucash.android.test.unit.util
 import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.test.unit.GnuCashTest
 import org.gnucash.android.util.TimestampHelper
+import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
 import org.junit.Test
 import java.sql.Timestamp
 
@@ -33,15 +34,15 @@ class TimestampHelperTest : GnuCashTest() {
         val unixBillennium = 1_000_000_000 * 1000L
         val unixBillenniumUtcString = "2001-09-09 01:46:40.000"
         val unixBillenniumTimestamp = Timestamp(unixBillennium)
-        assertThat(TimestampHelper.getUtcStringFromTimestamp(unixBillenniumTimestamp))
-            .isEqualTo(unixBillenniumUtcString)
+        assertThat(getUtcStringFromTimestamp(unixBillenniumTimestamp)).isEqualTo(
+            unixBillenniumUtcString
+        )
 
         val the1234567890thSecond = 1_234_567_890 * 1000L
         val the1234567890thSecondUtcString = "2009-02-13 23:31:30.000"
         val the1234567890thSecondTimestamp = Timestamp(the1234567890thSecond)
-        assertThat(
-            TimestampHelper.getUtcStringFromTimestamp(the1234567890thSecondTimestamp)
-        ).isEqualTo(the1234567890thSecondUtcString)
+        assertThat(getUtcStringFromTimestamp(the1234567890thSecondTimestamp))
+            .isEqualTo(the1234567890thSecondUtcString)
     }
 
     @Test

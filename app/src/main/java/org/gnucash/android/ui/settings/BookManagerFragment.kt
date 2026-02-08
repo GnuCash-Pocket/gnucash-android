@@ -25,10 +25,8 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import android.widget.TextView
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatDialog
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentResultListener
@@ -214,6 +212,7 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
         private val lastSyncLabel = binding.labelLastSync
         private val lastSyncTimeView = binding.lastSyncTime
         private val optionsMenuView = binding.optionsMenu
+        private val nameColorDefault = nameView.currentTextColor
 
         fun bind(book: Book) {
             val bookUID = book.uid
@@ -222,6 +221,8 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
             if (activeBookUID == bookUID) {
                 val context = itemView.context
                 nameView.setTextColor(ContextCompat.getColor(context, R.color.theme_primary))
+            } else {
+                nameView.setTextColor(nameColorDefault)
             }
 
             setLastExportedText(book)
@@ -281,16 +282,20 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
          */
         fun handleMenuRenameBook(bookName: String?, bookUID: String): Boolean {
             val activity = activity ?: return false
-            val dialog = AlertDialog.Builder(activity)
+
+            val view = layoutInflater.inflate(R.layout.dialog_rename_book, null)
+            val titleView = view.findViewById<EditText>(R.id.input_book_title)!!
+            titleView.setText(bookName)
+
+            AlertDialog.Builder(activity)
                 .setTitle(R.string.title_rename_book)
-                .setView(R.layout.dialog_rename_book)
+                .setView(view)
                 .setNegativeButton(R.string.btn_cancel) { _, _ ->
                     // Dismisses itself
                 }
-                .setPositiveButton(R.string.btn_rename) { dialog, _ ->
-                    val bookTitle =
-                        (dialog as AppCompatDialog).findViewById<EditText>(R.id.input_book_title)!!
-                    val bookName = bookTitle.trim()
+                .setPositiveButton(R.string.btn_rename) { _, _ ->
+                    val bookName = titleView.trim()
+                    if (bookName.isEmpty()) return@setPositiveButton
                     BooksDbAdapter.instance.updateRecord(
                         bookUID,
                         BookEntry.COLUMN_DISPLAY_NAME,
@@ -299,8 +304,7 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
                     refresh()
                 }
                 .show()
-            val titleView = dialog.findViewById<TextView>(R.id.input_book_title)!!
-            titleView.text = bookName
+
             return true
         }
 

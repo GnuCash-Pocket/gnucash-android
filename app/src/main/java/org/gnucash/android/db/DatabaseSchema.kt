@@ -175,7 +175,7 @@ object DatabaseSchema {
         @Column(Cursor.FIELD_TYPE_STRING)
         const val COLUMN_ID: String = CommonColumns.COLUMN_ID
         @Column(Cursor.FIELD_TYPE_STRING)
-        const val COLUMN_CREATED_AT: String = CommonColumns.COLUMN_CREATED_AT
+        const val COLUMN_DATE_ENTERED: String = CommonColumns.COLUMN_CREATED_AT
         @Column(Cursor.FIELD_TYPE_STRING)
         const val COLUMN_MODIFIED_AT: String = CommonColumns.COLUMN_MODIFIED_AT
 
@@ -195,7 +195,7 @@ object DatabaseSchema {
         const val COLUMN_COMMODITY_UID: String = "commodity_uid"
 
         @Column(Cursor.FIELD_TYPE_INTEGER)
-        const val COLUMN_TIMESTAMP: String = "timestamp"
+        const val COLUMN_DATE_POSTED: String = "timestamp"
 
         /**
          * Flag for marking transactions which have been exported.

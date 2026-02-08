@@ -48,7 +48,7 @@ class AccountBalanceTask(
         try {
             val account = accountsDbAdapter.getRecord(accountUID)
             val balance = accountsDbAdapter.getAccountBalance(account)
-            val accountType = account.accountType
+            val accountType = account.type
             return if (accountType.hasDebitNormalBalance != accountType.hasDebitDisplayBalance) {
                 -balance
             } else {

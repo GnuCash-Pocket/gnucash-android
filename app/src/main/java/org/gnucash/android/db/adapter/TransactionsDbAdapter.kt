@@ -22,25 +22,24 @@ import android.database.DatabaseUtils
 import android.database.SQLException
 import android.database.sqlite.SQLiteQueryBuilder
 import android.database.sqlite.SQLiteStatement
+import androidx.core.database.sqlite.transaction
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseHelper.Companion.sqlEscapeLike
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
-import org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry
 import org.gnucash.android.db.DatabaseSchema.SplitEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.bindBoolean
+import org.gnucash.android.db.bindTimestamp
 import org.gnucash.android.db.forEach
 import org.gnucash.android.db.getBoolean
-import org.gnucash.android.db.getLong
-import org.gnucash.android.db.getString
+import org.gnucash.android.db.getTimestamp
 import org.gnucash.android.db.joinIn
 import org.gnucash.android.model.AccountType
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.Transaction.Companion.computeBalance
-import org.gnucash.android.util.TimestampHelper.getTimestampFromUtcString
 import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
 import org.gnucash.android.util.TimestampHelper.timestampFromEpochZero
 import org.gnucash.android.util.TimestampHelper.timestampFromNow
@@ -62,18 +61,7 @@ class TransactionsDbAdapter(
 ) : DatabaseAdapter<Transaction>(
     splitsDbAdapter.holder,
     TransactionEntry.TABLE_NAME,
-    arrayOf(
-        TransactionEntry.COLUMN_DESCRIPTION,
-        TransactionEntry.COLUMN_NOTES,
-        TransactionEntry.COLUMN_TIMESTAMP,
-        TransactionEntry.COLUMN_EXPORTED,
-        TransactionEntry.COLUMN_CURRENCY,
-        TransactionEntry.COLUMN_COMMODITY_UID,
-        TransactionEntry.COLUMN_CREATED_AT,
-        TransactionEntry.COLUMN_SCHEDX_ACTION_UID,
-        TransactionEntry.COLUMN_TEMPLATE,
-        TransactionEntry.COLUMN_NUMBER
-    )
+    entryColumns
 ) {
     val commoditiesDbAdapter: CommoditiesDbAdapter = splitsDbAdapter.commoditiesDbAdapter
 
@@ -103,12 +91,11 @@ class TransactionsDbAdapter(
     override fun addRecord(transaction: Transaction, updateMethod: UpdateMethod): Transaction {
         // Did the transaction have any splits before?
         val didChange = transaction.id != 0L
-        try {
-            beginTransaction()
+        db.transaction {
             val imbalanceSplit = transaction.createAutoBalanceSplit()
             if (imbalanceSplit != null) {
                 val context = holder.context
-                val imbalanceAccountUID = AccountsDbAdapter(this)
+                val imbalanceAccountUID = AccountsDbAdapter(this@TransactionsDbAdapter)
                     .getOrCreateImbalanceAccountUID(context, transaction.commodity)
                 imbalanceSplit.accountUID = imbalanceAccountUID
             }
@@ -133,10 +120,6 @@ class TransactionsDbAdapter(
                 val deleted = db.delete(SplitEntry.TABLE_NAME, deleteWhere, deleteArgs)
                 Timber.d("%d splits deleted", deleted)
             }
-
-            setTransactionSuccessful()
-        } finally {
-            endTransaction()
         }
 
         return transaction
@@ -180,18 +163,18 @@ class TransactionsDbAdapter(
 
     override fun bind(stmt: SQLiteStatement, transaction: Transaction): SQLiteStatement {
         bindBaseModel(stmt, transaction)
-        stmt.bindString(1, transaction.description)
-        stmt.bindString(2, transaction.notes)
-        stmt.bindLong(3, transaction.time)
-        stmt.bindBoolean(4, transaction.isExported)
-        stmt.bindString(5, transaction.currencyCode)
-        stmt.bindString(6, transaction.commodity.uid)
-        stmt.bindString(7, getUtcStringFromTimestamp(transaction.createdTimestamp))
+        stmt.bindString(1 + INDEX_COLUMN_DESCRIPTION, transaction.description)
+        stmt.bindString(1 + INDEX_COLUMN_NOTES, transaction.notes)
+        stmt.bindLong(1 + INDEX_COLUMN_DATE_POSTED, transaction.datePosted)
+        stmt.bindBoolean(1 + INDEX_COLUMN_EXPORTED, transaction.isExported)
+        stmt.bindString(1 + INDEX_COLUMN_CURRENCY, transaction.currencyCode)
+        stmt.bindString(1 + INDEX_COLUMN_COMMODITY_UID, transaction.commodity.uid)
+        stmt.bindTimestamp(1 + INDEX_COLUMN_DATE_ENTERED, transaction.dateEntered)
         if (transaction.scheduledActionUID != null) {
-            stmt.bindString(8, transaction.scheduledActionUID)
+            stmt.bindString(1 + INDEX_COLUMN_SCHEDX_ACTION_UID, transaction.scheduledActionUID)
         }
-        stmt.bindBoolean(9, transaction.isTemplate)
-        stmt.bindString(10, transaction.number)
+        stmt.bindBoolean(1 + INDEX_COLUMN_TEMPLATE, transaction.isTemplate)
+        stmt.bindString(1 + INDEX_COLUMN_NUMBER, transaction.number)
 
         return stmt
     }
@@ -211,11 +194,11 @@ class TransactionsDbAdapter(
                 "t." + TransactionEntry.COLUMN_UID + " = " +
                 "s." + SplitEntry.COLUMN_TRANSACTION_UID
         queryBuilder.isDistinct = true
-        val projectionIn = arrayOf<String?>("t.*")
+        val projectionIn = allColumnsPrefix("t.")
         val selection = ("s." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
                 + " AND t." + TransactionEntry.COLUMN_TEMPLATE + " = 0")
         val selectionArgs = arrayOf<String?>(accountUID)
-        val sortOrder = "t." + TransactionEntry.COLUMN_TIMESTAMP + " DESC, " +
+        val sortOrder = "t." + TransactionEntry.COLUMN_DATE_POSTED + " DESC, " +
                 "t." + TransactionEntry.COLUMN_NUMBER + " DESC, " +
                 "t." + TransactionEntry.COLUMN_ID + " DESC"
 
@@ -239,29 +222,25 @@ class TransactionsDbAdapter(
      * @return Cursor with set of transactions
      */
     fun fetchScheduledTransactionsForAccount(accountUID: String): Cursor? {
-        val queryBuilder = SQLiteQueryBuilder()
-        queryBuilder.setTables(
-            (TransactionEntry.TABLE_NAME
-                    + " INNER JOIN " + SplitEntry.TABLE_NAME + " ON "
-                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " = "
-                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID)
-        )
-        queryBuilder.isDistinct = true
-        val projectionIn = arrayOf<String?>(TransactionEntry.TABLE_NAME + ".*")
-        val selection = (SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
-                + " AND " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + " = 1")
+        val table = TransactionEntry.TABLE_NAME + " t" +
+                " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON " +
+                "t." + TransactionEntry.COLUMN_UID + " = " +
+                "s." + SplitEntry.COLUMN_TRANSACTION_UID
+        val projectionIn = allColumnsPrefix("t.")
+        val selection = "s." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
         val selectionArgs = arrayOf<String?>(accountUID)
-        val sortOrder =
-            TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " DESC"
+        val sortOrder = "t." + TransactionEntry.COLUMN_DATE_POSTED + " DESC"
 
-        return queryBuilder.query(
-            db,
+        return db.query(
+            true,
+            table,
             projectionIn,
             selection,
             selectionArgs,
             null,
             null,
-            sortOrder
+            sortOrder,
+            null
         )
     }
 
@@ -297,31 +276,6 @@ class TransactionsDbAdapter(
     }
 
     /**
-     * Fetches all recurring transactions from the database.
-     *
-     * Recurring transactions are the transaction templates which have an entry in the scheduled events table
-     *
-     * @return Cursor holding set of all recurring transactions
-     */
-    fun fetchAllScheduledTransactions(): Cursor? {
-        val queryBuilder = SQLiteQueryBuilder()
-        queryBuilder.setTables(
-            (TransactionEntry.TABLE_NAME + " INNER JOIN " + ScheduledActionEntry.TABLE_NAME + " ON "
-                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " = "
-                    + ScheduledActionEntry.TABLE_NAME + "." + ScheduledActionEntry.COLUMN_ACTION_UID)
-        )
-
-        val projectionIn = arrayOf<String?>(
-            TransactionEntry.TABLE_NAME + ".*",
-            ScheduledActionEntry.TABLE_NAME + "." + ScheduledActionEntry.COLUMN_UID + " AS " + "origin_scheduled_action_uid"
-        )
-        val sortOrder =
-            TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_DESCRIPTION + " ASC"
-
-        return queryBuilder.query(db, projectionIn, null, null, null, null, sortOrder)
-    }
-
-    /**
      * Returns list of all transactions for account with UID `accountUID`
      *
      * @param accountUID UID of account whose transactions are to be retrieved
@@ -348,10 +302,37 @@ class TransactionsDbAdapter(
         orderBy: String?
     ): Cursor {
         val table = TransactionEntry.TABLE_NAME + " t, " + SplitEntry.TABLE_NAME + " s" +
-                " ON t." + TransactionEntry.COLUMN_UID +
-                " = s." + SplitEntry.COLUMN_TRANSACTION_UID +
+                " ON t." + TransactionEntry.COLUMN_UID + " = s." + SplitEntry.COLUMN_TRANSACTION_UID +
                 ", trans_extra_info ON trans_extra_info.trans_acct_t_uid = t." + TransactionEntry.COLUMN_UID
+        val orderBy = orderBy
+            ?: "t.${TransactionEntry.COLUMN_DATE_POSTED} ASC, t.${TransactionEntry.COLUMN_UID} ASC"
         return db.query(table, columns, where, whereArgs, null, null, orderBy)
+    }
+
+    fun fetchTransactionsWithSplit(
+        columns: Array<String?>?,
+        where: String?,
+        whereArgs: Array<String?>?,
+        orderBy: String?
+    ): Cursor {
+        val table = TransactionEntry.TABLE_NAME + " t INNER JOIN " + SplitEntry.TABLE_NAME + " s" +
+                " ON t." + TransactionEntry.COLUMN_UID + " = s." + SplitEntry.COLUMN_TRANSACTION_UID +
+                " INNER JOIN " + AccountEntry.TABLE_NAME + " a" +
+                " ON a." + AccountEntry.COLUMN_UID + " = s." + SplitEntry.COLUMN_ACCOUNT_UID
+        val columns = columns
+            ?: (allColumnsPrefix("t.") + splitsDbAdapter.allColumnsPrefix("s.") +
+                    ("a." + AccountEntry.COLUMN_COMMODITY_UID))
+        val orderBy = orderBy
+            ?: "t.${TransactionEntry.COLUMN_DATE_POSTED} ASC, t.${TransactionEntry.COLUMN_UID} ASC"
+        return db.query(table, columns, where, whereArgs, null, null, orderBy)
+    }
+
+    fun buildTransactionWithSplit(cursor: Cursor): Transaction {
+        val transaction = buildSimpleModelInstance(cursor)
+        val columnOffset = allColumns.size
+        val split = splitsDbAdapter.getSplitForTransaction(transaction, cursor, columnOffset)
+        transaction.addSplit(split)
+        return transaction
     }
 
     /**
@@ -365,7 +346,7 @@ class TransactionsDbAdapter(
                 TransactionEntry.COLUMN_EXPORTED + " = 0 AND " +
                 TransactionEntry.COLUMN_MODIFIED_AT + " >= ?"
         val whereArgs = arrayOf<String?>(getUtcStringFromTimestamp(timestamp))
-        val orderBy = TransactionEntry.COLUMN_TIMESTAMP + " ASC, " +
+        val orderBy = TransactionEntry.COLUMN_DATE_POSTED + " ASC, " +
                 TransactionEntry.COLUMN_NUMBER + " ASC, " +
                 TransactionEntry.COLUMN_ID + " ASC"
         return fetchAllRecords(where, whereArgs, orderBy)
@@ -426,26 +407,30 @@ class TransactionsDbAdapter(
      * @return [Transaction] object constructed from database record
      */
     override fun buildModelInstance(cursor: Cursor): Transaction {
-        val name = cursor.getString(TransactionEntry.COLUMN_DESCRIPTION)!!
-        val time = cursor.getLong(TransactionEntry.COLUMN_TIMESTAMP)
-        val notes = cursor.getString(TransactionEntry.COLUMN_NOTES)
-        val isExported = cursor.getBoolean(TransactionEntry.COLUMN_EXPORTED)
-        val isTemplate = cursor.getBoolean(TransactionEntry.COLUMN_TEMPLATE)
-        val commodityUID = cursor.getString(TransactionEntry.COLUMN_COMMODITY_UID)!!
-        val scheduledActionUID = cursor.getString(TransactionEntry.COLUMN_SCHEDX_ACTION_UID)
-        val number = cursor.getString(TransactionEntry.COLUMN_NUMBER)
-        val commodity = commoditiesDbAdapter.getRecord(commodityUID)
+        val transaction = buildSimpleModelInstance(cursor)
+        transaction.splits = splitsDbAdapter.getSplitsForTransaction(transaction.uid)
+        return transaction
+    }
 
-        val transaction = Transaction(name)
+    fun buildSimpleModelInstance(cursor: Cursor): Transaction {
+        val description = cursor.getString(INDEX_COLUMN_DESCRIPTION)!!
+        val datePosted = cursor.getLong(INDEX_COLUMN_DATE_POSTED)
+        val notes = cursor.getString(INDEX_COLUMN_NOTES).orEmpty()
+        val isExported = cursor.getBoolean(INDEX_COLUMN_EXPORTED)
+        val isTemplate = cursor.getBoolean(INDEX_COLUMN_TEMPLATE)
+        val commodityUID = cursor.getString(INDEX_COLUMN_COMMODITY_UID)!!
+        val scheduledActionUID = cursor.getString(INDEX_COLUMN_SCHEDX_ACTION_UID)
+        val number = cursor.getString(INDEX_COLUMN_NUMBER).orEmpty()
+
+        val transaction = Transaction(description)
         populateBaseModelAttributes(cursor, transaction)
-        transaction.time = time
-        transaction.notes = notes.orEmpty()
+        transaction.datePosted = datePosted
+        transaction.notes = notes
         transaction.isExported = isExported
         transaction.isTemplate = isTemplate
-        transaction.commodity = commodity
+        transaction.commodity = commoditiesDbAdapter.getRecord(commodityUID)
         transaction.scheduledActionUID = scheduledActionUID
-        transaction.number = number.orEmpty()
-        transaction.splits = splitsDbAdapter.getSplitsForTransaction(transaction.uid)
+        transaction.number = number
 
         return transaction
     }
@@ -556,20 +541,18 @@ class TransactionsDbAdapter(
      */
     fun fetchTransactionSuggestions(prefix: String, accountUID: String): Cursor? {
         val queryBuilder = SQLiteQueryBuilder()
-        queryBuilder.setTables(
-            (TransactionEntry.TABLE_NAME + " t"
-                    + " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON "
-                    + "t." + TransactionEntry.COLUMN_UID + " = s." + SplitEntry.COLUMN_TRANSACTION_UID)
-        )
-        val projectionIn =
-            arrayOf<String?>("t.*", "MAX(t." + TransactionEntry.COLUMN_TIMESTAMP + ")")
+        queryBuilder.tables = TransactionEntry.TABLE_NAME + " t" +
+                " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON " +
+                "t." + TransactionEntry.COLUMN_UID + " = s." + SplitEntry.COLUMN_TRANSACTION_UID
+        val projectionIn = allColumnsPrefix("t.") +
+                ("MAX(t." + TransactionEntry.COLUMN_DATE_POSTED + ")")
         val selection = ("s." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
                 + " AND t." + TransactionEntry.COLUMN_TEMPLATE + " = 0"
                 + " AND t." + TransactionEntry.COLUMN_DESCRIPTION + " LIKE " + sqlEscapeLike(prefix))
         val selectionArgs = arrayOf<String?>(accountUID)
         val groupBy = TransactionEntry.COLUMN_DESCRIPTION
-        val sortOrder = "t." + TransactionEntry.COLUMN_TIMESTAMP + " DESC"
-        val limit = 10.toString()
+        val sortOrder = "t." + TransactionEntry.COLUMN_DATE_POSTED + " DESC"
+        val limit = "10"
         return queryBuilder.query(
             db,
             projectionIn,
@@ -651,10 +634,7 @@ class TransactionsDbAdapter(
         var timestamp = timestampFromNow
         try {
             if (cursor.moveToFirst()) {
-                val timeString = cursor.getString(0)
-                if (!timeString.isNullOrEmpty()) { //in case there were no transactions in the XML file (account structure only)
-                    timestamp = getTimestampFromUtcString(timeString)
-                }
+                timestamp = cursor.getTimestamp(0) ?: timestamp
             }
         } finally {
             cursor.close()
@@ -673,7 +653,7 @@ class TransactionsDbAdapter(
      * @see .getTimestampOfEarliestTransaction
      */
     private fun getTimestamp(mod: String, type: AccountType, commodityUID: String): Long {
-        val sql = ("SELECT " + mod + "(t." + TransactionEntry.COLUMN_TIMESTAMP + ")"
+        val sql = ("SELECT " + mod + "(t." + TransactionEntry.COLUMN_DATE_POSTED + ")"
                 + " FROM " + TransactionEntry.TABLE_NAME + " t"
                 + " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON"
                 + " s." + SplitEntry.COLUMN_TRANSACTION_UID + " = t." + TransactionEntry.COLUMN_UID
@@ -697,12 +677,10 @@ class TransactionsDbAdapter(
 
     fun getTransactionsCountForAccount(accountUID: String): Long {
         val queryBuilder = SQLiteQueryBuilder()
-        queryBuilder.setTables(
-            (TransactionEntry.TABLE_NAME + " t "
-                    + " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON"
-                    + " t." + TransactionEntry.COLUMN_UID + " ="
-                    + " s." + SplitEntry.COLUMN_TRANSACTION_UID)
-        )
+        queryBuilder.tables = TransactionEntry.TABLE_NAME + " t " +
+                " INNER JOIN " + SplitEntry.TABLE_NAME + " s ON" +
+                " t." + TransactionEntry.COLUMN_UID + " =" +
+                " s." + SplitEntry.COLUMN_TRANSACTION_UID
         val projectionIn = arrayOf<String?>("COUNT(*)")
         val selection = "s." + SplitEntry.COLUMN_ACCOUNT_UID + " = ?"
         val selectionArgs = arrayOf<String?>(accountUID)
@@ -714,7 +692,7 @@ class TransactionsDbAdapter(
                 return cursor.getLong(0)
             }
         } finally {
-            cursor!!.close()
+            cursor.close()
         }
         return 0L
     }
@@ -728,7 +706,7 @@ class TransactionsDbAdapter(
 
     fun fetchSearch(where: String): Cursor? {
         if (where.isEmpty()) {
-            val orderBy = TransactionEntry.COLUMN_TIMESTAMP + " DESC, " +
+            val orderBy = TransactionEntry.COLUMN_DATE_POSTED + " DESC, " +
                     TransactionEntry.COLUMN_NUMBER + " DESC, " +
                     TransactionEntry.COLUMN_ID + " DESC"
             return fetchAllRecords(null, null, orderBy)
@@ -739,9 +717,9 @@ class TransactionsDbAdapter(
                 + " INNER JOIN " + SplitEntry.TABLE_NAME + " s2" + " ON t." + TransactionEntry.COLUMN_UID
                 + " = s2." + SplitEntry.COLUMN_TRANSACTION_UID
                 )
-        val columns = arrayOf<String?>("t.*")
+        val columns = allColumnsPrefix("t.")
         val selection = "(s1.${SplitEntry.COLUMN_ID} < s2.${SplitEntry.COLUMN_ID}) AND $where"
-        val orderBy = "t." + TransactionEntry.COLUMN_TIMESTAMP + " DESC, " +
+        val orderBy = "t." + TransactionEntry.COLUMN_DATE_POSTED + " DESC, " +
                 "t." + TransactionEntry.COLUMN_NUMBER + " DESC, " +
                 "t." + TransactionEntry.COLUMN_ID + " DESC"
         return db.query(true, table, columns, selection, null, null, null, orderBy, null)
@@ -772,8 +750,8 @@ class TransactionsDbAdapter(
                     + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_DESCRIPTION + ", "
                     + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_NOTES + " AS "
                     + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_NOTES + ", "
-                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " AS "
-                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + ", "
+                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_DATE_POSTED + " AS "
+                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_DATE_POSTED + ", "
                     + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_EXPORTED + " AS "
                     + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_EXPORTED + ", "
                     + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + " AS "
@@ -852,7 +830,7 @@ class TransactionsDbAdapter(
         )
         try {
             return if (cursor.moveToFirst()) {
-                cursor.getLong(0).toInt()
+                cursor.getInt(0)
             } else {
                 0
             }
@@ -891,6 +869,29 @@ class TransactionsDbAdapter(
     }
 
     companion object {
+        private val entryColumns = arrayOf(
+            TransactionEntry.COLUMN_DESCRIPTION,
+            TransactionEntry.COLUMN_NOTES,
+            TransactionEntry.COLUMN_DATE_POSTED,
+            TransactionEntry.COLUMN_EXPORTED,
+            TransactionEntry.COLUMN_CURRENCY,
+            TransactionEntry.COLUMN_COMMODITY_UID,
+            TransactionEntry.COLUMN_DATE_ENTERED,
+            TransactionEntry.COLUMN_SCHEDX_ACTION_UID,
+            TransactionEntry.COLUMN_TEMPLATE,
+            TransactionEntry.COLUMN_NUMBER
+        )
+        internal const val INDEX_COLUMN_DESCRIPTION = 0
+        internal const val INDEX_COLUMN_NOTES = INDEX_COLUMN_DESCRIPTION + 1
+        internal const val INDEX_COLUMN_DATE_POSTED = INDEX_COLUMN_NOTES + 1
+        internal const val INDEX_COLUMN_EXPORTED = INDEX_COLUMN_DATE_POSTED + 1
+        internal const val INDEX_COLUMN_CURRENCY = INDEX_COLUMN_EXPORTED + 1
+        internal const val INDEX_COLUMN_COMMODITY_UID = INDEX_COLUMN_CURRENCY + 1
+        internal const val INDEX_COLUMN_DATE_ENTERED = INDEX_COLUMN_COMMODITY_UID + 1
+        internal const val INDEX_COLUMN_SCHEDX_ACTION_UID = INDEX_COLUMN_DATE_ENTERED + 1
+        internal const val INDEX_COLUMN_TEMPLATE = INDEX_COLUMN_SCHEDX_ACTION_UID + 1
+        internal const val INDEX_COLUMN_NUMBER = INDEX_COLUMN_TEMPLATE + 1
+
         const val INVALID_DATE: Long = Long.MIN_VALUE
 
         /**

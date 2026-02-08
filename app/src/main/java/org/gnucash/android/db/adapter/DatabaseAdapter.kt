@@ -26,11 +26,8 @@ import org.gnucash.android.db.BookDbHelper.Companion.getBookPreferences
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.CommonColumns
 import org.gnucash.android.db.forEach
-import org.gnucash.android.db.getLong
-import org.gnucash.android.db.getString
+import org.gnucash.android.db.getTimestamp
 import org.gnucash.android.model.BaseModel
-import org.gnucash.android.util.TimestampHelper.getTimestampFromUtcString
-import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
 import org.gnucash.android.util.set
 import timber.log.Timber
 import java.io.Closeable
@@ -90,7 +87,19 @@ abstract class DatabaseAdapter<Model : BaseModel>(
      * @return `true` if the database is open, `false` otherwise
      */
     val isOpen: Boolean
-        get() = db.isOpen()
+        get() = db.isOpen
+
+    internal val allColumns: Array<String> = columns +
+            CommonColumns.COLUMN_UID +
+            CommonColumns.COLUMN_ID +
+            CommonColumns.COLUMN_CREATED_AT +
+            CommonColumns.COLUMN_MODIFIED_AT
+
+
+    internal val INDEX_COLUMN_UID = columns.size
+    internal val INDEX_COLUMN_ID = INDEX_COLUMN_UID + 1
+    internal val INDEX_COLUMN_CREATED_AT = INDEX_COLUMN_ID + 1
+    internal val INDEX_COLUMN_MODIFIED_AT = INDEX_COLUMN_CREATED_AT + 1
 
     /**
      * Adds a record to the database with the data contained in the model.
@@ -118,7 +127,7 @@ abstract class DatabaseAdapter<Model : BaseModel>(
         Timber.d(
             "Adding record to database: %s %s",
             model.javaClass.getSimpleName(),
-            model.uid
+            model.toString()
         )
         val statement: SQLiteStatement
         when (updateMethod) {
@@ -271,7 +280,7 @@ abstract class DatabaseAdapter<Model : BaseModel>(
         val columnsCount = columns.size
         val sql = StringBuilder("REPLACE INTO ").append(tableName).append(" (")
         for (i in 0 until columnsCount) {
-            sql.append(columns[i]).append(",")
+            sql.append(columns[i]).append(',')
         }
         sql.append(CommonColumns.COLUMN_UID)
             .append(") VALUES (")
@@ -305,7 +314,7 @@ abstract class DatabaseAdapter<Model : BaseModel>(
         for (i in 0 until columnsCount) {
             sql.append(columns[i]).append("=?,")
         }
-        sql.deleteCharAt(sql.length - 1) //delete the last ","
+        sql.deleteCharAt(sql.lastIndex) //delete the last ","
         sql.append(" WHERE ").append(CommonColumns.COLUMN_UID).append("=?")
         return sql.toString()
     }
@@ -330,7 +339,7 @@ abstract class DatabaseAdapter<Model : BaseModel>(
         val columnsCount = columns.size
         val sql = StringBuilder("INSERT INTO ").append(tableName).append(" (")
         for (i in 0 until columnsCount) {
-            sql.append(columns[i]).append(",")
+            sql.append(columns[i]).append(',')
         }
         sql.append(CommonColumns.COLUMN_UID)
             .append(") VALUES (")
@@ -353,7 +362,7 @@ abstract class DatabaseAdapter<Model : BaseModel>(
 
     protected fun bindBaseModel(stmt: SQLiteStatement, model: Model) {
         stmt.clearBindings()
-        stmt.bindString(1 + columns.size, model.uid)
+        stmt.bindString(1 + INDEX_COLUMN_UID, model.uid)
     }
 
     fun getRecordOrNull(uid: String): Model? {
@@ -452,8 +461,7 @@ abstract class DatabaseAdapter<Model : BaseModel>(
         model: Model
     ): ContentValues {
         contentValues[CommonColumns.COLUMN_UID] = model.uid
-        contentValues[CommonColumns.COLUMN_CREATED_AT] =
-            getUtcStringFromTimestamp(model.createdTimestamp)
+        contentValues[CommonColumns.COLUMN_CREATED_AT] = model.createdTimestamp
         //there is a trigger in the database for updated the modified_at column
         /* Due to the use of SQL REPLACE syntax, we insert the created_at values each time
          * (maintain the original creation time and not the time of creation of the replacement)
@@ -468,16 +476,20 @@ abstract class DatabaseAdapter<Model : BaseModel>(
      * @param cursor Cursor pointing to database record
      * @param model  Model instance to be initialized
      */
-    protected fun populateBaseModelAttributes(cursor: Cursor, model: BaseModel) {
-        val id = cursor.getLong(CommonColumns.COLUMN_ID)
-        val uid = cursor.getString(CommonColumns.COLUMN_UID)!!
-        val created = cursor.getString(CommonColumns.COLUMN_CREATED_AT)!!
-        val modified = cursor.getString(CommonColumns.COLUMN_MODIFIED_AT)!!
+    protected fun populateBaseModelAttributes(
+        cursor: Cursor,
+        model: BaseModel,
+        columnOffset: Int = 0
+    ) {
+        val id = cursor.getLong(INDEX_COLUMN_ID + columnOffset)
+        val uid = cursor.getString(INDEX_COLUMN_UID + columnOffset)!!
+        val created = cursor.getTimestamp(INDEX_COLUMN_CREATED_AT + columnOffset)!!
+        val modified = cursor.getTimestamp(INDEX_COLUMN_MODIFIED_AT + columnOffset)!!
 
         model.id = id
         model.setUID(uid)
-        model.createdTimestamp = getTimestampFromUtcString(created)
-        model.modifiedTimestamp = getTimestampFromUtcString(modified)
+        model.createdTimestamp = created
+        model.modifiedTimestamp = modified
     }
 
     /**
@@ -490,7 +502,7 @@ abstract class DatabaseAdapter<Model : BaseModel>(
         require(!uid.isEmpty()) { "UID required" }
         val where = CommonColumns.COLUMN_UID + "=?"
         val whereArgs = arrayOf<String?>(uid)
-        return db.query(tableName, null, where, whereArgs, null, null, null)
+        return db.query(tableName, allColumns, where, whereArgs, null, null, null)
     }
 
     /**
@@ -510,14 +522,14 @@ abstract class DatabaseAdapter<Model : BaseModel>(
      * @param orderBy   SQL orderby clause
      * @return Cursor to records matching conditions
      */
-    fun fetchAllRecords(where: String?, whereArgs: Array<String?>?, orderBy: String?): Cursor {
+    open fun fetchAllRecords(where: String?, whereArgs: Array<String?>?, orderBy: String?): Cursor {
         Timber.v(
             "Fetching all accounts from db where %s/%s order by %s",
             where,
             whereArgs.contentToString(),
             orderBy
         )
-        return db.query(tableName, null, where, whereArgs, null, null, orderBy)
+        return db.query(tableName, allColumns, where, whereArgs, null, null, orderBy)
     }
 
     /**
@@ -529,11 +541,8 @@ abstract class DatabaseAdapter<Model : BaseModel>(
     @Throws(SQLException::class)
     open fun deleteRecord(rowId: Long): Boolean {
         Timber.d("Deleting record with id %d from %s", rowId, tableName)
-        return db.delete(
-            tableName,
-            CommonColumns.COLUMN_ID + "=" + rowId,
-            null
-        ) > 0
+        val where = CommonColumns.COLUMN_ID + "=" + rowId
+        return db.delete(tableName, where, null) > 0
     }
 
     /**
@@ -852,20 +861,6 @@ abstract class DatabaseAdapter<Model : BaseModel>(
         db.setTransactionSuccessful()
     }
 
-    /** Foreign key constraits should be enabled in general.
-     * But if it affects speed (check constraints takes time)
-     * and the constrained can be assured by the program,
-     * or if some SQL exec will cause deletion of records
-     * (like use replace in accounts update will delete all transactions)
-     * that need not be deleted, then it can be disabled temporarily */
-    fun enableForeignKey(enable: Boolean) {
-        if (enable) {
-            db.execSQL("PRAGMA foreign_keys=ON;")
-        } else {
-            db.execSQL("PRAGMA foreign_keys=OFF;")
-        }
-    }
-
     /**
      * Expose mDb.endTransaction()
      */
@@ -915,4 +910,8 @@ abstract class DatabaseAdapter<Model : BaseModel>(
      */
     val bookPreferences: SharedPreferences
         get() = getBookPreferences(holder)
+
+    internal fun allColumnsPrefix(prefix: String): Array<String> {
+        return allColumns.map { prefix + it }.toTypedArray()
+    }
 }

@@ -152,7 +152,7 @@ class SplitEditorFragment : MenuFragment() {
             val account = this.account!!
             val commodity = account.commodity
             val split = Split(Money(baseAmount, commodity), account)
-            val accountType = account.accountType
+            val accountType = account.type
             val transactionType = getTypeForBalance(accountType, baseAmount.signum() < 0)
             split.type = transactionType
             val splitViewHolder = addSplitView(split)
@@ -326,7 +326,7 @@ class SplitEditorFragment : MenuFragment() {
                 splitMemoEditText.setText(split.memo)
                 splitUidTextView.text = split.uid
                 setSelectedTransferAccount(splitAccountUID, accountsSpinner)
-                splitTypeSwitch.accountType = account.accountType
+                splitTypeSwitch.accountType = account.type
                 splitTypeSwitch.setChecked(split.type)
             } else {
                 val account = this@SplitEditorFragment.account
@@ -338,7 +338,7 @@ class SplitEditorFragment : MenuFragment() {
                 val accountTransfer = transferUID?.let { accountNameAdapter.getAccountDb(it) }
                 if (accountTransfer != null) {
                     setSelectedTransferAccount(transferUID, accountsSpinner)
-                    splitTypeSwitch.accountType = accountTransfer.accountType
+                    splitTypeSwitch.accountType = accountTransfer.type
                 }
                 splitTypeSwitch.isChecked = baseAmount.signum() > 0
             }
@@ -449,7 +449,7 @@ class SplitEditorFragment : MenuFragment() {
                 val position = viewHolder.accountsSpinner.selectedItemPosition
                 if (position < 0) return
                 val account = accountNameAdapter.getAccount(position) ?: return
-                val hasDebitNormalBalance = account.accountType.hasDebitNormalBalance
+                val hasDebitNormalBalance = account.type.hasDebitNormalBalance
 
                 imbalance += if (viewHolder.splitTypeSwitch.isChecked) {
                     if (hasDebitNormalBalance) amount else -amount
@@ -490,7 +490,7 @@ class SplitEditorFragment : MenuFragment() {
             val accountFrom = this@SplitEditorFragment.account!!
 
             val accountTo = accountNameAdapter!!.getAccount(position) ?: return
-            val accountType = accountTo.accountType
+            val accountType = accountTo.type
             typeToggleButton.accountType = accountType
 
             //refresh the imbalance amount if we change the account
