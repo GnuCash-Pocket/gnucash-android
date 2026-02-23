@@ -57,6 +57,7 @@ import org.gnucash.android.ui.common.FormActivity
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.common.UxArgument
 import org.gnucash.android.ui.transaction.TransactionsActivity
+import timber.log.Timber
 import java.math.RoundingMode
 
 /**
@@ -230,6 +231,10 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
 
             itemView.setOnClickListener { v ->
                 val accountUID = budgetAmount.accountUID
+                if (accountUID.isNullOrEmpty()) {
+                    Timber.w("Account UID required")
+                    return@setOnClickListener
+                }
                 val intent = Intent(v.context, TransactionsActivity::class.java)
                     .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
                 startActivityForResult(intent, REQUEST_REFRESH)

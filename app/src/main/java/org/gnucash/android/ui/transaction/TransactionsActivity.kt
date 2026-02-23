@@ -348,6 +348,10 @@ class TransactionsActivity : BaseDrawerActivity(),
     }
 
     override fun accountSelected(accountUID: String) {
+        if (accountUID.isEmpty()) {
+            Timber.w("Account UID required")
+            return
+        }
         val intent = Intent(this, TransactionsActivity::class.java)
             .setAction(Intent.ACTION_VIEW)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)

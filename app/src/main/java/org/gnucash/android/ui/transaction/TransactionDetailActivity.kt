@@ -283,6 +283,14 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
     fun showAccount(split: Split) {
         val accountUID = split.accountUID ?: return
         val transactionUID = split.transactionUID ?: return
+        if (accountUID.isEmpty()) {
+            Timber.w("Account UID required")
+            return
+        }
+        if (transactionUID.isEmpty()) {
+            Timber.w("Transaction UID required")
+            return
+        }
         val intent = Intent(this, TransactionsActivity::class.java)
             .setAction(Intent.ACTION_VIEW)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)

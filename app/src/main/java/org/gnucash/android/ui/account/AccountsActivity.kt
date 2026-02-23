@@ -54,6 +54,7 @@ import org.gnucash.android.ui.util.widget.FragmentStateAdapter
 import org.gnucash.android.ui.wizard.FirstRunWizardActivity
 import org.gnucash.android.util.BackupManager.backupActiveBookAsync
 import org.gnucash.android.util.chooseContent
+import timber.log.Timber
 
 /**
  * Manages actions related to accounts, displaying, exporting and creating new accounts
@@ -272,6 +273,10 @@ class AccountsActivity : BaseDrawerActivity(),
     }
 
     override fun accountSelected(accountUID: String) {
+        if (accountUID.isEmpty()) {
+            Timber.w("Account UID required")
+            return
+        }
         val intent = Intent(this, TransactionsActivity::class.java)
             .setAction(Intent.ACTION_VIEW)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
