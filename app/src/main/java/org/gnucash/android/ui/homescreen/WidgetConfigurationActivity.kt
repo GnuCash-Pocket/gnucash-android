@@ -239,8 +239,7 @@ class WidgetConfigurationActivity : GnuCashActivity() {
         fun updateWidget(context: Context, appWidgetId: Int) {
             Timber.i("Updating widget: %s", appWidgetId)
             val appWidgetManager = AppWidgetManager.getInstance(context)
-            val views =
-                RemoteViews(context.packageName, R.layout.widget_4x1)
+            val views = RemoteViews(context.packageName, R.layout.widget_4x1)
 
             val preferences = context.getSharedPreferences(PREFS_PREFIX + appWidgetId, MODE_PRIVATE)
             val bookUID = preferences.getString(UxArgument.BOOK_UID, null)

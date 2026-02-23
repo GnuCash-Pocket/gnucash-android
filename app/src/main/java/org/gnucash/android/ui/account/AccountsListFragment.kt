@@ -465,6 +465,10 @@ class AccountsListFragment : MenuFragment(),
             if (!isResumed) return
             val accountsDbAdapter = this@AccountsListFragment.accountsDbAdapter
             val accountUID = cursor.getString(AccountEntry.COLUMN_UID)!!
+            if (accountUID.isEmpty()) {
+                Timber.w("Account UID required")
+                return
+            }
             this.accountUID = accountUID
             val account = accountsDbAdapter.getRecord(accountUID)
 
@@ -501,7 +505,6 @@ class AccountsListFragment : MenuFragment(),
                     val context = v.context
                     val intent = Intent(context, FormActivity::class.java)
                         .setAction(Intent.ACTION_INSERT_OR_EDIT)
-                        .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
                         .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
                     startActivityForResult(intent, REQUEST_REFRESH)
                 }

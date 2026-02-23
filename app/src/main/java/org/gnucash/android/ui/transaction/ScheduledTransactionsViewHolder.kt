@@ -72,6 +72,14 @@ internal class ScheduledTransactionsViewHolder(
         accountUID: String,
         transactionUID: String
     ) {
+        if (accountUID.isEmpty()) {
+            Timber.w("Account UID required")
+            return
+        }
+        if (transactionUID.isEmpty()) {
+            Timber.w("Transaction UID required")
+            return
+        }
         val context = itemView.context
         val intent = Intent(context, FormActivity::class.java)
             .setAction(Intent.ACTION_INSERT_OR_EDIT)

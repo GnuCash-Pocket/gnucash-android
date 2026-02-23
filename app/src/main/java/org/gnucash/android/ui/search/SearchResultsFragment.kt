@@ -29,6 +29,7 @@ import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity.Companion.u
 import org.gnucash.android.ui.transaction.TransactionDetailActivity
 import org.gnucash.android.ui.transaction.dialog.BulkMoveDialogFragment
 import org.gnucash.android.util.BackupManager.backupActiveBookAsync
+import timber.log.Timber
 
 class SearchResultsFragment : Fragment(), SearchResultCallback, FragmentResultListener {
     private val viewModel by viewModels<SearchResultsViewModel>()
@@ -111,10 +112,19 @@ class SearchResultsFragment : Fragment(), SearchResultCallback, FragmentResultLi
     }
 
     private fun edit(context: Context, transaction: Transaction) {
-        val accountUID = transaction.getDefaultAccountUID(TransactionType.CREDIT) ?: return
+        val accountUID = transaction.getDefaultAccountUID(TransactionType.CREDIT)
+        if (accountUID.isNullOrEmpty()) {
+            Timber.w("Account UID required")
+            return
+        }
+        val transactionUID = transaction.uid
+        if (transactionUID.isEmpty()) {
+            Timber.w("Transaction UID required")
+            return
+        }
         val intent = Intent(context, FormActivity::class.java)
             .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
-            .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transaction.uid)
+            .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
         startActivity(intent)
     }
@@ -130,8 +140,13 @@ class SearchResultsFragment : Fragment(), SearchResultCallback, FragmentResultLi
 
     private fun view(context: Context, transaction: Transaction) {
         val accountUID = transaction.getDefaultAccountUID(TransactionType.CREDIT) ?: return
+        val transactionUID = transaction.uid
+        if (transactionUID.isEmpty()) {
+            Timber.w("Transaction UID required")
+            return
+        }
         val intent = Intent(context, TransactionDetailActivity::class.java)
-            .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transaction.uid)
+            .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
         startActivity(intent)
     }
