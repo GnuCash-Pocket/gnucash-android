@@ -57,7 +57,7 @@
     <string-array name="export_destinations">
         <item>Speichern unter…</item>
         <item>Dropbox</item>
-        <item>ownCloud</item>
+        <item>@string/owncloud_name</item>
         <item>Senden an…</item>
     </string-array>
     <string name="btn_move">Verschieben</string>

@@ -42,7 +42,7 @@
     <string-array name="export_destinations">
         <item>שמירה בשם…</item>
         <item>Dropbox</item>
-        <item>ownCloud</item>
+        <item>@string/owncloud_name</item>
         <item>שלח ל…</item>
     </string-array>
     <string name="btn_move">העבר</string>

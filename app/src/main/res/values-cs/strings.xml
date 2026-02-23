@@ -57,7 +57,7 @@
     <string-array name="export_destinations">
         <item>Uložit jako…</item>
         <item>Dropbox</item>
-        <item>ownCloud</item>
+        <item>@string/owncloud_name</item>
         <item>Odeslat…</item>
     </string-array>
     <string name="btn_move">Přesunout</string>

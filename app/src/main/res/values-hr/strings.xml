@@ -57,7 +57,7 @@
     <string-array name="export_destinations">
         <item>Spremi pod…</item>
         <item>Dropbox</item>
-        <item>ownCloud</item>
+        <item>@string/owncloud_name</item>
         <item>Pošalji na…</item>
     </string-array>
     <string name="btn_move">Premjesti</string>

@@ -251,6 +251,7 @@
     </string-array>
     <string name="schedule_export_description" translatable="false">"%1$s %2$s"</string>
     <string name="owncloud_server" translatable="false">https://owncloud.com</string>
+    <string name="owncloud_name" translatable="false">ownCloud</string>
 
     <!-- Theme. -->
     <string name="pref_appearance_title" translatable="false">@string/category_name_appearance</string>

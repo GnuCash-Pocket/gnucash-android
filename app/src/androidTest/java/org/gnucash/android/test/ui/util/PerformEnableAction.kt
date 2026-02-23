@@ -9,24 +9,25 @@ import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.isEnabled
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.allOf
+import org.hamcrest.Matchers.not
 
-class PerformClickAction : ViewAction {
+class PerformEnableAction : ViewAction {
     override fun getConstraints(): Matcher<View> {
-        return allOf(isDisplayed(), isEnabled(), isClickable())
+        return allOf(isDisplayed(), not(isEnabled()))
     }
 
     override fun getDescription(): String {
-        return "Perform a click action"
+        return "Enable"
     }
 
     override fun perform(uiController: UiController, view: View) {
-        view.performClick()
+        view.isEnabled = true
     }
 
     companion object {
-        fun click(): ViewAction {
+        fun enable(): ViewAction {
             return actionWithAssertions(
-                PerformClickAction()
+                PerformEnableAction()
             )
         }
     }

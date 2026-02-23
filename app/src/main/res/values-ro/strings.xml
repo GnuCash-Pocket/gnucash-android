@@ -57,7 +57,7 @@
     <string-array name="export_destinations">
         <item>Salvează Ca…</item>
         <item>Dropbox</item>
-        <item>ownCloud</item>
+        <item>@string/owncloud_name</item>
         <item>Trimite către…</item>
     </string-array>
     <string name="btn_move">Mută</string>

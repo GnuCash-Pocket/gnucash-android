@@ -57,7 +57,7 @@
     <string-array name="export_destinations">
         <item>Farklı Kaydet…</item>
         <item>Dropbox</item>
-        <item>ownCloud</item>
+        <item>@string/owncloud_name</item>
         <item>Şuna Gönder…</item>
     </string-array>
     <string name="btn_move">Taşı</string>

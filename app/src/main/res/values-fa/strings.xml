@@ -57,7 +57,7 @@
     <string-array name="export_destinations">
         <item>ذخیره به عنوان…</item>
         <item>Dropbox</item>
-        <item>ownCloud</item>
+        <item>@string/owncloud_name</item>
         <item>ارسال به…</item>
     </string-array>
     <string name="btn_move">انتقال</string>

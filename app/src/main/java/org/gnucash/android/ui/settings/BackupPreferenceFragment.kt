@@ -117,7 +117,7 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
         }
 
         preference = findPreference(getString(R.string.key_backup_location))!!
-        preference.setOnPreferenceClickListener { preference ->
+        preference.setOnPreferenceClickListener { _ ->
             val bookName = BooksDbAdapter.instance.activeBookDisplayName
             val fileName =
                 sanitizeFilename(bookName) + "_" + getString(R.string.label_backup_filename)
@@ -151,10 +151,10 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
         switch = findPreference(getString(R.string.key_owncloud_sync))!!
         switch.setOnPreferenceClickListener { _ ->
             toggleOwnCloudSync(switch)
-            toggleOwnCloudPreference(switch)
+            toggleOwnCloudEnabled(switch)
             false
         }
-        toggleOwnCloudPreference(switch)
+        toggleOwnCloudEnabled(switch)
     }
 
     /**
@@ -172,7 +172,7 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
      *
      * @param preference ownCloud Sync preference
      */
-    fun toggleOwnCloudPreference(preference: TwoStatePreference) {
+    fun toggleOwnCloudEnabled(preference: TwoStatePreference) {
         val context = preference.context
         val preferences = OwnCloudPreferences(context)
         preference.isChecked = preferences.isSync

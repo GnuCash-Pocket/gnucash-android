@@ -57,7 +57,7 @@
     <string-array name="export_destinations">
         <item>Lagre som…</item>
         <item>Dropbox</item>
-        <item>ownCloud</item>
+        <item>@string/owncloud_name</item>
         <item>Send til…</item>
     </string-array>
     <string name="btn_move">Flytt</string>

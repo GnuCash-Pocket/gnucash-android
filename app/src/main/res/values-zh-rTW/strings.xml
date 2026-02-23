@@ -57,7 +57,7 @@
     <string-array name="export_destinations">
         <item>另存為…</item>
         <item>Dropbox</item>
-        <item>ownCloud</item>
+        <item>@string/owncloud_name</item>
         <item>傳送到…</item>
     </string-array>
     <string name="btn_move">移動</string>

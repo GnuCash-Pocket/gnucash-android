@@ -57,7 +57,7 @@
     <string-array name="export_destinations">
         <item>Сачувај као…</item>
         <item>Dropbox</item>
-        <item>ownCloud</item>
+        <item>@string/owncloud_name</item>
         <item>Пошаљи…</item>
     </string-array>
     <string name="btn_move">Премести</string>

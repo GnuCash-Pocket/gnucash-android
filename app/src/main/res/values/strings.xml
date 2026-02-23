@@ -57,7 +57,7 @@
     <string-array name="export_destinations">
         <item>Save As…</item>
         <item>Dropbox</item>
-        <item>ownCloud</item>
+        <item>@string/owncloud_name</item>
         <item>Send to…</item>
     </string-array>
     <string name="btn_move">Move</string>
@@ -547,6 +547,8 @@
     <string name="add_budget_amounts">Add Budget Amounts</string>
     <string name="label_spent">Spent</string>
     <string name="label_remaining">Remaining</string>
+    <string name="server_address">Server Address</string>
+    <string name="directory">Directory</string>
 
     <string-array name="colors_names_gtk">
         <item>"Very Light Blue"</item>

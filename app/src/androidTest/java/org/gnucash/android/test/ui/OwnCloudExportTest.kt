@@ -17,9 +17,9 @@ package org.gnucash.android.test.ui
 
 import android.Manifest
 import android.content.Context
-import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import androidx.core.content.edit
+import androidx.preference.PreferenceManager
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.clearText
 import androidx.test.espresso.action.ViewActions.click
@@ -46,6 +46,7 @@ import org.gnucash.android.model.Money
 import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.test.ui.util.DisableAnimationsRule
+import org.gnucash.android.test.ui.util.PerformEnableAction.Companion.enable
 import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.ui.settings.OwnCloudPreferences
 import org.junit.Assume
@@ -56,7 +57,6 @@ import org.junit.Rule
 import org.junit.Test
 
 class OwnCloudExportTest : GnuAndroidTest() {
-    private lateinit var prefs: SharedPreferences
 
     /**
      * A JUnit [@Rule][Rule] to launch your activity under test. This is a replacement
@@ -82,11 +82,6 @@ class OwnCloudExportTest : GnuAndroidTest() {
 
     @Before
     fun setUp() {
-        prefs = context.getSharedPreferences(
-            context.getString(R.string.owncloud_pref),
-            Context.MODE_PRIVATE
-        )
-
         GnuCashApplication.initializeDatabaseAdapters(context)
 
         val accountsDbAdapter = AccountsDbAdapter.instance
@@ -94,7 +89,7 @@ class OwnCloudExportTest : GnuAndroidTest() {
 
         val currencyCode = GnuCashApplication.defaultCurrencyCode
         Commodity.DEFAULT_COMMODITY =
-            CommoditiesDbAdapter.instance!!.getCurrency(currencyCode)!!
+            CommoditiesDbAdapter.instance.getCurrency(currencyCode)!!
 
         val account = Account("ownCloud")
         val transaction = Transaction("birds")
@@ -113,8 +108,11 @@ class OwnCloudExportTest : GnuAndroidTest() {
 
         accountsDbAdapter.insert(account)
 
-        prefs.edit {
-            putBoolean(context.getString(R.string.key_owncloud_sync), false)
+        val prefs = OwnCloudPreferences(context)
+        prefs.isEnabled = false
+
+        val prefsShared = PreferenceManager.getDefaultSharedPreferences(context)
+        prefsShared.edit {
             putInt(context.getString(R.string.key_last_export_destination), 0)
         }
     }
@@ -130,28 +128,29 @@ class OwnCloudExportTest : GnuAndroidTest() {
             .perform(scrollTo(), click())
         clickViewText(R.string.header_backup_and_export_settings)
         clickViewText(R.string.title_owncloud_sync_preference)
-        onView(withId(R.id.owncloud_hostname))
-            .check(matches(isDisplayed()))
 
-        onView(withId(R.id.owncloud_hostname))
+        onView(withId(R.id.server))
+            .check(matches(isDisplayed()))
             .perform(
                 clearText(),
                 typeText(OC_SERVER),
                 closeSoftKeyboard()
             )
-        onView(withId(R.id.owncloud_username))
+        onView(withId(R.id.username))
+            .check(matches(isDisplayed()))
             .perform(
                 clearText(),
                 replaceText(OC_USERNAME),
                 closeSoftKeyboard()
             )
-        onView(withId(R.id.owncloud_password))
+        onView(withId(R.id.password))
             .perform(
                 clearText(),
                 replaceText(OC_PASSWORD),
                 closeSoftKeyboard()
             )
-        onView(withId(R.id.owncloud_dir))
+        onView(withId(R.id.directory))
+            .check(matches(isDisplayed()))
             .perform(
                 clearText(),
                 typeText(OC_DIR),
@@ -163,22 +162,19 @@ class OwnCloudExportTest : GnuAndroidTest() {
         sleep(5000)
         clickViewId(BUTTON_POSITIVE)
 
-        assertThat(prefs.getString(context.getString(R.string.key_owncloud_server), null))
-            .isEqualTo(OC_SERVER)
-        assertThat(prefs.getString(context.getString(R.string.key_owncloud_username), null))
-            .isEqualTo(OC_USERNAME)
-        assertThat(prefs.getString(context.getString(R.string.key_owncloud_password), null))
-            .isEqualTo(OC_PASSWORD)
-        assertThat(prefs.getString(context.getString(R.string.key_owncloud_dir), null))
-            .isEqualTo(OC_DIR)
-        assertThat(prefs.getBoolean(context.getString(R.string.key_owncloud_sync), false)).isTrue()
+        val preferences = OwnCloudPreferences(context)
+        assertThat(preferences.server).isEqualTo(OC_SERVER)
+        assertThat(preferences.username).isEqualTo(OC_USERNAME)
+        assertThat(preferences.password).isEqualTo(OC_PASSWORD)
+        assertThat(preferences.dir).isEqualTo(OC_DIR)
+        assertThat(preferences.isSync).isTrue()
     }
 
     @Test
     fun ownCloudExport() {
         Assume.assumeTrue(hasActiveInternetConnection(context))
-        prefs.edit { putBoolean(context.getString(R.string.key_owncloud_sync), true) }
         val preferences = OwnCloudPreferences(context)
+        preferences.isEnabled = true
         preferences.server = OC_SERVER
         preferences.username = OC_USERNAME
         preferences.password = OC_PASSWORD
@@ -188,9 +184,11 @@ class OwnCloudExportTest : GnuAndroidTest() {
         clickViewText(R.string.nav_menu_export)
         clickViewId(R.id.spinner_export_destination)
         val destinations = context.resources.getStringArray(R.array.export_destinations)
-        clickViewText(destinations[2])
+        clickViewText(destinations[2]) // ownCloud
 
         // Close the dialog
+        onView(withId(BUTTON_POSITIVE))
+            .perform(enable())
         clickViewId(BUTTON_POSITIVE)
         // Export
         clickViewId(R.id.menu_save)

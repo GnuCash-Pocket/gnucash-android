@@ -71,6 +71,7 @@ import org.gnucash.android.ui.export.OptionsViewAnimationUtils.collapse
 import org.gnucash.android.ui.export.OptionsViewAnimationUtils.expand
 import org.gnucash.android.ui.get
 import org.gnucash.android.ui.passcode.PasscodeHelper.skipPasscodeScreen
+import org.gnucash.android.ui.settings.OwnCloudPreferences
 import org.gnucash.android.ui.settings.dialog.OwnCloudDialogFragment
 import org.gnucash.android.ui.snackLong
 import org.gnucash.android.ui.transaction.TransactionFormFragment
@@ -383,12 +384,16 @@ class ExportFormFragment : MenuFragment(),
 
                     TARGET_OWNCLOUD -> {
                         setExportUri(null)
-                        binding.recurrenceOptions.isVisible = true
-                        exportParams.exportTarget = ExportTarget.OWNCLOUD
-                        if (!preferences.getBoolean(getString(R.string.key_owncloud_sync), false)) {
+                        val ownCloudPreferences = OwnCloudPreferences(context)
+                        val ocEnabled = ownCloudPreferences.isEnabled
+                        val ocSync = ownCloudPreferences.isSync
+                        if (!ocSync || !ocEnabled) {
                             OwnCloudDialogFragment.newInstance()
                                 .show(parentFragmentManager, OwnCloudDialogFragment.TAG)
+                            return@DefaultItemSelectedListener
                         }
+                        exportParams.exportTarget = ExportTarget.OWNCLOUD
+                        binding.recurrenceOptions.isVisible = true
                     }
 
                     TARGET_SHARE -> {

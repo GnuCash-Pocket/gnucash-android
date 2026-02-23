@@ -57,7 +57,7 @@
     <string-array name="export_destinations">
         <item>다른 이름으로 저장…</item>
         <item>Dropbox</item>
-        <item>ownCloud</item>
+        <item>@string/owncloud_name</item>
         <item>보내기…</item>
     </string-array>
     <string name="btn_move">이동</string>

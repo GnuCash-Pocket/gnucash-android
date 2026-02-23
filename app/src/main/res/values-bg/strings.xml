@@ -56,7 +56,7 @@
     <string-array name="export_destinations">
         <item>Save As…</item>
         <item>Dropbox</item>
-        <item>ownCloud</item>
+        <item>@string/owncloud_name</item>
         <item>Send to…</item>
     </string-array>
     <string name="btn_move">Move</string>

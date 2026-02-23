@@ -57,7 +57,7 @@
     <string-array name="export_destinations">
         <item>Zapisz jako…</item>
         <item>Dropbox</item>
-        <item>ownCloud</item>
+        <item>@string/owncloud_name</item>
         <item>Wyślij do…</item>
     </string-array>
     <string name="btn_move">Przenieś</string>
