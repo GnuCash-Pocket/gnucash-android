@@ -44,6 +44,11 @@ class FragmentViewHolder private constructor(
                     if (f == fragment) {
                         fm.unregisterFragmentLifecycleCallbacks(this)
                         if (v.parent === container) return
+                        if (v.parent is ViewGroup) {
+                            (v.parent as ViewGroup).removeView(v)
+                        } else if (v.parent != null) {
+                            return
+                        }
                         container.removeAllViews()
                         container.addView(v)
                         fragment.setMenuVisibility(layoutPosition == pager.currentItem)
