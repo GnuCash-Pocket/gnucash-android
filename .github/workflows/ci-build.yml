@@ -1,81 +1,10 @@
-name: CI Build
+name: GnuCash Pocket CI Build
 
 on:
   push: {}
   pull_request:
     branches: [master]
   workflow_call:
-
-env:
-  GOOGLE_SERVICES: |
-    {
-      "project_info": {
-        "project_number": "679335683580",
-        "project_id": "gnucash-pocket",
-        "storage_bucket": "gnucash-pocket.appspot.com"
-      },
-      "client": [
-        {
-          "client_info": {
-            "mobilesdk_app_id": "1:679335683580:android:4a7289ff6df3b6d0e7fe79",
-            "android_client_info": {
-              "package_name": "org.gnucash.pocket"
-            }
-          },
-          "oauth_client": [
-            {
-              "client_id": "679335683580-9k138m2htltj52u018gqetisuf6fj3ca.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ],
-          "api_key": [
-            {
-              "current_key": "AIzaSyD3DWSMPA3bE2fm6vChbGy6o_fNYRLCCsQ"
-            }
-          ],
-          "services": {
-            "appinvite_service": {
-              "other_platform_oauth_client": [
-                {
-                  "client_id": "679335683580-9k138m2htltj52u018gqetisuf6fj3ca.apps.googleusercontent.com",
-                  "client_type": 3
-                }
-              ]
-            }
-          }
-        },
-        {
-          "client_info": {
-            "mobilesdk_app_id": "1:679335683580:android:b7412dd4e5dddc59e7fe79",
-            "android_client_info": {
-              "package_name": "org.gnucash.pocket.devel"
-            }
-          },
-          "oauth_client": [
-            {
-              "client_id": "679335683580-9k138m2htltj52u018gqetisuf6fj3ca.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ],
-          "api_key": [
-            {
-              "current_key": "AIzaSyD3DWSMPA3bE2fm6vChbGy6o_fNYRLCCsQ"
-            }
-          ],
-          "services": {
-            "appinvite_service": {
-              "other_platform_oauth_client": [
-                {
-                  "client_id": "679335683580-9k138m2htltj52u018gqetisuf6fj3ca.apps.googleusercontent.com",
-                  "client_type": 3
-                }
-              ]
-            }
-          }
-        }
-      ],
-      "configuration_version": "1"
-    }
 
 jobs:
   build:
@@ -90,10 +19,6 @@ jobs:
           distribution: temurin
       - name: Prepare Gradle
         uses: gradle/actions/setup-gradle@v3
-      - name: Prepare Google Services
-        run: echo $GOOGLE_SERVICES > app/google-services.json
-        env:
-          GOOGLE_SERVICES: ${{ env.GOOGLE_SERVICES }}
       - name: Build Application APK
         run: ./gradlew assembleDevelopmentDebug
       - name: Rename Application APK
@@ -118,10 +43,6 @@ jobs:
           distribution: temurin
       - name: Prepare Gradle
         uses: gradle/actions/setup-gradle@v3
-      - name: Prepare Google Services
-        run: echo $GOOGLE_SERVICES > app/google-services.json
-        env:
-          GOOGLE_SERVICES: ${{ env.GOOGLE_SERVICES }}
       - name: Run Unit Tests
         run: ./gradlew testDevelopmentDebugUnitTest
       - name: Unit Test Summary
@@ -149,10 +70,6 @@ jobs:
           distribution: temurin
       - name: Prepare Gradle
         uses: gradle/actions/setup-gradle@v3
-      - name: Prepare Google Services
-        run: echo $GOOGLE_SERVICES > app/google-services.json
-        env:
-          GOOGLE_SERVICES: ${{ env.GOOGLE_SERVICES }}
       - name: Run Linter
         run: ./gradlew lintDevelopmentDebug
 
@@ -168,10 +85,6 @@ jobs:
           distribution: temurin
       - name: Prepare Gradle
         uses: gradle/actions/setup-gradle@v3
-      - name: Prepare Google Services
-        run: echo $GOOGLE_SERVICES > app/google-services.json
-        env:
-          GOOGLE_SERVICES: ${{ env.GOOGLE_SERVICES }}
       - name: Build Instrumentation APK
         run: ./gradlew assembleDevelopmentDebugAndroidTest
       - name: Rename Instrumentation APK

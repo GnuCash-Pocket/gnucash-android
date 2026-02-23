@@ -26,9 +26,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - device_name: Nokia_1
-            device_model: FRT
-            device_version: 27
           - device_name: Pixel_5
             device_model: redfin
             device_version: 30
