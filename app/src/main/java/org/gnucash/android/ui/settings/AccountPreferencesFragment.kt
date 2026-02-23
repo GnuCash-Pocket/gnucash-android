@@ -74,15 +74,13 @@ class AccountPreferencesFragment : GnuPreferenceFragment() {
         if (currencyCode.isNullOrEmpty()) {
             currencyCode = defaultCurrencyCode
         }
-        val commodity = commoditiesDbAdapter.getCurrency(currencyCode)
+        val currency = commoditiesDbAdapter.getCurrency(currencyCode)
             ?: commoditiesDbAdapter.defaultCommodity
-        val currencyName = commodity.formatListItem()
-        listPreference.summary = currencyName
+        listPreference.summary = currency.formatListItem()
         listPreference.setOnPreferenceChangeListener { preference, newValue ->
-            val currencyCode = newValue.toString()
-            commoditiesDbAdapter.setDefaultCurrencyCode(currencyCode)
-            val summary = commoditiesDbAdapter.getCurrency(currencyCode)!!.formatListItem()
-            preference.setSummary(summary)
+            val currencyCode = newValue?.toString() ?: return@setOnPreferenceChangeListener false
+            val currency = commoditiesDbAdapter.setDefaultCurrencyCode(currencyCode)
+            preference.summary = currency?.formatListItem()
             true
         }
         listPreference.entries = currencyEntries.toTypedArray()
