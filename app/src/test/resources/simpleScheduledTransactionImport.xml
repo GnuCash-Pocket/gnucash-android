@@ -286,7 +286,7 @@
         </gnc:template-transactions>
         <gnc:schedxaction version="2.0.0">
             <sx:id type="guid">9def659b35e85b09fe2bfade35053487</sx:id>
-            <sx:name>Los pollos hermanos</sx:name>
+            <sx:name>Los pollos hermanos - monthly</sx:name>
             <sx:enabled>y</sx:enabled>
             <sx:autoCreate>n</sx:autoCreate>
             <sx:autoCreateNotify>n</sx:autoCreateNotify>

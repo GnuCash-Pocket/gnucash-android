@@ -19,6 +19,7 @@ import android.content.Context
 import androidx.core.content.edit
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
+import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
 import timber.log.Timber
 import java.sql.Timestamp
 
@@ -50,7 +51,7 @@ object PreferencesHelper {
      * @param lastExportTime the last export time to set.
      */
     fun setLastExportTime(context: Context, lastExportTime: Timestamp, bookUID: String) {
-        val utcString = TimestampHelper.getUtcStringFromTimestamp(lastExportTime)
+        val utcString = getUtcStringFromTimestamp(lastExportTime)
         Timber.d("Storing '%s' as lastExportTime in Android Preferences.", utcString)
         val prefs = GnuCashApplication.getBookPreferences(context, bookUID)
         prefs.edit {

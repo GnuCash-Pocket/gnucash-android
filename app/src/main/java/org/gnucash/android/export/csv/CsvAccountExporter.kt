@@ -76,14 +76,14 @@ class CsvAccountExporter(
     }
 
     private fun writeAccount(fields: Array<String?>, account: Account) {
-        fields[0] = account.accountType.name
+        fields[0] = account.type.name
         fields[1] = account.fullName
         fields[2] = account.name
 
         fields[3] = account.code.orEmpty()
         fields[4] = account.description
         fields[5] = formatRGB(account.color)
-        fields[6] = account.note.orEmpty()
+        fields[6] = account.notes.orEmpty()
 
         fields[7] = account.commodity.currencyCode
         fields[8] = account.commodity.namespace

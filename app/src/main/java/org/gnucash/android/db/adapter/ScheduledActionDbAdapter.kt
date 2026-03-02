@@ -20,19 +20,14 @@ import android.database.Cursor
 import android.database.DatabaseUtils
 import android.database.sqlite.SQLiteStatement
 import org.gnucash.android.app.GnuCashApplication
-import org.gnucash.android.db.DatabaseSchema
 import org.gnucash.android.db.DatabaseSchema.BookEntry
 import org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.bindBoolean
 import org.gnucash.android.db.bindInt
 import org.gnucash.android.db.getBoolean
-import org.gnucash.android.db.getInt
-import org.gnucash.android.db.getLong
-import org.gnucash.android.db.getString
 import org.gnucash.android.model.Recurrence
 import org.gnucash.android.model.ScheduledAction
-import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
 import org.gnucash.android.util.set
 import timber.log.Timber
 import java.io.IOException
@@ -46,30 +41,11 @@ class ScheduledActionDbAdapter(
     val recurrenceDbAdapter: RecurrenceDbAdapter,
     val transactionsDbAdapter: TransactionsDbAdapter,
     private val booksDbAdapter: BooksDbAdapter = BooksDbAdapter.instance
-) :
-    DatabaseAdapter<ScheduledAction>(
-        recurrenceDbAdapter.holder,
-        ScheduledActionEntry.TABLE_NAME,
-        arrayOf(
-            ScheduledActionEntry.COLUMN_ACTION_UID,
-            ScheduledActionEntry.COLUMN_TYPE,
-            ScheduledActionEntry.COLUMN_START_TIME,
-            ScheduledActionEntry.COLUMN_END_TIME,
-            ScheduledActionEntry.COLUMN_LAST_OCCUR,
-            ScheduledActionEntry.COLUMN_ENABLED,
-            ScheduledActionEntry.COLUMN_CREATED_AT,
-            ScheduledActionEntry.COLUMN_TAG,
-            ScheduledActionEntry.COLUMN_TOTAL_FREQUENCY,
-            ScheduledActionEntry.COLUMN_RECURRENCE_UID,
-            ScheduledActionEntry.COLUMN_AUTO_CREATE,
-            ScheduledActionEntry.COLUMN_AUTO_NOTIFY,
-            ScheduledActionEntry.COLUMN_ADVANCE_CREATION,
-            ScheduledActionEntry.COLUMN_ADVANCE_NOTIFY,
-            ScheduledActionEntry.COLUMN_TEMPLATE_ACCT_UID,
-            ScheduledActionEntry.COLUMN_INSTANCE_COUNT,
-            ScheduledActionEntry.COLUMN_NAME
-        )
-    ) {
+) : DatabaseAdapter<ScheduledAction>(
+    recurrenceDbAdapter.holder,
+    ScheduledActionEntry.TABLE_NAME,
+    entryColumns
+) {
     @Throws(IOException::class)
     override fun close() {
         super.close()
@@ -138,27 +114,24 @@ class ScheduledActionDbAdapter(
 
     override fun bind(stmt: SQLiteStatement, schedxAction: ScheduledAction): SQLiteStatement {
         bindBaseModel(stmt, schedxAction)
-        stmt.bindString(1, schedxAction.actionUID)
-        stmt.bindString(2, schedxAction.actionType.value)
-        stmt.bindLong(3, schedxAction.startDate)
-        stmt.bindLong(4, schedxAction.endDate)
-        stmt.bindLong(5, schedxAction.lastRunDate)
-        stmt.bindBoolean(6, schedxAction.isEnabled)
-        stmt.bindString(7, getUtcStringFromTimestamp(schedxAction.createdTimestamp))
+        stmt.bindString(1 + INDEX_COLUMN_ACTION_UID, schedxAction.actionUID)
+        stmt.bindString(1 + INDEX_COLUMN_TYPE, schedxAction.actionType.value)
+        stmt.bindLong(1 + INDEX_COLUMN_START_TIME, schedxAction.startDate)
+        stmt.bindLong(1 + INDEX_COLUMN_END_TIME, schedxAction.endDate)
+        stmt.bindLong(1 + INDEX_COLUMN_LAST_OCCUR, schedxAction.lastRunDate)
+        stmt.bindBoolean(1 + INDEX_COLUMN_ENABLED, schedxAction.isEnabled)
         if (schedxAction.tag != null) {
-            stmt.bindString(8, schedxAction.tag)
+            stmt.bindString(1 + INDEX_COLUMN_TAG, schedxAction.tag)
         }
-        stmt.bindInt(9, schedxAction.totalPlannedExecutionCount)
-        stmt.bindString(10, schedxAction.recurrence.uid)
-        stmt.bindBoolean(11, schedxAction.isAutoCreate)
-        stmt.bindBoolean(12, schedxAction.isAutoCreateNotify)
-        stmt.bindInt(13, schedxAction.advanceCreateDays)
-        stmt.bindInt(14, schedxAction.advanceRemindDays)
-        stmt.bindString(15, schedxAction.templateAccountUID)
-        stmt.bindInt(16, schedxAction.instanceCount)
-        if (schedxAction.name != null) {
-            stmt.bindString(17, schedxAction.name)
-        }
+        stmt.bindInt(1 + INDEX_COLUMN_TOTAL_FREQUENCY, schedxAction.totalPlannedExecutionCount)
+        stmt.bindString(1 + INDEX_COLUMN_RECURRENCE_UID, schedxAction.recurrence.uid)
+        stmt.bindBoolean(1 + INDEX_COLUMN_AUTO_CREATE, schedxAction.isAutoCreate)
+        stmt.bindBoolean(1 + INDEX_COLUMN_AUTO_NOTIFY, schedxAction.isAutoCreateNotify)
+        stmt.bindInt(1 + INDEX_COLUMN_ADVANCE_CREATION, schedxAction.advanceCreateDays)
+        stmt.bindInt(1 + INDEX_COLUMN_ADVANCE_NOTIFY, schedxAction.advanceRemindDays)
+        stmt.bindString(1 + INDEX_COLUMN_TEMPLATE_ACCT_UID, schedxAction.templateAccountUID)
+        stmt.bindInt(1 + INDEX_COLUMN_INSTANCE_COUNT, schedxAction.instanceCount)
+        stmt.bindString(1 + INDEX_COLUMN_NAME, schedxAction.name)
 
         return stmt
     }
@@ -171,22 +144,22 @@ class ScheduledActionDbAdapter(
      * @return ScheduledEvent object instance
      */
     override fun buildModelInstance(cursor: Cursor): ScheduledAction {
-        val actionUID = cursor.getString(ScheduledActionEntry.COLUMN_ACTION_UID)!!
-        val startTime = cursor.getLong(ScheduledActionEntry.COLUMN_START_TIME)
-        val endTime = cursor.getLong(ScheduledActionEntry.COLUMN_END_TIME)
-        val lastRun = cursor.getLong(ScheduledActionEntry.COLUMN_LAST_OCCUR)
-        val typeString = cursor.getString(ScheduledActionEntry.COLUMN_TYPE)!!
-        val tag = cursor.getString(ScheduledActionEntry.COLUMN_TAG)
-        val enabled = cursor.getBoolean(ScheduledActionEntry.COLUMN_ENABLED)
-        val numOccurrences = cursor.getInt(ScheduledActionEntry.COLUMN_TOTAL_FREQUENCY)
-        val execCount = cursor.getInt(ScheduledActionEntry.COLUMN_INSTANCE_COUNT)
-        val autoCreate = cursor.getBoolean(ScheduledActionEntry.COLUMN_AUTO_CREATE)
-        val autoNotify = cursor.getBoolean(ScheduledActionEntry.COLUMN_AUTO_NOTIFY)
-        val advanceCreate = cursor.getInt(ScheduledActionEntry.COLUMN_ADVANCE_CREATION)
-        val advanceNotify = cursor.getInt(ScheduledActionEntry.COLUMN_ADVANCE_NOTIFY)
-        val recurrenceUID = cursor.getString(ScheduledActionEntry.COLUMN_RECURRENCE_UID)!!
-        val templateAccountUID = cursor.getString(ScheduledActionEntry.COLUMN_TEMPLATE_ACCT_UID)
-        var name = cursor.getString(ScheduledActionEntry.COLUMN_NAME)
+        val actionUID = cursor.getString(INDEX_COLUMN_ACTION_UID)!!
+        val startTime = cursor.getLong(INDEX_COLUMN_START_TIME)
+        val endTime = cursor.getLong(INDEX_COLUMN_END_TIME)
+        val lastRun = cursor.getLong(INDEX_COLUMN_LAST_OCCUR)
+        val typeString = cursor.getString(INDEX_COLUMN_TYPE)!!
+        val tag = cursor.getString(INDEX_COLUMN_TAG)
+        val enabled = cursor.getBoolean(INDEX_COLUMN_ENABLED)
+        val numOccurrences = cursor.getInt(INDEX_COLUMN_TOTAL_FREQUENCY)
+        val execCount = cursor.getInt(INDEX_COLUMN_INSTANCE_COUNT)
+        val autoCreate = cursor.getBoolean(INDEX_COLUMN_AUTO_CREATE)
+        val autoNotify = cursor.getBoolean(INDEX_COLUMN_AUTO_NOTIFY)
+        val advanceCreate = cursor.getInt(INDEX_COLUMN_ADVANCE_CREATION)
+        val advanceNotify = cursor.getInt(INDEX_COLUMN_ADVANCE_NOTIFY)
+        val recurrenceUID = cursor.getString(INDEX_COLUMN_RECURRENCE_UID)!!
+        val templateAccountUID = cursor.getString(INDEX_COLUMN_TEMPLATE_ACCT_UID)
+        var name = cursor.getString(INDEX_COLUMN_NAME)
 
         val actionType = ScheduledAction.ActionType.of(typeString)
         if (name.isNullOrEmpty()) {
@@ -227,31 +200,14 @@ class ScheduledActionDbAdapter(
     }
 
     /**
-     * Returns all [ScheduledAction]s from the database with the specified action UID.
-     * Note that the parameter is not of the the scheduled action record, but from the action table
-     *
-     * @param actionUID GUID of the event itself
-     * @return List of ScheduledEvents
-     */
-    fun getScheduledActionsWithUID(actionUID: String): List<ScheduledAction> {
-        val cursor: Cursor? = db.query(
-            tableName, null,
-            ScheduledActionEntry.COLUMN_ACTION_UID + "= ?",
-            arrayOf<String?>(actionUID), null, null, null
-        )
-        return getRecords(cursor)
-    }
-
-    /**
      * Returns all enabled scheduled actions in the database
      *
      * @return List of enabled scheduled actions
      */
     val allEnabledScheduledActions: List<ScheduledAction>
         get() {
-            val cursor: Cursor? = db.query(
-                tableName, null, ScheduledActionEntry.COLUMN_ENABLED + "=1", null, null, null, null
-            )
+            val where = ScheduledActionEntry.COLUMN_ENABLED + "=1"
+            val cursor = db.query(tableName, allColumns, where, null, null, null, null)
             return getRecords(cursor)
         }
 
@@ -264,8 +220,8 @@ class ScheduledActionDbAdapter(
     fun getActionInstanceCount(scheduledActionUID: String?): Long {
         return DatabaseUtils.queryNumEntries(
             db,
-            DatabaseSchema.TransactionEntry.TABLE_NAME,
-            DatabaseSchema.TransactionEntry.COLUMN_SCHEDX_ACTION_UID + "=?",
+            TransactionEntry.TABLE_NAME,
+            TransactionEntry.COLUMN_SCHEDX_ACTION_UID + "=?",
             arrayOf<String?>(scheduledActionUID)
         )
     }
@@ -283,6 +239,41 @@ class ScheduledActionDbAdapter(
     }
 
     companion object {
+        private val entryColumns = arrayOf(
+            ScheduledActionEntry.COLUMN_ACTION_UID,
+            ScheduledActionEntry.COLUMN_TYPE,
+            ScheduledActionEntry.COLUMN_START_TIME,
+            ScheduledActionEntry.COLUMN_END_TIME,
+            ScheduledActionEntry.COLUMN_LAST_OCCUR,
+            ScheduledActionEntry.COLUMN_ENABLED,
+            ScheduledActionEntry.COLUMN_TAG,
+            ScheduledActionEntry.COLUMN_TOTAL_FREQUENCY,
+            ScheduledActionEntry.COLUMN_RECURRENCE_UID,
+            ScheduledActionEntry.COLUMN_AUTO_CREATE,
+            ScheduledActionEntry.COLUMN_AUTO_NOTIFY,
+            ScheduledActionEntry.COLUMN_ADVANCE_CREATION,
+            ScheduledActionEntry.COLUMN_ADVANCE_NOTIFY,
+            ScheduledActionEntry.COLUMN_TEMPLATE_ACCT_UID,
+            ScheduledActionEntry.COLUMN_INSTANCE_COUNT,
+            ScheduledActionEntry.COLUMN_NAME
+        )
+        private const val INDEX_COLUMN_ACTION_UID = 0
+        private const val INDEX_COLUMN_TYPE = INDEX_COLUMN_ACTION_UID + 1
+        private const val INDEX_COLUMN_START_TIME = INDEX_COLUMN_TYPE + 1
+        private const val INDEX_COLUMN_END_TIME = INDEX_COLUMN_START_TIME + 1
+        private const val INDEX_COLUMN_LAST_OCCUR = INDEX_COLUMN_END_TIME + 1
+        private const val INDEX_COLUMN_ENABLED = INDEX_COLUMN_LAST_OCCUR + 1
+        private const val INDEX_COLUMN_TAG = INDEX_COLUMN_ENABLED + 1
+        private const val INDEX_COLUMN_TOTAL_FREQUENCY = INDEX_COLUMN_TAG + 1
+        private const val INDEX_COLUMN_RECURRENCE_UID = INDEX_COLUMN_TOTAL_FREQUENCY + 1
+        private const val INDEX_COLUMN_AUTO_CREATE = INDEX_COLUMN_RECURRENCE_UID + 1
+        private const val INDEX_COLUMN_AUTO_NOTIFY = INDEX_COLUMN_AUTO_CREATE + 1
+        private const val INDEX_COLUMN_ADVANCE_CREATION = INDEX_COLUMN_AUTO_NOTIFY + 1
+        private const val INDEX_COLUMN_ADVANCE_NOTIFY = INDEX_COLUMN_ADVANCE_CREATION + 1
+        private const val INDEX_COLUMN_TEMPLATE_ACCT_UID = INDEX_COLUMN_ADVANCE_NOTIFY + 1
+        private const val INDEX_COLUMN_INSTANCE_COUNT = INDEX_COLUMN_TEMPLATE_ACCT_UID + 1
+        private const val INDEX_COLUMN_NAME = INDEX_COLUMN_INSTANCE_COUNT + 1
+
         val instance: ScheduledActionDbAdapter get() = GnuCashApplication.scheduledEventDbAdapter!!
     }
 }

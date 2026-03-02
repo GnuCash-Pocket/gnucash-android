@@ -180,7 +180,7 @@ class AccountsActivityTest : GnuAndroidTest() {
         val transaction = Transaction("Future transaction")
         val split1 = Split(Money("4.15", Commodity.DEFAULT_COMMODITY), SIMPLE_ACCOUNT_UID)
         transaction.addSplit(split1)
-        transaction.time = System.currentTimeMillis() + 4815162342L
+        transaction.datePosted = System.currentTimeMillis() + 4815162342L
         transactionsDbAdapter.addRecord(transaction)
 
         refreshAccountsList()
@@ -268,10 +268,9 @@ class AccountsActivityTest : GnuAndroidTest() {
         assertThat(
             accountsDbAdapter.getSubAccountCount(accountsDbAdapter.rootAccountUID)
         ).isEqualTo(2)
-        assertThat(accountsDbAdapter.simpleAccounts).extracting(
-            "accountType",
-            AccountType::class.java
-        ).contains(AccountType.TRADING)
+        assertThat(accountsDbAdapter.simpleAccounts)
+            .extracting("type", AccountType::class.java)
+            .contains(AccountType.TRADING)
     }
 
     @Test
@@ -320,19 +319,19 @@ class AccountsActivityTest : GnuAndroidTest() {
         val split = Split(Money(BigDecimal.TEN, accountsCurrency), account)
         transaction.addSplit(split)
         transaction.addSplit(split.createPair(SIMPLE_ACCOUNT_UID))
-        account.addTransaction(transaction)
         accountsDbAdapter.insert(account)
+        transactionsDbAdapter.insert(transaction)
 
         assertThat(accountsDbAdapter.getTransactionCount(account.uid)).isOne()
         assertThat(accountsDbAdapter.getTransactionCount(SIMPLE_ACCOUNT_UID)).isOne()
-        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction.uid)).hasSize(2)
+        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction)).hasSize(2)
 
         clickViewText(R.string.title_edit_account)
 
         clickViewId(R.id.menu_save)
         assertThat(accountsDbAdapter.getTransactionCount(SIMPLE_ACCOUNT_UID)).isOne()
-        assertThat(splitsDbAdapter.fetchSplitsForAccount(SIMPLE_ACCOUNT_UID)?.count).isOne()
-        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction.uid)).hasSize(2)
+        assertThat(splitsDbAdapter.fetchSplitsForAccount(SIMPLE_ACCOUNT_UID).count).isOne()
+        assertThat(splitsDbAdapter.getSplitsForTransaction(transaction)).hasSize(2)
     }
 
     fun testDeleteSimpleAccount() {

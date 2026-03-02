@@ -143,7 +143,7 @@ data class SearchForm(
             val dayStart = date.toDateTimeAtStartOfDay()
             val dayEnd = date.toDateTimeAtEndOfDay()
 
-            append(TRANSACTION_ALIAS).append(TransactionEntry.COLUMN_TIMESTAMP)
+            append(TRANSACTION_ALIAS).append(TransactionEntry.COLUMN_DATE_POSTED)
 
             when (criterion.compare) {
                 Compare.LessThan -> {

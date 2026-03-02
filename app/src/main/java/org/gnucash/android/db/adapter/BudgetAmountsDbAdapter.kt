@@ -22,9 +22,6 @@ import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry
 import org.gnucash.android.db.bindInt
-import org.gnucash.android.db.getInt
-import org.gnucash.android.db.getLong
-import org.gnucash.android.db.getString
 import org.gnucash.android.model.BudgetAmount
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
@@ -38,14 +35,7 @@ class BudgetAmountsDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
     DatabaseAdapter<BudgetAmount>(
         commoditiesDbAdapter.holder,
         BudgetAmountEntry.TABLE_NAME,
-        arrayOf(
-            BudgetAmountEntry.COLUMN_BUDGET_UID,
-            BudgetAmountEntry.COLUMN_ACCOUNT_UID,
-            BudgetAmountEntry.COLUMN_AMOUNT_NUM,
-            BudgetAmountEntry.COLUMN_AMOUNT_DENOM,
-            BudgetAmountEntry.COLUMN_PERIOD_NUM,
-            BudgetAmountEntry.COLUMN_NOTES
-        )
+        entryColumns
     ) {
     constructor(holder: DatabaseHolder) : this(CommoditiesDbAdapter(holder, false))
 
@@ -56,12 +46,12 @@ class BudgetAmountsDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
     }
 
     override fun buildModelInstance(cursor: Cursor): BudgetAmount {
-        val budgetUID = cursor.getString(BudgetAmountEntry.COLUMN_BUDGET_UID)!!
-        val accountUID = cursor.getString(BudgetAmountEntry.COLUMN_ACCOUNT_UID)!!
-        val amountNum = cursor.getLong(BudgetAmountEntry.COLUMN_AMOUNT_NUM)
-        val amountDenom = cursor.getLong(BudgetAmountEntry.COLUMN_AMOUNT_DENOM)
-        val periodNum = cursor.getInt(BudgetAmountEntry.COLUMN_PERIOD_NUM)
-        val notes = cursor.getString(BudgetAmountEntry.COLUMN_NOTES)
+        val budgetUID = cursor.getString(INDEX_COLUMN_BUDGET_UID)!!
+        val accountUID = cursor.getString(INDEX_COLUMN_ACCOUNT_UID)!!
+        val amountNum = cursor.getLong(INDEX_COLUMN_AMOUNT_NUM)
+        val amountDenom = cursor.getLong(INDEX_COLUMN_AMOUNT_DENOM)
+        val periodNum = cursor.getInt(INDEX_COLUMN_PERIOD_NUM)
+        val notes = cursor.getString(INDEX_COLUMN_NOTES)
 
         val budgetAmount = BudgetAmount(budgetUID, accountUID)
         populateBaseModelAttributes(cursor, budgetAmount)
@@ -74,13 +64,13 @@ class BudgetAmountsDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
 
     override fun bind(stmt: SQLiteStatement, budgetAmount: BudgetAmount): SQLiteStatement {
         bindBaseModel(stmt, budgetAmount)
-        stmt.bindString(1, budgetAmount.budgetUID)
-        stmt.bindString(2, budgetAmount.accountUID)
-        stmt.bindLong(3, budgetAmount.amount.numerator)
-        stmt.bindLong(4, budgetAmount.amount.denominator)
-        stmt.bindInt(5, budgetAmount.periodIndex)
+        stmt.bindString(1 + INDEX_COLUMN_BUDGET_UID, budgetAmount.budgetUID)
+        stmt.bindString(1 + INDEX_COLUMN_ACCOUNT_UID, budgetAmount.accountUID)
+        stmt.bindLong(1 + INDEX_COLUMN_AMOUNT_NUM, budgetAmount.amount.numerator)
+        stmt.bindLong(1 + INDEX_COLUMN_AMOUNT_DENOM, budgetAmount.amount.denominator)
+        stmt.bindInt(1 + INDEX_COLUMN_PERIOD_NUM, budgetAmount.periodIndex)
         if (budgetAmount.notes != null) {
-            stmt.bindString(6, budgetAmount.notes)
+            stmt.bindString(1 + INDEX_COLUMN_NOTES, budgetAmount.notes)
         }
 
         return stmt
@@ -173,6 +163,21 @@ class BudgetAmountsDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
     }
 
     companion object {
+        private val entryColumns = arrayOf(
+            BudgetAmountEntry.COLUMN_BUDGET_UID,
+            BudgetAmountEntry.COLUMN_ACCOUNT_UID,
+            BudgetAmountEntry.COLUMN_AMOUNT_NUM,
+            BudgetAmountEntry.COLUMN_AMOUNT_DENOM,
+            BudgetAmountEntry.COLUMN_PERIOD_NUM,
+            BudgetAmountEntry.COLUMN_NOTES
+        )
+        private const val INDEX_COLUMN_BUDGET_UID = 0
+        private const val INDEX_COLUMN_ACCOUNT_UID = INDEX_COLUMN_BUDGET_UID + 1
+        private const val INDEX_COLUMN_AMOUNT_NUM = INDEX_COLUMN_ACCOUNT_UID + 1
+        private const val INDEX_COLUMN_AMOUNT_DENOM = INDEX_COLUMN_AMOUNT_NUM + 1
+        private const val INDEX_COLUMN_PERIOD_NUM = INDEX_COLUMN_AMOUNT_DENOM + 1
+        private const val INDEX_COLUMN_NOTES = INDEX_COLUMN_PERIOD_NUM + 1
+
         val instance: BudgetAmountsDbAdapter get() = GnuCashApplication.budgetAmountsDbAdapter!!
     }
 }

@@ -89,7 +89,7 @@ class SplitsDbAdapterTest : GnuCashTest() {
         split.transactionUID = transaction.uid
         splitsDbAdapter.addRecord(split)
 
-        val splits = splitsDbAdapter.getSplitsForTransaction(transaction.uid)
+        val splits = splitsDbAdapter.getSplitsForTransaction(transaction)
         assertThat(splits).isNotEmpty()
         assertThat(splits[0].uid).isEqualTo(split.uid)
     }

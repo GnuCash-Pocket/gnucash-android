@@ -102,7 +102,7 @@ class SearchResultViewHolder(
         this.transaction = transaction
 
         primaryText.text = transaction.description
-        transactionDate.text = getPrettyDateFormat(context, transaction.time)
+        transactionDate.text = getPrettyDateFormat(context, transaction.datePosted)
         transactionAmount.isVisible = false
 
         if (isDoubleEntry) {

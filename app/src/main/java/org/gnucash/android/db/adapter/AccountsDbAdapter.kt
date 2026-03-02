@@ -76,24 +76,8 @@ class AccountsDbAdapter(
 ) : DatabaseAdapter<Account>(
     transactionsDbAdapter.holder,
     AccountEntry.TABLE_NAME,
-    arrayOf(
-        AccountEntry.COLUMN_NAME,
-        AccountEntry.COLUMN_DESCRIPTION,
-        AccountEntry.COLUMN_TYPE,
-        AccountEntry.COLUMN_CURRENCY,
-        AccountEntry.COLUMN_COLOR_CODE,
-        AccountEntry.COLUMN_FAVORITE,
-        AccountEntry.COLUMN_FULL_NAME,
-        AccountEntry.COLUMN_PLACEHOLDER,
-        AccountEntry.COLUMN_CREATED_AT,
-        AccountEntry.COLUMN_HIDDEN,
-        AccountEntry.COLUMN_COMMODITY_UID,
-        AccountEntry.COLUMN_PARENT_ACCOUNT_UID,
-        AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID,
-        AccountEntry.COLUMN_NOTES,
-        AccountEntry.COLUMN_TEMPLATE,
-        AccountEntry.COLUMN_CODE
-    ), true
+    entryColumns,
+    true
 ) {
     /**
      * Commodities database adapter for commodity manipulation
@@ -134,54 +118,7 @@ class AccountsDbAdapter(
             rootUID = account.uid
         }
         //in-case the account already existed, we want to update the templates based on it as well
-        super.addRecord(account, updateMethod)
-        //now add transactions if there are any
-        // NB! Beware of transactions that reference accounts not yet in the db,
-        if (!account.isRoot) {
-            for (t in account.transactions) {
-                t.commodity = account.commodity
-                transactionsDbAdapter.addRecord(t, updateMethod)
-            }
-            val scheduledTransactions =
-                transactionsDbAdapter.getScheduledTransactionsForAccount(account.uid)
-            for (transaction in scheduledTransactions) {
-                transactionsDbAdapter.update(transaction)
-            }
-        }
-
-        return account
-    }
-
-    /**
-     * Adds some accounts and their transactions to the database in bulk.
-     *
-     * If an account already exists in the database with the same GUID, it is replaced.
-     * This function will NOT try to determine the full name
-     * of the accounts inserted, full names should be generated prior to the insert.
-     * <br></br>All or none of the accounts will be inserted;
-     *
-     * @param accounts [Account] to be inserted to database
-     * @return number of rows inserted
-     */
-    @Throws(SQLException::class)
-    override fun bulkAddRecords(accounts: List<Account>, updateMethod: UpdateMethod): Long {
-        //scheduled transactions are not fetched from the database when getting account transactions
-        //so we retrieve those which affect this account and then re-save them later
-        //this is necessary because the database has ON DELETE CASCADE between accounts and splits
-        //and all accounts are editing via SQL REPLACE
-        // TODO: 20.04.2016 Investigate if we can safely remove updating the transactions when bulk updating accounts */
-
-        val transactions = ArrayList<Transaction>(accounts.size * 2)
-        for (account in accounts) {
-            transactions.addAll(account.transactions)
-            transactions.addAll(transactionsDbAdapter.getScheduledTransactionsForAccount(account.uid))
-        }
-        val nRow = super.bulkAddRecords(accounts, updateMethod)
-
-        if (nRow > 0 && !transactions.isEmpty()) {
-            transactionsDbAdapter.bulkAddRecords(transactions, updateMethod)
-        }
-        return nRow
+        return super.addRecord(account, updateMethod)
     }
 
     @Throws(SQLException::class)
@@ -197,31 +134,33 @@ class AccountsDbAdapter(
         }
 
         bindBaseModel(stmt, account)
-        stmt.bindString(1, account.name)
-        stmt.bindString(2, account.description)
-        stmt.bindString(3, account.accountType.name)
-        stmt.bindString(4, account.commodity.currencyCode)
+        stmt.bindString(1 + INDEX_COLUMN_NAME, account.name)
+        stmt.bindString(1 + INDEX_COLUMN_DESCRIPTION, account.description)
+        stmt.bindString(1 + INDEX_COLUMN_TYPE, account.type.name)
+        stmt.bindString(1 + INDEX_COLUMN_CURRENCY, account.commodity.currencyCode)
         if (account.color != Account.DEFAULT_COLOR) {
-            stmt.bindString(5, account.colorHexString)
+            stmt.bindString(1 + INDEX_COLUMN_COLOR_CODE, account.colorHexString)
         }
-        stmt.bindBoolean(6, account.isFavorite)
-        stmt.bindString(7, account.fullName)
-        stmt.bindBoolean(8, account.isPlaceholder)
-        stmt.bindString(9, getUtcStringFromTimestamp(account.createdTimestamp))
-        stmt.bindBoolean(10, account.isHidden)
-        stmt.bindString(11, account.commodity.uid)
+        stmt.bindBoolean(1 + INDEX_COLUMN_FAVORITE, account.isFavorite)
+        stmt.bindString(1 + INDEX_COLUMN_FULL_NAME, account.fullName)
+        stmt.bindBoolean(1 + INDEX_COLUMN_PLACEHOLDER, account.isPlaceholder)
+        stmt.bindBoolean(1 + INDEX_COLUMN_HIDDEN, account.isHidden)
+        stmt.bindString(1 + INDEX_COLUMN_COMMODITY_UID, account.commodity.uid)
         if (parentAccountUID != null) {
-            stmt.bindString(12, parentAccountUID)
+            stmt.bindString(1 + INDEX_COLUMN_PARENT_ACCOUNT_UID, parentAccountUID)
         }
         if (account.defaultTransferAccountUID != null) {
-            stmt.bindString(13, account.defaultTransferAccountUID)
+            stmt.bindString(
+                1 + INDEX_COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID,
+                account.defaultTransferAccountUID
+            )
         }
-        if (account.note != null) {
-            stmt.bindString(14, account.note)
+        if (account.notes != null) {
+            stmt.bindString(1 + INDEX_COLUMN_NOTES, account.notes)
         }
-        stmt.bindBoolean(15, account.isTemplate)
+        stmt.bindBoolean(1 + INDEX_COLUMN_TEMPLATE, account.isTemplate)
         if (account.code != null) {
-            stmt.bindString(16, account.code)
+            stmt.bindString(1 + INDEX_COLUMN_CODE, account.code)
         }
 
         return stmt
@@ -360,7 +299,8 @@ class AccountsDbAdapter(
                 val contentValues = ContentValues()
                 contentValues.putNull(AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID)
                 db.update(
-                    tableName, contentValues,
+                    tableName,
+                    contentValues,
                     AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID + " IN " + accountUIDList,
                     null
                 )
@@ -376,18 +316,6 @@ class AccountsDbAdapter(
     /**
      * Builds an account instance with the provided cursor and loads its corresponding transactions.
      *
-     * @param cursor Cursor pointing to account record in database
-     * @return [Account] object constructed from database record
-     */
-    fun buildFullModelInstance(cursor: Cursor): Account {
-        val account = buildModelInstance(cursor)
-        account.transactions = transactionsDbAdapter.getAllTransactionsForAccount(account.uid)
-        return account
-    }
-
-    /**
-     * Builds an account instance with the provided cursor and loads its corresponding transactions.
-     *
      * The method will not move the cursor position, so the cursor should already be pointing
      * to the account record in the database<br></br>
      * **Note** Unlike [.buildModelInstance] this method will not load transactions
@@ -396,29 +324,28 @@ class AccountsDbAdapter(
      * @return [Account] object constructed from database record
      */
     override fun buildModelInstance(cursor: Cursor): Account {
-        val account = Account(cursor.getString(AccountEntry.COLUMN_NAME)!!)
+        val account = Account(cursor.getString(INDEX_COLUMN_NAME)!!)
         populateBaseModelAttributes(cursor, account)
 
-        account.code = cursor.getString(AccountEntry.COLUMN_CODE)
-        account.description = cursor.getString(AccountEntry.COLUMN_DESCRIPTION)
-        account.parentUID = cursor.getString(AccountEntry.COLUMN_PARENT_ACCOUNT_UID)
-        account.accountType = AccountType.valueOf(cursor.getString(AccountEntry.COLUMN_TYPE)!!)
-        val commodityUID = cursor.getString(AccountEntry.COLUMN_COMMODITY_UID)!!
+        account.code = cursor.getString(INDEX_COLUMN_CODE)
+        account.description = cursor.getString(INDEX_COLUMN_DESCRIPTION)
+        account.parentUID = cursor.getString(INDEX_COLUMN_PARENT_ACCOUNT_UID)
+        account.type = AccountType.valueOf(cursor.getString(INDEX_COLUMN_TYPE)!!)
+        val commodityUID = cursor.getString(INDEX_COLUMN_COMMODITY_UID)!!
         account.commodity = commoditiesDbAdapter.getRecord(commodityUID)
-        account.isPlaceholder = cursor.getBoolean(AccountEntry.COLUMN_PLACEHOLDER)
+        account.isPlaceholder = cursor.getBoolean(INDEX_COLUMN_PLACEHOLDER)
         account.defaultTransferAccountUID =
-            cursor.getString(AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID)
-        val color = cursor.getString(AccountEntry.COLUMN_COLOR_CODE)
+            cursor.getString(INDEX_COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID)
+        val color = cursor.getString(INDEX_COLUMN_COLOR_CODE)
         account.setColor(color)
-        account.isFavorite = cursor.getBoolean(AccountEntry.COLUMN_FAVORITE)
-        account.fullName = cursor.getString(AccountEntry.COLUMN_FULL_NAME)
-        account.isHidden = cursor.getBoolean(AccountEntry.COLUMN_HIDDEN)
+        account.isFavorite = cursor.getBoolean(INDEX_COLUMN_FAVORITE)
+        account.fullName = cursor.getString(INDEX_COLUMN_FULL_NAME)
+        account.isHidden = cursor.getBoolean(INDEX_COLUMN_HIDDEN)
         if (account.isRoot) {
             account.isHidden = false
         }
-        account.note = cursor.getString(AccountEntry.COLUMN_NOTES)
-        account.isTemplate = cursor.getBoolean(AccountEntry.COLUMN_TEMPLATE)
-
+        account.notes = cursor.getString(INDEX_COLUMN_NOTES)
+        account.isTemplate = cursor.getBoolean(INDEX_COLUMN_TEMPLATE)
         if (account.isRoot) {
             account.isHidden = false
             account.isPlaceholder = false
@@ -502,7 +429,7 @@ class AccountsDbAdapter(
                 "t." + TransactionEntry.COLUMN_UID + " = " +
                 "s." + SplitEntry.COLUMN_TRANSACTION_UID + ", " +
                 AccountEntry.TABLE_NAME + " a ON a." + AccountEntry.COLUMN_UID + " = s." + SplitEntry.COLUMN_ACCOUNT_UID
-        val columns = arrayOf<String?>("a.*")
+        val columns = allColumnsPrefix("a.")
         val selection = "t." + TransactionEntry.COLUMN_MODIFIED_AT + " >= ?"
         val selectionArgs = arrayOf<String?>(getUtcStringFromTimestamp(lastExportTimeStamp))
         val groupBy = "a." + AccountEntry.COLUMN_UID
@@ -534,7 +461,7 @@ class AccountsDbAdapter(
         val uid = findAccountUidByFullName(imbalanceAccountName)
         if (uid.isNullOrEmpty()) {
             val account = Account(imbalanceAccountName, commodity)
-            account.accountType = AccountType.BANK
+            account.type = AccountType.BANK
             account.parentUID = rootAccountUID
             account.isHidden = !isDoubleEntryEnabled(context)
             insert(account)
@@ -583,7 +510,7 @@ class AccountsDbAdapter(
                 uid = parentUID
             } else {
                 val account = Account(token, commodity)
-                account.accountType = accountType
+                account.type = accountType
                 account.parentUID = uid //set its parent
                 account.fullName = parentName
                 accountsList.add(account)
@@ -631,7 +558,8 @@ class AccountsDbAdapter(
             }
         }
         val c = db.query(
-            tableName, arrayOf<String?>(AccountEntry.COLUMN_UID),
+            tableName,
+            arrayOf<String?>(AccountEntry.COLUMN_UID),
             AccountEntry.COLUMN_FULL_NAME + "= ?", arrayOf<String?>(fullName),
             null, null, null, "1"
         )
@@ -783,8 +711,7 @@ class AccountsDbAdapter(
         startTimestamp: Long,
         endTimestamp: Long
     ): Money {
-        val where = (AccountEntry.COLUMN_TYPE + " = ?"
-                + " AND " + AccountEntry.COLUMN_TEMPLATE + " = 0")
+        val where = AccountEntry.COLUMN_TYPE + " = ? AND " + AccountEntry.COLUMN_TEMPLATE + " = 0"
         val whereArgs = arrayOf<String?>(accountType.name)
         val accounts = getAllRecords(where, whereArgs)
         return getAccountsBalance(accounts, currency, startTimestamp, endTimestamp)
@@ -896,7 +823,7 @@ class AccountsDbAdapter(
         startTimestamp: Long,
         endTimestamp: Long
     ): Money {
-        val accountType = account.accountType
+        val accountType = account.type
         val splitsDbAdapter = transactionsDbAdapter.splitsDbAdapter
         val balance = splitsDbAdapter.computeSplitBalance(account, startTimestamp, endTimestamp)
         return if (accountType.hasDebitNormalBalance) balance else -balance
@@ -1093,33 +1020,29 @@ class AccountsDbAdapter(
         numberOfRecent: Int,
         filterName: String?,
         isShowHiddenAccounts: Boolean
-    ): Cursor? {
+    ): Cursor {
         var selection = ""
         if (!isShowHiddenAccounts) {
-            selection = AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_HIDDEN + " = 0"
+            selection = "a." + AccountEntry.COLUMN_HIDDEN + " = 0"
         }
         if (!filterName.isNullOrEmpty()) {
             if (!selection.isEmpty()) {
                 selection += " AND "
             }
-            selection += "(" + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_NAME + " LIKE " + sqlEscapeLike(
-                filterName
-            ) + ")"
+            selection += "(a." + AccountEntry.COLUMN_NAME + " LIKE " + sqlEscapeLike(filterName) + ")"
         }
         return db.query(
-            (TransactionEntry.TABLE_NAME
-                    + " LEFT OUTER JOIN " + SplitEntry.TABLE_NAME + " ON "
-                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " = "
-                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID
-                    + ", " + AccountEntry.TABLE_NAME + " ON " + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID
-                    + " = " + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_UID),
-            arrayOf<String?>(AccountEntry.TABLE_NAME + ".*"),
+            TransactionEntry.TABLE_NAME + " t LEFT OUTER JOIN " + SplitEntry.TABLE_NAME + " s ON " +
+                    "t." + TransactionEntry.COLUMN_UID + " = " + "s." + SplitEntry.COLUMN_TRANSACTION_UID +
+                    ", " + AccountEntry.TABLE_NAME + " a ON s." + SplitEntry.COLUMN_ACCOUNT_UID +
+                    " = a." + AccountEntry.COLUMN_UID,
+            allColumnsPrefix("a."),
             selection,
             null,
-            SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID,  //groupby
+            "s." + SplitEntry.COLUMN_ACCOUNT_UID,
             null,  //having
-            "MAX ( " + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " ) DESC",  // order
-            numberOfRecent.toString() // limit;
+            "MAX ( t." + TransactionEntry.COLUMN_DATE_POSTED + " ) DESC",  // order
+            numberOfRecent.toString() // limit
         )
     }
 
@@ -1172,7 +1095,7 @@ class AccountsDbAdapter(
             val commodity = commoditiesDbAdapter.defaultCommodity
             val rootAccount = Account(ROOT_ACCOUNT_NAME, commodity)
             rootAccount.setUID(uid)
-            rootAccount.accountType = AccountType.ROOT
+            rootAccount.type = AccountType.ROOT
             rootAccount.fullName = ROOT_ACCOUNT_FULL_NAME
             rootAccount.isHidden = false
             rootAccount.isPlaceholder = false
@@ -1181,7 +1104,7 @@ class AccountsDbAdapter(
             contentValues[AccountEntry.COLUMN_UID] = uid
             contentValues[AccountEntry.COLUMN_NAME] = rootAccount.name
             contentValues[AccountEntry.COLUMN_FULL_NAME] = rootAccount.fullName
-            contentValues[AccountEntry.COLUMN_TYPE] = rootAccount.accountType.name
+            contentValues[AccountEntry.COLUMN_TYPE] = rootAccount.type.name
             contentValues[AccountEntry.COLUMN_HIDDEN] = rootAccount.isHidden
             contentValues[AccountEntry.COLUMN_CURRENCY] = rootAccount.commodity.currencyCode
             contentValues[AccountEntry.COLUMN_COMMODITY_UID] = rootAccount.commodity.uid
@@ -1374,7 +1297,7 @@ class AccountsDbAdapter(
                     Transaction(context.getString(R.string.account_name_opening_balances))
                 transaction.notes = account.name
                 transaction.commodity = account.commodity
-                val transactionType = getTypeForBalance(account.accountType, balance.isNegative)
+                val transactionType = getTypeForBalance(account.type, balance.isNegative)
                 val split = Split(balance, account)
                 split.type = transactionType
                 transaction.addSplit(split)
@@ -1420,12 +1343,10 @@ class AccountsDbAdapter(
      * @return List of commodities in use
      */
     val commoditiesInUse: List<Commodity>
-        get() {
-            return allRecords.filter { !it.isTemplate }
-                .map { it.commodity }
-                .distinctBy { it.uid }
-                .sortedBy { it.id }
-        }
+        get() = allRecords.filter { !it.isTemplate }
+            .map { it.commodity }
+            .distinctBy { it.uid }
+            .sortedBy { it.id }
 
     val commoditiesInUseCount: Long
         get() {
@@ -1437,6 +1358,12 @@ class AccountsDbAdapter(
             val sqlArgs = arrayOf<String?>(Commodity.TEMPLATE)
             return DatabaseUtils.longForQuery(db, sql, sqlArgs)
         }
+
+    val allCommoditiesInUse: List<Commodity>
+        get() = getAllRecords(null, null, null)
+            .map { it.commodity }
+            .distinctBy { it.uid }
+            .sortedBy { it.id }
 
     /**
      * Deletes all accounts, transactions (and their splits) from the database.
@@ -1467,7 +1394,8 @@ class AccountsDbAdapter(
             val contentValues = ContentValues()
             contentValues.putNull(AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID)
             db.update(
-                tableName, contentValues,
+                tableName,
+                contentValues,
                 AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID + "=?",
                 arrayOf<String?>(uid)
             )
@@ -1490,20 +1418,6 @@ class AccountsDbAdapter(
         return transactionsDbAdapter.getTransactionMaxSplitNum(accountUID)
     }
 
-    fun getFullRecord(uid: String?): Account? {
-        if (uid.isNullOrEmpty()) return null
-        Timber.v("Fetching full account %s", uid)
-        val cursor = fetchRecord(uid) ?: return null
-        try {
-            if (cursor.moveToFirst()) {
-                return buildFullModelInstance(cursor)
-            }
-        } finally {
-            cursor.close()
-        }
-        return null
-    }
-
     fun getTransactionCount(uid: String): Long {
         return transactionsDbAdapter.getTransactionsCountForAccount(uid)
     }
@@ -1518,7 +1432,7 @@ class AccountsDbAdapter(
     @Throws(IllegalArgumentException::class)
     fun getAccountType(accountUID: String): AccountType {
         val account = getRecordOrNull(accountUID)
-        if (account != null) return account.accountType
+        if (account != null) return account.type
         throw IllegalArgumentException("Account not found")
     }
 
@@ -1540,7 +1454,7 @@ class AccountsDbAdapter(
             .toMutableMap()
         for (account in accounts) {
             val balance = balances[account.uid] ?: continue
-            if (!account.accountType.hasDebitNormalBalance) {
+            if (!account.type.hasDebitNormalBalance) {
                 balances[account.uid] = -balance
             }
         }
@@ -1584,6 +1498,40 @@ class AccountsDbAdapter(
         }
 
     companion object {
+        private val entryColumns = arrayOf(
+            AccountEntry.COLUMN_NAME,
+            AccountEntry.COLUMN_DESCRIPTION,
+            AccountEntry.COLUMN_TYPE,
+            AccountEntry.COLUMN_CURRENCY,
+            AccountEntry.COLUMN_COLOR_CODE,
+            AccountEntry.COLUMN_FAVORITE,
+            AccountEntry.COLUMN_FULL_NAME,
+            AccountEntry.COLUMN_PLACEHOLDER,
+            AccountEntry.COLUMN_HIDDEN,
+            AccountEntry.COLUMN_COMMODITY_UID,
+            AccountEntry.COLUMN_PARENT_ACCOUNT_UID,
+            AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID,
+            AccountEntry.COLUMN_NOTES,
+            AccountEntry.COLUMN_TEMPLATE,
+            AccountEntry.COLUMN_CODE
+        )
+        private const val INDEX_COLUMN_NAME = 0
+        private const val INDEX_COLUMN_DESCRIPTION = INDEX_COLUMN_NAME + 1
+        private const val INDEX_COLUMN_TYPE = INDEX_COLUMN_DESCRIPTION + 1
+        private const val INDEX_COLUMN_CURRENCY = INDEX_COLUMN_TYPE + 1
+        private const val INDEX_COLUMN_COLOR_CODE = INDEX_COLUMN_CURRENCY + 1
+        private const val INDEX_COLUMN_FAVORITE = INDEX_COLUMN_COLOR_CODE + 1
+        private const val INDEX_COLUMN_FULL_NAME = INDEX_COLUMN_FAVORITE + 1
+        private const val INDEX_COLUMN_PLACEHOLDER = INDEX_COLUMN_FULL_NAME + 1
+        private const val INDEX_COLUMN_HIDDEN = INDEX_COLUMN_PLACEHOLDER + 1
+        private const val INDEX_COLUMN_COMMODITY_UID = INDEX_COLUMN_HIDDEN + 1
+        private const val INDEX_COLUMN_PARENT_ACCOUNT_UID = INDEX_COLUMN_COMMODITY_UID + 1
+        private const val INDEX_COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID =
+            INDEX_COLUMN_PARENT_ACCOUNT_UID + 1
+        private const val INDEX_COLUMN_NOTES = INDEX_COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID + 1
+        private const val INDEX_COLUMN_TEMPLATE = INDEX_COLUMN_NOTES + 1
+        private const val INDEX_COLUMN_CODE = INDEX_COLUMN_TEMPLATE + 1
+
         /**
          * Separator used for account name hierarchies between parent and child accounts
          */

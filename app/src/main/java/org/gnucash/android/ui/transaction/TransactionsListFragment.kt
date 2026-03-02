@@ -15,7 +15,6 @@
  */
 package org.gnucash.android.ui.transaction
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -259,8 +258,8 @@ class TransactionsListFragment : MenuFragment(),
         override fun loadInBackground(): Cursor? {
             val databaseAdapter = TransactionsDbAdapter.instance
             this.databaseAdapter = databaseAdapter
-            val c = databaseAdapter.fetchAllTransactionsForAccount(accountUID)
-            if (c != null) registerContentObserver(c)
+            val c = databaseAdapter.fetchTransactionsForAccount(accountUID)
+            registerContentObserver(c)
             return c
         }
     }
@@ -355,7 +354,7 @@ class TransactionsListFragment : MenuFragment(),
             val amount = transaction.getBalance(accountUID)
             transactionAmount.displayBalance(amount, colorBalanceZero)
 
-            val dateText = getPrettyDateFormat(context, transaction.time)
+            val dateText = getPrettyDateFormat(context, transaction.datePosted)
             transactionDate.text = dateText
 
             if (useCompactView || !useDoubleEntry) {
@@ -435,7 +434,7 @@ class TransactionsListFragment : MenuFragment(),
         try {
             val transaction = transactionsDbAdapter.getRecord(transactionUID)
             val duplicate = transaction.copy()
-            duplicate.time = System.currentTimeMillis()
+            duplicate.datePosted = System.currentTimeMillis()
             transactionsDbAdapter.insert(duplicate)
             refresh()
         } catch (e: SQLException) {
