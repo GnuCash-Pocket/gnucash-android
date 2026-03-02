@@ -43,6 +43,7 @@ enum class ExportFormat(
     CSVT("CSVT", ".csv", "text/csv", "GnuCash transactions CSV", R.string.file_format_csv),
     OFX("OFX", ".ofx", "application/x-ofx", "Open Financial eXchange", R.string.file_format_ofx),
     QIF("QIF", ".qif", "application/qif", "Quicken Interchange Format", R.string.file_format_qif),
+    SQLITE("SQLITE3", ".xac", "application/x-sqlite3", "GnuCash SQLite", R.string.file_format_sqlite),
     XML("XML", ".xac", "application/x-gnucash", "GnuCash XML", R.string.file_format_xml);
 
     override fun toString(): String {

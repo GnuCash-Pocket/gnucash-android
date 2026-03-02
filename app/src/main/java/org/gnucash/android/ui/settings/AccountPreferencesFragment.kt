@@ -87,7 +87,7 @@ class AccountPreferencesFragment : GnuPreferenceFragment() {
         listPreference.entryValues = currencyEntryValues.toTypedArray()
 
         var preference = findPreference<Preference>(getString(R.string.key_import_accounts))!!
-        preference.setOnPreferenceClickListener { preference ->
+        preference.setOnPreferenceClickListener { _ ->
             AccountsActivity.startXmlFileChooser(this@AccountPreferencesFragment)
             true
         }
@@ -106,20 +106,10 @@ class AccountPreferencesFragment : GnuPreferenceFragment() {
 
         preference = findPreference(getString(R.string.key_create_default_accounts))!!
         preference.setOnPreferenceClickListener { _ ->
-            val activity: Activity = preference.context.getActivity() ?: return@setOnPreferenceClickListener false
-            AlertDialog.Builder(activity)
-                .setTitle(R.string.title_create_default_accounts)
-                .setMessage(R.string.msg_confirm_create_default_accounts_setting)
-                .setIcon(R.drawable.ic_warning)
-                .setNegativeButton(R.string.btn_cancel) { _, _ ->
-                    // Dismisses itself
-                }
-                .setPositiveButton(R.string.btn_create_accounts) { _, _ ->
-                    val currencyCode = defaultCurrencyCode
-                    AccountsActivity.createDefaultAccounts(activity, currencyCode)
-                }
-                .show()
-
+            val activity: Activity = activity
+                ?: preference.context.getActivity()
+                ?: return@setOnPreferenceClickListener false
+            showConfirmDefaultAccounts(activity)
             true
         }
     }
@@ -180,6 +170,21 @@ class AccountPreferencesFragment : GnuPreferenceFragment() {
 
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
+    }
+
+    private fun showConfirmDefaultAccounts(activity: Activity) {
+        AlertDialog.Builder(activity)
+            .setTitle(R.string.title_create_default_accounts)
+            .setMessage(R.string.msg_confirm_create_default_accounts_setting)
+            .setIcon(R.drawable.ic_warning)
+            .setNegativeButton(R.string.btn_cancel) { _, _ ->
+                // Dismisses itself
+            }
+            .setPositiveButton(R.string.btn_create_accounts) { _, _ ->
+                val currencyCode = defaultCurrencyCode
+                AccountsActivity.createDefaultAccounts(activity, currencyCode)
+            }
+            .show()
     }
 
     companion object {

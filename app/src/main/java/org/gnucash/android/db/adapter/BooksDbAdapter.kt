@@ -30,12 +30,12 @@ import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.BookEntry
 import org.gnucash.android.db.bindBoolean
+import org.gnucash.android.db.bindTimestamp
 import org.gnucash.android.db.forEach
-import org.gnucash.android.db.getInt
-import org.gnucash.android.db.getString
+import org.gnucash.android.db.getBoolean
+import org.gnucash.android.db.getTimestamp
 import org.gnucash.android.model.Book
-import org.gnucash.android.util.TimestampHelper
-import org.gnucash.android.util.TimestampHelper.getTimestampFromUtcString
+import org.gnucash.android.util.TimestampHelper.timestampFromEpochZero
 import org.gnucash.android.util.set
 import timber.log.Timber
 import kotlin.math.max
@@ -46,30 +46,23 @@ import kotlin.math.max
 class BooksDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Book>(
     holder,
     BookEntry.TABLE_NAME,
-    arrayOf(
-        BookEntry.COLUMN_DISPLAY_NAME,
-        BookEntry.COLUMN_ROOT_GUID,
-        BookEntry.COLUMN_TEMPLATE_GUID,
-        BookEntry.COLUMN_SOURCE_URI,
-        BookEntry.COLUMN_ACTIVE,
-        BookEntry.COLUMN_LAST_SYNC
-    )
+    entryColumns
 ) {
     override fun buildModelInstance(cursor: Cursor): Book {
-        val rootAccountGUID = cursor.getString(BookEntry.COLUMN_ROOT_GUID)
-        val rootTemplateGUID = cursor.getString(BookEntry.COLUMN_TEMPLATE_GUID)
-        val uriString = cursor.getString(BookEntry.COLUMN_SOURCE_URI)
-        val displayName = cursor.getString(BookEntry.COLUMN_DISPLAY_NAME)
-        val active = cursor.getInt(BookEntry.COLUMN_ACTIVE)
-        val lastSync = cursor.getString(BookEntry.COLUMN_LAST_SYNC)!!
+        val rootAccountGUID = cursor.getString(INDEX_COLUMN_ROOT_GUID)!!
+        val rootTemplateGUID = cursor.getString(INDEX_COLUMN_TEMPLATE_GUID)
+        val uriString = cursor.getString(INDEX_COLUMN_SOURCE_URI)
+        val displayName = cursor.getString(INDEX_COLUMN_DISPLAY_NAME)
+        val active = cursor.getBoolean(INDEX_COLUMN_ACTIVE)
+        val lastSync = cursor.getTimestamp(INDEX_COLUMN_LAST_SYNC)
 
         val book = Book(rootAccountGUID)
         populateBaseModelAttributes(cursor, book)
         book.displayName = displayName
         book.rootTemplateUID = rootTemplateGUID
         book.sourceUri = uriString?.toUri()
-        book.isActive = active != 0
-        book.lastSync = getTimestampFromUtcString(lastSync)
+        book.isActive = active
+        book.lastSync = lastSync ?: timestampFromEpochZero
 
         return book
     }
@@ -79,14 +72,14 @@ class BooksDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Book>(
             book.displayName = generateDefaultBookName()
         }
         bindBaseModel(stmt, book)
-        stmt.bindString(1, book.displayName)
-        stmt.bindString(2, book.rootAccountUID)
-        stmt.bindString(3, book.rootTemplateUID)
+        stmt.bindString(1 + INDEX_COLUMN_DISPLAY_NAME, book.displayName)
+        stmt.bindString(1 + INDEX_COLUMN_ROOT_GUID, book.rootAccountUID)
+        stmt.bindString(1 + INDEX_COLUMN_TEMPLATE_GUID, book.rootTemplateUID)
         if (book.sourceUri != null) {
-            stmt.bindString(4, book.sourceUri.toString())
+            stmt.bindString(1 + INDEX_COLUMN_SOURCE_URI, book.sourceUri.toString())
         }
-        stmt.bindBoolean(5, book.isActive)
-        stmt.bindString(6, TimestampHelper.getUtcStringFromTimestamp(book.lastSync!!))
+        stmt.bindBoolean(1 + INDEX_COLUMN_ACTIVE, book.isActive)
+        stmt.bindTimestamp(1 + INDEX_COLUMN_LAST_SYNC, book.lastSync)
 
         return stmt
     }
@@ -349,6 +342,21 @@ class BooksDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Book>(
     }
 
     companion object {
+        private val entryColumns = arrayOf(
+            BookEntry.COLUMN_DISPLAY_NAME,
+            BookEntry.COLUMN_ROOT_GUID,
+            BookEntry.COLUMN_TEMPLATE_GUID,
+            BookEntry.COLUMN_SOURCE_URI,
+            BookEntry.COLUMN_ACTIVE,
+            BookEntry.COLUMN_LAST_SYNC
+        )
+        private const val INDEX_COLUMN_DISPLAY_NAME = 0
+        private const val INDEX_COLUMN_ROOT_GUID = INDEX_COLUMN_DISPLAY_NAME + 1
+        private const val INDEX_COLUMN_TEMPLATE_GUID = INDEX_COLUMN_ROOT_GUID + 1
+        private const val INDEX_COLUMN_SOURCE_URI = INDEX_COLUMN_TEMPLATE_GUID + 1
+        private const val INDEX_COLUMN_ACTIVE = INDEX_COLUMN_SOURCE_URI + 1
+        private const val INDEX_COLUMN_LAST_SYNC = INDEX_COLUMN_ACTIVE + 1
+
         /**
          * Return the application instance of the books database adapter
          *

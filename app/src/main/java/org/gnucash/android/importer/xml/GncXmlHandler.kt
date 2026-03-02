@@ -18,7 +18,9 @@ package org.gnucash.android.importer.xml
 
 import android.content.ContentValues
 import android.content.Context
+import android.database.SQLException
 import android.os.CancellationSignal
+import androidx.annotation.ColorInt
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.app.GnuCashApplication.Companion.appContext
 import org.gnucash.android.db.DatabaseHelper
@@ -145,6 +147,8 @@ import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.model.WeekendAdjust
+import org.gnucash.android.util.NotSet
+import org.gnucash.android.util.parseColor
 import org.gnucash.android.util.set
 import org.xml.sax.Attributes
 import org.xml.sax.SAXException
@@ -152,7 +156,6 @@ import org.xml.sax.helpers.DefaultHandler
 import timber.log.Timber
 import java.io.Closeable
 import java.math.BigDecimal
-import java.sql.Timestamp
 import java.text.ParseException
 import java.util.Calendar
 import java.util.Stack
@@ -285,6 +288,19 @@ class GncXmlHandler(
         val databaseHelper = DatabaseHelper(context, bookUID)
         val holder = databaseHelper.holder
         this.holder = holder
+        val db = holder.db
+        try {
+            // Nice to have for performance, but not critical.
+            db.enableWriteAheadLogging()
+        } catch (e: SQLException) {
+            Timber.e(e)
+        }
+        // disable foreign key. The database structure should be ensured by the data inserted.
+        // it will make insertion much faster.
+        db.setForeignKeyConstraintsEnabled(false)
+
+        book = booksDbAdapter.getRecordOrNull(bookUID) ?: book
+
         commoditiesDbAdapter = CommoditiesDbAdapter(holder, true)
         pricesDbAdapter = PricesDbAdapter(commoditiesDbAdapter)
         transactionsDbAdapter = TransactionsDbAdapter(commoditiesDbAdapter)
@@ -295,10 +311,6 @@ class GncXmlHandler(
         budgetsDbAdapter = BudgetsDbAdapter(recurrenceDbAdapter)
 
         Timber.d("before clean up db")
-        // disable foreign key. The database structure should be ensured by the data inserted.
-        // it will make insertion much faster.
-        accountsDbAdapter.enableForeignKey(false)
-
         budgetsDbAdapter.deleteAllRecords()
         pricesDbAdapter.deleteAllRecords()
         scheduledActionsDbAdapter.deleteAllRecords()
@@ -458,7 +470,7 @@ class GncXmlHandler(
                 val commodity = commoditiesDbAdapter.getRecord(currencyUID)
                 imbAccount = Account(imbalancePrefix + commodity.currencyCode, commodity)
                 imbAccount.parentUID = rootAccount!!.uid
-                imbAccount.accountType = AccountType.BANK
+                imbAccount.type = AccountType.BANK
                 imbalanceAccounts[currencyUID] = imbAccount
                 accountsDbAdapter.insert(imbAccount)
                 listener?.onAccount(imbAccount)
@@ -489,7 +501,7 @@ class GncXmlHandler(
      * We on purpose do not set the book active. Only import. Caller should handle activation
      */
     private fun saveToDatabase() {
-        accountsDbAdapter.enableForeignKey(true)
+        holder!!.db.setForeignKeyConstraintsEnabled(true)
         maybeClose() //close it after import
     }
 
@@ -569,7 +581,7 @@ class GncXmlHandler(
                 } else if (rootTemplateAccount == null) {
                     account = Account(AccountsDbAdapter.TEMPLATE_ACCOUNT_NAME, Commodity.template)
                     rootTemplateAccount = account
-                    rootTemplateAccount!!.accountType = AccountType.ROOT
+                    rootTemplateAccount!!.type = AccountType.ROOT
                     book.rootTemplateUID = account.uid
                 }
             } else {
@@ -587,7 +599,7 @@ class GncXmlHandler(
                         commoditiesDbAdapter.defaultCommodity
                     )
                     rootAccount = account
-                    rootAccount!!.accountType = AccountType.ROOT
+                    rootAccount!!.type = AccountType.ROOT
                     book.rootAccountUID = account.uid
                 }
                 accounts.add(account)
@@ -742,10 +754,9 @@ class GncXmlHandler(
 
                 if (NS_TRANSACTION == uriParent) {
                     val transaction = transaction!!
-                    val timestamp = Timestamp(date)
                     when (tagParent) {
-                        TAG_DATE_ENTERED -> transaction.createdTimestamp = timestamp
-                        TAG_DATE_POSTED -> transaction.time = date
+                        TAG_DATE_ENTERED -> transaction.dateEntered = date
+                        TAG_DATE_POSTED -> transaction.datePosted = date
                     }
                     transaction.isExported = true
                 } else if (NS_PRICE == uriParent) {
@@ -1016,12 +1027,19 @@ class GncXmlHandler(
             KEY_PLACEHOLDER -> account?.isPlaceholder = slot.asString.toBoolean()
 
             KEY_COLOR -> {
-                val color = slot.asString
+                val colorCode = slot.asString
                 try {
-                    account?.setColor(color)
+                    @ColorInt var color = Account.DEFAULT_COLOR
+                    //sometimes the color entry in the account file is "Not set" instead of just blank.
+                    if (!colorCode.isEmpty() && colorCode != NotSet) {
+                        color = parseColor(colorCode) ?: Account.DEFAULT_COLOR
+                        if (color == Account.SILVER_COLOR) {
+                            color = Account.DEFAULT_COLOR
+                        }
+                    }
+                    account?.color = color
                 } catch (e: IllegalArgumentException) {
-                    //sometimes the color entry in the account file is "Not set" instead of just blank. So catch!
-                    Timber.e(e, "Invalid color code \"%s\" for account %s", color, account)
+                    Timber.e(e, "Invalid color code \"%s\" for account %s", colorCode, account)
                 }
             }
 
@@ -1197,7 +1215,7 @@ class GncXmlHandler(
     private fun handleEndType(uri: String, type: String) {
         if (NS_ACCOUNT == uri) {
             val accountType = AccountType.valueOf(type)
-            account!!.accountType = accountType
+            account!!.type = accountType
         } else if (NS_PRICE == uri) {
             price!!.type = Price.Type.of(type)
         }
@@ -1275,7 +1293,7 @@ class GncXmlHandler(
                 }
             } else if (KEY_NOTES == slot.key && slot.type == Slot.Type.STRING) {
                 transaction?.notes = value
-                account?.note = value
+                account?.notes = value
             }
         } else if (NS_SPLIT == uri) {
             val split = split!!

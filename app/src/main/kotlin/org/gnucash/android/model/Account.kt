@@ -63,12 +63,7 @@ class Account : BaseModel {
      * Type of account
      * Defaults to [AccountType.CASH]
      */
-    var accountType = AccountType.CASH
-
-    /**
-     * List of transactions in this account
-     */
-    private var _transactions = mutableListOf<Transaction>()
+    var type = AccountType.CASH
 
     /**
      * Account UID of the parent account. Can be null
@@ -97,7 +92,7 @@ class Account : BaseModel {
      */
     var isHidden = false
 
-    val isRoot: Boolean get() = accountType == AccountType.ROOT
+    val isRoot: Boolean get() = type == AccountType.ROOT
 
     var isTemplate = false
 
@@ -112,37 +107,6 @@ class Account : BaseModel {
         this.fullName = this.name
         this.commodity = commodity
     }
-
-    /**
-     * Adds a transaction to this account
-     *
-     * @param transaction [Transaction] to be added to the account
-     */
-    @Deprecated("add transaction directly to the db")
-    fun addTransaction(transaction: Transaction) {
-        transaction.commodity = commodity
-        _transactions.add(transaction)
-    }
-
-    /**
-     * Returns a list of transactions for this account
-     *
-     * @return Array list of transactions for the account
-     */
-    var transactions: List<Transaction>
-        @Deprecated("use transactions db adapter")
-        get() = _transactions
-        /**
-         * Sets a list of transactions for this account.
-         * Overrides any previous transactions with those in the list.
-         * The account UID and currency of the transactions will be set to the unique ID
-         * and currency of the account respectively
-         *
-         * @param value List of [Transaction]s to be set.
-         */
-        set(value) {
-            _transactions = value.toMutableList()
-        }
 
     /**
      * The color of the account.
@@ -190,7 +154,7 @@ class Account : BaseModel {
             field = value
         }
 
-    var note: String? = null
+    var notes: String? = null
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -224,6 +188,9 @@ class Account : BaseModel {
         // TODO: get it from a theme value?
         @ColorInt
         val DEFAULT_COLOR = Color.rgb(237, 236, 235)
+        /** An older default color. */
+        @ColorInt
+        val SILVER_COLOR = Color.rgb(238, 238, 238)
 
         /**
          * An extra key for passing the currency code (according ISO 4217) in an intent

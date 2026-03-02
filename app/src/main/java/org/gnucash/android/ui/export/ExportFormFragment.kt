@@ -128,6 +128,13 @@ class ExportFormFragment : MenuFragment(),
         binding.exportWarning.isVisible = false
 
         when (exportFormat) {
+            ExportFormat.CSVA, ExportFormat.CSVT -> {
+                binding.exportWarning.setText(R.string.export_notice_csv)
+                binding.exportWarning.isVisible = true
+                expand(binding.exportDateLayout)
+                expand(binding.layoutCsvOptions)
+            }
+
             ExportFormat.OFX -> {
                 binding.exportWarning.setText(R.string.export_warning_ofx)
                 binding.exportWarning.isVisible = true
@@ -143,18 +150,11 @@ class ExportFormFragment : MenuFragment(),
                 collapse(binding.layoutCsvOptions)
             }
 
-            ExportFormat.XML -> {
+            ExportFormat.SQLITE, ExportFormat.XML -> {
                 binding.exportWarning.setText(R.string.export_warning_xml)
                 binding.exportWarning.isVisible = true
                 collapse(binding.exportDateLayout)
                 collapse(binding.layoutCsvOptions)
-            }
-
-            ExportFormat.CSVA, ExportFormat.CSVT -> {
-                binding.exportWarning.setText(R.string.export_notice_csv)
-                binding.exportWarning.isVisible = true
-                expand(binding.exportDateLayout)
-                expand(binding.layoutCsvOptions)
             }
         }
     }
@@ -472,6 +472,9 @@ class ExportFormFragment : MenuFragment(),
             ExportFormatItem(ExportFormat.OFX, context.getString(ExportFormat.OFX.labelId))
         )
         if (isDoubleEntry) {
+            formatItems.add(
+                ExportFormatItem(ExportFormat.SQLITE, context.getString(ExportFormat.SQLITE.labelId))
+            )
             formatItems.add(
                 ExportFormatItem(ExportFormat.XML, context.getString(ExportFormat.XML.labelId))
             )

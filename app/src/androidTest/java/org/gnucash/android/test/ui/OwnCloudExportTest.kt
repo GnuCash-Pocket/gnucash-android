@@ -92,8 +92,10 @@ class OwnCloudExportTest : GnuAndroidTest() {
             CommoditiesDbAdapter.instance.getCurrency(currencyCode)!!
 
         val account = Account("ownCloud")
+        accountsDbAdapter.insert(account)
+
         val transaction = Transaction("birds")
-        transaction.time = System.currentTimeMillis()
+        transaction.datePosted = System.currentTimeMillis()
         val split = Split(Money("11.11", currencyCode), account)
         transaction.addSplit(split)
         transaction.addSplit(
@@ -104,9 +106,8 @@ class OwnCloudExportTest : GnuAndroidTest() {
                 )
             )
         )
-        account.addTransaction(transaction)
-
-        accountsDbAdapter.insert(account)
+        val transactionsDbAdapter = accountsDbAdapter.transactionsDbAdapter
+        transactionsDbAdapter.insert(transaction)
 
         val prefs = OwnCloudPreferences(context)
         prefs.isEnabled = false

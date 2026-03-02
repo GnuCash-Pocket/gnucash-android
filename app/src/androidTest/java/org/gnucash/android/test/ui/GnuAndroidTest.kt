@@ -120,6 +120,12 @@ abstract class GnuAndroidTest {
             .perform(click())
     }
 
+    protected fun setDoubleEntryEnabled(enabled: Boolean) {
+        GnuCashApplication.getBookPreferences(context).edit {
+            putBoolean(context.getString(R.string.key_use_double_entry), enabled)
+        }
+    }
+
     companion object {
         const val BUTTON_POSITIVE = android.R.id.button1
         const val BUTTON_NEGATIVE = android.R.id.button2

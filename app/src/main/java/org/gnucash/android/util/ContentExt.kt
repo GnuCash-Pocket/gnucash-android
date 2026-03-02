@@ -7,6 +7,7 @@ import android.content.res.AssetManager
 import android.content.res.Resources
 import android.net.Uri
 import android.provider.DocumentsContract
+import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
 import timber.log.Timber
 import java.io.FileNotFoundException
 import java.io.InputStream
@@ -110,7 +111,7 @@ operator fun ContentValues.set(key: String, value: Long) {
 }
 
 operator fun ContentValues.set(key: String, value: Timestamp) {
-    put(key, TimestampHelper.getUtcStringFromTimestamp(value))
+    put(key, getUtcStringFromTimestamp(value))
 }
 
 operator fun ContentValues.set(key: String, value: String?) {

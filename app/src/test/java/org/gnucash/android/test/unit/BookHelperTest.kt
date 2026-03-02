@@ -13,6 +13,7 @@ import org.gnucash.android.db.adapter.RecurrenceDbAdapter
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.gnc.GncProgressListener
+import org.gnucash.android.importer.ImporterFactory.getInputStream
 import org.gnucash.android.importer.sql.SqliteImporter
 import org.gnucash.android.importer.xml.GncXmlImporter
 import org.gnucash.android.util.ConsoleTree
@@ -35,7 +36,7 @@ abstract class BookHelperTest : GnuCashTest() {
     protected lateinit var pricesDbAdapter: PricesDbAdapter
 
     protected fun importGnuCashXml(filename: String): String {
-        val inputStream = openResourceStream(filename)
+        val inputStream = getInputStream(openResourceStream(filename))
         val bookUID = GncXmlImporter.parse(context, inputStream)
         setUpDbAdapters(bookUID)
         return bookUID
@@ -45,7 +46,7 @@ abstract class BookHelperTest : GnuCashTest() {
         filename: String,
         listener: GncProgressListener? = null
     ): String {
-        val inputStream = openResourceStream(filename)
+        val inputStream = getInputStream(openResourceStream(filename))
         return importGnuCashSqlite(inputStream, listener)
     }
 

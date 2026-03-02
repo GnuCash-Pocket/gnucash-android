@@ -40,6 +40,7 @@ import java.util.Calendar
 import java.util.TimeZone
 
 class OfxExporterTest : BookHelperTest() {
+
     /**
      * When there aren't new or modified transactions, the OFX exporter
      * shouldn't create any file.
@@ -63,9 +64,9 @@ class OfxExporterTest : BookHelperTest() {
         val account = Account("Basic Account")
         val transaction = Transaction("One transaction")
         transaction.addSplit(Split(createZeroInstance("EUR"), account))
-        account.addTransaction(transaction)
 
         accountsDbAdapter.addRecord(account)
+        transactionsDbAdapter.addRecord(transaction)
 
         val exportParameters = ExportParams(ExportFormat.OFX)
         val exporter = OfxExporter(
@@ -113,7 +114,7 @@ class OfxExporterTest : BookHelperTest() {
         val account = Account("Basic Account")
         val transaction = Transaction("One transaction")
         transaction.setUID("9dabf93ab0444ffabab513329286b691")
-        transaction.time = date
+        transaction.datePosted = date
         transaction.addSplit(Split(Money(123.45, "EUR"), account))
 
         accountsDbAdapter.addRecord(account)
@@ -152,7 +153,7 @@ class OfxExporterTest : BookHelperTest() {
         assertThat(accountExpense).isNotNull()
         val transaction = Transaction("Food")
         transaction.setUID("9dabf93ab0444ffabab513329286b691")
-        transaction.time = date
+        transaction.datePosted = date
         val split = Split(Money(123.45, "USD"), accountExpense)
         transaction.addSplit(split)
         transaction.addSplit(split.createPair(accountCash))
@@ -180,10 +181,10 @@ class OfxExporterTest : BookHelperTest() {
         val date = LocalDate(2025, 11, 26).toMillis()
 
         val account = Account("Visa")
-        account.accountType = AccountType.CREDIT
+        account.type = AccountType.CREDIT
         val transaction = Transaction("One transaction")
         transaction.setUID("9dabf93ab0444ffabab513329286b691")
-        transaction.time = date
+        transaction.datePosted = date
         transaction.addSplit(Split(Money(123.45, "EUR"), account))
 
         accountsDbAdapter.addRecord(account)

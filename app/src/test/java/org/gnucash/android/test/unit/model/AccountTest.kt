@@ -45,10 +45,10 @@ class AccountTest : GnuCashTest() {
         val trx = Transaction("Underground")
         val term = Transaction("Tube")
 
-        assertThat(trx.currencyCode).isEqualTo(Commodity.DEFAULT_COMMODITY.currencyCode)
+        assertThat(trx.commodity).isEqualTo(Commodity.DEFAULT_COMMODITY)
 
-        acc1.addTransaction(trx)
-        acc1.addTransaction(term)
+        trx.commodity = acc1.commodity
+        term.commodity = acc1.commodity
 
         assertThat(trx.currencyCode).isEqualTo("JPY")
         assertThat(term.currencyCode).isEqualTo("JPY")

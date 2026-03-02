@@ -52,7 +52,7 @@ abstract class DoubleConfirmationDialog : VolatileDialogFragment() {
      * dialog already set up.
      */
     protected val dialogBuilder: AlertDialog.Builder
-        get() = AlertDialog.Builder(requireActivity())
+        get() = AlertDialog.Builder(requireActivity(), theme)
             .setView(R.layout.dialog_double_confirm)
             .setNegativeButton(R.string.btn_cancel) { _, _ ->
                 onNegativeButton()
