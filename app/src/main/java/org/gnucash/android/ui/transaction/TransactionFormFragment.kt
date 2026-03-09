@@ -1103,7 +1103,7 @@ class TransactionFormFragment : MenuFragment(),
         if (account == null) {
             Timber.e("Account not found")
             finish(Activity.RESULT_CANCELED)
-            throw NullPointerException("Account required")
+            throw IllegalArgumentException("Account required")
         }
         return account
     }

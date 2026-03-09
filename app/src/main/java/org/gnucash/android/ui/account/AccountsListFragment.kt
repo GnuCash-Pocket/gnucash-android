@@ -474,10 +474,14 @@ class AccountsListFragment : MenuFragment(),
             if (!isResumed) return
             val accountsDbAdapter = this@AccountsListFragment.accountsDbAdapter
             val accountUID = cursor.getString(AccountEntry.COLUMN_UID)!!
+            if (accountUID.isEmpty()) {
+                Timber.w("Account UID required")
+                return
+            }
             this.accountUID = accountUID
             val account = accountsDbAdapter.getRecord(accountUID)
 
-            accountName.text = account!!.name
+            accountName.text = account.name
             val subAccountCount = accountsDbAdapter.getSubAccountCount(accountUID)
             if (subAccountCount > 0) {
                 description.isVisible = true
@@ -510,8 +514,8 @@ class AccountsListFragment : MenuFragment(),
                     val context = v.context
                     val intent = Intent(context, FormActivity::class.java)
                         .setAction(Intent.ACTION_INSERT_OR_EDIT)
-                        .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
                         .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
+                        .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
                     context.startActivity(intent)
                 }
             }

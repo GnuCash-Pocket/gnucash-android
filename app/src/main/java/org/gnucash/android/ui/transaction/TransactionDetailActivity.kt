@@ -171,7 +171,9 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
             binding.rowTrnRecurrence.isVisible = true
         }
 
-        binding.fabEdit.setOnClickListener { editTransaction() }
+        binding.fabEdit.setOnClickListener {
+            editTransaction(accountUID, transactionUID)
+        }
     }
 
     override fun refresh() {
@@ -183,12 +185,20 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         bindViews(binding)
     }
 
-    private fun editTransaction() {
+    private fun editTransaction(accountUID: String?, transactionUID: String?) {
+        if (accountUID.isNullOrEmpty()) {
+            Timber.w("Account UID required")
+            return
+        }
+        if (transactionUID.isNullOrEmpty()) {
+            Timber.w("Transaction UID required")
+            return
+        }
         val intent = Intent(this, FormActivity::class.java)
             .setAction(Intent.ACTION_INSERT_OR_EDIT)
+            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
             .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
-            .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
         startActivityForResult(intent, REQUEST_REFRESH)
     }
 
@@ -283,6 +293,14 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
     fun showAccount(split: Split) {
         val accountUID = split.accountUID ?: return
         val transactionUID = split.transactionUID ?: return
+        if (accountUID.isEmpty()) {
+            Timber.w("Account UID required")
+            return
+        }
+        if (transactionUID.isEmpty()) {
+            Timber.w("Transaction UID required")
+            return
+        }
         val intent = Intent(this, TransactionsActivity::class.java)
             .setAction(Intent.ACTION_VIEW)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)

@@ -452,6 +452,14 @@ class TransactionsListFragment : MenuFragment(),
     }
 
     private fun editTransaction(transactionUID: String, accountUID: String) {
+        if (transactionUID.isEmpty()) {
+            Timber.w("Transaction UID required")
+            return
+        }
+        if (accountUID.isEmpty()) {
+            Timber.w("Account UID required")
+            return
+        }
         val context: Context = context ?: return
         val intent = Intent(context, FormActivity::class.java)
             .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
@@ -481,10 +489,14 @@ class TransactionsListFragment : MenuFragment(),
     }
 
     private fun createNewTransaction(context: Context, accountUID: String) {
+        if (accountUID.isEmpty()) {
+            Timber.w("Account UID required")
+            return
+        }
         val intent = Intent(context, FormActivity::class.java)
             .setAction(Intent.ACTION_INSERT_OR_EDIT)
-            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
             .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
+            .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
         startActivity(intent)
     }
 
