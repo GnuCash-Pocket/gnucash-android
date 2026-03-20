@@ -226,18 +226,18 @@ class BudgetListFragment : Fragment(), Refreshable, LoaderManager.LoaderCallback
         }
 
         override fun onMenuItemClick(item: MenuItem): Boolean {
-            when (item.itemId) {
+            return when (item.itemId) {
                 R.id.menu_edit -> {
                     editBudget(budgetUID)
-                    return true
+                    true
                 }
 
                 R.id.menu_delete -> {
                     deleteBudget(budgetUID!!)
-                    return true
+                    true
                 }
 
-                else -> return false
+                else -> false
             }
         }
 

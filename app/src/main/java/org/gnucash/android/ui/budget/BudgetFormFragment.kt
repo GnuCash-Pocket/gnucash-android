@@ -247,13 +247,14 @@ class BudgetFormFragment : MenuFragment(), OnRecurrenceSetListener,
 
     @Deprecated("Deprecated in Java")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        return when (item.itemId) {
             R.id.menu_save -> {
                 saveBudget()
-                return true
+                true
             }
+
+            else -> super.onOptionsItemSelected(item)
         }
-        return false
     }
 
     private fun onClickBudgetStartDate() {

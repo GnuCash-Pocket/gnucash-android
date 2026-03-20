@@ -150,14 +150,7 @@ class QualifiedAccountNameAdapter(
         loadJob?.cancel()
         loadJob = scope.launch(Dispatchers.IO) {
             val records = loadData(adapter)
-            val items = records.map { account ->
-                val label = if (account.fullName.isNullOrBlank()) {
-                    account.name
-                } else {
-                    account.fullName!!
-                }
-                SpinnerItem(account, label)
-            }
+            val items = records.map { account -> toItem(account) }
             withContext(Dispatchers.Main) {
                 clear()
                 addAll(items)
@@ -165,6 +158,15 @@ class QualifiedAccountNameAdapter(
             }
         }
         return this
+    }
+
+    private fun toItem(account: Account): SpinnerItem<Account> {
+        val label = if (account.fullName.isNullOrBlank()) {
+            account.name
+        } else {
+            account.fullName!!
+        }
+        return SpinnerItem(account, label)
     }
 
     private fun loadData(adapter: AccountsDbAdapter): List<Account> {
@@ -176,6 +178,20 @@ class QualifiedAccountNameAdapter(
 
     fun getAccountDb(uid: String): Account? {
         return getAccount(uid) ?: adapter.getRecordOrNull(uid)
+    }
+
+    fun notifyAccountChanged(uid: String) {
+        val position = getPosition(uid)
+        if (position < 0) return
+        scope.launch(Dispatchers.IO) {
+            val record = adapter.getRecord(uid)
+            val itemOld = getItem(position)
+            val itemNew = toItem(record)
+            withContext(Dispatchers.Main) {
+                remove(itemOld)
+                insert(itemNew, position)
+            }
+        }
     }
 
     companion object {

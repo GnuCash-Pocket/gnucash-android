@@ -549,52 +549,7 @@
     <string name="label_remaining">Remaining</string>
     <string name="server_address">Server Address</string>
     <string name="directory">Directory</string>
-
-    <string-array name="colors_names_gtk">
-        <item>"Very Light Blue"</item>
-        <item>"Light Blue"</item>
-        <item>"Blue"</item>
-        <item>"Dark Blue"</item>
-        <item>"Very Dark Blue"</item>
-        <item>"Very Light Green"</item>
-        <item>"Light Green"</item>
-        <item>"Green"</item>
-        <item>"Dark Green"</item>
-        <item>"Very Dark Green"</item>
-        <item>"Very Light Yellow"</item>
-        <item>"Light Yellow"</item>
-        <item>"Yellow"</item>
-        <item>"Dark Yellow"</item>
-        <item>"Very Dark Yellow"</item>
-        <item>"Very Light Orange"</item>
-        <item>"Light Orange"</item>
-        <item>"Orange"</item>
-        <item>"Dark Orange"</item>
-        <item>"Very Dark Orange"</item>
-        <item>"Very Light Red"</item>
-        <item>"Light Red"</item>
-        <item>"Red"</item>
-        <item>"Dark Red"</item>
-        <item>"Very Dark Red"</item>
-        <item>"Very Light Purple"</item>
-        <item>"Light Purple"</item>
-        <item>"Purple"</item>
-        <item>"Dark Purple"</item>
-        <item>"Very Dark Purple"</item>
-        <item>"Very Light Brown"</item>
-        <item>"Light Brown"</item>
-        <item>"Brown"</item>
-        <item>"Dark Brown"</item>
-        <item>"Very Dark Brown"</item>
-        <item>"White"</item>
-        <item>"Light Gray 1"</item>
-        <item>"Light Gray 2"</item>
-        <item>"Light Gray 3"</item>
-        <item>"Light Gray 4"</item>
-        <item>"Dark Gray 1"</item>
-        <item>"Dark Gray 2"</item>
-        <item>"Dark Gray 3"</item>
-        <item>"Dark Gray 4"</item>
-        <item>"Black"</item>
-    </string-array>
+    <string name="title_absolute_date">Absolute date</string>
+    <string name="summary_absolute_date">Show transactions formatted with their actual date - relative date otherwise.</string>
+    <string name="menu_show_absolute_date">Format absolute date</string>
 </resources>

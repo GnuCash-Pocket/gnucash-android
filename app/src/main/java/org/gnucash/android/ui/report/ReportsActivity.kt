@@ -298,31 +298,31 @@ class ReportsActivity : BaseDrawerActivity(),
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.menu_group_reports_by -> return true
+        return when (item.itemId) {
+            R.id.menu_group_reports_by -> true
 
             R.id.group_by_month -> {
                 item.isChecked = true
                 reportGroupInterval = GroupInterval.MONTH
                 updateGroupingOnFragments()
-                return true
+                true
             }
 
             R.id.group_by_quarter -> {
                 item.isChecked = true
                 reportGroupInterval = GroupInterval.QUARTER
                 updateGroupingOnFragments()
-                return true
+                true
             }
 
             R.id.group_by_year -> {
                 item.isChecked = true
                 reportGroupInterval = GroupInterval.YEAR
                 updateGroupingOnFragments()
-                return true
+                true
             }
 
-            else -> return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 

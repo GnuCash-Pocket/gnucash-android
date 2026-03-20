@@ -114,7 +114,7 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        return when (item.itemId) {
             R.id.menu_create -> {
                 val activity: Activity? = activity
                 if (activity == null) {
@@ -122,15 +122,15 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
                     return false
                 }
                 createBook(activity)
-                return true
+                true
             }
 
             R.id.menu_open -> {
                 chooseDocument(REQUEST_OPEN_DOCUMENT)
-                return true
+                true
             }
 
-            else -> return false
+            else -> super.onOptionsItemSelected(item)
         }
     }
 

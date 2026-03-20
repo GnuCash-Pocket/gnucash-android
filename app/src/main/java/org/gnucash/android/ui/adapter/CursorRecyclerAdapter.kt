@@ -9,6 +9,7 @@ import android.provider.BaseColumns
 import android.widget.Filter
 import android.widget.Filterable
 import androidx.recyclerview.widget.RecyclerView
+import org.gnucash.android.db.DatabaseSchema.CommonColumns
 import org.gnucash.android.ui.util.CursorFilter
 
 /**
@@ -211,6 +212,22 @@ abstract class CursorRecyclerAdapter<VH : RecyclerView.ViewHolder>(cursor: Curso
     @SuppressLint("NotifyDataSetChanged")
     protected fun onContentChanged() {
         notifyDataSetChanged()
+    }
+
+    fun getItemPosition(itemUID: String): Int {
+        val cursor = cursor ?: return -1
+        if (cursor.moveToFirst()) {
+            val columnIndex = cursor.getColumnIndex(CommonColumns.COLUMN_UID)
+            var position = 0
+            do {
+                val uid = cursor.getString(columnIndex)
+                if (uid == itemUID) {
+                    return position
+                }
+                position++
+            } while (cursor.moveToNext())
+        }
+        return -1
     }
 
     private inner class ChangeObserver : ContentObserver(Handler()) {

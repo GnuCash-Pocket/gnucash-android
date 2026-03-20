@@ -23,4 +23,10 @@
         android:icon="@android:drawable/ic_menu_view"
         android:title="@string/menu_show_compact_view"
         app:showAsAction="never|withText" />
+    <item
+        android:id="@+id/menu_toggle_date"
+        android:checkable="true"
+        android:icon="@android:drawable/ic_menu_day"
+        android:title="@string/menu_show_absolute_date"
+        app:showAsAction="never|withText" />
 </menu>

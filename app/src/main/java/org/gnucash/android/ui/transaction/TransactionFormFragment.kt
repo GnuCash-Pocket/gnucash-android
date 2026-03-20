@@ -347,8 +347,7 @@ class TransactionFormFragment : MenuFragment(),
         binding.inputTransactionName.onItemClickListener =
             OnItemClickListener { adapterView, view, position, id ->
                 val transactionDb = transactionsDbAdapter.getRecord(id)
-                val transaction = transactionDb.copy()
-                transaction.time = System.currentTimeMillis()
+                val transaction = transactionDb.copy(time = System.currentTimeMillis())
                 //we check here because next method will modify it and we want to catch user-modification
                 val amountEntered = binding.inputTransactionAmount.value
                 val amountModified = binding.inputTransactionAmount.isInputModified
@@ -954,18 +953,18 @@ class TransactionFormFragment : MenuFragment(),
         val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(view.windowToken, 0)
 
-        when (item.itemId) {
+        return when (item.itemId) {
             android.R.id.home -> {
                 finish(Activity.RESULT_CANCELED)
-                return true
+                true
             }
 
             R.id.menu_save -> {
                 maybeSaveTransaction(binding)
-                return true
+                true
             }
 
-            else -> return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 

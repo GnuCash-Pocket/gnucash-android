@@ -342,7 +342,7 @@ abstract class DatabaseAdapter<Model : BaseModel>(
     }
 
     /**
-     * Binds the values from the model the the SQL statement
+     * Binds the values from the model the SQL statement
      *
      * @param stmt  SQL statement with placeholders
      * @param model Model from which to read bind attributes

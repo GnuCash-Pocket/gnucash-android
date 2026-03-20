@@ -293,7 +293,7 @@ class StackedBarChartFragment : IntervalReportFragment<BarData>() {
         if (item.isCheckable) {
             item.isChecked = !item.isChecked
         }
-        when (item.itemId) {
+        return when (item.itemId) {
             R.id.menu_toggle_legend -> {
                 val chart = chart ?: return false
                 val legend = chart.legend
@@ -305,7 +305,7 @@ class StackedBarChartFragment : IntervalReportFragment<BarData>() {
                     legend.isEnabled = !legend.isEnabled
                     chart.invalidate()
                 }
-                return true
+                true
             }
 
             R.id.menu_percentage_mode -> {
@@ -315,10 +315,10 @@ class StackedBarChartFragment : IntervalReportFragment<BarData>() {
                 else
                     R.string.toast_chart_percentage_mode_current_bar
                 snackLong(msgId)
-                return true
+                true
             }
 
-            else -> return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 

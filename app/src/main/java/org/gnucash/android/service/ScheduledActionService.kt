@@ -49,7 +49,7 @@ import kotlin.math.min
  *
  *
  * It's run every time the `enqueueWork` is called. It goes
- * through all scheduled event entries in the the database and executes them.
+ * through all scheduled event entries in the database and executes them.
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
@@ -313,8 +313,7 @@ class ScheduledActionService {
             //so compute the actual transaction time from pre-known values
             var transactionTime = scheduledAction.computeNextCountBasedScheduledExecutionTime()
             while (transactionTime <= endTime) {
-                val transaction = template.copy()
-                transaction.time = transactionTime
+                val transaction = template.copy(time = transactionTime)
                 transaction.scheduledActionUID = scheduledAction.uid
                 transactionsDbAdapter.insert(transaction)
                 //required for computingNextScheduledExecutionTime

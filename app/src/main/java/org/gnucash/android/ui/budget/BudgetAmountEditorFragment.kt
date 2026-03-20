@@ -104,18 +104,18 @@ class BudgetAmountEditorFragment : MenuFragment() {
 
     @Deprecated("Deprecated in Java")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        return when (item.itemId) {
             R.id.menu_add -> {
                 addBudgetAmountView(null)
-                return true
+                true
             }
 
             R.id.menu_save -> {
                 saveBudgetAmounts()
-                return true
+                true
             }
 
-            else -> return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 

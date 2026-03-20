@@ -50,7 +50,7 @@ import java.sql.Timestamp
 import java.util.Calendar
 
 /**
- * Test the the scheduled actions service runs as expected
+ * Test the scheduled actions service runs as expected
  */
 class ScheduledActionServiceTest : BookHelperTest() {
     private var actionUID: String? = null

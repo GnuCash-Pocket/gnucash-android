@@ -29,4 +29,6 @@ interface OnAccountClickedListener {
      * @param accountUID GUID of the selected account
      */
     fun accountSelected(accountUID: String)
+
+    fun accountChanged(accountUID: String)
 }

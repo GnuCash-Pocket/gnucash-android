@@ -437,5 +437,15 @@ class GnuCashApplication : Application() {
         fun getBookPreferences(context: Context, bookUID: String): SharedPreferences {
             return context.getSharedPreferences(bookUID, MODE_PRIVATE)
         }
+
+        /**
+         * Show transactions formatted with their actual date - relative date otherwise.
+         *
+         * @return `true` to format with absolute date.
+         */
+        fun isAbsoluteDate(context: Context): Boolean {
+            val preferences: SharedPreferences = getBookPreferences(context)
+            return preferences.getBoolean(context.getString(R.string.key_absolute_date), false)
+        }
     }
 }

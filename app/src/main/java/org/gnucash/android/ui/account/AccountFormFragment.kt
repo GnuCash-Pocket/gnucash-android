@@ -442,19 +442,19 @@ class AccountFormFragment : MenuFragment(), FragmentResultListener {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        return when (item.itemId) {
             R.id.menu_save -> {
                 saveAccount()
-                return true
+                true
             }
 
             android.R.id.home -> {
                 finishFragment()
-                return true
+                true
             }
-        }
 
-        return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     /**

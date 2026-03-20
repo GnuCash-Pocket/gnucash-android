@@ -298,20 +298,20 @@ class CashFlowLineChartFragment : IntervalReportFragment<LineData>() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        return when (item.itemId) {
             R.id.menu_toggle_legend -> {
                 item.isChecked = !item.isChecked
                 showLegend(item.isChecked)
-                return true
+                true
             }
 
             R.id.menu_toggle_average_lines -> {
                 item.isChecked = !item.isChecked
                 showAverageLines(item.isChecked)
-                return true
+                true
             }
 
-            else -> return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 

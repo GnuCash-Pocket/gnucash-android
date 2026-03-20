@@ -224,10 +224,10 @@ class PieChartFragment : BaseReportFragment<PieData>() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.isCheckable) item.isChecked = !item.isChecked
-        when (item.itemId) {
+        return when (item.itemId) {
             R.id.menu_order_by_size -> {
                 sort()
-                return true
+                true
             }
 
             R.id.menu_toggle_legend -> {
@@ -235,7 +235,7 @@ class PieChartFragment : BaseReportFragment<PieData>() {
                 pieChart.legend.isEnabled = !pieChart.legend.isEnabled
                 pieChart.notifyDataSetChanged()
                 pieChart.invalidate()
-                return true
+                true
             }
 
             R.id.menu_toggle_labels -> {
@@ -244,16 +244,16 @@ class PieChartFragment : BaseReportFragment<PieData>() {
                 pieChart.data.setDrawValues(draw)
                 pieChart.setDrawEntryLabels(draw)
                 pieChart.invalidate()
-                return true
+                true
             }
 
             R.id.menu_group_other_slice -> {
                 groupSmallerSlices = !groupSmallerSlices
                 refresh()
-                return true
+                true
             }
 
-            else -> return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 

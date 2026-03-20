@@ -199,28 +199,28 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        return when (item.itemId) {
             android.R.id.home -> {
                 finish()
-                return true
+                true
             }
 
             R.id.menu_move -> {
                 moveTransaction(transactionUID)
-                return true
+                true
             }
 
             R.id.menu_duplicate -> {
                 duplicateTransaction(transactionUID)
-                return true
+                true
             }
 
             R.id.menu_delete -> {
                 deleteTransaction(transactionUID)
-                return true
+                true
             }
 
-            else -> return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -262,8 +262,7 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         if (transactionUID.isNullOrEmpty()) return
 
         val transaction = transactionsDbAdapter.getRecord(transactionUID)
-        val duplicate = transaction.copy()
-        duplicate.time = System.currentTimeMillis()
+        val duplicate = transaction.copy(time = System.currentTimeMillis())
         try {
             transactionsDbAdapter.insert(duplicate)
             if (duplicate.id <= 0) return
@@ -287,11 +286,11 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
             .setAction(Intent.ACTION_VIEW)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
             .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
-        startActivity(intent)
+        startActivityForResult(intent, REQUEST_REFRESH)
     }
 
     companion object {
-        // "ForResult" to force refresh afterwards.
+        // "ForResult" to force refresh afterward.
         private const val REQUEST_REFRESH = 0x0000
     }
 }

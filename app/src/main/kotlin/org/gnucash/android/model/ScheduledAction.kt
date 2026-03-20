@@ -113,7 +113,7 @@ class ScheduledAction    //all actions are enabled by default
     var isAutoCreate = false
 
     /**
-     * "TRUE if the the user will be notified when the transaction is automatically created."
+     * "TRUE if the user will be notified when the transaction is automatically created."
      *
      * This flag is currently unused in the app. It is only included here for compatibility with GnuCash desktop XML
      */

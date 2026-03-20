@@ -194,7 +194,7 @@ class SplitEditorFragment : MenuFragment() {
 
     @Deprecated("Deprecated in Java")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        return when (item.itemId) {
             android.R.id.home -> {
                 val activity = activity
                 if (activity == null) {
@@ -203,20 +203,20 @@ class SplitEditorFragment : MenuFragment() {
                 }
                 activity.setResult(Activity.RESULT_CANCELED)
                 activity.finish()
-                return true
+                true
             }
 
             R.id.menu_save -> {
                 saveSplits()
-                return true
+                true
             }
 
             R.id.menu_add -> {
                 addSplitView(null)
-                return true
+                true
             }
 
-            else -> return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 

@@ -43,6 +43,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication.Companion.getBookPreferences
+import org.gnucash.android.app.GnuCashApplication.Companion.isAbsoluteDate
 import org.gnucash.android.app.GnuCashApplication.Companion.isDoubleEntryEnabled
 import org.gnucash.android.app.GnuCashApplication.Companion.shouldBackupTransactions
 import org.gnucash.android.app.MenuFragment
@@ -50,10 +51,8 @@ import org.gnucash.android.app.actionBar
 import org.gnucash.android.databinding.CardviewTransactionBinding
 import org.gnucash.android.databinding.FragmentTransactionsListBinding
 import org.gnucash.android.db.DatabaseCursorLoader
-import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
-import org.gnucash.android.db.getString
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.ui.adapter.CursorRecyclerAdapter
 import org.gnucash.android.ui.common.FormActivity
@@ -63,6 +62,7 @@ import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity.Companion.u
 import org.gnucash.android.ui.transaction.dialog.BulkMoveDialogFragment
 import org.gnucash.android.ui.util.displayBalance
 import org.gnucash.android.util.BackupManager.backupActiveBookAsync
+import org.gnucash.android.util.formatMediumDate
 import timber.log.Timber
 
 /**
@@ -81,6 +81,7 @@ class TransactionsListFragment : MenuFragment(),
 
     private var useCompactView = false
     private var useDoubleEntry = true
+    private var useAbsoluteDate = false
 
     private var transactionsAdapter: TransactionCursorAdapter? = null
 
@@ -98,11 +99,16 @@ class TransactionsListFragment : MenuFragment(),
             getString(R.string.key_use_compact_list),
             useCompactView
         )
+        useAbsoluteDate = isAbsoluteDate(context)
         //if there was a local override of the global setting, respect it
         if (savedInstanceState != null) {
             useCompactView = savedInstanceState.getBoolean(
                 getString(R.string.key_use_compact_list),
                 useCompactView
+            )
+            useAbsoluteDate = savedInstanceState.getBoolean(
+                getString(R.string.key_absolute_date),
+                useAbsoluteDate
             )
         }
 
@@ -113,6 +119,7 @@ class TransactionsListFragment : MenuFragment(),
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean(getString(R.string.key_use_compact_list), useCompactView)
+        outState.putBoolean(getString(R.string.key_absolute_date), useAbsoluteDate)
     }
 
     override fun onCreateView(
@@ -208,21 +215,31 @@ class TransactionsListFragment : MenuFragment(),
     @Deprecated("Deprecated in Java")
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
-        val item = menu.findItem(R.id.menu_toggle_compact)
-        item.isChecked = useCompactView
-        item.isEnabled = useDoubleEntry //always compact for single-entry
+        val itemCompact = menu.findItem(R.id.menu_toggle_compact)
+        itemCompact.isChecked = useCompactView
+        itemCompact.isEnabled = useDoubleEntry //always compact for single-entry
+
+        val itemDate = menu.findItem(R.id.menu_toggle_date)
+        itemDate.isChecked = useAbsoluteDate
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        return when (item.itemId) {
             R.id.menu_toggle_compact -> {
                 item.isChecked = !item.isChecked
                 useCompactView = item.isChecked
                 refresh()
-                return true
+                true
             }
 
-            else -> return super.onOptionsItemSelected(item)
+            R.id.menu_toggle_date -> {
+                item.isChecked = !item.isChecked
+                useAbsoluteDate = item.isChecked
+                refresh()
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -355,7 +372,11 @@ class TransactionsListFragment : MenuFragment(),
             val amount = transaction.getBalance(accountUID)
             transactionAmount.displayBalance(amount, colorBalanceZero)
 
-            val dateText = getPrettyDateFormat(context, transaction.time)
+            val dateText = if (useAbsoluteDate) {
+                formatMediumDate(transaction.time)
+            } else {
+                getPrettyDateFormat(context, transaction.time)
+            }
             transactionDate.text = dateText
 
             if (useCompactView || !useDoubleEntry) {
@@ -397,7 +418,7 @@ class TransactionsListFragment : MenuFragment(),
         }
 
         /**
-         * Formats the date to show the the day of the week if the `dateMillis` is within 7 days
+         * Formats the date to show the day of the week if the `dateMillis` is within 7 days
          * of today. Else it shows the actual date formatted as short string. <br></br>
          * It also shows "today", "yesterday" or "tomorrow" if the date is on any of those days
          *
@@ -420,23 +441,28 @@ class TransactionsListFragment : MenuFragment(),
         val activity = activity ?: return
         if (shouldBackupTransactions(activity)) {
             backupActiveBookAsync(activity) { result ->
-                transactionsDbAdapter.deleteRecord(transactionUID)
-                updateAllWidgets(activity)
-                refresh()
+                deleteTransactionImpl(transactionUID, activity)
             }
         } else {
-            transactionsDbAdapter.deleteRecord(transactionUID)
-            updateAllWidgets(activity)
-            refresh()
+            deleteTransactionImpl(transactionUID, activity)
         }
+    }
+
+    private fun deleteTransactionImpl(transactionUID: String, activity: Activity) {
+        val position = findItemPosition(transactionUID)
+        transactionsDbAdapter.deleteRecord(transactionUID)
+        if (position >= 0) {
+            transactionsAdapter?.notifyItemRemoved(position)
+        }
+        updateAllWidgets(activity)
     }
 
     private fun duplicateTransaction(transactionUID: String) {
         try {
             val transaction = transactionsDbAdapter.getRecord(transactionUID)
-            val duplicate = transaction.copy()
-            duplicate.time = System.currentTimeMillis()
+            val duplicate = transaction.copy(time = System.currentTimeMillis())
             transactionsDbAdapter.insert(duplicate)
+            scrollTransactionUID = duplicate.uid
             refresh()
         } catch (e: SQLException) {
             Timber.e(e)
@@ -453,6 +479,7 @@ class TransactionsListFragment : MenuFragment(),
 
     private fun editTransaction(transactionUID: String, accountUID: String) {
         val context: Context = context ?: return
+        scrollTransactionUID = transactionUID
         val intent = Intent(context, FormActivity::class.java)
             .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
             .putExtra(UxArgument.SELECTED_TRANSACTION_UID, transactionUID)
@@ -460,24 +487,20 @@ class TransactionsListFragment : MenuFragment(),
         startActivity(intent)
     }
 
-    private fun scrollToTransaction(cursor: Cursor?, scrollTransactionUID: String?) {
-        val cursor = cursor ?: return
-        val scrollTransactionUID = scrollTransactionUID ?: return
-        if (scrollTransactionUID.isEmpty()) return
+    private fun scrollToTransaction(cursor: Cursor?, transactionUID: String?) {
+        if (cursor == null) return
+        if (transactionUID.isNullOrEmpty()) return
         val binding = binding ?: return
 
-        var position = 0
-        if (cursor.moveToFirst()) {
-            do {
-                val transactionUID = cursor.getString(TransactionEntry.COLUMN_UID)
-                if (transactionUID == scrollTransactionUID) {
-                    break
-                }
-                position++
-            } while (cursor.moveToNext())
+        val position = findItemPosition(transactionUID)
+        if (position >= 0) {
+            binding.list.scrollToPosition(position)
         }
-        cursor.moveToFirst()
-        binding.list.scrollToPosition(position)
+    }
+
+    private fun findItemPosition(transactionUID: String): Int {
+        val adapter = transactionsAdapter ?: return -1
+        return adapter.getItemPosition(transactionUID)
     }
 
     private fun createNewTransaction(context: Context, accountUID: String) {

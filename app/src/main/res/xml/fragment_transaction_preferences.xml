@@ -38,6 +38,12 @@
         android:key="@string/key_use_compact_list"
         android:summary="@string/summary_use_compact_list"
         android:title="@string/title_use_compact_list" />
+    <SwitchPreference
+        android:defaultValue="false"
+        android:icon="@drawable/ic_day"
+        android:key="@string/key_absolute_date"
+        android:summary="@string/summary_absolute_date"
+        android:title="@string/title_absolute_date" />
 
     <SwitchPreference
         android:defaultValue="false"
@@ -45,6 +51,7 @@
         android:key="@string/key_save_opening_balances"
         android:summary="@string/summary_save_opening_balances"
         android:title="@string/title_save_opening_balances" />
+
     <Preference
         android:icon="@drawable/ic_delete"
         android:key="@string/key_delete_all_transactions"

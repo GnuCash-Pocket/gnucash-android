@@ -37,7 +37,6 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentResultListener
-import androidx.lifecycle.Lifecycle
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.Loader
 import androidx.recyclerview.widget.GridLayoutManager
@@ -108,11 +107,15 @@ class AccountsListFragment : MenuFragment(),
     private var binding: FragmentAccountsListBinding? = null
     private val accountBalanceTasks = mutableListOf<AccountBalanceTask>()
 
+    override fun toString(): String {
+        return super.toString() + "/" + displayMode
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = FragmentAccountsListBinding.inflate(inflater, container, false)
         this.binding = binding
         return binding.root
@@ -177,11 +180,6 @@ class AccountsListFragment : MenuFragment(),
         accountsDbAdapter = AccountsDbAdapter.instance
     }
 
-    override fun onStop() {
-        super.onStop()
-        binding?.list?.adapter = null
-    }
-
     override fun onResume() {
         super.onResume()
         refresh()
@@ -202,8 +200,9 @@ class AccountsListFragment : MenuFragment(),
 
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == Activity.RESULT_CANCELED) return
-        refresh()
+        if (resultCode == Activity.RESULT_OK) {
+            refresh()
+        }
     }
 
     /**
@@ -250,7 +249,7 @@ class AccountsListFragment : MenuFragment(),
         val contentValues = ContentValues()
         contentValues[AccountEntry.COLUMN_FAVORITE] = isFavoriteAccount
         accountsDbAdapter.updateRecord(accountUID, contentValues)
-        refreshActivity()
+        accountClickedListener?.accountChanged(accountUID)
     }
 
     /**
@@ -289,7 +288,6 @@ class AccountsListFragment : MenuFragment(),
 
     override fun onDestroyView() {
         super.onDestroyView()
-        accountListAdapter?.changeCursor(null)
         cancelBalances()
     }
 
@@ -311,7 +309,7 @@ class AccountsListFragment : MenuFragment(),
             .setAction(Intent.ACTION_INSERT_OR_EDIT)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
             .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name)
-        context.startActivity(intent)
+        startActivityForResult(intent, REQUEST_REFRESH)
     }
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor?> {
@@ -333,17 +331,10 @@ class AccountsListFragment : MenuFragment(),
         Timber.d("Accounts loader finished for $displayMode")
         val adapter = accountListAdapter ?: return
         adapter.changeCursor(cursor)
-        if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
-            val binding = binding
-            if (binding != null && binding.list.adapter == null) {
-                binding.list.adapter = adapter
-            }
-            adapter.notifyDataSetChanged()
-        }
     }
 
     override fun onLoaderReset(loader: Loader<Cursor?>) {
-        Timber.d("Resetting the accounts loader $displayMode")
+        Timber.d("Resetting the accounts loader for $displayMode")
         accountListAdapter?.changeCursor(null)
     }
 
@@ -427,7 +418,7 @@ class AccountsListFragment : MenuFragment(),
             .setAction(Intent.ACTION_INSERT_OR_EDIT)
             .putExtra(UxArgument.PARENT_ACCOUNT_UID, parentAccountUID)
             .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.ACCOUNT.name)
-        startActivity(intent)
+        startActivityForResult(intent, REQUEST_REFRESH)
     }
 
     internal inner class AccountRecyclerAdapter(cursor: Cursor?) :
@@ -477,7 +468,7 @@ class AccountsListFragment : MenuFragment(),
             this.accountUID = accountUID
             val account = accountsDbAdapter.getRecord(accountUID)
 
-            accountName.text = account!!.name
+            accountName.text = account.name
             val subAccountCount = accountsDbAdapter.getSubAccountCount(accountUID)
             if (subAccountCount > 0) {
                 description.isVisible = true
@@ -512,7 +503,7 @@ class AccountsListFragment : MenuFragment(),
                         .setAction(Intent.ACTION_INSERT_OR_EDIT)
                         .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
                         .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
-                    context.startActivity(intent)
+                    startActivityForResult(intent, REQUEST_REFRESH)
                 }
             }
 
@@ -550,18 +541,18 @@ class AccountsListFragment : MenuFragment(),
             val activity = activity ?: return false
             val accountUID = accountUID ?: return false
 
-            when (item.itemId) {
+            return when (item.itemId) {
                 R.id.menu_edit -> {
                     openCreateOrEditActivity(activity, accountUID)
-                    return true
+                    true
                 }
 
                 R.id.menu_delete -> {
                     tryDeleteAccount(activity, accountUID)
-                    return true
+                    true
                 }
 
-                else -> return false
+                else -> false
             }
         }
 
@@ -593,6 +584,9 @@ class AccountsListFragment : MenuFragment(),
          * Tag to save [AccountsListFragment.displayMode] to fragment state
          */
         private const val STATE_DISPLAY_MODE = "display_mode"
+
+        // "ForResult" to force refresh afterward.
+        private const val REQUEST_REFRESH = 0x0000
 
         fun newInstance(displayMode: DisplayMode): AccountsListFragment {
             val args = Bundle()

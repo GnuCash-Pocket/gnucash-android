@@ -145,7 +145,7 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
 
     @Deprecated("Deprecated in Java")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        return when (item.itemId) {
             R.id.menu_edit -> {
                 val context = context ?: return false
                 val intent = Intent(context, FormActivity::class.java)
@@ -153,10 +153,10 @@ class BudgetDetailFragment : MenuFragment(), Refreshable {
                     .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.BUDGET.name)
                     .putExtra(UxArgument.BUDGET_UID, budgetUID)
                 startActivityForResult(intent, REQUEST_REFRESH)
-                return true
+                true
             }
 
-            else -> return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
     }
 

@@ -110,14 +110,14 @@ class FormActivity : PasscodeLockActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+        return when (item.itemId) {
             android.R.id.home -> {
                 goBack()
-                return true
+                true
             }
-        }
 
-        return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     /**
