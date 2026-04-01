@@ -327,7 +327,7 @@
     <string name="summary_translate_gnucash">Допомагайте перекладати чи редагувати на CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">Нема сумісних застосунків для виватаження записів!</string>
     <string name="menu_move_transaction">Перенести…</string>
-    <string name="menu_duplicate_transaction">Дублювати</string>
+    <string name="menu_duplicate">Дублювати</string>
     <string name="title_cash_flow_report">Грошовий потік</string>
     <string name="title_budgets">Бюджети</string>
     <string name="title_use_compact_list">Компактне подання</string>

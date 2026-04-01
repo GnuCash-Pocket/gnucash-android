@@ -325,7 +325,7 @@
     <string name="summary_translate_gnucash">在 CrowdIn 平台翻譯或校對譯文</string>
     <string name="toast_no_compatible_apps_to_receive_export">匯出的交易沒有相容的應用程式接收！</string>
     <string name="menu_move_transaction">移動…</string>
-    <string name="menu_duplicate_transaction">複製</string>
+    <string name="menu_duplicate">複製</string>
     <string name="title_cash_flow_report">現金流</string>
     <string name="title_budgets">預算</string>
     <string name="title_use_compact_list">啟用精簡檢視</string>

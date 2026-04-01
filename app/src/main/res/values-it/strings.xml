@@ -325,7 +325,7 @@
     <string name="summary_translate_gnucash">Traduci o revisiona su Crowdin</string>
     <string name="toast_no_compatible_apps_to_receive_export">Nessuna app compatibile con la ricezione delle transazioni esportate!</string>
     <string name="menu_move_transaction">Sposta…</string>
-    <string name="menu_duplicate_transaction">Duplica</string>
+    <string name="menu_duplicate">Duplica</string>
     <string name="title_cash_flow_report">Flusso di liquidi</string>
     <string name="title_budgets">Bilanci</string>
     <string name="title_use_compact_list">Attiva visualizzazione compatta</string>

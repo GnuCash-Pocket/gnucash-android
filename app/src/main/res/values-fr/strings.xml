@@ -325,7 +325,7 @@
     <string name="summary_translate_gnucash">Traduire ou relire sur CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">Aucune application compatible pour recevoir les transactions exportées !</string>
     <string name="menu_move_transaction">Déplacer…</string>
-    <string name="menu_duplicate_transaction">Dupliquer</string>
+    <string name="menu_duplicate">Dupliquer</string>
     <string name="title_cash_flow_report">Flux de trésorerie</string>
     <string name="title_budgets">Budgets</string>
     <string name="title_use_compact_list">Activez le mode compact</string>

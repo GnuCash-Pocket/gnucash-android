@@ -308,7 +308,7 @@
     <string name="summary_translate_gnucash">תרגם ב-CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">אין אפליקציות תואמות היכולות לקבל את העסקאות המיוצאות!</string>
     <string name="menu_move_transaction">העבר…</string>
-    <string name="menu_duplicate_transaction">שכפל</string>
+    <string name="menu_duplicate">שכפל</string>
     <string name="title_cash_flow_report">תזרים מזומנים</string>
     <string name="title_budgets">תקציבים</string>
     <string name="title_use_compact_list">אפשר תצוגה קומפקטית</string>

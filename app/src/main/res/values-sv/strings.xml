@@ -325,7 +325,7 @@
     <string name="summary_translate_gnucash">Översätta eller korrekturläsa på CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">Inga kompatibla appar kan ta emot exporterade transaktionerna!</string>
     <string name="menu_move_transaction">Flytta…</string>
-    <string name="menu_duplicate_transaction">Dublett</string>
+    <string name="menu_duplicate">Dublett</string>
     <string name="title_cash_flow_report">Kassaflöde</string>
     <string name="title_budgets">Budgetar</string>
     <string name="title_use_compact_list">Aktivera kompakt vy</string>

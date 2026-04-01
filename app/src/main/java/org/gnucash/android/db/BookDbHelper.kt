@@ -19,6 +19,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import androidx.annotation.WorkerThread
 import org.gnucash.android.app.GnuCashApplication.Companion.appContext
 import org.gnucash.android.db.DatabaseSchema.BookEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
@@ -62,7 +63,7 @@ class BookDbHelper(private val context: Context) : SQLiteOpenHelper(
         return insertBlankBook(DatabaseHolder(context, db))
     }
 
-    fun insertBlankBook(bookHolder : DatabaseHolder): Book {
+    fun insertBlankBook(bookHolder: DatabaseHolder): Book {
         if (this.holder == null) {
             this.holder = bookHolder
         }
@@ -96,6 +97,42 @@ class BookDbHelper(private val context: Context) : SQLiteOpenHelper(
             book.displayName = name
         }
         booksDbAdapter.addRecord(book)
+    }
+
+    @WorkerThread
+    fun duplicateAccounts(context: Context, book: Book): Book {
+        val dbAdapter = BooksDbAdapter.instance
+        val bookClone = Book().apply {
+            rootAccountUID = book.rootAccountUID
+            rootTemplateUID = book.rootTemplateUID
+        }
+        val bookNew = dbAdapter.insert(bookClone)
+
+        val dbHelperOld = DatabaseHelper(context, book.uid)
+        val accountsDbAdapterOld = AccountsDbAdapter(dbHelperOld.holder, false)
+        val commoditiesDbAdapterOld = accountsDbAdapterOld.commoditiesDbAdapter
+
+        val dbHelperNew = DatabaseHelper(context, bookNew.uid)
+        val accountsDbAdapterNew = AccountsDbAdapter(dbHelperNew.holder, false)
+        val commoditiesDbAdapterNew = accountsDbAdapterNew.commoditiesDbAdapter
+
+        // Copy the commodities.
+        commoditiesDbAdapterNew.deleteAllRecords()
+        commoditiesDbAdapterNew.bulkAddRecords(commoditiesDbAdapterOld.allRecords)
+
+        // Copy the accounts.
+        accountsDbAdapterNew.deleteAllRecords()
+        accountsDbAdapterNew.bulkAddRecords(accountsDbAdapterOld.getAllRecords(null, null))
+
+        return bookNew
+    }
+
+    @WorkerThread
+    /// Clone the book's accounts.
+    fun duplicateAccounts(context: Context, bookUID: String): Book {
+        val dbAdapter = BooksDbAdapter.instance
+        val book = dbAdapter.getRecord(bookUID)
+        return duplicateAccounts(context, book)
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {

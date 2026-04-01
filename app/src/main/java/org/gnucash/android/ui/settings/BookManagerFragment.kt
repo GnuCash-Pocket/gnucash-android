@@ -16,6 +16,7 @@
 package org.gnucash.android.ui.settings
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -32,9 +33,13 @@ import androidx.appcompat.app.AppCompatDialog
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentResultListener
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.app.GnuCashApplication.Companion.defaultCurrencyCode
@@ -43,6 +48,7 @@ import org.gnucash.android.app.actionBar
 import org.gnucash.android.app.finish
 import org.gnucash.android.databinding.CardviewBookBinding
 import org.gnucash.android.databinding.FragmentBookListBinding
+import org.gnucash.android.db.BookDbHelper
 import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.DatabaseSchema.BookEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
@@ -55,6 +61,7 @@ import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.ui.adapter.AccountsTemplatesAdapter
 import org.gnucash.android.ui.adapter.ModelDiff
 import org.gnucash.android.ui.adapter.SpinnerItem
+import org.gnucash.android.ui.common.GnucashProgressDialog
 import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.get
 import org.gnucash.android.ui.settings.dialog.DeleteBookConfirmationDialog
@@ -249,6 +256,7 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
                     when (item.itemId) {
                         R.id.menu_rename -> handleMenuRenameBook(bookName, bookUID)
                         R.id.menu_delete -> handleMenuDeleteBook(bookUID)
+                        R.id.menu_duplicate_accounts -> handleMenuDuplicateAccounts(bookUID)
                         else -> true
                     }
                 }
@@ -269,6 +277,26 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
             )
             DeleteBookConfirmationDialog.newInstance(bookUID)
                 .show(fm, DeleteBookConfirmationDialog.TAG)
+            return true
+        }
+
+        private fun handleMenuDuplicateAccounts(bookUID: String): Boolean {
+            // show progress
+            val activity = requireActivity()
+            val context: Context = activity
+            val progressDialog = GnucashProgressDialog(activity).apply {
+                setTitle(R.string.title_import_accounts)
+                show()
+            }
+            lifecycleScope.launch(Dispatchers.IO) {
+                val helper = BookDbHelper(context)
+                helper.duplicateAccounts(context, bookUID)
+                refresh()
+                // hide progress
+                withContext(Dispatchers.Main) {
+                    progressDialog.dismiss()
+                }
+            }
             return true
         }
 
