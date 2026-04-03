@@ -100,8 +100,10 @@ class TransactionsActivity : BaseDrawerActivity(),
         }
 
         override fun getItemCount(): Int {
+            val account = account
             if (account.isPlaceholder) {
-                return 1
+                val txCount = transactionsDbAdapter.getTransactionsCount(account.uid)
+                if (txCount == 0) return 1
             }
             return NUM_PAGES
         }
@@ -467,32 +469,27 @@ class TransactionsActivity : BaseDrawerActivity(),
             val tabLayout = binding.tabLayout
             val txCount = transactionsDbAdapter.getTransactionsCount(accountUID)
             var tabIndex = INDEX_TRANSACTIONS_FRAGMENT
+            var needsTransactionsTab = txCount > 0
             if (txCount == 0) {
                 if (account.isPlaceholder) {
-                    if (tabLayout.tabCount > 1) {
-                        tabLayout.removeTabAt(INDEX_TRANSACTIONS_FRAGMENT)
-                    }
-                    tabIndex = INDEX_SUB_ACCOUNTS_FRAGMENT
+                    needsTransactionsTab = false
                 } else {
-                    if (tabLayout.tabCount < 2) {
-                        tabLayout.addTab(
-                            tabLayout.newTab()
-                                .setText(R.string.section_header_transactions)
-                        )
-                    }
+                    val subCount = accountsDbAdapter.getSubAccountCount(accountUID)
+                    needsTransactionsTab = subCount == 0L
                 }
-
-                val subCount = accountsDbAdapter.getSubAccountCount(accountUID)
-                if (subCount > 0) {
-                    tabIndex = INDEX_SUB_ACCOUNTS_FRAGMENT
-                }
-            } else {
+            }
+            if (needsTransactionsTab) {
                 if (tabLayout.tabCount < 2) {
                     tabLayout.addTab(
-                        tabLayout.newTab()
-                            .setText(R.string.section_header_transactions)
+                        tabLayout.newTab().setText(R.string.section_header_transactions)
                     )
                 }
+                tabIndex = INDEX_TRANSACTIONS_FRAGMENT
+            } else {
+                if (tabLayout.tabCount > 1) {
+                    tabLayout.removeTabAt(INDEX_TRANSACTIONS_FRAGMENT)
+                }
+                tabIndex = INDEX_SUB_ACCOUNTS_FRAGMENT
             }
 
             //refresh any fragments in the tab with the new account UID
