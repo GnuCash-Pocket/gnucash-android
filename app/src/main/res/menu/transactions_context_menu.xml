@@ -36,7 +36,7 @@
         android:id="@+id/menu_duplicate"
         android:icon="@drawable/ic_copy"
         android:orderInCategory="2"
-        android:title="@string/menu_duplicate_transaction"
+        android:title="@string/menu_duplicate"
         app:showAsAction="never" />
     <item
         android:id="@+id/menu_delete"

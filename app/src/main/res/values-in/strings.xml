@@ -324,7 +324,7 @@
     <string name="summary_translate_gnucash">Menerjemahkan atau bukti dibaca pada CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">Tidak ada aplikasi yang kompatibel untuk menerima transaksi diekspor!</string>
     <string name="menu_move_transaction">Bergerak…</string>
-    <string name="menu_duplicate_transaction">Duplikat</string>
+    <string name="menu_duplicate">Duplikat</string>
     <string name="title_cash_flow_report">Arus Tunai</string>
     <string name="title_budgets">Anggaran</string>
     <string name="title_use_compact_list">Mengaktifkan tampilan kompak</string>

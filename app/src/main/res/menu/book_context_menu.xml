@@ -41,4 +41,11 @@
         android:orderInCategory="3"
         android:title="@string/menu_delete"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_duplicate_accounts"
+        android:icon="@drawable/ic_copy"
+        android:orderInCategory="4"
+        android:title="@string/title_create_default_accounts"
+        app:showAsAction="ifRoom" />
 </menu>

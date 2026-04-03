@@ -327,7 +327,7 @@
     <string name="summary_translate_gnucash">Translate or proof-read on CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">No compatible apps to receive the exported transactions!</string>
     <string name="menu_move_transaction">Přejít na…</string>
-    <string name="menu_duplicate_transaction">Duplikovat</string>
+    <string name="menu_duplicate">Duplikovat</string>
     <string name="title_cash_flow_report">Peněžní tok</string>
     <string name="title_budgets">Rozpočty</string>
     <string name="title_use_compact_list">Povolit kompaktní zobrazení</string>

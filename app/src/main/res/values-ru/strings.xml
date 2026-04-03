@@ -327,7 +327,7 @@
     <string name="summary_translate_gnucash">Перевести или вычитать на CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">Не совместимых приложений, чтобы получить экспортированные транзакции!</string>
     <string name="menu_move_transaction">Перемещение…</string>
-    <string name="menu_duplicate_transaction">Повтор</string>
+    <string name="menu_duplicate">Повтор</string>
     <string name="title_cash_flow_report">Денежный поток</string>
     <string name="title_budgets">Бюджеты</string>
     <string name="title_use_compact_list">Компактный вид</string>

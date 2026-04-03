@@ -324,7 +324,7 @@
     <string name="summary_translate_gnucash">CrowdIn에서 번역하거나, 번역을 검토합니다</string>
     <string name="toast_no_compatible_apps_to_receive_export">내보낸 거래내역을 받을 앱이 없습니다</string>
     <string name="menu_move_transaction">이동…</string>
-    <string name="menu_duplicate_transaction">중복</string>
+    <string name="menu_duplicate">중복</string>
     <string name="title_cash_flow_report">현금흐름</string>
     <string name="title_budgets">예산</string>
     <string name="title_use_compact_list">간단히 표시하기</string>

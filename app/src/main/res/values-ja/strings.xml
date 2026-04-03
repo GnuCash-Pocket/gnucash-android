@@ -324,7 +324,7 @@
     <string name="summary_translate_gnucash">CrowdIn で翻訳または検証します</string>
     <string name="toast_no_compatible_apps_to_receive_export">エクスポートされた取引を受け取る、互換性のあるアプリがありません!</string>
     <string name="menu_move_transaction">移動…</string>
-    <string name="menu_duplicate_transaction">複製</string>
+    <string name="menu_duplicate">複製</string>
     <string name="title_cash_flow_report">キャッシュフロー</string>
     <string name="title_budgets">予算</string>
     <string name="title_use_compact_list">コンパクト表示を有効にする</string>

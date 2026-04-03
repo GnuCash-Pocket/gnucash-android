@@ -325,7 +325,7 @@
     <string name="summary_translate_gnucash">Μεταφράστε ή διορθώστε τυπογραφικά λάθη στο CrowdIn</string>
     <string name="toast_no_compatible_apps_to_receive_export">No compatible apps to receive the exported transactions!</string>
     <string name="menu_move_transaction">Μετακίνηση σε…</string>
-    <string name="menu_duplicate_transaction">Δημιουργία διπλότυπου</string>
+    <string name="menu_duplicate">Δημιουργία διπλότυπου</string>
     <string name="title_cash_flow_report">Ταμειακή Ροή</string>
     <string name="title_budgets">Προϋπολογισμοί</string>
     <string name="title_use_compact_list">Ενεργοποίηση συμπαγούς εμφάνισης</string>
