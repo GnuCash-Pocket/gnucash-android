@@ -499,10 +499,8 @@ class TransactionsDbAdapter(
      */
     fun getTransactionsCount(accountUID: String): Int {
         val cursor = fetchAllTransactionsForAccount(accountUID) ?: return 0
-        return try {
+        return cursor.use { cursor ->
             cursor.count
-        } finally {
-            cursor.close()
         }
     }
 

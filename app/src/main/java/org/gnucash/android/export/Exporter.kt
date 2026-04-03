@@ -38,7 +38,6 @@ import org.gnucash.android.BuildConfig
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
-import org.gnucash.android.app.GnuCashApplication.Companion.shouldSaveOpeningBalances
 import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.BookEntry
@@ -46,7 +45,6 @@ import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.BudgetsDbAdapter
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
-import org.gnucash.android.db.adapter.DatabaseAdapter
 import org.gnucash.android.db.adapter.PricesDbAdapter
 import org.gnucash.android.db.adapter.RecurrenceDbAdapter
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
@@ -55,9 +53,9 @@ import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.export.DropboxHelper.getClient
 import org.gnucash.android.export.ExportParams.ExportTarget
 import org.gnucash.android.gnc.GncProgressListener
-import org.gnucash.android.model.Transaction
 import org.gnucash.android.net.configureHttpClientToTrustAllCertificates
 import org.gnucash.android.ui.settings.OwnCloudPreferences
+import org.gnucash.android.ui.settings.dialog.DeleteAllTransactionsConfirmationDialog
 import org.gnucash.android.ui.snackLong
 import org.gnucash.android.util.BackupManager
 import org.gnucash.android.util.BackupManager.getBackupFolder
@@ -497,22 +495,7 @@ abstract class Exporter protected constructor(
      * and deletes all non-template transactions in the database.
      */
     private fun deleteTransactions() {
-        Timber.i("Deleting transactions after export")
-        var openingBalances = emptyList<Transaction>()
-        val preserveOpeningBalances = shouldSaveOpeningBalances(false)
-
-        val transactionsDbAdapter = this.transactionsDbAdapter
-        if (preserveOpeningBalances) {
-            openingBalances = accountsDbAdapter.allOpeningBalanceTransactions
-        }
-        transactionsDbAdapter.deleteAllNonTemplateTransactions()
-
-        if (preserveOpeningBalances && !openingBalances.isEmpty()) {
-            transactionsDbAdapter.bulkAddRecords(
-                openingBalances,
-                DatabaseAdapter.UpdateMethod.Insert
-            )
-        }
+        DeleteAllTransactionsConfirmationDialog.deleteAllTransactions(accountsDbAdapter)
     }
 
     fun cancel() {

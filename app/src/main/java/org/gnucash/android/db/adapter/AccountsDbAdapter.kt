@@ -853,15 +853,13 @@ class AccountsDbAdapter(
         val useCachedValue = (startTimestamp == ALWAYS) && (endTimestamp == ALWAYS)
         if (useCachedValue) {
             val cursor = db.query(tableName, columns, selection, selectionArgs, null, null, null)
-            try {
+            cursor.use { cursor ->
                 if (cursor.moveToFirst()) {
                     val amount = cursor.getBigDecimal(0)
                     if (amount != null) {
                         return Money(amount, account.commodity)
                     }
                 }
-            } finally {
-                cursor.close()
             }
         }
 
@@ -874,7 +872,7 @@ class AccountsDbAdapter(
             for (childUID in children) {
                 val child = getRecord(childUID)
                 val childCommodity = child!!.commodity
-                var childBalance = computeBalance(child, startTimestamp, endTimestamp, true)
+                val childBalance = computeBalance(child, startTimestamp, endTimestamp, true)
                 if (childBalance.isAmountZero) continue
                 val price = pricesDbAdapter.getPrice(childCommodity, commodity) ?: continue
                 balance += childBalance * price
@@ -1367,7 +1365,7 @@ class AccountsDbAdapter(
             val accounts = this.simpleAccounts
             val openingTransactions = mutableListOf<Transaction>()
             for (account in accounts) {
-                val balance = getAccountBalance(account, ALWAYS, ALWAYS, false)
+                val balance = computeSplitsBalance(account, ALWAYS, ALWAYS)
                 if (balance.isAmountZero) continue
 
                 val transaction =
