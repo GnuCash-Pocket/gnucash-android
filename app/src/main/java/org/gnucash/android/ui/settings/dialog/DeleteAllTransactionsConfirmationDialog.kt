@@ -24,7 +24,6 @@ import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication.Companion.shouldSaveOpeningBalances
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.DatabaseAdapter
-import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity
 import org.gnucash.android.ui.snackLong
@@ -61,22 +60,30 @@ class DeleteAllTransactionsConfirmationDialog : DoubleConfirmationDialog() {
         // TODO show a "Deleting Transactions" progress dialog.
 
         val accountsDbAdapter = AccountsDbAdapter.instance
-        val preserveOpeningBalances = shouldSaveOpeningBalances(false)
-        var openingBalances: List<Transaction> = emptyList()
-        if (preserveOpeningBalances) {
-            openingBalances = accountsDbAdapter.allOpeningBalanceTransactions
-        }
-        val transactionsDbAdapter = TransactionsDbAdapter.instance
-        val count = transactionsDbAdapter.deleteAllNonTemplateTransactions()
-        Timber.i("Deleted %d transactions successfully", count)
-
-        if (preserveOpeningBalances) {
-            transactionsDbAdapter.bulkAddRecords(
-                openingBalances,
-                DatabaseAdapter.UpdateMethod.Insert
-            )
-        }
+        deleteAllTransactions(accountsDbAdapter)
         snackLong(R.string.toast_all_transactions_deleted)
         WidgetConfigurationActivity.updateAllWidgets(context)
+    }
+
+    companion object {
+        fun deleteAllTransactions(accountsDbAdapter: AccountsDbAdapter) {
+            Timber.i("Deleting all transactions")
+            val preserveOpeningBalances = shouldSaveOpeningBalances(false)
+            val openingBalances: List<Transaction> = if (preserveOpeningBalances) {
+                accountsDbAdapter.allOpeningBalanceTransactions
+            } else {
+                emptyList()
+            }
+            val transactionsDbAdapter = accountsDbAdapter.transactionsDbAdapter
+            val count = transactionsDbAdapter.deleteAllNonTemplateTransactions()
+            Timber.i("Deleted %d transactions", count)
+
+            if (preserveOpeningBalances) {
+                transactionsDbAdapter.bulkAddRecords(
+                    openingBalances,
+                    DatabaseAdapter.UpdateMethod.Insert
+                )
+            }
+        }
     }
 }
