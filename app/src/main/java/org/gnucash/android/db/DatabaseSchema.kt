@@ -188,7 +188,7 @@ object DatabaseSchema {
         const val COLUMN_NOTES: String = "description"
 
         @Column(Cursor.FIELD_TYPE_STRING)
-        @Deprecated("")
+        @Deprecated("Use commodity UID")
         const val COLUMN_CURRENCY: String = "currency_code"
 
         @Column(Cursor.FIELD_TYPE_STRING)

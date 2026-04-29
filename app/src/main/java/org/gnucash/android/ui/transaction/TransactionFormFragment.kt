@@ -777,7 +777,7 @@ class TransactionFormFragment : MenuFragment(),
             this.notes = notes
             this.number = number
             this.splits = splits
-            isExported = false //not necessary as exports use timestamps now. Because, legacy
+            isExported = false
             isTemplate = account.isTemplate || !recurrenceRule.isNullOrEmpty()
         }
         return transaction

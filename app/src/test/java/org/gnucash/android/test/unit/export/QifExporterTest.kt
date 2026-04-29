@@ -15,13 +15,10 @@
  */
 package org.gnucash.android.test.unit.export
 
-import android.database.sqlite.SQLiteDatabase
+import androidx.core.net.toFile
 import org.assertj.core.api.Assertions.assertThat
-import org.gnucash.android.db.DatabaseHelper
-import org.gnucash.android.db.DatabaseHolder
-import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.adapter.BooksDbAdapter
-import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.export.ExportFormat
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.qif.QifExporter
@@ -45,12 +42,13 @@ import java.io.FileInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.nio.charset.StandardCharsets
 import java.util.Calendar
 import java.util.zip.ZipFile
+import java.util.zip.ZipInputStream
 
 class QifExporterTest : BookHelperTest() {
     private lateinit var bookUID: String
-    private lateinit var db: SQLiteDatabase
 
     @Before
     override fun setUp() {
@@ -58,15 +56,14 @@ class QifExporterTest : BookHelperTest() {
         val testBook = Book("testRootAccountUID")
         booksDbAdapter.addRecord(testBook)
         bookUID = testBook.uid
-        val databaseHelper = DatabaseHelper(context, testBook.uid)
-        db = databaseHelper.writableDatabase
+        setUpDbAdapters(testBook.uid)
     }
 
     @After
     override fun tearDown() {
         val booksDbAdapter = BooksDbAdapter.instance
         booksDbAdapter.deleteBook(context, bookUID)
-        db.close()
+        booksDbAdapter.close()
     }
 
     /**
@@ -76,9 +73,6 @@ class QifExporterTest : BookHelperTest() {
     @Test
     fun testWithNoTransactionsToExport_shouldNotCreateAnyFile() {
         val exportParameters = ExportParams(ExportFormat.QIF)
-        exportParameters.exportStartTime = TimestampHelper.timestampFromEpochZero
-        exportParameters.exportTarget = ExportParams.ExportTarget.SD_CARD
-        exportParameters.deleteTransactionsAfterExport = false
         val exporter = QifExporter(context, exportParameters, bookUID)
         val exportedFile = exporter.export()
         assertThat(exportedFile).isNull()
@@ -89,8 +83,7 @@ class QifExporterTest : BookHelperTest() {
      */
     @Test
     fun testGenerateQIFExport() {
-        val holder = DatabaseHolder(context, db)
-        val accountsDbAdapter = AccountsDbAdapter(holder)
+        val accountsDbAdapter = this.accountsDbAdapter
 
         val account = Account("Basic Account")
         val transaction = Transaction("One transaction")
@@ -100,9 +93,6 @@ class QifExporterTest : BookHelperTest() {
         accountsDbAdapter.addRecord(account)
 
         val exportParameters = ExportParams(ExportFormat.QIF)
-        exportParameters.exportStartTime = TimestampHelper.timestampFromEpochZero
-        exportParameters.exportTarget = ExportParams.ExportTarget.SD_CARD
-        exportParameters.deleteTransactionsAfterExport = false
 
         val exporter = QifExporter(context, exportParameters, bookUID)
         val exportedFile = exporter.export()
@@ -122,8 +112,7 @@ class QifExporterTest : BookHelperTest() {
     // @Test Fails randomly. Sometimes it doesn't split the QIF.
     @Throws(IOException::class)
     fun multiCurrencyTransactions_shouldResultInMultipleZippedQifFiles() {
-        val holder = DatabaseHolder(context, db)
-        val accountsDbAdapter = AccountsDbAdapter(holder)
+        val accountsDbAdapter = this.accountsDbAdapter
 
         val account = Account("Basic Account", Commodity.getInstance("EUR"))
         val transaction = Transaction("One transaction")
@@ -142,9 +131,6 @@ class QifExporterTest : BookHelperTest() {
         accountsDbAdapter.addRecord(foreignAccount)
 
         val exportParameters = ExportParams(ExportFormat.QIF)
-        exportParameters.exportStartTime = TimestampHelper.timestampFromEpochZero
-        exportParameters.exportTarget = ExportParams.ExportTarget.SD_CARD
-        exportParameters.deleteTransactionsAfterExport = false
 
         val exporter = QifExporter(context, exportParameters, bookUID)
         val exportedFile = exporter.export()
@@ -169,8 +155,7 @@ class QifExporterTest : BookHelperTest() {
             set(2025, Calendar.SEPTEMBER, 12)
         }.timeInMillis
 
-        val holder = DatabaseHolder(context, db)
-        val accountsDbAdapter = AccountsDbAdapter(holder)
+        val accountsDbAdapter = this.accountsDbAdapter
 
         val account = Account(expectedAccountName)
         val transaction = Transaction("One transaction")
@@ -184,9 +169,6 @@ class QifExporterTest : BookHelperTest() {
         accountsDbAdapter.addRecord(account)
 
         val exportParameters = ExportParams(ExportFormat.QIF)
-        exportParameters.exportStartTime = TimestampHelper.timestampFromEpochZero
-        exportParameters.exportTarget = ExportParams.ExportTarget.SD_CARD
-        exportParameters.deleteTransactionsAfterExport = false
 
         val exporter = QifExporter(context, exportParameters, bookUID)
         val exportedFile = exporter.export()
@@ -224,6 +206,7 @@ class QifExporterTest : BookHelperTest() {
     fun simpleTransactionExport() {
         val bookUID = importGnuCashXml("simpleTransactionImport.xml")
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
+        markForExport()
 
         assertThat(transactionsDbAdapter.recordsCount).isOne()
 
@@ -231,9 +214,6 @@ class QifExporterTest : BookHelperTest() {
         assertThat(transaction.splits).hasSize(2)
 
         val exportParameters = ExportParams(ExportFormat.QIF)
-        exportParameters.exportStartTime = TimestampHelper.timestampFromEpochZero
-        exportParameters.exportTarget = ExportParams.ExportTarget.SD_CARD
-        exportParameters.deleteTransactionsAfterExport = false
 
         val exporter = QifExporter(context, exportParameters, bookUID)
         val exportedFile = exporter.export()
@@ -270,6 +250,7 @@ class QifExporterTest : BookHelperTest() {
     fun transactionWithNonDefaultSplitsImport() {
         val bookUID = importGnuCashXml("transactionWithNonDefaultSplitsImport.xml")
         assertThat(BooksDbAdapter.isBookDatabase(bookUID)).isTrue()
+        markForExport()
 
         assertThat(transactionsDbAdapter.recordsCount).isOne()
 
@@ -282,9 +263,6 @@ class QifExporterTest : BookHelperTest() {
         assertThat(transaction.splits).hasSize(3)
 
         val exportParameters = ExportParams(ExportFormat.QIF)
-        exportParameters.exportStartTime = TimestampHelper.timestampFromEpochZero
-        exportParameters.exportTarget = ExportParams.ExportTarget.SD_CARD
-        exportParameters.deleteTransactionsAfterExport = false
 
         val exporter = QifExporter(context, exportParameters, bookUID)
         val exportedFile = exporter.export()
@@ -331,8 +309,7 @@ class QifExporterTest : BookHelperTest() {
             set(2025, Calendar.JULY, 29)
         }.timeInMillis
 
-        val holder = DatabaseHolder(context, db)
-        val accountsDbAdapter = AccountsDbAdapter(holder)
+        val accountsDbAdapter = this.accountsDbAdapter
         val account1 = Account(expectedAccountName1, Commodity.EUR)
         account1.accountType = AccountType.EXPENSE
         account1.setUID("account-001")
@@ -342,7 +319,7 @@ class QifExporterTest : BookHelperTest() {
         account2.setUID("account-002")
         accountsDbAdapter.addRecord(account2)
 
-        val transactionsDbAdapter = TransactionsDbAdapter(holder)
+        val transactionsDbAdapter = this.transactionsDbAdapter
         val transaction = Transaction("One transaction")
         val split1 = Split(Money(-123.45, Commodity.EUR), account1)
         val split2 = split1.createPair(account2)
@@ -355,9 +332,6 @@ class QifExporterTest : BookHelperTest() {
         transactionsDbAdapter.addRecord(transaction)
 
         val exportParameters = ExportParams(ExportFormat.QIF)
-        exportParameters.exportStartTime = TimestampHelper.timestampFromEpochZero
-        exportParameters.exportTarget = ExportParams.ExportTarget.SD_CARD
-        exportParameters.deleteTransactionsAfterExport = false
 
         val exporter = QifExporter(context, exportParameters, bookUID)
         val exportedFile = exporter.export()
@@ -402,5 +376,68 @@ class QifExporterTest : BookHelperTest() {
     fun readFileContent(file: File): String {
         val fileInput = FileInputStream(file)
         return readFileContent(fileInput)
+    }
+
+    @Test
+    fun `export common_1`() {
+        val bookUID = importGnuCashXml("common_1.gnucash")
+        assertThat(bookUID).isEqualTo("a7682e5d878e43cea216611401f08463")
+        markForExport()
+
+        val exportParameters = ExportParams(ExportFormat.QIF)
+
+        val exportedFile = QifExporter(context, exportParameters, bookUID).export()
+
+        assertThat(exportedFile).isNotNull()
+        val zipped = exportedFile!!.toFile()
+        assertThat(zipped).isNotEmpty
+        val input = ZipInputStream(zipped.inputStream())
+
+        val entry1 = input.nextEntry
+        assertThat(entry1.name).endsWith("EUR.qif")
+        val textActual1 = input.readAllBytes().toString(StandardCharsets.UTF_8)
+        assertThat(textActual1).isNotEmpty
+        val textExpected1 = openResourceStream("expected.common_1_EUR.qif")
+            .bufferedReader().readText()
+        assertThat(textActual1).isEqualTo(textExpected1)
+
+        val entry2 = input.nextEntry
+        assertThat(entry2.name).endsWith("USD.qif")
+        val textActual2 = input.readAllBytes().toString(StandardCharsets.UTF_8)
+        assertThat(textActual2).isNotEmpty
+        val textExpected2 = openResourceStream("expected.common_1_USD.qif")
+            .bufferedReader().readText()
+        assertThat(textActual2).isEqualTo(textExpected2)
+    }
+
+    @Test
+    fun `export since 2025-03-28`() {
+        val bookUID = importGnuCashXml("common_1.gnucash")
+        assertThat(bookUID).isEqualTo("a7682e5d878e43cea216611401f08463")
+
+        // Mark the transactions posted after 2025-03-30.
+        val t1 = transactionsDbAdapter.getRecord("46b64b7d40194fbb8270892c171d7c93")
+        assertThat(t1.isExported).isTrue
+        val where = TransactionEntry.COLUMN_TIMESTAMP + " >= " +
+                TimestampHelper.getTimestampFromUtcString("2025-03-30 00:00:00").time
+        markForExport(where)
+        val t2 = transactionsDbAdapter.getRecord("46b64b7d40194fbb8270892c171d7c93")
+        assertThat(t2.isExported).isFalse
+
+        val exportParameters = ExportParams(ExportFormat.QIF)
+
+        val exportedFile = QifExporter(context, exportParameters, bookUID).export()
+
+        assertThat(exportedFile).isNotNull()
+        val file = exportedFile!!.toFile()
+        assertThat(file.name).endsWith("USD.qif")
+        assertThat(file).isNotEmpty
+        val input = file.inputStream()
+
+        val textActual1 = input.readAllBytes().toString(StandardCharsets.UTF_8)
+        assertThat(textActual1).isNotEmpty
+        val textExpected1 = openResourceStream("expected.common_1_USD_20250330.qif")
+            .bufferedReader().readText()
+        assertThat(textActual1).isEqualTo(textExpected1)
     }
 }

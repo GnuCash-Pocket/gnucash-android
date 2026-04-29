@@ -395,10 +395,10 @@ class TransactionsDbAdapter(
         // account1 provides information for the grouped account. Splits from the grouped account
         // can be eliminated with a WHERE clause. Transactions in QIF can be auto balanced.
         //
-        // Account, transaction and split Information can be retrieve in a single query.
+        // Account, transaction and split Information can be retrieved in a single query.
         val table =
             "trans_split_acct, trans_extra_info ON trans_extra_info.trans_acct_t_uid = trans_split_acct." +
-                    TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID + ", " +
+                    "t_" + TransactionEntry.COLUMN_UID + ", " +
                     AccountEntry.TABLE_NAME + " AS account1 ON account1." + AccountEntry.COLUMN_UID +
                     " = trans_extra_info.trans_acct_a_uid"
         return db.query(table, columns, where, whereArgs, null, null, orderBy)
@@ -761,80 +761,77 @@ class TransactionsDbAdapter(
         //todo: would it be useful to add the split reconciled_state and reconciled_date to this view?
 
         db.execSQL(
-            ("CREATE TEMP VIEW IF NOT EXISTS trans_split_acct AS SELECT "
-                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_ID + " AS "
-                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_ID + ", "
-                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_MODIFIED_AT + " AS "
-                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_MODIFIED_AT + ", "
-                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + " AS "
-                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID + ", "
-                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_DESCRIPTION + " AS "
-                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_DESCRIPTION + ", "
-                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_NOTES + " AS "
-                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_NOTES + ", "
-                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TIMESTAMP + " AS "
-                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TIMESTAMP + ", "
-                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_EXPORTED + " AS "
-                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_EXPORTED + ", "
-                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_TEMPLATE + " AS "
-                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TEMPLATE + ", "
-                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_NUMBER + " AS "
-                    + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_NUMBER + ", "
-                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ID + " AS "
-                    + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_ID + ", "
-                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_UID + " AS "
-                    + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_UID + ", "
-                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TYPE + " AS "
-                    + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_TYPE + ", "
-                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_VALUE_NUM + " AS "
-                    + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_VALUE_NUM + ", "
-                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_VALUE_DENOM + " AS "
-                    + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_VALUE_DENOM + ", "
-                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_QUANTITY_NUM + " AS "
-                    + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_NUM + ", "
-                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_QUANTITY_DENOM + " AS "
-                    + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_DENOM + ", "
-                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_MEMO + " AS "
-                    + SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_MEMO + ", "
-                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_UID + " AS "
-                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID + ", "
-                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_NAME + " AS "
-                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_NAME + ", "
-                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_COMMODITY_UID + " AS "
-                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_COMMODITY_UID + ", "
-                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " AS "
-                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + ", "
-                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_PLACEHOLDER + " AS "
-                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_PLACEHOLDER + ", "
-                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_COLOR_CODE + " AS "
-                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_COLOR_CODE + ", "
-                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_FAVORITE + " AS "
-                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_FAVORITE + ", "
-                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_FULL_NAME + " AS "
-                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_FULL_NAME + ", "
-                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_TYPE + " AS "
-                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_TYPE + ", "
-                    + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID + " AS "
-                    + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID
-                    + " FROM " + TransactionEntry.TABLE_NAME + ", " + SplitEntry.TABLE_NAME + " ON "
-                    + TransactionEntry.TABLE_NAME + "." + TransactionEntry.COLUMN_UID + "=" + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_TRANSACTION_UID
-                    + ", " + AccountEntry.TABLE_NAME + " ON "
-                    + SplitEntry.TABLE_NAME + "." + SplitEntry.COLUMN_ACCOUNT_UID + "=" + AccountEntry.TABLE_NAME + "." + AccountEntry.COLUMN_UID)
+            "CREATE TEMP VIEW IF NOT EXISTS trans_split_acct AS SELECT "
+                    + "t." + TransactionEntry.COLUMN_ID + " AS "
+                    + "t_" + TransactionEntry.COLUMN_ID + ", "
+                    + "t." + TransactionEntry.COLUMN_MODIFIED_AT + " AS "
+                    + "t_" + TransactionEntry.COLUMN_MODIFIED_AT + ", "
+                    + "t." + TransactionEntry.COLUMN_UID + " AS "
+                    + "t_" + TransactionEntry.COLUMN_UID + ", "
+                    + "t." + TransactionEntry.COLUMN_DESCRIPTION + " AS "
+                    + "t_" + TransactionEntry.COLUMN_DESCRIPTION + ", "
+                    + "t." + TransactionEntry.COLUMN_NOTES + " AS "
+                    + "t_" + TransactionEntry.COLUMN_NOTES + ", "
+                    + "t." + TransactionEntry.COLUMN_TIMESTAMP + " AS "
+                    + "t_" + TransactionEntry.COLUMN_TIMESTAMP + ", "
+                    + "t." + TransactionEntry.COLUMN_EXPORTED + " AS "
+                    + "t_" + TransactionEntry.COLUMN_EXPORTED + ", "
+                    + "t." + TransactionEntry.COLUMN_TEMPLATE + " AS "
+                    + "t_" + TransactionEntry.COLUMN_TEMPLATE + ", "
+                    + "t." + TransactionEntry.COLUMN_NUMBER + " AS "
+                    + "t_" + TransactionEntry.COLUMN_NUMBER + ", "
+                    + "s." + SplitEntry.COLUMN_ID + " AS "
+                    + "s_" + SplitEntry.COLUMN_ID + ", "
+                    + "s." + SplitEntry.COLUMN_UID + " AS "
+                    + "s_" + SplitEntry.COLUMN_UID + ", "
+                    + "s." + SplitEntry.COLUMN_TYPE + " AS "
+                    + "s_" + SplitEntry.COLUMN_TYPE + ", "
+                    + "s." + SplitEntry.COLUMN_VALUE_NUM + " AS "
+                    + "s_" + SplitEntry.COLUMN_VALUE_NUM + ", "
+                    + "s." + SplitEntry.COLUMN_VALUE_DENOM + " AS "
+                    + "s_" + SplitEntry.COLUMN_VALUE_DENOM + ", "
+                    + "s." + SplitEntry.COLUMN_QUANTITY_NUM + " AS "
+                    + "s_" + SplitEntry.COLUMN_QUANTITY_NUM + ", "
+                    + "s." + SplitEntry.COLUMN_QUANTITY_DENOM + " AS "
+                    + "s_" + SplitEntry.COLUMN_QUANTITY_DENOM + ", "
+                    + "s." + SplitEntry.COLUMN_MEMO + " AS "
+                    + "s_" + SplitEntry.COLUMN_MEMO + ", "
+                    + "a." + AccountEntry.COLUMN_UID + " AS "
+                    + "a_" + AccountEntry.COLUMN_UID + ", "
+                    + "a." + AccountEntry.COLUMN_NAME + " AS "
+                    + "a_" + AccountEntry.COLUMN_NAME + ", "
+                    + "a." + AccountEntry.COLUMN_COMMODITY_UID + " AS "
+                    + "a_" + AccountEntry.COLUMN_COMMODITY_UID + ", "
+                    + "a." + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + " AS "
+                    + "a_" + AccountEntry.COLUMN_PARENT_ACCOUNT_UID + ", "
+                    + "a." + AccountEntry.COLUMN_PLACEHOLDER + " AS "
+                    + "a_" + AccountEntry.COLUMN_PLACEHOLDER + ", "
+                    + "a." + AccountEntry.COLUMN_COLOR_CODE + " AS "
+                    + "a_" + AccountEntry.COLUMN_COLOR_CODE + ", "
+                    + "a." + AccountEntry.COLUMN_FAVORITE + " AS "
+                    + "a_" + AccountEntry.COLUMN_FAVORITE + ", "
+                    + "a." + AccountEntry.COLUMN_FULL_NAME + " AS "
+                    + "a_" + AccountEntry.COLUMN_FULL_NAME + ", "
+                    + "a." + AccountEntry.COLUMN_TYPE + " AS "
+                    + "a_" + AccountEntry.COLUMN_TYPE + ", "
+                    + "a." + AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID + " AS "
+                    + "a_" + AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID
+                    + " FROM " + TransactionEntry.TABLE_NAME + " t, "
+                    + SplitEntry.TABLE_NAME + " s ON "
+                    + "t." + TransactionEntry.COLUMN_UID + " = s." + SplitEntry.COLUMN_TRANSACTION_UID
+                    + ", " + AccountEntry.TABLE_NAME + " a ON "
+                    + "s." + SplitEntry.COLUMN_ACCOUNT_UID + " = a." + AccountEntry.COLUMN_UID
         )
 
         db.execSQL(
-            "CREATE TEMP VIEW IF NOT EXISTS trans_extra_info AS SELECT " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID +
-                    " AS trans_acct_t_uid, SUBSTR ( MIN ( ( CASE WHEN IFNULL ( " + SplitEntry.TABLE_NAME + "_" +
-                    SplitEntry.COLUMN_MEMO + ", '' ) == '' THEN 'a' ELSE 'b' END ) || " +
-                    AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID +
-                    " ), 2 ) AS trans_acct_a_uid, TOTAL ( CASE WHEN " + SplitEntry.TABLE_NAME + "_" +
-                    SplitEntry.COLUMN_TYPE + " = 'DEBIT' THEN " + SplitEntry.TABLE_NAME + "_" +
-                    SplitEntry.COLUMN_VALUE_NUM + " ELSE - " + SplitEntry.TABLE_NAME + "_" +
-                    SplitEntry.COLUMN_VALUE_NUM + " END ) * 1.0 / " + SplitEntry.TABLE_NAME + "_" +
-                    SplitEntry.COLUMN_VALUE_DENOM + " AS trans_acct_balance, COUNT ( DISTINCT " +
-                    AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_COMMODITY_UID +
+            "CREATE TEMP VIEW IF NOT EXISTS trans_extra_info AS SELECT t_" + TransactionEntry.COLUMN_UID +
+                    " AS trans_acct_t_uid, SUBSTR ( MIN ( ( CASE WHEN IFNULL ( s_" + SplitEntry.COLUMN_MEMO + ", '' ) = '' THEN 'a' ELSE 'b' END ) || " +
+                    "a_" + AccountEntry.COLUMN_UID +
+                    " ), 2 ) AS trans_acct_a_uid, TOTAL ( CASE WHEN s_" + SplitEntry.COLUMN_TYPE + " = 'DEBIT' THEN s_" +
+                    SplitEntry.COLUMN_VALUE_NUM + " ELSE - s_" + SplitEntry.COLUMN_VALUE_NUM + " END ) * 1.0 / s_" +
+                    SplitEntry.COLUMN_VALUE_DENOM + " AS trans_acct_balance, COUNT ( DISTINCT " + "a_" + AccountEntry.COLUMN_COMMODITY_UID +
                     " ) AS trans_currency_count, COUNT (*) AS trans_split_count FROM trans_split_acct " +
-                    " GROUP BY " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID
+                    " GROUP BY t_" + TransactionEntry.COLUMN_UID
         )
     }
 
@@ -842,8 +839,8 @@ class TransactionsDbAdapter(
         val cursor = db.query(
             "trans_extra_info",
             arrayOf<String?>("MAX(trans_split_count)"),
-            "trans_acct_t_uid IN ( SELECT DISTINCT " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID +
-                    " FROM trans_split_acct WHERE " + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID +
+            "trans_acct_t_uid IN ( SELECT DISTINCT t_" + TransactionEntry.COLUMN_UID +
+                    " FROM trans_split_acct WHERE a_" + AccountEntry.COLUMN_UID +
                     " = ? )",
             arrayOf<String?>(accountUID),
             null,

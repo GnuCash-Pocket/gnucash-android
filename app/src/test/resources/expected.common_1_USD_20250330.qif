@@ -1,0 +1,13 @@
+!Account
+NIncome:Gifts Received
+TCash
+DGifts Received
+^
+!Type:Cash
+D2025/3/31
+L[Income:Gifts Received]
+Pmom
+S[Assets:Current Assets:Japan Wallet]
+$-133253.00
+T-133253.00
+^
