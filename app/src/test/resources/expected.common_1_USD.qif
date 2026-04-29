@@ -1,0 +1,29 @@
+!Account
+NAssets:Current Assets:Cash in Wallet
+TCash
+DCash in Wallet
+^
+!Type:Cash
+D2025/3/27
+L[Assets:Current Assets:Cash in Wallet]
+PAmazon
+NN123
+Mhardcover
+S[Expenses:Books]
+Ebible
+$-123.45
+T-123.45
+^
+!Account
+NIncome:Gifts Received
+TCash
+DGifts Received
+^
+!Type:Cash
+D2025/3/31
+L[Income:Gifts Received]
+Pmom
+S[Assets:Current Assets:Japan Wallet]
+$-133253.00
+T-133253.00
+^
