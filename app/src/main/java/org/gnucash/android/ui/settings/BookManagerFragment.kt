@@ -17,6 +17,7 @@ package org.gnucash.android.ui.settings
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -26,6 +27,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDialog
@@ -41,6 +43,7 @@ import org.gnucash.android.app.GnuCashApplication.Companion.defaultCurrencyCode
 import org.gnucash.android.app.MenuFragment
 import org.gnucash.android.app.actionBar
 import org.gnucash.android.app.finish
+import org.gnucash.android.app.takePersistableUriPermission
 import org.gnucash.android.databinding.CardviewBookBinding
 import org.gnucash.android.databinding.FragmentBookListBinding
 import org.gnucash.android.db.DatabaseHelper
@@ -48,10 +51,12 @@ import org.gnucash.android.db.DatabaseSchema.BookEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
+import org.gnucash.android.importer.ImportBookCallback
 import org.gnucash.android.importer.xml.AccountsTemplate
 import org.gnucash.android.lang.trim
 import org.gnucash.android.model.Book
 import org.gnucash.android.ui.account.AccountsActivity
+import org.gnucash.android.ui.account.AccountsActivity.Companion.importXmlFileFromIntent
 import org.gnucash.android.ui.adapter.AccountsTemplatesAdapter
 import org.gnucash.android.ui.adapter.ModelDiff
 import org.gnucash.android.ui.adapter.SpinnerItem
@@ -60,9 +65,8 @@ import org.gnucash.android.ui.get
 import org.gnucash.android.ui.settings.dialog.DeleteBookConfirmationDialog
 import org.gnucash.android.util.BookUtils.loadBook
 import org.gnucash.android.util.PreferencesHelper.getLastExportTime
-import org.gnucash.android.util.chooseDocument
+import org.gnucash.android.util.documentMimeTypes
 import org.gnucash.android.util.formatMediumDateTime
-import org.gnucash.android.util.openBook
 import timber.log.Timber
 
 /**
@@ -72,6 +76,12 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
     private var booksAdapter: BooksAdapter? = null
     private var accountsTemplatesAdapter: AccountsTemplatesAdapter? = null
     private var binding: FragmentBookListBinding? = null
+    private val pickDocumentLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            uri?.let {
+                openBook(requireActivity(), uri)
+            }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -126,7 +136,7 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
             }
 
             R.id.menu_open -> {
-                chooseDocument(REQUEST_OPEN_DOCUMENT)
+                pickDocumentLauncher.launch(documentMimeTypes)
                 true
             }
 
@@ -150,16 +160,6 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
             val refresh = result.getBoolean(Refreshable.EXTRA_REFRESH)
             if (refresh) refresh()
         }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == REQUEST_OPEN_DOCUMENT) {
-                openBook(requireActivity(), data)
-                return
-            }
-        }
-        super.onActivityResult(requestCode, resultCode, data)
     }
 
     private fun createBook(activity: Activity) {
@@ -344,6 +344,23 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
     }
 
     companion object {
-        private const val REQUEST_OPEN_DOCUMENT = 0x20
+        fun openBook(
+            activity: Activity,
+            intent: Intent?,
+            onFinishTask: ImportBookCallback? = null
+        ) {
+            val intent = intent ?: return
+            val uri = intent.data
+            activity.takePersistableUriPermission(intent)
+            openBook(activity, uri, onFinishTask)
+        }
+
+        fun openBook(activity: Activity, uri: Uri?, onFinishTask: ImportBookCallback? = null) {
+            if (uri == null) {
+                Timber.w("Document location expected!")
+                return
+            }
+            importXmlFileFromIntent(activity, uri, onFinishTask)
+        }
     }
 }

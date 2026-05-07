@@ -23,6 +23,7 @@ import android.content.DialogInterface
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.OperationCanceledException
+import androidx.appcompat.app.AlertDialog
 import org.gnucash.android.R
 import org.gnucash.android.db.DatabaseSchema.BookEntry
 import org.gnucash.android.db.adapter.BooksDbAdapter
@@ -37,6 +38,9 @@ import org.gnucash.android.util.getDocumentName
 import org.gnucash.android.util.openStream
 import org.gnucash.android.util.set
 import timber.log.Timber
+import java.io.EOFException
+
+typealias ImportProduct = Result<String>
 
 /**
  * Imports a GnuCash (desktop) account file and displays a progress dialog.
@@ -46,7 +50,7 @@ class ImportAsyncTask(
     activity: Activity,
     private val backup: Boolean = false,
     private val bookCallback: ImportBookCallback? = null
-) : AsyncTask<Uri, Any, String>() {
+) : AsyncTask<Uri, Any, ImportProduct>() {
     private val progressDialog: ProgressDialog
     private val listener: AsyncTaskProgressListener = ProgressListener(activity)
     private var importer: Importer? = null
@@ -75,35 +79,33 @@ class ImportAsyncTask(
     }
 
     @Deprecated("Deprecated in Java")
-    override fun doInBackground(vararg uris: Uri): String? {
+    override fun doInBackground(vararg uris: Uri): ImportProduct {
         if (backup) {
             backupActiveBook()
         }
         if (isCancelled) {
-            return null
+            return ImportProduct.failure(OperationCanceledException())
         }
 
         val uri: Uri = uris[0]
         val context = progressDialog.context
         val books: List<Book>
-        var bookUID: String? = null
 
         try {
             val accountInputStream = uri.openStream(context)!!
             val importer = ImporterFactory.create(context, accountInputStream, listener)
             this.importer = importer
             books = importer.parse()
-        } catch (ce: OperationCanceledException) {
-            Timber.i(ce, "Canceled")
-            return null
         } catch (e: Throwable) {
             Timber.e(e, "Error importing: %s", uri)
-            return null
+            return ImportProduct.failure(e)
         }
 
         val booksDbAdapter = BooksDbAdapter.instance
         val contentValues = ContentValues()
         contentValues[BookEntry.COLUMN_SOURCE_URI] = uri.toString()
+
+        var bookUID = ""
 
         for (book in books) {
             bookUID = book.uid
@@ -128,7 +130,7 @@ class ImportAsyncTask(
             booksDbAdapter.updateRecord(book.uid, contentValues)
         }
 
-        return bookUID
+        return ImportProduct.success(bookUID)
     }
 
     @Deprecated("Deprecated in Java")
@@ -139,20 +141,43 @@ class ImportAsyncTask(
     }
 
     @Deprecated("Deprecated in Java")
-    override fun onPostExecute(bookUID: String?) {
+    override fun onPostExecute(result: ImportProduct) {
         dismissProgressDialog()
         val context = progressDialog.context
 
-        if (!bookUID.isNullOrEmpty()) {
-            context.snackLong(R.string.toast_success_importing_accounts)
-            BookUtils.loadBook(context, bookUID)
-        } else {
-            context.snackLong(R.string.toast_error_importing_accounts)
+        if (result.isSuccess) {
+            val bookUID = result.getOrNull()
+            if (!bookUID.isNullOrEmpty()) {
+                context.snackLong(R.string.toast_success_importing_accounts)
+                BookUtils.loadBook(context, bookUID)
+            } else {
+                context.snackLong(R.string.toast_error_importing_accounts)
+            }
+
+            bookCallback?.invoke(bookUID)
+
+            schedulePeriodic(context)
+        } else if (result.isFailure) {
+            var message = context.getString(R.string.toast_error_importing_accounts)
+
+            when (val error = result.exceptionOrNull()) {
+                is EOFException,
+                is SecurityException -> {
+                    val errorMessage = error.message
+                    if (!errorMessage.isNullOrEmpty()) {
+                        message = errorMessage
+                    }
+                }
+            }
+
+            AlertDialog.Builder(context)
+                .setTitle(R.string.title_import_accounts)
+                .setMessage(message)
+                .setPositiveButton(R.string.btn_ok) { _, _ ->
+                    // dismisses itself
+                }
+                .show()
         }
-
-        schedulePeriodic(context)
-
-        bookCallback?.invoke(bookUID)
     }
 
     private fun dismissProgressDialog() {

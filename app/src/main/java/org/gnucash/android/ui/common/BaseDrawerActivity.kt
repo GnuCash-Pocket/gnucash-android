@@ -25,6 +25,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ProgressBar
 import android.widget.Spinner
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.view.ContextThemeWrapper
@@ -39,13 +40,13 @@ import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.ui.adapter.DefaultItemSelectedListener
 import org.gnucash.android.ui.passcode.PasscodeLockActivity
 import org.gnucash.android.ui.report.ReportsActivity
+import org.gnucash.android.ui.settings.BookManagerFragment.Companion.openBook
 import org.gnucash.android.ui.settings.PreferenceActivity
 import org.gnucash.android.ui.transaction.ScheduledActionsActivity
 import org.gnucash.android.ui.transaction.TransactionsActivity
 import org.gnucash.android.util.BookUtils.activateBook
 import org.gnucash.android.util.BookUtils.loadBook
-import org.gnucash.android.util.chooseDocument
-import org.gnucash.android.util.openBook
+import org.gnucash.android.util.documentMimeTypes
 
 /**
  * Base activity implementing the navigation drawer, to be extended by all activities requiring one.
@@ -76,6 +77,11 @@ abstract class BaseDrawerActivity : PasscodeLockActivity() {
     protected var toolbarProgress: ProgressBar? = null
     private var bookNameSpinner: Spinner? = null
     private var drawerToggle: ActionBarDrawerToggle? = null
+    private val pickDocumentLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let {
+            openBook(this@BaseDrawerActivity, uri)
+        }
+    }
 
     private inner class DrawerItemClickListener : NavigationView.OnNavigationItemSelectedListener {
         override fun onNavigationItemSelected(menuItem: MenuItem): Boolean {
@@ -243,7 +249,7 @@ abstract class BaseDrawerActivity : PasscodeLockActivity() {
         val context: Context = this
 
         when (itemId) {
-            R.id.nav_item_open -> chooseDocument(REQUEST_OPEN_DOCUMENT)
+            R.id.nav_item_open -> pickDocumentLauncher.launch(documentMimeTypes)
 
             R.id.nav_item_favorites -> AccountsActivity.start(
                 context,
@@ -263,23 +269,8 @@ abstract class BaseDrawerActivity : PasscodeLockActivity() {
         drawerLayout!!.closeDrawer(navigationView!!)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (requestCode) {
-            AccountsActivity.REQUEST_PICK_ACCOUNTS_FILE,
-            REQUEST_OPEN_DOCUMENT -> if (resultCode == RESULT_OK && data != null) {
-                openBook(this, data)
-            }
-
-            else -> super.onActivityResult(requestCode, resultCode, data)
-        }
-    }
-
     fun onClickAppTitle() {
         drawerLayout!!.closeDrawer(navigationView!!)
         AccountsActivity.start(this)
-    }
-
-    companion object {
-        private const val REQUEST_OPEN_DOCUMENT = 0x20
     }
 }

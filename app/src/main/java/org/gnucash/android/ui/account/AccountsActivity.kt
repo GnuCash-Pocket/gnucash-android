@@ -343,6 +343,7 @@ class AccountsActivity : BaseDrawerActivity(),
         /**
          * Request code for GnuCash account structure file to import
          */
+        @Deprecated("Use `registerForActivityResult`")
         const val REQUEST_PICK_ACCOUNTS_FILE = 0x1
 
         /**
@@ -485,16 +486,16 @@ class AccountsActivity : BaseDrawerActivity(),
          * This method is usually called in response to [AccountsActivity.startXmlFileChooser]
          *
          * @param context      Activity context
-         * @param data         Intent data containing the XML uri
+         * @param uri          The XML URI
          * @param onFinishTask Task to be executed when import is complete
          */
         fun importXmlFileFromIntent(
             context: Activity,
-            data: Intent,
+            uri: Uri,
             onFinishTask: ImportBookCallback?
         ) {
             val backup = shouldBackupForImport(context)
-            ImportAsyncTask(context, backup, onFinishTask).execute(data.data)
+            ImportAsyncTask(context, backup, onFinishTask).execute(uri)
         }
 
         /**

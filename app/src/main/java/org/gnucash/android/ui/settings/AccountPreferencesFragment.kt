@@ -33,9 +33,9 @@ import org.gnucash.android.export.ExportFormat
 import org.gnucash.android.export.ExportParams
 import org.gnucash.android.export.Exporter.Companion.buildExportFilename
 import org.gnucash.android.ui.account.AccountsActivity
+import org.gnucash.android.ui.settings.BookManagerFragment.Companion.openBook
 import org.gnucash.android.ui.settings.dialog.DeleteAllAccountsConfirmationDialog
 import org.gnucash.android.ui.snackLong
-import org.gnucash.android.util.openBook
 import timber.log.Timber
 import java.util.concurrent.ExecutionException
 

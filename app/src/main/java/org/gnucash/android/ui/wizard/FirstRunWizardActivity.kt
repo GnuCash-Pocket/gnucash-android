@@ -41,9 +41,9 @@ import org.gnucash.android.app.GnuCashApplication.Companion.defaultCurrencyCode
 import org.gnucash.android.databinding.ActivityFirstRunWizardBinding
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.ui.account.AccountsActivity
+import org.gnucash.android.ui.settings.BookManagerFragment.Companion.openBook
 import org.gnucash.android.ui.settings.ThemeHelper
 import org.gnucash.android.ui.util.widget.FragmentStateAdapter
-import org.gnucash.android.util.openBook
 import timber.log.Timber
 import kotlin.math.max
 
