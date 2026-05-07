@@ -281,12 +281,13 @@ class TransactionsDbAdapter(
      * Fetch all transactions modified since a given timestamp
      *
      * @param timestamp Timestamp in milliseconds (since Epoch)
+     * @param isModifiedOnly Only transactions that have been modified since last export?
      * @return Cursor to the results
      */
-    fun fetchTransactionsToExportSince(timestamp: Timestamp): Cursor {
+    fun fetchTransactionsToExportSince(timestamp: Timestamp, isModifiedOnly: Boolean): Cursor {
         val where = TransactionEntry.COLUMN_TEMPLATE + " = 0 AND " +
-                TransactionEntry.COLUMN_EXPORTED + " = 0 AND " +
-                TransactionEntry.COLUMN_MODIFIED_AT + " >= ?"
+                TransactionEntry.COLUMN_MODIFIED_AT + " >= ?" +
+                if (isModifiedOnly) " AND " + TransactionEntry.COLUMN_EXPORTED + " = 0" else ""
         val whereArgs = arrayOf<String?>(getUtcStringFromTimestamp(timestamp))
         val orderBy = TransactionEntry.COLUMN_DATE_POSTED + " ASC, " +
                 TransactionEntry.COLUMN_NUMBER + " ASC, " +

@@ -110,11 +110,11 @@ class QifExporter(
 
     @Throws(ExportException::class, IOException::class)
     override fun writeExport(writer: Writer, exportParams: ExportParams) {
-        writeExport(writer, exportParams.exportStartTime)
+        writeExport(writer, exportParams.exportStartTime, exportParams.isModifiedOnly)
     }
 
     @Throws(ExportException::class, IOException::class)
-    private fun writeExport(writer: Writer, exportStartTime: Timestamp) {
+    private fun writeExport(writer: Writer, exportStartTime: Timestamp, isModifiedOnly: Boolean) {
         val transactionsDbAdapter = transactionsDbAdapter
 
         val accounts = accountsDbAdapter.simpleAccounts.associateBy(Account::uid)
@@ -140,14 +140,14 @@ class QifExporter(
             "account1." + AccountEntry.COLUMN_UID + " AS acct1_uid",
             "a_" + AccountEntry.COLUMN_UID + " AS acct2_uid"
         )
-        // no recurrence transactions
         val where = "(t_" + TransactionEntry.COLUMN_TEMPLATE + " = 0) AND " +
                 // in qif, split from the one account entry is not recorded (will be auto balanced)
                 "(acct2_uid != account1." + AccountEntry.COLUMN_UID + " OR " +
                 // or if the transaction has only one split (the whole transaction would be lost if it is not selected)
                 "trans_split_count = 1)" +
-                " AND (t_" + TransactionEntry.COLUMN_EXPORTED + " = 0)" +
-                " AND (t_" + TransactionEntry.COLUMN_MODIFIED_AT + " >= ?)"
+                " AND (t_" + TransactionEntry.COLUMN_MODIFIED_AT + " >= ?)" +
+                if (isModifiedOnly) " AND (t_" + TransactionEntry.COLUMN_EXPORTED + " = 0)" else ""
+        // no recurrence transactions
         val whereArgs = arrayOf<String?>(
             getUtcStringFromTimestamp(exportStartTime)
         )

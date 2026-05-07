@@ -463,7 +463,10 @@ class GncXmlHandlerTest : BookHelperTest() {
         importGnuCashXml("common_1.gnucash")
         // 3 normal transactions + 1 template transaction
         assertThat(transactionsDbAdapter.recordsCount).isEqualTo(3)
-        val transactionsImported = transactionsDbAdapter.fetchTransactionsToExportSince(since)
+        val transactionsImported = transactionsDbAdapter.fetchTransactionsToExportSince(
+            since,
+            true
+        )
         assertThat(transactionsImported.count).isZero()
         assertThat(transactionsImported.moveToFirst()).isFalse()
         transactionsImported.close()
@@ -476,7 +479,10 @@ class GncXmlHandlerTest : BookHelperTest() {
         transactionsDbAdapter.insert(transaction)
         assertThat(transactionsDbAdapter.recordsCount).isEqualTo(4)
 
-        val transactionsModified = transactionsDbAdapter.fetchTransactionsToExportSince(since)
+        val transactionsModified = transactionsDbAdapter.fetchTransactionsToExportSince(
+            since,
+            true
+        )
         assertThat(transactionsModified.count).isOne()
         assertThat(transactionsModified.moveToFirst()).isTrue()
         val transactionToExport = transactionsDbAdapter.buildModelInstance(transactionsModified)

@@ -386,11 +386,16 @@ class QifExporterTest : BookHelperTest() {
         return readFileContent(fileInput)
     }
 
+    private fun readFileText(name: String): String {
+        return openResourceStream(name)
+            .bufferedReader().readText()
+            .replace("\r\n", "\n")
+    }
+
     @Test
-    fun `export common_1`() {
+    fun `export common_1 - all`() {
         val bookUID = importGnuCashXml("common_1.gnucash")
         assertThat(bookUID).isEqualTo("a7682e5d878e43cea216611401f08463")
-        markForExport()
 
         val exportParameters = ExportParams(ExportFormat.QIF)
 
@@ -405,21 +410,50 @@ class QifExporterTest : BookHelperTest() {
         assertThat(entry1.name).endsWith("EUR.qif")
         val textActual1 = input.readAllBytes().toString(StandardCharsets.UTF_8)
         assertThat(textActual1).isNotEmpty
-        val textExpected1 = openResourceStream("expected.common_1_EUR.qif")
-            .bufferedReader().readText()
+        val textExpected1 = readFileText("expected.common_1_EUR.qif")
         assertThat(textActual1).isEqualTo(textExpected1)
 
         val entry2 = input.nextEntry
         assertThat(entry2.name).endsWith("USD.qif")
         val textActual2 = input.readAllBytes().toString(StandardCharsets.UTF_8)
         assertThat(textActual2).isNotEmpty
-        val textExpected2 = openResourceStream("expected.common_1_USD.qif")
-            .bufferedReader().readText()
+        val textExpected2 = readFileText("expected.common_1_USD.qif")
         assertThat(textActual2).isEqualTo(textExpected2)
     }
 
     @Test
-    fun `export since 2025-03-28`() {
+    fun `export common_1 - only modified`() {
+        val bookUID = importGnuCashXml("common_1.gnucash")
+        assertThat(bookUID).isEqualTo("a7682e5d878e43cea216611401f08463")
+        markForExport()
+
+        val exportParameters = ExportParams(ExportFormat.QIF)
+        exportParameters.isModifiedOnly = true
+
+        val exportedFile = QifExporter(context, exportParameters, bookUID).export()
+
+        assertThat(exportedFile).isNotNull()
+        val zipped = exportedFile!!.toFile()
+        assertThat(zipped).isNotEmpty
+        val input = ZipInputStream(zipped.inputStream())
+
+        val entry1 = input.nextEntry
+        assertThat(entry1.name).endsWith("EUR.qif")
+        val textActual1 = input.readAllBytes().toString(StandardCharsets.UTF_8)
+        assertThat(textActual1).isNotEmpty
+        val textExpected1 = readFileText("expected.common_1_EUR.qif")
+        assertThat(textActual1).isEqualTo(textExpected1)
+
+        val entry2 = input.nextEntry
+        assertThat(entry2.name).endsWith("USD.qif")
+        val textActual2 = input.readAllBytes().toString(StandardCharsets.UTF_8)
+        assertThat(textActual2).isNotEmpty
+        val textExpected2 = readFileText("expected.common_1_USD.qif")
+        assertThat(textActual2).isEqualTo(textExpected2)
+    }
+
+    @Test
+    fun `export modified since 2025-03-28`() {
         val bookUID = importGnuCashXml("common_1.gnucash")
         assertThat(bookUID).isEqualTo("a7682e5d878e43cea216611401f08463")
 
@@ -433,6 +467,7 @@ class QifExporterTest : BookHelperTest() {
         assertThat(t2.isExported).isFalse
 
         val exportParameters = ExportParams(ExportFormat.QIF)
+        exportParameters.isModifiedOnly = true
 
         val exportedFile = QifExporter(context, exportParameters, bookUID).export()
 
@@ -444,8 +479,7 @@ class QifExporterTest : BookHelperTest() {
 
         val textActual1 = input.readAllBytes().toString(StandardCharsets.UTF_8)
         assertThat(textActual1).isNotEmpty
-        val textExpected1 = openResourceStream("expected.common_1_USD_20250330.qif")
-            .bufferedReader().readText()
+        val textExpected1 = readFileText("expected.common_1_USD_20250330.qif")
         assertThat(textActual1).isEqualTo(textExpected1)
     }
 }
