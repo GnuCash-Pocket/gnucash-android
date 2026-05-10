@@ -38,12 +38,12 @@
     <string name="key_use_compact_list" translatable="false">use_compact_list</string>
     <string name="key_prefs_header_general" translatable="false">prefs_header_general</string>
     <string name="key_dropbox_access_token" translatable="false">dropbox_access_token</string>
-    <string name="key_backup_location" translatable="false">backup_location</string>
+    <string name="key_backup_location" translatable="false">backup_location_db</string>
     <string name="key_export_accounts_csv" translatable="false">export_accounts_csv_key</string>
     <string name="key_delete_transaction_backup" translatable="false">delete_transaction_backup</string>
     <string name="key_import_book_backup" translatable="false">import_book_backup</string>
     <!-- This is the filename for default backups. So use only simple characters and no spaces. Do not change the extension -->
-    <string name="label_backup_filename" translatable="false">gnucash_pocket_backup.gnca</string>
+    <string name="suffix_backup_filename" translatable="false">_gnucash_pocket</string>
     <string-array name="key_account_type_entries" translatable="false">
         <item>CASH</item>
         <item>BANK</item>

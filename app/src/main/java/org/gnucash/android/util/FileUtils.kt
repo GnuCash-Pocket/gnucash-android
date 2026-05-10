@@ -77,15 +77,24 @@ object FileUtils {
      */
     @Throws(IOException::class)
     fun moveFile(src: File, outputStream: OutputStream) {
-        try {
-            FileInputStream(src).use { inputStream ->
-                copy(inputStream, outputStream)
-            }
-        } finally {
-            outputStream.close()
-        }
+        copyFile(src, outputStream)
         Timber.i("Deleting temp export file: %s", src)
         src.delete()
+    }
+
+    /**
+     * Copy file from a location on disk to an outputstream.
+     * The outputstream could be for a URI in the Storage Access Framework
+     *
+     * @param src          Input file (usually newly exported file)
+     * @param outputStream Output stream to write to
+     * @throws IOException if error occurred while moving the file
+     */
+    @Throws(IOException::class)
+    fun copyFile(src: File, outputStream: OutputStream) {
+        FileInputStream(src).use { inputStream ->
+            copy(inputStream, outputStream)
+        }
     }
 
     @Throws(IOException::class)

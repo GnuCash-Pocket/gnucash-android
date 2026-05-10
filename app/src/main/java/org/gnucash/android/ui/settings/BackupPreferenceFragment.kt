@@ -118,27 +118,11 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
 
         preference = findPreference(getString(R.string.key_backup_location))!!
         preference.setOnPreferenceClickListener { _ ->
-            val bookName = BooksDbAdapter.instance.activeBookDisplayName
-            val fileName =
-                sanitizeFilename(bookName) + "_" + getString(R.string.label_backup_filename)
-
-            val createIntent = Intent(Intent.ACTION_CREATE_DOCUMENT)
-                .setType(BackupManager.MIME_TYPE)
-                .addCategory(Intent.CATEGORY_OPENABLE)
-                .putExtra(Intent.EXTRA_TITLE, fileName)
-            try {
-                startActivityForResult(createIntent, REQUEST_BACKUP_FILE)
-            } catch (e: ActivityNotFoundException) {
-                Timber.e(e, "Cannot create document for backup")
-                snackLong(R.string.toast_install_file_manager)
-            }
+            selectBackupFile()
             true
         }
-
         val defaultBackupLocation = BackupManager.getBookBackupFileUri(context, activeBookUID!!)
-        if (defaultBackupLocation != null) {
-            preference.summary = defaultBackupLocation.getDocumentName(context)
-        }
+        preference.summary = defaultBackupLocation.getDocumentName(context)
 
         var switch = findPreference<TwoStatePreference>(getString(R.string.key_dropbox_sync))!!
         switch.setOnPreferenceClickListener { _ ->
@@ -155,6 +139,23 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
             false
         }
         toggleOwnCloudEnabled(switch)
+    }
+
+    private fun selectBackupFile() {
+        val bookName = BooksDbAdapter.instance.activeBookDisplayName
+        val fileName = sanitizeFilename(bookName) +
+                getString(R.string.suffix_backup_filename)
+
+        val createIntent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+            .setType(BackupManager.MIME_TYPE)
+            .addCategory(Intent.CATEGORY_OPENABLE)
+            .putExtra(Intent.EXTRA_TITLE, fileName)
+        try {
+            startActivityForResult(createIntent, REQUEST_BACKUP_FILE)
+        } catch (e: ActivityNotFoundException) {
+            Timber.e(e, "Cannot create document for backup")
+            snackLong(R.string.toast_install_file_manager)
+        }
     }
 
     /**
@@ -277,12 +278,12 @@ class BackupPreferenceFragment : GnuPreferenceFragment() {
                 val context = requireContext()
                 context.takePersistableUriPermission(data)
 
+                val key = context.getString(R.string.key_backup_location)
                 getBookPreferences(context).edit {
-                    putString(BackupManager.KEY_BACKUP_FILE, backupFileUri.toString())
+                    putString(key, backupFileUri.toString())
                 }
 
-                val preference =
-                    findPreference<Preference>(getString(R.string.key_backup_location))!!
+                val preference = findPreference<Preference>(key)!!
                 preference.summary = backupFileUri.getDocumentName(preference.context)
             }
 
