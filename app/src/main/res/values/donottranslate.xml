@@ -305,4 +305,12 @@
     <string name="comma" translatable="false">,</string>
     <string name="semicolon" translatable="false">;</string>
     <string name="colon" translatable="false">:</string>
+    <string name="price_add" translatable="false">@string/add</string>
+    <string name="price_currency" translatable="false">@string/label_account_currency</string>
+    <string name="price_date" translatable="false">@string/date</string>
+    <string name="price_edit" translatable="false">@string/edit</string>
+    <string name="price_price" translatable="false">@string/price</string>
+    <string name="price_security" translatable="false">@string/security</string>
+    <string name="price_type" translatable="false">@string/label_account_type</string>
+    <string name="price_unknown" translatable="false">@string/unknown</string>
 </resources>

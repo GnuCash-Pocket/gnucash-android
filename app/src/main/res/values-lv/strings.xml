@@ -489,4 +489,5 @@
     <string name="title_progress_processing_transactions">Darījumu apstrāde</string>
     <!-- msgid "Number" -->
     <string name="number">Numurs</string>
+    <string name="add">Pievienot</string>
 </resources>

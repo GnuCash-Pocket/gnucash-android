@@ -485,4 +485,5 @@
     <string name="title_progress_processing_transactions">Обработка на транзакции</string>
     <!-- msgid "Number" -->
     <string name="number">Брой</string>
+    <string name="add">Адрес</string>
 </resources>

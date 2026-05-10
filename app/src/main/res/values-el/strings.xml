@@ -486,4 +486,5 @@
     <string name="title_progress_processing_transactions">Επεξεργασία συναλλαγών</string>
     <!-- msgid "Number" -->
     <string name="number">Αριθμός</string>
+    <string name="add">Προσθήκη</string>
 </resources>

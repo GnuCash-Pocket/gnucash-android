@@ -15,10 +15,10 @@ import kotlin.math.max
  * Model for commodity prices
  */
 class Price : BaseModel {
-    var commodity: Commodity
+    var security: Commodity
     var currency: Commodity
     var date: Long = System.currentTimeMillis()
-    var source: String? = null
+    var source: PriceSource? = null
     var type: Type = Type.Unknown
 
     constructor() : this(Commodity.DEFAULT_COMMODITY, Commodity.DEFAULT_COMMODITY)
@@ -26,41 +26,40 @@ class Price : BaseModel {
     /**
      * Create new instance with the GUIDs of the commodities
      *
-     * @param commodity1 the origin commodity
-     * @param commodity2 the target commodity
+     * @param security the origin commodity
+     * @param currency the target commodity
      */
-    constructor(commodity1: Commodity, commodity2: Commodity) {
-        this.commodity = commodity1
-        this.currency = commodity2
+    constructor(security: Commodity, currency: Commodity) {
+        this.security = security
+        this.currency = currency
     }
 
     /**
      * Create new instance with the GUIDs of the commodities and the specified exchange rate.
      *
-     * @param commodity1 the origin commodity
-     * @param commodity2 the target commodity
+     * @param security the origin commodity
+     * @param currency the target commodity
      * @param exchangeRate  exchange rate between the commodities
      */
-    constructor(commodity1: Commodity, commodity2: Commodity, exchangeRate: BigDecimal) :
-            this(commodity1, commodity2) {
+    constructor(security: Commodity, currency: Commodity, exchangeRate: BigDecimal) :
+            this(security, currency) {
         setExchangeRate(exchangeRate)
     }
 
     /**
      * Create new instance with the GUIDs of the commodities and the specified exchange rate.
      *
-     * @param commodity1 the origin commodity
-     * @param commodity2 the target commodity
+     * @param security the origin commodity
+     * @param currency the target commodity
      * @param exchangeRateNumerator  exchange rate numerator between the commodities
      * @param exchangeRateDenominator  exchange rate denominator between the commodities
      */
     constructor(
-        commodity1: Commodity,
-        commodity2: Commodity,
+        security: Commodity,
+        currency: Commodity,
         exchangeRateNumerator: Long,
         exchangeRateDenominator: Long
-    ) :
-            this(commodity1, commodity2) {
+    ) : this(security, currency) {
         setExchangeRate(exchangeRateNumerator, exchangeRateDenominator)
     }
 
@@ -94,7 +93,7 @@ class Price : BaseModel {
                 num1 = -num1
             }
             var num2 = valueDenom
-            var commonDivisor: Long = 1
+            var commonDivisor = 1L
             while (true) {
                 var r = num1 % num2
                 if (r == 0L) {
@@ -134,12 +133,12 @@ class Price : BaseModel {
             maximumFractionDigits = precision
         }
         val amount = formatter.format(numerator.divide(denominator, MathContext.DECIMAL64))
-        return "$commodity/$currency=$amount"
+        return "$security/$currency=$amount"
     }
 
     fun toBigDecimal(): BigDecimal {
         val denominator = BigDecimal.valueOf(valueDenom)
-        val scale = max(denominator.numberOfTrailingZeros, commodity.smallestFractionDigits)
+        val scale = max(denominator.numberOfTrailingZeros, security.smallestFractionDigits)
         return toBigDecimal(scale)
     }
 
@@ -149,39 +148,72 @@ class Price : BaseModel {
         return numerator.divide(denominator, scale, BigDecimal.ROUND_HALF_EVEN)
     }
 
-    val commodityUID: String get() = commodity.uid
+    val securityUID: String get() = security.uid
     val currencyUID: String get() = currency.uid
 
     fun setExchangeRate(rate: BigDecimal) {
         // Store 0.1234 as 1234/10000
         val scale = MathContext.DECIMAL64.precision
-        valueNum = rate.setScale(scale, RoundingMode.HALF_UP).unscaledValue().toLong()
-        valueDenom = BigDecimal.ONE.scaleByPowerOfTen(scale).toLong()
+        val numerator = rate.setScale(scale, RoundingMode.HALF_UP).unscaledValue().toLong()
+        val denominator = BigDecimal.ONE.scaleByPowerOfTen(scale).toLong()
+        setExchangeRate(numerator, denominator)
     }
 
     fun setExchangeRate(numerator: Long, denominator: Long) {
         // Store 0.1234 as 1234/10000
-        valueNum = numerator
-        valueDenom = denominator
+        this._valueNum = numerator
+        this._valueDenom = denominator
+        reduce(numerator, denominator)
     }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Price) return false
-        return this.commodity == other.commodity
+        return this.security == other.security
                 && this.currency == other.currency
+                && this.type == other.type
                 && this.valueNum == other.valueNum
                 && this.valueDenom == other.valueDenom
+                && this.date == other.date
     }
 
-    fun inverse(): Price {
+    /**
+     * Return a newly-allocated price that's the inverse of the given price, p.
+     *
+     * Inverse means that the commodity and currency are swapped and the value is the numeric
+     * inverse of the original's.
+     * The source is set to PRICE_SOURCE_TEMP to prevent it being saved in the pricedb.
+     */
+    fun invert(): Price {
         // swap numerator and denominator
         val priceOld = this
-        return Price(currency, commodity, valueDenom, valueNum).apply {
+        return Price(currency, security, valueDenom, valueNum).apply {
             date = priceOld.date
-            source = priceOld.source
+            source = PriceSource.PRICE_SOURCE_TEMP
             type = priceOld.type
         }
+    }
+
+    fun copy(
+        uid: String? = null,
+        security: Commodity? = null,
+        currency: Commodity? = null,
+        source: PriceSource? = null,
+        type: Type? = null,
+        date: Long? = null,
+        rate: BigDecimal? = null
+    ): Price {
+        val clone = Price(security ?: this.security, currency ?: this.currency)
+        clone.setUID(uid ?: this.uid)
+        clone.date = date ?: this.date
+        clone.source = source ?: this.source
+        clone.type = type ?: this.type
+        clone._valueNum = this._valueNum
+        clone._valueDenom = this._valueDenom
+        if (rate != null) {
+            clone.setExchangeRate(rate)
+        }
+        return clone
     }
 
     /**
@@ -210,30 +242,24 @@ class Price : BaseModel {
         /** Net Asset Value (mutual fund price per share, NAV for short) */
         NetAssetValue("nav"),
 
+        /** 'Transaction' is set when the price is created from an amount and value in a Split
+         *  and is not available for users to set via the GUI. */
         Transaction("transaction"),
 
         Unknown("unknown");
 
+        override fun toString(): String {
+            return value
+        }
+
         companion object {
-            private val values = Type.values()
+            private val values = Type.entries
 
             fun of(key: String?): Type {
                 val value = key?.lowercase(Locale.ROOT) ?: return Unknown
                 return values.firstOrNull { it.value == value } ?: Unknown
             }
         }
-    }
-
-    companion object {
-        /**
-         * String indicating that the price was provided by the user
-         */
-        const val SOURCE_USER = "user:xfer-dialog"
-
-        /**
-         * The price was provided by the Finance::Quote module.
-         */
-        const val SOURCE_QUOTE = "Finance::Quote"
     }
 }
 
