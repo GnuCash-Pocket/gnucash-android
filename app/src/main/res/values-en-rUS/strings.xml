@@ -485,4 +485,5 @@
     <string name="title_progress_processing_transactions">Processing transactions</string>
     <!-- msgid "Number" -->
     <string name="number">Number</string>
+    <string name="add">Add</string>
 </resources>

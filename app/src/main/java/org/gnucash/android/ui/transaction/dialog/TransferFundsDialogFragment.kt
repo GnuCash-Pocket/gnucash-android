@@ -28,6 +28,7 @@ import org.gnucash.android.db.adapter.PricesDbAdapter
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Price
+import org.gnucash.android.model.PriceSource
 import org.gnucash.android.quote.QuoteCallback
 import org.gnucash.android.quote.QuoteProvider
 import org.gnucash.android.quote.YahooJson
@@ -227,7 +228,7 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
         val commodityFrom = commoditiesDbAdapter.loadCommodity(originCommodity)
         val commodityTo = commoditiesDbAdapter.loadCommodity(targetCommodity)
         var price = Price(commodityFrom, commodityTo)
-        price.source = Price.SOURCE_USER
+        price.source = PriceSource.PRICE_SOURCE_XFER_DLG_VAL
         price.type = Price.Type.Transaction
         val originAmount = originAmount!!
         val convertedAmount: Money

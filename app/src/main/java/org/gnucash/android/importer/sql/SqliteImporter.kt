@@ -43,6 +43,7 @@ import org.gnucash.android.model.Money
 import org.gnucash.android.model.Numeric
 import org.gnucash.android.model.PeriodType
 import org.gnucash.android.model.Price
+import org.gnucash.android.model.PriceSource
 import org.gnucash.android.model.Recurrence
 import org.gnucash.android.model.ScheduledAction
 import org.gnucash.android.model.Slot
@@ -458,10 +459,10 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
 
         val price = Price()
         price.setUID(guid)
-        price.commodity = commoditiesDbAdapter.getRecord(commodityGuid)
+        price.security = commoditiesDbAdapter.getRecord(commodityGuid)
         price.currency = commoditiesDbAdapter.getRecord(currencyGuid)
         price.date = parseDateTime(date)
-        price.source = source
+        price.source = PriceSource.of(source)
         price.type = Price.Type.of(type)
         price.valueNum = valueNum
         price.valueDenom = valueDenom

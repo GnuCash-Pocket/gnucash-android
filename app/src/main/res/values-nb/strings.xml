@@ -486,4 +486,5 @@
     <string name="title_progress_processing_transactions">Behandling av transaksjonene</string>
     <!-- msgid "Number" -->
     <string name="number">Nummer</string>
+    <string name="add">Legg til</string>
 </resources>

@@ -102,7 +102,7 @@ class SearchResultViewHolder(
         this.transaction = transaction
 
         primaryText.text = transaction.description
-        transactionDate.text = getPrettyDateFormat(context, transaction.datePosted)
+        transactionDate.text = formatPrettyDate(context, transaction.datePosted)
         transactionAmount.isVisible = false
 
         if (isDoubleEntry) {
@@ -141,7 +141,7 @@ class SearchResultViewHolder(
         }
     }
 
-    private fun getPrettyDateFormat(context: Context, time: Long): String {
+    private fun formatPrettyDate(context: Context, time: Long): String {
         return DateUtils.getRelativeDateTimeString(
             context,
             time,

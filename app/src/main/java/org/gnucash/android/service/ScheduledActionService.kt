@@ -40,7 +40,6 @@ import org.gnucash.android.util.formatLongDateTime
 import org.gnucash.android.util.set
 import org.gnucash.android.work.ActionWorker
 import timber.log.Timber
-import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import kotlin.math.min
 
@@ -226,9 +225,7 @@ class ScheduledActionService {
                 //wait for async task to finish before we proceed (we are holding a wake lock)
                 val exporter = ExporterFactory.create(context, params, bookUID, null)
                 result = exporter.export()
-            } catch (e: InterruptedException) {
-                Timber.e(e)
-            } catch (e: ExecutionException) {
+            } catch (e: Throwable) {
                 Timber.e(e)
             }
             if (result == null) {

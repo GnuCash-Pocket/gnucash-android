@@ -23,7 +23,7 @@ class SearchFormViewModel : ViewModel() {
         }
     }
 
-    fun onSearchShowed() {
+    fun onSearchShown() {
         _query.value = null
     }
 

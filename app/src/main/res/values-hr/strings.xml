@@ -489,4 +489,5 @@
     <string name="title_progress_processing_transactions">Obrada transakcija</string>
     <!-- msgid "Number" -->
     <string name="number">Broj</string>
+    <string name="add">Dodaj</string>
 </resources>

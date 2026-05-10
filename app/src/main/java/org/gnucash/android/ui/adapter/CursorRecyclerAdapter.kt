@@ -96,9 +96,12 @@ abstract class CursorRecyclerAdapter<VH : RecyclerView.ViewHolder>(cursor: Curso
      * @see android.widget.ListAdapter.getItemId
      */
     override fun getItemId(position: Int): Long {
+        val columnIndex = rowIDColumn
+        if (columnIndex < 0) return position.toLong()
+
         val cursor = cursor ?: return 0
         return if (isDataValid && cursor.moveToPosition(position)) {
-            cursor.getLong(rowIDColumn)
+            cursor.getLong(columnIndex)
         } else {
             0
         }

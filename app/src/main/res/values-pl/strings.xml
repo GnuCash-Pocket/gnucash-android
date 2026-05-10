@@ -492,4 +492,5 @@
     <string name="title_progress_processing_transactions">Przetwarzanie transakcji</string>
     <!-- msgid "Number" -->
     <string name="number">Liczba</string>
+    <string name="add">Dodaj</string>
 </resources>

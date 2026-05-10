@@ -486,4 +486,7 @@
     <string name="title_progress_processing_transactions">处理交易</string>
     <!-- msgid "Number" -->
     <string name="number">编号</string>
+    <string name="add">添加</string>
+    <string name="add">添加</string>
+    <string name="add">添加</string>
 </resources>
