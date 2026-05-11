@@ -95,6 +95,9 @@ object MigrationHelper {
         if (oldVersion < 28) {
             migrateTo28(db)
         }
+        if (oldVersion < 29) {
+            migrateTo29(db)
+        }
     }
 
     /**
@@ -197,26 +200,30 @@ object MigrationHelper {
     private fun migrateTo21(db: SQLiteDatabase) {
         Timber.i("Upgrading database to version 21")
 
-        if (db.hasTableColumn(AccountEntry.TABLE_NAME, AccountEntry.COLUMN_CURRENCY)) {
-            return
+        restoreCurrencyColumns(db)
+    }
+
+    private fun restoreCurrencyColumns(db: SQLiteDatabase) {
+        if (!db.hasTableColumn(AccountEntry.TABLE_NAME, AccountEntry.COLUMN_CURRENCY)) {
+            // Restore the currency code column that was deleted in v19.
+            val sql = "ALTER TABLE " + AccountEntry.TABLE_NAME +
+                    " ADD COLUMN " + AccountEntry.COLUMN_CURRENCY + " varchar(255)"
+            try {
+                db.execSQL(sql)
+            } catch (e: SQLException) {
+                Timber.e(e)
+            }
         }
 
-        // Restore the currency code column that was deleted in v19.
-        val sqlAccountCurrency = "ALTER TABLE " + AccountEntry.TABLE_NAME +
-                " ADD COLUMN " + AccountEntry.COLUMN_CURRENCY + " varchar(255)"
-        try {
-            db.execSQL(sqlAccountCurrency)
-        } catch (e: SQLException) {
-            Timber.e(e)
-        }
-
-        // Restore the currency code column.
-        val sql = "ALTER TABLE " + TransactionEntry.TABLE_NAME +
-                " ADD COLUMN " + TransactionEntry.COLUMN_CURRENCY + " varchar(255)"
-        try {
-            db.execSQL(sql)
-        } catch (e: SQLException) {
-            Timber.e(e)
+        if (!db.hasTableColumn(TransactionEntry.TABLE_NAME, TransactionEntry.COLUMN_CURRENCY)) {
+            // Restore the currency code column that was deleted in v19.
+            val sql = "ALTER TABLE " + TransactionEntry.TABLE_NAME +
+                    " ADD COLUMN " + TransactionEntry.COLUMN_CURRENCY + " varchar(255)"
+            try {
+                db.execSQL(sql)
+            } catch (e: SQLException) {
+                Timber.e(e)
+            }
         }
     }
 
@@ -323,6 +330,17 @@ object MigrationHelper {
             val sql = "ALTER TABLE ${AccountEntry.TABLE_NAME} ADD COLUMN ${AccountEntry.COLUMN_CODE} varchar(255)"
             db.execSQL(sql)
         }
+    }
+
+    /**
+     * Upgrade the database to version 29.
+     *
+     * @param db the database.
+     */
+    private fun migrateTo29(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 29")
+
+        restoreCurrencyColumns(db)
     }
 
     private class AccountCurrency(

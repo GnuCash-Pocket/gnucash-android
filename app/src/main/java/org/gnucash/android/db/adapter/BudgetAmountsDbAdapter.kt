@@ -22,6 +22,7 @@ import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry
 import org.gnucash.android.db.bindInt
+import org.gnucash.android.db.bindStringOrNull
 import org.gnucash.android.model.BudgetAmount
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
@@ -69,9 +70,7 @@ class BudgetAmountsDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) :
         stmt.bindLong(1 + INDEX_COLUMN_AMOUNT_NUM, budgetAmount.amount.numerator)
         stmt.bindLong(1 + INDEX_COLUMN_AMOUNT_DENOM, budgetAmount.amount.denominator)
         stmt.bindInt(1 + INDEX_COLUMN_PERIOD_NUM, budgetAmount.periodIndex)
-        if (budgetAmount.notes != null) {
-            stmt.bindString(1 + INDEX_COLUMN_NOTES, budgetAmount.notes)
-        }
+        stmt.bindStringOrNull(1 + INDEX_COLUMN_NOTES, budgetAmount.notes)
 
         return stmt
     }

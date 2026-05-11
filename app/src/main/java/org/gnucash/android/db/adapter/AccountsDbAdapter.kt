@@ -40,6 +40,7 @@ import org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry
 import org.gnucash.android.db.DatabaseSchema.SplitEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.bindBoolean
+import org.gnucash.android.db.bindStringOrNull
 import org.gnucash.android.db.forEach
 import org.gnucash.android.db.getBigDecimal
 import org.gnucash.android.db.getBoolean
@@ -135,33 +136,25 @@ class AccountsDbAdapter(
 
         bindBaseModel(stmt, account)
         stmt.bindString(1 + INDEX_COLUMN_NAME, account.name)
-        stmt.bindString(1 + INDEX_COLUMN_DESCRIPTION, account.description)
+        stmt.bindStringOrNull(1 + INDEX_COLUMN_DESCRIPTION, account.description)
         stmt.bindString(1 + INDEX_COLUMN_TYPE, account.type.name)
         stmt.bindString(1 + INDEX_COLUMN_CURRENCY, account.commodity.currencyCode)
         if (account.color != Account.DEFAULT_COLOR) {
             stmt.bindString(1 + INDEX_COLUMN_COLOR_CODE, account.colorHexString)
         }
         stmt.bindBoolean(1 + INDEX_COLUMN_FAVORITE, account.isFavorite)
-        stmt.bindString(1 + INDEX_COLUMN_FULL_NAME, account.fullName)
+        stmt.bindString(1 + INDEX_COLUMN_FULL_NAME, account.fullName ?: account.name)
         stmt.bindBoolean(1 + INDEX_COLUMN_PLACEHOLDER, account.isPlaceholder)
         stmt.bindBoolean(1 + INDEX_COLUMN_HIDDEN, account.isHidden)
         stmt.bindString(1 + INDEX_COLUMN_COMMODITY_UID, account.commodity.uid)
-        if (parentAccountUID != null) {
-            stmt.bindString(1 + INDEX_COLUMN_PARENT_ACCOUNT_UID, parentAccountUID)
-        }
-        if (account.defaultTransferAccountUID != null) {
-            stmt.bindString(
-                1 + INDEX_COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID,
-                account.defaultTransferAccountUID
-            )
-        }
-        if (account.notes != null) {
-            stmt.bindString(1 + INDEX_COLUMN_NOTES, account.notes)
-        }
+        stmt.bindStringOrNull(1 + INDEX_COLUMN_PARENT_ACCOUNT_UID, parentAccountUID)
+        stmt.bindStringOrNull(
+            1 + INDEX_COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID,
+            account.defaultTransferAccountUID
+        )
+        stmt.bindStringOrNull(1 + INDEX_COLUMN_NOTES, account.notes)
         stmt.bindBoolean(1 + INDEX_COLUMN_TEMPLATE, account.isTemplate)
-        if (account.code != null) {
-            stmt.bindString(1 + INDEX_COLUMN_CODE, account.code)
-        }
+        stmt.bindStringOrNull(1 + INDEX_COLUMN_CODE, account.code)
 
         return stmt
     }

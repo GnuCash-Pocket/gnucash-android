@@ -9,6 +9,7 @@ import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.CommodityEntry
 import org.gnucash.android.db.bindBoolean
 import org.gnucash.android.db.bindInt
+import org.gnucash.android.db.bindStringOrNull
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Commodity.Companion.getLocaleCurrencyCode
 import timber.log.Timber
@@ -63,20 +64,12 @@ class CommoditiesDbAdapter(
         stmt.bindString(1 + INDEX_COLUMN_FULLNAME, commodity.fullname)
         stmt.bindString(1 + INDEX_COLUMN_NAMESPACE, commodity.namespace)
         stmt.bindString(1 + INDEX_COLUMN_MNEMONIC, commodity.mnemonic)
-        if (commodity.localSymbol != null) {
-            stmt.bindString(1 + INDEX_COLUMN_LOCAL_SYMBOL, commodity.localSymbol)
-        }
-        if (commodity.cusip != null) {
-            stmt.bindString(1 + INDEX_COLUMN_CUSIP, commodity.cusip)
-        }
+        stmt.bindStringOrNull(1 + INDEX_COLUMN_LOCAL_SYMBOL, commodity.localSymbol)
+        stmt.bindStringOrNull(1 + INDEX_COLUMN_CUSIP, commodity.cusip)
         stmt.bindInt(1 + INDEX_COLUMN_SMALLEST_FRACTION, commodity.smallestFraction)
         stmt.bindBoolean(1 + INDEX_COLUMN_QUOTE_FLAG, commodity.quoteFlag)
-        if (commodity.quoteSource != null) {
-            stmt.bindString(1 + INDEX_COLUMN_QUOTE_SOURCE, commodity.quoteSource)
-        }
-        if (commodity.getQuoteTimeZoneId() != null) {
-            stmt.bindString(1 + INDEX_COLUMN_QUOTE_TZ, commodity.getQuoteTimeZoneId())
-        }
+        stmt.bindStringOrNull(1 + INDEX_COLUMN_QUOTE_SOURCE, commodity.quoteSource)
+        stmt.bindStringOrNull(1 + INDEX_COLUMN_QUOTE_TZ, commodity.getQuoteTimeZoneId())
 
         return stmt
     }

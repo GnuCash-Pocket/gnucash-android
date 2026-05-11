@@ -33,12 +33,13 @@ import java.io.File
  * there are multiple accounts/transactions databases in the system and this one will be used to
  * switch between them.
  */
-class BookDbHelper(private val context: Context) : SQLiteOpenHelper(
+class BookDbHelper(context: Context) : SQLiteOpenHelper(
     context,
     DatabaseSchema.BOOK_DATABASE_NAME,
     null,
     DatabaseSchema.BOOK_DATABASE_VERSION
 ) {
+    private val context: Context = context.applicationContext
     private var holder: DatabaseHolder? = null
 
     fun getHolder(): DatabaseHolder {
@@ -100,7 +101,7 @@ class BookDbHelper(private val context: Context) : SQLiteOpenHelper(
     }
 
     @WorkerThread
-    fun duplicateAccounts(context: Context, book: Book): Book {
+    fun duplicateAccounts(book: Book): Book {
         val dbAdapter = BooksDbAdapter.instance
         val bookClone = Book().apply {
             rootAccountUID = book.rootAccountUID
@@ -129,10 +130,10 @@ class BookDbHelper(private val context: Context) : SQLiteOpenHelper(
 
     @WorkerThread
     /// Clone the book's accounts.
-    fun duplicateAccounts(context: Context, bookUID: String): Book {
+    fun duplicateAccounts(bookUID: String): Book {
         val dbAdapter = BooksDbAdapter.instance
         val book = dbAdapter.getRecord(bookUID)
-        return duplicateAccounts(context, book)
+        return duplicateAccounts(book)
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {

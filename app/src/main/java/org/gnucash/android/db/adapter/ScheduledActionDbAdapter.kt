@@ -25,6 +25,7 @@ import org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.bindBoolean
 import org.gnucash.android.db.bindInt
+import org.gnucash.android.db.bindStringOrNull
 import org.gnucash.android.db.getBoolean
 import org.gnucash.android.model.Recurrence
 import org.gnucash.android.model.ScheduledAction
@@ -120,9 +121,7 @@ class ScheduledActionDbAdapter(
         stmt.bindLong(1 + INDEX_COLUMN_END_TIME, schedxAction.endDate)
         stmt.bindLong(1 + INDEX_COLUMN_LAST_OCCUR, schedxAction.lastRunDate)
         stmt.bindBoolean(1 + INDEX_COLUMN_ENABLED, schedxAction.isEnabled)
-        if (schedxAction.tag != null) {
-            stmt.bindString(1 + INDEX_COLUMN_TAG, schedxAction.tag)
-        }
+        stmt.bindStringOrNull(1 + INDEX_COLUMN_TAG, schedxAction.tag)
         stmt.bindInt(1 + INDEX_COLUMN_TOTAL_FREQUENCY, schedxAction.totalPlannedExecutionCount)
         stmt.bindString(1 + INDEX_COLUMN_RECURRENCE_UID, schedxAction.recurrence.uid)
         stmt.bindBoolean(1 + INDEX_COLUMN_AUTO_CREATE, schedxAction.isAutoCreate)

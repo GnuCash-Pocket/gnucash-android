@@ -30,6 +30,7 @@ import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.DatabaseSchema.SplitEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.bindBoolean
+import org.gnucash.android.db.bindStringOrNull
 import org.gnucash.android.db.bindTimestamp
 import org.gnucash.android.db.forEach
 import org.gnucash.android.db.getBoolean
@@ -171,9 +172,7 @@ class TransactionsDbAdapter(
         stmt.bindString(1 + INDEX_COLUMN_CURRENCY, transaction.currencyCode)
         stmt.bindString(1 + INDEX_COLUMN_COMMODITY_UID, transaction.commodity.uid)
         stmt.bindTimestamp(1 + INDEX_COLUMN_DATE_ENTERED, transaction.dateEntered)
-        if (transaction.scheduledActionUID != null) {
-            stmt.bindString(1 + INDEX_COLUMN_SCHEDX_ACTION_UID, transaction.scheduledActionUID)
-        }
+        stmt.bindStringOrNull(1 + INDEX_COLUMN_SCHEDX_ACTION_UID, transaction.scheduledActionUID)
         stmt.bindBoolean(1 + INDEX_COLUMN_TEMPLATE, transaction.isTemplate)
         stmt.bindString(1 + INDEX_COLUMN_NUMBER, transaction.number)
 

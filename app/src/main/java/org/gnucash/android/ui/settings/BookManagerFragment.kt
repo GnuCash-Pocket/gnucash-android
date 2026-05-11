@@ -291,7 +291,7 @@ class BookManagerFragment : MenuFragment(), Refreshable, FragmentResultListener 
             }
             lifecycleScope.launch(Dispatchers.IO) {
                 val helper = BookDbHelper(context)
-                helper.duplicateAccounts(context, bookUID)
+                helper.duplicateAccounts(bookUID)
                 refresh()
                 // hide progress
                 withContext(Dispatchers.Main) {

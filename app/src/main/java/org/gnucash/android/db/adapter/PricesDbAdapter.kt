@@ -4,6 +4,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteStatement
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.DatabaseSchema.PriceEntry
+import org.gnucash.android.db.bindStringOrNull
 import org.gnucash.android.db.bindTimestamp
 import org.gnucash.android.db.getTimestamp
 import org.gnucash.android.model.Commodity
@@ -35,9 +36,7 @@ class PricesDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) : Database
         stmt.bindString(1 + INDEX_COLUMN_COMMODITY_UID, price.commodityUID)
         stmt.bindString(1 + INDEX_COLUMN_CURRENCY_UID, price.currencyUID)
         stmt.bindTimestamp(1 + INDEX_COLUMN_DATE, price.date)
-        if (price.source != null) {
-            stmt.bindString(1 + INDEX_COLUMN_SOURCE, price.source)
-        }
+        stmt.bindStringOrNull(1 + INDEX_COLUMN_SOURCE, price.source)
         stmt.bindString(1 + INDEX_COLUMN_TYPE, price.type.value)
         stmt.bindLong(1 + INDEX_COLUMN_VALUE_NUM, price.valueNum)
         stmt.bindLong(1 + INDEX_COLUMN_VALUE_DENOM, price.valueDenom)

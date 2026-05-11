@@ -22,6 +22,7 @@ import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry
 import org.gnucash.android.db.DatabaseSchema.BudgetEntry
 import org.gnucash.android.db.bindInt
+import org.gnucash.android.db.bindStringOrNull
 import org.gnucash.android.model.Budget
 import org.gnucash.android.model.BudgetAmount
 import org.gnucash.android.model.Money
@@ -111,9 +112,7 @@ class BudgetsDbAdapter
     override fun bind(stmt: SQLiteStatement, budget: Budget): SQLiteStatement {
         bindBaseModel(stmt, budget)
         stmt.bindString(1 + INDEX_COLUMN_NAME, budget.name)
-        if (budget.description != null) {
-            stmt.bindString(1 + INDEX_COLUMN_DESCRIPTION, budget.description)
-        }
+        stmt.bindStringOrNull(1 + INDEX_COLUMN_DESCRIPTION, budget.description)
         stmt.bindString(1 + INDEX_COLUMN_RECURRENCE_UID, budget.recurrence.uid)
         stmt.bindInt(1 + INDEX_COLUMN_NUM_PERIODS, budget.numberOfPeriods)
 

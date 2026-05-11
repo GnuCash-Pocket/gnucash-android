@@ -30,6 +30,7 @@ import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.BookEntry
 import org.gnucash.android.db.bindBoolean
+import org.gnucash.android.db.bindStringOrNull
 import org.gnucash.android.db.bindTimestamp
 import org.gnucash.android.db.forEach
 import org.gnucash.android.db.getBoolean
@@ -75,9 +76,7 @@ class BooksDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Book>(
         stmt.bindString(1 + INDEX_COLUMN_DISPLAY_NAME, book.displayName)
         stmt.bindString(1 + INDEX_COLUMN_ROOT_GUID, book.rootAccountUID)
         stmt.bindString(1 + INDEX_COLUMN_TEMPLATE_GUID, book.rootTemplateUID)
-        if (book.sourceUri != null) {
-            stmt.bindString(1 + INDEX_COLUMN_SOURCE_URI, book.sourceUri.toString())
-        }
+        stmt.bindStringOrNull(1 + INDEX_COLUMN_SOURCE_URI, book.sourceUri?.toString())
         stmt.bindBoolean(1 + INDEX_COLUMN_ACTIVE, book.isActive)
         stmt.bindTimestamp(1 + INDEX_COLUMN_LAST_SYNC, book.lastSync)
 

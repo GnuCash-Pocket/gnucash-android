@@ -62,9 +62,7 @@ class RecurrenceDbAdapter(holder: DatabaseHolder) : DatabaseAdapter<Recurrence>(
         }
         //recurrence should always have a start date
         stmt.bindTimestamp(1 + INDEX_COLUMN_PERIOD_START, recurrence.periodStart)
-        if (recurrence.periodEnd != null) {
-            stmt.bindTimestamp(1 + INDEX_COLUMN_PERIOD_END, recurrence.periodEnd!!)
-        }
+        stmt.bindTimestamp(1 + INDEX_COLUMN_PERIOD_END, recurrence.periodEnd)
 
         return stmt
     }

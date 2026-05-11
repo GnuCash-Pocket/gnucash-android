@@ -37,12 +37,36 @@ fun SQLiteStatement.bindInt(@IntRange(from = 1) index: Int, value: Int) {
     bindLong(index, value.toLong())
 }
 
+fun SQLiteStatement.bindInt(@IntRange(from = 1) index: Int, value: Int?) {
+    if (value != null) {
+        bindInt(index, value)
+    } else {
+        bindNull(index)
+    }
+}
+
 fun SQLiteStatement.bindTimestamp(@IntRange(from = 1) index: Int, value: Timestamp) {
     bindString(index, getUtcStringFromTimestamp(value))
 }
 
 fun SQLiteStatement.bindTimestamp(@IntRange(from = 1) index: Int, value: Long) {
     bindString(index, getUtcStringFromTimestamp(value))
+}
+
+fun SQLiteStatement.bindTimestamp(@IntRange(from = 1) index: Int, value: Long?) {
+    if (value != null) {
+        bindString(index, getUtcStringFromTimestamp(value))
+    } else {
+        bindNull(index)
+    }
+}
+
+fun SQLiteStatement.bindStringOrNull(@IntRange(from = 1) index: Int, value: String?) {
+    if (value != null) {
+        bindString(index, value)
+    } else {
+        bindNull(index)
+    }
 }
 
 fun Cursor.getBigDecimal(@IntRange(from = 0) columnIndex: Int): BigDecimal? {

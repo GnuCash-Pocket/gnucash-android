@@ -24,6 +24,7 @@ import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.DatabaseSchema.SplitEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
+import org.gnucash.android.db.bindStringOrNull
 import org.gnucash.android.db.bindTimestamp
 import org.gnucash.android.db.forEach
 import org.gnucash.android.db.getLong
@@ -103,12 +104,10 @@ class SplitsDbAdapter(
         stmt.bindTimestamp(1 + INDEX_COLUMN_RECONCILE_DATE, split.reconcileDate)
         stmt.bindString(1 + INDEX_COLUMN_ACCOUNT_UID, split.accountUID)
         stmt.bindString(1 + INDEX_COLUMN_TRANSACTION_UID, split.transactionUID)
-        if (split.scheduledActionAccountUID != null) {
-            stmt.bindString(
-                1 + INDEX_COLUMN_SCHEDX_ACTION_ACCOUNT_UID,
-                split.scheduledActionAccountUID
-            )
-        }
+        stmt.bindStringOrNull(
+            1 + INDEX_COLUMN_SCHEDX_ACTION_ACCOUNT_UID,
+            split.scheduledActionAccountUID
+        )
 
         return stmt
     }
