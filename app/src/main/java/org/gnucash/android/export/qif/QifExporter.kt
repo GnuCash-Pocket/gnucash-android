@@ -67,6 +67,7 @@ import java.io.IOException
 import java.io.Writer
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.sql.Timestamp
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.util.Locale
@@ -108,8 +109,12 @@ class QifExporter(
     }
 
     @Throws(ExportException::class, IOException::class)
-    // TODO write each commodity to separate file here, instead of splitting the file afterwards.
     override fun writeExport(writer: Writer, exportParams: ExportParams) {
+        writeExport(writer, exportParams.exportStartTime, exportParams.isModifiedOnly)
+    }
+
+    @Throws(ExportException::class, IOException::class)
+    private fun writeExport(writer: Writer, exportStartTime: Timestamp, isModifiedOnly: Boolean) {
         val transactionsDbAdapter = transactionsDbAdapter
 
         val accounts = accountsDbAdapter.simpleAccounts.associateBy(Account::uid)
@@ -118,38 +123,38 @@ class QifExporter(
         quantityFormatter.isGroupingUsed = false
 
         val projection = arrayOf<String?>(
-            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_ID + " AS trans_id",
-            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_UID + " AS trans_uid",
-            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_DATE_POSTED + " AS trans_date_posted",
-            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_DESCRIPTION + " AS trans_desc",
-            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_NOTES + " AS trans_notes",
-            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_NUMBER + " AS trans_num",
-            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_ID + " AS split_id",
-            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_UID + " AS split_uid",
-            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_NUM + " AS split_quantity_num",
-            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_QUANTITY_DENOM + " AS split_quantity_denom",
-            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_TYPE + " AS split_type",
-            SplitEntry.TABLE_NAME + "_" + SplitEntry.COLUMN_MEMO + " AS split_memo",
+            "t_" + TransactionEntry.COLUMN_ID + " AS trans_id",
+            "t_" + TransactionEntry.COLUMN_UID + " AS trans_uid",
+            "t_" + TransactionEntry.COLUMN_DATE_POSTED + " AS trans_date_posted",
+            "t_" + TransactionEntry.COLUMN_DESCRIPTION + " AS trans_desc",
+            "t_" + TransactionEntry.COLUMN_NOTES + " AS trans_notes",
+            "t_" + TransactionEntry.COLUMN_NUMBER + " AS trans_num",
+            "s_" + SplitEntry.COLUMN_ID + " AS split_id",
+            "s_" + SplitEntry.COLUMN_UID + " AS split_uid",
+            "s_" + SplitEntry.COLUMN_QUANTITY_NUM + " AS split_quantity_num",
+            "s_" + SplitEntry.COLUMN_QUANTITY_DENOM + " AS split_quantity_denom",
+            "s_" + SplitEntry.COLUMN_TYPE + " AS split_type",
+            "s_" + SplitEntry.COLUMN_MEMO + " AS split_memo",
             "trans_extra_info.trans_acct_balance AS trans_acct_balance",
             "trans_extra_info.trans_split_count AS trans_split_count",
             "account1." + AccountEntry.COLUMN_UID + " AS acct1_uid",
-            AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID + " AS acct2_uid"
+            "a_" + AccountEntry.COLUMN_UID + " AS acct2_uid"
         )
+        val where = "(t_" + TransactionEntry.COLUMN_TEMPLATE + " = 0) AND " +
+                // in qif, split from the one account entry is not recorded (will be auto balanced)
+                "(acct2_uid != account1." + AccountEntry.COLUMN_UID + " OR " +
+                // or if the transaction has only one split (the whole transaction would be lost if it is not selected)
+                "trans_split_count = 1)" +
+                " AND (t_" + TransactionEntry.COLUMN_MODIFIED_AT + " >= ?)" +
+                if (isModifiedOnly) " AND (t_" + TransactionEntry.COLUMN_EXPORTED + " = 0)" else ""
         // no recurrence transactions
-        val where =
-            TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_TEMPLATE + " == 0 AND " +
-                    // in qif, split from the one account entry is not recorded (will be auto balanced)
-                    "(" + AccountEntry.TABLE_NAME + "_" + AccountEntry.COLUMN_UID + " != account1." + AccountEntry.COLUMN_UID + " OR " +
-                    // or if the transaction has only one split (the whole transaction would be lost if it is not selected)
-                    "trans_split_count == 1)" +
-                    " AND " + TransactionEntry.TABLE_NAME + "_" + TransactionEntry.COLUMN_MODIFIED_AT + " >= ?"
+        val whereArgs = arrayOf<String?>(
+            getUtcStringFromTimestamp(exportStartTime)
+        )
         // trans_uid ASC  : put splits from the same transaction together
         // trans_date_posted ASC : put transactions in time order
-        val whereArgs = arrayOf<String?>(
-            getUtcStringFromTimestamp(exportParams.exportStartTime)
-        )
         val orderBy = "account1." + AccountEntry.COLUMN_COMMODITY_UID + " ASC," +
-            "acct1_uid ASC, trans_date_posted ASC, trans_num ASC, trans_id ASC, split_id ASC"
+                "acct1_uid ASC, trans_date_posted ASC, trans_num ASC, trans_id ASC, split_id ASC"
 
         var cursor: Cursor? = null
         try {
@@ -313,7 +318,7 @@ class QifExporter(
             writer.close()
 
             /** export successful */
-            transactionsDbAdapter.markTransactionsExported(exportParams.exportStartTime)
+            transactionsDbAdapter.markTransactionsExported(exportStartTime)
             setLastExportTime(context, TimestampHelper.timestampFromNow, bookUID)
         } catch (e: IOException) {
             throw ExportException(exportParams, e)
@@ -373,7 +378,7 @@ class QifExporter(
             reader.close()
             out?.close()
         }
-        return splitFiles.toList()
+        return splitFiles.toList().sorted()
     }
 
     private fun String?.toSingleLine() = this?.replace('\n', ' ')

@@ -84,6 +84,11 @@ class ExportParams() {
     var isCompressed: Boolean = false
 
     /**
+     * Export only modified transactions?
+     */
+    var isModifiedOnly: Boolean = false
+
+    /**
      * Creates a new set of parameters and specifies the export format
      *
      * @param format Format to use when exporting the transactions
@@ -107,12 +112,13 @@ class ExportParams() {
      * @return String containing CSV format of ExportParams
      */
     fun toTag(): String {
-        return (exportFormat.name
-                + TAG_SEPARATOR + exportTarget.name
-                + TAG_SEPARATOR + getUtcStringFromTimestamp(exportStartTime)
-                + TAG_SEPARATOR + deleteTransactionsAfterExport
-                + TAG_SEPARATOR + (if (exportLocation != null) exportLocation else "")
-                + TAG_SEPARATOR + isCompressed)
+        return exportFormat.name +
+                TAG_SEPARATOR + exportTarget.name +
+                TAG_SEPARATOR + TimestampHelper.getUtcStringFromTimestamp(this.exportStartTime) +
+                TAG_SEPARATOR + deleteTransactionsAfterExport +
+                TAG_SEPARATOR + (exportLocation ?: "") +
+                TAG_SEPARATOR + isCompressed +
+                TAG_SEPARATOR + isModifiedOnly
     }
 
     companion object {
@@ -139,6 +145,9 @@ class ExportParams() {
                 params.exportLocation = tokens[4].toUri()
                 if (tokens.size >= 6) {
                     params.isCompressed = tokens[5].toBoolean()
+                    if (tokens.size >= 7) {
+                        params.isModifiedOnly = tokens[6].toBoolean()
+                    }
                 }
             }
             return params

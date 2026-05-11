@@ -34,10 +34,8 @@ import android.widget.ArrayAdapter
 import android.widget.DatePicker
 import android.widget.TimePicker
 import androidx.appcompat.app.ActionBar
-import androidx.core.content.edit
 import androidx.core.view.isVisible
 import androidx.preference.PreferenceManager
-import androidx.recyclerview.widget.RecyclerView
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrenceFormatter
 import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment.OnRecurrenceSetListener
@@ -55,6 +53,7 @@ import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.DatabaseAdapter
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
+import org.gnucash.android.db.toTimestamp
 import org.gnucash.android.export.DropboxHelper.authenticateDropbox
 import org.gnucash.android.export.DropboxHelper.hasDropboxToken
 import org.gnucash.android.export.DropboxHelper.retrieveAndSaveToken
@@ -83,7 +82,6 @@ import org.gnucash.android.util.PreferencesHelper.getLastExportTime
 import org.gnucash.android.util.TimestampHelper
 import org.gnucash.android.util.getDocumentName
 import timber.log.Timber
-import java.sql.Timestamp
 import java.util.Calendar
 
 /**
@@ -120,7 +118,6 @@ class ExportFormFragment : MenuFragment(),
     private var exportStarted = false
 
     private var binding: FragmentExportFormBinding? = null
-    private var isDoubleEntry = true
     private val formatItems = mutableListOf<ExportFormatItem>()
 
     private fun onFormatSelected(binding: FragmentExportFormBinding, exportFormat: ExportFormat) {
@@ -161,7 +158,61 @@ class ExportFormFragment : MenuFragment(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        isDoubleEntry = isDoubleEntryEnabled(requireContext())
+
+        val context = requireContext()
+        val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+        val exportParams = this.exportParams
+
+        val defaultExportFormat =
+            preferences.getString(
+                getString(R.string.key_default_export_format),
+                exportParams.exportFormat.value
+            )
+        var exportFormat = ExportFormat.of(defaultExportFormat)
+
+        formatItems.clear()
+        formatItems.add(
+            ExportFormatItem(ExportFormat.CSVT, context.getString(ExportFormat.CSVT.labelId))
+        )
+        formatItems.add(
+            ExportFormatItem(ExportFormat.QIF, context.getString(ExportFormat.QIF.labelId))
+        )
+        formatItems.add(
+            ExportFormatItem(ExportFormat.OFX, context.getString(ExportFormat.OFX.labelId))
+        )
+        if (isDoubleEntryEnabled(context)) {
+            formatItems.add(
+                ExportFormatItem(ExportFormat.SQLITE, context.getString(ExportFormat.SQLITE.labelId))
+            )
+            formatItems.add(
+                ExportFormatItem(ExportFormat.XML, context.getString(ExportFormat.XML.labelId))
+            )
+            if (exportFormat == ExportFormat.OFX) {
+                exportFormat = ExportFormat.XML
+            }
+        } else {
+            if (exportFormat == ExportFormat.XML) {
+                exportFormat = ExportFormat.OFX
+            }
+        }
+        exportParams.exportFormat = exportFormat
+
+        var timestamp = getLastExportTime(context, activeBookUID!!)
+        if (timestamp.time <= 0L) {
+            timestamp = TransactionsDbAdapter.instance.timestampOfFirstModification
+        }
+        exportStartCalendar.timeInMillis = timestamp.time
+        val isExportAll =
+            preferences.getBoolean(getString(R.string.key_export_all_transactions), false)
+        if (isExportAll) {
+            exportParams.exportStartTime = TimestampHelper.timestampFromEpochZero
+        } else {
+            exportParams.exportStartTime = timestamp
+        }
+        exportParams.deleteTransactionsAfterExport =
+            preferences.getBoolean(getString(R.string.key_delete_transactions_after_export), false)
+        exportParams.isCompressed =
+            preferences.getBoolean(getString(R.string.key_compress_export), true)
     }
 
     override fun onCreateView(
@@ -193,24 +244,29 @@ class ExportFormFragment : MenuFragment(),
 
         val scheduledUID = args.getString(UxArgument.SCHEDULED_ACTION_UID)
         if (scheduledUID.isNullOrEmpty()) {
+            bindForm(binding, exportParams)
             return
         }
         val scheduledActionDbAdapter = ScheduledActionDbAdapter.instance
         val scheduledAction = scheduledActionDbAdapter.getRecordOrNull(scheduledUID)
         if (scheduledAction != null) {
             bindForm(binding, scheduledAction)
+        } else {
+            bindForm(binding, exportParams)
         }
     }
 
     private fun bindForm(binding: FragmentExportFormBinding, scheduledAction: ScheduledAction) {
         this.scheduledAction = scheduledAction
         val exportParams = scheduledAction.getExportParams() ?: return
-        val uri = exportParams.exportLocation
-        val exportTarget = exportParams.exportTarget
-        val csvSeparator = exportParams.csvSeparator
-        val startTime = exportParams.exportStartTime
+        bindForm(binding, exportParams)
 
-        when (exportTarget) {
+        val rrule = scheduledAction.ruleString
+        onRecurrenceSet(rrule)
+    }
+
+    private fun bindForm(binding: FragmentExportFormBinding, exportParams: ExportParams) {
+        when (exportParams.exportTarget) {
             ExportTarget.DROPBOX -> binding.spinnerExportDestination.setSelection(TARGET_DROPBOX)
 
             ExportTarget.OWNCLOUD -> binding.spinnerExportDestination.setSelection(TARGET_OWNCLOUD)
@@ -221,43 +277,29 @@ class ExportFormFragment : MenuFragment(),
             ExportTarget.SHARING -> binding.spinnerExportDestination.setSelection(TARGET_SHARE)
         }
 
-        setExportUri(uri)
+        setExportUri(exportParams.exportLocation)
 
         // select relevant format
         val exportFormat = exportParams.exportFormat
-        var formatIndex = RecyclerView.NO_POSITION
-        for (i in formatItems.indices) {
-            val item = formatItems[i]
-            if (item.value == exportFormat) {
-                formatIndex = i
-                break
-            }
-        }
+        val formatIndex = formatItems.indexOfFirst { it.value == exportFormat }
         binding.valueExportFormat.setSelection(formatIndex)
 
-        when (csvSeparator) {
+        when (exportParams.csvSeparator) {
             ExportParams.CSV_COMMA -> binding.radioSeparatorCommaFormat.isChecked = true
             ExportParams.CSV_COLON -> binding.radioSeparatorColonFormat.isChecked = true
             ExportParams.CSV_SEMICOLON -> binding.radioSeparatorSemicolonFormat.isChecked = true
         }
 
-        val startTimeMills = startTime.time
-        if (startTimeMills > 0L) {
-            exportStartCalendar.timeInMillis = startTimeMills
-            binding.exportStartDate.text =
-                TransactionFormFragment.DATE_FORMATTER.print(startTimeMills)
-            binding.exportStartTime.text =
-                TransactionFormFragment.TIME_FORMATTER.print(startTimeMills)
-            binding.switchExportAll.isChecked = false
-        } else {
-            binding.switchExportAll.isChecked = true
-        }
+        val startTimeMills = exportStartCalendar.timeInMillis
+        binding.exportStartDate.text =
+            TransactionFormFragment.DATE_FORMATTER.print(startTimeMills)
+        binding.exportStartTime.text =
+            TransactionFormFragment.TIME_FORMATTER.print(startTimeMills)
 
+        binding.switchExportAll.isChecked = exportParams.exportStartTime.time <= 0L
+        binding.exportOnlyModified.isChecked = exportParams.isModifiedOnly
         binding.checkboxPostExportDelete.isChecked = exportParams.deleteTransactionsAfterExport
         binding.compression.isChecked = exportParams.isCompressed
-
-        val rrule = scheduledAction.ruleString
-        onRecurrenceSet(rrule)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -307,22 +349,13 @@ class ExportFormFragment : MenuFragment(),
         }
 
         val binding = binding ?: return
-        if (binding.switchExportAll.isChecked) {
-            exportParameters.exportStartTime = TimestampHelper.timestampFromEpochZero
-        } else {
-            exportParameters.exportStartTime = Timestamp(exportStartCalendar.timeInMillis)
-        }
 
         Timber.i("Commencing async export of transactions")
         val bookUID = activeBookUID ?: return
-        val position = binding.spinnerExportDestination.selectedItemPosition
 
         val activity: Context = binding.root.getActivity() ?: return
         ExportAsyncTask(activity, bookUID) { bookUri ->
             if (bookUri != null) {
-                PreferenceManager.getDefaultSharedPreferences(activity).edit {
-                    putInt(getString(R.string.key_last_export_destination), position)
-                }
                 bookExported(bookUID, exportParameters)
             }
         }.execute(exportParameters)
@@ -351,7 +384,6 @@ class ExportFormFragment : MenuFragment(),
      */
     private fun bindViewListeners(binding: FragmentExportFormBinding) {
         val context = binding.root.context
-        val preferences = PreferenceManager.getDefaultSharedPreferences(context)
         // export destination bindings
         val destinationAdapter = ArrayAdapter.createFromResource(
             context,
@@ -406,86 +438,45 @@ class ExportFormFragment : MenuFragment(),
                 }
             }
 
-        val position = preferences.getInt(getString(R.string.key_last_export_destination), 0)
-        binding.spinnerExportDestination.setSelection(position)
-
-        //**************** export start time bindings ******************
-        var timestamp = getLastExportTime(context, activeBookUID!!)
-        if (timestamp.time <= 0L) {
-            timestamp = TransactionsDbAdapter.instance.timestampOfFirstModification
-        }
-        val time = timestamp.time
-        exportStartCalendar.time = timestamp
-
         binding.exportStartDate.setOnClickListener {
             val dateMillis = exportStartCalendar.timeInMillis
             DatePickerDialogFragment.newInstance(this@ExportFormFragment, dateMillis)
                 .show(parentFragmentManager, "date_picker_fragment")
         }
-        binding.exportStartDate.text = TransactionFormFragment.DATE_FORMATTER.print(time)
 
         binding.exportStartTime.setOnClickListener {
             val timeMillis = exportStartCalendar.timeInMillis
             TimePickerDialogFragment.newInstance(this@ExportFormFragment, timeMillis)
                 .show(parentFragmentManager, "time_picker_dialog_fragment")
         }
-        binding.exportStartTime.text = TransactionFormFragment.TIME_FORMATTER.print(time)
 
         binding.switchExportAll.setOnCheckedChangeListener { _, isChecked ->
             binding.exportStartDate.isEnabled = !isChecked
             binding.exportStartTime.isEnabled = !isChecked
+
+            if (isChecked) {
+                exportParams.exportStartTime = TimestampHelper.timestampFromEpochZero
+            } else {
+                exportParams.exportStartTime = exportStartCalendar.timeInMillis.toTimestamp()
+            }
         }
-        binding.switchExportAll.isChecked =
-            preferences.getBoolean(getString(R.string.key_export_all_transactions), false)
 
         binding.checkboxPostExportDelete.setOnCheckedChangeListener { _, isChecked ->
             exportParams.deleteTransactionsAfterExport = isChecked
         }
-        binding.checkboxPostExportDelete.isChecked =
-            preferences.getBoolean(getString(R.string.key_delete_transactions_after_export), false)
+
+        binding.exportOnlyModified.setOnCheckedChangeListener { _, isChecked ->
+            exportParams.isModifiedOnly = isChecked
+        }
+
         binding.compression.setOnCheckedChangeListener { _, isChecked ->
             exportParams.isCompressed = isChecked
         }
-
-        binding.compression.isChecked =
-            preferences.getBoolean(getString(R.string.key_compress_export), true)
 
         binding.inputRecurrence.setOnClickListener(
             RecurrenceViewClickListener(parentFragmentManager, recurrenceRule, this)
         )
 
-        //this part (setting the export format) must come after the recurrence view bindings above
-        val keyDefaultExportFormat = getString(R.string.key_default_export_format)
-        val defaultExportFormat =
-            preferences.getString(keyDefaultExportFormat, ExportFormat.XML.value)
-        var defaultFormat = ExportFormat.of(defaultExportFormat)
-
-        val formatItems = this.formatItems
-        formatItems.clear()
-        formatItems.add(
-            ExportFormatItem(ExportFormat.CSVT, context.getString(ExportFormat.CSVT.labelId))
-        )
-        formatItems.add(
-            ExportFormatItem(ExportFormat.QIF, context.getString(ExportFormat.QIF.labelId))
-        )
-        formatItems.add(
-            ExportFormatItem(ExportFormat.OFX, context.getString(ExportFormat.OFX.labelId))
-        )
-        if (isDoubleEntry) {
-            formatItems.add(
-                ExportFormatItem(ExportFormat.SQLITE, context.getString(ExportFormat.SQLITE.labelId))
-            )
-            formatItems.add(
-                ExportFormatItem(ExportFormat.XML, context.getString(ExportFormat.XML.labelId))
-            )
-            if (defaultFormat == ExportFormat.OFX) {
-                defaultFormat = ExportFormat.XML
-            }
-        } else {
-            if (defaultFormat == ExportFormat.XML) {
-                defaultFormat = ExportFormat.OFX
-            }
-        }
         val formatAdapter = ArrayAdapter<ExportFormatItem>(
             context,
             android.R.layout.simple_spinner_item,
@@ -501,15 +492,6 @@ class ExportFormFragment : MenuFragment(),
                 val item: ExportFormatItem = formatAdapter[position]
                 onFormatSelected(binding, item.value)
             }
-        var formatIndex = RecyclerView.NO_POSITION
-        for (i in formatItems.indices) {
-            val item = formatItems[i]
-            if (item.value == defaultFormat) {
-                formatIndex = i
-                break
-            }
-        }
-        binding.valueExportFormat.setSelection(formatIndex)
 
         binding.radioSeparatorCommaFormat.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {

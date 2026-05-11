@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.gnucash.android.BuildConfig
 import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.DatabaseHolder
+import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.BudgetsDbAdapter
@@ -62,7 +63,7 @@ abstract class BookHelperTest : GnuCashTest() {
         return bookUID
     }
 
-    private fun setUpDbAdapters(bookUID: String) {
+    protected fun setUpDbAdapters(bookUID: String) {
         close()
         val databaseHelper = DatabaseHelper(context, bookUID)
         val mainHolder = databaseHelper.holder
@@ -104,6 +105,17 @@ abstract class BookHelperTest : GnuCashTest() {
         val stream = openResourceStream(name)
         val bytes = stream.readAllBytes()
         return String(bytes, StandardCharsets.UTF_8)
+    }
+
+    // Mark the transactions as ready to be exported.
+    protected fun markForExport(where: String? = null) {
+        var sql = "UPDATE " + TransactionEntry.TABLE_NAME +
+                " SET " + TransactionEntry.COLUMN_EXPORTED + " = 0"
+        if (where != null) {
+            sql += " WHERE $where"
+        }
+        val db = dbHolder.db
+        db.execSQL(sql)
     }
 
     companion object {

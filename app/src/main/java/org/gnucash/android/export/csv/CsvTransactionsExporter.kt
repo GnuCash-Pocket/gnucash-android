@@ -63,7 +63,7 @@ class CsvTransactionsExporter(
             .withSeparator(exportParams.csvSeparator)
             .withLineEnd(RFC4180_LINE_END)
             .build()
-        writeExport(csvWriter, exportParams.exportStartTime)
+        writeExport(csvWriter, exportParams.exportStartTime, exportParams.isModifiedOnly)
         csvWriter.close()
         setLastExportTime(context, TimestampHelper.timestampFromNow, bookUID)
     }
@@ -104,12 +104,12 @@ class CsvTransactionsExporter(
         }
     }
 
-    private fun writeExport(writer: ICSVWriter, exportStartTime: Timestamp) {
+    private fun writeExport(writer: ICSVWriter, exportStartTime: Timestamp, isModifiedOnly: Boolean) {
         val headers = context.resources.getStringArray(R.array.csv_transaction_headers)
         writer.writeNext(headers)
 
         val cursor =
-            transactionsDbAdapter.fetchTransactionsToExportSince(exportStartTime)
+            transactionsDbAdapter.fetchTransactionsToExportSince(exportStartTime, isModifiedOnly)
         Timber.d("Exporting %d transactions to CSV", cursor.count)
         val fields = Array(headers.size) { "" }
         cursor.forEach { cursor->

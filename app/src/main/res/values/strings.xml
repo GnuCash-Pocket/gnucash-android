@@ -553,4 +553,5 @@
     <string name="title_absolute_date">Absolute date</string>
     <string name="summary_absolute_date">Show transactions formatted with their actual date - relative date otherwise.</string>
     <string name="menu_show_absolute_date">Format absolute date</string>
+    <string name="export_only_modified">Export only modified transactions</string>
 </resources>

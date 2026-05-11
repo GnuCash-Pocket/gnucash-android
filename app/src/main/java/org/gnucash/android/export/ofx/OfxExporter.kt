@@ -155,6 +155,7 @@ class OfxExporter(
         accounts: List<Account>
     ) {
         val modifiedSince = exportParams.exportStartTime
+        val isModifiedOnly = exportParams.isModifiedOnly
 
         val accountsWithTransactions = accounts.filter { allowAccount(it) }
         if (accountsWithTransactions.isEmpty()) {
@@ -168,7 +169,7 @@ class OfxExporter(
 
         val accountsCredit = accountsWithTransactions.filter { it.isCreditCard }
         if (accountsCredit.isNotEmpty()) {
-            writeCreditAccounts(xmlSerializer, accountsCredit, modifiedSince)
+            writeCreditAccounts(xmlSerializer, accountsCredit, modifiedSince, isModifiedOnly)
         }
     }
 
@@ -198,7 +199,8 @@ class OfxExporter(
     private fun writeCreditAccounts(
         xmlSerializer: XmlSerializer,
         accounts: List<Account>,
-        modifiedSince: Timestamp
+        modifiedSince: Timestamp,
+        isModifiedOnly: Boolean
     ) {
         xmlSerializer.startTag(null, TAG_CC_MESSAGES_V1)
         xmlSerializer.startTag(null, TAG_CC_STATEMENT_TRANSACTION_RESPONSE)
@@ -211,7 +213,7 @@ class OfxExporter(
         accounts.forEach { account ->
             cancellationSignal.throwIfCanceled()
             // Add account details (transactions) to the XML document.
-            writeAccount(xmlSerializer, account, modifiedSince, true)
+            writeAccount(xmlSerializer, account, modifiedSince, isModifiedOnly, isCreditCard = true)
         }
 
         xmlSerializer.endTag(null, TAG_CC_STATEMENT_TRANSACTION_RESPONSE)
@@ -222,6 +224,7 @@ class OfxExporter(
         xmlSerializer: XmlSerializer,
         account: Account,
         modifiedSince: Timestamp,
+        isModifiedOnly: Boolean,
         isCreditCard: Boolean = false
     ) {
         if (isCreditCard) {
@@ -260,7 +263,7 @@ class OfxExporter(
         }
         //================= END BANK ACCOUNT INFO ============================================
 
-        writeTransactions(xmlSerializer, account, modifiedSince)
+        writeTransactions(xmlSerializer, account, modifiedSince, isModifiedOnly)
 
         //================= BEGIN ACCOUNT BALANCE INFO =================================
         val balance = getAccountBalance(account)
@@ -298,7 +301,8 @@ class OfxExporter(
     private fun writeTransactions(
         xmlSerializer: XmlSerializer,
         account: Account,
-        modifiedSince: Timestamp
+        modifiedSince: Timestamp,
+        isModifiedOnly: Boolean
     ) {
         //================= BEGIN TRANSACTIONS LIST =================================
         xmlSerializer.startTag(null, TAG_BANK_TRANSACTION_LIST)
@@ -310,13 +314,14 @@ class OfxExporter(
         xmlSerializer.text(formattedCurrentTime)
         xmlSerializer.endTag(null, TAG_DATE_END)
 
-        transactionsDbAdapter.fetchTransactionsToExportSince(modifiedSince).forEach { cursor ->
-            val transaction = transactionsDbAdapter.buildModelInstance(cursor)
-            if (transaction.hasAccount(account)) {
-                writeTransaction(xmlSerializer, account, transaction)
-                listener?.onTransaction(transaction)
+        transactionsDbAdapter.fetchTransactionsToExportSince(modifiedSince, isModifiedOnly)
+            .forEach { cursor ->
+                val transaction = transactionsDbAdapter.buildModelInstance(cursor)
+                if (transaction.hasAccount(account)) {
+                    writeTransaction(xmlSerializer, account, transaction)
+                    listener?.onTransaction(transaction)
+                }
             }
-        }
 
         xmlSerializer.endTag(null, TAG_BANK_TRANSACTION_LIST)
         //================= END TRANSACTIONS LIST =================================

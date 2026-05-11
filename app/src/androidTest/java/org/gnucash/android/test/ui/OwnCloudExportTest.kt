@@ -17,8 +17,6 @@ package org.gnucash.android.test.ui
 
 import android.content.Context
 import android.net.ConnectivityManager
-import androidx.core.content.edit
-import androidx.preference.PreferenceManager
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.clearText
 import androidx.test.espresso.action.ViewActions.click
@@ -104,11 +102,6 @@ class OwnCloudExportTest : GnuAndroidTest() {
 
         val prefs = OwnCloudPreferences(context)
         prefs.isEnabled = false
-
-        val prefsShared = PreferenceManager.getDefaultSharedPreferences(context)
-        prefsShared.edit {
-            putInt(context.getString(R.string.key_last_export_destination), 0)
-        }
     }
 
     /**
