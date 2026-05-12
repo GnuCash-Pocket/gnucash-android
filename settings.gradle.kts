@@ -24,4 +24,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "GnuCash-Pocket"
-include(":app")
+include("app")
+include("po")

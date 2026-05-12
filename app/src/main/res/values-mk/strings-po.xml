@@ -1,0 +1,17 @@
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="gnucash_po_action">"Акција"</string>
+    <string name="gnucash_po_date">"Датум"</string>
+    <string name="gnucash_po_description">"Опис"</string>
+    <string name="gnucash_po_edit">"Уреди"</string>
+    <string name="gnucash_po_hidden">"Скриено"</string>
+    <string name="gnucash_po_memo">"Потсетник"</string>
+    <string name="gnucash_po_notes">"Белешки"</string>
+    <string name="gnucash_po_number">"Број"</string>
+    <string name="gnucash_po_placeholder">"Главна сметка"</string>
+    <string name="gnucash_po_reconcile">"Усогласи"</string>
+    <string name="gnucash_po_symbol">"Симбол"</string>
+    <string name="gnucash_po_type">"Вид"</string>
+    <string name="gnucash_po_unknown">"Непознат"</string>
+    <string name="gnucash_po_you_must_enter_a_valid_amount">"Мора да внесете валиден износ."</string>
+    <string name="gnucash_po_you_must_select_a_currency">"Мора да изберете Валута."</string>
+</resources>
