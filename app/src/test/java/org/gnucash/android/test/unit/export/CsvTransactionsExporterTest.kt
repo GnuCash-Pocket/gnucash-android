@@ -66,7 +66,7 @@ class CsvTransactionsExporterTest : BookHelperTest() {
         val file = exportedFile!!.toFile()
         val lines = file.readLines()
         assertThat(lines[0])
-            .isEqualTo("\"Data\",\"ID transazione\",\"Numero\",\"Descrizione\",\"Note\",\"Commodity/Valuta\",\"Motivo annullamento\",\"Operazione\",\"Promemoria\",\"Nome completo dell'account\",\"Nome del conto\",\"Importo con Simb\",\"Importo Num.\",\"Valore con Simb\",\"Valore Num.\",\"Riconcilia\",\"Data di riconciliazione\",\"Tasso/Prezzo\"")
+            .isEqualTo("\"Data\",\"ID transazione\",\"Numero\",\"Descrizione\",\"Note\",\"Commodity/Valuta\",\"Motivo annullamento\",\"Operazione\",\"Promemoria\",\"Nome completo del conto\",\"Nome del conto\",\"Importo con Simb\",\"Importo Num.\",\"Valore con Simb\",\"Valore Num.\",\"Riconcilia\",\"Data di riconciliazione\",\"Tasso/Prezzo\"")
         assertThat(lines[1])
             .isEqualTo("\"2016-08-23\",\"b33c8a6160494417558fd143731fc26a\",\"\",\"Kahuna Burger\",\"\",\"CURRENCY::USD\",\"\",\"\",\"\",\"Assets:Cash in Wallet\",\"Cash in Wallet\",\"-10,00 \$\",\"-10,00\",\"-10,00 \$\",\"-10,00\",\"n\",\"\",\"1,0000\"")
         assertThat(lines[2])
