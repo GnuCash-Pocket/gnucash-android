@@ -47,11 +47,11 @@ class FirstRunWizardActivityTest : GnuAndroidTest() {
 
     @Rule
     @JvmField
-    val rule = ActivityTestRule(FirstRunWizardActivity::class.java)
+    val activityRule = ActivityTestRule(FirstRunWizardActivity::class.java)
 
     @Before
     fun setUp() {
-        activity = rule.activity
+        activity = activityRule.activity
         dbHelper = DatabaseHelper(activity, generateUID())
         splitsDbAdapter = SplitsDbAdapter(dbHelper.holder)
         transactionsDbAdapter = TransactionsDbAdapter(splitsDbAdapter)

@@ -6,14 +6,13 @@ import org.gnucash.android.model.Price
 import org.gnucash.android.ui.adapter.SpinnerArrayAdapter
 import org.gnucash.android.ui.adapter.SpinnerItem
 
-class PriceTypeAdapter(
-    context: Context,
-    types: List<Price.Type> = Price.Type.entries
-) : SpinnerArrayAdapter<Price.Type>(context) {
+// `Transaction` type is not available for users to set via the GUI.
+class PriceTypeAdapter(context: Context) : SpinnerArrayAdapter<Price.Type>(context) {
 
     init {
+        val types = Price.Type.entries.filterNot { it === Price.Type.Transaction }
         val labels = context.resources.getStringArray(R.array.price_types)
-        val items = types.map { type -> SpinnerItem(type, labels[type.ordinal]) }
+        val items = types.mapIndexed { index, type -> SpinnerItem(type, labels[index]) }
             .sortedBy { it.label }
 
         clear()
@@ -22,5 +21,10 @@ class PriceTypeAdapter(
 
     fun getType(position: Int): Price.Type? {
         return getItem(position)?.value
+    }
+
+    override fun getValuePosition(value: Price.Type): Int {
+        val value = if (value === Price.Type.Transaction) Price.Type.Unknown else value
+        return super.getValuePosition(value)
     }
 }
