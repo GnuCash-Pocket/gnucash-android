@@ -23,8 +23,11 @@ import androidx.test.uiautomator.UiDevice
 import com.kobakei.ratethisapp.RateThisApp
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
+import org.gnucash.android.importer.ImporterFactory.getInputStream
+import org.gnucash.android.importer.xml.GncXmlImporter
 import org.gnucash.android.test.ui.util.WaitAction
 import org.gnucash.android.ui.account.AccountsActivity
+import org.gnucash.android.util.BookUtils
 import org.gnucash.android.util.applyLocale
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.`is`
@@ -32,14 +35,15 @@ import org.hamcrest.Matchers.not
 import org.junit.FixMethodOrder
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import java.io.InputStream
 import java.util.Locale
 
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 abstract class GnuAndroidTest {
 
-    @JvmField
-    protected val context = GnuCashApplication.appContext
+    protected val context: Context = GnuCashApplication.appContext
+    protected val contextTest: Context = InstrumentationRegistry.getInstrumentation().context
 
     val device: UiDevice
         get() = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
@@ -160,6 +164,17 @@ abstract class GnuAndroidTest {
         GnuCashApplication.getBookPreferences(context).edit {
             putBoolean(context.getString(R.string.key_use_double_entry), enabled)
         }
+    }
+
+    protected fun openAssetStream(context: Context, name: String): InputStream {
+        return context.assets.open(name)
+    }
+
+    protected fun importGnuCash(filename: String): String {
+        val inputStream = getInputStream(openAssetStream(contextTest, filename))
+        val bookUID = GncXmlImporter.parse(context, inputStream)
+        BookUtils.activateBook(bookUID)
+        return bookUID
     }
 
     companion object {

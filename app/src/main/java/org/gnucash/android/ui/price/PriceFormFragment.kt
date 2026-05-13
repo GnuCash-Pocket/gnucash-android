@@ -254,7 +254,11 @@ class PriceFormFragment : MenuFragment() {
             return false
         }
 
-        if (!binding.inputExchangeRate.isInputValid) {
+        if (binding.inputExchangeRate.isInputValid) {
+            val rate = binding.inputExchangeRate.value ?: return false
+            price.setExchangeRate(rate)
+            viewModel.onPriceChanged(rate)
+        } else {
             binding.error.setText(R.string.price_error_amount)
             binding.inputExchangeRate.requestFocus()
             return false

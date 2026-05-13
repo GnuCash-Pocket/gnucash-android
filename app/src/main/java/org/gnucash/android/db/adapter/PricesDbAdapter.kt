@@ -1,5 +1,6 @@
 package org.gnucash.android.db.adapter
 
+import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteStatement
 import org.gnucash.android.app.GnuCashApplication
@@ -168,20 +169,31 @@ class PricesDbAdapter(val commoditiesDbAdapter: CommoditiesDbAdapter) : Database
     override fun addRecord(model: Price, updateMethod: UpdateMethod): Price {
         super.addRecord(model, updateMethod)
         if (isCached) {
-            val commodity = model.security
+            val security = model.security
             val currency = model.currency
-            val commodityUID = commodity.uid
+            val securityUID = security.uid
             val currencyUID = currency.uid
-            val key = "$commodityUID/$currencyUID"
-            val keyInverse = "$currencyUID/$commodityUID"
+            val key = "$securityUID/$currencyUID"
+            val keyInverse = "$currencyUID/$securityUID"
             val price = cachePair[key]
-            if (price == null || price.date < model.date) {
+            if (price == null || (price.date < model.date)
+                || (price.date == model.date && price.modifiedTimestamp < model.modifiedTimestamp)) {
                 cachePair[key] = model
                 cachePair[keyInverse] = model.invert()
             }
         }
 
         return model
+    }
+
+    override fun deleteAllRecords(): Int {
+        cachePair.clear()
+        return super.deleteAllRecords()
+    }
+
+    override fun updateRecord(uid: String, contentValues: ContentValues): Int {
+        cachePair.clear()
+        return super.updateRecord(uid, contentValues)
     }
 
     private fun cacheAll() {

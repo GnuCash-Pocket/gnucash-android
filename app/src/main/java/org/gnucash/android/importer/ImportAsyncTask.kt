@@ -177,6 +177,8 @@ class ImportAsyncTask(
                     // dismisses itself
                 }
                 .show()
+
+            bookCallback?.invoke(null)
         }
     }
 

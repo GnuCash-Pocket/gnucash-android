@@ -157,6 +157,12 @@ android {
         }
     }
 
+//    sourceSets {
+//        getByName("androidTest") {
+//            assets.srcDir("src/androidTest/assets")
+//        }
+//    }
+
     testOptions {
         unitTests {
             isIncludeAndroidResources = true

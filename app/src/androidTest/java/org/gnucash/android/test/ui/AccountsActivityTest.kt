@@ -51,7 +51,6 @@ import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.receivers.AccountCreator
 import org.gnucash.android.test.ui.util.DisableAnimationsRule
-import org.gnucash.android.test.ui.util.WaitAction.Companion.waitForView
 import org.gnucash.android.test.ui.util.performClick
 import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.ui.adapter.SpinnerItem

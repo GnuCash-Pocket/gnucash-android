@@ -82,11 +82,6 @@ class TransactionsActivityTest : GnuAndroidTest() {
     private lateinit var baseAccount: Account
     private lateinit var transferAccount: Account
 
-    val formatter = (NumberFormat.getInstance(Locale.getDefault()) as DecimalFormat).apply {
-        minimumFractionDigits = 0
-        isGroupingUsed = false
-    }
-
     @Before
     fun setUp() {
         setDoubleEntryEnabled(true)
