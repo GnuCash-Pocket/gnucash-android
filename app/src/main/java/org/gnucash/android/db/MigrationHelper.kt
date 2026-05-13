@@ -22,9 +22,11 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
 import androidx.annotation.VisibleForTesting
 import org.gnucash.android.R
+import org.gnucash.android.db.DatabaseHelper.Companion.PRICES_TABLE_CREATE
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.DatabaseSchema.BudgetAmountEntry
 import org.gnucash.android.db.DatabaseSchema.CommodityEntry
+import org.gnucash.android.db.DatabaseSchema.PriceEntry
 import org.gnucash.android.db.DatabaseSchema.ScheduledActionEntry
 import org.gnucash.android.db.DatabaseSchema.SplitEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
@@ -94,6 +96,9 @@ object MigrationHelper {
         }
         if (oldVersion < 28) {
             migrateTo28(db)
+        }
+        if (oldVersion < 30) {
+            migrateTo30(db)
         }
     }
 
@@ -306,7 +311,8 @@ object MigrationHelper {
         Timber.i("Upgrading database to version 27")
 
         if (!db.hasTableColumn(TransactionEntry.TABLE_NAME, TransactionEntry.COLUMN_NUMBER)) {
-            val sql = "ALTER TABLE ${TransactionEntry.TABLE_NAME} ADD COLUMN ${TransactionEntry.COLUMN_NUMBER} varchar(255)"
+            val sql =
+                "ALTER TABLE ${TransactionEntry.TABLE_NAME} ADD COLUMN ${TransactionEntry.COLUMN_NUMBER} varchar(255)"
             db.execSQL(sql)
         }
     }
@@ -320,8 +326,34 @@ object MigrationHelper {
         Timber.i("Upgrading database to version 28")
 
         if (!db.hasTableColumn(AccountEntry.TABLE_NAME, AccountEntry.COLUMN_CODE)) {
-            val sql = "ALTER TABLE ${AccountEntry.TABLE_NAME} ADD COLUMN ${AccountEntry.COLUMN_CODE} varchar(255)"
+            val sql =
+                "ALTER TABLE ${AccountEntry.TABLE_NAME} ADD COLUMN ${AccountEntry.COLUMN_CODE} varchar(255)"
             db.execSQL(sql)
+        }
+    }
+
+    /**
+     * Upgrade the database to version 30.
+     *
+     * @param db the database.
+     */
+    private fun migrateTo30(db: SQLiteDatabase) {
+        Timber.i("Upgrading database to version 30")
+
+        // Rebuild the prices table without the UNIQUE constraint.
+        val tableName = PriceEntry.TABLE_NAME
+        val tableNameTemp = tableName + "_tmp"
+        try {
+            db.beginTransaction()
+            db.execSQL("DROP TRIGGER IF EXISTS update_time_trigger_$tableName")
+            db.execSQL("DROP TABLE IF EXISTS $tableNameTemp")
+            db.execSQL("ALTER TABLE $tableName RENAME TO $tableNameTemp")
+            db.execSQL(PRICES_TABLE_CREATE)
+            db.execSQL("INSERT INTO $tableName SELECT * FROM $tableNameTemp")
+            db.execSQL("DROP TABLE $tableNameTemp")
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
         }
     }
 

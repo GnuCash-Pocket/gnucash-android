@@ -55,6 +55,11 @@
                 android:title="@string/nav_menu_export" />
         </menu>
     </item>
+    <!-- Tools section -->
+    <item
+        android:id="@+id/nav_item_prices"
+        android:icon="@drawable/ic_price_change"
+        android:title="@string/price_database" />
     <item
         android:id="@+id/nav_section_settings"
         android:title="@string/title_section_preferences">

@@ -49,7 +49,7 @@ open class SpinnerArrayAdapter<T> : ArrayAdapter<SpinnerItem<T>> {
         return true
     }
 
-    fun getValuePosition(value: T): Int {
+    open fun getValuePosition(value: T): Int {
         for (i in 0 until count) {
             val item = getItem(i) ?: continue
             if (item.value == value) {

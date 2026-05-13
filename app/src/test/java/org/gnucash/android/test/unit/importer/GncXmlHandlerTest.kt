@@ -33,6 +33,7 @@ import org.gnucash.android.model.AccountType
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.PeriodType
 import org.gnucash.android.model.Price
+import org.gnucash.android.model.PriceSource
 import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
@@ -237,9 +238,10 @@ class GncXmlHandlerTest : BookHelperTest() {
         assertThat(pricesDbAdapter.recordsCount).isOne()
         val price = pricesDbAdapter.getPriceForCurrencies("EUR", "USD")
         assertThat(price!!).isNotNull()
-        assertThat(price.commodity.currencyCode).isEqualTo("EUR")
+        assertThat(price.security.currencyCode).isEqualTo("EUR")
         assertThat(price.currency.currencyCode).isEqualTo("USD")
-        assertThat(price.source).isEqualTo("Finance::Quote")
+        assertThat(price.source).isEqualTo(PriceSource.PRICE_SOURCE_FQ)
+        assertThat(price.source!!.value).isEqualTo("Finance::Quote")
         assertThat(price.type).isEqualTo(Price.Type.Last)
         assertThat(price.valueNum).isEqualTo(11153L)
         assertThat(price.valueDenom).isEqualTo(10000L)

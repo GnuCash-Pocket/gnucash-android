@@ -75,6 +75,16 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
         db.execSQL(BUDGETS_TABLE_CREATE)
         db.execSQL(BUDGET_AMOUNTS_TABLE_CREATE)
 
+        db.execSQL(createUpdatedAtTrigger(AccountEntry.TABLE_NAME))
+        db.execSQL(createUpdatedAtTrigger(TransactionEntry.TABLE_NAME))
+        db.execSQL(createUpdatedAtTrigger(SplitEntry.TABLE_NAME))
+        db.execSQL(createUpdatedAtTrigger(ScheduledActionEntry.TABLE_NAME))
+        db.execSQL(createUpdatedAtTrigger(CommodityEntry.TABLE_NAME))
+        db.execSQL(createUpdatedAtTrigger(PriceEntry.TABLE_NAME))
+        db.execSQL(createUpdatedAtTrigger(RecurrenceEntry.TABLE_NAME))
+        db.execSQL(createUpdatedAtTrigger(BudgetEntry.TABLE_NAME))
+        db.execSQL(createUpdatedAtTrigger(BudgetAmountEntry.TABLE_NAME))
+
         val createAccountUidIndex = ("CREATE UNIQUE INDEX '" + AccountEntry.INDEX_UID + "' ON "
                 + AccountEntry.TABLE_NAME + "(" + AccountEntry.COLUMN_UID + ")")
 
@@ -133,7 +143,7 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
         /**
          * SQL statement to create the accounts table in the database
          */
-        private val ACCOUNTS_TABLE_CREATE = ("create table " + AccountEntry.TABLE_NAME + " ("
+        private const val ACCOUNTS_TABLE_CREATE = ("create table " + AccountEntry.TABLE_NAME + " ("
                 + AccountEntry.COLUMN_ID + " integer primary key autoincrement, "
                 + AccountEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
                 + AccountEntry.COLUMN_NAME + " varchar(255) not null, "
@@ -159,12 +169,12 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                 + AccountEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
                 + "FOREIGN KEY (" + AccountEntry.COLUMN_COMMODITY_UID + ") REFERENCES " + CommodityEntry.TABLE_NAME + " (" + CommodityEntry.COLUMN_UID + ") "
                 + ");"
-                + createUpdatedAtTrigger(AccountEntry.TABLE_NAME))
+                )
 
         /**
          * SQL statement to create the transactions table in the database
          */
-        private val TRANSACTIONS_TABLE_CREATE =
+        private const val TRANSACTIONS_TABLE_CREATE =
             ("create table " + TransactionEntry.TABLE_NAME + " ("
                     + TransactionEntry.COLUMN_ID + " integer primary key autoincrement, "
                     + TransactionEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
@@ -182,12 +192,12 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                     + "FOREIGN KEY (" + TransactionEntry.COLUMN_SCHEDX_ACTION_UID + ") REFERENCES " + ScheduledActionEntry.TABLE_NAME + " (" + ScheduledActionEntry.COLUMN_UID + ") ON DELETE SET NULL, "
                     + "FOREIGN KEY (" + TransactionEntry.COLUMN_COMMODITY_UID + ") REFERENCES " + CommodityEntry.TABLE_NAME + " (" + CommodityEntry.COLUMN_UID + ") "
                     + ");"
-                    + createUpdatedAtTrigger(TransactionEntry.TABLE_NAME))
+                    )
 
         /**
          * SQL statement to create the transaction splits table
          */
-        private val SPLITS_TABLE_CREATE = ("CREATE TABLE " + SplitEntry.TABLE_NAME + " ("
+        private const val SPLITS_TABLE_CREATE = ("CREATE TABLE " + SplitEntry.TABLE_NAME + " ("
                 + SplitEntry.COLUMN_ID + " integer primary key autoincrement, "
                 + SplitEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
                 + SplitEntry.COLUMN_MEMO + " text, "
@@ -206,10 +216,10 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                 + "FOREIGN KEY (" + SplitEntry.COLUMN_ACCOUNT_UID + ") REFERENCES " + AccountEntry.TABLE_NAME + " (" + AccountEntry.COLUMN_UID + ") ON DELETE CASCADE, "
                 + "FOREIGN KEY (" + SplitEntry.COLUMN_TRANSACTION_UID + ") REFERENCES " + TransactionEntry.TABLE_NAME + " (" + TransactionEntry.COLUMN_UID + ") ON DELETE CASCADE "
                 + ");"
-                + createUpdatedAtTrigger(SplitEntry.TABLE_NAME))
+                )
 
 
-        private val SCHEDULED_ACTIONS_TABLE_CREATE =
+        private const val SCHEDULED_ACTIONS_TABLE_CREATE =
             ("CREATE TABLE " + ScheduledActionEntry.TABLE_NAME + " ("
                     + ScheduledActionEntry.COLUMN_ID + " integer primary key autoincrement, "
                     + ScheduledActionEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
@@ -233,9 +243,9 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                     + ScheduledActionEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
                     + "FOREIGN KEY (" + ScheduledActionEntry.COLUMN_RECURRENCE_UID + ") REFERENCES " + RecurrenceEntry.TABLE_NAME + " (" + RecurrenceEntry.COLUMN_UID + ") "
                     + ");"
-                    + createUpdatedAtTrigger(ScheduledActionEntry.TABLE_NAME))
+                    )
 
-        private val COMMODITIES_TABLE_CREATE = ("CREATE TABLE " + CommodityEntry.TABLE_NAME + " ("
+        private const val COMMODITIES_TABLE_CREATE = ("CREATE TABLE " + CommodityEntry.TABLE_NAME + " ("
                 + CommodityEntry.COLUMN_ID + " integer primary key autoincrement, "
                 + CommodityEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
                 + CommodityEntry.COLUMN_NAMESPACE + " varchar(255) not null default '" + Commodity.COMMODITY_CURRENCY + "', "
@@ -250,15 +260,15 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                 + CommodityEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
                 + CommodityEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP "
                 + ");"
-                + createUpdatedAtTrigger(CommodityEntry.TABLE_NAME))
+                )
 
         /**
          * SQL statement to create the commodity prices table
          */
-        private val PRICES_TABLE_CREATE = ("CREATE TABLE " + PriceEntry.TABLE_NAME + " ("
+        internal const val PRICES_TABLE_CREATE = ("CREATE TABLE " + PriceEntry.TABLE_NAME + " ("
                 + PriceEntry.COLUMN_ID + " integer primary key autoincrement, "
                 + PriceEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
-                + PriceEntry.COLUMN_COMMODITY_UID + " varchar(255) not null, "
+                + PriceEntry.COLUMN_SECURITY_UID + " varchar(255) not null, "
                 + PriceEntry.COLUMN_CURRENCY_UID + " varchar(255) not null, "
                 + PriceEntry.COLUMN_TYPE + " varchar(255), "
                 + PriceEntry.COLUMN_DATE + " TIMESTAMP not null, "
@@ -267,14 +277,13 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                 + PriceEntry.COLUMN_VALUE_DENOM + " integer not null, "
                 + PriceEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
                 + PriceEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
-                + "UNIQUE (" + PriceEntry.COLUMN_COMMODITY_UID + ", " + PriceEntry.COLUMN_CURRENCY_UID + ") ON CONFLICT REPLACE, "
-                + "FOREIGN KEY (" + PriceEntry.COLUMN_COMMODITY_UID + ") REFERENCES " + CommodityEntry.TABLE_NAME + " (" + CommodityEntry.COLUMN_UID + ") ON DELETE CASCADE, "
+                + "FOREIGN KEY (" + PriceEntry.COLUMN_SECURITY_UID + ") REFERENCES " + CommodityEntry.TABLE_NAME + " (" + CommodityEntry.COLUMN_UID + ") ON DELETE CASCADE, "
                 + "FOREIGN KEY (" + PriceEntry.COLUMN_CURRENCY_UID + ") REFERENCES " + CommodityEntry.TABLE_NAME + " (" + CommodityEntry.COLUMN_UID + ") ON DELETE CASCADE "
                 + ");"
-                + createUpdatedAtTrigger(PriceEntry.TABLE_NAME))
+                )
 
 
-        private val BUDGETS_TABLE_CREATE = ("CREATE TABLE " + BudgetEntry.TABLE_NAME + " ("
+        private const val BUDGETS_TABLE_CREATE = ("CREATE TABLE " + BudgetEntry.TABLE_NAME + " ("
                 + BudgetEntry.COLUMN_ID + " integer primary key autoincrement, "
                 + BudgetEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
                 + BudgetEntry.COLUMN_NAME + " varchar(255) not null, "
@@ -285,9 +294,9 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                 + BudgetEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
                 + "FOREIGN KEY (" + BudgetEntry.COLUMN_RECURRENCE_UID + ") REFERENCES " + RecurrenceEntry.TABLE_NAME + " (" + RecurrenceEntry.COLUMN_UID + ") "
                 + ");"
-                + createUpdatedAtTrigger(BudgetEntry.TABLE_NAME))
+                )
 
-        private val BUDGET_AMOUNTS_TABLE_CREATE =
+        private const val BUDGET_AMOUNTS_TABLE_CREATE =
             ("CREATE TABLE " + BudgetAmountEntry.TABLE_NAME + " ("
                     + BudgetAmountEntry.COLUMN_ID + " integer primary key autoincrement, "
                     + BudgetAmountEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
@@ -302,10 +311,10 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                     + "FOREIGN KEY (" + BudgetAmountEntry.COLUMN_ACCOUNT_UID + ") REFERENCES " + AccountEntry.TABLE_NAME + " (" + AccountEntry.COLUMN_UID + ") ON DELETE CASCADE, "
                     + "FOREIGN KEY (" + BudgetAmountEntry.COLUMN_BUDGET_UID + ") REFERENCES " + BudgetEntry.TABLE_NAME + " (" + BudgetEntry.COLUMN_UID + ") ON DELETE CASCADE "
                     + ");"
-                    + createUpdatedAtTrigger(BudgetAmountEntry.TABLE_NAME))
+                    )
 
 
-        private val RECURRENCE_TABLE_CREATE = ("CREATE TABLE " + RecurrenceEntry.TABLE_NAME + " ("
+        private const val RECURRENCE_TABLE_CREATE = ("CREATE TABLE " + RecurrenceEntry.TABLE_NAME + " ("
                 + RecurrenceEntry.COLUMN_ID + " integer primary key autoincrement, "
                 + RecurrenceEntry.COLUMN_UID + " varchar(255) not null UNIQUE, "
                 + RecurrenceEntry.COLUMN_MULTIPLIER + " integer not null default 1, "
@@ -315,7 +324,7 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
                 + RecurrenceEntry.COLUMN_PERIOD_END + " timestamp, "
                 + RecurrenceEntry.COLUMN_CREATED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, "
                 + RecurrenceEntry.COLUMN_MODIFIED_AT + " TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP); "
-                + createUpdatedAtTrigger(RecurrenceEntry.TABLE_NAME))
+                )
 
         /**
          * Creates an update trigger to update the updated_at column for all records in the database.
@@ -325,7 +334,7 @@ class DatabaseHelper(private val context: Context, databaseName: String) :
          * @return SQL statement for creating trigger
          */
         fun createUpdatedAtTrigger(tableName: String): String {
-            return ("CREATE TRIGGER update_time_trigger "
+            return ("CREATE TRIGGER update_time_trigger_" + tableName
                     + "  AFTER UPDATE ON " + tableName + " FOR EACH ROW"
                     + "  BEGIN " + "UPDATE " + tableName
                     + "  SET " + CommonColumns.COLUMN_MODIFIED_AT + " = CURRENT_TIMESTAMP"

@@ -12,41 +12,54 @@ import org.junit.Test
  */
 class PriceDbAdapterTest : GnuCashTest() {
     /**
-     * The price table should override price for any commodity/currency pair
-     * todo: maybe move this to UI testing. Not sure how Robolectric handles this
+     * The price table should not override price for any commodity/currency pair
      */
     @Test
-    fun shouldOnlySaveOnePricePerCommodityPair() {
-        val commodity = CommoditiesDbAdapter.instance!!.getCurrency("EUR")
-        val currency = CommoditiesDbAdapter.instance!!.getCurrency("USD")
-        var price = Price(commodity!!, currency!!)
-        price.valueNum = 134
-        price.valueDenom = 100
-
+    fun `price is not unique per security-commodity pair`() {
         val pricesDbAdapter = PricesDbAdapter.instance
-        pricesDbAdapter.addRecord(price)
+        val commoditiesDbAdapter = pricesDbAdapter.commoditiesDbAdapter
+        val security = commoditiesDbAdapter.getCurrency("EUR")!!
+        val currency = commoditiesDbAdapter.getCurrency("USD")!!
 
-        price = pricesDbAdapter.getRecord(price.uid)
-        assertThat(pricesDbAdapter.recordsCount).isOne()
-        assertThat(price.valueNum)
-            .isEqualTo(67) //the price is reduced to 57/100 before saving
+        val price1 = Price(security, currency)
+        price1.valueNum = 1340
+        price1.valueDenom = 1000
+        //the price is reduced
+        assertThat(price1.valueNum).isEqualTo(67)
+        assertThat(price1.valueDenom).isEqualTo(50)
 
-        val price1 = Price(commodity, currency)
-        price1.valueNum = 187
-        price1.valueDenom = 100
         pricesDbAdapter.addRecord(price1)
-
         assertThat(pricesDbAdapter.recordsCount).isOne()
-        val savedPrice = pricesDbAdapter.allRecords[0]
-        assertThat(savedPrice.uid).isEqualTo(price1.uid) //different records
-        assertThat(savedPrice.valueNum).isEqualTo(187)
-        assertThat(savedPrice.valueDenom).isEqualTo(100)
 
-        val price2 = Price(currency, commodity)
-        price2.valueNum = 190
+        val price2 = Price(security, currency)
+        price2.valueNum = 187
         price2.valueDenom = 100
-        pricesDbAdapter.addRecord(price2)
+        //the price is reduced
+        assertThat(price2.valueNum).isEqualTo(187)
+        assertThat(price2.valueDenom).isEqualTo(100)
 
+        pricesDbAdapter.addRecord(price2)
         assertThat(pricesDbAdapter.recordsCount).isEqualTo(2)
+
+        val savedPrice1 = pricesDbAdapter.allRecords[0]
+        assertThat(savedPrice1.uid).isEqualTo(price1.uid)
+        assertThat(savedPrice1.valueNum).isEqualTo(67)
+        assertThat(savedPrice1.valueDenom).isEqualTo(50)
+
+        val savedPrice2 = pricesDbAdapter.allRecords[1]
+        assertThat(savedPrice1.uid).isNotEqualTo(savedPrice2.uid) //different records
+        assertThat(savedPrice2.uid).isEqualTo(price2.uid)
+        assertThat(savedPrice2.valueNum).isEqualTo(187)
+        assertThat(savedPrice2.valueDenom).isEqualTo(100)
+        assertThat(savedPrice2.security).isEqualTo(savedPrice1.security)
+        assertThat(savedPrice2.currency).isEqualTo(savedPrice1.currency)
+        assertThat(savedPrice2.date).isGreaterThan(savedPrice1.date)
+
+        val price3 = Price(currency, security)
+        price3.valueNum = 190
+        price3.valueDenom = 100
+        pricesDbAdapter.addRecord(price3)
+
+        assertThat(pricesDbAdapter.recordsCount).isEqualTo(3)
     }
 }

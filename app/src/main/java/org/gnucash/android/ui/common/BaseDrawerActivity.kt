@@ -39,6 +39,7 @@ import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.ui.adapter.DefaultItemSelectedListener
 import org.gnucash.android.ui.passcode.PasscodeLockActivity
+import org.gnucash.android.ui.price.PriceDatabaseActivity
 import org.gnucash.android.ui.report.ReportsActivity
 import org.gnucash.android.ui.settings.BookManagerFragment.Companion.openBook
 import org.gnucash.android.ui.settings.PreferenceActivity
@@ -109,7 +110,7 @@ abstract class BaseDrawerActivity : PasscodeLockActivity() {
 
         val headerView = navigationView!!.getHeaderView(0)
         headerView.findViewById<View>(R.id.drawer_title).setOnClickListener {
-            onClickAppTitle()
+            onClickAppTitle(headerView.context)
         }
 
         bookNameSpinner = headerView.findViewById<Spinner>(R.id.book_name)
@@ -247,6 +248,8 @@ abstract class BaseDrawerActivity : PasscodeLockActivity() {
      */
     protected fun onDrawerMenuItemClicked(itemId: Int) {
         val context: Context = this
+        val drawerLayout = drawerLayout ?: return
+        val navigationView = navigationView ?: return
 
         when (itemId) {
             R.id.nav_item_open -> pickDocumentLauncher.launch(documentMimeTypes)
@@ -262,15 +265,19 @@ abstract class BaseDrawerActivity : PasscodeLockActivity() {
 
             R.id.nav_item_export -> AccountsActivity.openExportFragment(context)
 
+            R.id.nav_item_prices -> PriceDatabaseActivity.show(context)
+
             R.id.nav_item_settings -> PreferenceActivity.show(context)
 
             R.id.nav_item_search -> TransactionsActivity.openSearchFragment(context)
         }
-        drawerLayout!!.closeDrawer(navigationView!!)
+        drawerLayout.closeDrawer(navigationView)
     }
 
-    fun onClickAppTitle() {
-        drawerLayout!!.closeDrawer(navigationView!!)
-        AccountsActivity.start(this)
+    private fun onClickAppTitle(context: Context) {
+        val drawerLayout = drawerLayout ?: return
+        val navigationView = navigationView ?: return
+        drawerLayout.closeDrawer(navigationView)
+        AccountsActivity.start(context)
     }
 }

@@ -41,8 +41,7 @@ class ExportTransactionsTest : GnuAndroidTest() {
 
     @Rule
     @JvmField
-    val rule: ActivityTestRule<AccountsActivity> =
-        ActivityTestRule(AccountsActivity::class.java)
+    val activityRule = ActivityTestRule(AccountsActivity::class.java)
 
     @Before
     fun setUp() {
@@ -77,7 +76,7 @@ class ExportTransactionsTest : GnuAndroidTest() {
 
     @Test
     fun testCreateBackup() {
-        val activity = rule.activity
+        val activity = activityRule.activity
         onView(withId(R.id.drawer_layout)).perform(open())
         onView(withText(R.string.title_settings))
             .perform(scrollTo())

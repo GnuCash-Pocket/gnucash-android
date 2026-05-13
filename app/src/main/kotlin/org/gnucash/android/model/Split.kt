@@ -237,7 +237,7 @@ class Split : BaseModel, Parcelable {
         get() = reconcileState == FLAG_RECONCILED
 
     override fun toString(): String {
-        return type.name + " of " + value.toString() + " in account: " + accountUID
+        return type.name + " of " + value + " in account " + accountUID
     }
 
     /**

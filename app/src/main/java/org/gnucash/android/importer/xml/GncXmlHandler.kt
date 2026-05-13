@@ -140,6 +140,7 @@ import org.gnucash.android.model.Money.Companion.createZeroInstance
 import org.gnucash.android.model.Numeric
 import org.gnucash.android.model.PeriodType
 import org.gnucash.android.model.Price
+import org.gnucash.android.model.PriceSource
 import org.gnucash.android.model.Recurrence
 import org.gnucash.android.model.ScheduledAction
 import org.gnucash.android.model.Slot
@@ -678,11 +679,12 @@ class GncXmlHandler(
 
     @Throws(SAXException::class)
     private fun handleEndCommodity(uri: String) {
+        val commodity = commodity
         if (NS_ACCOUNT == uri) {
             val account = account
             if (account != null) {
                 val commodity = getCommodity(commodity)
-                    ?: throw SAXException("Commodity with '${this.commodity}' not found in the database for account")
+                    ?: throw SAXException("Commodity with '${commodity}' not found in the database for account")
                 account.commodity = commodity
                 if (commodity.isCurrency) {
                     val currencyId = commodity.currencyCode
@@ -702,11 +704,11 @@ class GncXmlHandler(
             val price = price
             if (price != null) {
                 val commodity = getCommodity(commodity)
-                    ?: throw SAXException("Commodity with '" + this.commodity + "' not found in the database for price")
-                price.commodity = commodity
+                    ?: throw SAXException("Commodity with '${commodity}' not found in the database for account")
+                price.security = commodity
             }
         }
-        commodity = null
+        this.commodity = null
     }
 
     private fun handleEndCountData(value: String) {
@@ -1147,7 +1149,7 @@ class GncXmlHandler(
 
     private fun handleEndSource(uri: String, source: String) {
         if (NS_PRICE == uri) {
-            price!!.source = source
+            price!!.source = PriceSource.of(source)
         }
     }
 

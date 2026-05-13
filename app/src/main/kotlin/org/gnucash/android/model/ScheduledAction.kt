@@ -186,7 +186,7 @@ class ScheduledAction    //all actions are enabled by default
      * @return Next run time in milliseconds
      */
     fun computeNextTimeBasedScheduledExecutionTime(): Long {
-        return computeNextScheduledExecutionTimeStartingAt(lastRunTime)
+        return computeNextScheduledExecutionTimeStartingAt(lastRunDate)
     }
 
     /**
@@ -203,7 +203,7 @@ class ScheduledAction    //all actions are enabled by default
         if (startTime <= 0) { // has never been run
             return startDate
         }
-        val recurrence = recurrence ?: return startDate
+        val recurrence = recurrence
         val multiplier = recurrence.multiplier
         val startDate = LocalDateTime(startTime)
         val nextScheduledExecution: LocalDateTime = when (recurrence.periodType) {
@@ -216,7 +216,7 @@ class ScheduledAction    //all actions are enabled by default
 
             PeriodType.HOUR -> startDate.plusHours(multiplier)
             PeriodType.DAY -> startDate.plusDays(multiplier)
-            PeriodType.WEEK -> computeNextWeeklyExecutionStartingAt(startDate)
+            PeriodType.WEEK -> computeNextWeeklyExecutionStartingAt(recurrence, startDate)
             PeriodType.MONTH -> startDate.plusMonths(multiplier)
             PeriodType.YEAR -> startDate.plusYears(multiplier)
             PeriodType.LAST_WEEKDAY -> startDate.plusMonths(multiplier).lastDayOfWeek(startDate)
@@ -237,10 +237,12 @@ class ScheduledAction    //all actions are enabled by default
      * @return Next run time as a LocalDateTime. A date in the future, if no days of the week
      * were set in the Recurrence.
      */
-    private fun computeNextWeeklyExecutionStartingAt(startTime: LocalDateTime): LocalDateTime {
-        val recurrence = recurrence ?: return startTime
-        if (recurrence.byDays.isEmpty()) return LocalDateTime.now()
-            .plusDays(1) // Just a date in the future
+    private fun computeNextWeeklyExecutionStartingAt(
+        recurrence: Recurrence,
+        startTime: LocalDateTime
+    ): LocalDateTime {
+        if (recurrence.byDays.isEmpty())
+            return LocalDateTime.now().plusDays(1) // Just a date in the future
 
         // Look into the week of startTime for another scheduled day of the week
         for (dayOfWeek in recurrence.byDays) {

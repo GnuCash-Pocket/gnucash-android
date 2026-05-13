@@ -273,37 +273,93 @@
         <item>@string/theme_dark</item>
         <item>@string/theme_light</item>
     </string-array>
+
+    <string name="account_code" translatable="false">@string/gnucash_po_account_code</string>
+    <string name="account_color" translatable="false">@string/gnucash_po_account_color</string>
+    <string name="account_name" translatable="false">@string/gnucash_po_account_name</string>
+    <string name="action_find">@android:string/search_go</string>
+    <string name="add" translatable="false">@string/gnucash_po_add</string>
+    <string name="colon" translatable="false">:</string>
+    <string name="comma" translatable="false">,</string>
+    <string name="commodity_currencies" translatable="false">@string/gnucash_po_currencies</string>
+    <string name="commodity_non_currency" translatable="false">@string/gnucash_po_all_non_currency</string>
+    <string name="csv_account_header_account_code" translatable="false">@string/account_code</string>
+    <string name="csv_account_header_account_full_name" translatable="false">@string/gnucash_po_full_account_name</string>
+    <string name="csv_account_header_account_name" translatable="false">@string/account_name</string>
+    <string name="csv_account_header_colour" translatable="false">@string/account_color</string>
+    <string name="csv_account_header_description" translatable="false">@string/description</string>
+    <string name="csv_account_header_hidden" translatable="false">@string/hidden</string>
+    <string name="csv_account_header_namespace" translatable="false">@string/gnucash_po_namespace</string>
+    <string name="csv_account_header_notes" translatable="false">@string/notes</string>
+    <string name="csv_account_header_placeholder" translatable="false">@string/gnucash_po_placeholder</string>
+    <string name="csv_account_header_symbol" translatable="false">@string/gnucash_po_symbol</string>
+    <string name="csv_account_header_tax" translatable="false">@string/gnucash_po_tax_info</string>
+    <string name="csv_account_header_type" translatable="false">@string/type</string>
+    <string name="csv_transaction_header_account_full_name" translatable="false">@string/csv_account_header_account_full_name</string>
+    <string name="csv_transaction_header_account_name" translatable="false">@string/account_name</string>
+    <string name="csv_transaction_header_action" translatable="false">@string/gnucash_po_action</string>
+    <string name="csv_transaction_header_amount" translatable="false">@string/gnucash_po_amount_num</string>
+    <string name="csv_transaction_header_amount_sym" translatable="false">@string/gnucash_po_amount_with_sym</string>
+    <string name="csv_transaction_header_commodity" translatable="false">@string/gnucash_po_commodity_currency</string>
+    <string name="csv_transaction_header_date" translatable="false">@string/gnucash_po_date</string>
+    <string name="csv_transaction_header_description" translatable="false">@string/description</string>
+    <string name="csv_transaction_header_id" translatable="false">@string/gnucash_po_transaction_id</string>
+    <string name="csv_transaction_header_memo" translatable="false">@string/gnucash_po_memo</string>
+    <string name="csv_transaction_header_notes" translatable="false">@string/gnucash_po_notes</string>
+    <string name="csv_transaction_header_number" translatable="false">@string/gnucash_po_number</string>
+    <string name="csv_transaction_header_rate" translatable="false">@string/gnucash_po_rate_price</string>
+    <string name="csv_transaction_header_reconcile" translatable="false">@string/gnucash_po_reconcile</string>
+    <string name="csv_transaction_header_reconcile_date" translatable="false">@string/gnucash_po_reconcile_date</string>
+    <string name="csv_transaction_header_value" translatable="false">@string/gnucash_po_value_num</string>
+    <string name="csv_transaction_header_value_sym" translatable="false">@string/gnucash_po_value_with_sym</string>
+    <string name="csv_transaction_header_void" translatable="false">@string/gnucash_po_void_reason</string>
+    <string name="date" translatable="false">@string/gnucash_po_date</string>
+    <string name="default_color" translatable="false">@string/default_theme</string>
+    <string name="description" translatable="false">@string/gnucash_po_description</string>
+    <string name="edit" translatable="false">@string/gnucash_po_edit</string>
+    <string name="exchange_rate_example">1 %1$s = %2$s %3$s</string>
+    <string name="hidden" translatable="false">@string/gnucash_po_hidden</string>
     <string name="hint_description" translatable="false">@string/description</string>
     <string name="hint_notes" translatable="false">@string/notes</string>
     <string name="hint_number" translatable="false">@string/number</string>
     <string name="label_account_color" translatable="false">@string/account_color</string>
-    <string name="label_account_type" translatable="false">@string/type</string>
     <string name="label_account_name" translatable="false">@string/account_name</string>
-    <string name="label_transaction_name" translatable="false">@string/description</string>
-    <string name="label_placeholder_account" translatable="false">@string/placeholder</string>
+    <string name="label_account_type" translatable="false">@string/type</string>
     <string name="label_hidden" translatable="false">@string/hidden</string>
-    <string name="csv_transaction_header_account_full_name" translatable="false">@string/csv_account_header_account_full_name</string>
-    <string name="csv_transaction_header_account_name" translatable="false">@string/account_name</string>
-    <string name="csv_transaction_header_description" translatable="false">@string/description</string>
-    <string name="csv_account_header_description" translatable="false">@string/description</string>
-    <string name="csv_account_header_account_name" translatable="false">@string/account_name</string>
-    <string name="csv_account_header_account_code" translatable="false">@string/account_code</string>
-    <string name="csv_account_header_colour" translatable="false">@string/account_color</string>
-    <string name="csv_account_header_type" translatable="false">@string/type</string>
-    <string name="csv_account_header_notes" translatable="false">@string/notes</string>
-    <string name="csv_account_header_hidden" translatable="false">@string/hidden</string>
-    <string name="csv_account_header_placeholder" translatable="false">@string/placeholder</string>
-    <string name="default_color" translatable="false">@string/default_theme</string>
+    <string name="label_placeholder_account" translatable="false">@string/gnucash_po_placeholder</string>
+    <string name="label_transaction_name" translatable="false">@string/description</string>
     <string name="menu_accounts_hidden" translatable="false">@string/hidden</string>
-    <string name="exchange_rate_example">1 %1$s = %2$s %3$s</string>
     <string name="nav_menu_search">@string/menu_search_accounts</string>
-    <string name="title_search">@string/menu_search_accounts</string>
-    <string name="action_find">@android:string/search_go</string>
+    <string name="notes" translatable="false">@string/gnucash_po_notes</string>
+    <string name="number" translatable="false">@string/gnucash_po_number</string>
+    <string name="price" translatable="false">@string/gnucash_po_price</string>
+    <string name="price_add" translatable="false">@string/gnucash_po_add</string>
+    <string name="price_ask" translatable="false">@string/gnucash_po_ask</string>
+    <string name="price_bid" translatable="false">@string/gnucash_po_bid</string>
+    <string name="price_currency" translatable="false">@string/label_account_currency</string>
+    <string name="price_database" translatable="false">@string/gnucash_po_price_database</string>
+    <string name="price_date" translatable="false">@string/gnucash_po_date</string>
+    <string name="price_edit" translatable="false">@string/gnucash_po_edit</string>
+    <string name="price_editor" translatable="false">@string/gnucash_po_price_editor</string>
+    <string name="price_error_amount" translatable="false">@string/gnucash_po_you_must_enter_a_valid_amount</string>
+    <string name="price_error_currency" translatable="false">@string/gnucash_po_you_must_select_a_currency</string>
+    <string name="price_error_price" translatable="false">@string/gnucash_po_you_must_enter_a_valid_price</string>
+    <string name="price_error_security" translatable="false">@string/gnucash_po_you_must_select_a_security</string>
+    <string name="price_last" translatable="false">@string/gnucash_po_last</string>
+    <string name="price_namespace" translatable="false">@string/gnucash_po_namespace</string>
+    <string name="price_net_asset_value" translatable="false">@string/gnucash_po_net_asset_value</string>
+    <string name="price_price" translatable="false">@string/gnucash_po_price</string>
+    <string name="price_remove_old_prices" translatable="false">@string/gnucash_po_remove_old_prices</string>
+    <string name="price_security" translatable="false">@string/gnucash_po_security</string>
+    <string name="price_type" translatable="false">@string/gnucash_po_type</string>
+    <string name="price_unknown" translatable="false">@string/gnucash_po_unknown</string>
     <string name="search_field_description" translatable="false">@string/description</string>
-    <string name="search_field_notes" translatable="false">@string/hint_notes</string>
     <string name="search_field_memo" translatable="false">@string/hint_split_memo</string>
+    <string name="search_field_notes" translatable="false">@string/hint_notes</string>
     <string name="search_field_number" translatable="false">@string/hint_number</string>
-    <string name="comma" translatable="false">,</string>
+    <string name="security" translatable="false">@string/gnucash_po_security</string>
     <string name="semicolon" translatable="false">;</string>
-    <string name="colon" translatable="false">:</string>
+    <string name="title_search">@string/menu_search_accounts</string>
+    <string name="type" translatable="false">@string/gnucash_po_type</string>
+    <string name="unknown" translatable="false">@string/gnucash_po_unknown</string>
 </resources>
