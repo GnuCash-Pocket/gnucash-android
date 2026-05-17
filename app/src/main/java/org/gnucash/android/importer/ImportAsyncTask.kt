@@ -15,6 +15,7 @@
  */
 package org.gnucash.android.importer
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ProgressDialog
 import android.content.ContentValues
@@ -47,7 +48,8 @@ typealias ImportProduct = Result<String>
  * The AccountsActivity is opened when importing is done.
  */
 class ImportAsyncTask(
-    activity: Activity,
+    @SuppressLint("StaticFieldLeak")
+    private val activity: Activity,
     private val backup: Boolean = false,
     private val bookCallback: ImportBookCallback? = null
 ) : AsyncTask<Uri, Any, ImportProduct>() {
@@ -143,7 +145,7 @@ class ImportAsyncTask(
     @Deprecated("Deprecated in Java")
     override fun onPostExecute(result: ImportProduct) {
         dismissProgressDialog()
-        val context = progressDialog.context
+        val context: Context = activity
 
         if (result.isSuccess) {
             val bookUID = result.getOrNull()
@@ -170,13 +172,17 @@ class ImportAsyncTask(
                 }
             }
 
-            AlertDialog.Builder(context)
-                .setTitle(R.string.title_import_accounts)
-                .setMessage(message)
-                .setPositiveButton(R.string.btn_ok) { _, _ ->
-                    // dismisses itself
-                }
-                .show()
+            if (activity.isFinishing || activity.isDestroyed) {
+                context.snackLong(message)
+            } else {
+                AlertDialog.Builder(activity)
+                    .setTitle(R.string.title_import_accounts)
+                    .setMessage(message)
+                    .setPositiveButton(R.string.btn_ok) { _, _ ->
+                        // dismisses itself
+                    }
+                    .show()
+            }
         }
     }
 

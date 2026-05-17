@@ -302,9 +302,9 @@ class AccountsListFragment : MenuFragment(),
      * Opens a new activity for creating or editing an account.
      * If the `accountUID` is empty, then create else edit the account.
      *
-     * @param accountUID Unique ID of account to be edited. Pass 0 to create a new account.
+     * @param accountUID Unique ID of account to be edited. Pass `null` to create a new account.
      */
-    fun openCreateOrEditActivity(context: Context, accountUID: String?) {
+    fun showCreateOrEditAccount(context: Context, accountUID: String?) {
         val intent = Intent(context, FormActivity::class.java)
             .setAction(Intent.ACTION_INSERT_OR_EDIT)
             .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
@@ -502,11 +502,7 @@ class AccountsListFragment : MenuFragment(),
                 createTransaction.isVisible = false
             } else {
                 createTransaction.setOnClickListener { v ->
-                    val context = v.context
-                    val intent = Intent(context, FormActivity::class.java)
-                        .setAction(Intent.ACTION_INSERT_OR_EDIT)
-                        .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
-                    startActivityForResult(intent, REQUEST_REFRESH)
+                    showTransactionForm(v.context, accountUID)
                 }
             }
 
@@ -540,13 +536,21 @@ class AccountsListFragment : MenuFragment(),
             }
         }
 
+        private fun showTransactionForm(context: Context, accountUID: String) {
+            val intent = Intent(context, FormActivity::class.java)
+                .setAction(Intent.ACTION_INSERT_OR_EDIT)
+                .putExtra(UxArgument.FORM_TYPE, FormActivity.FormType.TRANSACTION.name)
+                .putExtra(UxArgument.SELECTED_ACCOUNT_UID, accountUID)
+            startActivityForResult(intent, REQUEST_REFRESH)
+        }
+
         override fun onMenuItemClick(item: MenuItem): Boolean {
             val activity = activity ?: return false
             val accountUID = accountUID ?: return false
 
             return when (item.itemId) {
                 R.id.menu_edit -> {
-                    openCreateOrEditActivity(activity, accountUID)
+                    showCreateOrEditAccount(activity, accountUID)
                     true
                 }
 

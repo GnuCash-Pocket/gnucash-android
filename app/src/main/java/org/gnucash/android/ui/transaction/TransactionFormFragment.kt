@@ -550,7 +550,6 @@ class TransactionFormFragment : MenuFragment(),
                 }
             }
             setSelectedTransferAccount(binding, transferUID)
-            null
         }
         binding.inputTransferAccountSpinner.adapter = accountTransferNameAdapter
     }
