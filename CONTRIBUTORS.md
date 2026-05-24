@@ -4,10 +4,11 @@ Appreciation goes to Muslim Chochlov and the to whole GnuCash community for guid
 project through the early phases (as Google Summer of Code project 2012) and providing valuable feedback.
 
 ### Core Developers:
-* Ngewi Fet <ngewif@gmail.com> - Project maintainer
-* Yongxin Wang <fefe.wyx@gmail.com>
-* Oleksandr Tyshkovets <olexandr.tyshkovets@gmail.com>
-* Àlex Magaz Graça <alexandre.magaz@gmail.com>
+* [Ngewi Fet](mailto:ngewif@gmail.com)
+* [Yongxin Wang](mailto:fefe.wyx@gmail.com)
+* [Oleksandr Tyshkovets](mailto:olexandr.tyshkovets@gmail.com)
+* [Àlex Magaz Graça](mailto:alexandre.magaz@gmail.com)
+* [Moshe Waisberg](mailto:pnemonic@gmail.com) - Project maintainer
 
 ### Other Contributors
 The following people (in alphabetical order) contributed (commits on GitHub) to GnuCash Android:
@@ -40,7 +41,6 @@ The following people (in alphabetical order) contributed (commits on GitHub) to 
 * Mark Haanen
 * Matthew Hague
 * Menelaos Maglis
-* Moshe Waisberg
 * Ngewi Fet
 * Nicolas Barranger
 * Oleg Kosmakov
