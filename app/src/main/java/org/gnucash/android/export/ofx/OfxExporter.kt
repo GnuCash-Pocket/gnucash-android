@@ -120,21 +120,18 @@ class OfxExporter(
         val factory = XmlPullParserFactory.newInstance()
         factory.isNamespaceAware = false
         val xmlSerializer = factory.newSerializer()
-        try {
-            xmlSerializer.setFeature(
-                "http://xmlpull.org/v1/doc/features.html#indent-output",
-                true
-            )
-        } catch (_: IllegalStateException) {
-            // Feature not supported. No problem
-        }
         xmlSerializer.setOutput(writer)
         if (useXmlHeader) {
             xmlSerializer.startDocument(StandardCharsets.UTF_8.name(), true)
-            writer.write("\n")
+            xmlSerializer.text("\n")
             xmlSerializer.processingInstruction(OFX_HEADER)
         } else {
-            writer.write(OFX_SGML_HEADER)
+            xmlSerializer.text(OFX_SGML_HEADER)
+        }
+        try {
+            xmlSerializer.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output", true)
+        } catch (_: IllegalStateException) {
+            // Feature not supported. No problem
         }
         xmlSerializer.startTag(null, TAG_ROOT)
         writeAccounts(xmlSerializer, exportParams, accounts)

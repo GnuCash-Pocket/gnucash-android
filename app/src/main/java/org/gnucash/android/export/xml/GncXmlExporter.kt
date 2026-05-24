@@ -1203,10 +1203,7 @@ class GncXmlExporter(
         factory.isNamespaceAware = true
         val serializer = factory.newSerializer()
         try {
-            serializer.setFeature(
-                "http://xmlpull.org/v1/doc/features.html#indent-output",
-                true
-            )
+            serializer.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output", true)
         } catch (_: IllegalStateException) {
             // Feature not supported. No problem
         }
