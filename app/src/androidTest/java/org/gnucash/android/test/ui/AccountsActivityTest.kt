@@ -124,7 +124,7 @@ class AccountsActivityTest : GnuAndroidTest() {
 
         //enter search query
         clickViewId(R.id.menu_search)
-        onView(withId(R.id.search_src_text))
+        onView(withId(androidx.appcompat.R.id.search_src_text))
             .perform(typeText(SEARCH_ACCOUNT_NAME.substring(0, 2)))
         sleep(100) //give search filter time to finish
         onView(withText(SIMPLE_ACCOUNT_NAME))
@@ -133,7 +133,7 @@ class AccountsActivityTest : GnuAndroidTest() {
             .check(matches(isDisplayed()))
 
         // same as before search query
-        onView(withId(R.id.search_src_text)).perform(clearText())
+        onView(withId(androidx.appcompat.R.id.search_src_text)).perform(clearText())
         sleep(100) //give search filter time to finish
         onView(withText(SIMPLE_ACCOUNT_NAME))
             .check(matches(isDisplayed()))

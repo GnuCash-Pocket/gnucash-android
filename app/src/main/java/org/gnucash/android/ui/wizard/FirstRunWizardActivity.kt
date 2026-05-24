@@ -193,13 +193,18 @@ class FirstRunWizardActivity : GnuCashActivity(),
             binding.defaultButtons.btnSave.background = btnSaveFinishBackground
             binding.defaultButtons.btnSave.setTextColor(btnSaveFinishColor)
         } else {
-            binding.defaultButtons.btnSave.setText(if (editingAfterReview) R.string.review else R.string.btn_wizard_next)
+            val btnSaveText = if (editingAfterReview) {
+                com.tech.freak.wizardpager.R.string.review
+            } else {
+                R.string.btn_wizard_next
+            }
+            binding.defaultButtons.btnSave.setText(btnSaveText)
             binding.defaultButtons.btnSave.background = btnSaveDefaultBackground
             binding.defaultButtons.btnSave.setTextColor(btnSaveDefaultColor)
         }
 
         binding.defaultButtons.btnCancel.visibility =
-            if (position <= 0) View.INVISIBLE else View.VISIBLE
+            if (position > 0) View.VISIBLE else View.INVISIBLE
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

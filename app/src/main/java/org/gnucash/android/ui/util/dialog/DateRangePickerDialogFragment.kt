@@ -53,14 +53,14 @@ class DateRangePickerDialogFragment : VolatileDialogFragment() {
             .setNegativeButton(R.string.btn_cancel) { _, _ ->
                 // Dismisses itself
             }
-            .setPositiveButton(R.string.done_label) { _, _ ->
+            .setPositiveButton(R.string.btn_ok) { _, _ ->
                 onRangeSelected(binding)
             }
             .create()
     }
 
     private fun onRangeSelected(binding: DialogDateRangePickerBinding) {
-        val selectedDates = binding.calendarView.getSelectedDates()
+        val selectedDates = binding.calendarView.selectedDates
         val length = selectedDates.size
         if (length > 0) {
             val startDateSelected = selectedDates[0]

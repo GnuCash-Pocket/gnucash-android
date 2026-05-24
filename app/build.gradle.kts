@@ -5,7 +5,6 @@ import org.jetbrains.kotlin.gradle.plugin.extraProperties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
 
     // Add the Firebase Crashlytics plugins.
     alias(libs.plugins.google.services)
@@ -23,13 +22,13 @@ val dropboxAppKey =
 android {
     namespace = "org.gnucash.android"
     compileSdk {
-        version = release(36)
+        version = release(37)
     }
 
     defaultConfig {
         applicationId = "org.gnucash.pocket"
-        minSdk = 21
-        targetSdk = 36
+        minSdk = 23
+        targetSdk = 37
         versionCode = (((((versionMajor * 100) + versionMinor) * 1000) + versionPatch) * 1000) + versionBuild
         versionName = "${versionMajor}.${versionMinor}.${versionPatch}"
         resValue("string", "app_name", "GnuCash")
@@ -153,6 +152,7 @@ android {
 
     kotlin {
         compilerOptions {
+            // 'Didn't find class "java.nio.file.DirectoryStream" on path'
             jvmTarget = JvmTarget.JVM_1_8
         }
     }

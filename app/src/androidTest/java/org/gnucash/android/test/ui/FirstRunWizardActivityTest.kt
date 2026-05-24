@@ -83,7 +83,7 @@ class FirstRunWizardActivityTest : GnuAndroidTest() {
         clickViewText(R.string.btn_wizard_next)
 
         // Review.
-        onView(withText(R.string.review))
+        onView(withText(com.tech.freak.wizardpager.R.string.review))
             .check(matches(isDisplayed()))
 
         clickViewId(R.id.btn_save)
@@ -119,7 +119,7 @@ class FirstRunWizardActivityTest : GnuAndroidTest() {
         clickViewText(R.string.wizard_option_disable_crash_reports)
         clickViewText(R.string.btn_wizard_next)
 
-        onView(withText(R.string.review))
+        onView(withText(com.tech.freak.wizardpager.R.string.review))
             .check(matches(isDisplayed()))
         clickViewId(R.id.btn_save)
 

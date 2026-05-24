@@ -12,7 +12,7 @@ import timber.log.Timber
 import java.io.InputStream
 
 @RunWith(RobolectricTestRunner::class) //package is required so that resources can be found in dev mode
-@Config(sdk = [21], shadows = [ShadowCrashlytics::class])
+@Config(sdk = [23, 36], shadows = [ShadowCrashlytics::class])
 abstract class GnuCashTest {
 
     protected val context = GnuCashApplication.appContext
@@ -26,7 +26,7 @@ abstract class GnuCashTest {
     }
 
     protected fun openResourceStream(name: String): InputStream {
-        return javaClass!!.classLoader!!.getResourceAsStream(name)
+        return javaClass.classLoader!!.getResourceAsStream(name)
     }
 
     protected fun setDoubleEntryEnabled(enabled: Boolean) {
