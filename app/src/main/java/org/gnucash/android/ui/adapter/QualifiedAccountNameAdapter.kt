@@ -79,10 +79,6 @@ class QualifiedAccountNameAdapter(
         lifecycleOwner = lifecycleOwner
     )
 
-    init {
-        setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-    }
-
     override fun hasStableIds(): Boolean {
         return true
     }
@@ -118,7 +114,7 @@ class QualifiedAccountNameAdapter(
         for (i in 0 until count) {
             if (getUID(i) == uid) return i
         }
-        return -1
+        return NO_SELECTION
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {

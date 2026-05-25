@@ -23,10 +23,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.RemoteViews
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashActivity
 import org.gnucash.android.app.GnuCashApplication.Companion.getBookPreferences
@@ -35,8 +37,6 @@ import org.gnucash.android.db.BookDbHelper
 import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.adapter.AccountsDbAdapter
-import org.gnucash.android.db.adapter.BooksDbAdapter
-import org.gnucash.android.model.Book
 import org.gnucash.android.receivers.TransactionAppWidgetProvider
 import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.ui.adapter.DefaultItemSelectedListener
@@ -58,7 +58,7 @@ class WidgetConfigurationActivity : GnuCashActivity() {
     private var selectedBookUID: String? = null
     private var selectedAccountUID: String? = null
     private var isHideBalance = false
-    private val books = mutableListOf<Book>()
+    private lateinit var booksAdapter: BooksAdapter
     private lateinit var accountNameAdapter: QualifiedAccountNameAdapter
 
     private lateinit var binding: WidgetConfigurationBinding
@@ -69,14 +69,11 @@ class WidgetConfigurationActivity : GnuCashActivity() {
         setContentView(binding.root)
 
         val context: Context = this
-        val booksDbAdapter = BooksDbAdapter.instance
-        val allBooks = booksDbAdapter.allRecords
-        books.clear()
-        books.addAll(allBooks)
 
-        val booksAdapter =
-            ArrayAdapter<Book>(context, android.R.layout.simple_spinner_item, allBooks)
-        booksAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        booksAdapter = BooksAdapter(context, lifecycleOwner = this).load { adapter ->
+            val position = adapter.getPosition(selectedBookUID)
+            binding.inputBooksSpinner.setSelection(position)
+        }
         binding.inputBooksSpinner.adapter = booksAdapter
 
         accountNameAdapter = QualifiedAccountNameAdapter(context, this)
@@ -98,7 +95,7 @@ class WidgetConfigurationActivity : GnuCashActivity() {
                                           position: Int,
                                           id: Long ->
                 val context = view!!.context
-                val book = books[position]
+                val book = booksAdapter.getBook(position) ?: return@DefaultItemSelectedListener
                 val holder = DatabaseHelper(context, book.uid).holder
                 accountNameAdapter.swapAdapter(AccountsDbAdapter(holder))
                 selectedBookUID = book.uid
@@ -168,17 +165,7 @@ class WidgetConfigurationActivity : GnuCashActivity() {
         selectedAccountUID = accountUID
         isHideBalance = hideAccountBalance
 
-        //determine the position of the book
-        var bookIndex = -1
-        val booksCount = books.size
-        for (i in 0 until booksCount) {
-            val book = books[i]
-            if (book.uid == bookUID || book.isActive) {
-                bookIndex = i
-                break
-            }
-        }
-
+        val bookIndex = booksAdapter.getPosition(bookUID)
         val accountIndex = accountNameAdapter.getPosition(accountUID)
 
         binding.inputBooksSpinner.setSelection(bookIndex)
@@ -325,6 +312,8 @@ class WidgetConfigurationActivity : GnuCashActivity() {
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
 
+        private var updateJob: Job? = null
+
         /**
          * Updates all widgets belonging to the application
          *
@@ -338,11 +327,12 @@ class WidgetConfigurationActivity : GnuCashActivity() {
 
             //update widgets asynchronously so as not to block method which called the update
             //inside the computation of the account balance
-            Thread {
+            updateJob?.cancel()
+            updateJob = GlobalScope.launch {
                 for (widgetId in appWidgetIds) {
                     updateWidget(context, widgetId)
                 }
-            }.start()
+            }
         }
     }
 }

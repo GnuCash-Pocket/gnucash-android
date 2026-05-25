@@ -486,7 +486,7 @@ class ExportFormFragment : MenuFragment(),
                 defaultFormat = ExportFormat.OFX
             }
         }
-        val formatAdapter = ArrayAdapter<ExportFormatItem>(
+        val formatAdapter = ArrayAdapter(
             context,
             android.R.layout.simple_spinner_item,
             formatItems

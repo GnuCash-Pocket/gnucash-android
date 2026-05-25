@@ -30,7 +30,7 @@ class AccountTypesAdapter(
                 return i
             }
         }
-        return -1
+        return NO_SELECTION
     }
 
     companion object {

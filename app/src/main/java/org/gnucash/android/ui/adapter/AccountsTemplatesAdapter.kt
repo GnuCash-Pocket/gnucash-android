@@ -39,6 +39,6 @@ class AccountsTemplatesAdapter(context: Context) : SpinnerArrayAdapter<AccountsT
                 return i
             }
         }
-        return -1
+        return NO_SELECTION
     }
 }

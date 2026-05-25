@@ -27,6 +27,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Adapter.NO_SELECTION
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.ColorInt
@@ -506,7 +507,7 @@ class TransactionsListFragment : MenuFragment(),
     }
 
     private fun findItemPosition(transactionUID: String): Int {
-        val adapter = transactionsAdapter ?: return -1
+        val adapter = transactionsAdapter ?: return NO_SELECTION
         return adapter.getItemPosition(transactionUID)
     }
 
