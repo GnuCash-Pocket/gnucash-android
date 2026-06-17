@@ -110,7 +110,7 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
         binding.radioExchangeRate.setOnCheckedChangeListener { _, isChecked ->
             binding.inputExchangeRate.isEnabled = isChecked
             binding.exchangeRateTextInputLayout.isErrorEnabled = isChecked
-            binding.btnFetchExchangeRate.isEnabled =
+            binding.fetchExchangeRate.isEnabled =
                 (isChecked && fromCommodity.isCurrency && targetCommodity.isCurrency)
             binding.radioConvertedAmount.isChecked = !isChecked
             if (isChecked) {
@@ -122,8 +122,8 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
             binding.radioExchangeRate.isChecked = true
         }
 
-        binding.btnFetchExchangeRate.setOnClickListener {
-            binding.btnFetchExchangeRate.isEnabled = false
+        binding.fetchExchangeRate.setOnClickListener {
+            binding.fetchExchangeRate.isEnabled = false
             fetchQuote(binding, fromCommodity, targetCommodity)
         }
 
@@ -190,7 +190,7 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
 
             binding.radioExchangeRate.isChecked = true
             binding.inputExchangeRate.setText(formatterRate.format(priceDecimal))
-            binding.btnFetchExchangeRate.isEnabled =
+            binding.fetchExchangeRate.isEnabled =
                 fromCommodity.isCurrency && targetCommodity.isCurrency
 
             // convertedAmount = fromAmount * numerator / denominator
@@ -298,13 +298,13 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
 
         val provider: QuoteProvider = YahooJson()
         provider.get(fromCommodity, targetCommodity, this, object : QuoteCallback {
-            override fun onQuote(price: Price?) {
-                if (price != null) {
-                    priceQuoted = price
-                    val rate = price.toBigDecimal(SCALE_RATE)
+            override suspend fun onQuote(quote: Price?) {
+                if (quote != null) {
+                    priceQuoted = quote
+                    val rate = quote.toBigDecimal(SCALE_RATE)
                     binding.inputExchangeRate.setText(formatterRate.format(rate))
                 }
-                binding.btnFetchExchangeRate.isEnabled = true
+                binding.fetchExchangeRate.isEnabled = true
             }
         })
     }
