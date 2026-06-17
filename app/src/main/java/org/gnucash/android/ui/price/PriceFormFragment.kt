@@ -3,6 +3,7 @@ package org.gnucash.android.ui.price
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -29,6 +30,7 @@ import org.gnucash.android.ui.transaction.TransactionFormFragment.Companion.TIME
 import org.gnucash.android.ui.util.dialog.DatePickerDialogFragment
 import org.gnucash.android.ui.util.dialog.TimePickerDialogFragment
 import org.gnucash.android.ui.util.widget.CalculatorEditText
+import org.gnucash.android.ui.util.widget.CalculatorKeyboard.Companion.rebind
 import java.math.BigDecimal
 
 class PriceFormFragment : MenuFragment() {
@@ -197,6 +199,11 @@ class PriceFormFragment : MenuFragment() {
             }
         })
 
+        binding.fetchExchangeRate.setOnClickListener {
+            binding.fetchExchangeRate.isEnabled = false
+            viewModel.fetchQuote(binding.fetchExchangeRate.context)
+        }
+
         binding.error.text = null
 
         lifecycleScope.launch {
@@ -226,16 +233,29 @@ class PriceFormFragment : MenuFragment() {
         val typeIndex = typeAdapter.getValuePosition(price.type)
         binding.type.setSelection(typeIndex)
 
-        binding.inputExchangeRate.commodity = price.currency
-        binding.inputExchangeRate.setValue(price.toBigDecimal(), true)
+        binding.inputExchangeRate.bindKeyboard(binding.calculatorKeyboard)
+        binding.inputExchangeRate.commodity = price.security.copy(smallestFraction = RATE_FRACTION)
+        binding.inputExchangeRate.setValue(price.toBigDecimal(RATE_SCALE), true)
+
+        // Only fetch quote for new prices.
+        binding.fetchExchangeRate.isEnabled = price.id == 0L
     }
 
     private fun processCommand(command: PriceFormViewModel.Command) {
         when (command) {
             PriceFormViewModel.Command.Done -> parentFragmentManager.popBackStack()
             PriceFormViewModel.Command.None -> Unit
+            is PriceFormViewModel.Command.Error -> handleError(command)
         }
         viewModel.markCommandProcessed()
+    }
+
+    private fun handleError(command: PriceFormViewModel.Command.Error) {
+        val binding = binding ?: return
+        binding.error.text = command.message
+
+        val price = viewModel.price.value
+        binding.fetchExchangeRate.isEnabled = price.id == 0L
     }
 
     private fun validate(binding: FragmentPriceFormBinding, price: Price): Boolean {
@@ -275,5 +295,18 @@ class PriceFormFragment : MenuFragment() {
         }
 
         return true
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val binding = this.binding ?: return
+        val parent: ViewGroup = binding.root
+        val keyboardView = binding.calculatorKeyboard.calculatorKeyboard
+        rebind(parent, keyboardView, binding.inputExchangeRate)
+    }
+
+    companion object {
+        private const val RATE_SCALE = PriceFormViewModel.SCALE_RATE
+        private const val RATE_FRACTION = 1_000_000
     }
 }

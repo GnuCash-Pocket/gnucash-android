@@ -145,7 +145,7 @@ class Price : BaseModel {
     fun toBigDecimal(scale: Int): BigDecimal {
         val numerator = BigDecimal.valueOf(valueNum)
         val denominator = BigDecimal.valueOf(valueDenom)
-        return numerator.divide(denominator, scale, BigDecimal.ROUND_HALF_EVEN)
+        return numerator.divide(denominator, scale, RoundingMode.HALF_UP)
     }
 
     val securityUID: String get() = security.uid
@@ -195,6 +195,7 @@ class Price : BaseModel {
     }
 
     fun copy(
+        id: Long = this.id,
         uid: String? = null,
         security: Commodity? = null,
         currency: Commodity? = null,
@@ -203,13 +204,15 @@ class Price : BaseModel {
         date: Long? = null,
         rate: BigDecimal? = null
     ): Price {
-        val clone = Price(security ?: this.security, currency ?: this.currency)
-        clone.setUID(uid ?: this.uid)
-        clone.date = date ?: this.date
-        clone.source = source ?: this.source
-        clone.type = type ?: this.type
-        clone._valueNum = this._valueNum
-        clone._valueDenom = this._valueDenom
+        val priceOld = this
+        val clone = Price(security ?: priceOld.security, currency ?: priceOld.currency)
+        clone.id = id
+        clone.setUID(uid ?: priceOld.uid)
+        clone.date = date ?: priceOld.date
+        clone.source = source ?: priceOld.source
+        clone.type = type ?: priceOld.type
+        clone._valueNum = priceOld._valueNum
+        clone._valueDenom = priceOld._valueDenom
         if (rate != null) {
             clone.setExchangeRate(rate)
         }
