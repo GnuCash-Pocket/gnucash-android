@@ -268,6 +268,24 @@ class Commodity @JvmOverloads constructor(
     fun formatListItem(): String {
         return formatListItem(currencyCode, fullname)
     }
+
+    fun copy(
+        smallestFraction: Int? = null
+    ): Commodity {
+        val commodityOld = this
+
+        return Commodity(
+            fullname,
+            mnemonic,
+            namespace,
+            smallestFraction ?: commodityOld.smallestFraction
+        ).apply {
+            localSymbol = commodityOld.localSymbol
+            quoteSource = commodityOld.quoteSource
+            quoteTimeZone = commodityOld.quoteTimeZone
+
+        }
+    }
 }
 
 fun Parcel.writeCommodity(value: Commodity?, flags: Int) {

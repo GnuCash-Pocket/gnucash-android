@@ -183,6 +183,8 @@ class ImportAsyncTask(
                     }
                     .show()
             }
+
+            bookCallback?.invoke(null)
         }
     }
 

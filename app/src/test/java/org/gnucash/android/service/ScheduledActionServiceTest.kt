@@ -38,6 +38,7 @@ import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.test.unit.BookHelperTest
+import org.gnucash.android.util.TimestampHelper.getUtcStringFromTimestamp
 import org.gnucash.android.util.set
 import org.gnucash.android.util.toMillis
 import org.joda.time.DateTime
@@ -245,14 +246,15 @@ class ScheduledActionServiceTest : BookHelperTest() {
      */
     @Test
     fun scheduledBackups_shouldRunOnlyOnce() {
+        val now = LocalDateTime.now()
         val scheduledBackup = ScheduledAction(ScheduledAction.ActionType.EXPORT)
         scheduledBackup.actionUID = GnuCashApplication.activeBookUID
-        scheduledBackup.startDate = LocalDateTime.now()
+        scheduledBackup.startDate = now
             .minusMonths(4).minusDays(2).toDate().time
         scheduledBackup.setRecurrence(PeriodType.MONTH, 1)
         scheduledBackup.instanceCount = 2
-        scheduledBackup.lastRunTime = LocalDateTime.now().minusMonths(2).toDate().time
-        var previousLastRun = scheduledBackup.lastRunTime
+        scheduledBackup.lastRunDate = now.minusMonths(2).toDate().time
+        var previousLastRun = scheduledBackup.lastRunDate
 
         val backupParams = ExportParams(ExportFormat.XML)
         backupParams.exportTarget = ExportParams.ExportTarget.SD_CARD
@@ -268,16 +270,16 @@ class ScheduledActionServiceTest : BookHelperTest() {
         // Check there's not a backup for each missed run
         ScheduledActionService.processScheduledAction(dbHolder, scheduledBackup)
         assertThat(scheduledBackup.instanceCount).isEqualTo(3)
-        assertThat(scheduledBackup.lastRunTime).isGreaterThanOrEqualTo(previousLastRun)
+        assertThat(scheduledBackup.lastRunDate).isGreaterThanOrEqualTo(previousLastRun)
         var backupFiles = backupFolder.listFiles()
         assertThat(backupFiles!!).hasSize(1)
         assertThat(backupFiles[0]).exists().hasExtension("xac")
 
         // Check also across service runs
-        previousLastRun = scheduledBackup.lastRunTime
+        previousLastRun = scheduledBackup.lastRunDate
         ScheduledActionService.processScheduledAction(dbHolder, scheduledBackup)
         assertThat(scheduledBackup.instanceCount).isEqualTo(3)
-        assertThat(scheduledBackup.lastRunTime).isGreaterThanOrEqualTo(previousLastRun)
+        assertThat(scheduledBackup.lastRunDate).isGreaterThanOrEqualTo(previousLastRun)
         backupFiles = backupFolder.listFiles()
         assertThat(backupFiles!!).hasSize(1)
         assertThat(backupFiles[0]).exists().hasExtension("xac")
@@ -292,11 +294,12 @@ class ScheduledActionServiceTest : BookHelperTest() {
      */
     @Test
     fun scheduledBackups_shouldNotRunBeforeNextScheduledExecution() {
+        val now = LocalDateTime.now()
         val scheduledBackup = ScheduledAction(ScheduledAction.ActionType.EXPORT)
         scheduledBackup.startDate =
-            LocalDateTime.now().withDayOfWeek(DateTimeConstants.WEDNESDAY).toDate().time
-        scheduledBackup.lastRunTime = scheduledBackup.startDate
-        val previousLastRun = scheduledBackup.lastRunTime
+            now.withDayOfWeek(DateTimeConstants.WEDNESDAY).toDate().time
+        scheduledBackup.lastRunDate = scheduledBackup.startDate
+        val previousLastRun = scheduledBackup.lastRunDate
         scheduledBackup.instanceCount = 0
         val recurrence = Recurrence(PeriodType.WEEK)
         recurrence.multiplier = 1
@@ -316,7 +319,7 @@ class ScheduledActionServiceTest : BookHelperTest() {
         ScheduledActionService.processScheduledAction(dbHolder, scheduledBackup)
 
         assertThat(scheduledBackup.instanceCount).isZero()
-        assertThat(scheduledBackup.lastRunTime).isEqualTo(previousLastRun)
+        assertThat(scheduledBackup.lastRunDate).isEqualTo(previousLastRun)
         assertThat(backupFolder.listFiles()).isEmpty()
     }
 
@@ -326,9 +329,10 @@ class ScheduledActionServiceTest : BookHelperTest() {
      */
     @Test
     fun scheduledBackups_shouldNotIncludeTransactionsPreviousToTheLastRun() {
+        val now = LocalDateTime.now()
         val scheduledBackup = ScheduledAction(ScheduledAction.ActionType.EXPORT).apply {
-            startDate = LocalDateTime.now().minusDays(15).toDate().time
-            lastRunTime = LocalDateTime.now().minusDays(8).toDate().time
+            startDate = now.minusDays(15).toDate().time
+            lastRunDate = now.minusDays(8).toDate().time
             instanceCount = 1
             val recurrence = Recurrence(PeriodType.WEEK).apply {
                 multiplier = 1
@@ -341,12 +345,12 @@ class ScheduledActionServiceTest : BookHelperTest() {
             }
             setExportParams(backupParams)
         }
-        val previousLastRun = scheduledBackup.lastRunTime
+        val previousLastRun = scheduledBackup.lastRunDate
 
         // Create a transaction with a modified date previous to the last run
         val transaction = Transaction("Tandoori express")
         val split = Split(
-            Money("10", Commodity.DEFAULT_COMMODITY.currencyCode),
+            Money("10", Commodity.DEFAULT_COMMODITY),
             baseAccount.uid
         )
         split.type = TransactionType.DEBIT
@@ -357,11 +361,12 @@ class ScheduledActionServiceTest : BookHelperTest() {
         // is ignored when the object is stored. It's set through a trigger instead.
         setTransactionInDbTimestamp(
             transaction.uid,
-            LocalDateTime.now().minusDays(9).toMillis()
+            now.minusDays(9).toMillis()
         )
 
         val bookUID = GnuCashApplication.activeBookUID
         assertThat(bookUID).isNotNull()
+        assertThat(bookUID).isEqualTo(dbHolder.name)
         val backupFolder = File(Exporter.getExportFolderPath(context, bookUID!!))
         assertThat(backupFolder).exists()
         assertThat(backupFolder.listFiles()).isEmpty()
@@ -369,7 +374,7 @@ class ScheduledActionServiceTest : BookHelperTest() {
         ScheduledActionService.processScheduledAction(dbHolder, scheduledBackup)
 
         assertThat(scheduledBackup.instanceCount).isOne()
-        assertThat(scheduledBackup.lastRunTime).isGreaterThanOrEqualTo(previousLastRun)
+        assertThat(scheduledBackup.lastRunDate).isGreaterThanOrEqualTo(previousLastRun)
         val files = backupFolder.listFiles()
         assertThat(files).isNotNull()
         assertThat(files).isEmpty()
@@ -382,8 +387,11 @@ class ScheduledActionServiceTest : BookHelperTest() {
      * @param timestamp      the new timestamp.
      */
     private fun setTransactionInDbTimestamp(transactionUID: String, timestamp: Long) {
+        val db = dbHolder.db
+        db.execSQL("DROP TRIGGER IF EXISTS update_time_trigger_" + TransactionEntry.TABLE_NAME)
+
         val values = ContentValues()
-        values[TransactionEntry.COLUMN_MODIFIED_AT] = timestamp
+        values[TransactionEntry.COLUMN_MODIFIED_AT] = getUtcStringFromTimestamp(timestamp)
         transactionsDbAdapter.updateTransaction(
             values,
             TransactionEntry.COLUMN_UID + "=?",
@@ -397,11 +405,12 @@ class ScheduledActionServiceTest : BookHelperTest() {
      */
     @Test
     fun scheduledBackups_shouldIncludeTransactionsAfterTheLastRun() {
+        val now = LocalDateTime.now()
         val scheduledBackup = ScheduledAction(ScheduledAction.ActionType.EXPORT)
         scheduledBackup.actionUID = GnuCashApplication.activeBookUID
-        scheduledBackup.startDate = LocalDateTime.now().minusDays(15).toDate().time
-        scheduledBackup.lastRunTime = LocalDateTime.now().minusDays(8).toDate().time
-        val previousLastRun = scheduledBackup.lastRunTime
+        scheduledBackup.startDate = now.minusDays(15).toDate().time
+        scheduledBackup.lastRunDate = now.minusDays(8).toDate().time
+        val previousLastRun = scheduledBackup.lastRunDate
         scheduledBackup.instanceCount = 1
         val recurrence = Recurrence(PeriodType.WEEK)
         recurrence.multiplier = 1
@@ -414,7 +423,7 @@ class ScheduledActionServiceTest : BookHelperTest() {
 
         val transaction = Transaction("Orient palace")
         val split = Split(
-            Money("10", Commodity.DEFAULT_COMMODITY.currencyCode),
+            Money("10", Commodity.DEFAULT_COMMODITY),
             baseAccount.uid
         )
         split.type = TransactionType.DEBIT
@@ -431,7 +440,7 @@ class ScheduledActionServiceTest : BookHelperTest() {
         ScheduledActionService.processScheduledAction(dbHolder, scheduledBackup)
 
         assertThat(scheduledBackup.instanceCount).isEqualTo(2)
-        assertThat(scheduledBackup.lastRunTime).isGreaterThanOrEqualTo(previousLastRun)
+        assertThat(scheduledBackup.lastRunDate).isGreaterThanOrEqualTo(previousLastRun)
         val files = backupFolder.listFiles()
         assertThat(files!!).isNotNull()
         assertThat(files).hasSize(1)
@@ -534,8 +543,9 @@ class ScheduledActionServiceTest : BookHelperTest() {
         assertThat(account.type).isEqualTo(AccountType.BANK)
         assertThat(account.isTemplate).isTrue()
         assertThat(account.commodity).isEqualTo(Commodity.template)
-        
-        val transactions = transactionsDbAdapter.getTransactionsForAccount(scheduledAction.templateAccountUID)
+
+        val transactions =
+            transactionsDbAdapter.getTransactionsForAccount(scheduledAction.templateAccountUID)
         assertThat(transactions).hasSize(1)
         val transaction = transactions[0]
         assertThat(transaction).isNotNull()

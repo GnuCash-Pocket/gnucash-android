@@ -95,4 +95,9 @@ object UxArgument {
      * Show hidden items?
      */
     const val SHOW_HIDDEN: String = "show_hidden"
+
+    /**
+     * Key for passing the price unique ID as argument to UI
+     */
+    const val SELECTED_PRICE_UID: String = "price_uid"
 }

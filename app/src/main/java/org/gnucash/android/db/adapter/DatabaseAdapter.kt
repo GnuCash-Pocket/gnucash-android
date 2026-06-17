@@ -676,7 +676,7 @@ abstract class DatabaseAdapter<Model : BaseModel>(
      * @param contentValues Content values to update
      * @return Number of records updated
      */
-    fun updateRecord(uid: String, contentValues: ContentValues): Int {
+    open fun updateRecord(uid: String, contentValues: ContentValues): Int {
         if (isCached) cache.remove(uid)
         return updateRecord(tableName, uid, contentValues)
     }

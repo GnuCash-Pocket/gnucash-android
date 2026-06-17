@@ -223,6 +223,7 @@ class TransactionsListFragment : MenuFragment(),
         itemDate.isChecked = useAbsoluteDate
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.menu_toggle_compact -> {
@@ -375,7 +376,7 @@ class TransactionsListFragment : MenuFragment(),
             val dateText = if (useAbsoluteDate) {
                 formatMediumDate(transaction.datePosted)
             } else {
-                getPrettyDateFormat(context, transaction.datePosted)
+                formatPrettyDate(context, transaction.datePosted)
             }
             transactionDate.text = dateText
 
@@ -426,7 +427,7 @@ class TransactionsListFragment : MenuFragment(),
          * @param time
          * @return
          */
-        private fun getPrettyDateFormat(context: Context, time: Long): String {
+        private fun formatPrettyDate(context: Context, time: Long): String {
             return DateUtils.getRelativeDateTimeString(
                 context,
                 time,

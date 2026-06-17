@@ -7,9 +7,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.Response
 import okio.IOException
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Price
+import org.gnucash.android.model.PriceSource
 import org.json.JSONObject
 import timber.log.Timber
 import java.math.BigDecimal
@@ -38,26 +40,7 @@ class YahooJson : QuoteProvider {
 
             val result: Result<Price?> = runCatching {
                 client.newCall(request).execute().use { response ->
-                    if (!response.isSuccessful) {
-                        throw IOException(response.message)
-                    }
-                    val body = response.body!!
-                    val s = body.string()
-                    val json = JSONObject(s)
-                    val chart = json.getJSONObject("chart")
-                    val result = chart.getJSONArray("result")
-                    val result0 = result.getJSONObject(0)
-                    val meta = result0.getJSONObject("meta")
-                    val regularMarketPrice = meta.getDouble("regularMarketPrice")
-                    val regularMarketTime = meta.getLong("regularMarketTime")
-
-                    val rate = BigDecimal.valueOf(regularMarketPrice)
-                    val price = Price(fromCommodity, targetCommodity, rate).apply {
-                        date = regularMarketTime * DateUtils.SECOND_IN_MILLIS
-                        source = Price.SOURCE_QUOTE
-                        type = Price.Type.Last
-                    }
-                    price
+                    processResponse(fromCommodity, targetCommodity, response)
                 }
             }.onFailure { e ->
                 Timber.e(e)
@@ -66,6 +49,39 @@ class YahooJson : QuoteProvider {
                 callback.onQuote(result.getOrNull())
             }
         }
+    }
+
+    @Throws(IOException::class)
+    private fun processResponse(
+        fromCommodity: Commodity,
+        targetCommodity: Commodity,
+        response: Response
+    ): Price {
+        if (!response.isSuccessful) {
+            var message = response.message
+            if (message.isEmpty()) {
+                message =
+                    "Error ${response.code} fetching exchange rate $fromCommodity/$targetCommodity"
+            }
+            throw IOException(message)
+        }
+        val body = response.body
+        val s = body.string()
+        val json = JSONObject(s)
+        val chart = json.getJSONObject("chart")
+        val result = chart.getJSONArray("result")
+        val result0 = result.getJSONObject(0)
+        val meta = result0.getJSONObject("meta")
+        val regularMarketPrice = meta.getDouble("regularMarketPrice")
+        val regularMarketTime = meta.getLong("regularMarketTime")
+
+        val rate = BigDecimal.valueOf(regularMarketPrice)
+        val price = Price(fromCommodity, targetCommodity, rate).apply {
+            date = regularMarketTime * DateUtils.SECOND_IN_MILLIS
+            source = PriceSource.PRICE_SOURCE_FQ
+            type = Price.Type.Last
+        }
+        return price
     }
 
     companion object {

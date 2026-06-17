@@ -38,7 +38,7 @@ object DatabaseSchema {
      * Version number of database containing accounts and transactions info.
      * With any change to the database schema, this number must increase
      */
-    const val DATABASE_VERSION: Int = 29
+    const val DATABASE_VERSION: Int = 30
 
     abstract class CommonColumns : BaseColumns {
         companion object {
@@ -428,7 +428,7 @@ object DatabaseSchema {
         const val COLUMN_MODIFIED_AT: String = CommonColumns.COLUMN_MODIFIED_AT
 
         @Column(Cursor.FIELD_TYPE_STRING)
-        const val COLUMN_COMMODITY_UID: String = "commodity_guid"
+        const val COLUMN_SECURITY_UID: String = "commodity_guid"
 
         @Column(Cursor.FIELD_TYPE_STRING)
         const val COLUMN_CURRENCY_UID: String = "currency_guid"

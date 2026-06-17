@@ -972,7 +972,7 @@ class GncXmlExporter(
         serializer.text(price.uid)
         serializer.endTag(NS_PRICE, TAG_ID)
         // commodity
-        val commodity = price.commodity
+        val commodity = price.security
         serializer.startTag(NS_PRICE, TAG_COMMODITY)
         serializer.startTag(NS_COMMODITY, TAG_SPACE)
         serializer.text(commodity.namespace)
@@ -998,9 +998,9 @@ class GncXmlExporter(
         serializer.endTag(NS_TS, TAG_DATE)
         serializer.endTag(NS_PRICE, TAG_TIME)
         // source
-        if (!price.source.isNullOrEmpty()) {
+        if (price.source != null) {
             serializer.startTag(NS_PRICE, TAG_SOURCE)
-            serializer.text(price.source)
+            serializer.text(price.source!!.value)
             serializer.endTag(NS_PRICE, TAG_SOURCE)
         }
         // type, optional

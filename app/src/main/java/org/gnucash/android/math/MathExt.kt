@@ -8,6 +8,7 @@ import java.math.BigInteger
 import java.math.RoundingMode
 import kotlin.math.log10
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 val BigDecimal.isZero get() = compareTo(BigDecimal.ZERO) == 0
 
@@ -32,7 +33,7 @@ val Number.numberOfTrailingZeros: Int
     get() {
         val v = this.toDouble()
         if (v <= 1) return 0
-        return log10(v).toInt()
+        return log10(v).roundToInt()
     }
 
 /**

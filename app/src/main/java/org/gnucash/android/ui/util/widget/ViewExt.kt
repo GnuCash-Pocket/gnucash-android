@@ -19,7 +19,7 @@ fun EditText.setTextToEnd(text: CharSequence?) {
     if (text.isNullOrEmpty()) return
     try {
         setSelection(text.length)
-    } catch (e: IndexOutOfBoundsException) {
+    } catch (_: IndexOutOfBoundsException) {
         setSelection(0)
     }
 }

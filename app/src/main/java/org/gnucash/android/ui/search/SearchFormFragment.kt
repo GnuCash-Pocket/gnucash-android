@@ -33,7 +33,6 @@ import org.gnucash.android.ui.text.DefaultTextWatcher
 import org.gnucash.android.ui.util.dialog.DatePickerDialogFragment
 import org.gnucash.android.ui.util.widget.CalculatorEditText.OnValueChangedListener
 import org.gnucash.android.util.toMillis
-import org.joda.time.LocalDate
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
 import java.math.BigDecimal
@@ -49,7 +48,7 @@ class SearchFormFragment : Fragment() {
             viewModel.query.collect { sql ->
                 if (!sql.isNullOrEmpty()) {
                     showResults(sql)
-                    viewModel.onSearchShowed()
+                    viewModel.onSearchShown()
                 }
             }
         }

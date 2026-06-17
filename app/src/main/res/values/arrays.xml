@@ -103,4 +103,11 @@
         <item>"Dark Gray 4"</item>
         <item>"Black"</item>
     </string-array>
+    <string-array name="price_types" translatable="false">
+        <item>@string/price_bid</item>
+        <item>@string/price_ask</item>
+        <item>@string/price_last</item>
+        <item>@string/price_net_asset_value</item>
+        <item>@string/price_unknown</item>
+    </string-array>
 </resources>

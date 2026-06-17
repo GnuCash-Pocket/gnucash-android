@@ -28,6 +28,7 @@ import org.gnucash.android.db.adapter.PricesDbAdapter
 import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Price
+import org.gnucash.android.model.PriceSource
 import org.gnucash.android.quote.QuoteCallback
 import org.gnucash.android.quote.QuoteProvider
 import org.gnucash.android.quote.YahooJson
@@ -109,7 +110,7 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
         binding.radioExchangeRate.setOnCheckedChangeListener { _, isChecked ->
             binding.inputExchangeRate.isEnabled = isChecked
             binding.exchangeRateTextInputLayout.isErrorEnabled = isChecked
-            binding.btnFetchExchangeRate.isEnabled =
+            binding.fetchExchangeRate.isEnabled =
                 (isChecked && fromCommodity.isCurrency && targetCommodity.isCurrency)
             binding.radioConvertedAmount.isChecked = !isChecked
             if (isChecked) {
@@ -121,8 +122,8 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
             binding.radioExchangeRate.isChecked = true
         }
 
-        binding.btnFetchExchangeRate.setOnClickListener {
-            binding.btnFetchExchangeRate.isEnabled = false
+        binding.fetchExchangeRate.setOnClickListener {
+            binding.fetchExchangeRate.isEnabled = false
             fetchQuote(binding, fromCommodity, targetCommodity)
         }
 
@@ -189,7 +190,7 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
 
             binding.radioExchangeRate.isChecked = true
             binding.inputExchangeRate.setText(formatterRate.format(priceDecimal))
-            binding.btnFetchExchangeRate.isEnabled =
+            binding.fetchExchangeRate.isEnabled =
                 fromCommodity.isCurrency && targetCommodity.isCurrency
 
             // convertedAmount = fromAmount * numerator / denominator
@@ -227,7 +228,7 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
         val commodityFrom = commoditiesDbAdapter.loadCommodity(originCommodity)
         val commodityTo = commoditiesDbAdapter.loadCommodity(targetCommodity)
         var price = Price(commodityFrom, commodityTo)
-        price.source = Price.SOURCE_USER
+        price.source = PriceSource.PRICE_SOURCE_XFER_DLG_VAL
         price.type = Price.Type.Transaction
         val originAmount = originAmount!!
         val convertedAmount: Money
@@ -297,13 +298,13 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
 
         val provider: QuoteProvider = YahooJson()
         provider.get(fromCommodity, targetCommodity, this, object : QuoteCallback {
-            override fun onQuote(price: Price?) {
-                if (price != null) {
-                    priceQuoted = price
-                    val rate = price.toBigDecimal(SCALE_RATE)
+            override suspend fun onQuote(quote: Price?) {
+                if (quote != null) {
+                    priceQuoted = quote
+                    val rate = quote.toBigDecimal(SCALE_RATE)
                     binding.inputExchangeRate.setText(formatterRate.format(rate))
                 }
-                binding.btnFetchExchangeRate.isEnabled = true
+                binding.fetchExchangeRate.isEnabled = true
             }
         })
     }

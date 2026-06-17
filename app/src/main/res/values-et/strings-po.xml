@@ -1,0 +1,17 @@
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="gnucash_po_account_name">"Konto"</string>
+    <string name="gnucash_po_action">"Tegevus"</string>
+    <string name="gnucash_po_date">"Kuupäev"</string>
+    <string name="gnucash_po_description">"Kirjeldus"</string>
+    <string name="gnucash_po_edit">"Redigeeri"</string>
+    <string name="gnucash_po_hidden">"Peidetud"</string>
+    <string name="gnucash_po_memo">"Memo"</string>
+    <string name="gnucash_po_notes">"Märkmed"</string>
+    <string name="gnucash_po_number">"Number"</string>
+    <string name="gnucash_po_price">"Hind"</string>
+    <string name="gnucash_po_symbol">"Sümbol"</string>
+    <string name="gnucash_po_type">"Tüüp"</string>
+    <string name="gnucash_po_unknown">"Teadmata"</string>
+    <string name="gnucash_po_value_num">"Väärtus"</string>
+    <string name="gnucash_po_you_must_select_a_currency">"Pead valima Valuuta."</string>
+</resources>

@@ -19,8 +19,6 @@
     <string name="description_add_transaction_icon">Add a new transaction to an account</string>
     <string name="description_view_account_icon">View account details</string>
     <string name="label_no_accounts">No accounts to display</string>
-    <!-- msgid "Account Name" -->
-    <string name="account_name">Име на сметка</string>
     <string name="btn_save">Save</string>
     <string name="btn_test">Test</string>
     <string name="label_passcode">Enter Passcode</string>
@@ -28,7 +26,6 @@
     <string name="toast_passcode_set">Passcode set</string>
     <string name="label_confirm_passcode">Please confirm your passcode</string>
     <string name="toast_invalid_passcode_confirmation">Invalid passcode confirmation. Please try again</string>
-    <string name="description">Описание</string>
     <string name="label_transaction_amount">Amount</string>
     <string name="title_add_transaction">New transaction</string>
     <string name="label_no_transactions">No transactions to display</string>
@@ -134,8 +131,6 @@
     <string name="title_progress_exporting_transactions">Exporting transactions</string>
     <string name="label_no_recurring_transactions">No recurring transactions to display.</string>
     <string name="toast_recurring_transaction_deleted">Successfully deleted recurring transaction</string>
-    <!-- msgid "Placeholder" -->
-    <string name="placeholder">Синтетична сметка</string>
     <string name="label_default_transfer_account">Default Transfer Account</string>
     <plurals name="label_sub_accounts">
         <item quantity="one">%d sub-account</item>
@@ -420,54 +415,6 @@
     <string name="label_csv_separator">Separator</string>
     <string name="export_notice_csv">Exports transactions as CSV</string>
     <string name="no_books">No books in the database</string>
-    <!-- msgid "Date" -->
-    <string name="csv_transaction_header_date">"Дата"</string>
-    <!-- msgid "Transaction ID" -->
-    <string name="csv_transaction_header_id">Транзакция</string>
-    <!-- msgid "Number" -->
-    <string name="csv_transaction_header_number">Брой</string>
-    <!-- msgid "Notes" -->
-    <string name="csv_transaction_header_notes">Бележки</string>
-    <!-- msgid "Commodity/Currency" -->
-    <string name="csv_transaction_header_commodity">Обща валута</string>
-    <!-- msgid "Void Reason" -->
-    <string name="csv_transaction_header_void">Само анулирани</string>
-    <!-- msgid "Action" -->
-    <string name="csv_transaction_header_action">Действие</string>
-    <!-- msgid "Memo" -->
-    <string name="csv_transaction_header_memo">Записка</string>
-    <!-- msgid "Amount With Sym" -->
-    <string name="csv_transaction_header_amount_sym">Сума със сим</string>
-    <!-- msgid "Amount Num." -->
-    <string name="csv_transaction_header_amount">Дължима сума</string>
-    <!-- msgid "Value With Sym" -->
-    <string name="csv_transaction_header_value_sym">Стойност със сим</string>
-    <!-- msgid "Value Num." -->
-    <string name="csv_transaction_header_value">Стойност</string>
-    <!-- msgid "Reconcile" -->
-    <string name="csv_transaction_header_reconcile">Сверяване</string>
-    <!-- msgid "Reconcile Date" -->
-    <string name="csv_transaction_header_reconcile_date">Сверена дата</string>
-    <!-- msgid "Rate/Price" -->
-    <string name="csv_transaction_header_rate">Обща цена</string>
-    <!-- msgid "Type" -->
-    <string name="type">Вид</string>
-    <!-- msgid "Full Account Name" -->
-    <string name="csv_account_header_account_full_name">Пълно име на акаунта</string>
-    <!-- msgid "Account Code" -->
-    <string name="account_code">Код на сметка</string>
-    <!-- msgid "Account Color" -->
-    <string name="account_color">Цвят на сметка</string>
-    <!-- msgid "Notes" -->
-    <string name="notes">Бележки</string>
-    <!-- msgid "Symbol" -->
-    <string name="csv_account_header_symbol">Символ</string>
-    <!-- msgid "Namespace" -->
-    <string name="csv_account_header_namespace">Пространство от имена</string>
-    <!-- msgid "Hidden" -->
-    <string name="hidden">Скрито</string>
-    <!-- msgid "Tax Info" -->
-    <string name="csv_account_header_tax">Данъчни данни</string>
     <string name="title_edit_budget">Edit Budget</string>
     <string name="title_delete_transaction_backup">When delete transaction?</string>
     <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>
@@ -483,6 +430,4 @@
     <string name="title_progress_processing_prices">Обработка на цени</string>
     <string name="title_progress_processing_schedules">Обработка на графици</string>
     <string name="title_progress_processing_transactions">Обработка на транзакции</string>
-    <!-- msgid "Number" -->
-    <string name="number">Брой</string>
 </resources>

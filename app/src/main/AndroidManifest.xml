@@ -142,12 +142,19 @@
             android:name="org.gnucash.android.ui.wizard.FirstRunWizardActivity"
             android:exported="false"
             android:label="@string/title_setup_gnucash"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.GnuCash" />
         <activity
             android:name="org.gnucash.android.ui.settings.PreferenceActivity"
             android:exported="false"
             android:label="@string/title_settings"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.GnuCash" />
+        <activity
+            android:name="org.gnucash.android.ui.price.PriceDatabaseActivity"
+            android:exported="false"
+            android:label="@string/price_database"
+            android:launchMode="singleTop" />
         <activity
             android:name="com.dropbox.core.android.AuthActivity"
             android:configChanges="orientation|keyboard"

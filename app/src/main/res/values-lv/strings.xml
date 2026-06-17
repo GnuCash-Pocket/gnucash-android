@@ -20,8 +20,6 @@
     <string name="description_add_transaction_icon">Add a new transaction to an account</string>
     <string name="description_view_account_icon">View account details</string>
     <string name="label_no_accounts">No accounts to display</string>
-    <!-- msgid "Account Name" -->
-    <string name="account_name">Konta nosaukums</string>
     <string name="btn_save">Save</string>
     <string name="btn_test">Test</string>
     <string name="label_passcode">Enter Passcode</string>
@@ -29,7 +27,6 @@
     <string name="toast_passcode_set">Passcode set</string>
     <string name="label_confirm_passcode">Please confirm your passcode</string>
     <string name="toast_invalid_passcode_confirmation">Invalid passcode confirmation. Please try again</string>
-    <string name="description">Apraksts</string>
     <string name="label_transaction_amount">Amount</string>
     <string name="title_add_transaction">New transaction</string>
     <string name="label_no_transactions">No transactions to display</string>
@@ -135,8 +132,6 @@
     <string name="title_progress_exporting_transactions">Exporting transactions</string>
     <string name="label_no_recurring_transactions">No recurring transactions to display.</string>
     <string name="toast_recurring_transaction_deleted">Successfully deleted recurring transaction</string>
-    <!-- msgid "Placeholder" -->
-    <string name="placeholder">Vietturis</string>
     <string name="label_default_transfer_account">Default Transfer Account</string>
     <plurals name="label_sub_accounts">
         <item quantity="zero">%d sub-accounts</item>
@@ -424,54 +419,6 @@
     <string name="label_csv_separator">Separator</string>
     <string name="export_notice_csv">Exports transactions as CSV</string>
     <string name="no_books">No books in the database</string>
-    <!-- msgid "Date" -->
-    <string name="csv_transaction_header_date">Datums</string>
-    <!-- msgid "Transaction ID" -->
-    <string name="csv_transaction_header_id">Grāmatojuma ID</string>
-    <!-- msgid "Number" -->
-    <string name="csv_transaction_header_number">Numurs</string>
-    <!-- msgid "Notes" -->
-    <string name="csv_transaction_header_notes">Piezīmes</string>
-    <!-- msgid "Commodity/Currency" -->
-    <string name="csv_transaction_header_commodity">Valūta</string>
-    <!-- msgid "Void Reason" -->
-    <string name="csv_transaction_header_void">Tukšs pamatojums</string>
-    <!-- msgid "Action" -->
-    <string name="csv_transaction_header_action">Darbs</string>
-    <!-- msgid "Memo" -->
-    <string name="csv_transaction_header_memo">Piezīmes</string>
-    <!-- msgid "Amount With Sym" -->
-    <string name="csv_transaction_header_amount_sym">Līdz ar simbolu</string>
-    <!-- msgid "Amount Num." -->
-    <string name="csv_transaction_header_amount">Summa</string>
-    <!-- msgid "Value With Sym" -->
-    <string name="csv_transaction_header_value_sym">Vērtība ar simbolu</string>
-    <!-- msgid "Value Num." -->
-    <string name="csv_transaction_header_value">Vērtība</string>
-    <!-- msgid "Reconcile" -->
-    <string name="csv_transaction_header_reconcile">Saskaņot</string>
-    <!-- msgid "Reconcile Date" -->
-    <string name="csv_transaction_header_reconcile_date">Saskaņošanas datums</string>
-    <!-- msgid "Rate/Price" -->
-    <string name="csv_transaction_header_rate">Uz kursu/cenu</string>
-    <!-- msgid "Type" -->
-    <string name="type">Veids</string>
-    <!-- msgid "Full Account Name" -->
-    <string name="csv_account_header_account_full_name">Pilns konta nosaukums</string>
-    <!-- msgid "Account Code" -->
-    <string name="account_code">Konta kods</string>
-    <!-- msgid "Account Color" -->
-    <string name="account_color">Konta krāsa</string>
-    <!-- msgid "Notes" -->
-    <string name="notes">Piezīmes</string>
-    <!-- msgid "Symbol" -->
-    <string name="csv_account_header_symbol">Simbols</string>
-    <!-- msgid "Namespace" -->
-    <string name="csv_account_header_namespace">Vieta nosaukumam</string>
-    <!-- msgid "Hidden" -->
-    <string name="hidden">Paslēpts</string>
-    <!-- msgid "Tax Info" -->
-    <string name="csv_account_header_tax">Nodokļu info</string>
     <string name="title_edit_budget">Edit Budget</string>
     <string name="title_delete_transaction_backup">When delete transaction?</string>
     <string name="summary_delete_transaction_backup">Backup active book when delete a transaction?</string>
@@ -487,6 +434,4 @@
     <string name="title_progress_processing_prices">Cenu apstrāde</string>
     <string name="title_progress_processing_schedules">Grafiksu apstrāde</string>
     <string name="title_progress_processing_transactions">Darījumu apstrāde</string>
-    <!-- msgid "Number" -->
-    <string name="number">Numurs</string>
 </resources>

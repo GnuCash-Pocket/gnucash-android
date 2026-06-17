@@ -950,10 +950,12 @@ class SqliteExporter(
         val statement = statementPrice
         statement.clearBindings()
         statement.bindString(1, price.uid)
-        statement.bindString(2, price.commodityUID)
+        statement.bindString(2, price.securityUID)
         statement.bindString(3, price.currencyUID)
         statement.bindString(4, formatDateTime(price.date))
-        price.source?.let { statement.bindString(5, it) }
+        if (price.source != null) {
+            statement.bindString(5, price.source!!.value)
+        }
         statement.bindString(6, price.type.value)
         statement.bindLong(7, price.valueNum)
         statement.bindLong(8, price.valueDenom)
