@@ -17,7 +17,6 @@ package org.gnucash.android.ui.settings
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
 import androidx.preference.ListPreference
@@ -26,18 +25,10 @@ import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
 import org.gnucash.android.app.GnuCashApplication.Companion.defaultCurrencyCode
 import org.gnucash.android.app.getActivity
-import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.CommoditiesDbAdapter
-import org.gnucash.android.export.ExportAsyncTask
-import org.gnucash.android.export.ExportFormat
-import org.gnucash.android.export.ExportParams
-import org.gnucash.android.export.Exporter.Companion.buildExportFilename
 import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.ui.settings.BookManagerFragment.Companion.openBook
 import org.gnucash.android.ui.settings.dialog.DeleteAllAccountsConfirmationDialog
-import org.gnucash.android.ui.snackLong
-import timber.log.Timber
-import java.util.concurrent.ExecutionException
 
 /**
  * Account settings fragment inside the Settings activity
@@ -92,12 +83,6 @@ class AccountPreferencesFragment : GnuPreferenceFragment() {
             true
         }
 
-        preference = findPreference(getString(R.string.key_export_accounts_csv))!!
-        preference.setOnPreferenceClickListener { _ ->
-            selectExportFile()
-            true
-        }
-
         preference = findPreference(getString(R.string.key_delete_all_accounts))!!
         preference.setOnPreferenceClickListener { _ ->
             showDeleteAccountsDialog()
@@ -115,25 +100,6 @@ class AccountPreferencesFragment : GnuPreferenceFragment() {
     }
 
     /**
-     * Open a chooser for user to pick a file to export to
-     */
-    private fun selectExportFile() {
-        val bookName = BooksDbAdapter.instance.activeBookDisplayName
-        val filename = buildExportFilename(ExportFormat.CSVA, false, bookName)
-
-        val createIntent = Intent(Intent.ACTION_CREATE_DOCUMENT)
-            .setType(ExportFormat.CSVA.mimeType)
-            .addCategory(Intent.CATEGORY_OPENABLE)
-            .putExtra(Intent.EXTRA_TITLE, filename)
-        try {
-            startActivityForResult(createIntent, REQUEST_EXPORT_FILE)
-        } catch (e: ActivityNotFoundException) {
-            Timber.e(e, "Cannot create document for export")
-            snackLong(R.string.toast_install_file_manager)
-        }
-    }
-
-    /**
      * Show the dialog for deleting accounts
      */
     fun showDeleteAccountsDialog() {
@@ -147,26 +113,9 @@ class AccountPreferencesFragment : GnuPreferenceFragment() {
         when (requestCode) {
             AccountsActivity.REQUEST_PICK_ACCOUNTS_FILE ->
                 if (resultCode == Activity.RESULT_OK && data != null) {
+                    // FIXME - only import the accounts and not the entire book
                     openBook(activity, data)
                 }
-
-            REQUEST_EXPORT_FILE -> if (resultCode == Activity.RESULT_OK && data != null) {
-                val exportParams = ExportParams(ExportFormat.CSVA).apply {
-                    exportTarget = ExportParams.ExportTarget.URI
-                    exportLocation = data.data
-                }
-                val exportTask = ExportAsyncTask(activity, activeBookUID!!)
-
-                try {
-                    exportTask.execute(exportParams)
-                } catch (e: InterruptedException) {
-                    Timber.e(e)
-                    snackLong(R.string.toast_export_error)
-                } catch (e: ExecutionException) {
-                    Timber.e(e)
-                    snackLong(R.string.toast_export_error)
-                }
-            }
 
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
@@ -185,9 +134,5 @@ class AccountPreferencesFragment : GnuPreferenceFragment() {
                 AccountsActivity.createDefaultAccounts(activity, currencyCode)
             }
             .show()
-    }
-
-    companion object {
-        private const val REQUEST_EXPORT_FILE = 0xC5
     }
 }

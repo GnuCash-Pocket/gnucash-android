@@ -305,4 +305,5 @@
     <string name="comma" translatable="false">,</string>
     <string name="semicolon" translatable="false">;</string>
     <string name="colon" translatable="false">:</string>
+    <string name="file_format_csva" translatable="false">%1$s (%2$s)</string>
 </resources>

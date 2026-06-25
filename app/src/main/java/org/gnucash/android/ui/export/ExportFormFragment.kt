@@ -123,9 +123,18 @@ class ExportFormFragment : MenuFragment(),
     private fun onFormatSelected(binding: FragmentExportFormBinding, exportFormat: ExportFormat) {
         exportParams.exportFormat = exportFormat
         binding.exportWarning.isVisible = false
+        binding.checkboxPostExportDelete.isVisible = true
 
         when (exportFormat) {
-            ExportFormat.CSVA, ExportFormat.CSVT -> {
+            ExportFormat.CSVA -> {
+                binding.exportWarning.setText(R.string.summary_export_accounts_csv)
+                binding.exportWarning.isVisible = true
+                collapse(binding.exportDateLayout)
+                expand(binding.layoutCsvOptions)
+                binding.checkboxPostExportDelete.isVisible = false
+            }
+
+            ExportFormat.CSVT -> {
                 binding.exportWarning.setText(R.string.export_notice_csv)
                 binding.exportWarning.isVisible = true
                 expand(binding.exportDateLayout)
@@ -172,6 +181,16 @@ class ExportFormFragment : MenuFragment(),
 
         formatItems.clear()
         formatItems.add(
+            ExportFormatItem(
+                ExportFormat.CSVA,
+                context.getString(
+                    R.string.file_format_csva,
+                    context.getString(ExportFormat.CSVA.labelId),
+                    context.getString(R.string.title_accounts)
+                )
+            )
+        )
+        formatItems.add(
             ExportFormatItem(ExportFormat.CSVT, context.getString(ExportFormat.CSVT.labelId))
         )
         formatItems.add(
@@ -182,7 +201,10 @@ class ExportFormFragment : MenuFragment(),
         )
         if (isDoubleEntryEnabled(context)) {
             formatItems.add(
-                ExportFormatItem(ExportFormat.SQLITE, context.getString(ExportFormat.SQLITE.labelId))
+                ExportFormatItem(
+                    ExportFormat.SQLITE,
+                    context.getString(ExportFormat.SQLITE.labelId)
+                )
             )
             formatItems.add(
                 ExportFormatItem(ExportFormat.XML, context.getString(ExportFormat.XML.labelId))
@@ -233,7 +255,7 @@ class ExportFormFragment : MenuFragment(),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val actionBar: ActionBar? = this.actionBar
-        actionBar?.setTitle(R.string.title_export_dialog)
+        actionBar?.setTitle(R.string.nav_menu_export)
 
         val args = arguments
         if (args.isNullOrEmpty()) {
@@ -348,12 +370,12 @@ class ExportFormFragment : MenuFragment(),
             return
         }
 
-        val binding = binding ?: return
-
-        Timber.i("Commencing async export of transactions")
         val bookUID = activeBookUID ?: return
 
-        val activity: Context = binding.root.getActivity() ?: return
+        val binding = binding ?: return
+        val activity: Context = activity ?: binding.root.getActivity() ?: return
+
+        Timber.i("Commencing async export of book $bookUID")
         ExportAsyncTask(activity, bookUID) { bookUri ->
             if (bookUri != null) {
                 bookExported(bookUID, exportParameters)
