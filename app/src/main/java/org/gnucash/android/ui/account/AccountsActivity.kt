@@ -34,7 +34,6 @@ import androidx.fragment.app.FragmentActivity
 import androidx.preference.PreferenceManager
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-import com.kobakei.ratethisapp.RateThisApp
 import org.gnucash.android.BuildConfig
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
@@ -160,16 +159,6 @@ class AccountsActivity : BaseDrawerActivity(),
         }.attach()
 
         setCurrentTab()
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        if (BuildConfig.CAN_REQUEST_RATING) {
-            RateThisApp.init(rateAppConfig)
-            RateThisApp.onStart(this)
-            RateThisApp.showRateDialogIfNeeded(this)
-        }
     }
 
     /**
@@ -380,11 +369,6 @@ class AccountsActivity : BaseDrawerActivity(),
          * Key for putting argument for tab into bundle arguments
          */
         const val EXTRA_TAB_INDEX: String = BuildConfig.APPLICATION_ID + ".extra.TAB_INDEX"
-
-        /**
-         * Configuration for rating the app
-         */
-        var rateAppConfig: RateThisApp.Config = RateThisApp.Config(14, 100)
 
         /**
          * Displays the dialog for exporting transactions

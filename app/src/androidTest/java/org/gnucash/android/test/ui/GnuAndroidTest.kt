@@ -20,7 +20,6 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
-import com.kobakei.ratethisapp.RateThisApp
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.test.ui.util.WaitAction
@@ -173,7 +172,6 @@ abstract class GnuAndroidTest {
          */
         @JvmStatic
         fun preventFirstRunDialogs(context: Context) {
-            AccountsActivity.rateAppConfig = RateThisApp.Config(10000, 10000)
             PreferenceManager.getDefaultSharedPreferences(context)
                 .edit { //do not show first run dialog
                     putBoolean(context.getString(R.string.key_first_run), false)
