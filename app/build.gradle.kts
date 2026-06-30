@@ -34,7 +34,6 @@ android {
         resValue("string", "app_name", "GnuCash")
         resValue("string", "app_playstore_url", "market://details?id=${applicationId}")
         resValue("string", "app_version_name", "$versionName")
-        buildConfigField("boolean", "CAN_REQUEST_RATING", "false")
         buildConfigField("boolean", "GOOGLE_GCM", "false")
         buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxAppKey}\"")
         manifestPlaceholders["dropbox_app_key"] = "db-${dropboxAppKey}"
@@ -123,7 +122,6 @@ android {
 
         create("production") {
             dimension = "stability"
-            buildConfigField("boolean", "CAN_REQUEST_RATING", "true")
 
             buildConfigField("Boolean", "GOOGLE_GCM", "true")
             extraProperties["useGoogleGcm"] = true
@@ -191,7 +189,6 @@ dependencies {
     implementation(libs.betterpickers)
     implementation(libs.times.square)
     implementation(libs.wizardpager)
-    implementation(libs.ratethisapp)
     implementation(libs.okhttp)
 
     // Export
