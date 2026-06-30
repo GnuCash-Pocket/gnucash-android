@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 import org.gnucash.android.R
 import org.gnucash.android.app.GnuCashActivity
 import org.gnucash.android.app.GnuCashApplication.Companion.getBookPreferences
+import org.gnucash.android.app.arguments
 import org.gnucash.android.databinding.WidgetConfigurationBinding
 import org.gnucash.android.db.BookDbHelper
 import org.gnucash.android.db.DatabaseHelper
@@ -142,16 +143,16 @@ class WidgetConfigurationActivity : GnuCashActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
         handleIntent(intent)
     }
 
     private fun handleIntent(intent: Intent) {
-        var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
-
-        val args = intent.extras
-        if (args != null) {
-            appWidgetId = args.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, this.appWidgetId)
-        }
+        val args = intent.arguments()
+        val appWidgetId = args.getInt(
+            AppWidgetManager.EXTRA_APPWIDGET_ID,
+            AppWidgetManager.INVALID_APPWIDGET_ID
+        )
 
         val context: Context = this
         val preferences = context.getSharedPreferences(PREFS_PREFIX + appWidgetId, MODE_PRIVATE)

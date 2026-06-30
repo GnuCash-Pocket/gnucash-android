@@ -80,6 +80,7 @@ class AccountsActivity : BaseDrawerActivity(),
      */
     private var currentFilter: String? = null
     private var isShowHiddenAccounts = false
+    private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
 
     @SuppressLint("NotifyDataSetChanged")
     override fun refresh() {
@@ -158,7 +159,7 @@ class AccountsActivity : BaseDrawerActivity(),
             }
         }.attach()
 
-        setCurrentTab()
+        handleIntent(intent)
     }
 
     /**
@@ -180,15 +181,18 @@ class AccountsActivity : BaseDrawerActivity(),
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        setCurrentTab()
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent) {
+        setCurrentTab(intent)
         handleOpenFileIntent(intent)
     }
 
     /**
      * Sets the current tab in the ViewPager
      */
-    fun setCurrentTab() {
-        val preferences = PreferenceManager.getDefaultSharedPreferences(this)
+    private fun setCurrentTab(intent: Intent) {
         val lastTabIndex =
             preferences.getInt(LAST_OPEN_TAB_INDEX, INDEX_TOP_LEVEL_ACCOUNTS_FRAGMENT)
         val index = intent.getIntExtra(EXTRA_TAB_INDEX, lastTabIndex)
@@ -210,8 +214,7 @@ class AccountsActivity : BaseDrawerActivity(),
             true
         )
 
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        val firstRun = prefs.getBoolean(getString(R.string.key_first_run), true)
+        val firstRun = preferences.getBoolean(getString(R.string.key_first_run), true)
         if (firstRun) {
             startActivity(Intent(context, FirstRunWizardActivity::class.java))
             finish()
@@ -221,9 +224,9 @@ class AccountsActivity : BaseDrawerActivity(),
         schedulePeriodic(context)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        PreferenceManager.getDefaultSharedPreferences(this).edit {
+    override fun onStop() {
+        super.onStop()
+        preferences.edit {
             putInt(LAST_OPEN_TAB_INDEX, binding.pager.currentItem)
         }
     }
