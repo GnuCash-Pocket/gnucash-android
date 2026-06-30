@@ -66,17 +66,18 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         transactionsDbAdapter = TransactionsDbAdapter.instance
         accountsDbAdapter = AccountsDbAdapter.instance
 
-        handleIntent()
+        handleIntent(intent)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        handleIntent()
+        setIntent(intent)
+        handleIntent(intent)
     }
 
-    private fun handleIntent() {
-        this.transaction = requireTransaction()
-        this.account = requireAccount()
+    private fun handleIntent(intent: Intent) {
+        this.transaction = requireTransaction(intent)
+        this.account = requireAccount(intent)
     }
 
     override fun onResume() {
@@ -125,8 +126,11 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
     /**
      * Reads the transaction information from the database and binds it to the views
      */
-    private fun bindViews(binding: ActivityTransactionDetailBinding, transaction: Transaction) {
-        val account = requireAccount()
+    private fun bindViews(
+        binding: ActivityTransactionDetailBinding,
+        transaction: Transaction,
+        account: Account
+    ) {
         // Remove all rows that are not special.
         binding.transactionItems.removeAllViews()
 
@@ -196,7 +200,8 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
     override fun refresh(uid: String?) {
         this.transaction = null
         val transaction = requireTransaction()
-        bindViews(binding, transaction)
+        val account = requireAccount()
+        bindViews(binding, transaction, account)
     }
 
     private fun editTransaction(transaction: Transaction, account: Account) {
@@ -311,12 +316,12 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         startActivityForResult(intent, REQUEST_REFRESH)
     }
 
-    private fun requireTransaction(): Transaction {
+    private fun requireTransaction(intent: Intent = this.intent): Transaction {
         var transaction = this.transaction
         if (transaction != null) {
             return transaction
         }
-        val args: Bundle = requireArguments()
+        val args: Bundle = intent.requireArguments()
         val transactionUID = args.getString(UxArgument.SELECTED_TRANSACTION_UID)!!
         try {
             transaction = transactionsDbAdapter.getRecord(transactionUID)
@@ -332,12 +337,12 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         return transaction
     }
 
-    private fun requireAccount(): Account {
+    private fun requireAccount(intent: Intent = this.intent): Account {
         var account = this.account
         if (account != null) {
             return account
         }
-        val args: Bundle = requireArguments()
+        val args: Bundle = intent.requireArguments()
         val accountUID = args.getString(UxArgument.SELECTED_ACCOUNT_UID)!!
         try {
             account = accountsDbAdapter.getRecord(accountUID)
