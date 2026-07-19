@@ -20,6 +20,7 @@
     <string name="key_delete_all_accounts" translatable="false">delete_all_accounts</string>
     <string name="key_delete_all_transactions" translatable="false">delete_all_transactions</string>
     <string name="key_default_export_format" translatable="false">default_export_format</string>
+    <string name="key_default_export_target" translatable="false">default_export_target</string>
     <string name="key_create_default_accounts" translatable="false">create_default_accounts</string>
     <string name="key_save_opening_balances" translatable="false">save_opening_balances</string>
     <string name="key_restore_backup" translatable="false">restore_backup</string>

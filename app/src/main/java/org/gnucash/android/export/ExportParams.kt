@@ -33,17 +33,6 @@ import java.sql.Timestamp
  * @see ExportAsyncTask
  */
 class ExportParams() {
-    /**
-     * Options for the destination of the exported transactions file.
-     * It could be stored on the [.SD_CARD] or exported through another program via [.SHARING]
-     */
-    enum class ExportTarget {
-        URI,
-        DROPBOX,
-        OWNCLOUD,
-        SHARING,
-        SD_CARD
-    }
 
     /**
      * Format to use for the exported transactions
@@ -113,8 +102,8 @@ class ExportParams() {
      */
     fun toTag(): String {
         return exportFormat.name +
-                TAG_SEPARATOR + exportTarget.name +
-                TAG_SEPARATOR + TimestampHelper.getUtcStringFromTimestamp(this.exportStartTime) +
+                TAG_SEPARATOR + exportTarget.value +
+                TAG_SEPARATOR + getUtcStringFromTimestamp(this.exportStartTime) +
                 TAG_SEPARATOR + deleteTransactionsAfterExport +
                 TAG_SEPARATOR + (exportLocation ?: "") +
                 TAG_SEPARATOR + isCompressed +
@@ -138,7 +127,7 @@ class ExportParams() {
             val tokens: Array<String> =
                 tag.split(TAG_SEPARATOR.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             val params = ExportParams(ExportFormat.of(tokens[0]))
-            params.exportTarget = ExportTarget.valueOf(tokens[1])
+            params.exportTarget = ExportTarget.of(tokens[1])
             params.exportStartTime = getTimestampFromUtcString(tokens[2])
             params.deleteTransactionsAfterExport = tokens[3].toBoolean()
             if (tokens.size >= 5) {

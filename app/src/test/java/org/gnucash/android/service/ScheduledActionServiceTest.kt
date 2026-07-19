@@ -25,6 +25,7 @@ import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.export.ExportFormat
 import org.gnucash.android.export.ExportParams
+import org.gnucash.android.export.ExportTarget
 import org.gnucash.android.export.Exporter
 import org.gnucash.android.export.xml.GncXmlHelper.parseDateTime
 import org.gnucash.android.model.Account
@@ -257,7 +258,7 @@ class ScheduledActionServiceTest : BookHelperTest() {
         var previousLastRun = scheduledBackup.lastRunDate
 
         val backupParams = ExportParams(ExportFormat.XML)
-        backupParams.exportTarget = ExportParams.ExportTarget.SD_CARD
+        backupParams.exportTarget = ExportTarget.SD_CARD
         scheduledBackup.setExportParams(backupParams)
 
         // Check there's not a backup for each missed run
@@ -307,7 +308,7 @@ class ScheduledActionServiceTest : BookHelperTest() {
         scheduledBackup.setRecurrence(recurrence)
 
         val backupParams = ExportParams(ExportFormat.XML)
-        backupParams.exportTarget = ExportParams.ExportTarget.SD_CARD
+        backupParams.exportTarget = ExportTarget.SD_CARD
         scheduledBackup.setExportParams(backupParams)
 
         val bookUID = GnuCashApplication.activeBookUID
@@ -340,7 +341,7 @@ class ScheduledActionServiceTest : BookHelperTest() {
             }
             setRecurrence(recurrence)
             val backupParams = ExportParams(ExportFormat.QIF).apply {
-                exportTarget = ExportParams.ExportTarget.SD_CARD
+                exportTarget = ExportTarget.SD_CARD
                 exportStartTime = Timestamp(startDate)
             }
             setExportParams(backupParams)
@@ -417,7 +418,7 @@ class ScheduledActionServiceTest : BookHelperTest() {
         recurrence.byDays = listOf(Calendar.FRIDAY)
         scheduledBackup.setRecurrence(recurrence)
         val backupParams = ExportParams(ExportFormat.QIF)
-        backupParams.exportTarget = ExportParams.ExportTarget.SD_CARD
+        backupParams.exportTarget = ExportTarget.SD_CARD
         backupParams.exportStartTime = Timestamp(scheduledBackup.startDate)
         scheduledBackup.setExportParams(backupParams)
 
