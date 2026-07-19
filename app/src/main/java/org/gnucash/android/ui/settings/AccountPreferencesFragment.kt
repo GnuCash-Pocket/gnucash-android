@@ -31,6 +31,7 @@ import org.gnucash.android.db.adapter.CommoditiesDbAdapter
 import org.gnucash.android.export.ExportAsyncTask
 import org.gnucash.android.export.ExportFormat
 import org.gnucash.android.export.ExportParams
+import org.gnucash.android.export.ExportTarget
 import org.gnucash.android.export.Exporter.Companion.buildExportFilename
 import org.gnucash.android.ui.account.AccountsActivity
 import org.gnucash.android.ui.settings.BookManagerFragment.Companion.openBook
@@ -152,7 +153,7 @@ class AccountPreferencesFragment : GnuPreferenceFragment() {
 
             REQUEST_EXPORT_FILE -> if (resultCode == Activity.RESULT_OK && data != null) {
                 val exportParams = ExportParams(ExportFormat.CSVA).apply {
-                    exportTarget = ExportParams.ExportTarget.URI
+                    exportTarget = ExportTarget.URI
                     exportLocation = data.data
                 }
                 val exportTask = ExportAsyncTask(activity, activeBookUID!!)

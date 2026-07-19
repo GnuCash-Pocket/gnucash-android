@@ -30,6 +30,7 @@ import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.export.ExportFormat
 import org.gnucash.android.export.ExportParams
+import org.gnucash.android.export.ExportTarget
 import org.gnucash.android.export.Exporter
 import org.gnucash.android.export.xml.GncXmlExporter
 import org.gnucash.android.lang.BooleanCallback
@@ -107,7 +108,7 @@ object BackupManager {
     @WorkerThread
     fun backupBook(context: Context, bookUID: String): Boolean {
         val params = ExportParams(ExportFormat.XML)
-        params.exportTarget = ExportParams.ExportTarget.URI
+        params.exportTarget = ExportTarget.URI
         params.isCompressed = true
         try {
             val backupUri = getBookBackupFileUri(context, bookUID, params)

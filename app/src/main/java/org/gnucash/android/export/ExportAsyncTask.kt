@@ -25,7 +25,6 @@ import android.os.AsyncTask
 import android.os.OperationCanceledException
 import org.gnucash.android.R
 import org.gnucash.android.app.getActivity
-import org.gnucash.android.export.ExportParams.ExportTarget
 import org.gnucash.android.gnc.AsyncTaskProgressListener
 import org.gnucash.android.ui.common.GnucashProgressDialog
 import org.gnucash.android.ui.common.Refreshable
