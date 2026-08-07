@@ -502,8 +502,12 @@ class GncXmlHandlerTest : BookHelperTest() {
             scheduledActionDbAdapter: ScheduledActionDbAdapter,
             transactionsDbAdapter: TransactionsDbAdapter
         ) {
+            val currencyEUR = commoditiesDbAdapter.getCurrency("EUR")!!
+            assertThat(currencyEUR.symbol).isEqualTo("€")
             val currencyILS = commoditiesDbAdapter.getCurrency("ILS")!!
+            assertThat(currencyILS.symbol).isEqualTo("₪")
             val currencyUSD = commoditiesDbAdapter.getCurrency("USD")!!
+            assertThat(currencyUSD.symbol).isEqualTo("$")
 
             assertThat(bookUID).isEqualTo("a7682e5d878e43cea216611401f08463")
             val book = booksDbAdapter.getRecord(bookUID)

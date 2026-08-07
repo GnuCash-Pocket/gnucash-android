@@ -89,13 +89,26 @@ class Commodity @JvmOverloads constructor(
     /**
      * Returns the symbol for this commodity.
      *
-     * Normally this would be the local symbol, but in it's absence, the mnemonic (currency code)
+     * Normally this would be the local symbol, but in its absence, the mnemonic (currency code)
      * is returned.
      *
      * @return
      */
     val symbol: String
-        get() = if (localSymbol.isNullOrEmpty()) mnemonic else localSymbol!!
+        get() = if (localSymbol.isNullOrEmpty()) {
+            if (isCurrency) {
+                val symbol = currency.symbol
+                if (symbol.isNullOrEmpty()) {
+                    mnemonic
+                } else {
+                    symbol
+                }
+            } else {
+                mnemonic
+            }
+        } else {
+            localSymbol!!
+        }
 
     /**
      * Returns the (minimum) number of digits that this commodity supports in its fractional part
