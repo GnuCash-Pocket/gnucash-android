@@ -400,7 +400,7 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
             cancellationSignal.throwIfCanceled()
             val commodity = pipeCommodity(db, cursor)
             listener?.onCommodity(commodity)
-            commoditiesDbAdapter.insert(commodity)
+            commoditiesDbAdapter.replace(commodity)
         }
     }
 
@@ -414,21 +414,21 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
         val quoteSource = cursor.getString("quote_source")
         val quoteTz = cursor.getString("quote_tz")
 
-        val commodityOld = commoditiesDbAdapter.getCommodity(mnemonic, namespace)
-        if (commodityOld != null) {
-            commoditiesDbAdapter.deleteRecord(commodityOld)
-        }
+        val commodityOld = commoditiesDbAdapter.getRecordOrNull(guid)
+            ?: commoditiesDbAdapter.getCommodity(mnemonic, namespace)
 
-        val commodity = Commodity(
+        val commodity = (commodityOld ?: Commodity(
             fullname = fullname,
             mnemonic = mnemonic,
             namespace = namespace
-        )
-        commodity.setUID(guid)
-        commodity.cusip = cusip
-        commodity.smallestFraction = fraction
-        commodity.quoteSource = quoteSource
-        commodity.setQuoteTimeZone(quoteTz)
+        )).apply {
+            setUID(guid)
+            this.cusip = cusip
+            this.localSymbol = commodityOld?.localSymbol.orEmpty()
+            this.smallestFraction = fraction
+            this.quoteSource = quoteSource
+            setQuoteTimeZone(quoteTz)
+        }
 
         return commodity
     }
