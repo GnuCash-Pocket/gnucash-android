@@ -153,9 +153,18 @@ class AccountsActivity : BaseDrawerActivity(),
 
         TabLayoutMediator(tabLayout, binding.pager) { tab, position ->
             when (position) {
-                INDEX_RECENT_ACCOUNTS_FRAGMENT -> tab.setText(R.string.title_recent_accounts)
-                INDEX_TOP_LEVEL_ACCOUNTS_FRAGMENT -> tab.setText(R.string.title_all_accounts)
-                INDEX_FAVORITE_ACCOUNTS_FRAGMENT -> tab.setText(R.string.title_favorite_accounts)
+                INDEX_RECENT_ACCOUNTS_FRAGMENT -> {
+                    tab.setText(R.string.title_recent_accounts)
+                    tab.setIcon(R.drawable.ic_history)
+                }
+                INDEX_TOP_LEVEL_ACCOUNTS_FRAGMENT -> {
+                    tab.setText(R.string.title_all_accounts)
+                    tab.setIcon(R.drawable.ic_account)
+                }
+                INDEX_FAVORITE_ACCOUNTS_FRAGMENT -> {
+                    tab.setText(R.string.title_favorite_accounts)
+                    tab.setIcon(R.drawable.ic_favorite)
+                }
             }
         }.attach()
 
