@@ -17,14 +17,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_vertical"
-    android:padding="4dp">
+    android:gravity="center_vertical">
 
     <TextView
         android:id="@+id/balance_label"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="2"
         android:gravity="end"
         android:text="@string/account_balance"
         android:textColor="?android:textColorPrimary"
@@ -32,26 +30,14 @@
         android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/balance_debit"
-        android:layout_width="0dp"
+        android:id="@+id/balance_amount"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="end"
+        android:layout_span="2"
+        android:gravity="center_horizontal"
         android:textColor="?android:textColorPrimary"
         android:textSize="16sp"
         android:textStyle="bold"
-        tools:text="$ 2000"
-        tools:textColor="@color/debit_red" />
-
-    <TextView
-        android:id="@+id/balance_credit"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="end"
-        android:textColor="?android:textColorPrimary"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        tools:text="$ 2000"
+        tools:text="$ 2000.99"
         tools:textColor="@color/credit_green" />
 </TableRow>

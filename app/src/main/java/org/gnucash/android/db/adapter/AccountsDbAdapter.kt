@@ -791,7 +791,7 @@ class AccountsDbAdapter(
             Timber.d("compute account children : %d", children.size)
             for (childUID in children) {
                 val child = getRecord(childUID)
-                val childCommodity = child!!.commodity
+                val childCommodity = child.commodity
                 val childBalance = computeBalance(child, startTimestamp, endTimestamp, true)
                 if (childBalance.isAmountZero) continue
                 val price = pricesDbAdapter.getPrice(childCommodity, commodity) ?: continue
