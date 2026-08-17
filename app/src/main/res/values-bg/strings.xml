@@ -430,4 +430,5 @@
     <string name="title_progress_processing_prices">Обработка на цени</string>
     <string name="title_progress_processing_schedules">Обработка на графици</string>
     <string name="title_progress_processing_transactions">Обработка на транзакции</string>
+    <string name="title_tab_labels">Показване на раздели с етикети</string>
 </resources>

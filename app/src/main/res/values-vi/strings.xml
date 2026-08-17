@@ -431,4 +431,5 @@
     <string name="title_progress_processing_prices">Xử lý giá cả</string>
     <string name="title_progress_processing_schedules">Xử lý lịch trình</string>
     <string name="title_progress_processing_transactions">Xử lý giao dịch</string>
+    <string name="title_tab_labels">Hiện tab có nhãn</string>
 </resources>

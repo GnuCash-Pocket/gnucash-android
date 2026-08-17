@@ -431,4 +431,5 @@
     <string name="title_progress_processing_prices">Hintojen käsittely</string>
     <string name="title_progress_processing_schedules">Aikataulujen käsittely</string>
     <string name="title_progress_processing_transactions">Transaktioiden käsittely</string>
+    <string name="title_tab_labels">Näytä välilehdet otsikoilla</string>
 </resources>

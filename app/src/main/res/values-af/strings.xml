@@ -431,4 +431,5 @@
     <string name="title_progress_processing_prices">Verwerking van pryse</string>
     <string name="title_progress_processing_schedules">Verwerking van skedules</string>
     <string name="title_progress_processing_transactions">Verwerking van transaksies</string>
+    <string name="title_tab_labels">Wys oortjies met etikette</string>
 </resources>

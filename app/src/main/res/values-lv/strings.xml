@@ -434,4 +434,5 @@
     <string name="title_progress_processing_prices">Cenu apstrāde</string>
     <string name="title_progress_processing_schedules">Grafiksu apstrāde</string>
     <string name="title_progress_processing_transactions">Darījumu apstrāde</string>
+    <string name="title_tab_labels">Rādīt cilnes ar etiķetēm</string>
 </resources>

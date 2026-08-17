@@ -431,4 +431,5 @@
     <string name="title_progress_processing_prices">Prijzen verwerken</string>
     <string name="title_progress_processing_schedules">Schema\'s verwerken</string>
     <string name="title_progress_processing_transactions">Transacties verwerken</string>
+    <string name="title_tab_labels">Tabbladen met labels weergeven</string>
 </resources>

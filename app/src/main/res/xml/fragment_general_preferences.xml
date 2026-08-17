@@ -11,6 +11,11 @@
             android:key="@string/key_theme"
             android:title="@string/theme_title"
             app:useSimpleSummaryProvider="true" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:icon="@drawable/ic_tab"
+            android:key="@string/pref_tabs_labels"
+            android:title="@string/title_tab_labels" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/title_passcode_preferences">

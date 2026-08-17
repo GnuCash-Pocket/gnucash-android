@@ -27,6 +27,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.edit
 import androidx.fragment.app.Fragment
@@ -80,6 +81,7 @@ class AccountsActivity : BaseDrawerActivity(),
      */
     private var currentFilter: String? = null
     private var isShowHiddenAccounts = false
+    private var isShowTabLabels = false
     private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -150,14 +152,9 @@ class AccountsActivity : BaseDrawerActivity(),
         //show the simple accounts list
         pagerAdapter = AccountViewPagerAdapter(this)
         binding.pager.adapter = pagerAdapter
+        isShowTabLabels = preferences.getBoolean(getString(R.string.pref_tabs_labels), true)
 
-        TabLayoutMediator(tabLayout, binding.pager) { tab, position ->
-            when (position) {
-                INDEX_RECENT_ACCOUNTS_FRAGMENT -> tab.setText(R.string.title_recent_accounts)
-                INDEX_TOP_LEVEL_ACCOUNTS_FRAGMENT -> tab.setText(R.string.title_all_accounts)
-                INDEX_FAVORITE_ACCOUNTS_FRAGMENT -> tab.setText(R.string.title_favorite_accounts)
-            }
-        }.attach()
+        TabLayoutMediator(tabLayout, binding.pager, ::bindTab).attach()
 
         handleIntent(intent)
     }
@@ -222,6 +219,17 @@ class AccountsActivity : BaseDrawerActivity(),
         }
 
         schedulePeriodic(context)
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        // In case some settings changed.
+        val showTabLabels = preferences.getBoolean(getString(R.string.pref_tabs_labels), true)
+        if (showTabLabels != isShowTabLabels) {
+            isShowTabLabels = showTabLabels
+            rebuildTabs()
+        }
     }
 
     override fun onStop() {
@@ -334,9 +342,49 @@ class AccountsActivity : BaseDrawerActivity(),
         }
     }
 
+    private fun rebuildTabs() {
+        val tabLayout = binding.tabLayout
+        for (position in 0 until tabLayout.tabCount) {
+            val tab = tabLayout.getTabAt(position) ?: continue
+            bindTab(tab, position)
+        }
+    }
+
+    private fun bindTab(tab: TabLayout.Tab, position: Int) {
+        when (position) {
+            INDEX_RECENT_ACCOUNTS_FRAGMENT -> bindTab(
+                tab,
+                R.string.title_recent_accounts,
+                R.drawable.ic_history
+            )
+
+            INDEX_TOP_LEVEL_ACCOUNTS_FRAGMENT -> bindTab(
+                tab,
+                R.string.title_all_accounts,
+                R.drawable.ic_account
+            )
+
+            INDEX_FAVORITE_ACCOUNTS_FRAGMENT -> bindTab(
+                tab,
+                R.string.title_favorite_accounts,
+                R.drawable.ic_favorite
+            )
+        }
+    }
+
+    private fun bindTab(tab: TabLayout.Tab, @StringRes title: Int, @DrawableRes icon: Int) {
+        tab.setIcon(icon)
+        if (isShowTabLabels) {
+            tab.setText(title)
+        } else {
+            tab.text = null
+        }
+    }
+
     companion object {
         // "ForResult" to force refresh afterward.
         private const val REQUEST_REFRESH = 0x0000
+
         /**
          * Request code for GnuCash account structure file to import
          */

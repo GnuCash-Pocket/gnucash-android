@@ -431,4 +431,5 @@
     <string name="title_progress_processing_prices">Traitement des prix</string>
     <string name="title_progress_processing_schedules">Traitement des échéanciers</string>
     <string name="title_progress_processing_transactions">Traitement des transactions</string>
+    <string name="title_tab_labels">Afficher les onglets avec libellés</string>
 </resources>

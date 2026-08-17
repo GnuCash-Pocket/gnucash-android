@@ -437,4 +437,5 @@
     <string name="title_progress_processing_prices">Обработка цен</string>
     <string name="title_progress_processing_schedules">Обработка графиков</string>
     <string name="title_progress_processing_transactions">Обработка транзакций</string>
+    <string name="title_tab_labels">Показывать вкладки с подписями</string>
 </resources>

@@ -431,4 +431,5 @@
     <string name="title_progress_processing_prices">Bearbetning av priser</string>
     <string name="title_progress_processing_schedules">Bearbetning av scheman</string>
     <string name="title_progress_processing_transactions">Bearbetning av transaktioner</string>
+    <string name="title_tab_labels">Visa flikar med etiketter</string>
 </resources>

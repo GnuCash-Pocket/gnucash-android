@@ -428,4 +428,5 @@
     <string name="title_progress_processing_prices">Memproses harga</string>
     <string name="title_progress_processing_schedules">Memproses jadwal</string>
     <string name="title_progress_processing_transactions">Memproses transaksi</string>
+    <string name="title_tab_labels">Tampilkan tab dengan label</string>
 </resources>

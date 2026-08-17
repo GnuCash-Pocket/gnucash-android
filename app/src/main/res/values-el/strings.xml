@@ -431,4 +431,5 @@
     <string name="title_progress_processing_prices">Επεξεργασία τιμών</string>
     <string name="title_progress_processing_schedules">Επεξεργασία χρονοδιαγραμμάτων</string>
     <string name="title_progress_processing_transactions">Επεξεργασία συναλλαγών</string>
+    <string name="title_tab_labels">Εμφάνιση καρτελών με ετικέτες</string>
 </resources>

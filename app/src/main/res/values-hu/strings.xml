@@ -431,4 +431,5 @@
     <string name="title_progress_processing_prices">Árak feldolgozása</string>
     <string name="title_progress_processing_schedules">Jegyzékek feldolgozása</string>
     <string name="title_progress_processing_transactions">Tranzakciók feldolgozása</string>
+    <string name="title_tab_labels">Címkés lapok megjelenítése</string>
 </resources>

@@ -143,6 +143,7 @@
         <item name="android:background">?attr/colorPrimary</item>
         <item name="android:minHeight">?attr/actionBarSize</item>
         <item name="elevation">@dimen/elevation_default</item>
+        <item name="tabInlineLabel">true</item>
     </style>
 
     <style name="Widget.GnuCash.Toolbar" parent="Widget.AppCompat.Toolbar">
