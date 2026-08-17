@@ -17,27 +17,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center_vertical"
-    android:padding="4dp">
+    android:gravity="center_vertical">
 
     <TextView
         android:id="@+id/split_account_name"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_weight="2"
+        android:layout_weight="3"
         android:ellipsize="start"
-        android:gravity="center_vertical"
         android:singleLine="true"
         android:textSize="14sp"
         tools:text="Computer" />
 
     <TextView
         android:id="@+id/split_debit"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_weight="1"
+        android:layout_weight="2"
         android:gravity="right"
         android:textSize="16sp"
         tools:text="$ 2000"
@@ -45,10 +41,9 @@
 
     <TextView
         android:id="@+id/split_credit"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_weight="1"
+        android:layout_weight="2"
         android:gravity="right"
         android:textSize="16sp"
         tools:text="$ 2000"

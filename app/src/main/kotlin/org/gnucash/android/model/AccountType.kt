@@ -40,7 +40,7 @@ enum class AccountType(
     /**< liability (and asset) accounts indicate
      *   generic, generalized accounts that are
      *   none of the above. */
-    LIABILITY(TransactionType.CREDIT, TransactionType.DEBIT, labelIndex = 4),
+    LIABILITY(TransactionType.CREDIT, labelIndex = 4),
 
     /**< Stock accounts will typically be shown in
      *   registers which show three columns:
@@ -73,7 +73,7 @@ enum class AccountType(
 
     /**< Expense accounts are used to denote
      *   expenses. */
-    EXPENSE(TransactionType.DEBIT, TransactionType.CREDIT, labelIndex = 6),
+    EXPENSE(TransactionType.DEBIT, labelIndex = 6),
 
     /**< Equity account is used to balance the
      *   balance sheet. */

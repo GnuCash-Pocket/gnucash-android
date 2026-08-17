@@ -116,11 +116,8 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
     }
 
     private fun bind(binding: RowBalanceBinding, account: Account, timeMillis: Long) {
-        val accountBalance =
-            accountsDbAdapter.getAccountBalance(account, ALWAYS, timeMillis, true)
-        val balanceTextView =
-            if (account.type.hasDebitDisplayBalance) binding.balanceDebit else binding.balanceCredit
-        balanceTextView.displayBalance(accountBalance, balanceTextView.currentTextColor)
+        val accountBalance = accountsDbAdapter.getAccountBalance(account, ALWAYS, timeMillis, true)
+        binding.balanceAmount.displayBalance(account, accountBalance, binding.balanceAmount.currentTextColor)
     }
 
     /**
