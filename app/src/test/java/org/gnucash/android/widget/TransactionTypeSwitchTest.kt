@@ -70,7 +70,7 @@ class TransactionTypeSwitchTest : GnuCashTest() {
 
         switch.accountType = AccountType.LIABILITY
         assertThat(switch.accountType.hasDebitNormalBalance).isFalse()
-        assertThat(switch.accountType.hasDebitDisplayBalance).isTrue()
+        assertThat(switch.accountType.hasDebitDisplayBalance).isFalse()
         assertThat(switch.transactionType).isEqualTo(TransactionType.CREDIT)
         assertThat(switch.textDebit).isEqualTo(labelDecrease)
         assertThat(switch.textCredit).isEqualTo(labelIncrease)
@@ -115,7 +115,7 @@ class TransactionTypeSwitchTest : GnuCashTest() {
 
         switch.accountType = AccountType.EXPENSE
         assertThat(switch.accountType.hasDebitNormalBalance).isTrue()
-        assertThat(switch.accountType.hasDebitDisplayBalance).isFalse()
+        assertThat(switch.accountType.hasDebitDisplayBalance).isTrue()
         assertThat(switch.transactionType).isEqualTo(TransactionType.DEBIT)
         assertThat(switch.textDebit).isEqualTo(labelExpense)
         assertThat(switch.textCredit).isEqualTo(labelRebate)
