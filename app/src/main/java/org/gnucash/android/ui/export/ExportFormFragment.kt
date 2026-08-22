@@ -21,6 +21,7 @@ import android.app.TimePickerDialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -34,6 +35,7 @@ import android.widget.ArrayAdapter
 import android.widget.DatePicker
 import android.widget.TimePicker
 import androidx.appcompat.app.ActionBar
+import androidx.core.content.edit
 import androidx.core.view.isVisible
 import androidx.preference.PreferenceManager
 import com.codetroopers.betterpickers.recurrencepicker.EventRecurrence
@@ -60,7 +62,7 @@ import org.gnucash.android.export.DropboxHelper.retrieveAndSaveToken
 import org.gnucash.android.export.ExportAsyncTask
 import org.gnucash.android.export.ExportFormat
 import org.gnucash.android.export.ExportParams
-import org.gnucash.android.export.ExportParams.ExportTarget
+import org.gnucash.android.export.ExportTarget
 import org.gnucash.android.export.Exporter
 import org.gnucash.android.export.Exporter.Companion.buildExportFilename
 import org.gnucash.android.model.ScheduledAction
@@ -119,6 +121,7 @@ class ExportFormFragment : MenuFragment(),
 
     private var binding: FragmentExportFormBinding? = null
     private val formatItems = mutableListOf<ExportFormatItem>()
+    private lateinit var preferences: SharedPreferences
 
     private fun onFormatSelected(binding: FragmentExportFormBinding, exportFormat: ExportFormat) {
         exportParams.exportFormat = exportFormat
@@ -160,14 +163,19 @@ class ExportFormFragment : MenuFragment(),
         super.onCreate(savedInstanceState)
 
         val context = requireContext()
-        val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+        preferences = PreferenceManager.getDefaultSharedPreferences(context)
         val exportParams = this.exportParams
 
-        val defaultExportFormat =
-            preferences.getString(
-                getString(R.string.key_default_export_format),
-                exportParams.exportFormat.value
-            )
+        val defaultExportTarget = preferences.getString(
+            getString(R.string.key_default_export_target),
+            exportParams.exportTarget.value
+        )
+        exportParams.exportTarget = ExportTarget.of(defaultExportTarget)
+
+        val defaultExportFormat = preferences.getString(
+            getString(R.string.key_default_export_format),
+            exportParams.exportFormat.value
+        )
         var exportFormat = ExportFormat.of(defaultExportFormat)
 
         formatItems.clear()
@@ -182,7 +190,10 @@ class ExportFormFragment : MenuFragment(),
         )
         if (isDoubleEntryEnabled(context)) {
             formatItems.add(
-                ExportFormatItem(ExportFormat.SQLITE, context.getString(ExportFormat.SQLITE.labelId))
+                ExportFormatItem(
+                    ExportFormat.SQLITE,
+                    context.getString(ExportFormat.SQLITE.labelId)
+                )
             )
             formatItems.add(
                 ExportFormatItem(ExportFormat.XML, context.getString(ExportFormat.XML.labelId))
@@ -402,12 +413,14 @@ class ExportFormFragment : MenuFragment(),
                         binding.recurrenceOptions.isVisible = true
                         val exportUri = exportParams.exportLocation
                         setExportUri(exportUri)
+                        setDefaultTarget(ExportTarget.URI)
                     }
 
                     TARGET_DROPBOX -> {
                         setExportUriText(getString(R.string.label_dropbox_export_destination))
                         binding.recurrenceOptions.isVisible = true
                         exportParams.exportTarget = ExportTarget.DROPBOX
+                        setDefaultTarget(ExportTarget.DROPBOX)
 
                         if (!hasDropboxToken(context)) {
                             authenticateDropbox(context)
@@ -426,15 +439,20 @@ class ExportFormFragment : MenuFragment(),
                         }
                         exportParams.exportTarget = ExportTarget.OWNCLOUD
                         binding.recurrenceOptions.isVisible = true
+                        setDefaultTarget(ExportTarget.OWNCLOUD)
                     }
 
                     TARGET_SHARE -> {
                         setExportUriText(getString(R.string.label_select_destination_after_export))
                         exportParams.exportTarget = ExportTarget.SHARING
                         binding.recurrenceOptions.isVisible = false
+                        setDefaultTarget(ExportTarget.SHARING)
                     }
 
-                    else -> exportParams.exportTarget = ExportTarget.SD_CARD
+                    else -> {
+                        exportParams.exportTarget = ExportTarget.SD_CARD
+                        setDefaultTarget(ExportTarget.SD_CARD)
+                    }
                 }
             }
 
@@ -638,6 +656,12 @@ class ExportFormFragment : MenuFragment(),
     private data class ExportFormatItem(val value: ExportFormat, val label: String) {
         override fun toString(): String {
             return label
+        }
+    }
+
+    private fun setDefaultTarget(target: ExportTarget) {
+        preferences.edit {
+            putString(getString(R.string.key_default_export_target), target.value)
         }
     }
 

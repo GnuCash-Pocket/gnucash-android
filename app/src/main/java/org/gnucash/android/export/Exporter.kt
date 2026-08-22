@@ -52,7 +52,6 @@ import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
 import org.gnucash.android.db.adapter.SplitsDbAdapter
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.export.DropboxHelper.getClient
-import org.gnucash.android.export.ExportParams.ExportTarget
 import org.gnucash.android.gnc.GncProgressListener
 import org.gnucash.android.net.configureHttpClientToTrustAllCertificates
 import org.gnucash.android.ui.settings.OwnCloudPreferences
