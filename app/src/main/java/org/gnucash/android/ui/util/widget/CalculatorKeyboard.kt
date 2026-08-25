@@ -188,7 +188,7 @@ class CalculatorKeyboard(
         get() = keyboardView.isVisible
 
     companion object {
-        private const val ACCEPTED = "0123456789١٢٣٤٥٦٧٨٩+*/()"
+        private const val ACCEPTED = "0123456789١٢٣٤٥٦٧٨٩+*/()÷×"
         private const val KEY_CODE_CLEAR = CalculatorKeyboardView.KEY_CODE_CLEAR
         private const val KEY_CODE_DELETE = CalculatorKeyboardView.KEY_CODE_DELETE
         private const val KEY_CODE_EVALUATE = CalculatorKeyboardView.KEY_CODE_EVALUATE

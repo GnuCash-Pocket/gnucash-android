@@ -175,7 +175,7 @@ class CalculatorEditText @JvmOverloads constructor(
      * @return Result of arithmetic evaluation which is same as text displayed in EditText
      */
     fun evaluate(): String {
-        val amountString = cleanString
+        val amountString = cleanString()
         if (amountString.isEmpty()) {
             return ""
         }
@@ -216,23 +216,15 @@ class CalculatorEditText @JvmOverloads constructor(
      *
      * @return String with the amount in the EditText or empty string if there is no input
      */
-    val cleanString: String
-        //convert "ARABIC DECIMAL SEPARATOR" U+066B into period
-        //convert "ARABIC-INDIC DIGIT ZERO" U+0660 into western zero and do the same for all digits
-        get() = getText().toString()
-            .replace("[,\u066B]".toRegex(), ".")
-            .replace("\u0660".toRegex(), "0")
-            .replace("\u0661".toRegex(), "1")
-            .replace("\u0662".toRegex(), "2")
-            .replace("\u0662".toRegex(), "2")
-            .replace("\u0663".toRegex(), "3")
-            .replace("\u0664".toRegex(), "4")
-            .replace("\u0665".toRegex(), "5")
-            .replace("\u0666".toRegex(), "6")
-            .replace("\u0667".toRegex(), "7")
-            .replace("\u0668".toRegex(), "8")
-            .replace("\u0669".toRegex(), "9")
-            .trim()
+    fun cleanString(): String {
+        var text = getText().toString().trim()
+        if (text.isNotEmpty()) {
+            specialCharacters.forEach { (c1, c2) ->
+                text = text.replace(c1, c2)
+            }
+        }
+        return text
+    }
 
     var value: BigDecimal?
         /**
@@ -333,5 +325,26 @@ class CalculatorEditText @JvmOverloads constructor(
         for (listener in onValueChangedListeners) {
             listener.onValueChanged(value)
         }
+    }
+
+    companion object {
+        //convert "ARABIC DECIMAL SEPARATOR" U+066B into period
+        //convert "ARABIC-INDIC DIGIT ZERO" U+0660 into western zero and do the same for all digits
+        private val specialCharacters = mapOf(
+            ',' to '.',
+            '\u066B' to '.',
+            '\u0660' to '0',
+            '\u0661' to '1',
+            '\u0662' to '2',
+            '\u0663' to '3',
+            '\u0664' to '4',
+            '\u0665' to '5',
+            '\u0666' to '6',
+            '\u0667' to '7',
+            '\u0668' to '8',
+            '\u0669' to '9',
+            '×' to '*',
+            '÷' to '/',
+        )
     }
 }

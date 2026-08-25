@@ -295,7 +295,7 @@ class SplitEditorFragment : MenuFragment() {
          */
         val amountValue: BigDecimal
             get() {
-                val amountString = splitAmountEditText.cleanString
+                val amountString = splitAmountEditText.cleanString()
                 val amount = evaluate(amountString)
                 return amount ?: BigDecimal.ZERO
             }
