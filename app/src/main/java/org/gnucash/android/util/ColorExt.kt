@@ -260,7 +260,6 @@ fun Int.formatHexRGB(): String = String.format(
     Color.blue(this)
 )
 
-@TargetApi(Build.VERSION_CODES.O)
 fun Color.formatHexRGB(): String = String.format(
     "#%02X%02X%02X",
     (red() * 255.0f + 0.5f).toInt(),

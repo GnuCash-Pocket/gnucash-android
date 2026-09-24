@@ -1,14 +1,12 @@
 package org.gnucash.android.util
 
-import android.os.Build
-import androidx.annotation.RequiresApi
-import net.objecthunter.exp4j.ExpressionBuilder
 import timber.log.Timber
 import java.math.BigDecimal
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.text.ParseException
 import java.text.ParsePosition
+import com.ezylang.evalex.Expression
 
 /**
  * Parses amounts as String into BigDecimal.
@@ -23,7 +21,7 @@ object AmountParser {
      */
     @Throws(ParseException::class)
     fun parse(amount: String?): BigDecimal {
-        if (amount == null || amount.isEmpty()) {
+        if (amount.isNullOrEmpty()) {
             throw ParseException("Parse error", 0)
         }
         val formatter = NumberFormat.getNumberInstance() as DecimalFormat
@@ -43,29 +41,7 @@ object AmountParser {
         if (expressionString.isNullOrEmpty()) {
             return null
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            return evaluate26(expressionString)
-        }
-        return evaluate16(expressionString)
-    }
-
-    private fun evaluate16(expressionString: String): BigDecimal? {
-        val builder = ExpressionBuilder(expressionString)
-
-        try {
-            val expression = builder.build()
-            if (expression != null && expression.validate().isValid) {
-                return BigDecimal.valueOf(expression.evaluate())
-            }
-        } catch (e: Exception) {
-            Timber.w(e, "Invalid expression: %s", expressionString)
-        }
-        return null
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun evaluate26(expressionString: String): BigDecimal? {
-        val expression = com.ezylang.evalex.Expression(expressionString)
+        val expression = Expression(expressionString)
         try {
             val value = expression.evaluate()
             if (value != null && value.isNumberValue) {

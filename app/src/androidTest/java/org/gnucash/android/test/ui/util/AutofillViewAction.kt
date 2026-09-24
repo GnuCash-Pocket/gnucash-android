@@ -22,14 +22,12 @@ class AutofillViewAction(private val mode: Int) : ViewAction {
     }
 
     override fun perform(uiController: UiController, view: View) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            view.setImportantForAutofill(mode)
+        view.setImportantForAutofill(mode)
 
-            val context = view.context
-            val autofillManager = context.getSystemService(AutofillManager::class.java)
-            autofillManager?.disableAutofillServices()
-            autofillManager?.cancel()
-        }
+        val context = view.context
+        val autofillManager = context.getSystemService(AutofillManager::class.java)
+        autofillManager?.disableAutofillServices()
+        autofillManager?.cancel()
     }
 
     companion object {

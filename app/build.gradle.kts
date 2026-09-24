@@ -5,15 +5,16 @@ import org.jetbrains.kotlin.gradle.plugin.extraProperties
 
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
 
     // Add the Firebase Crashlytics plugins.
     alias(libs.plugins.google.services)
     alias(libs.plugins.crashlytics)
 }
 
-val versionMajor = 2
-val versionMinor = 13
-val versionPatch = 0
+val versionMajor = 3
+val versionMinor = 3
+val versionPatch = 1
 val versionBuild = 0
 
 val dropboxAppKey =
@@ -27,10 +28,11 @@ android {
 
     defaultConfig {
         applicationId = "org.gnucash.pocket"
-        minSdk = 23
+        minSdk = 26
         targetSdk = 37
         versionCode = (((((versionMajor * 100) + versionMinor) * 1000) + versionPatch) * 1000) + versionBuild
-        versionName = "${versionMajor}.${versionMinor}.${versionPatch}"
+        versionName = "${versionMajor}.${versionMinor}.${versionPatch}.${versionBuild}"
+        println("default, version: $versionName")
         resValue("string", "app_name", "GnuCash")
         resValue("string", "app_playstore_url", "market://details?id=${applicationId}")
         resValue("string", "app_version_name", "$versionName")
@@ -104,6 +106,7 @@ android {
             applicationIdSuffix = ".devel"
             versionName =
                 "${versionMajor}.${versionMinor}.${versionPatch}.${versionBuild}-$gitCommit"
+            println("$name, version: $versionName")
             resValue("string", "app_name", "GnuCash dev")
             resValue("string", "app_version_name", versionName.toString())
 
@@ -113,6 +116,7 @@ android {
         create("beta") {
             dimension = "stability"
             versionName = "${versionMajor}.${versionMinor}.${versionPatch}.${versionBuild}"
+            println("$name, version: $versionName")
             resValue("string", "app_name", "GnuCash beta")
             resValue("string", "app_version_name", versionName.toString())
 
@@ -122,6 +126,8 @@ android {
 
         create("production") {
             dimension = "stability"
+            versionName = "${versionMajor}.${versionMinor}.${versionPatch}"
+            println("$name, version: $versionName")
 
             buildConfigField("Boolean", "GOOGLE_GCM", "true")
             extraProperties["useGoogleGcm"] = true
@@ -131,6 +137,7 @@ android {
     buildFeatures {
         viewBinding = true
         buildConfig = true
+        compose = true
     }
 
     bundle {
@@ -142,17 +149,8 @@ android {
     }
 
     compileOptions {
-        // For older Java 1.8 devices (SDK 25-).
-        isCoreLibraryDesugaringEnabled = true
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    kotlin {
-        compilerOptions {
-            // 'Didn't find class "java.nio.file.DirectoryStream" on path'
-            jvmTarget = JvmTarget.JVM_1_8
-        }
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
     testOptions {
@@ -161,6 +159,12 @@ android {
         }
 
         animationsDisabled = true
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_11
     }
 }
 
@@ -174,6 +178,14 @@ dependencies {
     implementation(libs.androidx.preference)
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.work.runtime)
+
+    val composeBom = platform(libs.androidx.compose.bom)
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
+
+    implementation(libs.bundles.compose)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     implementation(libs.evalex)
     implementation(libs.exp4j)
@@ -211,9 +223,6 @@ dependencies {
     androidTestImplementation(libs.bundles.android.test)
     androidTestImplementation(libs.bundles.espresso)
     androidTestImplementation(libs.assertj.core)
-
-    // For older Java 1.8 devices (SDK 25-).
-    coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
 
 afterEvaluate {

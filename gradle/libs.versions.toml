@@ -1,36 +1,37 @@
 [versions]
 activity = "1.13.0"
-agp = "9.2.1"
+agp = "9.4.1"
 android-test-core = "1.7.0"
 android-test-espresso = "3.7.0"
 android-test-ext-junit = "1.3.0"
 android-test-rules = "1.7.0"
 android-test-runner = "1.7.0"
-android-test-uiautomator = "2.3.0"
+android-test-uiautomator = "2.4.0"
 apache-http = "3.1"
-appcompat = "1.7.1"
+appcompat = "1.8.0"
 assertj = "3.27.7"
 betterpickers = "3.1.0"
 cardview = "1.0.0"
 chart = "v3.1.0"
-core = "1.18.0"
-crashlytics = "20.0.6"
-crashlytics-plugin = "3.0.7"
-desugar_jdk_libs = "2.1.5"
+compose-bom = "2026.09.00"
+core = "1.19.1"
+crashlytics = "20.1.1"
+crashlytics-plugin = "3.0.8"
 drawerlayout = "1.2.0"
 dropbox = "7.0.0"
-evalex = "3.6.1"
+evalex = "3.7.0"
 exp4j = "0.4.8"
 flexbox = "3.0.0"
-google-services = "4.4.4"
-hilt = "2.59.2"
-joda-time = "2.14.3"
+google-services = "4.5.0"
+hilt = "2.60.1"
+joda-time = "2.14.4"
 junit = "4.13.2"
-kotlin = "2.3.21"
+kotlin = "2.4.20"
 ksp = "2.3.8"
+lifecycle = "2.11.0"
 material = "1.14.0"
 nextcloud = "2.22.1"
-okhttp = "5.3.2"
+okhttp = "5.5.0"
 opencsv = "5.12.0"
 preference = "1.2.1"
 recyclerview = "1.4.0"
@@ -38,7 +39,7 @@ robolectric = "4.16.1"
 timber = "5.0.1"
 times-square = "1.7.11"
 wizardpager = "1.0.3"
-work-runtime = "2.11.2"
+work-runtime = "2.12.0"
 
 [libraries]
 android-test-core = { module = "androidx.test:core-ktx", version.ref = "android-test-core" }
@@ -47,10 +48,20 @@ android-test-rules = { module = "androidx.test:rules", version.ref = "android-te
 android-test-runner = { module = "androidx.test:runner", version.ref = "android-test-runner" }
 android-test-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "android-test-uiautomator" }
 androidx-activity = { module = "androidx.activity:activity-ktx", version.ref = "activity" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 androidx-cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-core = { module = "androidx.core:core-ktx", version.ref = "core" }
 androidx-drawerlayout = { module = "androidx.drawerlayout:drawerlayout", version.ref = "drawerlayout" }
+androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 androidx-preference = { module = "androidx.preference:preference-ktx", version.ref = "preference" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "work-runtime" }
@@ -59,7 +70,6 @@ assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 betterpickers = { module = "com.code-troopers.betterpickers:library", version.ref = "betterpickers" }
 chart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "chart" }
 crashlytics = { module = "com.google.firebase:firebase-crashlytics", version.ref = "crashlytics" }
-desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 dropbox = { module = "com.dropbox.core:dropbox-android-sdk", version.ref = "dropbox" }
 espresso-contrib = { module = "androidx.test.espresso:espresso-contrib", version.ref = "android-test-espresso" }
 espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "android-test-espresso" }
@@ -85,6 +95,14 @@ android-test = [
     "android-test-rules",
     "android-test-runner",
     "android-test-uiautomator"
+]
+compose = [
+    "androidx-compose-ui",
+    "androidx-compose-ui-graphics",
+    "androidx-compose-ui-tooling-preview",
+    "androidx-compose-material3",
+    "androidx-activity-compose",
+    "androidx-lifecycle-viewmodel-compose"
 ]
 espresso = ["espresso-core", "espresso-intents", "espresso-contrib"]
 

@@ -184,15 +184,6 @@ class MoneyTest : GnuCashTest() {
     }
 
     @Test
-    @Config(sdk = [25])
-    fun evaluate_25() {
-        val value = AmountParser.evaluate("123456789012345678.90")
-        assertThat(value).isNotNull()
-        assertThat(value!!.toDouble()).isCloseTo(123456789012345678.90, within(1e-2))
-        assertThat(value.toLong()).isEqualTo(123456789012345680L)
-    }
-
-    @Test
     @Config(sdk = [26])
     fun evaluate_26() {
         val value = AmountParser.evaluate("123456789012345678.90")
