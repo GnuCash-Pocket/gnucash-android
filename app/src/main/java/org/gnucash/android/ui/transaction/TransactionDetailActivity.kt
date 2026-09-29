@@ -9,6 +9,9 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.ActionBar
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentResultListener
 import org.gnucash.android.R
@@ -16,8 +19,6 @@ import org.gnucash.android.app.GnuCashApplication.Companion.isDoubleEntryEnabled
 import org.gnucash.android.app.GnuCashApplication.Companion.shouldBackupTransactions
 import org.gnucash.android.app.requireArguments
 import org.gnucash.android.databinding.ActivityTransactionDetailBinding
-import org.gnucash.android.databinding.ItemSplitAmountInfoBinding
-import org.gnucash.android.databinding.RowBalanceBinding
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.AccountsDbAdapter.Companion.ALWAYS
 import org.gnucash.android.db.adapter.ScheduledActionDbAdapter
@@ -31,8 +32,8 @@ import org.gnucash.android.ui.common.Refreshable
 import org.gnucash.android.ui.common.UxArgument
 import org.gnucash.android.ui.homescreen.WidgetConfigurationActivity.Companion.updateAllWidgets
 import org.gnucash.android.ui.passcode.PasscodeLockActivity
+import org.gnucash.android.ui.theme.GnucashTheme
 import org.gnucash.android.ui.transaction.dialog.BulkMoveDialogFragment
-import org.gnucash.android.ui.util.displayBalance
 import org.gnucash.android.util.BackupManager.backupActiveBookAsync
 import org.gnucash.android.util.formatFullDate
 import timber.log.Timber
@@ -101,23 +102,38 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         }
     }
 
-    private fun bind(binding: ItemSplitAmountInfoBinding, split: Split) {
+    private fun bind(binding: ComposeView, split: Split) {
         val accountUID = account?.uid
         val splitAccountUID = split.accountUID!!
         val account = accountsDbAdapter.getRecord(splitAccountUID)
-        binding.splitAccountName.text = account.fullName
-        if (accountUID != splitAccountUID) {
-            binding.splitAccountName.setOnClickListener { showAccount(split) }
+        val amountFormatted = split.getFormattedQuantity(account)
+
+        binding.setContent {
+            GnucashTheme {
+                SplitAmountInfoRow(
+                    modifier = Modifier.clickable {
+                        if (accountUID != splitAccountUID) {
+                            showAccount(split)
+                        }
+                    },
+                    accountName = account.fullName,
+                    debitAmount = if (split.type == TransactionType.DEBIT) amountFormatted else null,
+                    creditAmount = if (split.type == TransactionType.DEBIT) null else amountFormatted,
+                )
+            }
         }
-        val balanceView =
-            if (split.type == TransactionType.DEBIT) binding.splitDebit else binding.splitCredit
-        @ColorInt val colorBalanceZero = balanceView.currentTextColor
-        balanceView.displayBalance(split.getFormattedQuantity(account), colorBalanceZero)
     }
 
-    private fun bind(binding: RowBalanceBinding, account: Account, timeMillis: Long) {
+    private fun bind(binding: ComposeView, account: Account, timeMillis: Long) {
         val accountBalance = accountsDbAdapter.getAccountBalance(account, ALWAYS, timeMillis, true)
-        binding.balanceAmount.displayBalance(account, accountBalance, binding.balanceAmount.currentTextColor)
+        binding.setContent {
+            GnucashTheme {
+                AccountBalanceRow(
+                    account = account,
+                    balance = accountBalance
+                )
+            }
+        }
     }
 
     /**
@@ -139,23 +155,23 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
 
         val useDoubleEntry = isDoubleEntryEnabled(this)
         val context: Context = this
-        val inflater = layoutInflater
         for (split in transaction.splits) {
             val imbalanceUID =
                 accountsDbAdapter.getImbalanceAccountUID(context, split.value.commodity)
-            if (split.accountUID == imbalanceUID) {
+            if (!useDoubleEntry && split.accountUID == imbalanceUID) {
                 //do now show imbalance accounts for single entry use case
                 continue
             }
-            val splitBinding =
-                ItemSplitAmountInfoBinding.inflate(inflater, binding.transactionItems, true)
+            val splitBinding = ComposeView(context)
+            binding.transactionItems.addView(splitBinding)
             bind(splitBinding, split)
             if (!useDoubleEntry) {
                 break
             }
         }
 
-        val balanceBinding = RowBalanceBinding.inflate(inflater, binding.transactionItems, true)
+        val balanceBinding = ComposeView(context)
+        binding.transactionItems.addView(balanceBinding)
         bind(balanceBinding, account, transaction.datePosted)
 
         val timeAndDate = formatFullDate(transaction.datePosted)
@@ -266,15 +282,17 @@ class TransactionDetailActivity : PasscodeLockActivity(), FragmentResultListener
         val activity: Activity = this
         if (shouldBackupTransactions(activity)) {
             backupActiveBookAsync(activity) { result ->
-                transactionsDbAdapter.deleteRecord(transaction)
-                updateAllWidgets(activity)
-                finish()
+                deleteTransactionImpl(activity, transaction)
             }
         } else {
-            transactionsDbAdapter.deleteRecord(transaction)
-            updateAllWidgets(activity)
-            finish()
+            deleteTransactionImpl(activity, transaction)
         }
+    }
+
+    private fun deleteTransactionImpl(activity: Activity, transaction: Transaction) {
+        transactionsDbAdapter.deleteRecord(transaction)
+        updateAllWidgets(activity)
+        activity.finish()
     }
 
     private fun duplicateTransaction(transaction: Transaction) {
