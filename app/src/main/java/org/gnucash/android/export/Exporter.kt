@@ -460,11 +460,10 @@ abstract class Exporter protected constructor(
             .setType(exportParams.exportFormat.mimeType)
             .putExtra(Intent.EXTRA_STREAM, exportFile)
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             .putExtra(
-                Intent.EXTRA_SUBJECT, context.getString(
-                    R.string.title_export_email,
-                    exportParams.exportFormat.name
-                )
+                Intent.EXTRA_SUBJECT,
+                context.getString(R.string.title_export_email, exportParams.exportFormat.name)
             )
 
         val defaultEmail = PreferenceManager.getDefaultSharedPreferences(context)
@@ -479,7 +478,7 @@ abstract class Exporter protected constructor(
 
         val activities: List<ResolveInfo?>? =
             context.packageManager.queryIntentActivities(shareIntent, 0)
-        if (activities != null && !activities.isEmpty()) {
+        if (!activities.isNullOrEmpty()) {
             context.startActivity(
                 Intent.createChooser(
                     shareIntent,

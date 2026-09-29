@@ -818,13 +818,11 @@ abstract class DatabaseAdapter<Model : BaseModel>(
             arrayOf<String?>(recordUID), null, null, null
         )
 
-        try {
+        cursor.use { cursor ->
             if (cursor.moveToFirst()) {
                 return cursor.getString(0)
             }
             throw IllegalArgumentException("Record not found in $tableName with column '$columnName'")
-        } finally {
-            cursor.close()
         }
     }
 

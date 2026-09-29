@@ -1170,13 +1170,11 @@ class AccountsDbAdapter(
             AccountEntry.COLUMN_ID + " = " + accountID,
             null, null, null, null
         )
-        try {
+        cursor.use { cursor ->
             if (cursor.moveToFirst()) {
                 val uid = cursor.getString(AccountEntry.COLUMN_DEFAULT_TRANSFER_ACCOUNT_UID)
                 return if (uid.isNullOrEmpty()) 0 else getID(uid)
             }
-        } finally {
-            cursor.close()
         }
         return 0
     }
