@@ -59,7 +59,9 @@ limitations under the License.
         android:id="@+id/split_list_scroll"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:clipToPadding="false"
         android:fillViewport="true"
+        android:paddingBottom="250dp"
         app:layout_constraintBottom_toTopOf="@id/calculator_keyboard"
         app:layout_constraintTop_toBottomOf="@id/imbalance_divider">
 

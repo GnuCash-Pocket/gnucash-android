@@ -22,8 +22,10 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clipToPadding="false"
         android:fillViewport="true"
-        android:isScrollContainer="false">
+        android:isScrollContainer="true"
+        android:paddingBottom="300dp">
 
         <LinearLayout
             android:id="@+id/fragment_transaction_form"
