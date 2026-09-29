@@ -41,7 +41,6 @@ import org.gnucash.android.app.GnuCashApplication
 import org.gnucash.android.app.GnuCashApplication.Companion.activeBookUID
 import org.gnucash.android.db.DatabaseHelper
 import org.gnucash.android.db.DatabaseHolder
-import org.gnucash.android.db.DatabaseSchema.BookEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.adapter.BooksDbAdapter
 import org.gnucash.android.db.adapter.BudgetsDbAdapter
@@ -246,11 +245,11 @@ abstract class Exporter protected constructor(
         // avoid issues like #448
         var exportCacheFile = exportCacheFile
         if (exportCacheFile == null) {
-            val bookName =
-                booksDbAdapter.getAttribute(bookUID, BookEntry.COLUMN_DISPLAY_NAME)
-            val name =
+            val book = booksDbAdapter.getRecord(bookUID)
+            val bookName = book.displayName ?: book.uid
+            val fileName =
                 buildExportFilename(exportParams.exportFormat, exportParams.isCompressed, bookName)
-            exportCacheFile = File(cacheDir, name)
+            exportCacheFile = File(cacheDir, fileName)
         }
         return exportCacheFile
     }
