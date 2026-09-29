@@ -354,13 +354,13 @@ object GncXmlHelper {
         return "$numerator/$denomString"
     }
 
-    fun formatFormula(amount: BigDecimal, commodity: Commodity): String {
+    fun formatFormula(amount: BigDecimal, commodity: Commodity, locale: Locale = Locale.ROOT): String {
         val money = Money(amount, commodity)
-        return formatFormula(money)
+        return formatFormula(money, locale)
     }
 
-    fun formatFormula(money: Money): String {
-        return money.formattedStringWithoutSymbol()
+    fun formatFormula(money: Money, locale: Locale = Locale.ROOT): String {
+        return money.formattedStringWithoutSymbol(locale)
     }
 
     fun formatFormula(amount: BigDecimal, locale: Locale = Locale.ROOT, withGrouping: Boolean = true): String {

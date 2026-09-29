@@ -148,6 +148,7 @@ import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.model.WeekendAdjust
+import org.gnucash.android.util.AmountParser
 import org.gnucash.android.util.NotSet
 import org.gnucash.android.util.parseColor
 import org.gnucash.android.util.set
@@ -159,6 +160,7 @@ import java.io.Closeable
 import java.math.BigDecimal
 import java.text.ParseException
 import java.util.Calendar
+import java.util.Locale
 import java.util.Stack
 import java.util.TimeZone
 
@@ -1104,13 +1106,14 @@ class GncXmlHandler(
         try {
             // HACK: Check for bug #562. If a value has already been set, ignore the one just read
             if (split.value.isAmountZero) {
+                val amount = AmountParser.parse(value, Locale.ROOT)
                 var accountUID = split.scheduledActionAccountUID
                 if (accountUID.isNullOrEmpty()) {
                     accountUID = split.accountUID!!
                 }
                 val commodity = getCommodityForAccount(accountUID)
 
-                split.value = Money(value, commodity)
+                split.value = Money(amount, commodity)
                 split.type = splitType
             }
         } catch (e: NumberFormatException) {

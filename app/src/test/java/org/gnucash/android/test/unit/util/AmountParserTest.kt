@@ -26,7 +26,7 @@ class AmountParserTest : GnuCashTest() {
 
     @Test
     fun testParseIntegerAmount() {
-        assertThat(AmountParser.parse("123")).isEqualTo(BigDecimal(123))
+        assertThat(AmountParser.parse("123")).isEqualTo(BigDecimal("123"))
     }
 
     @Test
@@ -41,6 +41,15 @@ class AmountParserTest : GnuCashTest() {
 
         Locale.setDefault(Locale("es"))
         assertThat(AmountParser.parse("123,45")).isEqualTo(BigDecimal("123.45"))
+    }
+
+    @Test
+    fun parseDecimalAmountWithComma() {
+        Locale.setDefault(Locale.US)
+        assertThat(AmountParser.parse("1,234.56", Locale.ROOT)).isEqualTo(BigDecimal("1234.56"))
+
+        Locale.setDefault(Locale.GERMANY)
+        assertThat(AmountParser.parse("1,234.56", Locale.ROOT)).isEqualTo(BigDecimal("1234.56"))
     }
 
     @Test(expected = ParseException::class)
