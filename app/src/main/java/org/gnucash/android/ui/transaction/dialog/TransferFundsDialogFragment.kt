@@ -22,6 +22,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.findViewTreeLifecycleOwner
 import org.gnucash.android.R
 import org.gnucash.android.databinding.DialogTransferFundsBinding
 import org.gnucash.android.db.adapter.PricesDbAdapter
@@ -283,6 +284,8 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
         targetCommodity: Commodity
     ) {
         val context: Context = binding.root.context
+        val lifecycleOwner = binding.root.findViewTreeLifecycleOwner() ?: viewLifecycleOwner
+
         binding.exchangeRateTextInputLayout.error = null
         if (!fromCommodity.isCurrency) {
             binding.exchangeRateTextInputLayout.error = context.getString(R.string.commodity_required)
@@ -296,17 +299,19 @@ class TransferFundsDialogFragment : VolatileDialogFragment() {
         formatterRate.minimumFractionDigits = SCALE_RATE
         formatterRate.maximumFractionDigits = SCALE_RATE
 
-        val provider: QuoteProvider = YahooJson()
-        provider.get(fromCommodity, targetCommodity, this, object : QuoteCallback {
-            override suspend fun onQuote(quote: Price?) {
-                if (quote != null) {
-                    priceQuoted = quote
-                    val rate = quote.toBigDecimal(SCALE_RATE)
-                    binding.inputExchangeRate.setText(formatterRate.format(rate))
-                }
-                binding.fetchExchangeRate.isEnabled = true
+        val provider: QuoteProvider = createQuoteProvider()
+        provider.get(fromCommodity, targetCommodity, lifecycleOwner) { quote ->
+            if (quote != null) {
+                priceQuoted = quote
+                val rate = quote.toBigDecimal(SCALE_RATE)
+                binding.inputExchangeRate.setText(formatterRate.format(rate))
             }
-        })
+            binding.fetchExchangeRate.isEnabled = true
+        }
+    }
+
+    private fun createQuoteProvider(): QuoteProvider {
+        return YahooJson()
     }
 
     companion object {
