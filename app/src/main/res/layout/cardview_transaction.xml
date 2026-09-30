@@ -93,5 +93,33 @@
             app:layout_constraintStart_toStartOf="@id/list_item_2_lines"
             app:layout_constraintTop_toBottomOf="@id/list_item_2_lines"
             tools:text="@tools:sample/date/ddmmyy" />
+
+        <TextView
+            android:id="@+id/balance_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="@string/account_balance"
+            android:textColor="?android:textColorPrimary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@id/transaction_date"
+            app:layout_constraintTop_toBottomOf="@id/transaction_date" />
+
+        <TextView
+            android:id="@+id/account_balance"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="8dp"
+            android:gravity="end"
+            android:singleLine="true"
+            android:textColor="#000000"
+            android:textSize="14sp"
+            app:layout_constraintStart_toEndOf="@id/balance_label"
+            app:layout_constraintEnd_toStartOf="@id/options_menu"
+            app:layout_constraintTop_toTopOf="@id/balance_label"
+            android:text=""
+            app:layout_constraintBottom_toBottomOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

@@ -19,6 +19,7 @@ import android.content.Context
 import android.content.Intent
 import android.database.Cursor
 import android.database.SQLException
+import java.math.BigDecimal
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.LayoutInflater
@@ -52,6 +53,7 @@ import org.gnucash.android.databinding.CardviewTransactionBinding
 import org.gnucash.android.databinding.FragmentTransactionsListBinding
 import org.gnucash.android.db.DatabaseCursorLoader
 import org.gnucash.android.db.adapter.AccountsDbAdapter
+import org.gnucash.android.db.adapter.AccountsDbAdapter.Companion.ALWAYS
 import org.gnucash.android.db.adapter.TransactionsDbAdapter
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.ui.adapter.CursorRecyclerAdapter
@@ -70,6 +72,9 @@ import timber.log.Timber
  *
  * @author Ngewi Fet <ngewif@gmail.com>
  */
+
+private var previousAccountBalance: BigDecimal = BigDecimal(0);
+
 class TransactionsListFragment : MenuFragment(),
     Refreshable,
     LoaderManager.LoaderCallbacks<Cursor>,
@@ -309,6 +314,8 @@ class TransactionsListFragment : MenuFragment(),
 
         private var transaction: Transaction? = null
 
+        private val accountBalanceView: TextView = binding.accountBalance
+
         @ColorInt
         private val colorBalanceZero: Int = transactionAmount.currentTextColor
 
@@ -364,6 +371,7 @@ class TransactionsListFragment : MenuFragment(),
         fun bind(cursor: Cursor) {
             val context = itemView.context
             val accountUID = accountUID!!
+            val account = accountsDbAdapter.getRecord(accountUID)
             val transaction = transactionsDbAdapter.buildModelInstance(cursor)
             this.transaction = transaction
             val transactionUID = transaction.uid
@@ -372,6 +380,25 @@ class TransactionsListFragment : MenuFragment(),
 
             val amount = transaction.getBalance(accountUID)
             transactionAmount.displayBalance(amount, colorBalanceZero)
+
+            var accountBalance = accountsDbAdapter.getAccountBalance(
+                account,
+                ALWAYS,
+                transaction.datePosted,
+                true
+            )
+
+            // Sometimes the running account balance does not change from one transaction to the next, most likely because it
+            // returns the running balance based on as of a given date. This fixes that by keeping a true running balance for
+            // each transaction
+            if (previousAccountBalance == BigDecimal.ZERO || previousAccountBalance != accountBalance.toBigDecimal() ) {
+                previousAccountBalance = accountBalance.toBigDecimal();
+            } else if (accountBalance.toBigDecimal() == previousAccountBalance) {
+                accountBalance += amount;
+                previousAccountBalance = accountBalance.toBigDecimal();
+            }
+
+            accountBalanceView.text = accountBalance.toString()
 
             val dateText = if (useAbsoluteDate) {
                 formatMediumDate(transaction.datePosted)
