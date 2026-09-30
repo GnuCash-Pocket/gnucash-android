@@ -1,0 +1,2 @@
+# Treat SQLite database files and binary test resources as binary
+*.sqlite3.gnucash binary

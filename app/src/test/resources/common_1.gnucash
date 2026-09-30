@@ -1240,7 +1240,7 @@
     </trn:split>
     <trn:split>
       <split:id type="guid">f2bbfea2313f4a92aef8bc4fbe7db9b1</split:id>
-      <split:reconciled-state>n</split:reconciled-state>
+      <split:reconciled-state>y</split:reconciled-state>
       <split:value>-12345/100</split:value>
       <split:quantity>-12345/100</split:quantity>
       <split:account type="guid">377cc9fff6ad44daa3873e070afaf2e1</split:account>
@@ -1272,14 +1272,14 @@
     <trn:split>
       <split:id type="guid">729e490d725f41fabfeaeb972f9fb0fb</split:id>
       <split:memo>Android smartphone</split:memo>
-      <split:reconciled-state>n</split:reconciled-state>
+      <split:reconciled-state>c</split:reconciled-state>
       <split:value>100000/100</split:value>
       <split:quantity>100000/100</split:quantity>
       <split:account type="guid">84e8882f38514ee8b9c7ad6ede968a8b</split:account>
     </trn:split>
     <trn:split>
       <split:id type="guid">d429257be4664365b0520c90c294ee41</split:id>
-      <split:reconciled-state>n</split:reconciled-state>
+      <split:reconciled-state>c</split:reconciled-state>
       <split:value>-100000/100</split:value>
       <split:quantity>-93000/100</split:quantity>
       <split:account type="guid">d6572e1cc36c4fa0996598fbece22fe7</split:account>

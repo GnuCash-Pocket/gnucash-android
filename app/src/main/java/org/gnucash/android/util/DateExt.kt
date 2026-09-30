@@ -196,7 +196,7 @@ fun LocalDateTime.getFirstQuarterMonth(): Int {
     }
 }
 
-private const val NEVER = Long.MIN_VALUE
+const val NEVER = Long.MIN_VALUE
 
 fun LocalDateTime?.toMillis(): Long {
     return this?.toDateTime()?.millis ?: NEVER
