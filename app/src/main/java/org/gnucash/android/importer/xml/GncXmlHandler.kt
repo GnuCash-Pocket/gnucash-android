@@ -106,6 +106,7 @@ import org.gnucash.android.export.xml.GncXmlHelper.TAG_QUANTITY
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_QUOTE_SOURCE
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_QUOTE_TZ
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_RECONCILED_DATE
+import org.gnucash.android.export.xml.GncXmlHelper.TAG_RECONCILED_STATE
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_RECURRENCE
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_RECURRENCE_PERIOD
 import org.gnucash.android.export.xml.GncXmlHelper.TAG_REM_OCCUR
@@ -441,6 +442,7 @@ class GncXmlHandler(
             TAG_NUM_PERIODS -> handleEndNumPeriods(uri, characterString)
             TAG_COUNT_DATA -> handleEndCountData(characterString)
             TAG_TITLE -> handleEndTitle(uri, characterString)
+            TAG_RECONCILED_STATE -> handleEndReconciledState(uri, characterString)
         }
     }
 
@@ -769,7 +771,7 @@ class GncXmlHandler(
                     }
                 } else if (NS_SPLIT == uriParent) {
                     if (TAG_RECONCILED_DATE == tagParent) {
-                        split!!.reconcileDate = date
+                        split!!.reconciledDate = date
                     }
                 }
             } catch (e: ParseException) {
@@ -989,6 +991,12 @@ class GncXmlHandler(
     private fun handleEndQuoteTz(tzId: String) {
         if (tzId.isNotEmpty()) {
             commodity?.quoteTimeZone = TimeZone.getTimeZone(tzId)
+        }
+    }
+
+    private fun handleEndReconciledState(uri: String, state: String) {
+        if (NS_SPLIT == uri) {
+            split!!.reconciledState = state.getOrNull(0) ?: split!!.reconciledState
         }
     }
 

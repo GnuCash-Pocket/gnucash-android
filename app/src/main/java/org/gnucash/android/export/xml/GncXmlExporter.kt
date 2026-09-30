@@ -22,6 +22,7 @@ import org.gnucash.android.db.DatabaseSchema.SplitEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
 import org.gnucash.android.db.adapter.AccountsDbAdapter
 import org.gnucash.android.db.forEach
+import org.gnucash.android.db.getChar
 import org.gnucash.android.db.getLong
 import org.gnucash.android.db.getString
 import org.gnucash.android.db.getTimestamp
@@ -188,6 +189,7 @@ import org.gnucash.android.model.Price
 import org.gnucash.android.model.Recurrence
 import org.gnucash.android.model.ScheduledAction
 import org.gnucash.android.model.Slot
+import org.gnucash.android.model.Split
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.model.WeekendAdjust
@@ -493,7 +495,8 @@ class GncXmlExporter(
             "s." + SplitEntry.COLUMN_QUANTITY_NUM + " AS split_quantity_num",
             "s." + SplitEntry.COLUMN_QUANTITY_DENOM + " AS split_quantity_denom",
             "s." + SplitEntry.COLUMN_ACCOUNT_UID + " AS split_acct_uid",
-            "s." + SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID + " AS split_sched_xaction_acct_uid"
+            "s." + SplitEntry.COLUMN_RECONCILE_STATE + " AS split_reconcile_state",
+            "s." + SplitEntry.COLUMN_SCHEDX_ACTION_ACCOUNT_UID + " AS split_sched_xaction_acct_uid",
         )
         val where: String = if (isTemplates) {
             "t." + TransactionEntry.COLUMN_TEMPLATE + "=1"
@@ -629,9 +632,8 @@ class GncXmlExporter(
             }
             // reconciled
             serializer.startTag(NS_SPLIT, TAG_RECONCILED_STATE)
-            //FIXME: retrieve reconciled state from the split in the db
-            // serializer.text(split.reconcileState);
-            serializer.text("n")
+            val reconcileState = cursor.getChar("split_reconcile_state") ?: Split.RECONCILED_NO
+            serializer.text(reconcileState.toString())
             serializer.endTag(NS_SPLIT, TAG_RECONCILED_STATE)
             //todo: if split is reconciled, add reconciled date
             // value, in the transaction's currency

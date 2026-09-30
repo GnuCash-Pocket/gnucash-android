@@ -24,9 +24,11 @@ import org.gnucash.android.db.DatabaseHolder
 import org.gnucash.android.db.DatabaseSchema.AccountEntry
 import org.gnucash.android.db.DatabaseSchema.SplitEntry
 import org.gnucash.android.db.DatabaseSchema.TransactionEntry
+import org.gnucash.android.db.bindChar
 import org.gnucash.android.db.bindStringOrNull
 import org.gnucash.android.db.bindTimestamp
 import org.gnucash.android.db.forEach
+import org.gnucash.android.db.getChar
 import org.gnucash.android.db.getLong
 import org.gnucash.android.db.getString
 import org.gnucash.android.db.getTimestamp
@@ -37,9 +39,10 @@ import org.gnucash.android.model.Commodity
 import org.gnucash.android.model.Money
 import org.gnucash.android.model.Money.Companion.createZeroInstance
 import org.gnucash.android.model.Split
-import org.gnucash.android.model.Split.Companion.FLAG_NOT_RECONCILED
+import org.gnucash.android.model.Split.Companion.RECONCILED_NO
 import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
+import org.gnucash.android.util.NEVER
 import org.gnucash.android.util.TimestampHelper.timestampFromNow
 import org.gnucash.android.util.set
 import timber.log.Timber
@@ -100,8 +103,8 @@ class SplitsDbAdapter(
         stmt.bindLong(1 + INDEX_COLUMN_VALUE_DENOM, split.value.denominator)
         stmt.bindLong(1 + INDEX_COLUMN_QUANTITY_NUM, split.quantity.numerator)
         stmt.bindLong(1 + INDEX_COLUMN_QUANTITY_DENOM, split.quantity.denominator)
-        stmt.bindString(1 + INDEX_COLUMN_RECONCILE_STATE, split.reconcileState.toString())
-        stmt.bindTimestamp(1 + INDEX_COLUMN_RECONCILE_DATE, split.reconcileDate)
+        stmt.bindChar(1 + INDEX_COLUMN_RECONCILE_STATE, split.reconciledState)
+        stmt.bindTimestamp(1 + INDEX_COLUMN_RECONCILE_DATE, split.reconciledDate)
         stmt.bindString(1 + INDEX_COLUMN_ACCOUNT_UID, split.accountUID)
         stmt.bindString(1 + INDEX_COLUMN_TRANSACTION_UID, split.transactionUID)
         stmt.bindStringOrNull(
@@ -129,7 +132,7 @@ class SplitsDbAdapter(
         val accountUID = cursor.getString(INDEX_COLUMN_ACCOUNT_UID)!!
         val transxUID = cursor.getString(INDEX_COLUMN_TRANSACTION_UID)!!
         val memo = cursor.getString(INDEX_COLUMN_MEMO).orEmpty()
-        val reconcileState = cursor.getString(INDEX_COLUMN_RECONCILE_STATE)
+        val reconcileState = cursor.getChar(INDEX_COLUMN_RECONCILE_STATE)
         val reconcileDate = cursor.getTimestamp(INDEX_COLUMN_RECONCILE_DATE)
         val schedxAccountUID = cursor.getString(INDEX_COLUMN_SCHEDX_ACTION_ACCOUNT_UID)
 
@@ -153,8 +156,8 @@ class SplitsDbAdapter(
         split.transactionUID = transxUID
         split.type = TransactionType.of(typeName)
         split.memo = memo
-        split.reconcileState = reconcileState?.get(0) ?: FLAG_NOT_RECONCILED
-        split.reconcileDate = reconcileDate?.time ?: 0L
+        split.reconciledState = reconcileState ?: RECONCILED_NO
+        split.reconciledDate = reconcileDate?.time ?: NEVER
         split.scheduledActionAccountUID = schedxAccountUID
 
         return split
@@ -485,8 +488,8 @@ class SplitsDbAdapter(
         split.transactionUID = transxUID
         split.type = TransactionType.of(typeName)
         split.memo = memo.orEmpty()
-        split.reconcileState = reconcileState?.get(0) ?: FLAG_NOT_RECONCILED
-        split.reconcileDate = reconcileDate?.time ?: 0L
+        split.reconciledState = reconcileState?.get(0) ?: RECONCILED_NO
+        split.reconciledDate = reconcileDate?.time ?: NEVER
         split.scheduledActionAccountUID = actionAccountUID
 
         return split

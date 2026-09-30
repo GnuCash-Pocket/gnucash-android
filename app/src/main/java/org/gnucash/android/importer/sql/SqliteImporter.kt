@@ -52,6 +52,7 @@ import org.gnucash.android.model.Transaction
 import org.gnucash.android.model.TransactionType
 import org.gnucash.android.model.WeekendAdjust
 import org.gnucash.android.util.FileUtils
+import org.gnucash.android.util.NEVER
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
 import timber.log.Timber
@@ -642,8 +643,8 @@ class SqliteImporter(context: Context, inputStream: InputStream, listener: GncPr
         val split = Split(value, quantity, account)
         split.setUID(guid)
         split.memo = memo
-        split.reconcileState = reconcileState[0]
-        split.reconcileDate = reconcileDate?.time ?: 0L
+        split.reconciledState = reconcileState[0]
+        split.reconciledDate = reconcileDate?.time ?: NEVER
 
         pipeSlots(db, split).forEach { slot ->
             when (slot.key) {
